@@ -1,0 +1,39 @@
+{
+  "nodes": [
+    {
+      "id": "src_app_gtag_consent",
+      "label": "GTag Consent Initialization",
+      "file_type": "document",
+      "source_file": "src/app.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_app_gtm",
+      "label": "Google Tag Manager Shell",
+      "file_type": "document",
+      "source_file": "src/app.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "src_app_gtag_consent",
+      "target": "src_app_gtm",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app.html",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": []
+}

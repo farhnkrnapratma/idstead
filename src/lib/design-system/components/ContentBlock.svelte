@@ -1,14 +1,15 @@
+<!-- @format -->
 <script lang="ts">
-  import type { Snippet } from 'svelte';
-  import { cn } from '../utils/cn';
+  import type {Snippet} from 'svelte'
+  import {cn} from '../utils/cn'
 
   interface Props {
-    title?: string;
-    description?: string;
-    variant?: 'default' | 'highlight' | 'glass';
-    class?: string;
-    actions?: Snippet;
-    children?: Snippet;
+    title?: string
+    description?: string
+    variant?: 'default' | 'highlight' | 'glass'
+    class?: string
+    actions?: Snippet
+    children?: Snippet
   }
 
   let {
@@ -17,22 +18,23 @@
     variant = 'default',
     class: className = '',
     actions,
-    children,
-  }: Props = $props();
+    children
+  }: Props = $props()
 
   const variantStyles = {
     default: 'bg-surface/50 border border-border-subtle',
-    highlight: 'bg-accent-subtle/20 border border-accent/30',
-    glass: 'bg-surface/60 border border-border-subtle backdrop-blur-md',
-  };
+    highlight: 'bg-copilot-subtle/20 border border-copilot/30',
+    glass: 'bg-surface/60 border border-border-subtle backdrop-blur-md'
+  }
 </script>
 
 <div
   class={cn(
     'flex flex-col gap-3 rounded-2xl p-5 shadow-xs transition-colors duration-300 sm:p-6',
     variantStyles[variant],
-    className,
-  )}>
+    className
+  )}
+>
   {#if title || description}
     <div class="flex flex-col gap-1">
       {#if title}
@@ -49,7 +51,9 @@
   {/if}
 
   {#if actions}
-    <div class="mt-2 flex items-center justify-end gap-2 border-t border-border-subtle/40 pt-3">
+    <div
+      class="mt-2 flex items-center justify-end gap-2 border-t border-border-subtle/40 pt-3"
+    >
       {@render actions()}
     </div>
   {/if}

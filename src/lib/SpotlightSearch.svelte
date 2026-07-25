@@ -1,50 +1,51 @@
+<!-- @format -->
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { goto } from '$app/navigation';
+  import {onMount} from 'svelte'
+  import {goto} from '$app/navigation'
 
   interface SearchResult {
-    type: 'post' | 'project';
-    title: string;
-    subtitle: string;
-    url: string;
-    tags?: string[];
+    type: 'post' | 'project'
+    title: string
+    subtitle: string
+    url: string
+    tags?: string[]
   }
 
   interface Project {
-    name: string;
-    desc: string;
-    tags: string[];
-    url: string;
-    lang: string;
-    stars: number;
-    licenseName: string | null;
-    licenseUrl: string | null;
+    name: string
+    desc: string
+    tags: string[]
+    url: string
+    lang: string
+    stars: number
+    licenseName: string | null
+    licenseUrl: string | null
   }
 
   interface Props {
-    projects?: Project[];
+    projects?: Project[]
   }
 
-  let { projects = [] }: Props = $props();
+  let {projects = []}: Props = $props()
 
-  let isOpen = $state(false);
-  let query = $state('');
-  let results = $state<SearchResult[]>([]);
-  let activeIndex = $state(-1);
-  let isLoading = $state(false);
-  let inputEl = $state<HTMLInputElement | null>(null);
-  let listEl = $state<HTMLUListElement | null>(null);
+  let isOpen = $state(false)
+  let query = $state('')
+  let results = $state<SearchResult[]>([])
+  let activeIndex = $state(-1)
+  let isLoading = $state(false)
+  let inputEl = $state<HTMLInputElement | null>(null)
+  let listEl = $state<HTMLUListElement | null>(null)
 
-  let debounceTimer: ReturnType<typeof setTimeout>;
+  let debounceTimer: ReturnType<typeof setTimeout>
 
   function searchProjects(q: string): SearchResult[] {
-    const lower = q.toLowerCase();
+    const lower = q.toLowerCase()
     return projects
       .filter(
         p =>
-          p.name.toLowerCase().includes(lower) ||
-          p.desc.toLowerCase().includes(lower) ||
-          p.tags.some(t => t.toLowerCase().includes(lower)),
+          p.name.toLowerCase().includes(lower)
+          || p.desc.toLowerCase().includes(lower)
+          || p.tags.some(t => t.toLowerCase().includes(lower))
       )
       .slice(0, 4)
       .map(p => ({
@@ -52,140 +53,142 @@
         title: p.name,
         subtitle: p.desc,
         url: p.url,
-        tags: p.tags.slice(0, 3),
-      }));
+        tags: p.tags.slice(0, 3)
+      }))
   }
 
   async function runSearch(q: string) {
     if (q.length < 2) {
-      results = [];
-      isLoading = false;
-      return;
+      results = []
+      isLoading = false
+      return
     }
 
-    isLoading = true;
-    activeIndex = -1;
+    isLoading = true
+    activeIndex = -1
 
-    const projectMatches = searchProjects(q);
+    const projectMatches = searchProjects(q)
 
     try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
-      const data = await res.json();
-      const postResults: SearchResult[] = data.results ?? [];
-      results = [...postResults, ...projectMatches];
+      const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`)
+      const data = await res.json()
+      const postResults: SearchResult[] = data.results ?? []
+      results = [...postResults, ...projectMatches]
     } catch {
-      results = projectMatches;
+      results = projectMatches
     }
 
-    isLoading = false;
+    isLoading = false
   }
 
   function handleInput() {
-    clearTimeout(debounceTimer);
+    clearTimeout(debounceTimer)
     debounceTimer = setTimeout(() => {
-      runSearch(query);
-    }, 250);
+      runSearch(query)
+    }, 250)
   }
 
-  let previouslyFocusedElement = $state<HTMLElement | null>(null);
+  let previouslyFocusedElement = $state<HTMLElement | null>(null)
 
   function open() {
     if (typeof document !== 'undefined') {
-      previouslyFocusedElement = document.activeElement as HTMLElement;
+      previouslyFocusedElement = document.activeElement as HTMLElement
     }
-    isOpen = true;
-    query = '';
-    results = [];
-    activeIndex = -1;
-    setTimeout(() => inputEl?.focus(), 30);
+    isOpen = true
+    query = ''
+    results = []
+    activeIndex = -1
+    setTimeout(() => inputEl?.focus(), 30)
   }
 
   function close() {
-    isOpen = false;
-    query = '';
-    results = [];
-    activeIndex = -1;
+    isOpen = false
+    query = ''
+    results = []
+    activeIndex = -1
     if (previouslyFocusedElement) {
       setTimeout(() => {
-        previouslyFocusedElement?.focus();
-        previouslyFocusedElement = null;
-      }, 30);
+        previouslyFocusedElement?.focus()
+        previouslyFocusedElement = null
+      }, 30)
     }
   }
 
   function select(result: SearchResult) {
-    close();
+    close()
     if (result.url.startsWith('http')) {
-      window.open(result.url, '_blank', 'noopener,noreferrer');
+      window.open(result.url, '_blank', 'noopener,noreferrer')
     } else {
-      goto(result.url);
+      goto(result.url)
     }
   }
 
   function handleKeydown(e: KeyboardEvent) {
-    if (!isOpen) return;
+    if (!isOpen) return
 
     switch (e.key) {
       case 'ArrowDown':
-        e.preventDefault();
-        activeIndex = Math.min(activeIndex + 1, results.length - 1);
-        scrollActiveIntoView();
-        break;
+        e.preventDefault()
+        activeIndex = Math.min(activeIndex + 1, results.length - 1)
+        scrollActiveIntoView()
+        break
       case 'ArrowUp':
-        e.preventDefault();
-        activeIndex = Math.max(activeIndex - 1, -1);
-        scrollActiveIntoView();
-        break;
+        e.preventDefault()
+        activeIndex = Math.max(activeIndex - 1, -1)
+        scrollActiveIntoView()
+        break
       case 'Enter':
-        e.preventDefault();
+        e.preventDefault()
         if (activeIndex >= 0 && results[activeIndex]) {
-          select(results[activeIndex]);
+          select(results[activeIndex])
         }
-        break;
+        break
       case 'Escape':
-        e.preventDefault();
-        close();
-        break;
+        e.preventDefault()
+        close()
+        break
     }
   }
 
   function scrollActiveIntoView() {
-    if (!listEl || activeIndex < 0) return;
-    const items = listEl.querySelectorAll('[data-result-item]');
-    items[activeIndex]?.scrollIntoView({ block: 'nearest' });
+    if (!listEl || activeIndex < 0) return
+    const items = listEl.querySelectorAll('[data-result-item]')
+    items[activeIndex]?.scrollIntoView({block: 'nearest'})
   }
 
   function handleResultKeydown(e: KeyboardEvent, result: SearchResult) {
     if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      select(result);
+      e.preventDefault()
+      select(result)
     }
   }
 
   function handleGlobalKeydown(e: KeyboardEvent) {
-    const inInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName);
+    const inInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes(
+      (e.target as HTMLElement)?.tagName
+    )
     if ((e.ctrlKey && e.key === 'k') || (!inInput && e.key === '/')) {
-      e.preventDefault();
+      e.preventDefault()
       if (isOpen) {
-        close();
+        close()
       } else {
-        open();
+        open()
       }
     }
   }
 
   onMount(() => {
-    window.addEventListener('keydown', handleGlobalKeydown);
-    return () => window.removeEventListener('keydown', handleGlobalKeydown);
-  });
+    window.addEventListener('keydown', handleGlobalKeydown)
+    return () => window.removeEventListener('keydown', handleGlobalKeydown)
+  })
 
   function highlight(text: string, q: string): string {
-    if (!q || q.length < 2) return text;
-    const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (!q || q.length < 2) return text
+    const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     return text.replace(
       new RegExp(`(${escaped})`, 'gi'),
-      '<mark class="bg-accent/20 text-accent rounded-[2px] px-[1px] not-italic font-semibold">$1</mark>',
-    );
+      '<mark class="bg-copilot/20 text-copilot rounded-[2px] px-[1px] not-italic font-semibold">$1</mark>'
+    )
   }
 </script>
 
@@ -194,24 +197,27 @@
   onclick={open}
   class="group flex h-9 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border-subtle bg-surface-card px-3 text-xs font-semibold text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary"
   aria-label="Open spotlight search (Ctrl+K)"
-  title="Search (Ctrl+K)">
-  <i
-    class="bi bi-search text-sm"
-    aria-hidden="true"></i>
+  title="Search (Ctrl+K)"
+>
+  <i class="bi bi-search text-sm" aria-hidden="true"></i>
   <span class="hidden sm:inline">Search</span>
   <kbd
-    class="bg-surface-canvas ml-1.5 hidden h-5 items-center justify-center rounded border border-border-subtle px-1.5 align-middle font-mono text-[11px] leading-none font-semibold text-text-secondary sm:inline-flex">
+    class="bg-surface-canvas ml-1.5 hidden h-5 items-center justify-center rounded border border-border-subtle px-1.5 align-middle font-mono text-[11px] leading-none font-semibold text-text-secondary sm:inline-flex"
+  >
     Ctrl+K
   </kbd>
 </button>
 
 {#if isOpen}
-  <div class="fixed inset-0 z-[9999] flex items-start justify-center px-4 pt-[15vh]">
+  <div
+    class="fixed inset-0 z-9999 flex items-start justify-center px-4 pt-[15vh]"
+  >
     <button
       type="button"
       class="absolute inset-0 cursor-default bg-overlay-backdrop backdrop-blur-sm transition-all duration-300"
       aria-label="Close search"
-      onclick={close}></button>
+      onclick={close}
+    ></button>
 
     <div
       class="relative z-10 w-full max-w-xl overflow-hidden rounded-2xl border border-border-subtle bg-surface-card shadow-2xl"
@@ -219,33 +225,37 @@
       tabindex="-1"
       aria-modal="true"
       aria-label="Spotlight Search"
-      onkeydown={handleKeydown}>
+      onkeydown={handleKeydown}
+    >
       <div class="border-b border-border-subtle px-4 py-1.5">
         <div
-          class="bg-surface-canvas/40 flex items-center gap-3 rounded-xl border border-border-subtle px-3 py-0.5 transition-all duration-150 focus-within:border-accent/60 focus-within:ring-1 focus-within:ring-accent/20">
+          class="bg-surface-canvas/40 flex items-center gap-3 rounded-xl border border-border-subtle px-3 py-0.5 transition-all duration-150 focus-within:border-copilot/60 focus-within:ring-1 focus-within:ring-copilot/20"
+        >
           {#if isLoading}
             <svg
-              class="h-4 w-4 shrink-0 animate-spin text-accent"
+              class="h-4 w-4 shrink-0 animate-spin text-copilot"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
-              aria-hidden="true">
+              aria-hidden="true"
+            >
               <circle
-                class="opacity-25"
+                class="stroke-copilot stroke-3 opacity-25"
                 cx="12"
                 cy="12"
                 r="10"
-                stroke="currentColor"
-                stroke-width="4"></circle>
+              >
+              </circle>
               <path
-                class="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                class="fill-copilot stroke-copilot opacity-25"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              ></path>
             </svg>
           {:else}
             <i
               class="bi bi-search shrink-0 text-sm text-text-secondary"
-              aria-hidden="true"></i>
+              aria-hidden="true"
+            ></i>
           {/if}
 
           <input
@@ -260,16 +270,21 @@
             aria-label="Search query"
             aria-autocomplete="list"
             aria-controls="search-results"
-            aria-activedescendant={activeIndex >= 0 ? `result-${activeIndex}` : undefined} />
+            aria-activedescendant={activeIndex >= 0 ?
+              `result-${activeIndex}`
+            : undefined}
+          />
 
           <button
             type="button"
             onclick={close}
             class="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-none"
-            aria-label="Close search">
+            aria-label="Close search"
+          >
             <span>Cancel</span>
             <kbd
-              class="hidden items-center rounded border border-border-subtle bg-surface-card px-1.5 py-0.5 font-mono text-[9px] leading-none text-text-muted select-none sm:inline-flex">
+              class="hidden items-center rounded border border-border-subtle bg-surface-card px-1.5 py-0.5 font-mono text-[9px] leading-none text-text-muted select-none sm:inline-flex"
+            >
               Esc
             </kbd>
           </button>
@@ -278,19 +293,23 @@
 
       {#if query.length < 2}
         <div
-          class="flex flex-col items-center justify-center gap-2 px-4 py-12 text-center select-none">
-          <i
-            class="bi bi-search text-3xl text-text-muted/30"
-            aria-hidden="true"></i>
-          <p class="text-xs text-text-muted">Start typing to search posts & projects</p>
+          class="flex flex-col items-center justify-center gap-2 px-4 py-12 text-center select-none"
+        >
+          <i class="bi bi-search text-3xl text-text-muted/30" aria-hidden="true"
+          ></i>
+          <p class="text-xs text-text-muted">
+            Start typing to search posts & projects
+          </p>
         </div>
       {:else}
         {#if results.length === 0 && !isLoading}
           <div
-            class="flex flex-col items-center justify-center gap-2 px-4 py-12 text-center select-none">
+            class="flex flex-col items-center justify-center gap-2 px-4 py-12 text-center select-none"
+          >
             <i
               class="bi bi-search text-3xl text-text-muted/30"
-              aria-hidden="true"></i>
+              aria-hidden="true"
+            ></i>
             <p class="text-xs font-medium text-text-secondary">
               No results for "<span class="text-text-primary">{query}</span>"
             </p>
@@ -301,12 +320,14 @@
             id="search-results"
             role="listbox"
             aria-label="Search results"
-            class="no-scrollbar max-h-80 overflow-y-auto py-1.5">
+            class="no-scrollbar max-h-80 overflow-y-auto py-1.5"
+          >
             {#if results.some(r => r.type === 'post')}
               <li class="px-4 pt-2.5 pb-1">
                 <span
                   class="text-[11px] font-bold tracking-widest text-text-muted uppercase select-none"
-                  >Blog posts</span>
+                  >Blog posts</span
+                >
               </li>
               {#each results.filter(r => r.type === 'post') as result, i (i)}
                 {@const globalIdx = results.indexOf(result)}
@@ -322,30 +343,36 @@
                   class="group mx-1.5 flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 transition-colors {(
                     activeIndex === globalIdx
                   ) ?
-                    'bg-accent/10'
-                  : 'hover:bg-surface-hover'}">
+                    'bg-copilot/10'
+                  : 'hover:bg-surface-hover'}"
+                >
                   <span
-                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
+                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-copilot/10 text-copilot"
+                  >
                     <i
                       class="bi bi-file-earmark-text text-base"
-                      aria-hidden="true"></i>
+                      aria-hidden="true"
+                    ></i>
                   </span>
                   <div class="min-w-0 flex-1">
                     <p class="truncate text-sm font-semibold text-text-primary">
                       {@html highlight(result.title, query)}
                     </p>
                     {#if result.subtitle}
-                      <p class="mt-0.5 truncate text-xs text-text-secondary">{result.subtitle}</p>
+                      <p class="mt-0.5 truncate text-xs text-text-secondary">
+                        {result.subtitle}
+                      </p>
                     {/if}
                   </div>
                   <span
-                    class="material-symbols-rounded shrink-0 text-xs leading-none text-text-muted/0 transition-colors select-none group-hover:text-text-muted {(
+                    class="material-symbols-rounded shrink-0 leading-none text-text-muted/0 transition-colors select-none group-hover:text-copilot {(
                       activeIndex === globalIdx
                     ) ?
                       'text-text-muted'
                     : ''}"
-                    style="font-variation-settings: 'wght' 200, 'opsz' 20;"
-                    aria-hidden="true">arrow_forward</span>
+                    style="font-size: 16px; font-variation-settings: 'wght' 400, 'opsz' 20;"
+                    aria-hidden="true">arrow_forward</span
+                  >
                 </li>
               {/each}
             {/if}
@@ -354,7 +381,8 @@
               <li class="mt-1 px-4 pt-2.5 pb-1">
                 <span
                   class="text-[11px] font-bold tracking-widest text-text-muted uppercase select-none"
-                  >GitHub projects</span>
+                  >GitHub projects</span
+                >
               </li>
               {#each results.filter(r => r.type === 'project') as result, i (i)}
                 {@const globalIdx = results.indexOf(result)}
@@ -370,13 +398,16 @@
                   class="group mx-1.5 flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 transition-colors {(
                     activeIndex === globalIdx
                   ) ?
-                    'bg-accent/10'
-                  : 'hover:bg-surface-hover'}">
+                    'bg-copilot/10'
+                  : 'hover:bg-surface-hover'}"
+                >
                   <span
-                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface-hover text-text-secondary">
+                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-surface-hover text-text-secondary"
+                  >
                     <i
-                      class="bi bi-github text-base"
-                      aria-hidden="true"></i>
+                      class="bi bi-github text-base group-hover:text-copilot"
+                      aria-hidden="true"
+                    ></i>
                   </span>
                   <div class="min-w-0 flex-1">
                     <p class="truncate text-sm font-semibold text-text-primary">
@@ -386,21 +417,26 @@
                       <div class="mt-1 flex flex-wrap gap-1">
                         {#each result.tags as tag (tag)}
                           <span
-                            class="bg-surface-canvas rounded-full px-1.5 py-0.5 font-mono text-[10px] text-text-muted"
-                            >{tag}</span>
+                            class="rounded-md bg-surface-hover px-1.5 py-0.5 font-sans text-[10px] text-text-muted"
+                            >{tag}</span
+                          >
                         {/each}
                       </div>
                     {:else if result.subtitle}
-                      <p class="mt-0.5 truncate text-xs text-text-secondary">{result.subtitle}</p>
+                      <p class="mt-0.5 truncate text-xs text-text-secondary">
+                        {result.subtitle}
+                      </p>
                     {/if}
                   </div>
                   <i
-                    class="bi bi-box-arrow-up-right shrink-0 text-xs text-text-muted/0 transition-colors group-hover:text-text-muted {(
+                    class="material-symbols-rounded shrink-0 leading-none text-text-muted/0 transition-colors group-hover:text-copilot {(
                       activeIndex === globalIdx
                     ) ?
                       'text-text-muted'
                     : ''}"
-                    aria-hidden="true"></i>
+                    style="font-size: 16px; font-variation-settings: 'wght' 400, 'opsz' 20;"
+                    aria-hidden="true">open_in_new</i
+                  >
                 </li>
               {/each}
             {/if}
@@ -409,29 +445,30 @@
       {/if}
 
       <div
-        class="bg-surface-canvas/15 flex items-center justify-end border-t border-border-subtle px-4 py-2.5 select-none">
+        class="bg-surface-canvas/15 flex items-center justify-end border-t border-border-subtle px-4 py-2.5 select-none"
+      >
         <div class="flex items-center gap-3.5 text-xs text-text-muted">
           <span class="flex items-center gap-1.5">
             <kbd
-              class="bg-surface-canvas inline-flex h-5.5 w-5.5 items-center justify-center rounded border border-border-subtle align-middle text-[11px] font-semibold text-text-secondary">
-              <i
-                class="bi bi-arrow-down-up text-[11px]"
-                aria-hidden="true"></i>
+              class="bg-surface-canvas inline-flex h-5.5 w-5.5 items-center justify-center rounded border border-border-subtle align-middle text-[11px] font-semibold text-text-secondary"
+            >
+              <i class="bi bi-arrow-down-up text-[11px]" aria-hidden="true"></i>
             </kbd>
             navigate
           </span>
           <span class="flex items-center gap-1.5">
             <kbd
-              class="bg-surface-canvas inline-flex h-5.5 w-5.5 items-center justify-center rounded border border-border-subtle align-middle text-[11px] font-semibold text-text-secondary">
-              <i
-                class="bi bi-arrow-return-left text-[11px]"
-                aria-hidden="true"></i>
+              class="bg-surface-canvas inline-flex h-5.5 w-5.5 items-center justify-center rounded border border-border-subtle align-middle text-[11px] font-semibold text-text-secondary"
+            >
+              <i class="bi bi-arrow-return-left text-[11px]" aria-hidden="true"
+              ></i>
             </kbd>
             open
           </span>
           <span class="flex items-center gap-1.5">
             <kbd
-              class="bg-surface-canvas inline-flex h-5.5 items-center justify-center rounded border border-border-subtle px-1.5 align-middle font-mono text-[11px] font-semibold text-text-secondary uppercase">
+              class="bg-surface-canvas inline-flex h-5.5 items-center justify-center rounded border border-border-subtle px-1.5 align-middle font-mono text-[11px] font-semibold text-text-secondary uppercase"
+            >
               esc
             </kbd>
             close

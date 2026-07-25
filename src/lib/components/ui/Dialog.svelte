@@ -1,16 +1,17 @@
+<!-- @format -->
 <script lang="ts">
-  import type { Snippet } from 'svelte';
+  import type {Snippet} from 'svelte'
 
   interface Props {
-    isOpen: boolean;
-    title: string;
-    description?: string;
-    closeOnBackdrop?: boolean;
-    closeOnEscape?: boolean;
-    returnFocusToTrigger?: boolean;
-    onClose: () => void;
-    children?: Snippet;
-    footer?: Snippet;
+    isOpen: boolean
+    title: string
+    description?: string
+    closeOnBackdrop?: boolean
+    closeOnEscape?: boolean
+    returnFocusToTrigger?: boolean
+    onClose: () => void
+    children?: Snippet
+    footer?: Snippet
   }
 
   let {
@@ -22,71 +23,72 @@
     returnFocusToTrigger = true,
     onClose,
     children,
-    footer,
-  }: Props = $props();
+    footer
+  }: Props = $props()
 
-  let dialogRef = $state<HTMLElement | null>(null);
-  let previouslyFocusedElement = $state<HTMLElement | null>(null);
+  let dialogRef = $state<HTMLElement | null>(null)
+  let previouslyFocusedElement = $state<HTMLElement | null>(null)
 
   function handleKeydown(e: KeyboardEvent) {
-    if (!isOpen) return;
+    if (!isOpen) return
 
     if (e.key === 'Escape' && closeOnEscape) {
-      e.preventDefault();
-      onClose();
-      return;
+      e.preventDefault()
+      onClose()
+      return
     }
 
     if (e.key === 'Tab' && dialogRef) {
       const focusables = dialogRef.querySelectorAll<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-      );
-      if (focusables.length === 0) return;
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+      if (focusables.length === 0) return
 
-      const first = focusables[0];
-      const last = focusables[focusables.length - 1];
+      const first = focusables[0]
+      const last = focusables[focusables.length - 1]
 
       if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
+        e.preventDefault()
+        last.focus()
       } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
+        e.preventDefault()
+        first.focus()
       }
     }
   }
 
   $effect(() => {
     if (isOpen && typeof document !== 'undefined') {
-      previouslyFocusedElement = document.activeElement as HTMLElement;
+      previouslyFocusedElement = document.activeElement as HTMLElement
       setTimeout(() => {
         const focusable = dialogRef?.querySelector<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-        );
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )
         if (focusable) {
-          focusable.focus();
+          focusable.focus()
         } else if (dialogRef) {
-          dialogRef.focus();
+          dialogRef.focus()
         }
-      }, 30);
+      }, 30)
     } else if (!isOpen && previouslyFocusedElement && returnFocusToTrigger) {
       setTimeout(() => {
-        previouslyFocusedElement?.focus();
-        previouslyFocusedElement = null;
-      }, 30);
+        previouslyFocusedElement?.focus()
+        previouslyFocusedElement = null
+      }, 30)
     }
-  });
+  })
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
 
 {#if isOpen}
-  <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+  <div class="fixed inset-0 z-100 flex items-center justify-center p-4">
     <button
       type="button"
       class="absolute inset-0 cursor-default bg-overlay-backdrop backdrop-blur-sm"
       aria-label="Close modal"
-      onclick={() => closeOnBackdrop && onClose()}></button>
+      onclick={() => closeOnBackdrop && onClose()}
+    ></button>
 
     <div
       bind:this={dialogRef}
@@ -95,17 +97,17 @@
       tabindex="-1"
       aria-labelledby="dialog-title"
       aria-describedby={description ? 'dialog-desc' : undefined}
-      class="relative z-10 w-full max-w-md transform rounded-2xl border border-border-subtle bg-surface-elevated p-6 shadow-2xl transition-all select-none focus:outline-none">
+      class="relative z-10 w-full max-w-md transform rounded-2xl border border-border-subtle bg-surface-elevated p-6 shadow-2xl transition-all select-none focus:outline-none"
+    >
       <div class="flex flex-col gap-1 text-left">
-        <h2
-          id="dialog-title"
-          class="text-base font-bold text-text-primary">
+        <h2 id="dialog-title" class="text-base font-bold text-text-primary">
           {title}
         </h2>
         {#if description}
           <p
             id="dialog-desc"
-            class="mt-1 text-xs leading-relaxed text-text-secondary">
+            class="mt-1 text-xs leading-relaxed text-text-secondary"
+          >
             {description}
           </p>
         {/if}

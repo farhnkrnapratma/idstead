@@ -22,550 +22,620 @@
       "source_location": "L3"
     },
     {
+      "id": "home_hanz_projects_www_package_private",
+      "label": "private",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L4"
+    },
+    {
+      "id": "home_hanz_projects_www_package_license",
+      "label": "license",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L5"
+    },
+    {
       "id": "home_hanz_projects_www_package_devdependencies",
       "label": "devDependencies",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L4"
+      "source_location": "L6"
     },
     {
       "id": "home_hanz_projects_www_package_devdependencies_eslint_js",
       "label": "@eslint/js",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L5"
+      "source_location": "L7"
     },
     {
       "id": "eslint_js",
       "label": "@eslint/js",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L5"
+      "source_location": "L7"
     },
     {
       "id": "home_hanz_projects_www_package_devdependencies_sveltejs_adapter_cloudflare",
       "label": "@sveltejs/adapter-cloudflare",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L6"
+      "source_location": "L8"
     },
     {
       "id": "sveltejs_adapter_cloudflare",
       "label": "@sveltejs/adapter-cloudflare",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L6"
-    },
-    {
-      "id": "home_hanz_projects_www_package_devdependencies_sveltejs_kit",
-      "label": "@sveltejs/kit",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L7"
-    },
-    {
-      "id": "sveltejs_kit",
-      "label": "@sveltejs/kit",
-      "file_type": "concept",
-      "source_file": "package.json",
-      "source_location": "L7"
+      "source_location": "L8"
     },
     {
       "id": "home_hanz_projects_www_package_devdependencies_sveltejs_package",
       "label": "@sveltejs/package",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L8"
+      "source_location": "L9"
     },
     {
       "id": "sveltejs_package",
       "label": "@sveltejs/package",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L8"
+      "source_location": "L9"
     },
     {
       "id": "home_hanz_projects_www_package_devdependencies_sveltejs_vite_plugin_svelte",
       "label": "@sveltejs/vite-plugin-svelte",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L9"
+      "source_location": "L10"
     },
     {
       "id": "sveltejs_vite_plugin_svelte",
       "label": "@sveltejs/vite-plugin-svelte",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L9"
+      "source_location": "L10"
     },
     {
       "id": "home_hanz_projects_www_package_devdependencies_tailwindcss_vite",
       "label": "@tailwindcss/vite",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L10"
+      "source_location": "L11"
     },
     {
       "id": "tailwindcss_vite",
       "label": "@tailwindcss/vite",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L10"
+      "source_location": "L11"
     },
     {
       "id": "home_hanz_projects_www_package_devdependencies_types_marked",
       "label": "@types/marked",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L11"
+      "source_location": "L12"
     },
     {
       "id": "types_marked",
       "label": "@types/marked",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L11"
+      "source_location": "L12"
     },
     {
       "id": "home_hanz_projects_www_package_devdependencies_types_node",
       "label": "@types/node",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L12"
+      "source_location": "L13"
     },
     {
       "id": "types_node",
       "label": "@types/node",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L12"
+      "source_location": "L13"
     },
     {
       "id": "home_hanz_projects_www_package_devdependencies_eslint",
       "label": "eslint",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L13"
+      "source_location": "L14"
     },
     {
       "id": "eslint",
       "label": "eslint",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L13"
+      "source_location": "L14"
     },
     {
       "id": "home_hanz_projects_www_package_devdependencies_eslint_config_prettier",
       "label": "eslint-config-prettier",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L14"
+      "source_location": "L15"
     },
     {
       "id": "eslint_config_prettier",
       "label": "eslint-config-prettier",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L14"
+      "source_location": "L15"
     },
     {
       "id": "home_hanz_projects_www_package_devdependencies_eslint_plugin_svelte",
       "label": "eslint-plugin-svelte",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L15"
+      "source_location": "L16"
     },
     {
       "id": "eslint_plugin_svelte",
       "label": "eslint-plugin-svelte",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L15"
+      "source_location": "L16"
     },
     {
       "id": "home_hanz_projects_www_package_devdependencies_globals",
       "label": "globals",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L16"
+      "source_location": "L17"
     },
     {
       "id": "globals",
       "label": "globals",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L16"
+      "source_location": "L17"
     },
     {
       "id": "home_hanz_projects_www_package_devdependencies_prettier",
       "label": "prettier",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L17"
+      "source_location": "L18"
     },
     {
       "id": "prettier",
       "label": "prettier",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L17"
+      "source_location": "L18"
     },
     {
       "id": "home_hanz_projects_www_package_devdependencies_prettier_plugin_svelte",
       "label": "prettier-plugin-svelte",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L18"
+      "source_location": "L19"
     },
     {
       "id": "prettier_plugin_svelte",
       "label": "prettier-plugin-svelte",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L18"
+      "source_location": "L19"
     },
     {
       "id": "home_hanz_projects_www_package_devdependencies_prettier_plugin_tailwindcss",
       "label": "prettier-plugin-tailwindcss",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L19"
+      "source_location": "L20"
     },
     {
       "id": "prettier_plugin_tailwindcss",
       "label": "prettier-plugin-tailwindcss",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L19"
+      "source_location": "L20"
     },
     {
       "id": "home_hanz_projects_www_package_devdependencies_publint",
       "label": "publint",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L20"
+      "source_location": "L21"
     },
     {
       "id": "publint",
       "label": "publint",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L20"
+      "source_location": "L21"
     },
     {
       "id": "home_hanz_projects_www_package_devdependencies_svelte",
       "label": "svelte",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L21"
+      "source_location": "L22"
     },
     {
       "id": "svelte",
       "label": "svelte",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L21"
+      "source_location": "L22"
     },
     {
       "id": "home_hanz_projects_www_package_devdependencies_svelte_check",
       "label": "svelte-check",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L22"
+      "source_location": "L23"
     },
     {
       "id": "svelte_check",
       "label": "svelte-check",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L22"
+      "source_location": "L23"
     },
     {
       "id": "home_hanz_projects_www_package_devdependencies_tailwindcss",
       "label": "tailwindcss",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L23"
+      "source_location": "L24"
     },
     {
       "id": "tailwindcss",
       "label": "tailwindcss",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L23"
+      "source_location": "L24"
+    },
+    {
+      "id": "home_hanz_projects_www_package_devdependencies_typescript_native",
+      "label": "@typescript/native",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L25"
+    },
+    {
+      "id": "typescript_native",
+      "label": "@typescript/native",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L25"
     },
     {
       "id": "home_hanz_projects_www_package_devdependencies_typescript",
       "label": "typescript",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L24"
+      "source_location": "L26"
     },
     {
       "id": "typescript",
       "label": "typescript",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L24"
+      "source_location": "L26"
     },
     {
       "id": "home_hanz_projects_www_package_devdependencies_typescript_eslint",
       "label": "typescript-eslint",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L25"
+      "source_location": "L27"
     },
     {
       "id": "typescript_eslint",
       "label": "typescript-eslint",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L25"
+      "source_location": "L27"
     },
     {
       "id": "home_hanz_projects_www_package_devdependencies_vite",
       "label": "vite",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L26"
+      "source_location": "L28"
     },
     {
       "id": "vite",
       "label": "vite",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L26"
+      "source_location": "L28"
     },
     {
       "id": "home_hanz_projects_www_package_peerdependencies",
       "label": "peerDependencies",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L28"
+      "source_location": "L30"
     },
     {
       "id": "home_hanz_projects_www_package_peerdependencies_svelte",
       "label": "svelte",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L29"
+      "source_location": "L31"
+    },
+    {
+      "id": "home_hanz_projects_www_package_peerdependencies_sveltejs_kit",
+      "label": "@sveltejs/kit",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L32"
+    },
+    {
+      "id": "sveltejs_kit",
+      "label": "@sveltejs/kit",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L32"
     },
     {
       "id": "home_hanz_projects_www_package_exports",
       "label": "exports",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L31"
+      "source_location": "L34"
     },
     {
       "id": "home_hanz_projects_www_package_files",
       "label": "files",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L37"
+      "source_location": "L40"
     },
     {
       "id": "ref_dist",
       "label": "dist",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L37"
+      "source_location": "L40"
     },
     {
       "id": "ref_dist_test",
       "label": "!dist/**/*.test.*",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L37"
+      "source_location": "L40"
     },
     {
       "id": "ref_dist_spec",
       "label": "!dist/**/*.spec.*",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L37"
+      "source_location": "L40"
     },
     {
       "id": "home_hanz_projects_www_package_keywords",
       "label": "keywords",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L42"
+      "source_location": "L45"
     },
     {
       "id": "ref_svelte",
       "label": "svelte",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L42"
+      "source_location": "L45"
+    },
+    {
+      "id": "ref_sveltekit",
+      "label": "sveltekit",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L45"
+    },
+    {
+      "id": "ref_tailwindcss",
+      "label": "tailwindcss",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L45"
+    },
+    {
+      "id": "ref_farhan_kurnia_pratama",
+      "label": "farhan kurnia pratama",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L45"
+    },
+    {
+      "id": "ref_farhan",
+      "label": "farhan",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L45"
+    },
+    {
+      "id": "ref_kurnia",
+      "label": "kurnia",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L45"
+    },
+    {
+      "id": "ref_pratama",
+      "label": "pratama",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L45"
     },
     {
       "id": "home_hanz_projects_www_package_scripts",
       "label": "scripts",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L45"
+      "source_location": "L54"
     },
     {
       "id": "home_hanz_projects_www_package_scripts_dev",
       "label": "dev",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L46"
+      "source_location": "L55"
     },
     {
       "id": "home_hanz_projects_www_package_scripts_build",
       "label": "build",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L47"
+      "source_location": "L56"
     },
     {
       "id": "home_hanz_projects_www_package_scripts_preview",
       "label": "preview",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L48"
+      "source_location": "L57"
     },
     {
       "id": "home_hanz_projects_www_package_scripts_prepare",
       "label": "prepare",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L49"
+      "source_location": "L58"
     },
     {
       "id": "home_hanz_projects_www_package_scripts_prepack",
       "label": "prepack",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L50"
+      "source_location": "L59"
     },
     {
       "id": "home_hanz_projects_www_package_scripts_check",
       "label": "check",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L51"
+      "source_location": "L60"
     },
     {
       "id": "home_hanz_projects_www_package_scripts_check_watch",
       "label": "check:watch",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L52"
+      "source_location": "L61"
     },
     {
       "id": "home_hanz_projects_www_package_scripts_lint",
       "label": "lint",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L53"
+      "source_location": "L62"
     },
     {
       "id": "home_hanz_projects_www_package_scripts_format",
       "label": "format",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L54"
+      "source_location": "L63"
     },
     {
       "id": "home_hanz_projects_www_package_sideeffects",
       "label": "sideEffects",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L56"
+      "source_location": "L65"
     },
     {
       "id": "ref_css",
       "label": "**/*.css",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L56"
+      "source_location": "L65"
     },
     {
       "id": "home_hanz_projects_www_package_svelte",
       "label": "svelte",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L59"
+      "source_location": "L68"
     },
     {
       "id": "home_hanz_projects_www_package_type",
       "label": "type",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L60"
+      "source_location": "L69"
     },
     {
       "id": "home_hanz_projects_www_package_types",
       "label": "types",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L61"
+      "source_location": "L70"
     },
     {
       "id": "home_hanz_projects_www_package_dependencies",
       "label": "dependencies",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L62"
+      "source_location": "L71"
     },
     {
       "id": "home_hanz_projects_www_package_dependencies_supabase_supabase_js",
       "label": "@supabase/supabase-js",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L63"
+      "source_location": "L72"
     },
     {
       "id": "supabase_supabase_js",
       "label": "@supabase/supabase-js",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L63"
+      "source_location": "L72"
     },
     {
       "id": "home_hanz_projects_www_package_dependencies_bootstrap_icons",
       "label": "bootstrap-icons",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L64"
+      "source_location": "L73"
     },
     {
       "id": "bootstrap_icons",
       "label": "bootstrap-icons",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L64"
+      "source_location": "L73"
     },
     {
       "id": "home_hanz_projects_www_package_dependencies_highlight_js",
       "label": "highlight.js",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L65"
+      "source_location": "L74"
     },
     {
       "id": "highlight_js",
       "label": "highlight.js",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L65"
+      "source_location": "L74"
     },
     {
       "id": "home_hanz_projects_www_package_dependencies_marked",
       "label": "marked",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L66"
+      "source_location": "L75"
     },
     {
       "id": "marked",
       "label": "marked",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L66"
+      "source_location": "L75"
     }
   ],
   "edges": [
@@ -589,11 +659,29 @@
     },
     {
       "source": "home_hanz_projects_www_package_json",
-      "target": "home_hanz_projects_www_package_devdependencies",
+      "target": "home_hanz_projects_www_package_private",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
       "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "home_hanz_projects_www_package_json",
+      "target": "home_hanz_projects_www_package_license",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "home_hanz_projects_www_package_json",
+      "target": "home_hanz_projects_www_package_devdependencies",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L6",
       "weight": 1.0
     },
     {
@@ -602,7 +690,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L5",
+      "source_location": "L7",
       "weight": 1.0
     },
     {
@@ -611,7 +699,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L5",
+      "source_location": "L7",
       "weight": 1.0,
       "context": "import"
     },
@@ -621,7 +709,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L6",
+      "source_location": "L8",
       "weight": 1.0
     },
     {
@@ -630,26 +718,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L6",
-      "weight": 1.0,
-      "context": "import"
-    },
-    {
-      "source": "home_hanz_projects_www_package_devdependencies",
-      "target": "home_hanz_projects_www_package_devdependencies_sveltejs_kit",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "package.json",
-      "source_location": "L7",
-      "weight": 1.0
-    },
-    {
-      "source": "home_hanz_projects_www_package_devdependencies_sveltejs_kit",
-      "target": "sveltejs_kit",
-      "relation": "imports",
-      "confidence": "EXTRACTED",
-      "source_file": "package.json",
-      "source_location": "L7",
+      "source_location": "L8",
       "weight": 1.0,
       "context": "import"
     },
@@ -659,7 +728,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L8",
+      "source_location": "L9",
       "weight": 1.0
     },
     {
@@ -668,7 +737,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L8",
+      "source_location": "L9",
       "weight": 1.0,
       "context": "import"
     },
@@ -678,7 +747,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L9",
+      "source_location": "L10",
       "weight": 1.0
     },
     {
@@ -687,7 +756,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L9",
+      "source_location": "L10",
       "weight": 1.0,
       "context": "import"
     },
@@ -697,7 +766,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L10",
+      "source_location": "L11",
       "weight": 1.0
     },
     {
@@ -706,7 +775,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L10",
+      "source_location": "L11",
       "weight": 1.0,
       "context": "import"
     },
@@ -716,7 +785,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L11",
+      "source_location": "L12",
       "weight": 1.0
     },
     {
@@ -725,7 +794,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L11",
+      "source_location": "L12",
       "weight": 1.0,
       "context": "import"
     },
@@ -735,7 +804,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L12",
+      "source_location": "L13",
       "weight": 1.0
     },
     {
@@ -744,7 +813,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L12",
+      "source_location": "L13",
       "weight": 1.0,
       "context": "import"
     },
@@ -754,7 +823,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L13",
+      "source_location": "L14",
       "weight": 1.0
     },
     {
@@ -763,7 +832,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L13",
+      "source_location": "L14",
       "weight": 1.0,
       "context": "import"
     },
@@ -773,7 +842,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L14",
+      "source_location": "L15",
       "weight": 1.0
     },
     {
@@ -782,7 +851,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L14",
+      "source_location": "L15",
       "weight": 1.0,
       "context": "import"
     },
@@ -792,7 +861,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L15",
+      "source_location": "L16",
       "weight": 1.0
     },
     {
@@ -801,7 +870,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L15",
+      "source_location": "L16",
       "weight": 1.0,
       "context": "import"
     },
@@ -811,7 +880,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L16",
+      "source_location": "L17",
       "weight": 1.0
     },
     {
@@ -820,7 +889,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L16",
+      "source_location": "L17",
       "weight": 1.0,
       "context": "import"
     },
@@ -830,7 +899,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L17",
+      "source_location": "L18",
       "weight": 1.0
     },
     {
@@ -839,7 +908,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L17",
+      "source_location": "L18",
       "weight": 1.0,
       "context": "import"
     },
@@ -849,7 +918,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L18",
+      "source_location": "L19",
       "weight": 1.0
     },
     {
@@ -858,7 +927,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L18",
+      "source_location": "L19",
       "weight": 1.0,
       "context": "import"
     },
@@ -868,7 +937,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L19",
+      "source_location": "L20",
       "weight": 1.0
     },
     {
@@ -877,7 +946,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L19",
+      "source_location": "L20",
       "weight": 1.0,
       "context": "import"
     },
@@ -887,7 +956,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L20",
+      "source_location": "L21",
       "weight": 1.0
     },
     {
@@ -896,7 +965,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L20",
+      "source_location": "L21",
       "weight": 1.0,
       "context": "import"
     },
@@ -906,7 +975,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L21",
+      "source_location": "L22",
       "weight": 1.0
     },
     {
@@ -915,7 +984,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L21",
+      "source_location": "L22",
       "weight": 1.0,
       "context": "import"
     },
@@ -925,7 +994,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L22",
+      "source_location": "L23",
       "weight": 1.0
     },
     {
@@ -934,7 +1003,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L22",
+      "source_location": "L23",
       "weight": 1.0,
       "context": "import"
     },
@@ -944,7 +1013,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L23",
+      "source_location": "L24",
       "weight": 1.0
     },
     {
@@ -953,7 +1022,26 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L23",
+      "source_location": "L24",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_hanz_projects_www_package_devdependencies",
+      "target": "home_hanz_projects_www_package_devdependencies_typescript_native",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "home_hanz_projects_www_package_devdependencies_typescript_native",
+      "target": "typescript_native",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L25",
       "weight": 1.0,
       "context": "import"
     },
@@ -963,7 +1051,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L24",
+      "source_location": "L26",
       "weight": 1.0
     },
     {
@@ -972,7 +1060,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L24",
+      "source_location": "L26",
       "weight": 1.0,
       "context": "import"
     },
@@ -982,7 +1070,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L25",
+      "source_location": "L27",
       "weight": 1.0
     },
     {
@@ -991,7 +1079,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L25",
+      "source_location": "L27",
       "weight": 1.0,
       "context": "import"
     },
@@ -1001,7 +1089,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L26",
+      "source_location": "L28",
       "weight": 1.0
     },
     {
@@ -1010,7 +1098,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L26",
+      "source_location": "L28",
       "weight": 1.0,
       "context": "import"
     },
@@ -1020,7 +1108,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L28",
+      "source_location": "L30",
       "weight": 1.0
     },
     {
@@ -1029,7 +1117,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L29",
+      "source_location": "L31",
       "weight": 1.0
     },
     {
@@ -1038,7 +1126,26 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L29",
+      "source_location": "L31",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_hanz_projects_www_package_peerdependencies",
+      "target": "home_hanz_projects_www_package_peerdependencies_sveltejs_kit",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L32",
+      "weight": 1.0
+    },
+    {
+      "source": "home_hanz_projects_www_package_peerdependencies_sveltejs_kit",
+      "target": "sveltejs_kit",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L32",
       "weight": 1.0,
       "context": "import"
     },
@@ -1048,7 +1155,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L31",
+      "source_location": "L34",
       "weight": 1.0
     },
     {
@@ -1057,7 +1164,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L37",
+      "source_location": "L40",
       "weight": 1.0
     },
     {
@@ -1066,7 +1173,7 @@
       "relation": "extends",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L37",
+      "source_location": "L40",
       "weight": 1.0,
       "context": "import"
     },
@@ -1076,7 +1183,7 @@
       "relation": "extends",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L37",
+      "source_location": "L40",
       "weight": 1.0,
       "context": "import"
     },
@@ -1086,7 +1193,7 @@
       "relation": "extends",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L37",
+      "source_location": "L40",
       "weight": 1.0,
       "context": "import"
     },
@@ -1096,7 +1203,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L42",
+      "source_location": "L45",
       "weight": 1.0
     },
     {
@@ -1105,7 +1212,67 @@
       "relation": "extends",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L42",
+      "source_location": "L45",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_hanz_projects_www_package_keywords",
+      "target": "ref_sveltekit",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L45",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_hanz_projects_www_package_keywords",
+      "target": "ref_tailwindcss",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L45",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_hanz_projects_www_package_keywords",
+      "target": "ref_farhan_kurnia_pratama",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L45",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_hanz_projects_www_package_keywords",
+      "target": "ref_farhan",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L45",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_hanz_projects_www_package_keywords",
+      "target": "ref_kurnia",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L45",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "home_hanz_projects_www_package_keywords",
+      "target": "ref_pratama",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L45",
       "weight": 1.0,
       "context": "import"
     },
@@ -1115,7 +1282,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L45",
+      "source_location": "L54",
       "weight": 1.0
     },
     {
@@ -1124,7 +1291,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L46",
+      "source_location": "L55",
       "weight": 1.0
     },
     {
@@ -1133,7 +1300,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L47",
+      "source_location": "L56",
       "weight": 1.0
     },
     {
@@ -1142,7 +1309,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L48",
+      "source_location": "L57",
       "weight": 1.0
     },
     {
@@ -1151,7 +1318,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L49",
+      "source_location": "L58",
       "weight": 1.0
     },
     {
@@ -1160,7 +1327,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L50",
+      "source_location": "L59",
       "weight": 1.0
     },
     {
@@ -1169,7 +1336,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L51",
+      "source_location": "L60",
       "weight": 1.0
     },
     {
@@ -1178,7 +1345,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L52",
+      "source_location": "L61",
       "weight": 1.0
     },
     {
@@ -1187,7 +1354,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L53",
+      "source_location": "L62",
       "weight": 1.0
     },
     {
@@ -1196,7 +1363,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L54",
+      "source_location": "L63",
       "weight": 1.0
     },
     {
@@ -1205,7 +1372,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L56",
+      "source_location": "L65",
       "weight": 1.0
     },
     {
@@ -1214,7 +1381,7 @@
       "relation": "extends",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L56",
+      "source_location": "L65",
       "weight": 1.0,
       "context": "import"
     },
@@ -1224,7 +1391,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L59",
+      "source_location": "L68",
       "weight": 1.0
     },
     {
@@ -1233,7 +1400,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L60",
+      "source_location": "L69",
       "weight": 1.0
     },
     {
@@ -1242,7 +1409,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L61",
+      "source_location": "L70",
       "weight": 1.0
     },
     {
@@ -1251,7 +1418,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L62",
+      "source_location": "L71",
       "weight": 1.0
     },
     {
@@ -1260,7 +1427,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L63",
+      "source_location": "L72",
       "weight": 1.0
     },
     {
@@ -1269,7 +1436,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L63",
+      "source_location": "L72",
       "weight": 1.0,
       "context": "import"
     },
@@ -1279,7 +1446,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L64",
+      "source_location": "L73",
       "weight": 1.0
     },
     {
@@ -1288,7 +1455,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L64",
+      "source_location": "L73",
       "weight": 1.0,
       "context": "import"
     },
@@ -1298,7 +1465,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L65",
+      "source_location": "L74",
       "weight": 1.0
     },
     {
@@ -1307,7 +1474,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L65",
+      "source_location": "L74",
       "weight": 1.0,
       "context": "import"
     },
@@ -1317,7 +1484,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L66",
+      "source_location": "L75",
       "weight": 1.0
     },
     {
@@ -1326,7 +1493,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L66",
+      "source_location": "L75",
       "weight": 1.0,
       "context": "import"
     }

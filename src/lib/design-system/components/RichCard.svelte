@@ -1,17 +1,18 @@
+<!-- @format -->
 <script lang="ts">
-  import type { Snippet } from 'svelte';
-  import { cn } from '../utils/cn';
+  import type {Snippet} from 'svelte'
+  import {cn} from '../utils/cn'
 
   interface Props {
-    title: string;
-    href?: string;
-    description?: string;
-    interactive?: boolean;
-    class?: string;
-    meta?: Snippet;
-    tags?: Snippet;
-    actions?: Snippet;
-    children?: Snippet;
+    title: string
+    href?: string
+    description?: string
+    interactive?: boolean
+    class?: string
+    meta?: Snippet
+    tags?: Snippet
+    actions?: Snippet
+    children?: Snippet
   }
 
   let {
@@ -23,24 +24,27 @@
     meta,
     tags,
     actions,
-    children,
-  }: Props = $props();
+    children
+  }: Props = $props()
 </script>
 
 <div
   class={cn(
     'group relative flex flex-col justify-between rounded-2xl border border-border-subtle bg-surface/60 p-5 shadow-xs backdrop-blur-lg transition-all duration-300 sm:p-6',
     interactive ? 'hover:border-border-strong hover:bg-surface-hover' : '',
-    className,
-  )}>
+    className
+  )}
+>
   <div class="flex flex-col gap-2">
     <div class="flex items-start justify-between gap-3">
       <h3
-        class="text-base font-bold tracking-tight text-text-primary transition-colors group-hover:text-accent">
+        class="text-base font-bold tracking-tight text-text-primary transition-colors group-hover:text-copilot"
+      >
         {#if href}
           <a
             {href}
-            class="rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+            class="rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+          >
             {title}
           </a>
         {:else}
@@ -49,8 +53,9 @@
       </h3>
       {#if href && interactive}
         <i
-          class="bi bi-arrow-up-right mt-1 shrink-0 text-xs text-text-muted transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent"
-          aria-hidden="true"></i>
+          class="bi bi-arrow-up-right mt-1 shrink-0 text-xs text-text-muted transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-copilot"
+          aria-hidden="true"
+        ></i>
       {/if}
     </div>
 
@@ -73,7 +78,8 @@
 
   {#if tags || actions}
     <div
-      class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle/40 pt-3 select-none">
+      class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle/40 pt-3 select-none"
+    >
       {#if tags}
         <div class="flex flex-wrap items-center gap-1.5">
           {@render tags()}

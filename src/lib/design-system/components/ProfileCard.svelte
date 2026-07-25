@@ -1,14 +1,15 @@
+<!-- @format -->
 <script lang="ts">
-  import type { Snippet } from 'svelte';
-  import { cn } from '../utils/cn';
+  import type {Snippet} from 'svelte'
+  import {cn} from '../utils/cn'
 
   interface Props {
-    name: string;
-    role?: string;
-    avatarUrl?: string;
-    bio?: string;
-    class?: string;
-    actions?: Snippet;
+    name: string
+    role?: string
+    avatarUrl?: string
+    bio?: string
+    class?: string
+    actions?: Snippet
   }
 
   let {
@@ -17,32 +18,36 @@
     avatarUrl = '',
     bio = '',
     class: className = '',
-    actions,
-  }: Props = $props();
+    actions
+  }: Props = $props()
 </script>
 
 <div
   class={cn(
     'flex flex-col gap-4 rounded-2xl border border-border-subtle bg-surface/60 p-5 shadow-xs backdrop-blur-lg select-none sm:p-6',
-    className,
-  )}>
+    className
+  )}
+>
   <div class="flex items-center gap-4">
     {#if avatarUrl}
       <div
-        class="relative h-12 w-12 shrink-0 animate-pulse overflow-hidden rounded-full border border-border-default bg-surface-card/60">
+        class="relative h-12 w-12 shrink-0 animate-pulse overflow-hidden rounded-full border border-border-default bg-surface-card/60"
+      >
         <img
           src={avatarUrl}
           alt={name}
           loading="lazy"
           onload={e =>
-            (e.currentTarget.closest('.animate-pulse') as HTMLElement | null)?.classList.remove(
-              'animate-pulse',
-            )}
-          class="h-full w-full object-cover shadow-xs" />
+            (
+              e.currentTarget.closest('.animate-pulse') as HTMLElement | null
+            )?.classList.remove('animate-pulse')}
+          class="h-full w-full object-cover shadow-xs"
+        />
       </div>
     {:else}
       <div
-        class="flex h-12 w-12 items-center justify-center rounded-full border border-border-default bg-surface-subtle text-base font-bold text-accent">
+        class="flex h-12 w-12 items-center justify-center rounded-full border border-border-default bg-surface-subtle text-base font-bold text-copilot"
+      >
         {name.charAt(0)}
       </div>
     {/if}

@@ -1,44 +1,46 @@
-import { supabase } from '$lib/supabase';
-import type { RequestHandler } from './$types';
+/** @format */
 
-const SITE_URL = 'https://fkp.my.id';
+import {supabase} from '$lib/supabase'
+import type {RequestHandler} from './$types'
+
+const SITE_URL = 'https://fkp.my.id'
 
 export const GET: RequestHandler = async () => {
-  const { data: posts } = await supabase
+  const {data: posts} = await supabase
     .from('posts')
     .select('slug, created_at, title')
     .eq('published', true)
-    .order('created_at', { ascending: false });
+    .order('created_at', {ascending: false})
 
   const staticRoutes = [
     {
       url: `${SITE_URL}/`,
       lastmod: new Date().toISOString().split('T')[0],
       priority: '1.0',
-      changefreq: 'weekly',
+      changefreq: 'weekly'
     },
     {
       url: `${SITE_URL}/feedback`,
       lastmod: new Date().toISOString().split('T')[0],
       priority: '0.5',
-      changefreq: 'monthly',
+      changefreq: 'monthly'
     },
     {
       url: `${SITE_URL}/privacy`,
       lastmod: new Date().toISOString().split('T')[0],
       priority: '0.5',
-      changefreq: 'monthly',
-    },
-  ];
+      changefreq: 'monthly'
+    }
+  ]
 
   const postRoutes = (posts ?? []).map(post => ({
     url: `${SITE_URL}/blog/${post.slug}`,
     lastmod: new Date(post.created_at).toISOString().split('T')[0],
     priority: '0.8',
-    changefreq: 'monthly',
-  }));
+    changefreq: 'monthly'
+  }))
 
-  const allRoutes = [...staticRoutes, ...postRoutes];
+  const allRoutes = [...staticRoutes, ...postRoutes]
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset
@@ -53,18 +55,18 @@ ${allRoutes
     <lastmod>${route.lastmod}</lastmod>
     <changefreq>${route.changefreq}</changefreq>
     <priority>${route.priority}</priority>
-  </url>`,
+  </url>`
   )
   .join('\n')}
-</urlset>`;
+</urlset>`
 
   return new Response(xml, {
     headers: {
       'Content-Type': 'application/xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600, s-maxage=3600',
-    },
-  });
-};
+      'Cache-Control': 'public, max-age=3600, s-maxage=3600'
+    }
+  })
+}
 
 function escapeXml(str: string): string {
   return str
@@ -72,5 +74,5 @@ function escapeXml(str: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
+    .replace(/'/g, '&apos;')
 }

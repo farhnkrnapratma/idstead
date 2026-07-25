@@ -1,16 +1,17 @@
+<!-- @format -->
 <script lang="ts">
-  import type { Snippet } from 'svelte';
-  import { cn } from '../utils/cn';
+  import type {Snippet} from 'svelte'
+  import {cn} from '../utils/cn'
 
   interface Props {
-    title?: string;
-    description?: string;
-    action?: string;
-    method?: 'POST' | 'GET' | 'post' | 'get' | 'dialog' | 'DIALOG';
-    onsubmit?: (e: SubmitEvent) => void;
-    class?: string;
-    children?: Snippet;
-    actions?: Snippet;
+    title?: string
+    description?: string
+    action?: string
+    method?: 'POST' | 'GET' | 'post' | 'get' | 'dialog' | 'DIALOG'
+    onsubmit?: (e: SubmitEvent) => void
+    class?: string
+    children?: Snippet
+    actions?: Snippet
   }
 
   let {
@@ -21,8 +22,8 @@
     onsubmit,
     class: className = '',
     children,
-    actions,
-  }: Props = $props();
+    actions
+  }: Props = $props()
 </script>
 
 <form
@@ -32,9 +33,10 @@
   novalidate
   class={cn(
     'flex w-full flex-col gap-4 rounded-2xl border border-border-subtle bg-surface/60 p-5 shadow-xs backdrop-blur-lg transition-colors duration-300 sm:p-6',
-    className,
+    className
   )}
-  autocomplete="off">
+  autocomplete="off"
+>
   {#if title || description}
     <div class="mb-1 select-none">
       {#if title}

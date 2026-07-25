@@ -1,74 +1,73 @@
-import { supabase } from '$lib/supabase';
-import type { PageServerLoad } from './$types';
+/** @format */
+
+import {supabase} from '$lib/supabase'
+import type {PageServerLoad} from './$types'
 
 interface GitHubRepo {
-  name: string;
-  description: string | null;
-  html_url: string;
-  language: string | null;
-  stargazers_count: number;
-  topics: string[];
-  fork: boolean;
-  archived: boolean;
-  license: {
-    key: string;
-    name: string;
-    spdx_id: string;
-    url: string;
-  } | null;
+  name: string
+  description: string | null
+  html_url: string
+  language: string | null
+  stargazers_count: number
+  topics: string[]
+  fork: boolean
+  archived: boolean
+  license: {key: string; name: string; spdx_id: string; url: string} | null
 }
 
 export interface Project {
-  name: string;
-  desc: string;
-  tags: string[];
-  url: string;
-  lang: string;
-  stars: number;
-  licenseName: string | null;
-  licenseUrl: string | null;
+  name: string
+  desc: string
+  tags: string[]
+  url: string
+  lang: string
+  stars: number
+  licenseName: string | null
+  licenseUrl: string | null
 }
 
 export interface BlogPost {
-  id: string;
-  title: string;
-  slug: string;
-  published: boolean;
-  storage_path: string;
-  banner_path?: string | null;
-  created_at: string;
-  excerpt?: string | null;
-  content: string;
-  read_time?: string;
-  comment_count?: number;
-  views_count?: number;
-  tags?: string[];
+  id: string
+  title: string
+  slug: string
+  published: boolean
+  storage_path: string
+  banner_path?: string | null
+  created_at: string
+  excerpt?: string | null
+  content: string
+  read_time?: string
+  comment_count?: number
+  views_count?: number
+  tags?: string[]
 }
 
-const GITHUB_USERNAME = 'farhnkrnapratma';
-const GITHUB_API_URL = `https://api.github.com/users/${GITHUB_USERNAME}/repos`;
+const GITHUB_USERNAME = 'farhnkrnapratma'
+const GITHUB_API_URL = `https://api.github.com/users/${GITHUB_USERNAME}/repos`
 
-export const load: PageServerLoad = async ({ fetch, platform }) => {
-  let projects: Project[] = [];
-  let dbPosts: BlogPost[] = [];
+export const load: PageServerLoad = async ({fetch, platform}) => {
+  let projects: Project[] = []
+  let dbPosts: BlogPost[] = []
 
   try {
     const headers: Record<string, string> = {
-      'Accept': 'application/vnd.github.v3+json',
-      'User-Agent': 'fkp-www-sveltekit',
-    };
-
-    const token = platform?.env?.GITHUB_TOKEN ?? import.meta.env.VITE_GITHUB_TOKEN;
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+      Accept: 'application/vnd.github.v3+json',
+      'User-Agent': 'fkp-www-sveltekit'
     }
 
-    const res = await fetch(`${GITHUB_API_URL}?sort=stars&direction=desc&per_page=30&type=owner`, {
-      headers,
-    });
+    const token =
+      platform?.env?.GITHUB_TOKEN ?? import.meta.env.VITE_GITHUB_TOKEN
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+
+    const res = await fetch(
+      `${GITHUB_API_URL}?sort=stars&direction=desc&per_page=30&type=owner`,
+      {headers}
+    )
 
     if (res.ok) {
-      const repos: GitHubRepo[] = await res.json();
+      const repos: GitHubRepo[] = await res.json()
       projects = repos
         .filter(repo => !repo.fork && !repo.archived)
         .map(repo => ({
@@ -79,76 +78,76 @@ export const load: PageServerLoad = async ({ fetch, platform }) => {
           lang: repo.language ?? 'Unknown',
           stars: repo.stargazers_count,
           licenseName: repo.license?.spdx_id ?? null,
-          licenseUrl: repo.license ? `${repo.html_url}/blob/main/LICENSE` : null,
-        }));
+          licenseUrl: repo.license ? `${repo.html_url}/blob/main/LICENSE` : null
+        }))
     } else {
-      console.error(`GitHub API error: ${res.status} ${res.statusText}`);
+      console.error(`GitHub API error: ${res.status} ${res.statusText}`)
     }
   } catch (err) {
-    console.error('Failed to fetch GitHub repos:', err);
+    console.error('Failed to fetch GitHub repos:', err)
   }
 
   try {
-    const { data, error } = await supabase
+    const {data, error} = await supabase
       .from('posts')
       .select('*')
       .eq('published', true)
-      .order('created_at', { ascending: false })
-      .limit(3);
+      .order('created_at', {ascending: false})
+      .limit(3)
     if (!error && data) {
       dbPosts = await Promise.all(
         data.map(async post => {
-          let readTime = '1 min read';
-          let commentCount = 0;
+          let readTime = '1 min read'
+          let commentCount = 0
           try {
-            const { data: urlData } = supabase.storage
+            const {data: urlData} = supabase.storage
               .from('blog-posts')
-              .getPublicUrl(post.storage_path);
-            const fileRes = await fetch(urlData.publicUrl);
+              .getPublicUrl(post.storage_path)
+            const fileRes = await fetch(urlData.publicUrl)
             if (fileRes.ok) {
-              const text = await fileRes.text();
-              const words = text.trim().split(/\s+/).length;
-              const minutes = Math.max(1, Math.ceil(words / 200));
-              readTime = `${minutes} min${minutes > 1 ? 's' : ''} read`;
+              const text = await fileRes.text()
+              const words = text.trim().split(/\s+/).length
+              const minutes = Math.max(1, Math.ceil(words / 200))
+              readTime = `${minutes} min${minutes > 1 ? 's' : ''} read`
             }
           } catch (err) {
-            console.error(err);
+            console.error(err)
           }
 
           try {
-            const { count } = await supabase
+            const {count} = await supabase
               .from('comments')
-              .select('*', { count: 'exact', head: true })
+              .select('*', {count: 'exact', head: true})
               .eq('post_id', post.id)
-              .eq('is_approved', true);
-            commentCount = count ?? 0;
+              .eq('is_approved', true)
+            commentCount = count ?? 0
           } catch (err) {
-            console.error(err);
+            console.error(err)
           }
 
-          let viewsCount = 0;
+          let viewsCount = 0
           try {
-            const { count } = await supabase
+            const {count} = await supabase
               .from('post_views')
-              .select('*', { count: 'exact', head: true })
-              .eq('post_id', post.id);
-            viewsCount = count ?? 0;
+              .select('*', {count: 'exact', head: true})
+              .eq('post_id', post.id)
+            viewsCount = count ?? 0
           } catch (err) {
-            console.error(err);
+            console.error(err)
           }
 
           return {
             ...post,
             read_time: readTime,
             comment_count: commentCount,
-            views_count: viewsCount,
-          };
-        }),
-      );
+            views_count: viewsCount
+          }
+        })
+      )
     }
   } catch (err) {
-    console.error(err);
+    console.error(err)
   }
 
-  return { projects, posts: dbPosts };
-};
+  return {projects, posts: dbPosts}
+}

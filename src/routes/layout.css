@@ -1,10 +1,12 @@
+/** @format */
+
 @import 'tailwindcss';
 @import '../lib/design-system/tokens.css';
 @import 'bootstrap-icons/font/bootstrap-icons.css';
 
 @layer base {
   html {
-    @apply scroll-pt-[4.25rem] scroll-pb-[5.25rem] scroll-smooth text-[122%];
+    @apply scroll-pt-17 scroll-pb-21 scroll-smooth text-[122%];
     overflow-x: clip;
   }
 
@@ -48,8 +50,6 @@
 @theme {
   --font-sans: 'Google Sans Flex', ui-sans-serif, system-ui, sans-serif;
   --font-sans-text: 'Google Sans Flex', ui-sans-serif, system-ui, sans-serif;
-  --font-serif: 'Google Sans Flex', ui-sans-serif, system-ui, sans-serif;
-  --font-serif-text: 'Google Sans Flex', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'Google Sans Code', monospace;
 
   /* GitHub Colors */
@@ -203,22 +203,22 @@
 }
 
 .prose-custom {
-  @apply font-sans leading-[1.7] text-[var(--color-body)];
+  @apply font-sans leading-[1.7] text-(--color-body);
   --color-heading: #101411;
   --color-body: #232925;
-  --color-link: var(--color-adwaita-accent);
-  --color-link-hover: var(--color-adwaita-accent-hover);
+  --color-link: var(--color-copilot);
+  --color-link-hover: var(--color-copilot);
 }
 
 :root.dark .prose-custom {
   --color-heading: #f2f5f3;
   --color-body: #b6bfb8;
-  --color-link: var(--color-adwaita-accent);
-  --color-link-hover: var(--color-adwaita-accent-hover);
+  --color-link: var(--color-copilot);
+  --color-link-hover: var(--color-copilot);
 }
 
 .prose-custom p {
-  @apply mt-5 mb-5 text-[var(--color-body)];
+  @apply mt-5 mb-5 text-(--color-body);
 }
 
 .prose-custom h1,
@@ -227,7 +227,7 @@
 .prose-custom h4,
 .prose-custom h5,
 .prose-custom h6 {
-  @apply font-sans text-[var(--color-heading)];
+  @apply font-sans text-(--color-heading);
 }
 
 .prose-custom h1 {
@@ -267,11 +267,11 @@
 }
 
 .prose-custom a {
-  @apply text-[var(--color-link)] underline;
+  @apply text-(--color-link) underline;
 }
 
 .prose-custom a:hover {
-  @apply text-[var(--color-link-hover)];
+  @apply text-(--color-link-hover);
 }
 
 .prose-custom .heading-text {
@@ -305,7 +305,6 @@
   text-decoration: none !important;
 }
 
-/* Hover: Subheading text turns primary green AND underlines */
 .prose-custom h1:hover .heading-text,
 .prose-custom h2:hover .heading-text,
 .prose-custom h3:hover .heading-text,
@@ -320,12 +319,9 @@
 :root.dark .prose-custom h5:hover .heading-text,
 :root.dark .prose-custom h6:hover .heading-text,
 :root.dark .prose-custom .heading-text:hover {
-  color: var(--color-accent, #0fbf3e) !important;
-  text-decoration: underline !important;
-  text-underline-offset: 4px !important;
+  @apply text-copilot underline underline-offset-4;
 }
 
-/* Hover: Link icon turns primary green WITHOUT underline (Overriding dark mode specificity) */
 .prose-custom h1:hover a.anchor-link,
 .prose-custom h2:hover a.anchor-link,
 .prose-custom h3:hover a.anchor-link,
@@ -354,8 +350,7 @@
 :root.dark .prose-custom h5:hover a.anchor-link .material-symbols-rounded,
 :root.dark .prose-custom h6:hover a.anchor-link .material-symbols-rounded,
 :root.dark .prose-custom a.anchor-link:hover .material-symbols-rounded {
-  color: var(--color-accent, #0fbf3e) !important;
-  text-decoration: none !important;
+  @apply text-copilot! no-underline! opacity-100;
 }
 
 .shiny-text {
@@ -417,7 +412,7 @@ button,
 }
 
 ::placeholder {
-  @apply !text-[var(--color-adwaita-label)] !opacity-75;
+  @apply text-(--color-adwaita-label)! opacity-75!;
 }
 
 a:focus-visible,
@@ -432,24 +427,23 @@ select:focus-visible,
 details:focus-visible,
 summary:focus-visible,
 [tabindex='0']:focus-visible {
-  @apply !outline-2 !outline-offset-2 !outline-[var(--color-adwaita-accent)];
-  border-radius: 6px;
+  @apply rounded-md outline-2! outline-offset-2! outline-copilot!;
 }
 
 input:focus-visible,
 textarea:focus-visible {
-  @apply !outline-none;
+  @apply outline-none!;
 }
 
 input:focus,
 textarea:focus,
 select:focus {
-  @apply !border-[var(--color-adwaita-accent)] !ring-2 !ring-[color-mix(in_srgb,var(--color-adwaita-accent)_20%,transparent)];
+  @apply border-copilot! ring-2! ring-[color-mix(in_srgb,var(--color-copilot)_20%,transparent)]!;
 }
 
 input.input-valid,
 textarea.input-valid {
-  @apply !border-[var(--color-adwaita-accent)];
+  @apply border-copilot!;
 }
 
 input[type='text'],
@@ -458,5 +452,5 @@ input[type='password'],
 input[type='search'],
 textarea,
 select {
-  @apply !pt-[0.55rem] !pb-[0.55rem];
+  @apply pt-[0.55rem]! pb-[0.55rem]!;
 }

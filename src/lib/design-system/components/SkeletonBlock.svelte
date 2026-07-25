@@ -1,13 +1,18 @@
+<!-- @format -->
 <script lang="ts">
-  import { cn } from '../utils/cn';
+  import {cn} from '../utils/cn'
 
   interface Props {
-    height?: string;
-    width?: string;
-    class?: string;
+    height?: string
+    width?: string
+    class?: string
   }
 
-  let { height = 'h-16', width = 'w-full', class: className = '' }: Props = $props();
+  let {
+    height = 'h-16',
+    width = 'w-full',
+    class: className = ''
+  }: Props = $props()
 </script>
 
 <div
@@ -16,6 +21,6 @@
     'animate-pulse rounded-2xl border border-border-subtle/40 bg-surface-subtle/80 select-none',
     height,
     width,
-    className,
-  )}>
-</div>
+    className
+  )}
+></div>

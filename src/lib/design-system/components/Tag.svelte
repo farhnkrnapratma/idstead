@@ -1,26 +1,30 @@
+<!-- @format -->
 <script lang="ts">
-  import type { Snippet } from 'svelte';
-  import { cn } from '../utils/cn';
+  import type {Snippet} from 'svelte'
+  import {cn} from '../utils/cn'
 
   interface Props {
-    variant?: 'neutral' | 'subtle' | 'accent';
-    size?: 'sm' | 'md';
-    children?: Snippet;
-    class?: string;
+    variant?: 'neutral' | 'subtle' | 'accent'
+    size?: 'sm' | 'md'
+    children?: Snippet
+    class?: string
   }
 
-  let { variant = 'neutral', size = 'sm', children, class: className = '' }: Props = $props();
+  let {
+    variant = 'neutral',
+    size = 'sm',
+    children,
+    class: className = ''
+  }: Props = $props()
 
   const variantStyles = {
-    neutral: 'bg-surface-subtle text-text-secondary border border-border-subtle',
+    neutral:
+      'bg-surface-subtle text-text-secondary border border-border-subtle',
     subtle: 'bg-border-subtle/40 text-text-muted border border-transparent',
-    accent: 'bg-accent-subtle text-accent border border-accent/20 font-bold',
-  };
+    accent: 'bg-copilot-subtle text-copilot border border-copilot/20 font-bold'
+  }
 
-  const sizeStyles = {
-    sm: 'px-2 py-0.5 text-[11px]',
-    md: 'px-2.5 py-1 text-xs',
-  };
+  const sizeStyles = {sm: 'px-2 py-0.5 text-[11px]', md: 'px-2.5 py-1 text-xs'}
 </script>
 
 <span
@@ -28,7 +32,8 @@
     'inline-flex items-center gap-1 rounded-md font-medium tracking-normal select-none',
     variantStyles[variant],
     sizeStyles[size],
-    className,
-  )}>
+    className
+  )}
+>
   {@render children?.()}
 </span>

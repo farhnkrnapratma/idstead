@@ -1,13 +1,14 @@
+<!-- @format -->
 <script lang="ts">
-  import type { Snippet } from 'svelte';
-  import { cn } from '../utils/cn';
+  import type {Snippet} from 'svelte'
+  import {cn} from '../utils/cn'
 
   interface Props {
-    title: string;
-    description?: string;
-    icon?: string;
-    class?: string;
-    actions?: Snippet;
+    title: string
+    description?: string
+    icon?: string
+    class?: string
+    actions?: Snippet
   }
 
   let {
@@ -15,20 +16,18 @@
     description = '',
     icon = 'bi-inbox',
     class: className = '',
-    actions,
-  }: Props = $props();
+    actions
+  }: Props = $props()
 </script>
 
 <div
   class={cn(
     'flex flex-col items-center justify-center rounded-2xl border border-dashed border-border-default bg-surface/30 p-8 text-center select-none',
-    className,
-  )}>
-  <div
-    class="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-surface-subtle text-text-muted">
-    <i
-      class="bi {icon} text-2xl"
-      aria-hidden="true"></i>
+    className
+  )}
+>
+  <div class="mb-3 flex items-center justify-center text-text-on-accent">
+    <i class="bi {icon} text-2xl" aria-hidden="true"></i>
   </div>
   <h3 class="text-sm font-bold text-text-primary">{title}</h3>
   {#if description}

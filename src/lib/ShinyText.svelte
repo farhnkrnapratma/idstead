@@ -1,3 +1,4 @@
+<!-- @format -->
 <script lang="ts">
   let {
     text,
@@ -13,19 +14,19 @@
     delay = 0,
     ...restProps
   } = $props<{
-    text: string;
-    disabled?: boolean;
-    speed?: number;
-    className?: string;
-    color?: string;
-    shineColor?: string;
-    spread?: number;
-    yoyo?: boolean;
-    pauseOnHover?: boolean;
-    direction?: 'left' | 'right';
-    delay?: number;
-    [key: string]: unknown;
-  }>();
+    text: string
+    disabled?: boolean
+    speed?: number
+    className?: string
+    color?: string
+    shineColor?: string
+    spread?: number
+    yoyo?: boolean
+    pauseOnHover?: boolean
+    direction?: 'left' | 'right'
+    delay?: number
+    [key: string]: unknown
+  }>()
 </script>
 
 <span
@@ -44,6 +45,7 @@
 		--anim-direction: {yoyo ? 'alternate' : 'normal'};
 		--anim-name: {direction === 'left' ? 'shiny-text-left' : 'shiny-text-right'};
 	"
-  {...restProps}>
+  {...restProps}
+>
   {text}
 </span>

@@ -1,18 +1,18 @@
+<!-- @format -->
+
 <!doctype html>
-<html
-  lang="en"
-  translate="no">
+<html lang="en" translate="no">
   <head>
     <script>
-      window.dataLayer = window.dataLayer || [];
+      window.dataLayer = window.dataLayer || []
       function gtag() {
-        dataLayer.push(arguments);
+        dataLayer.push(arguments)
       }
 
-      let savedConsent = null;
+      let savedConsent = null
       try {
-        const stored = localStorage.getItem('fkp_cookie_consent_v2');
-        if (stored) savedConsent = JSON.parse(stored);
+        const stored = localStorage.getItem('fkp_cookie_consent_v2')
+        if (stored) savedConsent = JSON.parse(stored)
       } catch (e) {}
 
       const defaultConsent = {
@@ -20,75 +20,77 @@
         ad_storage: 'denied',
         ad_user_data: 'denied',
         ad_personalization: 'denied',
-        wait_for_update: 500,
-      };
-
-      if (savedConsent) {
-        defaultConsent.analytics_storage = savedConsent.analytics_storage || 'denied';
-        defaultConsent.ad_storage = savedConsent.ad_storage || 'denied';
-        defaultConsent.ad_user_data = savedConsent.ad_user_data || 'denied';
-        defaultConsent.ad_personalization = savedConsent.ad_personalization || 'denied';
+        wait_for_update: 500
       }
 
-      gtag('consent', 'default', defaultConsent);
-      gtag('set', 'ads_data_redaction', true);
-      gtag('set', 'url_passthrough', true);
+      if (savedConsent) {
+        defaultConsent.analytics_storage =
+          savedConsent.analytics_storage || 'denied'
+        defaultConsent.ad_storage = savedConsent.ad_storage || 'denied'
+        defaultConsent.ad_user_data = savedConsent.ad_user_data || 'denied'
+        defaultConsent.ad_personalization =
+          savedConsent.ad_personalization || 'denied'
+      }
+
+      gtag('consent', 'default', defaultConsent)
+      gtag('set', 'ads_data_redaction', true)
+      gtag('set', 'url_passthrough', true)
     </script>
     <script
       async
-      src="https://www.googletagmanager.com/gtag/js?id=G-6HR3DKWZLF"></script>
+      src="https://www.googletagmanager.com/gtag/js?id=G-6HR3DKWZLF"
+    ></script>
     <script>
-      gtag('js', new Date());
-      gtag('config', 'G-6HR3DKWZLF');
+      gtag('js', new Date())
+      gtag('config', 'G-6HR3DKWZLF')
+    </script>
+    <script>
+      ;(function (w, d, s, l, i) {
+        w[l] = w[l] || []
+        w[l].push({'gtm.start': new Date().getTime(), event: 'gtm.js'})
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != 'dataLayer' ? '&l=' + l : ''
+        j.async = true
+        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl
+        f.parentNode.insertBefore(j, f)
+      })(window, document, 'script', 'dataLayer', 'GTM-TSBRHB6V')
     </script>
     <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1" />
-    <meta
-      name="theme-color"
-      content="#09090b" />
-    <link
-      rel="apple-touch-icon"
-      sizes="180x180"
-      href="/apple-touch-icon.png" />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="/favicon-32x32.png" />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="16x16"
-      href="/favicon-16x16.png" />
-    <link
-      rel="icon"
-      href="/favicon.ico" />
-    <link
-      rel="manifest"
-      href="/site.webmanifest" />
-    <link
-      rel="preconnect"
-      href="https://fonts.googleapis.com" />
-    <link
-      rel="preconnect"
-      href="https://fonts.gstatic.com"
-      crossorigin />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#09090b" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Google+Sans+Code:ital,wght,MONO@0,300..800,1;1,300..800,1&family=Google+Sans+Flex:opsz,wght@6..144,1..1000&display=swap"
-      rel="stylesheet" />
+      rel="stylesheet"
+    />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    />
     <link
       rel="alternate"
       type="application/atom+xml"
       title="fkp.my.id — Blog Feed"
-      href="/atom.xml" />
+      href="/atom.xml"
+    />
     %sveltekit.head%
   </head>
   <body class="min-h-screen">
+    <noscript
+      ><iframe
+        src="https://www.googletagmanager.com/ns.html?id=GTM-TSBRHB6V"
+        height="0"
+        width="0"
+        style="display: none; visibility: hidden"
+      ></iframe
+    ></noscript>
     <div style="display: contents">%sveltekit.body%</div>
   </body>
 </html>

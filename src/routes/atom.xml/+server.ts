@@ -1,31 +1,33 @@
-import { supabase } from '$lib/supabase';
-import type { RequestHandler } from './$types';
+/** @format */
 
-const SITE_URL = 'https://fkp.my.id';
-const AUTHOR_NAME = 'Farhan Kurnia Pratama';
-const AUTHOR_EMAIL = 'contact@fkp.my.id';
-const FEED_TITLE = 'fkp.my.id — Blog';
+import {supabase} from '$lib/supabase'
+import type {RequestHandler} from './$types'
+
+const SITE_URL = 'https://fkp.my.id'
+const AUTHOR_NAME = 'Farhan Kurnia Pratama'
+const AUTHOR_EMAIL = 'contact@fkp.my.id'
+const FEED_TITLE = 'fkp.my.id — Blog'
 const FEED_SUBTITLE =
-  'Security-focused Software Engineer writing about Linux/Unix, AI, Open-Source Software, and Cybersecurity.';
+  'Security-focused Software Engineer writing about Linux/Unix, AI, Open-Source Software, and Cybersecurity.'
 
-export const GET: RequestHandler = async ({ fetch }) => {
-  const { data: posts } = await supabase
+export const GET: RequestHandler = async ({fetch}) => {
+  const {data: posts} = await supabase
     .from('posts')
     .select('id, title, slug, excerpt, created_at, storage_path')
     .eq('published', true)
-    .order('created_at', { ascending: false })
-    .limit(20);
+    .order('created_at', {ascending: false})
+    .limit(20)
 
   const enriched = await Promise.all(
     (posts ?? []).map(async post => {
-      let content = post.excerpt ?? '';
+      let content = post.excerpt ?? ''
       try {
-        const { data: urlData } = supabase.storage
+        const {data: urlData} = supabase.storage
           .from('blog-posts')
-          .getPublicUrl(post.storage_path);
-        const fileRes = await fetch(urlData.publicUrl);
+          .getPublicUrl(post.storage_path)
+        const fileRes = await fetch(urlData.publicUrl)
         if (fileRes.ok) {
-          const md = await fileRes.text();
+          const md = await fileRes.text()
           content = md
             .replace(/^#{1,6}\s+.*/gm, '')
             .replace(/!\[.*?\]\(.*?\)/g, '')
@@ -33,18 +35,20 @@ export const GET: RequestHandler = async ({ fetch }) => {
             .replace(/[*_`~>#|-]/g, '')
             .replace(/\s+/g, ' ')
             .trim()
-            .slice(0, 500);
-          if (md.length > 500) content += '…';
+            .slice(0, 500)
+          if (md.length > 500) content += '…'
         }
       } catch {
-        content = post.excerpt ?? '';
+        content = post.excerpt ?? ''
       }
-      return { ...post, summary: content };
-    }),
-  );
+      return {...post, summary: content}
+    })
+  )
 
   const updatedDate =
-    enriched.length > 0 ? new Date(enriched[0].created_at).toISOString() : new Date().toISOString();
+    enriched.length > 0 ?
+      new Date(enriched[0].created_at).toISOString()
+    : new Date().toISOString()
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
@@ -73,18 +77,18 @@ ${enriched
       <name>${escapeXml(AUTHOR_NAME)}</name>
     </author>
     <summary type="text">${escapeXml(post.summary)}</summary>
-  </entry>`,
+  </entry>`
   )
   .join('\n')}
-</feed>`;
+</feed>`
 
   return new Response(xml, {
     headers: {
       'Content-Type': 'application/atom+xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=1800, s-maxage=1800',
-    },
-  });
-};
+      'Cache-Control': 'public, max-age=1800, s-maxage=1800'
+    }
+  })
+}
 
 function escapeXml(str: string): string {
   return str
@@ -92,5 +96,5 @@ function escapeXml(str: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
+    .replace(/'/g, '&apos;')
 }

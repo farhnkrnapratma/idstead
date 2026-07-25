@@ -1,10 +1,9 @@
+/** @format */
+
 {
   "name": "www",
   "compatibility_date": "2025-06-28",
   "compatibility_flags": ["nodejs_als"],
   "pages_build_output_dir": ".svelte-kit/cloudflare",
-  "ai": {
-    "binding": "AI",
-    "remote": true,
-  },
+  "ai": {"binding": "AI", "remote": true}
 }

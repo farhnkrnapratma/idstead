@@ -1,14 +1,15 @@
+<!-- @format -->
 <script lang="ts">
-  import Button from './Button.svelte';
-  import { cn } from '../utils/cn';
+  import Button from './Button.svelte'
+  import {cn} from '../utils/cn'
 
   interface Props {
-    title?: string;
-    description?: string;
-    icon?: string;
-    onRetry?: () => void;
-    retryLabel?: string;
-    class?: string;
+    title?: string
+    description?: string
+    icon?: string
+    onRetry?: () => void
+    retryLabel?: string
+    class?: string
   }
 
   let {
@@ -17,8 +18,8 @@
     icon = 'bi-exclamation-triangle',
     onRetry,
     retryLabel = 'Try Again',
-    class: className = '',
-  }: Props = $props();
+    class: className = ''
+  }: Props = $props()
 </script>
 
 <div
@@ -26,13 +27,13 @@
   aria-live="assertive"
   class={cn(
     'flex flex-col items-center justify-center rounded-2xl border border-danger/30 bg-danger-subtle/10 p-8 text-center select-none',
-    className,
-  )}>
+    className
+  )}
+>
   <div
-    class="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-danger-subtle/30 text-danger">
-    <i
-      class="bi {icon} text-2xl"
-      aria-hidden="true"></i>
+    class="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-danger-subtle/30 text-danger"
+  >
+    <i class="bi {icon} text-2xl" aria-hidden="true"></i>
   </div>
   <h3 class="text-sm font-bold text-text-primary">{title}</h3>
   {#if description}
@@ -45,7 +46,8 @@
         variant="secondary"
         size="sm"
         leadingIcon="bi-arrow-clockwise"
-        onclick={onRetry}>
+        onclick={onRetry}
+      >
         {retryLabel}
       </Button>
     </div>

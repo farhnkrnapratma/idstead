@@ -1,38 +1,33 @@
-import { type Config } from 'prettier';
+/** @format */
+
+import {type Config} from 'prettier'
 
 const config: Config = {
   experimentalTernaries: true,
-  experimentalOperatorPosition: 'end',
-  printWidth: 100,
+  experimentalOperatorPosition: 'start',
+  printWidth: 80,
   tabWidth: 2,
   useTabs: false,
-  semi: true,
+  semi: false,
   singleQuote: true,
+  quoteProps: 'as-needed',
   jsxSingleQuote: true,
-  trailingComma: 'all',
-  bracketSpacing: true,
-  objectWrap: 'preserve',
-  bracketSameLine: true,
+  trailingComma: 'none',
+  bracketSpacing: false,
+  objectWrap: 'collapse',
+  bracketSameLine: false,
   arrowParens: 'avoid',
-  quoteProps: 'consistent',
   requirePragma: false,
-  insertPragma: false,
-  checkIgnorePragma: false,
-  proseWrap: 'preserve',
+  insertPragma: true,
+  checkIgnorePragma: true,
+  proseWrap: 'never',
   htmlWhitespaceSensitivity: 'css',
   endOfLine: 'lf',
   embeddedLanguageFormatting: 'auto',
-  singleAttributePerLine: true,
+  singleAttributePerLine: false,
   plugins: ['prettier-plugin-svelte', 'prettier-plugin-tailwindcss'],
-  overrides: [
-    {
-      files: '*.svelte',
-      options: {
-        parser: 'svelte',
-      },
-    },
-  ],
-  tailwindStylesheet: './src/routes/layout.css',
-};
+  overrides: [{files: '*.svelte', options: {parser: 'svelte'}}],
+  tailwindStylesheet: './src/routes/layout.css'
+}
 
-export default config;
+export default config

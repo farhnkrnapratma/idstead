@@ -1,40 +1,42 @@
+/** @format */
+
 export function normalizeName(name: string): string {
-  let normalized = name.trim().toLowerCase();
-  normalized = normalized.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  let normalized = name.trim().toLowerCase()
+  normalized = normalized.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
   const homoglyphs: Record<string, string> = {
-    'а': 'a',
-    'е': 'e',
-    'о': 'o',
-    'р': 'p',
-    'с': 'c',
-    'у': 'y',
-    'х': 'x',
-    'і': 'i',
-    'ј': 'j',
-    'ѕ': 's',
-    'ԁ': 'd',
-    'ԛ': 'q',
-    'ԝ': 'w',
-    'α': 'a',
-    'ε': 'e',
-    'ι': 'i',
-    'ο': 'o',
-    'ρ': 'p',
-    'υ': 'y',
-    'χ': 'x',
+    а: 'a',
+    е: 'e',
+    о: 'o',
+    р: 'p',
+    с: 'c',
+    у: 'y',
+    х: 'x',
+    і: 'i',
+    ј: 'j',
+    ѕ: 's',
+    ԁ: 'd',
+    ԛ: 'q',
+    ԝ: 'w',
+    α: 'a',
+    ε: 'e',
+    ι: 'i',
+    ο: 'o',
+    ρ: 'p',
+    υ: 'y',
+    χ: 'x',
     '0': 'o',
     '1': 'i',
-    'l': 'i',
-  };
-  let homoglyphFree = '';
-  for (const char of normalized) {
-    homoglyphFree += homoglyphs[char] || char;
+    l: 'i'
   }
-  return homoglyphFree.replace(/[^a-z0-9]/g, '');
+  let homoglyphFree = ''
+  for (const char of normalized) {
+    homoglyphFree += homoglyphs[char] || char
+  }
+  return homoglyphFree.replace(/[^a-z0-9]/g, '')
 }
 
 export function isNameReserved(name: string): boolean {
-  const normalized = normalizeName(name);
+  const normalized = normalizeName(name)
 
   const substringReserved = [
     'admin',
@@ -44,29 +46,31 @@ export function isNameReserved(name: string): boolean {
     'support',
     'official',
     'system',
+    'farhnkrnapratma',
     'farhankurniapratama',
     'farhan',
-    'kurniapratama',
-  ];
+    'kurnia',
+    'pratama'
+  ]
 
-  const exactOrWordReserved = ['mod', 'fkp'];
+  const exactOrWordReserved = ['mod', 'fkp']
 
   if (substringReserved.some(pattern => normalized.includes(pattern))) {
-    return true;
+    return true
   }
 
   if (exactOrWordReserved.includes(normalized)) {
-    return true;
+    return true
   }
 
   const words = name
     .toLowerCase()
     .split(/[^a-z0-9]+/)
     .map(w => normalizeName(w))
-    .filter(Boolean);
+    .filter(Boolean)
   if (words.some(word => exactOrWordReserved.includes(word))) {
-    return true;
+    return true
   }
 
-  return false;
+  return false
 }
