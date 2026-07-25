@@ -22,11 +22,9 @@
   class={cn(
     'flex flex-col gap-2.5 rounded-2xl border border-border-subtle bg-surface/50 p-4 shadow-xs transition-colors select-none sm:p-5',
     className
-  )}
->
+  )}>
   <div
-    class="flex items-center gap-2 text-xs font-bold tracking-wider text-text-secondary uppercase"
-  >
+    class="flex items-center gap-2 text-xs font-bold tracking-wider text-text-secondary uppercase">
     {#if icon}
       <i class="bi {icon} text-copilot" aria-hidden="true"></i>
     {/if}

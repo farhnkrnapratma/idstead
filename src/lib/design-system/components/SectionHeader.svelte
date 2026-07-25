@@ -25,18 +25,15 @@
     'flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between',
     align === 'center' ? 'items-center text-center' : 'text-left',
     className
-  )}
->
+  )}>
   <div>
     <h1
-      class="text-2xl font-bold tracking-tight text-text-primary sm:text-3xl lg:text-4xl"
-    >
+      class="text-2xl font-bold tracking-tight text-text-primary sm:text-3xl lg:text-4xl">
       {title}
     </h1>
     {#if subtitle}
       <p
-        class="mt-1 max-w-xl text-xs leading-relaxed text-text-secondary sm:text-sm"
-      >
+        class="mt-1 max-w-xl text-xs leading-relaxed text-text-secondary sm:text-sm">
         {subtitle}
       </p>
     {/if}

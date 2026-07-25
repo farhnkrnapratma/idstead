@@ -36,14 +36,12 @@
   <title>Privacy Policy — {name}</title>
   <meta
     name="description"
-    content="Privacy policy and data collection transparency statement for {siteUrl}"
-  />
+    content="Privacy policy and data collection transparency statement for {siteUrl}" />
   <link rel="canonical" href="{siteUrl}privacy" />
   <meta property="og:title" content="Privacy Policy — {name}" />
   <meta
     property="og:description"
-    content="Privacy policy and data collection transparency statement for {siteUrl}"
-  />
+    content="Privacy policy and data collection transparency statement for {siteUrl}" />
   <meta property="og:url" content="{siteUrl}privacy" />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="{siteUrl}hero.png" />
@@ -51,8 +49,7 @@
   <meta name="twitter:title" content="Privacy Policy — {name}" />
   <meta
     name="twitter:description"
-    content="Privacy policy and data collection transparency statement for {siteUrl}"
-  />
+    content="Privacy policy and data collection transparency statement for {siteUrl}" />
   <meta name="twitter:image" content="{siteUrl}hero.png" />
 </svelte:head>
 
@@ -60,12 +57,10 @@
 
 <nav
   class="fixed top-0 z-40 flex h-15 w-full items-center justify-between border-b border-border-subtle bg-surface-card/60 px-3 font-sans shadow-xs backdrop-blur-lg transition-colors duration-300 sm:px-5"
-  aria-label="Privacy page navigation"
->
+  aria-label="Privacy page navigation">
   <a
     href="/"
-    class="inline-flex h-9 items-center justify-center rounded-lg border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
-  >
+    class="inline-flex h-9 items-center justify-center rounded-lg border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
     Back to Home
   </a>
 
@@ -77,8 +72,7 @@
 
 <main
   id="main-content"
-  class="relative z-10 mx-auto w-full px-6 pt-24 pb-20 font-sans md:w-[80%] md:max-w-none md:pt-28 md:pb-24 lg:w-[50%]"
->
+  class="relative z-10 mx-auto w-full px-6 pt-24 pb-20 font-sans md:w-[80%] md:max-w-none md:pt-28 md:pb-24 lg:w-[50%]">
   <div class="mb-8">
     <h1 class="text-3xl font-bold tracking-tight text-text-primary">
       Privacy Policy
@@ -88,8 +82,7 @@
 
   <div class="space-y-6 text-sm leading-relaxed text-text-secondary">
     <section
-      class="rounded-2xl border border-border-subtle bg-surface-card/45 p-6 shadow-xs backdrop-blur-lg"
-    >
+      class="rounded-2xl border border-border-subtle bg-surface-card/45 p-6 shadow-xs backdrop-blur-lg">
       <h2 class="text-base font-bold text-text-primary">
         1. Overview & Data Transparency
       </h2>
@@ -105,8 +98,7 @@
     </section>
 
     <section
-      class="rounded-2xl border border-border-subtle bg-surface-card/45 p-6 shadow-xs backdrop-blur-lg"
-    >
+      class="rounded-2xl border border-border-subtle bg-surface-card/45 p-6 shadow-xs backdrop-blur-lg">
       <h2 class="text-base font-bold text-text-primary">
         2. Google Analytics 4 & Consent Mode v2
       </h2>
@@ -120,8 +112,7 @@
       <ul class="mt-2 list-disc space-y-1.5 pl-5">
         <li>
           <strong class="font-semibold text-text-primary"
-            >Default Denial:</strong
-          >
+            >Default Denial:</strong>
           All optional consent signals (<code
             class="rounded bg-surface-hover px-1 py-0.5 font-mono text-xs"
             >analytics_storage</code
@@ -139,20 +130,19 @@
         </li>
         <li>
           <strong class="font-semibold text-text-primary"
-            >IP Anonymization:</strong
-          > IP addresses are automatically masked and anonymized by GA4 prior to processing.
+            >IP Anonymization:</strong> IP addresses are automatically masked and
+          anonymized by GA4 prior to processing.
         </li>
         <li>
           <strong class="font-semibold text-text-primary"
-            >No Cross-Site Tracking:</strong
-          > We do not use third-party advertising cookies or cross-site tracking technologies.
+            >No Cross-Site Tracking:</strong> We do not use third-party advertising
+          cookies or cross-site tracking technologies.
         </li>
       </ul>
     </section>
 
     <section
-      class="rounded-2xl border border-border-subtle bg-surface-card/45 p-6 shadow-xs backdrop-blur-lg"
-    >
+      class="rounded-2xl border border-border-subtle bg-surface-card/45 p-6 shadow-xs backdrop-blur-lg">
       <h2 class="text-base font-bold text-text-primary">
         3. Data Retention Policy (14-Month Standard)
       </h2>
@@ -161,8 +151,7 @@
         privacy best practices, user-level and event-level data (such as
         pageview events, session duration, and browser metrics) is retained for
         a maximum of <strong class="font-semibold text-text-primary"
-          >14 months</strong
-        > from the date of collection.
+          >14 months</strong> from the date of collection.
       </p>
       <p class="mt-2">
         After 14 months, all associated user data is automatically deleted from
@@ -173,8 +162,7 @@
     </section>
 
     <section
-      class="rounded-2xl border border-border-subtle bg-surface-card/45 p-6 shadow-xs backdrop-blur-lg"
-    >
+      class="rounded-2xl border border-border-subtle bg-surface-card/45 p-6 shadow-xs backdrop-blur-lg">
       <h2 class="text-base font-bold text-text-primary">
         4. Public Comments & Feedback
       </h2>
@@ -198,8 +186,7 @@
     </section>
 
     <section
-      class="rounded-2xl border border-border-subtle bg-surface-card/45 p-6 shadow-xs backdrop-blur-lg"
-    >
+      class="rounded-2xl border border-border-subtle bg-surface-card/45 p-6 shadow-xs backdrop-blur-lg">
       <h2 class="text-base font-bold text-text-primary">
         5. Your Choices & Cookie Preferences
       </h2>
@@ -212,16 +199,14 @@
         <button
           type="button"
           onclick={() => consentStore.openCustomizeModal()}
-          class="inline-flex cursor-pointer items-center justify-center rounded-lg border border-border-subtle bg-surface-card px-4 py-2 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
-        >
+          class="inline-flex cursor-pointer items-center justify-center rounded-lg border border-border-subtle bg-surface-card px-4 py-2 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
           Manage Cookie Settings
         </button>
       </div>
     </section>
 
     <section
-      class="rounded-2xl border border-border-subtle bg-surface-card/45 p-6 shadow-xs backdrop-blur-lg"
-    >
+      class="rounded-2xl border border-border-subtle bg-surface-card/45 p-6 shadow-xs backdrop-blur-lg">
       <h2 class="text-base font-bold text-text-primary">
         6. Contact Information
       </h2>

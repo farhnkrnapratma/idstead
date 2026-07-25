@@ -45,7 +45,6 @@
     gapStyles[gap],
     alignStyles[align],
     className
-  )}
->
+  )}>
   {@render children?.()}
 </div>

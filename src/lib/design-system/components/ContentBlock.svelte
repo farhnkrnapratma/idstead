@@ -33,8 +33,7 @@
     'flex flex-col gap-3 rounded-2xl p-5 shadow-xs transition-colors duration-300 sm:p-6',
     variantStyles[variant],
     className
-  )}
->
+  )}>
   {#if title || description}
     <div class="flex flex-col gap-1">
       {#if title}
@@ -52,8 +51,7 @@
 
   {#if actions}
     <div
-      class="mt-2 flex items-center justify-end gap-2 border-t border-border-subtle/40 pt-3"
-    >
+      class="mt-2 flex items-center justify-end gap-2 border-t border-border-subtle/40 pt-3">
       {@render actions()}
     </div>
   {/if}

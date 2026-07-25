@@ -40,7 +40,6 @@
     valid && !error ? 'border-copilot!' : '',
     className
   )}
-  {...restProps}
->
+  {...restProps}>
   {@render children?.()}
 </select>

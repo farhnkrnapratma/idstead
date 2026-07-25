@@ -29,7 +29,6 @@
 <div
   class="flex flex-wrap items-center {alignStyles[align]} {gapStyles[
     gap
-  ]} {className}"
->
+  ]} {className}">
   {@render children?.()}
 </div>

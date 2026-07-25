@@ -32,7 +32,6 @@
       'sticky bottom-0 z-30 border-t border-border-subtle bg-surface/90 px-4 py-3 backdrop-blur-md'
     : 'py-2',
     className
-  )}
->
+  )}>
   {@render children?.()}
 </div>

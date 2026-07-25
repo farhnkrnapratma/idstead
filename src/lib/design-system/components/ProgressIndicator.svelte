@@ -16,8 +16,7 @@
 <div class={cn('flex w-full flex-col gap-1.5 select-none', className)}>
   {#if label}
     <div
-      class="flex items-center justify-between text-xs font-semibold text-text-secondary"
-    >
+      class="flex items-center justify-between text-xs font-semibold text-text-secondary">
       <span>{label}</span>
       <span class="font-mono text-[11px]">{clampedValue}%</span>
     </div>
@@ -29,11 +28,10 @@
     aria-valuemin={0}
     aria-valuemax={100}
     aria-label={label || 'Progress bar'}
-    class="h-2 w-full overflow-hidden rounded-full border border-border-subtle bg-surface-subtle"
-  >
+    class="h-2 w-full overflow-hidden rounded-full border border-border-subtle bg-surface-subtle">
     <div
       class="h-full rounded-full bg-copilot transition-all duration-300"
-      style="width: {clampedValue}%"
-    ></div>
+      style="width: {clampedValue}%">
+    </div>
   </div>
 </div>

@@ -27,29 +27,24 @@
     'mb-8 flex flex-col gap-3 sm:mb-10',
     align === 'center' ? 'items-center text-center' : 'text-left',
     className
-  )}
->
+  )}>
   {#if eyebrow}
     <span
-      class="text-xs font-bold tracking-wider text-copilot uppercase select-none"
-    >
+      class="text-xs font-bold tracking-wider text-copilot uppercase select-none">
       {eyebrow}
     </span>
   {/if}
 
   <div
-    class="flex w-full flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"
-  >
+    class="flex w-full flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
     <div>
       <h1
-        class="text-2xl font-bold tracking-tight text-text-primary sm:text-3xl lg:text-4xl"
-      >
+        class="text-2xl font-bold tracking-tight text-text-primary sm:text-3xl lg:text-4xl">
         {title}
       </h1>
       {#if description}
         <p
-          class="mt-1.5 max-w-xl text-xs leading-relaxed text-text-secondary sm:text-sm"
-        >
+          class="mt-1.5 max-w-xl text-xs leading-relaxed text-text-secondary sm:text-sm">
           {description}
         </p>
       {/if}

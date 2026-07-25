@@ -102,8 +102,7 @@
       type="button"
       class="absolute inset-0 cursor-default bg-overlay-backdrop backdrop-blur-sm"
       aria-label="Close modal"
-      onclick={() => closeOnBackdrop && onClose()}
-    ></button>
+      onclick={() => closeOnBackdrop && onClose()}></button>
 
     <div
       bind:this={dialogRef}
@@ -117,29 +116,25 @@
         sizeStyles[size],
         isDestructive ? 'border-danger/30' : '',
         className
-      )}
-    >
+      )}>
       <div class="flex flex-col gap-1 text-left">
         <h2
           id="dialog-title"
           class={cn(
             'flex items-center gap-2 text-base font-bold text-text-primary',
             isDestructive ? 'text-danger' : ''
-          )}
-        >
+          )}>
           {#if isDestructive}
             <i
               class="bi bi-exclamation-triangle-fill text-sm text-danger"
-              aria-hidden="true"
-            ></i>
+              aria-hidden="true"></i>
           {/if}
           {title}
         </h2>
         {#if description}
           <p
             id="dialog-desc"
-            class="mt-1 text-xs leading-relaxed text-text-secondary"
-          >
+            class="mt-1 text-xs leading-relaxed text-text-secondary">
             {description}
           </p>
         {/if}

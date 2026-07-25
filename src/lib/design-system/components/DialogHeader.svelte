@@ -24,16 +24,14 @@
   class={cn(
     'relative flex flex-col gap-1 pr-6 text-left select-none',
     className
-  )}
->
+  )}>
   <h2 id="dialog-title" class="text-base font-bold text-text-primary">
     {title}
   </h2>
   {#if description}
     <p
       id="dialog-desc"
-      class="mt-1 text-xs leading-relaxed text-text-secondary"
-    >
+      class="mt-1 text-xs leading-relaxed text-text-secondary">
       {description}
     </p>
   {/if}
@@ -44,8 +42,7 @@
         ariaLabel="Close dialog"
         variant="ghost"
         size="sm"
-        onclick={onClose}
-      >
+        onclick={onClose}>
         <i class="bi bi-x-lg text-xs" aria-hidden="true"></i>
       </IconButton>
     </div>

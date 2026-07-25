@@ -30,23 +30,19 @@
 </script>
 
 <div
-  class="w-full overflow-x-auto rounded-2xl border border-border-subtle shadow-xs select-none"
->
+  class="w-full overflow-x-auto rounded-2xl border border-border-subtle shadow-xs select-none">
   <table
-    class={cn('w-full border-collapse text-xs text-text-primary', className)}
-  >
+    class={cn('w-full border-collapse text-xs text-text-primary', className)}>
     {#if caption}
       <caption class="sr-only">{caption}</caption>
     {/if}
     <thead
-      class="border-b border-border-subtle bg-surface-elevated text-[11px] font-bold tracking-wider text-text-secondary uppercase"
-    >
+      class="border-b border-border-subtle bg-surface-elevated text-[11px] font-bold tracking-wider text-text-secondary uppercase">
       <tr>
         {#each columns as col (col.key)}
           <th
             scope="col"
-            class={cn('px-4 py-3 font-bold', alignStyles[col.align || 'left'])}
-          >
+            class={cn('px-4 py-3 font-bold', alignStyles[col.align || 'left'])}>
             {col.header}
           </th>
         {/each}
@@ -60,8 +56,7 @@
               class={cn(
                 'px-4 py-3 font-medium',
                 alignStyles[col.align || 'left']
-              )}
-            >
+              )}>
               {row[col.key] ?? '—'}
             </td>
           {/each}

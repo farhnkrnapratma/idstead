@@ -67,8 +67,7 @@
     {accept}
     {disabled}
     onchange={handleFileChange}
-    class="sr-only"
-  />
+    class="sr-only" />
 
   <div
     role="button"
@@ -87,16 +86,13 @@
       : 'border-border-default bg-surface/50 hover:border-border-strong hover:bg-surface-hover',
       error ? 'border-danger! bg-danger-subtle/10!' : '',
       disabled ? 'cursor-not-allowed opacity-50' : ''
-    )}
-  >
+    )}>
     {#if selectedFileName}
       <div
-        class="flex items-center gap-2 text-xs font-semibold text-text-primary"
-      >
+        class="flex items-center gap-2 text-xs font-semibold text-text-primary">
         <i
           class="bi bi-file-earmark-check-fill text-lg text-copilot"
-          aria-hidden="true"
-        ></i>
+          aria-hidden="true"></i>
         <span class="max-w-xs truncate">{selectedFileName}</span>
         <button
           type="button"
@@ -105,16 +101,14 @@
             e.stopPropagation()
             clearFile()
           }}
-          class="ml-2 rounded p-1 text-text-muted hover:bg-danger-subtle hover:text-danger"
-        >
+          class="ml-2 rounded p-1 text-text-muted hover:bg-danger-subtle hover:text-danger">
           <i class="bi bi-x-lg text-xs" aria-hidden="true"></i>
         </button>
       </div>
     {:else}
       <i
         class="bi bi-cloud-arrow-up text-3xl text-text-muted transition-colors group-hover:text-copilot"
-        aria-hidden="true"
-      ></i>
+        aria-hidden="true"></i>
       <p class="mt-2 text-xs font-semibold text-text-primary">
         Click to upload or drag & drop
       </p>
@@ -125,8 +119,7 @@
   {#if error}
     <span
       role="alert"
-      class="mt-1 flex items-center gap-1 text-[11px] font-medium text-danger"
-    >
+      class="mt-1 flex items-center gap-1 text-[11px] font-medium text-danger">
       <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
       {error}
     </span>

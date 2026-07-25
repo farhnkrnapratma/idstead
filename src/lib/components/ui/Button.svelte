@@ -46,16 +46,14 @@
   {type}
   disabled={disabled || isLoading}
   class="{baseStyles} {variantStyles[variant]} {sizeStyles[size]} {className}"
-  {...restProps}
->
+  {...restProps}>
   {#if isLoading}
     <svg
       class="h-4 w-4 animate-spin"
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
+      aria-hidden="true">
       <circle class="stroke-copilot stroke-3 opacity-25" cx="12" cy="12" r="10"
       ></circle>
       <path
@@ -69,8 +67,7 @@
 
   {#if showEscHint && !isLoading}
     <kbd
-      class="hidden items-center rounded border border-border-subtle/80 bg-surface-elevated/80 px-1 py-0.5 font-mono text-[9px] leading-none text-text-muted select-none sm:inline-flex"
-    >
+      class="hidden items-center rounded border border-border-subtle/80 bg-surface-elevated/80 px-1 py-0.5 font-mono text-[9px] leading-none text-text-muted select-none sm:inline-flex">
       Esc
     </kbd>
   {/if}

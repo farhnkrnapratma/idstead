@@ -68,14 +68,12 @@
   <aside
     transition:fade={{duration: 200}}
     aria-label="Cookie and Privacy Consent"
-    class="fixed right-4 bottom-4 left-4 z-50 mx-auto max-w-xl rounded-2xl border border-border-subtle bg-surface-card/95 p-5 shadow-2xl backdrop-blur-xl transition-all sm:right-auto sm:bottom-6 sm:left-6 sm:w-full"
-  >
+    class="fixed right-4 bottom-4 left-4 z-50 mx-auto max-w-xl rounded-2xl border border-border-subtle bg-surface-card/95 p-5 shadow-2xl backdrop-blur-xl transition-all sm:right-auto sm:bottom-6 sm:left-6 sm:w-full">
     <div class="flex flex-col gap-4">
       <div class="flex items-start justify-between gap-3">
         <div class="flex items-center gap-2.5">
           <div
-            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-copilot/15 text-copilot"
-          >
+            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-copilot/15 text-copilot">
             <i class="bi bi-shield-check text-base" aria-hidden="true"></i>
           </div>
           <div>
@@ -92,8 +90,7 @@
           type="button"
           onclick={consentStore.closeBanner}
           aria-label="Dismiss banner"
-          class="shrink-0 text-text-muted hover:text-text-primary"
-        >
+          class="shrink-0 text-text-muted hover:text-text-primary">
           <i class="bi bi-x-lg text-xs" aria-hidden="true"></i>
         </button>
       </div>
@@ -103,8 +100,7 @@
         your choice at any time. See our <a
           href="/privacy"
           class="hover:text-copilot-hover font-semibold text-copilot underline"
-          >Privacy Policy</a
-        > for full details.
+          >Privacy Policy</a> for full details.
       </p>
 
       <div class="flex flex-wrap items-center gap-2 pt-1">
@@ -114,8 +110,7 @@
         <Button
           variant="secondary"
           size="sm"
-          onclick={consentStore.acceptAnalyticsOnly}
-        >
+          onclick={consentStore.acceptAnalyticsOnly}>
           Analytics only
         </Button>
         <Button variant="ghost" size="sm" onclick={consentStore.rejectAll}>
@@ -124,8 +119,7 @@
         <button
           type="button"
           onclick={openCustomize}
-          class="ml-auto text-xs font-semibold text-text-muted hover:text-copilot hover:underline"
-        >
+          class="ml-auto text-xs font-semibold text-text-muted hover:text-copilot hover:underline">
           Cookie Settings
         </button>
       </div>
@@ -139,41 +133,35 @@
   description="Manage your analytics and advertising privacy choices."
   size="2xl"
   class="max-h-[85vh] w-[95vw] max-w-2xl overflow-y-auto"
-  onClose={() => consentStore.closeCustomizeModal()}
->
+  onClose={() => consentStore.closeCustomizeModal()}>
   <div class="flex flex-col gap-4 py-1">
     <div
-      class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border-subtle/70 bg-surface-card/50 p-2.5"
-    >
+      class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border-subtle/70 bg-surface-card/50 p-2.5">
       <span class="text-xs font-semibold text-text-muted">Quick Presets</span>
       <div class="flex flex-wrap items-center gap-1.5">
         <button
           type="button"
           onclick={() => applyPreset('all')}
-          class="inline-flex cursor-pointer items-center rounded-lg border border-border-subtle/80 bg-surface-card px-2.5 py-1 text-xs font-semibold text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary"
-        >
+          class="inline-flex cursor-pointer items-center rounded-lg border border-border-subtle/80 bg-surface-card px-2.5 py-1 text-xs font-semibold text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary">
           Allow All
         </button>
         <button
           type="button"
           onclick={() => applyPreset('analytics')}
-          class="inline-flex cursor-pointer items-center rounded-lg border border-border-subtle/80 bg-surface-card px-2.5 py-1 text-xs font-semibold text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary"
-        >
+          class="inline-flex cursor-pointer items-center rounded-lg border border-border-subtle/80 bg-surface-card px-2.5 py-1 text-xs font-semibold text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary">
           Analytics Only
         </button>
         <button
           type="button"
           onclick={() => applyPreset('deny')}
-          class="inline-flex cursor-pointer items-center rounded-lg border border-border-subtle/80 bg-surface-card px-2.5 py-1 text-xs font-semibold text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary"
-        >
+          class="inline-flex cursor-pointer items-center rounded-lg border border-border-subtle/80 bg-surface-card px-2.5 py-1 text-xs font-semibold text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary">
           Deny All
         </button>
       </div>
     </div>
 
     <div
-      class="divide-y divide-border-subtle/50 rounded-xl border border-border-subtle/70 bg-surface-card/30"
-    >
+      class="divide-y divide-border-subtle/50 rounded-xl border border-border-subtle/70 bg-surface-card/30">
       <div class="flex items-center justify-between gap-3 p-3 sm:p-3.5">
         <div class="flex min-w-0 flex-1 flex-col gap-0.5">
           <h4 class="text-xs font-bold text-text-primary">
@@ -193,22 +181,18 @@
             aria-label="Behavioral Analytics preference"
             aria-expanded={activeDropdown === 'analytics'}
             aria-haspopup="listbox"
-            class="inline-flex h-8 min-w-22 cursor-pointer items-center justify-between gap-1.5 rounded-lg border border-border-subtle bg-surface-card px-2.5 text-xs font-semibold text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
-          >
+            class="inline-flex h-8 min-w-22 cursor-pointer items-center justify-between gap-1.5 rounded-lg border border-border-subtle bg-surface-card px-2.5 text-xs font-semibold text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
             <span class="leading-none"
-              >{tempAnalytics === 'granted' ? 'Allow' : 'Deny'}</span
-            >
+              >{tempAnalytics === 'granted' ? 'Allow' : 'Deny'}</span>
             <span
               class="inline-flex h-4 w-4 shrink-0 origin-center items-center justify-center text-text-muted transition-transform duration-200 ease-out {(
                 activeDropdown === 'analytics'
               ) ?
                 'rotate-180'
-              : ''}"
-            >
+              : ''}">
               <i
                 class="bi bi-chevron-down text-[10px] leading-none"
-                aria-hidden="true"
-              ></i>
+                aria-hidden="true"></i>
             </span>
           </button>
 
@@ -217,13 +201,11 @@
               type="button"
               class="fixed inset-0 z-40 cursor-default"
               onclick={() => (activeDropdown = null)}
-              aria-label="Close menu"
-            ></button>
+              aria-label="Close menu"></button>
             <div
               role="listbox"
               aria-label="Behavioral Analytics options"
-              class="absolute top-[calc(100%+4px)] right-0 z-60 flex min-w-36 flex-col overflow-hidden rounded-xl border border-border-subtle bg-surface-elevated py-0 shadow-xl backdrop-blur-md"
-            >
+              class="absolute top-[calc(100%+4px)] right-0 z-60 flex min-w-36 flex-col overflow-hidden rounded-xl border border-border-subtle bg-surface-elevated py-0 shadow-xl backdrop-blur-md">
               <button
                 type="button"
                 role="option"
@@ -236,14 +218,12 @@
                   tempAnalytics === 'denied'
                 ) ?
                   'bg-copilot/10 text-copilot'
-                : 'text-text-primary hover:bg-surface-hover'}"
-              >
+                : 'text-text-primary hover:bg-surface-hover'}">
                 <span>Deny</span>
                 {#if tempAnalytics === 'denied'}
                   <i
                     class="bi bi-check2 shrink-0 text-copilot"
-                    aria-hidden="true"
-                  ></i>
+                    aria-hidden="true"></i>
                 {/if}
               </button>
               <button
@@ -258,14 +238,12 @@
                   tempAnalytics === 'granted'
                 ) ?
                   'bg-copilot/10 text-copilot'
-                : 'text-text-primary hover:bg-surface-hover'}"
-              >
+                : 'text-text-primary hover:bg-surface-hover'}">
                 <span>Allow</span>
                 {#if tempAnalytics === 'granted'}
                   <i
                     class="bi bi-check2 shrink-0 text-copilot"
-                    aria-hidden="true"
-                  ></i>
+                    aria-hidden="true"></i>
                 {/if}
               </button>
             </div>
@@ -292,22 +270,18 @@
             aria-label="Advertising Storage preference"
             aria-expanded={activeDropdown === 'ad_storage'}
             aria-haspopup="listbox"
-            class="inline-flex h-8 min-w-22 cursor-pointer items-center justify-between gap-1.5 rounded-lg border border-border-subtle bg-surface-card px-2.5 text-xs font-semibold text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
-          >
+            class="inline-flex h-8 min-w-22 cursor-pointer items-center justify-between gap-1.5 rounded-lg border border-border-subtle bg-surface-card px-2.5 text-xs font-semibold text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
             <span class="leading-none"
-              >{tempAdStorage === 'granted' ? 'Allow' : 'Deny'}</span
-            >
+              >{tempAdStorage === 'granted' ? 'Allow' : 'Deny'}</span>
             <span
               class="inline-flex h-4 w-4 shrink-0 origin-center items-center justify-center text-text-muted transition-transform duration-200 ease-out {(
                 activeDropdown === 'ad_storage'
               ) ?
                 'rotate-180'
-              : ''}"
-            >
+              : ''}">
               <i
                 class="bi bi-chevron-down text-[10px] leading-none"
-                aria-hidden="true"
-              ></i>
+                aria-hidden="true"></i>
             </span>
           </button>
 
@@ -316,13 +290,11 @@
               type="button"
               class="fixed inset-0 z-40 cursor-default"
               onclick={() => (activeDropdown = null)}
-              aria-label="Close menu"
-            ></button>
+              aria-label="Close menu"></button>
             <div
               role="listbox"
               aria-label="Advertising Storage options"
-              class="absolute top-[calc(100%+4px)] right-0 z-60 flex min-w-36 flex-col overflow-hidden rounded-xl border border-border-subtle bg-surface-elevated py-0 shadow-xl backdrop-blur-md"
-            >
+              class="absolute top-[calc(100%+4px)] right-0 z-60 flex min-w-36 flex-col overflow-hidden rounded-xl border border-border-subtle bg-surface-elevated py-0 shadow-xl backdrop-blur-md">
               <button
                 type="button"
                 role="option"
@@ -335,14 +307,12 @@
                   tempAdStorage === 'denied'
                 ) ?
                   'bg-copilot/10 text-copilot'
-                : 'text-text-primary hover:bg-surface-hover'}"
-              >
+                : 'text-text-primary hover:bg-surface-hover'}">
                 <span>Deny</span>
                 {#if tempAdStorage === 'denied'}
                   <i
                     class="bi bi-check2 shrink-0 text-copilot"
-                    aria-hidden="true"
-                  ></i>
+                    aria-hidden="true"></i>
                 {/if}
               </button>
               <button
@@ -357,14 +327,12 @@
                   tempAdStorage === 'granted'
                 ) ?
                   'bg-copilot/10 text-copilot'
-                : 'text-text-primary hover:bg-surface-hover'}"
-              >
+                : 'text-text-primary hover:bg-surface-hover'}">
                 <span>Allow</span>
                 {#if tempAdStorage === 'granted'}
                   <i
                     class="bi bi-check2 shrink-0 text-copilot"
-                    aria-hidden="true"
-                  ></i>
+                    aria-hidden="true"></i>
                 {/if}
               </button>
             </div>
@@ -389,22 +357,18 @@
             aria-label="Ad User Data preference"
             aria-expanded={activeDropdown === 'ad_user_data'}
             aria-haspopup="listbox"
-            class="inline-flex h-8 min-w-22 cursor-pointer items-center justify-between gap-1.5 rounded-lg border border-border-subtle bg-surface-card px-2.5 text-xs font-semibold text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
-          >
+            class="inline-flex h-8 min-w-22 cursor-pointer items-center justify-between gap-1.5 rounded-lg border border-border-subtle bg-surface-card px-2.5 text-xs font-semibold text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
             <span class="leading-none"
-              >{tempAdUserData === 'granted' ? 'Allow' : 'Deny'}</span
-            >
+              >{tempAdUserData === 'granted' ? 'Allow' : 'Deny'}</span>
             <span
               class="inline-flex h-4 w-4 shrink-0 origin-center items-center justify-center text-text-muted transition-transform duration-200 ease-out {(
                 activeDropdown === 'ad_user_data'
               ) ?
                 'rotate-180'
-              : ''}"
-            >
+              : ''}">
               <i
                 class="bi bi-chevron-down text-[10px] leading-none"
-                aria-hidden="true"
-              ></i>
+                aria-hidden="true"></i>
             </span>
           </button>
 
@@ -413,13 +377,11 @@
               type="button"
               class="fixed inset-0 z-40 cursor-default"
               onclick={() => (activeDropdown = null)}
-              aria-label="Close menu"
-            ></button>
+              aria-label="Close menu"></button>
             <div
               role="listbox"
               aria-label="Ad User Data options"
-              class="absolute top-[calc(100%+4px)] right-0 z-60 flex min-w-36 flex-col overflow-hidden rounded-xl border border-border-subtle bg-surface-elevated py-0 shadow-xl backdrop-blur-md"
-            >
+              class="absolute top-[calc(100%+4px)] right-0 z-60 flex min-w-36 flex-col overflow-hidden rounded-xl border border-border-subtle bg-surface-elevated py-0 shadow-xl backdrop-blur-md">
               <button
                 type="button"
                 role="option"
@@ -432,14 +394,12 @@
                   tempAdUserData === 'denied'
                 ) ?
                   'bg-copilot/10 text-copilot'
-                : 'text-text-primary hover:bg-surface-hover'}"
-              >
+                : 'text-text-primary hover:bg-surface-hover'}">
                 <span>Deny</span>
                 {#if tempAdUserData === 'denied'}
                   <i
                     class="bi bi-check2 shrink-0 text-copilot"
-                    aria-hidden="true"
-                  ></i>
+                    aria-hidden="true"></i>
                 {/if}
               </button>
               <button
@@ -454,14 +414,12 @@
                   tempAdUserData === 'granted'
                 ) ?
                   'bg-copilot/10 text-copilot'
-                : 'text-text-primary hover:bg-surface-hover'}"
-              >
+                : 'text-text-primary hover:bg-surface-hover'}">
                 <span>Allow</span>
                 {#if tempAdUserData === 'granted'}
                   <i
                     class="bi bi-check2 shrink-0 text-copilot"
-                    aria-hidden="true"
-                  ></i>
+                    aria-hidden="true"></i>
                 {/if}
               </button>
             </div>
@@ -490,22 +448,18 @@
             aria-label="Ad Personalization preference"
             aria-expanded={activeDropdown === 'ad_personalization'}
             aria-haspopup="listbox"
-            class="inline-flex h-8 min-w-22 cursor-pointer items-center justify-between gap-1.5 rounded-lg border border-border-subtle bg-surface-card px-2.5 text-xs font-semibold text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
-          >
+            class="inline-flex h-8 min-w-22 cursor-pointer items-center justify-between gap-1.5 rounded-lg border border-border-subtle bg-surface-card px-2.5 text-xs font-semibold text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
             <span class="flex-1 text-left leading-none"
-              >{tempAdPersonalization === 'granted' ? 'Allow' : 'Deny'}</span
-            >
+              >{tempAdPersonalization === 'granted' ? 'Allow' : 'Deny'}</span>
             <span
               class="inline-flex h-4 w-4 shrink-0 origin-center items-center justify-center text-text-muted transition-transform duration-200 ease-out {(
                 activeDropdown === 'ad_personalization'
               ) ?
                 'rotate-180'
-              : ''}"
-            >
+              : ''}">
               <i
                 class="bi bi-chevron-down text-[10px] leading-none"
-                aria-hidden="true"
-              ></i>
+                aria-hidden="true"></i>
             </span>
           </button>
 
@@ -514,13 +468,11 @@
               type="button"
               class="fixed inset-0 z-40 cursor-default"
               onclick={() => (activeDropdown = null)}
-              aria-label="Close menu"
-            ></button>
+              aria-label="Close menu"></button>
             <div
               role="listbox"
               aria-label="Ad Personalization options"
-              class="absolute top-[calc(100%+4px)] right-0 z-60 flex min-w-36 flex-col overflow-hidden rounded-xl border border-border-subtle bg-surface-elevated py-0 shadow-xl backdrop-blur-md"
-            >
+              class="absolute top-[calc(100%+4px)] right-0 z-60 flex min-w-36 flex-col overflow-hidden rounded-xl border border-border-subtle bg-surface-elevated py-0 shadow-xl backdrop-blur-md">
               <button
                 type="button"
                 role="option"
@@ -533,14 +485,12 @@
                   tempAdPersonalization === 'denied'
                 ) ?
                   'bg-copilot/10 text-copilot'
-                : 'text-text-primary hover:bg-surface-hover'}"
-              >
+                : 'text-text-primary hover:bg-surface-hover'}">
                 <span>Deny</span>
                 {#if tempAdPersonalization === 'denied'}
                   <i
                     class="bi bi-check2 shrink-0 text-copilot"
-                    aria-hidden="true"
-                  ></i>
+                    aria-hidden="true"></i>
                 {/if}
               </button>
               <button
@@ -555,15 +505,13 @@
                   tempAdPersonalization === 'granted'
                 ) ?
                   'bg-copilot/10 text-copilot'
-                : 'text-text-primary hover:bg-surface-hover'}"
-              >
+                : 'text-text-primary hover:bg-surface-hover'}">
                 : 'text-text-primary hover:bg-surface-hover'}">
                 <span>Allow</span>
                 {#if tempAdPersonalization === 'granted'}
                   <i
                     class="bi bi-check2 shrink-0 text-copilot"
-                    aria-hidden="true"
-                  ></i>
+                    aria-hidden="true"></i>
                 {/if}
               </button>
             </div>
@@ -574,13 +522,11 @@
 
     <div class="flex items-center justify-between gap-3 px-1 pt-1">
       <span class="text-[11px] text-text-muted"
-        >Need to clear stored choices?</span
-      >
+        >Need to clear stored choices?</span>
       <button
         type="button"
         onclick={consentStore.resetVisitorConsent}
-        class="cursor-pointer text-xs font-semibold text-text-muted transition-colors hover:text-danger hover:underline"
-      >
+        class="cursor-pointer text-xs font-semibold text-text-muted transition-colors hover:text-danger hover:underline">
         Reset choice
       </button>
     </div>
@@ -588,15 +534,13 @@
 
   {#snippet footer()}
     <div
-      class="flex w-full flex-col-reverse items-center justify-end gap-2 sm:flex-row"
-    >
+      class="flex w-full flex-col-reverse items-center justify-end gap-2 sm:flex-row">
       <Button
         variant="secondary"
         size="md"
         showEscHint
         onclick={() => consentStore.closeCustomizeModal()}
-        class="w-full sm:w-auto"
-      >
+        class="w-full sm:w-auto">
         Cancel
       </Button>
 
@@ -607,8 +551,7 @@
           applyPreset('all')
           saveCustomPreferences()
         }}
-        class="w-full sm:w-auto"
-      >
+        class="w-full sm:w-auto">
         Accept All
       </Button>
 
@@ -616,8 +559,7 @@
         variant="primary"
         size="md"
         onclick={saveCustomPreferences}
-        class="w-full sm:w-auto"
-      >
+        class="w-full sm:w-auto">
         Save Preferences
       </Button>
     </div>

@@ -32,5 +32,4 @@
   ]} {error ? 'border-danger! ring-danger/20!' : ''} {valid && !error ?
     'border-copilot!'
   : ''} {className}"
-  {...restProps}
-/>
+  {...restProps} />

@@ -23,6 +23,7 @@
     createFilterSortStore,
     ThemeSelect,
     formatBlogDate,
+    formatReadTime,
     formatViewCount
   } from '$lib'
 
@@ -35,6 +36,7 @@
     created_at: string
     banner_path?: string | null
     excerpt?: string | null
+    read_time?: string | null
   }
 
   function getBannerUrl(bannerPath: string | null | undefined): string | null {
@@ -216,8 +218,8 @@
         const cB = getPostComments(b.id).length
         return (cA - cB) * sortDir
       } else if (sortField === 'readingTime') {
-        const rA = (a.excerpt || '').length
-        const rB = (b.excerpt || '').length
+        const rA = parseInt(a.read_time || '0', 10)
+        const rB = parseInt(b.read_time || '0', 10)
         return (rA - rB) * sortDir
       } else {
         return (
@@ -328,6 +330,7 @@
     if (!postToDelete) return
     const post = postToDelete
     postToDelete = null
+    showDeletePostDialog = false
 
     const {error: storageError} = await supabase.storage
       .from('blog-posts')
@@ -359,6 +362,7 @@
     if (!commentIdToDelete) return
     const id = commentIdToDelete
     commentIdToDelete = null
+    showDeleteCommentDialog = false
 
     const {error} = await supabase.from('comments').delete().eq('id', id)
 
@@ -399,13 +403,6 @@
     return comment.is_anonymous ? 'Anonymous' : comment.author_name
   }
 
-  function estimateReadTimeFromText(excerpt?: string | null): string {
-    const text = excerpt || ''
-    const words = text.trim().split(/\s+/).filter(Boolean).length
-    const minutes = Math.max(1, Math.ceil(words / 40))
-    return `${minutes} min${minutes > 1 ? 's' : ''} read`
-  }
-
   function getCommentIcon(comment: AdminComment) {
     if (comment.author_name === 'Admin') return 'person_shield'
     return comment.is_anonymous ? 'domino_mask' : 'person'
@@ -420,17 +417,14 @@
 
 <nav
   class="fixed top-0 z-40 flex h-15 w-full items-center justify-between border-b border-border-subtle bg-surface-card/60 px-5 font-sans shadow-xs backdrop-blur-lg transition-colors duration-300"
-  aria-label="Admin navigation"
->
+  aria-label="Admin navigation">
   <div class="flex items-center gap-4">
     <a href="/admin" class="flex items-center gap-2">
       <span
         class="material-symbols-rounded text-lg text-copilot select-none"
-        aria-hidden="true">code</span
-      >
+        aria-hidden="true">code</span>
       <span class="text-sm font-bold text-text-primary select-none"
-        >Console</span
-      >
+        >Console</span>
     </a>
   </div>
 
@@ -442,8 +436,7 @@
       size="md"
       onclick={handleLogout}
       disabled={isLoggingOut}
-      isLoading={isLoggingOut}
-    >
+      isLoading={isLoggingOut}>
       Sign out
     </Button>
   </div>
@@ -451,19 +444,16 @@
 
 <main
   id="main-content"
-  class="flex min-h-[calc(100vh-3.75rem)] flex-col pt-15 font-sans"
->
+  class="flex min-h-[calc(100vh-3.75rem)] flex-col pt-15 font-sans">
   <section
     class="mx-auto w-full flex-1 px-6 py-14 md:w-[80%] md:max-w-none lg:w-[50%]"
-    aria-label="Blog posts"
-  >
+    aria-label="Blog posts">
     {#if isLoading}
       <LoadingState label="Loading dashboard data..." size="lg" class="py-20" />
     {:else}
       <div class="mb-6 flex items-center justify-between gap-4">
         <h1
-          class="text-2xl font-bold tracking-tight text-text-primary sm:text-3xl"
-        >
+          class="text-2xl font-bold tracking-tight text-text-primary sm:text-3xl">
           Blog Posts
         </h1>
         <a href="/admin/new">
@@ -485,8 +475,7 @@
                   oninput={e =>
                     filterStore.setSearch((e.target as HTMLInputElement).value)}
                   size="sm"
-                  aria-label="Search posts"
-                />
+                  aria-label="Search posts" />
               </div>
             {/snippet}
 
@@ -499,16 +488,14 @@
                   {value: 'published', label: 'Published'},
                   {value: 'draft', label: 'Draft'}
                 ]}
-                onChange={val => filterStore.setSingleFilter('status', val)}
-              />
+                onChange={val => filterStore.setSingleFilter('status', val)} />
             {/snippet}
 
             {#snippet countSlot()}
               <SearchResultCount
                 count={filteredPosts.length}
                 total={posts.length}
-                itemLabel="posts"
-              />
+                itemLabel="posts" />
             {/snippet}
 
             {#snippet sortSlot()}
@@ -524,16 +511,14 @@
                 currentField={filterStore.sort.field}
                 currentDirection={filterStore.sort.direction}
                 onFieldChange={field => filterStore.setSort(field)}
-                onDirectionToggle={() => filterStore.toggleSortDirection()}
-              />
+                onDirectionToggle={() => filterStore.toggleSortDirection()} />
             {/snippet}
 
             {#snippet chipsSlot()}
               <FilterChipGroup
                 chips={filterStore.activeChips}
                 onRemove={(type, val) => filterStore.removeFilter(type, val)}
-                onClearAll={() => filterStore.clearAllFilters()}
-              />
+                onClearAll={() => filterStore.clearAllFilters()} />
             {/snippet}
           </FilterToolbar>
         </div>
@@ -543,13 +528,11 @@
         <EmptyState
           title="No posts yet"
           description="You haven't published any posts. Create your first article to get started."
-          icon="bi-journal-plus"
-        >
+          icon="bi-journal-plus">
           {#snippet actions()}
             <a href="/admin/new">
               <Button variant="primary" size="sm" leadingIcon="bi-plus-lg"
-                >New post</Button
-              >
+                >New post</Button>
             </a>
           {/snippet}
         </EmptyState>
@@ -557,26 +540,22 @@
         <FilterEmptyState
           title="No matching posts found"
           description="No posts match the current filter or search criteria."
-          onClearFilters={() => filterStore.clearAllFilters()}
-        />
+          onClearFilters={() => filterStore.clearAllFilters()} />
       {:else}
         <div
-          class="boxed-list relative z-0 overflow-visible! text-left"
+          class="boxed-list relative z-0 divide-y divide-border-subtle overflow-visible! rounded-xl border border-border-subtle bg-surface-card text-left"
           role="list"
-          aria-label="Blog posts list"
-        >
+          aria-label="Blog posts list">
           {#each filteredPosts as post (post.id)}
             {@const postComments = getPostComments(post.id)}
             {@const commentCount = postComments.length}
             {@const commentWord = commentCount > 1 ? 'comments' : 'comment'}
             <div
-              class="action-row group relative flex flex-col gap-4 overflow-hidden rounded-xl border border-border-subtle bg-surface-card p-5 text-left transition-all duration-200 hover:bg-surface-hover/40"
-              role="listitem"
-            >
+              class="action-row group relative flex flex-col gap-4 overflow-hidden p-5 text-left transition-all duration-200 hover:bg-surface-hover/40"
+              role="listitem">
               <div class="flex flex-col gap-4 sm:flex-row sm:items-start">
                 <div
-                  class="relative aspect-video w-full shrink-0 animate-pulse overflow-hidden rounded-lg border border-border-subtle bg-surface-subtle/50 select-none sm:w-44 md:w-48"
-                >
+                  class="relative aspect-video w-full shrink-0 animate-pulse overflow-hidden rounded-lg border border-border-subtle bg-surface-subtle/50 select-none sm:w-44 md:w-48">
                   {#if post.banner_path}
                     <img
                       src={getBannerUrl(post.banner_path)}
@@ -588,61 +567,48 @@
                             '.animate-pulse'
                           ) as HTMLElement | null
                         )?.classList.remove('animate-pulse')}
-                      class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
+                      class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                   {:else}
                     <div
-                      class="flex h-full w-full items-center justify-center bg-linear-to-br from-surface-subtle to-surface-card select-none"
-                    >
+                      class="flex h-full w-full items-center justify-center bg-linear-to-br from-surface-subtle to-surface-card select-none">
                       <i
                         class="bi bi-file-earmark-text text-2xl text-text-muted/50"
-                        aria-hidden="true"
-                      ></i>
+                        aria-hidden="true"></i>
                     </div>
                   {/if}
                 </div>
 
                 <div class="flex min-w-0 flex-1 flex-col gap-2 font-sans">
                   <div
-                    class="flex flex-wrap items-center gap-1.5 text-xs font-medium text-text-muted select-none"
-                  >
-                    <span>{formatBlogDate(post.created_at)}</span>
-                    <span aria-hidden="true">&middot;</span>
-                    <span>{estimateReadTimeFromText(post.excerpt)}</span>
-                    <span aria-hidden="true">&middot;</span>
-                    <span
-                      >{formatViewCount(postViewsMap.get(post.id) ?? 0)}</span
-                    >
-                    <span aria-hidden="true">&middot;</span>
+                    class="flex flex-wrap items-center gap-1.5 text-[12px] font-medium text-text-muted select-none">
                     {#if post.published}
                       <span
-                        class="inline-flex items-center gap-1.5 text-xs font-semibold text-text-secondary select-none"
-                      >
-                        <span class="h-1.5 w-1.5 rounded-full bg-success"
-                        ></span>
+                        class="gap-1.5 rounded-sm bg-success-subtle px-1 py-0.5 text-[12px] text-success select-none">
                         Published
                       </span>
                     {:else}
                       <span
-                        class="inline-flex items-center gap-1.5 text-xs font-semibold text-text-muted select-none"
-                      >
-                        <span class="h-1.5 w-1.5 rounded-full bg-warning"
-                        ></span>
+                        class="gap-1.5 rounded-sm bg-warning-subtle px-1 py-0.5 text-[12px] text-warning select-none">
                         Draft
                       </span>
                     {/if}
+                    <span aria-hidden="true">&middot;</span>
+                    <span>{formatBlogDate(post.created_at)}</span>
+                    <span aria-hidden="true">&middot;</span>
+                    <span>{formatReadTime(post.read_time)}</span>
+                    <span aria-hidden="true">&middot;</span>
+                    <span
+                      >{formatViewCount(postViewsMap.get(post.id) ?? 0)}</span>
                   </div>
 
                   <div class="mt-0.5">
                     <h2
-                      class="text-base leading-snug font-bold text-text-primary transition-colors group-hover:text-copilot sm:text-lg"
-                    >
+                      class="text-base leading-snug font-bold text-text-primary transition-colors group-hover:text-copilot sm:text-lg">
                       {post.title}
                     </h2>
                     {#if post.excerpt}
                       <p
-                        class="mt-1 line-clamp-2 text-xs leading-relaxed text-text-muted"
-                      >
+                        class="mt-1 line-clamp-2 text-xs leading-relaxed text-text-muted">
                         {post.excerpt}
                       </p>
                     {/if}
@@ -651,20 +617,17 @@
               </div>
 
               <div
-                class="no-scrollbar mt-1 flex w-full flex-wrap items-center justify-between gap-2 overflow-x-auto border-t border-border-subtle/40 pt-3.5 whitespace-nowrap"
-              >
+                class="no-scrollbar mt-1 flex w-full flex-wrap items-center justify-between gap-2 overflow-x-auto border-t border-border-subtle/40 pt-3.5 whitespace-nowrap">
                 <div class="flex flex-wrap items-center gap-2">
                   <a
                     href="/blog/{post.slug}"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="shrink-0"
-                    aria-label="Read article: {post.title}"
-                  >
+                    aria-label="Read article: {post.title}">
                     <button
                       type="button"
-                      class="hover:bg-copilot-hover inline-flex h-8 shrink-0 cursor-pointer items-center justify-center rounded-lg bg-copilot px-3.5 text-xs font-bold whitespace-nowrap text-text-on-accent shadow-xs transition-colors focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
-                    >
+                      class="hover:bg-copilot-hover inline-flex h-8 shrink-0 cursor-pointer items-center justify-center rounded-lg bg-copilot px-3.5 text-xs font-bold whitespace-nowrap text-text-on-accent shadow-xs transition-colors focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
                       Read article
                     </button>
                   </a>
@@ -672,12 +635,10 @@
                   <a
                     href="/admin/new?id={post.id}"
                     class="shrink-0"
-                    aria-label="Edit post: {post.title}"
-                  >
+                    aria-label="Edit post: {post.title}">
                     <button
                       type="button"
-                      class="inline-flex h-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border-subtle bg-surface-card px-3 text-xs font-semibold whitespace-nowrap text-text-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
-                    >
+                      class="inline-flex h-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border-subtle bg-surface-card px-3 text-xs font-semibold whitespace-nowrap text-text-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
                       Edit
                     </button>
                   </a>
@@ -687,8 +648,7 @@
                     onclick={() => toggleComments(post.id)}
                     aria-expanded={expandedPostIds.has(post.id)}
                     aria-controls="comments-{post.id}"
-                    class="inline-flex h-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border-subtle bg-surface-card px-3 text-xs font-semibold whitespace-nowrap text-text-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
-                  >
+                    class="inline-flex h-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border-subtle bg-surface-card px-3 text-xs font-semibold whitespace-nowrap text-text-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
                     {expandedPostIds.has(post.id) ? 'Hide' : 'Show'}
                     {commentWord} ({commentCount})
                   </button>
@@ -696,8 +656,7 @@
                   <button
                     type="button"
                     onclick={() => togglePublish(post)}
-                    class="inline-flex h-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border-subtle bg-surface-card px-3 text-xs font-semibold whitespace-nowrap text-text-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
-                  >
+                    class="inline-flex h-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border-subtle bg-surface-card px-3 text-xs font-semibold whitespace-nowrap text-text-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
                     {post.published ? 'Unpublish' : 'Publish'}
                   </button>
                 </div>
@@ -705,13 +664,11 @@
                 <button
                   type="button"
                   onclick={() => confirmDeletePost(post)}
-                  class="ml-auto inline-flex h-8 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-[#FE4C25]/40 bg-[#FE4C25]/10 px-3 text-xs font-semibold whitespace-nowrap text-[#FE4C25] transition-colors hover:bg-[#FE4C25] hover:text-white focus-visible:ring-2 focus-visible:ring-[#FE4C25] focus-visible:outline-none"
-                >
+                  class="ml-auto inline-flex h-8 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-[#FE4C25]/40 bg-[#FE4C25]/10 px-3 text-xs font-semibold whitespace-nowrap text-[#FE4C25] transition-colors hover:bg-[#FE4C25] hover:text-white focus-visible:ring-2 focus-visible:ring-[#FE4C25] focus-visible:outline-none">
                   <span
                     class="material-symbols-rounded text-base leading-none select-none"
                     style="font-size: 16px; font-variation-settings: 'wght' 400, 'opsz' 20;"
-                    aria-hidden="true">delete_forever</span
-                  >
+                    aria-hidden="true">delete_forever</span>
                   <span>Delete</span>
                 </button>
               </div>
@@ -719,18 +676,15 @@
               {#if expandedPostIds.has(post.id)}
                 <div
                   id="comments-{post.id}"
-                  class="mt-2 flex w-full flex-col gap-6 border-t border-border-subtle/50 pt-4"
-                >
+                  class="mt-2 flex w-full flex-col gap-6 border-t border-border-subtle/50 pt-4">
                   {#if postComments.length > 0}
                     <CommentThread
                       comments={postComments}
                       {replyTo}
-                      getIcon={getCommentIcon}
-                    >
+                      getIcon={getCommentIcon}>
                       {#snippet actions(comment)}
                         <time datetime={comment.created_at}
-                          >{formatBlogDate(comment.created_at)}</time
-                        >
+                          >{formatBlogDate(comment.created_at)}</time>
                         <span aria-hidden="true">&middot;</span>
                         {#if !comment.is_approved}
                           <Badge variant="warning">Hidden</Badge>
@@ -743,8 +697,7 @@
                               replyTo = comment
                               commentContent = ''
                             }}
-                            class="cursor-pointer font-bold text-text-muted transition-colors hover:text-copilot focus-visible:outline-none"
-                          >
+                            class="cursor-pointer font-bold text-text-muted transition-colors hover:text-copilot focus-visible:outline-none">
                             Reply
                           </button>
                           <span aria-hidden="true">&middot;</span>
@@ -755,8 +708,7 @@
                           aria-label="Delete comment by {getCommentAuthor(
                             comment
                           )}"
-                          class="cursor-pointer font-bold text-[#FE4C25] transition-colors hover:text-[#e03e19] hover:underline focus-visible:outline-none"
-                        >
+                          class="cursor-pointer font-bold text-[#FE4C25] transition-colors hover:text-[#e03e19] hover:underline focus-visible:outline-none">
                           Delete
                         </button>
                       {/snippet}
@@ -765,18 +717,14 @@
                         <form
                           onsubmit={e =>
                             handleAdminSubmit(e, comment.id, post.id)}
-                          class="rounded-xl border border-border-subtle bg-surface-base p-4"
-                        >
+                          class="rounded-xl border border-border-subtle bg-surface-base p-4">
                           <div
-                            class="mb-3 flex items-center justify-between gap-3"
-                          >
+                            class="mb-3 flex items-center justify-between gap-3">
                             <p
-                              class="text-xs font-semibold text-text-secondary"
-                            >
+                              class="text-xs font-semibold text-text-secondary">
                               Replying as Admin to <span
                                 class="font-bold text-text-primary"
-                                >{getCommentAuthor(comment)}</span
-                              >
+                                >{getCommentAuthor(comment)}</span>
                             </p>
                             <Button
                               variant="ghost"
@@ -785,8 +733,7 @@
                               onclick={() => {
                                 replyTo = null
                                 commentContent = ''
-                              }}
-                            >
+                              }}>
                               Cancel
                             </Button>
                           </div>
@@ -796,24 +743,21 @@
                               id="reply-msg-{comment.id}"
                               label="Message"
                               counter="{2000
-                                - commentContent.length} characters left"
-                            >
+                                - commentContent.length} characters left">
                               <Textarea
                                 id="reply-msg-{comment.id}"
                                 required
                                 rows={3}
                                 maxlength={2000}
                                 placeholder="Write your reply…"
-                                bind:value={commentContent}
-                              />
+                                bind:value={commentContent} />
                             </FormField>
                             <div class="flex justify-end">
                               <Button
                                 type="submit"
                                 variant="primary"
                                 size="sm"
-                                isLoading={isSubmitting}
-                              >
+                                isLoading={isSubmitting}>
                                 {isSubmitting ? 'Posting…' : 'Post reply'}
                               </Button>
                             </div>
@@ -823,8 +767,7 @@
                     </CommentThread>
                   {:else}
                     <p
-                      class="py-3 text-center text-xs font-medium text-text-muted italic select-none"
-                    >
+                      class="py-3 text-center text-xs font-medium text-text-muted italic select-none">
                       No comments yet for this post.
                     </p>
                   {/if}
@@ -844,15 +787,13 @@
   description={'Permanently delete "'
     + (postToDelete?.title || '')
     + '"? This cannot be undone.'}
-  onClose={() => (showDeletePostDialog = false)}
->
+  onClose={() => (showDeletePostDialog = false)}>
   {#snippet footer()}
     <Button
       variant="secondary"
       size="md"
       showEscHint
-      onclick={() => (showDeletePostDialog = false)}
-    >
+      onclick={() => (showDeletePostDialog = false)}>
       Cancel
     </Button>
     <Button variant="destructive" size="md" onclick={executeDeletePost}>
@@ -865,15 +806,13 @@
   bind:isOpen={showDeleteCommentDialog}
   title="Delete comment?"
   description="Permanently delete this comment and all its replies? This cannot be undone."
-  onClose={() => (showDeleteCommentDialog = false)}
->
+  onClose={() => (showDeleteCommentDialog = false)}>
   {#snippet footer()}
     <Button
       variant="secondary"
       size="md"
       showEscHint
-      onclick={() => (showDeleteCommentDialog = false)}
-    >
+      onclick={() => (showDeleteCommentDialog = false)}>
       Cancel
     </Button>
     <Button variant="destructive" size="md" onclick={executeDeleteComment}>

@@ -31,11 +31,9 @@
   class={cn(
     'relative flex flex-col gap-3 rounded-2xl border border-border-subtle bg-surface/60 p-5 shadow-xs backdrop-blur-lg transition-all select-none hover:border-border-strong hover:bg-surface-hover sm:p-6',
     className
-  )}
->
+  )}>
   <div
-    class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between"
-  >
+    class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
     <div>
       <h3 class="text-base font-bold text-text-primary">{role}</h3>
       <span class="text-xs font-semibold text-copilot">{organization}</span>
@@ -45,8 +43,7 @@
     </div>
 
     <span
-      class="mt-1 inline-flex shrink-0 items-center self-start rounded-full border border-border-subtle bg-surface px-2.5 py-0.5 font-mono text-[11px] font-medium text-text-secondary sm:mt-0 sm:self-auto"
-    >
+      class="mt-1 inline-flex shrink-0 items-center self-start rounded-full border border-border-subtle bg-surface px-2.5 py-0.5 font-mono text-[11px] font-medium text-text-secondary sm:mt-0 sm:self-auto">
       {period}
     </span>
   </div>

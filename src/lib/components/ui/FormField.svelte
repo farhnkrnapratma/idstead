@@ -38,8 +38,7 @@
     </label>
     {#if counter}
       <span class="font-mono text-[10px] text-text-muted select-none"
-        >{counter}</span
-      >
+        >{counter}</span>
     {/if}
   </div>
 

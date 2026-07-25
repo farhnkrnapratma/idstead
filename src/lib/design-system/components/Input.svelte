@@ -41,8 +41,7 @@
 <div class={cn('relative flex items-center', fullWidth ? 'w-full' : '')}>
   {#if leadingIcon}
     <div
-      class="pointer-events-none absolute left-3 z-10 flex items-center text-text-muted"
-    >
+      class="pointer-events-none absolute left-3 z-10 flex items-center text-text-muted">
       <i class="bi {leadingIcon} text-sm" aria-hidden="true"></i>
     </div>
   {:else if leadingSlot}
@@ -64,13 +63,11 @@
       valid && !error ? 'border-copilot! ring-copilot/20!' : '',
       className
     )}
-    {...restProps}
-  />
+    {...restProps} />
 
   {#if trailingIcon}
     <div
-      class="pointer-events-none absolute right-3 z-10 flex items-center text-text-muted"
-    >
+      class="pointer-events-none absolute right-3 z-10 flex items-center text-text-muted">
       <i class="bi {trailingIcon} text-sm" aria-hidden="true"></i>
     </div>
   {:else if trailingSlot}

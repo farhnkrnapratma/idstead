@@ -38,22 +38,19 @@
     class={cn(
       'group flex items-center justify-between gap-3 px-4 py-3.5 transition-colors hover:bg-surface-hover',
       className
-    )}
-  >
+    )}>
     <div class="flex min-w-0 shrink-0 items-center gap-3.5">
       {#if icon}
         <i
           class="bi {icon} text-lg {iconColor} transition-colors group-hover:text-copilot"
-          aria-hidden="true"
-        ></i>
+          aria-hidden="true"></i>
       {/if}
       <div class="flex min-w-0 flex-col">
         <span class="truncate text-sm font-semibold text-text-primary"
-          >{title}</span
-        >
+          >{title}</span>
         {#if subtitle}
-          <span class="mt-0.5 truncate text-xs text-text-muted">{subtitle}</span
-          >
+          <span class="mt-0.5 truncate text-xs text-text-muted"
+            >{subtitle}</span>
         {/if}
       </div>
     </div>
@@ -61,8 +58,7 @@
       {@render children?.()}
       <i
         class="bi bi-chevron-right shrink-0 text-xs text-text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-copilot"
-        aria-hidden="true"
-      ></i>
+        aria-hidden="true"></i>
     </div>
   </a>
 {:else}
@@ -70,19 +66,17 @@
     class={cn(
       'flex items-center justify-between gap-3 px-4 py-3.5 transition-colors hover:bg-surface-hover',
       className
-    )}
-  >
+    )}>
     <div class="flex min-w-0 shrink-0 items-center gap-3.5">
       {#if icon}
         <i class="bi {icon} text-lg {iconColor}" aria-hidden="true"></i>
       {/if}
       <div class="flex min-w-0 flex-col">
         <span class="truncate text-sm font-semibold text-text-primary"
-          >{title}</span
-        >
+          >{title}</span>
         {#if subtitle}
-          <span class="mt-0.5 truncate text-xs text-text-muted">{subtitle}</span
-          >
+          <span class="mt-0.5 truncate text-xs text-text-muted"
+            >{subtitle}</span>
         {/if}
       </div>
     </div>

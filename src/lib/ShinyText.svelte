@@ -45,7 +45,6 @@
 		--anim-direction: {yoyo ? 'alternate' : 'normal'};
 		--anim-name: {direction === 'left' ? 'shiny-text-left' : 'shiny-text-right'};
 	"
-  {...restProps}
->
+  {...restProps}>
   {text}
 </span>

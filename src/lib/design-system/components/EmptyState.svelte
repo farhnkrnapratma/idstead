@@ -24,8 +24,7 @@
   class={cn(
     'flex flex-col items-center justify-center rounded-2xl border border-dashed border-border-default bg-surface/30 p-8 text-center select-none',
     className
-  )}
->
+  )}>
   <div class="mb-3 flex items-center justify-center text-text-on-accent">
     <i class="bi {icon} text-2xl" aria-hidden="true"></i>
   </div>

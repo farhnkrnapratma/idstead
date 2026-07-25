@@ -28,14 +28,13 @@
   class={cn(
     'flex flex-col items-center justify-center gap-3 p-8 text-center select-none',
     className
-  )}
->
+  )}>
   <div
     class={cn(
       'animate-spin rounded-full border-border-subtle border-t-copilot',
       sizeStyles[size]
-    )}
-  ></div>
+    )}>
+  </div>
   {#if label}
     <span class="text-xs font-medium text-text-muted">{label}</span>
   {/if}

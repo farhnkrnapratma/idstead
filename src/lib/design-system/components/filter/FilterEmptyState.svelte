@@ -26,8 +26,7 @@
       variant="secondary"
       size="md"
       leadingIcon="bi-x-circle"
-      onclick={onClearFilters}
-    >
+      onclick={onClearFilters}>
       {clearLabel}
     </Button>
   {/snippet}

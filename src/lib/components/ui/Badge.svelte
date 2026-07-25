@@ -31,7 +31,6 @@
 <span
   class="inline-flex items-center gap-1 rounded-md font-semibold tracking-wide select-none {variantStyles[
     variant
-  ]} {sizeStyles[size]} {className}"
->
+  ]} {sizeStyles[size]} {className}">
   {@render children?.()}
 </span>

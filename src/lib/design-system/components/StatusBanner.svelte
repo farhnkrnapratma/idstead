@@ -38,8 +38,7 @@
     'flex items-start gap-3 rounded-2xl border p-4 text-xs shadow-xs backdrop-blur-md select-none',
     typeStyles[type],
     className
-  )}
->
+  )}>
   <i class="bi {iconStyles[type]} mt-0.5 shrink-0 text-base" aria-hidden="true"
   ></i>
   <div class="flex flex-col gap-0.5">

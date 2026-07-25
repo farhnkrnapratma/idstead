@@ -179,14 +179,12 @@
   <title>Feedback — Farhan Kurnia Pratama</title>
   <meta
     name="description"
-    content="Send feedback, suggestions, or comments directly to Farhan Kurnia Pratama."
-  />
+    content="Send feedback, suggestions, or comments directly to Farhan Kurnia Pratama." />
   <link rel="canonical" href="https://fkp.my.id/feedback" />
   <meta property="og:title" content="Feedback — Farhan Kurnia Pratama" />
   <meta
     property="og:description"
-    content="Send feedback, suggestions, or comments directly to Farhan Kurnia Pratama."
-  />
+    content="Send feedback, suggestions, or comments directly to Farhan Kurnia Pratama." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://fkp.my.id/feedback" />
   <meta property="og:image" content="https://fkp.my.id/hero.png" />
@@ -194,8 +192,7 @@
   <meta name="twitter:title" content="Feedback — Farhan Kurnia Pratama" />
   <meta
     name="twitter:description"
-    content="Send feedback, suggestions, or comments directly to Farhan Kurnia Pratama."
-  />
+    content="Send feedback, suggestions, or comments directly to Farhan Kurnia Pratama." />
   <meta name="twitter:image" content="https://fkp.my.id/hero.png" />
 </svelte:head>
 
@@ -203,12 +200,10 @@
 
 <nav
   class="fixed top-0 z-40 flex h-15 w-full items-center justify-between border-b border-border-subtle bg-surface-card/60 px-3 font-sans shadow-xs backdrop-blur-lg transition-colors duration-300 sm:px-5"
-  aria-label="Feedback page navigation"
->
+  aria-label="Feedback page navigation">
   <a
     href="/"
-    class="inline-flex h-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
-  >
+    class="inline-flex h-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
     Back to Home
   </a>
 
@@ -220,24 +215,20 @@
 
 <main
   id="main-content"
-  class="flex min-h-[calc(100vh-3.75rem)] flex-col pt-15 font-sans"
->
+  class="flex min-h-[calc(100vh-3.75rem)] flex-col pt-15 font-sans">
   <section
-    class="relative z-10 mx-auto flex w-full flex-col gap-8 px-6 py-12 md:w-[80%] lg:w-[50%]"
-  >
+    class="relative z-10 mx-auto flex w-full flex-col gap-8 px-6 py-12 md:w-[80%] lg:w-[50%]">
     <div
-      class="pointer-events-none absolute top-12.5 left-[50%] z-0 h-80 w-[320px] translate-x-[-50%] rounded-full bg-copilot/10 blur-[80px]"
-    ></div>
+      class="pointer-events-none absolute top-12.5 left-[50%] z-0 h-80 w-[320px] translate-x-[-50%] rounded-full bg-copilot/10 blur-[80px]">
+    </div>
 
     <div class="relative z-10 text-center select-none">
       <h1
-        class="text-3xl font-bold tracking-tight text-text-primary md:text-4xl lg:text-5xl"
-      >
+        class="text-3xl font-bold tracking-tight text-text-primary md:text-4xl lg:text-5xl">
         Your feedback matters
       </h1>
       <p
-        class="mx-auto mt-4 max-w-xl text-base leading-relaxed text-text-secondary"
-      >
+        class="mx-auto mt-4 max-w-xl text-base leading-relaxed text-text-secondary">
         Your valuable feedback helps improve the quality of articles and ensures
         the website's technical systems run reliably. Please let us know if you
         spot any issues.
@@ -251,52 +242,42 @@
           <li class="flex items-start gap-2">
             <i
               class="bi bi-check-circle-fill mt-0.5 text-copilot"
-              aria-hidden="true"
-            ></i>
+              aria-hidden="true"></i>
             <span
               ><strong>Writing errors:</strong> Grammatical mistakes, typos, spelling,
-              or poor phrasing.</span
-            >
+              or poor phrasing.</span>
           </li>
           <li class="flex items-start gap-2">
             <i
               class="bi bi-check-circle-fill mt-0.5 text-copilot"
-              aria-hidden="true"
-            ></i>
+              aria-hidden="true"></i>
             <span
               ><strong>Technical inaccuracies:</strong> Code snippets that don't compile,
-              wrong command usages, or faulty explanation logic.</span
-            >
+              wrong command usages, or faulty explanation logic.</span>
           </li>
           <li class="flex items-start gap-2">
             <i
               class="bi bi-check-circle-fill mt-0.5 text-copilot"
-              aria-hidden="true"
-            ></i>
+              aria-hidden="true"></i>
             <span
               ><strong>Outdated information:</strong> Deprecated package API calls,
-              tools that are no longer active, or outdated tutorial steps.</span
-            >
+              tools that are no longer active, or outdated tutorial steps.</span>
           </li>
           <li class="flex items-start gap-2">
             <i
               class="bi bi-check-circle-fill mt-0.5 text-copilot"
-              aria-hidden="true"
-            ></i>
+              aria-hidden="true"></i>
             <span
               ><strong>Broken links:</strong> 404 links, invalid references, or missing
-              static download files.</span
-            >
+              static download files.</span>
           </li>
           <li class="flex items-start gap-2">
             <i
               class="bi bi-check-circle-fill mt-0.5 text-copilot"
-              aria-hidden="true"
-            ></i>
+              aria-hidden="true"></i>
             <span
               ><strong>Website issues:</strong> UI layout bugs, visual display mistakes,
-              broken styling, accessibility complaints, or slow loading times.</span
-            >
+              broken styling, accessibility complaints, or slow loading times.</span>
           </li>
         </ul>
       </div>
@@ -309,13 +290,11 @@
       method="POST"
       onsubmit={validateForm}
       class="relative z-10 flex w-full flex-col gap-3 rounded-2xl border border-border-subtle bg-surface-card/60 p-6 text-left shadow-xs backdrop-blur-lg transition-colors duration-300"
-      autocomplete="off"
-    >
+      autocomplete="off">
       <input
         type="hidden"
         name="_subject"
-        value="New feedback report from website!"
-      />
+        value="New feedback report from website!" />
       <input type="hidden" name="_template" value="table" />
       <input type="hidden" name="_captcha" value="true" />
       <input type="hidden" name="_url" value="https://fkp.my.id/feedback" />
@@ -332,8 +311,7 @@
         label="Name"
         required
         error={formErrors.name}
-        valid={formValid.name}
-      >
+        valid={formValid.name}>
         <Input
           type="text"
           id="form-name"
@@ -348,8 +326,7 @@
             formErrors.name = ''
             formValid.name = false
             validateName()
-          }}
-        />
+          }} />
       </FormField>
 
       <FormField
@@ -357,8 +334,7 @@
         label="Email"
         required
         error={formErrors.email}
-        valid={formValid.email}
-      >
+        valid={formValid.email}>
         <Input
           type="email"
           id="form-email"
@@ -373,8 +349,7 @@
             formErrors.email = ''
             formValid.email = false
             validateEmail()
-          }}
-        />
+          }} />
       </FormField>
 
       <FormField
@@ -382,8 +357,7 @@
         label="Which URL/page contains the issue?"
         required
         error={formErrors.url}
-        valid={formValid.url}
-      >
+        valid={formValid.url}>
         <Input
           type="text"
           id="form-url"
@@ -397,8 +371,7 @@
             formErrors.url = ''
             formValid.url = false
             validateUrl()
-          }}
-        />
+          }} />
       </FormField>
 
       <FormField
@@ -407,8 +380,7 @@
         required
         error={formErrors.message}
         valid={formValid.message}
-        counter="{2000 - formMessage.length} left"
-      >
+        counter="{2000 - formMessage.length} left">
         <Textarea
           id="form-message"
           name="message"
@@ -422,8 +394,7 @@
             formErrors.message = ''
             formValid.message = false
             validateMessage()
-          }}
-        />
+          }} />
       </FormField>
 
       <div class="mt-2 flex justify-end select-none">
@@ -441,15 +412,13 @@
   bind:isOpen={showSubmitDialog}
   title="Submit feedback?"
   description="Are you sure you want to submit this feedback report?"
-  onClose={() => (showSubmitDialog = false)}
->
+  onClose={() => (showSubmitDialog = false)}>
   {#snippet footer()}
     <Button
       variant="secondary"
       size="md"
       showEscHint
-      onclick={() => (showSubmitDialog = false)}
-    >
+      onclick={() => (showSubmitDialog = false)}>
       Cancel
     </Button>
     <Button variant="primary" size="md" onclick={executeSubmit}>

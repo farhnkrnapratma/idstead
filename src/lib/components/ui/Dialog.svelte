@@ -87,8 +87,7 @@
       type="button"
       class="absolute inset-0 cursor-default bg-overlay-backdrop backdrop-blur-sm"
       aria-label="Close modal"
-      onclick={() => closeOnBackdrop && onClose()}
-    ></button>
+      onclick={() => closeOnBackdrop && onClose()}></button>
 
     <div
       bind:this={dialogRef}
@@ -97,8 +96,7 @@
       tabindex="-1"
       aria-labelledby="dialog-title"
       aria-describedby={description ? 'dialog-desc' : undefined}
-      class="relative z-10 w-full max-w-md transform rounded-2xl border border-border-subtle bg-surface-elevated p-6 shadow-2xl transition-all select-none focus:outline-none"
-    >
+      class="relative z-10 w-full max-w-md transform rounded-2xl border border-border-subtle bg-surface-elevated p-6 shadow-2xl transition-all select-none focus:outline-none">
       <div class="flex flex-col gap-1 text-left">
         <h2 id="dialog-title" class="text-base font-bold text-text-primary">
           {title}
@@ -106,8 +104,7 @@
         {#if description}
           <p
             id="dialog-desc"
-            class="mt-1 text-xs leading-relaxed text-text-secondary"
-          >
+            class="mt-1 text-xs leading-relaxed text-text-secondary">
             {description}
           </p>
         {/if}

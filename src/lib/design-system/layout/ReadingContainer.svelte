@@ -15,7 +15,6 @@
   class={cn(
     'mx-auto w-full max-w-2xl px-4 py-10 font-sans leading-relaxed sm:px-6 md:py-16',
     className
-  )}
->
+  )}>
   {@render children?.()}
 </article>

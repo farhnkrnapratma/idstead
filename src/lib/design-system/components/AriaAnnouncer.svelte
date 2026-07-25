@@ -19,7 +19,6 @@
   role="status"
   aria-live={politeness}
   aria-atomic="true"
-  class={cn('sr-only', className)}
->
+  class={cn('sr-only', className)}>
   {message}
 </div>

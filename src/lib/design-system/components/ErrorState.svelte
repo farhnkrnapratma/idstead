@@ -28,11 +28,9 @@
   class={cn(
     'flex flex-col items-center justify-center rounded-2xl border border-danger/30 bg-danger-subtle/10 p-8 text-center select-none',
     className
-  )}
->
+  )}>
   <div
-    class="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-danger-subtle/30 text-danger"
-  >
+    class="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-danger-subtle/30 text-danger">
     <i class="bi {icon} text-2xl" aria-hidden="true"></i>
   </div>
   <h3 class="text-sm font-bold text-text-primary">{title}</h3>
@@ -46,8 +44,7 @@
         variant="secondary"
         size="sm"
         leadingIcon="bi-arrow-clockwise"
-        onclick={onRetry}
-      >
+        onclick={onRetry}>
         {retryLabel}
       </Button>
     </div>

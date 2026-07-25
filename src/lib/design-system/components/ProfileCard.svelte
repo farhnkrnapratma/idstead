@@ -26,13 +26,11 @@
   class={cn(
     'flex flex-col gap-4 rounded-2xl border border-border-subtle bg-surface/60 p-5 shadow-xs backdrop-blur-lg select-none sm:p-6',
     className
-  )}
->
+  )}>
   <div class="flex items-center gap-4">
     {#if avatarUrl}
       <div
-        class="relative h-12 w-12 shrink-0 animate-pulse overflow-hidden rounded-full border border-border-default bg-surface-card/60"
-      >
+        class="relative h-12 w-12 shrink-0 animate-pulse overflow-hidden rounded-full border border-border-default bg-surface-card/60">
         <img
           src={avatarUrl}
           alt={name}
@@ -41,13 +39,11 @@
             (
               e.currentTarget.closest('.animate-pulse') as HTMLElement | null
             )?.classList.remove('animate-pulse')}
-          class="h-full w-full object-cover shadow-xs"
-        />
+          class="h-full w-full object-cover shadow-xs" />
       </div>
     {:else}
       <div
-        class="flex h-12 w-12 items-center justify-center rounded-full border border-border-default bg-surface-subtle text-base font-bold text-copilot"
-      >
+        class="flex h-12 w-12 items-center justify-center rounded-full border border-border-default bg-surface-subtle text-base font-bold text-copilot">
         {name.charAt(0)}
       </div>
     {/if}

@@ -843,13 +843,11 @@
   {#if isDark}
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css"
-    />
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
   {:else}
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css"
-    />
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
   {/if}
 </svelte:head>
 
@@ -857,13 +855,11 @@
 
 <nav
   class="fixed top-0 z-40 flex h-15 w-full items-center justify-between border-b border-border-subtle bg-surface-card/60 px-5 font-sans shadow-xs backdrop-blur-lg transition-colors duration-300"
-  aria-label="Editor navigation"
->
+  aria-label="Editor navigation">
   <button
     type="button"
     onclick={handleCancelClick}
-    class="inline-flex h-8 cursor-pointer items-center justify-center rounded-lg border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
-  >
+    class="inline-flex h-8 cursor-pointer items-center justify-center rounded-lg border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
     Back to Admin
   </button>
 
@@ -874,14 +870,12 @@
 
 <main
   id="main-content"
-  class="flex min-h-[calc(100vh-3.75rem)] flex-col pt-15 font-sans"
->
+  class="flex min-h-[calc(100vh-3.75rem)] flex-col pt-15 font-sans">
   {#if isCheckingAuth}
     <LoadingState
       label="Verifying credentials…"
       size="lg"
-      class="flex-1 py-20"
-    />
+      class="flex-1 py-20" />
   {:else}
     <section class="mx-auto w-full max-w-4xl flex-1 px-6 py-10">
       {#if errorMessage}
@@ -890,8 +884,7 @@
 
       <form onsubmit={e => e.preventDefault()} class="flex flex-col gap-4">
         <div
-          class="rounded-2xl border border-border-subtle bg-surface-card/45 p-6 text-left shadow-xs backdrop-blur-lg transition-colors duration-300"
-        >
+          class="rounded-2xl border border-border-subtle bg-surface-card/45 p-6 text-left shadow-xs backdrop-blur-lg transition-colors duration-300">
           <h2 class="mb-4 text-base font-bold text-text-primary select-none">
             {isEditMode ? 'Edit post details' : 'Post details'}
           </h2>
@@ -900,21 +893,18 @@
             <div class="flex flex-col gap-2 lg:col-span-5">
               <label
                 for="post-banner"
-                class="text-xs font-bold text-text-secondary select-none"
-              >
+                class="text-xs font-bold text-text-secondary select-none">
                 Banner image
               </label>
 
               <div
-                class="group relative flex aspect-2/1 w-full items-center justify-center overflow-hidden rounded-lg border border-border-subtle bg-surface-base select-none"
-              >
+                class="group relative flex aspect-2/1 w-full items-center justify-center overflow-hidden rounded-lg border border-border-subtle bg-surface-base select-none">
                 {#if bannerPreview}
                   <img
                     src={bannerPreview}
                     alt="Banner preview"
                     loading="lazy"
-                    class="h-full w-full object-cover"
-                  />
+                    class="h-full w-full object-cover" />
                   <button
                     type="button"
                     onclick={() => {
@@ -923,17 +913,14 @@
                       bannerPath = null
                     }}
                     class="absolute top-2 right-2 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-white/20 bg-black/70 text-white transition-colors hover:bg-black/90"
-                    aria-label="Remove banner"
-                  >
+                    aria-label="Remove banner">
                     <span
                       class="material-symbols-rounded text-base leading-none"
-                      >close</span
-                    >
+                      >close</span>
                   </button>
                 {:else}
                   <div
-                    class="flex flex-col items-center gap-2 text-text-muted/65"
-                  >
+                    class="flex flex-col items-center gap-2 text-text-muted/65">
                     <i class="bi bi-image text-3xl"></i>
                     <span class="text-[10px]">No banner uploaded</span>
                   </div>
@@ -945,19 +932,16 @@
                 id="post-banner"
                 accept="image/png,image/jpeg,image/webp"
                 onchange={handleBannerChange}
-                class="mt-2 block w-full text-xs text-text-secondary file:mr-4 file:cursor-pointer file:rounded-lg file:border file:border-border-subtle file:bg-surface-card file:px-4 file:py-2 file:text-xs file:font-semibold file:text-text-primary hover:file:bg-surface-hover focus:outline-2 focus:outline-copilot"
-              />
+                class="mt-2 block w-full text-xs text-text-secondary file:mr-4 file:cursor-pointer file:rounded-lg file:border file:border-border-subtle file:bg-surface-card file:px-4 file:py-2 file:text-xs file:font-semibold file:text-text-primary hover:file:bg-surface-hover focus:outline-2 focus:outline-copilot" />
 
               {#if bannerError}
                 <div
                   id="post-banner-fb"
                   aria-live="polite"
-                  class="mt-1 text-xs leading-none font-medium"
-                >
+                  class="mt-1 text-xs leading-none font-medium">
                   <span
                     role="alert"
-                    class="flex items-center gap-1 text-danger"
-                  >
+                    class="flex items-center gap-1 text-danger">
                     <i class="bi bi-exclamation-circle-fill"></i>{bannerError}
                   </span>
                 </div>
@@ -971,8 +955,7 @@
                 required
                 error={titleError}
                 valid={titleValid}
-                counter="{60 - title.length} left"
-              >
+                counter="{60 - title.length} left">
                 <Input
                   type="text"
                   id="post-title"
@@ -986,8 +969,7 @@
                     titleError = ''
                     titleValid = false
                     validateTitleField()
-                  }}
-                />
+                  }} />
               </FormField>
 
               <FormField
@@ -996,8 +978,7 @@
                 required
                 error={excerptError}
                 valid={excerptValid}
-                counter="{250 - excerpt.length} left"
-              >
+                counter="{250 - excerpt.length} left">
                 <Textarea
                   id="post-excerpt"
                   rows={3}
@@ -1011,8 +992,7 @@
                     excerptError = ''
                     excerptValid = false
                     validateExcerptField()
-                  }}
-                />
+                  }} />
               </FormField>
             </div>
           </div>
@@ -1020,11 +1000,9 @@
 
         <div class="boxed-list flex flex-col overflow-hidden text-left">
           <div
-            class="flex items-center border-b border-border-subtle bg-surface-card/10 px-4 py-2.5 select-none"
-          >
+            class="flex items-center border-b border-border-subtle bg-surface-card/10 px-4 py-2.5 select-none">
             <div
-              class="inline-flex gap-0.5 rounded-lg border border-border-subtle bg-surface-switcher p-1"
-            >
+              class="inline-flex gap-0.5 rounded-lg border border-border-subtle bg-surface-switcher p-1">
               <button
                 type="button"
                 onclick={() => (activeTab = 'editor')}
@@ -1033,8 +1011,7 @@
                   activeTab === 'editor'
                 ) ?
                   'border border-border-subtle/10 bg-surface-switcher-active text-text-primary shadow-xs'
-                : 'text-text-secondary hover:bg-surface-hover/30 hover:text-text-primary'}"
-              >
+                : 'text-text-secondary hover:bg-surface-hover/30 hover:text-text-primary'}">
                 Edit
               </button>
               <button
@@ -1045,8 +1022,7 @@
                   activeTab === 'preview'
                 ) ?
                   'border border-border-subtle/10 bg-surface-switcher-active text-text-primary shadow-xs'
-                : 'text-text-secondary hover:bg-surface-hover/30 hover:text-text-primary'}"
-              >
+                : 'text-text-secondary hover:bg-surface-hover/30 hover:text-text-primary'}">
                 Preview
               </button>
             </div>
@@ -1055,8 +1031,7 @@
               <div
                 role="status"
                 aria-live="polite"
-                class="flex items-center pr-1.5 text-xs font-medium text-text-muted"
-              >
+                class="flex items-center pr-1.5 text-xs font-medium text-text-muted">
                 {#if autoSaveStatus === 'saving'}
                   <span class="inline-flex items-center gap-1.5">
                     <svg
@@ -1064,14 +1039,12 @@
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
-                      aria-hidden="true"
-                    >
+                      aria-hidden="true">
                       <circle
                         class="stroke-copilot stroke-3 opacity-25"
                         cx="12"
                         cy="12"
-                        r="10"
-                      ></circle>
+                        r="10"></circle>
                       <path
                         class="fill-copilot opacity-75"
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
@@ -1083,8 +1056,7 @@
                   <span class="inline-flex items-center gap-1.5">
                     <span
                       class="material-symbols-rounded text-[13px] text-text-muted"
-                      aria-hidden="true">cloud_done</span
-                    >
+                      aria-hidden="true">cloud_done</span>
                     Saved
                   </span>
                 {/if}
@@ -1100,16 +1072,14 @@
                   }}
                   class="inline-flex h-8 cursor-pointer items-center justify-between gap-1.5 rounded-lg border border-border-subtle bg-surface-card px-3 text-xs font-medium text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
                   aria-haspopup="true"
-                  aria-expanded={indentModeDropdownOpen}
-                >
+                  aria-expanded={indentModeDropdownOpen}>
                   {indentMode === 'spaces' ? 'Spaces' : 'Tabs'}
                   <span
                     class="inline-flex h-3.5 w-3.5 shrink-0 origin-center items-center justify-center text-text-muted transition-transform duration-200 ease-out {(
                       indentModeDropdownOpen
                     ) ?
                       'rotate-180'
-                    : ''}"
-                  >
+                    : ''}">
                     <i class="bi bi-chevron-down text-[9px] leading-none"></i>
                   </span>
                 </button>
@@ -1117,12 +1087,10 @@
                   <button
                     class="fixed inset-0 z-40 cursor-default"
                     onclick={() => (indentModeDropdownOpen = false)}
-                    aria-label="Close menu"
-                  ></button>
+                    aria-label="Close menu"></button>
                   <div
                     role="menu"
-                    class="absolute top-8.5 right-0 z-50 flex min-w-30 flex-col rounded-lg border border-border-subtle bg-surface-elevated py-1 text-xs shadow-lg"
-                  >
+                    class="absolute top-8.5 right-0 z-50 flex min-w-30 flex-col rounded-lg border border-border-subtle bg-surface-elevated py-1 text-xs shadow-lg">
                     {#each ['spaces', 'tabs'] as const as mode (mode)}
                       <button
                         type="button"
@@ -1131,8 +1099,7 @@
                           indentMode = mode
                           indentModeDropdownOpen = false
                         }}
-                        class="flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-left text-xs text-text-primary transition-colors hover:bg-surface-hover"
-                      >
+                        class="flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-left text-xs text-text-primary transition-colors hover:bg-surface-hover">
                         <span>{mode === 'spaces' ? 'Spaces' : 'Tabs'}</span>
                         {#if indentMode === mode}
                           <i class="bi bi-check text-copilot"></i>
@@ -1153,16 +1120,14 @@
                   }}
                   class="inline-flex h-8 cursor-pointer items-center justify-between gap-1.5 rounded-lg border border-border-subtle bg-surface-card px-3 text-xs font-medium text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
                   aria-haspopup="true"
-                  aria-expanded={indentSizeDropdownOpen}
-                >
+                  aria-expanded={indentSizeDropdownOpen}>
                   {indentSize}
                   <span
                     class="inline-flex h-3.5 w-3.5 shrink-0 origin-center items-center justify-center text-text-muted transition-transform duration-200 ease-out {(
                       indentSizeDropdownOpen
                     ) ?
                       'rotate-180'
-                    : ''}"
-                  >
+                    : ''}">
                     <i class="bi bi-chevron-down text-[9px] leading-none"></i>
                   </span>
                 </button>
@@ -1170,12 +1135,10 @@
                   <button
                     class="fixed inset-0 z-40 cursor-default"
                     onclick={() => (indentSizeDropdownOpen = false)}
-                    aria-label="Close menu"
-                  ></button>
+                    aria-label="Close menu"></button>
                   <div
                     role="menu"
-                    class="absolute top-8.5 right-0 z-50 flex min-w-20 flex-col rounded-lg border border-border-subtle bg-surface-elevated py-1 text-xs shadow-lg"
-                  >
+                    class="absolute top-8.5 right-0 z-50 flex min-w-20 flex-col rounded-lg border border-border-subtle bg-surface-elevated py-1 text-xs shadow-lg">
                     {#each [2, 4, 8] as size (size)}
                       <button
                         type="button"
@@ -1184,8 +1147,7 @@
                           indentSize = size
                           indentSizeDropdownOpen = false
                         }}
-                        class="flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-left text-xs text-text-primary transition-colors hover:bg-surface-hover"
-                      >
+                        class="flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-left text-xs text-text-primary transition-colors hover:bg-surface-hover">
                         <span>{size}</span>
                         {#if indentSize === size}
                           <i class="bi bi-check text-copilot"></i>
@@ -1206,16 +1168,14 @@
                   }}
                   class="inline-flex h-8 cursor-pointer items-center justify-between gap-1.5 rounded-lg border border-border-subtle bg-surface-card px-3 text-xs font-medium text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
                   aria-haspopup="true"
-                  aria-expanded={wrapModeDropdownOpen}
-                >
+                  aria-expanded={wrapModeDropdownOpen}>
                   {lineWrapMode === 'soft' ? 'Soft wrap' : 'No wrap'}
                   <span
                     class="inline-flex h-3.5 w-3.5 shrink-0 origin-center items-center justify-center text-text-muted transition-transform duration-200 ease-out {(
                       wrapModeDropdownOpen
                     ) ?
                       'rotate-180'
-                    : ''}"
-                  >
+                    : ''}">
                     <i class="bi bi-chevron-down text-[9px] leading-none"></i>
                   </span>
                 </button>
@@ -1223,12 +1183,10 @@
                   <button
                     class="fixed inset-0 z-40 cursor-default"
                     onclick={() => (wrapModeDropdownOpen = false)}
-                    aria-label="Close menu"
-                  ></button>
+                    aria-label="Close menu"></button>
                   <div
                     role="menu"
-                    class="absolute top-8.5 right-0 z-50 flex min-w-30 flex-col rounded-lg border border-border-subtle bg-surface-elevated py-1 text-xs shadow-lg"
-                  >
+                    class="absolute top-8.5 right-0 z-50 flex min-w-30 flex-col rounded-lg border border-border-subtle bg-surface-elevated py-1 text-xs shadow-lg">
                     {#each ['soft', 'none'] as const as mode (mode)}
                       <button
                         type="button"
@@ -1237,8 +1195,7 @@
                           lineWrapMode = mode
                           wrapModeDropdownOpen = false
                         }}
-                        class="flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-left text-xs text-text-primary transition-colors hover:bg-surface-hover"
-                      >
+                        class="flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-left text-xs text-text-primary transition-colors hover:bg-surface-hover">
                         <span>{mode === 'soft' ? 'Soft wrap' : 'No wrap'}</span>
                         {#if lineWrapMode === mode}
                           <i class="bi bi-check text-copilot"></i>
@@ -1255,8 +1212,7 @@
             {#if activeTab === 'editor'}
               <div class="flex w-full flex-row items-stretch overflow-hidden">
                 <div
-                  class="editor-line-numbers border-r border-border-subtle/20 bg-surface-card/10 pt-5 pb-5 select-none"
-                >
+                  class="editor-line-numbers border-r border-border-subtle/20 bg-surface-card/10 pt-5 pb-5 select-none">
                   {#each Array.from({length: lineCount}).keys() as i (i)}
                     <div
                       class="line-num-item pr-3.5 pl-4 text-right transition-colors {(
@@ -1266,8 +1222,7 @@
                       : 'text-text-muted/40'}"
                       style={lineWrapMode === 'soft' && lineHeights[i] ?
                         `height: ${lineHeights[i]}px !important;`
-                      : ''}
-                    >
+                      : ''}>
                       {i + 1}
                     </div>
                   {/each}
@@ -1283,8 +1238,7 @@
                     : 'overflow-x-auto! break-normal! whitespace-pre!'}"><code
                       class="whitespace-inherit! break-inherit! overflow-wrap-inherit! language-markdown m-0! block! bg-transparent! p-0!"
                       >{#each splitHighlightedHtml(highlightedMarkdown) as lineHtml, i (i)}<div
-                          class="editor-code-line whitespace-inherit! break-inherit! overflow-wrap-inherit! m-0! p-0!">{@html lineHtml}</div>{/each}</code
-                    ></pre>
+                          class="editor-code-line whitespace-inherit! break-inherit! overflow-wrap-inherit! m-0! p-0!">{@html lineHtml}</div>{/each}</code></pre>
 
                   <textarea
                     bind:this={markdownTextareaElement}
@@ -1321,57 +1275,45 @@
 
           {#if activeTab === 'editor'}
             <div
-              class="flex flex-wrap items-center justify-between border-t border-border-subtle bg-surface-card/10 px-3 py-1.5 text-xs text-text-secondary select-none"
-            >
+              class="flex flex-wrap items-center justify-between border-t border-border-subtle bg-surface-card/10 px-3 py-1.5 text-xs text-text-secondary select-none">
               <div
                 class="flex items-center gap-1"
                 role="toolbar"
-                aria-label="Formatting tools"
-              >
+                aria-label="Formatting tools">
                 {#each [{action: () => insertMarkdown('# '), icon: 'format_h1', label: 'H1 heading'}, {action: () => insertMarkdown('## '), icon: 'format_h2', label: 'H2 heading'}, {action: () => insertMarkdown('### '), icon: 'format_h3', label: 'H3 heading'}] as const as item (item.icon)}
                   <button
                     type="button"
                     onclick={item.action}
                     aria-label={item.label}
-                    class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary"
-                  >
+                    class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
                     <span
                       class="material-symbols-rounded text-base"
-                      aria-hidden="true">{item.icon}</span
-                    >
+                      aria-hidden="true">{item.icon}</span>
                   </button>
                 {/each}
-                <div
-                  class="mx-1 h-4 w-px bg-border-subtle"
-                  aria-hidden="true"
-                ></div>
+                <div class="mx-1 h-4 w-px bg-border-subtle" aria-hidden="true">
+                </div>
                 {#each [{action: () => insertMarkdown('**', '**'), icon: 'format_bold', label: 'Bold'}, {action: () => insertMarkdown('*', '*'), icon: 'format_italic', label: 'Italic'}, {action: () => insertMarkdown('<u>', '</u>'), icon: 'format_underlined', label: 'Underline'}, {action: () => insertMarkdown('~~', '~~'), icon: 'format_strikethrough', label: 'Strikethrough'}] as const as item (item.icon)}
                   <button
                     type="button"
                     onclick={item.action}
                     aria-label={item.label}
-                    class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary"
-                  >
+                    class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
                     <span
                       class="material-symbols-rounded text-base"
-                      aria-hidden="true">{item.icon}</span
-                    >
+                      aria-hidden="true">{item.icon}</span>
                   </button>
                 {/each}
-                <div
-                  class="mx-1 h-4 w-px bg-border-subtle"
-                  aria-hidden="true"
-                ></div>
+                <div class="mx-1 h-4 w-px bg-border-subtle" aria-hidden="true">
+                </div>
                 <button
                   type="button"
                   onclick={() => imageFileInput?.click()}
                   aria-label="Insert image"
-                  class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary"
-                >
+                  class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
                   <span
                     class="material-symbols-rounded text-base"
-                    aria-hidden="true">add_photo_alternate</span
-                  >
+                    aria-hidden="true">add_photo_alternate</span>
                 </button>
                 <input
                   type="file"
@@ -1379,52 +1321,41 @@
                   accept="image/png, image/webp, image/jpeg, image/jpg"
                   onchange={handleImageUpload}
                   class="hidden"
-                  aria-label="Upload image file"
-                />
+                  aria-label="Upload image file" />
                 {#each [{action: () => insertMarkdown('[', '](url)'), icon: 'link', label: 'Insert link'}, {action: () => insertMarkdown('1. '), icon: 'format_list_numbered', label: 'Numbered list'}, {action: () => insertMarkdown('- '), icon: 'format_list_bulleted', label: 'Bulleted list'}, {action: () => insertMarkdown('```\n', '\n```'), icon: 'code_blocks', label: 'Code block'}] as const as item (item.icon)}
                   <button
                     type="button"
                     onclick={item.action}
                     aria-label={item.label}
-                    class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary"
-                  >
+                    class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
                     <span
                       class="material-symbols-rounded text-base"
-                      aria-hidden="true">{item.icon}</span
-                    >
+                      aria-hidden="true">{item.icon}</span>
                   </button>
                 {/each}
               </div>
 
               <div
-                class="flex items-center gap-4 font-mono text-[11px] select-none"
-              >
+                class="flex items-center gap-4 font-mono text-[11px] select-none">
                 <span class="text-[12.5px] font-semibold tracking-wide"
-                  >{currentLine}:{currentColumn}</span
-                >
+                  >{currentLine}:{currentColumn}</span>
                 <span
-                  class="flex items-center gap-1 text-[12.5px] font-semibold tracking-wide"
-                >
+                  class="flex items-center gap-1 text-[12.5px] font-semibold tracking-wide">
                   <span
                     class="material-symbols-rounded text-[14px]"
-                    aria-hidden="true">space_bar</span
-                  >
+                    aria-hidden="true">space_bar</span>
                   {indentSize}
                 </span>
                 <span class="text-[12.5px] font-semibold tracking-wide"
-                  >UTF-8</span
-                >
+                  >UTF-8</span>
                 <span class="text-[12.5px] font-semibold tracking-wide"
-                  >{lineEnding}</span
-                >
+                  >{lineEnding}</span>
                 <span class="group relative flex cursor-help items-center">
                   <span
                     class="material-symbols-rounded text-[16px]"
-                    aria-label="Markdown formatting supported">markdown</span
-                  >
+                    aria-label="Markdown formatting supported">markdown</span>
                   <span
-                    class="absolute right-0 bottom-full mb-1.5 hidden rounded-md border border-border-subtle bg-surface-elevated px-2 py-1 font-sans text-[10px] whitespace-nowrap text-text-primary shadow-md group-hover:block"
-                  >
+                    class="absolute right-0 bottom-full mb-1.5 hidden rounded-md border border-border-subtle bg-surface-elevated px-2 py-1 font-sans text-[10px] whitespace-nowrap text-text-primary shadow-md group-hover:block">
                     Markdown formatting is supported
                   </span>
                 </span>
@@ -1441,8 +1372,7 @@
             variant="secondary"
             size="md"
             onclick={() => handleSaveClick(false)}
-            disabled={isSubmitting}
-          >
+            disabled={isSubmitting}>
             Save draft
           </Button>
           <Button
@@ -1450,8 +1380,7 @@
             size="md"
             onclick={() => handleSaveClick(true)}
             disabled={isSubmitting}
-            isLoading={isSubmitting}
-          >
+            isLoading={isSubmitting}>
             {isSubmitting ? 'Publishing…' : 'Publish post'}
           </Button>
         </div>
@@ -1464,20 +1393,17 @@
   bind:isOpen={showCancelDialog}
   title="Discard unsaved changes?"
   description="You have unsaved edits. All changes will be lost."
-  onClose={() => (showCancelDialog = false)}
->
+  onClose={() => (showCancelDialog = false)}>
   {#snippet footer()}
     <Button
       variant="secondary"
       size="md"
       showEscHint
-      onclick={() => (showCancelDialog = false)}>Keep editing</Button
-    >
+      onclick={() => (showCancelDialog = false)}>Keep editing</Button>
     <Button
       variant="destructive"
       size="md"
-      onclick={() => (window.location.href = '/admin')}>Discard changes</Button
-    >
+      onclick={() => (window.location.href = '/admin')}>Discard changes</Button>
   {/snippet}
 </Dialog>
 
@@ -1485,18 +1411,15 @@
   bind:isOpen={showPublishDialog}
   title="Publish post?"
   description="This will make the post immediately visible to all readers."
-  onClose={() => (showPublishDialog = false)}
->
+  onClose={() => (showPublishDialog = false)}>
   {#snippet footer()}
     <Button
       variant="secondary"
       size="md"
       showEscHint
-      onclick={() => (showPublishDialog = false)}>Cancel</Button
-    >
+      onclick={() => (showPublishDialog = false)}>Cancel</Button>
     <Button variant="primary" size="md" onclick={() => executeSave(true)}
-      >Publish post</Button
-    >
+      >Publish post</Button>
   {/snippet}
 </Dialog>
 
@@ -1504,18 +1427,15 @@
   bind:isOpen={showSaveDraftDialog}
   title="Save as draft?"
   description="The post will be saved privately and won't be visible to readers."
-  onClose={() => (showSaveDraftDialog = false)}
->
+  onClose={() => (showSaveDraftDialog = false)}>
   {#snippet footer()}
     <Button
       variant="secondary"
       size="md"
       showEscHint
-      onclick={() => (showSaveDraftDialog = false)}>Cancel</Button
-    >
+      onclick={() => (showSaveDraftDialog = false)}>Cancel</Button>
     <Button variant="primary" size="md" onclick={() => executeSave(false)}
-      >Save draft</Button
-    >
+      >Save draft</Button>
   {/snippet}
 </Dialog>
 
@@ -1523,8 +1443,7 @@
   <div
     role="status"
     aria-live="polite"
-    class="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full border border-border-subtle bg-surface-card/90 px-4 py-2 text-xs font-semibold text-text-primary shadow-lg backdrop-blur-md transition-all duration-300"
-  >
+    class="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full border border-border-subtle bg-surface-card/90 px-4 py-2 text-xs font-semibold text-text-primary shadow-lg backdrop-blur-md transition-all duration-300">
     <i class="bi bi-check-circle-fill text-sm text-copilot" aria-hidden="true"
     ></i>
     {toastMessage}

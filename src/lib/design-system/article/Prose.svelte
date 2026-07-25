@@ -28,7 +28,6 @@
     '[&_hr]:my-8 [&_hr]:border-border-subtle',
     '[&_img]:rounded-2xl [&_img]:border [&_img]:border-border-subtle [&_img]:shadow-md',
     className
-  )}
->
+  )}>
   {@render children?.()}
 </div>

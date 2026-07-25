@@ -676,8 +676,7 @@
   <title>{post.title} | Farhan Kurnia Pratama</title>
   <meta
     name="description"
-    content={post.excerpt || 'Read this article on my blog.'}
-  />
+    content={post.excerpt || 'Read this article on my blog.'} />
   <link rel="canonical" href={'https://fkp.my.id/blog/' + post.slug} />
   <script type="application/ld+json">
     {
@@ -700,48 +699,39 @@
   <meta property="og:title" content={post.title} />
   <meta
     property="og:description"
-    content={post.excerpt || 'Read this article on my blog.'}
-  />
+    content={post.excerpt || 'Read this article on my blog.'} />
   <meta
     property="og:image"
-    content={bannerPublicUrl || 'https://fkp.my.id/hero.png'}
-  />
+    content={bannerPublicUrl || 'https://fkp.my.id/hero.png'} />
   <meta
     property="og:image:secure_url"
-    content={bannerPublicUrl || 'https://fkp.my.id/hero.png'}
-  />
+    content={bannerPublicUrl || 'https://fkp.my.id/hero.png'} />
   <meta property="og:image:alt" content={post.title} />
 
   <meta name="twitter:card" content="summary_large_image" />
   <meta property="twitter:card" content="summary_large_image" />
   <meta
     property="twitter:url"
-    content={'https://fkp.my.id/blog/' + post.slug}
-  />
+    content={'https://fkp.my.id/blog/' + post.slug} />
   <meta property="twitter:title" content={post.title} />
   <meta
     property="twitter:description"
-    content={post.excerpt || 'Read this article on my blog.'}
-  />
+    content={post.excerpt || 'Read this article on my blog.'} />
   <meta
     name="twitter:image"
-    content={bannerPublicUrl || 'https://fkp.my.id/hero.png'}
-  />
+    content={bannerPublicUrl || 'https://fkp.my.id/hero.png'} />
   <meta
     property="twitter:image"
-    content={bannerPublicUrl || 'https://fkp.my.id/hero.png'}
-  />
+    content={bannerPublicUrl || 'https://fkp.my.id/hero.png'} />
 
   {#if isDark}
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css"
-    />
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
   {:else}
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css"
-    />
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
   {/if}
 </svelte:head>
 
@@ -749,12 +739,10 @@
 
 <nav
   class="fixed top-0 z-40 flex h-15 w-full items-center justify-between border-b border-border-subtle bg-surface-card/60 px-3 font-sans shadow-xs backdrop-blur-lg transition-colors duration-300 sm:px-5"
-  aria-label="Article navigation"
->
+  aria-label="Article navigation">
   <a
     href="/#blogs"
-    class="inline-flex h-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
-  >
+    class="inline-flex h-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
     Back to Blogs
   </a>
   <div class="flex items-center gap-2">
@@ -765,18 +753,14 @@
 
 <main
   id="main-content"
-  class="flex min-h-[calc(100vh-3.75rem)] flex-col pt-15 font-sans"
->
+  class="flex min-h-[calc(100vh-3.75rem)] flex-col pt-15 font-sans">
   <div
-    class="relative mx-auto w-full max-w-7xl px-6 pt-9 pb-16 xl:grid xl:grid-cols-12 xl:gap-8"
-  >
+    class="relative mx-auto w-full max-w-7xl px-6 pt-9 pb-16 xl:grid xl:grid-cols-12 xl:gap-8">
     <article
-      class="mx-auto flex w-full flex-col pt-4 md:w-[80%] lg:w-[50%] xl:col-span-6 xl:col-start-4 xl:mx-0 xl:w-auto"
-    >
+      class="mx-auto flex w-full flex-col pt-4 md:w-[80%] lg:w-[50%] xl:col-span-6 xl:col-start-4 xl:mx-0 xl:w-auto">
       <header class="mb-8 border-b border-border-subtle pb-6">
         <h1
-          class="text-4xl leading-tight font-extrabold tracking-tight text-text-primary md:text-5xl"
-        >
+          class="text-4xl leading-tight font-extrabold tracking-tight text-text-primary md:text-5xl">
           {post.title}
         </h1>
         {#if post.excerpt}
@@ -785,11 +769,9 @@
           </p>
         {/if}
         <div
-          class="no-scrollbar mt-4 flex w-full flex-wrap items-center gap-x-1.5 overflow-x-auto font-sans text-[11px] font-semibold whitespace-nowrap text-text-muted select-none"
-        >
+          class="no-scrollbar mt-4 flex w-full flex-wrap items-center gap-x-1.5 overflow-x-auto font-sans text-[11px] font-semibold whitespace-nowrap text-text-muted select-none">
           <time datetime={post.created_at}
-            >{formatBlogDate(post.created_at)}</time
-          >
+            >{formatBlogDate(post.created_at)}</time>
           <span aria-hidden="true">&middot;</span>
           <span>{formatReadTime(post.read_time)}</span>
           <span aria-hidden="true">&middot;</span>
@@ -803,22 +785,18 @@
 
       {#if headings.length > 0}
         <div
-          class="mb-6 rounded-2xl border border-border-subtle bg-surface-card/45 p-5 shadow-xs backdrop-blur-lg select-none xl:hidden"
-        >
+          class="mb-6 rounded-2xl border border-border-subtle bg-surface-card/45 p-5 shadow-xs backdrop-blur-lg select-none xl:hidden">
           <h3
-            class="titlecase mb-3 text-xs font-bold tracking-wider text-text-secondary select-none"
-          >
+            class="titlecase mb-3 text-xs font-bold tracking-wider text-text-secondary select-none">
             In this article
           </h3>
           <ul
             class="flex flex-col gap-1.5 border-l border-border-subtle/50 pl-3"
-            role="list"
-          >
+            role="list">
             {#each headings as heading, index (heading.id + '-' + index)}
               <li
                 class="text-xs"
-                style="padding-left: {(heading.level - 2) * 12}px;"
-              >
+                style="padding-left: {(heading.level - 2) * 12}px;">
                 <a
                   href="#{heading.id}"
                   onclick={e => {
@@ -833,8 +811,7 @@
                       activeHeadingId = heading.id
                     }
                   }}
-                  class="block py-0.5 text-text-secondary transition-colors hover:text-copilot"
-                >
+                  class="block py-0.5 text-text-secondary transition-colors hover:text-copilot">
                   {heading.text}
                 </a>
               </li>
@@ -848,8 +825,7 @@
       </div>
 
       <div
-        class="mt-10 flex flex-col items-center justify-between gap-4 border-t border-border-subtle pt-8 select-none sm:flex-row"
-      >
+        class="mt-10 flex flex-col items-center justify-between gap-4 border-t border-border-subtle pt-8 select-none sm:flex-row">
         <div>
           <h3 class="text-sm font-bold text-text-primary">
             Was this article helpful?
@@ -863,38 +839,32 @@
             <Button
               variant="secondary"
               size="sm"
-              onclick={() => handleHelpfulness('yes')}
-            >
+              onclick={() => handleHelpfulness('yes')}>
               <span
                 class="material-symbols-rounded text-sm leading-none select-none"
                 style="font-size: 16px; font-variation-settings: 'wght' 400, 'opsz' 20;"
-                aria-hidden="true">thumb_up</span
-              >
+                aria-hidden="true">thumb_up</span>
               <span>Yes</span>
             </Button>
             <Button
               variant="secondary"
               size="sm"
-              onclick={() => handleHelpfulness('no')}
-            >
+              onclick={() => handleHelpfulness('no')}>
               <span
                 class="material-symbols-rounded text-sm leading-none select-none"
                 style="font-size: 16px; font-variation-settings: 'wght' 400, 'opsz' 20;"
-                aria-hidden="true">thumb_down</span
-              >
+                aria-hidden="true">thumb_down</span>
               <span>No</span>
             </Button>
           {:else if helpfulnessFeedback === 'yes'}
             <span
-              class="flex animate-pulse items-center gap-1.5 text-xs font-bold text-copilot"
-            >
+              class="flex animate-pulse items-center gap-1.5 text-xs font-bold text-copilot">
               <i class="bi bi-heart-fill" aria-hidden="true"></i> Thank you for your
               feedback!
             </span>
           {:else}
             <span
-              class="flex items-center gap-1.5 text-xs font-bold text-text-muted"
-            >
+              class="flex items-center gap-1.5 text-xs font-bold text-text-muted">
               <i class="bi bi-emoji-neutral" aria-hidden="true"></i> Redirecting to
               feedback…
             </span>
@@ -910,20 +880,17 @@
           <button
             onclick={copyToClipboard}
             class="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors select-none hover:bg-surface-hover hover:text-copilot"
-            aria-label="Copy link to clipboard"
-          >
+            aria-label="Copy link to clipboard">
             {#if showCopySuccess}
               <i class="bi bi-check2 text-success" aria-hidden="true"></i>
             {:else}
               <span
                 class="material-symbols-rounded text-base leading-none select-none"
                 style="font-size: 16px; font-variation-settings: 'wght' 400, 'opsz' 20;"
-                aria-hidden="true">link_2</span
-              >
+                aria-hidden="true">link_2</span>
             {/if}
             <span class="hidden sm:inline"
-              >{showCopySuccess ? 'Copied!' : 'Copy link'}</span
-            >
+              >{showCopySuccess ? 'Copied!' : 'Copy link'}</span>
           </button>
           {#each [{href: `https://twitter.com/intent/tweet?url=${encodeURIComponent(page.url.href)}&text=${encodeURIComponent(post.title)}`, icon: 'bi-twitter-x', label: 'Share on X (opens in a new tab)', text: 'X'}, {href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(page.url.href)}`, icon: 'bi-facebook', label: 'Share on Facebook (opens in a new tab)', text: 'Facebook'}, {href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(page.url.href)}`, icon: 'bi-linkedin', label: 'Share on LinkedIn (opens in a new tab)', text: 'LinkedIn'}, {href: `mailto:?subject=${encodeURIComponent(post.title)}&body=${encodeURIComponent(page.url.href)}`, icon: 'bi-envelope', label: 'Share via email', text: 'Email'}] as item (item.text)}
             <a
@@ -931,8 +898,7 @@
               target={item.href.startsWith('mailto') ? undefined : '_blank'}
               rel="noopener noreferrer"
               class="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors select-none hover:bg-surface-hover hover:text-copilot"
-              aria-label={item.label}
-            >
+              aria-label={item.label}>
               <i class="bi {item.icon}" aria-hidden="true"></i>
               <span class="hidden sm:inline">{item.text}</span>
             </a>
@@ -941,11 +907,9 @@
       </div>
 
       <div
-        class="mt-8 flex w-full max-w-full flex-col items-center gap-5 overflow-hidden rounded-2xl border border-border-subtle bg-surface-card/45 p-5 shadow-xs backdrop-blur-lg select-none sm:flex-row sm:items-start sm:p-6"
-      >
+        class="mt-8 flex w-full max-w-full flex-col items-center gap-5 overflow-hidden rounded-2xl border border-border-subtle bg-surface-card/45 p-5 shadow-xs backdrop-blur-lg select-none sm:flex-row sm:items-start sm:p-6">
         <div
-          class="relative h-20 w-20 shrink-0 animate-pulse overflow-hidden rounded-full border border-border-subtle bg-surface-card/60"
-        >
+          class="relative h-20 w-20 shrink-0 animate-pulse overflow-hidden rounded-full border border-border-subtle bg-surface-card/60">
           <img
             src="/android-chrome-512x512.png"
             alt="Farhan Kurnia Pratama"
@@ -954,102 +918,85 @@
               (
                 e.currentTarget.closest('.animate-pulse') as HTMLElement | null
               )?.classList.remove('animate-pulse')}
-            class="h-full w-full object-cover object-top"
-          />
+            class="h-full w-full object-cover object-top" />
         </div>
         <div class="w-full min-w-0 flex-1 text-center sm:text-left">
           <h4
-            class="px-1 text-base leading-snug font-bold text-text-primary sm:px-0"
-          >
+            class="px-1 text-base leading-snug font-bold text-text-primary sm:px-0">
             Farhan Kurnia Pratama
           </h4>
           <p
-            class="mt-0.5 px-1 text-xs font-semibold text-text-secondary sm:px-0"
-          >
+            class="mt-0.5 px-1 text-xs font-semibold text-text-secondary sm:px-0">
             Linux/Unix, AI, Open-Source Software, and Cybersecurity.
           </p>
           <p
-            class="mt-3 px-1 text-sm leading-relaxed text-text-secondary/90 sm:px-0"
-          >
+            class="mt-3 px-1 text-sm leading-relaxed text-text-secondary/90 sm:px-0">
             Security-focused Software Engineer with expertise in Linux/Unix, AI,
             and Open-Source Software, dedicated to building reliable,
             maintainable, and privacy-centric systems.
           </p>
 
           <div
-            class="mt-4 flex flex-wrap items-center justify-center gap-2.5 px-1 sm:justify-start sm:gap-4 sm:px-0"
-          >
+            class="mt-4 flex flex-wrap items-center justify-center gap-2.5 px-1 sm:justify-start sm:gap-4 sm:px-0">
             <a
               href="https://github.com/farhnkrnapratma"
               target="_blank"
               rel="noopener noreferrer"
               class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot"
-              aria-label="GitHub (opens in a new tab)"
-            >
+              aria-label="GitHub (opens in a new tab)">
               <i
                 class="bi bi-github flex items-center justify-center text-base leading-none"
-                aria-hidden="true"
-              ></i>
+                aria-hidden="true"></i>
             </a>
             <a
               href="https://linkedin.com/in/farhnkrnapratma"
               target="_blank"
               rel="noopener noreferrer"
               class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot"
-              aria-label="LinkedIn (opens in a new tab)"
-            >
+              aria-label="LinkedIn (opens in a new tab)">
               <i
                 class="bi bi-linkedin flex items-center justify-center text-base leading-none"
-                aria-hidden="true"
-              ></i>
+                aria-hidden="true"></i>
             </a>
             <a
               href="https://x.com/farhnkrnapratma"
               target="_blank"
               rel="noopener noreferrer"
               class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot"
-              aria-label="X (opens in a new tab)"
-            >
+              aria-label="X (opens in a new tab)">
               <i
                 class="bi bi-twitter-x flex items-center justify-center text-base leading-none"
-                aria-hidden="true"
-              ></i>
+                aria-hidden="true"></i>
             </a>
             <a
               href="https://facebook.com/farhnkrnapratma"
               target="_blank"
               rel="noopener noreferrer"
               class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot"
-              aria-label="Facebook (opens in a new tab)"
-            >
+              aria-label="Facebook (opens in a new tab)">
               <i
                 class="bi bi-facebook flex items-center justify-center text-base leading-none"
-                aria-hidden="true"
-              ></i>
+                aria-hidden="true"></i>
             </a>
             <a
               href="https://instagram.com/farhnkrnapratma"
               target="_blank"
               rel="noopener noreferrer"
               class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot"
-              aria-label="Instagram (opens in a new tab)"
-            >
+              aria-label="Instagram (opens in a new tab)">
               <i
                 class="bi bi-instagram flex items-center justify-center text-base leading-none"
-                aria-hidden="true"
-              ></i>
+                aria-hidden="true"></i>
             </a>
             <a
               href="https://threads.net/@farhnkrnapratma"
               target="_blank"
               rel="noopener noreferrer"
               class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot"
-              aria-label="Threads (opens in a new tab)"
-            >
+              aria-label="Threads (opens in a new tab)">
               <i
                 class="bi bi-threads flex items-center justify-center text-base leading-none"
-                aria-hidden="true"
-              ></i>
+                aria-hidden="true"></i>
             </a>
           </div>
         </div>
@@ -1057,8 +1004,7 @@
 
       <section
         class="mt-16 border-t border-border-subtle pt-10"
-        aria-label="Comments"
-      >
+        aria-label="Comments">
         <h2 class="mb-8 text-xl font-bold tracking-tight text-text-primary">
           Comments ({comments.length})
         </h2>
@@ -1067,14 +1013,12 @@
           <StatusBanner
             type={feedbackMessage.type === 'success' ? 'success' : 'error'}
             message={feedbackMessage.text}
-            class="mb-6"
-          />
+            class="mb-6" />
         {/if}
 
         {#if !replyTo}
           <div
-            class="mb-8 rounded-2xl border border-border-subtle bg-surface-card/45 p-5 text-left shadow-xs backdrop-blur-lg transition-colors duration-300"
-          >
+            class="mb-8 rounded-2xl border border-border-subtle bg-surface-card/45 p-5 text-left shadow-xs backdrop-blur-lg transition-colors duration-300">
             <div class="mb-4 select-none">
               <h3 class="text-sm font-bold text-text-primary">
                 Leave a comment
@@ -1084,14 +1028,12 @@
             <form
               novalidate
               onsubmit={e => handleSubmit(e)}
-              class="flex flex-col gap-2.5"
-            >
+              class="flex flex-col gap-2.5">
               <Checkbox
                 id="comment-anon"
                 label="Comment anonymously"
                 bind:checked={isAnonymous}
-                aria-describedby="anon-help-main"
-              />
+                aria-describedby="anon-help-main" />
               <span id="anon-help-main" class="sr-only">
                 If checked, your name is hidden and your comment is posted as
                 Anonymous.
@@ -1099,8 +1041,7 @@
               <div class="flex flex-col gap-1">
                 <label
                   for="comment-author"
-                  class="text-xs font-bold text-text-primary select-none"
-                >
+                  class="text-xs font-bold text-text-primary select-none">
                   Name {#if !isAnonymous}<span
                       aria-hidden="true"
                       class="text-danger">*</span
@@ -1124,27 +1065,25 @@
                     }}
                     class="w-full rounded-lg border border-border-subtle bg-surface px-3 py-1.5 text-sm text-text-primary transition-colors placeholder:text-text-muted/70 disabled:opacity-60"
                     class:border-danger={errors.authorName}
-                    class:input-valid={valid.authorName && !isAnonymous}
-                  />
+                    class:input-valid={valid.authorName && !isAnonymous} />
                   <div
                     id="comment-author-fb"
                     aria-live="polite"
-                    class="mt-1 h-4 text-xs leading-none font-medium"
-                  >
+                    class="mt-1 h-4 text-xs leading-none font-medium">
                     {#if errors.authorName}
                       <span
                         role="alert"
-                        class="flex items-center gap-1 text-danger"
-                      >
+                        class="flex items-center gap-1 text-danger">
                         <i
                           class="bi bi-exclamation-circle-fill"
-                          aria-hidden="true"
-                        ></i>{errors.authorName}
+                          aria-hidden="true"></i
+                        >{errors.authorName}
                       </span>
                     {:else if valid.authorName && !isAnonymous}
                       <span class="flex items-center gap-1 text-copilot">
                         <i class="bi bi-check-circle-fill" aria-hidden="true"
-                        ></i>Looks good
+                        ></i
+                        >Looks good
                       </span>
                     {/if}
                   </div>
@@ -1157,8 +1096,7 @@
                 required
                 error={errors.commentContent}
                 valid={valid.commentContent}
-                counter="{2000 - commentContent.length} left"
-              >
+                counter="{2000 - commentContent.length} left">
                 <Textarea
                   id="comment-msg"
                   rows={3}
@@ -1172,8 +1110,7 @@
                     valid.commentContent = false
                     validateCommentContent()
                   }}
-                  aria-required="true"
-                />
+                  aria-required="true" />
               </FormField>
 
               <div class="mt-2 flex justify-end">
@@ -1182,8 +1119,7 @@
                   variant="primary"
                   size="md"
                   disabled={isSubmitting}
-                  isLoading={isSubmitting}
-                >
+                  isLoading={isSubmitting}>
                   {isSubmitting ? 'Posting…' : 'Post comment'}
                 </Button>
               </div>
@@ -1195,14 +1131,12 @@
           <EmptyState
             icon="bi-chat-square"
             title="No comments yet"
-            description="Be the first to share your thoughts on this article."
-          />
+            description="Be the first to share your thoughts on this article." />
         {:else}
           <CommentThread {comments} {replyTo} getIcon={getCommentIcon}>
             {#snippet actions(comment)}
               <time datetime={comment.created_at}
-                >{formatBlogDate(comment.created_at)}</time
-              >
+                >{formatBlogDate(comment.created_at)}</time>
               <span aria-hidden="true">&middot;</span>
               <button
                 type="button"
@@ -1211,8 +1145,7 @@
                   feedbackMessage = null
                   commentContent = ''
                 }}
-                class="cursor-pointer font-bold text-text-muted transition-colors hover:text-copilot focus-visible:outline-none"
-              >
+                class="cursor-pointer font-bold text-text-muted transition-colors hover:text-copilot focus-visible:outline-none">
                 Reply
               </button>
             {/snippet}
@@ -1221,8 +1154,7 @@
               <form
                 novalidate
                 onsubmit={e => handleSubmit(e, comment.id)}
-                class="rounded-xl border border-border-subtle bg-surface-base/60 p-4"
-              >
+                class="rounded-xl border border-border-subtle bg-surface-base/60 p-4">
                 <div class="mb-3 flex items-center justify-between gap-3">
                   <p class="text-xs font-semibold text-text-secondary">
                     Replying to {getCommentAuthor(comment)}
@@ -1231,8 +1163,7 @@
                     variant="ghost"
                     size="sm"
                     showEscHint
-                    onclick={cancelReply}>Cancel</Button
-                  >
+                    onclick={cancelReply}>Cancel</Button>
                 </div>
 
                 <div class="flex flex-col gap-4">
@@ -1240,8 +1171,7 @@
                     id="reply-anon-{comment.id}"
                     label="Comment anonymously"
                     bind:checked={isAnonymous}
-                    aria-describedby="anon-help-reply-{comment.id}"
-                  />
+                    aria-describedby="anon-help-reply-{comment.id}" />
                   <span id="anon-help-reply-{comment.id}" class="sr-only">
                     If checked, your name is hidden and your comment is posted
                     as Anonymous.
@@ -1250,8 +1180,7 @@
                   <div class="flex flex-col gap-1">
                     <label
                       for="reply-author-{comment.id}"
-                      class="text-xs font-bold text-text-primary select-none"
-                    >
+                      class="text-xs font-bold text-text-primary select-none">
                       Name {#if !isAnonymous}<span
                           aria-hidden="true"
                           class="text-danger">*</span
@@ -1277,29 +1206,26 @@
                         }}
                         class="w-full rounded-lg border border-border-subtle bg-surface-base px-3 py-1.5 text-sm text-text-primary transition-colors placeholder:text-text-muted/70 disabled:opacity-60"
                         class:border-danger={errors.authorName}
-                        class:input-valid={valid.authorName && !isAnonymous}
-                      />
+                        class:input-valid={valid.authorName && !isAnonymous} />
                       <div
                         id="reply-author-fb-{comment.id}"
                         aria-live="polite"
-                        class="mt-1 h-4 text-xs leading-none font-medium"
-                      >
+                        class="mt-1 h-4 text-xs leading-none font-medium">
                         {#if errors.authorName}
                           <span
                             role="alert"
-                            class="flex items-center gap-1 text-danger"
-                          >
+                            class="flex items-center gap-1 text-danger">
                             <i
                               class="bi bi-exclamation-circle-fill"
-                              aria-hidden="true"
-                            ></i>{errors.authorName}
+                              aria-hidden="true"></i
+                            >{errors.authorName}
                           </span>
                         {:else if valid.authorName && !isAnonymous}
                           <span class="flex items-center gap-1 text-copilot">
                             <i
                               class="bi bi-check-circle-fill"
-                              aria-hidden="true"
-                            ></i>Looks good
+                              aria-hidden="true"></i
+                            >Looks good
                           </span>
                         {/if}
                       </div>
@@ -1312,8 +1238,7 @@
                     required
                     error={errors.commentContent}
                     valid={valid.commentContent}
-                    counter="{2000 - commentContent.length} left"
-                  >
+                    counter="{2000 - commentContent.length} left">
                     <Textarea
                       id="reply-msg-{comment.id}"
                       rows={3}
@@ -1327,8 +1252,7 @@
                         valid.commentContent = false
                         validateCommentContent()
                       }}
-                      aria-required="true"
-                    />
+                      aria-required="true" />
                   </FormField>
 
                   <div class="flex justify-end">
@@ -1337,8 +1261,7 @@
                       variant="primary"
                       size="sm"
                       disabled={isSubmitting}
-                      isLoading={isSubmitting}
-                    >
+                      isLoading={isSubmitting}>
                       {isSubmitting ? 'Posting…' : 'Post reply'}
                     </Button>
                   </div>
@@ -1352,14 +1275,11 @@
 
     <aside
       class="sticky top-24 hidden h-fit self-start select-none xl:col-span-3 xl:col-start-10 xl:block"
-      aria-label="Table of contents"
-    >
+      aria-label="Table of contents">
       <div
-        class="overflow-hidden rounded-2xl border border-border-subtle bg-surface-card/45 p-5 shadow-xs backdrop-blur-lg"
-      >
+        class="overflow-hidden rounded-2xl border border-border-subtle bg-surface-card/45 p-5 shadow-xs backdrop-blur-lg">
         <h3
-          class="titlecase mb-3 text-xs font-bold tracking-wider text-text-secondary select-none"
-        >
+          class="titlecase mb-3 text-xs font-bold tracking-wider text-text-secondary select-none">
           In this article
         </h3>
 
@@ -1369,8 +1289,8 @@
           <div class="relative pl-3">
             <div
               class="absolute top-0 bottom-0 left-0 w-1 rounded-full bg-border-subtle/40"
-              aria-hidden="true"
-            ></div>
+              aria-hidden="true">
+            </div>
 
             {#if isIndicatorVisible}
               <div
@@ -1380,21 +1300,19 @@
                 ) ?
                   'top 0.12s ease-out, height 0.12s ease-out'
                 : 'top 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)'};"
-                aria-hidden="true"
-              ></div>
+                aria-hidden="true">
+              </div>
             {/if}
 
             <ul
               bind:this={tocListEl}
               class="relative flex flex-col gap-1"
-              role="list"
-            >
+              role="list">
               {#each headings as heading, index (heading.id + '-' + index)}
                 {@const isActive = activeHeadingId === heading.id}
                 <li
                   class="text-xs"
-                  style="padding-left: {(heading.level - 2) * 12}px;"
-                >
+                  style="padding-left: {(heading.level - 2) * 12}px;">
                   <a
                     href="#{heading.id}"
                     onclick={e => {
@@ -1415,11 +1333,9 @@
                       isActive
                     ) ?
                       'font-medium text-copilot'
-                    : 'font-normal text-text-secondary'}"
-                  >
+                    : 'font-normal text-text-secondary'}">
                     <span class="transition-colors duration-300 ease-in-out"
-                      >{heading.text}</span
-                    >
+                      >{heading.text}</span>
                   </a>
                 </li>
               {/each}
@@ -1437,8 +1353,7 @@
   <div
     role="status"
     aria-live="polite"
-    class="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full border border-border-subtle bg-surface-card/90 px-4 py-2 text-xs font-semibold text-text-primary shadow-lg backdrop-blur-md transition-all duration-300"
-  >
+    class="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full border border-border-subtle bg-surface-card/90 px-4 py-2 text-xs font-semibold text-text-primary shadow-lg backdrop-blur-md transition-all duration-300">
     <i class="bi bi-check-circle-fill text-sm text-copilot" aria-hidden="true"
     ></i>
     {toastMessage}
@@ -1452,24 +1367,21 @@
   onClose={() => {
     showYesFeedbackDialog = false
     helpfulnessFeedback = null
-  }}
->
+  }}>
   <div class="grid grid-cols-2 gap-2 text-left">
     <button
       onclick={() => {
         copyToClipboard()
         showYesFeedbackDialog = false
       }}
-      class="col-span-2 flex h-9.5 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border-subtle bg-surface-card px-3 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover hover:text-copilot"
-    >
+      class="col-span-2 flex h-9.5 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border-subtle bg-surface-card px-3 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover hover:text-copilot">
       {#if showCopySuccess}
         <i class="bi bi-check2 text-sm text-success" aria-hidden="true"></i>
       {:else}
         <span
           class="material-symbols-rounded text-base leading-none select-none"
           style="font-size: 16px; font-variation-settings: 'wght' 400, 'opsz' 20;"
-          aria-hidden="true">link_2</span
-        >
+          aria-hidden="true">link_2</span>
       {/if}
       <span>{showCopySuccess ? 'Copied!' : 'Copy link'}</span>
     </button>
@@ -1479,8 +1391,7 @@
         target={item.href.startsWith('mailto') ? undefined : '_blank'}
         rel="noopener noreferrer"
         onclick={() => (showYesFeedbackDialog = false)}
-        class="flex h-9.5 items-center justify-center gap-2 rounded-lg border border-border-subtle bg-surface-card px-3 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover hover:text-copilot"
-      >
+        class="flex h-9.5 items-center justify-center gap-2 rounded-lg border border-border-subtle bg-surface-card px-3 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover hover:text-copilot">
         <i class="bi {item.icon} text-sm" aria-hidden="true"></i>
         <span>{item.text}</span>
       </a>
@@ -1494,8 +1405,7 @@
       onclick={() => {
         showYesFeedbackDialog = false
         helpfulnessFeedback = null
-      }}>Cancel</Button
-    >
+      }}>Cancel</Button>
   {/snippet}
 </Dialog>
 
@@ -1506,8 +1416,7 @@
   onClose={() => {
     showNoFeedbackDialog = false
     helpfulnessFeedback = null
-  }}
->
+  }}>
   {#snippet footer()}
     <Button
       variant="secondary"
@@ -1516,15 +1425,13 @@
       onclick={() => {
         showNoFeedbackDialog = false
         helpfulnessFeedback = null
-      }}>Cancel</Button
-    >
+      }}>Cancel</Button>
     <Button
       variant="primary"
       size="md"
       onclick={() => {
         showNoFeedbackDialog = false
         window.location.href = '/feedback'
-      }}>Send feedback</Button
-    >
+      }}>Send feedback</Button>
   {/snippet}
 </Dialog>

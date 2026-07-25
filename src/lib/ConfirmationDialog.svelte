@@ -47,8 +47,7 @@
       <span class="inline-flex items-center gap-1.5">
         <span>{cancelLabel}</span>
         <kbd
-          class="hidden items-center rounded border border-border-subtle/80 bg-surface-elevated/80 px-1 py-0.5 font-mono text-[9px] leading-none text-text-muted select-none sm:inline-flex"
-        >
+          class="hidden items-center rounded border border-border-subtle/80 bg-surface-elevated/80 px-1 py-0.5 font-mono text-[9px] leading-none text-text-muted select-none sm:inline-flex">
           Esc
         </kbd>
       </span>
@@ -56,8 +55,7 @@
     <Button
       variant={isDestructive ? 'destructive' : 'primary'}
       size="md"
-      onclick={confirm}
-    >
+      onclick={confirm}>
       {confirmLabel || (isDestructive ? 'Delete' : 'Confirm')}
     </Button>
   {/snippet}

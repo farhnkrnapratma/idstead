@@ -15,7 +15,6 @@
   class={cn(
     'inline-flex flex-wrap items-center gap-3 text-xs text-text-muted select-none',
     className
-  )}
->
+  )}>
   {@render children?.()}
 </div>

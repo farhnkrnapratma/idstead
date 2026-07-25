@@ -37,8 +37,7 @@
     'flex w-full flex-col gap-1.5',
     disabled ? 'opacity-60' : '',
     className
-  )}
->
+  )}>
   <div class="flex items-center justify-between">
     <label for={id} class="text-xs font-bold text-text-secondary select-none">
       {label}
@@ -49,8 +48,7 @@
     </label>
     {#if counter}
       <span class="font-mono text-[10px] text-text-muted select-none"
-        >{counter}</span
-      >
+        >{counter}</span>
     {/if}
   </div>
 
@@ -65,8 +63,7 @@
       <span
         id="{id}-error"
         role="alert"
-        class="flex items-center gap-1 text-danger"
-      >
+        class="flex items-center gap-1 text-danger">
         <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
         {error}
       </span>

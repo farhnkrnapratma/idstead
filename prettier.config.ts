@@ -15,7 +15,7 @@ const config: Config = {
   trailingComma: 'none',
   bracketSpacing: false,
   objectWrap: 'collapse',
-  bracketSameLine: false,
+  bracketSameLine: true,
   arrowParens: 'avoid',
   requirePragma: false,
   insertPragma: true,

@@ -24,7 +24,6 @@
     'mt-4 flex items-center gap-3 border-t border-border-subtle/50 pt-3',
     alignStyles[align],
     className
-  )}
->
+  )}>
   {@render children?.()}
 </div>

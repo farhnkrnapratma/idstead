@@ -22,8 +22,7 @@
     class={cn(
       'mb-4 rounded-xl border border-danger/30 bg-danger-subtle/20 p-4 text-xs select-none',
       className
-    )}
-  >
+    )}>
     <div class="flex items-center gap-2 font-bold text-danger">
       <i class="bi bi-exclamation-octagon-fill text-sm" aria-hidden="true"></i>
       <span>{title}</span>

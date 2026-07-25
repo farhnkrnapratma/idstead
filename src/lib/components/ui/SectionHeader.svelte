@@ -17,18 +17,15 @@
     align === 'center'
   ) ?
     'items-center text-center'
-  : 'text-left'}"
->
+  : 'text-left'}">
   <div>
     <h1
-      class="text-2xl font-bold tracking-tight text-text-primary sm:text-3xl lg:text-4xl"
-    >
+      class="text-2xl font-bold tracking-tight text-text-primary sm:text-3xl lg:text-4xl">
       {title}
     </h1>
     {#if subtitle}
       <p
-        class="mt-1 max-w-xl text-xs leading-relaxed text-text-secondary sm:text-sm"
-      >
+        class="mt-1 max-w-xl text-xs leading-relaxed text-text-secondary sm:text-sm">
         {subtitle}
       </p>
     {/if}

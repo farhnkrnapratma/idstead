@@ -13,7 +13,6 @@
   ariaLabel="Close dialog"
   variant="ghost"
   size="sm"
-  onclick={onClose}
->
+  onclick={onClose}>
   <i class="bi bi-x-lg text-xs" aria-hidden="true"></i>
 </IconButton>

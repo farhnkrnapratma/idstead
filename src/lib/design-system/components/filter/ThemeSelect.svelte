@@ -44,19 +44,16 @@
     'relative inline-flex items-center gap-2 select-none',
     isOpen ? 'z-60' : 'z-20',
     className
-  )}
->
+  )}>
   {#if label}
     <span class="text-xs font-medium whitespace-nowrap text-text-secondary"
-      >{label}</span
-    >
+      >{label}</span>
   {/if}
 
   <DropdownTrigger
     ariaLabel="{label ? `${label}: ` : ''}{currentOption.label}"
     {isOpen}
-    onclick={() => (isOpen = !isOpen)}
-  >
+    onclick={() => (isOpen = !isOpen)}>
     <span class="inline-flex items-center gap-1.5">
       <i class="bi {currentOption.icon} text-xs" aria-hidden="true"></i>
       <span>{currentOption.label}</span>
@@ -68,8 +65,7 @@
       type="button"
       class="fixed inset-0 z-65 cursor-default"
       onclick={() => (isOpen = false)}
-      aria-label="Close {label ?? 'theme'} selector"
-    ></button>
+      aria-label="Close {label ?? 'theme'} selector"></button>
 
     <div
       role="listbox"
@@ -79,8 +75,7 @@
         dropdownDirection === 'up' ?
           'bottom-[calc(100%+4px)]'
         : 'top-[calc(100%+4px)]'
-      )}
-    >
+      )}>
       {#each themeOptions as option (option.value)}
         <button
           type="button"
@@ -92,15 +87,13 @@
             theme === option.value ?
               'bg-copilot/10 font-semibold text-copilot'
             : 'text-text-primary hover:bg-surface-hover'
-          )}
-        >
+          )}>
           <span class="inline-flex items-center gap-2">
             <i
               class="bi {option.icon} text-xs {theme === option.value ?
                 'text-copilot'
               : 'text-text-secondary'}"
-              aria-hidden="true"
-            ></i>
+              aria-hidden="true"></i>
             <span>{option.label}</span>
           </span>
           {#if theme === option.value}

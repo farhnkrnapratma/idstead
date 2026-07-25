@@ -568,8 +568,8 @@
       "name": "Farhan Kurnia Pratama",
       "url": "https://fkp.my.id",
       "sameAs": ["https://github.com/farhnkrnapratma"],
-      "jobTitle": "Software Developer",
-      "description": "Linux/Unix, AI, Open-Source Software"
+      "jobTitle": "Software Engineer",
+      "description": "Linux/Unix, AI, Open-Source Software, and Cybersecurity."
     }
   </script>
 </svelte:head>
@@ -578,20 +578,17 @@
   <button
     class="fixed inset-0 z-30 bg-transparent md:hidden"
     onclick={() => (menuOpen = false)}
-    aria-label="Close menu"
-  ></button>
+    aria-label="Close menu"></button>
 {/if}
 
 <SkipLink />
 
 <nav
   class="fixed top-0 z-40 flex h-15 w-full items-center justify-between border-b border-border-subtle bg-surface-card px-3 font-sans shadow-xs backdrop-blur-lg transition-colors duration-300 sm:px-5 md:bg-surface-card/60"
-  aria-label="Main navigation"
->
+  aria-label="Main navigation">
   <button
     onclick={() => navigate('home')}
-    class="max-w-[calc(100vw-5rem)] min-w-0 cursor-pointer truncate text-left text-base font-bold tracking-tight text-text-primary transition-colors hover:text-copilot sm:max-w-none"
-  >
+    class="max-w-[calc(100vw-5rem)] min-w-0 cursor-pointer truncate text-left text-base font-bold tracking-tight text-text-primary transition-colors hover:text-copilot sm:max-w-none">
     {name}
   </button>
 
@@ -603,8 +600,7 @@
       class:scale-95={!menuOpen}
       class:pointer-events-none={!menuOpen}
       class:opacity-100={menuOpen}
-      class:scale-100={menuOpen}
-    >
+      class:scale-100={menuOpen}>
       <li class="w-full md:hidden">
         <div class="relative w-full">
           <button
@@ -612,8 +608,7 @@
             class="flex h-11 w-full cursor-pointer items-center justify-between rounded-lg px-4 text-sm font-semibold text-text-primary transition-colors hover:bg-surface-hover"
             aria-label="Change theme"
             aria-haspopup="true"
-            aria-expanded={themeDropdownOpen}
-          >
+            aria-expanded={themeDropdownOpen}>
             <span class="inline-flex items-center gap-3">
               <i class="bi {getThemeIcon()} text-sm" aria-hidden="true"></i>
               {getThemeLabel()}
@@ -623,19 +618,16 @@
                 themeDropdownOpen
               ) ?
                 'rotate-180'
-              : ''}"
-            >
+              : ''}">
               <i
                 class="bi bi-chevron-down text-xs leading-none"
-                aria-hidden="true"
-              ></i>
+                aria-hidden="true"></i>
             </span>
           </button>
 
           {#if themeDropdownOpen}
             <div
-              class="absolute top-12 right-0 left-0 z-50 flex w-full flex-col rounded-lg border border-border-subtle bg-surface-card p-1 shadow-lg"
-            >
+              class="absolute top-12 right-0 left-0 z-50 flex w-full flex-col rounded-lg border border-border-subtle bg-surface-card p-1 shadow-lg">
               {#each ['auto', 'light', 'dark'] as themeOption (themeOption)}
                 <button
                   onclick={() => {
@@ -646,12 +638,10 @@
                     theme === themeOption
                   ) ?
                     'text-copilot'
-                  : 'text-text-primary'}"
-                >
+                  : 'text-text-primary'}">
                   <i
                     class="bi {getThemeIcon(themeOption as Theme)} text-sm"
-                    aria-hidden="true"
-                  ></i>
+                    aria-hidden="true"></i>
                   {getThemeLabel(themeOption as Theme)}
                 </button>
               {/each}
@@ -671,8 +661,7 @@
               activeSection === item.id
             ) ?
               'bg-copilot font-semibold text-white hover:bg-copilot/90 md:bg-surface-switcher-active md:text-copilot md:shadow-xs md:hover:bg-surface-switcher-active'
-            : 'text-text-primary hover:bg-surface-hover md:text-text-muted md:hover:bg-surface-hover md:hover:text-text-primary'}"
-          >
+            : 'text-text-primary hover:bg-surface-hover md:text-text-muted md:hover:bg-surface-hover md:hover:text-text-primary'}">
             {item.label}
           </button>
         </li>
@@ -682,8 +671,7 @@
     <ThemeSelect
       {theme}
       onThemeChange={applyTheme}
-      class="hidden md:inline-flex"
-    />
+      class="hidden md:inline-flex" />
 
     <SpotlightSearch projects={data.projects} />
 
@@ -692,73 +680,60 @@
       onclick={() => (menuOpen = !menuOpen)}
       aria-label={menuOpen ? 'Close menu' : 'Open menu'}
       aria-expanded={menuOpen}
-      aria-controls="mobile-menu"
-    >
+      aria-controls="mobile-menu">
       <i
         class="bi {menuOpen ? 'bi-x-lg' : 'bi-list'} text-text-primary"
-        aria-hidden="true"
-      ></i>
+        aria-hidden="true"></i>
     </button>
   </div>
 </nav>
 
 <main
   id="main-content"
-  class="flex min-h-[calc(100vh-3.75rem)] flex-col pt-15 font-sans"
->
+  class="flex min-h-[calc(100vh-3.75rem)] flex-col pt-15 font-sans">
   {#if activeSection === 'home'}
     <section
-      class="relative z-10 mx-auto flex w-full flex-col gap-8 px-6 pt-10 pb-24 md:w-[80%] md:max-w-none md:pt-14 md:pb-28 lg:w-[50%]"
-    >
+      class="relative z-10 mx-auto flex w-full flex-col gap-8 px-6 pt-10 pb-24 md:w-[80%] md:max-w-none md:pt-14 md:pb-28 lg:w-[50%]">
       <div
-        class="pointer-events-none absolute top-12.5 left-[50%] z-0 h-80 w-[320px] translate-x-[-50%] rounded-full bg-copilot/10 blur-[80px]"
-      ></div>
+        class="pointer-events-none absolute top-12.5 left-[50%] z-0 h-80 w-[320px] translate-x-[-50%] rounded-full bg-copilot/10 blur-[80px]">
+      </div>
 
       <div
-        class="relative z-10 flex flex-col items-center justify-center text-center"
-      >
+        class="relative z-10 flex flex-col items-center justify-center text-center">
         <img
           src="/android-chrome-512x512.png"
           alt="Farhan Kurnia Pratama"
           loading="lazy"
-          class="relative z-10 mb-6 h-28 w-28 rounded-full border-2 border-copilot object-cover object-top shadow-[0_0_20px_rgba(120,101,217,0.25)] transition-all duration-300 dark:shadow-[0_0_25px_rgba(120,101,217,0.35)]"
-        />
+          class="relative z-10 mb-6 h-28 w-28 rounded-full border-2 border-copilot object-cover object-top shadow-[0_0_20px_rgba(120,101,217,0.25)] transition-all duration-300 dark:shadow-[0_0_25px_rgba(120,101,217,0.35)]" />
         <h1
-          class="relative z-10 px-2 text-2xl font-bold tracking-tight whitespace-nowrap text-text-primary sm:text-3xl md:text-4xl lg:text-5xl"
-        >
+          class="relative z-10 px-2 text-2xl font-bold tracking-tight whitespace-nowrap text-text-primary sm:text-3xl md:text-4xl lg:text-5xl">
           {name}
         </h1>
         <p
-          class="relative z-10 mt-3 mb-2 text-lg font-medium text-text-secondary"
-        >
+          class="relative z-10 mt-3 mb-2 text-lg font-medium text-text-secondary">
           {headline}
         </p>
         <p
-          class="relative z-10 mt-4 max-w-xl text-base leading-relaxed text-text-secondary/90"
-        >
+          class="relative z-10 mt-4 max-w-xl text-base leading-relaxed text-text-secondary/90">
           {desc}
         </p>
 
         <div
-          class="relative z-10 mt-8 flex w-full flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4"
-        >
+          class="relative z-10 mt-8 flex w-full flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
           <a
             href="/cv.pdf"
             download="Farhan_Kurnia_Pratama_CV.pdf"
-            class="hover:bg-copilot-hover inline-flex w-full cursor-pointer items-center justify-center rounded-lg bg-copilot py-2 text-xs font-semibold whitespace-nowrap text-white transition-colors sm:w-48 sm:text-sm"
-          >
+            class="hover:bg-copilot-hover inline-flex w-full cursor-pointer items-center justify-center rounded-lg bg-copilot py-2 text-xs font-semibold whitespace-nowrap text-white transition-colors sm:w-48 sm:text-sm">
             Download CV
           </a>
           <button
             onclick={() => navigate('projects')}
-            class="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-border-subtle bg-surface-card py-2 text-xs font-semibold whitespace-nowrap text-text-primary transition-colors hover:bg-surface-hover sm:w-48 sm:text-sm"
-          >
+            class="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-border-subtle bg-surface-card py-2 text-xs font-semibold whitespace-nowrap text-text-primary transition-colors hover:bg-surface-hover sm:w-48 sm:text-sm">
             Browse projects
           </button>
           <button
             onclick={() => navigate('contacts')}
-            class="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-border-subtle bg-surface-card py-2 text-xs font-semibold whitespace-nowrap text-text-primary transition-colors hover:bg-surface-hover sm:mt-0 sm:w-48 sm:text-sm"
-          >
+            class="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-border-subtle bg-surface-card py-2 text-xs font-semibold whitespace-nowrap text-text-primary transition-colors hover:bg-surface-hover sm:mt-0 sm:w-48 sm:text-sm">
             Get in touch
           </button>
         </div>
@@ -772,37 +747,30 @@
           <ul class="divide-y divide-border-subtle">
             {#each projects.slice(0, 3) as project (project.name)}
               <li
-                class="group relative flex flex-col gap-3 p-5 text-left transition-all duration-200 hover:bg-surface-hover/40 active:scale-[0.995]"
-              >
+                class="group relative flex flex-col gap-3 p-5 text-left transition-all duration-200 hover:bg-surface-hover/40 active:scale-[0.995]">
                 <article class="contents">
                   <div
-                    class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
-                  >
+                    class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div class="flex flex-wrap items-center gap-0.5">
                       <h4
-                        class="text-base leading-snug font-bold text-text-primary transition-colors group-hover:text-copilot"
-                      >
+                        class="text-base leading-snug font-bold text-text-primary transition-colors group-hover:text-copilot">
                         <a
                           href={project.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="rounded-xs outline-none after:absolute after:inset-0 focus-visible:ring-2 focus-visible:ring-copilot focus-visible:ring-offset-2 focus-visible:ring-offset-surface-card"
-                        >
+                          class="rounded-xs outline-none after:absolute after:inset-0 focus-visible:ring-2 focus-visible:ring-copilot focus-visible:ring-offset-2 focus-visible:ring-offset-surface-card">
                           {project.name}
                         </a>
                       </h4>
                       {#if project.lang}
                         <span
-                          class="inline-flex items-center gap-1 select-none"
-                        >
+                          class="inline-flex items-center gap-1 select-none">
                           <span
                             class="h-1.5 w-1.5 rounded-full"
                             style="background-color: {langColors[project.lang]
-                              || 'var(--color-accent)'}"
-                          ></span>
+                              || 'var(--color-accent)'}"></span>
                           <span
-                            class="rounded-md bg-border-subtle/30 px-1.5 py-0.5 font-mono text-[12px] font-semibold text-text-muted"
-                          >
+                            class="rounded-md bg-border-subtle/30 px-1.5 py-0.5 font-mono text-[12px] font-semibold text-text-muted">
                             {project.lang}
                           </span>
                         </span>
@@ -810,15 +778,13 @@
                     </div>
 
                     <div
-                      class="no-scrollbar relative z-20 flex items-center gap-x-2 overflow-x-auto font-sans text-xs font-semibold whitespace-nowrap text-text-muted select-none sm:justify-end"
-                    >
+                      class="no-scrollbar relative z-20 flex items-center gap-x-2 overflow-x-auto font-sans text-xs font-semibold whitespace-nowrap text-text-muted select-none sm:justify-end">
                       {#if project.licenseName}
                         <span class="inline-flex items-center gap-1">
                           <span
                             class="material-symbols-rounded text-xs leading-none"
                             style="font-size: 16px; font-variation-settings: 'wght' 400, 'opsz' 20;"
-                            aria-hidden="true">gavel</span
-                          >
+                            aria-hidden="true">gavel</span>
                           {project.licenseName} License
                         </span>
                         <span aria-hidden="true">&middot;</span>
@@ -827,43 +793,36 @@
                         <span
                           class="material-symbols-rounded text-xs leading-none"
                           style="font-size: 16px; font-variation-settings: 'wght' 400, 'opsz' 20;"
-                          aria-hidden="true">star_rate</span
-                        >
+                          aria-hidden="true">star_rate</span>
                         {project.stars} stars
                       </span>
                     </div>
                   </div>
 
                   <p
-                    class="line-clamp-2 text-xs leading-normal text-text-muted dark:text-zinc-300"
-                  >
+                    class="line-clamp-2 text-xs leading-normal text-text-muted dark:text-zinc-300">
                     {project.desc}
                   </p>
 
                   <div
-                    class="mt-1 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
-                  >
+                    class="mt-1 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                     <div
-                      class="relative z-20 flex flex-wrap items-center gap-1.5"
-                    >
+                      class="relative z-20 flex flex-wrap items-center gap-1.5">
                       {#each project.tags as tag (tag)}
                         <span
-                          class="rounded-md bg-border-subtle/30 px-1.5 py-0.5 font-mono text-[12px] font-medium text-text-muted transition-colors"
-                        >
+                          class="rounded-md bg-border-subtle/30 px-1.5 py-0.5 font-mono text-[12px] font-medium text-text-muted transition-colors">
                           {tag}
                         </span>
                       {/each}
                     </div>
 
                     <div
-                      class="flex items-center gap-1.5 text-xs font-bold text-copilot transition-colors"
-                    >
+                      class="flex items-center gap-1.5 text-xs font-bold text-copilot transition-colors">
                       <span>View repository</span>
                       <span
                         class="material-symbols-rounded text-xs leading-none transition-transform group-hover:translate-x-0.5"
                         style="font-size: 16px; font-variation-settings: 'wght' 400, 'opsz' 20;"
-                        aria-hidden="true">open_in_new</span
-                      >
+                        aria-hidden="true">open_in_new</span>
                     </div>
                   </div>
                 </article>
@@ -875,14 +834,12 @@
           <div class="mt-4 flex justify-end">
             <button
               onclick={() => navigate('projects')}
-              class="group inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-copilot hover:underline"
-            >
+              class="group inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-copilot hover:underline">
               <span class="leading-none">View all projects</span>
               <span
                 class="material-symbols-rounded leading-none transition-transform select-none group-hover:translate-x-0.5"
                 style="font-size: 16px; font-variation-settings: 'wght' 400, 'opsz' 20;"
-                aria-hidden="true">arrow_forward</span
-              >
+                aria-hidden="true">arrow_forward</span>
             </button>
           </div>
         {/if}
@@ -897,17 +854,14 @@
             <EmptyState
               icon="bi-journal-text"
               title="No posts yet"
-              description="Check back soon for new articles."
-            />
+              description="Check back soon for new articles." />
           {:else}
             <ul class="divide-y divide-border-subtle">
               {#each posts.slice(0, 2) as post (post.title)}
                 <li
-                  class="group relative flex w-full flex-col gap-5 p-5 text-left transition-all duration-200 hover:bg-surface-hover/40 active:scale-[0.995] sm:flex-row sm:items-start"
-                >
+                  class="group relative flex w-full flex-col gap-5 p-5 text-left transition-all duration-200 hover:bg-surface-hover/40 active:scale-[0.995] sm:flex-row sm:items-start">
                   <div
-                    class="relative aspect-video w-full shrink-0 animate-pulse overflow-hidden rounded-lg border border-border-subtle bg-surface-card/60 select-none sm:w-40 md:w-48"
-                  >
+                    class="relative aspect-video w-full shrink-0 animate-pulse overflow-hidden rounded-lg border border-border-subtle bg-surface-card/60 select-none sm:w-40 md:w-48">
                     {#if post.banner_path}
                       <img
                         src={getBannerUrl(post.banner_path)}
@@ -919,12 +873,10 @@
                               '.animate-pulse'
                             ) as HTMLElement | null
                           )?.classList.remove('animate-pulse')}
-                        class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-103"
-                      />
+                        class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-103" />
                     {:else}
                       <div
-                        class="to-palette-purple/15 flex h-full w-full items-center justify-center bg-linear-to-br from-accent/15 select-none"
-                      >
+                        class="to-palette-purple/15 flex h-full w-full items-center justify-center bg-linear-to-br from-accent/15 select-none">
                         <i class="bi bi-journal-text text-xl text-copilot/50"
                         ></i>
                       </div>
@@ -933,8 +885,7 @@
 
                   <div class="flex flex-1 flex-col gap-2 font-sans">
                     <div
-                      class="no-scrollbar flex w-full flex-wrap items-center gap-x-1.5 overflow-x-auto font-sans text-[11px] font-semibold whitespace-nowrap text-text-muted select-none"
-                    >
+                      class="no-scrollbar flex w-full flex-wrap items-center gap-x-1.5 overflow-x-auto font-sans text-[11px] font-semibold whitespace-nowrap text-text-muted select-none">
                       <span>{formatBlogDate(post.created_at)}</span>
                       <span aria-hidden="true">&middot;</span>
                       <span>{formatReadTime(post.read_time)}</span>
@@ -947,32 +898,27 @@
                     </div>
                     <div class="mt-1">
                       <h4
-                        class="text-base leading-snug font-bold text-text-primary transition-colors group-hover:text-copilot"
-                      >
+                        class="text-base leading-snug font-bold text-text-primary transition-colors group-hover:text-copilot">
                         <a
                           href="/blog/{post.slug}"
-                          class="rounded-xs outline-none after:absolute after:inset-0 focus-visible:ring-2 focus-visible:ring-copilot focus-visible:ring-offset-2 focus-visible:ring-offset-surface-card"
-                        >
+                          class="rounded-xs outline-none after:absolute after:inset-0 focus-visible:ring-2 focus-visible:ring-copilot focus-visible:ring-offset-2 focus-visible:ring-offset-surface-card">
                           {post.title}
                         </a>
                       </h4>
                     </div>
                     {#if post.excerpt}
                       <p
-                        class="line-clamp-2 text-xs leading-normal text-text-muted dark:text-zinc-300"
-                      >
+                        class="line-clamp-2 text-xs leading-normal text-text-muted dark:text-zinc-300">
                         {post.excerpt}
                       </p>
                     {/if}
                     <div
-                      class="mt-1 flex items-center gap-1.5 text-xs font-bold text-copilot"
-                    >
+                      class="mt-1 flex items-center gap-1.5 text-xs font-bold text-copilot">
                       <span class="leading-none">Read article</span>
                       <span
                         class="material-symbols-rounded leading-none transition-transform select-none group-hover:translate-x-0.5"
                         style="font-size: 16px; font-variation-settings: 'wght' 400, 'opsz' 20;"
-                        aria-hidden="true">arrow_forward</span
-                      >
+                        aria-hidden="true">arrow_forward</span>
                     </div>
                   </div>
                 </li>
@@ -984,14 +930,12 @@
           <div class="mt-4 flex justify-end">
             <button
               onclick={() => navigate('blogs')}
-              class="group inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-copilot hover:underline"
-            >
+              class="group inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-copilot hover:underline">
               <span class="leading-none">View all posts</span>
               <span
                 class="material-symbols-rounded leading-none transition-transform select-none group-hover:translate-x-0.5"
                 style="font-size: 16px; font-variation-settings: 'wght' 400, 'opsz' 20;"
-                aria-hidden="true">arrow_forward</span
-              >
+                aria-hidden="true">arrow_forward</span>
             </button>
           </div>
         {/if}
@@ -1004,12 +948,10 @@
         <div class="flex flex-wrap gap-2">
           {#each skillsSnapshot as group (group.category)}
             <span
-              class="cursor-default rounded-full border border-border-subtle bg-surface-card/60 px-3.5 py-1.5 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover"
-            >
+              class="cursor-default rounded-full border border-border-subtle bg-surface-card/60 px-3.5 py-1.5 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover">
               {group.category}
               <span class="font-normal text-text-secondary opacity-80"
-                >({group.items.join(', ')})</span
-              >
+                >({group.items.join(', ')})</span>
             </span>
           {/each}
         </div>
@@ -1022,8 +964,7 @@
         <div class="boxed-list text-left">
           {#each experiences.slice(0, 1) as exp (exp.role)}
             <div
-              class="flex flex-col gap-2 px-6 py-5 transition-all hover:bg-surface-hover/40"
-            >
+              class="flex flex-col gap-2 px-6 py-5 transition-all hover:bg-surface-hover/40">
               <div class="flex items-start justify-between gap-4">
                 <div>
                   <h4 class="text-base font-bold text-text-primary">
@@ -1034,8 +975,7 @@
                   </p>
                 </div>
                 <span
-                  class="shrink-0 rounded-full border border-border-subtle bg-border-subtle/30 px-2.5 py-0.5 text-xs font-semibold text-text-muted select-none"
-                >
+                  class="shrink-0 rounded-full border border-border-subtle bg-border-subtle/30 px-2.5 py-0.5 text-xs font-semibold text-text-muted select-none">
                   {exp.period}
                 </span>
               </div>
@@ -1049,35 +989,30 @@
           <button
             onclick={() => navigate('cv')}
             class="group inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-copilot hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-copilot"
-            aria-label="View full CV including education and experience"
-          >
+            aria-label="View full CV including education and experience">
             <span class="leading-none">View full CV</span>
             <span
               class="material-symbols-rounded leading-none transition-transform select-none group-hover:translate-x-0.5"
               style="font-size: 16px; font-variation-settings: 'wght' 400, 'opsz' 20;"
-              aria-hidden="true">arrow_forward</span
-            >
+              aria-hidden="true">arrow_forward</span>
           </button>
         </div>
       </div>
 
       <div class="boxed-list border-copilot/30 bg-copilot/5 text-left">
         <div
-          class="flex flex-col justify-between gap-4 px-5 py-4 sm:flex-row sm:items-center"
-        >
+          class="flex flex-col justify-between gap-4 px-5 py-4 sm:flex-row sm:items-center">
           <div class="flex items-start gap-4">
             <i
               class="bi bi-heart-fill mt-0.5 shrink-0 text-2xl text-copilot"
-              aria-hidden="true"
-            ></i>
+              aria-hidden="true"></i>
             <div>
               <h4 class="text-sm font-bold">
                 <ShinyText
                   text="Support Open Source Work"
                   color="var(--color-copilot)"
                   shineColor="var(--color-surface-card)"
-                  speed={1.5}
-                />
+                  speed={1.5} />
               </h4>
               <p class="mt-0.5 text-xs leading-relaxed text-text-secondary">
                 Your support helps maintain and improve these open-source
@@ -1087,8 +1022,7 @@
           </div>
           <button
             onclick={() => navigate('funding')}
-            class="hover:bg-copilot-hover inline-flex shrink-0 cursor-pointer items-center justify-center rounded-lg bg-copilot px-4 py-2 text-xs font-semibold text-white transition-colors"
-          >
+            class="hover:bg-copilot-hover inline-flex shrink-0 cursor-pointer items-center justify-center rounded-lg bg-copilot px-4 py-2 text-xs font-semibold text-white transition-colors">
             Become a sponsor
           </button>
         </div>
@@ -1101,13 +1035,11 @@
         method="POST"
         onsubmit={validateForm}
         class="flex w-full flex-col gap-3 rounded-2xl border border-border-subtle bg-surface-card/60 p-6 text-left shadow-xs backdrop-blur-lg transition-colors duration-300"
-        autocomplete="off"
-      >
+        autocomplete="off">
         <input
           type="hidden"
           name="_subject"
-          value="New message from portfolio website!"
-        />
+          value="New message from portfolio website!" />
         <input type="hidden" name="_template" value="table" />
         <input type="hidden" name="_captcha" value="true" />
         <input type="hidden" name="_url" value="https://fkp.my.id/" />
@@ -1125,8 +1057,7 @@
           label="Name"
           required
           error={formErrors.name}
-          valid={formValid.name}
-        >
+          valid={formValid.name}>
           <Input
             type="text"
             id="form-name"
@@ -1141,8 +1072,7 @@
               formErrors.name = ''
               formValid.name = false
               validateName()
-            }}
-          />
+            }} />
         </FormField>
 
         <FormField
@@ -1150,8 +1080,7 @@
           label="Email"
           required
           error={formErrors.email}
-          valid={formValid.email}
-        >
+          valid={formValid.email}>
           <Input
             type="email"
             id="form-email"
@@ -1166,8 +1095,7 @@
               formErrors.email = ''
               formValid.email = false
               validateEmail()
-            }}
-          />
+            }} />
         </FormField>
 
         <FormField
@@ -1176,8 +1104,7 @@
           required
           error={formErrors.message}
           valid={formValid.message}
-          counter="{2000 - formMessage.length} left"
-        >
+          counter="{2000 - formMessage.length} left">
           <Textarea
             id="form-message"
             name="message"
@@ -1191,8 +1118,7 @@
               formErrors.message = ''
               formValid.message = false
               validateMessage()
-            }}
-          />
+            }} />
         </FormField>
 
         <div class="mt-2 flex justify-end">
@@ -1208,17 +1134,14 @@
     <LinkListSection
       title="Contacts"
       subtitle="Feel free to reach out via any of the channels below."
-      items={contacts}
-    />
+      items={contacts} />
   {/if}
 
   {#if activeSection === 'cv'}
     <section
-      class="relative z-10 mx-auto w-full px-6 pt-10 pb-24 md:w-[80%] md:max-w-none md:pt-14 md:pb-28 lg:w-[50%]"
-    >
+      class="relative z-10 mx-auto w-full px-6 pt-10 pb-24 md:w-[80%] md:max-w-none md:pt-14 md:pb-28 lg:w-[50%]">
       <div
-        class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
-      >
+        class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 class="text-3xl font-bold tracking-tight text-text-primary">
             Curriculum Vitae
@@ -1230,23 +1153,20 @@
         <a
           href="/cv.pdf"
           download="Farhan_Kurnia_Pratama_CV.pdf"
-          class="hover:bg-copilot-hover inline-flex items-center justify-center rounded-lg bg-copilot px-4 py-2.5 text-sm font-semibold text-white transition-colors"
-        >
+          class="hover:bg-copilot-hover inline-flex items-center justify-center rounded-lg bg-copilot px-4 py-2.5 text-sm font-semibold text-white transition-colors">
           Download PDF
         </a>
       </div>
 
       <div class="mt-10">
         <h2
-          class="text-sm font-bold tracking-wider text-text-secondary uppercase"
-        >
+          class="text-sm font-bold tracking-wider text-text-secondary uppercase">
           Experience
         </h2>
         <div class="boxed-list mt-4">
           {#each experiences as exp (exp.role)}
             <div
-              class="flex flex-col gap-2 px-6 py-5 transition-all hover:bg-surface-hover/40"
-            >
+              class="flex flex-col gap-2 px-6 py-5 transition-all hover:bg-surface-hover/40">
               <div class="flex items-start justify-between gap-4">
                 <div>
                   <h3 class="text-base font-bold text-text-primary">
@@ -1257,8 +1177,7 @@
                   </p>
                 </div>
                 <span
-                  class="shrink-0 rounded-full border border-border-subtle bg-border-subtle/30 px-2.5 py-0.5 text-xs font-semibold text-text-muted select-none"
-                >
+                  class="shrink-0 rounded-full border border-border-subtle bg-border-subtle/30 px-2.5 py-0.5 text-xs font-semibold text-text-muted select-none">
                   {exp.period}
                 </span>
               </div>
@@ -1272,15 +1191,13 @@
 
       <div class="mt-10">
         <h2
-          class="text-sm font-bold tracking-wider text-text-secondary uppercase"
-        >
+          class="text-sm font-bold tracking-wider text-text-secondary uppercase">
           Education
         </h2>
         <div class="boxed-list mt-4">
           {#each education as edu (`${edu.degree}-${edu.university}`)}
             <div
-              class="flex flex-col gap-1.5 px-6 py-5 transition-all hover:bg-surface-hover/40"
-            >
+              class="flex flex-col gap-1.5 px-6 py-5 transition-all hover:bg-surface-hover/40">
               <div class="flex items-start justify-between gap-4">
                 <div>
                   <h3 class="text-base font-bold text-text-primary">
@@ -1293,8 +1210,7 @@
                         href={edu.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="transition-colors hover:text-copilot hover:underline"
-                      >
+                        class="transition-colors hover:text-copilot hover:underline">
                         {edu.university}
                       </a>
                     {:else}
@@ -1304,14 +1220,12 @@
                   {#if edu.gpa}
                     <p class="mt-1.5 text-xs font-semibold text-text-secondary">
                       Current GPA: <span class="text-text-primary"
-                        >{edu.gpa}</span
-                      >
+                        >{edu.gpa}</span>
                     </p>
                   {/if}
                 </div>
                 <span
-                  class="shrink-0 rounded-full border border-border-subtle bg-border-subtle/30 px-2.5 py-0.5 text-xs font-semibold text-text-muted select-none"
-                >
+                  class="shrink-0 rounded-full border border-border-subtle bg-border-subtle/30 px-2.5 py-0.5 text-xs font-semibold text-text-muted select-none">
                   {edu.period}
                 </span>
               </div>
@@ -1322,19 +1236,16 @@
 
       <div class="mt-10">
         <h2
-          class="text-sm font-bold tracking-wider text-text-secondary uppercase"
-        >
+          class="text-sm font-bold tracking-wider text-text-secondary uppercase">
           Skills
         </h2>
         <div class="mt-4 flex flex-wrap gap-2">
           {#each skills as group (group.category)}
             <span
-              class="cursor-default rounded-full bg-border-subtle/40 px-4 py-2 text-sm font-bold text-text-primary transition-colors hover:bg-border-subtle/60"
-            >
+              class="cursor-default rounded-full bg-border-subtle/40 px-4 py-2 text-sm font-bold text-text-primary transition-colors hover:bg-border-subtle/60">
               {group.category}
               <span class="font-normal opacity-85"
-                >({group.items.join(', ')})</span
-              >
+                >({group.items.join(', ')})</span>
             </span>
           {/each}
         </div>
@@ -1344,8 +1255,7 @@
 
   {#if activeSection === 'blogs'}
     <section
-      class="relative z-10 mx-auto w-full px-6 pt-10 pb-24 md:w-[80%] md:max-w-none md:pt-14 md:pb-28 lg:w-[50%]"
-    >
+      class="relative z-10 mx-auto w-full px-6 pt-10 pb-24 md:w-[80%] md:max-w-none md:pt-14 md:pb-28 lg:w-[50%]">
       <div class="mb-6 flex items-end justify-between gap-4">
         <div>
           <h1 class="text-3xl font-bold tracking-tight text-text-primary">
@@ -1360,13 +1270,11 @@
           target="_blank"
           rel="noopener noreferrer"
           title="Subscribe via Atom/RSS feed"
-          class="mb-0.5 inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-border-subtle bg-surface-card px-3 text-xs font-semibold text-text-muted transition-colors select-none hover:bg-surface-hover hover:text-[#f26522]"
-        >
+          class="mb-0.5 inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-border-subtle bg-surface-card px-3 text-xs font-semibold text-text-muted transition-colors select-none hover:bg-surface-hover hover:text-[#f26522]">
           <span
             class="material-symbols-rounded text-[11px] select-none"
             style="font-size: 16px; font-variation-settings: 'wght' 400, 'opsz' 20;"
-            aria-hidden="true">rss_feed</span
-          >
+            aria-hidden="true">rss_feed</span>
           <span class="hidden items-center sm:inline">Feed</span>
         </a>
       </div>
@@ -1385,8 +1293,7 @@
                       (e.target as HTMLInputElement).value
                     )}
                   size="sm"
-                  aria-label="Search blog articles"
-                />
+                  aria-label="Search blog articles" />
               </div>
             {/snippet}
 
@@ -1397,8 +1304,7 @@
                   options={allBlogTags.map(t => ({value: t, label: t}))}
                   selectedValues={blogFilterStore.filters['tag'] || []}
                   onChange={val =>
-                    blogFilterStore.toggleMultiFilter('tag', val)}
-                />
+                    blogFilterStore.toggleMultiFilter('tag', val)} />
               {/if}
             {/snippet}
 
@@ -1406,8 +1312,7 @@
               <SearchResultCount
                 count={filteredBlogPosts.length}
                 total={posts.length}
-                itemLabel="articles"
-              />
+                itemLabel="articles" />
             {/snippet}
 
             {#snippet sortSlot()}
@@ -1422,8 +1327,8 @@
                 currentField={blogFilterStore.sort.field}
                 currentDirection={blogFilterStore.sort.direction}
                 onFieldChange={field => blogFilterStore.setSort(field)}
-                onDirectionToggle={() => blogFilterStore.toggleSortDirection()}
-              />
+                onDirectionToggle={() =>
+                  blogFilterStore.toggleSortDirection()} />
             {/snippet}
 
             {#snippet chipsSlot()}
@@ -1431,8 +1336,7 @@
                 chips={blogFilterStore.activeChips}
                 onRemove={(type, val) =>
                   blogFilterStore.removeFilter(type, val)}
-                onClearAll={() => blogFilterStore.clearAllFilters()}
-              />
+                onClearAll={() => blogFilterStore.clearAllFilters()} />
             {/snippet}
           </FilterToolbar>
         </div>
@@ -1442,24 +1346,20 @@
         <EmptyState
           icon="bi-journal-x"
           title="No posts yet"
-          description="Articles will appear here once published."
-        />
+          description="Articles will appear here once published." />
       {:else if filteredBlogPosts.length === 0}
         <FilterEmptyState
           title="No articles match these filters"
           description="Try adjusting your tag filters or search keyword."
-          onClearFilters={() => blogFilterStore.clearAllFilters()}
-        />
+          onClearFilters={() => blogFilterStore.clearAllFilters()} />
       {:else}
         <div class="boxed-list relative z-0 mt-2">
           <ul class="divide-y divide-border-subtle">
             {#each filteredBlogPosts as post (post.id)}
               <li
-                class="group relative flex w-full flex-col gap-5 p-5 text-left transition-all duration-200 hover:bg-surface-hover/40 active:scale-[0.995] sm:flex-row sm:items-start"
-              >
+                class="group relative flex w-full flex-col gap-5 p-5 text-left transition-all duration-200 hover:bg-surface-hover/40 active:scale-[0.995] sm:flex-row sm:items-start">
                 <div
-                  class="relative aspect-video w-full shrink-0 animate-pulse overflow-hidden rounded-lg border border-border-subtle bg-surface-card/60 select-none sm:w-40 md:w-48"
-                >
+                  class="relative aspect-video w-full shrink-0 animate-pulse overflow-hidden rounded-lg border border-border-subtle bg-surface-card/60 select-none sm:w-40 md:w-48">
                   {#if post.banner_path}
                     <img
                       src={getBannerUrl(post.banner_path)}
@@ -1471,24 +1371,20 @@
                             '.animate-pulse'
                           ) as HTMLElement | null
                         )?.classList.remove('animate-pulse')}
-                      class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-103"
-                    />
+                      class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-103" />
                   {:else}
                     <div
-                      class="to-palette-purple/15 flex h-full w-full items-center justify-center bg-linear-to-br from-accent/15 select-none"
-                    >
+                      class="to-palette-purple/15 flex h-full w-full items-center justify-center bg-linear-to-br from-accent/15 select-none">
                       <i
                         class="bi bi-journal-text text-xl text-copilot/50"
-                        aria-hidden="true"
-                      ></i>
+                        aria-hidden="true"></i>
                     </div>
                   {/if}
                 </div>
 
                 <div class="flex flex-1 flex-col gap-1 font-sans">
                   <div
-                    class="no-scrollbar flex w-full flex-wrap items-center gap-x-1.5 overflow-x-auto font-sans text-[11px] font-semibold whitespace-nowrap text-text-muted select-none"
-                  >
+                    class="no-scrollbar flex w-full flex-wrap items-center gap-x-1.5 overflow-x-auto font-sans text-[11px] font-semibold whitespace-nowrap text-text-muted select-none">
                     <span>{formatBlogDate(post.created_at)}</span>
                     <span aria-hidden="true">&middot;</span>
                     <span>{formatReadTime(post.read_time)}</span>
@@ -1501,32 +1397,27 @@
                   </div>
                   <div>
                     <h2
-                      class="text-xl leading-snug font-bold text-text-primary transition-colors group-hover:text-text-primary hover:text-text-primary"
-                    >
+                      class="text-xl leading-snug font-bold text-text-primary transition-colors group-hover:text-text-primary hover:text-text-primary">
                       <a
                         href="/blog/{post.slug}"
-                        class="rounded-xs outline-none after:absolute after:inset-0 focus-visible:ring-2 focus-visible:ring-copilot focus-visible:ring-offset-2 focus-visible:ring-offset-surface-card"
-                      >
+                        class="rounded-xs outline-none after:absolute after:inset-0 focus-visible:ring-2 focus-visible:ring-copilot focus-visible:ring-offset-2 focus-visible:ring-offset-surface-card">
                         {post.title}
                       </a>
                     </h2>
                   </div>
                   {#if post.excerpt}
                     <p
-                      class="line-clamp-2 text-xs leading-normal text-text-muted dark:text-zinc-300"
-                    >
+                      class="line-clamp-2 text-xs leading-normal text-text-muted dark:text-zinc-300">
                       {post.excerpt}
                     </p>
                   {/if}
                   <div
-                    class="mt-1 flex items-center gap-1.5 text-xs font-bold text-copilot"
-                  >
+                    class="mt-1 flex items-center gap-1.5 text-xs font-bold text-copilot">
                     <span class="leading-none">Read article</span>
                     <span
                       class="material-symbols-rounded leading-none transition-transform select-none group-hover:translate-x-0.5"
                       style="font-size: 16px; font-variation-settings: 'wght' 400, 'opsz' 20;"
-                      aria-hidden="true">arrow_forward</span
-                    >
+                      aria-hidden="true">arrow_forward</span>
                   </div>
                 </div>
               </li>
@@ -1539,8 +1430,7 @@
 
   {#if activeSection === 'projects'}
     <section
-      class="relative z-10 mx-auto w-full px-6 pt-10 pb-24 md:w-[80%] md:max-w-none md:pt-14 md:pb-28 lg:w-[50%]"
-    >
+      class="relative z-10 mx-auto w-full px-6 pt-10 pb-24 md:w-[80%] md:max-w-none md:pt-14 md:pb-28 lg:w-[50%]">
       <div class="mb-6">
         <h1 class="text-3xl font-bold tracking-tight text-text-primary">
           Projects
@@ -1564,8 +1454,7 @@
                       (e.target as HTMLInputElement).value
                     )}
                   size="sm"
-                  aria-label="Search projects"
-                />
+                  aria-label="Search projects" />
               </div>
             {/snippet}
 
@@ -1576,8 +1465,7 @@
                   options={allProjectTags.map(t => ({value: t, label: t}))}
                   selectedValues={projectFilterStore.filters['tag'] || []}
                   onChange={val =>
-                    projectFilterStore.toggleMultiFilter('tag', val)}
-                />
+                    projectFilterStore.toggleMultiFilter('tag', val)} />
               {/if}
             {/snippet}
 
@@ -1585,8 +1473,7 @@
               <SearchResultCount
                 count={filteredProjectList.length}
                 total={projects.length}
-                itemLabel="projects"
-              />
+                itemLabel="projects" />
             {/snippet}
 
             {#snippet sortSlot()}
@@ -1600,8 +1487,7 @@
                 currentDirection={projectFilterStore.sort.direction}
                 onFieldChange={field => projectFilterStore.setSort(field)}
                 onDirectionToggle={() =>
-                  projectFilterStore.toggleSortDirection()}
-              />
+                  projectFilterStore.toggleSortDirection()} />
             {/snippet}
 
             {#snippet chipsSlot()}
@@ -1609,8 +1495,7 @@
                 chips={projectFilterStore.activeChips}
                 onRemove={(type, val) =>
                   projectFilterStore.removeFilter(type, val)}
-                onClearAll={() => projectFilterStore.clearAllFilters()}
-              />
+                onClearAll={() => projectFilterStore.clearAllFilters()} />
             {/snippet}
           </FilterToolbar>
         </div>
@@ -1620,50 +1505,41 @@
         <EmptyState
           icon="bi-box-seam"
           title="No projects yet"
-          description="Projects will appear here."
-        />
+          description="Projects will appear here." />
       {:else if filteredProjectList.length === 0}
         <FilterEmptyState
           title="No projects match these filters"
           description="Try adjusting your tech stack filters or search keyword."
-          onClearFilters={() => projectFilterStore.clearAllFilters()}
-        />
+          onClearFilters={() => projectFilterStore.clearAllFilters()} />
       {:else}
         <div class="boxed-list relative z-0 mt-2">
           <ul class="divide-y divide-border-subtle">
             {#each filteredProjectList as project (project.name)}
               <li
-                class="group relative flex flex-col gap-3 p-5 text-left transition-all duration-200 hover:bg-surface-hover/40 active:scale-[0.995]"
-              >
+                class="group relative flex flex-col gap-3 p-5 text-left transition-all duration-200 hover:bg-surface-hover/40 active:scale-[0.995]">
                 <article class="contents">
                   <div
-                    class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
-                  >
+                    class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div class="flex flex-wrap items-center gap-0.5">
                       <h3
-                        class="text-base leading-snug font-bold text-text-primary transition-colors group-hover:text-copilot"
-                      >
+                        class="text-base leading-snug font-bold text-text-primary transition-colors group-hover:text-copilot">
                         <a
                           href={project.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="rounded-xs outline-none after:absolute after:inset-0 focus-visible:ring-2 focus-visible:ring-copilot focus-visible:ring-offset-2 focus-visible:ring-offset-surface-card"
-                        >
+                          class="rounded-xs outline-none after:absolute after:inset-0 focus-visible:ring-2 focus-visible:ring-copilot focus-visible:ring-offset-2 focus-visible:ring-offset-surface-card">
                           {project.name}
                         </a>
                       </h3>
                       {#if project.lang}
                         <span
-                          class="inline-flex items-center gap-1 select-none"
-                        >
+                          class="inline-flex items-center gap-1 select-none">
                           <span
                             class="h-1.5 w-1.5 rounded-full"
                             style="background-color: {langColors[project.lang]
-                              || 'var(--color-accent)'}"
-                          ></span>
+                              || 'var(--color-accent)'}"></span>
                           <span
-                            class="rounded-md bg-border-subtle/30 px-1.5 py-0.5 font-mono text-[12px] font-semibold text-text-muted"
-                          >
+                            class="rounded-md bg-border-subtle/30 px-1.5 py-0.5 font-mono text-[12px] font-semibold text-text-muted">
                             {project.lang}
                           </span>
                         </span>
@@ -1671,15 +1547,13 @@
                     </div>
 
                     <div
-                      class="no-scrollbar relative z-20 flex items-center gap-x-2 overflow-x-auto font-sans text-xs font-semibold whitespace-nowrap text-text-muted select-none sm:justify-end"
-                    >
+                      class="no-scrollbar relative z-20 flex items-center gap-x-2 overflow-x-auto font-sans text-xs font-semibold whitespace-nowrap text-text-muted select-none sm:justify-end">
                       {#if project.licenseName}
                         <span class="inline-flex items-center gap-1">
                           <span
                             class="material-symbols-rounded text-xs leading-none"
                             style="font-size: 16px; font-variation-settings: 'wght' 400, 'opsz' 20;"
-                            aria-hidden="true">gavel</span
-                          >
+                            aria-hidden="true">gavel</span>
                           {project.licenseName} License
                         </span>
                         <span aria-hidden="true">&middot;</span>
@@ -1688,25 +1562,21 @@
                         <span
                           class="material-symbols-rounded text-xs leading-none"
                           style="font-size: 16px; font-variation-settings: 'wght' 400, 'opsz' 20;"
-                          aria-hidden="true">star_rate</span
-                        >
+                          aria-hidden="true">star_rate</span>
                         {project.stars} stars
                       </span>
                     </div>
                   </div>
 
                   <p
-                    class="dark:text-primary line-clamp-2 text-xs leading-normal text-text-secondary"
-                  >
+                    class="dark:text-primary line-clamp-2 text-xs leading-normal text-text-secondary">
                     {project.desc}
                   </p>
 
                   <div
-                    class="mt-1 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
-                  >
+                    class="mt-1 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                     <div
-                      class="relative z-20 flex flex-wrap items-center gap-1.5"
-                    >
+                      class="relative z-20 flex flex-wrap items-center gap-1.5">
                       {#each project.tags as tag (tag)}
                         <button
                           type="button"
@@ -1716,22 +1586,19 @@
                             projectFilterStore.filters['tag']?.includes(tag)
                           ) ?
                             'font-semibold text-copilot'
-                          : 'text-text-muted'}"
-                        >
+                          : 'text-text-muted'}">
                           {tag}
                         </button>
                       {/each}
                     </div>
 
                     <div
-                      class="flex items-center gap-1.5 text-xs font-bold text-copilot transition-colors"
-                    >
+                      class="flex items-center gap-1.5 text-xs font-bold text-copilot transition-colors">
                       <span>View repository</span>
                       <span
                         class="material-symbols-rounded text-xs leading-none transition-transform group-hover:translate-x-0.5"
                         style="font-size: 16px; font-variation-settings: 'wght' 400, 'opsz' 20;"
-                        aria-hidden="true">open_in_new</span
-                      >
+                        aria-hidden="true">open_in_new</span>
                     </div>
                   </div>
                 </article>
@@ -1747,8 +1614,7 @@
     <LinkListSection
       title="Supporting & Funding"
       subtitle="Support open-source development and maintenance through these platforms."
-      items={fundingPlatforms}
-    />
+      items={fundingPlatforms} />
   {/if}
 
   <FooterSection
@@ -1763,25 +1629,21 @@
       } else {
         window.location.href = url
       }
-    }}
-  />
+    }} />
 </main>
 
 <Dialog
   bind:isOpen={showSendMessageDialog}
   title="Send message?"
   description="Are you sure you want to send this message?"
-  onClose={() => (showSendMessageDialog = false)}
->
+  onClose={() => (showSendMessageDialog = false)}>
   {#snippet footer()}
     <Button
       variant="secondary"
       size="md"
       showEscHint
-      onclick={() => (showSendMessageDialog = false)}>Cancel</Button
-    >
+      onclick={() => (showSendMessageDialog = false)}>Cancel</Button>
     <Button variant="primary" size="md" onclick={executeSendMessage}
-      >Send message</Button
-    >
+      >Send message</Button>
   {/snippet}
 </Dialog>

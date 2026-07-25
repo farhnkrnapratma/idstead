@@ -24,7 +24,6 @@
     : isWarning ? 'font-semibold text-warning'
     : 'text-text-muted',
     className
-  )}
->
+  )}>
   {current}/{max}
 </span>

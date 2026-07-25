@@ -33,7 +33,6 @@
     variantStyles[variant],
     sizeStyles[size],
     className
-  )}
->
+  )}>
   {@render children?.()}
 </span>

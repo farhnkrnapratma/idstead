@@ -35,8 +35,7 @@
     'flex w-full flex-col gap-4 rounded-2xl border border-border-subtle bg-surface/60 p-5 shadow-xs backdrop-blur-lg transition-colors duration-300 sm:p-6',
     className
   )}
-  autocomplete="off"
->
+  autocomplete="off">
   {#if title || description}
     <div class="mb-1 select-none">
       {#if title}

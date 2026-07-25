@@ -25,8 +25,7 @@
   class={cn(
     'flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-muted select-none',
     className
-  )}
->
+  )}>
   {#if author}
     <div class="flex items-center gap-1.5 font-medium text-text-secondary">
       <i class="bi bi-person-circle text-copilot" aria-hidden="true"></i>

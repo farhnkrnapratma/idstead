@@ -39,7 +39,6 @@
     : 'border-border-default bg-surface text-text-secondary hover:border-border-strong hover:bg-surface-hover hover:text-text-primary',
     sizeStyles[size],
     className
-  )}
->
+  )}>
   {@render children?.()}
 </button>

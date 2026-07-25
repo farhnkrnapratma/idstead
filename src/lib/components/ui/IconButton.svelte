@@ -42,7 +42,6 @@
   class="inline-flex cursor-pointer items-center justify-center rounded-lg transition-colors select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50 {variantStyles[
     variant
   ]} {sizeStyles[size]} {className}"
-  {...restProps}
->
+  {...restProps}>
   {@render children?.()}
 </button>

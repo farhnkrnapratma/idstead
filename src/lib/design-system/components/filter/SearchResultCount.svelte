@@ -23,8 +23,7 @@
     className
   )}
   aria-live="polite"
-  aria-atomic="true"
->
+  aria-atomic="true">
   Showing <span class="font-semibold text-text-secondary">{count}</span> of
   <span class="font-semibold text-text-secondary">{total}</span>
   {itemLabel}

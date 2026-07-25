@@ -24,16 +24,14 @@
     'transition-all hover:border-border-subtle/80 hover:bg-surface-hover',
     'focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none',
     isOpen && 'border-border-subtle/60 bg-surface-hover'
-  )}
->
+  )}>
   <span class="truncate leading-none">{@render children()}</span>
   <span
     class="inline-flex h-4 w-4 shrink-0 origin-center items-center justify-center text-text-muted transition-transform duration-200 ease-out {(
       isOpen
     ) ?
       'rotate-180'
-    : ''}"
-  >
+    : ''}">
     <i class="bi bi-chevron-down text-[10px] leading-none" aria-hidden="true"
     ></i>
   </span>

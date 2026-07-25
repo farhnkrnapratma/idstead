@@ -35,8 +35,7 @@
       'mt-1 flex items-center gap-1.5 text-[11px] leading-tight font-medium select-none',
       typeStyles[type],
       className
-    )}
-  >
+    )}>
     <i class="bi {iconStyles[type]} text-xs" aria-hidden="true"></i>
     <span>{message}</span>
   </div>

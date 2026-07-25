@@ -82,9 +82,9 @@
 </script>
 
 <div
-  class="pointer-events-none fixed top-15 left-0 z-50 h-0.5 bg-copilot transition-all duration-75 ease-out select-none"
-  style="width: {scrollProgress}%"
-></div>
+  class="pointer-events-none fixed top-15 left-0 z-40 h-0.5 bg-copilot transition-all duration-75 ease-out select-none"
+  style="width: {scrollProgress}%">
+</div>
 
 {@render children()}
 
@@ -94,13 +94,11 @@
     class="fixed right-4 bottom-4 z-50 inline-flex h-10 w-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border-subtle bg-surface-card px-0 text-xs font-semibold text-text-primary shadow-lg transition-all select-none hover:bg-surface-hover hover:text-copilot sm:right-6 sm:bottom-6 sm:w-auto sm:px-4 sm:text-sm"
     onclick={scrollToTop}
     title="Scroll to top"
-    aria-label="Scroll to top"
-  >
+    aria-label="Scroll to top">
     <span
       class="material-symbols-rounded text-sm"
       style="font-variation-settings: 'wght' 300, 'opsz' 20;"
-      aria-hidden="true">vertical_align_top</span
-    >
+      aria-hidden="true">vertical_align_top</span>
     <span class="hidden sm:inline">Scroll to top</span>
   </button>
 {/if}
@@ -109,13 +107,11 @@
   <a
     href="/feedback"
     class="fixed bottom-4 left-4 z-50 inline-flex h-10 w-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border-subtle bg-surface-card px-0 text-xs font-semibold text-text-primary shadow-lg transition-all select-none hover:bg-surface-hover hover:text-copilot sm:bottom-6 sm:left-6 sm:w-auto sm:px-4 sm:text-sm"
-    title="Report an issue or give feedback"
-  >
+    title="Report an issue or give feedback">
     <span
       class="material-symbols-rounded text-sm"
       style="font-variation-settings: 'wght' 300, 'opsz' 20;"
-      aria-hidden="true">chat</span
-    >
+      aria-hidden="true">chat</span>
     <span class="hidden sm:inline">Feedback</span>
   </a>
 {/if}

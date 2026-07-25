@@ -30,7 +30,6 @@
     spacingStyles[spacing],
     bordered ? 'border-t border-border-subtle' : '',
     className
-  )}
->
+  )}>
   {@render children?.()}
 </section>

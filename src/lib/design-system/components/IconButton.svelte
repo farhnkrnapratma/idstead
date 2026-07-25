@@ -46,7 +46,6 @@
     sizeStyles[size],
     className
   )}
-  {...restProps}
->
+  {...restProps}>
   {@render children?.()}
 </button>

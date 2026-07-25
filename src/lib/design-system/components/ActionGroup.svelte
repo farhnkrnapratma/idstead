@@ -33,7 +33,6 @@
     alignStyles[align],
     gapStyles[gap],
     className
-  )}
->
+  )}>
   {@render children?.()}
 </div>

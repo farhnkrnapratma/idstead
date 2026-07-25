@@ -32,22 +32,19 @@
   <div
     class={cn('flex flex-wrap items-center gap-2 pt-2 select-none', className)}
     role="region"
-    aria-label="Active filters"
-  >
+    aria-label="Active filters">
     {#each chips as chip (chip.id)}
       <FilterChip
         label={chip.type}
         value={chip.value}
-        onRemove={() => onRemove(chip.type, chip.value)}
-      />
+        onRemove={() => onRemove(chip.type, chip.value)} />
     {/each}
 
     <Button
       variant="ghost"
       size="sm"
       onclick={onClearAll}
-      class="text-xs text-text-muted hover:text-text-primary"
-    >
+      class="text-xs text-text-muted hover:text-text-primary">
       {clearAllLabel}
     </Button>
   </div>

@@ -56,8 +56,7 @@
       interactiveStyles,
       className
     )}
-    {...restProps}
-  >
+    {...restProps}>
     {#if header}
       <div class="mb-4 border-b border-border-subtle pb-3">
         {@render header()}
@@ -80,8 +79,7 @@
       densityStyles[density],
       className
     )}
-    {...restProps}
-  >
+    {...restProps}>
     {#if header}
       <div class="mb-4 border-b border-border-subtle pb-3">
         {@render header()}

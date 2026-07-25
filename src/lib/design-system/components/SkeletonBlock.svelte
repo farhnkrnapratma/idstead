@@ -22,5 +22,5 @@
     height,
     width,
     className
-  )}
-></div>
+  )}>
+</div>
