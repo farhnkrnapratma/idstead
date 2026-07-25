@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
-  import { SvelteMap, SvelteSet } from 'svelte/reactivity';
   import type { PageProps } from './$types';
   import type { BlogComment } from './+page.server';
   import hljs from 'highlight.js';
@@ -10,6 +9,7 @@
     SpotlightSearch,
     Button,
     Checkbox,
+    CommentThread,
     EmptyState,
     StatusBanner,
     FormField,
@@ -154,11 +154,6 @@
 
       pre.parentNode?.insertBefore(headerBar, pre);
     });
-  }
-
-  interface FlatComment extends BlogComment {
-    children: FlatComment[];
-    reply_to_author?: string | null;
   }
 
   let currentPostId = $state<string | null>(null);
@@ -499,65 +494,6 @@
   let replyTo = $state<BlogComment | null>(null);
   let isSubmitting = $state(false);
   let feedbackMessage = $state<{ type: 'success' | 'error'; text: string } | null>(null);
-  const commentTree = $derived(buildCommentTree(comments));
-
-  function buildCommentTree(items: BlogComment[]): FlatComment[] {
-    const itemMap = new SvelteMap<string, BlogComment>();
-    for (const item of items) {
-      itemMap.set(item.id, item);
-    }
-
-    function getRootParentId(id: string): string {
-      let current = itemMap.get(id);
-      const visited = new SvelteSet<string>();
-      while (current && current.parent_id && itemMap.has(current.parent_id)) {
-        if (visited.has(current.id)) break;
-        visited.add(current.id);
-        current = itemMap.get(current.parent_id);
-      }
-      return current ? current.id : id;
-    }
-
-    const rootsMap = new SvelteMap<string, FlatComment>();
-    const rootsOrder: string[] = [];
-
-    for (const item of items) {
-      if (!item.parent_id || !itemMap.has(item.parent_id)) {
-        if (!rootsMap.has(item.id)) {
-          rootsMap.set(item.id, { ...item, children: [] });
-          rootsOrder.push(item.id);
-        }
-      }
-    }
-
-    for (const item of items) {
-      if (item.parent_id && itemMap.has(item.parent_id)) {
-        const rootId = getRootParentId(item.id);
-        const rootNode = rootsMap.get(rootId);
-        if (rootNode && item.id !== rootId) {
-          const directParent = itemMap.get(item.parent_id);
-          const reply_to_author = directParent ? getCommentAuthor(directParent) : undefined;
-          rootNode.children.push({
-            ...item,
-            reply_to_author,
-            children: [],
-          });
-        }
-      }
-    }
-
-    const sortFn = (a: FlatComment, b: FlatComment) =>
-      new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-
-    const roots = rootsOrder.map(id => rootsMap.get(id)!);
-    roots.sort(sortFn);
-
-    for (const root of roots) {
-      root.children.sort(sortFn);
-    }
-
-    return roots;
-  }
 
   function getCommentAuthor(comment: BlogComment) {
     return comment.is_anonymous ? 'Anonymous' : comment.author_name;
@@ -1165,211 +1101,143 @@
             title="No comments yet"
             description="Be the first to share your thoughts on this article." />
         {:else}
-          {#snippet commentNode(comment: FlatComment)}
-            <div class="relative flex flex-col gap-2">
-              {#if comment.children && comment.children.length > 0}
-                <!-- Vertical rail starting directly under parent avatar center (X=15px, Y=30px) -->
-                <div
-                  class="pointer-events-none absolute top-[30px] bottom-[16px] left-[15px] z-0 w-[2px] bg-text-muted/60"
-                  aria-hidden="true">
-                </div>
-              {/if}
+          <CommentThread
+            {comments}
+            {replyTo}
+            getIcon={getCommentIcon}>
+            {#snippet actions(comment)}
+              <time datetime={comment.created_at}>{formatBlogDate(comment.created_at)}</time>
+              <span aria-hidden="true">&middot;</span>
+              <button
+                type="button"
+                onclick={() => {
+                  replyTo = comment;
+                  feedbackMessage = null;
+                  commentContent = '';
+                }}
+                class="cursor-pointer font-bold text-text-muted transition-colors hover:text-accent focus-visible:outline-none">
+                Reply
+              </button>
+            {/snippet}
 
-              <div class="comment-row-wrapper relative flex items-start gap-2.5">
-                <div
-                  class="z-10 flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-full border border-border-subtle bg-surface-card text-text-secondary select-none">
+            {#snippet replyForm(comment)}
+              <form
+                novalidate
+                onsubmit={e => handleSubmit(e, comment.id)}
+                class="rounded-xl border border-border-subtle bg-surface-base/60 p-4">
+                <div class="mb-3 flex items-center justify-between gap-3">
+                  <p class="text-xs font-semibold text-text-secondary">
+                    Replying to {getCommentAuthor(comment)}
+                  </p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    showEscHint
+                    onclick={cancelReply}>Cancel</Button>
+                </div>
+
+                <div class="flex flex-col gap-4">
+                  <Checkbox
+                    id="reply-anon-{comment.id}"
+                    label="Comment anonymously"
+                    bind:checked={isAnonymous}
+                    aria-describedby="anon-help-reply-{comment.id}" />
                   <span
-                    class="material-symbols-rounded text-sm"
-                    style="font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;"
-                    aria-hidden="true">
-                    {getCommentIcon(comment)}
+                    id="anon-help-reply-{comment.id}"
+                    class="sr-only">
+                    If checked, your name is hidden and your comment is posted as Anonymous.
                   </span>
-                </div>
 
-                <div class="min-w-0 flex-1">
-                  <div
-                    class="inline-block max-w-full border border-border-subtle bg-surface-card/60 px-3.5 py-1.5 text-left shadow-2xs"
-                    style="border-radius: 16px;">
-                    <div class="text-xs font-bold text-text-primary/95">
-                      {getCommentAuthor(comment)}
-                    </div>
-                    <div
-                      class="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs leading-relaxed text-text-primary/90 sm:text-sm">
-                      {#if comment.reply_to_author}
-                        <span
-                          class="me-1 inline-flex shrink-0 items-center rounded-md bg-accent/10 px-1.5 py-0.5 text-[11px] font-semibold text-accent select-none">
-                          @{comment.reply_to_author}
-                        </span>
-                      {/if}
-                      <span class="whitespace-pre-line">{comment.content}</span>
+                  <div class="flex flex-col gap-1">
+                    <label
+                      for="reply-author-{comment.id}"
+                      class="text-xs font-bold text-text-primary select-none">
+                      Name {#if !isAnonymous}<span
+                          aria-hidden="true"
+                          class="text-danger">*</span
+                        ><span class="sr-only">(required)</span>{/if}
+                    </label>
+                    <div class="w-full">
+                      <input
+                        type="text"
+                        id="reply-author-{comment.id}"
+                        disabled={isAnonymous}
+                        aria-required={!isAnonymous}
+                        autocomplete="name"
+                        aria-invalid={!!errors.authorName}
+                        aria-describedby="reply-author-fb-{comment.id}"
+                        placeholder={isAnonymous ? 'Anonymous' : 'Enter your name'}
+                        bind:value={authorName}
+                        oninput={() => {
+                          errors.authorName = '';
+                          valid.authorName = false;
+                          validateAuthorName();
+                        }}
+                        class="w-full rounded-lg border border-border-subtle bg-surface-base px-3 py-1.5 text-sm text-text-primary transition-colors placeholder:text-text-muted/70 disabled:opacity-60"
+                        class:border-danger={errors.authorName}
+                        class:input-valid={valid.authorName && !isAnonymous} />
+                      <div
+                        id="reply-author-fb-{comment.id}"
+                        aria-live="polite"
+                        class="mt-1 h-4 text-xs leading-none font-medium">
+                        {#if errors.authorName}
+                          <span
+                            role="alert"
+                            class="flex items-center gap-1 text-danger">
+                            <i
+                              class="bi bi-exclamation-circle-fill"
+                              aria-hidden="true"></i
+                            >{errors.authorName}
+                          </span>
+                        {:else if valid.authorName && !isAnonymous}
+                          <span class="flex items-center gap-1 text-accent">
+                            <i
+                              class="bi bi-check-circle-fill"
+                              aria-hidden="true"></i
+                            >Looks good
+                          </span>
+                        {/if}
+                      </div>
                     </div>
                   </div>
 
-                  <div
-                    class="mt-0.5 ml-1.5 flex items-center gap-2 text-[10px] text-text-muted select-none">
-                    <time datetime={comment.created_at}>{formatBlogDate(comment.created_at)}</time>
-                    <span aria-hidden="true">&middot;</span>
-                    <button
-                      type="button"
-                      onclick={() => {
-                        replyTo = comment;
-                        feedbackMessage = null;
-                        commentContent = '';
+                  <FormField
+                    id="reply-msg-{comment.id}"
+                    label="Message"
+                    required
+                    error={errors.commentContent}
+                    valid={valid.commentContent}
+                    counter="{2000 - commentContent.length} left">
+                    <Textarea
+                      id="reply-msg-{comment.id}"
+                      rows={3}
+                      maxlength={2000}
+                      placeholder="Write your reply…"
+                      bind:value={commentContent}
+                      error={!!errors.commentContent}
+                      valid={valid.commentContent}
+                      oninput={() => {
+                        errors.commentContent = '';
+                        valid.commentContent = false;
+                        validateCommentContent();
                       }}
-                      class="cursor-pointer font-bold text-text-muted transition-colors hover:text-accent focus-visible:outline-none">
-                      Reply
-                    </button>
+                      aria-required="true" />
+                  </FormField>
+
+                  <div class="flex justify-end">
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      size="sm"
+                      disabled={isSubmitting}
+                      isLoading={isSubmitting}>
+                      {isSubmitting ? 'Posting…' : 'Post reply'}
+                    </Button>
                   </div>
-
-                  {#if replyTo?.id === comment.id}
-                    <form
-                      novalidate
-                      onsubmit={e => handleSubmit(e, comment.id)}
-                      class="mt-3 rounded-xl border border-border-subtle bg-surface-base/60 p-4">
-                      <div class="mb-3 flex items-center justify-between gap-3">
-                        <p class="text-xs font-semibold text-text-secondary">
-                          Replying to {getCommentAuthor(comment)}
-                        </p>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          showEscHint
-                          onclick={cancelReply}>Cancel</Button>
-                      </div>
-
-                      <div class="flex flex-col gap-4">
-                        <Checkbox
-                          id="reply-anon-{comment.id}"
-                          label="Comment anonymously"
-                          bind:checked={isAnonymous}
-                          aria-describedby="anon-help-reply-{comment.id}" />
-                        <span
-                          id="anon-help-reply-{comment.id}"
-                          class="sr-only">
-                          If checked, your name is hidden and your comment is posted as Anonymous.
-                        </span>
-
-                        <div class="flex flex-col gap-1">
-                          <label
-                            for="reply-author-{comment.id}"
-                            class="text-xs font-bold text-text-primary select-none">
-                            Name {#if !isAnonymous}<span
-                                aria-hidden="true"
-                                class="text-danger">*</span
-                              ><span class="sr-only">(required)</span>{/if}
-                          </label>
-                          <div class="w-full">
-                            <input
-                              type="text"
-                              id="reply-author-{comment.id}"
-                              disabled={isAnonymous}
-                              aria-required={!isAnonymous}
-                              autocomplete="name"
-                              aria-invalid={!!errors.authorName}
-                              aria-describedby="reply-author-fb-{comment.id}"
-                              placeholder={isAnonymous ? 'Anonymous' : 'Enter your name'}
-                              bind:value={authorName}
-                              oninput={() => {
-                                errors.authorName = '';
-                                valid.authorName = false;
-                                validateAuthorName();
-                              }}
-                              class="w-full rounded-lg border border-border-subtle bg-surface-base px-3 py-1.5 text-sm text-text-primary transition-colors placeholder:text-text-muted/70 disabled:opacity-60"
-                              class:border-danger={errors.authorName}
-                              class:input-valid={valid.authorName && !isAnonymous} />
-                            <div
-                              id="reply-author-fb-{comment.id}"
-                              aria-live="polite"
-                              class="mt-1 h-4 text-xs leading-none font-medium">
-                              {#if errors.authorName}
-                                <span
-                                  role="alert"
-                                  class="flex items-center gap-1 text-danger">
-                                  <i
-                                    class="bi bi-exclamation-circle-fill"
-                                    aria-hidden="true"></i
-                                  >{errors.authorName}
-                                </span>
-                              {:else if valid.authorName && !isAnonymous}
-                                <span class="flex items-center gap-1 text-accent">
-                                  <i
-                                    class="bi bi-check-circle-fill"
-                                    aria-hidden="true"></i
-                                  >Looks good
-                                </span>
-                              {/if}
-                            </div>
-                          </div>
-                        </div>
-
-                        <FormField
-                          id="reply-msg-{comment.id}"
-                          label="Message"
-                          required
-                          error={errors.commentContent}
-                          valid={valid.commentContent}
-                          counter="{2000 - commentContent.length} left">
-                          <Textarea
-                            id="reply-msg-{comment.id}"
-                            rows={3}
-                            maxlength={2000}
-                            placeholder="Write your reply…"
-                            bind:value={commentContent}
-                            error={!!errors.commentContent}
-                            valid={valid.commentContent}
-                            oninput={() => {
-                              errors.commentContent = '';
-                              valid.commentContent = false;
-                              validateCommentContent();
-                            }}
-                            aria-required="true" />
-                        </FormField>
-
-                        <div class="flex justify-end">
-                          <Button
-                            type="submit"
-                            variant="primary"
-                            size="sm"
-                            disabled={isSubmitting}
-                            isLoading={isSubmitting}>
-                            {isSubmitting ? 'Posting…' : 'Post reply'}
-                          </Button>
-                        </div>
-                      </div>
-                    </form>
-                  {/if}
                 </div>
-              </div>
-
-              {#if comment.children && comment.children.length > 0}
-                <div class="replies-container relative mt-3 flex flex-col gap-3.5 pl-9 sm:pl-9">
-                  {#each comment.children as child, i (child.id)}
-                    {@const isLast = i === comment.children.length - 1}
-                    <div class="child-wrapper relative">
-                      {#if !isLast}
-                        <div
-                          class="pointer-events-none absolute top-[15px] -left-[21px] h-[2px] w-[21px] bg-text-muted/60"
-                          aria-hidden="true">
-                        </div>
-                      {:else}
-                        <div
-                          class="pointer-events-none absolute top-0 -left-[21px] h-[16px] w-[21px] rounded-bl-xl border-b-2 border-l-2 border-text-muted/60"
-                          aria-hidden="true">
-                        </div>
-                      {/if}
-                      {@render commentNode(child)}
-                    </div>
-                  {/each}
-                </div>
-              {/if}
-            </div>
-          {/snippet}
-
-          <div class="flex flex-col gap-6">
-            {#each commentTree as rootComment (rootComment.id)}
-              {@render commentNode(rootComment)}
-            {/each}
-          </div>
+              </form>
+            {/snippet}
+          </CommentThread>
         {/if}
       </section>
     </article>

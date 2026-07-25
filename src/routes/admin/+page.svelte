@@ -9,6 +9,7 @@
     Textarea,
     FormField,
     Input,
+    CommentThread,
     LoadingState,
     EmptyState,
     SkipLink,
@@ -65,11 +66,6 @@
     is_approved: boolean;
     created_at: string;
     posts?: { title: string };
-  }
-
-  interface FlatAdminComment extends AdminComment {
-    children: FlatAdminComment[];
-    reply_to_author?: string | null;
   }
 
   let comments = $state<AdminComment[]>([]);
@@ -238,7 +234,7 @@
     };
   });
 
-  let postViewsMap = new SvelteMap<string, number>();
+  const postViewsMap = new SvelteMap<string, number>();
 
   async function fetchPosts() {
     const { data, error } = await supabase
@@ -251,11 +247,10 @@
       try {
         const { data: viewsData } = await supabase.from('post_views').select('post_id');
         if (viewsData) {
-          const sMap = new SvelteMap<string, number>();
+          postViewsMap.clear();
           for (const row of viewsData) {
-            sMap.set(row.post_id, (sMap.get(row.post_id) ?? 0) + 1);
+            postViewsMap.set(row.post_id, (postViewsMap.get(row.post_id) ?? 0) + 1);
           }
-          postViewsMap = sMap;
         }
       } catch (err) {
         console.error('Error fetching view counts:', err);
@@ -344,37 +339,6 @@
 
   function getPostComments(postId: string) {
     return comments.filter(comment => comment.post_id === postId);
-  }
-
-  function buildCommentTree(items: AdminComment[]): FlatAdminComment[] {
-    const commentMap = new SvelteMap<string, FlatAdminComment>();
-    for (const item of items) {
-      commentMap.set(item.id, { ...item, children: [] });
-    }
-
-    const roots: FlatAdminComment[] = [];
-
-    for (const item of items) {
-      const node = commentMap.get(item.id)!;
-      if (item.parent_id && commentMap.has(item.parent_id)) {
-        const parentNode = commentMap.get(item.parent_id)!;
-        node.reply_to_author = getCommentAuthor(parentNode);
-        parentNode.children.push(node);
-      } else {
-        roots.push(node);
-      }
-    }
-
-    const sortFn = (a: FlatAdminComment, b: FlatAdminComment) =>
-      new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-
-    roots.sort(sortFn);
-
-    for (const node of commentMap.values()) {
-      node.children.sort(sortFn);
-    }
-
-    return roots;
   }
 
   function getDescendantCommentIds(commentId: string, items: AdminComment[]) {
@@ -684,157 +648,87 @@
                 <div
                   id="comments-{post.id}"
                   class="mt-2 flex w-full flex-col gap-6 border-t border-border-subtle/50 pt-4">
-                  {#snippet commentNode(
-                    comment: FlatAdminComment,
-                    depth: number,
-                    isLastChildOfParent: boolean,
-                  )}
-                    <div class="relative flex flex-col gap-2.5">
-                      {#if comment.children && comment.children.length > 0}
-                        <!-- Vertical rail starting directly under parent avatar center (X=16px, Y=32px) -->
-                        <div
-                          class="pointer-events-none absolute top-[32px] bottom-[16px] left-[16px] z-0 w-[2px] bg-text-muted/60"
-                          aria-hidden="true">
-                        </div>
-                      {/if}
-
-                      <div class="comment-row-wrapper relative flex items-start gap-3">
-                        <div
-                          class="z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border-subtle bg-surface-elevated text-text-secondary"
-                          class:parent-avatar={comment.children && comment.children.length > 0}
-                          class:last-reply-avatar={isLastChildOfParent}
-                          aria-hidden="true">
-                          <span
-                            class="material-symbols-rounded text-sm text-text-secondary"
-                            style="font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;">
-                            {getCommentIcon(comment)}
-                          </span>
-                        </div>
-
-                        <div class="min-w-0 flex-1">
-                          <div
-                            class="inline-block max-w-full rounded-2xl border border-border-subtle bg-surface-card/70 px-4 py-2.5 text-left">
-                            <div class="text-xs font-bold text-text-primary">
-                              {getCommentAuthor(comment)}
-                            </div>
-                            <div
-                              class="mt-0.5 flex flex-wrap items-center gap-1.5 text-sm leading-relaxed text-text-secondary">
-                              {#if comment.reply_to_author}
-                                <span
-                                  class="inline-flex shrink-0 items-center rounded-full border border-border-subtle bg-border-subtle/30 px-2 py-0.5 text-xs leading-none font-semibold text-accent select-none">
-                                  {comment.reply_to_author}
-                                </span>
-                              {/if}
-                              <span class="whitespace-pre-line">{comment.content}</span>
-                            </div>
-                          </div>
-
-                          <div
-                            class="mt-1.5 ml-2 flex flex-wrap items-center gap-2 text-[10px] text-text-muted">
-                            <span>{formatBlogDate(comment.created_at)}</span>
-                            <span aria-hidden="true">&middot;</span>
-                            {#if !comment.is_approved}
-                              <Badge variant="warning">Hidden</Badge>
-                              <span aria-hidden="true">&middot;</span>
-                            {/if}
-                            {#if comment.is_approved}
-                              <button
-                                type="button"
-                                onclick={() => {
-                                  replyTo = comment;
-                                  commentContent = '';
-                                }}
-                                class="cursor-pointer font-bold text-text-muted transition-colors hover:text-accent focus-visible:outline-none">
-                                Reply
-                              </button>
-                              <span aria-hidden="true">&middot;</span>
-                            {/if}
-                            <button
-                              type="button"
-                              onclick={() => confirmDeleteComment(comment.id)}
-                              aria-label="Delete comment by {getCommentAuthor(comment)}"
-                              class="cursor-pointer font-bold text-[#FE4C25] transition-colors hover:text-[#e03e19] hover:underline focus-visible:outline-none">
-                              Delete
-                            </button>
-                          </div>
-
-                          {#if replyTo?.id === comment.id}
-                            <form
-                              onsubmit={e => handleAdminSubmit(e, comment.id, post.id)}
-                              class="mt-3 rounded-xl border border-border-subtle bg-surface-base p-4">
-                              <div class="mb-3 flex items-center justify-between gap-3">
-                                <p class="text-xs font-semibold text-text-secondary">
-                                  Replying as Admin to <span class="font-bold text-text-primary"
-                                    >{getCommentAuthor(comment)}</span>
-                                </p>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  showEscHint
-                                  onclick={() => {
-                                    replyTo = null;
-                                    commentContent = '';
-                                  }}>
-                                  Cancel
-                                </Button>
-                              </div>
-
-                              <div class="flex flex-col gap-2.5">
-                                <FormField
-                                  id="reply-msg-{comment.id}"
-                                  label="Message"
-                                  counter="{2000 - commentContent.length} characters left">
-                                  <Textarea
-                                    id="reply-msg-{comment.id}"
-                                    required
-                                    rows={3}
-                                    maxlength={2000}
-                                    placeholder="Write your reply…"
-                                    bind:value={commentContent} />
-                                </FormField>
-                                <div class="flex justify-end">
-                                  <Button
-                                    type="submit"
-                                    variant="primary"
-                                    size="sm"
-                                    isLoading={isSubmitting}>
-                                    {isSubmitting ? 'Posting…' : 'Post reply'}
-                                  </Button>
-                                </div>
-                              </div>
-                            </form>
-                          {/if}
-                        </div>
-                      </div>
-
-                      {#if comment.children && comment.children.length > 0}
-                        <div class="replies-container relative mt-3.5 flex flex-col gap-3.5 pl-10">
-                          {#each comment.children as child, i (child.id)}
-                            {@const isLast = i === comment.children.length - 1}
-                            <div class="child-wrapper relative">
-                              {#if !isLast}
-                                <div
-                                  class="pointer-events-none absolute top-[16px] -left-[24px] h-[2px] w-[24px] bg-text-muted/60"
-                                  aria-hidden="true">
-                                </div>
-                              {:else}
-                                <div
-                                  class="pointer-events-none absolute top-0 -left-[24px] h-[17px] w-[24px] rounded-bl-xl border-b-2 border-l-2 border-text-muted/60"
-                                  aria-hidden="true">
-                                </div>
-                              {/if}
-                              {@render commentNode(child, depth + 1, isLast)}
-                            </div>
-                          {/each}
-                        </div>
-                      {/if}
-                    </div>
-                  {/snippet}
-
                   {#if postComments.length > 0}
-                    {#each buildCommentTree(postComments) as rootComment (rootComment.id)}
-                      {@render commentNode(rootComment, 0, false)}
-                    {/each}
+                    <CommentThread
+                      comments={postComments}
+                      {replyTo}
+                      getIcon={getCommentIcon}>
+                      {#snippet actions(comment)}
+                        <time datetime={comment.created_at}
+                          >{formatBlogDate(comment.created_at)}</time>
+                        <span aria-hidden="true">&middot;</span>
+                        {#if !comment.is_approved}
+                          <Badge variant="warning">Hidden</Badge>
+                          <span aria-hidden="true">&middot;</span>
+                        {/if}
+                        {#if comment.is_approved}
+                          <button
+                            type="button"
+                            onclick={() => {
+                              replyTo = comment;
+                              commentContent = '';
+                            }}
+                            class="cursor-pointer font-bold text-text-muted transition-colors hover:text-accent focus-visible:outline-none">
+                            Reply
+                          </button>
+                          <span aria-hidden="true">&middot;</span>
+                        {/if}
+                        <button
+                          type="button"
+                          onclick={() => confirmDeleteComment(comment.id)}
+                          aria-label="Delete comment by {getCommentAuthor(comment)}"
+                          class="cursor-pointer font-bold text-[#FE4C25] transition-colors hover:text-[#e03e19] hover:underline focus-visible:outline-none">
+                          Delete
+                        </button>
+                      {/snippet}
+
+                      {#snippet replyForm(comment)}
+                        <form
+                          onsubmit={e => handleAdminSubmit(e, comment.id, post.id)}
+                          class="rounded-xl border border-border-subtle bg-surface-base p-4">
+                          <div class="mb-3 flex items-center justify-between gap-3">
+                            <p class="text-xs font-semibold text-text-secondary">
+                              Replying as Admin to <span class="font-bold text-text-primary"
+                                >{getCommentAuthor(comment)}</span>
+                            </p>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              showEscHint
+                              onclick={() => {
+                                replyTo = null;
+                                commentContent = '';
+                              }}>
+                              Cancel
+                            </Button>
+                          </div>
+
+                          <div class="flex flex-col gap-2.5">
+                            <FormField
+                              id="reply-msg-{comment.id}"
+                              label="Message"
+                              counter="{2000 - commentContent.length} characters left">
+                              <Textarea
+                                id="reply-msg-{comment.id}"
+                                required
+                                rows={3}
+                                maxlength={2000}
+                                placeholder="Write your reply…"
+                                bind:value={commentContent} />
+                            </FormField>
+                            <div class="flex justify-end">
+                              <Button
+                                type="submit"
+                                variant="primary"
+                                size="sm"
+                                isLoading={isSubmitting}>
+                                {isSubmitting ? 'Posting…' : 'Post reply'}
+                              </Button>
+                            </div>
+                          </div>
+                        </form>
+                      {/snippet}
+                    </CommentThread>
                   {:else}
                     <p
                       class="py-3 text-center text-xs font-medium text-text-muted italic select-none">
