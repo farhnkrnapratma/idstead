@@ -16,7 +16,7 @@
   let {
     title,
     subtitle = '',
-    icon = 'bi-envelope',
+    icon = 'bi-envelope-at',
     href = '',
     copyableText = '',
     class: className = '',

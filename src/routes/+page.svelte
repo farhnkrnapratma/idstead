@@ -32,7 +32,7 @@
 
   let {data} = $props()
 
-  type Section = 'home' | 'blogs' | 'contacts' | 'cv' | 'projects' | 'funding'
+  type Section = 'home' | 'blog' | 'contact' | 'cv' | 'projects' | 'funding'
 
   interface NavItem {
     id: Section
@@ -74,10 +74,10 @@
   const navItems: NavItem[] = [
     {id: 'home', label: 'Home'},
     {id: 'projects', label: 'Projects'},
-    {id: 'blogs', label: 'Blogs'},
+    {id: 'blog', label: 'Blog'},
     {id: 'cv', label: 'CV'},
     {id: 'funding', label: 'Funding'},
-    {id: 'contacts', label: 'Contacts'}
+    {id: 'contact', label: 'Contact'}
   ]
 
   const posts = $derived(data.posts || [])
@@ -90,12 +90,12 @@
     return res.publicUrl
   }
 
-  const contacts: Contact[] = [
+  const contact: Contact[] = [
     {
       label: 'Email',
       value: 'contact@fkp.my.id',
       href: 'mailto:contact@fkp.my.id',
-      icon: 'bi-envelope'
+      icon: 'bi-envelope-at'
     },
     {
       label: 'GitHub',
@@ -518,7 +518,7 @@
       if (typeof window !== 'undefined' && window.location.hash) {
         const hash = window.location.hash.substring(1) as Section
         if (
-          ['home', 'blogs', 'contacts', 'cv', 'projects', 'funding'].includes(
+          ['home', 'blog', 'contact', 'cv', 'projects', 'funding'].includes(
             hash
           )
         ) {
@@ -710,7 +710,7 @@
           {name}
         </h1>
         <p
-          class="relative z-10 mt-3 mb-2 text-lg font-medium text-text-secondary">
+          class="relative z-10 mt-3 mb-2 font-mono text-lg font-medium text-text-secondary">
           {headline}
         </p>
         <p
@@ -732,7 +732,7 @@
             Browse projects
           </button>
           <button
-            onclick={() => navigate('contacts')}
+            onclick={() => navigate('contact')}
             class="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-border-subtle bg-surface-card py-2 text-xs font-semibold whitespace-nowrap text-text-primary transition-colors hover:bg-surface-hover sm:mt-0 sm:w-48 sm:text-sm">
             Get in touch
           </button>
@@ -929,7 +929,7 @@
         {#if posts.length > 0}
           <div class="mt-4 flex justify-end">
             <button
-              onclick={() => navigate('blogs')}
+              onclick={() => navigate('blog')}
               class="group inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-copilot hover:underline">
               <span class="leading-none">View all posts</span>
               <span
@@ -1130,11 +1130,11 @@
     </section>
   {/if}
 
-  {#if activeSection === 'contacts'}
+  {#if activeSection === 'contact'}
     <LinkListSection
-      title="Contacts"
+      title="Contact"
       subtitle="Feel free to reach out via any of the channels below."
-      items={contacts} />
+      items={contact} />
   {/if}
 
   {#if activeSection === 'cv'}
@@ -1253,13 +1253,13 @@
     </section>
   {/if}
 
-  {#if activeSection === 'blogs'}
+  {#if activeSection === 'blog'}
     <section
       class="relative z-10 mx-auto w-full px-6 pt-10 pb-24 md:w-[80%] md:max-w-none md:pt-14 md:pb-28 lg:w-[50%]">
       <div class="mb-6 flex items-end justify-between gap-4">
         <div>
           <h1 class="text-3xl font-bold tracking-tight text-text-primary">
-            Blogs
+            Blog
           </h1>
           <p class="mt-2 text-sm text-text-secondary">
             Thoughts on Linux, security, and open source.

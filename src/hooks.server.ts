@@ -13,7 +13,7 @@ export const handle: Handle = async ({event, resolve}) => {
   const pathname = event.url.pathname.toLowerCase().replace(/\/$/, '')
 
   if (
-    ['/blogs', '/projects', '/contacts', '/cv', '/funding', '/home'].includes(
+    ['/blog', '/projects', '/contact', '/cv', '/funding', '/home'].includes(
       pathname
     )
   ) {
@@ -22,7 +22,7 @@ export const handle: Handle = async ({event, resolve}) => {
   }
 
   if (pathname === '/blog') {
-    throw redirect(307, '/#blogs')
+    throw redirect(307, '/#blog')
   }
 
   return resolve(event)

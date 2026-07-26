@@ -21,10 +21,10 @@
   const defaultNavItems: NavItem[] = [
     {label: 'Home', url: '/'},
     {label: 'Projects', url: '/#projects'},
-    {label: 'Blogs', url: '/#blogs'},
+    {label: 'Blog', url: '/#blog'},
     {label: 'CV', url: '/#cv'},
     {label: 'Funding', url: '/#funding'},
-    {label: 'Contacts', url: '/#contacts'}
+    {label: 'Contact', url: '/#contact'}
   ]
 
   type Theme = 'auto' | 'dark' | 'light'
@@ -108,20 +108,20 @@
               class="grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs font-normal text-text-secondary">
               {#each resolvedNavItems as item, index (item.url)}
                 <li
-                  class="text-xs leading-[29px] {index % 2 === 0 ?
+                  class="text-xs leading-7.25 {index % 2 === 0 ?
                     'md:pl-2.5'
                   : ''}">
                   {#if onNavClick}
                     <button
                       type="button"
                       onclick={() => onNavClick(item.url)}
-                      class="cursor-pointer text-left text-xs leading-[29px] font-normal text-text-secondary transition-colors hover:text-copilot focus-visible:text-copilot focus-visible:outline-none">
+                      class="cursor-pointer text-left text-xs leading-7.25 font-normal text-text-secondary transition-colors hover:text-copilot focus-visible:text-copilot focus-visible:outline-none">
                       {item.label}
                     </button>
                   {:else}
                     <a
                       href={item.url}
-                      class="cursor-pointer text-left text-xs leading-[29px] font-normal text-text-secondary transition-colors hover:text-copilot focus-visible:text-copilot focus-visible:outline-none">
+                      class="cursor-pointer text-left text-xs leading-7.25 font-normal text-text-secondary transition-colors hover:text-copilot focus-visible:text-copilot focus-visible:outline-none">
                       {item.label}
                     </a>
                   {/if}
