@@ -1,8 +1,17 @@
 <!-- @format -->
 <script lang="ts">
+  import {page} from '$app/state'
   import {supabase} from '$lib/supabase'
   import {onMount} from 'svelte'
-  import {Card, FormField, Input, Button, IconButton, SkipLink} from '$lib'
+  import {
+    Card,
+    FormField,
+    Input,
+    Button,
+    IconButton,
+    SkipLink,
+    StatusBanner
+  } from '$lib'
 
   let email = $state('')
   let password = $state('')
@@ -12,6 +21,8 @@
   let valid = $state({email: false, password: false})
   let showToast = $state(false)
   let toastMessage = $state('')
+  let pageAuthor = $derived((page?.data as any)?.author)
+  let authorName = $derived(pageAuthor?.name || 'Admin')
 
   function triggerToast(msg: string) {
     toastMessage = msg
@@ -116,7 +127,9 @@
   id="main-content"
   class="flex min-h-[calc(100vh-3.75rem)] flex-col items-center justify-center pt-15 font-sans">
   <div class="flex w-full max-w-sm flex-1 flex-col justify-center px-6 py-10">
-    <Card variant="glass" class="p-6">
+    <Card
+      variant="glass"
+      class="p-6">
       <div class="mb-6 flex flex-col items-center text-center select-none">
         <div class="flex items-center gap-2">
           <span
@@ -129,7 +142,10 @@
         </p>
       </div>
 
-      <form novalidate onsubmit={handleLogin} class="flex flex-col gap-3">
+      <form
+        novalidate
+        onsubmit={handleLogin}
+        class="flex flex-col gap-3">
         <FormField
           id="login-email"
           label="Email"
@@ -215,19 +231,16 @@
   <footer
     class="w-full px-6 py-8 text-center font-sans text-xs text-text-muted select-none">
     <p>
-      &copy; {new Date().getFullYear()} Farhan Kurnia Pratama. All rights reserved.
+      &copy; {new Date().getFullYear()}
+      {authorName}. All rights reserved.
     </p>
   </footer>
 
   {#if showToast}
-    <div
-      role="status"
-      aria-live="polite"
-      class="fixed bottom-6 left-1/2 z-110 flex -translate-x-1/2 items-center gap-2 rounded-full border border-border-subtle bg-surface-elevated/90 px-4 py-2 text-xs font-semibold text-text-primary shadow-lg backdrop-blur-md transition-all duration-300">
-      <i
-        class="bi bi-exclamation-circle-fill text-sm text-danger"
-        aria-hidden="true"></i>
-      {toastMessage}
+    <div class="fixed bottom-6 left-1/2 z-110 -translate-x-1/2">
+      <StatusBanner
+        type="error"
+        message={toastMessage} />
     </div>
   {/if}
 </main>

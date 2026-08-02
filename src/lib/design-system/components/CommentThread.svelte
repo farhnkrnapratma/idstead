@@ -1,5 +1,7 @@
 <!-- @format -->
-<script lang="ts" module>
+<script
+  lang="ts"
+  module>
   export interface CommentItem {
     id: string
     post_id: string
@@ -18,7 +20,9 @@
   }
 </script>
 
-<script lang="ts" generics="T extends CommentItem">
+<script
+  lang="ts"
+  generics="T extends CommentItem">
   import type {Snippet} from 'svelte'
   import {SvelteMap, SvelteSet} from 'svelte/reactivity'
   import {formatBlogDate} from '../../utils/formatters'

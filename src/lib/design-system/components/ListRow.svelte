@@ -69,7 +69,9 @@
     )}>
     <div class="flex min-w-0 shrink-0 items-center gap-3.5">
       {#if icon}
-        <i class="bi {icon} text-lg {iconColor}" aria-hidden="true"></i>
+        <i
+          class="bi {icon} text-lg {iconColor}"
+          aria-hidden="true"></i>
       {/if}
       <div class="flex min-w-0 flex-col">
         <span class="truncate text-sm font-semibold text-text-primary"

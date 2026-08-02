@@ -1,0 +1,63 @@
+{
+  "nodes": [
+    {
+      "id": "home_hanz_projects_www_agents_skills_security_audit_hunting_md",
+      "label": "HUNTING.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/security-audit/HUNTING.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "home_hanz_projects_www_agents_skills_security_audit_hunting_vulnerability_hunting",
+      "label": "Vulnerability Hunting",
+      "file_type": "document",
+      "source_file": ".agents/skills/security-audit/HUNTING.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "home_hanz_projects_www_agents_skills_security_audit_hunting_phase_2_hunt_for_vulnerabilities",
+      "label": "Phase 2: Hunt for vulnerabilities",
+      "file_type": "document",
+      "source_file": ".agents/skills/security-audit/HUNTING.md",
+      "source_location": "L3"
+    },
+    {
+      "id": "home_hanz_projects_www_agents_skills_security_audit_hunting_hunting_methodology_include_in_every_phase_2_agent_prompt",
+      "label": "Hunting methodology \u2014 include in every Phase 2 agent prompt",
+      "file_type": "document",
+      "source_file": ".agents/skills/security-audit/HUNTING.md",
+      "source_location": "L18"
+    }
+  ],
+  "edges": [
+    {
+      "source": "home_hanz_projects_www_agents_skills_security_audit_hunting_md",
+      "target": "home_hanz_projects_www_agents_skills_security_audit_hunting_vulnerability_hunting",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/security-audit/HUNTING.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "home_hanz_projects_www_agents_skills_security_audit_hunting_vulnerability_hunting",
+      "target": "home_hanz_projects_www_agents_skills_security_audit_hunting_phase_2_hunt_for_vulnerabilities",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/security-audit/HUNTING.md",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "home_hanz_projects_www_agents_skills_security_audit_hunting_phase_2_hunt_for_vulnerabilities",
+      "target": "home_hanz_projects_www_agents_skills_security_audit_hunting_hunting_methodology_include_in_every_phase_2_agent_prompt",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/security-audit/HUNTING.md",
+      "source_location": "L18",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

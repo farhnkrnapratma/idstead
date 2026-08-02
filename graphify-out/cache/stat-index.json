@@ -1,273 +1,128 @@
 {
-  "/home/hanz/Projects/www/.gemini/settings.json": {
-    "size": 219,
-    "mtime_ns": 1783497389211346209,
-    "word_count": 15,
+  ".github/FUNDING.yml": {
+    "size": 91,
+    "mtime_ns": 1784972264936016392,
+    "word_count": 8,
     "hashes": {
-      ".gemini/settings.json": "8207ad89ff59cb8e22f70be40b7cc214d1abec9fcd2261c44f762dd3daf93a7e"
+      ".github/funding.yml": "c2955d785818a916cce8c35f265486767cc12ff29a2d6fc3464f7260e69cc8f1"
     }
   },
-  "/home/hanz/Projects/www/.github/FUNDING.yml": {
-    "size": 80,
-    "mtime_ns": 1783094324369037984,
-    "word_count": 6,
+  ".github/dependabot.yml": {
+    "size": 112,
+    "mtime_ns": 1785210041034137233,
+    "word_count": 13,
     "hashes": {
-      ".github/funding.yml": "0e1ece36c0c5b5c377cdc5a5879b72cdfb5bdeb59e30ad8689f48542d0dd604b"
+      ".github/dependabot.yml": "7555b4960f04b8676eca34e55e4bcf7a7833200199f48e5c9ae5626c7be5983f"
     }
   },
-  "/home/hanz/Projects/www/.github/dependabot.yml": {
-    "size": 107,
-    "mtime_ns": 1783094324369423374,
-    "word_count": 11,
+  ".mcp.json": {
+    "size": 275,
+    "mtime_ns": 1785408623613324759,
+    "word_count": 22,
     "hashes": {
-      ".github/dependabot.yml": "51b782d723d74fc37e98d21bc8115a24eb396b4755d055f604951261683ffa95"
+      ".mcp.json": "bb73c65493fafb4c88fe720d2f9891296b57a09a49e49824c721fc657faa9833"
     }
   },
-  "/home/hanz/Projects/www/.mcp.json": {
-    "size": 145,
-    "mtime_ns": 1784526700948003204,
-    "word_count": 16,
+  "README.md": {
+    "size": 2978,
+    "mtime_ns": 1785213331479317348,
+    "word_count": 385,
     "hashes": {
-      ".mcp.json": "4d273728c6d5e8ce222f4396f397f88373708a3b20e3713eea0da5c2c788de39"
+      "readme.md": "0dac555452f920afb8cc6a31c44b0cd4816d7618b7c9b816708f2fc539723e03"
     }
   },
-  "/home/hanz/Projects/www/.serena/memories/memory_maintenance.md": {
-    "size": 2043,
-    "mtime_ns": 1783680870848417058,
-    "word_count": 291,
-    "hash": "e91af6f48fe324e3bd4fa51652a3b536abcc2487e8ae7b08884eacba81e5ec68"
+  "eslint.config.js": {
+    "size": 1163,
+    "mtime_ns": 1785306549664697648,
+    "word_count": 89
   },
-  "/home/hanz/Projects/www/.serena/memories/www/conventions.md": {
-    "size": 282,
-    "mtime_ns": 1783680979024350210,
-    "word_count": 35,
-    "hash": "bedd455e0f9896a088937113086b704004bf1b2d84839e9e1fbf052b486cf5e8"
-  },
-  "/home/hanz/Projects/www/.serena/memories/www/core.md": {
-    "size": 285,
-    "mtime_ns": 1783680977117642624,
-    "word_count": 36,
-    "hash": "a2dfaab7b6260f47aaf2204a943a9d12c3bc84d8968bb615438198b44574096e"
-  },
-  "/home/hanz/Projects/www/.serena/memories/www/suggested_commands.md": {
-    "size": 220,
-    "mtime_ns": 1783680974708071858,
-    "word_count": 37,
-    "hash": "3aa57f89533d2f733e9e56d4da17a86a2ad4d4511b08777adeba3d6119ea3a33"
-  },
-  "/home/hanz/Projects/www/.serena/memories/www/task_completion.md": {
-    "size": 199,
-    "mtime_ns": 1783680972802280400,
-    "word_count": 34,
-    "hash": "b92e9705c29c003208db3547390db1c595600375aeeb24fb8fcbdf3b52780fe4"
-  },
-  "/home/hanz/Projects/www/.serena/memories/www/tech_stack.md": {
-    "size": 218,
-    "mtime_ns": 1783680976013022633,
-    "word_count": 29,
-    "hash": "9a684b611188d60bfcaaf9f70b325b9d145933172e043dc8a7f96c1ce84dcabf"
-  },
-  "/home/hanz/Projects/www/.serena/project.yml": {
-    "size": 9142,
-    "mtime_ns": 1783680849495463285,
-    "word_count": 1228,
-    "hash": "3f88d7a49733183e446e9652244037908fec6ba1908423aa9b7c408032f09844"
-  },
-  "/home/hanz/Projects/www/.vscode/extensions.json": {
-    "size": 151,
-    "mtime_ns": 1783497389265894949,
-    "word_count": 9,
+  "package.json": {
+    "size": 2094,
+    "mtime_ns": 1785365065377673047,
+    "word_count": 170,
     "hashes": {
-      ".vscode/extensions.json": "20a2a7b114e53a2449a78956b311a8995f35fc17042fb1a3c860b0fd8022d657"
+      "package.json": "7939be2f9b1de80ff4123dc9f5ccefe0d4fa72e4c0edb90c9d9c0e2ec061ce4f"
     }
   },
-  "/home/hanz/Projects/www/.vscode/settings.json": {
-    "size": 61,
-    "mtime_ns": 1783497389269894992,
-    "word_count": 7,
-    "hashes": {
-      ".vscode/settings.json": "baeac21a2dfefaa2e640df5f7911e74f3cc8134c86e1bc17dbac0e0d58848c41"
-    }
-  },
-  "/home/hanz/Projects/www/GEMINI.md": {
-    "size": 1445,
-    "mtime_ns": 1783094324369630899,
-    "word_count": 219,
-    "hashes": {
-      "gemini.md": "ab44bf199c0541f6d6653dc20629dd21180a9edfe4bf6f9b1e7ed437f1258307"
-    }
-  },
-  "/home/hanz/Projects/www/README.md": {
-    "size": 491,
-    "mtime_ns": 1783695288551036925,
-    "word_count": 81,
-    "hashes": {
-      "readme.md": "3d788cc61bb556ad770deff4a5d53c8bdca2fb48fddfc46d088e80b312835c08"
-    }
-  },
-  "/home/hanz/Projects/www/eslint.config.js": {
-    "size": 1027,
-    "mtime_ns": 1784551058972787206,
-    "word_count": 88
-  },
-  "/home/hanz/Projects/www/package.json": {
-    "size": 2021,
-    "mtime_ns": 1784966784698155986,
-    "word_count": 164,
-    "hashes": {
-      "package.json": "5282d6bdf30237f37a4536ffbd5da04a91d1ae5a10427ce602253a743ecc188e"
-    }
-  },
-  "/home/hanz/Projects/www/prettier.config.ts": {
-    "size": 879,
-    "mtime_ns": 1784872102233920797,
-    "word_count": 77
-  },
-  "/home/hanz/Projects/www/src/app.d.ts": {
-    "size": 158,
-    "mtime_ns": 1783497541341533645,
-    "word_count": 21
-  },
-  "/home/hanz/Projects/www/src/app.html": {
-    "size": 3436,
-    "mtime_ns": 1784947569502546735,
-    "word_count": 233,
-    "hashes": {
-      "src/app.html": "b5d7cb5fa99cebdc2fea6eb8985041dfdb2ee62194b4fde6e1c3c485e03b109e"
-    }
-  },
-  "/home/hanz/Projects/www/src/lib/LinkListSection.svelte": {
-    "size": 1221,
-    "mtime_ns": 1784808940444574293,
+  "prettier.config.ts": {
+    "size": 1237,
+    "mtime_ns": 1785210493714319932,
     "word_count": 104
   },
-  "/home/hanz/Projects/www/src/lib/ShinyText.svelte": {
-    "size": 1079,
-    "mtime_ns": 1783497547626601370,
-    "word_count": 109
+  "src/app.d.ts": {
+    "size": 889,
+    "mtime_ns": 1785367565690607591,
+    "word_count": 97
   },
-  "/home/hanz/Projects/www/src/lib/index.ts": {
-    "size": 304,
-    "mtime_ns": 1784731828268726240,
-    "word_count": 34
-  },
-  "/home/hanz/Projects/www/src/lib/nameValidator.ts": {
-    "size": 1509,
-    "mtime_ns": 1784969582394754172,
-    "word_count": 154
-  },
-  "/home/hanz/Projects/www/src/lib/supabase.ts": {
-    "size": 856,
-    "mtime_ns": 1784632955754399998,
-    "word_count": 80
-  },
-  "/home/hanz/Projects/www/src/routes/+error.svelte": {
-    "size": 936,
-    "mtime_ns": 1784949144778008735,
-    "word_count": 92
-  },
-  "/home/hanz/Projects/www/src/routes/+layout.svelte": {
-    "size": 3895,
-    "mtime_ns": 1784949158210153605,
-    "word_count": 351
-  },
-  "/home/hanz/Projects/www/src/routes/+page.server.ts": {
-    "size": 4227,
-    "mtime_ns": 1784683326890217663,
-    "word_count": 438
-  },
-  "/home/hanz/Projects/www/src/routes/+page.svelte": {
-    "size": 62671,
-    "mtime_ns": 1784950421497650674,
-    "word_count": 4423
-  },
-  "/home/hanz/Projects/www/src/routes/admin/+page.svelte": {
-    "size": 28563,
-    "mtime_ns": 1784949338487597686,
-    "word_count": 2091
-  },
-  "/home/hanz/Projects/www/src/routes/admin/login/+page.svelte": {
-    "size": 7028,
-    "mtime_ns": 1784969871770663222,
-    "word_count": 612
-  },
-  "/home/hanz/Projects/www/src/routes/admin/new/+page.svelte": {
-    "size": 55003,
-    "mtime_ns": 1784951552600200048,
-    "word_count": 4308
-  },
-  "/home/hanz/Projects/www/src/routes/api/comments/+server.ts": {
-    "size": 6288,
-    "mtime_ns": 1784810080719544687,
-    "word_count": 716
-  },
-  "/home/hanz/Projects/www/src/routes/blog/[slug]/+page.server.ts": {
-    "size": 4313,
-    "mtime_ns": 1784837462857843151,
-    "word_count": 471
-  },
-  "/home/hanz/Projects/www/src/routes/blog/[slug]/+page.svelte": {
-    "size": 53596,
-    "mtime_ns": 1784949796266093160,
-    "word_count": 3910
-  },
-  "/home/hanz/Projects/www/static/android-chrome-192x192.png": {
-    "size": 40347,
-    "mtime_ns": 1783094324370287167,
-    "word_count": 1555,
+  "src/app.html": {
+    "size": 3268,
+    "mtime_ns": 1785367565730607988,
+    "word_count": 215,
     "hashes": {
-      "static/android-chrome-192x192.png": "08af19124c27b2aca8a31b6ffd955d29ef1a9e20ea8f9434015939f6f41d25ca"
+      "src/app.html": "d54b028a481193cb1e4928546db3a90aba4228f46058dec9f2d26c788415efb2"
     }
   },
-  "/home/hanz/Projects/www/static/android-chrome-512x512.png": {
-    "size": 199198,
-    "mtime_ns": 1783094324370477270,
-    "word_count": 7607,
-    "hashes": {
-      "static/android-chrome-512x512.png": "5bf7a5e3bc1e7dd284b80e24c0b47fbe5f07498c368811ccbf524ee0c2b759bc"
-    }
+  "src/lib/index.ts": {
+    "size": 497,
+    "mtime_ns": 1785367576167711764,
+    "word_count": 48
   },
-  "/home/hanz/Projects/www/static/apple-touch-icon.png": {
-    "size": 36037,
-    "mtime_ns": 1783094324370477270,
-    "word_count": 1483,
-    "hashes": {
-      "static/apple-touch-icon.png": "3f757c186aca683345c67fe9a49e4f5747f46dcffde3aaee05a1f58087557915"
-    }
+  "src/lib/supabase.ts": {
+    "size": 887,
+    "mtime_ns": 1785376112169292183,
+    "word_count": 79
   },
-  "/home/hanz/Projects/www/static/favicon-16x16.png": {
-    "size": 749,
-    "mtime_ns": 1783094324370477270,
-    "word_count": 25,
-    "hashes": {
-      "static/favicon-16x16.png": "390d2d5fad56e76b2f9dd3a1d425b2ff88aafb0e7e1a9d344af8dc860b59fab4"
-    }
+  "src/routes/+error.svelte": {
+    "size": 941,
+    "mtime_ns": 1785367587911828535,
+    "word_count": 89
   },
-  "/home/hanz/Projects/www/static/favicon-32x32.png": {
-    "size": 2207,
-    "mtime_ns": 1783094324370477270,
-    "word_count": 69,
-    "hashes": {
-      "static/favicon-32x32.png": "850a618b12bfd042863224a71806f900382a872c9ff5a77d8bbaf3fb16d35f5d"
-    }
+  "src/routes/+layout.svelte": {
+    "size": 3426,
+    "mtime_ns": 1785367998223908235,
+    "word_count": 300
   },
-  "/home/hanz/Projects/www/static/hero.png": {
-    "size": 63858,
-    "mtime_ns": 1783094324370866627,
-    "word_count": 2074,
-    "hashes": {
-      "static/hero.png": "f834136bfe882d017334b793a89a28e3831e0c13b09e3c62461e38d0a8796765"
-    }
+  "src/routes/+page.server.ts": {
+    "size": 4638,
+    "mtime_ns": 1785367577216722194,
+    "word_count": 442
   },
-  "/home/hanz/Projects/www/static/universed.jpeg": {
-    "size": 75578,
-    "mtime_ns": 1783419781732103525,
-    "word_count": 1556,
-    "hashes": {
-      "static/universed.jpeg": "c983525d02fdaf001cbf1ccedcc317e6a40ba8035e54a3690ef8dc043c762e6c"
-    }
+  "src/routes/+page.svelte": {
+    "size": 60905,
+    "mtime_ns": 1785368787476824939,
+    "word_count": 4231
   },
-  "/home/hanz/Projects/www/tsconfig.json": {
+  "src/routes/admin/+page.svelte": {
+    "size": 105238,
+    "mtime_ns": 1785372838955082426,
+    "word_count": 7175
+  },
+  "src/routes/admin/login/+page.svelte": {
+    "size": 7019,
+    "mtime_ns": 1785367591084860085,
+    "word_count": 603
+  },
+  "src/routes/admin/new/+page.svelte": {
+    "size": 53559,
+    "mtime_ns": 1785367592017869362,
+    "word_count": 4156
+  },
+  "src/routes/api/comments/+server.ts": {
+    "size": 6360,
+    "mtime_ns": 1785367580982759640,
+    "word_count": 669
+  },
+  "src/routes/blog/[slug]/+page.server.ts": {
+    "size": 4415,
+    "mtime_ns": 1785367582484774574,
+    "word_count": 462
+  },
+  "src/routes/blog/[slug]/+page.svelte": {
+    "size": 49948,
+    "mtime_ns": 1785367593648885579,
+    "word_count": 3577
+  },
+  "tsconfig.json": {
     "size": 330,
     "mtime_ns": 1783497390750910951,
     "word_count": 25,
@@ -275,565 +130,1080 @@
       "tsconfig.json": "9a0ae464b64ce22f4a439d1c240e7aa49a3ed8689a9d9192e4dac45c2f98a072"
     }
   },
-  "/home/hanz/Projects/www/vite.config.ts": {
-    "size": 451,
-    "mtime_ns": 1784872088672789621,
-    "word_count": 45
+  "vite.config.ts": {
+    "size": 710,
+    "mtime_ns": 1785152061586249546,
+    "word_count": 61
   },
-  "/home/hanz/Projects/www/.agents/mcp_config.json": {
-    "size": 105,
-    "mtime_ns": 1784526697084964937,
-    "word_count": 12,
+  ".agents/mcp_config.json": {
+    "size": 75,
+    "mtime_ns": 1785210128139296616,
+    "word_count": 6,
     "hashes": {
-      ".agents/mcp_config.json": "90efa5a0e004d91738e7765c047f2cd7543e08b0120c3e043d3fc19fed2bf182"
+      ".agents/mcp_config.json": "9e9805fa88e02e00b719dc109ce2535073a91ed6e77f74bf7fca03284f31e99f"
     }
   },
-  "/home/hanz/Projects/www/AGENTS.md": {
-    "size": 1445,
-    "mtime_ns": 1784520589721257198,
-    "word_count": 219,
+  "AGENTS.md": {
+    "size": 1463,
+    "mtime_ns": 1784972264997983449,
+    "word_count": 222,
     "hashes": {
-      "agents.md": "463342b32dfe487bbf87d4f6567b89a5c71ef78497d596a105df117583cfaf05"
+      "agents.md": "155592c068099d89b99158b41696f082d352711d93dae202cf080e200257438a"
     }
   },
-  "/home/hanz/Projects/www/src/hooks.server.ts": {
-    "size": 615,
-    "mtime_ns": 1784875338291742036,
-    "word_count": 63
-  },
-  "/home/hanz/Projects/www/src/lib/ConfirmationDialog.svelte": {
-    "size": 1556,
-    "mtime_ns": 1784738616851333313,
-    "word_count": 144
-  },
-  "/home/hanz/Projects/www/src/lib/SpotlightSearch.svelte": {
-    "size": 16466,
-    "mtime_ns": 1784951237786724274,
-    "word_count": 1220
-  },
-  "/home/hanz/Projects/www/src/lib/actions.ts": {
-    "size": 996,
-    "mtime_ns": 1784837677917918982,
-    "word_count": 79
-  },
-  "/home/hanz/Projects/www/src/lib/components/ConsentBanner.svelte": {
-    "size": 23310,
-    "mtime_ns": 1784967862154810967,
-    "word_count": 1562
-  },
-  "/home/hanz/Projects/www/src/lib/components/ui/ActionGroup.svelte": {
-    "size": 662,
-    "mtime_ns": 1784671627177946197,
-    "word_count": 83
-  },
-  "/home/hanz/Projects/www/src/lib/components/ui/Badge.svelte": {
-    "size": 1053,
-    "mtime_ns": 1784950191786782855,
-    "word_count": 112
-  },
-  "/home/hanz/Projects/www/src/lib/components/ui/Button.svelte": {
-    "size": 2425,
-    "mtime_ns": 1784949158207156155,
-    "word_count": 219
-  },
-  "/home/hanz/Projects/www/src/lib/components/ui/Card.svelte": {
-    "size": 2305,
-    "mtime_ns": 1784671627296247663,
-    "word_count": 203
-  },
-  "/home/hanz/Projects/www/src/lib/components/ui/Checkbox.svelte": {
-    "size": 914,
-    "mtime_ns": 1784967102642221316,
-    "word_count": 84
-  },
-  "/home/hanz/Projects/www/src/lib/components/ui/Dialog.svelte": {
-    "size": 3491,
-    "mtime_ns": 1784967507833955670,
-    "word_count": 307
-  },
-  "/home/hanz/Projects/www/src/lib/components/ui/FormField.svelte": {
-    "size": 1582,
-    "mtime_ns": 1784967564945393693,
-    "word_count": 139
-  },
-  "/home/hanz/Projects/www/src/lib/components/ui/IconButton.svelte": {
-    "size": 1345,
-    "mtime_ns": 1784949144770008649,
-    "word_count": 125
-  },
-  "/home/hanz/Projects/www/src/lib/components/ui/Input.svelte": {
-    "size": 999,
-    "mtime_ns": 1784967485327643127,
-    "word_count": 110
-  },
-  "/home/hanz/Projects/www/src/lib/components/ui/ListRow.svelte": {
-    "size": 2275,
-    "mtime_ns": 1784949144770008649,
-    "word_count": 193
-  },
-  "/home/hanz/Projects/www/src/lib/components/ui/SectionHeader.svelte": {
-    "size": 831,
-    "mtime_ns": 1784671627651251422,
-    "word_count": 90
-  },
-  "/home/hanz/Projects/www/src/lib/components/ui/Select.svelte": {
-    "size": 984,
-    "mtime_ns": 1784967602442264630,
-    "word_count": 105
-  },
-  "/home/hanz/Projects/www/src/lib/components/ui/Textarea.svelte": {
-    "size": 1522,
-    "mtime_ns": 1784967786364653243,
+  "src/hooks.server.ts": {
+    "size": 1877,
+    "mtime_ns": 1785367565774608426,
     "word_count": 138
   },
-  "/home/hanz/Projects/www/src/lib/design-system/article/ArticleHeader.svelte": {
-    "size": 784,
-    "mtime_ns": 1784671627827771300,
-    "word_count": 85
+  "src/lib/components/ConsentBanner.svelte": {
+    "size": 23584,
+    "mtime_ns": 1785367580233752193,
+    "word_count": 1574
   },
-  "/home/hanz/Projects/www/src/lib/design-system/article/ArticleMeta.svelte": {
-    "size": 1516,
-    "mtime_ns": 1784949144770008649,
-    "word_count": 134
+  "src/lib/components/ui/ActionGroup.svelte": {
+    "size": 679,
+    "mtime_ns": 1785367580295752809,
+    "word_count": 84
   },
-  "/home/hanz/Projects/www/src/lib/design-system/article/HelpfulBlock.svelte": {
-    "size": 1878,
-    "mtime_ns": 1784949144770008649,
-    "word_count": 164
+  "src/lib/components/ui/Badge.svelte": {
+    "size": 1070,
+    "mtime_ns": 1785367580355753406,
+    "word_count": 111
   },
-  "/home/hanz/Projects/www/src/lib/design-system/article/Prose.svelte": {
-    "size": 1701,
-    "mtime_ns": 1784950191787018842,
-    "word_count": 109
+  "src/lib/components/ui/Button.svelte": {
+    "size": 2385,
+    "mtime_ns": 1785367580450754350,
+    "word_count": 218
   },
-  "/home/hanz/Projects/www/src/lib/design-system/components/ActionGroup.svelte": {
-    "size": 701,
-    "mtime_ns": 1784671627950794354,
-    "word_count": 89
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/AlertDialog.svelte": {
-    "size": 614,
-    "mtime_ns": 1784671627977790672,
-    "word_count": 60
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/AriaAnnouncer.svelte": {
-    "size": 385,
-    "mtime_ns": 1784671627995255064,
-    "word_count": 45
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/Badge.svelte": {
-    "size": 1113,
-    "mtime_ns": 1784950191787831104,
-    "word_count": 118
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/BreakpointVisibility.svelte": {
-    "size": 573,
-    "mtime_ns": 1784671628041255552,
-    "word_count": 64
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/Button.svelte": {
-    "size": 3072,
-    "mtime_ns": 1784949158208620613,
-    "word_count": 280
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/Card.svelte": {
-    "size": 2288,
-    "mtime_ns": 1784671628127256462,
-    "word_count": 203
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/CharacterCounter.svelte": {
-    "size": 620,
-    "mtime_ns": 1784671628159299333,
-    "word_count": 75
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/Checkbox.svelte": {
-    "size": 1216,
-    "mtime_ns": 1784950247776559560,
-    "word_count": 114
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/Chip.svelte": {
-    "size": 1170,
-    "mtime_ns": 1784950191787831104,
-    "word_count": 112
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/CommentThread.svelte": {
-    "size": 7120,
-    "mtime_ns": 1784968740519451103,
-    "word_count": 588
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/ContactRow.svelte": {
-    "size": 2821,
-    "mtime_ns": 1784949144756008498,
-    "word_count": 231
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/ContentBlock.svelte": {
-    "size": 1347,
-    "mtime_ns": 1784950191790187084,
-    "word_count": 134
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/CvEntryCard.svelte": {
-    "size": 1948,
-    "mtime_ns": 1784949144756008498,
-    "word_count": 177
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/DataTable.svelte": {
-    "size": 1576,
-    "mtime_ns": 1784671676877772693,
-    "word_count": 148
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/Dialog.svelte": {
-    "size": 4218,
-    "mtime_ns": 1784968790289828278,
-    "word_count": 379
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/DialogBody.svelte": {
-    "size": 342,
-    "mtime_ns": 1784651816419119825,
-    "word_count": 44
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/DialogCloseButton.svelte": {
-    "size": 334,
-    "mtime_ns": 1784872990850516392,
-    "word_count": 34
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/DialogFooter.svelte": {
-    "size": 529,
-    "mtime_ns": 1784651820809173293,
-    "word_count": 65
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/DialogHeader.svelte": {
-    "size": 1039,
-    "mtime_ns": 1784872990850516392,
-    "word_count": 97
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/EmptyState.svelte": {
-    "size": 1023,
-    "mtime_ns": 1784872990850516392,
-    "word_count": 104
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/ErrorState.svelte": {
-    "size": 1326,
-    "mtime_ns": 1784872990851516401,
-    "word_count": 124
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/ErrorSummary.svelte": {
-    "size": 865,
-    "mtime_ns": 1784872990851516401,
-    "word_count": 89
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/FieldMessage.svelte": {
-    "size": 1019,
-    "mtime_ns": 1784949144756008498,
-    "word_count": 106
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/FileUploadField.svelte": {
-    "size": 3622,
-    "mtime_ns": 1784968933434419259,
-    "word_count": 309
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/FormActions.svelte": {
-    "size": 622,
-    "mtime_ns": 1784671628758263144,
-    "word_count": 74
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/FormField.svelte": {
-    "size": 1900,
-    "mtime_ns": 1784951323802181375,
-    "word_count": 169
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/FundingRow.svelte": {
-    "size": 1902,
-    "mtime_ns": 1784968951041311240,
-    "word_count": 155
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/IconButton.svelte": {
-    "size": 1420,
-    "mtime_ns": 1784949144756008498,
-    "word_count": 132
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/Input.svelte": {
-    "size": 2276,
-    "mtime_ns": 1784950730805615848,
-    "word_count": 233
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/ListRow.svelte": {
-    "size": 2279,
-    "mtime_ns": 1784949144756008498,
-    "word_count": 198
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/LoadingState.svelte": {
-    "size": 762,
-    "mtime_ns": 1784671629048266215,
-    "word_count": 87
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/MetaList.svelte": {
-    "size": 393,
-    "mtime_ns": 1784671629066266405,
-    "word_count": 49
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/MobileActionBar.svelte": {
-    "size": 491,
-    "mtime_ns": 1784671629082102655,
-    "word_count": 59
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/ProfileCard.svelte": {
-    "size": 1767,
-    "mtime_ns": 1784949144756008498,
-    "word_count": 159
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/ProgressIndicator.svelte": {
-    "size": 982,
-    "mtime_ns": 1784949158208620613,
-    "word_count": 90
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/ResponsiveGrid.svelte": {
-    "size": 732,
-    "mtime_ns": 1784671629177267581,
-    "word_count": 96
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/ResponsiveStack.svelte": {
-    "size": 1010,
-    "mtime_ns": 1784671629207267898,
-    "word_count": 115
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/RichCard.svelte": {
-    "size": 2330,
-    "mtime_ns": 1784949144756008498,
-    "word_count": 202
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/SectionCtaRow.svelte": {
-    "size": 866,
-    "mtime_ns": 1784949144756008498,
-    "word_count": 74
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/SectionHeader.svelte": {
-    "size": 937,
-    "mtime_ns": 1784671629334269243,
-    "word_count": 105
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/Select.svelte": {
-    "size": 1152,
-    "mtime_ns": 1784969289541701190,
-    "word_count": 127
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/ShareDialog.svelte": {
-    "size": 3912,
-    "mtime_ns": 1784949144756008498,
-    "word_count": 298
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/SkeletonBlock.svelte": {
-    "size": 426,
-    "mtime_ns": 1784671629501271011,
-    "word_count": 49
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/SkillGroup.svelte": {
-    "size": 901,
-    "mtime_ns": 1784949144756008498,
-    "word_count": 92
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/SkipLink.svelte": {
-    "size": 624,
-    "mtime_ns": 1784969352994633995,
-    "word_count": 62
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/StatsGrid.svelte": {
-    "size": 1071,
-    "mtime_ns": 1784949144756008498,
-    "word_count": 99
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/StatusBanner.svelte": {
-    "size": 1382,
-    "mtime_ns": 1784950191790187084,
-    "word_count": 132
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/Tag.svelte": {
-    "size": 922,
-    "mtime_ns": 1784950191787831104,
-    "word_count": 101
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/TagGroup.svelte": {
-    "size": 349,
-    "mtime_ns": 1784664670072793202,
-    "word_count": 45
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/Textarea.svelte": {
-    "size": 1413,
-    "mtime_ns": 1784950962092151028,
-    "word_count": 137
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/VisuallyHidden.svelte": {
-    "size": 375,
-    "mtime_ns": 1784671629905275289,
-    "word_count": 47
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/filter/DropdownTrigger.svelte": {
-    "size": 1230,
-    "mtime_ns": 1784951337517208136,
-    "word_count": 107
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/filter/FilterCheckboxGroup.svelte": {
-    "size": 2842,
-    "mtime_ns": 1784967911329657793,
-    "word_count": 237
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/filter/FilterChip.svelte": {
-    "size": 983,
-    "mtime_ns": 1784950332553000282,
-    "word_count": 90
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/filter/FilterChipGroup.svelte": {
-    "size": 1129,
-    "mtime_ns": 1784683096993848749,
-    "word_count": 117
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/filter/FilterEmptyState.svelte": {
-    "size": 790,
-    "mtime_ns": 1784872990854516430,
-    "word_count": 78
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/components/filter/FilterSelect.svelte": {
-    "size": 2188,
-    "mtime_ns": 1784967934834839909,
+  "src/lib/components/ui/Card.svelte": {
+    "size": 2303,
+    "mtime_ns": 1785367580534755185,
     "word_count": 200
   },
-  "/home/hanz/Projects/www/src/lib/design-system/components/filter/FilterToolbar.svelte": {
-    "size": 1526,
-    "mtime_ns": 1784706239384903278,
-    "word_count": 142
+  "src/lib/components/ui/Checkbox.svelte": {
+    "size": 932,
+    "mtime_ns": 1785367580577755613,
+    "word_count": 86
   },
-  "/home/hanz/Projects/www/src/lib/design-system/components/filter/SearchResultCount.svelte": {
-    "size": 566,
-    "mtime_ns": 1784686734267673527,
-    "word_count": 55
+  "src/lib/components/ui/Dialog.svelte": {
+    "size": 3469,
+    "mtime_ns": 1785367580684756677,
+    "word_count": 308
   },
-  "/home/hanz/Projects/www/src/lib/design-system/components/filter/SortControl.svelte": {
-    "size": 3134,
-    "mtime_ns": 1784967955041392034,
-    "word_count": 277
+  "src/lib/components/ui/FormField.svelte": {
+    "size": 1594,
+    "mtime_ns": 1785367580749757323,
+    "word_count": 141
   },
-  "/home/hanz/Projects/www/src/lib/design-system/components/filter/ThemeSelect.svelte": {
-    "size": 3177,
-    "mtime_ns": 1784967980895256495,
-    "word_count": 283
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/index.ts": {
-    "size": 5813,
-    "mtime_ns": 1784885902307683374,
-    "word_count": 626
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/layout/ActionBar.svelte": {
-    "size": 744,
-    "mtime_ns": 1784671629989854709,
-    "word_count": 89
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/layout/AppShell.svelte": {
-    "size": 416,
-    "mtime_ns": 1784671630005276348,
-    "word_count": 50
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/layout/ContentStack.svelte": {
-    "size": 484,
-    "mtime_ns": 1784671630021150768,
-    "word_count": 68
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/layout/FooterSection.svelte": {
-    "size": 9655,
-    "mtime_ns": 1784949195064551091,
-    "word_count": 704
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/layout/FormSection.svelte": {
-    "size": 1239,
-    "mtime_ns": 1784671630138135051,
-    "word_count": 133
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/layout/ListSection.svelte": {
-    "size": 474,
-    "mtime_ns": 1784671630162358416,
-    "word_count": 53
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/layout/PageContainer.svelte": {
-    "size": 680,
-    "mtime_ns": 1784671630184278244,
-    "word_count": 83
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/layout/PageHeader.svelte": {
-    "size": 1250,
-    "mtime_ns": 1784949144770008649,
-    "word_count": 130
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/layout/ReadingContainer.svelte": {
-    "size": 403,
-    "mtime_ns": 1784874758372333507,
-    "word_count": 51
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/layout/Section.svelte": {
-    "size": 660,
-    "mtime_ns": 1784671630270133811,
-    "word_count": 80
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/layout/SplitSection.svelte": {
-    "size": 955,
-    "mtime_ns": 1784671630293279398,
-    "word_count": 102
-  },
-  "/home/hanz/Projects/www/src/lib/design-system/utils/cn.ts": {
-    "size": 562,
-    "mtime_ns": 1784671669420693726,
-    "word_count": 69
-  },
-  "/home/hanz/Projects/www/src/lib/stores/consentStore.svelte.ts": {
-    "size": 7792,
-    "mtime_ns": 1784838130814626626,
-    "word_count": 679
-  },
-  "/home/hanz/Projects/www/src/lib/stores/useFilterSort.svelte.ts": {
-    "size": 5611,
-    "mtime_ns": 1784837693269183108,
-    "word_count": 669
-  },
-  "/home/hanz/Projects/www/src/lib/utils/formatters.ts": {
-    "size": 2293,
-    "mtime_ns": 1784732787769886184,
-    "word_count": 304
-  },
-  "/home/hanz/Projects/www/src/routes/api/search/+server.ts": {
-    "size": 999,
-    "mtime_ns": 1784551163788887170,
+  "src/lib/components/ui/IconButton.svelte": {
+    "size": 1347,
+    "mtime_ns": 1785367580922759043,
     "word_count": 124
   },
-  "/home/hanz/Projects/www/src/routes/api/views/+server.ts": {
-    "size": 1734,
-    "mtime_ns": 1784551231641599228,
+  "src/lib/components/ui/Input.svelte": {
+    "size": 1002,
+    "mtime_ns": 1785367580973759550,
+    "word_count": 109
+  },
+  "src/lib/components/ui/ListRow.svelte": {
+    "size": 2334,
+    "mtime_ns": 1785367581138761191,
+    "word_count": 199
+  },
+  "src/lib/components/ui/SectionHeader.svelte": {
+    "size": 862,
+    "mtime_ns": 1785367581184761648,
+    "word_count": 91
+  },
+  "src/lib/components/ui/Select.svelte": {
+    "size": 988,
+    "mtime_ns": 1785367581225762056,
+    "word_count": 104
+  },
+  "src/lib/components/ui/Textarea.svelte": {
+    "size": 1534,
+    "mtime_ns": 1785367581328763080,
+    "word_count": 137
+  },
+  "src/lib/design-system/article/ArticleHeader.svelte": {
+    "size": 806,
+    "mtime_ns": 1785367581395763746,
+    "word_count": 84
+  },
+  "src/lib/design-system/article/ArticleMeta.svelte": {
+    "size": 1521,
+    "mtime_ns": 1785367581456764353,
+    "word_count": 135
+  },
+  "src/lib/design-system/article/HelpfulBlock.svelte": {
+    "size": 1938,
+    "mtime_ns": 1785367581499764781,
+    "word_count": 170
+  },
+  "src/lib/design-system/article/Prose.svelte": {
+    "size": 1706,
+    "mtime_ns": 1785367581536765148,
+    "word_count": 106
+  },
+  "src/lib/design-system/components/ActionGroup.svelte": {
+    "size": 727,
+    "mtime_ns": 1785367581634766123,
+    "word_count": 88
+  },
+  "src/lib/design-system/components/AlertDialog.svelte": {
+    "size": 622,
+    "mtime_ns": 1785367581681766590,
+    "word_count": 63
+  },
+  "src/lib/design-system/components/AriaAnnouncer.svelte": {
+    "size": 409,
+    "mtime_ns": 1785367581712766898,
+    "word_count": 46
+  },
+  "src/lib/design-system/components/Badge.svelte": {
+    "size": 1138,
+    "mtime_ns": 1785367581744767216,
+    "word_count": 115
+  },
+  "src/lib/design-system/components/BreakpointVisibility.svelte": {
+    "size": 592,
+    "mtime_ns": 1785367581773767505,
+    "word_count": 63
+  },
+  "src/lib/design-system/components/Button.svelte": {
+    "size": 3039,
+    "mtime_ns": 1785367581836768131,
+    "word_count": 277
+  },
+  "src/lib/design-system/components/Card.svelte": {
+    "size": 2286,
+    "mtime_ns": 1785367581926769026,
+    "word_count": 200
+  },
+  "src/lib/design-system/components/CharacterCounter.svelte": {
+    "size": 624,
+    "mtime_ns": 1785367581979769553,
+    "word_count": 74
+  },
+  "src/lib/design-system/components/Checkbox.svelte": {
+    "size": 1233,
+    "mtime_ns": 1785367582026770020,
+    "word_count": 114
+  },
+  "src/lib/design-system/components/Chip.svelte": {
+    "size": 1170,
+    "mtime_ns": 1785367582066770418,
+    "word_count": 111
+  },
+  "src/lib/design-system/components/CommentThread.svelte": {
+    "size": 7094,
+    "mtime_ns": 1785367582320772944,
+    "word_count": 586
+  },
+  "src/lib/design-system/components/ContactRow.svelte": {
+    "size": 2831,
+    "mtime_ns": 1785367582478774515,
+    "word_count": 231
+  },
+  "src/lib/design-system/components/ContentBlock.svelte": {
+    "size": 1353,
+    "mtime_ns": 1785367582600775728,
+    "word_count": 133
+  },
+  "src/lib/design-system/components/CvEntryCard.svelte": {
+    "size": 1953,
+    "mtime_ns": 1785367582708776802,
+    "word_count": 178
+  },
+  "src/lib/design-system/components/DataTable.svelte": {
+    "size": 1666,
+    "mtime_ns": 1785367582764777359,
+    "word_count": 151
+  },
+  "src/lib/design-system/components/Dialog.svelte": {
+    "size": 4178,
+    "mtime_ns": 1785367582829778005,
+    "word_count": 378
+  },
+  "src/lib/design-system/components/DialogBody.svelte": {
+    "size": 348,
+    "mtime_ns": 1785367582866778373,
+    "word_count": 41
+  },
+  "src/lib/design-system/components/DialogCloseButton.svelte": {
+    "size": 346,
+    "mtime_ns": 1785367582899778701,
+    "word_count": 35
+  },
+  "src/lib/design-system/components/DialogFooter.svelte": {
+    "size": 532,
+    "mtime_ns": 1785367582937779079,
+    "word_count": 62
+  },
+  "src/lib/design-system/components/DialogHeader.svelte": {
+    "size": 1059,
+    "mtime_ns": 1785367582999779695,
+    "word_count": 100
+  },
+  "src/lib/design-system/components/EmptyState.svelte": {
+    "size": 986,
+    "mtime_ns": 1785367583058780282,
+    "word_count": 99
+  },
+  "src/lib/design-system/components/ErrorState.svelte": {
+    "size": 1330,
+    "mtime_ns": 1785367583103780729,
+    "word_count": 125
+  },
+  "src/lib/design-system/components/ErrorSummary.svelte": {
+    "size": 873,
+    "mtime_ns": 1785367583135781047,
+    "word_count": 90
+  },
+  "src/lib/design-system/components/FieldMessage.svelte": {
+    "size": 1021,
+    "mtime_ns": 1785367583167781365,
+    "word_count": 105
+  },
+  "src/lib/design-system/components/FileUploadField.svelte": {
+    "size": 3640,
+    "mtime_ns": 1785367583336783046,
+    "word_count": 312
+  },
+  "src/lib/design-system/components/FormActions.svelte": {
+    "size": 624,
+    "mtime_ns": 1785367584279792422,
+    "word_count": 71
+  },
+  "src/lib/design-system/components/FormField.svelte": {
+    "size": 1925,
+    "mtime_ns": 1785367584347793098,
+    "word_count": 171
+  },
+  "src/lib/design-system/components/FundingRow.svelte": {
+    "size": 1907,
+    "mtime_ns": 1785367584414793765,
+    "word_count": 156
+  },
+  "src/lib/design-system/components/IconButton.svelte": {
+    "size": 1418,
+    "mtime_ns": 1785367584469794311,
+    "word_count": 129
+  },
+  "src/lib/design-system/components/Input.svelte": {
+    "size": 2283,
+    "mtime_ns": 1785367584582795435,
+    "word_count": 230
+  },
+  "src/lib/design-system/components/ListRow.svelte": {
+    "size": 2324,
+    "mtime_ns": 1785367584723796837,
+    "word_count": 201
+  },
+  "src/lib/design-system/components/LoadingState.svelte": {
+    "size": 802,
+    "mtime_ns": 1785367584760797205,
+    "word_count": 90
+  },
+  "src/lib/design-system/components/MetaList.svelte": {
+    "size": 398,
+    "mtime_ns": 1785367584788797483,
+    "word_count": 46
+  },
+  "src/lib/design-system/components/MobileActionBar.svelte": {
+    "size": 496,
+    "mtime_ns": 1785367584823797831,
+    "word_count": 56
+  },
+  "src/lib/design-system/components/ProfileCard.svelte": {
+    "size": 1768,
+    "mtime_ns": 1785367584895798547,
+    "word_count": 158
+  },
+  "src/lib/design-system/components/ProgressIndicator.svelte": {
+    "size": 995,
+    "mtime_ns": 1785367584954799134,
+    "word_count": 89
+  },
+  "src/lib/design-system/components/ResponsiveGrid.svelte": {
+    "size": 752,
+    "mtime_ns": 1785367585005799641,
+    "word_count": 95
+  },
+  "src/lib/design-system/components/ResponsiveStack.svelte": {
+    "size": 1032,
+    "mtime_ns": 1785367585085800436,
+    "word_count": 116
+  },
+  "src/lib/design-system/components/RichCard.svelte": {
+    "size": 2329,
+    "mtime_ns": 1785367585193801510,
+    "word_count": 201
+  },
+  "src/lib/design-system/components/SectionCtaRow.svelte": {
+    "size": 890,
+    "mtime_ns": 1785367585236801938,
+    "word_count": 75
+  },
+  "src/lib/design-system/components/SectionHeader.svelte": {
+    "size": 977,
+    "mtime_ns": 1785367585264802216,
+    "word_count": 104
+  },
+  "src/lib/design-system/components/Select.svelte": {
+    "size": 1151,
+    "mtime_ns": 1785367585302802594,
+    "word_count": 124
+  },
+  "src/lib/design-system/components/ShareDialog.svelte": {
+    "size": 4372,
+    "mtime_ns": 1785367992884855149,
+    "word_count": 367
+  },
+  "src/lib/design-system/components/SkeletonBlock.svelte": {
+    "size": 449,
+    "mtime_ns": 1785367585432803886,
+    "word_count": 50
+  },
+  "src/lib/design-system/components/SkillGroup.svelte": {
+    "size": 926,
+    "mtime_ns": 1785367585542804980,
+    "word_count": 93
+  },
+  "src/lib/design-system/components/SkipLink.svelte": {
+    "size": 629,
+    "mtime_ns": 1785367585584805398,
+    "word_count": 63
+  },
+  "src/lib/design-system/components/StatsGrid.svelte": {
+    "size": 1118,
+    "mtime_ns": 1785367585942808957,
+    "word_count": 102
+  },
+  "src/lib/design-system/components/StatusBanner.svelte": {
+    "size": 1404,
+    "mtime_ns": 1785367586005809584,
+    "word_count": 133
+  },
+  "src/lib/design-system/components/Tag.svelte": {
+    "size": 935,
+    "mtime_ns": 1785367586156811085,
+    "word_count": 98
+  },
+  "src/lib/design-system/components/TagGroup.svelte": {
+    "size": 355,
+    "mtime_ns": 1785367586172811244,
+    "word_count": 42
+  },
+  "src/lib/design-system/components/Textarea.svelte": {
+    "size": 1419,
+    "mtime_ns": 1785367586238811901,
+    "word_count": 134
+  },
+  "src/lib/design-system/components/VisuallyHidden.svelte": {
+    "size": 380,
+    "mtime_ns": 1785367586302812537,
+    "word_count": 44
+  },
+  "src/lib/design-system/components/filter/DropdownTrigger.svelte": {
+    "size": 1253,
+    "mtime_ns": 1785367583520784876,
+    "word_count": 106
+  },
+  "src/lib/design-system/components/filter/FilterCheckboxGroup.svelte": {
+    "size": 2854,
+    "mtime_ns": 1785367583648786148,
+    "word_count": 240
+  },
+  "src/lib/design-system/components/filter/FilterChip.svelte": {
+    "size": 1009,
+    "mtime_ns": 1785367583694786606,
+    "word_count": 91
+  },
+  "src/lib/design-system/components/filter/FilterChipGroup.svelte": {
+    "size": 1130,
+    "mtime_ns": 1785367583748787142,
+    "word_count": 118
+  },
+  "src/lib/design-system/components/filter/FilterEmptyState.svelte": {
+    "size": 793,
+    "mtime_ns": 1785367583811787769,
+    "word_count": 81
+  },
+  "src/lib/design-system/components/filter/FilterSelect.svelte": {
+    "size": 2214,
+    "mtime_ns": 1785367583925788902,
+    "word_count": 202
+  },
+  "src/lib/design-system/components/filter/FilterToolbar.svelte": {
+    "size": 1531,
+    "mtime_ns": 1785367583999789638,
+    "word_count": 141
+  },
+  "src/lib/design-system/components/filter/SearchResultCount.svelte": {
+    "size": 605,
+    "mtime_ns": 1785367584068790324,
+    "word_count": 58
+  },
+  "src/lib/design-system/components/filter/SortControl.svelte": {
+    "size": 3209,
+    "mtime_ns": 1785367584175791388,
+    "word_count": 287
+  },
+  "src/lib/design-system/components/filter/ThemeSelect.svelte": {
+    "size": 3520,
+    "mtime_ns": 1785367584257792203,
+    "word_count": 296
+  },
+  "src/lib/design-system/index.ts": {
+    "size": 5984,
+    "mtime_ns": 1785367575250702646,
+    "word_count": 503
+  },
+  "src/lib/design-system/layout/ActionBar.svelte": {
+    "size": 765,
+    "mtime_ns": 1785367586420813710,
+    "word_count": 88
+  },
+  "src/lib/design-system/layout/AppShell.svelte": {
+    "size": 421,
+    "mtime_ns": 1785367586450814009,
+    "word_count": 47
+  },
+  "src/lib/design-system/layout/ContentStack.svelte": {
+    "size": 467,
+    "mtime_ns": 1785367586493814436,
+    "word_count": 63
+  },
+  "src/lib/design-system/layout/FooterSection.svelte": {
+    "size": 6800,
+    "mtime_ns": 1785367586581815311,
+    "word_count": 490
+  },
+  "src/lib/design-system/layout/FormSection.svelte": {
+    "size": 1239,
+    "mtime_ns": 1785367586646815957,
+    "word_count": 132
+  },
+  "src/lib/design-system/layout/ListSection.svelte": {
+    "size": 479,
+    "mtime_ns": 1785367586677816266,
+    "word_count": 50
+  },
+  "src/lib/design-system/layout/PageContainer.svelte": {
+    "size": 683,
+    "mtime_ns": 1785367586727816763,
+    "word_count": 80
+  },
+  "src/lib/design-system/layout/PageHeader.svelte": {
+    "size": 1280,
+    "mtime_ns": 1785367586818817668,
+    "word_count": 129
+  },
+  "src/lib/design-system/layout/ReadingContainer.svelte": {
+    "size": 408,
+    "mtime_ns": 1785367586857818055,
+    "word_count": 48
+  },
+  "src/lib/design-system/layout/Section.svelte": {
+    "size": 681,
+    "mtime_ns": 1785367586888818364,
+    "word_count": 79
+  },
+  "src/lib/design-system/layout/SplitSection.svelte": {
+    "size": 953,
+    "mtime_ns": 1785367586923818712,
+    "word_count": 99
+  },
+  "src/lib/design-system/utils/cn.ts": {
+    "size": 587,
+    "mtime_ns": 1785367576148711575,
+    "word_count": 74
+  },
+  "src/lib/stores/consentStore.svelte.ts": {
+    "size": 7724,
+    "mtime_ns": 1785367576270712788,
+    "word_count": 682
+  },
+  "src/lib/stores/useFilterSort.svelte.ts": {
+    "size": 5555,
+    "mtime_ns": 1785367576388713962,
+    "word_count": 646
+  },
+  "src/lib/utils/formatters.ts": {
+    "size": 2274,
+    "mtime_ns": 1785367576601716080,
+    "word_count": 307
+  },
+  "src/routes/api/search/+server.ts": {
+    "size": 983,
+    "mtime_ns": 1785367581165761460,
+    "word_count": 111
+  },
+  "src/routes/api/views/+server.ts": {
+    "size": 1680,
+    "mtime_ns": 1785367581296762762,
+    "word_count": 174
+  },
+  "src/routes/atom.xml/+server.ts": {
+    "size": 3306,
+    "mtime_ns": 1785367581401763806,
+    "word_count": 262
+  },
+  "src/routes/cv.pdf/+server.ts": {
+    "size": 947,
+    "mtime_ns": 1785367583214781833,
+    "word_count": 97
+  },
+  "src/routes/feedback/+page.svelte": {
+    "size": 13021,
+    "mtime_ns": 1785367593912888204,
+    "word_count": 1113
+  },
+  "src/routes/privacy/+page.svelte": {
+    "size": 10734,
+    "mtime_ns": 1785367594253891594,
+    "word_count": 977
+  },
+  "src/routes/robots.txt/+server.ts": {
+    "size": 631,
+    "mtime_ns": 1785367583690786566,
+    "word_count": 76
+  },
+  "src/routes/sitemap.xml/+server.ts": {
+    "size": 2033,
+    "mtime_ns": 1785367583734787003,
+    "word_count": 160
+  },
+  ".agents/skills/security-audit/AI-AND-LLM.md": {
+    "size": 11073,
+    "mtime_ns": 1785247854368227202,
+    "word_count": 1721,
+    "hashes": {
+      ".agents/skills/security-audit/ai-and-llm.md": "c5dacaeda1c188a73a51d085a7337112af08409528bc24dd44abab535bf08248"
+    }
+  },
+  ".agents/skills/security-audit/ATTACK-CLASSES.md": {
+    "size": 14376,
+    "mtime_ns": 1785247854409227651,
+    "word_count": 2117,
+    "hashes": {
+      ".agents/skills/security-audit/attack-classes.md": "0defe57aeffc5fb6cf1657363ab222753e93821bb19f8bb5b6719ff15d4ba82f"
+    }
+  },
+  ".agents/skills/security-audit/CLIENT-SIDE.md": {
+    "size": 8682,
+    "mtime_ns": 1785247854434227925,
+    "word_count": 1174,
+    "hashes": {
+      ".agents/skills/security-audit/client-side.md": "6a22a979e9a8af41d67b813414b8638c89244a8a9807e7958726dbdadbca3e78"
+    }
+  },
+  ".agents/skills/security-audit/HUNTING.md": {
+    "size": 6530,
+    "mtime_ns": 1785247854442228013,
+    "word_count": 1018,
+    "hashes": {
+      ".agents/skills/security-audit/hunting.md": "62ed1b5db71a49d5658ef1a83e037f3e9504e798f5ed5c42dca78cbd144e072f"
+    }
+  },
+  ".agents/skills/security-audit/MEMORY-SAFETY-AND-BINARY.md": {
+    "size": 8288,
+    "mtime_ns": 1785247854469228309,
+    "word_count": 1249,
+    "hashes": {
+      ".agents/skills/security-audit/memory-safety-and-binary.md": "964fc137fdd0f3238ed8b141395ec01d046cf68b61edf14f085c5132ce8b2d15"
+    }
+  },
+  ".agents/skills/security-audit/RECONNAISSANCE.md": {
+    "size": 3449,
+    "mtime_ns": 1785247854477228397,
+    "word_count": 499,
+    "hashes": {
+      ".agents/skills/security-audit/reconnaissance.md": "24a05b5d3b5ad8bf91486f2361c927944453e36a34b4119834e1c6c148672481"
+    }
+  },
+  ".agents/skills/security-audit/SKILL.md": {
+    "size": 10664,
+    "mtime_ns": 1785247854518228846,
+    "word_count": 1547,
+    "hashes": {
+      ".agents/skills/security-audit/skill.md": "b03202270a4e45467e09b319466596652202f16f76f1d93b40f651eacda4f313"
+    }
+  },
+  ".agents/skills/security-audit/VALIDATION-AND-REPORTING.md": {
+    "size": 8435,
+    "mtime_ns": 1785247854583229558,
+    "word_count": 1273,
+    "hashes": {
+      ".agents/skills/security-audit/validation-and-reporting.md": "7620885cd0d71c5f34ac228dcb39ce55e3e614521552be47572f07b7a1d9e85c"
+    }
+  },
+  ".agents/skills/security-audit/WEB-PROTOCOL-AND-AUTH.md": {
+    "size": 13936,
+    "mtime_ns": 1785247854628230052,
+    "word_count": 2090,
+    "hashes": {
+      ".agents/skills/security-audit/web-protocol-and-auth.md": "aa5e73a24d4448c1c9d1a283dda1761d48b28e2a6cc9bbcc4efb827cdca40a7c"
+    }
+  },
+  ".agents/skills/security-audit/report-schema.json": {
+    "size": 8480,
+    "mtime_ns": 1785247854486228495,
+    "word_count": 644,
+    "hashes": {
+      ".agents/skills/security-audit/report-schema.json": "8033b86f8748f1e34d1f55e6f39ef73d1728d451017aa389f2a4f412a2a4b0b7"
+    }
+  },
+  ".agents/skills/security-audit/validate-findings.cjs": {
+    "size": 7272,
+    "mtime_ns": 1785247854556229263,
+    "word_count": 849
+  },
+  "skills-lock.json": {
+    "size": 803,
+    "mtime_ns": 1785408483757026772,
+    "word_count": 40,
+    "hashes": {
+      "skills-lock.json": "c12b6fe45f24f7c733893de8701bf45f544249b85300789cea2fad9fa6699a51"
+    }
+  },
+  "src/hooks.client.ts": {
+    "size": 455,
+    "mtime_ns": 1785367565745608138,
+    "word_count": 39
+  },
+  "src/lib/types.ts": {
+    "size": 1004,
+    "mtime_ns": 1785367576492714996,
+    "word_count": 142
+  },
+  "src/routes/.well-known/agent-skills/index.json/+server.ts": {
+    "size": 2172,
+    "mtime_ns": 1785367576810718158,
+    "word_count": 192
+  },
+  "src/routes/.well-known/api-catalog/+server.ts": {
+    "size": 1823,
+    "mtime_ns": 1785367576907719122,
+    "word_count": 153
+  },
+  "src/lib/design-system/tokens.css": {
+    "size": 2429,
+    "mtime_ns": 1784972269206321309,
+    "hashes": {
+      "src/lib/design-system/tokens.css": "42d2f92320e718528b64d261d41431d7698d4aafb23a1dd27aa681f528c1c8ad"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/CHANGELOG.md": {
+    "size": 3048,
+    "mtime_ns": 1785408483660629839,
+    "word_count": 152,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/changelog.md": "235770f330c0875b6144b533c73eb1fd49697bceddf4802bdc81680b63d5efb6"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/SKILL.md": {
+    "size": 2576,
+    "mtime_ns": 1785408483660278468,
+    "word_count": 337,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/skill.md": "6a8635debee701693054fc9cb7d935b03634249ca916400902275c8e6de6fb5e"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/_contributing.md": {
+    "size": 4113,
+    "mtime_ns": 1785408483664532829,
+    "word_count": 589,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/_contributing.md": "d1e272b7912e1ca3120c731df08612912cede4a4694ca8015469b242b2e11310"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/_sections.md": {
+    "size": 1682,
+    "mtime_ns": 1785408483664206739,
+    "word_count": 203,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/_sections.md": "fb856f5a159146e9d0ca283b3062bbff6c7a70d833a859762f39e0495dda8086"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/_template.md": {
+    "size": 1040,
+    "mtime_ns": 1785408483664323737,
+    "word_count": 133,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/_template.md": "d37e2e88aa622e6ee46c3dcd642ebcb3d48feff3784edaa176ab0d45c3d299ca"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/advanced-full-text-search.md": {
+    "size": 1468,
+    "mtime_ns": 1785408483664638366,
+    "word_count": 182,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/advanced-full-text-search.md": "0c406bfdafb96467c4804035ed54bbdf4b8ff8a39658348a1802ad17985cb0ad"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/advanced-jsonb-indexing.md": {
+    "size": 1444,
+    "mtime_ns": 1785408483664719311,
+    "word_count": 194,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/advanced-jsonb-indexing.md": "f9c59b3e5f3c123b1d265e9d537636f7f222b0cc73a697610a67c399ed879937"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/conn-idle-timeout.md": {
+    "size": 1282,
+    "mtime_ns": 1785408483664780776,
+    "word_count": 145,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/conn-idle-timeout.md": "83cdf47a3184d5929da7f8f57379fc74db0bcf5c2a9e7df89f1bdfc9547b98c5"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/conn-limits.md": {
+    "size": 1325,
+    "mtime_ns": 1785408483664839802,
+    "word_count": 187,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/conn-limits.md": "9ec1c7a888303ad2c7b5b0727e9cd63e5a4bb7d352d42bd847202c1e6d45c2b8"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/conn-pooling.md": {
+    "size": 1382,
+    "mtime_ns": 1785408483664900495,
+    "word_count": 178,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/conn-pooling.md": "cd53c1b3e3b19b01463a7d09464fc5ee2e839e26b0cd17a09519401df7328bb0"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/conn-prepared-statements.md": {
+    "size": 1529,
+    "mtime_ns": 1785408483664969391,
+    "word_count": 202,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/conn-prepared-statements.md": "daa3d67b8f2e325ea2191231fa7ce1a737da2ea080ceb8756dcc8870a09df178"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/data-batch-inserts.md": {
+    "size": 1287,
+    "mtime_ns": 1785408483665044598,
+    "word_count": 185,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/data-batch-inserts.md": "aa71ee37390604af6b8a12f52b92097fc2673b20918ea92aed17732053171877"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/data-n-plus-one.md": {
+    "size": 1361,
+    "mtime_ns": 1785408483665105879,
+    "word_count": 221,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/data-n-plus-one.md": "bbdf36daa2588f225cf44ec0d993ae99d222c3477caef5fc86516a1b05d94547"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/data-pagination.md": {
+    "size": 1358,
+    "mtime_ns": 1785408483665173585,
+    "word_count": 213,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/data-pagination.md": "eb43c37e504647787cda932c81d7b0aead870788e0e030b02f2139f3f50ff21c"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/data-upsert.md": {
+    "size": 1390,
+    "mtime_ns": 1785408483665235118,
+    "word_count": 183,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/data-upsert.md": "82be27aec47feef90f3681fe6541e295bb7601d4fe8ed4af6afb100ef49842f8"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/lock-advisory.md": {
+    "size": 1531,
+    "mtime_ns": 1785408483665307833,
+    "word_count": 168,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/lock-advisory.md": "e35b08e8ad6f7d171be5a233c7a6635220d6858f295a81f80bb794aabdc31190"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/lock-deadlock-prevention.md": {
+    "size": 1855,
+    "mtime_ns": 1785408483665583194,
+    "word_count": 273,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/lock-deadlock-prevention.md": "516566ab8ef955d1caeac25c3f2eaa8c353ec1e1955fb84c298e81315ad3deaa"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/lock-short-transactions.md": {
+    "size": 1350,
+    "mtime_ns": 1785408483665746349,
+    "word_count": 187,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/lock-short-transactions.md": "97503456fdc7f9911e709d607b9c851299f5b3e13bc556c39e2e650c34f5e9f6"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/lock-skip-locked.md": {
+    "size": 1353,
+    "mtime_ns": 1785408483665850096,
+    "word_count": 206,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/lock-skip-locked.md": "189fac459bbffbfc61399be5074653ba6865ee55aadd8606174fc15fd9be6e3b"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/monitor-explain-analyze.md": {
+    "size": 1441,
+    "mtime_ns": 1785408483665934269,
+    "word_count": 213,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/monitor-explain-analyze.md": "afd0c4933cc83eaa86f955f36d7ca84e736fd130d71207d8e94a7218e0f311f2"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/monitor-pg-stat-statements.md": {
+    "size": 1418,
+    "mtime_ns": 1785408483666017029,
+    "word_count": 165,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/monitor-pg-stat-statements.md": "bc5744ac1bf6f392d3f2a011180f31ceb91c4f3a64d484b79ff05c4d09783cb9"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/monitor-vacuum-analyze.md": {
+    "size": 1506,
+    "mtime_ns": 1785408483666075923,
+    "word_count": 193,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/monitor-vacuum-analyze.md": "e25a6d03d20840ca13e518bb3ef6f76ef760c53e4e6ab04ae5e155f738112f47"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/query-composite-indexes.md": {
+    "size": 1454,
+    "mtime_ns": 1785408483666176017,
+    "word_count": 188,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/query-composite-indexes.md": "2d9996da9a75663419f1d192a59268e7f6b3d64976b25bfb7b6c849dfd42f0f0"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/query-covering-indexes.md": {
+    "size": 1287,
+    "mtime_ns": 1785408483666232463,
+    "word_count": 170,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/query-covering-indexes.md": "a0e65905cbe1035d7ae14c25507b6c224dfcf4099fcbe422fa3f0cf67d34e3d9"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/query-index-types.md": {
+    "size": 1521,
+    "mtime_ns": 1785408483666309034,
+    "word_count": 207,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/query-index-types.md": "8c00c56e73e38e85dda898f22111a219d2b12f7255e7749f32511811a474576c"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/query-missing-indexes.md": {
+    "size": 1218,
+    "mtime_ns": 1785408483666408124,
+    "word_count": 159,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/query-missing-indexes.md": "e3abde34d8c6f171cc0d13fc73c6b896912d8d34cad0441de13f6c24d1da3a81"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/query-partial-indexes.md": {
+    "size": 1347,
+    "mtime_ns": 1785408483666481908,
+    "word_count": 181,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/query-partial-indexes.md": "464f3493222b74efad8cc370f0fc43441ae67388c86ae92a1c734a726c18f299"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/schema-constraints.md": {
+    "size": 1880,
+    "mtime_ns": 1785408483666634137,
+    "word_count": 239,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/schema-constraints.md": "2ef8aad7fb026ec6c576d4b86d1ce3ad5014fb510f7f6813699baae60d35b980"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/schema-data-types.md": {
+    "size": 1453,
+    "mtime_ns": 1785408483666570609,
+    "word_count": 186,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/schema-data-types.md": "f9ec2bb2e318430aa84faebd84857e475e708a78339f68ebbe4de0ad3d1b2326"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/schema-foreign-key-indexes.md": {
+    "size": 1679,
+    "mtime_ns": 1785408483666698642,
+    "word_count": 232,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/schema-foreign-key-indexes.md": "5b953d1d7a043b6669fe199d4dc034be4c766426e5daec6db86233c3677f1c1a"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/schema-lowercase-identifiers.md": {
+    "size": 1728,
+    "mtime_ns": 1785408483666766763,
+    "word_count": 230,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/schema-lowercase-identifiers.md": "442d2fb6326907c69659d65c3d8dc99532947266dc73d83400554218441fc82c"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/schema-partitioning.md": {
+    "size": 1548,
+    "mtime_ns": 1785408483666838020,
+    "word_count": 204,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/schema-partitioning.md": "49f4b6dc59f69c0ad8c9f8d3b9301cb34bcfa17b8f333369ca9ac150ca0170aa"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/schema-primary-keys.md": {
+    "size": 1821,
+    "mtime_ns": 1785408483666917724,
+    "word_count": 232,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/schema-primary-keys.md": "5cdd1d823bcf18b16487347452d1c6bf1adf1d64d459ac079f29c70a084406c9"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/security-privileges.md": {
+    "size": 1566,
+    "mtime_ns": 1785408483666981038,
+    "word_count": 216,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/security-privileges.md": "07d985c56877cb51ddb944539b48b0a5c64507c364e5e7b4eec32273b14ec8a7"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/security-rls-basics.md": {
+    "size": 1372,
+    "mtime_ns": 1785408483667045507,
+    "word_count": 185,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/security-rls-basics.md": "7f8ca28c845e7c09369f8d72406f06bcfa486cf0096541ba64210990207d26d2"
+    }
+  },
+  ".agents/skills/supabase-postgres-best-practices/references/security-rls-performance.md": {
+    "size": 2103,
+    "mtime_ns": 1785408483667122745,
+    "word_count": 279,
+    "hashes": {
+      ".agents/skills/supabase-postgres-best-practices/references/security-rls-performance.md": "13dc671546c377e8fb092e42eed6501c8770aa8b42ae3a2769a42a16cedae35a"
+    }
+  },
+  ".agents/skills/supabase/CHANGELOG.md": {
+    "size": 5147,
+    "mtime_ns": 1785408483152100534,
+    "word_count": 270,
+    "hashes": {
+      ".agents/skills/supabase/changelog.md": "50dc010919e3a974caf95ac4c5274001ee2e33c3a150d40b31653e0ffa7ea43d"
+    }
+  },
+  ".agents/skills/supabase/SKILL.md": {
+    "size": 11946,
+    "mtime_ns": 1785408483152129876,
+    "word_count": 1661,
+    "hashes": {
+      ".agents/skills/supabase/skill.md": "4d1e04edf27eef639066489d82bc2d4e5eebf8cfe5f8b5870da387a80a840f06"
+    }
+  },
+  ".agents/skills/supabase/assets/feedback-issue-template.md": {
+    "size": 459,
+    "mtime_ns": 1785408483152271411,
+    "word_count": 64,
+    "hashes": {
+      ".agents/skills/supabase/assets/feedback-issue-template.md": "d2e1780da9d124c6f16427ec916bac79799f6cb485fe600b732d3907d1560ef7"
+    }
+  },
+  ".agents/skills/supabase/references/skill-feedback.md": {
+    "size": 1035,
+    "mtime_ns": 1785408483152308108,
+    "word_count": 150,
+    "hashes": {
+      ".agents/skills/supabase/references/skill-feedback.md": "e9346c733908231dc7ba5fa30be14040c6d79218792bea9176e74d8061c4afe5"
+    }
+  },
+  "src/lib/author.ts": {
+    "size": 9659,
+    "mtime_ns": 1785367565921609888,
+    "word_count": 1036
+  },
+  "src/lib/design-system/components/ConfirmationDialog.svelte": {
+    "size": 1528,
+    "mtime_ns": 1785367582386773600,
+    "word_count": 147
+  },
+  "src/lib/design-system/components/LinkListSection.svelte": {
+    "size": 1191,
+    "mtime_ns": 1785367584646796071,
+    "word_count": 105
+  },
+  "src/lib/design-system/components/ShinyText.svelte": {
+    "size": 1083,
+    "mtime_ns": 1785367585408803648,
+    "word_count": 112
+  },
+  "src/lib/design-system/components/SpotlightSearch.svelte": {
+    "size": 17532,
+    "mtime_ns": 1785367585885808391,
+    "word_count": 1283
+  },
+  "src/lib/design-system/components/TableOfContents.svelte": {
+    "size": 8468,
+    "mtime_ns": 1785367586129810817,
+    "word_count": 822
+  },
+  "src/lib/stores/themeStore.svelte.ts": {
+    "size": 1259,
+    "mtime_ns": 1785367576304713126,
+    "word_count": 127
+  },
+  "src/lib/utils/actions.ts": {
+    "size": 989,
+    "mtime_ns": 1785367576553715602,
+    "word_count": 82
+  },
+  "src/lib/utils/nameValidator.ts": {
+    "size": 1467,
+    "mtime_ns": 1785367576662716686,
+    "word_count": 157
+  },
+  "src/routes/+layout.server.ts": {
+    "size": 274,
+    "mtime_ns": 1785367577005720096,
+    "word_count": 33
+  },
+  "src/routes/api/admin/cv/delete/+server.ts": {
+    "size": 2015,
+    "mtime_ns": 1785367580527755116,
     "word_count": 207
   },
-  "/home/hanz/Projects/www/src/routes/atom.xml/+server.ts": {
-    "size": 3265,
-    "mtime_ns": 1784551320303530952,
-    "word_count": 270
+  "src/routes/api/admin/cv/upload/+server.ts": {
+    "size": 4231,
+    "mtime_ns": 1785367580805757880,
+    "word_count": 397
   },
-  "/home/hanz/Projects/www/src/routes/cv.pdf/+server.ts": {
-    "size": 253,
-    "mtime_ns": 1784875308271409002,
-    "word_count": 34
+  "src/routes/author/+page.server.ts": {
+    "size": 647,
+    "mtime_ns": 1785367581501764800,
+    "word_count": 61
   },
-  "/home/hanz/Projects/www/src/routes/feedback/+page.svelte": {
-    "size": 13497,
-    "mtime_ns": 1784949195064551091,
-    "word_count": 1173
+  "src/routes/author/+page.svelte": {
+    "size": 6873,
+    "mtime_ns": 1785367592583874989,
+    "word_count": 510
   },
-  "/home/hanz/Projects/www/src/routes/privacy/+page.svelte": {
-    "size": 8755,
-    "mtime_ns": 1784949195064551091,
-    "word_count": 816
+  "src/routes/author/+server.ts": {
+    "size": 431,
+    "mtime_ns": 1785367581764767415,
+    "word_count": 49
   },
-  "/home/hanz/Projects/www/src/routes/robots.txt/+server.ts": {
-    "size": 346,
-    "mtime_ns": 1784875320105540283,
-    "word_count": 40
+  "src/routes/author/contact/+server.ts": {
+    "size": 421,
+    "mtime_ns": 1785367582029770050,
+    "word_count": 47
   },
-  "/home/hanz/Projects/www/src/routes/sitemap.xml/+server.ts": {
-    "size": 2044,
-    "mtime_ns": 1784875327905626822,
-    "word_count": 165
+  "src/routes/author/cv/+server.ts": {
+    "size": 407,
+    "mtime_ns": 1785367582167771422,
+    "word_count": 47
+  },
+  "src/routes/author/funding/+server.ts": {
+    "size": 423,
+    "mtime_ns": 1785367582320772944,
+    "word_count": 47
   }
 }

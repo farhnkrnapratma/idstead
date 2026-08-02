@@ -1,7 +1,8 @@
 <!-- @format -->
 <script lang="ts">
+  import {page} from '$app/state'
   import {onMount} from 'svelte'
-  import {isNameReserved} from '$lib/nameValidator'
+  import {isNameReserved} from '$lib/utils/nameValidator'
   import {
     Card,
     FormField,
@@ -15,8 +16,7 @@
     ThemeSelect
   } from '$lib'
 
-  type Theme = 'auto' | 'dark' | 'light'
-  let theme = $state<Theme>('auto')
+  import {themeStore} from '$lib/stores/themeStore.svelte'
 
   let formName = $state('')
   let formEmail = $state('')
@@ -35,27 +35,6 @@
   let feedbackFormElement = $state<HTMLFormElement | null>(null)
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-  function applyTheme(newTheme: Theme) {
-    theme = newTheme
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('theme', newTheme)
-      const isDark =
-        newTheme === 'dark'
-        || (newTheme === 'auto'
-          && window.matchMedia('(prefers-color-scheme: dark)').matches)
-      if (isDark) {
-        document.documentElement.classList.add('dark')
-      } else {
-        document.documentElement.classList.remove('dark')
-      }
-    }
-  }
-
-  onMount(() => {
-    const saved = localStorage.getItem('theme') as Theme
-    theme = saved || 'auto'
-  })
 
   function debounce<T extends unknown[]>(cb: (...args: T) => void, ms: number) {
     let timer: ReturnType<typeof setTimeout>
@@ -173,27 +152,52 @@
       feedbackFormElement.submit()
     }
   }
+
+  let pageAuthor = $derived((page?.data as any)?.author)
+  let authorName = $derived(pageAuthor?.name || '')
 </script>
 
 <svelte:head>
-  <title>Feedback — Farhan Kurnia Pratama</title>
+  <title>Feedback{authorName ? ` — ${authorName}` : ''}</title>
   <meta
     name="description"
-    content="Send feedback, suggestions, or comments directly to Farhan Kurnia Pratama." />
-  <link rel="canonical" href="https://fkp.my.id/feedback" />
-  <meta property="og:title" content="Feedback — Farhan Kurnia Pratama" />
+    content="Send feedback, suggestions, or comments{authorName ?
+      ` directly to ${authorName}.`
+    : '.'}" />
+  <link
+    rel="canonical"
+    href="https://fkp.my.id/feedback" />
+  <meta
+    property="og:title"
+    content="Feedback{authorName ? ` — ${authorName}` : ''}" />
   <meta
     property="og:description"
-    content="Send feedback, suggestions, or comments directly to Farhan Kurnia Pratama." />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://fkp.my.id/feedback" />
-  <meta property="og:image" content="https://fkp.my.id/hero.png" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Feedback — Farhan Kurnia Pratama" />
+    content="Send feedback, suggestions, or comments{authorName ?
+      ` directly to ${authorName}.`
+    : '.'}" />
+  <meta
+    property="og:type"
+    content="website" />
+  <meta
+    property="og:url"
+    content="https://fkp.my.id/feedback" />
+  <meta
+    property="og:image"
+    content="https://fkp.my.id/hero.png" />
+  <meta
+    name="twitter:card"
+    content="summary_large_image" />
+  <meta
+    name="twitter:title"
+    content="Feedback{authorName ? ` — ${authorName}` : ''}" />
   <meta
     name="twitter:description"
-    content="Send feedback, suggestions, or comments directly to Farhan Kurnia Pratama." />
-  <meta name="twitter:image" content="https://fkp.my.id/hero.png" />
+    content="Send feedback, suggestions, or comments{authorName ?
+      ` directly to ${authorName}.`
+    : '.'}" />
+  <meta
+    name="twitter:image"
+    content="https://fkp.my.id/hero.png" />
 </svelte:head>
 
 <SkipLink />
@@ -203,13 +207,16 @@
   aria-label="Feedback page navigation">
   <a
     href="/"
-    class="inline-flex h-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
+    class="inline-flex h-8 items-center justify-center rounded-md border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover hover:text-copilot focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
     Back to Home
   </a>
 
   <div class="flex items-center gap-2">
     <SpotlightSearch />
-    <ThemeSelect {theme} onThemeChange={applyTheme} />
+    <ThemeSelect
+      theme={themeStore.current}
+      onThemeChange={themeStore.apply}
+      class="hidden md:inline-flex" />
   </div>
 </nav>
 
@@ -235,7 +242,9 @@
       </p>
     </div>
 
-    <Card variant="glass" class="relative z-10 p-5 select-none">
+    <Card
+      variant="glass"
+      class="relative z-10 p-5 select-none">
       <div class="flex flex-col gap-3">
         <h2 class="text-sm font-bold text-text-primary">Feedback categories</h2>
         <ul class="flex flex-col gap-2.5 text-xs text-text-secondary">
@@ -295,9 +304,18 @@
         type="hidden"
         name="_subject"
         value="New feedback report from website!" />
-      <input type="hidden" name="_template" value="table" />
-      <input type="hidden" name="_captcha" value="true" />
-      <input type="hidden" name="_url" value="https://fkp.my.id/feedback" />
+      <input
+        type="hidden"
+        name="_template"
+        value="table" />
+      <input
+        type="hidden"
+        name="_captcha"
+        value="true" />
+      <input
+        type="hidden"
+        name="_url"
+        value="https://fkp.my.id/feedback" />
 
       <div class="mb-2 select-none">
         <h2 class="text-sm font-bold text-text-primary">Report an issue</h2>
@@ -398,7 +416,10 @@
       </FormField>
 
       <div class="mt-2 flex justify-end select-none">
-        <Button type="submit" variant="primary" size="md">
+        <Button
+          type="submit"
+          variant="primary"
+          size="md">
           Submit feedback
         </Button>
       </div>
@@ -421,7 +442,10 @@
       onclick={() => (showSubmitDialog = false)}>
       Cancel
     </Button>
-    <Button variant="primary" size="md" onclick={executeSubmit}>
+    <Button
+      variant="primary"
+      size="md"
+      onclick={executeSubmit}>
       Submit feedback
     </Button>
   {/snippet}

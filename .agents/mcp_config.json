@@ -1,1 +1,11 @@
-{"mcpServers": {"svelte": {"command": "bunx", "args": ["@sveltejs/mcp"]}}}
+{
+  "mcpServers": {
+    "svelte": {"command": "bunx", "args": ["@sveltejs/mcp"]},
+    "Sentry": {"serverUrl": "https://mcp.sentry.dev/mcp/farhnkrnapratma/www"},
+    "supabase": {"serverUrl": "https://mcp.supabase.com/mcp"},
+    "chrome-devtools": {
+      "command": "bunx",
+      "args": ["chrome-devtools-mcp@latest"]
+    }
+  }
+}

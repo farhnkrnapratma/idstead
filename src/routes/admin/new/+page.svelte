@@ -2,19 +2,22 @@
 <script lang="ts">
   import {supabase} from '$lib/supabase'
   import {onMount, tick} from 'svelte'
-  import {marked} from 'marked'
+  import {renderMarkdown} from '$lib/markdown'
   import hljs from 'highlight.js'
   import {
     SkipLink,
     LoadingState,
     StatusBanner,
     Button,
+    IconButton,
+    Card,
     FormField,
     Input,
     Textarea,
-    ThemeSelect
+    ThemeSelect,
+    Dialog
   } from '$lib'
-  import Dialog from '$lib/design-system/components/Dialog.svelte'
+  import {themeStore} from '$lib/stores/themeStore.svelte'
 
   let isCheckingAuth = $state(true)
   let title = $state('')
@@ -60,26 +63,6 @@
   let showPublishDialog = $state(false)
   let showSaveDraftDialog = $state(false)
 
-  type Theme = 'auto' | 'dark' | 'light'
-  let theme = $state<Theme>('auto')
-
-  function applyTheme(newTheme: Theme) {
-    theme = newTheme
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('theme', newTheme)
-      const isDarkVal =
-        newTheme === 'dark'
-        || (newTheme === 'auto'
-          && window.matchMedia('(prefers-color-scheme: dark)').matches)
-      isDark = isDarkVal
-      if (isDarkVal) {
-        document.documentElement.classList.add('dark')
-      } else {
-        document.documentElement.classList.remove('dark')
-      }
-    }
-  }
-
   $effect(() => {
     if (typeof window !== 'undefined') {
       isDark = document.documentElement.classList.contains('dark')
@@ -114,9 +97,6 @@
   ] as const
 
   onMount(() => {
-    const saved = localStorage.getItem('theme') as Theme
-    theme = saved || 'auto'
-
     ;(async () => {
       const {data: sessionData} = await supabase.auth.getSession()
       if (!sessionData.session) {
@@ -242,7 +222,7 @@
 
   $effect(() => {
     if (markdownContent) {
-      Promise.resolve(marked.parse(markdownContent)).then(html => {
+      renderMarkdown(markdownContent).then(html => {
         previewHtml = html
       })
     }
@@ -325,7 +305,7 @@
       copyBtn.className =
         'flex h-5 w-5 items-center justify-center rounded-md border border-border-subtle/30 hover:bg-surface-hover/30 hover:text-text-primary transition-colors cursor-pointer text-text-muted leading-none'
       copyBtn.innerHTML =
-        '<span class="material-symbols-rounded text-[10.5px] font-bold leading-none" style="font-variation-settings: \'wght\' 800;">content_copy</span>'
+        '<i class="bi bi-clipboard text-xs font-bold leading-none" aria-hidden="true"></i>'
 
       copyBtn.addEventListener('click', () => {
         if (!codeElement) return
@@ -334,11 +314,11 @@
           .writeText(codeText)
           .then(() => {
             copyBtn.innerHTML =
-              '<span class="material-symbols-rounded text-[10.5px] font-bold leading-none text-palette-green" style="font-variation-settings: \'wght\' 800;">check_small</span>'
+              '<i class="bi bi-check-lg text-xs font-bold text-copilot leading-none" aria-hidden="true"></i>'
             triggerToast('Code copied to clipboard!')
             setTimeout(() => {
               copyBtn.innerHTML =
-                '<span class="material-symbols-rounded text-[10.5px] font-bold leading-none" style="font-variation-settings: \'wght\' 800;">content_copy</span>'
+                '<i class="bi bi-clipboard text-xs font-bold leading-none" aria-hidden="true"></i>'
             }, 2000)
           })
           .catch(err => {
@@ -348,11 +328,7 @@
 
       headerBar.appendChild(copyBtn)
 
-      pre.style.marginTop = '0px'
-      pre.style.borderTopLeftRadius = '0px'
-      pre.style.borderTopRightRadius = '0px'
-      pre.style.borderTopWidth = '0px'
-      pre.style.paddingTop = '10px'
+      pre.classList.add('mt-0!', 'rounded-t-none!', 'border-t-0!', 'pt-2.5!')
 
       pre.parentNode?.insertBefore(headerBar, pre)
     })
@@ -728,10 +704,24 @@
   }
 
   async function executeSave(toBePublished: boolean) {
+    showPublishDialog = false
+    showSaveDraftDialog = false
     isSubmitting = true
     errorMessage = null
 
     try {
+      // Ensure Supabase auth session is valid before storage or database operations
+      const {data: userData, error: userError} = await supabase.auth.getUser()
+      if (userError || !userData?.user) {
+        const {data: refreshData, error: refreshError} =
+          await supabase.auth.refreshSession()
+        if (refreshError || !refreshData?.session) {
+          throw new Error('Your session has expired. Please log in again.')
+        }
+      }
+
+      const activeUser = (await supabase.auth.getUser()).data?.user
+
       if (title.trim().length > 60) {
         throw new Error(
           'Title exceeds backend maximum length of 60 characters.'
@@ -769,6 +759,15 @@
         finalBannerPath = bannerFileName
       }
 
+      const payload = {
+        title: title.trim(),
+        slug: slug.trim(),
+        excerpt: excerpt.trim() || null,
+        published: toBePublished,
+        storage_path: storagePath,
+        banner_path: finalBannerPath
+      }
+
       if (isEditMode && editId) {
         const {error: uploadError} = await supabase.storage
           .from('blog-posts')
@@ -778,17 +777,27 @@
           throw new Error(`Storage upload failed: ${uploadError.message}`)
         }
 
-        const {error: dbError} = await supabase
+        const updatePayload: Record<string, any> = {
+          ...payload,
+          updated_at: new Date().toISOString()
+        }
+
+        let {error: dbError} = await supabase
           .from('posts')
-          .update({
-            title: title.trim(),
-            slug: slug.trim(),
-            excerpt: excerpt.trim() || null,
-            published: toBePublished,
-            storage_path: storagePath,
-            banner_path: finalBannerPath
-          })
+          .update(updatePayload)
           .eq('id', editId)
+
+        if (
+          dbError
+          && (dbError.message.includes('updated_at')
+            || dbError.code === '42703')
+        ) {
+          const {error: dbError2} = await supabase
+            .from('posts')
+            .update(payload)
+            .eq('id', editId)
+          dbError = dbError2
+        }
 
         if (dbError) {
           throw dbError
@@ -808,16 +817,7 @@
           throw new Error(`Storage upload failed: ${uploadError.message}`)
         }
 
-        const {error: dbError} = await supabase
-          .from('posts')
-          .insert({
-            title: title.trim(),
-            slug: slug.trim(),
-            excerpt: excerpt.trim() || null,
-            published: toBePublished,
-            storage_path: storagePath,
-            banner_path: finalBannerPath
-          })
+        const {error: dbError} = await supabase.from('posts').insert(payload)
 
         if (dbError) {
           await supabase.storage.from('blog-posts').remove([storagePath])
@@ -864,7 +864,10 @@
   </button>
 
   <div class="flex items-center gap-2">
-    <ThemeSelect {theme} onThemeChange={applyTheme} />
+    <ThemeSelect
+      theme={themeStore.current}
+      onThemeChange={themeStore.apply}
+      class="hidden md:inline-flex" />
   </div>
 </nav>
 
@@ -879,10 +882,15 @@
   {:else}
     <section class="mx-auto w-full max-w-4xl flex-1 px-6 py-10">
       {#if errorMessage}
-        <StatusBanner type="error" message={errorMessage} class="mb-6" />
+        <StatusBanner
+          type="error"
+          message={errorMessage}
+          class="mb-6" />
       {/if}
 
-      <form onsubmit={e => e.preventDefault()} class="flex flex-col gap-4">
+      <form
+        onsubmit={e => e.preventDefault()}
+        class="flex flex-col gap-4">
         <div
           class="rounded-2xl border border-border-subtle bg-surface-card/45 p-6 text-left shadow-xs backdrop-blur-lg transition-colors duration-300">
           <h2 class="mb-4 text-base font-bold text-text-primary select-none">
@@ -904,7 +912,7 @@
                     src={bannerPreview}
                     alt="Banner preview"
                     loading="lazy"
-                    class="h-full w-full object-cover" />
+                    class="h-full w-full bg-surface-base object-contain" />
                   <button
                     type="button"
                     onclick={() => {
@@ -938,11 +946,15 @@
                 <div
                   id="post-banner-fb"
                   aria-live="polite"
-                  class="mt-1 text-xs leading-none font-medium">
+                  class="mt-1 text-xs font-medium">
                   <span
                     role="alert"
-                    class="flex items-center gap-1 text-danger">
-                    <i class="bi bi-exclamation-circle-fill"></i>{bannerError}
+                    class="flex items-start gap-1.5 text-danger">
+                    <i
+                      class="bi bi-exclamation-circle-fill mt-[1px] shrink-0 self-start text-xs leading-none"
+                      aria-hidden="true"></i>
+                    <span class="min-w-0 flex-1 break-words"
+                      >{bannerError}</span>
                   </span>
                 </div>
               {/if}
@@ -1254,12 +1266,12 @@
                     onkeyup={updateCursorPosition}
                     onfocus={updateCursorPosition}
                     onkeydown={handleTextareaKeyDown}
-                    class="editor-textarea relative m-0! box-border! w-full! overflow-y-hidden! border-0! bg-transparent pt-5! pr-5! pb-5! pl-4! text-transparent caret-text-primary focus:border-transparent! focus:shadow-none! focus:ring-0 focus:outline-none {(
+                    class="editor-textarea relative m-0! box-border! w-full! resize-none! overflow-y-hidden! border-0! bg-transparent pt-5! pr-5! pb-5! pl-4! text-transparent caret-text-primary focus:border-transparent! focus:shadow-none! focus:ring-0 focus:outline-none {(
                       lineWrapMode === 'soft'
                     ) ?
                       'overflow-x-hidden! break-normal! wrap-break-word! whitespace-pre-wrap!'
                     : 'overflow-x-auto! break-normal! whitespace-pre!'}"
-                    style="resize: none;"></textarea>
+                  ></textarea>
                 </div>
               </div>
             {:else}
@@ -1291,7 +1303,9 @@
                       aria-hidden="true">{item.icon}</span>
                   </button>
                 {/each}
-                <div class="mx-1 h-4 w-px bg-border-subtle" aria-hidden="true">
+                <div
+                  class="mx-1 h-4 w-px bg-border-subtle"
+                  aria-hidden="true">
                 </div>
                 {#each [{action: () => insertMarkdown('**', '**'), icon: 'format_bold', label: 'Bold'}, {action: () => insertMarkdown('*', '*'), icon: 'format_italic', label: 'Italic'}, {action: () => insertMarkdown('<u>', '</u>'), icon: 'format_underlined', label: 'Underline'}, {action: () => insertMarkdown('~~', '~~'), icon: 'format_strikethrough', label: 'Strikethrough'}] as const as item (item.icon)}
                   <button
@@ -1304,7 +1318,9 @@
                       aria-hidden="true">{item.icon}</span>
                   </button>
                 {/each}
-                <div class="mx-1 h-4 w-px bg-border-subtle" aria-hidden="true">
+                <div
+                  class="mx-1 h-4 w-px bg-border-subtle"
+                  aria-hidden="true">
                 </div>
                 <button
                   type="button"
@@ -1365,7 +1381,10 @@
         </div>
 
         <div class="mt-4 mb-10 flex flex-wrap justify-end gap-3 select-none">
-          <Button variant="ghost" size="md" onclick={handleCancelClick}>
+          <Button
+            variant="ghost"
+            size="md"
+            onclick={handleCancelClick}>
             Cancel
           </Button>
           <Button
@@ -1418,8 +1437,10 @@
       size="md"
       showEscHint
       onclick={() => (showPublishDialog = false)}>Cancel</Button>
-    <Button variant="primary" size="md" onclick={() => executeSave(true)}
-      >Publish post</Button>
+    <Button
+      variant="primary"
+      size="md"
+      onclick={() => executeSave(true)}>Publish post</Button>
   {/snippet}
 </Dialog>
 
@@ -1434,8 +1455,10 @@
       size="md"
       showEscHint
       onclick={() => (showSaveDraftDialog = false)}>Cancel</Button>
-    <Button variant="primary" size="md" onclick={() => executeSave(false)}
-      >Save draft</Button>
+    <Button
+      variant="primary"
+      size="md"
+      onclick={() => executeSave(false)}>Save draft</Button>
   {/snippet}
 </Dialog>
 
@@ -1444,65 +1467,49 @@
     role="status"
     aria-live="polite"
     class="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full border border-border-subtle bg-surface-card/90 px-4 py-2 text-xs font-semibold text-text-primary shadow-lg backdrop-blur-md transition-all duration-300">
-    <i class="bi bi-check-circle-fill text-sm text-copilot" aria-hidden="true"
-    ></i>
+    <i
+      class="bi bi-check-circle-fill text-sm text-copilot"
+      aria-hidden="true"></i>
     {toastMessage}
   </div>
 {/if}
 
 <style>
+  @reference "../../layout.css";
   .editor-textarea,
   .editor-pre,
   .editor-pre code,
   .editor-pre :global(span),
   .line-num-item {
-    font-family:
-      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
-      'Courier New', monospace !important;
-    font-size: 14.5px !important;
-    line-height: 24px !important;
-    letter-spacing: normal !important;
-    text-transform: none !important;
-    font-variant-ligatures: none !important;
-    font-feature-settings: normal !important;
+    @apply font-mono text-[14.5px]! leading-[24px]! tracking-normal! normal-case!;
+    font-feature-settings: var(--font-feature-settings-mono) !important;
   }
 
   .editor-textarea,
   .editor-pre {
+    @apply break-words!;
     word-break: normal !important;
-    overflow-wrap: break-word !important;
   }
 
   .editor-textarea {
-    margin: 0 !important;
-    box-sizing: border-box !important;
-    border-width: 0 !important;
-    outline: none !important;
+    @apply m-0! box-border! border-0! outline-hidden!;
   }
 
   .editor-textarea:focus,
   .editor-textarea:focus-visible {
-    outline: none !important;
-    box-shadow: none !important;
-    border-color: transparent !important;
+    @apply border-transparent! shadow-none! outline-hidden!;
     --tw-ring-shadow: none !important;
   }
 
   .editor-code-line {
-    display: block !important;
-    min-height: 24px !important;
-    line-height: 24px !important;
+    @apply block! min-h-[24px]! leading-[24px]!;
   }
 
   .line-num-item {
-    display: flex !important;
-    align-items: flex-start !important;
-    justify-content: flex-end !important;
-    box-sizing: border-box !important;
-    height: 24px;
+    @apply box-border! flex! h-[24px] items-start! justify-end!;
   }
 
   .prose-custom > :global(*:first-child) {
-    margin-top: 0 !important;
+    @apply mt-0!;
   }
 </style>

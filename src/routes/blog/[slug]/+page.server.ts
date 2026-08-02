@@ -2,8 +2,9 @@
 
 import {supabase} from '$lib/supabase'
 import {error} from '@sveltejs/kit'
-import {marked} from 'marked'
+import {renderMarkdown} from '$lib/markdown'
 import type {PageServerLoad} from './$types'
+import {fetchAuthorProfile} from '$lib/author'
 
 export interface BlogComment {
   id: string
@@ -95,7 +96,7 @@ export const load: PageServerLoad = async ({params, fetch}) => {
     }
     const markdown = await fileRes.text()
     readTime = estimateReadTime(markdown)
-    const rawHtml = await marked.parse(markdown)
+    const rawHtml = await renderMarkdown(markdown)
     html = injectHeadingIds(rawHtml)
   } catch (err) {
     console.error('Error fetching/rendering markdown file:', err)
@@ -122,7 +123,7 @@ export const load: PageServerLoad = async ({params, fetch}) => {
   while ((match = headingRegex.exec(html)) !== null) {
     const level = parseInt(match[1], 10)
     const id = match[2]
-    const text = decodeHtmlEntities(match[3].replace(/<[^>]*>/g, '').trim())
+    const text = decodeHtmlEntities(match[3].trim())
     headings.push({id, text, level})
   }
 
@@ -152,11 +153,14 @@ export const load: PageServerLoad = async ({params, fetch}) => {
     bannerPublicUrl = bannerRes?.publicUrl || null
   }
 
+  const author = await fetchAuthorProfile(supabase)
+
   return {
     post: {...post, read_time: readTime},
     bannerPublicUrl,
     html,
     headings,
-    comments
+    comments,
+    author
   }
 }

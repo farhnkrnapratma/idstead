@@ -22,9 +22,9 @@
       'bg-border-subtle/50 text-text-secondary border border-border-subtle',
     accent: 'bg-copilot-subtle text-copilot border border-copilot/30 font-bold',
     success:
-      'bg-success-subtle text-success border border-success/30 font-bold',
+      'bg-success-subtle text-gh-green-6 border border-success/30 font-bold dark:text-emerald-300',
     warning:
-      'bg-warning-subtle text-warning border border-warning/30 font-bold',
+      'bg-warning-subtle text-[#c53211] border border-warning/30 font-bold dark:text-amber-300',
     danger: 'bg-danger-subtle text-danger border border-danger/30 font-bold'
   }
 

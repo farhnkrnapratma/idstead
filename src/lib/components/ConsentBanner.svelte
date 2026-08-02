@@ -74,7 +74,9 @@
         <div class="flex items-center gap-2.5">
           <div
             class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-copilot/15 text-copilot">
-            <i class="bi bi-shield-check text-base" aria-hidden="true"></i>
+            <i
+              class="bi bi-shield-check text-base"
+              aria-hidden="true"></i>
           </div>
           <div>
             <h3 class="text-sm font-bold text-text-primary">
@@ -91,7 +93,9 @@
           onclick={consentStore.closeBanner}
           aria-label="Dismiss banner"
           class="shrink-0 text-text-muted hover:text-text-primary">
-          <i class="bi bi-x-lg text-xs" aria-hidden="true"></i>
+          <i
+            class="bi bi-x-lg text-xs"
+            aria-hidden="true"></i>
         </button>
       </div>
 
@@ -104,7 +108,10 @@
       </p>
 
       <div class="flex flex-wrap items-center gap-2 pt-1">
-        <Button variant="primary" size="sm" onclick={consentStore.acceptAll}>
+        <Button
+          variant="primary"
+          size="sm"
+          onclick={consentStore.acceptAll}>
           Accept all
         </Button>
         <Button
@@ -113,7 +120,10 @@
           onclick={consentStore.acceptAnalyticsOnly}>
           Analytics only
         </Button>
-        <Button variant="ghost" size="sm" onclick={consentStore.rejectAll}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onclick={consentStore.rejectAll}>
           Reject all
         </Button>
         <button

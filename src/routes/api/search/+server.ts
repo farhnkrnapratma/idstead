@@ -14,20 +14,30 @@ export interface SearchResult {
 
 export const GET: RequestHandler = async ({url}) => {
   const q = url.searchParams.get('q')?.trim() ?? ''
+  const limitParam = parseInt(url.searchParams.get('limit') || '6', 10)
+  const limit = Math.min(Math.max(1, limitParam), 20)
 
   if (q.length < 2) {
-    return json({results: []})
+    return json({
+      query: q,
+      data: [],
+      results: [],
+      pagination: {limit, returned: 0}
+    })
   }
 
   const results: SearchResult[] = []
+  const normalizedQuery = q.replace(/[,\n\r\t]/g, ' ').trim()
 
   const {data: posts, error: postsError} = await supabase
     .from('posts')
     .select('id, title, slug, excerpt')
     .eq('published', true)
-    .or(`title.ilike.%${q}%,excerpt.ilike.%${q}%`)
+    .or(
+      `title.ilike.%${normalizedQuery}%,excerpt.ilike.%${normalizedQuery}%`
+    )
     .order('created_at', {ascending: false})
-    .limit(6)
+    .limit(limit)
 
   if (!postsError && posts) {
     for (const post of posts) {
@@ -40,5 +50,10 @@ export const GET: RequestHandler = async ({url}) => {
     }
   }
 
-  return json({results})
+  return json({
+    query: q,
+    data: results,
+    results,
+    pagination: {limit, returned: results.length}
+  })
 }

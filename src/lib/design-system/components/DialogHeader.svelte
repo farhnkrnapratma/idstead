@@ -25,7 +25,9 @@
     'relative flex flex-col gap-1 pr-6 text-left select-none',
     className
   )}>
-  <h2 id="dialog-title" class="text-base font-bold text-text-primary">
+  <h2
+    id="dialog-title"
+    class="text-base font-bold text-text-primary">
     {title}
   </h2>
   {#if description}
@@ -43,7 +45,9 @@
         variant="ghost"
         size="sm"
         onclick={onClose}>
-        <i class="bi bi-x-lg text-xs" aria-hidden="true"></i>
+        <i
+          class="bi bi-x-lg text-xs"
+          aria-hidden="true"></i>
       </IconButton>
     </div>
   {/if}

@@ -1,10 +1,10 @@
 <!-- @format -->
 <script lang="ts">
-  import LinkListSection from '$lib/LinkListSection.svelte'
-  import ShinyText from '$lib/ShinyText.svelte'
   import {onMount} from 'svelte'
-  import {isNameReserved} from '$lib/nameValidator'
+  import {isNameReserved} from '$lib/utils/nameValidator'
   import {
+    LinkListSection,
+    ShinyText,
     SkipLink,
     SpotlightSearch,
     FormField,
@@ -29,6 +29,9 @@
   } from '$lib'
   import {supabase} from '$lib/supabase'
   import {SvelteSet} from 'svelte/reactivity'
+  import {formatMonthAbbrev, decodeHtmlEntities} from '$lib/author'
+  import {themeStore} from '$lib/stores/themeStore.svelte'
+  import type {Theme} from '$lib/types'
 
   let {data} = $props()
 
@@ -64,12 +67,18 @@
     gpa?: string
   }
 
-  const name = 'Farhan Kurnia Pratama'
-  const username = 'farhnkrnapratma'
-  const desc =
-    'Security-focused Software Engineer with expertise in Linux/Unix, AI, and Open-Source Software, dedicated to building reliable, maintainable, and privacy-centric systems.'
-  const headline = 'Linux/Unix, AI, Open-Source Software, and Cybersecurity.'
-  const siteUrl = 'https://fkp.my.id/'
+  let author = $derived(data.author)
+  let cvData = $derived(data.cv || {experience: [], education: []})
+  let fundingData = $derived(data.funding || [])
+  let contactData = $derived(data.contact || [])
+
+  let name = $derived(author?.name || '')
+  let username = $derived(author?.username || '')
+  let desc = $derived(author?.bio || '')
+  let headline = $derived(author?.headline || '')
+  let jobTitle = $derived(author?.jobTitle || '')
+  let siteUrl = $derived(author?.siteUrl || '')
+  let avatar = $derived(author?.avatar || '')
 
   const navItems: NavItem[] = [
     {id: 'home', label: 'Home'},
@@ -90,105 +99,32 @@
     return res.publicUrl
   }
 
-  const contact: Contact[] = [
-    {
-      label: 'Email',
-      value: 'contact@fkp.my.id',
-      href: 'mailto:contact@fkp.my.id',
-      icon: 'bi-envelope-at'
-    },
-    {
-      label: 'GitHub',
-      value: '@farhnkrnapratma',
-      href: 'https://github.com/farhnkrnapratma',
-      icon: 'bi-github'
-    },
-    {
-      label: 'LinkedIn',
-      value: '@farhnkrnapratma',
-      href: 'https://linkedin.com/in/farhnkrnapratma',
-      icon: 'bi-linkedin'
-    },
-    {
-      label: 'X',
-      value: '@farhnkrnapratma',
-      href: 'https://x.com/farhnkrnapratma',
-      icon: 'bi-twitter-x'
-    },
-    {
-      label: 'Facebook',
-      value: '@farhnkrnapratma',
-      href: 'https://facebook.com/farhnkrnapratma',
-      icon: 'bi-facebook'
-    },
-    {
-      label: 'Instagram',
-      value: '@farhnkrnapratma',
-      href: 'https://instagram.com/farhnkrnapratma',
-      icon: 'bi-instagram'
-    },
-    {
-      label: 'Threads',
-      value: '@farhnkrnapratma',
-      href: 'https://threads.net/@farhnkrnapratma',
-      icon: 'bi-threads'
-    },
-    {
-      label: 'YouTube',
-      value: '@farhnkrnapratma',
-      href: 'https://youtube.com/@farhnkrnapratma',
-      icon: 'bi-youtube'
-    }
-  ]
-
-  const experiences: Experience[] = [
-    {
-      role: 'Software Engineer',
-      company: 'PT Secure Modern Technology Indonesia',
-      period: '2024 – Present',
-      desc: 'Designed and developed highly secure, performant, and reliable software systems. Built secure APIs and backend services using Rust and Python. Automated system deployments and container orchestration, ensuring alignment with cybersecurity standards and robust access control guidelines.'
-    }
-  ]
-
-  const education: Education[] = [
-    {
-      degree: "Bachelor's (S1)",
-      major: 'Informatics Engineering',
-      faculty: 'Faculty of Computer Science and Sciences',
-      university: 'Indo Global Mandiri University, Palembang, Indonesia',
-      url: 'https://www.uigm.ac.id/',
-      period: '2024 – Present',
-      gpa: '3.44/4.00'
-    }
-  ]
+  let experiences = $derived(cvData.experience || [])
+  let education = $derived(cvData.education || [])
+  let contact = $derived(contactData || [])
 
   interface SkillGroup {
     category: string
     items: string[]
   }
 
-  const skills: SkillGroup[] = [
-    {
-      category: 'Linux',
-      items: ['Debian', 'Ubuntu', 'Fedora', 'openSUSE', 'NixOS']
-    },
-    {category: 'Unix', items: ['FreeBSD', 'OmniOS', 'OpenBSD']},
-    {category: 'Programming Languages', items: ['Rust', 'Python']},
-    {
-      category: 'DevOps & Tooling',
-      items: ['Docker', 'Kubernetes', 'CI/CD', 'Nix']
-    },
-    {category: 'Shell Scripting', items: ['Bash', 'Nu']},
-    {category: 'Database', items: ['PostgreSQL', 'SurrealDB']},
-    {category: 'Version Control', items: ['Git', 'Jujutsu']},
-    {
-      category: 'Artificial Intelligence',
-      items: ['Prompt Engineering', 'LLMs', 'RAG']
-    },
-    {category: 'Cybersecurity', items: ['GRC', 'IAM']}
-  ]
+  let rawSkills = $derived(data.skills || author?.skills || [])
+  let skills = $derived<SkillGroup[]>(
+    Array.isArray(rawSkills) ?
+      rawSkills.map((s: any) =>
+        typeof s === 'string' ?
+          {category: 'Skills', items: [s]}
+        : {
+            category: decodeHtmlEntities(s.category || 'General'),
+            items: (s.items || []).map((i: string) => decodeHtmlEntities(i))
+          }
+      )
+    : []
+  )
 
   const snapshotSkillGroups = [
+    'Software Engineering',
+    'Linux/Unix',
     'Linux',
     'Unix',
     'Programming Languages',
@@ -197,7 +133,36 @@
     'Artificial Intelligence'
   ]
   const skillsSnapshot = $derived(
-    skills.filter(g => snapshotSkillGroups.includes(g.category))
+    skills.filter(g => snapshotSkillGroups.includes(g.category)).length > 0 ?
+      skills.filter(g => snapshotSkillGroups.includes(g.category))
+    : skills.slice(0, 6)
+  )
+
+  function formatPeriod(
+    startMonth?: string,
+    startYear?: number,
+    endMonth?: string | null,
+    endYear?: number | null,
+    currentlyIn?: boolean
+  ): string {
+    const sMonth = formatMonthAbbrev(startMonth)
+    const eMonth = formatMonthAbbrev(endMonth)
+    const start = [sMonth, startYear].filter(Boolean).join(' ')
+    if (currentlyIn) return `${start} - Present`
+    const end = [eMonth, endYear].filter(Boolean).join(' ')
+    if (start && end) return `${start} - ${end}`
+    if (start) return start
+    if (end) return end
+    return ''
+  }
+
+  let contactItems = $derived(
+    contactData.map(c => ({
+      label: c.platform || c.displayValue,
+      value: c.displayValue,
+      href: c.href,
+      icon: c.icon || 'bi-person'
+    }))
   )
 
   interface FundingPlatform {
@@ -209,47 +174,19 @@
     color?: string
   }
 
-  const fundingPlatforms: FundingPlatform[] = [
-    {
-      label: 'GitHub Sponsors',
-      value: '@farhnkrnapratma',
-      href: 'https://github.com/sponsors/farhnkrnapratma',
-      icon: 'bi-heart-fill'
-    },
-    {
-      label: 'Ko-fi',
-      value: '@farhnkrnapratma',
-      href: 'https://ko-fi.com/farhnkrnapratma',
-      icon: 'bi-cup-hot-fill'
-    },
-    {
-      label: 'Open Collective',
-      value: '@farhnkrnapratma',
-      href: 'https://opencollective.com/farhnkrnapratma',
-      icon: 'bi-people-fill'
-    }
-  ]
+  let fundingPlatforms = $derived<FundingPlatform[]>(
+    fundingData.map(f => ({
+      label: f.platform,
+      value: f.displayValue || f.platform,
+      href: f.url,
+      icon: f.icon || 'bi-heart-fill'
+    }))
+  )
 
-  const langColors: Record<string, string> = {
-    Nix: 'bg-blue-100 text-blue-700',
-    Rust: 'bg-orange-100 text-orange-700',
-    Svelte: 'bg-red-100 text-red-700',
-    Go: 'bg-sky-100 text-sky-700',
-    Python: 'bg-yellow-100 text-yellow-700',
-    TypeScript: 'bg-indigo-100 text-indigo-700',
-    Shell: 'bg-emerald-100 text-emerald-700',
-    JavaScript: 'bg-amber-100 text-amber-700',
-    CSS: 'bg-purple-100 text-purple-700',
-    HTML: 'bg-pink-100 text-pink-700'
-  }
-
-  const projects = $derived(data.projects)
-
-  type Theme = 'auto' | 'dark' | 'light'
+  const projects = $derived(data.projects || [])
 
   let activeSection = $state<Section>('home')
   let menuOpen = $state(false)
-  let theme = $state<Theme>('auto')
   let themeDropdownOpen = $state(false)
   let formName = $state('')
   let formEmail = $state('')
@@ -361,29 +298,13 @@
     }
   }
 
-  function applyTheme(newTheme: Theme) {
-    theme = newTheme
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('theme', newTheme)
-      const isDark =
-        newTheme === 'dark'
-        || (newTheme === 'auto'
-          && window.matchMedia('(prefers-color-scheme: dark)').matches)
-      if (isDark) {
-        document.documentElement.classList.add('dark')
-      } else {
-        document.documentElement.classList.remove('dark')
-      }
-    }
-  }
-
-  function getThemeIcon(selectedTheme = theme) {
+  function getThemeIcon(selectedTheme = themeStore.current) {
     if (selectedTheme === 'dark') return 'bi-moon-stars-fill'
     if (selectedTheme === 'light') return 'bi-sun-fill'
     return 'bi-circle-half'
   }
 
-  function getThemeLabel(selectedTheme = theme) {
+  function getThemeLabel(selectedTheme = themeStore.current) {
     return selectedTheme.charAt(0).toUpperCase() + selectedTheme.slice(1)
   }
 
@@ -503,16 +424,6 @@
   onMount(() => {
     blogFilterStore.parseFromUrl(new URL(window.location.href))
     projectFilterStore.parseFromUrl(new URL(window.location.href))
-    const saved = localStorage.getItem('theme') as Theme
-    applyTheme(saved || 'auto')
-
-    const media = window.matchMedia('(prefers-color-scheme: dark)')
-    const listener = () => {
-      if (theme === 'auto') {
-        applyTheme('auto')
-      }
-    }
-    media.addEventListener('change', listener)
 
     const handleHashChange = () => {
       if (typeof window !== 'undefined' && window.location.hash) {
@@ -530,48 +441,92 @@
     window.addEventListener('hashchange', handleHashChange)
 
     return () => {
-      media.removeEventListener('change', listener)
       window.removeEventListener('hashchange', handleHashChange)
     }
   })
+
+  let jsonLdScript = $derived(
+    '<script type="application/ld+json">'
+      + JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Person',
+        name: name,
+        url: siteUrl,
+        sameAs: Object.values(author?.socials || {}).filter(Boolean),
+        jobTitle: jobTitle,
+        description: desc
+      })
+      + '</'
+      + 'script>'
+  )
 </script>
 
 <svelte:head>
-  <title>{name} — {headline}</title>
-  <meta name="description" content={desc} />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href={siteUrl} />
-  <meta property="og:title" content="{name} — {headline}" />
-  <meta property="og:description" content={desc} />
-  <meta property="og:type" content="profile" />
-  <meta property="og:url" content={siteUrl} />
-  <meta property="og:site_name" content={name} />
-  <meta property="og:image" content="{siteUrl}hero.png" />
-  <meta property="og:image:secure_url" content="{siteUrl}hero.png" />
-  <meta property="og:image:type" content="image/png" />
-  <meta property="og:image:width" content="1280" />
-  <meta property="og:image:height" content="640" />
-  <meta property="og:image:alt" content="{name} — {desc}" />
-  <meta property="og:locale" content="en_US" />
-  <meta property="og:locale:alternate" content="id_ID" />
-  <meta property="profile:first_name" content="Farhan Kurnia" />
-  <meta property="profile:last_name" content="Pratama" />
-  <meta property="profile:username" content={username} />
-  <meta property="profile:gender" content="male" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="{name} — {headline}" />
-  <meta name="twitter:description" content={desc} />
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Person",
-      "name": "Farhan Kurnia Pratama",
-      "url": "https://fkp.my.id",
-      "sameAs": ["https://github.com/farhnkrnapratma"],
-      "jobTitle": "Software Engineer",
-      "description": "Linux/Unix, AI, Open-Source Software, and Cybersecurity."
-    }
-  </script>
+  <title>{name} — {jobTitle}</title>
+  <meta
+    name="description"
+    content={desc} />
+  <meta
+    name="robots"
+    content="index, follow" />
+  <link
+    rel="canonical"
+    href={siteUrl} />
+  <meta
+    property="og:title"
+    content="{name} — {headline}" />
+  <meta
+    property="og:description"
+    content={desc} />
+  <meta
+    property="og:type"
+    content="profile" />
+  <meta
+    property="og:url"
+    content={siteUrl} />
+  <meta
+    property="og:site_name"
+    content={name} />
+  <meta
+    property="og:image"
+    content="{siteUrl}/hero.png" />
+  <meta
+    property="og:image:secure_url"
+    content="{siteUrl}/hero.png" />
+  <meta
+    property="og:image:type"
+    content="image/png" />
+  <meta
+    property="og:image:width"
+    content="1280" />
+  <meta
+    property="og:image:height"
+    content="640" />
+  <meta
+    property="og:image:alt"
+    content="{name} — {desc}" />
+  <meta
+    property="og:locale"
+    content="en_US" />
+  <meta
+    property="og:locale:alternate"
+    content="id_ID" />
+  <meta
+    property="profile:username"
+    content={username} />
+  <meta
+    property="profile:gender"
+    content="male" />
+  <meta
+    name="twitter:card"
+    content="summary_large_image" />
+  <meta
+    name="twitter:title"
+    content="{name} — {headline}" />
+  <meta
+    name="twitter:description"
+    content={desc} />
+  {@html jsonLdScript}
 </svelte:head>
 
 {#if menuOpen}
@@ -595,7 +550,7 @@
   <div class="flex items-center gap-2 sm:gap-3">
     <ul
       id="mobile-menu"
-      class="fixed top-16 right-5 z-40 flex w-56 origin-top-right flex-col items-start gap-1 rounded-xl border border-border-subtle bg-surface-card p-2 shadow-lg transition-all duration-200 md:pointer-events-auto md:static md:h-auto md:w-auto md:translate-x-0 md:scale-100 md:flex-row md:items-center md:gap-0.5 md:rounded-lg md:border md:border-border-subtle md:bg-surface-switcher md:p-1 md:opacity-100 md:shadow-none"
+      class="fixed top-16 right-5 z-40 flex w-56 origin-top-right flex-col items-start gap-1 rounded-xl border border-border-subtle bg-surface-card p-2 shadow-lg transition-all duration-200 md:pointer-events-auto md:static md:h-auto md:w-auto md:translate-x-0 md:scale-100 md:flex-row md:items-center md:gap-1 md:rounded-none md:border-0 md:bg-transparent md:p-0 md:opacity-100 md:shadow-none"
       class:opacity-0={!menuOpen}
       class:scale-95={!menuOpen}
       class:pointer-events-none={!menuOpen}
@@ -605,12 +560,14 @@
         <div class="relative w-full">
           <button
             onclick={() => (themeDropdownOpen = !themeDropdownOpen)}
-            class="flex h-11 w-full cursor-pointer items-center justify-between rounded-lg px-4 text-sm font-semibold text-text-primary transition-colors hover:bg-surface-hover"
+            class="flex h-11 w-full cursor-pointer items-center justify-between rounded-md px-4 text-sm font-semibold text-text-primary transition-colors hover:bg-surface-hover hover:text-copilot"
             aria-label="Change theme"
             aria-haspopup="true"
             aria-expanded={themeDropdownOpen}>
             <span class="inline-flex items-center gap-3">
-              <i class="bi {getThemeIcon()} text-sm" aria-hidden="true"></i>
+              <i
+                class="bi {getThemeIcon()} text-sm"
+                aria-hidden="true"></i>
               {getThemeLabel()}
             </span>
             <span
@@ -627,15 +584,15 @@
 
           {#if themeDropdownOpen}
             <div
-              class="absolute top-12 right-0 left-0 z-50 flex w-full flex-col rounded-lg border border-border-subtle bg-surface-card p-1 shadow-lg">
+              class="absolute top-12 right-0 left-0 z-50 flex w-full flex-col rounded-md border border-border-subtle bg-surface-card p-1 shadow-lg">
               {#each ['auto', 'light', 'dark'] as themeOption (themeOption)}
                 <button
                   onclick={() => {
-                    applyTheme(themeOption as Theme)
+                    themeStore.apply(themeOption as Theme)
                     themeDropdownOpen = false
                   }}
-                  class="flex h-9 w-full cursor-pointer items-center gap-3 rounded-md px-3 text-left text-xs font-bold transition-colors hover:bg-surface-hover {(
-                    theme === themeOption
+                  class="flex h-9 w-full cursor-pointer items-center gap-3 rounded-md px-3 text-left text-xs font-bold transition-colors hover:bg-surface-hover hover:text-copilot {(
+                    themeStore.current === themeOption
                   ) ?
                     'text-copilot'
                   : 'text-text-primary'}">
@@ -657,23 +614,23 @@
               navigate(item.id)
               menuOpen = false
             }}
-            class="flex h-11 w-full cursor-pointer items-center justify-start rounded-lg border-0 px-4 text-sm leading-none font-medium whitespace-nowrap transition-all md:h-7.5 md:justify-center md:rounded-md md:px-3.5 {(
+            class="text-md flex h-11 w-full cursor-pointer items-center justify-start rounded-md border-0 px-4 leading-none font-medium whitespace-nowrap transition-all md:h-8 md:justify-center md:rounded-md md:px-3 md:text-sm {(
               activeSection === item.id
             ) ?
-              'bg-copilot font-semibold text-white hover:bg-copilot/90 md:bg-surface-switcher-active md:text-copilot md:shadow-xs md:hover:bg-surface-switcher-active'
-            : 'text-text-primary hover:bg-surface-hover md:text-text-muted md:hover:bg-surface-hover md:hover:text-text-primary'}">
+              'bg-copilot font-semibold text-white hover:bg-copilot/90 md:bg-copilot md:text-white md:shadow-xs md:hover:bg-copilot/90'
+            : 'text-text-primary hover:bg-surface-hover hover:text-copilot md:text-text-secondary md:hover:bg-surface-hover md:hover:text-copilot'}">
             {item.label}
           </button>
         </li>
       {/each}
     </ul>
 
-    <ThemeSelect
-      {theme}
-      onThemeChange={applyTheme}
-      class="hidden md:inline-flex" />
-
     <SpotlightSearch projects={data.projects} />
+
+    <ThemeSelect
+      theme={themeStore.current}
+      onThemeChange={themeStore.apply}
+      class="hidden md:inline-flex" />
 
     <button
       class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-xl transition-colors hover:bg-surface-hover md:hidden"
@@ -701,9 +658,10 @@
       <div
         class="relative z-10 flex flex-col items-center justify-center text-center">
         <img
-          src="/android-chrome-512x512.png"
-          alt="Farhan Kurnia Pratama"
+          src={avatar}
+          alt={name || author?.name || ''}
           loading="lazy"
+          referrerpolicy="no-referrer"
           class="relative z-10 mb-6 h-28 w-28 rounded-full border-2 border-copilot object-cover object-top shadow-[0_0_20px_rgba(120,101,217,0.25)] transition-all duration-300 dark:shadow-[0_0_25px_rgba(120,101,217,0.35)]" />
         <h1
           class="relative z-10 px-2 text-2xl font-bold tracking-tight whitespace-nowrap text-text-primary sm:text-3xl md:text-4xl lg:text-5xl">
@@ -721,7 +679,7 @@
         <div
           class="relative z-10 mt-8 flex w-full flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
           <a
-            href="/cv.pdf"
+            href="/api/cv"
             download="Farhan_Kurnia_Pratama_CV.pdf"
             class="hover:bg-copilot-hover inline-flex w-full cursor-pointer items-center justify-center rounded-lg bg-copilot py-2 text-xs font-semibold whitespace-nowrap text-white transition-colors sm:w-48 sm:text-sm">
             Download CV
@@ -766,10 +724,6 @@
                         <span
                           class="inline-flex items-center gap-1 select-none">
                           <span
-                            class="h-1.5 w-1.5 rounded-full"
-                            style="background-color: {langColors[project.lang]
-                              || 'var(--color-accent)'}"></span>
-                          <span
                             class="rounded-md bg-border-subtle/30 px-1.5 py-0.5 font-mono text-[12px] font-semibold text-text-muted">
                             {project.lang}
                           </span>
@@ -800,7 +754,7 @@
                   </div>
 
                   <p
-                    class="line-clamp-2 text-xs leading-normal text-text-muted dark:text-zinc-300">
+                    class="line-clamp-2 text-xs leading-normal text-text-primary">
                     {project.desc}
                   </p>
 
@@ -852,7 +806,7 @@
         <div class="boxed-list text-left">
           {#if posts.length === 0}
             <EmptyState
-              icon="bi-journal-text"
+              icon="bi-body-text"
               title="No posts yet"
               description="Check back soon for new articles." />
           {:else}
@@ -861,11 +815,11 @@
                 <li
                   class="group relative flex w-full flex-col gap-5 p-5 text-left transition-all duration-200 hover:bg-surface-hover/40 active:scale-[0.995] sm:flex-row sm:items-start">
                   <div
-                    class="relative aspect-video w-full shrink-0 animate-pulse overflow-hidden rounded-lg border border-border-subtle bg-surface-card/60 select-none sm:w-40 md:w-48">
+                    class="relative w-full shrink-0 overflow-hidden rounded-lg border border-border-subtle select-none sm:w-40 md:w-48">
                     {#if post.banner_path}
                       <img
                         src={getBannerUrl(post.banner_path)}
-                        alt=""
+                        alt={post.title}
                         loading="lazy"
                         onload={e =>
                           (
@@ -873,12 +827,11 @@
                               '.animate-pulse'
                             ) as HTMLElement | null
                           )?.classList.remove('animate-pulse')}
-                        class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-103" />
+                        class="block h-auto w-full transition-transform duration-300 group-hover:scale-103" />
                     {:else}
                       <div
-                        class="to-palette-purple/15 flex h-full w-full items-center justify-center bg-linear-to-br from-accent/15 select-none">
-                        <i class="bi bi-journal-text text-xl text-copilot/50"
-                        ></i>
+                        class="to-palette-purple/15 flex aspect-video w-full items-center justify-center bg-linear-to-br from-accent/15 select-none">
+                        <i class="bi bi-body-text text-xl text-copilot/50"></i>
                       </div>
                     {/if}
                   </div>
@@ -908,7 +861,7 @@
                     </div>
                     {#if post.excerpt}
                       <p
-                        class="line-clamp-2 text-xs leading-normal text-text-muted dark:text-zinc-300">
+                        class="line-clamp-2 text-xs leading-normal text-text-primary">
                         {post.excerpt}
                       </p>
                     {/if}
@@ -962,13 +915,13 @@
           Experience
         </h3>
         <div class="boxed-list text-left">
-          {#each experiences.slice(0, 1) as exp (exp.role)}
+          {#each experiences.slice(0, 1) as exp (exp.title || exp.company)}
             <div
               class="flex flex-col gap-2 px-6 py-5 transition-all hover:bg-surface-hover/40">
               <div class="flex items-start justify-between gap-4">
                 <div>
                   <h4 class="text-base font-bold text-text-primary">
-                    {exp.role}
+                    {exp.title}
                   </h4>
                   <p class="text-sm font-medium text-text-secondary">
                     {exp.company}
@@ -976,12 +929,20 @@
                 </div>
                 <span
                   class="shrink-0 rounded-full border border-border-subtle bg-border-subtle/30 px-2.5 py-0.5 text-xs font-semibold text-text-muted select-none">
-                  {exp.period}
+                  {formatPeriod(
+                    exp.startMonth,
+                    exp.startYear,
+                    exp.endMonth,
+                    exp.endYear,
+                    exp.currentlyIn
+                  )}
                 </span>
               </div>
-              <p class="mt-1.5 text-sm leading-relaxed text-text-secondary">
-                {exp.desc}
-              </p>
+              {#if exp.description}
+                <p class="mt-1.5 text-sm leading-relaxed text-text-secondary">
+                  {exp.description}
+                </p>
+              {/if}
             </div>
           {/each}
         </div>
@@ -1031,7 +992,7 @@
       <form
         bind:this={contactFormElement}
         novalidate
-        action="https://formsubmit.co/contact@fkp.my.id"
+        action="https://buttondown.email/api/v1/subscribers"
         method="POST"
         onsubmit={validateForm}
         class="flex w-full flex-col gap-3 rounded-2xl border border-border-subtle bg-surface-card/60 p-6 text-left shadow-xs backdrop-blur-lg transition-colors duration-300"
@@ -1040,9 +1001,18 @@
           type="hidden"
           name="_subject"
           value="New message from portfolio website!" />
-        <input type="hidden" name="_template" value="table" />
-        <input type="hidden" name="_captcha" value="true" />
-        <input type="hidden" name="_url" value="https://fkp.my.id/" />
+        <input
+          type="hidden"
+          name="_template"
+          value="table" />
+        <input
+          type="hidden"
+          name="_captcha"
+          value="true" />
+        <input
+          type="hidden"
+          name="_url"
+          value="https://fkp.my.id/" />
 
         <div class="mb-2 select-none">
           <h2 class="text-sm font-bold text-text-primary">Send a Message</h2>
@@ -1122,7 +1092,10 @@
         </FormField>
 
         <div class="mt-2 flex justify-end">
-          <Button type="submit" variant="primary" size="md">
+          <Button
+            type="submit"
+            variant="primary"
+            size="md">
             Send message
           </Button>
         </div>
@@ -1134,7 +1107,7 @@
     <LinkListSection
       title="Contact"
       subtitle="Feel free to reach out via any of the channels below."
-      items={contact} />
+      items={contactItems} />
   {/if}
 
   {#if activeSection === 'cv'}
@@ -1151,7 +1124,7 @@
           </p>
         </div>
         <a
-          href="/cv.pdf"
+          href="/api/cv"
           download="Farhan_Kurnia_Pratama_CV.pdf"
           class="hover:bg-copilot-hover inline-flex items-center justify-center rounded-lg bg-copilot px-4 py-2.5 text-sm font-semibold text-white transition-colors">
           Download PDF
@@ -1164,13 +1137,13 @@
           Experience
         </h2>
         <div class="boxed-list mt-4">
-          {#each experiences as exp (exp.role)}
+          {#each experiences as exp, idx (idx)}
             <div
               class="flex flex-col gap-2 px-6 py-5 transition-all hover:bg-surface-hover/40">
               <div class="flex items-start justify-between gap-4">
                 <div>
                   <h3 class="text-base font-bold text-text-primary">
-                    {exp.role}
+                    {exp.title}
                   </h3>
                   <p class="text-sm font-medium text-text-secondary">
                     {exp.company}
@@ -1178,12 +1151,20 @@
                 </div>
                 <span
                   class="shrink-0 rounded-full border border-border-subtle bg-border-subtle/30 px-2.5 py-0.5 text-xs font-semibold text-text-muted select-none">
-                  {exp.period}
+                  {formatPeriod(
+                    exp.startMonth,
+                    exp.startYear,
+                    exp.endMonth,
+                    exp.endYear,
+                    exp.currentlyIn
+                  )}
                 </span>
               </div>
-              <p class="mt-1.5 text-sm leading-relaxed text-text-secondary">
-                {exp.desc}
-              </p>
+              {#if exp.description}
+                <p class="mt-1.5 text-sm leading-relaxed text-text-secondary">
+                  {exp.description}
+                </p>
+              {/if}
             </div>
           {/each}
         </div>
@@ -1195,40 +1176,32 @@
           Education
         </h2>
         <div class="boxed-list mt-4">
-          {#each education as edu (`${edu.degree}-${edu.university}`)}
+          {#each education as edu, idx (idx)}
             <div
               class="flex flex-col gap-1.5 px-6 py-5 transition-all hover:bg-surface-hover/40">
               <div class="flex items-start justify-between gap-4">
                 <div>
                   <h3 class="text-base font-bold text-text-primary">
-                    {edu.degree} in {edu.major}
+                    {edu.degree}
                   </h3>
-                  <p class="text-sm text-text-secondary">{edu.faculty}</p>
-                  <p class="mt-1 text-sm font-semibold text-text-primary">
-                    {#if edu.url}
-                      <a
-                        href={edu.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="transition-colors hover:text-copilot hover:underline">
-                        {edu.university}
-                      </a>
-                    {:else}
-                      {edu.university}
-                    {/if}
-                  </p>
-                  {#if edu.gpa}
-                    <p class="mt-1.5 text-xs font-semibold text-text-secondary">
-                      Current GPA: <span class="text-text-primary"
-                        >{edu.gpa}</span>
-                    </p>
-                  {/if}
+                  <p class="text-sm text-text-secondary">{edu.institution}</p>
                 </div>
                 <span
                   class="shrink-0 rounded-full border border-border-subtle bg-border-subtle/30 px-2.5 py-0.5 text-xs font-semibold text-text-muted select-none">
-                  {edu.period}
+                  {formatPeriod(
+                    edu.startMonth,
+                    edu.startYear,
+                    edu.endMonth,
+                    edu.endYear,
+                    edu.currentlyIn
+                  )}
                 </span>
               </div>
+              {#if edu.description}
+                <p class="mt-1.5 text-sm leading-relaxed text-text-secondary">
+                  {edu.description}
+                </p>
+              {/if}
             </div>
           {/each}
         </div>
@@ -1270,6 +1243,7 @@
           target="_blank"
           rel="noopener noreferrer"
           title="Subscribe via Atom/RSS feed"
+          aria-label="Subscribe via Atom/RSS feed"
           class="mb-0.5 inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-border-subtle bg-surface-card px-3 text-xs font-semibold text-text-muted transition-colors select-none hover:bg-surface-hover hover:text-[#f26522]">
           <span
             class="material-symbols-rounded text-[11px] select-none"
@@ -1359,11 +1333,11 @@
               <li
                 class="group relative flex w-full flex-col gap-5 p-5 text-left transition-all duration-200 hover:bg-surface-hover/40 active:scale-[0.995] sm:flex-row sm:items-start">
                 <div
-                  class="relative aspect-video w-full shrink-0 animate-pulse overflow-hidden rounded-lg border border-border-subtle bg-surface-card/60 select-none sm:w-40 md:w-48">
+                  class="relative w-full shrink-0 overflow-hidden rounded-lg border border-border-subtle select-none sm:w-40 md:w-48">
                   {#if post.banner_path}
                     <img
                       src={getBannerUrl(post.banner_path)}
-                      alt=""
+                      alt={post.title}
                       loading="lazy"
                       onload={e =>
                         (
@@ -1371,12 +1345,12 @@
                             '.animate-pulse'
                           ) as HTMLElement | null
                         )?.classList.remove('animate-pulse')}
-                      class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-103" />
+                      class="block h-auto w-full transition-transform duration-300 group-hover:scale-103" />
                   {:else}
                     <div
-                      class="to-palette-purple/15 flex h-full w-full items-center justify-center bg-linear-to-br from-accent/15 select-none">
+                      class="to-palette-purple/15 flex aspect-video w-full items-center justify-center bg-linear-to-br from-accent/15 select-none">
                       <i
-                        class="bi bi-journal-text text-xl text-copilot/50"
+                        class="bi bi-body-text text-xl text-copilot/50"
                         aria-hidden="true"></i>
                     </div>
                   {/if}
@@ -1395,19 +1369,19 @@
                       <span>{formatViewCount(post.views_count)}</span>
                     {/if}
                   </div>
-                  <div>
-                    <h2
-                      class="text-xl leading-snug font-bold text-text-primary transition-colors group-hover:text-text-primary hover:text-text-primary">
+                  <div class="mt-1">
+                    <h4
+                      class="text-base leading-snug font-bold text-text-primary transition-colors group-hover:text-copilot">
                       <a
                         href="/blog/{post.slug}"
                         class="rounded-xs outline-none after:absolute after:inset-0 focus-visible:ring-2 focus-visible:ring-copilot focus-visible:ring-offset-2 focus-visible:ring-offset-surface-card">
                         {post.title}
                       </a>
-                    </h2>
+                    </h4>
                   </div>
                   {#if post.excerpt}
                     <p
-                      class="line-clamp-2 text-xs leading-normal text-text-muted dark:text-zinc-300">
+                      class="line-clamp-2 text-xs leading-normal text-text-primary">
                       {post.excerpt}
                     </p>
                   {/if}
@@ -1535,10 +1509,6 @@
                         <span
                           class="inline-flex items-center gap-1 select-none">
                           <span
-                            class="h-1.5 w-1.5 rounded-full"
-                            style="background-color: {langColors[project.lang]
-                              || 'var(--color-accent)'}"></span>
-                          <span
                             class="rounded-md bg-border-subtle/30 px-1.5 py-0.5 font-mono text-[12px] font-semibold text-text-muted">
                             {project.lang}
                           </span>
@@ -1569,7 +1539,7 @@
                   </div>
 
                   <p
-                    class="dark:text-primary line-clamp-2 text-xs leading-normal text-text-secondary">
+                    class="line-clamp-2 text-xs leading-normal text-text-primary">
                     {project.desc}
                   </p>
 
@@ -1618,6 +1588,7 @@
   {/if}
 
   <FooterSection
+    socials={data.socials || []}
     onNavClick={url => {
       if (url.startsWith('/#')) {
         const sectionId = url.replace('/#', '')
@@ -1643,7 +1614,9 @@
       size="md"
       showEscHint
       onclick={() => (showSendMessageDialog = false)}>Cancel</Button>
-    <Button variant="primary" size="md" onclick={executeSendMessage}
-      >Send message</Button>
+    <Button
+      variant="primary"
+      size="md"
+      onclick={executeSendMessage}>Send message</Button>
   {/snippet}
 </Dialog>

@@ -102,7 +102,9 @@
             clearFile()
           }}
           class="ml-2 rounded p-1 text-text-muted hover:bg-danger-subtle hover:text-danger">
-          <i class="bi bi-x-lg text-xs" aria-hidden="true"></i>
+          <i
+            class="bi bi-x-lg text-xs"
+            aria-hidden="true"></i>
         </button>
       </div>
     {:else}
@@ -120,7 +122,9 @@
     <span
       role="alert"
       class="mt-1 flex items-center gap-1 text-[11px] font-medium text-danger">
-      <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
+      <i
+        class="bi bi-exclamation-circle-fill"
+        aria-hidden="true"></i>
       {error}
     </span>
   {/if}

@@ -39,12 +39,15 @@
     typeStyles[type],
     className
   )}>
-  <i class="bi {iconStyles[type]} mt-0.5 shrink-0 text-base" aria-hidden="true"
-  ></i>
-  <div class="flex flex-col gap-0.5">
+  <i
+    class="bi {iconStyles[
+      type
+    ]} mt-[1.5px] shrink-0 self-start text-base leading-none"
+    aria-hidden="true"></i>
+  <div class="flex min-w-0 flex-1 flex-col gap-0.5">
     {#if title}
-      <span class="font-bold">{title}</span>
+      <span class="leading-snug font-bold">{title}</span>
     {/if}
-    <span class="leading-relaxed font-medium">{message}</span>
+    <span class="leading-relaxed font-medium break-words">{message}</span>
   </div>
 </div>

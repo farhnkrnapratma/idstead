@@ -36,7 +36,9 @@
       typeStyles[type],
       className
     )}>
-    <i class="bi {iconStyles[type]} text-xs" aria-hidden="true"></i>
+    <i
+      class="bi {iconStyles[type]} text-xs"
+      aria-hidden="true"></i>
     <span>{message}</span>
   </div>
 {/if}

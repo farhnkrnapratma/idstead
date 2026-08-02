@@ -85,8 +85,9 @@
           : 'text-text-primary hover:bg-surface-hover'}">
           <span>{field.label}</span>
           {#if field.value === resolvedField}
-            <i class="bi bi-check2 shrink-0 text-copilot" aria-hidden="true"
-            ></i>
+            <i
+              class="bi bi-check2 shrink-0 text-copilot"
+              aria-hidden="true"></i>
           {/if}
         </button>
       {/each}

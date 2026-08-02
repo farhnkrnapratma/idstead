@@ -42,7 +42,9 @@
   <div class="flex min-w-0 items-center gap-3.5">
     <div
       class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border-subtle bg-surface text-text-secondary transition-colors group-hover:text-copilot">
-      <i class="bi {icon} text-base" aria-hidden="true"></i>
+      <i
+        class="bi {icon} text-base"
+        aria-hidden="true"></i>
     </div>
     <div class="flex min-w-0 flex-col">
       {#if href}
@@ -71,10 +73,14 @@
         aria-label="Copy contact information"
         class="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border-subtle bg-surface px-2.5 text-[11px] font-medium text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring">
         {#if copied}
-          <i class="bi bi-check2 text-copilot" aria-hidden="true"></i>
+          <i
+            class="bi bi-check2 text-copilot"
+            aria-hidden="true"></i>
           <span class="text-copilot">Copied</span>
         {:else}
-          <i class="bi bi-clipboard" aria-hidden="true"></i>
+          <i
+            class="bi bi-clipboard"
+            aria-hidden="true"></i>
           <span>Copy</span>
         {/if}
       </button>

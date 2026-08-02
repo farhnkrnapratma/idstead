@@ -24,7 +24,9 @@
       className
     )}>
     <div class="flex items-center gap-2 font-bold text-danger">
-      <i class="bi bi-exclamation-octagon-fill text-sm" aria-hidden="true"></i>
+      <i
+        class="bi bi-exclamation-octagon-fill text-sm"
+        aria-hidden="true"></i>
       <span>{title}</span>
     </div>
     <ul class="mt-2 flex list-disc flex-col gap-1 pl-5 font-medium text-danger">

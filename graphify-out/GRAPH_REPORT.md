@@ -1,130 +1,152 @@
 <!-- @format -->
 
-# Graph Report - . (2026-07-19)
+# Graph Report - . (2026-07-30)
 
 ## Corpus Check
 
-- 37 files · ~26,661 words
-- Verdict: corpus is large enough that graph structure adds value.
+- cluster-only mode — file stats not available
 
 ## Summary
 
-- 196 nodes · 205 edges · 23 communities (19 shown, 4 thin omitted)
-- Extraction: 88% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 12 edges (avg confidence: 0.88)
+- 457 nodes · 684 edges · 54 communities (38 shown, 16 thin omitted)
+- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 7 edges (avg confidence: 0.68)
 - Token cost: 0 input · 0 output
+
+## Graph Freshness
+
+- Built from commit: `47ba3cc0`
+- Run `git rev-parse HEAD` and compare to check if the graph is stale.
+- Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 
+- lib/index.ts
+- author.ts
 - devDependencies
-- $lib/supabase
 - package.json
+- design-system/index.ts
+- admin/+page.svelte
+- supabase.ts
+- svelte/elements
 - compilerOptions
-- Universed Color Palette Screenshot
-- Svelte MCP Server
-- +server.ts
-- scripts
 - dependencies
-- www (official website project)
-- svelte
-- Website Icon / Branding Set
-- svelte
+- DropdownTrigger.svelte
+- validate-findings.cjs
 - app.d.ts
+- children
+- farhnkrnapratma (GitHub Sponsor)
+- .mcp.json
+- useFilterSort.svelte.ts
+- hooks.server.ts
+- index.json/+server.ts
 - eslint.config.js
 - prettier.config.ts
-- prettier (add-on)
+- GTag Consent Initialization
+- hooks.client.ts
+- Project Configuration
+- Svelte MCP Tools Guide
+- datetime
+- fixture
+- Dependabot: bun package ecosystem (weekly updates)
+- Namespace
+- Path
 
 ## God Nodes (most connected - your core abstractions)
 
-1. `scripts` - 10 edges
-2. `compilerOptions` - 10 edges
-3. `$lib/supabase` - 7 edges
-4. `Universed Color Palette Screenshot` - 7 edges
-5. `Svelte MCP Server` - 6 edges
-6. `www (official website project)` - 6 edges
-7. `SvelteKit HTML entry template (app.html)` - 6 edges
-8. `Hero Image - Personal Profile Banner` - 6 edges
-9. `Site Owner / Author Person` - 6 edges
-10. `Website Icon / Branding Set` - 6 edges
+1. `fetchAuthorProfile()` - 16 edges
+2. `supabase` - 12 edges
+3. `compilerOptions` - 10 edges
+4. `scripts` - 10 edges
+5. `keywords` - 8 edges
+6. `fetchCvEntries()` - 8 edges
+7. `sanitizeInput()` - 8 edges
+8. `loadAdminData()` - 8 edges
+9. `load()` - 7 edges
+10. `fetchGroupedSkills()` - 6 edges
 
 ## Surprising Connections (you probably didn't know these)
 
-- `tailwindcss (add-on)` --conceptually_related_to--> `SvelteKit HTML entry template (app.html)` [INFERRED] /home/hanz/Projects/www/GEMINI.md → /home/hanz/Projects/www/src/app.html
-- `SvelteKit HTML entry template (app.html)` --conceptually_related_to--> `Svelte 5 and SvelteKit documentation` [INFERRED] /home/hanz/Projects/www/src/app.html → /home/hanz/Projects/www/GEMINI.md
-- `www (official website project)` --conceptually_related_to--> `SvelteKit HTML entry template (app.html)` [INFERRED] /home/hanz/Projects/www/README.md → /home/hanz/Projects/www/src/app.html
-- `farhnkrnapratma (GitHub Sponsor)` --conceptually_related_to--> `www (official website project)` [INFERRED] /home/hanz/Projects/www/.github/FUNDING.yml → /home/hanz/Projects/www/README.md
-- `TypeScript (project language)` --conceptually_related_to--> `www (official website project)` [EXTRACTED] /home/hanz/Projects/www/GEMINI.md → /home/hanz/Projects/www/README.md
+- `farhnkrnapratma (GitHub Sponsor)` --conceptually_related_to--> `www (official website project)` [INFERRED] .github/FUNDING.yml → README.md
+- `cn()` --calls--> `children()` [INFERRED] src/lib/design-system/layout/ActionBar.svelte → src/lib/design-system/layout/FormSection.svelte
+- `cn()` --calls--> `children()` [INFERRED] src/lib/design-system/layout/ListSection.svelte → src/lib/design-system/layout/FormSection.svelte
+- `cn()` --calls--> `children()` [INFERRED] src/lib/design-system/layout/Section.svelte → src/lib/design-system/layout/FormSection.svelte
+- `GET()` --calls--> `fetchAuthorProfile()` [EXTRACTED] src/routes/author/+server.ts → src/lib/author.ts
 
 ## Import Cycles
 
 - None detected.
 
-## Communities (23 total, 4 thin omitted)
+## Communities (54 total, 16 thin omitted)
 
-### Community 0 - "devDependencies"
+### Community 0 - "lib/index.ts"
+
+Cohesion: 0.06 Nodes (15): ConsentSignals, ConsentStatus, consentStore, RetentionPeriod, RetentionSettings, StreamInfo, Window, themeStore (+7 more)
+
+### Community 1 - "author.ts"
+
+Cohesion: 0.09 Nodes (36): AuthorProfile, ContactInfo, CvDocument, EducationItem, ExperienceItem, fetchActiveCvDocument(), fetchAuthorProfile(), fetchContactInfo() (+28 more)
+
+### Community 2 - "devDependencies"
 
 Cohesion: 0.05 Nodes (43): eslint, eslint-config-prettier, @eslint/js, eslint-plugin-svelte, globals, devDependencies, eslint, eslint-config-prettier (+35 more)
 
-### Community 1 - "$lib/supabase"
+### Community 3 - "package.json"
 
-Cohesion: 0.10 Nodes (10): ./$types, ./layout.css, svelte/reactivity, $lib/supabase, supabase, BlogPost, GitHubRepo, Project (+2 more)
+Cohesion: 0.05 Nodes (38): svelte, tailwindcss, exports, files, keywords, license, name, peerDependencies (+30 more)
 
-### Community 2 - "package.json"
+### Community 5 - "admin/+page.svelte"
 
-Cohesion: 0.11 Nodes (18): svelte, exports, files, svelte, keywords, name, peerDependencies, svelte (+10 more)
+Cohesion: 0.07 Nodes (10): sanitizeIconClass(), handleAdminSubmit(), handleSaveAuthor(), handleSaveContact(), handleSaveCv(), handleSaveSkills(), handleSaveSocials(), handleSaveSponsorship() (+2 more)
 
-### Community 3 - "compilerOptions"
+### Community 6 - "supabase.ts"
+
+Cohesion: 0.09 Nodes (17): supabase, isNameReserved(), normalizeName(), getS3Client(), POST(), FORBIDDEN_WORDS, getCommentDepth(), localModerate() (+9 more)
+
+### Community 8 - "compilerOptions"
 
 Cohesion: 0.14 Nodes (13): node, ./.svelte-kit/tsconfig.json, compilerOptions, allowJs, checkJs, forceConsistentCasingInFileNames, resolveJsonModule, rewriteRelativeImportExtensions (+5 more)
 
-### Community 4 - "Universed Color Palette Screenshot"
+### Community 10 - "dependencies"
 
-Cohesion: 0.22 Nodes (13): Dark Theme Design, GitHub Handle - @farhnkrnapratma, Hero Image - Personal Profile Banner, Name Text - Farhan Kurnia Pratama, Portrait Photo - Farhan Kurnia Pratama, Website Link - fkp.my.id, Adobe Color - color.adobe.com, Color #D97566 - Terracotta/Coral (+5 more)
+Cohesion: 0.15 Nodes (13): @aws-sdk/client-s3, bootstrap-icons, dependencies, @aws-sdk/client-s3, bootstrap-icons, highlight.js, marked, @sentry/sveltekit (+5 more)
 
-### Community 5 - "Svelte MCP Server"
+### Community 12 - "validate-findings.cjs"
 
-Cohesion: 0.18 Nodes (12): MCP (add-on / Model Context Protocol), Svelte 5 and SvelteKit documentation, Svelte MCP Server, tailwindcss (add-on), MCP Tool: get-documentation, MCP Tool: list-sections, MCP Tool: playground-link, MCP Tool: svelte-autofixer (+4 more)
+Cohesion: 0.36 Nodes (7): collect(), findDiscriminator(), fs, path, schemaPath, typeOf(), validate()
 
-### Community 6 - "+server.ts"
+### Community 13 - "app.d.ts"
 
-Cohesion: 0.24 Nodes (10): ./+page.server, $lib/LinkListSection.svelte, $lib/nameValidator, isNameReserved(), normalizeName(), $lib/ShinyText.svelte, FORBIDDEN_WORDS, getCommentDepth() (+2 more)
+Cohesion: 0.25 Nodes (4): App, Platform, R2Bucket, R2Object
 
-### Community 7 - "scripts"
+### Community 14 - "children"
 
-Cohesion: 0.20 Nodes (10): scripts, build, check, check:watch, dev, format, lint, prepack (+2 more)
+Cohesion: 0.25 Nodes (4): cn(), children(), cn(), cn()
 
-### Community 8 - "dependencies"
+### Community 15 - "farhnkrnapratma (GitHub Sponsor)"
 
-Cohesion: 0.22 Nodes (9): bootstrap-icons, dependencies, bootstrap-icons, highlight.js, marked, @supabase/supabase-js, highlight.js, marked (+1 more)
+Cohesion: 0.33 Nodes (6): Ko-fi: farhnkrnapratma, Open Collective: farhnkrnapratma, farhnkrnapratma (GitHub Sponsor), Bun 1.0+ runtime (prerequisite), MIT License, www (official website project)
 
-### Community 9 - "www (official website project)"
+### Community 16 - ".mcp.json"
 
-Cohesion: 0.25 Nodes (9): bun (package manager), TypeScript (project language), Dependabot: bun package ecosystem (weekly updates), Ko-fi: farhnkrnapratma, Open Collective: farhnkrnapratma, farhnkrnapratma (GitHub Sponsor), Bun 1.0+ runtime (prerequisite), MIT License (+1 more)
+Cohesion: 0.33 Nodes (5): bunx, Sentry, supabase, svelte, @sveltejs/mcp
 
-### Community 10 - "svelte"
+### Community 17 - "useFilterSort.svelte.ts"
 
-Cohesion: 0.25 Nodes (7): mcpServers, svelte, $schema, args, command, @sveltejs/mcp, -y
-
-### Community 11 - "Website Icon / Branding Set"
-
-Cohesion: 0.71 Nodes (7): Android Chrome App Icon 192x192, Android Chrome App Icon 512x512, Apple Touch Icon, Favicon 16x16, Favicon 32x32, Website Icon / Branding Set, Site Owner / Author Person
-
-### Community 12 - "svelte"
-
-Cohesion: 0.50 Nodes (3): npx, svelte, @sveltejs/mcp
+Cohesion: 0.33 Nodes (4): ActiveFilterChip, FilterSortOptions, FilterSortStore, SortState
 
 ## Knowledge Gaps
 
-- **89 isolated node(s):** `$schema`, `command`, `-y`, `@sveltejs/mcp`, `npx` (+84 more) These have ≤1 connection - possible missing edges or undocumented components.
-- **4 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **116 isolated node(s):** `fs`, `path`, `schemaPath`, `config`, `resolvedField` (+111 more) These have ≤1 connection - possible missing edges or undocumented components.
+- **16 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `devDependencies` connect `devDependencies` to `package.json`?** _High betweenness centrality (0.132) - this node is a cross-community bridge._
-- **Why does `scripts` connect `scripts` to `package.json`?** _High betweenness centrality (0.036) - this node is a cross-community bridge._
-- **Why does `dependencies` connect `dependencies` to `package.json`?** _High betweenness centrality (0.032) - this node is a cross-community bridge._
-- **What connects `$schema`, `command`, `-y` to the rest of the system?** _89 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `devDependencies` connect `devDependencies` to `package.json`?** _High betweenness centrality (0.030) - this node is a cross-community bridge._
+- **Why does `dependencies` connect `dependencies` to `package.json`?** _High betweenness centrality (0.010) - this node is a cross-community bridge._
+- **Why does `fetchAuthorProfile()` connect `author.ts` to `supabase.ts`?** _High betweenness centrality (0.009) - this node is a cross-community bridge._
+- **What connects `fs`, `path`, `schemaPath` to the rest of the system?** _116 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `lib/index.ts` be split into smaller, more focused modules?** _Cohesion score 0.06105457909343201 - nodes in this community are weakly interconnected._
+- **Should `author.ts` be split into smaller, more focused modules?** _Cohesion score 0.08788159111933395 - nodes in this community are weakly interconnected._
 - **Should `devDependencies` be split into smaller, more focused modules?** _Cohesion score 0.046511627906976744 - nodes in this community are weakly interconnected._
-- **Should `$lib/supabase` be split into smaller, more focused modules?** _Cohesion score 0.1038961038961039 - nodes in this community are weakly interconnected._
-- **Should `package.json` be split into smaller, more focused modules?** _Cohesion score 0.10526315789473684 - nodes in this community are weakly interconnected._

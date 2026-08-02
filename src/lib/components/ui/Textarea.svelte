@@ -1,7 +1,7 @@
 <!-- @format -->
 <script lang="ts">
   import type {HTMLTextareaAttributes} from 'svelte/elements'
-  import {autoResize} from '$lib/actions'
+  import {autoResize} from '$lib/utils/actions'
 
   interface Props extends HTMLTextareaAttributes {
     value?: string

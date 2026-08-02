@@ -7,32 +7,30 @@
   import ConsentBanner from '$lib/components/ConsentBanner.svelte'
   import {page} from '$app/state'
 
-  const {children} = $props()
+  import {themeStore} from '$lib/stores/themeStore.svelte'
 
-  type Theme = 'auto' | 'dark' | 'light'
+  const {data, children} = $props()
+
+  let name = $derived(data?.author?.name || '')
+  let siteUrl = $derived(
+    (data?.author?.siteUrl || 'https://fkp.my.id').replace(/\/$/, '')
+  )
+
+  let feedTitle = $derived(
+    name ?
+      `${name} (${siteUrl}/blog) — RSS Feed`
+    : `${siteUrl.replace(/^https?:\/\//, '')}/blog — RSS Feed`
+  )
 
   let showScrollTop = $state(false)
   let scrollProgress = $state(0)
 
+  const isAdminPage = $derived(page.url.pathname.startsWith('/admin'))
   const isPageWithFeedback = $derived(
-    page.url.pathname !== '/feedback'
-      && (page.url.pathname === '/admin/login'
-        || !page.url.pathname.startsWith('/admin'))
+    !page.error
+      && page.url.pathname !== '/feedback'
+      && !page.url.pathname.startsWith('/admin')
   )
-
-  function applyTheme(newTheme: Theme) {
-    if (typeof window !== 'undefined') {
-      const isDark =
-        newTheme === 'dark'
-        || (newTheme === 'auto'
-          && window.matchMedia('(prefers-color-scheme: dark)').matches)
-      if (isDark) {
-        document.documentElement.classList.add('dark')
-      } else {
-        document.documentElement.classList.remove('dark')
-      }
-    }
-  }
 
   function handleScroll() {
     showScrollTop = window.scrollY > 300
@@ -50,41 +48,42 @@
   }
 
   onMount(() => {
-    const saved = (localStorage.getItem('theme') as Theme) || 'auto'
-    applyTheme(saved)
+    const cleanupTheme = themeStore.init()
 
-    const media = window.matchMedia('(prefers-color-scheme: dark)')
-    const listener = () => {
-      const current = (localStorage.getItem('theme') as Theme) || 'auto'
-      if (current === 'auto') {
-        applyTheme('auto')
-      }
-    }
-
-    const storageListener = (e: StorageEvent) => {
-      if (e.key === 'theme') {
-        applyTheme((e.newValue as Theme) || 'auto')
-      }
-    }
-
-    media.addEventListener('change', listener)
-    window.addEventListener('storage', storageListener)
-    window.addEventListener('scroll', handleScroll)
-
+    window.addEventListener('scroll', handleScroll, {passive: true})
     handleScroll()
 
     return () => {
-      media.removeEventListener('change', listener)
-      window.removeEventListener('storage', storageListener)
+      cleanupTheme?.()
       window.removeEventListener('scroll', handleScroll)
     }
   })
 </script>
 
-<div
-  class="pointer-events-none fixed top-15 left-0 z-40 h-0.5 bg-copilot transition-all duration-75 ease-out select-none"
-  style="width: {scrollProgress}%">
-</div>
+<svelte:head>
+  <link
+    rel="alternate"
+    type="application/atom+xml"
+    title={feedTitle}
+    href="/atom.xml" />
+  <link
+    rel="describedby"
+    type="text/markdown"
+    title="LLM & AI Agent Directory"
+    href="/llms.txt" />
+  <link
+    rel="describedby"
+    type="text/plain"
+    title="Public API Documentation"
+    href="/api/README.md" />
+</svelte:head>
+
+{#if !isAdminPage}
+  <div
+    class="pointer-events-none fixed top-0 right-0 left-0 z-[100] h-1 bg-copilot transition-all duration-75 ease-out select-none"
+    style="width: {scrollProgress}%">
+  </div>
+{/if}
 
 {@render children()}
 
@@ -107,7 +106,8 @@
   <a
     href="/feedback"
     class="fixed bottom-4 left-4 z-50 inline-flex h-10 w-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border-subtle bg-surface-card px-0 text-xs font-semibold text-text-primary shadow-lg transition-all select-none hover:bg-surface-hover hover:text-copilot sm:bottom-6 sm:left-6 sm:w-auto sm:px-4 sm:text-sm"
-    title="Report an issue or give feedback">
+    title="Report an issue or give feedback"
+    aria-label="Report an issue or give feedback">
     <span
       class="material-symbols-rounded text-sm"
       style="font-variation-settings: 'wght' 300, 'opsz' 20;"

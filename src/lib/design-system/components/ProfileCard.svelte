@@ -35,10 +35,17 @@
           src={avatarUrl}
           alt={name}
           loading="lazy"
+          referrerpolicy="no-referrer"
           onload={e =>
             (
               e.currentTarget.closest('.animate-pulse') as HTMLElement | null
             )?.classList.remove('animate-pulse')}
+          onerror={e => {
+            const container = e.currentTarget.closest(
+              '.animate-pulse'
+            ) as HTMLElement | null
+            container?.classList.remove('animate-pulse')
+          }}
           class="h-full w-full object-cover shadow-xs" />
       </div>
     {:else}

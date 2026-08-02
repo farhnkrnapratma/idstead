@@ -61,9 +61,13 @@
         size="md"
         onclick={copyUrl}>
         {#if copied}
-          <i class="bi bi-check2 text-copilot" aria-hidden="true"></i> Copied!
+          <i
+            class="bi bi-check2 text-copilot"
+            aria-hidden="true"></i> Copied!
         {:else}
-          <i class="bi bi-clipboard" aria-hidden="true"></i> Copy
+          <i
+            class="bi bi-clipboard"
+            aria-hidden="true"></i> Copy
         {/if}
       </Button>
     </div>
@@ -72,45 +76,74 @@
       <a
         href="https://x.com/intent/post?url={encodedUrl}&text={encodedTitle}"
         target="_blank"
-        rel="noopener noreferrer">
-        <IconButton ariaLabel="Share on X" variant="default" size="lg">
-          <i class="bi bi-twitter-x text-lg" aria-hidden="true"></i>
+        rel="noopener noreferrer"
+        aria-label="Share on X (opens in a new tab)"
+        title="Share on X (opens in a new tab)">
+        <IconButton
+          ariaLabel="Share on X"
+          variant="default"
+          size="lg">
+          <i
+            class="bi bi-twitter-x text-lg"
+            aria-hidden="true"></i>
         </IconButton>
       </a>
 
       <a
         href="https://linkedin.com/sharing/share-offsite/?url={encodedUrl}"
         target="_blank"
-        rel="noopener noreferrer">
-        <IconButton ariaLabel="Share on LinkedIn" variant="default" size="lg">
-          <i class="bi bi-linkedin text-lg text-[#0a66c2]" aria-hidden="true"
-          ></i>
+        rel="noopener noreferrer"
+        aria-label="Share on LinkedIn (opens in a new tab)"
+        title="Share on LinkedIn (opens in a new tab)">
+        <IconButton
+          ariaLabel="Share on LinkedIn"
+          variant="default"
+          size="lg">
+          <i
+            class="bi bi-linkedin text-lg text-[#0a66c2]"
+            aria-hidden="true"></i>
         </IconButton>
       </a>
 
       <a
         href="https://www.facebook.com/sharer/sharer.php?u={encodedUrl}"
         target="_blank"
-        rel="noopener noreferrer">
-        <IconButton ariaLabel="Share on Facebook" variant="default" size="lg">
-          <i class="bi bi-facebook text-lg text-[#1877f2]" aria-hidden="true"
-          ></i>
+        rel="noopener noreferrer"
+        aria-label="Share on Facebook (opens in a new tab)"
+        title="Share on Facebook (opens in a new tab)">
+        <IconButton
+          ariaLabel="Share on Facebook"
+          variant="default"
+          size="lg">
+          <i
+            class="bi bi-facebook text-lg text-[#1877f2]"
+            aria-hidden="true"></i>
         </IconButton>
       </a>
 
       <a
         href="https://reddit.com/submit?url={encodedUrl}&title={encodedTitle}"
         target="_blank"
-        rel="noopener noreferrer">
-        <IconButton ariaLabel="Share on Reddit" variant="default" size="lg">
-          <i class="bi bi-reddit text-lg text-[#ff4500]" aria-hidden="true"></i>
+        rel="noopener noreferrer"
+        aria-label="Share on Reddit (opens in a new tab)"
+        title="Share on Reddit (opens in a new tab)">
+        <IconButton
+          ariaLabel="Share on Reddit"
+          variant="default"
+          size="lg">
+          <i
+            class="bi bi-reddit text-lg text-[#ff4500]"
+            aria-hidden="true"></i>
         </IconButton>
       </a>
     </div>
   </div>
 
   {#snippet footer()}
-    <Button variant="ghost" size="md" onclick={onClose}>
+    <Button
+      variant="ghost"
+      size="md"
+      onclick={onClose}>
       <span class="inline-flex items-center gap-1.5">
         <span>Close</span>
         <kbd

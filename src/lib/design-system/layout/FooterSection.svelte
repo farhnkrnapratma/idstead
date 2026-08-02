@@ -1,9 +1,12 @@
 <!-- @format -->
 <script lang="ts">
-  import {onMount} from 'svelte'
   import {cn} from '../utils/cn'
   import {consentStore} from '../../stores/consentStore.svelte'
   import ThemeSelect from '../components/filter/ThemeSelect.svelte'
+  import {themeStore} from '../../stores/themeStore.svelte'
+  import {sanitizeIconClass, type SocialLink} from '../../author'
+
+  import {page} from '$app/state'
 
   interface NavItem {
     label: string
@@ -12,8 +15,10 @@
 
   interface Props {
     name?: string
+    headline?: string
     description?: string
     navItems?: NavItem[]
+    socials?: SocialLink[]
     onNavClick?: (url: string) => void
     class?: string
   }
@@ -27,51 +32,66 @@
     {label: 'Contact', url: '/#contact'}
   ]
 
-  type Theme = 'auto' | 'dark' | 'light'
-
   let {
-    name = 'Farhan Kurnia Pratama',
-    description = 'Security-focused Software Engineer with expertise in Linux/Unix, AI, and Open-Source Software, dedicated to building reliable, maintainable, and privacy-centric systems.',
+    name = '',
+    headline = '',
+    description = '',
     navItems = [],
+    socials = [],
     onNavClick,
     class: className = ''
   }: Props = $props()
 
-  let theme = $state<Theme>('auto')
+  let pageAuthor = $derived((page?.data as any)?.author)
+
+  let resolvedName = $derived(name || pageAuthor?.name || '')
+  let resolvedHeadline = $derived(
+    headline
+      || pageAuthor?.headline
+      || pageAuthor?.jobTitle
+      || 'Software Engineer'
+  )
+  let resolvedDescription = $derived(description || pageAuthor?.bio || '')
 
   let resolvedNavItems = $derived(
     navItems.length > 0 ? navItems : defaultNavItems
   )
 
-  function applyTheme(newTheme: Theme) {
-    theme = newTheme
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('theme', newTheme)
-      if (newTheme === 'dark') {
-        document.documentElement.classList.add('dark')
-      } else if (newTheme === 'light') {
-        document.documentElement.classList.remove('dark')
-      } else {
-        const prefersDark = window.matchMedia(
-          '(prefers-color-scheme: dark)'
-        ).matches
-        if (prefersDark) {
-          document.documentElement.classList.add('dark')
-        } else {
-          document.documentElement.classList.remove('dark')
-        }
-      }
+  const defaultSocials: SocialLink[] = [
+    {
+      platform: 'GitHub',
+      url: 'https://github.com/farhnkrnapratma',
+      icon: 'bi-github'
+    },
+    {
+      platform: 'LinkedIn',
+      url: 'https://linkedin.com/in/farhnkrnapratma',
+      icon: 'bi-linkedin'
+    },
+    {platform: 'X', url: 'https://x.com/farhnkrnapratma', icon: 'bi-twitter-x'},
+    {
+      platform: 'Facebook',
+      url: 'https://facebook.com/farhnkrnapratma',
+      icon: 'bi-facebook'
+    },
+    {
+      platform: 'Instagram',
+      url: 'https://instagram.com/farhnkrnapratma',
+      icon: 'bi-instagram'
+    },
+    {
+      platform: 'Threads',
+      url: 'https://threads.net/@farhnkrnapratma',
+      icon: 'bi-threads'
     }
-  }
+  ]
 
-  onMount(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('theme') as Theme
-      if (saved) {
-        theme = saved
-      }
-    }
-  })
+  let resolvedSocials = $derived(
+    Array.isArray(socials) && socials.length > 0 ? socials
+    : pageAuthor?.socialLinks && pageAuthor.socialLinks.length > 0 ?
+      pageAuthor.socialLinks
+    : defaultSocials
+  )
 </script>
 
 <footer
@@ -86,26 +106,26 @@
         <div class="flex min-w-0 flex-col gap-0.5">
           <h3
             class="text-base font-bold tracking-tight text-text-primary sm:text-lg">
-            {name}
+            {resolvedName}
           </h3>
           <p class="text-xs font-medium text-text-secondary sm:text-sm">
-            Linux/Unix, AI, Open-Source Software, and Cybersecurity.
+            {resolvedHeadline}
           </p>
         </div>
       </div>
 
       <div class="pt-1 md:col-span-7 md:pr-6">
         <p class="max-w-md text-xs leading-relaxed text-text-secondary">
-          {description}
+          {resolvedDescription}
         </p>
       </div>
 
       {#if resolvedNavItems.length > 0}
         <div
-          class="mt-3 border-t border-border-subtle/40 pt-3 md:col-span-5 md:mt-0 md:border-t-0 md:border-l md:border-border-subtle/40 md:pt-0.5 md:pl-6">
+          class="border-t border-border-subtle/40 md:col-span-5 md:mt-0 md:border-t-0 md:border-l md:border-border-subtle/40 md:pl-6">
           <nav aria-label="Footer navigation">
             <ul
-              class="grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs font-normal text-text-secondary">
+              class="grid grid-cols-2 gap-x-6 text-xs font-normal text-text-secondary">
               {#each resolvedNavItems as item, index (item.url)}
                 <li
                   class="text-xs leading-7.25 {index % 2 === 0 ?
@@ -134,67 +154,29 @@
 
       <div
         class="flex flex-wrap items-center justify-between gap-3 pt-4 md:col-span-12">
-        <div class="flex flex-wrap items-center gap-2 sm:gap-2.5">
-          <a
-            href="https://github.com/farhnkrnapratma"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
-            aria-label="GitHub profile (opens in a new tab)">
-            <i class="bi bi-github text-base leading-none" aria-hidden="true"
-            ></i>
-          </a>
-          <a
-            href="https://linkedin.com/in/farhnkrnapratma"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
-            aria-label="LinkedIn profile (opens in a new tab)">
-            <i class="bi bi-linkedin text-base leading-none" aria-hidden="true"
-            ></i>
-          </a>
-          <a
-            href="https://x.com/farhnkrnapratma"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
-            aria-label="X profile (opens in a new tab)">
-            <i class="bi bi-twitter-x text-base leading-none" aria-hidden="true"
-            ></i>
-          </a>
-          <a
-            href="https://facebook.com/farhnkrnapratma"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
-            aria-label="Facebook profile (opens in a new tab)">
-            <i class="bi bi-facebook text-base leading-none" aria-hidden="true"
-            ></i>
-          </a>
-          <a
-            href="https://instagram.com/farhnkrnapratma"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
-            aria-label="Instagram profile (opens in a new tab)">
-            <i class="bi bi-instagram text-base leading-none" aria-hidden="true"
-            ></i>
-          </a>
-          <a
-            href="https://threads.net/@farhnkrnapratma"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
-            aria-label="Threads profile (opens in a new tab)">
-            <i class="bi bi-threads text-base leading-none" aria-hidden="true"
-            ></i>
-          </a>
+        <div
+          class="flex max-w-[calc(6*2.25rem+5*0.625rem)] flex-wrap items-center gap-2 sm:gap-2.5">
+          {#each resolvedSocials as item (item.url + item.platform)}
+            <a
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
+              aria-label={item.platform}>
+              <i
+                class="{sanitizeIconClass(
+                  item.icon,
+                  'bi bi-people'
+                )} text-base leading-none"
+                aria-hidden="true"></i>
+            </a>
+          {/each}
         </div>
 
         <div class="relative w-fit">
           <ThemeSelect
-            {theme}
-            onThemeChange={applyTheme}
+            theme={themeStore.current}
+            onThemeChange={themeStore.apply}
             dropdownDirection="up" />
         </div>
       </div>
@@ -206,7 +188,7 @@
       class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs font-medium text-text-muted">
       <span class="inline-flex shrink-0 items-center text-text-muted">
         &copy; {new Date().getFullYear()}
-        {name}.
+        {resolvedName}.
       </span>
       <a
         href="/privacy"

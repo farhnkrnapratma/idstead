@@ -3,8 +3,24 @@
     "svelte": {
       "type": "stdio",
       "command": "bunx",
-      "env": {},
-      "args": ["@sveltejs/mcp"]
+      "args": ["@sveltejs/mcp"],
+      "tools": ["*"]
+    },
+    "Sentry": {
+      "type": "http",
+      "url": "https://mcp.sentry.dev/mcp/farhnkrnapratma/www",
+      "tools": ["*"]
+    },
+    "supabase": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=vbjerskcgtasmjodabsy",
+      "tools": ["*"]
+    },
+    "chrome-devtools": {
+      "type": "stdio",
+      "command": "bunx",
+      "args": ["chrome-devtools-mcp@latest"],
+      "tools": ["*"]
     }
   }
 }

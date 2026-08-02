@@ -6,9 +6,16 @@ import type {RequestHandler} from './$types'
 
 export const POST: RequestHandler = async ({request, getClientAddress}) => {
   try {
-    const {post_id} = await request.json()
-    if (!post_id || typeof post_id !== 'string') {
-      return json({error: 'Invalid post_id'}, {status: 400})
+    const body = await request.json()
+    const postId = typeof body?.postId === 'string' ? body.postId.trim() : ''
+    if (!postId) {
+      return json(
+        {
+          code: 400,
+          error: '400 Bad Request: postId is required.'
+        },
+        {status: 400}
+      )
     }
 
     const ip = getClientAddress()
@@ -26,7 +33,7 @@ export const POST: RequestHandler = async ({request, getClientAddress}) => {
     const {data: existing} = await supabase
       .from('post_views')
       .select('id')
-      .eq('post_id', post_id)
+      .eq('post_id', postId)
       .eq('ip_hash', dailyKey)
       .maybeSingle()
 
@@ -36,25 +43,38 @@ export const POST: RequestHandler = async ({request, getClientAddress}) => {
 
     await supabase
       .from('post_views')
-      .insert({post_id, ip_hash: dailyKey, viewed_at: new Date().toISOString()})
+      .insert({post_id: postId, ip_hash: dailyKey, viewed_at: new Date().toISOString()})
 
     return json({counted: true})
   } catch (err) {
     console.error('View tracking error:', err)
-    return json({error: 'Internal error'}, {status: 500})
+    return json(
+      {
+        code: 500,
+        error:
+          '500 Internal Server Error: An unexpected error occurred while recording views.'
+      },
+      {status: 500}
+    )
   }
 }
 
 export const GET: RequestHandler = async ({url}) => {
-  const post_id = url.searchParams.get('post_id')
-  if (!post_id) {
-    return json({error: 'Missing post_id'}, {status: 400})
+  const postId = url.searchParams.get('postId')?.trim() || ''
+  if (!postId) {
+    return json(
+      {
+        code: 400,
+        error: '400 Bad Request: postId is required.'
+      },
+      {status: 400}
+    )
   }
 
   const {count} = await supabase
     .from('post_views')
     .select('*', {count: 'exact', head: true})
-    .eq('post_id', post_id)
+    .eq('post_id', postId)
 
-  return json({views: count ?? 0})
+  return json({postId, views: count ?? 0})
 }

@@ -29,10 +29,14 @@
 
 <div class="flex w-full flex-col gap-1.5 {className}">
   <div class="flex items-center justify-between">
-    <label for={id} class="text-xs font-bold text-text-secondary select-none">
+    <label
+      for={id}
+      class="text-xs font-bold text-text-secondary select-none">
       {label}
       {#if required}
-        <span class="text-danger" aria-hidden="true">*</span>
+        <span
+          class="text-danger"
+          aria-hidden="true">*</span>
         <span class="sr-only">(required)</span>
       {/if}
     </label>
@@ -46,13 +50,19 @@
 
   <div class="min-h-4 text-[11px] leading-tight font-medium">
     {#if error}
-      <span role="alert" class="flex items-center gap-1 text-danger">
-        <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
+      <span
+        role="alert"
+        class="flex items-center gap-1 text-danger">
+        <i
+          class="bi bi-exclamation-circle-fill"
+          aria-hidden="true"></i>
         {error}
       </span>
     {:else if valid}
       <span class="flex items-center gap-1 text-copilot">
-        <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+        <i
+          class="bi bi-check-circle-fill"
+          aria-hidden="true"></i>
         Looks good
       </span>
     {:else if hint}

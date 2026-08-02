@@ -5,7 +5,7 @@
   import {cn} from '../utils/cn'
 
   interface Props extends Omit<HTMLSelectAttributes, 'size'> {
-    value?: string
+    value?: string | number | null
     error?: boolean
     valid?: boolean
     size?: 'sm' | 'md' | 'lg'
@@ -13,7 +13,7 @@
   }
 
   let {
-    value = $bindable(''),
+    value = $bindable(undefined),
     error = false,
     valid = false,
     size = 'md',
@@ -34,7 +34,7 @@
   bind:value
   {disabled}
   class={cn(
-    'w-full border border-border-default bg-surface text-text-primary transition-colors focus:border-copilot focus:ring-2 focus:ring-copilot/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+    'w-full border border-border-subtle bg-surface text-text-primary transition-colors focus:border-copilot focus:ring-2 focus:ring-copilot/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50',
     sizeStyles[size],
     error ? 'border-danger! ring-danger/20!' : '',
     valid && !error ? 'border-copilot!' : '',

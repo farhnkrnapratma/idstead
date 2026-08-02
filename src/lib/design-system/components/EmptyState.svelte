@@ -26,7 +26,9 @@
     className
   )}>
   <div class="mb-3 flex items-center justify-center text-text-on-accent">
-    <i class="bi {icon} text-2xl" aria-hidden="true"></i>
+    <i
+      class="bi {icon} text-2xl"
+      aria-hidden="true"></i>
   </div>
   <h3 class="text-sm font-bold text-text-primary">{title}</h3>
   {#if description}

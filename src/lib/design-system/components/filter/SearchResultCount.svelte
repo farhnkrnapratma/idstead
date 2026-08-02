@@ -19,12 +19,12 @@
 
 <div
   class={cn(
-    'text-xs font-medium whitespace-nowrap text-text-muted select-none',
+    'text-xs font-semibold whitespace-nowrap text-text-primary select-none',
     className
   )}
   aria-live="polite"
   aria-atomic="true">
-  Showing <span class="font-semibold text-text-secondary">{count}</span> of
-  <span class="font-semibold text-text-secondary">{total}</span>
+  Showing <span class="font-bold text-copilot">{count}</span> of
+  <span class="font-bold text-copilot">{total}</span>
   {itemLabel}
 </div>

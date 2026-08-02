@@ -20,7 +20,11 @@
   }: Props = $props()
 </script>
 
-<EmptyState {title} {description} icon="bi-filter-circle" class={className}>
+<EmptyState
+  {title}
+  {description}
+  icon="bi-filter-circle"
+  class={className}>
   {#snippet actions()}
     <Button
       variant="secondary"

@@ -32,7 +32,9 @@
   <div class="flex min-w-0 items-center gap-3.5">
     <div
       class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border-subtle bg-surface text-copilot transition-transform group-hover:scale-105">
-      <i class="bi {icon} text-base" aria-hidden="true"></i>
+      <i
+        class="bi {icon} text-base"
+        aria-hidden="true"></i>
     </div>
     <div class="flex min-w-0 flex-col">
       <div class="flex items-center gap-2">
@@ -56,6 +58,8 @@
   <div
     class="flex shrink-0 items-center gap-1.5 text-xs font-medium text-text-muted transition-colors group-hover:text-copilot">
     <span>Sponsor</span>
-    <i class="bi bi-box-arrow-up-right text-[10px]" aria-hidden="true"></i>
+    <i
+      class="bi bi-box-arrow-up-right text-[10px]"
+      aria-hidden="true"></i>
   </div>
 </a>

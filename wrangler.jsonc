@@ -3,7 +3,7 @@
 {
   "name": "www",
   "compatibility_date": "2025-06-28",
-  "compatibility_flags": ["nodejs_als"],
+  "compatibility_flags": ["nodejs_compat"],
   "pages_build_output_dir": ".svelte-kit/cloudflare",
   "ai": {"binding": "AI", "remote": true}
 }

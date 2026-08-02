@@ -1,0 +1,76 @@
+{
+  "nodes": [
+    {
+      "id": "home_hanz_projects_www_agent_skills_skill_stocktake_scripts_save_results_sh",
+      "label": "save-results.sh",
+      "file_type": "code",
+      "source_file": ".agent/skills/skill-stocktake/scripts/save-results.sh",
+      "source_location": "L1",
+      "metadata": {"language": "bash", "kind": "file"}
+    },
+    {
+      "id": "home_hanz_projects_www_agent_skills_skill_stocktake_scripts_save_results_sh__entry",
+      "label": "save-results.sh script",
+      "file_type": "code",
+      "source_file": ".agent/skills/skill-stocktake/scripts/save-results.sh",
+      "source_location": "L1",
+      "metadata": {"language": "bash", "kind": "bash_entrypoint"}
+    }
+  ],
+  "edges": [
+    {
+      "source": "home_hanz_projects_www_agent_skills_skill_stocktake_scripts_save_results_sh",
+      "target": "home_hanz_projects_www_agent_skills_skill_stocktake_scripts_save_results_sh__entry",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agent/skills/skill-stocktake/scripts/save-results.sh",
+      "source_location": "L1",
+      "weight": 1.0
+    }
+  ],
+  "raw_calls": [
+    {
+      "language": "bash",
+      "callee": "set",
+      "caller_nid": "home_hanz_projects_www_agent_skills_skill_stocktake_scripts_save_results_sh__entry",
+      "source_file": ".agent/skills/skill-stocktake/scripts/save-results.sh",
+      "source_location": "L12"
+    },
+    {
+      "language": "bash",
+      "callee": "echo",
+      "caller_nid": "home_hanz_projects_www_agent_skills_skill_stocktake_scripts_save_results_sh__entry",
+      "source_file": ".agent/skills/skill-stocktake/scripts/save-results.sh",
+      "source_location": "L17"
+    },
+    {
+      "language": "bash",
+      "callee": "exit",
+      "caller_nid": "home_hanz_projects_www_agent_skills_skill_stocktake_scripts_save_results_sh__entry",
+      "source_file": ".agent/skills/skill-stocktake/scripts/save-results.sh",
+      "source_location": "L19"
+    },
+    {
+      "language": "bash",
+      "callee": "jq",
+      "caller_nid": "home_hanz_projects_www_agent_skills_skill_stocktake_scripts_save_results_sh__entry",
+      "source_file": ".agent/skills/skill-stocktake/scripts/save-results.sh",
+      "source_location": "L26"
+    },
+    {
+      "language": "bash",
+      "callee": "trap",
+      "caller_nid": "home_hanz_projects_www_agent_skills_skill_stocktake_scripts_save_results_sh__entry",
+      "source_file": ".agent/skills/skill-stocktake/scripts/save-results.sh",
+      "source_location": "L44"
+    },
+    {
+      "language": "bash",
+      "callee": "mv",
+      "caller_nid": "home_hanz_projects_www_agent_skills_skill_stocktake_scripts_save_results_sh__entry",
+      "source_file": ".agent/skills/skill-stocktake/scripts/save-results.sh",
+      "source_location": "L56"
+    }
+  ],
+  "bash_sources": []
+}

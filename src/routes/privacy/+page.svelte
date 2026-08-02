@@ -1,35 +1,20 @@
 <!-- @format -->
 <script lang="ts">
+  import {page} from '$app/state'
   import {onMount} from 'svelte'
   import {SkipLink, FooterSection, SpotlightSearch, ThemeSelect} from '$lib'
   import {consentStore} from '$lib/stores/consentStore.svelte'
 
-  const name = 'Farhan Kurnia Pratama'
-  const siteUrl = 'https://fkp.my.id/'
+  import {themeStore} from '$lib/stores/themeStore.svelte'
 
-  type Theme = 'auto' | 'dark' | 'light'
-  let theme = $state<Theme>('auto')
-
-  function applyTheme(newTheme: Theme) {
-    theme = newTheme
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('theme', newTheme)
-      const isDark =
-        newTheme === 'dark'
-        || (newTheme === 'auto'
-          && window.matchMedia('(prefers-color-scheme: dark)').matches)
-      if (isDark) {
-        document.documentElement.classList.add('dark')
-      } else {
-        document.documentElement.classList.remove('dark')
-      }
-    }
-  }
-
-  onMount(() => {
-    const saved = (localStorage.getItem('theme') as Theme) || 'auto'
-    applyTheme(saved)
-  })
+  let pageAuthor = $derived((page?.data as any)?.author)
+  let name = $derived(pageAuthor?.name || 'This website')
+  let siteUrl = $derived(
+    ((page?.data as any)?.author?.siteUrl || 'https://fkp.my.id/').replace(
+      /\/$/,
+      ''
+    ) + '/'
+  )
 </script>
 
 <svelte:head>
@@ -37,20 +22,36 @@
   <meta
     name="description"
     content="Privacy policy and data collection transparency statement for {siteUrl}" />
-  <link rel="canonical" href="{siteUrl}privacy" />
-  <meta property="og:title" content="Privacy Policy — {name}" />
+  <link
+    rel="canonical"
+    href="{siteUrl}privacy" />
+  <meta
+    property="og:title"
+    content="Privacy Policy — {name}" />
   <meta
     property="og:description"
     content="Privacy policy and data collection transparency statement for {siteUrl}" />
-  <meta property="og:url" content="{siteUrl}privacy" />
-  <meta property="og:type" content="website" />
-  <meta property="og:image" content="{siteUrl}hero.png" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Privacy Policy — {name}" />
+  <meta
+    property="og:url"
+    content="{siteUrl}privacy" />
+  <meta
+    property="og:type"
+    content="website" />
+  <meta
+    property="og:image"
+    content="{siteUrl}hero.png" />
+  <meta
+    name="twitter:card"
+    content="summary_large_image" />
+  <meta
+    name="twitter:title"
+    content="Privacy Policy — {name}" />
   <meta
     name="twitter:description"
     content="Privacy policy and data collection transparency statement for {siteUrl}" />
-  <meta name="twitter:image" content="{siteUrl}hero.png" />
+  <meta
+    name="twitter:image"
+    content="{siteUrl}hero.png" />
 </svelte:head>
 
 <SkipLink />
@@ -60,13 +61,16 @@
   aria-label="Privacy page navigation">
   <a
     href="/"
-    class="inline-flex h-9 items-center justify-center rounded-lg border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
+    class="inline-flex h-8 items-center justify-center rounded-md border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover hover:text-copilot focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
     Back to Home
   </a>
 
   <div class="flex items-center gap-2">
     <SpotlightSearch />
-    <ThemeSelect {theme} onThemeChange={applyTheme} />
+    <ThemeSelect
+      theme={themeStore.current}
+      onThemeChange={themeStore.apply}
+      class="hidden md:inline-flex" />
   </div>
 </nav>
 
@@ -87,9 +91,10 @@
         1. Overview & Data Transparency
       </h2>
       <p class="mt-2">
-        Farhan Kurnia Pratama ("we", "our", or "us") is committed to respecting
-        your privacy and maintaining complete transparency regarding how your
-        data is handled when you visit <a
+        {name} ("we", "our", or "us") is committed to respecting your privacy and
+        maintaining complete transparency regarding how your data is handled when
+        you visit
+        <a
           href={siteUrl}
           class="font-medium text-copilot hover:underline">{siteUrl}</a
         >. This site operates with a strict privacy-by-default policy. We do not
@@ -164,7 +169,57 @@
     <section
       class="rounded-2xl border border-border-subtle bg-surface-card/45 p-6 shadow-xs backdrop-blur-lg">
       <h2 class="text-base font-bold text-text-primary">
-        4. Public Comments & Feedback
+        4. Error Monitoring & Performance Tracking (Sentry)
+      </h2>
+      <p class="mt-2">
+        We use <strong class="font-semibold text-text-primary">Sentry</strong>
+        (sentry.io) to monitor performance and detect errors within this application.
+        Sentry automatically collects the following technical data when an error occurs
+        or during normal application operation:
+      </p>
+      <ul class="mt-2 list-disc space-y-1.5 pl-5">
+        <li>
+          <strong class="font-semibold text-text-primary">Error data:</strong>
+          error type, error message, stack trace (file names, line numbers, and column
+          numbers), and error-handling status.
+        </li>
+        <li>
+          <strong class="font-semibold text-text-primary">HTTP data:</strong>
+          request method, accessed route/path, response status code, and URLs of external
+          services called by the server (GitHub API, Supabase).
+        </li>
+        <li>
+          <strong class="font-semibold text-text-primary"
+            >Performance data:</strong>
+          operation duration, execution hierarchy (traces & spans), and transaction/route
+          names.
+        </li>
+        <li>
+          <strong class="font-semibold text-text-primary">Breadcrumbs:</strong>
+          contextual logs consisting of HTTP request history and console messages
+          that occurred before an error.
+        </li>
+      </ul>
+      <p class="mt-2">
+        This data <strong class="font-semibold text-text-primary"
+          >does not include</strong> user identity, request/response body content,
+        cookies, authentication tokens, or other personal information.
+      </p>
+      <p class="mt-2">
+        Data is sent to and stored by Sentry, Inc. Further information is
+        available in the <a
+          href="https://sentry.io/privacy/"
+          class="font-medium text-copilot hover:underline"
+          target="_blank"
+          rel="noopener noreferrer">Sentry Privacy Policy</a
+        >.
+      </p>
+    </section>
+
+    <section
+      class="rounded-2xl border border-border-subtle bg-surface-card/45 p-6 shadow-xs backdrop-blur-lg">
+      <h2 class="text-base font-bold text-text-primary">
+        5. Public Comments & Feedback
       </h2>
       <p class="mt-2">
         When you submit a comment on a blog post or send feedback via our
@@ -188,7 +243,7 @@
     <section
       class="rounded-2xl border border-border-subtle bg-surface-card/45 p-6 shadow-xs backdrop-blur-lg">
       <h2 class="text-base font-bold text-text-primary">
-        5. Your Choices & Cookie Preferences
+        6. Your Choices & Cookie Preferences
       </h2>
       <p class="mt-2">
         You retain full control over your cookie preferences at all times. You
@@ -208,7 +263,7 @@
     <section
       class="rounded-2xl border border-border-subtle bg-surface-card/45 p-6 shadow-xs backdrop-blur-lg">
       <h2 class="text-base font-bold text-text-primary">
-        6. Contact Information
+        7. Contact Information
       </h2>
       <p class="mt-2">
         If you have any questions or privacy inquiries regarding this policy or

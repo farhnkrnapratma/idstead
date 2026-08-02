@@ -1,13 +1,82 @@
 /** @format */
 
 @theme {
-  /* GitHub Primary Palette */
+  --font-serif: 'Bitter', ui-serif, serif;
+  --font-sans: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --color-gh-gray-1: #f2f5f3;
+  --color-gh-gray-2: #e4ebe6;
+  --color-gh-gray-3: #b6bfb8;
+  --color-gh-gray-4: #909692;
+  --color-gh-gray-5: #232925;
+  --color-gh-gray-6: #101411;
+
+  --color-gh-green-1: #bfffd1;
+  --color-gh-green-2: #8cf2a6;
+  --color-gh-green-3: #5fed83;
+  --color-gh-green-4: #0fbf3e;
+  --color-gh-green-5: #08872b;
+  --color-gh-green-6: #0a241b;
+
+  --color-gh-purple-1: #c898fd;
+  --color-gh-purple-2: #b870ff;
+  --color-gh-purple-3: #8534f3;
+  --color-gh-purple-4: #43179e;
+  --color-gh-purple-5: #26115f;
+  --color-gh-purple-6: #160048;
+
+  --color-gh-orange-1: #f4a876;
+  --color-gh-orange-2: #f08a3a;
+  --color-gh-orange-3: #fe4c25;
+  --color-gh-orange-4: #c53211;
+  --color-gh-orange-5: #801e0f;
+  --color-gh-orange-6: #500a00;
+
+  --color-gh-blue-1: #9eecff;
+  --color-gh-blue-2: #3094ff;
+  --color-gh-blue-3: #1a61fe;
+  --color-gh-blue-4: #0527fc;
+  --color-gh-blue-5: #212183;
+  --color-gh-blue-6: #001c4d;
+
+  --color-gh-lime-1: #dcff96;
+  --color-gh-lime-2: #d3fa37;
+  --color-gh-lime-3: #d8bd0e;
+  --color-gh-lime-4: #db9d00;
+  --color-gh-lime-5: #d67200;
+  --color-gh-lime-6: #703100;
+
+  --color-adwaita-bg: #f2f5f3;
+  --color-adwaita-card: #ffffff;
+  --color-adwaita-border: #e4ebe6;
+  --color-adwaita-accent: #0fbf3e;
+  --color-adwaita-accent-hover: #08872b;
+  --color-adwaita-text: #232925;
+  --color-adwaita-subtitle: #909692;
+  --color-adwaita-body: #232925;
+  --color-adwaita-label: #232925;
+  --color-adwaita-error: #fe4c25;
+  --color-adwaita-focus: #0fbf3e;
+  --color-adwaita-switcher-bg: rgba(228, 235, 230, 0.5);
+  --color-adwaita-switcher-active: #ffffff;
+  --color-adwaita-hover: rgba(16, 20, 17, 0.03);
+
+  --color-palette-primary: #0fbf3e;
+  --color-palette-green: #5fed83;
+  --color-palette-yellow: #d3fa37;
+  --color-palette-coral: #fe4c25;
+  --color-palette-slate: #909692;
+
   --color-background: #f2f5f3;
+  --color-surface-base: #f2f5f3;
   --color-surface: #ffffff;
   --color-surface-card: #ffffff;
   --color-surface-subtle: #e4ebe6;
   --color-surface-elevated: #ffffff;
   --color-surface-hover: rgba(16, 20, 17, 0.04);
+  --color-surface-switcher: rgba(228, 235, 230, 0.5);
+  --color-surface-switcher-active: #ffffff;
 
   --color-text-primary: #101411;
   --color-text-secondary: #232925;
@@ -42,17 +111,38 @@
   --color-overlay: rgba(16, 20, 17, 0.55);
   --color-overlay-backdrop: rgba(16, 20, 17, 0.55);
   --color-focus-ring: #0fbf3e;
+
+  --color-shiny-text: #b5b5b5;
+  --color-shiny-text-shine: #ffffff;
 }
 
 :root.dark {
+  --color-adwaita-bg: #101411;
+  --color-adwaita-card: #232925;
+  --color-adwaita-border: rgba(228, 235, 230, 0.12);
+  --color-adwaita-text: #f2f5f3;
+  --color-adwaita-subtitle: #b6bfb8;
+  --color-adwaita-body: #b6bfb8;
+  --color-adwaita-label: #b6bfb8;
+  --color-adwaita-error: #fe4c25;
+  --color-adwaita-focus: #0fbf3e;
+  --color-adwaita-switcher-bg: rgba(16, 20, 17, 0.5);
+  --color-adwaita-switcher-active: #232925;
+  --color-adwaita-hover: rgba(242, 245, 243, 0.05);
+  --color-adwaita-accent: #0fbf3e;
+  --color-adwaita-accent-hover: #5fed83;
+
   --color-background: #101411;
+  --color-surface-base: #101411;
   --color-surface: #232925;
   --color-surface-card: #232925;
   --color-surface-subtle: #0a241b;
   --color-surface-elevated: #232925;
   --color-surface-hover: rgba(242, 245, 243, 0.05);
+  --color-surface-switcher: rgba(16, 20, 17, 0.5);
+  --color-surface-switcher-active: #232925;
 
-  --color-text-primary: #f2f5f3;
+  --color-text-primary: #e2e8f0;
   --color-text-secondary: #b6bfb8;
   --color-text-muted: #909692;
   --color-text-on-accent: #ffffff;

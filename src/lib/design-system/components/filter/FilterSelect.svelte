@@ -75,8 +75,9 @@
           : 'text-text-primary hover:bg-surface-hover'}">
           <span>{option.label}</span>
           {#if option.value === value}
-            <i class="bi bi-check2 shrink-0 text-copilot" aria-hidden="true"
-            ></i>
+            <i
+              class="bi bi-check2 shrink-0 text-copilot"
+              aria-hidden="true"></i>
           {/if}
         </button>
       {/each}

@@ -1,0 +1,87 @@
+{
+  "nodes": [
+    {
+      "id": "home_hanz_projects_www_agents_skills_security_audit_attack_classes_md",
+      "label": "ATTACK-CLASSES.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/security-audit/ATTACK-CLASSES.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "home_hanz_projects_www_agents_skills_security_audit_attack_classes_attack_classes",
+      "label": "Attack Classes",
+      "file_type": "document",
+      "source_file": ".agents/skills/security-audit/ATTACK-CLASSES.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "home_hanz_projects_www_agents_skills_security_audit_attack_classes_attack_classes_choose_and_split_based_on_phase_1",
+      "label": "Attack classes \u2014 choose and split based on Phase 1",
+      "file_type": "document",
+      "source_file": ".agents/skills/security-audit/ATTACK-CLASSES.md",
+      "source_location": "L3"
+    }
+  ],
+  "edges": [
+    {
+      "source": "home_hanz_projects_www_agents_skills_security_audit_attack_classes_md",
+      "target": "home_hanz_projects_www_agents_skills_security_audit_attack_classes_attack_classes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/security-audit/ATTACK-CLASSES.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "home_hanz_projects_www_agents_skills_security_audit_attack_classes_attack_classes",
+      "target": "home_hanz_projects_www_agents_skills_security_audit_attack_classes_attack_classes_choose_and_split_based_on_phase_1",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/security-audit/ATTACK-CLASSES.md",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "home_hanz_projects_www_agents_skills_security_audit_attack_classes_md",
+      "target": "home_hanz_projects_www_agents_skills_security_audit_memory_safety_and_binary_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/security-audit/ATTACK-CLASSES.md",
+      "source_location": "L7",
+      "weight": 1.0,
+      "target_file": "/home/hanz/Projects/www/.agents/skills/security-audit/MEMORY-SAFETY-AND-BINARY.md"
+    },
+    {
+      "source": "home_hanz_projects_www_agents_skills_security_audit_attack_classes_md",
+      "target": "home_hanz_projects_www_agents_skills_security_audit_ai_and_llm_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/security-audit/ATTACK-CLASSES.md",
+      "source_location": "L9",
+      "weight": 1.0,
+      "target_file": "/home/hanz/Projects/www/.agents/skills/security-audit/AI-AND-LLM.md"
+    },
+    {
+      "source": "home_hanz_projects_www_agents_skills_security_audit_attack_classes_md",
+      "target": "home_hanz_projects_www_agents_skills_security_audit_web_protocol_and_auth_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/security-audit/ATTACK-CLASSES.md",
+      "source_location": "L11",
+      "weight": 1.0,
+      "target_file": "/home/hanz/Projects/www/.agents/skills/security-audit/WEB-PROTOCOL-AND-AUTH.md"
+    },
+    {
+      "source": "home_hanz_projects_www_agents_skills_security_audit_attack_classes_md",
+      "target": "home_hanz_projects_www_agents_skills_security_audit_client_side_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/security-audit/ATTACK-CLASSES.md",
+      "source_location": "L13",
+      "weight": 1.0,
+      "target_file": "/home/hanz/Projects/www/.agents/skills/security-audit/CLIENT-SIDE.md"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -1,0 +1,69 @@
+{
+  "nodes": [
+    {
+      "id": "home_hanz_projects_www_agent_skills_continuous_learning_evaluate_session_sh",
+      "label": "evaluate-session.sh",
+      "file_type": "code",
+      "source_file": ".agent/skills/continuous-learning/evaluate-session.sh",
+      "source_location": "L1",
+      "metadata": {"language": "bash", "kind": "file"}
+    },
+    {
+      "id": "home_hanz_projects_www_agent_skills_continuous_learning_evaluate_session_sh__entry",
+      "label": "evaluate-session.sh script",
+      "file_type": "code",
+      "source_file": ".agent/skills/continuous-learning/evaluate-session.sh",
+      "source_location": "L1",
+      "metadata": {"language": "bash", "kind": "bash_entrypoint"}
+    }
+  ],
+  "edges": [
+    {
+      "source": "home_hanz_projects_www_agent_skills_continuous_learning_evaluate_session_sh",
+      "target": "home_hanz_projects_www_agent_skills_continuous_learning_evaluate_session_sh__entry",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agent/skills/continuous-learning/evaluate-session.sh",
+      "source_location": "L1",
+      "weight": 1.0
+    }
+  ],
+  "raw_calls": [
+    {
+      "language": "bash",
+      "callee": "set",
+      "caller_nid": "home_hanz_projects_www_agent_skills_continuous_learning_evaluate_session_sh__entry",
+      "source_file": ".agent/skills/continuous-learning/evaluate-session.sh",
+      "source_location": "L26"
+    },
+    {
+      "language": "bash",
+      "callee": "command",
+      "caller_nid": "home_hanz_projects_www_agent_skills_continuous_learning_evaluate_session_sh__entry",
+      "source_file": ".agent/skills/continuous-learning/evaluate-session.sh",
+      "source_location": "L35"
+    },
+    {
+      "language": "bash",
+      "callee": "echo",
+      "caller_nid": "home_hanz_projects_www_agent_skills_continuous_learning_evaluate_session_sh__entry",
+      "source_file": ".agent/skills/continuous-learning/evaluate-session.sh",
+      "source_location": "L36"
+    },
+    {
+      "language": "bash",
+      "callee": "mkdir",
+      "caller_nid": "home_hanz_projects_www_agent_skills_continuous_learning_evaluate_session_sh__entry",
+      "source_file": ".agent/skills/continuous-learning/evaluate-session.sh",
+      "source_location": "L44"
+    },
+    {
+      "language": "bash",
+      "callee": "exit",
+      "caller_nid": "home_hanz_projects_www_agent_skills_continuous_learning_evaluate_session_sh__entry",
+      "source_file": ".agent/skills/continuous-learning/evaluate-session.sh",
+      "source_location": "L55"
+    }
+  ],
+  "bash_sources": []
+}

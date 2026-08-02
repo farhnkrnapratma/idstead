@@ -41,8 +41,10 @@
 <div class={cn('relative flex items-center', fullWidth ? 'w-full' : '')}>
   {#if leadingIcon}
     <div
-      class="pointer-events-none absolute left-3 z-10 flex items-center text-text-muted">
-      <i class="bi {leadingIcon} text-sm" aria-hidden="true"></i>
+      class="pointer-events-none absolute left-3 z-10 flex items-center text-text-secondary">
+      <i
+        class="bi {leadingIcon} text-sm"
+        aria-hidden="true"></i>
     </div>
   {:else if leadingSlot}
     <div class="absolute left-2 z-10 flex items-center">
@@ -54,7 +56,7 @@
     bind:value
     {disabled}
     class={cn(
-      'border border-border-default bg-surface text-text-primary transition-colors placeholder:text-text-muted focus:border-copilot focus:ring-2 focus:ring-copilot/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+      'border border-border-subtle bg-surface text-text-primary transition-colors placeholder:text-text-secondary focus:border-copilot focus:ring-2 focus:ring-copilot/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50',
       fullWidth ? 'w-full' : '',
       sizeStyles[size],
       leadingIcon || leadingSlot ? 'pl-9' : '',
@@ -67,8 +69,10 @@
 
   {#if trailingIcon}
     <div
-      class="pointer-events-none absolute right-3 z-10 flex items-center text-text-muted">
-      <i class="bi {trailingIcon} text-sm" aria-hidden="true"></i>
+      class="pointer-events-none absolute right-3 z-10 flex items-center text-text-secondary">
+      <i
+        class="bi {trailingIcon} text-sm"
+        aria-hidden="true"></i>
     </div>
   {:else if trailingSlot}
     <div class="absolute right-2 z-10 flex items-center">

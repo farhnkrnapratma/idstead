@@ -3,14 +3,17 @@
 import {supabase} from '$lib/supabase'
 import type {RequestHandler} from './$types'
 
+import {fetchAuthorProfile} from '$lib/author'
+
 const SITE_URL = 'https://fkp.my.id'
-const AUTHOR_NAME = 'Farhan Kurnia Pratama'
-const AUTHOR_EMAIL = 'contact@fkp.my.id'
 const FEED_TITLE = 'fkp.my.id — Blog'
-const FEED_SUBTITLE =
-  'Security-focused Software Engineer writing about Linux/Unix, AI, Open-Source Software, and Cybersecurity.'
 
 export const GET: RequestHandler = async ({fetch}) => {
+  const authorProfile = await fetchAuthorProfile(supabase)
+  const AUTHOR_NAME = authorProfile?.name || ''
+  const AUTHOR_EMAIL = authorProfile?.email || 'contact@fkp.my.id'
+  const FEED_SUBTITLE = authorProfile?.bio || ''
+
   const {data: posts} = await supabase
     .from('posts')
     .select('id, title, slug, excerpt, created_at, storage_path')
@@ -70,7 +73,8 @@ ${enriched
     post => `  <entry>
     <title>${escapeXml(post.title)}</title>
     <link href="${SITE_URL}/blog/${escapeXml(post.slug)}" rel="alternate" type="text/html"/>
-    <id>${SITE_URL}/blog/${escapeXml(post.slug)}</id>
+    <link href="${SITE_URL}/api/blog/${escapeXml(post.slug)}?format=md" rel="alternate" type="text/markdown"/>
+    <id>urn:uuid:${post.id}</id>
     <published>${new Date(post.created_at).toISOString()}</published>
     <updated>${new Date(post.created_at).toISOString()}</updated>
     <author>

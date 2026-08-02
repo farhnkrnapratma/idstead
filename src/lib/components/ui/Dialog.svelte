@@ -98,7 +98,9 @@
       aria-describedby={description ? 'dialog-desc' : undefined}
       class="relative z-10 w-full max-w-md transform rounded-2xl border border-border-subtle bg-surface-elevated p-6 shadow-2xl transition-all select-none focus:outline-none">
       <div class="flex flex-col gap-1 text-left">
-        <h2 id="dialog-title" class="text-base font-bold text-text-primary">
+        <h2
+          id="dialog-title"
+          class="text-base font-bold text-text-primary">
           {title}
         </h2>
         {#if description}

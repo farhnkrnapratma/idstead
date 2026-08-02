@@ -4,7 +4,7 @@
   import type {PageProps} from './$types'
   import type {BlogComment} from './+page.server'
   import hljs from 'highlight.js'
-  import {isNameReserved} from '$lib/nameValidator'
+  import {isNameReserved} from '$lib/utils/nameValidator'
   import {
     SkipLink,
     SpotlightSearch,
@@ -17,6 +17,7 @@
     Textarea,
     FooterSection,
     ThemeSelect,
+    TableOfContents,
     formatBlogDate,
     formatReadTime,
     formatCommentCount,
@@ -26,10 +27,12 @@
   import {pushState} from '$app/navigation'
   import {page} from '$app/state'
   import {supabase} from '$lib/supabase'
+  import {themeStore} from '$lib/stores/themeStore.svelte'
 
   let {data}: PageProps = $props()
   const post = $derived(data.post)
   const html = $derived(data.html)
+  const author = $derived(data.author)
 
   let showCopySuccess = $state(false)
 
@@ -125,7 +128,7 @@
       copyBtn.className =
         'flex h-5 w-5 items-center justify-center rounded-md border border-border-subtle/30 hover:bg-surface-hover/30 hover:text-text-primary transition-colors cursor-pointer text-text-secondary leading-none'
       copyBtn.innerHTML =
-        '<span class="material-symbols-rounded text-[10.5px] font-bold leading-none" style="font-variation-settings: \'wght\' 800;">content_copy</span>'
+        '<i class="bi bi-clipboard text-xs" aria-hidden="true"></i>'
 
       copyBtn.addEventListener('click', () => {
         if (!codeElement) return
@@ -134,11 +137,11 @@
           .writeText(codeText)
           .then(() => {
             copyBtn.innerHTML =
-              '<span class="material-symbols-rounded text-[10.5px] font-bold leading-none text-palette-green" style="font-variation-settings: \'wght\' 800;">check_small</span>'
+              '<i class="bi bi-clipboard-check text-xs text-copilot" aria-hidden="true"></i>'
             triggerToast('Code copied to clipboard!')
             setTimeout(() => {
               copyBtn.innerHTML =
-                '<span class="material-symbols-rounded text-[10.5px] font-bold leading-none" style="font-variation-settings: \'wght\' 800;">content_copy</span>'
+                '<i class="bi bi-clipboard text-xs" aria-hidden="true"></i>'
             }, 2000)
           })
           .catch(err => {
@@ -152,9 +155,66 @@
       pre.style.borderTopLeftRadius = '0px'
       pre.style.borderTopRightRadius = '0px'
       pre.style.borderTopWidth = '0px'
-      pre.style.paddingTop = '10px'
+      pre.style.padding = '10px 12px 10px 12px'
 
       pre.parentNode?.insertBefore(headerBar, pre)
+
+      // Build 100% custom DOM horizontal scrollbar (matching TOC heading indicator 1-to-1)
+      const wrapperBar = document.createElement('div')
+      wrapperBar.className =
+        'code-scrollbar-wrapper relative w-full px-3 py-1.5 bg-surface-card/80 border-x border-b border-border-subtle rounded-b-lg select-none -mt-6 mb-6 transition-all'
+
+      const trackBar = document.createElement('div')
+      trackBar.className =
+        'code-scrollbar-track relative w-full h-1 rounded-full bg-border-subtle/50 cursor-pointer overflow-hidden'
+
+      const thumbBar = document.createElement('div')
+      thumbBar.className =
+        'code-scrollbar-thumb absolute top-0 left-0 h-full rounded-full bg-copilot shadow-xs transition-all duration-75'
+
+      trackBar.appendChild(thumbBar)
+      wrapperBar.appendChild(trackBar)
+
+      function updateCustomScrollbar() {
+        const scrollLeft = pre.scrollLeft
+        const scrollWidth = pre.scrollWidth
+        const clientWidth = pre.clientWidth
+
+        if (scrollWidth <= clientWidth + 2) {
+          wrapperBar.style.display = 'none'
+          pre.style.borderBottomLeftRadius = '0.5rem'
+          pre.style.borderBottomRightRadius = '0.5rem'
+          pre.style.marginBottom = '1.5rem'
+        } else {
+          wrapperBar.style.display = 'block'
+          pre.style.borderBottomLeftRadius = '0px'
+          pre.style.borderBottomRightRadius = '0px'
+          pre.style.marginBottom = '0px'
+
+          const thumbRatio = clientWidth / scrollWidth
+          const thumbWidthPercent = Math.max(thumbRatio * 100, 12)
+          const maxThumbLeft = 100 - thumbWidthPercent
+          const maxScroll = scrollWidth - clientWidth
+          const thumbLeftPercent =
+            maxScroll > 0 ? (scrollLeft / maxScroll) * maxThumbLeft : 0
+
+          thumbBar.style.width = `${thumbWidthPercent}%`
+          thumbBar.style.left = `${thumbLeftPercent}%`
+        }
+      }
+
+      pre.addEventListener('scroll', updateCustomScrollbar, {passive: true})
+      window.addEventListener('resize', updateCustomScrollbar)
+
+      trackBar.addEventListener('click', e => {
+        const rect = trackBar.getBoundingClientRect()
+        const clickRatio = (e.clientX - rect.left) / rect.width
+        const maxScroll = pre.scrollWidth - pre.clientWidth
+        pre.scrollLeft = clickRatio * maxScroll
+      })
+
+      pre.parentNode?.insertBefore(wrapperBar, pre.nextSibling)
+      setTimeout(updateCustomScrollbar, 50)
     })
   }
 
@@ -176,26 +236,6 @@
           .data.publicUrl
       : '')
   )
-
-  type Theme = 'auto' | 'dark' | 'light'
-  let theme = $state<Theme>('auto')
-
-  function applyTheme(newTheme: Theme) {
-    theme = newTheme
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('theme', newTheme)
-      const isDarkVal =
-        newTheme === 'dark'
-        || (newTheme === 'auto'
-          && window.matchMedia('(prefers-color-scheme: dark)').matches)
-      isDark = isDarkVal
-      if (isDarkVal) {
-        document.documentElement.classList.add('dark')
-      } else {
-        document.documentElement.classList.remove('dark')
-      }
-    }
-  }
 
   const headings = $derived(data.headings || [])
   let activeHeadingId = $state('')
@@ -482,16 +522,10 @@
   })
 
   onMount(() => {
-    const saved = localStorage.getItem('theme') as Theme
-    theme = saved || 'auto'
     isDark = document.documentElement.classList.contains('dark')
 
     const observer = new MutationObserver(() => {
       isDark = document.documentElement.classList.contains('dark')
-      const currentSaved = localStorage.getItem('theme') as Theme
-      if (currentSaved) {
-        theme = currentSaved
-      }
       setTimeout(() => {
         hljs.highlightAll()
       }, 50)
@@ -525,6 +559,41 @@
       observer.disconnect()
     }
   })
+
+  let showCopyMenu = $state(false)
+  let copyToastMsg = $state<string | null>(null)
+
+  function toggleCopyMenu() {
+    showCopyMenu = !showCopyMenu
+  }
+
+  async function copyBlogId() {
+    showCopyMenu = false
+    try {
+      await navigator.clipboard.writeText(data.post.id)
+      copyToastMsg = 'Blog ID copied!'
+    } catch {
+      copyToastMsg = 'Failed to copy Blog ID'
+    }
+    setTimeout(() => (copyToastMsg = null), 2000)
+  }
+
+  async function copyBlogMarkdown() {
+    showCopyMenu = false
+    try {
+      const res = await fetch(`/api/blog/${data.post.slug}?format=md`)
+      if (res.ok) {
+        const mdText = await res.text()
+        await navigator.clipboard.writeText(mdText)
+        copyToastMsg = 'Copied as Markdown!'
+      } else {
+        copyToastMsg = 'Failed to fetch Markdown'
+      }
+    } catch {
+      copyToastMsg = 'Failed to copy Markdown'
+    }
+    setTimeout(() => (copyToastMsg = null), 2000)
+  }
 
   let authorName = $state('')
   let isAnonymous = $state(false)
@@ -670,59 +739,90 @@
       isSubmitting = false
     }
   }
+
+  let jsonLdScript = $derived(
+    '<script type="application/ld+json">'
+      + JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: post.title,
+        description: post.excerpt || post.title,
+        url: 'https://fkp.my.id/blog/' + post.slug,
+        datePublished: post.created_at,
+        author: {
+          '@type': 'Person',
+          name: author?.name || '',
+          url: author?.siteUrl || 'https://fkp.my.id'
+        }
+      })
+      + '</'
+      + 'script>'
+  )
 </script>
 
 <svelte:head>
-  <title>{post.title} | Farhan Kurnia Pratama</title>
-  <meta
-    name="description"
-    content={post.excerpt || 'Read this article on my blog.'} />
-  <link rel="canonical" href={'https://fkp.my.id/blog/' + post.slug} />
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "BlogPosting",
-      "headline": "{post.title}",
-      "description": "{post.excerpt || ''}",
-      "url": "https://fkp.my.id/blog/{post.slug}",
-      "datePublished": "{post.created_at}",
-      "author": {
-        "@type": "Person",
-        "name": "Farhan Kurnia Pratama",
-        "url": "https://fkp.my.id"
-      }
-    }
-  </script>
+  <title>{post.title}{author?.name ? ` | ${author.name}` : ''}</title>
+  {#if post.excerpt}
+    <meta
+      name="description"
+      content={post.excerpt} />
+  {/if}
+  <link
+    rel="canonical"
+    href={'https://fkp.my.id/blog/' + post.slug} />
+  {@html jsonLdScript}
 
-  <meta property="og:type" content="article" />
-  <meta property="og:url" content={'https://fkp.my.id/blog/' + post.slug} />
-  <meta property="og:title" content={post.title} />
   <meta
-    property="og:description"
-    content={post.excerpt || 'Read this article on my blog.'} />
+    property="og:type"
+    content="article" />
   <meta
-    property="og:image"
-    content={bannerPublicUrl || 'https://fkp.my.id/hero.png'} />
+    property="og:url"
+    content={'https://fkp.my.id/blog/' + post.slug} />
   <meta
-    property="og:image:secure_url"
-    content={bannerPublicUrl || 'https://fkp.my.id/hero.png'} />
-  <meta property="og:image:alt" content={post.title} />
+    property="og:title"
+    content={post.title} />
+  {#if post.excerpt}
+    <meta
+      property="og:description"
+      content={post.excerpt} />
+  {/if}
+  {#if bannerPublicUrl}
+    <meta
+      property="og:image"
+      content={bannerPublicUrl} />
+    <meta
+      property="og:image:secure_url"
+      content={bannerPublicUrl} />
+  {/if}
+  <meta
+    property="og:image:alt"
+    content={post.title} />
 
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta property="twitter:card" content="summary_large_image" />
+  <meta
+    name="twitter:card"
+    content="summary_large_image" />
+  <meta
+    property="twitter:card"
+    content="summary_large_image" />
   <meta
     property="twitter:url"
     content={'https://fkp.my.id/blog/' + post.slug} />
-  <meta property="twitter:title" content={post.title} />
   <meta
-    property="twitter:description"
-    content={post.excerpt || 'Read this article on my blog.'} />
-  <meta
-    name="twitter:image"
-    content={bannerPublicUrl || 'https://fkp.my.id/hero.png'} />
-  <meta
-    property="twitter:image"
-    content={bannerPublicUrl || 'https://fkp.my.id/hero.png'} />
+    property="twitter:title"
+    content={post.title} />
+  {#if post.excerpt}
+    <meta
+      property="twitter:description"
+      content={post.excerpt} />
+  {/if}
+  {#if bannerPublicUrl}
+    <meta
+      name="twitter:image"
+      content={bannerPublicUrl} />
+    <meta
+      property="twitter:image"
+      content={bannerPublicUrl} />
+  {/if}
 
   {#if isDark}
     <link
@@ -747,7 +847,10 @@
   </a>
   <div class="flex items-center gap-2">
     <SpotlightSearch />
-    <ThemeSelect {theme} onThemeChange={applyTheme} />
+    <ThemeSelect
+      theme={themeStore.current}
+      onThemeChange={themeStore.apply}
+      class="hidden md:inline-flex" />
   </div>
 </nav>
 
@@ -758,67 +861,90 @@
     class="relative mx-auto w-full max-w-7xl px-6 pt-9 pb-16 xl:grid xl:grid-cols-12 xl:gap-8">
     <article
       class="mx-auto flex w-full flex-col pt-4 md:w-[80%] lg:w-[50%] xl:col-span-6 xl:col-start-4 xl:mx-0 xl:w-auto">
-      <header class="mb-8 border-b border-border-subtle pb-6">
+      <header class="border-b border-b-border-subtle">
         <h1
-          class="text-4xl leading-tight font-extrabold tracking-tight text-text-primary md:text-5xl">
+          class="blog-title font normal font-serif text-5xl leading-tight tracking-tight text-text-primary md:text-5xl">
           {post.title}
         </h1>
-        {#if post.excerpt}
-          <p class="mt-3 text-base leading-relaxed text-text-secondary">
-            {post.excerpt}
-          </p>
-        {/if}
-        <div
-          class="no-scrollbar mt-4 flex w-full flex-wrap items-center gap-x-1.5 overflow-x-auto font-sans text-[11px] font-semibold whitespace-nowrap text-text-muted select-none">
-          <time datetime={post.created_at}
-            >{formatBlogDate(post.created_at)}</time>
-          <span aria-hidden="true">&middot;</span>
-          <span>{formatReadTime(post.read_time)}</span>
-          <span aria-hidden="true">&middot;</span>
-          <span>{formatCommentCount(comments.length)}</span>
-          {#if viewCount !== null}
-            <span aria-hidden="true">&middot;</span>
-            <span>{formatViewCount(viewCount)}</span>
-          {/if}
+        <div class="relative mb-3 rounded-md bg-copilot/5 py-3 pr-2.5 pl-5">
+          <div class="absolute top-0 left-0 h-full w-2 rounded-l-md bg-copilot">
+          </div>
+          <div>
+            {#if post.excerpt}
+              <div class="text-sm leading-relaxed text-text-secondary">
+                {post.excerpt}
+              </div>
+            {/if}
+            <div
+              class="no-scrollbar mt-4 flex w-full items-center justify-between gap-2 font-sans text-xs font-semibold whitespace-nowrap text-text-muted select-none">
+              <div class="flex items-center gap-x-1.5 overflow-x-auto">
+                <time datetime={post.created_at}
+                  >{formatBlogDate(post.created_at)}</time>
+                <span aria-hidden="true">&middot;</span>
+                <span>{formatReadTime(post.read_time)}</span>
+                <span aria-hidden="true">&middot;</span>
+                <span>{formatCommentCount(comments.length)}</span>
+                {#if viewCount !== null}
+                  <span aria-hidden="true">&middot;</span>
+                  <span>{formatViewCount(viewCount)}</span>
+                {/if}
+              </div>
+
+              <div class="relative inline-block shrink-0 text-left">
+                <button
+                  type="button"
+                  onclick={toggleCopyMenu}
+                  class="inline-flex items-center gap-1 rounded border border-border-subtle/80 bg-surface-card/80 px-2 py-0.5 text-[11px] font-medium text-text-secondary transition-colors hover:border-copilot/50 hover:bg-surface-hover hover:text-copilot focus:outline-none"
+                  aria-label="Copy options menu">
+                  {#if copyToastMsg}
+                    <i
+                      class="bi bi-clipboard-check text-[11px] text-copilot"
+                      aria-hidden="true"></i>
+                    <span class="font-semibold text-copilot"
+                      >{copyToastMsg}</span>
+                  {:else}
+                    <i
+                      class="bi bi-clipboard text-[11px]"
+                      aria-hidden="true"></i>
+                    <span>Copy</span>
+                    <i
+                      class="bi bi-chevron-down text-[9px] opacity-70"
+                      aria-hidden="true"></i>
+                  {/if}
+                </button>
+
+                {#if showCopyMenu}
+                  <div
+                    class="absolute right-0 z-50 mt-1 w-40 rounded-lg border border-border-subtle bg-surface-card p-1 shadow-lg backdrop-blur-md">
+                    <button
+                      type="button"
+                      onclick={copyBlogId}
+                      class="flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-[11px] font-medium text-text-primary transition-colors hover:bg-surface-hover hover:text-copilot">
+                      <i
+                        class="bi bi-hash text-xs text-copilot"
+                        aria-hidden="true"></i>
+                      <span>Copy Blog ID</span>
+                    </button>
+                    <button
+                      type="button"
+                      onclick={copyBlogMarkdown}
+                      class="flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-[11px] font-medium text-text-primary transition-colors hover:bg-surface-hover hover:text-copilot">
+                      <i
+                        class="bi bi-markdown text-xs text-copilot"
+                        aria-hidden="true"></i>
+                      <span>Copy as Markdown</span>
+                    </button>
+                  </div>
+                {/if}
+              </div>
+            </div>
+          </div>
         </div>
       </header>
 
-      {#if headings.length > 0}
-        <div
-          class="mb-6 rounded-2xl border border-border-subtle bg-surface-card/45 p-5 shadow-xs backdrop-blur-lg select-none xl:hidden">
-          <h3
-            class="titlecase mb-3 text-xs font-bold tracking-wider text-text-secondary select-none">
-            In this article
-          </h3>
-          <ul
-            class="flex flex-col gap-1.5 border-l border-border-subtle/50 pl-3"
-            role="list">
-            {#each headings as heading, index (heading.id + '-' + index)}
-              <li
-                class="text-xs"
-                style="padding-left: {(heading.level - 2) * 12}px;">
-                <a
-                  href="#{heading.id}"
-                  onclick={e => {
-                    e.preventDefault()
-                    const target = document.getElementById(heading.id)
-                    if (target) {
-                      target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                      })
-                      pushState(`#${heading.id}`, {})
-                      activeHeadingId = heading.id
-                    }
-                  }}
-                  class="block py-0.5 text-text-secondary transition-colors hover:text-copilot">
-                  {heading.text}
-                </a>
-              </li>
-            {/each}
-          </ul>
-        </div>
-      {/if}
+      <TableOfContents
+        {headings}
+        class="mt-3 xl:hidden" />
 
       <div class="prose-custom w-full">
         {@html html}
@@ -859,14 +985,16 @@
           {:else if helpfulnessFeedback === 'yes'}
             <span
               class="flex animate-pulse items-center gap-1.5 text-xs font-bold text-copilot">
-              <i class="bi bi-heart-fill" aria-hidden="true"></i> Thank you for your
-              feedback!
+              <i
+                class="bi bi-heart-fill"
+                aria-hidden="true"></i> Thank you for your feedback!
             </span>
           {:else}
             <span
               class="flex items-center gap-1.5 text-xs font-bold text-text-muted">
-              <i class="bi bi-emoji-neutral" aria-hidden="true"></i> Redirecting to
-              feedback…
+              <i
+                class="bi bi-emoji-neutral"
+                aria-hidden="true"></i> Redirecting to feedback…
             </span>
           {/if}
         </div>
@@ -882,7 +1010,9 @@
             class="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors select-none hover:bg-surface-hover hover:text-copilot"
             aria-label="Copy link to clipboard">
             {#if showCopySuccess}
-              <i class="bi bi-check2 text-success" aria-hidden="true"></i>
+              <i
+                class="bi bi-check2 text-success"
+                aria-hidden="true"></i>
             {:else}
               <span
                 class="material-symbols-rounded text-base leading-none select-none"
@@ -899,108 +1029,112 @@
               rel="noopener noreferrer"
               class="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors select-none hover:bg-surface-hover hover:text-copilot"
               aria-label={item.label}>
-              <i class="bi {item.icon}" aria-hidden="true"></i>
+              <i
+                class="bi {item.icon}"
+                aria-hidden="true"></i>
               <span class="hidden sm:inline">{item.text}</span>
             </a>
           {/each}
         </div>
       </div>
 
-      <div
-        class="mt-8 flex w-full max-w-full flex-col items-center gap-5 overflow-hidden rounded-2xl border border-border-subtle bg-surface-card/45 p-5 shadow-xs backdrop-blur-lg select-none sm:flex-row sm:items-start sm:p-6">
+      {#if author}
         <div
-          class="relative h-20 w-20 shrink-0 animate-pulse overflow-hidden rounded-full border border-border-subtle bg-surface-card/60">
-          <img
-            src="/android-chrome-512x512.png"
-            alt="Farhan Kurnia Pratama"
-            loading="lazy"
-            onload={e =>
-              (
-                e.currentTarget.closest('.animate-pulse') as HTMLElement | null
-              )?.classList.remove('animate-pulse')}
-            class="h-full w-full object-cover object-top" />
-        </div>
-        <div class="w-full min-w-0 flex-1 text-center sm:text-left">
-          <h4
-            class="px-1 text-base leading-snug font-bold text-text-primary sm:px-0">
-            Farhan Kurnia Pratama
-          </h4>
-          <p
-            class="mt-0.5 px-1 text-xs font-semibold text-text-secondary sm:px-0">
-            Linux/Unix, AI, Open-Source Software, and Cybersecurity.
-          </p>
-          <p
-            class="mt-3 px-1 text-sm leading-relaxed text-text-secondary/90 sm:px-0">
-            Security-focused Software Engineer with expertise in Linux/Unix, AI,
-            and Open-Source Software, dedicated to building reliable,
-            maintainable, and privacy-centric systems.
-          </p>
-
+          class="mt-8 flex w-full max-w-full flex-col items-center gap-5 overflow-hidden rounded-md border border-border-subtle bg-surface-card/45 p-5 shadow-xs backdrop-blur-lg select-none sm:flex-row sm:items-start sm:p-6">
           <div
-            class="mt-4 flex flex-wrap items-center justify-center gap-2.5 px-1 sm:justify-start sm:gap-4 sm:px-0">
-            <a
-              href="https://github.com/farhnkrnapratma"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot"
-              aria-label="GitHub (opens in a new tab)">
-              <i
-                class="bi bi-github flex items-center justify-center text-base leading-none"
-                aria-hidden="true"></i>
-            </a>
-            <a
-              href="https://linkedin.com/in/farhnkrnapratma"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot"
-              aria-label="LinkedIn (opens in a new tab)">
-              <i
-                class="bi bi-linkedin flex items-center justify-center text-base leading-none"
-                aria-hidden="true"></i>
-            </a>
-            <a
-              href="https://x.com/farhnkrnapratma"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot"
-              aria-label="X (opens in a new tab)">
-              <i
-                class="bi bi-twitter-x flex items-center justify-center text-base leading-none"
-                aria-hidden="true"></i>
-            </a>
-            <a
-              href="https://facebook.com/farhnkrnapratma"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot"
-              aria-label="Facebook (opens in a new tab)">
-              <i
-                class="bi bi-facebook flex items-center justify-center text-base leading-none"
-                aria-hidden="true"></i>
-            </a>
-            <a
-              href="https://instagram.com/farhnkrnapratma"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot"
-              aria-label="Instagram (opens in a new tab)">
-              <i
-                class="bi bi-instagram flex items-center justify-center text-base leading-none"
-                aria-hidden="true"></i>
-            </a>
-            <a
-              href="https://threads.net/@farhnkrnapratma"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot"
-              aria-label="Threads (opens in a new tab)">
-              <i
-                class="bi bi-threads flex items-center justify-center text-base leading-none"
-                aria-hidden="true"></i>
-            </a>
+            class="relative h-20 w-20 shrink-0 animate-pulse overflow-hidden rounded-full border border-border-subtle bg-surface-card/60">
+            <img
+              src={author.avatar}
+              alt={author.name}
+              loading="lazy"
+              onload={e =>
+                (
+                  e.currentTarget.closest(
+                    '.animate-pulse'
+                  ) as HTMLElement | null
+                )?.classList.remove('animate-pulse')}
+              class="h-full w-full object-cover object-top" />
+          </div>
+          <div class="w-full min-w-0 flex-1 text-center sm:text-left">
+            <h4
+              class="px-1 text-base leading-snug font-bold text-text-primary sm:px-0">
+              {author.name}
+            </h4>
+            <p
+              class="mt-0.5 px-1 text-xs font-semibold text-text-secondary sm:px-0">
+              {author.headline}
+            </p>
+            <p
+              class="mt-3 px-1 text-sm leading-relaxed text-text-secondary/90 sm:px-0">
+              {author.bio}
+            </p>
+
+            <div
+              class="mt-4 flex flex-wrap items-center justify-center gap-2.5 px-1 sm:justify-start sm:gap-4 sm:px-0">
+              <a
+                href="https://github.com/farhnkrnapratma"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot"
+                aria-label="GitHub (opens in a new tab)">
+                <i
+                  class="bi bi-github flex items-center justify-center text-base leading-none"
+                  aria-hidden="true"></i>
+              </a>
+              <a
+                href="https://linkedin.com/in/farhnkrnapratma"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot"
+                aria-label="LinkedIn (opens in a new tab)">
+                <i
+                  class="bi bi-linkedin flex items-center justify-center text-base leading-none"
+                  aria-hidden="true"></i>
+              </a>
+              <a
+                href="https://x.com/farhnkrnapratma"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot"
+                aria-label="X (opens in a new tab)">
+                <i
+                  class="bi bi-twitter-x flex items-center justify-center text-base leading-none"
+                  aria-hidden="true"></i>
+              </a>
+              <a
+                href="https://facebook.com/farhnkrnapratma"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot"
+                aria-label="Facebook (opens in a new tab)">
+                <i
+                  class="bi bi-facebook flex items-center justify-center text-base leading-none"
+                  aria-hidden="true"></i>
+              </a>
+              <a
+                href="https://instagram.com/farhnkrnapratma"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot"
+                aria-label="Instagram (opens in a new tab)">
+                <i
+                  class="bi bi-instagram flex items-center justify-center text-base leading-none"
+                  aria-hidden="true"></i>
+              </a>
+              <a
+                href="https://threads.net/@farhnkrnapratma"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot"
+                aria-label="Threads (opens in a new tab)">
+                <i
+                  class="bi bi-threads flex items-center justify-center text-base leading-none"
+                  aria-hidden="true"></i>
+              </a>
+            </div>
           </div>
         </div>
-      </div>
+      {/if}
 
       <section
         class="mt-16 border-t border-border-subtle pt-10"
@@ -1034,7 +1168,9 @@
                 label="Comment anonymously"
                 bind:checked={isAnonymous}
                 aria-describedby="anon-help-main" />
-              <span id="anon-help-main" class="sr-only">
+              <span
+                id="anon-help-main"
+                class="sr-only">
                 If checked, your name is hidden and your comment is posted as
                 Anonymous.
               </span>
@@ -1081,8 +1217,9 @@
                       </span>
                     {:else if valid.authorName && !isAnonymous}
                       <span class="flex items-center gap-1 text-copilot">
-                        <i class="bi bi-check-circle-fill" aria-hidden="true"
-                        ></i
+                        <i
+                          class="bi bi-check-circle-fill"
+                          aria-hidden="true"></i
                         >Looks good
                       </span>
                     {/if}
@@ -1133,7 +1270,10 @@
             title="No comments yet"
             description="Be the first to share your thoughts on this article." />
         {:else}
-          <CommentThread {comments} {replyTo} getIcon={getCommentIcon}>
+          <CommentThread
+            {comments}
+            {replyTo}
+            getIcon={getCommentIcon}>
             {#snippet actions(comment)}
               <time datetime={comment.created_at}
                 >{formatBlogDate(comment.created_at)}</time>
@@ -1172,7 +1312,9 @@
                     label="Comment anonymously"
                     bind:checked={isAnonymous}
                     aria-describedby="anon-help-reply-{comment.id}" />
-                  <span id="anon-help-reply-{comment.id}" class="sr-only">
+                  <span
+                    id="anon-help-reply-{comment.id}"
+                    class="sr-only">
                     If checked, your name is hidden and your comment is posted
                     as Anonymous.
                   </span>
@@ -1276,73 +1418,7 @@
     <aside
       class="sticky top-24 hidden h-fit self-start select-none xl:col-span-3 xl:col-start-10 xl:block"
       aria-label="Table of contents">
-      <div
-        class="overflow-hidden rounded-2xl border border-border-subtle bg-surface-card/45 p-5 shadow-xs backdrop-blur-lg">
-        <h3
-          class="titlecase mb-3 text-xs font-bold tracking-wider text-text-secondary select-none">
-          In this article
-        </h3>
-
-        {#if headings.length === 0}
-          <p class="text-xs text-text-muted italic">No subheadings found.</p>
-        {:else}
-          <div class="relative pl-3">
-            <div
-              class="absolute top-0 bottom-0 left-0 w-1 rounded-full bg-border-subtle/40"
-              aria-hidden="true">
-            </div>
-
-            {#if isIndicatorVisible}
-              <div
-                class="absolute left-0 w-1 rounded-full bg-copilot shadow-xs"
-                style="top: {indicatorTop}px; height: {indicatorHeight}px; transition: {(
-                  isStretching
-                ) ?
-                  'top 0.12s ease-out, height 0.12s ease-out'
-                : 'top 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)'};"
-                aria-hidden="true">
-              </div>
-            {/if}
-
-            <ul
-              bind:this={tocListEl}
-              class="relative flex flex-col gap-1"
-              role="list">
-              {#each headings as heading, index (heading.id + '-' + index)}
-                {@const isActive = activeHeadingId === heading.id}
-                <li
-                  class="text-xs"
-                  style="padding-left: {(heading.level - 2) * 12}px;">
-                  <a
-                    href="#{heading.id}"
-                    onclick={e => {
-                      e.preventDefault()
-                      const target = document.getElementById(heading.id)
-                      if (target) {
-                        target.scrollIntoView({
-                          behavior: 'smooth',
-                          block: 'start'
-                        })
-                        pushState(`#${heading.id}`, {})
-                        activeHeadingId = heading.id
-                        updateIndicatorPos(heading.id, false)
-                      }
-                    }}
-                    aria-current={isActive ? 'true' : undefined}
-                    class="group relative block rounded-md py-1 pr-2 leading-relaxed transition-colors duration-300 ease-in-out hover:text-copilot {(
-                      isActive
-                    ) ?
-                      'font-medium text-copilot'
-                    : 'font-normal text-text-secondary'}">
-                    <span class="transition-colors duration-300 ease-in-out"
-                      >{heading.text}</span>
-                  </a>
-                </li>
-              {/each}
-            </ul>
-          </div>
-        {/if}
-      </div>
+      <TableOfContents {headings} />
     </aside>
   </div>
 
@@ -1354,8 +1430,9 @@
     role="status"
     aria-live="polite"
     class="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full border border-border-subtle bg-surface-card/90 px-4 py-2 text-xs font-semibold text-text-primary shadow-lg backdrop-blur-md transition-all duration-300">
-    <i class="bi bi-check-circle-fill text-sm text-copilot" aria-hidden="true"
-    ></i>
+    <i
+      class="bi bi-check-circle-fill text-sm text-copilot"
+      aria-hidden="true"></i>
     {toastMessage}
   </div>
 {/if}
@@ -1376,7 +1453,9 @@
       }}
       class="col-span-2 flex h-9.5 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border-subtle bg-surface-card px-3 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover hover:text-copilot">
       {#if showCopySuccess}
-        <i class="bi bi-check2 text-sm text-success" aria-hidden="true"></i>
+        <i
+          class="bi bi-check2 text-sm text-success"
+          aria-hidden="true"></i>
       {:else}
         <span
           class="material-symbols-rounded text-base leading-none select-none"
@@ -1392,7 +1471,9 @@
         rel="noopener noreferrer"
         onclick={() => (showYesFeedbackDialog = false)}
         class="flex h-9.5 items-center justify-center gap-2 rounded-lg border border-border-subtle bg-surface-card px-3 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover hover:text-copilot">
-        <i class="bi {item.icon} text-sm" aria-hidden="true"></i>
+        <i
+          class="bi {item.icon} text-sm"
+          aria-hidden="true"></i>
         <span>{item.text}</span>
       </a>
     {/each}

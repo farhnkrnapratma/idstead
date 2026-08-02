@@ -36,18 +36,26 @@
 
   {#if voted !== null}
     <span class="flex items-center gap-1.5 text-xs font-semibold text-copilot">
-      <i class="bi bi-check-circle-fill" aria-hidden="true"></i> Thanks for your feedback!
+      <i
+        class="bi bi-check-circle-fill"
+        aria-hidden="true"></i> Thanks for your feedback!
     </span>
   {:else}
     <div class="flex items-center gap-2">
-      <Button variant="secondary" size="sm" onclick={() => handleVote(true)}>
+      <Button
+        variant="secondary"
+        size="sm"
+        onclick={() => handleVote(true)}>
         <span
           class="material-symbols-rounded text-sm leading-none select-none"
           style="font-size: 16px; font-variation-settings: 'wght' 400, 'opsz' 20;"
           aria-hidden="true">thumb_up</span>
         <span>Yes</span>
       </Button>
-      <Button variant="secondary" size="sm" onclick={() => handleVote(false)}>
+      <Button
+        variant="secondary"
+        size="sm"
+        onclick={() => handleVote(false)}>
         <span
           class="material-symbols-rounded text-sm leading-none select-none"
           style="font-size: 16px; font-variation-settings: 'wght' 400, 'opsz' 20;"

@@ -39,10 +39,14 @@
     className
   )}>
   <div class="flex items-center justify-between">
-    <label for={id} class="text-xs font-bold text-text-secondary select-none">
+    <label
+      for={id}
+      class="text-xs font-bold text-text-secondary select-none">
       {label}
       {#if required}
-        <span class="text-danger" aria-hidden="true">*</span>
+        <span
+          class="text-danger"
+          aria-hidden="true">*</span>
         <span class="sr-only">(required)</span>
       {/if}
     </label>
@@ -63,17 +67,23 @@
       <span
         id="{id}-error"
         role="alert"
-        class="flex items-center gap-1 text-danger">
-        <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
-        {error}
+        class="flex items-start gap-1.5 text-danger">
+        <i
+          class="bi bi-exclamation-circle-fill mt-[1px] shrink-0 self-start text-xs leading-none"
+          aria-hidden="true"></i>
+        <span class="min-w-0 flex-1 break-words">{error}</span>
       </span>
     {:else if valid}
-      <span class="flex items-center gap-1 text-copilot">
-        <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-        Looks good
+      <span class="flex items-start gap-1.5 text-copilot">
+        <i
+          class="bi bi-check-circle-fill mt-[1px] shrink-0 self-start text-xs leading-none"
+          aria-hidden="true"></i>
+        <span class="min-w-0 flex-1">Looks good</span>
       </span>
     {:else if hint}
-      <span id="{id}-hint" class="text-text-muted">{hint}</span>
+      <span
+        id="{id}-hint"
+        class="text-text-muted">{hint}</span>
     {/if}
   </div>
 </div>

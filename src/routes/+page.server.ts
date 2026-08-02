@@ -2,6 +2,15 @@
 
 import {supabase} from '$lib/supabase'
 import type {PageServerLoad} from './$types'
+import type {Project} from '$lib/types'
+import {
+  fetchAuthorProfile,
+  fetchCvEntries,
+  fetchFundingLinks,
+  fetchContactInfo,
+  fetchGroupedSkills,
+  fetchSocials
+} from '$lib/author'
 
 interface GitHubRepo {
   name: string
@@ -13,17 +22,6 @@ interface GitHubRepo {
   fork: boolean
   archived: boolean
   license: {key: string; name: string; spdx_id: string; url: string} | null
-}
-
-export interface Project {
-  name: string
-  desc: string
-  tags: string[]
-  url: string
-  lang: string
-  stars: number
-  licenseName: string | null
-  licenseUrl: string | null
 }
 
 export interface BlogPost {
@@ -45,9 +43,21 @@ export interface BlogPost {
 const GITHUB_USERNAME = 'farhnkrnapratma'
 const GITHUB_API_URL = `https://api.github.com/users/${GITHUB_USERNAME}/repos`
 
-export const load: PageServerLoad = async ({fetch, platform}) => {
+export const load: PageServerLoad = async ({fetch, platform, locals}) => {
   let projects: Project[] = []
   let dbPosts: BlogPost[] = []
+
+  const supabaseClient = (locals as any)?.supabase || supabase
+
+  const [author, cv, funding, contact, skillsGrouped, socials] =
+    await Promise.all([
+      fetchAuthorProfile(supabaseClient),
+      fetchCvEntries(supabaseClient),
+      fetchFundingLinks(supabaseClient),
+      fetchContactInfo(supabaseClient),
+      fetchGroupedSkills(supabaseClient),
+      fetchSocials(supabaseClient)
+    ])
 
   try {
     const headers: Record<string, string> = {
@@ -75,7 +85,7 @@ export const load: PageServerLoad = async ({fetch, platform}) => {
           desc: repo.description ?? 'No description provided.',
           tags: repo.topics.length > 0 ? repo.topics : [],
           url: repo.html_url,
-          lang: repo.language ?? 'Unknown',
+          lang: repo.language ?? undefined,
           stars: repo.stargazers_count,
           licenseName: repo.license?.spdx_id ?? null,
           licenseUrl: repo.license ? `${repo.html_url}/blob/main/LICENSE` : null
@@ -93,7 +103,6 @@ export const load: PageServerLoad = async ({fetch, platform}) => {
       .select('*')
       .eq('published', true)
       .order('created_at', {ascending: false})
-      .limit(3)
     if (!error && data) {
       dbPosts = await Promise.all(
         data.map(async post => {
@@ -149,5 +158,14 @@ export const load: PageServerLoad = async ({fetch, platform}) => {
     console.error(err)
   }
 
-  return {projects, posts: dbPosts}
+  return {
+    projects,
+    posts: dbPosts,
+    author,
+    cv,
+    funding,
+    contact,
+    skills: skillsGrouped,
+    socials
+  }
 }

@@ -32,13 +32,13 @@
   }: Props = $props()
 
   const baseStyles =
-    'inline-flex items-center justify-center font-semibold rounded-lg transition-all cursor-pointer select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50 disabled:cursor-not-allowed'
+    'inline-flex items-center justify-center font-semibold rounded-md transition-all cursor-pointer select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50 disabled:cursor-not-allowed'
 
   const variantStyles = {
     primary:
       'bg-copilot text-text-on-accent hover:bg-copilot-hover active:bg-copilot-active shadow-xs',
     secondary:
-      'border border-border-default bg-surface text-text-primary hover:bg-surface-hover hover:border-copilot shadow-xs',
+      'border border-border-subtle bg-surface text-text-primary hover:bg-surface-hover hover:border-copilot shadow-xs',
     ghost:
       'bg-transparent text-text-secondary hover:bg-surface-hover hover:text-text-primary',
     danger: 'bg-[#FE4C25] text-white hover:bg-[#e03e19] shadow-xs',
@@ -82,13 +82,17 @@
       ></path>
     </svg>
   {:else if leadingIcon}
-    <i class="bi {leadingIcon} text-sm" aria-hidden="true"></i>
+    <i
+      class="bi {leadingIcon} text-sm"
+      aria-hidden="true"></i>
   {/if}
 
   {@render children?.()}
 
   {#if trailingIcon && !isLoading}
-    <i class="bi {trailingIcon} text-sm" aria-hidden="true"></i>
+    <i
+      class="bi {trailingIcon} text-sm"
+      aria-hidden="true"></i>
   {/if}
 
   {#if showEscHint && !isLoading}

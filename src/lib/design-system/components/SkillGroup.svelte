@@ -26,14 +26,18 @@
   <div
     class="flex items-center gap-2 text-xs font-bold tracking-wider text-text-secondary uppercase">
     {#if icon}
-      <i class="bi {icon} text-copilot" aria-hidden="true"></i>
+      <i
+        class="bi {icon} text-copilot"
+        aria-hidden="true"></i>
     {/if}
     <span>{category}</span>
   </div>
 
   <div class="flex flex-wrap gap-1.5">
     {#each skills as skill (skill)}
-      <Tag variant="neutral" size="md">{skill}</Tag>
+      <Tag
+        variant="neutral"
+        size="md">{skill}</Tag>
     {/each}
   </div>
 </div>

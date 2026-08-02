@@ -26,8 +26,9 @@
     <div
       class="flex flex-col items-center justify-center rounded-2xl border border-border-subtle bg-surface/50 p-4 text-center shadow-xs">
       {#if item.icon}
-        <i class="bi {item.icon} mb-1 text-lg text-copilot" aria-hidden="true"
-        ></i>
+        <i
+          class="bi {item.icon} mb-1 text-lg text-copilot"
+          aria-hidden="true"></i>
       {/if}
       <span
         class="font-mono text-2xl font-extrabold tracking-tight text-text-primary"

@@ -65,7 +65,9 @@
   {#if tags.length > 0}
     <TagGroup class="mt-1 border-t border-border-subtle/40 pt-3">
       {#each tags as t (t)}
-        <Tag variant="neutral" size="sm">{t}</Tag>
+        <Tag
+          variant="neutral"
+          size="sm">{t}</Tag>
       {/each}
     </TagGroup>
   {/if}

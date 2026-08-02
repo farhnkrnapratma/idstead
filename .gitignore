@@ -25,3 +25,6 @@ vite.config.ts.timestamp-*
 
 # Editor
 .vscode
+
+# Sentry Config File
+.env.sentry-build-plugin
