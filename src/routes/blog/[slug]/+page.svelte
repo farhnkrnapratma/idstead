@@ -709,7 +709,7 @@
       const result = await res.json()
 
       if (!res.ok) {
-        throw new Error(result.message || 'Failed to submit comment')
+        throw new Error(result.error || 'Failed to submit comment')
       }
 
       if (result.is_approved) {
