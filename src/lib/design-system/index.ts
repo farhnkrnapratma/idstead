@@ -67,6 +67,7 @@ export {default as ShareDialog} from './components/ShareDialog.svelte'
 export {default as ListRow} from './components/ListRow.svelte'
 export {default as SectionHeader} from './components/SectionHeader.svelte'
 export {default as ActionGroup} from './components/ActionGroup.svelte'
+export {default as Pagination} from './components/Pagination.svelte'
 
 export {default as AppShell} from './layout/AppShell.svelte'
 export {default as PageContainer} from './layout/PageContainer.svelte'
