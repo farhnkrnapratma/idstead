@@ -36,7 +36,9 @@
     ThemeSelect,
     StatusBanner,
     formatReadTime,
-    formatViewCount
+    formatViewCount,
+    FormSection,
+    FormActions
   } from '$lib'
   import {themeStore} from '$lib/stores/themeStore.svelte'
 
@@ -2701,19 +2703,12 @@
         </div>
       {/if}
     {:else if activeAdminTab === 'author'}
-      <form
+      <FormSection
         onsubmit={handleSaveAuthor}
-        novalidate
-        class="flex flex-col gap-8 rounded-sm border border-border-subtle bg-surface-card p-6 shadow-xs">
-        <div>
-          <h2 class="text-2xl font-bold tracking-tight text-text-primary">
-            Profile
-          </h2>
-          <p class="mt-1 text-xs text-text-secondary">
-            Manage your public author profile and contact details.
-          </p>
-        </div>
-
+        title="Profile"
+        description="Manage your public author profile and contact details."
+        titleClass="text-2xl font-bold tracking-tight text-text-primary"
+        class="gap-8">
         {#if authorSaveError}<StatusBanner
             variant="error"
             message={authorSaveError} />{/if}
@@ -3002,35 +2997,36 @@
           </section>
         </div>
 
-        <div
-          class="flex items-center justify-end gap-3 border-t border-border-subtle/60 pt-4">
-          {#if authorIsDirty}
-            <p class="text-xs text-text-secondary select-none">
-              You have unsaved changes.
-            </p>
-          {/if}
-          <Button
-            type="button"
-            variant="danger"
-            size="md"
-            disabled={!authorState.id}
-            onclick={confirmClearAuthor}
-            isLoading={isClearingAuthor}>
-            <i
-              class="bi bi-trash3 text-xs"
-              aria-hidden="true"></i>
-            <span>Delete Profile</span>
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            size="md"
-            disabled={!authorIsDirty}
-            isLoading={isSavingAuthor}>
-            Save Profile
-          </Button>
-        </div>
-      </form>
+        {#snippet actions()}
+          <FormActions>
+            {#if authorIsDirty}
+              <p class="text-xs text-text-secondary select-none">
+                You have unsaved changes.
+              </p>
+            {/if}
+            <Button
+              type="button"
+              variant="danger"
+              size="md"
+              disabled={!authorState.id}
+              onclick={confirmClearAuthor}
+              isLoading={isClearingAuthor}>
+              <i
+                class="bi bi-trash3 text-xs"
+                aria-hidden="true"></i>
+              <span>Delete Profile</span>
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              size="md"
+              disabled={!authorIsDirty}
+              isLoading={isSavingAuthor}>
+              Save Profile
+            </Button>
+          </FormActions>
+        {/snippet}
+      </FormSection>
     {:else if activeAdminTab === 'cv'}
       <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -3627,7 +3623,7 @@
           </div>
         </div>
 
-        <div class="flex items-center justify-end gap-3">
+        <FormActions>
           {#if cvIsDirty}
             <p class="text-xs text-text-secondary select-none">
               You have unsaved changes.
@@ -3639,7 +3635,7 @@
             size="md"
             disabled={!cvIsDirty}
             isLoading={isSavingCv}>Save Resume</Button>
-        </div>
+        </FormActions>
       </form>
 
       <!-- CV Document Management -->
@@ -3856,12 +3852,10 @@
         </div>
       </div>
     {:else if activeAdminTab === 'skills'}
-      <form
+      <FormSection
         onsubmit={handleSaveSkills}
-        novalidate
-        class="flex flex-col gap-6 rounded-sm border border-border-subtle bg-surface-card p-6 shadow-xs">
-        <div class="flex items-center justify-between">
-          <h2 class="text-xl font-bold text-text-primary">Skills</h2>
+        title="Skills">
+        {#snippet headerActions()}
           <Button
             type="button"
             variant="primary"
@@ -3870,7 +3864,7 @@
             onclick={handleAddSkill}>
             Add Skill
           </Button>
-        </div>
+        {/snippet}
 
         {#if skillsSaveSuccess}<StatusBanner
             variant="success"
@@ -4088,27 +4082,27 @@
           {/each}
         </div>
 
-        <div class="flex items-center justify-end gap-3">
-          {#if skillsIsDirty}
-            <p class="text-xs text-text-secondary select-none">
-              You have unsaved changes.
-            </p>
-          {/if}
-          <Button
-            type="submit"
-            variant="primary"
-            size="md"
-            disabled={!skillsIsDirty}
-            isLoading={isSavingSkills}>Save Skills</Button>
-        </div>
-      </form>
+        {#snippet actions()}
+          <FormActions>
+            {#if skillsIsDirty}
+              <p class="text-xs text-text-secondary select-none">
+                You have unsaved changes.
+              </p>
+            {/if}
+            <Button
+              type="submit"
+              variant="primary"
+              size="md"
+              disabled={!skillsIsDirty}
+              isLoading={isSavingSkills}>Save Skills</Button>
+          </FormActions>
+        {/snippet}
+      </FormSection>
     {:else if activeAdminTab === 'socials'}
-      <form
+      <FormSection
         onsubmit={handleSaveSocials}
-        novalidate
-        class="flex flex-col gap-6 rounded-sm border border-border-subtle bg-surface-card p-6 shadow-xs">
-        <div class="flex items-center justify-between">
-          <h2 class="text-xl font-bold text-text-primary">Social Links</h2>
+        title="Social Links">
+        {#snippet headerActions()}
           <Button
             type="button"
             variant="primary"
@@ -4117,7 +4111,7 @@
             onclick={handleAddSocial}>
             Add Social Link
           </Button>
-        </div>
+        {/snippet}
 
         {#if socialsSaveSuccess}<StatusBanner
             variant="success"
@@ -4254,27 +4248,27 @@
           {/each}
         </div>
 
-        <div class="flex items-center justify-end gap-3">
-          {#if socialIsDirty}
-            <p class="text-xs text-text-secondary select-none">
-              You have unsaved changes.
-            </p>
-          {/if}
-          <Button
-            type="submit"
-            variant="primary"
-            size="md"
-            disabled={!socialIsDirty}
-            isLoading={isSavingSocials}>Save Social Links</Button>
-        </div>
-      </form>
+        {#snippet actions()}
+          <FormActions>
+            {#if socialIsDirty}
+              <p class="text-xs text-text-secondary select-none">
+                You have unsaved changes.
+              </p>
+            {/if}
+            <Button
+              type="submit"
+              variant="primary"
+              size="md"
+              disabled={!socialIsDirty}
+              isLoading={isSavingSocials}>Save Social Links</Button>
+          </FormActions>
+        {/snippet}
+      </FormSection>
     {:else if activeAdminTab === 'sponsorship'}
-      <form
+      <FormSection
         onsubmit={handleSaveSponsorship}
-        novalidate
-        class="flex flex-col gap-6 rounded-sm border border-border-subtle bg-surface-card p-6 shadow-xs">
-        <div class="flex items-center justify-between">
-          <h2 class="text-xl font-bold text-text-primary">Sponsorship</h2>
+        title="Sponsorship">
+        {#snippet headerActions()}
           <Button
             type="button"
             variant="primary"
@@ -4283,7 +4277,7 @@
             onclick={handleAddSponsorship}>
             Add Sponsorship
           </Button>
-        </div>
+        {/snippet}
 
         {#if sponsorshipSaveSuccess}<StatusBanner
             variant="success"
@@ -4475,27 +4469,27 @@
           {/each}
         </div>
 
-        <div class="flex items-center justify-end gap-3">
-          {#if sponsorshipIsDirty}
-            <p class="text-xs text-text-secondary select-none">
-              You have unsaved changes.
-            </p>
-          {/if}
-          <Button
-            type="submit"
-            variant="primary"
-            size="md"
-            disabled={!sponsorshipIsDirty}
-            isLoading={isSavingSponsorship}>Save Sponsorship</Button>
-        </div>
-      </form>
+        {#snippet actions()}
+          <FormActions>
+            {#if sponsorshipIsDirty}
+              <p class="text-xs text-text-secondary select-none">
+                You have unsaved changes.
+              </p>
+            {/if}
+            <Button
+              type="submit"
+              variant="primary"
+              size="md"
+              disabled={!sponsorshipIsDirty}
+              isLoading={isSavingSponsorship}>Save Sponsorship</Button>
+          </FormActions>
+        {/snippet}
+      </FormSection>
     {:else if activeAdminTab === 'contact'}
-      <form
+      <FormSection
         onsubmit={handleSaveContact}
-        novalidate
-        class="flex flex-col gap-6 rounded-sm border border-border-subtle bg-surface-card p-6 shadow-xs">
-        <div class="flex items-center justify-between">
-          <h2 class="text-xl font-bold text-text-primary">Contact</h2>
+        title="Contact">
+        {#snippet headerActions()}
           <Button
             type="button"
             variant="primary"
@@ -4504,7 +4498,7 @@
             onclick={handleAddContact}>
             Add Contact
           </Button>
-        </div>
+        {/snippet}
 
         {#if contactSaveSuccess}<StatusBanner
             variant="success"
@@ -4671,20 +4665,22 @@
           {/each}
         </div>
 
-        <div class="flex items-center justify-end gap-3">
-          {#if contactIsDirty}
-            <p class="text-xs text-text-secondary select-none">
-              You have unsaved changes.
-            </p>
-          {/if}
-          <Button
-            type="submit"
-            variant="primary"
-            size="md"
-            disabled={!contactIsDirty}
-            isLoading={isSavingContact}>Save Contact</Button>
-        </div>
-      </form>
+        {#snippet actions()}
+          <FormActions>
+            {#if contactIsDirty}
+              <p class="text-xs text-text-secondary select-none">
+                You have unsaved changes.
+              </p>
+            {/if}
+            <Button
+              type="submit"
+              variant="primary"
+              size="md"
+              disabled={!contactIsDirty}
+              isLoading={isSavingContact}>Save Contact</Button>
+          </FormActions>
+        {/snippet}
+      </FormSection>
     {/if}
   </main>
 </div>
