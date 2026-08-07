@@ -32,6 +32,7 @@
     formatViewCount,
     Dialog,
     ArticleHeader,
+    ShareDialog,
     ArticleMeta,
     HelpfulBlock
   } from '$lib'
@@ -1059,49 +1060,15 @@
   <FooterSection />
 </main>
 
-<Dialog
+<ShareDialog
   bind:isOpen={showYesFeedbackDialog}
   title="Share this article?"
-  description="Great to hear it helped! Share it with your peers:"
+  url={page.url.href}
+  articleTitle={post.title}
+  showEmail
   onClose={() => {
     showYesFeedbackDialog = false
-  }}>
-  <div class="grid grid-cols-2 gap-2 text-left">
-    <button
-      onclick={() => {
-        copyToClipboard()
-        showYesFeedbackDialog = false
-      }}
-      class="col-span-2 flex h-9.5 cursor-pointer items-center justify-center gap-2 rounded-sm border border-border-subtle bg-surface-card px-3 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover hover:text-copilot">
-      <i
-        class="bi bi-link text-base leading-none select-none"
-        aria-hidden="true"></i>
-      <span>Copy link</span>
-    </button>
-    {#each [{href: `https://twitter.com/intent/tweet?url=${encodeURIComponent(page.url.href)}&text=${encodeURIComponent(post.title)}`, icon: 'bi-twitter-x', text: 'X'}, {href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(page.url.href)}`, icon: 'bi-linkedin', text: 'LinkedIn'}, {href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(page.url.href)}`, icon: 'bi-facebook', text: 'Facebook'}, {href: `mailto:?subject=${encodeURIComponent(post.title)}&body=${encodeURIComponent(page.url.href)}`, icon: 'bi-envelope-fill', text: 'Email'}] as item (item.text)}
-      <a
-        href={item.href}
-        target={item.href.startsWith('mailto') ? undefined : '_blank'}
-        rel="noopener noreferrer"
-        onclick={() => (showYesFeedbackDialog = false)}
-        class="flex h-9.5 items-center justify-center gap-2 rounded-sm border border-border-subtle bg-surface-card px-3 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover hover:text-copilot">
-        <i
-          class="bi {item.icon} text-sm"
-          aria-hidden="true"></i>
-        <span>{item.text}</span>
-      </a>
-    {/each}
-  </div>
-  {#snippet footer()}
-    <Button
-      variant="secondary"
-      size="md"
-      showEscHint
-      onclick={() => {
-        showYesFeedbackDialog = false
-      }}>Cancel</Button>
-  {/snippet}
-</Dialog>
+  }} />
 
 <Dialog
   bind:isOpen={showNoFeedbackDialog}

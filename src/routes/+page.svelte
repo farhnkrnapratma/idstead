@@ -15,6 +15,7 @@
     Dialog,
     EmptyState,
     CvEntryCard,
+    ShareDialog,
     FilterToolbar,
     FilterChipGroup,
     SortControl,
@@ -159,19 +160,6 @@
 
   function shareProjectDialog(project: {name: string; url: string}) {
     openShareDialog({title: project.name, url: project.url})
-  }
-
-  function shareDialogUrl(): string {
-    return shareDialogData?.url ?? ''
-  }
-
-  async function copyShareDialogLink() {
-    try {
-      await navigator.clipboard.writeText(shareDialogUrl())
-      toastStore.success('Copied!')
-    } catch {
-      toastStore.error('Failed to copy')
-    }
   }
 
   async function copyBlogId(post: {id: string}) {
@@ -2046,42 +2034,10 @@
   {/snippet}
 </Dialog>
 
-<Dialog
+<ShareDialog
   bind:isOpen={showShareDialog}
   title="Share this?"
-  description="Share it with your peers:"
-  onClose={() => (showShareDialog = false)}>
-  <div class="grid grid-cols-2 gap-2 text-left">
-    <button
-      onclick={() => {
-        copyShareDialogLink()
-        showShareDialog = false
-      }}
-      class="col-span-2 flex h-9.5 cursor-pointer items-center justify-center gap-2 rounded-sm border border-border-subtle bg-surface-card px-3 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover hover:text-copilot">
-      <i
-        class="bi bi-link text-sm"
-        aria-hidden="true"></i>
-      <span>Copy link</span>
-    </button>
-    {#each [{href: `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareDialogUrl())}&text=${encodeURIComponent(shareDialogData?.title ?? '')}`, icon: 'bi-twitter-x', text: 'X'}, {href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareDialogUrl())}`, icon: 'bi-linkedin', text: 'LinkedIn'}, {href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareDialogUrl())}`, icon: 'bi-facebook', text: 'Facebook'}, {href: `mailto:?subject=${encodeURIComponent(shareDialogData?.title ?? '')}&body=${encodeURIComponent(shareDialogUrl())}`, icon: 'bi-envelope-fill', text: 'Email'}] as item (item.text)}
-      <a
-        href={item.href}
-        target={item.href.startsWith('mailto') ? undefined : '_blank'}
-        rel="noopener noreferrer"
-        onclick={() => (showShareDialog = false)}
-        class="flex h-9.5 items-center justify-center gap-2 rounded-sm border border-border-subtle bg-surface-card px-3 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover hover:text-copilot">
-        <i
-          class="bi {item.icon} text-sm"
-          aria-hidden="true"></i>
-        <span>{item.text}</span>
-      </a>
-    {/each}
-  </div>
-  {#snippet footer()}
-    <Button
-      variant="secondary"
-      size="md"
-      showEscHint
-      onclick={() => (showShareDialog = false)}>Cancel</Button>
-  {/snippet}
-</Dialog>
+  url={shareDialogData?.url ?? ''}
+  articleTitle={shareDialogData?.title ?? ''}
+  showEmail
+  onClose={() => (showShareDialog = false)} />
