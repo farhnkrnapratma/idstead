@@ -95,6 +95,7 @@ export {default as ReadingContainer} from './layout/ReadingContainer.svelte'
 export {default as FormSection} from './layout/FormSection.svelte'
 export {default as ListSection} from './layout/ListSection.svelte'
 export {default as FooterSection} from './layout/FooterSection.svelte'
+export {default as FooterLegalRow} from './layout/FooterLegalRow.svelte'
 
 export {default as DropdownTrigger} from './components/filter/DropdownTrigger.svelte'
 export {default as FilterToolbar} from './components/filter/FilterToolbar.svelte'
