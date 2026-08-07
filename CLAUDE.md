@@ -10,7 +10,7 @@ Personal website/blog for Farhan Kurnia Pratama (fkp.my.id) — SvelteKit 5 + Ty
 
 ## Commands
 
-Package manager is **bun** (not npm/npx — `bun.lock` is the lockfile).
+Package manager is **bun** — never use npm/npx/yarn/pnpm in this repo (`bun.lock` is the lockfile; use `bun`/`bunx` for everything, including one-off tool invocations).
 
 ```sh
 bun install          # install deps
@@ -59,6 +59,7 @@ Full endpoint reference and error-code table: [src/routes/api/v1/README.md](src/
 - `src/lib/supabaseFunctions.ts` — Supabase Edge Function calls from the app.
 - `supabase/functions/` — Supabase Edge Functions (`admin`, `admin-cv-upload`, `admin-cv-delete`) deployed separately from the SvelteKit app.
 - Comment moderation: submissions are checked by Llama Guard 3 (via the Cloudflare `AI` binding declared in `wrangler.jsonc`), falling back to a heuristic keyword/pattern check if that binding is unavailable. `is_approved: false` means held back, not published.
+- **No hardcoded/raw content data in application code.** Author name, bio, contact info, CV entries, funding links, skills, etc. must always be fetched from Supabase via `author.ts`/`authorApi.ts` — never inline a literal value (e.g. the author's name or bio) directly in a component or route as a stand-in for real data. This doesn't apply to files that are inherently static by format/platform convention (`.github/FUNDING.yml`, `SECURITY.md`, `package.json` metadata, etc.) — those aren't rendered app content.
 
 ### `src/hooks.server.ts`
 
@@ -71,6 +72,7 @@ Single `sequence()`-composed `Handle` doing, in order: Sentry init/handle, `www.
 - `src/lib/article/` — blog-post-specific rendering (ArticleHeader, ArticleMeta, HelpfulBlock).
 - `src/lib/stores/` — Svelte 5 runes-based stores (`.svelte.ts` files): theme, toast, consent, filter/sort state.
 - Styling: Tailwind CSS 4 (via `@tailwindcss/vite`, no separate config file) plus `src/lib/tokens.css` for design tokens and `src/routes/global.css` for the irreducible global reset/Tailwind entry point — component- and page-specific styling lives in each component/page's own `<style>` block or inline Tailwind classes instead.
+- **Every page must reuse the existing shared components/layout primitives consistently** (`src/lib/components/`, `src/lib/layout/`, `src/lib/article/`) — never build a page-local one-off replacement for something that already exists (e.g. a custom footer instead of `src/lib/layout/FooterSection.svelte`). Run the `ui-consistency-check` skill (or the `ui-consistency-reviewer` agent) after touching any page or component to catch drift.
 
 ### Agent/skills tooling
 
@@ -79,6 +81,10 @@ Single `sequence()`-composed `Handle` doing, in order: Sentry init/handle, `www.
 ## Code style
 
 Enforced by `prettier.config.ts` + `eslint.config.js` — run `bun run format` before committing. Notable non-defaults: no semicolons, single quotes, no trailing commas, no bracket spacing (`{foo}` not `{ foo }`), `arrowParens: 'avoid'`, 2-space indent. Files start with a `/** @format */` pragma (`insertPragma: true`). Svelte 5 runes syntax (`$state`, `$derived`, etc.) is used throughout — this is not Svelte 4/Options API.
+
+- **No explanatory comments in code.** The only comments allowed are tool-directive ones — formatter pragmas (`/** @format */`), ESLint/Prettier disable/ignore directives, `@ts-expect-error`, and similar machine-read directives. Don't add comments describing what code does or why, even for non-obvious logic — prefer clear naming/structure instead.
+- **Prefer Tailwind utility classes over hand-written CSS** wherever Tailwind can express it. Only drop into a `<style>` block for things Tailwind genuinely can't do (e.g. complex selectors, animations Tailwind doesn't cover).
+- **Always write security-aware code.** Validate/sanitize untrusted input at every boundary, avoid injection/XSS/auth-bypass-shaped patterns, and default to the same scrutiny the `security-audit` skill and `security-reviewer` agent apply — don't wait to be asked to "think about security" on a given change.
 
 ## Git workflow
 
@@ -90,6 +96,8 @@ This repo uses **git-flow-next** (classic preset — https://git-flow.sh/), init
 - `release/<name>`, `hotfix/<name>` — parent `main`, started from `develop`/`main` respectively, merge into `main`, tagged on finish.
 
 Use `git-flow overview` to see current branch structure and `git-flow <topic> list` to see active topic branches.
+
+**Always sign commits with `-s`/`--signoff`** (`git commit -s ...`, including on `git-flow` `feature`/`release`/`hotfix` finish operations).
 
 ## graphify
 
