@@ -2431,29 +2431,26 @@
         </a>
       </div>
 
-      <div
-        class="mb-6 flex flex-col gap-4 rounded-sm border border-border-subtle bg-surface-card/40 p-4 shadow-xs">
-        <div
-          class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div
-            class="flex w-full items-center gap-3 sm:w-auto sm:max-w-md sm:flex-1">
-            <Input
-              type="search"
-              placeholder="Search posts..."
-              value={filterStore.search}
-              oninput={e =>
-                filterStore.setSearch((e.target as HTMLInputElement).value)}
-              size="sm"
-              aria-label="Search blog posts" />
-          </div>
+      <FilterToolbar
+        title="Posts filter"
+        class="mb-6">
+        {#snippet searchSlot()}
+          <Input
+            type="search"
+            placeholder="Search posts..."
+            value={filterStore.search}
+            oninput={e =>
+              filterStore.setSearch((e.target as HTMLInputElement).value)}
+            size="sm"
+            aria-label="Search blog posts" />
+        {/snippet}
+        {#snippet countSlot()}
           <SearchResultCount
             count={filteredPosts.length}
             total={posts.length}
             itemLabel="posts" />
-        </div>
-
-        <div
-          class="flex flex-wrap items-center justify-between gap-4 border-t border-border-subtle/50 pt-3">
+        {/snippet}
+        {#snippet filterControlsSlot()}
           <FilterSelect
             label="Status"
             value={statusFilter}
@@ -2463,6 +2460,8 @@
               {value: 'draft', label: 'Draft'}
             ]}
             onChange={val => filterStore.setSingleFilter('status', val)} />
+        {/snippet}
+        {#snippet sortSlot()}
           <SortControl
             currentField={filterStore.sort.field}
             currentDirection={filterStore.sort.direction}
@@ -2480,8 +2479,8 @@
                 filterStore.sort.field,
                 filterStore.sort.direction === 'asc' ? 'desc' : 'asc'
               )} />
-        </div>
-      </div>
+        {/snippet}
+      </FilterToolbar>
 
       {#if filteredPosts.length === 0}
         <EmptyState
@@ -2490,8 +2489,7 @@
       {:else}
         <div class="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
           {#each paginatedPosts as post (post.id)}
-            <div
-              class="relative flex h-full w-full flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-5 shadow-xs">
+            <Card class="relative flex h-full w-full flex-col gap-3">
               <div
                 class="relative aspect-video w-full overflow-hidden rounded-sm border border-border-subtle select-none">
                 {#if post.banner_path && !failedBanners.has(post.id)}
@@ -2692,7 +2690,7 @@
                   {/if}
                 </div>
               {/if}
-            </div>
+            </Card>
           {/each}
         </div>
         <div class="mt-6">
@@ -3098,12 +3096,10 @@
             message="Resume saved successfully!" />
         {/if}
 
-        <div
-          class="flex flex-col gap-4 rounded-sm border border-border-subtle bg-surface-card p-6 shadow-xs">
-          <div class="flex items-center justify-between">
+        <Card>
+          {#snippet header()}
             <h2 class="text-xl font-bold text-text-primary">Experiences</h2>
-          </div>
-
+          {/snippet}
           <div class="flex flex-col gap-6">
             {#if cvState.experience.length === 0}
               <EmptyState
@@ -3359,14 +3355,12 @@
               </div>
             {/each}
           </div>
-        </div>
+        </Card>
 
-        <div
-          class="flex flex-col gap-4 rounded-sm border border-border-subtle bg-surface-card p-6 shadow-xs">
-          <div class="flex items-center justify-between">
+        <Card>
+          {#snippet header()}
             <h2 class="text-xl font-bold text-text-primary">Education</h2>
-          </div>
-
+          {/snippet}
           <div class="flex flex-col gap-6">
             {#if cvState.education.length === 0}
               <EmptyState
@@ -3621,7 +3615,7 @@
               </div>
             {/each}
           </div>
-        </div>
+        </Card>
 
         <FormActions>
           {#if cvIsDirty}
@@ -3639,16 +3633,17 @@
       </form>
 
       <!-- CV Document Management -->
-      <div
-        class="mt-10 flex flex-col gap-5 rounded-sm border border-border-subtle bg-surface-card/60 p-6 shadow-xs backdrop-blur-lg sm:p-8">
-        <div>
+      <Card
+        variant="glass"
+        class="mt-10 flex flex-col gap-5">
+        {#snippet header()}
           <h2 class="text-lg font-bold tracking-tight text-text-primary">
             CV Document
           </h2>
           <p class="mt-1 text-xs text-text-secondary">
             The PDF resume served across your portfolio and public API.
           </p>
-        </div>
+        {/snippet}
 
         {#if pdfUploadError}
           <StatusBanner
@@ -3850,7 +3845,7 @@
             </Button>
           </form>
         </div>
-      </div>
+      </Card>
     {:else if activeAdminTab === 'skills'}
       <FormSection
         onsubmit={handleSaveSkills}
