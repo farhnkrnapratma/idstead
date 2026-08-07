@@ -1,0 +1,103 @@
+<!-- @format -->
+
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project
+
+Personal website/blog for Farhan Kurnia Pratama (fkp.my.id) — SvelteKit 5 + TypeScript + Tailwind CSS 4, backed by Supabase (Postgres + RLS), deployed to Cloudflare Pages via `@sveltejs/adapter-cloudflare`. Also publishes a public read-only REST API under `/api/v1`.
+
+## Commands
+
+Package manager is **bun** (not npm/npx — `bun.lock` is the lockfile).
+
+```sh
+bun install          # install deps
+bun run dev [--host]  # start Vite dev server
+bun run build         # production build -> .svelte-kit/cloudflare
+bun run preview       # preview the production build
+bun run check          # svelte-kit sync + svelte-check (type checking)
+bun run check:watch    # same, in watch mode
+bun run lint            # prettier --check . && eslint .
+bun run format           # prettier --write .
+```
+
+There is no test runner configured in this repo — `bun run check` (types) and `bun run lint` are the correctness gates. Always run `check` and `lint` after non-trivial changes.
+
+Requires a `.env` (copy from `.env.example`) with at least `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY` for the dev server to start. Other vars: Cloudflare R2 (CV file storage), Sentry, Turnstile (bot protection), `IP_SALT` (hashing client IPs), `SUPABASE_SERVICE_ROLE_KEY` (server-only, bypasses RLS).
+
+Nix/NixOS users can also `nix develop` for a dev shell (`flake.nix`).
+
+## Architecture
+
+### Routing (`src/routes`)
+
+- `/` is a single-page app — sections (`blog`, `projects`, `contact`, `cv`, `funding`, `home`) are anchors (`/#section`); `src/hooks.server.ts` 307-redirects bare `/blog`, `/projects`, etc. to their hash-anchor form.
+- `/blog/[slug]` — individual blog post pages.
+- `/admin`, `/admin/login`, `/admin/new` — admin UI for authoring blog posts (backed by Supabase auth, not a custom session system).
+- `/api/v1/**` — the public REST API (see below).
+- `/.well-known/**` — serves canonical `openapi.json`/`openapi.yaml`, `llms.txt`, `agent-skills`, `api-catalog`.
+- Root also serves `sitemap.xml`, `robots.txt`, `atom.xml`, `llms.txt` as `+server.ts` endpoints.
+
+### Public API (`src/routes/api/v1`)
+
+Full endpoint reference and error-code table: [src/routes/api/v1/README.md](src/routes/api/v1/README.md) — this is also served live at `GET /api/v1`. Read it before adding/changing any API route. Key conventions to preserve when touching API code:
+
+- **Error envelope**: route handlers return a flat `{code, message, details?}` body via `apiError()` (`src/lib/server/apiError.ts`); `src/hooks.server.ts` is the single place that wraps this into the public `{error: {...}}` shape. Never hand-roll error JSON in a route — always go through `apiError`.
+- **Error codes** are stable and per-endpoint (e.g. `BLOG_POST_NOT_FOUND`, `BLOG_COMMENT_TURNSTILE_FAILED`) — add new codes to both the handler and the README table, don't reuse generic ones.
+- **Versioning**: breaking changes ship under a new `/api/v2/`, never in place under `/api/v1`.
+- **CORS + rate limiting** are handled centrally in `src/hooks.server.ts` (60 req/min/IP via Cloudflare's `API_RATE_LIMITER` binding, with an in-memory-per-isolate fallback for local dev) — `/api/v1/admin/*` is exempted from the general limiter but has its own lockout (`src/lib/server/loginRateLimit.ts`, 5 failed attempts / 15 min).
+- **Markdown responses**: `?format=md` / `Accept: text/markdown` is supported only on `/api/v1/blog`, `/api/v1/blog/{id_or_slug}`, and `/api/v1/author` — don't assume it works elsewhere.
+- Keep `src/lib/openapi.ts` and `/.well-known/openapi.{json,yaml}` in sync with any route/schema changes.
+
+### Data layer
+
+- `src/lib/supabase.ts` — public (anon key) Supabase client, safe for server _and_ client use.
+- `src/lib/server/supabaseAdmin.ts` — service-role client that bypasses RLS. **Server-only** — never import from a `.svelte` file or anything bundled for the browser. Used where RLS deliberately blocks the public role (e.g. comment inserts must go through Turnstile + AI moderation first, not a direct anon-key insert).
+- `src/lib/authorApi.ts` / `src/lib/author.ts` — fetch/shape the author profile (CV, funding, contact, skills, socials) consumed by both the root layout and `/api/v1/author*`.
+- `src/lib/supabaseFunctions.ts` — Supabase Edge Function calls from the app.
+- `supabase/functions/` — Supabase Edge Functions (`admin`, `admin-cv-upload`, `admin-cv-delete`) deployed separately from the SvelteKit app.
+- Comment moderation: submissions are checked by Llama Guard 3 (via the Cloudflare `AI` binding declared in `wrangler.jsonc`), falling back to a heuristic keyword/pattern check if that binding is unavailable. `is_approved: false` means held back, not published.
+
+### `src/hooks.server.ts`
+
+Single `sequence()`-composed `Handle` doing, in order: Sentry init/handle, `www.` → apex redirect, favicon/static-asset redirects to `cdn.fkp.my.id`, section-path → hash-anchor redirects, CORS preflight handling for `/api/*`, then rate limiting for non-admin API routes. Read this file before changing any cross-cutting request behavior (redirects, CORS, rate limits) — don't duplicate this logic in individual routes.
+
+### Components (`src/lib`)
+
+- `src/lib/components/` — flat directory of reusable UI primitives (Button, Dialog family, form fields, Toast, DataTable, Pagination, etc.) plus one `filter/` subfolder.
+- `src/lib/layout/` — page-structure components (AppShell, PageContainer, Section, FormSection, etc.), separate from generic UI components.
+- `src/lib/article/` — blog-post-specific rendering (ArticleHeader, ArticleMeta, HelpfulBlock).
+- `src/lib/stores/` — Svelte 5 runes-based stores (`.svelte.ts` files): theme, toast, consent, filter/sort state.
+- Styling: Tailwind CSS 4 (via `@tailwindcss/vite`, no separate config file) plus `src/lib/tokens.css` for design tokens and `src/routes/global.css` for the irreducible global reset/Tailwind entry point — component- and page-specific styling lives in each component/page's own `<style>` block or inline Tailwind classes instead.
+
+### Agent/skills tooling
+
+`.agents/` and `agent/skills/` hold Supabase and security-audit skill references used by AI coding agents working in this repo (Postgres best practices, security audit checklists) — not part of the application runtime.
+
+## Code style
+
+Enforced by `prettier.config.ts` + `eslint.config.js` — run `bun run format` before committing. Notable non-defaults: no semicolons, single quotes, no trailing commas, no bracket spacing (`{foo}` not `{ foo }`), `arrowParens: 'avoid'`, 2-space indent. Files start with a `/** @format */` pragma (`insertPragma: true`). Svelte 5 runes syntax (`$state`, `$derived`, etc.) is used throughout — this is not Svelte 4/Options API.
+
+## Git workflow
+
+This repo uses **git-flow-next** (classic preset — https://git-flow.sh/), initialized via `git-flow init --preset=classic --defaults --main main`. Config lives in local `.git/config` (`gitflow.*` keys), not committed — re-run that command on a fresh clone.
+
+- `main` — production/release only. Never commit directly; only `release/*` and `hotfix/*` branches merge into it (and get tagged).
+- `develop` — integration branch. `feature/*` and `bugfix/*` branch from and merge back into it.
+- `feature/<name>`, `bugfix/<name>` — parent `develop`. `git-flow feature start <name>` / `git-flow feature finish <name>`.
+- `release/<name>`, `hotfix/<name>` — parent `main`, started from `develop`/`main` respectively, merge into `main`, tagged on finish.
+
+Use `git-flow overview` to see current branch structure and `git-flow <topic> list` to see active topic branches.
+
+## graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+Rules:
+
+- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
