@@ -3,8 +3,8 @@
   import {onMount} from 'svelte'
   import {fade} from 'svelte/transition'
   import {consentStore, type ConsentStatus} from '../stores/consentStore.svelte'
-  import Button from '../design-system/components/Button.svelte'
-  import Dialog from '../design-system/components/Dialog.svelte'
+  import Button from './Button.svelte'
+  import Dialog from './Dialog.svelte'
 
   let tempAnalytics = $state<ConsentStatus>('denied')
   let tempAdStorage = $state<ConsentStatus>('denied')
@@ -62,18 +62,60 @@
     }
     activeDropdown = null
   }
+
+  // 0 = Allow All (green), 1 = Analytics Only (yellow/warning), 2 = Deny All
+  // (red, the default) - a custom combination that matches neither preset
+  // exactly reads as the "in-between"/Analytics Only position.
+  const presetSliderValue = $derived(
+    (
+      tempAnalytics === 'granted'
+        && tempAdStorage === 'granted'
+        && tempAdUserData === 'granted'
+        && tempAdPersonalization === 'granted'
+    ) ?
+      0
+    : (
+      tempAnalytics === 'denied'
+      && tempAdStorage === 'denied'
+      && tempAdUserData === 'denied'
+      && tempAdPersonalization === 'denied'
+    ) ?
+      2
+    : 1
+  )
+
+  const presetColor = $derived(
+    presetSliderValue === 0 ? 'var(--color-success)'
+    : presetSliderValue === 1 ? 'var(--color-warning)'
+    : 'var(--color-danger)'
+  )
+
+  const presetLabel = $derived(
+    presetSliderValue === 0 ? 'Allow All'
+    : presetSliderValue === 1 ? 'Analytics Only'
+    : 'Deny All'
+  )
+
+  function handlePresetSlider(e: Event) {
+    const value = Number((e.currentTarget as HTMLInputElement).value)
+    applyPreset(
+      value === 0 ? 'all'
+      : value === 1 ? 'analytics'
+      : 'deny'
+    )
+  }
 </script>
 
 {#if consentStore.isBannerOpen}
   <aside
     transition:fade={{duration: 200}}
     aria-label="Cookie and Privacy Consent"
-    class="fixed right-4 bottom-4 left-4 z-50 mx-auto max-w-xl rounded-2xl border border-border-subtle bg-surface-card/95 p-5 shadow-2xl backdrop-blur-xl transition-all sm:right-auto sm:bottom-6 sm:left-6 sm:w-full">
+    class="fixed right-4 bottom-4 left-4 z-50 mx-auto max-w-xl rounded-sm border border-border-subtle bg-surface-card/75 p-5 shadow-2xl backdrop-blur-2xl transition-all sm:right-auto sm:bottom-6 sm:left-6 sm:w-full">
     <div class="flex flex-col gap-4">
       <div class="flex items-start justify-between gap-3">
         <div class="flex items-center gap-2.5">
           <div
-            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-copilot/15 text-copilot">
+            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-copilot/15 text-copilot">
             <i
               class="bi bi-shield-check text-base"
               aria-hidden="true"></i>
@@ -82,7 +124,7 @@
             <h3 class="text-sm font-bold text-text-primary">
               Cookie & Privacy Preferences
             </h3>
-            <p class="text-[11px] text-text-muted">
+            <p class="text-xxs text-text-muted">
               We use cookies to analyze site traffic and enhance your
               experience.
             </p>
@@ -142,36 +184,52 @@
   title="Cookie Preferences"
   description="Manage your analytics and advertising privacy choices."
   size="2xl"
-  class="max-h-[85vh] w-[95vw] max-w-2xl overflow-y-auto"
+  class="w-[95vw] max-w-2xl"
   onClose={() => consentStore.closeCustomizeModal()}>
   <div class="flex flex-col gap-4 py-1">
     <div
-      class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border-subtle/70 bg-surface-card/50 p-2.5">
-      <span class="text-xs font-semibold text-text-muted">Quick Presets</span>
-      <div class="flex flex-wrap items-center gap-1.5">
-        <button
-          type="button"
-          onclick={() => applyPreset('all')}
-          class="inline-flex cursor-pointer items-center rounded-lg border border-border-subtle/80 bg-surface-card px-2.5 py-1 text-xs font-semibold text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary">
-          Allow All
-        </button>
-        <button
-          type="button"
-          onclick={() => applyPreset('analytics')}
-          class="inline-flex cursor-pointer items-center rounded-lg border border-border-subtle/80 bg-surface-card px-2.5 py-1 text-xs font-semibold text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary">
-          Analytics Only
-        </button>
-        <button
-          type="button"
-          onclick={() => applyPreset('deny')}
-          class="inline-flex cursor-pointer items-center rounded-lg border border-border-subtle/80 bg-surface-card px-2.5 py-1 text-xs font-semibold text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary">
-          Deny All
-        </button>
+      class="flex flex-col gap-2.5 rounded-sm border border-border-subtle/70 bg-surface-card/50 p-3">
+      <div class="flex items-center justify-between gap-2">
+        <span class="text-xs font-semibold text-text-secondary"
+          >Quick Presets</span>
+        <span
+          class="text-xs font-bold text-[var(--preset-color)] transition-colors"
+          style="--preset-color: {presetColor}">
+          {presetLabel}
+        </span>
+      </div>
+
+      <div class="relative flex h-5 w-full items-center">
+        <div
+          class="pointer-events-none absolute inset-x-0 h-1.5 rounded-full bg-border-subtle">
+        </div>
+        <div
+          class="pointer-events-none absolute inset-y-0 left-0 h-1.5 w-[var(--preset-slider-w)] self-center rounded-full bg-[var(--preset-color)] transition-[width,background-color] duration-200"
+          style="--preset-slider-w: {(presetSliderValue / 2)
+            * 100}%; --preset-color: {presetColor};">
+        </div>
+        <input
+          type="range"
+          min="0"
+          max="2"
+          step="1"
+          value={presetSliderValue}
+          oninput={handlePresetSlider}
+          aria-label="Quick cookie preset: allow all, analytics only, or deny all"
+          class="preset-slider relative z-10 w-full cursor-pointer appearance-none bg-transparent"
+          style="--thumb-color: {presetColor}" />
+      </div>
+
+      <div
+        class="flex items-center justify-between text-2xs font-medium text-text-secondary">
+        <span>Allow All</span>
+        <span>Analytics Only</span>
+        <span>Deny All</span>
       </div>
     </div>
 
     <div
-      class="divide-y divide-border-subtle/50 rounded-xl border border-border-subtle/70 bg-surface-card/30">
+      class="divide-y divide-border-subtle/50 rounded-sm border border-border-subtle/70 bg-surface-card/30">
       <div class="flex items-center justify-between gap-3 p-3 sm:p-3.5">
         <div class="flex min-w-0 flex-1 flex-col gap-0.5">
           <h4 class="text-xs font-bold text-text-primary">
@@ -191,7 +249,7 @@
             aria-label="Behavioral Analytics preference"
             aria-expanded={activeDropdown === 'analytics'}
             aria-haspopup="listbox"
-            class="inline-flex h-8 min-w-22 cursor-pointer items-center justify-between gap-1.5 rounded-lg border border-border-subtle bg-surface-card px-2.5 text-xs font-semibold text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
+            class="inline-flex h-8 min-w-22 cursor-pointer items-center justify-between gap-1.5 rounded-sm border border-border-subtle bg-surface-card px-2.5 text-xs font-semibold text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
             <span class="leading-none"
               >{tempAnalytics === 'granted' ? 'Allow' : 'Deny'}</span>
             <span
@@ -201,7 +259,7 @@
                 'rotate-180'
               : ''}">
               <i
-                class="bi bi-chevron-down text-[10px] leading-none"
+                class="bi bi-chevron-down text-2xs leading-none"
                 aria-hidden="true"></i>
             </span>
           </button>
@@ -215,7 +273,7 @@
             <div
               role="listbox"
               aria-label="Behavioral Analytics options"
-              class="absolute top-[calc(100%+4px)] right-0 z-60 flex min-w-36 flex-col overflow-hidden rounded-xl border border-border-subtle bg-surface-elevated py-0 shadow-xl backdrop-blur-md">
+              class="absolute top-[calc(100%+4px)] right-0 z-60 flex min-w-36 flex-col overflow-hidden rounded-sm border border-border-subtle bg-surface-elevated/70 py-0 shadow-xl backdrop-blur-lg">
               <button
                 type="button"
                 role="option"
@@ -280,7 +338,7 @@
             aria-label="Advertising Storage preference"
             aria-expanded={activeDropdown === 'ad_storage'}
             aria-haspopup="listbox"
-            class="inline-flex h-8 min-w-22 cursor-pointer items-center justify-between gap-1.5 rounded-lg border border-border-subtle bg-surface-card px-2.5 text-xs font-semibold text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
+            class="inline-flex h-8 min-w-22 cursor-pointer items-center justify-between gap-1.5 rounded-sm border border-border-subtle bg-surface-card px-2.5 text-xs font-semibold text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
             <span class="leading-none"
               >{tempAdStorage === 'granted' ? 'Allow' : 'Deny'}</span>
             <span
@@ -290,7 +348,7 @@
                 'rotate-180'
               : ''}">
               <i
-                class="bi bi-chevron-down text-[10px] leading-none"
+                class="bi bi-chevron-down text-2xs leading-none"
                 aria-hidden="true"></i>
             </span>
           </button>
@@ -304,7 +362,7 @@
             <div
               role="listbox"
               aria-label="Advertising Storage options"
-              class="absolute top-[calc(100%+4px)] right-0 z-60 flex min-w-36 flex-col overflow-hidden rounded-xl border border-border-subtle bg-surface-elevated py-0 shadow-xl backdrop-blur-md">
+              class="absolute top-[calc(100%+4px)] right-0 z-60 flex min-w-36 flex-col overflow-hidden rounded-sm border border-border-subtle bg-surface-elevated/70 py-0 shadow-xl backdrop-blur-lg">
               <button
                 type="button"
                 role="option"
@@ -367,7 +425,7 @@
             aria-label="Ad User Data preference"
             aria-expanded={activeDropdown === 'ad_user_data'}
             aria-haspopup="listbox"
-            class="inline-flex h-8 min-w-22 cursor-pointer items-center justify-between gap-1.5 rounded-lg border border-border-subtle bg-surface-card px-2.5 text-xs font-semibold text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
+            class="inline-flex h-8 min-w-22 cursor-pointer items-center justify-between gap-1.5 rounded-sm border border-border-subtle bg-surface-card px-2.5 text-xs font-semibold text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
             <span class="leading-none"
               >{tempAdUserData === 'granted' ? 'Allow' : 'Deny'}</span>
             <span
@@ -377,7 +435,7 @@
                 'rotate-180'
               : ''}">
               <i
-                class="bi bi-chevron-down text-[10px] leading-none"
+                class="bi bi-chevron-down text-2xs leading-none"
                 aria-hidden="true"></i>
             </span>
           </button>
@@ -391,7 +449,7 @@
             <div
               role="listbox"
               aria-label="Ad User Data options"
-              class="absolute top-[calc(100%+4px)] right-0 z-60 flex min-w-36 flex-col overflow-hidden rounded-xl border border-border-subtle bg-surface-elevated py-0 shadow-xl backdrop-blur-md">
+              class="absolute top-[calc(100%+4px)] right-0 z-60 flex min-w-36 flex-col overflow-hidden rounded-sm border border-border-subtle bg-surface-elevated/70 py-0 shadow-xl backdrop-blur-lg">
               <button
                 type="button"
                 role="option"
@@ -458,7 +516,7 @@
             aria-label="Ad Personalization preference"
             aria-expanded={activeDropdown === 'ad_personalization'}
             aria-haspopup="listbox"
-            class="inline-flex h-8 min-w-22 cursor-pointer items-center justify-between gap-1.5 rounded-lg border border-border-subtle bg-surface-card px-2.5 text-xs font-semibold text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
+            class="inline-flex h-8 min-w-22 cursor-pointer items-center justify-between gap-1.5 rounded-sm border border-border-subtle bg-surface-card px-2.5 text-xs font-semibold text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
             <span class="flex-1 text-left leading-none"
               >{tempAdPersonalization === 'granted' ? 'Allow' : 'Deny'}</span>
             <span
@@ -468,7 +526,7 @@
                 'rotate-180'
               : ''}">
               <i
-                class="bi bi-chevron-down text-[10px] leading-none"
+                class="bi bi-chevron-down text-2xs leading-none"
                 aria-hidden="true"></i>
             </span>
           </button>
@@ -482,7 +540,7 @@
             <div
               role="listbox"
               aria-label="Ad Personalization options"
-              class="absolute top-[calc(100%+4px)] right-0 z-60 flex min-w-36 flex-col overflow-hidden rounded-xl border border-border-subtle bg-surface-elevated py-0 shadow-xl backdrop-blur-md">
+              class="absolute top-[calc(100%+4px)] right-0 z-60 flex min-w-36 flex-col overflow-hidden rounded-sm border border-border-subtle bg-surface-elevated/70 py-0 shadow-xl backdrop-blur-lg">
               <button
                 type="button"
                 role="option"
@@ -516,7 +574,6 @@
                 ) ?
                   'bg-copilot/10 text-copilot'
                 : 'text-text-primary hover:bg-surface-hover'}">
-                : 'text-text-primary hover:bg-surface-hover'}">
                 <span>Allow</span>
                 {#if tempAdPersonalization === 'granted'}
                   <i
@@ -531,12 +588,15 @@
     </div>
 
     <div class="flex items-center justify-between gap-3 px-1 pt-1">
-      <span class="text-[11px] text-text-muted"
+      <span class="text-xxs text-text-secondary"
         >Need to clear stored choices?</span>
       <button
         type="button"
         onclick={consentStore.resetVisitorConsent}
-        class="cursor-pointer text-xs font-semibold text-text-muted transition-colors hover:text-danger hover:underline">
+        class="inline-flex cursor-pointer items-center gap-1.5 rounded-sm border border-danger/30 bg-danger/10 px-2.5 py-1 text-xs font-semibold text-danger transition-colors hover:border-danger/50 hover:bg-danger/20">
+        <i
+          class="bi bi-trash3 text-2xs"
+          aria-hidden="true"></i>
         Reset choice
       </button>
     </div>
@@ -575,3 +635,48 @@
     </div>
   {/snippet}
 </Dialog>
+
+<style>
+  .preset-slider {
+    height: 1.25rem;
+    outline: none;
+  }
+  .preset-slider:focus,
+  .preset-slider:focus-visible {
+    outline: none;
+    box-shadow: none;
+  }
+  .preset-slider::-moz-focus-outer {
+    border: 0;
+  }
+  .preset-slider::-webkit-slider-runnable-track {
+    height: 0.375rem;
+    background: transparent;
+  }
+  .preset-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 1.1rem;
+    height: 1.1rem;
+    margin-top: -0.375rem;
+    border-radius: 9999px;
+    border: 2px solid var(--color-surface-elevated);
+    background: var(--thumb-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  .preset-slider::-moz-range-track {
+    height: 0.375rem;
+    background: transparent;
+  }
+  .preset-slider::-moz-range-thumb {
+    width: 1.1rem;
+    height: 1.1rem;
+    border: 2px solid var(--color-surface-elevated);
+    border-radius: 9999px;
+    background: var(--thumb-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+</style>

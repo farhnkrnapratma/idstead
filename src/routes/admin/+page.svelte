@@ -1,7 +1,9 @@
 <!-- @format -->
 <script lang="ts">
+  import {page} from '$app/state'
+  import {replaceState} from '$app/navigation'
   import {supabase} from '$lib/supabase'
-  import {onMount} from 'svelte'
+  import {onMount, tick} from 'svelte'
   import {SvelteSet} from 'svelte/reactivity'
   import {
     Dialog,
@@ -22,18 +24,29 @@
     FilterToolbar,
     FilterSelect,
     DropdownSelect,
+    DropdownTrigger,
     SortControl,
     SearchResultCount,
     FilterChipGroup,
     FilterEmptyState,
+    Pagination,
+    RelativeTime,
+    toastStore,
     createFilterSortStore,
     ThemeSelect,
     StatusBanner,
-    formatBlogDate,
     formatReadTime,
     formatViewCount
   } from '$lib'
   import {themeStore} from '$lib/stores/themeStore.svelte'
+
+  // Focuses an element as soon as it mounts - used instead of the `autofocus`
+  // attribute (flagged by a11y linting) for inputs that only appear after an
+  // explicit user action (e.g. clicking "edit"), where moving focus there is
+  // the expected, non-disorienting behavior.
+  function focusOnMount(node: HTMLElement) {
+    node.focus()
+  }
   import {
     fetchAuthorProfile,
     fetchCvEntries,
@@ -73,6 +86,12 @@
     return res.publicUrl
   }
 
+  const failedBanners = new SvelteSet<string>()
+
+  function markBannerFailed(postId: string) {
+    failedBanners.add(postId)
+  }
+
   let isLoading = $state(true)
   let posts = $state<AdminPost[]>([])
   let isLoggingOut = $state(false)
@@ -87,6 +106,9 @@
   let postToDelete = $state<AdminPost | null>(null)
   let showDeleteCommentDialog = $state(false)
   let commentIdToDelete = $state<string | null>(null)
+  let showClearAuthorDialog = $state(false)
+  let showDeleteCvDocDialog = $state(false)
+  let showAvatarPreviewDialog = $state(false)
 
   interface AdminComment {
     id: string
@@ -107,8 +129,16 @@
 
   let activeAdminTab = $state<
     'posts' | 'author' | 'cv' | 'skills' | 'socials' | 'sponsorship' | 'contact'
-  >('posts')
+  >((page.url.searchParams.get('tab') as any) || 'posts')
   let sidebarMobileOpen = $state(false)
+
+  function selectTab(id: typeof activeAdminTab) {
+    activeAdminTab = id
+    sidebarMobileOpen = false
+    const url = new URL(page.url)
+    url.searchParams.set('tab', id)
+    replaceState(url, page.state)
+  }
 
   type Theme = 'auto' | 'dark' | 'light'
 
@@ -240,12 +270,16 @@
         })
   )
 
-  let avatarHasError = $state(false)
   const avatarPreviewUrl = $derived(authorState.avatar.trim())
 
   $effect(() => {
-    void authorState.avatar
-    avatarHasError = false
+    if (typeof document !== 'undefined') {
+      if (showAvatarPreviewDialog) {
+        document.body.style.overflow = 'hidden'
+      } else {
+        document.body.style.overflow = ''
+      }
+    }
   })
 
   function debounceAuthor<T extends unknown[]>(
@@ -382,6 +416,32 @@
   let socialState = $state<SocialLink[]>([])
   let sponsorshipState = $state<SponsorshipLink[]>([])
   let contactState = $state<ContactInfo[]>([])
+
+  let cvInitial = $state<typeof cvState | null>(null)
+  let skillsInitial = $state<SkillItem[] | null>(null)
+  let socialInitial = $state<SocialLink[] | null>(null)
+  let sponsorshipInitial = $state<SponsorshipLink[] | null>(null)
+  let contactInitial = $state<ContactInfo[] | null>(null)
+
+  const cvIsDirty = $derived(
+    cvInitial !== null && JSON.stringify(cvState) !== JSON.stringify(cvInitial)
+  )
+  const skillsIsDirty = $derived(
+    skillsInitial !== null
+      && JSON.stringify(skillsState) !== JSON.stringify(skillsInitial)
+  )
+  const socialIsDirty = $derived(
+    socialInitial !== null
+      && JSON.stringify(socialState) !== JSON.stringify(socialInitial)
+  )
+  const sponsorshipIsDirty = $derived(
+    sponsorshipInitial !== null
+      && JSON.stringify(sponsorshipState) !== JSON.stringify(sponsorshipInitial)
+  )
+  const contactIsDirty = $derived(
+    contactInitial !== null
+      && JSON.stringify(contactState) !== JSON.stringify(contactInitial)
+  )
   let cvDocState = $state<CvDocument>({
     filename: '',
     fileUrl: '',
@@ -389,12 +449,392 @@
     isActive: true
   })
 
+  function debounceAdmin<T extends unknown[]>(
+    cb: (...args: T) => void,
+    ms: number
+  ) {
+    let timer: ReturnType<typeof setTimeout>
+    return (...args: T) => {
+      clearTimeout(timer)
+      timer = setTimeout(() => cb(...args), ms)
+    }
+  }
+
+  let experienceErrors = $state<Record<number, Record<string, string>>>({})
+  let experienceValid = $state<Record<number, Record<string, boolean>>>({})
+  let educationErrors = $state<Record<number, Record<string, string>>>({})
+  let educationValid = $state<Record<number, Record<string, boolean>>>({})
+  let skillsErrors = $state<Record<number, Record<string, string>>>({})
+  let skillsValid = $state<Record<number, Record<string, boolean>>>({})
+  let socialErrors = $state<Record<number, Record<string, string>>>({})
+  let socialValid = $state<Record<number, Record<string, boolean>>>({})
+  let sponsorshipErrors = $state<Record<number, Record<string, string>>>({})
+  let sponsorshipValid = $state<Record<number, Record<string, boolean>>>({})
+  let contactErrors = $state<Record<number, Record<string, string>>>({})
+  let contactValid = $state<Record<number, Record<string, boolean>>>({})
+
+  const urlRegex = /^(https?:\/\/|mailto:|tel:).+/i
+
+  function validateRequiredField(
+    errors: Record<number, Record<string, string>>,
+    valid: Record<number, Record<string, boolean>>,
+    idx: number,
+    field: string,
+    label: string,
+    value: string,
+    isUrl = false
+  ): boolean {
+    if (!errors[idx]) errors[idx] = {}
+    if (!valid[idx]) valid[idx] = {}
+    const v = value.trim()
+    if (!v) {
+      errors[idx][field] = `${label} is required.`
+      valid[idx][field] = false
+      return false
+    }
+    if (isUrl && !urlRegex.test(v)) {
+      errors[idx][field] = 'Must start with http://, https://, mailto:, or tel:'
+      valid[idx][field] = false
+      return false
+    }
+    errors[idx][field] = ''
+    valid[idx][field] = true
+    return true
+  }
+
+  function clearFieldError(
+    errors: Record<number, Record<string, string>>,
+    valid: Record<number, Record<string, boolean>>,
+    idx: number,
+    field: string
+  ) {
+    if (errors[idx]) errors[idx][field] = ''
+    if (valid[idx]) valid[idx][field] = false
+  }
+
+  const validateExperienceField = debounceAdmin(
+    (idx: number, field: keyof ExperienceItem, label: string) => {
+      const value = String(cvState.experience[idx]?.[field] ?? '')
+      validateRequiredField(
+        experienceErrors,
+        experienceValid,
+        idx,
+        field,
+        label,
+        value
+      )
+    },
+    400
+  )
+
+  const validateEducationField = debounceAdmin(
+    (idx: number, field: keyof EducationItem, label: string) => {
+      const value = String(cvState.education[idx]?.[field] ?? '')
+      validateRequiredField(
+        educationErrors,
+        educationValid,
+        idx,
+        field,
+        label,
+        value
+      )
+    },
+    400
+  )
+
+  const validateSkillField = debounceAdmin((idx: number) => {
+    validateRequiredField(
+      skillsErrors,
+      skillsValid,
+      idx,
+      'category',
+      'Area of expertise',
+      skillsState[idx]?.category || ''
+    )
+  }, 400)
+
+  const validateSocialField = debounceAdmin(
+    (idx: number, field: 'icon' | 'platform' | 'url') => {
+      const labels = {icon: 'Icon', platform: 'Platform', url: 'URL'}
+      validateRequiredField(
+        socialErrors,
+        socialValid,
+        idx,
+        field,
+        labels[field],
+        socialState[idx]?.[field] || '',
+        field === 'url'
+      )
+    },
+    400
+  )
+
+  const validateSponsorshipField = debounceAdmin(
+    (idx: number, field: 'platform' | 'displayValue' | 'icon' | 'url') => {
+      const labels = {
+        platform: 'Platform',
+        displayValue: 'Display text',
+        icon: 'Icon',
+        url: 'URL'
+      }
+      validateRequiredField(
+        sponsorshipErrors,
+        sponsorshipValid,
+        idx,
+        field,
+        labels[field],
+        sponsorshipState[idx]?.[field] || '',
+        field === 'url'
+      )
+    },
+    400
+  )
+
+  const validateContactField = debounceAdmin(
+    (idx: number, field: 'platform' | 'displayValue' | 'icon' | 'href') => {
+      const labels = {
+        platform: 'Platform',
+        displayValue: 'Display text',
+        icon: 'Icon',
+        href: 'URL'
+      }
+      validateRequiredField(
+        contactErrors,
+        contactValid,
+        idx,
+        field,
+        labels[field],
+        contactState[idx]?.[field] || '',
+        field === 'href'
+      )
+    },
+    400
+  )
+
+  function validateAllExperience(): boolean {
+    let ok = true
+    cvState.experience.forEach((exp, idx) => {
+      const fields: [keyof ExperienceItem, string][] = [
+        ['title', 'Title'],
+        ['company', 'Company'],
+        ['location', 'Location'],
+        ['description', 'Description']
+      ]
+      for (const [field, label] of fields) {
+        if (
+          !validateRequiredField(
+            experienceErrors,
+            experienceValid,
+            idx,
+            field,
+            label,
+            String(exp[field] ?? '')
+          )
+        )
+          ok = false
+      }
+    })
+    return ok
+  }
+
+  function validateAllEducation(): boolean {
+    let ok = true
+    cvState.education.forEach((edu, idx) => {
+      const fields: [keyof EducationItem, string][] = [
+        ['institution', 'Institution'],
+        ['degree', 'Degree'],
+        ['field', 'Field of study'],
+        ['grade', 'Grade'],
+        ['description', 'Description']
+      ]
+      for (const [field, label] of fields) {
+        if (
+          !validateRequiredField(
+            educationErrors,
+            educationValid,
+            idx,
+            field,
+            label,
+            String(edu[field] ?? '')
+          )
+        )
+          ok = false
+      }
+    })
+    return ok
+  }
+
+  function validateAllSkills(): boolean {
+    let ok = true
+    skillsState.forEach((item, idx) => {
+      if (
+        !validateRequiredField(
+          skillsErrors,
+          skillsValid,
+          idx,
+          'category',
+          'Area of expertise',
+          item.category || ''
+        )
+      )
+        ok = false
+    })
+    return ok
+  }
+
+  function validateAllSocials(): boolean {
+    let ok = true
+    socialState.forEach((item, idx) => {
+      if (
+        !validateRequiredField(
+          socialErrors,
+          socialValid,
+          idx,
+          'icon',
+          'Icon',
+          item.icon || ''
+        )
+      )
+        ok = false
+      if (
+        !validateRequiredField(
+          socialErrors,
+          socialValid,
+          idx,
+          'platform',
+          'Platform',
+          item.platform || ''
+        )
+      )
+        ok = false
+      if (
+        !validateRequiredField(
+          socialErrors,
+          socialValid,
+          idx,
+          'url',
+          'URL',
+          item.url || '',
+          true
+        )
+      )
+        ok = false
+    })
+    return ok
+  }
+
+  function validateAllSponsorship(): boolean {
+    let ok = true
+    sponsorshipState.forEach((item, idx) => {
+      if (
+        !validateRequiredField(
+          sponsorshipErrors,
+          sponsorshipValid,
+          idx,
+          'platform',
+          'Platform',
+          item.platform || ''
+        )
+      )
+        ok = false
+      if (
+        !validateRequiredField(
+          sponsorshipErrors,
+          sponsorshipValid,
+          idx,
+          'displayValue',
+          'Display text',
+          item.displayValue || ''
+        )
+      )
+        ok = false
+      if (
+        !validateRequiredField(
+          sponsorshipErrors,
+          sponsorshipValid,
+          idx,
+          'icon',
+          'Icon',
+          item.icon || ''
+        )
+      )
+        ok = false
+      if (
+        !validateRequiredField(
+          sponsorshipErrors,
+          sponsorshipValid,
+          idx,
+          'url',
+          'URL',
+          item.url || '',
+          true
+        )
+      )
+        ok = false
+    })
+    return ok
+  }
+
+  function validateAllContact(): boolean {
+    let ok = true
+    contactState.forEach((item, idx) => {
+      if (
+        !validateRequiredField(
+          contactErrors,
+          contactValid,
+          idx,
+          'platform',
+          'Platform',
+          item.platform || ''
+        )
+      )
+        ok = false
+      if (
+        !validateRequiredField(
+          contactErrors,
+          contactValid,
+          idx,
+          'displayValue',
+          'Display text',
+          item.displayValue || ''
+        )
+      )
+        ok = false
+      if (
+        !validateRequiredField(
+          contactErrors,
+          contactValid,
+          idx,
+          'icon',
+          'Icon',
+          item.icon || ''
+        )
+      )
+        ok = false
+      if (
+        !validateRequiredField(
+          contactErrors,
+          contactValid,
+          idx,
+          'href',
+          'URL',
+          item.href || '',
+          true
+        )
+      )
+        ok = false
+    })
+    return ok
+  }
+
+  let isResumeAddOpen = $state(false)
+  let isClearingAuthor = $state(false)
+
   let selectedPdfFile = $state<File | null>(null)
   let isUploadingPdf = $state(false)
   let isDraggingFile = $state(false)
   let pdfUploadError = $state('')
   let pdfUploadSuccess = $state('')
-  let copiedCvHash = $state(false)
 
   function handleFileDrop(e: DragEvent) {
     e.preventDefault()
@@ -443,9 +883,110 @@
     editingSkillText = currentText
   }
 
+  // Typing "\," anywhere in a skill name inserts a literal comma there
+  // instead of committing/splitting the skill. Checks the character right
+  // before the caret rather than the end of the whole string, so the escape
+  // works when editing mid-string (e.g. "Governance\, Risk and Compliance"),
+  // not just when appending at the end.
+  function tryEscapeComma(
+    value: string,
+    cursor: number
+  ): {value: string; cursor: number} | null {
+    if (cursor > 0 && value[cursor - 1] === '\\') {
+      return {
+        value: value.slice(0, cursor - 1) + ',' + value.slice(cursor),
+        cursor
+      }
+    }
+    return null
+  }
+
+  // Splits on unescaped commas; "\," becomes a literal "," in the output.
+  // Trims each resulting item and drops empty ones.
+  function splitEscapedCommas(text: string): string[] {
+    const parts: string[] = []
+    let current = ''
+    for (let i = 0; i < text.length; i++) {
+      if (text[i] === '\\' && text[i + 1] === ',') {
+        current += ','
+        i++
+      } else if (text[i] === ',') {
+        parts.push(current)
+        current = ''
+      } else {
+        current += text[i]
+      }
+    }
+    parts.push(current)
+    return parts.map(s => s.trim()).filter(Boolean)
+  }
+
+  // "Category: a, b, c" -> {category: "Category", skills: [a,b,c]}
+  // "a, b, c" (no colon) -> {category: null, skills: [a,b,c]}
+  function parsePastedSkillsText(text: string): {
+    category: string | null
+    skills: string[]
+  } {
+    const colonIdx = text.indexOf(':')
+    if (colonIdx === -1) {
+      return {category: null, skills: splitEscapedCommas(text)}
+    }
+    const category = text.slice(0, colonIdx).trim()
+    return {
+      category: category || null,
+      skills: splitEscapedCommas(text.slice(colonIdx + 1))
+    }
+  }
+
+  function mergeSkills(existing: string[], toAdd: string[]): string[] {
+    const result = [...existing]
+    for (const s of toAdd) {
+      if (s && !result.includes(s)) result.push(s)
+    }
+    return result
+  }
+
+  function handleCategoryPaste(idx: number, e: ClipboardEvent) {
+    const text = e.clipboardData?.getData('text/plain') ?? ''
+    const parsed = parsePastedSkillsText(text)
+    if (parsed.category === null) return
+    e.preventDefault()
+    skillsState[idx].category = parsed.category
+    skillsState[idx].skills = mergeSkills(
+      skillsState[idx].skills,
+      parsed.skills
+    )
+    clearFieldError(skillsErrors, skillsValid, idx, 'category')
+    validateSkillField(idx)
+  }
+
+  function handleSkillsSetPaste(idx: number, e: ClipboardEvent) {
+    const text = e.clipboardData?.getData('text/plain') ?? ''
+    const parsed = parsePastedSkillsText(text)
+    if (parsed.skills.length === 0 && parsed.category === null) return
+    e.preventDefault()
+    if (parsed.category !== null) {
+      skillsState[idx].category = parsed.category
+      clearFieldError(skillsErrors, skillsValid, idx, 'category')
+      validateSkillField(idx)
+    }
+    skillsState[idx].skills = mergeSkills(
+      skillsState[idx].skills,
+      parsed.skills
+    )
+    ;(e.currentTarget as HTMLInputElement).value = ''
+  }
+
   function saveEditSkill(catIdx: number, skillIdx: number) {
     if (editingSkillKey === `${catIdx}-${skillIdx}`) {
-      const trimmed = editingSkillText.trim().replace(/,/g, '')
+      // A trailing "\" here is only ever a literal backslash the user typed
+      // and didn't follow with "," - the ",": keydown handler below already
+      // consumes it into a real comma the moment an escape sequence
+      // completes, so nothing dangling ever reaches this point. Stripping it
+      // unconditionally used to silently swallow that character (and, if it
+      // was the only character being typed, reduce the value to empty and
+      // discard the edit entirely - closing the pill without saving).
+      const trimmed = editingSkillText.trim()
       if (trimmed) {
         skillsState[catIdx].skills[skillIdx] = trimmed
       }
@@ -454,11 +995,34 @@
     }
   }
 
+  function createSkillDragImage(sourceEl: HTMLElement): HTMLElement {
+    const clone = sourceEl.cloneNode(true) as HTMLElement
+    const rect = sourceEl.getBoundingClientRect()
+    const computed = getComputedStyle(sourceEl)
+    Object.assign(clone.style, {
+      position: 'fixed',
+      top: '-1000px',
+      left: '-1000px',
+      width: `${rect.width}px`,
+      height: `${rect.height}px`,
+      margin: '0',
+      borderRadius: computed.borderRadius,
+      background: computed.backgroundColor,
+      border: computed.border,
+      pointerEvents: 'none'
+    })
+    document.body.appendChild(clone)
+    return clone
+  }
+
   function handleSkillDragStart(sIdx: number, e: DragEvent) {
     draggedSkillIdx = sIdx
     if (e.dataTransfer) {
       e.dataTransfer.effectAllowed = 'move'
       e.dataTransfer.setData('text/plain', String(sIdx))
+      const ghost = createSkillDragImage(e.currentTarget as HTMLElement)
+      e.dataTransfer.setDragImage(ghost, 12, 12)
+      setTimeout(() => ghost.remove(), 0)
     }
   }
 
@@ -480,7 +1044,7 @@
   async function fetchPostViews(postId: string) {
     if (postViewsMap.has(postId)) return
     try {
-      const res = await fetch(`/api/views?post_id=${postId}`)
+      const res = await fetch(`/api/v1/blog/views?postId=${postId}`)
       if (res.ok) {
         const data = await res.json()
         postViewsMap.set(postId, data.views || 0)
@@ -557,6 +1121,28 @@
     return result
   })
 
+  const POSTS_PAGE_SIZE = 10
+
+  let postsPage = $state(1)
+
+  const postsTotalPages = $derived(
+    Math.max(1, Math.ceil(filteredPosts.length / POSTS_PAGE_SIZE))
+  )
+  const postsPageClamped = $derived(Math.min(postsPage, postsTotalPages))
+  const paginatedPosts = $derived(
+    filteredPosts.slice(
+      (postsPageClamped - 1) * POSTS_PAGE_SIZE,
+      postsPageClamped * POSTS_PAGE_SIZE
+    )
+  )
+
+  $effect(() => {
+    void filterStore.search
+    void filterStore.filters
+    void filterStore.sort
+    postsPage = 1
+  })
+
   const expandedPostIds = new SvelteSet<string>()
 
   function toggleComments(postId: string) {
@@ -584,9 +1170,9 @@
       || (comment.author_name
         && comment.author_name.toLowerCase().includes('farhan'))
     ) {
-      return 'admin_panel_settings'
+      return 'bi-shield-lock'
     }
-    return comment.is_anonymous ? 'account_circle' : 'person'
+    return comment.is_anonymous ? 'bi-person-circle' : 'bi-person'
   }
 
   async function handleAdminSubmit(
@@ -626,9 +1212,11 @@
         comments = [...comments, newComment]
         commentContent = ''
         replyTo = null
+        toastStore.success('Reply posted.')
       }
     } catch (err) {
       console.error('Error posting admin reply:', err)
+      toastStore.error('Failed to post reply.')
     } finally {
       isSubmitting = false
     }
@@ -697,6 +1285,17 @@
         adminUserEmail = sessionData.session.user.email
       }
 
+      const pendingToast = sessionStorage.getItem('admin_toast')
+      if (pendingToast) {
+        sessionStorage.removeItem('admin_toast')
+        try {
+          const {message, type} = JSON.parse(pendingToast)
+          if (message) toastStore.show(message, type)
+        } catch (err) {
+          console.error('Failed to parse pending toast:', err)
+        }
+      }
+
       startIdleTimer()
       ACTIVITY_EVENTS.forEach(evt =>
         window.addEventListener(evt, handleUserActivity, {passive: true})
@@ -720,7 +1319,7 @@
   async function loadAdminData() {
     try {
       const [p, cv, sp, ct, soc, sk, doc] = await Promise.all([
-        fetchAuthorProfile(supabase),
+        fetchAuthorProfile(supabase, {includeEmail: true}),
         fetchCvEntries(supabase),
         fetchSponsorship(supabase),
         fetchContactInfo(supabase),
@@ -731,10 +1330,15 @@
       if (p) authorState = p
       authorInitial = {...authorState}
       if (cv) cvState = cv
+      cvInitial = $state.snapshot(cvState)
       if (sp) sponsorshipState = sp
+      sponsorshipInitial = $state.snapshot(sponsorshipState)
       if (ct) contactState = ct
+      contactInitial = $state.snapshot(contactState)
       if (soc) socialState = soc
+      socialInitial = $state.snapshot(socialState)
       if (sk) skillsState = sk
+      skillsInitial = $state.snapshot(skillsState)
       cvDocState = doc || {filename: '', fileUrl: '', hash: '', isActive: false}
     } catch (err) {
       console.error('Failed to load admin supplementary data:', err)
@@ -818,8 +1422,12 @@
       posts = posts.map(p =>
         p.id === post.id ? {...p, published: nextPublished} : p
       )
+      toastStore.success(
+        nextPublished ? 'Post published.' : 'Post unpublished.'
+      )
     } catch (err) {
       console.error('Error updating post published status:', err)
+      toastStore.error('Failed to update post status.')
     }
   }
 
@@ -847,8 +1455,10 @@
         .eq('id', postToDelete.id)
       if (error) throw error
       posts = posts.filter(p => p.id !== postToDelete!.id)
+      toastStore.success('Post deleted.')
     } catch (err) {
       console.error('Error deleting post:', err)
+      toastStore.error('Failed to delete post.')
     } finally {
       showDeletePostDialog = false
       postToDelete = null
@@ -889,8 +1499,10 @@
       if (error) throw error
 
       comments = comments.filter(c => !idsToDelete.includes(c.id))
+      toastStore.success('Comment deleted.')
     } catch (err) {
       console.error('Error deleting comment:', err)
+      toastStore.error('Failed to delete comment.')
     } finally {
       showDeleteCommentDialog = false
       commentIdToDelete = null
@@ -909,8 +1521,12 @@
       comments = comments.map(c =>
         c.id === comment.id ? {...c, is_approved: nextApproved} : c
       )
+      toastStore.success(
+        nextApproved ? 'Comment approved.' : 'Comment held for review.'
+      )
     } catch (err) {
       console.error('Error toggling comment approval:', err)
+      toastStore.error('Failed to update comment.')
     }
   }
 
@@ -1019,74 +1635,173 @@
       authorSaveSuccess = true
       authorInitial = {...authorState}
       setTimeout(() => (authorSaveSuccess = false), 2500)
+      toastStore.success('Author profile saved.')
     } catch (err: any) {
       console.error('Error saving author profile:', err)
       authorSaveError = err.message || 'Failed to save author profile.'
+      toastStore.error(authorSaveError)
     } finally {
       isSavingAuthor = false
     }
   }
 
+  function confirmClearAuthor() {
+    if (!authorState.id) return
+    showClearAuthorDialog = true
+  }
+
+  async function executeClearAuthor() {
+    showClearAuthorDialog = false
+    isClearingAuthor = true
+    try {
+      const {
+        data: {user},
+        error: userError
+      } = await supabase.auth.getUser()
+      if (userError || !user) {
+        throw new Error('Your admin session has expired. Please log in again.')
+      }
+
+      if (authorState.id) {
+        const {error} = await supabase
+          .from('author_profile')
+          .delete()
+          .eq('id', authorState.id)
+        if (error) throw error
+      } else {
+        const {error} = await supabase
+          .from('author_profile')
+          .delete()
+          .neq('id', '00000000-0000-0000-0000-000000000000')
+        if (error) throw error
+      }
+
+      authorState = {
+        id: '',
+        name: '',
+        username: '',
+        headline: '',
+        jobTitle: '',
+        bio: '',
+        avatar: '',
+        email: '',
+        city: '',
+        postalCode: '',
+        country: '',
+        siteUrl: ''
+      }
+      authorInitial = {...authorState}
+      toastStore.success('Author profile cleared.')
+    } catch (err: any) {
+      console.error('Failed to clear author profile:', err)
+      toastStore.error(err?.message || 'Failed to clear author profile.')
+    } finally {
+      isClearingAuthor = false
+    }
+  }
+
+  async function getAuthorId(): Promise<string | null> {
+    if (authorState.id) return authorState.id
+    try {
+      const {data} = await supabase
+        .from('author_profile')
+        .select('id')
+        .limit(1)
+        .maybeSingle()
+      if (data?.id) {
+        authorState.id = data.id
+        return data.id
+      }
+
+      // Auto-insert author profile if none exists using only user-entered state
+      const {data: created, error} = await supabase
+        .from('author_profile')
+        .insert({
+          name: authorState.name ? authorState.name.trim() : '',
+          username: authorState.username ? authorState.username.trim() : '',
+          headline: authorState.headline ? authorState.headline.trim() : '',
+          job_title: authorState.jobTitle ? authorState.jobTitle.trim() : '',
+          bio: authorState.bio ? authorState.bio.trim() : '',
+          avatar: authorState.avatar ? authorState.avatar.trim() : '',
+          email: authorState.email ? authorState.email.trim() : '',
+          city: authorState.city ? authorState.city.trim() : '',
+          postal_code:
+            authorState.postalCode ? authorState.postalCode.trim() : '',
+          country: authorState.country ? authorState.country.trim() : '',
+          site_url: authorState.siteUrl ? authorState.siteUrl.trim() : ''
+        })
+        .select('id')
+        .maybeSingle()
+
+      if (created?.id) {
+        authorState.id = created.id
+        return created.id
+      }
+    } catch (err) {
+      console.error('Error fetching or creating author_id:', err)
+    }
+    return null
+  }
+
   async function handleSaveCv(e: SubmitEvent) {
     e.preventDefault()
     if (isSavingCv) return
+    const experienceOk = validateAllExperience()
+    const educationOk = validateAllEducation()
+    if (!experienceOk || !educationOk) {
+      toastStore.error('Please fix the errors below before saving.')
+      return
+    }
     isSavingCv = true
     cvSaveSuccess = false
     try {
-      await supabase
-        .from('experiences')
-        .delete()
-        .neq('id', '00000000-0000-0000-0000-000000000000')
-      await supabase
-        .from('education')
-        .delete()
-        .neq('id', '00000000-0000-0000-0000-000000000000')
+      const authorId = await getAuthorId()
+      if (!authorId) throw new Error('Could not resolve author ID.')
 
-      if (cvState.experience.length > 0) {
-        const expPayload = cvState.experience.map((item, idx) => ({
-          title: sanitizeInput(item.title.trim()),
-          type: item.type || '',
-          company: sanitizeInput(item.company.trim()),
-          start_month: item.startMonth || '',
-          start_year: item.startYear || currentYear,
-          end_month: item.currentlyIn ? null : item.endMonth || null,
-          end_year: item.currentlyIn ? null : item.endYear || null,
-          currently_in: item.currentlyIn || false,
-          location: sanitizeInput((item.location || '').trim()),
-          loc_type: item.locType || '',
-          description: sanitizeInput(item.description.trim()),
-          sort_order: idx + 1
-        }))
-        const {error: expErr} = await supabase
-          .from('experiences')
-          .insert(expPayload)
-        if (expErr) throw expErr
-      }
+      const experiences = cvState.experience.map((item, idx) => ({
+        title: sanitizeInput(item.title.trim()),
+        type: item.type || '',
+        company: sanitizeInput(item.company.trim()),
+        start_month: item.startMonth || '',
+        start_year: item.startYear || currentYear,
+        end_month: item.currentlyIn ? null : item.endMonth || null,
+        end_year: item.currentlyIn ? null : item.endYear || null,
+        currently_in: item.currentlyIn || false,
+        location: sanitizeInput((item.location || '').trim()),
+        loc_type: item.locType || '',
+        description: sanitizeInput(item.description.trim()),
+        sort_order: idx + 1
+      }))
 
-      if (cvState.education.length > 0) {
-        const eduPayload = cvState.education.map((item, idx) => ({
-          institution: sanitizeInput(item.institution.trim()),
-          degree: sanitizeInput(item.degree.trim()),
-          field: sanitizeInput(item.field.trim()),
-          start_month: item.startMonth || 'September',
-          start_year: item.startYear || currentYear,
-          end_month: item.currentlyIn ? null : item.endMonth || null,
-          end_year: item.currentlyIn ? null : item.endYear || null,
-          currently_in: item.currentlyIn || false,
-          grade: sanitizeInput(item.grade.trim()),
-          description: sanitizeInput(item.description.trim()),
-          sort_order: idx + 1
-        }))
-        const {error: eduErr} = await supabase
-          .from('education')
-          .insert(eduPayload)
-        if (eduErr) throw eduErr
-      }
+      const education = cvState.education.map((item, idx) => ({
+        institution: sanitizeInput(item.institution.trim()),
+        degree: sanitizeInput(item.degree.trim()),
+        field: sanitizeInput(item.field.trim()),
+        start_month: item.startMonth || 'September',
+        start_year: item.startYear || currentYear,
+        end_month: item.currentlyIn ? null : item.endMonth || null,
+        end_year: item.currentlyIn ? null : item.endYear || null,
+        currently_in: item.currentlyIn || false,
+        grade: sanitizeInput(item.grade.trim()),
+        description: sanitizeInput(item.description.trim()),
+        sort_order: idx + 1
+      }))
 
+      const {error} = await supabase.rpc('save_cv_entries', {
+        p_author_id: authorId,
+        p_experiences: experiences,
+        p_education: education
+      })
+      if (error) throw error
+
+      cvInitial = $state.snapshot(cvState)
       cvSaveSuccess = true
       setTimeout(() => (cvSaveSuccess = false), 2500)
-    } catch (err) {
+      toastStore.success('CV entries saved.')
+    } catch (err: any) {
       console.error('Error saving CV entries:', err)
+      const msg = err?.message || err?.error || 'Failed to save CV entries.'
+      toastStore.error(msg)
     } finally {
       isSavingCv = false
     }
@@ -1095,31 +1810,39 @@
   async function handleSaveSkills(e: SubmitEvent) {
     e.preventDefault()
     if (isSavingSkills) return
+    if (!validateAllSkills()) {
+      toastStore.error('Please fix the errors below before saving.')
+      return
+    }
     isSavingSkills = true
     skillsSaveSuccess = false
     try {
-      await supabase
-        .from('skills')
-        .delete()
-        .neq('id', '00000000-0000-0000-0000-000000000000')
+      const authorId = await getAuthorId()
+      if (!authorId) throw new Error('Could not resolve author ID.')
 
-      if (skillsState.length > 0) {
-        const payload = skillsState.map((item, idx) => ({
-          category: sanitizeInput(item.category.trim()),
-          skills:
-            Array.isArray(item.skills) ?
-              item.skills.map(s => sanitizeInput(s.trim())).filter(Boolean)
-            : [],
-          sort_order: idx + 1
-        }))
-        const {error} = await supabase.from('skills').insert(payload)
-        if (error) throw error
-      }
+      const categories = skillsState.map((item, idx) => ({
+        category: sanitizeInput(item.category.trim()),
+        sort_order: idx + 1,
+        skills:
+          Array.isArray(item.skills) ?
+            item.skills.map(s => sanitizeInput(s.trim())).filter(Boolean)
+          : []
+      }))
 
+      const {error} = await supabase.rpc('save_skills', {
+        p_author_id: authorId,
+        p_categories: categories
+      })
+      if (error) throw error
+
+      skillsInitial = $state.snapshot(skillsState)
       skillsSaveSuccess = true
       setTimeout(() => (skillsSaveSuccess = false), 2500)
-    } catch (err) {
+      toastStore.success('Skills saved.')
+    } catch (err: any) {
       console.error('Error saving skills:', err)
+      const msg = err?.message || err?.error || 'Failed to save skills.'
+      toastStore.error(msg)
     } finally {
       isSavingSkills = false
     }
@@ -1128,29 +1851,39 @@
   async function handleSaveSocials(e: SubmitEvent) {
     e.preventDefault()
     if (isSavingSocials) return
+    if (!validateAllSocials()) {
+      toastStore.error('Please fix the errors below before saving.')
+      return
+    }
     isSavingSocials = true
     socialsSaveSuccess = false
     try {
-      await supabase
-        .from('socials')
-        .delete()
-        .neq('id', '00000000-0000-0000-0000-000000000000')
+      const authorId = await getAuthorId()
+      if (!authorId) throw new Error('Could not resolve author ID.')
 
-      if (socialState.length > 0) {
-        const payload = socialState.map((item, idx) => ({
-          platform: sanitizeInput(item.platform.trim()),
-          url: item.url.trim(),
-          icon: sanitizeIconClass(item.icon, 'bi-people'),
-          sort_order: idx + 1
-        }))
-        const {error} = await supabase.from('socials').insert(payload)
-        if (error) throw error
-      }
+      const items = socialState.map((item, idx) => ({
+        platform: sanitizeInput(item.platform.trim()),
+        display_value: null,
+        url: item.url.trim(),
+        icon: sanitizeIconClass(item.icon, 'bi-people'),
+        sort_order: idx + 1
+      }))
 
+      const {error} = await supabase.rpc('save_author_links', {
+        p_author_id: authorId,
+        p_category: 'social',
+        p_items: items
+      })
+      if (error) throw error
+
+      socialInitial = $state.snapshot(socialState)
       socialsSaveSuccess = true
       setTimeout(() => (socialsSaveSuccess = false), 2500)
-    } catch (err) {
+      toastStore.success('Social links saved.')
+    } catch (err: any) {
       console.error('Error saving socials:', err)
+      const msg = err?.message || err?.error || 'Failed to save social links.'
+      toastStore.error(msg)
     } finally {
       isSavingSocials = false
     }
@@ -1159,31 +1892,40 @@
   async function handleSaveSponsorship(e: SubmitEvent) {
     e.preventDefault()
     if (isSavingSponsorship) return
+    if (!validateAllSponsorship()) {
+      toastStore.error('Please fix the errors below before saving.')
+      return
+    }
     isSavingSponsorship = true
     sponsorshipSaveSuccess = false
     try {
-      await supabase
-        .from('funding')
-        .delete()
-        .neq('id', '00000000-0000-0000-0000-000000000000')
+      const authorId = await getAuthorId()
+      if (!authorId) throw new Error('Could not resolve author ID.')
 
-      if (sponsorshipState.length > 0) {
-        const payload = sponsorshipState.map((item, idx) => ({
-          platform: sanitizeInput(item.platform.trim()),
-          display_value: sanitizeInput(item.displayValue.trim()),
-          url: item.url.trim(),
-          icon: sanitizeIconClass(item.icon, 'bi-currency-dollar'),
-          description: sanitizeInput(item.description.trim()),
-          sort_order: idx + 1
-        }))
-        const {error} = await supabase.from('funding').insert(payload)
-        if (error) throw error
-      }
+      const items = sponsorshipState.map((item, idx) => ({
+        platform: sanitizeInput(item.platform.trim()),
+        display_value: sanitizeInput(item.displayValue.trim()),
+        url: item.url.trim(),
+        icon: sanitizeIconClass(item.icon, 'bi-currency-dollar'),
+        sort_order: idx + 1
+      }))
 
+      const {error} = await supabase.rpc('save_author_links', {
+        p_author_id: authorId,
+        p_category: 'funding',
+        p_items: items
+      })
+      if (error) throw error
+
+      sponsorshipInitial = $state.snapshot(sponsorshipState)
       sponsorshipSaveSuccess = true
       setTimeout(() => (sponsorshipSaveSuccess = false), 2500)
-    } catch (err) {
+      toastStore.success('Sponsorship links saved.')
+    } catch (err: any) {
       console.error('Error saving sponsorship links:', err)
+      const msg =
+        err?.message || err?.error || 'Failed to save sponsorship links.'
+      toastStore.error(msg)
     } finally {
       isSavingSponsorship = false
     }
@@ -1192,30 +1934,39 @@
   async function handleSaveContact(e: SubmitEvent) {
     e.preventDefault()
     if (isSavingContact) return
+    if (!validateAllContact()) {
+      toastStore.error('Please fix the errors below before saving.')
+      return
+    }
     isSavingContact = true
     contactSaveSuccess = false
     try {
-      await supabase
-        .from('contact_info')
-        .delete()
-        .neq('id', '00000000-0000-0000-0000-000000000000')
+      const authorId = await getAuthorId()
+      if (!authorId) throw new Error('Could not resolve author ID.')
 
-      if (contactState.length > 0) {
-        const payload = contactState.map((item, idx) => ({
-          platform: sanitizeInput(item.platform.trim()),
-          display_value: sanitizeInput(item.displayValue.trim()),
-          href: item.href.trim(),
-          icon: sanitizeIconClass(item.icon, 'bi-person'),
-          sort_order: idx + 1
-        }))
-        const {error} = await supabase.from('contact_info').insert(payload)
-        if (error) throw error
-      }
+      const items = contactState.map((item, idx) => ({
+        platform: sanitizeInput(item.platform.trim()),
+        display_value: sanitizeInput(item.displayValue.trim()),
+        url: item.href.trim(),
+        icon: sanitizeIconClass(item.icon, 'bi-person'),
+        sort_order: idx + 1
+      }))
 
+      const {error} = await supabase.rpc('save_author_links', {
+        p_author_id: authorId,
+        p_category: 'contact',
+        p_items: items
+      })
+      if (error) throw error
+
+      contactInitial = $state.snapshot(contactState)
       contactSaveSuccess = true
       setTimeout(() => (contactSaveSuccess = false), 2500)
-    } catch (err) {
+      toastStore.success('Contact info saved.')
+    } catch (err: any) {
       console.error('Error saving contact info:', err)
+      const msg = err?.message || err?.error || 'Failed to save contact info.'
+      toastStore.error(msg)
     } finally {
       isSavingContact = false
     }
@@ -1230,6 +1981,13 @@
     pdfUploadSuccess = ''
 
     try {
+      const {
+        data: {user},
+        error: userError
+      } = await supabase.auth.getUser()
+      if (userError || !user) {
+        throw new Error('Your admin session has expired. Please log in again.')
+      }
       const {data: sessionData} = await supabase.auth.getSession()
       const accessToken = sessionData.session?.access_token
       if (!accessToken) {
@@ -1239,7 +1997,7 @@
       const formData = new FormData()
       formData.append('file', selectedPdfFile)
 
-      const response = await fetch('/api/admin/cv/upload', {
+      const response = await fetch('/api/v1/admin/cv/upload', {
         method: 'POST',
         headers: {Authorization: `Bearer ${accessToken}`},
         body: formData
@@ -1247,7 +2005,12 @@
 
       const res = await response.json()
       if (!response.ok || !res.success) {
-        throw new Error(res.error || 'Failed to upload PDF file')
+        const errorMsg =
+          typeof res?.message === 'string' ? res.message
+          : typeof res?.error === 'string' ? res.error
+          : typeof res?.error?.message === 'string' ? res.error.message
+          : 'Failed to upload PDF file'
+        throw new Error(errorMsg)
       }
 
       cvDocState = {
@@ -1264,31 +2027,41 @@
         'cv-pdf-upload'
       ) as HTMLInputElement
       if (fileInput) fileInput.value = ''
+      toastStore.success('CV document uploaded.')
     } catch (err: any) {
       console.error('PDF upload error:', err)
-      pdfUploadError = err.message || 'Failed to upload PDF'
+      pdfUploadError =
+        typeof err?.message === 'string' ? err.message
+        : typeof err === 'string' ? err
+        : 'Failed to upload PDF'
+      toastStore.error(pdfUploadError)
     } finally {
       isUploadingPdf = false
     }
   }
 
-  async function handleDeleteCvDoc() {
+  function confirmDeleteCvDoc() {
     if (!cvDocState.filename) return
-    if (
-      !confirm(
-        `Delete CV document "${cvDocState.filename}" from CDN & database?`
-      )
-    )
-      return
+    showDeleteCvDocDialog = true
+  }
 
+  async function executeDeleteCvDoc() {
+    showDeleteCvDocDialog = false
     try {
+      const {
+        data: {user},
+        error: userError
+      } = await supabase.auth.getUser()
+      if (userError || !user) {
+        throw new Error('Your admin session has expired. Please log in again.')
+      }
       const {data: sessionData} = await supabase.auth.getSession()
       const accessToken = sessionData.session?.access_token
       if (!accessToken) {
         throw new Error('Your admin session has expired. Please log in again.')
       }
 
-      const response = await fetch('/api/admin/cv/delete', {
+      const response = await fetch('/api/v1/admin/cv/delete', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1297,13 +2070,25 @@
         body: JSON.stringify({filename: cvDocState.filename})
       })
 
+      const result = await response.json().catch(() => ({}))
+
       if (response.ok) {
         cvDocState = {filename: '', fileUrl: '', hash: '', isActive: false}
         pdfUploadSuccess = 'CV document deleted successfully.'
         setTimeout(() => (pdfUploadSuccess = ''), 3000)
+        toastStore.success('CV document deleted.')
+      } else {
+        const errMsg =
+          typeof result?.message === 'string' ? result.message
+          : typeof result?.error === 'string' ? result.error
+          : 'Failed to delete CV document.'
+        toastStore.error(errMsg)
       }
-    } catch (err) {
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'Failed to delete CV document.'
       console.error('Failed to delete CV document:', err)
+      toastStore.error(message)
     }
   }
 
@@ -1396,29 +2181,24 @@
     icon: string
     section: 'content' | 'profile'
   }[] = [
-    {
-      id: 'posts',
-      label: 'Blog Posts',
-      icon: 'bi-body-text',
-      section: 'content'
-    },
+    {id: 'posts', label: 'Posts', icon: 'bi-journal-text', section: 'content'},
     {
       id: 'author',
-      label: 'Author Profile',
-      icon: 'bi-person-lines-fill',
+      label: 'Profile',
+      icon: 'bi-person-vcard-fill',
       section: 'profile'
     },
     {
       id: 'cv',
-      label: 'CV Entries',
-      icon: 'bi-list-columns-reverse',
+      label: 'Resume',
+      icon: 'bi-file-earmark-person-fill',
       section: 'profile'
     },
     {id: 'skills', label: 'Skills', icon: 'bi-stack', section: 'profile'},
     {
       id: 'socials',
       label: 'Social Links',
-      icon: 'bi-globe-americas',
+      icon: 'bi-share-fill',
       section: 'profile'
     },
     {
@@ -1429,7 +2209,7 @@
     },
     {
       id: 'contact',
-      label: 'Contact Info',
+      label: 'Contact',
       icon: 'bi-envelope-at-fill',
       section: 'profile'
     }
@@ -1509,7 +2289,7 @@
     <button
       type="button"
       onclick={() => (sidebarMobileOpen = !sidebarMobileOpen)}
-      class="flex h-9 w-9 items-center justify-center rounded-md border border-border-subtle text-text-primary hover:bg-surface-hover"
+      class="flex h-9 w-9 items-center justify-center rounded-sm border border-border-subtle text-text-primary hover:bg-surface-hover"
       aria-expanded={sidebarMobileOpen}
       aria-label={sidebarMobileOpen ? 'Close sidebar' : 'Open sidebar'}
       title={sidebarMobileOpen ? 'Close sidebar' : 'Open sidebar'}>
@@ -1543,18 +2323,15 @@
       class="flex flex-1 flex-col p-3 font-sans"
       aria-label="Admin Navigation">
       <div
-        class="px-2 pb-1.5 text-[11px] font-bold tracking-wider text-text-primary uppercase select-none">
+        class="px-2 pb-1.5 text-[10px] font-bold tracking-wider text-text-primary uppercase select-none">
         Content Management
       </div>
       <div class="flex flex-col gap-1">
         {#each adminNavLinks.filter(l => l.section === 'content') as link (link.id)}
           <button
             type="button"
-            onclick={() => {
-              activeAdminTab = link.id
-              sidebarMobileOpen = false
-            }}
-            class="group flex h-10 w-full items-center gap-3 rounded-md px-3 text-left text-xs font-bold transition-all duration-150 ease-in-out {(
+            onclick={() => selectTab(link.id)}
+            class="group flex h-9 w-full items-center gap-3 rounded-sm px-3 text-left text-xs font-bold transition-all duration-150 ease-in-out {(
               activeAdminTab === link.id
             ) ?
               'border-l-3 border-copilot bg-copilot-subtle font-extrabold text-copilot shadow-xs'
@@ -1566,18 +2343,15 @@
       </div>
 
       <div
-        class="mt-5 border-t border-border-subtle/40 px-2 pt-4 pb-1.5 text-[11px] font-bold tracking-wider text-text-primary uppercase select-none">
+        class="mt-5 border-t border-border-subtle/40 px-2 pt-4 pb-1.5 text-[10px] font-bold tracking-wider text-text-primary uppercase select-none">
         Profile & Resume
       </div>
       <div class="flex flex-col gap-1">
         {#each adminNavLinks.filter(l => l.section === 'profile') as link (link.id)}
           <button
             type="button"
-            onclick={() => {
-              activeAdminTab = link.id
-              sidebarMobileOpen = false
-            }}
-            class="group flex h-10 w-full items-center gap-3 rounded-md px-3 text-left text-xs font-bold transition-all duration-150 ease-in-out {(
+            onclick={() => selectTab(link.id)}
+            class="group flex h-9 w-full items-center gap-3 rounded-sm px-3 text-left text-xs font-bold transition-all duration-150 ease-in-out {(
               activeAdminTab === link.id
             ) ?
               'border-l-3 border-copilot bg-copilot-subtle font-extrabold text-copilot shadow-xs'
@@ -1598,9 +2372,9 @@
             <span class="text-xs leading-tight font-bold text-text-primary"
               >Admin</span>
             <span
-              class="truncate font-mono text-[11px] leading-tight font-normal text-text-primary"
+              class="truncate font-mono text-xxs leading-tight font-normal text-text-primary"
               title={adminUserEmail || authorState.email}>
-              {adminUserEmail || authorState.email || 'admin@fkp.my.id'}
+              {adminUserEmail || authorState.email || ''}
             </span>
           </div>
         </div>
@@ -1621,37 +2395,42 @@
   {#if sidebarMobileOpen}
     <button
       type="button"
-      class="fixed inset-0 z-40 bg-overlay/50 backdrop-blur-xs md:hidden"
+      class="fixed inset-0 z-40 bg-overlay/50 backdrop-blur-sm md:hidden"
       onclick={() => (sidebarMobileOpen = false)}
       aria-label="Close sidebar"></button>
   {/if}
 
   <main
     id="main-content"
-    class="flex-1 overflow-y-auto p-6 pb-32 font-sans">
+    class="flex-1 overflow-y-auto p-6 pb-24 font-sans">
     {#if isLoading}
       <LoadingState
-        label="Loading dashboard data..."
+        label="Loading dashboard..."
         size="lg"
         class="py-20" />
     {:else if activeAdminTab === 'posts'}
       <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 class="text-2xl font-bold tracking-tight text-text-primary">
-            Blog Posts
+            Posts
           </h1>
           <p class="mt-1 text-xs text-text-secondary">
             Manage articles and post comments
           </p>
         </div>
+
         <a
           href="/admin/new"
-          class="inline-flex cursor-pointer items-center justify-center rounded-md bg-copilot px-4 py-2 text-sm font-semibold text-white shadow-xs transition-all"
-          >+ New Post</a>
+          class="hover:bg-copilot-hover active:bg-copilot-active inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-sm bg-copilot px-4 text-xs font-semibold text-text-on-accent shadow-xs transition-all select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:text-sm">
+          <i
+            class="bi bi-plus-lg text-sm"
+            aria-hidden="true"></i>
+          New Post
+        </a>
       </div>
 
       <div
-        class="mb-6 flex flex-col gap-4 rounded-xl border border-border-subtle bg-surface-card/40 p-4 shadow-xs">
+        class="mb-6 flex flex-col gap-4 rounded-sm border border-border-subtle bg-surface-card/40 p-4 shadow-xs">
         <div
           class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div
@@ -1708,34 +2487,35 @@
           description="Try adjusting your filter or search query." />
       {:else}
         <div class="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
-          {#each filteredPosts as post (post.id)}
+          {#each paginatedPosts as post (post.id)}
             <div
-              class="group relative flex w-full flex-col gap-3 rounded-xl border border-border-subtle bg-surface-card p-5 shadow-xs transition-all duration-200 hover:bg-surface-hover/40">
+              class="relative flex h-full w-full flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-5 shadow-xs">
               <div
-                class="relative aspect-video w-full overflow-hidden rounded-lg border border-border-subtle select-none">
-                {#if post.banner_path}
+                class="relative aspect-video w-full overflow-hidden rounded-sm border border-border-subtle select-none">
+                {#if post.banner_path && !failedBanners.has(post.id)}
                   <img
                     src={getBannerUrl(post.banner_path)}
                     alt={post.title}
                     loading="lazy"
-                    class="block h-full w-full object-cover transition-transform duration-300 group-hover:scale-103" />
+                    onerror={() => markBannerFailed(post.id)}
+                    class="block h-full w-full object-cover" />
                 {:else}
                   <div
                     class="to-palette-purple/15 flex h-full w-full items-center justify-center bg-linear-to-br from-copilot/15 select-none">
                     <i
-                      class="bi bi-body-text text-2xl text-copilot/50"
+                      class="bi bi-journal-text text-2xl text-copilot/50"
                       aria-hidden="true"></i>
                   </div>
                 {/if}
               </div>
 
               <div
-                class="no-scrollbar flex w-full flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold text-text-secondary select-none">
+                class="flex w-full scrollbar-none flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold text-text-secondary select-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                 <Badge variant={post.published ? 'success' : 'warning'}>
                   {post.published ? 'Published' : 'Draft'}
                 </Badge>
                 <span aria-hidden="true">&middot;</span>
-                <span>{formatBlogDate(post.created_at)}</span>
+                <RelativeTime date={post.created_at} />
                 <span aria-hidden="true">&middot;</span>
                 <span>{formatReadTime(post.read_time)}</span>
                 <span aria-hidden="true">&middot;</span>
@@ -1757,14 +2537,15 @@
 
               {#if post.excerpt}
                 <p
-                  class="line-clamp-2 text-xs leading-relaxed font-normal text-text-primary">
+                  class="min-h-16 text-xs leading-relaxed font-normal text-text-primary">
                   {post.excerpt}
                 </p>
               {/if}
 
               <div
-                class="no-scrollbar mt-auto flex w-full flex-wrap items-center justify-between gap-2 overflow-x-auto border-t border-border-subtle/40 pt-3.5 whitespace-nowrap">
-                <div class="flex flex-wrap items-center gap-2">
+                class="mt-auto flex w-full scrollbar-none flex-wrap items-center justify-between gap-2 overflow-x-auto border-t border-border-subtle/40 pt-3.5 whitespace-nowrap [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                <div
+                  class="flex w-full flex-wrap items-center justify-between gap-2 sm:w-auto sm:justify-start">
                   <Button
                     type="button"
                     variant="primary"
@@ -1795,11 +2576,12 @@
                   </Button>
                 </div>
 
-                <div class="flex items-center gap-2">
+                <div class="flex w-full items-center gap-2 sm:w-auto">
                   <Button
                     type="button"
                     variant="danger"
                     size="sm"
+                    class="w-full sm:w-auto"
                     onclick={() => confirmDeletePost(post)}>
                     Delete
                   </Button>
@@ -1828,9 +2610,9 @@
                       {/snippet}
 
                       {#snippet actions(comment)}
-                        <time datetime={comment.created_at}>
-                          {formatBlogDate(comment.created_at)}
-                        </time>
+                        <RelativeTime
+                          date={comment.created_at}
+                          tag="time" />
                         <span aria-hidden="true">&middot;</span>
                         <button
                           type="button"
@@ -1862,7 +2644,7 @@
                           novalidate
                           onsubmit={e =>
                             handleAdminSubmit(e, comment.id, comment.post_id)}
-                          class="rounded-xl border border-border-subtle bg-surface-card p-4">
+                          class="rounded-sm border border-border-subtle bg-surface-card p-4">
                           <div
                             class="mb-3 flex items-center justify-between gap-3">
                             <p
@@ -1911,43 +2693,39 @@
             </div>
           {/each}
         </div>
+        <div class="mt-6">
+          <Pagination
+            page={postsPageClamped}
+            totalPages={postsTotalPages}
+            onPageChange={p => (postsPage = p)} />
+        </div>
       {/if}
     {:else if activeAdminTab === 'author'}
       <form
         onsubmit={handleSaveAuthor}
-        class="flex flex-col gap-8 rounded-md border border-border-subtle bg-surface-card p-6 shadow-xs">
-        <div class="flex items-start justify-between gap-4">
-          <div>
-            <h2 class="text-2xl font-bold tracking-tight text-text-primary">
-              Author Profile
-            </h2>
-            <p class="mt-1 text-xs text-text-secondary">
-              Manage your public author profile and contact details.
-            </p>
-          </div>
-          {#if authorIsDirty}
-            <span
-              class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[11px] font-semibold text-amber-600 select-none dark:text-amber-400">
-              <i
-                class="bi bi-circle-fill text-[6px]"
-                aria-hidden="true"></i>
-              Unsaved changes
-            </span>
-          {/if}
+        novalidate
+        class="flex flex-col gap-8 rounded-sm border border-border-subtle bg-surface-card p-6 shadow-xs">
+        <div>
+          <h2 class="text-2xl font-bold tracking-tight text-text-primary">
+            Profile
+          </h2>
+          <p class="mt-1 text-xs text-text-secondary">
+            Manage your public author profile and contact details.
+          </p>
         </div>
 
         {#if authorSaveError}<StatusBanner
-            type="error"
+            variant="error"
             message={authorSaveError} />{/if}
         {#if authorSaveSuccess}<StatusBanner
-            type="success"
-            message="Author Profile saved successfully to Supabase!" />{/if}
+            variant="success"
+            message="Profile saved successfully!" />{/if}
 
         <div class="flex flex-col gap-10">
           <section aria-labelledby="section-identity">
             <h3
               id="section-identity"
-              class="mb-4 text-[11px] font-bold tracking-widest text-text-secondary uppercase select-none">
+              class="mb-4 text-xxs font-bold tracking-widest text-text-secondary uppercase select-none">
               Identity
             </h3>
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -2028,7 +2806,7 @@
           <section aria-labelledby="section-contact">
             <h3
               id="section-contact"
-              class="mb-4 text-[11px] font-bold tracking-widest text-text-muted uppercase select-none">
+              class="mb-4 text-xxs font-bold tracking-widest text-text-muted uppercase select-none">
               Contact
             </h3>
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -2040,32 +2818,47 @@
                 error={authorErrors.avatar}
                 valid={authorValid.avatar}>
                 <div class="flex items-center gap-3">
-                  <div
-                    class="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border-subtle bg-surface-base select-none">
-                    {#if avatarPreviewUrl}
-                      <img
-                        src={avatarPreviewUrl}
-                        alt="Avatar preview"
-                        class="h-full w-full object-cover"
-                        onerror={e => {
-                          const target = e.currentTarget as HTMLImageElement
-                          target.style.display = 'none'
-                          const fallback =
-                            target.nextElementSibling as HTMLElement
-                          if (fallback) fallback.style.display = 'flex'
-                        }} />
+                  <button
+                    type="button"
+                    class="group relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border-subtle bg-surface-base transition-transform select-none hover:scale-105 active:scale-95"
+                    onclick={() => {
+                      if (authorState.avatar) showAvatarPreviewDialog = true
+                    }}
+                    aria-label="Preview avatar">
+                    {#if authorState.avatar}
                       <div
-                        class="flex hidden h-full w-full items-center justify-center bg-surface-subtle">
+                        class="absolute inset-0 z-0 flex items-center justify-center bg-surface-subtle">
                         <i
                           class="bi bi-person-fill text-lg text-text-muted"
                           aria-hidden="true"></i>
                       </div>
+                      {#key authorState.avatar}
+                        <img
+                          src={authorState.avatar}
+                          alt="Avatar preview"
+                          class="absolute inset-0 z-10 h-full w-full object-cover"
+                          onerror={e =>
+                            ((
+                              e.currentTarget as HTMLImageElement
+                            ).style.display = 'none')}
+                          onload={e =>
+                            ((
+                              e.currentTarget as HTMLImageElement
+                            ).style.display = 'block')} />
+                      {/key}
+                      <div
+                        class="absolute inset-0 z-20 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                        <i class="bi bi-zoom-in text-lg text-white"></i>
+                      </div>
                     {:else}
-                      <i
-                        class="bi bi-person-fill text-lg text-text-muted"
-                        aria-hidden="true"></i>
+                      <div
+                        class="absolute inset-0 flex items-center justify-center bg-surface-subtle">
+                        <i
+                          class="bi bi-person-fill text-lg text-text-muted"
+                          aria-hidden="true"></i>
+                      </div>
                     {/if}
-                  </div>
+                  </button>
                   <Input
                     id="author-avatar"
                     bind:value={authorState.avatar}
@@ -2087,7 +2880,7 @@
                 valid={authorValid.email}>
                 <Input
                   id="author-email"
-                  type="email"
+                  type="text"
                   bind:value={authorState.email}
                   placeholder="Ex: torvalds@linux-foundation.org"
                   maxlength={50}
@@ -2102,7 +2895,7 @@
           <section aria-labelledby="section-location">
             <h3
               id="section-location"
-              class="mb-4 text-[11px] font-bold tracking-widest text-text-secondary uppercase select-none">
+              class="mb-4 text-xxs font-bold tracking-widest text-text-secondary uppercase select-none">
               Location
             </h3>
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -2165,7 +2958,7 @@
           <section aria-labelledby="section-about">
             <h3
               id="section-about"
-              class="mb-4 text-[11px] font-bold tracking-widest text-text-secondary uppercase select-none">
+              class="mb-4 text-xxs font-bold tracking-widest text-text-secondary uppercase select-none">
               About
             </h3>
             <div class="flex flex-col gap-4">
@@ -2217,6 +3010,18 @@
             </p>
           {/if}
           <Button
+            type="button"
+            variant="danger"
+            size="md"
+            disabled={!authorState.id}
+            onclick={confirmClearAuthor}
+            isLoading={isClearingAuthor}>
+            <i
+              class="bi bi-trash3 text-xs"
+              aria-hidden="true"></i>
+            <span>Delete Profile</span>
+          </Button>
+          <Button
             type="submit"
             variant="primary"
             size="md"
@@ -2227,32 +3032,92 @@
         </div>
       </form>
     {:else if activeAdminTab === 'cv'}
+      <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight text-text-primary">
+            Resume
+          </h1>
+          <p class="mt-1 text-xs text-text-secondary">
+            Manage work experience, education, and the CV document.
+          </p>
+        </div>
+
+        <div class="relative select-none">
+          <DropdownTrigger
+            ariaLabel="Add entry options"
+            variant="primary"
+            isOpen={isResumeAddOpen}
+            onclick={() => (isResumeAddOpen = !isResumeAddOpen)}>
+            <i
+              class="bi bi-plus-lg"
+              aria-hidden="true"></i>
+            Add entry
+          </DropdownTrigger>
+
+          {#if isResumeAddOpen}
+            <button
+              type="button"
+              class="fixed inset-0 z-40 cursor-default"
+              onclick={() => (isResumeAddOpen = false)}
+              aria-label="Close options"></button>
+
+            <div
+              role="listbox"
+              aria-label="Add entry options"
+              class="absolute top-[calc(100%+4px)] right-0 z-60 flex min-w-36 flex-col overflow-hidden rounded-sm border border-border-subtle bg-surface-elevated/70 py-0 shadow-xl backdrop-blur-lg">
+              <button
+                type="button"
+                role="option"
+                aria-selected={false}
+                onclick={() => {
+                  handleAddCvEntry('experience')
+                  isResumeAddOpen = false
+                }}
+                class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
+                <span>Add Experience</span>
+              </button>
+              <button
+                type="button"
+                role="option"
+                aria-selected={false}
+                onclick={() => {
+                  handleAddCvEntry('education')
+                  isResumeAddOpen = false
+                }}
+                class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
+                <span>Add Education</span>
+              </button>
+            </div>
+          {/if}
+        </div>
+      </div>
+
       <form
         onsubmit={handleSaveCv}
+        novalidate
         class="flex flex-col gap-8">
         {#if cvSaveSuccess}
           <StatusBanner
-            type="success"
-            message="CV Entries saved successfully to Supabase!" />
+            variant="success"
+            message="Resume saved successfully!" />
         {/if}
 
         <div
-          class="flex flex-col gap-4 rounded-md border border-border-subtle bg-surface-card p-6 shadow-xs">
+          class="flex flex-col gap-4 rounded-sm border border-border-subtle bg-surface-card p-6 shadow-xs">
           <div class="flex items-center justify-between">
             <h2 class="text-xl font-bold text-text-primary">Experiences</h2>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onclick={() => handleAddCvEntry('experience')}>
-              + Add Experience
-            </Button>
           </div>
 
           <div class="flex flex-col gap-6">
+            {#if cvState.experience.length === 0}
+              <EmptyState
+                icon="bi-briefcase-fill"
+                title="No experience entries yet"
+                description="Add your first experience entry below." />
+            {/if}
             {#each cvState.experience as exp, idx (idx)}
               <div
-                class="flex flex-col gap-4 rounded-md border border-border-subtle/80 bg-surface-base p-4">
+                class="flex flex-col gap-4 rounded-sm border border-border-subtle/80 bg-surface-base p-4">
                 <div
                   class="flex items-center justify-between border-b border-border-subtle/40 pb-2">
                   <span class="font-mono text-xs font-light text-text-muted"
@@ -2270,7 +3135,11 @@
                           cvState.experience,
                           idx,
                           'up'
-                        ))}>↑</Button>
+                        ))}
+                      ><i
+                        class="bi bi-arrow-up"
+                        aria-hidden="true"></i
+                      ></Button>
                     <Button
                       type="button"
                       variant="ghost"
@@ -2283,7 +3152,11 @@
                           cvState.experience,
                           idx,
                           'down'
-                        ))}>↓</Button>
+                        ))}
+                      ><i
+                        class="bi bi-arrow-down"
+                        aria-hidden="true"></i
+                      ></Button>
                     <Button
                       type="button"
                       variant="danger"
@@ -2298,13 +3171,25 @@
                     id={'exp-title-' + idx}
                     label="Title"
                     required
+                    error={experienceErrors[idx]?.title}
+                    valid={experienceValid[idx]?.title}
                     counter={`${(exp.title || '').length}/50`}>
                     <Input
                       id={'exp-title-' + idx}
                       bind:value={exp.title}
                       placeholder="Ex: Software Engineer"
                       maxlength={50}
-                      required />
+                      error={!!experienceErrors[idx]?.title}
+                      valid={experienceValid[idx]?.title}
+                      oninput={() => {
+                        clearFieldError(
+                          experienceErrors,
+                          experienceValid,
+                          idx,
+                          'title'
+                        )
+                        validateExperienceField(idx, 'title', 'Title')
+                      }} />
                   </FormField>
 
                   <FormField
@@ -2326,13 +3211,25 @@
                   id={'exp-company-' + idx}
                   label="Company or organization"
                   required
+                  error={experienceErrors[idx]?.company}
+                  valid={experienceValid[idx]?.company}
                   counter={`${(exp.company || '').length}/100`}>
                   <Input
                     id={'exp-company-' + idx}
                     bind:value={exp.company}
                     placeholder="Ex: Berkshire Hathaway"
                     maxlength={100}
-                    required />
+                    error={!!experienceErrors[idx]?.company}
+                    valid={experienceValid[idx]?.company}
+                    oninput={() => {
+                      clearFieldError(
+                        experienceErrors,
+                        experienceValid,
+                        idx,
+                        'company'
+                      )
+                      validateExperienceField(idx, 'company', 'Company')
+                    }} />
                 </FormField>
 
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -2340,13 +3237,25 @@
                     id={'exp-location-' + idx}
                     label="Location"
                     required
+                    error={experienceErrors[idx]?.location}
+                    valid={experienceValid[idx]?.location}
                     counter={`${(exp.location || '').length}/100`}>
                     <Input
                       id={'exp-location-' + idx}
                       bind:value={exp.location}
                       placeholder="Ex: London, United Kingdom"
                       maxlength={100}
-                      required />
+                      error={!!experienceErrors[idx]?.location}
+                      valid={experienceValid[idx]?.location}
+                      oninput={() => {
+                        clearFieldError(
+                          experienceErrors,
+                          experienceValid,
+                          idx,
+                          'location'
+                        )
+                        validateExperienceField(idx, 'location', 'Location')
+                      }} />
                   </FormField>
 
                   <FormField
@@ -2430,6 +3339,8 @@
                   id={'exp-desc-' + idx}
                   label="Description"
                   required
+                  error={experienceErrors[idx]?.description}
+                  valid={experienceValid[idx]?.description}
                   counter={`${(exp.description || '').length}/1000`}>
                   <Textarea
                     id={'exp-desc-' + idx}
@@ -2437,7 +3348,17 @@
                     placeholder="Describe your experience..."
                     rows={3}
                     maxlength={1000}
-                    required />
+                    error={!!experienceErrors[idx]?.description}
+                    valid={experienceValid[idx]?.description}
+                    oninput={() => {
+                      clearFieldError(
+                        experienceErrors,
+                        experienceValid,
+                        idx,
+                        'description'
+                      )
+                      validateExperienceField(idx, 'description', 'Description')
+                    }} />
                 </FormField>
               </div>
             {/each}
@@ -2445,22 +3366,21 @@
         </div>
 
         <div
-          class="flex flex-col gap-4 rounded-md border border-border-subtle bg-surface-card p-6 shadow-xs">
+          class="flex flex-col gap-4 rounded-sm border border-border-subtle bg-surface-card p-6 shadow-xs">
           <div class="flex items-center justify-between">
             <h2 class="text-xl font-bold text-text-primary">Education</h2>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onclick={() => handleAddCvEntry('education')}>
-              + Add Education
-            </Button>
           </div>
 
           <div class="flex flex-col gap-6">
+            {#if cvState.education.length === 0}
+              <EmptyState
+                icon="bi-mortarboard-fill"
+                title="No education entries yet"
+                description="Add your first education entry below." />
+            {/if}
             {#each cvState.education as edu, idx (idx)}
               <div
-                class="flex flex-col gap-4 rounded-md border border-border-subtle/80 bg-surface-base p-4">
+                class="flex flex-col gap-4 rounded-sm border border-border-subtle/80 bg-surface-base p-4">
                 <div
                   class="flex items-center justify-between border-b border-border-subtle/40 pb-2">
                   <span class="font-mono text-xs font-light text-text-muted"
@@ -2478,7 +3398,11 @@
                           cvState.education,
                           idx,
                           'up'
-                        ))}>↑</Button>
+                        ))}
+                      ><i
+                        class="bi bi-arrow-up"
+                        aria-hidden="true"></i
+                      ></Button>
                     <Button
                       type="button"
                       variant="ghost"
@@ -2491,7 +3415,11 @@
                           cvState.education,
                           idx,
                           'down'
-                        ))}>↓</Button>
+                        ))}
+                      ><i
+                        class="bi bi-arrow-down"
+                        aria-hidden="true"></i
+                      ></Button>
                     <Button
                       type="button"
                       variant="danger"
@@ -2506,52 +3434,104 @@
                     id={'edu-inst-' + idx}
                     label="Institution"
                     required
+                    error={educationErrors[idx]?.institution}
+                    valid={educationValid[idx]?.institution}
                     counter={`${(edu.institution || '').length}/100`}>
                     <Input
                       id={'edu-inst-' + idx}
                       bind:value={edu.institution}
                       placeholder="Ex: Massachusetts Institute of Technology"
                       maxlength={100}
-                      required />
+                      error={!!educationErrors[idx]?.institution}
+                      valid={educationValid[idx]?.institution}
+                      oninput={() => {
+                        clearFieldError(
+                          educationErrors,
+                          educationValid,
+                          idx,
+                          'institution'
+                        )
+                        validateEducationField(
+                          idx,
+                          'institution',
+                          'Institution'
+                        )
+                      }} />
                   </FormField>
 
                   <FormField
                     id={'edu-degree-' + idx}
                     label="Degree"
                     required
+                    error={educationErrors[idx]?.degree}
+                    valid={educationValid[idx]?.degree}
                     counter={`${(edu.degree || '').length}/100`}>
                     <Input
                       id={'edu-degree-' + idx}
                       bind:value={edu.degree}
                       placeholder="Ex: Bachelor of Computer Science"
                       maxlength={100}
-                      required />
+                      error={!!educationErrors[idx]?.degree}
+                      valid={educationValid[idx]?.degree}
+                      oninput={() => {
+                        clearFieldError(
+                          educationErrors,
+                          educationValid,
+                          idx,
+                          'degree'
+                        )
+                        validateEducationField(idx, 'degree', 'Degree')
+                      }} />
                   </FormField>
 
                   <FormField
                     id={'edu-field-' + idx}
                     label="Field of Study"
                     required
+                    error={educationErrors[idx]?.field}
+                    valid={educationValid[idx]?.field}
                     counter={`${(edu.field || '').length}/100`}>
                     <Input
                       id={'edu-field-' + idx}
                       bind:value={edu.field}
                       placeholder="Ex: Computer Science"
                       maxlength={100}
-                      required />
+                      error={!!educationErrors[idx]?.field}
+                      valid={educationValid[idx]?.field}
+                      oninput={() => {
+                        clearFieldError(
+                          educationErrors,
+                          educationValid,
+                          idx,
+                          'field'
+                        )
+                        validateEducationField(idx, 'field', 'Field of study')
+                      }} />
                   </FormField>
 
                   <FormField
                     id={'edu-grade-' + idx}
                     label="Grade"
                     required
+                    error={educationErrors[idx]?.grade}
+                    valid={educationValid[idx]?.grade}
                     counter={`${(edu.grade || '').length}/50`}>
                     <Input
                       id={'edu-grade-' + idx}
                       bind:value={edu.grade}
                       placeholder="Ex: 3.99/4.00"
                       maxlength={50}
-                      required />
+                      error={!!educationErrors[idx]?.grade}
+                      valid={educationValid[idx]?.grade}
+                      oninput={() => {
+                        clearFieldError(
+                          educationErrors,
+                          educationValid,
+                          idx,
+                          'grade'
+                        )
+                        validateEducationField(idx, 'grade', 'Grade')
+                      }} />
                   </FormField>
                 </div>
 
@@ -2621,6 +3601,8 @@
                   id={'edu-desc-' + idx}
                   label="Description"
                   required
+                  error={educationErrors[idx]?.description}
+                  valid={educationValid[idx]?.description}
                   counter={`${(edu.description || '').length}/1000`}>
                   <Textarea
                     id={'edu-desc-' + idx}
@@ -2628,339 +3610,144 @@
                     placeholder="Describe your education..."
                     rows={3}
                     maxlength={1000}
-                    required />
+                    error={!!educationErrors[idx]?.description}
+                    valid={educationValid[idx]?.description}
+                    oninput={() => {
+                      clearFieldError(
+                        educationErrors,
+                        educationValid,
+                        idx,
+                        'description'
+                      )
+                      validateEducationField(idx, 'description', 'Description')
+                    }} />
                 </FormField>
               </div>
             {/each}
           </div>
         </div>
 
-        <div class="flex justify-end">
+        <div class="flex items-center justify-end gap-3">
+          {#if cvIsDirty}
+            <p class="text-xs text-text-secondary select-none">
+              You have unsaved changes.
+            </p>
+          {/if}
           <Button
             type="submit"
             variant="primary"
             size="md"
-            isLoading={isSavingCv}>Save CV Entries</Button>
+            disabled={!cvIsDirty}
+            isLoading={isSavingCv}>Save Resume</Button>
         </div>
       </form>
 
-      <!-- CV Document Management Redesign -->
+      <!-- CV Document Management -->
       <div
-        class="mt-10 flex flex-col gap-6 rounded-2xl border border-border-subtle bg-surface-card/80 p-6 shadow-xs backdrop-blur-md sm:p-8">
-        <!-- Header -->
-        <div
-          class="flex items-start gap-3.5 border-b border-border-subtle/60 pb-6">
-          <span
-            class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-copilot/30 bg-copilot/10 text-copilot shadow-2xs">
-            <i
-              class="bi bi-file-earmark-pdf text-2xl leading-none"
-              aria-hidden="true"></i>
-          </span>
-          <div class="flex flex-col gap-1">
-            <h2 class="text-xl font-bold tracking-tight text-text-primary">
-              CV Document Management
-            </h2>
-            <p class="text-xs leading-relaxed font-normal text-text-secondary">
-              Upload, manage, and publish your official curriculum vitae PDF
-              document accessible across your portfolio and public API.
-            </p>
-          </div>
+        class="mt-10 flex flex-col gap-5 rounded-sm border border-border-subtle bg-surface-card/60 p-6 shadow-xs backdrop-blur-lg sm:p-8">
+        <div>
+          <h2 class="text-lg font-bold tracking-tight text-text-primary">
+            CV Document
+          </h2>
+          <p class="mt-1 text-xs text-text-secondary">
+            The PDF resume served across your portfolio and public API.
+          </p>
         </div>
 
         {#if pdfUploadError}
           <StatusBanner
-            type="error"
+            variant="error"
             message={pdfUploadError} />
         {/if}
 
         {#if pdfUploadSuccess}
           <StatusBanner
-            type="success"
+            variant="success"
             message={pdfUploadSuccess} />
         {/if}
 
-        <!-- 2-Column Grid Layout on Desktop -->
-        <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
-          <!-- Left Column: Upload Hero Dropzone -->
-          <form
-            onsubmit={handleUploadPdf}
-            class="flex flex-col justify-between gap-5 rounded-2xl border border-border-subtle bg-surface/50 p-6 transition-all hover:border-border-strong">
-            <div>
-              <div class="mb-4 flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <span class="h-2 w-2 rounded-full bg-copilot"></span>
-                  <h3
-                    class="text-sm font-bold tracking-wider text-text-primary uppercase">
-                    {selectedPdfFile ? 'File Selected'
-                    : cvDocState && cvDocState.filename ? 'Replace CV Document'
-                    : 'Upload New CV'}
-                  </h3>
+        <div class="flex flex-col gap-5">
+          <!-- Current document -->
+          {#if cvDocState && cvDocState.filename}
+            <div
+              class="flex flex-col gap-3 rounded-sm border border-border-subtle bg-surface/50 p-4">
+              <div class="flex items-center gap-3">
+                <i
+                  class="bi bi-file-earmark-pdf-fill text-xl text-copilot"
+                  aria-hidden="true"></i>
+                <div class="min-w-0 flex-1">
+                  <p
+                    class="mb-1 text-xxs font-semibold tracking-wide text-text-muted uppercase">
+                    Filename
+                  </p>
+                  <p
+                    class="font-mono text-sm font-semibold break-all text-text-primary">
+                    {cvDocState.filename}
+                  </p>
+                  <p class="mt-1 text-xs font-semibold text-success">Live</p>
                 </div>
-                {#if selectedPdfFile}
-                  <span
-                    class="inline-flex items-center rounded-full bg-copilot/15 px-2.5 py-0.5 font-mono text-[11px] font-semibold text-copilot">
-                    Ready to upload
-                  </span>
-                {/if}
               </div>
 
-              <!-- Hidden File Input -->
-              <input
-                type="file"
-                id="cv-pdf-upload"
-                accept="application/pdf,.pdf"
-                onchange={e => {
-                  const files = (e.currentTarget as HTMLInputElement).files
-                  if (files && files.length > 0) {
-                    const file = files[0]
-                    if (file.size > 10 * 1024 * 1024) {
-                      pdfUploadError = 'File size exceeds 10 MB limit.'
-                      selectedPdfFile = null
-                      return
-                    }
-                    selectedPdfFile = file
-                    pdfUploadError = ''
-                  }
-                }}
-                class="hidden" />
-
-              <!-- Hero Dropzone Area -->
-              <div
-                role="region"
-                aria-label="CV PDF Dropzone"
-                ondragover={e => {
-                  e.preventDefault()
-                  isDraggingFile = true
-                }}
-                ondragleave={e => {
-                  e.preventDefault()
-                  isDraggingFile = false
-                }}
-                ondrop={handleFileDrop}
-                class="group relative flex min-h-[210px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 text-center transition-all select-none
-                  {isDraggingFile ?
-                  'scale-[0.99] border-copilot bg-copilot/10'
-                : 'border-border-subtle bg-surface-card/60 hover:border-copilot/60 hover:bg-surface-hover/80'}">
-                {#if selectedPdfFile}
-                  <!-- File Selected View -->
-                  <div class="flex flex-col items-center gap-3">
-                    <div
-                      class="flex h-14 w-14 items-center justify-center rounded-2xl border border-copilot/40 bg-copilot/10 text-copilot shadow-xs">
-                      <i
-                        class="bi bi-file-earmark-pdf-fill text-2xl"
-                        aria-hidden="true"></i>
-                    </div>
-                    <div
-                      class="flex max-w-full flex-col items-center gap-0.5 px-2">
-                      <p
-                        class="max-w-[260px] truncate font-mono text-sm font-bold text-text-primary">
-                        {selectedPdfFile.name}
-                      </p>
-                      <p class="font-mono text-xs text-text-secondary">
-                        {(selectedPdfFile.size / (1024 * 1024)).toFixed(2)} MB
-                      </p>
-                    </div>
+              {#if cvDocState.hash}
+                <div class="flex flex-col gap-1">
+                  <span
+                    class="text-xxs font-semibold tracking-wide text-text-muted uppercase">
+                    SHA-256 checksum
+                  </span>
+                  <div
+                    class="flex items-center gap-2 rounded-sm border border-border-subtle bg-surface-base/60 px-2.5 py-2">
+                    <span
+                      class="min-w-0 flex-1 scrollbar-none overflow-x-auto font-mono text-xxs break-all text-text-secondary select-all [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                      {cvDocState.hash}
+                    </span>
                     <button
                       type="button"
-                      onclick={() => (selectedPdfFile = null)}
-                      class="mt-1 inline-flex items-center gap-1.5 rounded-lg border border-border-subtle bg-surface-base px-3 py-1 font-mono text-[11px] font-semibold text-text-muted transition-colors hover:border-danger/40 hover:text-danger">
+                      onclick={() => {
+                        navigator.clipboard
+                          .writeText(cvDocState.hash || '')
+                          .then(() => toastStore.success('Copied!'))
+                          .catch(() => toastStore.error('Failed to copy'))
+                      }}
+                      class="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center text-text-secondary transition-colors hover:text-copilot"
+                      aria-label="Copy SHA-256 checksum"
+                      title="Copy SHA-256 checksum">
                       <i
-                        class="bi bi-x-circle text-xs"
+                        class="bi bi-copy text-xs"
                         aria-hidden="true"></i>
-                      <span>Change file</span>
                     </button>
                   </div>
-                {:else if isUploadingPdf}
-                  <!-- Uploading State -->
-                  <div class="flex flex-col items-center gap-3">
-                    <div
-                      class="flex h-12 w-12 items-center justify-center rounded-full border border-copilot/30 bg-copilot/10">
-                      <i
-                        class="bi bi-arrow-repeat animate-spin text-xl text-copilot"
-                        aria-hidden="true"></i>
-                    </div>
-                    <p class="font-mono text-xs font-semibold text-copilot">
-                      Uploading to Cloudflare R2...
-                    </p>
-                    <div
-                      class="h-1.5 w-36 overflow-hidden rounded-full bg-surface-subtle">
-                      <div
-                        class="h-full w-2/3 animate-pulse rounded-full bg-copilot">
-                      </div>
-                    </div>
-                  </div>
-                {:else}
-                  <!-- Empty Dropzone View -->
-                  <label
-                    for="cv-pdf-upload"
-                    class="flex cursor-pointer flex-col items-center gap-3">
-                    <div
-                      class="flex h-12 w-12 items-center justify-center rounded-2xl border border-border-subtle bg-surface-base text-text-secondary transition-all group-hover:scale-110 group-hover:border-copilot/40 group-hover:text-copilot">
-                      <i
-                        class="bi bi-cloud-arrow-up text-2xl"
-                        aria-hidden="true"></i>
-                    </div>
-                    <div class="flex flex-col items-center gap-1">
-                      <span class="text-sm font-semibold text-text-primary">
-                        Drag & drop your CV PDF here
-                      </span>
-                      <span class="text-xs text-text-muted">
-                        Only PDF format supported (max 10 MB)
-                      </span>
-                    </div>
-                    <span
-                      class="mt-1 inline-flex h-8 items-center justify-center rounded-lg bg-surface-base px-3.5 text-xs font-semibold text-text-primary transition-colors group-hover:border-copilot group-hover:text-copilot">
-                      Choose file
-                    </span>
-                  </label>
-                {/if}
-              </div>
-            </div>
-
-            <div
-              class="flex items-center justify-between border-t border-border-subtle/40 pt-4">
-              <span class="font-mono text-[11px] text-text-muted">
-                {selectedPdfFile ? '1 file queued' : 'No file chosen'}
-              </span>
-              <Button
-                type="submit"
-                variant="primary"
-                size="md"
-                disabled={!selectedPdfFile || isUploadingPdf}
-                isLoading={isUploadingPdf}>
-                Upload & Publish
-              </Button>
-            </div>
-          </form>
-
-          <!-- Right Column: Active CV Document OR Empty State Card -->
-          {#if cvDocState && cvDocState.filename}
-            <!-- Active CV Document Card -->
-            <div
-              class="flex flex-col justify-between gap-6 rounded-2xl border border-copilot/30 bg-copilot/5 p-6 shadow-xs backdrop-blur-md">
-              <div class="flex flex-col gap-4">
-                <!-- Status Badge Header -->
-                <div class="flex items-center justify-between">
-                  <span
-                    class="inline-flex items-center gap-1.5 rounded-full border border-copilot/30 bg-copilot/10 px-3 py-1 font-mono text-xs font-semibold text-copilot">
-                    <span class="h-2 w-2 animate-pulse rounded-full bg-copilot"
-                    ></span>
-                    Active Document
-                  </span>
-                  <span class="font-mono text-[11px] text-text-muted">
-                    Cloudflare R2 CDN
-                  </span>
                 </div>
+              {/if}
 
-                <!-- Document Header Box -->
-                <div
-                  class="flex items-start gap-4 rounded-xl border border-border-subtle bg-surface-card p-4">
-                  <div
-                    class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-copilot/40 bg-copilot/10 text-copilot">
-                    <i
-                      class="bi bi-file-earmark-pdf-fill text-2xl"
-                      aria-hidden="true"></i>
-                  </div>
-                  <div class="flex min-w-0 flex-col overflow-hidden">
-                    <h3
-                      class="truncate font-mono text-sm font-bold text-text-primary"
-                      title={cvDocState.filename}>
-                      {cvDocState.filename}
-                    </h3>
-                    <span class="mt-0.5 text-xs text-text-secondary">
-                      Publicly accessible resume
-                    </span>
-                  </div>
-                </div>
-
-                <!-- Metadata Grid -->
-                <div
-                  class="flex flex-col gap-2 rounded-xl border border-border-subtle/80 bg-surface-base/60 p-4 font-mono text-xs">
-                  <div
-                    class="flex items-center justify-between text-text-secondary">
-                    <span class="text-text-muted">Format:</span>
-                    <span class="font-semibold text-text-primary"
-                      >PDF Document</span>
-                  </div>
-                  <div
-                    class="flex items-center justify-between text-text-secondary">
-                    <span class="text-text-muted">Status:</span>
-                    <span class="font-semibold text-copilot"
-                      >Live & Synced</span>
-                  </div>
-                  {#if cvDocState.hash}
-                    <div
-                      class="flex flex-col gap-1.5 border-t border-border-subtle/40 pt-3">
-                      <span class="text-[11px] text-text-muted"
-                        >SHA-256 Checksum:</span>
-                      <div
-                        class="flex items-center justify-between gap-2 overflow-hidden rounded-lg border border-border-subtle/80 bg-surface-base/80 p-2.5 font-mono text-[11px]">
-                        <span
-                          class="no-scrollbar min-w-0 flex-1 overflow-x-auto whitespace-nowrap text-text-primary select-all">
-                          {cvDocState.hash}
-                        </span>
-                        <button
-                          type="button"
-                          onclick={() => {
-                            navigator.clipboard
-                              .writeText(cvDocState.hash || '')
-                              .then(() => {
-                                copiedCvHash = true
-                                setTimeout(() => (copiedCvHash = false), 2000)
-                              })
-                          }}
-                          class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border-subtle bg-surface-card text-text-secondary transition-colors hover:border-copilot hover:text-copilot focus:outline-none"
-                          aria-label="Copy SHA-256 checksum"
-                          title="Copy SHA-256 checksum">
-                          {#if copiedCvHash}
-                            <i
-                              class="bi bi-check2 text-xs font-bold text-copilot"
-                              aria-hidden="true"></i>
-                          {:else}
-                            <i
-                              class="bi bi-clipboard text-xs"
-                              aria-hidden="true"></i>
-                          {/if}
-                        </button>
-                      </div>
-                    </div>
-                  {/if}
-                </div>
-              </div>
-
-              <div
-                class="flex flex-wrap items-center justify-between gap-2 border-t border-border-subtle/40 pt-4">
-                <div class="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    onclick={() =>
-                      window.open(cvDocState.fileUrl || '/cv.pdf', '_blank')}>
-                    <i
-                      class="bi bi-box-arrow-up-right text-xs"
-                      aria-hidden="true"></i>
-                    <span>Open PDF</span>
-                  </Button>
-
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    onclick={() =>
-                      document.getElementById('cv-pdf-upload')?.click()}>
-                    <i
-                      class="bi bi-arrow-repeat text-xs"
-                      aria-hidden="true"></i>
-                    <span>Replace</span>
-                  </Button>
-                </div>
-
+              <div class="flex items-center gap-2 pt-1">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onclick={() =>
+                    window.open(cvDocState.fileUrl || '/cv.pdf', '_blank')}>
+                  <i
+                    class="bi bi-box-arrow-up-right text-xs"
+                    aria-hidden="true"></i>
+                  <span>Open</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onclick={() =>
+                    document.getElementById('cv-pdf-upload')?.click()}>
+                  <i
+                    class="bi bi-arrow-repeat text-xs"
+                    aria-hidden="true"></i>
+                  <span>Replace</span>
+                </Button>
                 <Button
                   type="button"
                   variant="danger"
                   size="sm"
-                  onclick={handleDeleteCvDoc}>
+                  class="ml-auto"
+                  onclick={confirmDeleteCvDoc}>
                   <i
                     class="bi bi-trash3 text-xs"
                     aria-hidden="true"></i>
@@ -2969,57 +3756,136 @@
               </div>
             </div>
           {:else}
-            <!-- Empty State Card -->
             <div
-              class="flex min-h-[300px] flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-border-subtle bg-surface/30 p-8 text-center">
-              <div
-                class="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-subtle bg-surface-base text-2xl text-text-muted shadow-xs">
-                <i
-                  class="bi bi-file-earmark-x"
-                  aria-hidden="true"></i>
-              </div>
-              <div class="flex max-w-sm flex-col items-center gap-1">
-                <h3 class="text-base font-bold text-text-primary">
-                  No active CV uploaded yet
-                </h3>
-                <p class="text-xs leading-relaxed text-text-secondary">
-                  Upload your official CV PDF document so visitors and AI search
-                  engines can retrieve and download your resume.
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant="primary"
-                size="sm"
-                onclick={() =>
-                  document.getElementById('cv-pdf-upload')?.click()}>
-                Upload your first CV
-              </Button>
+              class="flex min-h-30 flex-col items-center justify-center gap-1 rounded-sm border border-dashed border-border-subtle p-6 text-center">
+              <p class="text-sm font-medium text-text-primary">
+                No CV uploaded yet
+              </p>
+              <p class="text-xs text-text-secondary">
+                Upload a PDF to make it available on your portfolio and API.
+              </p>
             </div>
           {/if}
+
+          <!-- Upload -->
+          <form
+            onsubmit={handleUploadPdf}
+            class="flex flex-col gap-4">
+            <input
+              type="file"
+              id="cv-pdf-upload"
+              accept="application/pdf,.pdf"
+              onchange={e => {
+                const files = (e.currentTarget as HTMLInputElement).files
+                if (files && files.length > 0) {
+                  const file = files[0]
+                  if (file.size > 10 * 1024 * 1024) {
+                    pdfUploadError = 'File size exceeds 10 MB limit.'
+                    selectedPdfFile = null
+                    return
+                  }
+                  selectedPdfFile = file
+                  pdfUploadError = ''
+                }
+              }}
+              class="hidden" />
+
+            <div
+              role="region"
+              aria-label="CV PDF Dropzone"
+              ondragover={e => {
+                e.preventDefault()
+                isDraggingFile = true
+              }}
+              ondragleave={e => {
+                e.preventDefault()
+                isDraggingFile = false
+              }}
+              ondrop={handleFileDrop}
+              class="flex min-h-40 flex-col items-center justify-center gap-2 rounded-sm border-2 border-dashed p-6 text-center transition-all select-none
+                {isDraggingFile ?
+                'border-copilot bg-copilot/10'
+              : 'border-border-subtle bg-surface/50 hover:border-copilot/60 hover:bg-surface-hover/60'}">
+              {#if selectedPdfFile}
+                <i
+                  class="bi bi-file-earmark-pdf-fill text-2xl text-copilot"
+                  aria-hidden="true"></i>
+                <p
+                  class="max-w-full truncate font-mono text-sm font-semibold text-text-primary">
+                  {selectedPdfFile.name}
+                </p>
+                <p class="font-mono text-xs text-text-muted">
+                  {(selectedPdfFile.size / (1024 * 1024)).toFixed(2)} MB
+                </p>
+                <button
+                  type="button"
+                  onclick={() => (selectedPdfFile = null)}
+                  class="text-xs font-semibold text-text-muted transition-colors hover:text-danger">
+                  Remove
+                </button>
+              {:else if isUploadingPdf}
+                <i
+                  class="bi bi-arrow-repeat animate-spin text-xl text-copilot"
+                  aria-hidden="true"></i>
+                <p class="text-xs font-semibold text-copilot">Uploading…</p>
+              {:else}
+                <label
+                  for="cv-pdf-upload"
+                  class="flex cursor-pointer flex-col items-center gap-2">
+                  <i
+                    class="bi bi-cloud-arrow-up text-2xl text-text-secondary"
+                    aria-hidden="true"></i>
+                  <span class="text-sm font-medium text-text-primary">
+                    Drop PDF here or click to browse
+                  </span>
+                  <span class="text-xs text-text-muted">Max 10 MB</span>
+                </label>
+              {/if}
+            </div>
+
+            <Button
+              type="submit"
+              variant="primary"
+              size="md"
+              fullWidth
+              disabled={!selectedPdfFile || isUploadingPdf}
+              isLoading={isUploadingPdf}>
+              Upload CV Document
+            </Button>
+          </form>
         </div>
       </div>
     {:else if activeAdminTab === 'skills'}
       <form
         onsubmit={handleSaveSkills}
-        class="flex flex-col gap-6 rounded-md border border-border-subtle bg-surface-card p-6 shadow-xs">
+        novalidate
+        class="flex flex-col gap-6 rounded-sm border border-border-subtle bg-surface-card p-6 shadow-xs">
         <div class="flex items-center justify-between">
           <h2 class="text-xl font-bold text-text-primary">Skills</h2>
           <Button
             type="button"
-            variant="secondary"
-            size="sm"
-            onclick={handleAddSkill}>+ Add Skill</Button>
+            variant="primary"
+            size="md"
+            leadingIcon="bi-plus-lg"
+            onclick={handleAddSkill}>
+            Add Skill
+          </Button>
         </div>
 
         {#if skillsSaveSuccess}<StatusBanner
-            type="success"
-            message="Skills saved successfully to Supabase!" />{/if}
+            variant="success"
+            message="Skills saved successfully!" />{/if}
 
         <div class="flex flex-col gap-4">
+          {#if skillsState.length === 0}
+            <EmptyState
+              icon="bi-stack"
+              title="No skill groups yet"
+              description="Add your first skill group below." />
+          {/if}
           {#each skillsState as item, idx (idx)}
             <div
-              class="flex flex-col gap-3 rounded-md border border-border-subtle/80 bg-surface-base p-4">
+              class="flex flex-col gap-3 rounded-sm border border-border-subtle/80 bg-surface-base p-4">
               <div
                 class="flex items-center justify-between border-b border-border-subtle/40 pb-2">
                 <span class="font-mono text-xs font-light text-text-muted"
@@ -3034,7 +3900,10 @@
                     disabled={idx === 0}
                     onclick={() =>
                       (skillsState = moveArrayItem(skillsState, idx, 'up'))}
-                    >↑</Button>
+                    ><i
+                      class="bi bi-arrow-up"
+                      aria-hidden="true"></i
+                    ></Button>
                   <Button
                     type="button"
                     variant="ghost"
@@ -3044,7 +3913,10 @@
                     disabled={idx === skillsState.length - 1}
                     onclick={() =>
                       (skillsState = moveArrayItem(skillsState, idx, 'down'))}
-                    >↓</Button>
+                    ><i
+                      class="bi bi-arrow-down"
+                      aria-hidden="true"></i
+                    ></Button>
                   <Button
                     type="button"
                     variant="danger"
@@ -3055,24 +3927,38 @@
 
               <FormField
                 id={'sk-cat-' + idx}
-                label="Category Name"
+                label="Area of Expertise"
                 required
+                error={skillsErrors[idx]?.category}
+                valid={skillsValid[idx]?.category}
                 counter={`${(item.category || '').length}/100`}>
                 <Input
                   id={'sk-cat-' + idx}
                   bind:value={item.category}
                   placeholder="Ex: Software Engineering"
                   maxlength={100}
-                  required />
+                  error={!!skillsErrors[idx]?.category}
+                  valid={skillsValid[idx]?.category}
+                  oninput={() => {
+                    clearFieldError(skillsErrors, skillsValid, idx, 'category')
+                    validateSkillField(idx)
+                  }}
+                  onpaste={e => handleCategoryPaste(idx, e)} />
               </FormField>
 
               <FormField
                 id={'sk-list-' + idx}
-                label="Skills (Comma Separated)">
+                label="Skills Set">
+                {#snippet hintSnippet()}
+                  Separate multiple skills with commas. To include a comma
+                  within a skill name, use a backslash (e.g., UI\,UX Design).
+                {/snippet}
                 <div
-                  class="flex flex-wrap items-center gap-2 rounded-lg border border-border-subtle bg-surface-base p-2 focus-within:border-copilot focus-within:ring-1 focus-within:ring-copilot">
+                  class="flex flex-wrap items-center gap-2 rounded-sm border border-border-subtle bg-surface-base p-2 focus-within:border-copilot focus-within:ring-2 focus-within:ring-copilot/20 focus-within:outline-none">
                   {#each item.skills as skill, sIdx (sIdx)}
                     <span
+                      role="group"
+                      aria-label={`Skill: ${skill}`}
                       draggable="true"
                       ondragstart={e => handleSkillDragStart(sIdx, e)}
                       ondragover={e => e.preventDefault()}
@@ -3087,20 +3973,53 @@
                       {#if editingSkillKey === `${idx}-${sIdx}`}
                         <input
                           type="text"
+                          id={`sk-edit-${idx}-${sIdx}`}
                           bind:value={editingSkillText}
-                          class="w-20 border-0 border-none bg-transparent font-mono text-xs font-medium text-copilot shadow-none ring-0 outline-none focus:border-none focus:ring-0 focus:outline-none focus-visible:border-none focus-visible:ring-0 focus-visible:outline-none"
+                          style="--sk-w: {Math.max(
+                            editingSkillText.length,
+                            3
+                          )}ch"
+                          class="w-[var(--sk-w)] border-0 border-none bg-transparent font-mono text-xs font-medium text-copilot shadow-none ring-0 outline-none focus:border-none! focus:ring-0! focus:outline-none! focus-visible:border-none! focus-visible:ring-0! focus-visible:outline-none!"
                           onkeydown={e => {
-                            if (e.key === 'Enter' || e.key === ',') {
+                            const target = e.currentTarget as HTMLInputElement
+                            if (e.key === ',') {
+                              e.preventDefault()
+                              const cursor =
+                                target.selectionStart ?? editingSkillText.length
+                              const escaped = tryEscapeComma(
+                                editingSkillText,
+                                cursor
+                              )
+                              if (escaped) {
+                                editingSkillText = escaped.value
+                                tick().then(() =>
+                                  target.setSelectionRange(
+                                    escaped.cursor,
+                                    escaped.cursor
+                                  )
+                                )
+                              } else {
+                                saveEditSkill(idx, sIdx)
+                              }
+                            } else if (e.key === 'Enter') {
                               e.preventDefault()
                               saveEditSkill(idx, sIdx)
                             }
                           }}
                           onblur={() => saveEditSkill(idx, sIdx)}
-                          autofocus />
+                          use:focusOnMount />
                       {:else}
                         <span
+                          role="button"
+                          tabindex="0"
                           class="cursor-pointer hover:underline"
-                          onclick={() => startEditSkill(idx, sIdx, skill)}>
+                          onclick={() => startEditSkill(idx, sIdx, skill)}
+                          onkeydown={e => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              startEditSkill(idx, sIdx, skill)
+                            }
+                          }}>
                           {skill}
                         </span>
                       {/if}
@@ -3120,25 +4039,34 @@
                   <input
                     id={'sk-list-' + idx}
                     type="text"
-                    class="min-w-35 flex-1 border-0 border-none bg-transparent font-mono text-xs text-text-primary shadow-none ring-0 outline-none placeholder:text-text-muted focus:border-none focus:ring-0 focus:outline-none focus-visible:border-none focus-visible:ring-0 focus-visible:outline-none"
+                    class="min-w-35 flex-1 border-0 border-none bg-transparent font-mono text-xs text-text-primary shadow-none ring-0 outline-none placeholder:text-text-muted focus:border-none! focus:ring-0! focus:outline-none! focus-visible:border-none! focus-visible:ring-0! focus-visible:outline-none!"
                     placeholder={item.skills.length === 0 ?
                       'Type skill and press comma...'
                     : 'Add skill...'}
                     onkeydown={e => {
-                      if (e.key === ',' || e.key === 'Enter') {
+                      if (e.key === ',') {
                         e.preventDefault()
                         const target = e.currentTarget as HTMLInputElement
-                        const val = target.value.trim().replace(/^,|,$/g, '')
+                        const cursor =
+                          target.selectionStart ?? target.value.length
+                        const escaped = tryEscapeComma(target.value, cursor)
+                        if (escaped) {
+                          target.value = escaped.value
+                          target.setSelectionRange(
+                            escaped.cursor,
+                            escaped.cursor
+                          )
+                          return
+                        }
+                        const val = target.value.trim()
                         if (val && !item.skills.includes(val)) {
                           item.skills = [...item.skills, val]
                         }
                         target.value = ''
-                      }
-                    }}
-                    onkeyup={e => {
-                      if (e.key === ',') {
+                      } else if (e.key === 'Enter') {
+                        e.preventDefault()
                         const target = e.currentTarget as HTMLInputElement
-                        const val = target.value.trim().replace(/,/g, '')
+                        const val = target.value.trim()
                         if (val && !item.skills.includes(val)) {
                           item.skills = [...item.skills, val]
                         }
@@ -3147,47 +4075,64 @@
                     }}
                     onblur={e => {
                       const target = e.currentTarget as HTMLInputElement
-                      const val = target.value.trim().replace(/,/g, '')
+                      const val = target.value.trim()
                       if (val && !item.skills.includes(val)) {
                         item.skills = [...item.skills, val]
                       }
                       target.value = ''
-                    }} />
+                    }}
+                    onpaste={e => handleSkillsSetPaste(idx, e)} />
                 </div>
               </FormField>
             </div>
           {/each}
         </div>
 
-        <div class="flex justify-end">
+        <div class="flex items-center justify-end gap-3">
+          {#if skillsIsDirty}
+            <p class="text-xs text-text-secondary select-none">
+              You have unsaved changes.
+            </p>
+          {/if}
           <Button
             type="submit"
             variant="primary"
             size="md"
+            disabled={!skillsIsDirty}
             isLoading={isSavingSkills}>Save Skills</Button>
         </div>
       </form>
     {:else if activeAdminTab === 'socials'}
       <form
         onsubmit={handleSaveSocials}
-        class="flex flex-col gap-6 rounded-md border border-border-subtle bg-surface-card p-6 shadow-xs">
+        novalidate
+        class="flex flex-col gap-6 rounded-sm border border-border-subtle bg-surface-card p-6 shadow-xs">
         <div class="flex items-center justify-between">
           <h2 class="text-xl font-bold text-text-primary">Social Links</h2>
           <Button
             type="button"
-            variant="secondary"
-            size="sm"
-            onclick={handleAddSocial}>+ Add Social</Button>
+            variant="primary"
+            size="md"
+            leadingIcon="bi-plus-lg"
+            onclick={handleAddSocial}>
+            Add Social Link
+          </Button>
         </div>
 
         {#if socialsSaveSuccess}<StatusBanner
-            type="success"
+            variant="success"
             message="Social links saved successfully!" />{/if}
 
         <div class="flex flex-col gap-4">
+          {#if socialState.length === 0}
+            <EmptyState
+              icon="bi-share-fill"
+              title="No social links yet"
+              description="Add your first social link below." />
+          {/if}
           {#each socialState as item, idx (idx)}
             <div
-              class="flex flex-col gap-3 rounded-md border border-border-subtle/80 bg-surface-base p-4">
+              class="flex flex-col gap-3 rounded-sm border border-border-subtle/80 bg-surface-base p-4">
               <div
                 class="flex items-center justify-between border-b border-border-subtle/40 pb-2">
                 <span class="font-mono text-xs text-text-muted"
@@ -3202,7 +4147,10 @@
                     disabled={idx === 0}
                     onclick={() =>
                       (socialState = moveArrayItem(socialState, idx, 'up'))}
-                    >↑</Button>
+                    ><i
+                      class="bi bi-arrow-up"
+                      aria-hidden="true"></i
+                    ></Button>
                   <Button
                     type="button"
                     variant="ghost"
@@ -3212,7 +4160,10 @@
                     disabled={idx === socialState.length - 1}
                     onclick={() =>
                       (socialState = moveArrayItem(socialState, idx, 'down'))}
-                    >↓</Button>
+                    ><i
+                      class="bi bi-arrow-down"
+                      aria-hidden="true"></i
+                    ></Button>
                   <Button
                     type="button"
                     variant="danger"
@@ -3224,12 +4175,14 @@
               <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FormField
                   id={'soc-icon-' + idx}
-                  label="Icon Name"
+                  label="Icon"
                   required
+                  error={socialErrors[idx]?.icon}
+                  valid={socialValid[idx]?.icon}
                   counter={`${(item.icon || '').length}/50`}>
                   <div class="flex items-center gap-2">
                     <div
-                      class="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border-subtle bg-surface-card text-copilot">
+                      class="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-border-subtle bg-surface-card text-copilot">
                       <i
                         class="bi {sanitizeIconClass(
                           item.icon,
@@ -3243,7 +4196,12 @@
                       bind:value={item.icon}
                       placeholder="default: bi-people"
                       maxlength={50}
-                      required />
+                      error={!!socialErrors[idx]?.icon}
+                      valid={socialValid[idx]?.icon}
+                      oninput={() => {
+                        clearFieldError(socialErrors, socialValid, idx, 'icon')
+                        validateSocialField(idx, 'icon')
+                      }} />
                   </div>
                 </FormField>
 
@@ -3251,61 +4209,96 @@
                   id={'soc-plat-' + idx}
                   label="Platform"
                   required
+                  error={socialErrors[idx]?.platform}
+                  valid={socialValid[idx]?.platform}
                   counter={`${(item.platform || '').length}/50`}>
                   <Input
                     id={'soc-plat-' + idx}
                     bind:value={item.platform}
                     placeholder="Ex: GitHub"
                     maxlength={50}
-                    required />
+                    error={!!socialErrors[idx]?.platform}
+                    valid={socialValid[idx]?.platform}
+                    oninput={() => {
+                      clearFieldError(
+                        socialErrors,
+                        socialValid,
+                        idx,
+                        'platform'
+                      )
+                      validateSocialField(idx, 'platform')
+                    }} />
                 </FormField>
               </div>
 
               <FormField
                 id={'soc-url-' + idx}
-                label="Platform URL"
+                label="URL"
                 required
+                error={socialErrors[idx]?.url}
+                valid={socialValid[idx]?.url}
                 counter={`${(item.url || '').length}/100`}>
                 <Input
                   id={'soc-url-' + idx}
                   bind:value={item.url}
                   placeholder="Ex: https://github.com/torvalds"
                   maxlength={100}
-                  required />
+                  error={!!socialErrors[idx]?.url}
+                  valid={socialValid[idx]?.url}
+                  oninput={() => {
+                    clearFieldError(socialErrors, socialValid, idx, 'url')
+                    validateSocialField(idx, 'url')
+                  }} />
               </FormField>
             </div>
           {/each}
         </div>
 
-        <div class="flex justify-end">
+        <div class="flex items-center justify-end gap-3">
+          {#if socialIsDirty}
+            <p class="text-xs text-text-secondary select-none">
+              You have unsaved changes.
+            </p>
+          {/if}
           <Button
             type="submit"
             variant="primary"
             size="md"
+            disabled={!socialIsDirty}
             isLoading={isSavingSocials}>Save Social Links</Button>
         </div>
       </form>
     {:else if activeAdminTab === 'sponsorship'}
       <form
         onsubmit={handleSaveSponsorship}
-        class="flex flex-col gap-6 rounded-md border border-border-subtle bg-surface-card p-6 shadow-xs">
+        novalidate
+        class="flex flex-col gap-6 rounded-sm border border-border-subtle bg-surface-card p-6 shadow-xs">
         <div class="flex items-center justify-between">
           <h2 class="text-xl font-bold text-text-primary">Sponsorship</h2>
           <Button
             type="button"
-            variant="secondary"
-            size="sm"
-            onclick={handleAddSponsorship}>+ Add Sponsorship</Button>
+            variant="primary"
+            size="md"
+            leadingIcon="bi-plus-lg"
+            onclick={handleAddSponsorship}>
+            Add Sponsorship
+          </Button>
         </div>
 
         {#if sponsorshipSaveSuccess}<StatusBanner
-            type="success"
+            variant="success"
             message="Sponsorship links saved successfully!" />{/if}
 
         <div class="flex flex-col gap-4">
+          {#if sponsorshipState.length === 0}
+            <EmptyState
+              icon="bi-heart-fill"
+              title="No funding platforms yet"
+              description="Add your first funding platform below." />
+          {/if}
           {#each sponsorshipState as item, idx (idx)}
             <div
-              class="flex flex-col gap-3 rounded-md border border-border-subtle/80 bg-surface-base p-4">
+              class="flex flex-col gap-3 rounded-sm border border-border-subtle/80 bg-surface-base p-4">
               <div
                 class="flex items-center justify-between border-b border-border-subtle/40 pb-2">
                 <span class="font-mono text-xs text-text-muted"
@@ -3323,7 +4316,11 @@
                         sponsorshipState,
                         idx,
                         'up'
-                      ))}>↑</Button>
+                      ))}
+                    ><i
+                      class="bi bi-arrow-up"
+                      aria-hidden="true"></i
+                    ></Button>
                   <Button
                     type="button"
                     variant="ghost"
@@ -3336,7 +4333,11 @@
                         sponsorshipState,
                         idx,
                         'down'
-                      ))}>↓</Button>
+                      ))}
+                    ><i
+                      class="bi bi-arrow-down"
+                      aria-hidden="true"></i
+                    ></Button>
                   <Button
                     type="button"
                     variant="danger"
@@ -3348,38 +4349,64 @@
               <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FormField
                   id={'sp-plat-' + idx}
-                  label="Platform Name"
+                  label="Platform"
                   required
+                  error={sponsorshipErrors[idx]?.platform}
+                  valid={sponsorshipValid[idx]?.platform}
                   counter={`${(item.platform || '').length}/50`}>
                   <Input
                     id={'sp-plat-' + idx}
                     bind:value={item.platform}
                     placeholder="Ex: Ko-fi"
                     maxlength={50}
-                    required />
+                    error={!!sponsorshipErrors[idx]?.platform}
+                    valid={sponsorshipValid[idx]?.platform}
+                    oninput={() => {
+                      clearFieldError(
+                        sponsorshipErrors,
+                        sponsorshipValid,
+                        idx,
+                        'platform'
+                      )
+                      validateSponsorshipField(idx, 'platform')
+                    }} />
                 </FormField>
 
                 <FormField
                   id={'sp-val-' + idx}
-                  label="Display Value"
+                  label="Display Text"
                   required
+                  error={sponsorshipErrors[idx]?.displayValue}
+                  valid={sponsorshipValid[idx]?.displayValue}
                   counter={`${(item.displayValue || '').length}/50`}>
                   <Input
                     id={'sp-val-' + idx}
                     bind:value={item.displayValue}
                     placeholder="Ex: @farhnkrnapratma"
                     maxlength={50}
-                    required />
+                    error={!!sponsorshipErrors[idx]?.displayValue}
+                    valid={sponsorshipValid[idx]?.displayValue}
+                    oninput={() => {
+                      clearFieldError(
+                        sponsorshipErrors,
+                        sponsorshipValid,
+                        idx,
+                        'displayValue'
+                      )
+                      validateSponsorshipField(idx, 'displayValue')
+                    }} />
                 </FormField>
 
                 <FormField
                   id={'sp-icon-' + idx}
-                  label="Icon Name"
+                  label="Icon"
                   required
+                  error={sponsorshipErrors[idx]?.icon}
+                  valid={sponsorshipValid[idx]?.icon}
                   counter={`${(item.icon || '').length}/50`}>
                   <div class="flex items-center gap-2">
                     <div
-                      class="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border-subtle bg-surface-card text-copilot">
+                      class="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-border-subtle bg-surface-card text-copilot">
                       <i
                         class="bi {sanitizeIconClass(
                           item.icon,
@@ -3393,21 +4420,43 @@
                       bind:value={item.icon}
                       placeholder="default: bi-currency-dollar"
                       maxlength={50}
-                      required />
+                      error={!!sponsorshipErrors[idx]?.icon}
+                      valid={sponsorshipValid[idx]?.icon}
+                      oninput={() => {
+                        clearFieldError(
+                          sponsorshipErrors,
+                          sponsorshipValid,
+                          idx,
+                          'icon'
+                        )
+                        validateSponsorshipField(idx, 'icon')
+                      }} />
                   </div>
                 </FormField>
 
                 <FormField
                   id={'sp-url-' + idx}
-                  label="Platform URL"
+                  label="URL"
                   required
+                  error={sponsorshipErrors[idx]?.url}
+                  valid={sponsorshipValid[idx]?.url}
                   counter={`${(item.url || '').length}/100`}>
                   <Input
                     id={'sp-url-' + idx}
                     bind:value={item.url}
                     placeholder="Ex: https://ko-fi.com/farhnkrnapratma"
                     maxlength={100}
-                    required />
+                    error={!!sponsorshipErrors[idx]?.url}
+                    valid={sponsorshipValid[idx]?.url}
+                    oninput={() => {
+                      clearFieldError(
+                        sponsorshipErrors,
+                        sponsorshipValid,
+                        idx,
+                        'url'
+                      )
+                      validateSponsorshipField(idx, 'url')
+                    }} />
                 </FormField>
               </div>
 
@@ -3426,39 +4475,55 @@
           {/each}
         </div>
 
-        <div class="flex justify-end">
+        <div class="flex items-center justify-end gap-3">
+          {#if sponsorshipIsDirty}
+            <p class="text-xs text-text-secondary select-none">
+              You have unsaved changes.
+            </p>
+          {/if}
           <Button
             type="submit"
             variant="primary"
             size="md"
-            isLoading={isSavingSponsorship}>Save Sponsorship Links</Button>
+            disabled={!sponsorshipIsDirty}
+            isLoading={isSavingSponsorship}>Save Sponsorship</Button>
         </div>
       </form>
     {:else if activeAdminTab === 'contact'}
       <form
         onsubmit={handleSaveContact}
-        class="flex flex-col gap-6 rounded-md border border-border-subtle bg-surface-card p-6 shadow-xs">
+        novalidate
+        class="flex flex-col gap-6 rounded-sm border border-border-subtle bg-surface-card p-6 shadow-xs">
         <div class="flex items-center justify-between">
-          <h2 class="text-xl font-bold text-text-primary">Contact Info</h2>
+          <h2 class="text-xl font-bold text-text-primary">Contact</h2>
           <Button
             type="button"
-            variant="secondary"
-            size="sm"
-            onclick={handleAddContact}>+ Add Contact</Button>
+            variant="primary"
+            size="md"
+            leadingIcon="bi-plus-lg"
+            onclick={handleAddContact}>
+            Add Contact
+          </Button>
         </div>
 
         {#if contactSaveSuccess}<StatusBanner
-            type="success"
+            variant="success"
             message="Contact info saved successfully!" />{/if}
 
         <div class="flex flex-col gap-4">
+          {#if contactState.length === 0}
+            <EmptyState
+              icon="bi-envelope-at-fill"
+              title="No contact channels yet"
+              description="Add your first contact channel below." />
+          {/if}
           {#each contactState as item, idx (idx)}
             <div
-              class="flex flex-col gap-3 rounded-md border border-border-subtle/80 bg-surface-base p-4">
+              class="flex flex-col gap-3 rounded-sm border border-border-subtle/80 bg-surface-base p-4">
               <div
                 class="flex items-center justify-between border-b border-border-subtle/40 pb-2">
                 <span class="font-mono text-xs text-text-muted"
-                  >Contact Info #{idx + 1}</span>
+                  >Contact #{idx + 1}</span>
                 <div class="flex items-center gap-1">
                   <Button
                     type="button"
@@ -3469,7 +4534,10 @@
                     disabled={idx === 0}
                     onclick={() =>
                       (contactState = moveArrayItem(contactState, idx, 'up'))}
-                    >↑</Button>
+                    ><i
+                      class="bi bi-arrow-up"
+                      aria-hidden="true"></i
+                    ></Button>
                   <Button
                     type="button"
                     variant="ghost"
@@ -3479,7 +4547,10 @@
                     disabled={idx === contactState.length - 1}
                     onclick={() =>
                       (contactState = moveArrayItem(contactState, idx, 'down'))}
-                    >↓</Button>
+                    ><i
+                      class="bi bi-arrow-down"
+                      aria-hidden="true"></i
+                    ></Button>
                   <Button
                     type="button"
                     variant="danger"
@@ -3491,38 +4562,64 @@
               <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FormField
                   id={'ct-plat-' + idx}
-                  label="Platform Name"
+                  label="Platform"
                   required
+                  error={contactErrors[idx]?.platform}
+                  valid={contactValid[idx]?.platform}
                   counter={`${(item.platform || '').length}/50`}>
                   <Input
                     id={'ct-plat-' + idx}
                     bind:value={item.platform}
                     placeholder="Ex: Email"
                     maxlength={50}
-                    required />
+                    error={!!contactErrors[idx]?.platform}
+                    valid={contactValid[idx]?.platform}
+                    oninput={() => {
+                      clearFieldError(
+                        contactErrors,
+                        contactValid,
+                        idx,
+                        'platform'
+                      )
+                      validateContactField(idx, 'platform')
+                    }} />
                 </FormField>
 
                 <FormField
                   id={'ct-val-' + idx}
-                  label="Display Value"
+                  label="Display Text"
                   required
+                  error={contactErrors[idx]?.displayValue}
+                  valid={contactValid[idx]?.displayValue}
                   counter={`${(item.displayValue || '').length}/50`}>
                   <Input
                     id={'ct-val-' + idx}
                     bind:value={item.displayValue}
                     placeholder="Ex: contact@fkp.my.id"
                     maxlength={50}
-                    required />
+                    error={!!contactErrors[idx]?.displayValue}
+                    valid={contactValid[idx]?.displayValue}
+                    oninput={() => {
+                      clearFieldError(
+                        contactErrors,
+                        contactValid,
+                        idx,
+                        'displayValue'
+                      )
+                      validateContactField(idx, 'displayValue')
+                    }} />
                 </FormField>
 
                 <FormField
                   id={'ct-icon-' + idx}
-                  label="Icon Name"
+                  label="Icon"
                   required
+                  error={contactErrors[idx]?.icon}
+                  valid={contactValid[idx]?.icon}
                   counter={`${(item.icon || '').length}/50`}>
                   <div class="flex items-center gap-2">
                     <div
-                      class="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border-subtle bg-surface-card text-copilot">
+                      class="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-border-subtle bg-surface-card text-copilot">
                       <i
                         class="bi {sanitizeIconClass(
                           item.icon,
@@ -3536,33 +4633,56 @@
                       bind:value={item.icon}
                       placeholder="default: bi-person"
                       maxlength={50}
-                      required />
+                      error={!!contactErrors[idx]?.icon}
+                      valid={contactValid[idx]?.icon}
+                      oninput={() => {
+                        clearFieldError(
+                          contactErrors,
+                          contactValid,
+                          idx,
+                          'icon'
+                        )
+                        validateContactField(idx, 'icon')
+                      }} />
                   </div>
                 </FormField>
 
                 <FormField
                   id={'ct-url-' + idx}
-                  label="Platform URL"
+                  label="URL"
                   required
+                  error={contactErrors[idx]?.href}
+                  valid={contactValid[idx]?.href}
                   counter={`${(item.href || '').length}/100`}>
                   <Input
                     id={'ct-url-' + idx}
                     bind:value={item.href}
                     placeholder="Ex: mailto:contact@fkp.my.id"
                     maxlength={100}
-                    required />
+                    error={!!contactErrors[idx]?.href}
+                    valid={contactValid[idx]?.href}
+                    oninput={() => {
+                      clearFieldError(contactErrors, contactValid, idx, 'href')
+                      validateContactField(idx, 'href')
+                    }} />
                 </FormField>
               </div>
             </div>
           {/each}
         </div>
 
-        <div class="flex justify-end">
+        <div class="flex items-center justify-end gap-3">
+          {#if contactIsDirty}
+            <p class="text-xs text-text-secondary select-none">
+              You have unsaved changes.
+            </p>
+          {/if}
           <Button
             type="submit"
             variant="primary"
             size="md"
-            isLoading={isSavingContact}>Save Contact Info</Button>
+            disabled={!contactIsDirty}
+            isLoading={isSavingContact}>Save Contact</Button>
         </div>
       </form>
     {/if}
@@ -3614,3 +4734,130 @@
     </div>
   </div>
 </Dialog>
+
+<Dialog
+  isOpen={showClearAuthorDialog}
+  onClose={() => (showClearAuthorDialog = false)}
+  title="Delete Profile">
+  <div class="flex flex-col gap-4">
+    <p class="text-sm text-text-secondary">
+      Are you sure you want to delete/clear all author profile data from the
+      database?
+    </p>
+    <div class="flex justify-end gap-3">
+      <Button
+        type="button"
+        variant="secondary"
+        size="md"
+        onclick={() => (showClearAuthorDialog = false)}>Cancel</Button>
+      <Button
+        type="button"
+        variant="danger"
+        size="md"
+        isLoading={isClearingAuthor}
+        onclick={executeClearAuthor}>Delete</Button>
+    </div>
+  </div>
+</Dialog>
+
+<Dialog
+  isOpen={showDeleteCvDocDialog}
+  onClose={() => (showDeleteCvDocDialog = false)}
+  title="Delete CV Document">
+  <div class="flex flex-col gap-4">
+    <p class="text-sm text-text-secondary">
+      Delete CV document "{cvDocState.filename}" from CDN & database?
+    </p>
+    <div class="flex justify-end gap-3">
+      <Button
+        type="button"
+        variant="secondary"
+        size="md"
+        onclick={() => (showDeleteCvDocDialog = false)}>Cancel</Button>
+      <Button
+        type="button"
+        variant="danger"
+        size="md"
+        onclick={executeDeleteCvDoc}>Delete</Button>
+    </div>
+  </div>
+</Dialog>
+
+{#if showAvatarPreviewDialog}
+  <div class="fixed inset-0 z-100 flex items-center justify-center p-4">
+    <button
+      type="button"
+      class="absolute inset-0 cursor-default bg-overlay-backdrop backdrop-blur-md"
+      aria-label="Close modal"
+      onclick={() => (showAvatarPreviewDialog = false)}></button>
+
+    <div
+      role="dialog"
+      aria-modal="true"
+      class="relative z-10 flex w-full max-w-sm transform flex-col gap-6 rounded-sm border border-border-subtle bg-surface-elevated p-6 shadow-2xl transition-all select-none">
+      <!-- Image Container -->
+      <div
+        class="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-sm border border-border-subtle bg-surface-base">
+        {#if authorState.avatar}
+          <div
+            class="absolute inset-0 z-0 flex items-center justify-center bg-surface-subtle">
+            <i
+              class="bi bi-person-fill text-4xl text-text-muted"
+              aria-hidden="true"></i>
+          </div>
+          {#key authorState.avatar}
+            <img
+              src={authorState.avatar}
+              alt="Avatar preview enlarged"
+              class="relative z-10 h-full w-full object-cover"
+              onerror={e =>
+                ((e.currentTarget as HTMLImageElement).style.display = 'none')}
+              onload={e =>
+                ((e.currentTarget as HTMLImageElement).style.display =
+                  'block')} />
+          {/key}
+        {:else}
+          <div
+            class="flex h-full w-full items-center justify-center bg-surface-subtle">
+            <i
+              class="bi bi-person-fill text-4xl text-text-muted"
+              aria-hidden="true"></i>
+          </div>
+        {/if}
+
+        <!-- Close Button inside Image Container -->
+        <button
+          type="button"
+          class="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-sm bg-black/40 text-white transition-colors hover:bg-black/60"
+          aria-label="Close dialog"
+          onclick={() => (showAvatarPreviewDialog = false)}>
+          <i
+            class="bi bi-x-lg text-sm"
+            aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <!-- Button Row -->
+      <div class="flex w-full items-center justify-between">
+        <Button
+          type="button"
+          variant="danger"
+          size="md"
+          onclick={() => {
+            authorState.avatar = ''
+            showAvatarPreviewDialog = false
+            onAuthorInput('avatar')
+          }}>
+          Delete
+        </Button>
+        <Button
+          type="button"
+          variant="primary"
+          size="md"
+          onclick={() => (showAvatarPreviewDialog = false)}>
+          Looks good
+        </Button>
+      </div>
+    </div>
+  </div>
+{/if}
