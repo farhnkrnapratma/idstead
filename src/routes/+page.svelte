@@ -1,6 +1,7 @@
 <!-- @format -->
 <script lang="ts">
   import {onMount, tick} from 'svelte'
+  import type {Snippet} from 'svelte'
   import {isNameReserved} from '$lib/utils/nameValidator'
   import {
     LinkListSection,
@@ -35,7 +36,8 @@
   import {SvelteSet} from 'svelte/reactivity'
   import {formatMonthAbbrev, decodeHtmlEntities} from '$lib/author'
   import {themeStore} from '$lib/stores/themeStore.svelte'
-  import type {Theme} from '$lib/types'
+  import type {Theme, Project} from '$lib/types'
+  import type {BlogPost} from './+page.server'
 
   let {data} = $props()
 
@@ -928,6 +930,387 @@
   inert={menuOpen}
   aria-hidden={menuOpen ? 'true' : undefined}
   class="flex min-h-[calc(100vh-3.75rem)] flex-col pt-15 font-sans">
+  {#snippet staticTag(tag: string)}
+    <span
+      class="rounded-md bg-border-subtle/30 px-1.5 py-0.5 font-mono text-[12px] font-medium text-text-muted transition-colors">
+      {tag}
+    </span>
+  {/snippet}
+
+  {#snippet filterableTag(tag: string)}
+    <button
+      type="button"
+      onclick={() => projectFilterStore.toggleMultiFilter('tag', tag)}
+      class="cursor-pointer rounded-md bg-border-subtle/30 px-1.5 py-0.5 font-mono text-[12px] font-medium transition-colors hover:bg-surface-hover hover:text-copilot {(
+        projectFilterStore.filters['tag']?.includes(tag)
+      ) ?
+        'font-semibold text-copilot'
+      : 'text-text-muted'}">
+      {tag}
+    </button>
+  {/snippet}
+
+  {#snippet projectCard(
+    project: Project,
+    headingTag: 'h3' | 'h4',
+    tagItem: Snippet<[string]>
+  )}
+    <div
+      class="relative flex h-full flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-5 text-left shadow-xs {(
+        openCodeMenuId === project.name
+      ) ?
+        'z-30'
+      : ''}">
+      <article class="contents">
+        <div class="flex flex-col gap-2">
+          <div class="flex flex-wrap items-center gap-1">
+            <svelte:element
+              this={headingTag}
+              class="text-xl leading-snug font-bold text-text-primary">
+              {project.name}
+            </svelte:element>
+            {#if project.lang}
+              <span class="inline-flex items-center gap-1 select-none">
+                <span
+                  class="rounded-md bg-border-subtle/30 px-1.5 py-0.5 font-mono text-[12px] font-semibold text-text-muted">
+                  {project.lang}
+                </span>
+              </span>
+            {/if}
+          </div>
+
+          <div
+            class="relative z-20 grid grid-cols-2 gap-x-4 gap-y-1 font-sans text-xs leading-5 font-medium text-text-muted select-none">
+            {#if project.licenseName}
+              <span class="inline-flex w-fit items-center gap-1">
+                <i
+                  class="bi bi-award text-xs leading-none"
+                  aria-hidden="true"></i>
+                {project.licenseName} License
+              </span>
+            {:else}
+              <span aria-hidden="true"></span>
+            {/if}
+            <span class="inline-flex w-fit items-center gap-1">
+              <i
+                class="bi bi-diagram-2 text-xs leading-none"
+                aria-hidden="true"></i>
+              {project.forks} forks
+            </span>
+            <span class="inline-flex w-fit items-center gap-1">
+              <i
+                class="bi bi-star-fill text-xs leading-none"
+                aria-hidden="true"></i>
+              {project.stars} stars
+            </span>
+            {#if project.pushedAt}
+              <span class="inline-flex w-fit items-center gap-1">
+                <i
+                  class="bi bi-clock-history text-xs leading-none"
+                  aria-hidden="true"></i>
+                <RelativeTime
+                  date={project.pushedAt}
+                  titlePrefix="Updated " />
+              </span>
+            {:else}
+              <span aria-hidden="true"></span>
+            {/if}
+            <span class="inline-flex w-fit items-center gap-1">
+              <i
+                class="bi bi-git text-xs leading-none"
+                aria-hidden="true"></i>
+              {project.branches} branches
+            </span>
+            <span class="inline-flex w-fit items-center gap-1">
+              <i
+                class="bi bi-activity text-xs leading-none"
+                aria-hidden="true"></i>
+              {project.commits} commits
+            </span>
+          </div>
+
+          {#if project.tags.length > 0}
+            <div class="relative z-20 flex flex-wrap items-center gap-1.5">
+              {#each project.tags as tag (tag)}
+                {@render tagItem(tag)}
+              {/each}
+            </div>
+          {/if}
+        </div>
+
+        <p class="min-h-[4rem] text-sm leading-normal text-text-secondary">
+          {project.desc}
+        </p>
+
+        {#if project.languages.length > 0}
+          <div class="relative z-20 flex flex-col gap-2">
+            <span
+              class="text-[11px] font-bold tracking-wider text-text-secondary uppercase">
+              Languages
+            </span>
+            <div
+              class="flex h-1.5 w-full overflow-hidden rounded-full bg-border-subtle/30">
+              {#each project.languages as language (language.name)}
+                <div
+                  class="w-[var(--lang-w)] bg-[var(--lang-color)]"
+                  style="--lang-w: {language.percent}%; --lang-color: {language.color};">
+                </div>
+              {/each}
+            </div>
+            <div
+              class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-muted">
+              {#each project.languages as language (language.name)}
+                <span class="inline-flex items-center gap-1.5">
+                  <span
+                    class="h-2 w-2 shrink-0 rounded-full bg-[var(--lang-dot-color)]"
+                    style="--lang-dot-color: {language.color};"></span>
+                  <span class="font-semibold text-text-primary"
+                    >{language.name}</span>
+                  {language.percent}%
+                </span>
+              {/each}
+            </div>
+          </div>
+        {/if}
+
+        <div class="relative z-20 mt-auto flex flex-col gap-2 pt-2">
+          <hr class="border-border-subtle" />
+
+          <div class="grid grid-cols-2 gap-2">
+            <Button
+              variant="secondary"
+              size="md"
+              leadingIcon="bi-share-fill"
+              class="w-full"
+              onclick={() => shareProjectDialog(project)}>
+              Share
+            </Button>
+
+            <div
+              class="relative w-full"
+              data-code-dropdown={project.name}>
+              <DropdownTrigger
+                ariaLabel="Code options"
+                fullWidth
+                isOpen={openCodeMenuId === project.name}
+                onclick={() => toggleCodeMenu(project.name)}>
+                <span class="inline-flex items-center gap-1.5">
+                  <i
+                    class="bi bi-code text-xs"
+                    aria-hidden="true"></i>
+                  Code
+                </span>
+              </DropdownTrigger>
+
+              {#if openCodeMenuId === project.name}
+                <div
+                  role="menu"
+                  class="absolute left-0 z-50 mt-1.5 w-72 overflow-hidden rounded-sm border border-border-subtle bg-surface-elevated/70 p-3 shadow-xl backdrop-blur-lg">
+                  <div
+                    class="flex items-center gap-1.5 text-xs font-bold text-text-primary">
+                    <i
+                      class="bi bi-terminal text-xs"
+                      aria-hidden="true"></i>
+                    Clone
+                  </div>
+
+                  <div
+                    class="mt-2.5 flex rounded-sm border border-border-subtle p-0.5 text-xs font-semibold">
+                    {#each [['https', 'HTTPS'], ['ssh', 'SSH'], ['cli', 'GitHub CLI']] as const as [key, label] (key)}
+                      <button
+                        type="button"
+                        onclick={() => setCodeTab(project.name, key)}
+                        class="flex-1 cursor-pointer rounded-xs py-1 transition-colors {(
+                          getCodeTab(project.name) === key
+                        ) ?
+                          'bg-copilot text-white'
+                        : 'text-text-secondary hover:text-text-primary'}">
+                        {label}
+                      </button>
+                    {/each}
+                  </div>
+
+                  <div
+                    class="mt-2.5 flex items-center gap-2 rounded-sm border border-border-subtle bg-surface-base/60 px-2.5 py-2">
+                    <span
+                      class="min-w-0 flex-1 [scrollbar-width:none] overflow-x-auto font-mono text-[11px] whitespace-nowrap text-text-secondary select-all [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                      {codeCommand(project, getCodeTab(project.name))}
+                    </span>
+                    <button
+                      type="button"
+                      onclick={() =>
+                        copyCodeCommand(project, getCodeTab(project.name))}
+                      aria-label="Copy clone command"
+                      class="shrink-0 cursor-pointer text-text-secondary transition-colors hover:text-copilot">
+                      <i
+                        class="bi bi-copy text-xs"
+                        aria-hidden="true"></i>
+                    </button>
+                  </div>
+
+                  <hr class="my-2.5 border-border-subtle" />
+
+                  <a
+                    href={project.zipUrl}
+                    class="flex items-center gap-2 rounded-sm px-2 py-1.5 text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
+                    <i
+                      class="bi bi-file-earmark-zip text-xs"
+                      aria-hidden="true"></i>
+                    Download ZIP
+                  </a>
+                </div>
+              {/if}
+            </div>
+          </div>
+
+          <a
+            href={project.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hover:bg-copilot-hover active:bg-copilot-active inline-flex h-9 w-full cursor-pointer items-center justify-center rounded-sm bg-copilot px-4 text-xs font-semibold text-text-on-accent shadow-xs transition-all select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:text-sm">
+            View repo
+          </a>
+        </div>
+      </article>
+    </div>
+  {/snippet}
+
+  {#snippet blogPostCard(post: BlogPost)}
+    <div
+      class="relative flex h-full w-full flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-5 text-left shadow-xs {(
+        openCopyMenuId === post.id
+      ) ?
+        'z-30'
+      : ''}">
+      <div
+        class="relative aspect-video w-full overflow-hidden rounded-sm border border-border-subtle select-none">
+        {#if post.banner_path && !failedBanners.has(post.id)}
+          <img
+            src={getBannerUrl(post.banner_path)}
+            alt={post.title}
+            loading="lazy"
+            onload={e =>
+              (
+                e.currentTarget.closest('.animate-pulse') as HTMLElement | null
+              )?.classList.remove('animate-pulse')}
+            onerror={() => markBannerFailed(post.id)}
+            class="block h-full w-full object-cover" />
+        {:else}
+          <div
+            class="to-palette-purple/15 flex h-full w-full items-center justify-center bg-linear-to-br from-accent/15 select-none">
+            <i
+              class="bi bi-journal-text text-2xl text-copilot/50"
+              aria-hidden="true"></i>
+          </div>
+        {/if}
+      </div>
+
+      <div class="flex flex-1 flex-col gap-1 font-sans">
+        <div
+          class="flex min-h-[1.25rem] w-full [scrollbar-width:none] flex-wrap items-center gap-x-1.5 overflow-x-auto font-sans text-[11px] font-medium whitespace-nowrap text-text-muted select-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <RelativeTime date={post.created_at} />
+          <span aria-hidden="true">&middot;</span>
+          <span>{formatReadTime(post.read_time)}</span>
+          <span aria-hidden="true">&middot;</span>
+          <span>{formatCommentCount(post.comment_count)}</span>
+          {#if post.views_count !== undefined}
+            <span aria-hidden="true">&middot;</span>
+            <span>{formatViewCount(post.views_count)}</span>
+          {/if}
+        </div>
+        <div class="mt-1">
+          <h4 class="text-lg leading-snug font-bold text-text-primary">
+            <a
+              href="/blog/{post.slug}"
+              class="rounded-xs outline-none after:absolute after:inset-0 focus-visible:ring-2 focus-visible:ring-copilot focus-visible:ring-offset-2 focus-visible:ring-offset-surface-card">
+              {post.title}
+            </a>
+          </h4>
+        </div>
+        {#if post.excerpt}
+          <p class="min-h-[6.5rem] text-sm leading-normal text-text-secondary">
+            {post.excerpt}
+          </p>
+        {/if}
+
+        <div class="relative z-20 mt-auto flex flex-col gap-2 pt-2">
+          <hr class="border-border-subtle" />
+
+          <div class="grid grid-cols-2 gap-2">
+            <Button
+              variant="secondary"
+              size="md"
+              leadingIcon="bi-share-fill"
+              class="w-full"
+              onclick={() => shareBlogPostDialog(post)}>
+              Share
+            </Button>
+
+            <div
+              class="relative w-full"
+              data-copy-dropdown={post.id}>
+              <DropdownTrigger
+                ariaLabel="Copy options menu"
+                fullWidth
+                isOpen={openCopyMenuId === post.id}
+                onclick={() => toggleCopyMenu(post.id)}>
+                <span class="inline-flex items-center gap-1.5">
+                  <i
+                    class="bi bi-copy text-xs"
+                    aria-hidden="true"></i>
+                  Copy
+                </span>
+              </DropdownTrigger>
+
+              {#if openCopyMenuId === post.id}
+                <div
+                  role="menu"
+                  class="absolute left-0 z-50 mt-1.5 min-w-40 overflow-hidden rounded-sm border border-border-subtle bg-surface-elevated/70 py-1 shadow-xl backdrop-blur-lg">
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onclick={() => copyBlogUrl(post)}
+                    class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
+                    <i
+                      class="bi bi-link text-xs"
+                      aria-hidden="true"></i>
+                    <span>Copy Blog URL</span>
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onclick={() => copyBlogId(post)}
+                    class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
+                    <i
+                      class="bi bi-hash text-xs"
+                      aria-hidden="true"></i>
+                    <span>Copy Blog ID</span>
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onclick={() => copyBlogMarkdown(post)}
+                    class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
+                    <i
+                      class="bi bi-markdown-fill text-xs"
+                      aria-hidden="true"></i>
+                    <span>Copy as Markdown</span>
+                  </button>
+                </div>
+              {/if}
+            </div>
+          </div>
+
+          <a
+            href="/blog/{post.slug}"
+            class="hover:bg-copilot-hover active:bg-copilot-active inline-flex h-9 w-full cursor-pointer items-center justify-center rounded-sm bg-copilot px-4 text-xs font-semibold text-text-on-accent shadow-xs transition-all select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:text-sm">
+            Read post
+          </a>
+        </div>
+      </div>
+    </div>
+  {/snippet}
+
   {#if activeSection === 'home'}
     <section
       class="relative z-10 mx-auto flex w-full flex-col gap-8 px-6 pt-10 pb-24 md:w-[80%] md:max-w-none md:pt-14 md:pb-28 lg:w-[60%] xl:w-[50%]">
@@ -1009,233 +1392,7 @@
               'z-0'
             )} mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {#each recentProjects as project (project.name)}
-              <div
-                class="relative flex h-full flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-5 text-left shadow-xs {(
-                  openCodeMenuId === project.name
-                ) ?
-                  'z-30'
-                : ''}">
-                <article class="contents">
-                  <div class="flex flex-col gap-2">
-                    <div class="flex flex-wrap items-center gap-1">
-                      <h4
-                        class="text-xl leading-snug font-bold text-text-primary">
-                        {project.name}
-                      </h4>
-                      {#if project.lang}
-                        <span
-                          class="inline-flex items-center gap-1 select-none">
-                          <span
-                            class="rounded-md bg-border-subtle/30 px-1.5 py-0.5 font-mono text-[12px] font-semibold text-text-muted">
-                            {project.lang}
-                          </span>
-                        </span>
-                      {/if}
-                    </div>
-
-                    <div
-                      class="relative z-20 grid grid-cols-2 gap-x-4 gap-y-1 font-sans text-xs leading-5 font-medium text-text-muted select-none">
-                      {#if project.licenseName}
-                        <span class="inline-flex w-fit items-center gap-1">
-                          <i
-                            class="bi bi-award text-xs leading-none"
-                            aria-hidden="true"></i>
-                          {project.licenseName} License
-                        </span>
-                      {:else}
-                        <span aria-hidden="true"></span>
-                      {/if}
-                      <span class="inline-flex w-fit items-center gap-1">
-                        <i
-                          class="bi bi-diagram-2 text-xs leading-none"
-                          aria-hidden="true"></i>
-                        {project.forks} forks
-                      </span>
-                      <span class="inline-flex w-fit items-center gap-1">
-                        <i
-                          class="bi bi-star-fill text-xs leading-none"
-                          aria-hidden="true"></i>
-                        {project.stars} stars
-                      </span>
-                      {#if project.pushedAt}
-                        <span class="inline-flex w-fit items-center gap-1">
-                          <i
-                            class="bi bi-clock-history text-xs leading-none"
-                            aria-hidden="true"></i>
-                          <RelativeTime
-                            date={project.pushedAt}
-                            titlePrefix="Updated " />
-                        </span>
-                      {:else}
-                        <span aria-hidden="true"></span>
-                      {/if}
-                      <span class="inline-flex w-fit items-center gap-1">
-                        <i
-                          class="bi bi-git text-xs leading-none"
-                          aria-hidden="true"></i>
-                        {project.branches} branches
-                      </span>
-                      <span class="inline-flex w-fit items-center gap-1">
-                        <i
-                          class="bi bi-activity text-xs leading-none"
-                          aria-hidden="true"></i>
-                        {project.commits} commits
-                      </span>
-                    </div>
-
-                    {#if project.tags.length > 0}
-                      <div
-                        class="relative z-20 flex flex-wrap items-center gap-1.5">
-                        {#each project.tags as tag (tag)}
-                          <span
-                            class="rounded-md bg-border-subtle/30 px-1.5 py-0.5 font-mono text-[12px] font-medium text-text-muted transition-colors">
-                            {tag}
-                          </span>
-                        {/each}
-                      </div>
-                    {/if}
-                  </div>
-
-                  <p
-                    class="min-h-[4rem] text-sm leading-normal text-text-secondary">
-                    {project.desc}
-                  </p>
-
-                  {#if project.languages.length > 0}
-                    <div class="relative z-20 flex flex-col gap-2">
-                      <span
-                        class="text-[11px] font-bold tracking-wider text-text-secondary uppercase">
-                        Languages
-                      </span>
-                      <div
-                        class="flex h-1.5 w-full overflow-hidden rounded-full bg-border-subtle/30">
-                        {#each project.languages as language (language.name)}
-                          <div
-                            class="w-[var(--lang-w)] bg-[var(--lang-color)]"
-                            style="--lang-w: {language.percent}%; --lang-color: {language.color};">
-                          </div>
-                        {/each}
-                      </div>
-                      <div
-                        class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-muted">
-                        {#each project.languages as language (language.name)}
-                          <span class="inline-flex items-center gap-1.5">
-                            <span
-                              class="h-2 w-2 shrink-0 rounded-full bg-[var(--lang-dot-color)]"
-                              style="--lang-dot-color: {language.color};"
-                            ></span>
-                            <span class="font-semibold text-text-primary"
-                              >{language.name}</span>
-                            {language.percent}%
-                          </span>
-                        {/each}
-                      </div>
-                    </div>
-                  {/if}
-
-                  <div class="relative z-20 mt-auto flex flex-col gap-2 pt-2">
-                    <hr class="border-border-subtle" />
-
-                    <div class="grid grid-cols-2 gap-2">
-                      <Button
-                        variant="secondary"
-                        size="md"
-                        leadingIcon="bi-share-fill"
-                        class="w-full"
-                        onclick={() => shareProjectDialog(project)}>
-                        Share
-                      </Button>
-
-                      <div
-                        class="relative w-full"
-                        data-code-dropdown={project.name}>
-                        <DropdownTrigger
-                          ariaLabel="Code options"
-                          fullWidth
-                          isOpen={openCodeMenuId === project.name}
-                          onclick={() => toggleCodeMenu(project.name)}>
-                          <span class="inline-flex items-center gap-1.5">
-                            <i
-                              class="bi bi-code text-xs"
-                              aria-hidden="true"></i>
-                            Code
-                          </span>
-                        </DropdownTrigger>
-
-                        {#if openCodeMenuId === project.name}
-                          <div
-                            role="menu"
-                            class="absolute left-0 z-50 mt-1.5 w-72 overflow-hidden rounded-sm border border-border-subtle bg-surface-elevated/70 p-3 shadow-xl backdrop-blur-lg">
-                            <div
-                              class="flex items-center gap-1.5 text-xs font-bold text-text-primary">
-                              <i
-                                class="bi bi-terminal text-xs"
-                                aria-hidden="true"></i>
-                              Clone
-                            </div>
-
-                            <div
-                              class="mt-2.5 flex rounded-sm border border-border-subtle p-0.5 text-xs font-semibold">
-                              {#each [['https', 'HTTPS'], ['ssh', 'SSH'], ['cli', 'GitHub CLI']] as const as [key, label] (key)}
-                                <button
-                                  type="button"
-                                  onclick={() => setCodeTab(project.name, key)}
-                                  class="flex-1 cursor-pointer rounded-xs py-1 transition-colors {(
-                                    getCodeTab(project.name) === key
-                                  ) ?
-                                    'bg-copilot text-white'
-                                  : 'text-text-secondary hover:text-text-primary'}">
-                                  {label}
-                                </button>
-                              {/each}
-                            </div>
-
-                            <div
-                              class="mt-2.5 flex items-center gap-2 rounded-sm border border-border-subtle bg-surface-base/60 px-2.5 py-2">
-                              <span
-                                class="min-w-0 flex-1 [scrollbar-width:none] overflow-x-auto font-mono text-[11px] whitespace-nowrap text-text-secondary select-all [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                                {codeCommand(project, getCodeTab(project.name))}
-                              </span>
-                              <button
-                                type="button"
-                                onclick={() =>
-                                  copyCodeCommand(
-                                    project,
-                                    getCodeTab(project.name)
-                                  )}
-                                aria-label="Copy clone command"
-                                class="shrink-0 cursor-pointer text-text-secondary transition-colors hover:text-copilot">
-                                <i
-                                  class="bi bi-copy text-xs"
-                                  aria-hidden="true"></i>
-                              </button>
-                            </div>
-
-                            <hr class="my-2.5 border-border-subtle" />
-
-                            <a
-                              href={project.zipUrl}
-                              class="flex items-center gap-2 rounded-sm px-2 py-1.5 text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
-                              <i
-                                class="bi bi-file-earmark-zip text-xs"
-                                aria-hidden="true"></i>
-                              Download ZIP
-                            </a>
-                          </div>
-                        {/if}
-                      </div>
-                    </div>
-
-                    <a
-                      href={project.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="hover:bg-copilot-hover active:bg-copilot-active inline-flex h-9 w-full cursor-pointer items-center justify-center rounded-sm bg-copilot px-4 text-xs font-semibold text-text-on-accent shadow-xs transition-all select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:text-sm">
-                      View repo
-                    </a>
-                  </div>
-                </article>
-              </div>
+              {@render projectCard(project, 'h4', staticTag)}
             {/each}
           </div>
         {/if}
@@ -1265,143 +1422,7 @@
         {:else}
           <div class="relative z-0 mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {#each recentPosts as post (post.id)}
-              <div
-                class="relative flex h-full w-full flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-5 text-left shadow-xs {(
-                  openCopyMenuId === post.id
-                ) ?
-                  'z-30'
-                : ''}">
-                <div
-                  class="relative aspect-video w-full overflow-hidden rounded-sm border border-border-subtle select-none">
-                  {#if post.banner_path && !failedBanners.has(post.id)}
-                    <img
-                      src={getBannerUrl(post.banner_path)}
-                      alt={post.title}
-                      loading="lazy"
-                      onload={e =>
-                        (
-                          e.currentTarget.closest(
-                            '.animate-pulse'
-                          ) as HTMLElement | null
-                        )?.classList.remove('animate-pulse')}
-                      onerror={() => markBannerFailed(post.id)}
-                      class="block h-full w-full object-cover" />
-                  {:else}
-                    <div
-                      class="to-palette-purple/15 flex h-full w-full items-center justify-center bg-linear-to-br from-accent/15 select-none">
-                      <i
-                        class="bi bi-journal-text text-2xl text-copilot/50"
-                        aria-hidden="true"></i>
-                    </div>
-                  {/if}
-                </div>
-
-                <div class="flex flex-1 flex-col gap-1 font-sans">
-                  <div
-                    class="flex min-h-[1.25rem] w-full [scrollbar-width:none] flex-wrap items-center gap-x-1.5 overflow-x-auto font-sans text-[11px] font-medium whitespace-nowrap text-text-muted select-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                    <RelativeTime date={post.created_at} />
-                    <span aria-hidden="true">&middot;</span>
-                    <span>{formatReadTime(post.read_time)}</span>
-                    <span aria-hidden="true">&middot;</span>
-                    <span>{formatCommentCount(post.comment_count)}</span>
-                    {#if post.views_count !== undefined}
-                      <span aria-hidden="true">&middot;</span>
-                      <span>{formatViewCount(post.views_count)}</span>
-                    {/if}
-                  </div>
-                  <div class="mt-1">
-                    <h4
-                      class="text-lg leading-snug font-bold text-text-primary">
-                      <a
-                        href="/blog/{post.slug}"
-                        class="rounded-xs outline-none after:absolute after:inset-0 focus-visible:ring-2 focus-visible:ring-copilot focus-visible:ring-offset-2 focus-visible:ring-offset-surface-card">
-                        {post.title}
-                      </a>
-                    </h4>
-                  </div>
-                  {#if post.excerpt}
-                    <p
-                      class="min-h-[6.5rem] text-sm leading-normal text-text-secondary">
-                      {post.excerpt}
-                    </p>
-                  {/if}
-
-                  <div class="relative z-20 mt-auto flex flex-col gap-2 pt-2">
-                    <hr class="border-border-subtle" />
-
-                    <div class="grid grid-cols-2 gap-2">
-                      <Button
-                        variant="secondary"
-                        size="md"
-                        leadingIcon="bi-share-fill"
-                        class="w-full"
-                        onclick={() => shareBlogPostDialog(post)}>
-                        Share
-                      </Button>
-
-                      <div
-                        class="relative w-full"
-                        data-copy-dropdown={post.id}>
-                        <DropdownTrigger
-                          ariaLabel="Copy options menu"
-                          fullWidth
-                          isOpen={openCopyMenuId === post.id}
-                          onclick={() => toggleCopyMenu(post.id)}>
-                          <span class="inline-flex items-center gap-1.5">
-                            <i
-                              class="bi bi-copy text-xs"
-                              aria-hidden="true"></i>
-                            Copy
-                          </span>
-                        </DropdownTrigger>
-
-                        {#if openCopyMenuId === post.id}
-                          <div
-                            role="menu"
-                            class="absolute left-0 z-50 mt-1.5 min-w-40 overflow-hidden rounded-sm border border-border-subtle bg-surface-elevated/70 py-1 shadow-xl backdrop-blur-lg">
-                            <button
-                              type="button"
-                              role="menuitem"
-                              onclick={() => copyBlogUrl(post)}
-                              class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
-                              <i
-                                class="bi bi-link text-xs"
-                                aria-hidden="true"></i>
-                              <span>Copy Blog URL</span>
-                            </button>
-                            <button
-                              type="button"
-                              role="menuitem"
-                              onclick={() => copyBlogId(post)}
-                              class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
-                              <i
-                                class="bi bi-hash text-xs"
-                                aria-hidden="true"></i>
-                              <span>Copy Blog ID</span>
-                            </button>
-                            <button
-                              type="button"
-                              role="menuitem"
-                              onclick={() => copyBlogMarkdown(post)}
-                              class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
-                              <i
-                                class="bi bi-markdown-fill text-xs"
-                                aria-hidden="true"></i>
-                              <span>Copy as Markdown</span>
-                            </button>
-                          </div>
-                        {/if}
-                      </div>
-                    </div>
-
-                    <a
-                      href="/blog/{post.slug}"
-                      class="hover:bg-copilot-hover active:bg-copilot-active inline-flex h-9 w-full cursor-pointer items-center justify-center rounded-sm bg-copilot px-4 text-xs font-semibold text-text-on-accent shadow-xs transition-all select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:text-sm">
-                      Read post
-                    </a>
-                  </div>
-                </div>
-              </div>
+              {@render blogPostCard(post)}
             {/each}
           </div>
         {/if}
@@ -1917,142 +1938,7 @@
       {:else}
         <div class="relative z-0 mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {#each paginatedBlogPosts as post (post.id)}
-            <div
-              class="relative flex h-full w-full flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-5 text-left shadow-xs {(
-                openCopyMenuId === post.id
-              ) ?
-                'z-30'
-              : ''}">
-              <div
-                class="relative aspect-video w-full overflow-hidden rounded-sm border border-border-subtle select-none">
-                {#if post.banner_path && !failedBanners.has(post.id)}
-                  <img
-                    src={getBannerUrl(post.banner_path)}
-                    alt={post.title}
-                    loading="lazy"
-                    onload={e =>
-                      (
-                        e.currentTarget.closest(
-                          '.animate-pulse'
-                        ) as HTMLElement | null
-                      )?.classList.remove('animate-pulse')}
-                    onerror={() => markBannerFailed(post.id)}
-                    class="block h-full w-full object-cover" />
-                {:else}
-                  <div
-                    class="to-palette-purple/15 flex h-full w-full items-center justify-center bg-linear-to-br from-accent/15 select-none">
-                    <i
-                      class="bi bi-journal-text text-2xl text-copilot/50"
-                      aria-hidden="true"></i>
-                  </div>
-                {/if}
-              </div>
-
-              <div class="flex flex-1 flex-col gap-1 font-sans">
-                <div
-                  class="flex min-h-[1.25rem] w-full [scrollbar-width:none] flex-wrap items-center gap-x-1.5 overflow-x-auto font-sans text-[11px] font-medium whitespace-nowrap text-text-muted select-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                  <RelativeTime date={post.created_at} />
-                  <span aria-hidden="true">&middot;</span>
-                  <span>{formatReadTime(post.read_time)}</span>
-                  <span aria-hidden="true">&middot;</span>
-                  <span>{formatCommentCount(post.comment_count)}</span>
-                  {#if post.views_count !== undefined}
-                    <span aria-hidden="true">&middot;</span>
-                    <span>{formatViewCount(post.views_count)}</span>
-                  {/if}
-                </div>
-                <div class="mt-1">
-                  <h4 class="text-lg leading-snug font-bold text-text-primary">
-                    <a
-                      href="/blog/{post.slug}"
-                      class="rounded-xs outline-none after:absolute after:inset-0 focus-visible:ring-2 focus-visible:ring-copilot focus-visible:ring-offset-2 focus-visible:ring-offset-surface-card">
-                      {post.title}
-                    </a>
-                  </h4>
-                </div>
-                {#if post.excerpt}
-                  <p
-                    class="min-h-[6.5rem] text-sm leading-normal text-text-secondary">
-                    {post.excerpt}
-                  </p>
-                {/if}
-
-                <div class="relative z-20 mt-auto flex flex-col gap-2 pt-2">
-                  <hr class="border-border-subtle" />
-
-                  <div class="grid grid-cols-2 gap-2">
-                    <Button
-                      variant="secondary"
-                      size="md"
-                      leadingIcon="bi-share-fill"
-                      class="w-full"
-                      onclick={() => shareBlogPostDialog(post)}>
-                      Share
-                    </Button>
-
-                    <div
-                      class="relative w-full"
-                      data-copy-dropdown={post.id}>
-                      <DropdownTrigger
-                        ariaLabel="Copy options menu"
-                        fullWidth
-                        isOpen={openCopyMenuId === post.id}
-                        onclick={() => toggleCopyMenu(post.id)}>
-                        <span class="inline-flex items-center gap-1.5">
-                          <i
-                            class="bi bi-copy text-xs"
-                            aria-hidden="true"></i>
-                          Copy
-                        </span>
-                      </DropdownTrigger>
-
-                      {#if openCopyMenuId === post.id}
-                        <div
-                          role="menu"
-                          class="absolute left-0 z-50 mt-1.5 min-w-40 overflow-hidden rounded-sm border border-border-subtle bg-surface-elevated/70 py-1 shadow-xl backdrop-blur-lg">
-                          <button
-                            type="button"
-                            role="menuitem"
-                            onclick={() => copyBlogUrl(post)}
-                            class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
-                            <i
-                              class="bi bi-link text-xs"
-                              aria-hidden="true"></i>
-                            <span>Copy Blog URL</span>
-                          </button>
-                          <button
-                            type="button"
-                            role="menuitem"
-                            onclick={() => copyBlogId(post)}
-                            class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
-                            <i
-                              class="bi bi-hash text-xs"
-                              aria-hidden="true"></i>
-                            <span>Copy Blog ID</span>
-                          </button>
-                          <button
-                            type="button"
-                            role="menuitem"
-                            onclick={() => copyBlogMarkdown(post)}
-                            class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
-                            <i
-                              class="bi bi-markdown-fill text-xs"
-                              aria-hidden="true"></i>
-                            <span>Copy as Markdown</span>
-                          </button>
-                        </div>
-                      {/if}
-                    </div>
-                  </div>
-
-                  <a
-                    href="/blog/{post.slug}"
-                    class="hover:bg-copilot-hover active:bg-copilot-active inline-flex h-9 w-full cursor-pointer items-center justify-center rounded-sm bg-copilot px-4 text-xs font-semibold text-text-on-accent shadow-xs transition-all select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:text-sm">
-                    Read post
-                  </a>
-                </div>
-              </div>
-            </div>
+            {@render blogPostCard(post)}
           {/each}
         </div>
         <div class="mt-6">
@@ -2154,238 +2040,7 @@
             'z-0'
           )} mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {#each paginatedProjectList as project (project.name)}
-            <div
-              class="relative flex h-full flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-5 text-left shadow-xs {(
-                openCodeMenuId === project.name
-              ) ?
-                'z-30'
-              : ''}">
-              <article class="contents">
-                <div class="flex flex-col gap-2">
-                  <div class="flex flex-wrap items-center gap-1">
-                    <h3
-                      class="text-xl leading-snug font-bold text-text-primary">
-                      {project.name}
-                    </h3>
-                    {#if project.lang}
-                      <span class="inline-flex items-center gap-1 select-none">
-                        <span
-                          class="rounded-md bg-border-subtle/30 px-1.5 py-0.5 font-mono text-[12px] font-semibold text-text-muted">
-                          {project.lang}
-                        </span>
-                      </span>
-                    {/if}
-                  </div>
-
-                  <div
-                    class="relative z-20 grid grid-cols-2 gap-x-4 gap-y-1 font-sans text-xs leading-5 font-medium text-text-muted select-none">
-                    {#if project.licenseName}
-                      <span class="inline-flex w-fit items-center gap-1">
-                        <i
-                          class="bi bi-award text-xs leading-none"
-                          aria-hidden="true"></i>
-                        {project.licenseName} License
-                      </span>
-                    {:else}
-                      <span aria-hidden="true"></span>
-                    {/if}
-                    <span class="inline-flex w-fit items-center gap-1">
-                      <i
-                        class="bi bi-diagram-2 text-xs leading-none"
-                        aria-hidden="true"></i>
-                      {project.forks} forks
-                    </span>
-                    <span class="inline-flex w-fit items-center gap-1">
-                      <i
-                        class="bi bi-star-fill text-xs leading-none"
-                        aria-hidden="true"></i>
-                      {project.stars} stars
-                    </span>
-                    {#if project.pushedAt}
-                      <span class="inline-flex w-fit items-center gap-1">
-                        <i
-                          class="bi bi-clock-history text-xs leading-none"
-                          aria-hidden="true"></i>
-                        <RelativeTime
-                          date={project.pushedAt}
-                          titlePrefix="Updated " />
-                      </span>
-                    {:else}
-                      <span aria-hidden="true"></span>
-                    {/if}
-                    <span class="inline-flex w-fit items-center gap-1">
-                      <i
-                        class="bi bi-git text-xs leading-none"
-                        aria-hidden="true"></i>
-                      {project.branches} branches
-                    </span>
-                    <span class="inline-flex w-fit items-center gap-1">
-                      <i
-                        class="bi bi-activity text-xs leading-none"
-                        aria-hidden="true"></i>
-                      {project.commits} commits
-                    </span>
-                  </div>
-
-                  {#if project.tags.length > 0}
-                    <div
-                      class="relative z-20 flex flex-wrap items-center gap-1.5">
-                      {#each project.tags as tag (tag)}
-                        <button
-                          type="button"
-                          onclick={() =>
-                            projectFilterStore.toggleMultiFilter('tag', tag)}
-                          class="cursor-pointer rounded-md bg-border-subtle/30 px-1.5 py-0.5 font-mono text-[12px] font-medium transition-colors hover:bg-surface-hover hover:text-copilot {(
-                            projectFilterStore.filters['tag']?.includes(tag)
-                          ) ?
-                            'font-semibold text-copilot'
-                          : 'text-text-muted'}">
-                          {tag}
-                        </button>
-                      {/each}
-                    </div>
-                  {/if}
-                </div>
-
-                <p
-                  class="min-h-[4rem] text-sm leading-normal text-text-secondary">
-                  {project.desc}
-                </p>
-
-                {#if project.languages.length > 0}
-                  <div class="relative z-20 flex flex-col gap-2">
-                    <span
-                      class="text-[11px] font-bold tracking-wider text-text-secondary uppercase">
-                      Languages
-                    </span>
-                    <div
-                      class="flex h-1.5 w-full overflow-hidden rounded-full bg-border-subtle/30">
-                      {#each project.languages as language (language.name)}
-                        <div
-                          class="w-[var(--lang-w)] bg-[var(--lang-color)]"
-                          style="--lang-w: {language.percent}%; --lang-color: {language.color};">
-                        </div>
-                      {/each}
-                    </div>
-                    <div
-                      class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-muted">
-                      {#each project.languages as language (language.name)}
-                        <span class="inline-flex items-center gap-1.5">
-                          <span
-                            class="h-2 w-2 shrink-0 rounded-full bg-[var(--lang-dot-color)]"
-                            style="--lang-dot-color: {language.color};"></span>
-                          <span class="font-semibold text-text-primary"
-                            >{language.name}</span>
-                          {language.percent}%
-                        </span>
-                      {/each}
-                    </div>
-                  </div>
-                {/if}
-
-                <div class="relative z-20 mt-auto flex flex-col gap-2 pt-2">
-                  <hr class="border-border-subtle" />
-
-                  <div class="grid grid-cols-2 gap-2">
-                    <Button
-                      variant="secondary"
-                      size="md"
-                      leadingIcon="bi-share-fill"
-                      class="w-full"
-                      onclick={() => shareProjectDialog(project)}>
-                      Share
-                    </Button>
-
-                    <div
-                      class="relative w-full"
-                      data-code-dropdown={project.name}>
-                      <DropdownTrigger
-                        ariaLabel="Code options"
-                        fullWidth
-                        isOpen={openCodeMenuId === project.name}
-                        onclick={() => toggleCodeMenu(project.name)}>
-                        <span class="inline-flex items-center gap-1.5">
-                          <i
-                            class="bi bi-code text-xs"
-                            aria-hidden="true"></i>
-                          Code
-                        </span>
-                      </DropdownTrigger>
-
-                      {#if openCodeMenuId === project.name}
-                        <div
-                          role="menu"
-                          class="absolute left-0 z-50 mt-1.5 w-72 overflow-hidden rounded-sm border border-border-subtle bg-surface-elevated/70 p-3 shadow-xl backdrop-blur-lg">
-                          <div
-                            class="flex items-center gap-1.5 text-xs font-bold text-text-primary">
-                            <i
-                              class="bi bi-terminal text-xs"
-                              aria-hidden="true"></i>
-                            Clone
-                          </div>
-
-                          <div
-                            class="mt-2.5 flex rounded-sm border border-border-subtle p-0.5 text-xs font-semibold">
-                            {#each [['https', 'HTTPS'], ['ssh', 'SSH'], ['cli', 'GitHub CLI']] as const as [key, label] (key)}
-                              <button
-                                type="button"
-                                onclick={() => setCodeTab(project.name, key)}
-                                class="flex-1 cursor-pointer rounded-xs py-1 transition-colors {(
-                                  getCodeTab(project.name) === key
-                                ) ?
-                                  'bg-copilot text-white'
-                                : 'text-text-secondary hover:text-text-primary'}">
-                                {label}
-                              </button>
-                            {/each}
-                          </div>
-
-                          <div
-                            class="mt-2.5 flex items-center gap-2 rounded-sm border border-border-subtle bg-surface-base/60 px-2.5 py-2">
-                            <span
-                              class="min-w-0 flex-1 [scrollbar-width:none] overflow-x-auto font-mono text-[11px] whitespace-nowrap text-text-secondary select-all [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                              {codeCommand(project, getCodeTab(project.name))}
-                            </span>
-                            <button
-                              type="button"
-                              onclick={() =>
-                                copyCodeCommand(
-                                  project,
-                                  getCodeTab(project.name)
-                                )}
-                              aria-label="Copy clone command"
-                              class="shrink-0 cursor-pointer text-text-secondary transition-colors hover:text-copilot">
-                              <i
-                                class="bi bi-copy text-xs"
-                                aria-hidden="true"></i>
-                            </button>
-                          </div>
-
-                          <hr class="my-2.5 border-border-subtle" />
-
-                          <a
-                            href={project.zipUrl}
-                            class="flex items-center gap-2 rounded-sm px-2 py-1.5 text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
-                            <i
-                              class="bi bi-file-earmark-zip text-xs"
-                              aria-hidden="true"></i>
-                            Download ZIP
-                          </a>
-                        </div>
-                      {/if}
-                    </div>
-                  </div>
-
-                  <a
-                    href={project.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="hover:bg-copilot-hover active:bg-copilot-active inline-flex h-9 w-full cursor-pointer items-center justify-center rounded-sm bg-copilot px-4 text-xs font-semibold text-text-on-accent shadow-xs transition-all select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:text-sm">
-                    View repo
-                  </a>
-                </div>
-              </article>
-            </div>
+            {@render projectCard(project, 'h3', filterableTag)}
           {/each}
         </div>
         <div class="mt-6">
