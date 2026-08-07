@@ -14,6 +14,7 @@
     Button,
     Dialog,
     EmptyState,
+    CvEntryCard,
     FilterToolbar,
     FilterChipGroup,
     SortControl,
@@ -1476,36 +1477,19 @@
             description="Check back soon for career history." />
         {:else}
           <div
-            class="divide-y divide-adwaita-border overflow-hidden rounded-md border border-adwaita-border bg-adwaita-card/45 text-left shadow-xs backdrop-blur-lg transition-colors duration-300">
+            class="divide-y divide-border-subtle overflow-hidden rounded-md border border-border-subtle bg-surface-card/45 text-left shadow-xs backdrop-blur-lg transition-colors duration-300">
             {#each experiences.slice(0, 2) as exp (exp.title || exp.company)}
-              <div
-                class="flex flex-col gap-2 px-6 py-5 transition-all hover:bg-surface-hover/40">
-                <div class="flex items-start justify-between gap-4">
-                  <div>
-                    <h4 class="text-base font-bold text-text-primary">
-                      {exp.title}
-                    </h4>
-                    <p class="text-sm font-medium text-text-secondary">
-                      {exp.company}
-                    </p>
-                  </div>
-                  <span
-                    class="shrink-0 rounded-full border border-border-subtle bg-border-subtle/30 px-2.5 py-0.5 text-xs font-semibold text-text-muted select-none">
-                    {formatPeriod(
-                      exp.startMonth,
-                      exp.startYear,
-                      exp.endMonth,
-                      exp.endYear,
-                      exp.currentlyIn
-                    )}
-                  </span>
-                </div>
-                {#if exp.description}
-                  <p class="mt-1.5 text-sm leading-relaxed text-text-secondary">
-                    {exp.description}
-                  </p>
-                {/if}
-              </div>
+              <CvEntryCard
+                role={exp.title}
+                organization={exp.company}
+                period={formatPeriod(
+                  exp.startMonth,
+                  exp.startYear,
+                  exp.endMonth,
+                  exp.endYear,
+                  exp.currentlyIn
+                )}
+                description={exp.description} />
             {/each}
           </div>
         {/if}
@@ -1722,36 +1706,19 @@
           </div>
         {:else}
           <div
-            class="mt-4 divide-y divide-adwaita-border overflow-hidden rounded-md border border-adwaita-border bg-adwaita-card/45 shadow-xs backdrop-blur-lg transition-colors duration-300">
+            class="mt-4 divide-y divide-border-subtle overflow-hidden rounded-md border border-border-subtle bg-surface-card/45 shadow-xs backdrop-blur-lg transition-colors duration-300">
             {#each experiences as exp, idx (idx)}
-              <div
-                class="flex flex-col gap-2 px-6 py-5 transition-all hover:bg-surface-hover/40">
-                <div class="flex items-start justify-between gap-4">
-                  <div>
-                    <h3 class="text-base font-bold text-text-primary">
-                      {exp.title}
-                    </h3>
-                    <p class="text-sm font-medium text-text-secondary">
-                      {exp.company}
-                    </p>
-                  </div>
-                  <span
-                    class="shrink-0 rounded-full border border-border-subtle bg-border-subtle/30 px-2.5 py-0.5 text-xs font-semibold text-text-muted select-none">
-                    {formatPeriod(
-                      exp.startMonth,
-                      exp.startYear,
-                      exp.endMonth,
-                      exp.endYear,
-                      exp.currentlyIn
-                    )}
-                  </span>
-                </div>
-                {#if exp.description}
-                  <p class="mt-1.5 text-sm leading-relaxed text-text-secondary">
-                    {exp.description}
-                  </p>
-                {/if}
-              </div>
+              <CvEntryCard
+                role={exp.title}
+                organization={exp.company}
+                period={formatPeriod(
+                  exp.startMonth,
+                  exp.startYear,
+                  exp.endMonth,
+                  exp.endYear,
+                  exp.currentlyIn
+                )}
+                description={exp.description} />
             {/each}
           </div>
         {/if}
@@ -1771,36 +1738,19 @@
           </div>
         {:else}
           <div
-            class="mt-4 divide-y divide-adwaita-border overflow-hidden rounded-md border border-adwaita-border bg-adwaita-card/45 shadow-xs backdrop-blur-lg transition-colors duration-300">
+            class="mt-4 divide-y divide-border-subtle overflow-hidden rounded-md border border-border-subtle bg-surface-card/45 shadow-xs backdrop-blur-lg transition-colors duration-300">
             {#each education as edu, idx (idx)}
-              <div
-                class="flex flex-col gap-1.5 px-6 py-5 transition-all hover:bg-surface-hover/40">
-                <div class="flex items-start justify-between gap-4">
-                  <div>
-                    <h3 class="text-base font-bold text-text-primary">
-                      {edu.degree}
-                    </h3>
-                    <p class="text-sm text-text-secondary">
-                      {edu.institution}
-                    </p>
-                  </div>
-                  <span
-                    class="shrink-0 rounded-full border border-border-subtle bg-border-subtle/30 px-2.5 py-0.5 text-xs font-semibold text-text-muted select-none">
-                    {formatPeriod(
-                      edu.startMonth,
-                      edu.startYear,
-                      edu.endMonth,
-                      edu.endYear,
-                      edu.currentlyIn
-                    )}
-                  </span>
-                </div>
-                {#if edu.description}
-                  <p class="mt-1.5 text-sm leading-relaxed text-text-secondary">
-                    {edu.description}
-                  </p>
-                {/if}
-              </div>
+              <CvEntryCard
+                role={edu.degree}
+                organization={edu.institution}
+                period={formatPeriod(
+                  edu.startMonth,
+                  edu.startYear,
+                  edu.endMonth,
+                  edu.endYear,
+                  edu.currentlyIn
+                )}
+                description={edu.description} />
             {/each}
           </div>
         {/if}
