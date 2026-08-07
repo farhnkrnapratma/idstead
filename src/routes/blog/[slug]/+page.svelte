@@ -89,41 +89,6 @@
   )
 
   const headings = $derived(data.headings || [])
-  let activeHeadingId = $state('')
-  let isStretching = $state(false)
-  let indicatorTop = $state(0)
-  let indicatorHeight = $state(0)
-  let isIndicatorVisible = $state(false)
-  let tocListEl = $state<HTMLElement | null>(null)
-
-  function updateIndicatorPos(
-    headingId: string,
-    stretch = false,
-    topOverride?: number,
-    heightOverride?: number
-  ) {
-    if (!tocListEl) return
-    const targetLink = tocListEl.querySelector<HTMLElement>(
-      `a[href="#${headingId}"]`
-    )
-    if (!targetLink) {
-      isIndicatorVisible = false
-      return
-    }
-    isIndicatorVisible = true
-    isStretching = stretch
-
-    const baseHeight =
-      targetLink.getBoundingClientRect().height || targetLink.offsetHeight
-
-    if (topOverride !== undefined && heightOverride !== undefined) {
-      indicatorTop = topOverride
-      indicatorHeight = heightOverride
-    } else {
-      indicatorTop = targetLink.offsetTop
-      indicatorHeight = baseHeight
-    }
-  }
 
   let showYesFeedbackDialog = $state(false)
   let showNoFeedbackDialog = $state(false)
@@ -139,10 +104,6 @@
 
   $effect(() => {
     void html
-    let headingObserver: IntersectionObserver | null = null
-    let scrollTimeout: ReturnType<typeof setTimeout> | null = null
-    let rafId: number | null = null
-    let lastScrollY = 0
 
     tick().then(() => {
       const container = document.querySelector('.prose-custom')
@@ -190,184 +151,12 @@
             if (target) {
               target.scrollIntoView({behavior: 'smooth', block: 'start'})
               pushState(`#${el.id}`, {})
-              activeHeadingId = el.id
-              updateIndicatorPos(el.id, false)
             }
           }
           el.appendChild(anchor)
         })
-
-        if (activeHeadingId) {
-          updateIndicatorPos(activeHeadingId, false)
-        }
-
-        const updateScrollspyPosition = () => {
-          if (!tocListEl || elements.length === 0) return
-          const scrollY = window.scrollY
-          const viewportOffset = 120
-          const isScrollingDown = scrollY >= lastScrollY
-          lastScrollY = scrollY
-
-          const headingPositions = elements.map(el => {
-            const rect = el.getBoundingClientRect()
-            return {
-              id: el.id,
-              top: rect.top + window.scrollY,
-              height: rect.height
-            }
-          })
-
-          const tocLinks = headingPositions.map(h => {
-            const link = tocListEl?.querySelector<HTMLElement>(
-              `a[href="#${h.id}"]`
-            )
-            return {
-              id: h.id,
-              top: link?.offsetTop ?? 0,
-              height:
-                link ?
-                  link.getBoundingClientRect().height || link.offsetHeight
-                : 0
-            }
-          })
-
-          if (
-            headingPositions.length > 0
-            && scrollY < headingPositions[0].top - viewportOffset
-          ) {
-            activeHeadingId = ''
-            isIndicatorVisible = false
-            return
-          }
-
-          let segmentIndex = 0
-          for (let i = 0; i < headingPositions.length; i++) {
-            if (scrollY >= headingPositions[i].top - viewportOffset) {
-              segmentIndex = i
-            }
-          }
-
-          const hCurrent = headingPositions[segmentIndex]
-          const hNext = headingPositions[segmentIndex + 1]
-
-          const lCurrent = tocLinks[segmentIndex]
-          const lNext = tocLinks[segmentIndex + 1]
-
-          if (!hCurrent || !lCurrent) return
-
-          if (!hNext || !lNext) {
-            activeHeadingId = hCurrent.id
-            updateIndicatorPos(
-              hCurrent.id,
-              false,
-              lCurrent.top,
-              lCurrent.height
-            )
-            return
-          }
-
-          const segDistance = hNext.top - hCurrent.top
-          if (segDistance <= 0) {
-            activeHeadingId = hCurrent.id
-            updateIndicatorPos(
-              hCurrent.id,
-              false,
-              lCurrent.top,
-              lCurrent.height
-            )
-            return
-          }
-
-          const rawProgress =
-            (scrollY - (hCurrent.top - viewportOffset)) / segDistance
-          const progress = Math.max(0, Math.min(1, rawProgress))
-
-          activeHeadingId = progress >= 0.5 ? hNext.id : hCurrent.id
-
-          if (progress > 0.08 && progress < 0.92) {
-            const stretchRatio = (progress - 0.08) / 0.84
-
-            if (isScrollingDown) {
-              const calcTop = lCurrent.top
-              const currentBottom = lCurrent.top + lCurrent.height
-              const targetBottom = lNext.top + lNext.height
-              const calcBottom =
-                currentBottom + (targetBottom - currentBottom) * stretchRatio
-              const calcHeight = calcBottom - calcTop
-              updateIndicatorPos(activeHeadingId, true, calcTop, calcHeight)
-            } else {
-              const calcBottom = lNext.top + lNext.height
-              const currentTop = lNext.top
-              const targetTop = lCurrent.top
-              const calcTop =
-                currentTop - (currentTop - targetTop) * (1 - stretchRatio)
-              const calcHeight = calcBottom - calcTop
-              updateIndicatorPos(activeHeadingId, true, calcTop, calcHeight)
-            }
-          } else {
-            const targetLink = progress >= 0.5 ? lNext : lCurrent
-            updateIndicatorPos(
-              activeHeadingId,
-              false,
-              targetLink.top,
-              targetLink.height
-            )
-          }
-
-          if (scrollTimeout) clearTimeout(scrollTimeout)
-          scrollTimeout = setTimeout(() => {
-            if (activeHeadingId) {
-              const activeLink = tocLinks.find(l => l.id === activeHeadingId)
-              if (activeLink) {
-                updateIndicatorPos(
-                  activeHeadingId,
-                  false,
-                  activeLink.top,
-                  activeLink.height
-                )
-              }
-            }
-          }, 150)
-        }
-
-        const handleScroll = () => {
-          if (rafId !== null) return
-          rafId = requestAnimationFrame(() => {
-            rafId = null
-            updateScrollspyPosition()
-          })
-        }
-
-        window.addEventListener('scroll', handleScroll, {passive: true})
-
-        headingObserver = new IntersectionObserver(
-          entries => {
-            entries.forEach(entry => {
-              if (entry.isIntersecting) {
-                activeHeadingId = entry.target.id
-                updateIndicatorPos(entry.target.id, false)
-              }
-            })
-          },
-          {root: null, rootMargin: '0px 0px -70% 0px', threshold: 0.1}
-        )
-
-        elements.forEach(el => headingObserver?.observe(el))
-
-        return () => {
-          window.removeEventListener('scroll', handleScroll)
-          if (rafId !== null) cancelAnimationFrame(rafId)
-          if (scrollTimeout) clearTimeout(scrollTimeout)
-          if (headingObserver) headingObserver.disconnect()
-        }
       }
     })
-
-    return () => {
-      if (headingObserver) {
-        headingObserver.disconnect()
-      }
-    }
   })
 
   onMount(() => {
