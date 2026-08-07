@@ -10,13 +10,16 @@
     Textarea,
     Button,
     Dialog,
-    SkipLink,
-    FooterSection,
-    SpotlightSearch,
-    ThemeSelect
+    TopNav,
+    FooterSection
   } from '$lib'
 
-  import {themeStore} from '$lib/stores/themeStore.svelte'
+  let pageAuthor = $derived((page?.data as any)?.author)
+  let authorName = $derived(pageAuthor?.name || '')
+  let siteUrl = $derived(
+    ((page?.data as any)?.author?.siteUrl || page.url.origin).replace(/\/$/, '')
+  )
+  let contactEmail = $derived(pageAuthor?.email || '')
 
   let formName = $state('')
   let formEmail = $state('')
@@ -152,9 +155,6 @@
       feedbackFormElement.submit()
     }
   }
-
-  let pageAuthor = $derived((page?.data as any)?.author)
-  let authorName = $derived(pageAuthor?.name || '')
 </script>
 
 <svelte:head>
@@ -166,7 +166,7 @@
     : '.'}" />
   <link
     rel="canonical"
-    href="https://fkp.my.id/feedback" />
+    href="{siteUrl}/feedback" />
   <meta
     property="og:title"
     content="Feedback{authorName ? ` — ${authorName}` : ''}" />
@@ -180,10 +180,10 @@
     content="website" />
   <meta
     property="og:url"
-    content="https://fkp.my.id/feedback" />
+    content="{siteUrl}/feedback" />
   <meta
     property="og:image"
-    content="https://fkp.my.id/hero.png" />
+    content="{siteUrl}/hero.png" />
   <meta
     name="twitter:card"
     content="summary_large_image" />
@@ -197,34 +197,19 @@
     : '.'}" />
   <meta
     name="twitter:image"
-    content="https://fkp.my.id/hero.png" />
+    content="{siteUrl}/hero.png" />
 </svelte:head>
 
-<SkipLink />
-
-<nav
-  class="fixed top-0 z-40 flex h-15 w-full items-center justify-between border-b border-border-subtle bg-surface-card/60 px-3 font-sans shadow-xs backdrop-blur-lg transition-colors duration-300 sm:px-5"
-  aria-label="Feedback page navigation">
-  <a
-    href="/"
-    class="inline-flex h-8 items-center justify-center rounded-md border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover hover:text-copilot focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
-    Back to Home
-  </a>
-
-  <div class="flex items-center gap-2">
-    <SpotlightSearch />
-    <ThemeSelect
-      theme={themeStore.current}
-      onThemeChange={themeStore.apply}
-      class="hidden md:inline-flex" />
-  </div>
-</nav>
+<TopNav
+  ariaLabel="Feedback page navigation"
+  backHref="/"
+  backLabel="Back to Home" />
 
 <main
   id="main-content"
   class="flex min-h-[calc(100vh-3.75rem)] flex-col pt-15 font-sans">
   <section
-    class="relative z-10 mx-auto flex w-full flex-col gap-8 px-6 py-12 md:w-[80%] lg:w-[50%]">
+    class="relative z-10 mx-auto flex w-full flex-col gap-8 px-6 py-12 md:w-[80%] lg:w-[60%] xl:w-[50%]">
     <div
       class="pointer-events-none absolute top-12.5 left-[50%] z-0 h-80 w-[320px] translate-x-[-50%] rounded-full bg-copilot/10 blur-[80px]">
     </div>
@@ -295,10 +280,10 @@
     <form
       bind:this={feedbackFormElement}
       novalidate
-      action="https://formsubmit.co/contact@fkp.my.id"
+      action={contactEmail ? `https://formsubmit.co/${contactEmail}` : '#'}
       method="POST"
       onsubmit={validateForm}
-      class="relative z-10 flex w-full flex-col gap-3 rounded-2xl border border-border-subtle bg-surface-card/60 p-6 text-left shadow-xs backdrop-blur-lg transition-colors duration-300"
+      class="relative z-10 flex w-full flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card/45 p-6 text-left shadow-xs backdrop-blur-xl transition-colors duration-300"
       autocomplete="off">
       <input
         type="hidden"
@@ -315,7 +300,7 @@
       <input
         type="hidden"
         name="_url"
-        value="https://fkp.my.id/feedback" />
+        value="{siteUrl}/feedback" />
 
       <div class="mb-2 select-none">
         <h2 class="text-sm font-bold text-text-primary">Report an issue</h2>
@@ -354,7 +339,7 @@
         error={formErrors.email}
         valid={formValid.email}>
         <Input
-          type="email"
+          type="text"
           id="form-email"
           name="email"
           aria-required="true"

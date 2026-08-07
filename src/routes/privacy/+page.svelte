@@ -2,18 +2,14 @@
 <script lang="ts">
   import {page} from '$app/state'
   import {onMount} from 'svelte'
-  import {SkipLink, FooterSection, SpotlightSearch, ThemeSelect} from '$lib'
+  import {TopNav, FooterSection} from '$lib'
   import {consentStore} from '$lib/stores/consentStore.svelte'
-
-  import {themeStore} from '$lib/stores/themeStore.svelte'
 
   let pageAuthor = $derived((page?.data as any)?.author)
   let name = $derived(pageAuthor?.name || 'This website')
   let siteUrl = $derived(
-    ((page?.data as any)?.author?.siteUrl || 'https://fkp.my.id/').replace(
-      /\/$/,
-      ''
-    ) + '/'
+    ((page?.data as any)?.author?.siteUrl || page.url.origin).replace(/\/$/, '')
+      + '/'
   )
 </script>
 
@@ -54,29 +50,14 @@
     content="{siteUrl}hero.png" />
 </svelte:head>
 
-<SkipLink />
-
-<nav
-  class="fixed top-0 z-40 flex h-15 w-full items-center justify-between border-b border-border-subtle bg-surface-card/60 px-3 font-sans shadow-xs backdrop-blur-lg transition-colors duration-300 sm:px-5"
-  aria-label="Privacy page navigation">
-  <a
-    href="/"
-    class="inline-flex h-8 items-center justify-center rounded-md border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover hover:text-copilot focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
-    Back to Home
-  </a>
-
-  <div class="flex items-center gap-2">
-    <SpotlightSearch />
-    <ThemeSelect
-      theme={themeStore.current}
-      onThemeChange={themeStore.apply}
-      class="hidden md:inline-flex" />
-  </div>
-</nav>
+<TopNav
+  ariaLabel="Privacy page navigation"
+  backHref="/"
+  backLabel="Back to Home" />
 
 <main
   id="main-content"
-  class="relative z-10 mx-auto w-full px-6 pt-24 pb-20 font-sans md:w-[80%] md:max-w-none md:pt-28 md:pb-24 lg:w-[50%]">
+  class="relative z-10 mx-auto w-full px-6 pt-24 pb-20 font-sans md:w-[80%] md:max-w-none md:pt-28 md:pb-24 lg:w-[60%] xl:w-[50%]">
   <div class="mb-8">
     <h1 class="text-3xl font-bold tracking-tight text-text-primary">
       Privacy Policy
@@ -86,7 +67,7 @@
 
   <div class="space-y-6 text-sm leading-relaxed text-text-secondary">
     <section
-      class="rounded-2xl border border-border-subtle bg-surface-card/45 p-6 shadow-xs backdrop-blur-lg">
+      class="rounded-sm border border-border-subtle bg-surface-card/30 p-6 shadow-xs backdrop-blur-xl">
       <h2 class="text-base font-bold text-text-primary">
         1. Overview & Data Transparency
       </h2>
@@ -103,7 +84,7 @@
     </section>
 
     <section
-      class="rounded-2xl border border-border-subtle bg-surface-card/45 p-6 shadow-xs backdrop-blur-lg">
+      class="rounded-sm border border-border-subtle bg-surface-card/30 p-6 shadow-xs backdrop-blur-xl">
       <h2 class="text-base font-bold text-text-primary">
         2. Google Analytics 4 & Consent Mode v2
       </h2>
@@ -147,7 +128,7 @@
     </section>
 
     <section
-      class="rounded-2xl border border-border-subtle bg-surface-card/45 p-6 shadow-xs backdrop-blur-lg">
+      class="rounded-sm border border-border-subtle bg-surface-card/30 p-6 shadow-xs backdrop-blur-xl">
       <h2 class="text-base font-bold text-text-primary">
         3. Data Retention Policy (14-Month Standard)
       </h2>
@@ -167,7 +148,7 @@
     </section>
 
     <section
-      class="rounded-2xl border border-border-subtle bg-surface-card/45 p-6 shadow-xs backdrop-blur-lg">
+      class="rounded-sm border border-border-subtle bg-surface-card/30 p-6 shadow-xs backdrop-blur-xl">
       <h2 class="text-base font-bold text-text-primary">
         4. Error Monitoring & Performance Tracking (Sentry)
       </h2>
@@ -217,7 +198,7 @@
     </section>
 
     <section
-      class="rounded-2xl border border-border-subtle bg-surface-card/45 p-6 shadow-xs backdrop-blur-lg">
+      class="rounded-sm border border-border-subtle bg-surface-card/30 p-6 shadow-xs backdrop-blur-xl">
       <h2 class="text-base font-bold text-text-primary">
         5. Public Comments & Feedback
       </h2>
@@ -241,7 +222,7 @@
     </section>
 
     <section
-      class="rounded-2xl border border-border-subtle bg-surface-card/45 p-6 shadow-xs backdrop-blur-lg">
+      class="rounded-sm border border-border-subtle bg-surface-card/30 p-6 shadow-xs backdrop-blur-xl">
       <h2 class="text-base font-bold text-text-primary">
         6. Your Choices & Cookie Preferences
       </h2>
@@ -254,26 +235,29 @@
         <button
           type="button"
           onclick={() => consentStore.openCustomizeModal()}
-          class="inline-flex cursor-pointer items-center justify-center rounded-lg border border-border-subtle bg-surface-card px-4 py-2 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
+          class="inline-flex cursor-pointer items-center justify-center rounded-sm border border-border-subtle bg-surface-card px-4 py-2 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
           Manage Cookie Settings
         </button>
       </div>
     </section>
 
-    <section
-      class="rounded-2xl border border-border-subtle bg-surface-card/45 p-6 shadow-xs backdrop-blur-lg">
-      <h2 class="text-base font-bold text-text-primary">
-        7. Contact Information
-      </h2>
-      <p class="mt-2">
-        If you have any questions or privacy inquiries regarding this policy or
-        your data, please contact us at <a
-          href="mailto:contact@fkp.my.id"
-          class="font-medium text-copilot hover:underline">contact@fkp.my.id</a
-        >.
-      </p>
-    </section>
+    {#if pageAuthor?.email}
+      <section
+        class="rounded-sm border border-border-subtle bg-surface-card/30 p-6 shadow-xs backdrop-blur-xl">
+        <h2 class="text-base font-bold text-text-primary">
+          7. Contact Information
+        </h2>
+        <p class="mt-2">
+          If you have any questions or privacy inquiries regarding this policy
+          or your data, please contact us at <a
+            href="mailto:{pageAuthor.email}"
+            class="font-medium text-copilot hover:underline"
+            >{pageAuthor.email}</a
+          >.
+        </p>
+      </section>
+    {/if}
   </div>
 </main>
 
-<FooterSection {name} />
+<FooterSection />

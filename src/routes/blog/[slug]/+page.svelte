@@ -14,8 +14,7 @@
     turnstileSiteKey
   } from '$lib/utils/turnstile'
   import {
-    SkipLink,
-    SpotlightSearch,
+    TopNav,
     Button,
     Checkbox,
     CommentThread,
@@ -24,7 +23,6 @@
     FormField,
     Textarea,
     FooterSection,
-    ThemeSelect,
     TableOfContents,
     RelativeTime,
     DropdownTrigger,
@@ -503,24 +501,10 @@
   {/if}
 </svelte:head>
 
-<SkipLink />
-
-<nav
-  class="fixed top-0 z-40 flex h-15 w-full items-center justify-between border-b border-border-subtle bg-surface-card/45 px-3 font-sans shadow-xs backdrop-blur-xl transition-colors duration-300 sm:px-5"
-  aria-label="Article navigation">
-  <a
-    href="/#blog"
-    class="inline-flex h-9 items-center justify-center rounded-sm border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
-    Back to Blog
-  </a>
-  <div class="flex items-center gap-2">
-    <SpotlightSearch />
-    <ThemeSelect
-      theme={themeStore.current}
-      onThemeChange={themeStore.apply}
-      class="hidden md:inline-flex" />
-  </div>
-</nav>
+<TopNav
+  ariaLabel="Article navigation"
+  backHref="/#blog"
+  backLabel="Back to Blog" />
 
 <main
   id="main-content"
