@@ -3,15 +3,14 @@
   import {page} from '$app/state'
   import {supabase} from '$lib/supabase'
   import {onMount} from 'svelte'
+  import {Card, FormField, Input, Button, IconButton, SkipLink} from '$lib'
+  import {toastStore} from '$lib/stores/toastStore.svelte'
   import {
-    Card,
-    FormField,
-    Input,
-    Button,
-    IconButton,
-    SkipLink,
-    StatusBanner
-  } from '$lib'
+    turnstileWidget,
+    getTurnstileResponse,
+    resetTurnstile,
+    turnstileSiteKey
+  } from '$lib/utils/turnstile'
 
   let email = $state('')
   let password = $state('')
@@ -19,18 +18,9 @@
   let showPassword = $state(false)
   let errors = $state({email: '', password: ''})
   let valid = $state({email: false, password: false})
-  let showToast = $state(false)
-  let toastMessage = $state('')
+  let turnstileEl = $state<HTMLDivElement | null>(null)
   let pageAuthor = $derived((page?.data as any)?.author)
-  let authorName = $derived(pageAuthor?.name || 'Admin')
-
-  function triggerToast(msg: string) {
-    toastMessage = msg
-    showToast = true
-    setTimeout(() => {
-      showToast = false
-    }, 4000)
-  }
+  let authorName = $derived(pageAuthor?.name || '')
 
   onMount(async () => {
     const {data} = await supabase.auth.getSession()
@@ -101,40 +91,78 @@
     e.preventDefault()
     if (!validate()) return
 
+    const turnstileToken = getTurnstileResponse(turnstileEl)
+    if (!turnstileToken) {
+      toastStore.error(
+        'Please complete the verification challenge before submitting.'
+      )
+      return
+    }
+
     isSubmitting = true
 
     try {
-      const {error} = await supabase.auth.signInWithPassword({
-        email: sanitizeInput(email.trim()),
-        password: password.trim()
+      const res = await fetch('/api/v1/admin/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          email: email.trim(),
+          password: password,
+          turnstileToken
+        })
       })
 
+      const result = await res.json()
+
+      if (!res.ok) {
+        throw new Error(result.error?.message || 'Invalid email or password.')
+      }
+
+      const {error} = await supabase.auth.setSession({
+        access_token: result.session.access_token,
+        refresh_token: result.session.refresh_token
+      })
       if (error) throw error
+
       window.location.href = '/admin'
-    } catch (err) {
-      const error = err as Error
-      console.error('Login failed:', error)
-      triggerToast(error.message || 'Invalid email or password.')
+    } catch (err: unknown) {
+      console.error('Login failed:', err)
+      const message =
+        err instanceof Error ? err.message
+        : typeof err === 'object' && err !== null && 'message' in err ?
+          String((err as {message: unknown}).message)
+        : 'Invalid email or password.'
+      toastStore.error(message || 'Invalid email or password.')
     } finally {
       isSubmitting = false
+      // Tokens are single-use; always reset so a retry gets a fresh one
+      // instead of being rejected as timeout-or-duplicate.
+      resetTurnstile(turnstileEl)
     }
   }
 </script>
+
+<svelte:head>
+  <script
+    src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+    async
+    defer></script>
+</svelte:head>
 
 <SkipLink />
 
 <main
   id="main-content"
-  class="flex min-h-[calc(100vh-3.75rem)] flex-col items-center justify-center pt-15 font-sans">
-  <div class="flex w-full max-w-sm flex-1 flex-col justify-center px-6 py-10">
+  class="relative flex min-h-dvh flex-col items-center justify-center font-sans">
+  <div class="flex w-full max-w-sm items-center justify-center px-6">
     <Card
       variant="glass"
-      class="p-6">
-      <div class="mb-6 flex flex-col items-center text-center select-none">
+      class="p-5">
+      <div class="mb-4 flex flex-col items-center text-center select-none">
         <div class="flex items-center gap-2">
-          <span
-            class="material-symbols-rounded text-2xl text-copilot select-none"
-            aria-hidden="true">code</span>
+          <i
+            class="bi bi-terminal-fill text-2xl text-copilot select-none"
+            aria-hidden="true"></i>
           <h1 class="text-xl font-bold text-text-primary">Console</h1>
         </div>
         <p class="mt-1 text-xs text-text-secondary">
@@ -145,15 +173,16 @@
       <form
         novalidate
         onsubmit={handleLogin}
-        class="flex flex-col gap-3">
+        class="flex flex-col gap-2.5">
         <FormField
           id="login-email"
           label="Email"
           required
+          hideAsterisk
           error={errors.email}
           valid={valid.email}>
           <Input
-            type="email"
+            type="text"
             id="login-email"
             placeholder="Enter your email"
             autocomplete="username"
@@ -173,6 +202,7 @@
           id="login-pass"
           label="Password"
           required
+          hideAsterisk
           error={errors.password}
           valid={valid.password}>
           <div class="relative flex items-center">
@@ -198,15 +228,22 @@
                 variant="ghost"
                 size="sm"
                 onclick={() => (showPassword = !showPassword)}>
-                <span
-                  class="material-symbols-rounded text-base"
-                  aria-hidden="true">
-                  {showPassword ? 'visibility_off' : 'visibility'}
-                </span>
+                <i
+                  class="bi {showPassword ? 'bi-eye-slash' : (
+                    'bi-eye'
+                  )} text-base"
+                  aria-hidden="true"></i>
               </IconButton>
             </div>
           </div>
         </FormField>
+
+        <div
+          bind:this={turnstileEl}
+          class="cf-turnstile"
+          data-action="turnstile-spin-v2"
+          use:turnstileWidget={{sitekey: turnstileSiteKey}}>
+        </div>
 
         <Button
           type="submit"
@@ -218,29 +255,13 @@
         </Button>
       </form>
     </Card>
-
-    <div class="mt-4 text-center select-none">
-      <a
-        href="/"
-        class="text-xs font-semibold text-text-secondary transition-colors hover:text-copilot hover:underline">
-        Back to home
-      </a>
-    </div>
   </div>
 
   <footer
-    class="w-full px-6 py-8 text-center font-sans text-xs text-text-muted select-none">
+    class="absolute inset-x-0 bottom-0 w-full px-6 py-6 text-center font-sans text-xs text-text-muted select-none">
     <p>
-      &copy; {new Date().getFullYear()}
-      {authorName}. All rights reserved.
+      &copy; {new Date().getFullYear()}{authorName ? ` ${authorName}` : ''}. All
+      rights reserved.
     </p>
   </footer>
-
-  {#if showToast}
-    <div class="fixed bottom-6 left-1/2 z-110 -translate-x-1/2">
-      <StatusBanner
-        type="error"
-        message={toastMessage} />
-    </div>
-  {/if}
 </main>

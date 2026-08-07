@@ -3,6 +3,10 @@
   import {supabase} from '$lib/supabase'
   import {onMount, tick} from 'svelte'
   import {renderMarkdown} from '$lib/markdown'
+  import {
+    enhanceCodeBlocks,
+    splitHighlightedHtmlLines
+  } from '$lib/utils/codeBlocks'
   import hljs from 'highlight.js'
   import {
     SkipLink,
@@ -15,7 +19,8 @@
     Input,
     Textarea,
     ThemeSelect,
-    Dialog
+    Dialog,
+    toastStore
   } from '$lib'
   import {themeStore} from '$lib/stores/themeStore.svelte'
 
@@ -228,112 +233,6 @@
     }
   })
 
-  let showToast = $state(false)
-  let toastMessage = $state('')
-
-  function triggerToast(message: string) {
-    toastMessage = message
-    showToast = true
-    setTimeout(() => {
-      showToast = false
-    }, 2000)
-  }
-
-  function getPrettyLanguage(className: string): string {
-    if (!className) return 'Code'
-    const match = className.match(/language-(\S+)/)
-    if (!match) return 'Code'
-    const lang = match[1].toLowerCase()
-    const map: Record<string, string> = {
-      js: 'JavaScript',
-      javascript: 'JavaScript',
-      ts: 'TypeScript',
-      typescript: 'TypeScript',
-      html: 'HTML',
-      css: 'CSS',
-      rust: 'Rust',
-      rs: 'Rust',
-      python: 'Python',
-      py: 'Python',
-      bash: 'Bash',
-      sh: 'Shell',
-      shell: 'Shell',
-      json: 'JSON',
-      yaml: 'YAML',
-      yml: 'YAML',
-      xml: 'XML',
-      md: 'Markdown',
-      markdown: 'Markdown',
-      go: 'Go',
-      golang: 'Go',
-      cpp: 'C++',
-      c: 'C',
-      csharp: 'C#',
-      cs: 'C#',
-      sql: 'SQL',
-      dockerfile: 'Docker',
-      docker: 'Docker'
-    }
-    return map[lang] || lang.charAt(0).toUpperCase() + lang.slice(1)
-  }
-
-  function setupCodeHeaderBars() {
-    const container = document.querySelector('.prose-custom')
-    if (!container) return
-    const preBlocks = container.querySelectorAll('pre')
-    preBlocks.forEach(el => {
-      const pre = el as HTMLElement
-      if (pre.previousElementSibling?.classList.contains('code-header-bar'))
-        return
-
-      const codeElement = pre.querySelector('code')
-      const langClass = codeElement?.className || ''
-      const prettyLang = getPrettyLanguage(langClass)
-
-      const headerBar = document.createElement('div')
-      headerBar.className =
-        'code-header-bar flex items-center justify-between bg-surface-canvas/95 border border-border-subtle rounded-t-lg px-4 py-1 text-xs text-text-muted font-semibold select-none mt-6'
-
-      const leftSpan = document.createElement('span')
-      leftSpan.className =
-        'text-[12.5px] font-sans font-bold uppercase tracking-wider text-text-muted leading-none'
-      leftSpan.innerText = prettyLang
-      headerBar.appendChild(leftSpan)
-
-      const copyBtn = document.createElement('button')
-      copyBtn.type = 'button'
-      copyBtn.className =
-        'flex h-5 w-5 items-center justify-center rounded-md border border-border-subtle/30 hover:bg-surface-hover/30 hover:text-text-primary transition-colors cursor-pointer text-text-muted leading-none'
-      copyBtn.innerHTML =
-        '<i class="bi bi-clipboard text-xs font-bold leading-none" aria-hidden="true"></i>'
-
-      copyBtn.addEventListener('click', () => {
-        if (!codeElement) return
-        const codeText = codeElement.innerText || codeElement.textContent || ''
-        navigator.clipboard
-          .writeText(codeText)
-          .then(() => {
-            copyBtn.innerHTML =
-              '<i class="bi bi-check-lg text-xs font-bold text-copilot leading-none" aria-hidden="true"></i>'
-            triggerToast('Code copied to clipboard!')
-            setTimeout(() => {
-              copyBtn.innerHTML =
-                '<i class="bi bi-clipboard text-xs font-bold leading-none" aria-hidden="true"></i>'
-            }, 2000)
-          })
-          .catch(err => {
-            console.error('Failed to copy code: ', err)
-          })
-      })
-
-      headerBar.appendChild(copyBtn)
-
-      pre.classList.add('mt-0!', 'rounded-t-none!', 'border-t-0!', 'pt-2.5!')
-
-      pre.parentNode?.insertBefore(headerBar, pre)
-    })
-  }
-
   $effect(() => {
     if (activeTab === 'preview' && previewHtml) {
       tick().then(() => {
@@ -341,47 +240,10 @@
         blocks.forEach(block => {
           hljs.highlightElement(block as HTMLElement)
         })
-        setupCodeHeaderBars()
+        enhanceCodeBlocks(toastStore.success)
       })
     }
   })
-
-  function splitHighlightedHtml(html: string): string[] {
-    const lines = html.split('\n')
-    const result: string[] = []
-    let openTags: string[] = []
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i]
-      const prefix = openTags.join('')
-      const tagRegex = /<\/?([a-z0-9]+)[^>]*>/gi
-      let match: RegExpExecArray | null
-      const currentOpen = [...openTags]
-
-      while ((match = tagRegex.exec(line)) !== null) {
-        const fullTag = match[0]
-        if (fullTag.startsWith('</')) {
-          currentOpen.pop()
-        } else if (!fullTag.endsWith('/>')) {
-          currentOpen.push(fullTag)
-        }
-      }
-
-      const suffix = currentOpen
-        .slice()
-        .reverse()
-        .map(t => {
-          const name = t.match(/<([a-z0-9]+)/i)?.[1]
-          return name ? `</${name}>` : ''
-        })
-        .join('')
-
-      result.push(prefix + line + suffix || '&nbsp;')
-      openTags = currentOpen
-    }
-
-    return result
-  }
 
   let lineHeights = $state<number[]>([])
 
@@ -827,11 +689,23 @@
 
       const key = editId ? `autosave_edit_${editId}` : 'autosave_new'
       localStorage.removeItem(key)
+
+      const successMessage =
+        isEditMode ?
+          toBePublished ? 'Post updated and published.'
+          : 'Post updated and saved as draft.'
+        : toBePublished ? 'Post published.'
+        : 'Post saved as draft.'
+      sessionStorage.setItem(
+        'admin_toast',
+        JSON.stringify({message: successMessage, type: 'success'})
+      )
       window.location.href = '/admin'
     } catch (err) {
       const error = err as Error
       console.error('Error saving post:', error)
       errorMessage = error.message || 'Failed to save blog post.'
+      toastStore.error(errorMessage)
     } finally {
       isSubmitting = false
     }
@@ -854,12 +728,12 @@
 <SkipLink />
 
 <nav
-  class="fixed top-0 z-40 flex h-15 w-full items-center justify-between border-b border-border-subtle bg-surface-card/60 px-5 font-sans shadow-xs backdrop-blur-lg transition-colors duration-300"
+  class="fixed top-0 z-40 flex h-15 w-full items-center justify-between border-b border-border-subtle bg-surface-card/45 px-5 font-sans shadow-xs backdrop-blur-xl transition-colors duration-300"
   aria-label="Editor navigation">
   <button
     type="button"
     onclick={handleCancelClick}
-    class="inline-flex h-8 cursor-pointer items-center justify-center rounded-lg border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
+    class="inline-flex h-9 cursor-pointer items-center justify-center rounded-sm border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
     Back to Admin
   </button>
 
@@ -876,23 +750,24 @@
   class="flex min-h-[calc(100vh-3.75rem)] flex-col pt-15 font-sans">
   {#if isCheckingAuth}
     <LoadingState
-      label="Verifying credentials…"
+      label="Loading post..."
       size="lg"
       class="flex-1 py-20" />
   {:else}
     <section class="mx-auto w-full max-w-4xl flex-1 px-6 py-10">
       {#if errorMessage}
         <StatusBanner
-          type="error"
+          variant="error"
           message={errorMessage}
           class="mb-6" />
       {/if}
 
       <form
         onsubmit={e => e.preventDefault()}
+        novalidate
         class="flex flex-col gap-4">
         <div
-          class="rounded-2xl border border-border-subtle bg-surface-card/45 p-6 text-left shadow-xs backdrop-blur-lg transition-colors duration-300">
+          class="rounded-sm border border-border-subtle bg-surface-card/30 p-6 text-left shadow-xs backdrop-blur-xl transition-colors duration-300">
           <h2 class="mb-4 text-base font-bold text-text-primary select-none">
             {isEditMode ? 'Edit post details' : 'Post details'}
           </h2>
@@ -906,7 +781,7 @@
               </label>
 
               <div
-                class="group relative flex aspect-2/1 w-full items-center justify-center overflow-hidden rounded-lg border border-border-subtle bg-surface-base select-none">
+                class="group relative flex aspect-2/1 w-full items-center justify-center overflow-hidden rounded-sm border border-border-subtle bg-surface-base select-none">
                 {#if bannerPreview}
                   <img
                     src={bannerPreview}
@@ -922,9 +797,9 @@
                     }}
                     class="absolute top-2 right-2 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-white/20 bg-black/70 text-white transition-colors hover:bg-black/90"
                     aria-label="Remove banner">
-                    <span
-                      class="material-symbols-rounded text-base leading-none"
-                      >close</span>
+                    <i
+                      class="bi bi-x-lg text-base leading-none"
+                      aria-hidden="true"></i>
                   </button>
                 {:else}
                   <div
@@ -940,7 +815,7 @@
                 id="post-banner"
                 accept="image/png,image/jpeg,image/webp"
                 onchange={handleBannerChange}
-                class="mt-2 block w-full text-xs text-text-secondary file:mr-4 file:cursor-pointer file:rounded-lg file:border file:border-border-subtle file:bg-surface-card file:px-4 file:py-2 file:text-xs file:font-semibold file:text-text-primary hover:file:bg-surface-hover focus:outline-2 focus:outline-copilot" />
+                class="mt-2 block w-full text-xs text-text-secondary file:mr-4 file:cursor-pointer file:rounded-sm file:border file:border-border-subtle file:bg-surface-card file:px-4 file:py-2 file:text-xs file:font-semibold file:text-text-primary hover:file:bg-surface-hover focus:outline-2 focus:outline-copilot" />
 
               {#if bannerError}
                 <div
@@ -972,7 +847,6 @@
                   type="text"
                   id="post-title"
                   maxlength={60}
-                  required
                   placeholder="Getting Started with Rust"
                   bind:value={title}
                   error={!!titleError}
@@ -995,7 +869,6 @@
                   id="post-excerpt"
                   rows={3}
                   maxlength={250}
-                  required
                   placeholder="Brief summary of the post (max 250 characters)…"
                   bind:value={excerpt}
                   error={!!excerptError}
@@ -1010,16 +883,17 @@
           </div>
         </div>
 
-        <div class="boxed-list flex flex-col overflow-hidden text-left">
+        <div
+          class="flex flex-col divide-y divide-adwaita-border overflow-hidden rounded-md border border-adwaita-border bg-adwaita-card/45 text-left shadow-xs backdrop-blur-lg transition-colors duration-300">
           <div
             class="flex items-center border-b border-border-subtle bg-surface-card/10 px-4 py-2.5 select-none">
             <div
-              class="inline-flex gap-0.5 rounded-lg border border-border-subtle bg-surface-switcher p-1">
+              class="inline-flex gap-0.5 rounded-sm border border-border-subtle bg-surface-switcher p-1">
               <button
                 type="button"
                 onclick={() => (activeTab = 'editor')}
                 aria-pressed={activeTab === 'editor'}
-                class="cursor-pointer rounded-md px-4 py-1.5 text-xs font-semibold transition-all {(
+                class="cursor-pointer rounded-sm px-4 py-1.5 text-xs font-semibold transition-all {(
                   activeTab === 'editor'
                 ) ?
                   'border border-border-subtle/10 bg-surface-switcher-active text-text-primary shadow-xs'
@@ -1030,7 +904,7 @@
                 type="button"
                 onclick={() => (activeTab = 'preview')}
                 aria-pressed={activeTab === 'preview'}
-                class="cursor-pointer rounded-md px-4 py-1.5 text-xs font-semibold transition-all {(
+                class="cursor-pointer rounded-sm px-4 py-1.5 text-xs font-semibold transition-all {(
                   activeTab === 'preview'
                 ) ?
                   'border border-border-subtle/10 bg-surface-switcher-active text-text-primary shadow-xs'
@@ -1066,9 +940,9 @@
                   </span>
                 {:else}
                   <span class="inline-flex items-center gap-1.5">
-                    <span
-                      class="material-symbols-rounded text-[13px] text-text-muted"
-                      aria-hidden="true">cloud_done</span>
+                    <i
+                      class="bi bi-cloud-check text-[13px] text-text-muted"
+                      aria-hidden="true"></i>
                     Saved
                   </span>
                 {/if}
@@ -1082,7 +956,7 @@
                     indentSizeDropdownOpen = false
                     wrapModeDropdownOpen = false
                   }}
-                  class="inline-flex h-8 cursor-pointer items-center justify-between gap-1.5 rounded-lg border border-border-subtle bg-surface-card px-3 text-xs font-medium text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
+                  class="inline-flex h-8 cursor-pointer items-center justify-between gap-1.5 rounded-sm border border-border-subtle bg-surface-card px-3 text-xs font-medium text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
                   aria-haspopup="true"
                   aria-expanded={indentModeDropdownOpen}>
                   {indentMode === 'spaces' ? 'Spaces' : 'Tabs'}
@@ -1102,7 +976,7 @@
                     aria-label="Close menu"></button>
                   <div
                     role="menu"
-                    class="absolute top-8.5 right-0 z-50 flex min-w-30 flex-col rounded-lg border border-border-subtle bg-surface-elevated py-1 text-xs shadow-lg">
+                    class="absolute top-8.5 right-0 z-50 flex min-w-30 flex-col rounded-sm border border-border-subtle bg-surface-elevated py-1 text-xs shadow-lg">
                     {#each ['spaces', 'tabs'] as const as mode (mode)}
                       <button
                         type="button"
@@ -1130,7 +1004,7 @@
                     indentModeDropdownOpen = false
                     wrapModeDropdownOpen = false
                   }}
-                  class="inline-flex h-8 cursor-pointer items-center justify-between gap-1.5 rounded-lg border border-border-subtle bg-surface-card px-3 text-xs font-medium text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
+                  class="inline-flex h-8 cursor-pointer items-center justify-between gap-1.5 rounded-sm border border-border-subtle bg-surface-card px-3 text-xs font-medium text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
                   aria-haspopup="true"
                   aria-expanded={indentSizeDropdownOpen}>
                   {indentSize}
@@ -1150,7 +1024,7 @@
                     aria-label="Close menu"></button>
                   <div
                     role="menu"
-                    class="absolute top-8.5 right-0 z-50 flex min-w-20 flex-col rounded-lg border border-border-subtle bg-surface-elevated py-1 text-xs shadow-lg">
+                    class="absolute top-8.5 right-0 z-50 flex min-w-20 flex-col rounded-sm border border-border-subtle bg-surface-elevated py-1 text-xs shadow-lg">
                     {#each [2, 4, 8] as size (size)}
                       <button
                         type="button"
@@ -1178,7 +1052,7 @@
                     indentModeDropdownOpen = false
                     indentSizeDropdownOpen = false
                   }}
-                  class="inline-flex h-8 cursor-pointer items-center justify-between gap-1.5 rounded-lg border border-border-subtle bg-surface-card px-3 text-xs font-medium text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
+                  class="inline-flex h-8 cursor-pointer items-center justify-between gap-1.5 rounded-sm border border-border-subtle bg-surface-card px-3 text-xs font-medium text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
                   aria-haspopup="true"
                   aria-expanded={wrapModeDropdownOpen}>
                   {lineWrapMode === 'soft' ? 'Soft wrap' : 'No wrap'}
@@ -1198,7 +1072,7 @@
                     aria-label="Close menu"></button>
                   <div
                     role="menu"
-                    class="absolute top-8.5 right-0 z-50 flex min-w-30 flex-col rounded-lg border border-border-subtle bg-surface-elevated py-1 text-xs shadow-lg">
+                    class="absolute top-8.5 right-0 z-50 flex min-w-30 flex-col rounded-sm border border-border-subtle bg-surface-elevated py-1 text-xs shadow-lg">
                     {#each ['soft', 'none'] as const as mode (mode)}
                       <button
                         type="button"
@@ -1243,18 +1117,19 @@
                 <div class="relative flex-1 overflow-hidden">
                   <pre
                     bind:this={preElement}
-                    class="editor-pre no-scrollbar pointer-events-none absolute inset-0 m-0! box-border! w-full! overflow-y-hidden! border-0! bg-transparent pt-5! pr-5! pb-5! pl-4! text-text-primary select-none {(
+                    class="editor-pre pointer-events-none absolute inset-0 m-0! box-border! w-full! [scrollbar-width:none] overflow-y-hidden! border-0! bg-transparent pt-5! pr-5! pb-5! pl-4! text-text-primary select-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden {(
                       lineWrapMode === 'soft'
                     ) ?
                       'overflow-x-hidden! break-normal! wrap-break-word! whitespace-pre-wrap!'
                     : 'overflow-x-auto! break-normal! whitespace-pre!'}"><code
                       class="whitespace-inherit! break-inherit! overflow-wrap-inherit! language-markdown m-0! block! bg-transparent! p-0!"
-                      >{#each splitHighlightedHtml(highlightedMarkdown) as lineHtml, i (i)}<div
+                      >{#each splitHighlightedHtmlLines(highlightedMarkdown) as lineHtml, i (i)}<div
                           class="editor-code-line whitespace-inherit! break-inherit! overflow-wrap-inherit! m-0! p-0!">{@html lineHtml}</div>{/each}</code></pre>
 
                   <textarea
                     bind:this={markdownTextareaElement}
-                    required
+                    id="markdown-content"
+                    name="markdownContent"
                     aria-label="Markdown content"
                     bind:value={markdownContent}
                     onscroll={syncScroll}
@@ -1292,30 +1167,30 @@
                 class="flex items-center gap-1"
                 role="toolbar"
                 aria-label="Formatting tools">
-                {#each [{action: () => insertMarkdown('# '), icon: 'format_h1', label: 'H1 heading'}, {action: () => insertMarkdown('## '), icon: 'format_h2', label: 'H2 heading'}, {action: () => insertMarkdown('### '), icon: 'format_h3', label: 'H3 heading'}] as const as item (item.icon)}
+                {#each [{action: () => insertMarkdown('# '), icon: 'bi-type-h1', label: 'H1 heading'}, {action: () => insertMarkdown('## '), icon: 'bi-type-h2', label: 'H2 heading'}, {action: () => insertMarkdown('### '), icon: 'bi-type-h3', label: 'H3 heading'}] as const as item (item.icon)}
                   <button
                     type="button"
                     onclick={item.action}
                     aria-label={item.label}
                     class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
-                    <span
-                      class="material-symbols-rounded text-base"
-                      aria-hidden="true">{item.icon}</span>
+                    <i
+                      class="bi {item.icon} text-base"
+                      aria-hidden="true"></i>
                   </button>
                 {/each}
                 <div
                   class="mx-1 h-4 w-px bg-border-subtle"
                   aria-hidden="true">
                 </div>
-                {#each [{action: () => insertMarkdown('**', '**'), icon: 'format_bold', label: 'Bold'}, {action: () => insertMarkdown('*', '*'), icon: 'format_italic', label: 'Italic'}, {action: () => insertMarkdown('<u>', '</u>'), icon: 'format_underlined', label: 'Underline'}, {action: () => insertMarkdown('~~', '~~'), icon: 'format_strikethrough', label: 'Strikethrough'}] as const as item (item.icon)}
+                {#each [{action: () => insertMarkdown('**', '**'), icon: 'bi-type-bold', label: 'Bold'}, {action: () => insertMarkdown('*', '*'), icon: 'bi-type-italic', label: 'Italic'}, {action: () => insertMarkdown('<u>', '</u>'), icon: 'bi-type-underline', label: 'Underline'}, {action: () => insertMarkdown('~~', '~~'), icon: 'bi-type-strikethrough', label: 'Strikethrough'}] as const as item (item.icon)}
                   <button
                     type="button"
                     onclick={item.action}
                     aria-label={item.label}
                     class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
-                    <span
-                      class="material-symbols-rounded text-base"
-                      aria-hidden="true">{item.icon}</span>
+                    <i
+                      class="bi {item.icon} text-base"
+                      aria-hidden="true"></i>
                   </button>
                 {/each}
                 <div
@@ -1327,39 +1202,40 @@
                   onclick={() => imageFileInput?.click()}
                   aria-label="Insert image"
                   class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
-                  <span
-                    class="material-symbols-rounded text-base"
-                    aria-hidden="true">add_photo_alternate</span>
+                  <i
+                    class="bi bi-image-fill text-base"
+                    aria-hidden="true"></i>
                 </button>
                 <input
                   type="file"
+                  id="post-inline-image-upload"
                   bind:this={imageFileInput}
                   accept="image/png, image/webp, image/jpeg, image/jpg"
                   onchange={handleImageUpload}
                   class="hidden"
                   aria-label="Upload image file" />
-                {#each [{action: () => insertMarkdown('[', '](url)'), icon: 'link', label: 'Insert link'}, {action: () => insertMarkdown('1. '), icon: 'format_list_numbered', label: 'Numbered list'}, {action: () => insertMarkdown('- '), icon: 'format_list_bulleted', label: 'Bulleted list'}, {action: () => insertMarkdown('```\n', '\n```'), icon: 'code_blocks', label: 'Code block'}] as const as item (item.icon)}
+                {#each [{action: () => insertMarkdown('[', '](url)'), icon: 'bi-link', label: 'Insert link'}, {action: () => insertMarkdown('1. '), icon: 'bi-list-ol', label: 'Numbered list'}, {action: () => insertMarkdown('- '), icon: 'bi-list-ul', label: 'Bulleted list'}, {action: () => insertMarkdown('```\n', '\n```'), icon: 'bi-code-square', label: 'Code block'}] as const as item (item.icon)}
                   <button
                     type="button"
                     onclick={item.action}
                     aria-label={item.label}
                     class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
-                    <span
-                      class="material-symbols-rounded text-base"
-                      aria-hidden="true">{item.icon}</span>
+                    <i
+                      class="bi {item.icon} text-base"
+                      aria-hidden="true"></i>
                   </button>
                 {/each}
               </div>
 
               <div
-                class="flex items-center gap-4 font-mono text-[11px] select-none">
+                class="flex items-center gap-4 font-mono text-xxs select-none">
                 <span class="text-[12.5px] font-semibold tracking-wide"
                   >{currentLine}:{currentColumn}</span>
                 <span
                   class="flex items-center gap-1 text-[12.5px] font-semibold tracking-wide">
-                  <span
-                    class="material-symbols-rounded text-[14px]"
-                    aria-hidden="true">space_bar</span>
+                  <i
+                    class="bi bi-indent text-[14px]"
+                    aria-hidden="true"></i>
                   {indentSize}
                 </span>
                 <span class="text-[12.5px] font-semibold tracking-wide"
@@ -1367,11 +1243,11 @@
                 <span class="text-[12.5px] font-semibold tracking-wide"
                   >{lineEnding}</span>
                 <span class="group relative flex cursor-help items-center">
+                  <i
+                    class="bi bi-markdown-fill text-[16px]"
+                    aria-label="Markdown formatting supported"></i>
                   <span
-                    class="material-symbols-rounded text-[16px]"
-                    aria-label="Markdown formatting supported">markdown</span>
-                  <span
-                    class="absolute right-0 bottom-full mb-1.5 hidden rounded-md border border-border-subtle bg-surface-elevated px-2 py-1 font-sans text-[10px] whitespace-nowrap text-text-primary shadow-md group-hover:block">
+                    class="absolute right-0 bottom-full mb-1.5 hidden rounded-sm border border-border-subtle bg-surface-elevated px-2 py-1 font-sans text-[10px] whitespace-nowrap text-text-primary shadow-md group-hover:block">
                     Markdown formatting is supported
                   </span>
                 </span>
@@ -1462,20 +1338,8 @@
   {/snippet}
 </Dialog>
 
-{#if showToast}
-  <div
-    role="status"
-    aria-live="polite"
-    class="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full border border-border-subtle bg-surface-card/90 px-4 py-2 text-xs font-semibold text-text-primary shadow-lg backdrop-blur-md transition-all duration-300">
-    <i
-      class="bi bi-check-circle-fill text-sm text-copilot"
-      aria-hidden="true"></i>
-    {toastMessage}
-  </div>
-{/if}
-
 <style>
-  @reference "../../layout.css";
+  @reference "../../global.css";
   .editor-textarea,
   .editor-pre,
   .editor-pre code,
@@ -1509,6 +1373,270 @@
     @apply box-border! flex! h-[24px] items-start! justify-end!;
   }
 
+  .prose-custom :global(h1),
+  .prose-custom :global(h2),
+  .prose-custom :global(h3) {
+    @apply font-serif;
+  }
+
+  .prose-custom {
+    @apply font-sans text-[0.9rem] leading-[1.7] text-(--color-body);
+    --color-heading: var(--color-gh-gray-6);
+    --color-body: var(--color-gh-gray-5);
+    --color-link: var(--color-copilot);
+    --color-link-hover: var(--color-copilot);
+  }
+
+  :global(:root.dark) .prose-custom {
+    --color-heading: var(--color-gh-gray-1);
+    --color-body: var(--color-gh-gray-3);
+    --color-link: var(--color-copilot);
+    --color-link-hover: var(--color-copilot);
+  }
+
+  .prose-custom :global(p) {
+    @apply mt-5 mb-5 text-(--color-body);
+  }
+
+  .prose-custom :global(h1),
+  .prose-custom :global(h2),
+  .prose-custom :global(h3),
+  .prose-custom :global(h4),
+  .prose-custom :global(h5),
+  .prose-custom :global(h6) {
+    @apply font-sans text-(--color-heading);
+  }
+
+  .prose-custom :global(h1) {
+    @apply mt-8 mb-4 text-3xl font-extrabold;
+  }
+
+  .prose-custom :global(h2) {
+    @apply mt-7 mb-3 text-2xl font-bold;
+  }
+
+  .prose-custom :global(h3) {
+    @apply mt-6 mb-2 text-xl font-semibold;
+  }
+
+  .prose-custom :global(ul) {
+    @apply mt-4 mb-4 list-disc pl-6;
+  }
+
+  .prose-custom :global(ol) {
+    @apply mt-4 mb-4 list-decimal pl-6;
+  }
+
+  .prose-custom :global(li) {
+    @apply mt-1 mb-1;
+  }
+
+  .prose-custom :global(pre) {
+    @apply mt-6 mb-6 [scrollbar-width:none]! overflow-x-auto rounded-sm border border-adwaita-border bg-adwaita-hover px-3! py-2! font-mono text-[0.8rem] leading-relaxed break-normal! whitespace-pre! [-ms-overflow-style:none]!;
+  }
+
+  /* When a line-number gutter sits to the left (see enhanceCodeBlocks), it
+     already provides its own edge padding — pre's own left padding on top of
+     that doubled the visual gap between the divider and the code text. */
+  .prose-custom :global(pre[data-enhanced='true']) {
+    @apply pl-2!;
+  }
+
+  .prose-custom :global(pre)::-webkit-scrollbar {
+    @apply hidden! h-0! w-0!;
+  }
+
+  .prose-custom :global(code:not(pre code)) {
+    @apply rounded bg-adwaita-hover px-1 py-px font-mono text-xs font-normal text-inherit;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .prose-custom :global(pre code) {
+    @apply overflow-visible! border-0 bg-transparent p-0 font-mono text-[0.8rem] leading-relaxed break-normal! whitespace-pre! text-inherit;
+  }
+
+  .prose-custom :global(a) {
+    @apply text-(--color-link) underline;
+  }
+
+  .prose-custom :global(a):hover {
+    @apply text-(--color-link-hover);
+  }
+
+  .prose-custom :global(.heading-text) {
+    @apply inline! transition-none!;
+  }
+
+  .prose-custom :global(a.anchor-link) {
+    @apply ml-[0.35rem]! inline-flex! items-center! justify-center! align-middle! leading-none! whitespace-nowrap! text-adwaita-text! no-underline! transition-none!;
+  }
+
+  :global(:root.dark) .prose-custom :global(a.anchor-link) {
+    @apply text-gh-gray-4!;
+  }
+
+  .prose-custom :global(a.anchor-link .bi) {
+    @apply inline-block! align-middle! text-[0.85em]! leading-none! text-inherit! no-underline!;
+  }
+
+  .prose-custom :global(h1:hover .heading-text),
+  .prose-custom :global(h2:hover .heading-text),
+  .prose-custom :global(h3:hover .heading-text),
+  .prose-custom :global(h4:hover .heading-text),
+  .prose-custom :global(h5:hover .heading-text),
+  .prose-custom :global(h6:hover .heading-text),
+  .prose-custom :global(.heading-text):hover,
+  :global(:root.dark) .prose-custom :global(h1:hover .heading-text),
+  :global(:root.dark) .prose-custom :global(h2:hover .heading-text),
+  :global(:root.dark) .prose-custom :global(h3:hover .heading-text),
+  :global(:root.dark) .prose-custom :global(h4:hover .heading-text),
+  :global(:root.dark) .prose-custom :global(h5:hover .heading-text),
+  :global(:root.dark) .prose-custom :global(h6:hover .heading-text),
+  :global(:root.dark) .prose-custom :global(.heading-text):hover {
+    @apply text-copilot underline underline-offset-4;
+  }
+
+  .prose-custom :global(h1:hover a.anchor-link),
+  .prose-custom :global(h2:hover a.anchor-link),
+  .prose-custom :global(h3:hover a.anchor-link),
+  .prose-custom :global(h4:hover a.anchor-link),
+  .prose-custom :global(h5:hover a.anchor-link),
+  .prose-custom :global(h6:hover a.anchor-link),
+  .prose-custom :global(a.anchor-link):hover,
+  :global(:root.dark) .prose-custom :global(h1:hover a.anchor-link),
+  :global(:root.dark) .prose-custom :global(h2:hover a.anchor-link),
+  :global(:root.dark) .prose-custom :global(h3:hover a.anchor-link),
+  :global(:root.dark) .prose-custom :global(h4:hover a.anchor-link),
+  :global(:root.dark) .prose-custom :global(h5:hover a.anchor-link),
+  :global(:root.dark) .prose-custom :global(h6:hover a.anchor-link),
+  :global(:root.dark) .prose-custom :global(a.anchor-link):hover,
+  .prose-custom :global(h1:hover a.anchor-link .bi),
+  .prose-custom :global(h2:hover a.anchor-link .bi),
+  .prose-custom :global(h3:hover a.anchor-link .bi),
+  .prose-custom :global(h4:hover a.anchor-link .bi),
+  .prose-custom :global(h5:hover a.anchor-link .bi),
+  .prose-custom :global(h6:hover a.anchor-link .bi),
+  .prose-custom :global(a.anchor-link):hover :global(.bi),
+  :global(:root.dark) .prose-custom :global(h1:hover a.anchor-link .bi),
+  :global(:root.dark) .prose-custom :global(h2:hover a.anchor-link .bi),
+  :global(:root.dark) .prose-custom :global(h3:hover a.anchor-link .bi),
+  :global(:root.dark) .prose-custom :global(h4:hover a.anchor-link .bi),
+  :global(:root.dark) .prose-custom :global(h5:hover a.anchor-link .bi),
+  :global(:root.dark) .prose-custom :global(h6:hover a.anchor-link .bi),
+  :global(:root.dark) .prose-custom :global(a.anchor-link):hover :global(.bi) {
+    @apply text-copilot! no-underline! opacity-100;
+  }
+
+  .prose-custom :global(table) {
+    @apply my-6 w-full max-w-full overflow-hidden rounded-sm border border-border-subtle text-left text-xs shadow-2xs;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+  }
+
+  .prose-custom :global(thead) {
+    @apply border-b border-border-subtle bg-surface-hover/80 font-semibold tracking-wider text-text-primary uppercase;
+  }
+
+  /* Headers always render centered regardless of the column's markdown
+     alignment marker (`align` presentational attribute) - only body cells
+     follow per-column alignment. */
+  .prose-custom :global(th) {
+    @apply px-2.5 py-2 text-center font-semibold text-text-primary;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .prose-custom :global(tbody tr) {
+    @apply transition-colors hover:bg-surface-hover/30;
+  }
+
+  .prose-custom :global(td) {
+    @apply border-r border-border-subtle/40 px-2.5 py-1.5 text-left leading-relaxed text-text-secondary last:border-r-0;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .prose-custom :global(td code),
+  .prose-custom :global(th code) {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    white-space: normal;
+  }
+
+  /* GFM table alignment markers (`---:`, `:---:`) - e.g. numeric/money
+     columns marked right-aligned in the source markdown. */
+  .prose-custom :global(td[align='right']) {
+    @apply text-right;
+  }
+
+  .prose-custom :global(td[align='center']) {
+    @apply text-center;
+  }
+
+  .prose-custom :global(hr) {
+    @apply my-8 h-px border-0 bg-border-default;
+  }
+
+  .prose-custom :global(.markdown-alert) {
+    @apply my-6 rounded-r-xl border-l-4 p-4 text-xs shadow-2xs transition-colors duration-200 sm:text-sm;
+  }
+
+  .prose-custom :global(.markdown-alert-title) {
+    @apply mb-1.5 flex items-center gap-2 text-xs font-bold select-none sm:text-sm;
+  }
+
+  .prose-custom :global(.markdown-alert-content) {
+    @apply leading-relaxed text-text-secondary;
+  }
+
+  .prose-custom :global(.markdown-alert-content > p) {
+    @apply my-1 text-text-secondary;
+  }
+
+  .prose-custom :global(.markdown-alert-content > *:first-child) {
+    @apply mt-0!;
+  }
+
+  .prose-custom :global(.markdown-alert-content > *:last-child) {
+    @apply mb-0!;
+  }
+
+  .prose-custom :global(.markdown-alert-note) {
+    @apply border-(--color-security) bg-(--color-security-subtle) text-(--color-body);
+  }
+  .prose-custom :global(.markdown-alert-note .markdown-alert-title) {
+    @apply text-(--color-security);
+  }
+
+  .prose-custom :global(.markdown-alert-tip) {
+    @apply border-(--color-success) bg-(--color-success-subtle) text-(--color-body);
+  }
+  .prose-custom :global(.markdown-alert-tip .markdown-alert-title) {
+    @apply text-(--color-success);
+  }
+
+  .prose-custom :global(.markdown-alert-important) {
+    @apply border-(--color-copilot) bg-(--color-copilot-subtle) text-(--color-body);
+  }
+  .prose-custom :global(.markdown-alert-important .markdown-alert-title) {
+    @apply text-(--color-copilot);
+  }
+
+  .prose-custom :global(.markdown-alert-warning) {
+    @apply border-(--color-warning) bg-(--color-warning-subtle) text-(--color-body);
+  }
+  .prose-custom :global(.markdown-alert-warning .markdown-alert-title) {
+    @apply text-(--color-warning-strong);
+  }
+
+  .prose-custom :global(.markdown-alert-caution) {
+    @apply border-(--color-danger) bg-(--color-danger-subtle) text-(--color-body);
+  }
+  .prose-custom :global(.markdown-alert-caution .markdown-alert-title) {
+    @apply text-(--color-danger);
+  }
   .prose-custom > :global(*:first-child) {
     @apply mt-0!;
   }
