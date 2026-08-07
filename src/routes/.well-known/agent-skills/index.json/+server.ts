@@ -1,32 +1,30 @@
 /** @format */
 
-import {readFile} from 'node:fs/promises'
-import {resolve} from 'node:path'
 import type {RequestHandler} from './$types'
+// Bundled at build time via Vite's `?raw` import - `node:fs` reads of source
+// files don't resolve against the original repo tree on Cloudflare's
+// edge/worker runtime the way they do under local `vite dev`/Node, so the
+// previous readFile-at-request-time approach silently failed in production.
+import searchSource from '../../../api/v1/search/+server.ts?raw'
+import commentsSource from '../../../api/v1/blog/comments/+server.ts?raw'
+import viewsSource from '../../../api/v1/blog/views/+server.ts?raw'
 
-async function computeDigest(filePath: string): Promise<string> {
-  try {
-    const fullPath = resolve(process.cwd(), filePath)
-    const content = await readFile(fullPath, 'utf-8')
-    const buffer = await crypto.subtle.digest(
-      'SHA-256',
-      new TextEncoder().encode(content)
-    )
-    const hex = Array.from(new Uint8Array(buffer))
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join('')
-    return `sha256:${hex}`
-  } catch (err) {
-    console.error(`Failed to compute digest for ${filePath}:`, err)
-    return 'sha256:0000000000000000000000000000000000000000000000000000000000000000'
-  }
+async function digest(source: string): Promise<string> {
+  const buffer = await crypto.subtle.digest(
+    'SHA-256',
+    new TextEncoder().encode(source)
+  )
+  const hex = Array.from(new Uint8Array(buffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('')
+  return `sha256:${hex}`
 }
 
 export const GET: RequestHandler = async () => {
   const [searchDigest, commentsDigest, viewsDigest] = await Promise.all([
-    computeDigest('src/routes/api/search/+server.ts'),
-    computeDigest('src/routes/api/comments/+server.ts'),
-    computeDigest('src/routes/api/views/+server.ts')
+    digest(searchSource),
+    digest(commentsSource),
+    digest(viewsSource)
   ])
 
   const index = {
@@ -36,24 +34,24 @@ export const GET: RequestHandler = async () => {
         name: 'search',
         type: 'skill-md',
         description:
-          'Full-text search over blog posts and projects. POST /api/search with {"query": "string"}.',
-        url: 'https://fkp.my.id/api/search',
+          'Full-text search over blog posts by title/excerpt. GET /api/v1/search?q=string&limit=number (limit defaults to 6, max 20).',
+        url: 'https://fkp.my.id/api/v1/search',
         digest: searchDigest
       },
       {
         name: 'comments',
         type: 'skill-md',
         description:
-          'Read (GET) or post (POST) comments on blog entries. Requires a display name and message.',
-        url: 'https://fkp.my.id/api/comments',
+          'GET /api/v1/blog/comments?postId=uuid returns approved comments for a post (postId omitted returns recent approved comments site-wide). POST /api/v1/blog/comments with {"postId": "uuid", "content": "string", "turnstileToken": "string", "authorName": "string", "isAnonymous": boolean, "parentId": "uuid|null"} submits a new comment; authorName is required unless isAnonymous is true, and turnstileToken (a Cloudflare Turnstile response token) is always required. No login required — comments are gated by Turnstile and moderated automatically, and may be held for approval.',
+        url: 'https://fkp.my.id/api/v1/blog/comments',
         digest: commentsDigest
       },
       {
         name: 'views',
         type: 'skill-md',
         description:
-          'Record a page view (POST /api/views with {"post_id": "string"}) or retrieve view counts.',
-        url: 'https://fkp.my.id/api/views',
+          'Record a page view (POST /api/v1/blog/views with {"postId": "string"}) or retrieve view counts (GET /api/v1/blog/views?postId=string).',
+        url: 'https://fkp.my.id/api/v1/blog/views',
         digest: viewsDigest
       }
     ]

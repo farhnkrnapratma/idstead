@@ -7,30 +7,30 @@ export const GET: RequestHandler = async () => {
   const catalog = {
     linkset: [
       {
-        anchor: 'https://fkp.my.id/api/search',
+        anchor: 'https://fkp.my.id/api/v1/search',
         'service-doc': [
           {
-            href: 'https://fkp.my.id/api/search',
+            href: 'https://fkp.my.id/api/v1/search',
             type: 'text/html',
-            title: 'Search API — full-text search over blog posts and projects'
+            title: 'Search API — full-text search over blog posts'
           }
         ]
       },
       {
-        anchor: 'https://fkp.my.id/api/comments',
+        anchor: 'https://fkp.my.id/api/v1/blog/comments',
         'service-doc': [
           {
-            href: 'https://fkp.my.id/api/comments',
+            href: 'https://fkp.my.id/api/v1/blog/comments',
             type: 'text/html',
             title: 'Comments API — read and post comments on blog entries'
           }
         ]
       },
       {
-        anchor: 'https://fkp.my.id/api/views',
+        anchor: 'https://fkp.my.id/api/v1/blog/views',
         'service-doc': [
           {
-            href: 'https://fkp.my.id/api/views',
+            href: 'https://fkp.my.id/api/v1/blog/views',
             type: 'text/html',
             title: 'Views API — record and retrieve post view counts'
           }
@@ -43,6 +43,17 @@ export const GET: RequestHandler = async () => {
             href: 'https://fkp.my.id/.well-known/openapi.json',
             type: 'application/json',
             title: 'OpenAPI (machine-readable) — public API specification'
+          }
+        ]
+      },
+      {
+        anchor: 'https://fkp.my.id/api/v1',
+        'service-doc': [
+          {
+            href: 'https://fkp.my.id/api/v1',
+            type: 'text/markdown',
+            title:
+              'Public API reference (human-readable) — all v1 endpoints, auth, CORS, versioning'
           }
         ]
       },

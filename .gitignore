@@ -26,5 +26,8 @@ vite.config.ts.timestamp-*
 # Editor
 .vscode
 
+# Git worktrees
+.claude/worktrees/
+
 # Sentry Config File
 .env.sentry-build-plugin
