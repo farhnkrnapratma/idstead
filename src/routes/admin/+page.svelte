@@ -38,7 +38,8 @@
     formatReadTime,
     formatViewCount,
     FormSection,
-    FormActions
+    FormActions,
+    FileUploadField
   } from '$lib'
   import {themeStore} from '$lib/stores/themeStore.svelte'
 
@@ -834,31 +835,30 @@
 
   let selectedPdfFile = $state<File | null>(null)
   let isUploadingPdf = $state(false)
-  let isDraggingFile = $state(false)
   let pdfUploadError = $state('')
   let pdfUploadSuccess = $state('')
 
-  function handleFileDrop(e: DragEvent) {
-    e.preventDefault()
-    isDraggingFile = false
-    if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
-      const file = e.dataTransfer.files[0]
-      if (
-        file.type === 'application/pdf'
-        || file.name.toLowerCase().endsWith('.pdf')
-      ) {
-        if (file.size > 10 * 1024 * 1024) {
-          pdfUploadError = 'File size exceeds 10 MB limit.'
-          selectedPdfFile = null
-          return
-        }
-        selectedPdfFile = file
-        pdfUploadError = ''
-      } else {
-        pdfUploadError = 'Only PDF files are supported.'
-        selectedPdfFile = null
-      }
+  function handleCvFileSelect(file: File | null) {
+    if (!file) {
+      selectedPdfFile = null
+      pdfUploadError = ''
+      return
     }
+    const isPdf =
+      file.type === 'application/pdf'
+      || file.name.toLowerCase().endsWith('.pdf')
+    if (!isPdf) {
+      pdfUploadError = 'Only PDF files are supported.'
+      selectedPdfFile = null
+      return
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      pdfUploadError = 'File size exceeds 10 MB limit.'
+      selectedPdfFile = null
+      return
+    }
+    selectedPdfFile = file
+    pdfUploadError = ''
   }
 
   let isSavingCv = $state(false)
@@ -3795,92 +3795,28 @@
               </div>
             </div>
           {:else}
-            <div
-              class="flex min-h-30 flex-col items-center justify-center gap-1 rounded-sm border border-dashed border-border-subtle p-6 text-center">
-              <p class="text-sm font-medium text-text-primary">
-                No CV uploaded yet
-              </p>
-              <p class="text-xs text-text-secondary">
-                Upload a PDF to make it available on your portfolio and API.
-              </p>
-            </div>
+            <EmptyState
+              icon="bi-file-earmark-pdf"
+              title="No CV uploaded yet"
+              description="Upload a PDF to make it available on your portfolio and API." />
           {/if}
 
           <!-- Upload -->
           <form
             onsubmit={handleUploadPdf}
             class="flex flex-col gap-4">
-            <input
-              type="file"
+            <FileUploadField
               id="cv-pdf-upload"
+              label="Drop PDF here or click to browse"
+              hint="Max 10 MB"
               accept="application/pdf,.pdf"
-              onchange={e => {
-                const files = (e.currentTarget as HTMLInputElement).files
-                if (files && files.length > 0) {
-                  const file = files[0]
-                  if (file.size > 10 * 1024 * 1024) {
-                    pdfUploadError = 'File size exceeds 10 MB limit.'
-                    selectedPdfFile = null
-                    return
-                  }
-                  selectedPdfFile = file
-                  pdfUploadError = ''
-                }
-              }}
-              class="hidden" />
-
-            <div
-              role="region"
-              aria-label="CV PDF Dropzone"
-              ondragover={e => {
-                e.preventDefault()
-                isDraggingFile = true
-              }}
-              ondragleave={e => {
-                e.preventDefault()
-                isDraggingFile = false
-              }}
-              ondrop={handleFileDrop}
-              class="flex min-h-40 flex-col items-center justify-center gap-2 rounded-sm border-2 border-dashed p-6 text-center transition-all select-none
-                {isDraggingFile ?
-                'border-copilot bg-copilot/10'
-              : 'border-border-subtle bg-surface/50 hover:border-copilot/60 hover:bg-surface-hover/60'}">
-              {#if selectedPdfFile}
-                <i
-                  class="bi bi-file-earmark-pdf-fill text-2xl text-copilot"
-                  aria-hidden="true"></i>
-                <p
-                  class="max-w-full truncate font-mono text-sm font-semibold text-text-primary">
-                  {selectedPdfFile.name}
-                </p>
-                <p class="font-mono text-xs text-text-muted">
-                  {(selectedPdfFile.size / (1024 * 1024)).toFixed(2)} MB
-                </p>
-                <button
-                  type="button"
-                  onclick={() => (selectedPdfFile = null)}
-                  class="text-xs font-semibold text-text-muted transition-colors hover:text-danger">
-                  Remove
-                </button>
-              {:else if isUploadingPdf}
-                <i
-                  class="bi bi-arrow-repeat animate-spin text-xl text-copilot"
-                  aria-hidden="true"></i>
-                <p class="text-xs font-semibold text-copilot">Uploading…</p>
-              {:else}
-                <label
-                  for="cv-pdf-upload"
-                  class="flex cursor-pointer flex-col items-center gap-2">
-                  <i
-                    class="bi bi-cloud-arrow-up text-2xl text-text-secondary"
-                    aria-hidden="true"></i>
-                  <span class="text-sm font-medium text-text-primary">
-                    Drop PDF here or click to browse
-                  </span>
-                  <span class="text-xs text-text-muted">Max 10 MB</span>
-                </label>
-              {/if}
-            </div>
+              disabled={isUploadingPdf}
+              isUploading={isUploadingPdf}
+              selectedFileName={selectedPdfFile?.name || ''}
+              fileSize={selectedPdfFile ?
+                `${(selectedPdfFile.size / (1024 * 1024)).toFixed(2)} MB`
+              : ''}
+              onFileSelect={handleCvFileSelect} />
 
             <Button
               type="submit"
