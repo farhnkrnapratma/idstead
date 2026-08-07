@@ -2131,28 +2131,84 @@
     }
   }
 
-  function handleRemoveCvEntry(type: 'experience' | 'education', idx: number) {
-    if (type === 'experience') {
-      cvState.experience = cvState.experience.filter((_, i) => i !== idx)
-    } else {
-      cvState.education = cvState.education.filter((_, i) => i !== idx)
+  type RemovableEntry =
+    | 'cv-experience'
+    | 'cv-education'
+    | 'skill'
+    | 'social'
+    | 'sponsorship'
+    | 'contact'
+  let showRemoveEntryDialog = $state(false)
+  let pendingRemove = $state<{type: RemovableEntry; idx: number} | null>(null)
+
+  const removeEntryLabels: Record<RemovableEntry, string> = {
+    'cv-experience': 'this experience entry',
+    'cv-education': 'this education entry',
+    skill: 'this skill category',
+    social: 'this social link',
+    sponsorship: 'this sponsorship link',
+    contact: 'this contact'
+  }
+  const removeEntryMessage = $derived(
+    pendingRemove ?
+      `Are you sure you want to remove ${removeEntryLabels[pendingRemove.type]}? This won't be saved until you click Save.`
+    : ''
+  )
+
+  function confirmRemoveCvEntry(type: 'experience' | 'education', idx: number) {
+    pendingRemove = {
+      type: type === 'experience' ? 'cv-experience' : 'cv-education',
+      idx
     }
+    showRemoveEntryDialog = true
+  }
+
+  function confirmRemoveSkill(idx: number) {
+    pendingRemove = {type: 'skill', idx}
+    showRemoveEntryDialog = true
+  }
+
+  function confirmRemoveSocial(idx: number) {
+    pendingRemove = {type: 'social', idx}
+    showRemoveEntryDialog = true
+  }
+
+  function confirmRemoveSponsorship(idx: number) {
+    pendingRemove = {type: 'sponsorship', idx}
+    showRemoveEntryDialog = true
+  }
+
+  function confirmRemoveContact(idx: number) {
+    pendingRemove = {type: 'contact', idx}
+    showRemoveEntryDialog = true
+  }
+
+  function executeRemoveEntry() {
+    if (!pendingRemove) return
+    const {type, idx} = pendingRemove
+    if (type === 'cv-experience') {
+      cvState.experience = cvState.experience.filter((_, i) => i !== idx)
+    } else if (type === 'cv-education') {
+      cvState.education = cvState.education.filter((_, i) => i !== idx)
+    } else if (type === 'skill') {
+      skillsState = skillsState.filter((_, i) => i !== idx)
+    } else if (type === 'social') {
+      socialState = socialState.filter((_, i) => i !== idx)
+    } else if (type === 'sponsorship') {
+      sponsorshipState = sponsorshipState.filter((_, i) => i !== idx)
+    } else if (type === 'contact') {
+      contactState = contactState.filter((_, i) => i !== idx)
+    }
+    pendingRemove = null
+    showRemoveEntryDialog = false
   }
 
   function handleAddSkill() {
     skillsState = [...skillsState, {category: '', skills: []}]
   }
 
-  function handleRemoveSkill(idx: number) {
-    skillsState = skillsState.filter((_, i) => i !== idx)
-  }
-
   function handleAddSocial() {
     socialState = [...socialState, {platform: '', url: '', icon: ''}]
-  }
-
-  function handleRemoveSocial(idx: number) {
-    socialState = socialState.filter((_, i) => i !== idx)
   }
 
   function handleAddSponsorship() {
@@ -2162,19 +2218,11 @@
     ]
   }
 
-  function handleRemoveSponsorship(idx: number) {
-    sponsorshipState = sponsorshipState.filter((_, i) => i !== idx)
-  }
-
   function handleAddContact() {
     contactState = [
       ...contactState,
       {platform: '', displayValue: '', href: '', icon: ''}
     ]
-  }
-
-  function handleRemoveContact(idx: number) {
-    contactState = contactState.filter((_, i) => i !== idx)
   }
 
   const adminNavLinks: {
@@ -3153,7 +3201,7 @@
                       type="button"
                       variant="danger"
                       size="sm"
-                      onclick={() => handleRemoveCvEntry('experience', idx)}
+                      onclick={() => confirmRemoveCvEntry('experience', idx)}
                       >Delete</Button>
                   </div>
                 </div>
@@ -3414,7 +3462,7 @@
                       type="button"
                       variant="danger"
                       size="sm"
-                      onclick={() => handleRemoveCvEntry('education', idx)}
+                      onclick={() => confirmRemoveCvEntry('education', idx)}
                       >Delete</Button>
                   </div>
                 </div>
@@ -3910,7 +3958,7 @@
                     type="button"
                     variant="danger"
                     size="sm"
-                    onclick={() => handleRemoveSkill(idx)}>Delete</Button>
+                    onclick={() => confirmRemoveSkill(idx)}>Delete</Button>
                 </div>
               </div>
 
@@ -4157,7 +4205,7 @@
                     type="button"
                     variant="danger"
                     size="sm"
-                    onclick={() => handleRemoveSocial(idx)}>Delete</Button>
+                    onclick={() => confirmRemoveSocial(idx)}>Delete</Button>
                 </div>
               </div>
 
@@ -4331,7 +4379,8 @@
                     type="button"
                     variant="danger"
                     size="sm"
-                    onclick={() => handleRemoveSponsorship(idx)}>Delete</Button>
+                    onclick={() => confirmRemoveSponsorship(idx)}
+                    >Delete</Button>
                 </div>
               </div>
 
@@ -4544,7 +4593,7 @@
                     type="button"
                     variant="danger"
                     size="sm"
-                    onclick={() => handleRemoveContact(idx)}>Delete</Button>
+                    onclick={() => confirmRemoveContact(idx)}>Delete</Button>
                 </div>
               </div>
 
@@ -4680,99 +4729,47 @@
   </main>
 </div>
 
-<Dialog
-  isOpen={showDeletePostDialog}
-  onClose={() => (showDeletePostDialog = false)}
-  title="Delete Post">
-  <div class="flex flex-col gap-4">
-    <p class="text-sm text-text-secondary">
-      Are you sure you want to delete post "{postToDelete?.title}"?
-    </p>
-    <div class="flex justify-end gap-3">
-      <Button
-        type="button"
-        variant="secondary"
-        size="md"
-        onclick={() => (showDeletePostDialog = false)}>Cancel</Button>
-      <Button
-        type="button"
-        variant="danger"
-        size="md"
-        onclick={executeDeletePost}>Delete</Button>
-    </div>
-  </div>
-</Dialog>
+<ConfirmationDialog
+  bind:isOpen={showDeletePostDialog}
+  title="Delete Post"
+  message={`Are you sure you want to delete post "${postToDelete?.title}"?`}
+  confirmLabel="Delete"
+  isDestructive
+  onConfirm={executeDeletePost} />
 
-<Dialog
-  isOpen={showDeleteCommentDialog}
-  onClose={() => (showDeleteCommentDialog = false)}
-  title="Delete Comment">
-  <div class="flex flex-col gap-4">
-    <p class="text-sm text-text-secondary">
-      Are you sure you want to delete this comment?
-    </p>
-    <div class="flex justify-end gap-3">
-      <Button
-        type="button"
-        variant="secondary"
-        size="md"
-        onclick={() => (showDeleteCommentDialog = false)}>Cancel</Button>
-      <Button
-        type="button"
-        variant="danger"
-        size="md"
-        onclick={executeDeleteComment}>Delete</Button>
-    </div>
-  </div>
-</Dialog>
+<ConfirmationDialog
+  bind:isOpen={showDeleteCommentDialog}
+  title="Delete Comment"
+  message="Are you sure you want to delete this comment?"
+  confirmLabel="Delete"
+  isDestructive
+  onConfirm={executeDeleteComment} />
 
-<Dialog
-  isOpen={showClearAuthorDialog}
-  onClose={() => (showClearAuthorDialog = false)}
-  title="Delete Profile">
-  <div class="flex flex-col gap-4">
-    <p class="text-sm text-text-secondary">
-      Are you sure you want to delete/clear all author profile data from the
-      database?
-    </p>
-    <div class="flex justify-end gap-3">
-      <Button
-        type="button"
-        variant="secondary"
-        size="md"
-        onclick={() => (showClearAuthorDialog = false)}>Cancel</Button>
-      <Button
-        type="button"
-        variant="danger"
-        size="md"
-        isLoading={isClearingAuthor}
-        onclick={executeClearAuthor}>Delete</Button>
-    </div>
-  </div>
-</Dialog>
+<ConfirmationDialog
+  bind:isOpen={showClearAuthorDialog}
+  title="Delete Profile"
+  message="Are you sure you want to delete/clear all author profile data from the database?"
+  confirmLabel="Delete"
+  isDestructive
+  isLoading={isClearingAuthor}
+  onConfirm={executeClearAuthor} />
 
-<Dialog
-  isOpen={showDeleteCvDocDialog}
-  onClose={() => (showDeleteCvDocDialog = false)}
-  title="Delete CV Document">
-  <div class="flex flex-col gap-4">
-    <p class="text-sm text-text-secondary">
-      Delete CV document "{cvDocState.filename}" from CDN & database?
-    </p>
-    <div class="flex justify-end gap-3">
-      <Button
-        type="button"
-        variant="secondary"
-        size="md"
-        onclick={() => (showDeleteCvDocDialog = false)}>Cancel</Button>
-      <Button
-        type="button"
-        variant="danger"
-        size="md"
-        onclick={executeDeleteCvDoc}>Delete</Button>
-    </div>
-  </div>
-</Dialog>
+<ConfirmationDialog
+  bind:isOpen={showDeleteCvDocDialog}
+  title="Delete CV Document"
+  message={`Delete CV document "${cvDocState.filename}" from CDN & database?`}
+  confirmLabel="Delete"
+  isDestructive
+  onConfirm={executeDeleteCvDoc} />
+
+<ConfirmationDialog
+  bind:isOpen={showRemoveEntryDialog}
+  title="Remove entry"
+  message={removeEntryMessage}
+  confirmLabel="Remove"
+  isDestructive
+  onConfirm={executeRemoveEntry}
+  onCancel={() => (pendingRemove = null)} />
 
 {#if showAvatarPreviewDialog}
   <div class="fixed inset-0 z-100 flex items-center justify-center p-4">
