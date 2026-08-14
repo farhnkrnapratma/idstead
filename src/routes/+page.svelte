@@ -1965,7 +1965,9 @@
             description="Try adjusting your tag filters or search keyword."
             onClearFilters={() => blogFilterStore.clearAllFilters()} />
         {:else}
-          <div class="relative z-0 mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div
+            use:staggerChildren
+            class="stagger-children relative z-0 mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {#each paginatedBlogPosts as post (post.id)}
               {@render blogPostCard(post)}
             {/each}
@@ -2068,7 +2070,8 @@
             onClearFilters={() => projectFilterStore.clearAllFilters()} />
         {:else}
           <div
-            class="relative {openCodeMenuId ? 'z-40' : (
+            use:staggerChildren
+            class="stagger-children relative {openCodeMenuId ? 'z-40' : (
               'z-0'
             )} mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {#each paginatedProjectList as project (project.name)}
