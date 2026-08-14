@@ -40,7 +40,8 @@
     Section,
     PageContainer,
     LogoLoop,
-    ConsentNotice
+    ConsentNotice,
+    staggerChildren
   } from '$lib'
   import {supabase} from '$lib/supabase'
   import {SvelteSet} from 'svelte/reactivity'
@@ -1334,7 +1335,8 @@
 
         <div class="relative z-10 mx-auto w-full">
           <div
-            class="relative mt-12 flex flex-col items-center justify-center rounded-sm glass-card border border-border-subtle/60 bg-surface-card/40 p-6 pt-0 text-center shadow-xl backdrop-blur-xl sm:p-8 sm:pt-0 dark:border-white/10 dark:bg-surface-card/30">
+            use:staggerChildren
+            class="stagger-children relative mt-12 flex flex-col items-center justify-center rounded-sm glass-card border border-border-subtle/60 bg-surface-card/40 p-6 pt-0 text-center shadow-xl backdrop-blur-xl sm:p-8 sm:pt-0 dark:border-white/10 dark:bg-surface-card/30">
             {#if avatar}
               <ImageWithSkeleton
                 src={avatar}
