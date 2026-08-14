@@ -3,10 +3,18 @@
 import {sequence} from '@sveltejs/kit/hooks'
 import * as Sentry from '@sentry/sveltekit'
 import {redirect, type Handle} from '@sveltejs/kit'
-import {PUBLIC_SENTRY_DSN} from '$env/static/public'
+import {PUBLIC_CDN_BASE_URL, PUBLIC_SENTRY_DSN} from '$env/static/public'
+import {env as publicEnv} from '$env/dynamic/public'
+import {dev} from '$app/environment'
 
 const RATE_LIMIT_WINDOW_MS = 60 * 1000
 const MAX_REQUESTS_PER_WINDOW = 60
+
+function getCdnBaseUrl(): string {
+  const base = (PUBLIC_CDN_BASE_URL ?? '').trim()
+  if (!base) return ''
+  return base.replace(/\/+$/, '')
+}
 
 interface RateLimitRecord {
   timestamps: number[]
@@ -30,8 +38,9 @@ function getClientIp(event: any): string {
 export const handle: Handle = sequence(
   Sentry.initCloudflareSentryHandle({
     dsn: PUBLIC_SENTRY_DSN,
-    tracesSampleRate: 1.0,
-    enableLogs: true
+    environment: publicEnv.PUBLIC_SENTRY_ENVIRONMENT || import.meta.env.MODE,
+    tracesSampleRate: dev ? 0 : 1.0,
+    enableLogs: !dev
   }),
   Sentry.sentryHandle(),
   async ({event, resolve}) => {
@@ -45,6 +54,8 @@ export const handle: Handle = sequence(
       )
     }
 
+    const cdnBaseUrl = getCdnBaseUrl()
+
     if (
       [
         '/favicon.ico',
@@ -56,7 +67,11 @@ export const handle: Handle = sequence(
         '/site.webmanifest'
       ].includes(event.url.pathname)
     ) {
-      throw redirect(301, `https://cdn.fkp.my.id${event.url.pathname}`)
+      if (!cdnBaseUrl) {
+        throw redirect(307, event.url.pathname)
+      }
+
+      throw redirect(301, `${cdnBaseUrl}${event.url.pathname}`)
     }
 
     const pathname = event.url.pathname.toLowerCase().replace(/\/$/, '')
@@ -76,10 +91,12 @@ export const handle: Handle = sequence(
       || (event.request.headers.get('accept')?.includes('application/json')
         ?? false)
 
-    const isAdminApi = event.url.pathname.startsWith('/api/admin')
+    const isInternalApi = event.url.pathname.startsWith('/api/internal')
+    const isAdminApi = event.url.pathname.startsWith('/api/internal/admin')
+
     let rateLimitHeaders: Record<string, string> = {}
 
-    // Apply Rate Limiting to Public API Endpoints
+    // Apply Rate Limiting to Public API Endpoints (including OPTIONS)
     if (isApiRequest && !isAdminApi) {
       const clientIp = getClientIp(event)
       const now = Date.now()
@@ -89,16 +106,30 @@ export const handle: Handle = sequence(
         t => now - t < RATE_LIMIT_WINDOW_MS
       )
 
-      if (record.timestamps.length >= MAX_REQUESTS_PER_WINDOW) {
-        const oldest = record.timestamps[0]
-        const resetSeconds = Math.ceil(
-          (oldest + RATE_LIMIT_WINDOW_MS - now) / 1000
+      // Cloudflare's Rate Limiting binding is the authoritative, distributed
+      // decision - it's consistent across every edge isolate, unlike the
+      // in-memory map below which only tracks requests seen by THIS isolate
+      // and can't enforce a real global limit on its own. When the binding
+      // isn't available (local dev without the Cloudflare runtime), fall
+      // back to the in-memory count so rate limiting still does something.
+      const limiter = event.platform?.env?.API_RATE_LIMITER
+      const isLimited =
+        limiter ?
+          !(await limiter.limit({key: clientIp})).success
+        : record.timestamps.length >= MAX_REQUESTS_PER_WINDOW
+
+      if (isLimited) {
+        const oldest = record.timestamps[0] ?? now
+        const resetSeconds = Math.max(
+          1,
+          Math.ceil((oldest + RATE_LIMIT_WINDOW_MS - now) / 1000)
         )
         return new Response(
           JSON.stringify({
-            code: 429,
-            error:
-              '429 Too Many Requests: Rate limit exceeded. Please wait before retrying.'
+            error: {
+              code: 'RATE_LIMITED',
+              message: 'Rate limit exceeded. Please wait before retrying.'
+            }
           }),
           {
             status: 429,
@@ -106,6 +137,7 @@ export const handle: Handle = sequence(
               'Content-Type': 'application/json; charset=utf-8',
               'Cache-Control': 'no-store',
               'X-Request-ID': requestId,
+              ...(isInternalApi ? {} : {'Access-Control-Allow-Origin': '*'}),
               'Retry-After': String(resetSeconds > 0 ? resetSeconds : 60),
               'X-RateLimit-Limit': String(MAX_REQUESTS_PER_WINDOW),
               'X-RateLimit-Remaining': '0',
@@ -132,14 +164,30 @@ export const handle: Handle = sequence(
       }
     }
 
+    if (isApiRequest && event.request.method === 'OPTIONS') {
+      return new Response(null, {
+        status: 204,
+        headers: {
+          ...(isInternalApi ? {} : {'Access-Control-Allow-Origin': '*'}),
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          'Access-Control-Max-Age': '86400',
+          'X-Request-ID': requestId,
+          ...rateLimitHeaders
+        }
+      })
+    }
+
     const response = await resolve(event)
     const contentType = response.headers.get('content-type') ?? ''
 
     if (isApiRequest) {
       response.headers.set('X-Request-ID', requestId)
+      if (!isInternalApi) {
+        response.headers.set('Access-Control-Allow-Origin', '*')
+      }
     }
 
-    // Attach Rate Limit headers to API responses
     if (isApiRequest && !isAdminApi) {
       for (const [hKey, hVal] of Object.entries(rateLimitHeaders)) {
         response.headers.set(hKey, hVal)
@@ -150,72 +198,77 @@ export const handle: Handle = sequence(
       isApiRequest
       && (response.status >= 400 || contentType.includes('text/html'))
     ) {
-      const code = response.status >= 400 ? response.status : 404
-      const statusText =
-        code === 400 ? 'Bad Request'
-        : code === 401 ? 'Unauthorized'
-        : code === 403 ? 'Forbidden'
-        : code === 404 ? 'Not Found'
-        : code === 429 ? 'Too Many Requests'
-        : 'Internal Server Error'
+      const httpStatus = response.status >= 400 ? response.status : 404
 
-      let safeDetail = ''
-
-      if (code === 401) {
-        safeDetail =
-          'Authentication is required to access this privileged endpoint.'
-      } else if (code === 403) {
-        safeDetail =
-          'You do not have permission to access this privileged resource.'
-      } else if (code === 404) {
-        safeDetail = 'Requested API endpoint or resource does not exist.'
-      } else if (code === 429) {
-        safeDetail = 'Rate limit exceeded. Please wait before retrying.'
-      } else if (code === 500) {
-        safeDetail =
-          'An unexpected error occurred while processing the request.'
+      const DEFAULT_CODES: Record<number, string> = {
+        400: 'BAD_REQUEST',
+        401: 'UNAUTHORIZED',
+        403: 'FORBIDDEN',
+        404: 'NOT_FOUND',
+        429: 'RATE_LIMITED'
       }
+      const DEFAULT_MESSAGES: Record<number, string> = {
+        400: 'The request was invalid.',
+        401: 'Authentication is required to access this privileged endpoint.',
+        403: 'You do not have permission to access this privileged resource.',
+        404: 'Requested API endpoint or resource does not exist.',
+        429: 'Rate limit exceeded. Please wait before retrying.'
+      }
+
+      let errorCode = DEFAULT_CODES[httpStatus] ?? 'INTERNAL_ERROR'
+      let errorMessage =
+        DEFAULT_MESSAGES[httpStatus]
+        ?? 'An unexpected error occurred while processing the request.'
+      let errorDetails: string | undefined
 
       if (contentType.includes('application/json')) {
         try {
           const jsonBody = await response.clone().json()
-          if (
-            jsonBody
-            && typeof jsonBody === 'object'
-            && ('error' in jsonBody || 'message' in jsonBody)
-          ) {
-            const rawMsg = String(
-              jsonBody.error || jsonBody.message || ''
-            ).trim()
-
-            const isSensitive =
+          if (jsonBody && typeof jsonBody === 'object') {
+            const isSensitive = (text: string) =>
               /row-level security|violates|postgres|supabase|column|relation|syntax error|duplicate key|PGRST|permission denied/i.test(
-                rawMsg
+                text
               )
 
-            if (!isSensitive && rawMsg) {
-              const cleanMsg = rawMsg.replace(/^\d{3}\s+[^:]+:\s*/, '')
-              safeDetail = cleanMsg
+            if (typeof jsonBody.code === 'string' && jsonBody.code) {
+              errorCode = jsonBody.code
+            }
+
+            const rawMessage = String(
+              jsonBody.message ?? jsonBody.error ?? ''
+            ).trim()
+            if (rawMessage && !isSensitive(rawMessage)) {
+              errorMessage = rawMessage.replace(/^\d{3}\s+[^:]+:\s*/, '')
+            }
+
+            const rawDetails = String(jsonBody.details ?? '').trim()
+            if (rawDetails && !isSensitive(rawDetails)) {
+              errorDetails = rawDetails
             }
           }
         } catch (err) {
-          // Fall back to safeDetail
+          // Fall back to the defaults above
         }
       }
-
-      const formattedError = `${code} ${statusText}: ${safeDetail || 'Request could not be completed.'}`
 
       const errHeaders: Record<string, string> = {
         'Content-Type': 'application/json; charset=utf-8',
         'Cache-Control': 'no-store',
         'X-Request-ID': requestId,
+        ...(isInternalApi ? {} : {'Access-Control-Allow-Origin': '*'}),
         ...rateLimitHeaders
       }
 
-      return new Response(JSON.stringify({code, error: formattedError}), {
-        status: code,
-        headers: errHeaders
-      })
+      return new Response(
+        JSON.stringify({
+          error: {
+            code: errorCode,
+            message: errorMessage,
+            ...(errorDetails ? {details: errorDetails} : {})
+          }
+        }),
+        {status: httpStatus, headers: errHeaders}
+      )
     }
 
     if (contentType.includes('text/html')) {

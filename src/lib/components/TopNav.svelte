@@ -3,6 +3,7 @@
   import SkipLink from './SkipLink.svelte'
   import SpotlightSearch from './SpotlightSearch.svelte'
   import ThemeSelect from './filter/ThemeSelect.svelte'
+  import AccessibilitySelect from './filter/AccessibilitySelect.svelte'
   import {themeStore} from '../stores/themeStore.svelte'
 
   interface Props {
@@ -17,7 +18,7 @@
 <SkipLink />
 
 <nav
-  class="fixed top-0 z-40 flex h-15 w-full items-center justify-between border-b border-border-subtle bg-surface-card/45 px-3 font-sans shadow-xs backdrop-blur-xl transition-colors duration-300 sm:px-5"
+  class="fixed top-0 z-60 flex h-15 w-full items-center justify-between glass-card border-b border-border-subtle/60 px-3 font-sans shadow-xs sm:px-5"
   aria-label={ariaLabel}>
   <a
     href={backHref}
@@ -31,5 +32,6 @@
       theme={themeStore.current}
       onThemeChange={themeStore.apply}
       class="hidden md:inline-flex" />
+    <AccessibilitySelect class="hidden md:inline-flex" />
   </div>
 </nav>

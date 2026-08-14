@@ -28,14 +28,25 @@ interface R2Bucket {
   get(key: string): Promise<R2Object | null>
 }
 
+interface RateLimit {
+  limit(options: {key: string}): Promise<{success: boolean}>
+}
+
 declare global {
   namespace App {
+    interface Error {
+      message: string
+      code?: string
+      details?: string
+    }
     interface Platform {
       env: {
         GITHUB_TOKEN?: string
         AI?: unknown
         R2_BUCKET?: R2Bucket
         MY_BUCKET?: R2Bucket
+        API_RATE_LIMITER?: RateLimit
+        TURNSTILE_SECRET?: string
         [key: string]: unknown
       }
     }

@@ -240,13 +240,14 @@ export function sanitizeIconClass(
 }
 
 export async function fetchAuthorProfile(
-  supabaseClient?: any
+  supabaseClient?: any,
+  options?: {includeEmail?: boolean}
 ): Promise<AuthorProfile | null> {
   if (!supabaseClient) return null
 
   try {
     const {data, error} = await supabaseClient
-      .from('author_profile')
+      .from('db_profiles')
       .select('*')
       .limit(1)
       .maybeSingle()
@@ -268,7 +269,10 @@ export async function fetchAuthorProfile(
       jobTitle: decodeHtmlEntities(data.job_title || ''),
       bio: decodeHtmlEntities(data.bio || ''),
       avatar: decodeHtmlEntities(data.avatar || ''),
-      email: decodeHtmlEntities(data.email || ''),
+      // Not returned unless explicitly requested (admin editor only) - this
+      // is the site's Supabase Auth login identity and must not leak into
+      // any publicly-served page data or API response.
+      email: options?.includeEmail ? decodeHtmlEntities(data.email || '') : '',
       city,
       postalCode,
       country,
@@ -284,6 +288,18 @@ export async function fetchAuthorProfile(
   }
 }
 
+export async function fetchAuthorProfileWithSocials(
+  supabaseClient?: any,
+  options?: {includeEmail?: boolean}
+): Promise<AuthorProfile | null> {
+  const [profile, socialLinks] = await Promise.all([
+    fetchAuthorProfile(supabaseClient, options),
+    fetchSocials(supabaseClient)
+  ])
+  if (!profile) return null
+  return {...profile, socialLinks}
+}
+
 export async function fetchSocials(
   supabaseClient?: any
 ): Promise<SocialLink[]> {
@@ -291,8 +307,9 @@ export async function fetchSocials(
 
   try {
     const {data, error} = await supabaseClient
-      .from('socials')
+      .from('db_links')
       .select('*')
+      .eq('category', 'social')
       .order('sort_order', {ascending: true})
 
     if (error || !data) return []
@@ -314,23 +331,19 @@ export async function fetchSkills(supabaseClient?: any): Promise<SkillItem[]> {
 
   try {
     const {data, error} = await supabaseClient
-      .from('skills')
-      .select('*')
+      .from('db_categories')
+      .select('id, category, sort_order, db_items(id, name, sort_order)')
       .order('sort_order', {ascending: true})
 
     if (error || !data) return []
 
-    return data.map((item: any) => ({
-      id: item.id,
-      category: decodeHtmlEntities(item.category || ''),
-      skills:
-        Array.isArray(item.skills) ?
-          item.skills.map((s: string) => decodeHtmlEntities(s))
-        : (item.skills || item.name || '')
-            .split(',')
-            .map((s: string) => decodeHtmlEntities(s.trim()))
-            .filter(Boolean),
-      sortOrder: item.sort_order
+    return data.map((cat: any) => ({
+      id: cat.id,
+      category: decodeHtmlEntities(cat.category || ''),
+      skills: (cat.db_items || [])
+        .sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+        .map((item: any) => decodeHtmlEntities(item.name || '')),
+      sortOrder: cat.sort_order
     }))
   } catch (e) {
     return []
@@ -358,7 +371,7 @@ export async function fetchExperiences(
 
   try {
     const {data, error} = await supabaseClient
-      .from('experiences')
+      .from('db_experiences')
       .select('*')
       .order('sort_order', {ascending: true})
 
@@ -391,7 +404,7 @@ export async function fetchEducation(
 
   try {
     const {data, error} = await supabaseClient
-      .from('education')
+      .from('db_educations')
       .select('*')
       .order('sort_order', {ascending: true})
 
@@ -431,8 +444,9 @@ export async function fetchSponsorship(
 
   try {
     const {data, error} = await supabaseClient
-      .from('funding')
+      .from('db_links')
       .select('*')
+      .eq('category', 'funding')
       .order('sort_order', {ascending: true})
 
     if (error || !data) return []
@@ -464,8 +478,9 @@ export async function fetchContactInfo(
 
   try {
     const {data, error} = await supabaseClient
-      .from('contact_info')
+      .from('db_links')
       .select('*')
+      .eq('category', 'contact')
       .order('sort_order', {ascending: true})
 
     if (error || !data) return []
@@ -474,7 +489,7 @@ export async function fetchContactInfo(
       id: item.id,
       platform: decodeHtmlEntities(item.platform || item.label || ''),
       displayValue: decodeHtmlEntities(item.display_value || item.value || ''),
-      href: decodeHtmlEntities(item.href || ''),
+      href: decodeHtmlEntities(item.url || item.href || ''),
       icon: item.icon || 'bi-person',
       sortOrder: item.sort_order
     }))
@@ -484,13 +499,14 @@ export async function fetchContactInfo(
 }
 
 export async function fetchActiveCvDocument(
-  supabaseClient?: any
+  supabaseClient?: any,
+  fetchFn: typeof fetch = fetch
 ): Promise<CvDocument | null> {
   if (!supabaseClient) return null
 
   try {
     const {data, error} = await supabaseClient
-      .from('cv_documents')
+      .from('db_documents')
       .select('*')
       .eq('is_active', true)
       .order('sort_order', {ascending: true})
@@ -504,14 +520,14 @@ export async function fetchActiveCvDocument(
     let fullHash = data.hash || ''
     if (fullHash.length < 64 && data.file_url) {
       try {
-        const shaRes = await fetch(`${data.file_url}.sha256`)
+        const shaRes = await fetchFn(`${data.file_url}.sha256`)
         if (shaRes.ok) {
           const shaText = await shaRes.text()
           const match = shaText.trim().match(/^[a-fA-F0-9]{64}/)
           if (match) {
             fullHash = match[0]
             await supabaseClient
-              .from('cv_documents')
+              .from('db_documents')
               .update({hash: fullHash})
               .eq('id', data.id)
           }

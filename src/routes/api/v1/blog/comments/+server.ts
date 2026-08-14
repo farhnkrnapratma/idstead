@@ -1,15 +1,53 @@
 /** @format */
 
-import {supabase} from '$lib/supabase'
+import {json} from '@sveltejs/kit'
 import type {RequestHandler} from './$types'
-import {proxyToSupabaseEdgeFunction} from '$lib/supabaseFunctions'
+import {supabase} from '$lib/supabase'
+import {apiError} from '$lib/server/apiError'
 
-export const GET: RequestHandler = async ({request, url}) => {
-  const target = new URL(request.url)
-  target.search = url.search
-  return proxyToSupabaseEdgeFunction(new Request(target, request), 'comments-api')
-}
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-export const POST: RequestHandler = async ({request}) => {
-  return proxyToSupabaseEdgeFunction(request, 'comments-api')
+export const GET: RequestHandler = async ({url}) => {
+  const postId =
+    url.searchParams.get('postId') || url.searchParams.get('post_id')
+  const limitParam = parseInt(url.searchParams.get('limit') || '50', 10)
+  const limit = Math.min(
+    Math.max(1, Number.isNaN(limitParam) ? 50 : limitParam),
+    100
+  )
+
+  if (postId && !UUID_RE.test(postId)) {
+    return apiError(
+      400,
+      'BLOG_COMMENT_INVALID_POST_ID',
+      'postId must be a valid UUID.',
+      `Received postId '${postId}'.`
+    )
+  }
+
+  let query = supabase
+    .from('db_comments')
+    .select(
+      'id, post_id, parent_id, author_name, content, is_anonymous, is_approved, created_at'
+    )
+    .eq('is_approved', true)
+    .order('created_at', {ascending: true})
+    .limit(limit)
+
+  if (postId) {
+    query = query.eq('post_id', postId)
+  }
+
+  const {data, error: dbErr} = await query
+
+  if (dbErr) {
+    return apiError(
+      500,
+      'BLOG_COMMENTS_FETCH_FAILED',
+      'Could not fetch comments.'
+    )
+  }
+
+  return json({data: data ?? []})
 }

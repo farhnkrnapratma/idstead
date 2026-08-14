@@ -1,3 +1,5 @@
+<!-- @format -->
+
 ## What happened
 
 **Task:** <!-- e.g., "Set up MFA on patient records" -->

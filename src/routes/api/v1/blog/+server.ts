@@ -3,6 +3,7 @@
 import {json} from '@sveltejs/kit'
 import type {RequestHandler} from './$types'
 import {supabase} from '$lib/supabase'
+import {apiError} from '$lib/server/apiError'
 
 export const GET: RequestHandler = async ({url, request}) => {
   const id = url.searchParams.get('id')?.trim()
@@ -22,8 +23,8 @@ export const GET: RequestHandler = async ({url, request}) => {
     || acceptHeader.includes('text/markdown')
 
   let query = supabase
-    .from('posts')
-    .select('id, title, slug, excerpt, created_at, updated_at, banner_path', {
+    .from('db_posts')
+    .select('id, title, slug, excerpt, created_at, updated_at', {
       count: 'exact'
     })
     .eq('published', true)
@@ -36,7 +37,7 @@ export const GET: RequestHandler = async ({url, request}) => {
   }
 
   if (search) {
-    const normalizedSearch = search.replace(/[,\n\r\t]/g, ' ').trim()
+    const normalizedSearch = search.replace(/[,().\n\r\t]/g, ' ').trim()
     if (normalizedSearch) {
       query = query.or(
         `title.ilike.%${normalizedSearch}%,excerpt.ilike.%${normalizedSearch}%`
@@ -49,12 +50,10 @@ export const GET: RequestHandler = async ({url, request}) => {
   const {data: posts, error: dbErr, count} = await query
 
   if (dbErr) {
-    return json(
-      {
-        code: 500,
-        error: '500 Internal Server Error: Could not fetch blog posts.'
-      },
-      {status: 500}
+    return apiError(
+      500,
+      'BLOG_LIST_FETCH_FAILED',
+      'Could not fetch blog posts.'
     )
   }
 
@@ -63,14 +62,14 @@ export const GET: RequestHandler = async ({url, request}) => {
   const totalPages = Math.max(1, Math.ceil(total / limit))
 
   if (wantsMarkdown) {
-    let md = `# Blog Posts Catalog\n\nPage: ${page}/${totalPages}\nTotal posts: ${total}\n\n`
+    let md = `# Posts Catalog\n\nPage: ${page}/${totalPages}\nTotal posts: ${total}\n\n`
     list.forEach(p => {
       md += `## ${p.title}\n`
       md += `- **ID**: \`${p.id}\`\n`
       md += `- **Slug**: \`${p.slug}\`\n`
       md += `- **Date**: ${new Date(p.created_at).toISOString().split('T')[0]}\n`
-      md += `- **JSON Endpoint**: \`/api/blog/${p.slug}\`\n`
-      md += `- **Markdown Endpoint**: \`/api/blog/${p.slug}?format=md\`\n`
+      md += `- **JSON Endpoint**: \`/api/v1/blog/${p.slug}\`\n`
+      md += `- **Markdown Endpoint**: \`/api/v1/blog/${p.slug}?format=md\`\n`
       if (p.excerpt) md += `\n> ${p.excerpt}\n`
       md += `\n---\n\n`
     })
@@ -87,7 +86,6 @@ export const GET: RequestHandler = async ({url, request}) => {
   return json(
     {
       data: list,
-      posts: list,
       total,
       pagination: {
         page,

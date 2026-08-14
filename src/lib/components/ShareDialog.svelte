@@ -2,7 +2,6 @@
 <script lang="ts">
   import Dialog from './Dialog.svelte'
   import Button from './Button.svelte'
-  import Input from './Input.svelte'
   import IconButton from './IconButton.svelte'
 
   interface Props {
@@ -54,15 +53,9 @@
   class={className}
   {onClose}>
   <div class="flex flex-col gap-4">
-    <div class="flex items-center gap-2">
-      <Input
-        type="text"
-        readonly
-        value={url
-          || (typeof window !== 'undefined' ? window.location.href : '')}
-        class="font-mono text-xs select-all" />
+    <div class="flex justify-center">
       <Button
-        variant={copied ? 'subtle' : 'secondary'}
+        type={copied ? 'Tertiary' : 'Secondary'}
         size="md"
         onclick={copyUrl}>
         {#if copied}
@@ -71,8 +64,8 @@
             aria-hidden="true"></i> Copied!
         {:else}
           <i
-            class="bi bi-clipboard"
-            aria-hidden="true"></i> Copy
+            class="bi bi-copy"
+            aria-hidden="true"></i> Copy URL
         {/if}
       </Button>
     </div>
@@ -105,7 +98,7 @@
           variant="default"
           size="lg">
           <i
-            class="bi bi-linkedin text-lg text-(--color-brand-linkedin)"
+            class="bi bi-linkedin text-lg text-brand-linkedin"
             aria-hidden="true"></i>
         </IconButton>
       </a>
@@ -121,7 +114,7 @@
           variant="default"
           size="lg">
           <i
-            class="bi bi-facebook text-lg text-(--color-brand-facebook)"
+            class="bi bi-facebook text-lg text-brand-facebook"
             aria-hidden="true"></i>
         </IconButton>
       </a>
@@ -137,7 +130,7 @@
           variant="default"
           size="lg">
           <i
-            class="bi bi-reddit text-lg text-(--color-brand-reddit)"
+            class="bi bi-reddit text-lg text-brand-reddit"
             aria-hidden="true"></i>
         </IconButton>
       </a>
@@ -162,7 +155,7 @@
 
   {#snippet footer()}
     <Button
-      variant="ghost"
+      type="Secondary"
       size="md"
       onclick={onClose}>
       <span class="inline-flex items-center gap-1.5">

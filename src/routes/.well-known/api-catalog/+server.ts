@@ -22,7 +22,7 @@ export const GET: RequestHandler = async () => {
           {
             href: 'https://fkp.my.id/api/v1/blog/comments',
             type: 'text/html',
-            title: 'Comments API — read and post comments on blog entries'
+            title: 'Comments API — read comments on blog entries'
           }
         ]
       },
@@ -32,7 +32,7 @@ export const GET: RequestHandler = async () => {
           {
             href: 'https://fkp.my.id/api/v1/blog/views',
             type: 'text/html',
-            title: 'Views API — record and retrieve post view counts'
+            title: 'Views API — retrieve post view counts'
           }
         ]
       },

@@ -1,3 +1,5 @@
+<!-- @format -->
+
 # Skill Feedback
 
 Use this when the user reports that the skill gave incorrect guidance, is missing information, or could be improved. This is about the skill (agent instructions), not about Supabase the product.

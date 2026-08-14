@@ -5,6 +5,8 @@ impactDescription: 10-100x improvement with correct index type
 tags: indexes, btree, gin, gist, brin, hash, index-types
 ---
 
+<!-- @format -->
+
 ## Choose the Right Index Type for Your Data
 
 Different index types excel at different query patterns. The default B-tree isn't always optimal.

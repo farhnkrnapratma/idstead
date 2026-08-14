@@ -15,9 +15,11 @@
     Button,
     IconButton,
     Card,
+    ImageWithSkeleton,
     FormField,
     Input,
     Textarea,
+    MarkdownEditor,
     ThemeSelect,
     Dialog,
     toastStore
@@ -103,56 +105,62 @@
 
   onMount(() => {
     ;(async () => {
-      const {data: sessionData} = await supabase.auth.getSession()
-      if (!sessionData.session) {
-        window.location.href = '/admin/login'
-        return
-      }
-      isCheckingAuth = false
+      try {
+        const {data: sessionData} = await supabase.auth.getSession()
+        if (!sessionData.session) {
+          window.location.href = '/admin/login'
+          return
+        }
 
-      const params = new URLSearchParams(window.location.search)
-      const id = params.get('id')
-      if (id) {
-        editId = id
-        isEditMode = true
-        await loadPostForEdit(id)
-      } else {
-        initialTitle = ''
-        initialExcerpt = ''
-        initialMarkdownContent =
-          '# New Post\n\nWrite your markdown content here...'
-      }
-
-      const key = id ? `autosave_edit_${id}` : 'autosave_new'
-      const savedDraft = localStorage.getItem(key)
-      if (savedDraft) {
-        try {
-          const parsed = JSON.parse(savedDraft)
-          const defaultTemplate =
+        const params = new URLSearchParams(window.location.search)
+        const id = params.get('id')
+        if (id) {
+          editId = id
+          isEditMode = true
+          await loadPostForEdit(id)
+        } else {
+          initialTitle = ''
+          initialExcerpt = ''
+          initialMarkdownContent =
             '# New Post\n\nWrite your markdown content here...'
-          if (!id) {
-            title = parsed.title || title
-            excerpt = parsed.excerpt || excerpt
-            if (
-              parsed.markdownContent
-              && parsed.markdownContent !== defaultTemplate
-            ) {
-              markdownContent = parsed.markdownContent
-            }
-          } else {
-            if (
-              parsed.markdownContent
-              && parsed.markdownContent !== defaultTemplate
-              && parsed.markdownContent !== markdownContent
-            ) {
+        }
+
+        const key = id ? `autosave_edit_${id}` : 'autosave_new'
+        const savedDraft = localStorage.getItem(key)
+        if (savedDraft) {
+          try {
+            const parsed = JSON.parse(savedDraft)
+            const defaultTemplate =
+              '# New Post\n\nWrite your markdown content here...'
+            if (!id) {
               title = parsed.title || title
               excerpt = parsed.excerpt || excerpt
-              markdownContent = parsed.markdownContent
+              if (
+                parsed.markdownContent
+                && parsed.markdownContent !== defaultTemplate
+              ) {
+                markdownContent = parsed.markdownContent
+              }
+            } else {
+              if (
+                parsed.markdownContent
+                && parsed.markdownContent !== defaultTemplate
+                && parsed.markdownContent !== markdownContent
+              ) {
+                title = parsed.title || title
+                excerpt = parsed.excerpt || excerpt
+                markdownContent = parsed.markdownContent
+              }
             }
+          } catch (e) {
+            console.error('Failed to parse autosave draft', e)
           }
-        } catch (e) {
-          console.error('Failed to parse autosave draft', e)
         }
+      } catch (err: any) {
+        console.error('Failed initializing edit page:', err)
+        errorMessage = err?.message || 'Failed loading post data.'
+      } finally {
+        isCheckingAuth = false
       }
     })()
 
@@ -172,7 +180,7 @@
   async function loadPostForEdit(id: string) {
     try {
       const {data: post, error} = await supabase
-        .from('posts')
+        .from('db_posts')
         .select('*')
         .eq('id', id)
         .single()
@@ -185,16 +193,33 @@
       originalSlug = post.slug
       excerpt = post.excerpt || ''
 
-      const {data: fileData, error: fileError} = await supabase.storage
-        .from('blog-posts')
-        .download(post.storage_path)
+      let fileText = ''
+      if (post.storage_path) {
+        try {
+          const {data: fileData, error: fileError} = await supabase.storage
+            .from('blog-posts')
+            .download(post.storage_path)
 
-      if (fileError) {
-        throw fileError
+          if (!fileError && fileData) {
+            fileText = await fileData.text()
+          } else {
+            const {data: publicUrlData} = supabase.storage
+              .from('blog-posts')
+              .getPublicUrl(post.storage_path)
+            const fileRes = await fetch(publicUrlData.publicUrl)
+            if (fileRes.ok) {
+              fileText = await fileRes.text()
+            }
+          }
+        } catch (storageErr) {
+          console.error('Failed downloading post markdown file:', storageErr)
+        }
       }
 
-      const fileText = await fileData.text()
       markdownContent = fileText
+      initialTitle = title
+      initialExcerpt = excerpt
+      initialMarkdownContent = markdownContent
 
       bannerPath = post.banner_path || null
       if (post.banner_path) {
@@ -205,14 +230,9 @@
       } else {
         bannerPreview = null
       }
-
-      initialTitle = title
-      initialExcerpt = excerpt
-      initialMarkdownContent = markdownContent
-    } catch (err) {
-      const error = err as Error
-      console.error('Error loading post for edit:', error)
-      errorMessage = 'Failed to load post data: ' + error.message
+    } catch (err: any) {
+      console.error('Failed in loadPostForEdit:', err)
+      errorMessage = err?.message || 'Failed to load post for editing'
     }
   }
 
@@ -279,6 +299,21 @@
     hljs.highlight(markdownContent || '', {language: 'markdown'}).value
       + (markdownContent.endsWith('\n') ? '\n ' : '')
   )
+
+  let isToolbarStuck = $state(false)
+  let editorSentinelElement = $state<HTMLDivElement | null>(null)
+
+  $effect(() => {
+    if (typeof window === 'undefined' || !editorSentinelElement) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isToolbarStuck = !entry.isIntersecting
+      },
+      {threshold: 0, rootMargin: '0px'}
+    )
+    observer.observe(editorSentinelElement)
+    return () => observer.disconnect()
+  })
 
   let excerptTextareaElement = $state<HTMLTextAreaElement | null>(null)
 
@@ -374,19 +409,15 @@
     })
   }
 
-  async function handleImageUpload(e: Event) {
-    const target = e.target as HTMLInputElement
-    const files = target.files
-    if (!files || files.length === 0) return
-    const file = files[0]
+  async function handleImageUploadFile(file: File): Promise<string | null> {
     const allowedTypes = ['image/png', 'image/webp', 'image/jpeg', 'image/jpg']
     if (!allowedTypes.includes(file.type)) {
       errorMessage = 'Supported image formats are PNG, WebP, JPEG, JPG.'
-      return
+      return null
     }
     if (file.size > 5 * 1024 * 1024) {
       errorMessage = 'Image size must be 5MB or less.'
-      return
+      return null
     }
     isSubmitting = true
     errorMessage = null
@@ -400,15 +431,13 @@
       const {data: urlData} = supabase.storage
         .from('blog-posts')
         .getPublicUrl(path)
-      insertMarkdown(
-        `![${file.name.replace(/\.[^/.]+$/, '')}](${urlData.publicUrl})`
-      )
+      return urlData.publicUrl
     } catch (err) {
       const error = err as Error
       errorMessage = error.message || 'Failed to upload image.'
+      return null
     } finally {
       isSubmitting = false
-      target.value = ''
     }
   }
 
@@ -645,7 +674,7 @@
         }
 
         let {error: dbError} = await supabase
-          .from('posts')
+          .from('db_posts')
           .update(updatePayload)
           .eq('id', editId)
 
@@ -655,7 +684,7 @@
             || dbError.code === '42703')
         ) {
           const {error: dbError2} = await supabase
-            .from('posts')
+            .from('db_posts')
             .update(payload)
             .eq('id', editId)
           dbError = dbError2
@@ -679,7 +708,7 @@
           throw new Error(`Storage upload failed: ${uploadError.message}`)
         }
 
-        const {error: dbError} = await supabase.from('posts').insert(payload)
+        const {error: dbError} = await supabase.from('db_posts').insert(payload)
 
         if (dbError) {
           await supabase.storage.from('blog-posts').remove([storagePath])
@@ -728,7 +757,7 @@
 <SkipLink />
 
 <nav
-  class="fixed top-0 z-40 flex h-15 w-full items-center justify-between border-b border-border-subtle bg-surface-card/45 px-5 font-sans shadow-xs backdrop-blur-xl transition-colors duration-300"
+  class="fixed top-0 z-40 flex h-15 w-full items-center justify-between glass-card border-b border-border-subtle/60 px-5 font-sans shadow-xs"
   aria-label="Editor navigation">
   <button
     type="button"
@@ -766,8 +795,7 @@
         onsubmit={e => e.preventDefault()}
         novalidate
         class="flex flex-col gap-4">
-        <div
-          class="rounded-sm border border-border-subtle bg-surface-card/30 p-6 text-left shadow-xs backdrop-blur-xl transition-colors duration-300">
+        <div class="rounded-sm glass-card p-6 text-left">
           <h2 class="mb-4 text-base font-bold text-text-primary select-none">
             {isEditMode ? 'Edit post details' : 'Post details'}
           </h2>
@@ -783,11 +811,11 @@
               <div
                 class="group relative flex aspect-2/1 w-full items-center justify-center overflow-hidden rounded-sm border border-border-subtle bg-surface-base select-none">
                 {#if bannerPreview}
-                  <img
+                  <ImageWithSkeleton
                     src={bannerPreview}
                     alt="Banner preview"
-                    loading="lazy"
-                    class="h-full w-full bg-surface-base object-contain" />
+                    class="h-full w-full bg-surface-base"
+                    imgClass="object-contain" />
                   <button
                     type="button"
                     onclick={() => {
@@ -804,8 +832,8 @@
                 {:else}
                   <div
                     class="flex flex-col items-center gap-2 text-text-muted/65">
-                    <i class="bi bi-image text-3xl"></i>
-                    <span class="text-[10px]">No banner uploaded</span>
+                    <i class="bi bi-file-richtext-fill text-3xl"></i>
+                    <span class="text-2xs">No banner uploaded</span>
                   </div>
                 {/if}
               </div>
@@ -826,9 +854,9 @@
                     role="alert"
                     class="flex items-start gap-1.5 text-danger">
                     <i
-                      class="bi bi-exclamation-circle-fill mt-[1px] shrink-0 self-start text-xs leading-none"
+                      class="bi bi-exclamation-circle-fill mt-px shrink-0 self-start text-xs leading-none"
                       aria-hidden="true"></i>
-                    <span class="min-w-0 flex-1 break-words"
+                    <span class="min-w-0 flex-1 wrap-break-word"
                       >{bannerError}</span>
                   </span>
                 </div>
@@ -838,7 +866,7 @@
             <div class="flex flex-col gap-2.5 lg:col-span-7">
               <FormField
                 id="post-title"
-                label="Title*"
+                label="Title"
                 required
                 error={titleError}
                 valid={titleValid}
@@ -883,395 +911,30 @@
           </div>
         </div>
 
-        <div
-          class="flex flex-col divide-y divide-adwaita-border overflow-hidden rounded-md border border-adwaita-border bg-adwaita-card/45 text-left shadow-xs backdrop-blur-lg transition-colors duration-300">
-          <div
-            class="flex items-center border-b border-border-subtle bg-surface-card/10 px-4 py-2.5 select-none">
-            <div
-              class="inline-flex gap-0.5 rounded-sm border border-border-subtle bg-surface-switcher p-1">
-              <button
-                type="button"
-                onclick={() => (activeTab = 'editor')}
-                aria-pressed={activeTab === 'editor'}
-                class="cursor-pointer rounded-sm px-4 py-1.5 text-xs font-semibold transition-all {(
-                  activeTab === 'editor'
-                ) ?
-                  'border border-border-subtle/10 bg-surface-switcher-active text-text-primary shadow-xs'
-                : 'text-text-secondary hover:bg-surface-hover/30 hover:text-text-primary'}">
-                Edit
-              </button>
-              <button
-                type="button"
-                onclick={() => (activeTab = 'preview')}
-                aria-pressed={activeTab === 'preview'}
-                class="cursor-pointer rounded-sm px-4 py-1.5 text-xs font-semibold transition-all {(
-                  activeTab === 'preview'
-                ) ?
-                  'border border-border-subtle/10 bg-surface-switcher-active text-text-primary shadow-xs'
-                : 'text-text-secondary hover:bg-surface-hover/30 hover:text-text-primary'}">
-                Preview
-              </button>
-            </div>
-
-            <div class="ml-auto flex items-center gap-2 select-none">
-              <div
-                role="status"
-                aria-live="polite"
-                class="flex items-center pr-1.5 text-xs font-medium text-text-muted">
-                {#if autoSaveStatus === 'saving'}
-                  <span class="inline-flex items-center gap-1.5">
-                    <svg
-                      class="h-3.5 w-3.5 animate-spin text-text-muted"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true">
-                      <circle
-                        class="stroke-copilot stroke-3 opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"></circle>
-                      <path
-                        class="fill-copilot opacity-75"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    Saving…
-                  </span>
-                {:else}
-                  <span class="inline-flex items-center gap-1.5">
-                    <i
-                      class="bi bi-cloud-check text-[13px] text-text-muted"
-                      aria-hidden="true"></i>
-                    Saved
-                  </span>
-                {/if}
-              </div>
-
-              <div class="relative">
-                <button
-                  type="button"
-                  onclick={() => {
-                    indentModeDropdownOpen = !indentModeDropdownOpen
-                    indentSizeDropdownOpen = false
-                    wrapModeDropdownOpen = false
-                  }}
-                  class="inline-flex h-8 cursor-pointer items-center justify-between gap-1.5 rounded-sm border border-border-subtle bg-surface-card px-3 text-xs font-medium text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
-                  aria-haspopup="true"
-                  aria-expanded={indentModeDropdownOpen}>
-                  {indentMode === 'spaces' ? 'Spaces' : 'Tabs'}
-                  <span
-                    class="inline-flex h-3.5 w-3.5 shrink-0 origin-center items-center justify-center text-text-muted transition-transform duration-200 ease-out {(
-                      indentModeDropdownOpen
-                    ) ?
-                      'rotate-180'
-                    : ''}">
-                    <i class="bi bi-chevron-down text-[9px] leading-none"></i>
-                  </span>
-                </button>
-                {#if indentModeDropdownOpen}
-                  <button
-                    class="fixed inset-0 z-40 cursor-default"
-                    onclick={() => (indentModeDropdownOpen = false)}
-                    aria-label="Close menu"></button>
-                  <div
-                    role="menu"
-                    class="absolute top-8.5 right-0 z-50 flex min-w-30 flex-col rounded-sm border border-border-subtle bg-surface-elevated py-1 text-xs shadow-lg">
-                    {#each ['spaces', 'tabs'] as const as mode (mode)}
-                      <button
-                        type="button"
-                        role="menuitem"
-                        onclick={() => {
-                          indentMode = mode
-                          indentModeDropdownOpen = false
-                        }}
-                        class="flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-left text-xs text-text-primary transition-colors hover:bg-surface-hover">
-                        <span>{mode === 'spaces' ? 'Spaces' : 'Tabs'}</span>
-                        {#if indentMode === mode}
-                          <i class="bi bi-check text-copilot"></i>
-                        {/if}
-                      </button>
-                    {/each}
-                  </div>
-                {/if}
-              </div>
-
-              <div class="relative">
-                <button
-                  type="button"
-                  onclick={() => {
-                    indentSizeDropdownOpen = !indentSizeDropdownOpen
-                    indentModeDropdownOpen = false
-                    wrapModeDropdownOpen = false
-                  }}
-                  class="inline-flex h-8 cursor-pointer items-center justify-between gap-1.5 rounded-sm border border-border-subtle bg-surface-card px-3 text-xs font-medium text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
-                  aria-haspopup="true"
-                  aria-expanded={indentSizeDropdownOpen}>
-                  {indentSize}
-                  <span
-                    class="inline-flex h-3.5 w-3.5 shrink-0 origin-center items-center justify-center text-text-muted transition-transform duration-200 ease-out {(
-                      indentSizeDropdownOpen
-                    ) ?
-                      'rotate-180'
-                    : ''}">
-                    <i class="bi bi-chevron-down text-[9px] leading-none"></i>
-                  </span>
-                </button>
-                {#if indentSizeDropdownOpen}
-                  <button
-                    class="fixed inset-0 z-40 cursor-default"
-                    onclick={() => (indentSizeDropdownOpen = false)}
-                    aria-label="Close menu"></button>
-                  <div
-                    role="menu"
-                    class="absolute top-8.5 right-0 z-50 flex min-w-20 flex-col rounded-sm border border-border-subtle bg-surface-elevated py-1 text-xs shadow-lg">
-                    {#each [2, 4, 8] as size (size)}
-                      <button
-                        type="button"
-                        role="menuitem"
-                        onclick={() => {
-                          indentSize = size
-                          indentSizeDropdownOpen = false
-                        }}
-                        class="flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-left text-xs text-text-primary transition-colors hover:bg-surface-hover">
-                        <span>{size}</span>
-                        {#if indentSize === size}
-                          <i class="bi bi-check text-copilot"></i>
-                        {/if}
-                      </button>
-                    {/each}
-                  </div>
-                {/if}
-              </div>
-
-              <div class="relative">
-                <button
-                  type="button"
-                  onclick={() => {
-                    wrapModeDropdownOpen = !wrapModeDropdownOpen
-                    indentModeDropdownOpen = false
-                    indentSizeDropdownOpen = false
-                  }}
-                  class="inline-flex h-8 cursor-pointer items-center justify-between gap-1.5 rounded-sm border border-border-subtle bg-surface-card px-3 text-xs font-medium text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
-                  aria-haspopup="true"
-                  aria-expanded={wrapModeDropdownOpen}>
-                  {lineWrapMode === 'soft' ? 'Soft wrap' : 'No wrap'}
-                  <span
-                    class="inline-flex h-3.5 w-3.5 shrink-0 origin-center items-center justify-center text-text-muted transition-transform duration-200 ease-out {(
-                      wrapModeDropdownOpen
-                    ) ?
-                      'rotate-180'
-                    : ''}">
-                    <i class="bi bi-chevron-down text-[9px] leading-none"></i>
-                  </span>
-                </button>
-                {#if wrapModeDropdownOpen}
-                  <button
-                    class="fixed inset-0 z-40 cursor-default"
-                    onclick={() => (wrapModeDropdownOpen = false)}
-                    aria-label="Close menu"></button>
-                  <div
-                    role="menu"
-                    class="absolute top-8.5 right-0 z-50 flex min-w-30 flex-col rounded-sm border border-border-subtle bg-surface-elevated py-1 text-xs shadow-lg">
-                    {#each ['soft', 'none'] as const as mode (mode)}
-                      <button
-                        type="button"
-                        role="menuitem"
-                        onclick={() => {
-                          lineWrapMode = mode
-                          wrapModeDropdownOpen = false
-                        }}
-                        class="flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-left text-xs text-text-primary transition-colors hover:bg-surface-hover">
-                        <span>{mode === 'soft' ? 'Soft wrap' : 'No wrap'}</span>
-                        {#if lineWrapMode === mode}
-                          <i class="bi bi-check text-copilot"></i>
-                        {/if}
-                      </button>
-                    {/each}
-                  </div>
-                {/if}
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-surface-base">
-            {#if activeTab === 'editor'}
-              <div class="flex w-full flex-row items-stretch overflow-hidden">
-                <div
-                  class="editor-line-numbers border-r border-border-subtle/20 bg-surface-card/10 pt-5 pb-5 select-none">
-                  {#each Array.from({length: lineCount}).keys() as i (i)}
-                    <div
-                      class="line-num-item pr-3.5 pl-4 text-right transition-colors {(
-                        currentLine === i + 1
-                      ) ?
-                        '-mr-px border-r-2 border-copilot bg-copilot/10 font-bold text-copilot'
-                      : 'text-text-muted/40'}"
-                      style={lineWrapMode === 'soft' && lineHeights[i] ?
-                        `height: ${lineHeights[i]}px !important;`
-                      : ''}>
-                      {i + 1}
-                    </div>
-                  {/each}
-                </div>
-
-                <div class="relative flex-1 overflow-hidden">
-                  <pre
-                    bind:this={preElement}
-                    class="editor-pre pointer-events-none absolute inset-0 m-0! box-border! w-full! [scrollbar-width:none] overflow-y-hidden! border-0! bg-transparent pt-5! pr-5! pb-5! pl-4! text-text-primary select-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden {(
-                      lineWrapMode === 'soft'
-                    ) ?
-                      'overflow-x-hidden! break-normal! wrap-break-word! whitespace-pre-wrap!'
-                    : 'overflow-x-auto! break-normal! whitespace-pre!'}"><code
-                      class="whitespace-inherit! break-inherit! overflow-wrap-inherit! language-markdown m-0! block! bg-transparent! p-0!"
-                      >{#each splitHighlightedHtmlLines(highlightedMarkdown) as lineHtml, i (i)}<div
-                          class="editor-code-line whitespace-inherit! break-inherit! overflow-wrap-inherit! m-0! p-0!">{@html lineHtml}</div>{/each}</code></pre>
-
-                  <textarea
-                    bind:this={markdownTextareaElement}
-                    id="markdown-content"
-                    name="markdownContent"
-                    aria-label="Markdown content"
-                    bind:value={markdownContent}
-                    onscroll={syncScroll}
-                    oninput={() => {
-                      syncScroll()
-                      updateCursorPosition()
-                    }}
-                    onclick={updateCursorPosition}
-                    onkeyup={updateCursorPosition}
-                    onfocus={updateCursorPosition}
-                    onkeydown={handleTextareaKeyDown}
-                    class="editor-textarea relative m-0! box-border! w-full! resize-none! overflow-y-hidden! border-0! bg-transparent pt-5! pr-5! pb-5! pl-4! text-transparent caret-text-primary focus:border-transparent! focus:shadow-none! focus:ring-0 focus:outline-none {(
-                      lineWrapMode === 'soft'
-                    ) ?
-                      'overflow-x-hidden! break-normal! wrap-break-word! whitespace-pre-wrap!'
-                    : 'overflow-x-auto! break-normal! whitespace-pre!'}"
-                  ></textarea>
-                </div>
-              </div>
-            {:else}
-              <div class="prose-custom w-full bg-surface-base p-6">
-                {#if previewHtml}
-                  {@html previewHtml}
-                {:else}
-                  <p class="text-text-muted italic">Nothing to preview yet…</p>
-                {/if}
-              </div>
-            {/if}
-          </div>
-
-          {#if activeTab === 'editor'}
-            <div
-              class="flex flex-wrap items-center justify-between border-t border-border-subtle bg-surface-card/10 px-3 py-1.5 text-xs text-text-secondary select-none">
-              <div
-                class="flex items-center gap-1"
-                role="toolbar"
-                aria-label="Formatting tools">
-                {#each [{action: () => insertMarkdown('# '), icon: 'bi-type-h1', label: 'H1 heading'}, {action: () => insertMarkdown('## '), icon: 'bi-type-h2', label: 'H2 heading'}, {action: () => insertMarkdown('### '), icon: 'bi-type-h3', label: 'H3 heading'}] as const as item (item.icon)}
-                  <button
-                    type="button"
-                    onclick={item.action}
-                    aria-label={item.label}
-                    class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
-                    <i
-                      class="bi {item.icon} text-base"
-                      aria-hidden="true"></i>
-                  </button>
-                {/each}
-                <div
-                  class="mx-1 h-4 w-px bg-border-subtle"
-                  aria-hidden="true">
-                </div>
-                {#each [{action: () => insertMarkdown('**', '**'), icon: 'bi-type-bold', label: 'Bold'}, {action: () => insertMarkdown('*', '*'), icon: 'bi-type-italic', label: 'Italic'}, {action: () => insertMarkdown('<u>', '</u>'), icon: 'bi-type-underline', label: 'Underline'}, {action: () => insertMarkdown('~~', '~~'), icon: 'bi-type-strikethrough', label: 'Strikethrough'}] as const as item (item.icon)}
-                  <button
-                    type="button"
-                    onclick={item.action}
-                    aria-label={item.label}
-                    class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
-                    <i
-                      class="bi {item.icon} text-base"
-                      aria-hidden="true"></i>
-                  </button>
-                {/each}
-                <div
-                  class="mx-1 h-4 w-px bg-border-subtle"
-                  aria-hidden="true">
-                </div>
-                <button
-                  type="button"
-                  onclick={() => imageFileInput?.click()}
-                  aria-label="Insert image"
-                  class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
-                  <i
-                    class="bi bi-image-fill text-base"
-                    aria-hidden="true"></i>
-                </button>
-                <input
-                  type="file"
-                  id="post-inline-image-upload"
-                  bind:this={imageFileInput}
-                  accept="image/png, image/webp, image/jpeg, image/jpg"
-                  onchange={handleImageUpload}
-                  class="hidden"
-                  aria-label="Upload image file" />
-                {#each [{action: () => insertMarkdown('[', '](url)'), icon: 'bi-link', label: 'Insert link'}, {action: () => insertMarkdown('1. '), icon: 'bi-list-ol', label: 'Numbered list'}, {action: () => insertMarkdown('- '), icon: 'bi-list-ul', label: 'Bulleted list'}, {action: () => insertMarkdown('```\n', '\n```'), icon: 'bi-code-square', label: 'Code block'}] as const as item (item.icon)}
-                  <button
-                    type="button"
-                    onclick={item.action}
-                    aria-label={item.label}
-                    class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
-                    <i
-                      class="bi {item.icon} text-base"
-                      aria-hidden="true"></i>
-                  </button>
-                {/each}
-              </div>
-
-              <div
-                class="flex items-center gap-4 font-mono text-xxs select-none">
-                <span class="text-[12.5px] font-semibold tracking-wide"
-                  >{currentLine}:{currentColumn}</span>
-                <span
-                  class="flex items-center gap-1 text-[12.5px] font-semibold tracking-wide">
-                  <i
-                    class="bi bi-indent text-[14px]"
-                    aria-hidden="true"></i>
-                  {indentSize}
-                </span>
-                <span class="text-[12.5px] font-semibold tracking-wide"
-                  >UTF-8</span>
-                <span class="text-[12.5px] font-semibold tracking-wide"
-                  >{lineEnding}</span>
-                <span class="group relative flex cursor-help items-center">
-                  <i
-                    class="bi bi-markdown-fill text-[16px]"
-                    aria-label="Markdown formatting supported"></i>
-                  <span
-                    class="absolute right-0 bottom-full mb-1.5 hidden rounded-sm border border-border-subtle bg-surface-elevated px-2 py-1 font-sans text-[10px] whitespace-nowrap text-text-primary shadow-md group-hover:block">
-                    Markdown formatting is supported
-                  </span>
-                </span>
-              </div>
-            </div>
-          {/if}
-        </div>
+        <MarkdownEditor
+          bind:value={markdownContent}
+          autosaveKey={editId ? `autosave_edit_${editId}` : 'autosave_new'}
+          placeholder="Write your markdown content here..."
+          minHeight="500px"
+          stickyTopClass="top-15"
+          onImageUpload={handleImageUploadFile} />
 
         <div class="mt-4 mb-10 flex flex-wrap justify-end gap-3 select-none">
           <Button
-            variant="ghost"
+            type="Ghost"
             size="md"
             onclick={handleCancelClick}>
             Cancel
           </Button>
           <Button
-            variant="secondary"
+            type="Secondary"
             size="md"
             onclick={() => handleSaveClick(false)}
             disabled={isSubmitting}>
             Save draft
           </Button>
           <Button
-            variant="primary"
+            type="Primary"
             size="md"
             onclick={() => handleSaveClick(true)}
             disabled={isSubmitting}
@@ -1291,12 +954,13 @@
   onClose={() => (showCancelDialog = false)}>
   {#snippet footer()}
     <Button
-      variant="secondary"
+      type="Secondary"
       size="md"
       showEscHint
       onclick={() => (showCancelDialog = false)}>Keep editing</Button>
     <Button
-      variant="destructive"
+      type="Danger"
+      tone="Critical"
       size="md"
       onclick={() => (window.location.href = '/admin')}>Discard changes</Button>
   {/snippet}
@@ -1309,12 +973,12 @@
   onClose={() => (showPublishDialog = false)}>
   {#snippet footer()}
     <Button
-      variant="secondary"
+      type="Secondary"
       size="md"
       showEscHint
       onclick={() => (showPublishDialog = false)}>Cancel</Button>
     <Button
-      variant="primary"
+      type="Primary"
       size="md"
       onclick={() => executeSave(true)}>Publish post</Button>
   {/snippet}
@@ -1327,12 +991,12 @@
   onClose={() => (showSaveDraftDialog = false)}>
   {#snippet footer()}
     <Button
-      variant="secondary"
+      type="Secondary"
       size="md"
       showEscHint
       onclick={() => (showSaveDraftDialog = false)}>Cancel</Button>
     <Button
-      variant="primary"
+      type="Primary"
       size="md"
       onclick={() => executeSave(false)}>Save draft</Button>
   {/snippet}
@@ -1345,13 +1009,13 @@
   .editor-pre code,
   .editor-pre :global(span),
   .line-num-item {
-    @apply font-mono text-[14.5px]! leading-[24px]! tracking-normal! normal-case!;
+    @apply font-mono text-[14.5px]! leading-6! tracking-normal! normal-case!;
     font-feature-settings: var(--font-feature-settings-mono) !important;
   }
 
   .editor-textarea,
   .editor-pre {
-    @apply break-words!;
+    @apply wrap-break-word!;
     word-break: normal !important;
   }
 
@@ -1366,17 +1030,17 @@
   }
 
   .editor-code-line {
-    @apply block! min-h-[24px]! leading-[24px]!;
+    @apply block! min-h-6! leading-6!;
   }
 
   .line-num-item {
-    @apply box-border! flex! h-[24px] items-start! justify-end!;
+    @apply box-border! flex! h-6 items-start! justify-end!;
   }
 
   .prose-custom :global(h1),
   .prose-custom :global(h2),
   .prose-custom :global(h3) {
-    @apply font-serif;
+    @apply font-sans;
   }
 
   .prose-custom {
@@ -1432,14 +1096,14 @@
   }
 
   .prose-custom :global(pre) {
-    @apply mt-6 mb-6 [scrollbar-width:none]! overflow-x-auto rounded-sm border border-adwaita-border bg-adwaita-hover px-3! py-2! font-mono text-[0.8rem] leading-relaxed break-normal! whitespace-pre! [-ms-overflow-style:none]!;
+    @apply mt-6 mb-6 scrollbar-none! overflow-x-auto rounded-sm border border-adwaita-border bg-adwaita-hover px-3! py-2! font-mono text-[0.8rem] leading-relaxed break-normal! whitespace-pre! [-ms-overflow-style:none]!;
   }
 
   /* When a line-number gutter sits to the left (see enhanceCodeBlocks), it
      already provides its own edge padding — pre's own left padding on top of
      that doubled the visual gap between the divider and the code text. */
   .prose-custom :global(pre[data-enhanced='true']) {
-    @apply pl-2!;
+    @apply pr-3.5! pl-2!;
   }
 
   .prose-custom :global(pre)::-webkit-scrollbar {
@@ -1453,7 +1117,11 @@
   }
 
   .prose-custom :global(pre code) {
-    @apply overflow-visible! border-0 bg-transparent p-0 font-mono text-[0.8rem] leading-relaxed break-normal! whitespace-pre! text-inherit;
+    @apply block! w-max! min-w-full! overflow-visible! border-0 bg-transparent py-0! pr-3.5! pl-0! font-mono text-[0.8rem] leading-relaxed break-normal! whitespace-pre! text-inherit;
+  }
+
+  .prose-custom :global(.code-line) {
+    @apply block! w-full! pr-3.5!;
   }
 
   .prose-custom :global(a) {
@@ -1604,7 +1272,7 @@
   }
 
   .prose-custom :global(.markdown-alert-note) {
-    @apply border-(--color-security) bg-(--color-security-subtle) text-(--color-body);
+    @apply border-(--color-security) bg-security-subtle text-(--color-body);
   }
   .prose-custom :global(.markdown-alert-note .markdown-alert-title) {
     @apply text-(--color-security);
@@ -1618,21 +1286,21 @@
   }
 
   .prose-custom :global(.markdown-alert-important) {
-    @apply border-(--color-copilot) bg-(--color-copilot-subtle) text-(--color-body);
+    @apply border-(--color-copilot) bg-copilot-subtle text-(--color-body);
   }
   .prose-custom :global(.markdown-alert-important .markdown-alert-title) {
     @apply text-(--color-copilot);
   }
 
   .prose-custom :global(.markdown-alert-warning) {
-    @apply border-(--color-warning) bg-(--color-warning-subtle) text-(--color-body);
+    @apply border-(--color-warning) bg-warning-subtle text-(--color-body);
   }
   .prose-custom :global(.markdown-alert-warning .markdown-alert-title) {
     @apply text-(--color-warning-strong);
   }
 
   .prose-custom :global(.markdown-alert-caution) {
-    @apply border-(--color-danger) bg-(--color-danger-subtle) text-(--color-body);
+    @apply border-(--color-danger) bg-danger-subtle text-(--color-body);
   }
   .prose-custom :global(.markdown-alert-caution .markdown-alert-title) {
     @apply text-(--color-danger);

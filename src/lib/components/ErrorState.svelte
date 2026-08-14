@@ -44,8 +44,8 @@
         <ShinyText
           text={String(code)}
           color="var(--color-copilot)"
-          shineColor="var(--color-surface-card)"
-          speed={1.5} />
+          shineColor="#ffffff"
+          speed={3} />
       </p>
     {/if}
     <h1
@@ -66,7 +66,7 @@
     {:else if onRetry}
       <div class="mt-10">
         <Button
-          variant="secondary"
+          type="Secondary"
           size="md"
           leadingIcon="bi-arrow-clockwise"
           onclick={onRetry}>
@@ -97,7 +97,7 @@
     {#if onRetry}
       <div class="mt-4">
         <Button
-          variant="secondary"
+          type="Secondary"
           size="sm"
           leadingIcon="bi-arrow-clockwise"
           onclick={onRetry}>

@@ -110,14 +110,14 @@
   <aside
     transition:fade={{duration: 200}}
     aria-label="Cookie and Privacy Consent"
-    class="fixed right-4 bottom-4 left-4 z-50 mx-auto max-w-xl rounded-sm border border-border-subtle bg-surface-card/75 p-5 shadow-2xl backdrop-blur-2xl transition-all sm:right-auto sm:bottom-6 sm:left-6 sm:w-full">
+    class="fixed right-4 bottom-4 left-4 z-50 mx-auto max-w-xl rounded-sm glass-overlay p-5 transition-all sm:right-auto sm:bottom-6 sm:left-6 sm:w-full">
     <div class="flex flex-col gap-4">
       <div class="flex items-start justify-between gap-3">
         <div class="flex items-center gap-2.5">
           <div
             class="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-copilot/15 text-copilot">
             <i
-              class="bi bi-shield-check text-base"
+              class="bi bi-shield-fill-check text-base"
               aria-hidden="true"></i>
           </div>
           <div>
@@ -151,19 +151,19 @@
 
       <div class="flex flex-wrap items-center gap-2 pt-1">
         <Button
-          variant="primary"
+          type="Primary"
           size="sm"
           onclick={consentStore.acceptAll}>
           Accept all
         </Button>
         <Button
-          variant="secondary"
+          type="Secondary"
           size="sm"
           onclick={consentStore.acceptAnalyticsOnly}>
           Analytics only
         </Button>
         <Button
-          variant="ghost"
+          type="Ghost"
           size="sm"
           onclick={consentStore.rejectAll}>
           Reject all
@@ -193,7 +193,7 @@
         <span class="text-xs font-semibold text-text-secondary"
           >Quick Presets</span>
         <span
-          class="text-xs font-bold text-[var(--preset-color)] transition-colors"
+          class="text-xs font-bold text-(--preset-color) transition-colors"
           style="--preset-color: {presetColor}">
           {presetLabel}
         </span>
@@ -204,7 +204,7 @@
           class="pointer-events-none absolute inset-x-0 h-1.5 rounded-full bg-border-subtle">
         </div>
         <div
-          class="pointer-events-none absolute inset-y-0 left-0 h-1.5 w-[var(--preset-slider-w)] self-center rounded-full bg-[var(--preset-color)] transition-[width,background-color] duration-200"
+          class="pointer-events-none absolute inset-y-0 left-0 h-1.5 w-(--preset-slider-w) self-center rounded-full bg-(--preset-color) transition-[width,background-color] duration-200"
           style="--preset-slider-w: {(presetSliderValue / 2)
             * 100}%; --preset-color: {presetColor};">
         </div>
@@ -273,47 +273,50 @@
             <div
               role="listbox"
               aria-label="Behavioral Analytics options"
-              class="absolute top-[calc(100%+4px)] right-0 z-60 flex min-w-36 flex-col overflow-hidden rounded-sm border border-border-subtle bg-surface-elevated/70 py-0 shadow-xl backdrop-blur-lg">
-              <button
-                type="button"
-                role="option"
-                aria-selected={tempAnalytics === 'denied'}
-                onclick={() => {
-                  tempAnalytics = 'denied'
-                  activeDropdown = null
-                }}
-                class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
-                  tempAnalytics === 'denied'
-                ) ?
-                  'bg-copilot/10 text-copilot'
-                : 'text-text-primary hover:bg-surface-hover'}">
-                <span>Deny</span>
-                {#if tempAnalytics === 'denied'}
-                  <i
-                    class="bi bi-check2 shrink-0 text-copilot"
-                    aria-hidden="true"></i>
-                {/if}
-              </button>
-              <button
-                type="button"
-                role="option"
-                aria-selected={tempAnalytics === 'granted'}
-                onclick={() => {
-                  tempAnalytics = 'granted'
-                  activeDropdown = null
-                }}
-                class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
-                  tempAnalytics === 'granted'
-                ) ?
-                  'bg-copilot/10 text-copilot'
-                : 'text-text-primary hover:bg-surface-hover'}">
-                <span>Allow</span>
-                {#if tempAnalytics === 'granted'}
-                  <i
-                    class="bi bi-check2 shrink-0 text-copilot"
-                    aria-hidden="true"></i>
-                {/if}
-              </button>
+              class="absolute top-[calc(100%+8px)] left-1/2 z-60 flex w-full w-max min-w-full -translate-x-1/2 flex-col rounded-sm glass-overlay p-0 shadow-xl">
+              <div
+                class="relative z-10 flex flex-col overflow-hidden rounded-sm">
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={tempAnalytics === 'denied'}
+                  onclick={() => {
+                    tempAnalytics = 'denied'
+                    activeDropdown = null
+                  }}
+                  class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
+                    tempAnalytics === 'denied'
+                  ) ?
+                    'bg-copilot/10 text-copilot'
+                  : 'text-text-primary hover:bg-surface-hover'}">
+                  <span>Deny</span>
+                  {#if tempAnalytics === 'denied'}
+                    <i
+                      class="bi bi-check2 shrink-0 text-copilot"
+                      aria-hidden="true"></i>
+                  {/if}
+                </button>
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={tempAnalytics === 'granted'}
+                  onclick={() => {
+                    tempAnalytics = 'granted'
+                    activeDropdown = null
+                  }}
+                  class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
+                    tempAnalytics === 'granted'
+                  ) ?
+                    'bg-copilot/10 text-copilot'
+                  : 'text-text-primary hover:bg-surface-hover'}">
+                  <span>Allow</span>
+                  {#if tempAnalytics === 'granted'}
+                    <i
+                      class="bi bi-check2 shrink-0 text-copilot"
+                      aria-hidden="true"></i>
+                  {/if}
+                </button>
+              </div>
             </div>
           {/if}
         </div>
@@ -362,47 +365,50 @@
             <div
               role="listbox"
               aria-label="Advertising Storage options"
-              class="absolute top-[calc(100%+4px)] right-0 z-60 flex min-w-36 flex-col overflow-hidden rounded-sm border border-border-subtle bg-surface-elevated/70 py-0 shadow-xl backdrop-blur-lg">
-              <button
-                type="button"
-                role="option"
-                aria-selected={tempAdStorage === 'denied'}
-                onclick={() => {
-                  tempAdStorage = 'denied'
-                  activeDropdown = null
-                }}
-                class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
-                  tempAdStorage === 'denied'
-                ) ?
-                  'bg-copilot/10 text-copilot'
-                : 'text-text-primary hover:bg-surface-hover'}">
-                <span>Deny</span>
-                {#if tempAdStorage === 'denied'}
-                  <i
-                    class="bi bi-check2 shrink-0 text-copilot"
-                    aria-hidden="true"></i>
-                {/if}
-              </button>
-              <button
-                type="button"
-                role="option"
-                aria-selected={tempAdStorage === 'granted'}
-                onclick={() => {
-                  tempAdStorage = 'granted'
-                  activeDropdown = null
-                }}
-                class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
-                  tempAdStorage === 'granted'
-                ) ?
-                  'bg-copilot/10 text-copilot'
-                : 'text-text-primary hover:bg-surface-hover'}">
-                <span>Allow</span>
-                {#if tempAdStorage === 'granted'}
-                  <i
-                    class="bi bi-check2 shrink-0 text-copilot"
-                    aria-hidden="true"></i>
-                {/if}
-              </button>
+              class="absolute top-[calc(100%+8px)] left-1/2 z-60 flex w-full w-max min-w-full -translate-x-1/2 flex-col rounded-sm glass-overlay p-0 shadow-xl">
+              <div
+                class="relative z-10 flex flex-col overflow-hidden rounded-sm">
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={tempAdStorage === 'denied'}
+                  onclick={() => {
+                    tempAdStorage = 'denied'
+                    activeDropdown = null
+                  }}
+                  class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
+                    tempAdStorage === 'denied'
+                  ) ?
+                    'bg-copilot/10 text-copilot'
+                  : 'text-text-primary hover:bg-surface-hover'}">
+                  <span>Deny</span>
+                  {#if tempAdStorage === 'denied'}
+                    <i
+                      class="bi bi-check2 shrink-0 text-copilot"
+                      aria-hidden="true"></i>
+                  {/if}
+                </button>
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={tempAdStorage === 'granted'}
+                  onclick={() => {
+                    tempAdStorage = 'granted'
+                    activeDropdown = null
+                  }}
+                  class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
+                    tempAdStorage === 'granted'
+                  ) ?
+                    'bg-copilot/10 text-copilot'
+                  : 'text-text-primary hover:bg-surface-hover'}">
+                  <span>Allow</span>
+                  {#if tempAdStorage === 'granted'}
+                    <i
+                      class="bi bi-check2 shrink-0 text-copilot"
+                      aria-hidden="true"></i>
+                  {/if}
+                </button>
+              </div>
             </div>
           {/if}
         </div>
@@ -449,47 +455,50 @@
             <div
               role="listbox"
               aria-label="Ad User Data options"
-              class="absolute top-[calc(100%+4px)] right-0 z-60 flex min-w-36 flex-col overflow-hidden rounded-sm border border-border-subtle bg-surface-elevated/70 py-0 shadow-xl backdrop-blur-lg">
-              <button
-                type="button"
-                role="option"
-                aria-selected={tempAdUserData === 'denied'}
-                onclick={() => {
-                  tempAdUserData = 'denied'
-                  activeDropdown = null
-                }}
-                class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
-                  tempAdUserData === 'denied'
-                ) ?
-                  'bg-copilot/10 text-copilot'
-                : 'text-text-primary hover:bg-surface-hover'}">
-                <span>Deny</span>
-                {#if tempAdUserData === 'denied'}
-                  <i
-                    class="bi bi-check2 shrink-0 text-copilot"
-                    aria-hidden="true"></i>
-                {/if}
-              </button>
-              <button
-                type="button"
-                role="option"
-                aria-selected={tempAdUserData === 'granted'}
-                onclick={() => {
-                  tempAdUserData = 'granted'
-                  activeDropdown = null
-                }}
-                class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
-                  tempAdUserData === 'granted'
-                ) ?
-                  'bg-copilot/10 text-copilot'
-                : 'text-text-primary hover:bg-surface-hover'}">
-                <span>Allow</span>
-                {#if tempAdUserData === 'granted'}
-                  <i
-                    class="bi bi-check2 shrink-0 text-copilot"
-                    aria-hidden="true"></i>
-                {/if}
-              </button>
+              class="absolute top-[calc(100%+8px)] left-1/2 z-60 flex w-full w-max min-w-full -translate-x-1/2 flex-col rounded-sm glass-overlay p-0 shadow-xl">
+              <div
+                class="relative z-10 flex flex-col overflow-hidden rounded-sm">
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={tempAdUserData === 'denied'}
+                  onclick={() => {
+                    tempAdUserData = 'denied'
+                    activeDropdown = null
+                  }}
+                  class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
+                    tempAdUserData === 'denied'
+                  ) ?
+                    'bg-copilot/10 text-copilot'
+                  : 'text-text-primary hover:bg-surface-hover'}">
+                  <span>Deny</span>
+                  {#if tempAdUserData === 'denied'}
+                    <i
+                      class="bi bi-check2 shrink-0 text-copilot"
+                      aria-hidden="true"></i>
+                  {/if}
+                </button>
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={tempAdUserData === 'granted'}
+                  onclick={() => {
+                    tempAdUserData = 'granted'
+                    activeDropdown = null
+                  }}
+                  class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
+                    tempAdUserData === 'granted'
+                  ) ?
+                    'bg-copilot/10 text-copilot'
+                  : 'text-text-primary hover:bg-surface-hover'}">
+                  <span>Allow</span>
+                  {#if tempAdUserData === 'granted'}
+                    <i
+                      class="bi bi-check2 shrink-0 text-copilot"
+                      aria-hidden="true"></i>
+                  {/if}
+                </button>
+              </div>
             </div>
           {/if}
         </div>
@@ -540,47 +549,50 @@
             <div
               role="listbox"
               aria-label="Ad Personalization options"
-              class="absolute top-[calc(100%+4px)] right-0 z-60 flex min-w-36 flex-col overflow-hidden rounded-sm border border-border-subtle bg-surface-elevated/70 py-0 shadow-xl backdrop-blur-lg">
-              <button
-                type="button"
-                role="option"
-                aria-selected={tempAdPersonalization === 'denied'}
-                onclick={() => {
-                  tempAdPersonalization = 'denied'
-                  activeDropdown = null
-                }}
-                class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
-                  tempAdPersonalization === 'denied'
-                ) ?
-                  'bg-copilot/10 text-copilot'
-                : 'text-text-primary hover:bg-surface-hover'}">
-                <span>Deny</span>
-                {#if tempAdPersonalization === 'denied'}
-                  <i
-                    class="bi bi-check2 shrink-0 text-copilot"
-                    aria-hidden="true"></i>
-                {/if}
-              </button>
-              <button
-                type="button"
-                role="option"
-                aria-selected={tempAdPersonalization === 'granted'}
-                onclick={() => {
-                  tempAdPersonalization = 'granted'
-                  activeDropdown = null
-                }}
-                class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
-                  tempAdPersonalization === 'granted'
-                ) ?
-                  'bg-copilot/10 text-copilot'
-                : 'text-text-primary hover:bg-surface-hover'}">
-                <span>Allow</span>
-                {#if tempAdPersonalization === 'granted'}
-                  <i
-                    class="bi bi-check2 shrink-0 text-copilot"
-                    aria-hidden="true"></i>
-                {/if}
-              </button>
+              class="absolute top-[calc(100%+8px)] left-1/2 z-60 flex w-full w-max min-w-full -translate-x-1/2 flex-col rounded-sm glass-overlay p-0 shadow-xl">
+              <div
+                class="relative z-10 flex flex-col overflow-hidden rounded-sm">
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={tempAdPersonalization === 'denied'}
+                  onclick={() => {
+                    tempAdPersonalization = 'denied'
+                    activeDropdown = null
+                  }}
+                  class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
+                    tempAdPersonalization === 'denied'
+                  ) ?
+                    'bg-copilot/10 text-copilot'
+                  : 'text-text-primary hover:bg-surface-hover'}">
+                  <span>Deny</span>
+                  {#if tempAdPersonalization === 'denied'}
+                    <i
+                      class="bi bi-check2 shrink-0 text-copilot"
+                      aria-hidden="true"></i>
+                  {/if}
+                </button>
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={tempAdPersonalization === 'granted'}
+                  onclick={() => {
+                    tempAdPersonalization = 'granted'
+                    activeDropdown = null
+                  }}
+                  class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
+                    tempAdPersonalization === 'granted'
+                  ) ?
+                    'bg-copilot/10 text-copilot'
+                  : 'text-text-primary hover:bg-surface-hover'}">
+                  <span>Allow</span>
+                  {#if tempAdPersonalization === 'granted'}
+                    <i
+                      class="bi bi-check2 shrink-0 text-copilot"
+                      aria-hidden="true"></i>
+                  {/if}
+                </button>
+              </div>
             </div>
           {/if}
         </div>
@@ -606,7 +618,7 @@
     <div
       class="flex w-full flex-col-reverse items-center justify-end gap-2 sm:flex-row">
       <Button
-        variant="secondary"
+        type="Secondary"
         size="md"
         showEscHint
         onclick={() => consentStore.closeCustomizeModal()}
@@ -615,7 +627,7 @@
       </Button>
 
       <Button
-        variant="secondary"
+        type="Secondary"
         size="md"
         onclick={() => {
           applyPreset('all')
@@ -626,7 +638,7 @@
       </Button>
 
       <Button
-        variant="primary"
+        type="Primary"
         size="md"
         onclick={saveCustomPreferences}
         class="w-full sm:w-auto">

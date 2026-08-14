@@ -22,7 +22,6 @@ export function sanitizePublicApiData(obj: any): any {
   if (obj !== null && typeof obj === 'object') {
     const cleaned: Record<string, any> = {}
 
-    // If end date is present, omit currentlyIn
     const hasEndDate =
       obj.endMonth !== null
       && obj.endMonth !== undefined
@@ -30,7 +29,6 @@ export function sanitizePublicApiData(obj: any): any {
       && obj.endYear !== undefined
 
     for (const [key, value] of Object.entries(obj)) {
-      // Omit internal, legacy, or icon/sortOrder fields
       if (
         key === 'id'
         || key === 'authorId'
@@ -40,23 +38,21 @@ export function sanitizePublicApiData(obj: any): any {
         || key === 'sort_order'
         || key === 'firstName'
         || key === 'lastName'
+        || key === 'email'
       ) {
         continue
       }
 
-      // Omit currentlyIn if end date is set
       if (hasEndDate && key === 'currentlyIn') {
         continue
       }
 
-      // Omit null or empty description
       if (key === 'description' && (!value || String(value).trim() === '')) {
         continue
       }
 
       const valCleaned = sanitizePublicApiData(value)
 
-      // Omit empty arrays, null, or empty objects
       if (
         valCleaned === null
         || valCleaned === undefined
@@ -82,7 +78,7 @@ export function generateAuthorMarkdown(data: Record<string, any>): string {
 
   if (data.profile) {
     const p = data.profile
-    lines.push(`# ${p.name || 'Author Profile'}`)
+    lines.push(`# ${p.name || 'Profile'}`)
     lines.push('')
     if (p.headline) lines.push(`**Headline**: ${p.headline}`)
     if (p.bio) {
@@ -168,7 +164,7 @@ export function generateAuthorMarkdown(data: Record<string, any>): string {
   }
 
   if (data.contact && data.contact.length > 0) {
-    lines.push('## Contact Info')
+    lines.push('## Contact')
     lines.push('')
     data.contact.forEach((c: any) => {
       const label = c.platform || c.label || 'Contact'

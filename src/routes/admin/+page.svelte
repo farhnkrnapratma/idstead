@@ -3,6 +3,12 @@
   import {page} from '$app/state'
   import {replaceState} from '$app/navigation'
   import {supabase} from '$lib/supabase'
+  import hljs from 'highlight.js'
+  import {renderMarkdown} from '$lib/markdown'
+  import {
+    enhanceCodeBlocks,
+    splitHighlightedHtmlLines
+  } from '$lib/utils/codeBlocks'
   import {onMount, tick} from 'svelte'
   import {SvelteSet} from 'svelte/reactivity'
   import {
@@ -20,11 +26,11 @@
     CommentThread,
     LoadingState,
     EmptyState,
+    ImageWithSkeleton,
     SkipLink,
     FilterToolbar,
     FilterSelect,
     DropdownSelect,
-    DropdownTrigger,
     SortControl,
     SearchResultCount,
     FilterChipGroup,
@@ -37,16 +43,14 @@
     StatusBanner,
     formatReadTime,
     formatViewCount,
+    formatAbsoluteDate,
     FormSection,
     FormActions,
-    FileUploadField
+    FileUploadField,
+    MarkdownEditor
   } from '$lib'
-  import {themeStore} from '$lib/stores/themeStore.svelte'
 
-  // Focuses an element as soon as it mounts - used instead of the `autofocus`
-  // attribute (flagged by a11y linting) for inputs that only appear after an
-  // explicit user action (e.g. clicking "edit"), where moving focus there is
-  // the expected, non-disorienting behavior.
+  import {themeStore} from '$lib/stores/themeStore.svelte'
   function focusOnMount(node: HTMLElement) {
     node.focus()
   }
@@ -76,6 +80,7 @@
     published: boolean
     storage_path: string
     created_at: string
+    updated_at?: string | null
     banner_path?: string | null
     excerpt?: string | null
     read_time?: string | null
@@ -130,9 +135,20 @@
   let commentContent = $state('')
   let isSubmitting = $state(false)
 
+  let initialTab = page.url.searchParams.get('tab')
+
   let activeAdminTab = $state<
-    'posts' | 'author' | 'cv' | 'skills' | 'socials' | 'sponsorship' | 'contact'
-  >((page.url.searchParams.get('tab') as any) || 'posts')
+    | 'posts'
+    | 'profile'
+    | 'resume'
+    | 'skills'
+    | 'socials'
+    | 'sponsorship'
+    | 'contact'
+    | 'privacy'
+    | 'security'
+    | 'terms'
+  >((initialTab as any) || 'posts')
   let sidebarMobileOpen = $state(false)
 
   function selectTab(id: typeof activeAdminTab) {
@@ -206,6 +222,102 @@
     siteUrl: '',
     skills: []
   })
+
+  let legalPagesData = $state<Record<string, {title: string; content: string}>>(
+    {
+      privacy: {title: 'Privacy Policy', content: ''},
+      security: {title: 'Security Policy', content: ''},
+      terms: {title: 'Terms of Service', content: ''}
+    }
+  )
+  let isSavingLegal = $state(false)
+  let legalSaveSuccess = $state(false)
+  let legalSaveError = $state('')
+
+  let isDark = $state(false)
+
+  onMount(() => {
+    isDark = document.documentElement.classList.contains('dark')
+    const themeObserver = new MutationObserver(() => {
+      isDark = document.documentElement.classList.contains('dark')
+    })
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    })
+    return () => themeObserver.disconnect()
+  })
+
+  async function loadLegalPagesFromSupabase() {
+    try {
+      const {data, error} = await supabase
+        .from('db_legals')
+        .select('slug, title, content')
+      if (!error && data && data.length > 0) {
+        for (const item of data) {
+          if (item.slug && legalPagesData[item.slug]) {
+            legalPagesData[item.slug] = {
+              title: item.title || legalPagesData[item.slug].title || '',
+              content: item.content ?? legalPagesData[item.slug].content ?? ''
+            }
+          }
+        }
+      }
+    } catch {
+      // fallback
+    }
+  }
+
+  async function handleSaveLegalPage(
+    targetSlug?: 'privacy' | 'security' | 'terms',
+    e?: SubmitEvent
+  ) {
+    if (e) e.preventDefault()
+    if (isSavingLegal) return
+    const slugToSave =
+      targetSlug || (activeAdminTab as 'privacy' | 'security' | 'terms')
+    if (!slugToSave || !legalPagesData[slugToSave]) return
+
+    isSavingLegal = true
+    legalSaveError = ''
+    legalSaveSuccess = false
+
+    const pageToSave = legalPagesData[slugToSave]
+    try {
+      const {error} = await supabase.rpc('db_save_legal', {
+        p_slug: slugToSave,
+        p_title: pageToSave.title,
+        p_content: pageToSave.content
+      })
+
+      if (error) {
+        const {error: upsertErr} = await supabase
+          .from('db_legals')
+          .upsert(
+            {
+              slug: slugToSave,
+              title: pageToSave.title,
+              content: pageToSave.content,
+              updated_at: new Date().toISOString()
+            },
+            {onConflict: 'slug'}
+          )
+
+        if (upsertErr) {
+          throw upsertErr
+        }
+      }
+
+      legalSaveSuccess = true
+      toastStore.success(`${pageToSave.title} saved successfully`)
+      setTimeout(() => (legalSaveSuccess = false), 3000)
+    } catch (err: any) {
+      legalSaveError = err?.message || 'Failed to save legal page'
+      toastStore.error(`Error: ${legalSaveError}`)
+    } finally {
+      isSavingLegal = false
+    }
+  }
   let isSavingAuthor = $state(false)
   let authorSaveSuccess = $state(false)
   let authorSaveError = $state('')
@@ -274,16 +386,6 @@
   )
 
   const avatarPreviewUrl = $derived(authorState.avatar.trim())
-
-  $effect(() => {
-    if (typeof document !== 'undefined') {
-      if (showAvatarPreviewDialog) {
-        document.body.style.overflow = 'hidden'
-      } else {
-        document.body.style.overflow = ''
-      }
-    }
-  })
 
   function debounceAuthor<T extends unknown[]>(
     cb: (...args: T) => void,
@@ -830,7 +932,6 @@
     return ok
   }
 
-  let isResumeAddOpen = $state(false)
   let isClearingAuthor = $state(false)
 
   let selectedPdfFile = $state<File | null>(null)
@@ -1191,11 +1292,11 @@
     isSubmitting = true
     try {
       const {data, error} = await supabase
-        .from('comments')
+        .from('db_comments')
         .insert({
           post_id: postId,
           parent_id: parentId,
-          author_name: 'Admin',
+          author_name: authorState.name,
           content: sanitizeInput(trimmed),
           is_anonymous: false,
           is_approved: true
@@ -1287,6 +1388,8 @@
         adminUserEmail = sessionData.session.user.email
       }
 
+      void loadLegalPagesFromSupabase()
+
       const pendingToast = sessionStorage.getItem('admin_toast')
       if (pendingToast) {
         sessionStorage.removeItem('admin_toast')
@@ -1303,8 +1406,18 @@
         window.addEventListener(evt, handleUserActivity, {passive: true})
       )
 
-      await Promise.all([fetchPosts(), fetchComments(), loadAdminData()])
-      isLoading = false
+      try {
+        await Promise.allSettled([
+          fetchPosts(),
+          fetchComments(),
+          loadAdminData(),
+          loadLegalPagesFromSupabase()
+        ])
+      } catch (err) {
+        console.error('Error loading admin dashboard data:', err)
+      } finally {
+        isLoading = false
+      }
     })()
 
     return () => {
@@ -1350,38 +1463,47 @@
   async function fetchPosts() {
     try {
       const {data, error} = await supabase
-        .from('posts')
+        .from('db_posts')
         .select(
-          'id, title, slug, published, storage_path, created_at, banner_path, excerpt'
+          'id, title, slug, published, storage_path, created_at, updated_at, banner_path, excerpt'
         )
         .order('created_at', {ascending: false})
 
       if (error) throw error
 
-      const postsWithReadTime = await Promise.all(
-        (data || []).map(async post => {
-          let readTime = '1 min read'
-          if (post.storage_path) {
-            try {
-              const {data: urlData} = supabase.storage
-                .from('blog-posts')
-                .getPublicUrl(post.storage_path)
-              const fileRes = await fetch(urlData.publicUrl)
-              if (fileRes.ok) {
-                const text = await fileRes.text()
-                const words = text.trim().split(/\s+/).filter(Boolean).length
-                const minutes = Math.max(1, Math.ceil(words / 200))
-                readTime = `${minutes} min${minutes > 1 ? 's' : ''} read`
-              }
-            } catch (err) {
-              console.error('Error fetching post content for read_time:', err)
-            }
-          }
-          return {...post, read_time: readTime}
-        })
-      )
+      const rawPosts = data || []
+      posts = rawPosts.map(post => ({...post, read_time: '1 min read'}))
 
-      posts = postsWithReadTime
+      void (async () => {
+        const postsWithReadTime = await Promise.all(
+          rawPosts.map(async post => {
+            let readTime = '1 min read'
+            if (post.storage_path) {
+              try {
+                const {data: urlData} = supabase.storage
+                  .from('blog-posts')
+                  .getPublicUrl(post.storage_path)
+                const controller = new AbortController()
+                const timer = setTimeout(() => controller.abort(), 2000)
+                const fileRes = await fetch(urlData.publicUrl, {
+                  signal: controller.signal
+                })
+                clearTimeout(timer)
+                if (fileRes.ok) {
+                  const text = await fileRes.text()
+                  const words = text.trim().split(/\s+/).filter(Boolean).length
+                  const minutes = Math.max(1, Math.ceil(words / 200))
+                  readTime = `${minutes} min${minutes > 1 ? 's' : ''} read`
+                }
+              } catch {
+                // Ignore background fetch timeout/error
+              }
+            }
+            return {...post, read_time: readTime}
+          })
+        )
+        posts = postsWithReadTime
+      })()
     } catch (err) {
       console.error('Error fetching admin posts:', err)
     }
@@ -1390,7 +1512,7 @@
   async function fetchComments() {
     try {
       const {data, error} = await supabase
-        .from('comments')
+        .from('db_comments')
         .select('*, posts:post_id(title)')
         .order('created_at', {ascending: false})
 
@@ -1416,7 +1538,7 @@
     try {
       const nextPublished = !post.published
       const {error} = await supabase
-        .from('posts')
+        .from('db_posts')
         .update({published: nextPublished})
         .eq('id', post.id)
 
@@ -1452,7 +1574,7 @@
           .remove([postToDelete.banner_path])
       }
       const {error} = await supabase
-        .from('posts')
+        .from('db_posts')
         .delete()
         .eq('id', postToDelete.id)
       if (error) throw error
@@ -1495,7 +1617,7 @@
       const idsToDelete = getCommentDescendantIds(commentIdToDelete, comments)
 
       const {error} = await supabase
-        .from('comments')
+        .from('db_comments')
         .delete()
         .in('id', idsToDelete)
       if (error) throw error
@@ -1515,7 +1637,7 @@
     try {
       const nextApproved = !comment.is_approved
       const {error} = await supabase
-        .from('comments')
+        .from('db_comments')
         .update({is_approved: nextApproved})
         .eq('id', comment.id)
 
@@ -1575,7 +1697,7 @@
 
       if (authorState.id) {
         const {data, error} = await supabase
-          .from('author_profile')
+          .from('db_profiles')
           .update(payload)
           .eq('id', authorState.id)
           .select()
@@ -1583,14 +1705,14 @@
 
         if (!data || data.length === 0) {
           const {data: existingRows} = await supabase
-            .from('author_profile')
+            .from('db_profiles')
             .select('id')
             .limit(1)
           if (existingRows && existingRows.length > 0) {
             const realId = existingRows[0].id
             authorState.id = realId
             const {data: updated2, error: err2} = await supabase
-              .from('author_profile')
+              .from('db_profiles')
               .update(payload)
               .eq('id', realId)
               .select()
@@ -1600,7 +1722,7 @@
             }
           } else {
             const {data: inserted, error: err3} = await supabase
-              .from('author_profile')
+              .from('db_profiles')
               .insert(payload)
               .select()
               .single()
@@ -1610,21 +1732,21 @@
         }
       } else {
         const {data: existingRows} = await supabase
-          .from('author_profile')
+          .from('db_profiles')
           .select('id')
           .limit(1)
         if (existingRows && existingRows.length > 0) {
           const realId = existingRows[0].id
           authorState.id = realId
           const {data: updated, error: err4} = await supabase
-            .from('author_profile')
+            .from('db_profiles')
             .update(payload)
             .eq('id', realId)
             .select()
           if (err4) throw err4
         } else {
           const {data: inserted, error: err5} = await supabase
-            .from('author_profile')
+            .from('db_profiles')
             .insert(payload)
             .select()
             .single()
@@ -1666,13 +1788,13 @@
 
       if (authorState.id) {
         const {error} = await supabase
-          .from('author_profile')
+          .from('db_profiles')
           .delete()
           .eq('id', authorState.id)
         if (error) throw error
       } else {
         const {error} = await supabase
-          .from('author_profile')
+          .from('db_profiles')
           .delete()
           .neq('id', '00000000-0000-0000-0000-000000000000')
         if (error) throw error
@@ -1706,7 +1828,7 @@
     if (authorState.id) return authorState.id
     try {
       const {data} = await supabase
-        .from('author_profile')
+        .from('db_profiles')
         .select('id')
         .limit(1)
         .maybeSingle()
@@ -1717,7 +1839,7 @@
 
       // Auto-insert author profile if none exists using only user-entered state
       const {data: created, error} = await supabase
-        .from('author_profile')
+        .from('db_profiles')
         .insert({
           name: authorState.name ? authorState.name.trim() : '',
           username: authorState.username ? authorState.username.trim() : '',
@@ -1789,7 +1911,7 @@
         sort_order: idx + 1
       }))
 
-      const {error} = await supabase.rpc('save_cv_entries', {
+      const {error} = await supabase.rpc('db_save_cv', {
         p_author_id: authorId,
         p_experiences: experiences,
         p_education: education
@@ -1831,7 +1953,7 @@
           : []
       }))
 
-      const {error} = await supabase.rpc('save_skills', {
+      const {error} = await supabase.rpc('db_save_skills', {
         p_author_id: authorId,
         p_categories: categories
       })
@@ -1871,7 +1993,7 @@
         sort_order: idx + 1
       }))
 
-      const {error} = await supabase.rpc('save_author_links', {
+      const {error} = await supabase.rpc('db_save_links', {
         p_author_id: authorId,
         p_category: 'social',
         p_items: items
@@ -1912,7 +2034,7 @@
         sort_order: idx + 1
       }))
 
-      const {error} = await supabase.rpc('save_author_links', {
+      const {error} = await supabase.rpc('db_save_links', {
         p_author_id: authorId,
         p_category: 'funding',
         p_items: items
@@ -1954,7 +2076,7 @@
         sort_order: idx + 1
       }))
 
-      const {error} = await supabase.rpc('save_author_links', {
+      const {error} = await supabase.rpc('db_save_links', {
         p_author_id: authorId,
         p_category: 'contact',
         p_items: items
@@ -1999,7 +2121,7 @@
       const formData = new FormData()
       formData.append('file', selectedPdfFile)
 
-      const response = await fetch('/api/v1/admin/cv/upload', {
+      const response = await fetch('/api/internal/admin/cv/upload', {
         method: 'POST',
         headers: {Authorization: `Bearer ${accessToken}`},
         body: formData
@@ -2022,7 +2144,8 @@
         isActive: true
       }
 
-      pdfUploadSuccess = `Successfully uploaded ${res.filename} to R2 & synced database!`
+      const provider = res.storageProvider || 'R2'
+      pdfUploadSuccess = `Successfully uploaded ${res.filename} to ${provider} & synced database!`
       selectedPdfFile = null
 
       const fileInput = document.getElementById(
@@ -2063,7 +2186,7 @@
         throw new Error('Your admin session has expired. Please log in again.')
       }
 
-      const response = await fetch('/api/v1/admin/cv/delete', {
+      const response = await fetch('/api/internal/admin/cv/delete', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -2229,17 +2352,22 @@
     id: typeof activeAdminTab
     label: string
     icon: string
-    section: 'content' | 'profile'
+    section: 'content' | 'profile' | 'legal'
   }[] = [
-    {id: 'posts', label: 'Posts', icon: 'bi-journal-text', section: 'content'},
     {
-      id: 'author',
+      id: 'posts',
+      label: 'Posts',
+      icon: 'bi-file-richtext-fill',
+      section: 'content'
+    },
+    {
+      id: 'profile',
       label: 'Profile',
       icon: 'bi-person-vcard-fill',
       section: 'profile'
     },
     {
-      id: 'cv',
+      id: 'resume',
       label: 'Resume',
       icon: 'bi-file-earmark-person-fill',
       section: 'profile'
@@ -2260,14 +2388,41 @@
     {
       id: 'contact',
       label: 'Contact',
-      icon: 'bi-envelope-at-fill',
+      icon: 'bi-envelope-fill',
       section: 'profile'
+    },
+    {
+      id: 'privacy',
+      label: 'Privacy Policy',
+      icon: 'bi-shield-lock-fill',
+      section: 'legal'
+    },
+    {
+      id: 'security',
+      label: 'Security Policy',
+      icon: 'bi-shield-fill-check',
+      section: 'legal'
+    },
+    {
+      id: 'terms',
+      label: 'Terms of Service',
+      icon: 'bi-file-text-fill',
+      section: 'legal'
     }
   ]
 </script>
 
 <svelte:head>
   <title>Admin Console</title>
+  {#if isDark}
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  {:else}
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
+  {/if}
 </svelte:head>
 
 <SkipLink />
@@ -2314,16 +2469,17 @@
 
       <div class="flex items-center gap-3">
         <Button
-          type="button"
-          variant="destructive"
+          htmlType="button"
+          type="Danger"
+          tone="Critical"
           size="md"
           onclick={handleLogout}
           disabled={isLoggingOut}>
           Sign out
         </Button>
         <Button
-          type="button"
-          variant="primary"
+          htmlType="button"
+          type="Primary"
           size="md"
           onclick={handleExtendSession}>
           Extend session
@@ -2334,17 +2490,14 @@
 </Dialog>
 
 <div
-  class="fixed top-0 z-40 flex h-14 w-full items-center justify-between border-b border-border-subtle bg-surface-card px-4 md:hidden">
+  class="fixed top-0 z-40 flex h-14 w-full items-center justify-between glass-card border-b border-border-subtle/60 px-4 md:hidden">
   <div class="flex items-center gap-2">
-    <button
-      type="button"
+    <IconButton
       onclick={() => (sidebarMobileOpen = !sidebarMobileOpen)}
-      class="flex h-9 w-9 items-center justify-center rounded-sm border border-border-subtle text-text-primary hover:bg-surface-hover"
       aria-expanded={sidebarMobileOpen}
-      aria-label={sidebarMobileOpen ? 'Close sidebar' : 'Open sidebar'}
-      title={sidebarMobileOpen ? 'Close sidebar' : 'Open sidebar'}>
+      ariaLabel={sidebarMobileOpen ? 'Close sidebar' : 'Open sidebar'}>
       <i class="bi {sidebarMobileOpen ? 'bi-x-lg' : 'bi-list'} text-lg"></i>
-    </button>
+    </IconButton>
     <span class="text-base font-bold text-text-primary">Admin Console</span>
   </div>
   <ThemeSelect
@@ -2354,14 +2507,14 @@
 
 <div class="flex min-h-screen pt-14 md:pt-0">
   <aside
-    class="fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col justify-between overflow-y-auto border-r border-border-subtle bg-surface-card transition-transform duration-200 ease-in-out md:sticky md:top-0 md:h-screen md:w-72 md:translate-x-0 {(
+    class="fixed inset-y-0 left-0 z-50 flex w-56 shrink-0 flex-col justify-between overflow-y-auto glass-card border-r border-border-subtle/60 transition-transform duration-200 ease-in-out md:sticky md:top-0 md:h-screen md:w-56 md:translate-x-0 {(
       sidebarMobileOpen
     ) ?
       'translate-x-0 shadow-2xl'
     : '-translate-x-full'}">
     <div
-      class="flex items-center justify-between border-b border-border-subtle/60 p-4">
-      <h1 class="text-base font-bold tracking-tight text-text-primary">
+      class="flex items-center justify-between border-b border-border-subtle/60 px-3.5 py-2.5">
+      <h1 class="text-xs font-bold tracking-tight text-text-primary">
         Admin Console
       </h1>
       <ThemeSelect
@@ -2370,67 +2523,109 @@
     </div>
 
     <nav
-      class="flex flex-1 flex-col p-3 font-sans"
+      class="flex flex-1 flex-col px-2.5 py-2 font-sans"
       aria-label="Admin Navigation">
       <div
-        class="px-2 pb-1.5 text-[10px] font-bold tracking-wider text-text-primary uppercase select-none">
+        class="px-2 py-1 text-[10px] font-bold tracking-wider text-text-muted uppercase select-none">
         Content Management
       </div>
-      <div class="flex flex-col gap-1">
+      <div class="flex flex-col gap-0.5">
         {#each adminNavLinks.filter(l => l.section === 'content') as link (link.id)}
           <button
             type="button"
             onclick={() => selectTab(link.id)}
-            class="group flex h-9 w-full items-center gap-3 rounded-sm px-3 text-left text-xs font-bold transition-all duration-150 ease-in-out {(
+            class="group flex h-8 w-full items-center gap-2.5 rounded-sm px-2.5 text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
               activeAdminTab === link.id
             ) ?
-              'border-l-3 border-copilot bg-copilot-subtle font-extrabold text-copilot shadow-xs'
-            : 'border-l-3 border-transparent text-text-primary hover:bg-surface-hover hover:text-copilot'}">
-            <i class="bi {link.icon} text-base transition-colors"></i>
-            <span>{link.label}</span>
+              'border-l-2 border-copilot bg-copilot-subtle font-bold text-copilot shadow-2xs'
+            : 'border-l-2 border-transparent text-text-primary hover:bg-surface-hover hover:text-copilot'}">
+            <i class="bi {link.icon} text-sm transition-colors"></i>
+            <span class="truncate">{link.label}</span>
           </button>
         {/each}
       </div>
 
       <div
-        class="mt-5 border-t border-border-subtle/40 px-2 pt-4 pb-1.5 text-[10px] font-bold tracking-wider text-text-primary uppercase select-none">
+        class="mt-3 border-t border-border-subtle/30 px-2 pt-2.5 pb-1 text-[10px] font-bold tracking-wider text-text-muted uppercase select-none">
         Profile & Resume
       </div>
-      <div class="flex flex-col gap-1">
+      <div class="flex flex-col gap-0.5">
         {#each adminNavLinks.filter(l => l.section === 'profile') as link (link.id)}
           <button
             type="button"
             onclick={() => selectTab(link.id)}
-            class="group flex h-9 w-full items-center gap-3 rounded-sm px-3 text-left text-xs font-bold transition-all duration-150 ease-in-out {(
+            class="group flex h-8 w-full items-center gap-2.5 rounded-sm px-2.5 text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
               activeAdminTab === link.id
             ) ?
-              'border-l-3 border-copilot bg-copilot-subtle font-extrabold text-copilot shadow-xs'
-            : 'border-l-3 border-transparent text-text-primary hover:bg-surface-hover hover:text-copilot'}">
-            <i class="bi {link.icon} text-base transition-colors"></i>
-            <span>{link.label}</span>
+              'border-l-2 border-copilot bg-copilot-subtle font-bold text-copilot shadow-2xs'
+            : 'border-l-2 border-transparent text-text-primary hover:bg-surface-hover hover:text-copilot'}">
+            <i class="bi {link.icon} text-sm transition-colors"></i>
+            <span class="truncate">{link.label}</span>
+          </button>
+        {/each}
+      </div>
+
+      <div
+        class="mt-3 border-t border-border-subtle/30 px-2 pt-2.5 pb-1 text-[10px] font-bold tracking-wider text-text-muted uppercase select-none">
+        Legal & Policy
+      </div>
+      <div class="flex flex-col gap-0.5">
+        {#each adminNavLinks.filter(l => l.section === 'legal') as link (link.id)}
+          <button
+            type="button"
+            onclick={() => selectTab(link.id)}
+            class="group flex h-8 w-full items-center gap-2.5 rounded-sm px-2.5 text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
+              activeAdminTab === link.id
+            ) ?
+              'border-l-2 border-copilot bg-copilot-subtle font-bold text-copilot shadow-2xs'
+            : 'border-l-2 border-transparent text-text-primary hover:bg-surface-hover hover:text-copilot'}">
+            <i class="bi {link.icon} text-sm transition-colors"></i>
+            <span class="truncate">{link.label}</span>
           </button>
         {/each}
       </div>
     </nav>
 
     <div
-      class="sticky bottom-0 z-10 mt-auto border-t border-border-subtle/60 bg-surface-card p-4">
+      class="sticky bottom-0 z-10 mt-auto glass-card border-t border-border-subtle/60 px-3 py-2.5">
       <div class="flex items-center justify-between gap-2">
-        <div class="flex min-w-0 items-center gap-2.5">
-          <span class="bi bi-person-circle shrink-0 text-2xl"></span>
+        <div class="flex min-w-0 items-center gap-2">
+          {#if authorState.avatar}
+            <ImageWithSkeleton
+              src={authorState.avatar}
+              alt={authorState.name || 'Admin'}
+              referrerpolicy="no-referrer"
+              rounded="rounded-full"
+              fallbackIcon="bi bi-person-circle"
+              class="h-7 w-7 shrink-0 border border-border-subtle"
+              imgClass="object-top" />
+          {:else}
+            <span class="bi bi-person-circle shrink-0 text-xl"></span>
+          {/if}
           <div class="flex flex-col truncate">
-            <span class="text-xs leading-tight font-bold text-text-primary"
-              >Admin</span>
-            <span
-              class="truncate font-mono text-xxs leading-tight font-normal text-text-primary"
-              title={adminUserEmail || authorState.email}>
-              {adminUserEmail || authorState.email || ''}
-            </span>
+            {#if isLoading || (!authorState.name && !adminUserEmail)}
+              <div
+                class="h-3 w-20 animate-pulse rounded bg-surface-hover"
+                aria-hidden="true">
+              </div>
+              <div
+                class="mt-1 h-2 w-24 animate-pulse rounded bg-border-default"
+                aria-hidden="true">
+              </div>
+            {:else}
+              <span class="text-xs leading-tight font-bold text-text-primary"
+                >{authorState.name || ''}</span>
+              <span
+                class="truncate font-mono text-[10.5px] leading-tight font-normal text-text-muted"
+                title={adminUserEmail || authorState.email}>
+                {adminUserEmail || authorState.email || ''}
+              </span>
+            {/if}
           </div>
         </div>
 
         <Button
-          variant="secondary"
+          type="Secondary"
           size="sm"
           onclick={handleLogout}
           disabled={isLoggingOut}
@@ -2445,14 +2640,18 @@
   {#if sidebarMobileOpen}
     <button
       type="button"
-      class="fixed inset-0 z-40 bg-overlay/50 backdrop-blur-sm md:hidden"
+      class="fixed inset-0 z-40 bg-overlay/50 backdrop-blur-md md:hidden"
       onclick={() => (sidebarMobileOpen = false)}
       aria-label="Close sidebar"></button>
   {/if}
 
   <main
     id="main-content"
-    class="flex-1 overflow-y-auto p-6 pb-24 font-sans">
+    class="flex-1 overflow-y-auto p-4 pb-24 font-sans sm:p-6 md:h-screen {(
+      ['privacy', 'security', 'terms'].includes(activeAdminTab)
+    ) ?
+      'pt-0! pb-0!'
+    : ''}">
     {#if isLoading}
       <LoadingState
         label="Loading dashboard..."
@@ -2469,14 +2668,13 @@
           </p>
         </div>
 
-        <a
+        <Button
           href="/admin/new"
-          class="hover:bg-copilot-hover active:bg-copilot-active inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-sm bg-copilot px-4 text-xs font-semibold text-text-on-accent shadow-xs transition-all select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:text-sm">
-          <i
-            class="bi bi-plus-lg text-sm"
-            aria-hidden="true"></i>
+          type="Primary"
+          size="md"
+          leadingIcon="bi-plus-lg">
           New Post
-        </a>
+        </Button>
       </div>
 
       <FilterToolbar
@@ -2530,32 +2728,40 @@
         {/snippet}
       </FilterToolbar>
 
+      <FilterChipGroup
+        chips={filterStore.activeChips}
+        onRemove={filterStore.removeFilter}
+        onClearAll={filterStore.clearAllFilters}
+        class="mb-6" />
+
       {#if filteredPosts.length === 0}
-        <EmptyState
-          title="No posts found"
-          description="Try adjusting your filter or search query." />
+        {#if filterStore.isFiltered}
+          <FilterEmptyState onClearFilters={filterStore.clearAllFilters} />
+        {:else}
+          <EmptyState
+            title="No posts found"
+            description="Try adjusting your filter or search query." />
+        {/if}
       {:else}
         <div class="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
           {#each paginatedPosts as post (post.id)}
             <Card class="relative flex h-full w-full flex-col gap-3">
-              <div
-                class="relative aspect-video w-full overflow-hidden rounded-sm border border-border-subtle select-none">
-                {#if post.banner_path && !failedBanners.has(post.id)}
-                  <img
-                    src={getBannerUrl(post.banner_path)}
-                    alt={post.title}
-                    loading="lazy"
-                    onerror={() => markBannerFailed(post.id)}
-                    class="block h-full w-full object-cover" />
-                {:else}
-                  <div
-                    class="to-palette-purple/15 flex h-full w-full items-center justify-center bg-linear-to-br from-copilot/15 select-none">
-                    <i
-                      class="bi bi-journal-text text-2xl text-copilot/50"
-                      aria-hidden="true"></i>
-                  </div>
-                {/if}
-              </div>
+              {#if post.banner_path && !failedBanners.has(post.id)}
+                <ImageWithSkeleton
+                  src={getBannerUrl(post.banner_path)}
+                  alt={post.title}
+                  aspectRatio="aspect-video"
+                  fallbackIcon="bi bi-file-richtext-fill"
+                  onerror={() => markBannerFailed(post.id)}
+                  class="w-full border border-border-subtle" />
+              {:else}
+                <div
+                  class="to-palette-purple/15 relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-sm border border-border-subtle bg-linear-to-br from-copilot/15 select-none">
+                  <i
+                    class="bi bi-file-richtext-fill text-2xl text-copilot/50"
+                    aria-hidden="true"></i>
+                </div>
+              {/if}
 
               <div
                 class="flex w-full scrollbar-none flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold text-text-secondary select-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
@@ -2564,6 +2770,11 @@
                 </Badge>
                 <span aria-hidden="true">&middot;</span>
                 <RelativeTime date={post.created_at} />
+                <span aria-hidden="true">&middot;</span>
+                <span
+                  >Last updated {formatAbsoluteDate(
+                    post.updated_at || post.created_at
+                  )}</span>
                 <span aria-hidden="true">&middot;</span>
                 <span>{formatReadTime(post.read_time)}</span>
                 <span aria-hidden="true">&middot;</span>
@@ -2595,8 +2806,8 @@
                 <div
                   class="flex w-full flex-wrap items-center justify-between gap-2 sm:w-auto sm:justify-start">
                   <Button
-                    type="button"
-                    variant="primary"
+                    htmlType="button"
+                    type="Primary"
                     size="sm"
                     onclick={() =>
                       (window.location.href = `/admin/new?id=${post.id}`)}>
@@ -2604,8 +2815,8 @@
                   </Button>
 
                   <Button
-                    type="button"
-                    variant="secondary"
+                    htmlType="button"
+                    type="Secondary"
                     size="sm"
                     aria-expanded={expandedPostIds.has(post.id)}
                     aria-controls="comments-{post.id}"
@@ -2616,8 +2827,8 @@
                   </Button>
 
                   <Button
-                    type="button"
-                    variant="secondary"
+                    htmlType="button"
+                    type="Secondary"
                     size="sm"
                     onclick={() => handleTogglePublished(post)}>
                     {post.published ? 'Unpublish' : 'Publish'}
@@ -2626,8 +2837,9 @@
 
                 <div class="flex w-full items-center gap-2 sm:w-auto">
                   <Button
-                    type="button"
-                    variant="danger"
+                    htmlType="button"
+                    type="Danger"
+                    tone="Critical"
                     size="sm"
                     class="w-full sm:w-auto"
                     onclick={() => confirmDeletePost(post)}>
@@ -2704,7 +2916,7 @@
                               : comment.author_name}
                             </p>
                             <Button
-                              variant="ghost"
+                              type="Ghost"
                               size="sm"
                               onclick={() => (replyTo = null)}>Cancel</Button>
                           </div>
@@ -2724,8 +2936,8 @@
 
                           <div class="mt-3 flex justify-end">
                             <Button
-                              type="submit"
-                              variant="primary"
+                              htmlType="submit"
+                              type="Primary"
                               size="sm"
                               disabled={isSubmitting}
                               isLoading={isSubmitting}>
@@ -2748,7 +2960,7 @@
             onPageChange={p => (postsPage = p)} />
         </div>
       {/if}
-    {:else if activeAdminTab === 'author'}
+    {:else if activeAdminTab === 'profile'}
       <FormSection
         onsubmit={handleSaveAuthor}
         title="Profile"
@@ -3051,8 +3263,9 @@
               </p>
             {/if}
             <Button
-              type="button"
-              variant="danger"
+              htmlType="button"
+              type="Danger"
+              tone="Critical"
               size="md"
               disabled={!authorState.id}
               onclick={confirmClearAuthor}
@@ -3063,8 +3276,8 @@
               <span>Delete Profile</span>
             </Button>
             <Button
-              type="submit"
-              variant="primary"
+              htmlType="submit"
+              type="Primary"
               size="md"
               disabled={!authorIsDirty}
               isLoading={isSavingAuthor}>
@@ -3073,65 +3286,14 @@
           </FormActions>
         {/snippet}
       </FormSection>
-    {:else if activeAdminTab === 'cv'}
-      <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 class="text-2xl font-bold tracking-tight text-text-primary">
-            Resume
-          </h1>
-          <p class="mt-1 text-xs text-text-secondary">
-            Manage work experience, education, and the CV document.
-          </p>
-        </div>
-
-        <div class="relative select-none">
-          <DropdownTrigger
-            ariaLabel="Add entry options"
-            variant="primary"
-            isOpen={isResumeAddOpen}
-            onclick={() => (isResumeAddOpen = !isResumeAddOpen)}>
-            <i
-              class="bi bi-plus-lg"
-              aria-hidden="true"></i>
-            Add entry
-          </DropdownTrigger>
-
-          {#if isResumeAddOpen}
-            <button
-              type="button"
-              class="fixed inset-0 z-40 cursor-default"
-              onclick={() => (isResumeAddOpen = false)}
-              aria-label="Close options"></button>
-
-            <div
-              role="listbox"
-              aria-label="Add entry options"
-              class="absolute top-[calc(100%+4px)] right-0 z-60 flex min-w-36 flex-col overflow-hidden rounded-sm border border-border-subtle bg-surface-elevated/70 py-0 shadow-xl backdrop-blur-lg">
-              <button
-                type="button"
-                role="option"
-                aria-selected={false}
-                onclick={() => {
-                  handleAddCvEntry('experience')
-                  isResumeAddOpen = false
-                }}
-                class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
-                <span>Add Experience</span>
-              </button>
-              <button
-                type="button"
-                role="option"
-                aria-selected={false}
-                onclick={() => {
-                  handleAddCvEntry('education')
-                  isResumeAddOpen = false
-                }}
-                class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
-                <span>Add Education</span>
-              </button>
-            </div>
-          {/if}
-        </div>
+    {:else if activeAdminTab === 'resume'}
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold tracking-tight text-text-primary">
+          Resume
+        </h1>
+        <p class="mt-1 text-xs text-text-secondary">
+          Manage work experience, education, and the CV document.
+        </p>
       </div>
 
       <form
@@ -3145,9 +3307,22 @@
         {/if}
 
         <Card>
-          {#snippet header()}
-            <h2 class="text-xl font-bold text-text-primary">Experiences</h2>
-          {/snippet}
+          <div class="mb-6 flex items-center justify-between gap-4">
+            <div>
+              <h2 class="text-xl font-bold text-text-primary">Experiences</h2>
+              <p class="mt-1 text-xs text-text-secondary">
+                List your work history in reverse chronological order.
+              </p>
+            </div>
+            <Button
+              htmlType="button"
+              type="Primary"
+              size="sm"
+              leadingIcon="bi-plus-lg"
+              onclick={() => handleAddCvEntry('experience')}>
+              Add Experience
+            </Button>
+          </div>
           <div class="flex flex-col gap-6">
             {#if cvState.experience.length === 0}
               <EmptyState
@@ -3155,7 +3330,7 @@
                 title="No experience entries yet"
                 description="Add your first experience entry below." />
             {/if}
-            {#each cvState.experience as exp, idx (idx)}
+            {#each cvState.experience as exp, idx (exp.id ?? idx)}
               <div
                 class="flex flex-col gap-4 rounded-sm border border-border-subtle/80 bg-surface-base p-4">
                 <div
@@ -3164,8 +3339,8 @@
                     >Experience Entry #{idx + 1}</span>
                   <div class="flex items-center gap-1">
                     <Button
-                      type="button"
-                      variant="ghost"
+                      htmlType="button"
+                      type="Ghost"
                       size="sm"
                       aria-label="Move experience item up"
                       title="Move experience item up"
@@ -3181,8 +3356,8 @@
                         aria-hidden="true"></i
                       ></Button>
                     <Button
-                      type="button"
-                      variant="ghost"
+                      htmlType="button"
+                      type="Ghost"
                       size="sm"
                       aria-label="Move experience item down"
                       title="Move experience item down"
@@ -3198,8 +3373,9 @@
                         aria-hidden="true"></i
                       ></Button>
                     <Button
-                      type="button"
-                      variant="danger"
+                      htmlType="button"
+                      type="Danger"
+                      tone="Critical"
                       size="sm"
                       onclick={() => confirmRemoveCvEntry('experience', idx)}
                       >Delete</Button>
@@ -3403,12 +3579,39 @@
               </div>
             {/each}
           </div>
+
+          <FormActions>
+            {#if cvIsDirty}
+              <p class="text-xs text-text-secondary select-none">
+                You have unsaved changes.
+              </p>
+            {/if}
+            <Button
+              htmlType="submit"
+              type="Primary"
+              size="md"
+              disabled={!cvIsDirty}
+              isLoading={isSavingCv}>Save Experiences</Button>
+          </FormActions>
         </Card>
 
         <Card>
-          {#snippet header()}
-            <h2 class="text-xl font-bold text-text-primary">Education</h2>
-          {/snippet}
+          <div class="mb-6 flex items-center justify-between gap-4">
+            <div>
+              <h2 class="text-xl font-bold text-text-primary">Education</h2>
+              <p class="mt-1 text-xs text-text-secondary">
+                List your degrees, certifications, and academic background.
+              </p>
+            </div>
+            <Button
+              htmlType="button"
+              type="Primary"
+              size="sm"
+              leadingIcon="bi-plus-lg"
+              onclick={() => handleAddCvEntry('education')}>
+              Add Education
+            </Button>
+          </div>
           <div class="flex flex-col gap-6">
             {#if cvState.education.length === 0}
               <EmptyState
@@ -3416,7 +3619,7 @@
                 title="No education entries yet"
                 description="Add your first education entry below." />
             {/if}
-            {#each cvState.education as edu, idx (idx)}
+            {#each cvState.education as edu, idx (edu.id ?? idx)}
               <div
                 class="flex flex-col gap-4 rounded-sm border border-border-subtle/80 bg-surface-base p-4">
                 <div
@@ -3425,8 +3628,8 @@
                     >Education Entry #{idx + 1}</span>
                   <div class="flex items-center gap-1">
                     <Button
-                      type="button"
-                      variant="ghost"
+                      htmlType="button"
+                      type="Ghost"
                       size="sm"
                       aria-label="Move education item up"
                       title="Move education item up"
@@ -3442,8 +3645,8 @@
                         aria-hidden="true"></i
                       ></Button>
                     <Button
-                      type="button"
-                      variant="ghost"
+                      htmlType="button"
+                      type="Ghost"
                       size="sm"
                       aria-label="Move education item down"
                       title="Move education item down"
@@ -3459,8 +3662,9 @@
                         aria-hidden="true"></i
                       ></Button>
                     <Button
-                      type="button"
-                      variant="danger"
+                      htmlType="button"
+                      type="Danger"
+                      tone="Critical"
                       size="sm"
                       onclick={() => confirmRemoveCvEntry('education', idx)}
                       >Delete</Button>
@@ -3663,21 +3867,21 @@
               </div>
             {/each}
           </div>
-        </Card>
 
-        <FormActions>
-          {#if cvIsDirty}
-            <p class="text-xs text-text-secondary select-none">
-              You have unsaved changes.
-            </p>
-          {/if}
-          <Button
-            type="submit"
-            variant="primary"
-            size="md"
-            disabled={!cvIsDirty}
-            isLoading={isSavingCv}>Save Resume</Button>
-        </FormActions>
+          <FormActions>
+            {#if cvIsDirty}
+              <p class="text-xs text-text-secondary select-none">
+                You have unsaved changes.
+              </p>
+            {/if}
+            <Button
+              htmlType="submit"
+              type="Primary"
+              size="md"
+              disabled={!cvIsDirty}
+              isLoading={isSavingCv}>Save Education</Button>
+          </FormActions>
+        </Card>
       </form>
 
       <!-- CV Document Management -->
@@ -3739,29 +3943,28 @@
                       class="min-w-0 flex-1 scrollbar-none overflow-x-auto font-mono text-xxs break-all text-text-secondary select-all [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                       {cvDocState.hash}
                     </span>
-                    <button
-                      type="button"
+                    <IconButton
+                      variant="borderless"
+                      size="sm"
                       onclick={() => {
                         navigator.clipboard
                           .writeText(cvDocState.hash || '')
                           .then(() => toastStore.success('Copied!'))
                           .catch(() => toastStore.error('Failed to copy'))
                       }}
-                      class="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center text-text-secondary transition-colors hover:text-copilot"
-                      aria-label="Copy SHA-256 checksum"
-                      title="Copy SHA-256 checksum">
+                      ariaLabel="Copy SHA-256 checksum">
                       <i
                         class="bi bi-copy text-xs"
                         aria-hidden="true"></i>
-                    </button>
+                    </IconButton>
                   </div>
                 </div>
               {/if}
 
               <div class="flex items-center gap-2 pt-1">
                 <Button
-                  type="button"
-                  variant="secondary"
+                  htmlType="button"
+                  type="Secondary"
                   size="sm"
                   onclick={() =>
                     window.open(cvDocState.fileUrl || '/cv.pdf', '_blank')}>
@@ -3771,8 +3974,8 @@
                   <span>Open</span>
                 </Button>
                 <Button
-                  type="button"
-                  variant="secondary"
+                  htmlType="button"
+                  type="Secondary"
                   size="sm"
                   onclick={() =>
                     document.getElementById('cv-pdf-upload')?.click()}>
@@ -3782,8 +3985,9 @@
                   <span>Replace</span>
                 </Button>
                 <Button
-                  type="button"
-                  variant="danger"
+                  htmlType="button"
+                  type="Danger"
+                  tone="Critical"
                   size="sm"
                   class="ml-auto"
                   onclick={confirmDeleteCvDoc}>
@@ -3819,8 +4023,8 @@
               onFileSelect={handleCvFileSelect} />
 
             <Button
-              type="submit"
-              variant="primary"
+              htmlType="submit"
+              type="Primary"
               size="md"
               fullWidth
               disabled={!selectedPdfFile || isUploadingPdf}
@@ -3833,11 +4037,12 @@
     {:else if activeAdminTab === 'skills'}
       <FormSection
         onsubmit={handleSaveSkills}
-        title="Skills">
+        title="Skills"
+        description="Manage skill categories and the skills within each one.">
         {#snippet headerActions()}
           <Button
-            type="button"
-            variant="primary"
+            htmlType="button"
+            type="Primary"
             size="md"
             leadingIcon="bi-plus-lg"
             onclick={handleAddSkill}>
@@ -3856,7 +4061,7 @@
               title="No skill groups yet"
               description="Add your first skill group below." />
           {/if}
-          {#each skillsState as item, idx (idx)}
+          {#each skillsState as item, idx (item.id ?? idx)}
             <div
               class="flex flex-col gap-3 rounded-sm border border-border-subtle/80 bg-surface-base p-4">
               <div
@@ -3865,8 +4070,8 @@
                   >Category #{idx + 1}</span>
                 <div class="flex items-center gap-1">
                   <Button
-                    type="button"
-                    variant="ghost"
+                    htmlType="button"
+                    type="Ghost"
                     size="sm"
                     aria-label="Move skill up"
                     title="Move skill up"
@@ -3878,8 +4083,8 @@
                       aria-hidden="true"></i
                     ></Button>
                   <Button
-                    type="button"
-                    variant="ghost"
+                    htmlType="button"
+                    type="Ghost"
                     size="sm"
                     aria-label="Move skill down"
                     title="Move skill down"
@@ -3891,8 +4096,9 @@
                       aria-hidden="true"></i
                     ></Button>
                   <Button
-                    type="button"
-                    variant="danger"
+                    htmlType="button"
+                    type="Danger"
+                    tone="Critical"
                     size="sm"
                     onclick={() => confirmRemoveSkill(idx)}>Delete</Button>
                 </div>
@@ -3952,7 +4158,7 @@
                             editingSkillText.length,
                             3
                           )}ch"
-                          class="w-[var(--sk-w)] border-0 border-none bg-transparent font-mono text-xs font-medium text-copilot shadow-none ring-0 outline-none focus:border-none! focus:ring-0! focus:outline-none! focus-visible:border-none! focus-visible:ring-0! focus-visible:outline-none!"
+                          class="w-(--sk-w) border-0 border-none bg-transparent font-mono text-xs font-medium text-copilot shadow-none ring-0 outline-none focus:border-none! focus:ring-0! focus:outline-none! focus-visible:border-none! focus-visible:ring-0! focus-visible:outline-none!"
                           onkeydown={e => {
                             const target = e.currentTarget as HTMLInputElement
                             if (e.key === ',') {
@@ -4069,8 +4275,8 @@
               </p>
             {/if}
             <Button
-              type="submit"
-              variant="primary"
+              htmlType="submit"
+              type="Primary"
               size="md"
               disabled={!skillsIsDirty}
               isLoading={isSavingSkills}>Save Skills</Button>
@@ -4080,11 +4286,12 @@
     {:else if activeAdminTab === 'socials'}
       <FormSection
         onsubmit={handleSaveSocials}
-        title="Social Links">
+        title="Social Links"
+        description="Manage links to your social media profiles.">
         {#snippet headerActions()}
           <Button
-            type="button"
-            variant="primary"
+            htmlType="button"
+            type="Primary"
             size="md"
             leadingIcon="bi-plus-lg"
             onclick={handleAddSocial}>
@@ -4103,7 +4310,7 @@
               title="No social links yet"
               description="Add your first social link below." />
           {/if}
-          {#each socialState as item, idx (idx)}
+          {#each socialState as item, idx (item.id ?? idx)}
             <div
               class="flex flex-col gap-3 rounded-sm border border-border-subtle/80 bg-surface-base p-4">
               <div
@@ -4112,8 +4319,8 @@
                   >Social #{idx + 1}</span>
                 <div class="flex items-center gap-1">
                   <Button
-                    type="button"
-                    variant="ghost"
+                    htmlType="button"
+                    type="Ghost"
                     size="sm"
                     aria-label="Move social link up"
                     title="Move social link up"
@@ -4125,8 +4332,8 @@
                       aria-hidden="true"></i
                     ></Button>
                   <Button
-                    type="button"
-                    variant="ghost"
+                    htmlType="button"
+                    type="Ghost"
                     size="sm"
                     aria-label="Move social link down"
                     title="Move social link down"
@@ -4138,8 +4345,9 @@
                       aria-hidden="true"></i
                     ></Button>
                   <Button
-                    type="button"
-                    variant="danger"
+                    htmlType="button"
+                    type="Danger"
+                    tone="Critical"
                     size="sm"
                     onclick={() => confirmRemoveSocial(idx)}>Delete</Button>
                 </div>
@@ -4235,8 +4443,8 @@
               </p>
             {/if}
             <Button
-              type="submit"
-              variant="primary"
+              htmlType="submit"
+              type="Primary"
               size="md"
               disabled={!socialIsDirty}
               isLoading={isSavingSocials}>Save Social Links</Button>
@@ -4246,11 +4454,12 @@
     {:else if activeAdminTab === 'sponsorship'}
       <FormSection
         onsubmit={handleSaveSponsorship}
-        title="Sponsorship">
+        title="Sponsorship"
+        description="Manage funding and sponsorship platforms.">
         {#snippet headerActions()}
           <Button
-            type="button"
-            variant="primary"
+            htmlType="button"
+            type="Primary"
             size="md"
             leadingIcon="bi-plus-lg"
             onclick={handleAddSponsorship}>
@@ -4269,7 +4478,7 @@
               title="No funding platforms yet"
               description="Add your first funding platform below." />
           {/if}
-          {#each sponsorshipState as item, idx (idx)}
+          {#each sponsorshipState as item, idx (item.id ?? idx)}
             <div
               class="flex flex-col gap-3 rounded-sm border border-border-subtle/80 bg-surface-base p-4">
               <div
@@ -4278,8 +4487,8 @@
                   >Sponsorship #{idx + 1}</span>
                 <div class="flex items-center gap-1">
                   <Button
-                    type="button"
-                    variant="ghost"
+                    htmlType="button"
+                    type="Ghost"
                     size="sm"
                     aria-label="Move sponsorship link up"
                     title="Move sponsorship link up"
@@ -4295,8 +4504,8 @@
                       aria-hidden="true"></i
                     ></Button>
                   <Button
-                    type="button"
-                    variant="ghost"
+                    htmlType="button"
+                    type="Ghost"
                     size="sm"
                     aria-label="Move sponsorship link down"
                     title="Move sponsorship link down"
@@ -4312,8 +4521,9 @@
                       aria-hidden="true"></i
                     ></Button>
                   <Button
-                    type="button"
-                    variant="danger"
+                    htmlType="button"
+                    type="Danger"
+                    tone="Critical"
                     size="sm"
                     onclick={() => confirmRemoveSponsorship(idx)}
                     >Delete</Button>
@@ -4457,8 +4667,8 @@
               </p>
             {/if}
             <Button
-              type="submit"
-              variant="primary"
+              htmlType="submit"
+              type="Primary"
               size="md"
               disabled={!sponsorshipIsDirty}
               isLoading={isSavingSponsorship}>Save Sponsorship</Button>
@@ -4468,11 +4678,12 @@
     {:else if activeAdminTab === 'contact'}
       <FormSection
         onsubmit={handleSaveContact}
-        title="Contact">
+        title="Contact"
+        description="Manage public contact channels.">
         {#snippet headerActions()}
           <Button
-            type="button"
-            variant="primary"
+            htmlType="button"
+            type="Primary"
             size="md"
             leadingIcon="bi-plus-lg"
             onclick={handleAddContact}>
@@ -4487,11 +4698,11 @@
         <div class="flex flex-col gap-4">
           {#if contactState.length === 0}
             <EmptyState
-              icon="bi-envelope-at-fill"
+              icon="bi-envelope-fill"
               title="No contact channels yet"
               description="Add your first contact channel below." />
           {/if}
-          {#each contactState as item, idx (idx)}
+          {#each contactState as item, idx (item.id ?? idx)}
             <div
               class="flex flex-col gap-3 rounded-sm border border-border-subtle/80 bg-surface-base p-4">
               <div
@@ -4500,8 +4711,8 @@
                   >Contact #{idx + 1}</span>
                 <div class="flex items-center gap-1">
                   <Button
-                    type="button"
-                    variant="ghost"
+                    htmlType="button"
+                    type="Ghost"
                     size="sm"
                     aria-label="Move contact item up"
                     title="Move contact item up"
@@ -4513,8 +4724,8 @@
                       aria-hidden="true"></i
                     ></Button>
                   <Button
-                    type="button"
-                    variant="ghost"
+                    htmlType="button"
+                    type="Ghost"
                     size="sm"
                     aria-label="Move contact item down"
                     title="Move contact item down"
@@ -4526,8 +4737,9 @@
                       aria-hidden="true"></i
                     ></Button>
                   <Button
-                    type="button"
-                    variant="danger"
+                    htmlType="button"
+                    type="Danger"
+                    tone="Critical"
                     size="sm"
                     onclick={() => confirmRemoveContact(idx)}>Delete</Button>
                 </div>
@@ -4653,13 +4865,82 @@
               </p>
             {/if}
             <Button
-              type="submit"
-              variant="primary"
+              htmlType="submit"
+              type="Primary"
               size="md"
               disabled={!contactIsDirty}
               isLoading={isSavingContact}>Save Contact</Button>
           </FormActions>
         {/snippet}
+      </FormSection>
+    {:else if activeAdminTab === 'privacy'}
+      <FormSection
+        title="Privacy Policy"
+        description="Edit and publish your website Privacy Policy in Markdown."
+        onsubmit={e => handleSaveLegalPage('privacy', e)}
+        class="py-4 sm:py-6"
+        bare>
+        {#snippet headerActions()}
+          <Button
+            htmlType="submit"
+            type="Primary"
+            size="md"
+            isLoading={isSavingLegal}
+            disabled={isSavingLegal}>
+            Save Privacy Policy
+          </Button>
+        {/snippet}
+        <MarkdownEditor
+          bind:value={legalPagesData.privacy.content}
+          autosaveKey="autosave_legal_privacy"
+          placeholder="Write your Privacy Policy content in markdown..."
+          minHeight="500px" />
+      </FormSection>
+    {:else if activeAdminTab === 'security'}
+      <FormSection
+        title="Security Policy"
+        description="Edit and publish your website Security Policy & Vulnerability Disclosure Guidelines."
+        onsubmit={e => handleSaveLegalPage('security', e)}
+        class="py-4 sm:py-6"
+        bare>
+        {#snippet headerActions()}
+          <Button
+            htmlType="submit"
+            type="Primary"
+            size="md"
+            isLoading={isSavingLegal}
+            disabled={isSavingLegal}>
+            Save Security Policy
+          </Button>
+        {/snippet}
+        <MarkdownEditor
+          bind:value={legalPagesData.security.content}
+          autosaveKey="autosave_legal_security"
+          placeholder="Write your Security Policy content in markdown..."
+          minHeight="500px" />
+      </FormSection>
+    {:else if activeAdminTab === 'terms'}
+      <FormSection
+        title="Terms of Service"
+        description="Edit and publish your website Terms of Service."
+        onsubmit={e => handleSaveLegalPage('terms', e)}
+        class="py-4 sm:py-6"
+        bare>
+        {#snippet headerActions()}
+          <Button
+            htmlType="submit"
+            type="Primary"
+            size="md"
+            isLoading={isSavingLegal}
+            disabled={isSavingLegal}>
+            Save Terms of Service
+          </Button>
+        {/snippet}
+        <MarkdownEditor
+          bind:value={legalPagesData.terms.content}
+          autosaveKey="autosave_legal_terms"
+          placeholder="Write your Terms of Service content in markdown..."
+          minHeight="500px" />
       </FormSection>
     {/if}
   </main>
@@ -4707,81 +4988,380 @@
   onConfirm={executeRemoveEntry}
   onCancel={() => (pendingRemove = null)} />
 
-{#if showAvatarPreviewDialog}
-  <div class="fixed inset-0 z-100 flex items-center justify-center p-4">
-    <button
-      type="button"
-      class="absolute inset-0 cursor-default bg-overlay-backdrop backdrop-blur-md"
-      aria-label="Close modal"
-      onclick={() => (showAvatarPreviewDialog = false)}></button>
-
-    <div
-      role="dialog"
-      aria-modal="true"
-      class="relative z-10 flex w-full max-w-sm transform flex-col gap-6 rounded-sm border border-border-subtle bg-surface-elevated p-6 shadow-2xl transition-all select-none">
-      <!-- Image Container -->
+<Dialog
+  bind:isOpen={showAvatarPreviewDialog}
+  onClose={() => (showAvatarPreviewDialog = false)}
+  title="Avatar Preview"
+  size="sm">
+  <div
+    class="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-sm border border-border-subtle bg-surface-base">
+    {#if authorState.avatar}
       <div
-        class="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-sm border border-border-subtle bg-surface-base">
-        {#if authorState.avatar}
-          <div
-            class="absolute inset-0 z-0 flex items-center justify-center bg-surface-subtle">
-            <i
-              class="bi bi-person-fill text-4xl text-text-muted"
-              aria-hidden="true"></i>
-          </div>
-          {#key authorState.avatar}
-            <img
-              src={authorState.avatar}
-              alt="Avatar preview enlarged"
-              class="relative z-10 h-full w-full object-cover"
-              onerror={e =>
-                ((e.currentTarget as HTMLImageElement).style.display = 'none')}
-              onload={e =>
-                ((e.currentTarget as HTMLImageElement).style.display =
-                  'block')} />
-          {/key}
-        {:else}
-          <div
-            class="flex h-full w-full items-center justify-center bg-surface-subtle">
-            <i
-              class="bi bi-person-fill text-4xl text-text-muted"
-              aria-hidden="true"></i>
-          </div>
-        {/if}
-
-        <!-- Close Button inside Image Container -->
-        <button
-          type="button"
-          class="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-sm bg-black/40 text-white transition-colors hover:bg-black/60"
-          aria-label="Close dialog"
-          onclick={() => (showAvatarPreviewDialog = false)}>
-          <i
-            class="bi bi-x-lg text-sm"
-            aria-hidden="true"></i>
-        </button>
+        class="absolute inset-0 z-0 flex items-center justify-center bg-surface-subtle">
+        <i
+          class="bi bi-person-fill text-4xl text-text-muted"
+          aria-hidden="true"></i>
       </div>
-
-      <!-- Button Row -->
-      <div class="flex w-full items-center justify-between">
-        <Button
-          type="button"
-          variant="danger"
-          size="md"
-          onclick={() => {
-            authorState.avatar = ''
-            showAvatarPreviewDialog = false
-            onAuthorInput('avatar')
-          }}>
-          Delete
-        </Button>
-        <Button
-          type="button"
-          variant="primary"
-          size="md"
-          onclick={() => (showAvatarPreviewDialog = false)}>
-          Looks good
-        </Button>
+      {#key authorState.avatar}
+        <img
+          src={authorState.avatar}
+          alt="Avatar preview enlarged"
+          class="relative z-10 h-full w-full object-cover"
+          onerror={e =>
+            ((e.currentTarget as HTMLImageElement).style.display = 'none')}
+          onload={e =>
+            ((e.currentTarget as HTMLImageElement).style.display = 'block')} />
+      {/key}
+    {:else}
+      <div
+        class="flex h-full w-full items-center justify-center bg-surface-subtle">
+        <i
+          class="bi bi-person-fill text-4xl text-text-muted"
+          aria-hidden="true"></i>
       </div>
-    </div>
+    {/if}
+
+    <IconButton
+      ariaLabel="Close dialog"
+      variant="borderless"
+      size="sm"
+      class="absolute top-2 right-2 bg-black/40! text-white! hover:bg-black/60!"
+      onclick={() => (showAvatarPreviewDialog = false)}>
+      <i
+        class="bi bi-x-lg text-sm"
+        aria-hidden="true"></i>
+    </IconButton>
   </div>
-{/if}
+
+  {#snippet footer()}
+    <div class="flex w-full items-center justify-between">
+      <Button
+        htmlType="button"
+        type="Danger"
+        tone="Critical"
+        size="md"
+        onclick={() => {
+          authorState.avatar = ''
+          showAvatarPreviewDialog = false
+          onAuthorInput('avatar')
+        }}>
+        Delete
+      </Button>
+      <Button
+        htmlType="button"
+        type="Primary"
+        size="md"
+        onclick={() => (showAvatarPreviewDialog = false)}>
+        Looks good
+      </Button>
+    </div>
+  {/snippet}
+</Dialog>
+
+<style>
+  @reference "../global.css";
+  .editor-textarea,
+  .editor-pre,
+  .editor-pre code,
+  .editor-pre :global(span),
+  .line-num-item {
+    @apply font-mono text-[14.5px]! leading-6! tracking-normal! normal-case!;
+    font-feature-settings: var(--font-feature-settings-mono) !important;
+  }
+
+  .editor-textarea,
+  .editor-pre {
+    @apply wrap-break-word!;
+    word-break: normal !important;
+  }
+
+  .editor-textarea {
+    @apply m-0! box-border! border-0! outline-hidden!;
+  }
+
+  .editor-textarea:focus,
+  .editor-textarea:focus-visible {
+    @apply border-transparent! shadow-none! outline-hidden!;
+    --tw-ring-shadow: none !important;
+  }
+
+  .editor-code-line {
+    @apply block! min-h-6! leading-6!;
+  }
+
+  .line-num-item {
+    @apply box-border! flex! h-6 items-start! justify-end!;
+  }
+
+  .prose-custom :global(h1),
+  .prose-custom :global(h2),
+  .prose-custom :global(h3) {
+    @apply font-sans;
+  }
+
+  .prose-custom {
+    @apply font-sans text-[0.9rem] leading-[1.7] text-(--color-body);
+    --color-heading: var(--color-gh-gray-6);
+    --color-body: var(--color-gh-gray-5);
+    --color-link: var(--color-copilot);
+    --color-link-hover: var(--color-copilot);
+  }
+
+  :global(:root.dark) .prose-custom {
+    --color-heading: var(--color-gh-gray-1);
+    --color-body: var(--color-gh-gray-3);
+    --color-link: var(--color-copilot);
+    --color-link-hover: var(--color-copilot);
+  }
+
+  .prose-custom :global(p) {
+    @apply mt-5 mb-5 text-(--color-body);
+  }
+
+  .prose-custom :global(h1),
+  .prose-custom :global(h2),
+  .prose-custom :global(h3),
+  .prose-custom :global(h4),
+  .prose-custom :global(h5),
+  .prose-custom :global(h6) {
+    @apply font-sans text-(--color-heading);
+  }
+
+  .prose-custom :global(h1) {
+    @apply mt-8 mb-4 text-3xl font-extrabold;
+  }
+
+  .prose-custom :global(h2) {
+    @apply mt-7 mb-3 text-2xl font-bold;
+  }
+
+  .prose-custom :global(h3) {
+    @apply mt-6 mb-2 text-xl font-semibold;
+  }
+
+  .prose-custom :global(ul) {
+    @apply mt-4 mb-4 list-disc pl-6;
+  }
+
+  .prose-custom :global(ol) {
+    @apply mt-4 mb-4 list-decimal pl-6;
+  }
+
+  .prose-custom :global(li) {
+    @apply mt-1 mb-1;
+  }
+
+  .prose-custom :global(pre) {
+    @apply mt-6 mb-6 scrollbar-none! overflow-x-auto rounded-sm border border-adwaita-border bg-adwaita-hover px-3! py-2! font-mono text-[0.8rem] leading-relaxed break-normal! whitespace-pre! [-ms-overflow-style:none]!;
+  }
+
+  /* When a line-number gutter sits to the left (see enhanceCodeBlocks), it
+     already provides its own edge padding — pre's own left padding on top of
+     that doubled the visual gap between the divider and the code text. */
+  .prose-custom :global(pre[data-enhanced='true']) {
+    @apply pr-3.5! pl-2!;
+  }
+
+  .prose-custom :global(pre)::-webkit-scrollbar {
+    @apply hidden! h-0! w-0!;
+  }
+
+  .prose-custom :global(code:not(pre code)) {
+    @apply rounded bg-adwaita-hover px-1 py-px font-mono text-xs font-normal text-inherit;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .prose-custom :global(pre code) {
+    @apply block! w-max! min-w-full! overflow-visible! border-0 bg-transparent py-0! pr-3.5! pl-0! font-mono text-[0.8rem] leading-relaxed break-normal! whitespace-pre! text-inherit;
+  }
+
+  .prose-custom :global(.code-line) {
+    @apply block! w-full! pr-3.5!;
+  }
+
+  .prose-custom :global(a) {
+    @apply text-(--color-link) underline;
+  }
+
+  .prose-custom :global(a):hover {
+    @apply text-(--color-link-hover);
+  }
+
+  .prose-custom :global(.heading-text) {
+    @apply inline! transition-none!;
+  }
+
+  .prose-custom :global(a.anchor-link) {
+    @apply ml-[0.35rem]! inline-flex! items-center! justify-center! align-middle! leading-none! whitespace-nowrap! text-adwaita-text! no-underline! transition-none!;
+  }
+
+  :global(:root.dark) .prose-custom :global(a.anchor-link) {
+    @apply text-gh-gray-4!;
+  }
+
+  .prose-custom :global(a.anchor-link .bi) {
+    @apply inline-block! align-middle! text-[0.85em]! leading-none! text-inherit! no-underline!;
+  }
+
+  .prose-custom :global(h1:hover .heading-text),
+  .prose-custom :global(h2:hover .heading-text),
+  .prose-custom :global(h3:hover .heading-text),
+  .prose-custom :global(h4:hover .heading-text),
+  .prose-custom :global(h5:hover .heading-text),
+  .prose-custom :global(h6:hover .heading-text),
+  .prose-custom :global(.heading-text):hover,
+  :global(:root.dark) .prose-custom :global(h1:hover .heading-text),
+  :global(:root.dark) .prose-custom :global(h2:hover .heading-text),
+  :global(:root.dark) .prose-custom :global(h3:hover .heading-text),
+  :global(:root.dark) .prose-custom :global(h4:hover .heading-text),
+  :global(:root.dark) .prose-custom :global(h5:hover .heading-text),
+  :global(:root.dark) .prose-custom :global(h6:hover .heading-text),
+  :global(:root.dark) .prose-custom :global(.heading-text):hover {
+    @apply text-copilot underline underline-offset-4;
+  }
+
+  .prose-custom :global(h1:hover a.anchor-link),
+  .prose-custom :global(h2:hover a.anchor-link),
+  .prose-custom :global(h3:hover a.anchor-link),
+  .prose-custom :global(h4:hover a.anchor-link),
+  .prose-custom :global(h5:hover a.anchor-link),
+  .prose-custom :global(h6:hover a.anchor-link),
+  .prose-custom :global(a.anchor-link):hover,
+  :global(:root.dark) .prose-custom :global(h1:hover a.anchor-link),
+  :global(:root.dark) .prose-custom :global(h2:hover a.anchor-link),
+  :global(:root.dark) .prose-custom :global(h3:hover a.anchor-link),
+  :global(:root.dark) .prose-custom :global(h4:hover a.anchor-link),
+  :global(:root.dark) .prose-custom :global(h5:hover a.anchor-link),
+  :global(:root.dark) .prose-custom :global(h6:hover a.anchor-link),
+  :global(:root.dark) .prose-custom :global(a.anchor-link):hover,
+  .prose-custom :global(h1:hover a.anchor-link .bi),
+  .prose-custom :global(h2:hover a.anchor-link .bi),
+  .prose-custom :global(h3:hover a.anchor-link .bi),
+  .prose-custom :global(h4:hover a.anchor-link .bi),
+  .prose-custom :global(h5:hover a.anchor-link .bi),
+  .prose-custom :global(h6:hover a.anchor-link .bi),
+  .prose-custom :global(a.anchor-link):hover :global(.bi),
+  :global(:root.dark) .prose-custom :global(h1:hover a.anchor-link .bi),
+  :global(:root.dark) .prose-custom :global(h2:hover a.anchor-link .bi),
+  :global(:root.dark) .prose-custom :global(h3:hover a.anchor-link .bi),
+  :global(:root.dark) .prose-custom :global(h4:hover a.anchor-link .bi),
+  :global(:root.dark) .prose-custom :global(h5:hover a.anchor-link .bi),
+  :global(:root.dark) .prose-custom :global(h6:hover a.anchor-link .bi),
+  :global(:root.dark) .prose-custom :global(a.anchor-link):hover :global(.bi) {
+    @apply text-copilot! no-underline! opacity-100;
+  }
+
+  .prose-custom :global(table) {
+    @apply my-6 w-full max-w-full overflow-hidden rounded-sm border border-border-subtle text-left text-xs shadow-2xs;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+  }
+
+  .prose-custom :global(thead) {
+    @apply border-b border-border-subtle bg-surface-hover/80 font-semibold tracking-wider text-text-primary uppercase;
+  }
+
+  /* Headers always render centered regardless of the column's markdown
+     alignment marker (`align` presentational attribute) - only body cells
+     follow per-column alignment. */
+  .prose-custom :global(th) {
+    @apply px-2.5 py-2 text-center font-semibold text-text-primary;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .prose-custom :global(tbody tr) {
+    @apply transition-colors hover:bg-surface-hover/30;
+  }
+
+  .prose-custom :global(td) {
+    @apply border-r border-border-subtle/40 px-2.5 py-1.5 text-left leading-relaxed text-text-secondary last:border-r-0;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .prose-custom :global(td code),
+  .prose-custom :global(th code) {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    white-space: normal;
+  }
+
+  /* GFM table alignment markers (`---:`, `:---:`) - e.g. numeric/money
+     columns marked right-aligned in the source markdown. */
+  .prose-custom :global(td[align='right']) {
+    @apply text-right;
+  }
+
+  .prose-custom :global(td[align='center']) {
+    @apply text-center;
+  }
+
+  .prose-custom :global(hr) {
+    @apply my-8 h-px border-0 bg-border-default;
+  }
+
+  .prose-custom :global(.markdown-alert) {
+    @apply my-6 rounded-r-xl border-l-4 p-4 text-xs shadow-2xs transition-colors duration-200 sm:text-sm;
+  }
+
+  .prose-custom :global(.markdown-alert-title) {
+    @apply mb-1.5 flex items-center gap-2 text-xs font-bold select-none sm:text-sm;
+  }
+
+  .prose-custom :global(.markdown-alert-content) {
+    @apply leading-relaxed text-text-secondary;
+  }
+
+  .prose-custom :global(.markdown-alert-content > p) {
+    @apply my-1 text-text-secondary;
+  }
+
+  .prose-custom :global(.markdown-alert-content > *:first-child) {
+    @apply mt-0!;
+  }
+
+  .prose-custom :global(.markdown-alert-content > *:last-child) {
+    @apply mb-0!;
+  }
+
+  .prose-custom :global(.markdown-alert-note) {
+    @apply border-(--color-security) bg-security-subtle text-(--color-body);
+  }
+  .prose-custom :global(.markdown-alert-note .markdown-alert-title) {
+    @apply text-(--color-security);
+  }
+
+  .prose-custom :global(.markdown-alert-tip) {
+    @apply border-(--color-success) bg-(--color-success-subtle) text-(--color-body);
+  }
+  .prose-custom :global(.markdown-alert-tip .markdown-alert-title) {
+    @apply text-(--color-success);
+  }
+
+  .prose-custom :global(.markdown-alert-important) {
+    @apply border-(--color-copilot) bg-copilot-subtle text-(--color-body);
+  }
+  .prose-custom :global(.markdown-alert-important .markdown-alert-title) {
+    @apply text-(--color-copilot);
+  }
+
+  .prose-custom :global(.markdown-alert-warning) {
+    @apply border-(--color-warning) bg-warning-subtle text-(--color-body);
+  }
+  .prose-custom :global(.markdown-alert-warning .markdown-alert-title) {
+    @apply text-(--color-warning-strong);
+  }
+
+  .prose-custom :global(.markdown-alert-caution) {
+    @apply border-(--color-danger) bg-danger-subtle text-(--color-body);
+  }
+  .prose-custom :global(.markdown-alert-caution .markdown-alert-title) {
+    @apply text-(--color-danger);
+  }
+  .prose-custom > :global(*:first-child) {
+    @apply mt-0!;
+  }
+</style>

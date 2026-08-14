@@ -5,17 +5,24 @@ import type {RequestHandler} from './$types'
 
 import {fetchAuthorProfile} from '$lib/author'
 
-const SITE_URL = 'https://fkp.my.id'
-const FEED_TITLE = 'fkp.my.id — Blog'
-
-export const GET: RequestHandler = async ({fetch}) => {
-  const authorProfile = await fetchAuthorProfile(supabase)
+export const GET: RequestHandler = async ({fetch, url}) => {
+  const authorProfile = await fetchAuthorProfile(supabase, {includeEmail: true})
   const AUTHOR_NAME = authorProfile?.name || ''
-  const AUTHOR_EMAIL = authorProfile?.email || 'contact@fkp.my.id'
+  const AUTHOR_EMAIL = authorProfile?.email || ''
   const FEED_SUBTITLE = authorProfile?.bio || ''
 
+  const rawSiteUrl = authorProfile?.siteUrl || url.origin
+  const SITE_URL = rawSiteUrl.replace(/\/$/, '')
+  let domain: string
+  try {
+    domain = new URL(SITE_URL).hostname
+  } catch {
+    domain = url.hostname
+  }
+  const FEED_TITLE = `${domain} — Blog`
+
   const {data: posts} = await supabase
-    .from('posts')
+    .from('db_posts')
     .select('id, title, slug, excerpt, created_at, storage_path')
     .eq('published', true)
     .order('created_at', {ascending: false})
@@ -73,7 +80,7 @@ ${enriched
     post => `  <entry>
     <title>${escapeXml(post.title)}</title>
     <link href="${SITE_URL}/blog/${escapeXml(post.slug)}" rel="alternate" type="text/html"/>
-    <link href="${SITE_URL}/api/blog/${escapeXml(post.slug)}?format=md" rel="alternate" type="text/markdown"/>
+    <link href="${SITE_URL}/api/v1/blog/${escapeXml(post.slug)}?format=md" rel="alternate" type="text/markdown"/>
     <id>urn:uuid:${post.id}</id>
     <published>${new Date(post.created_at).toISOString()}</published>
     <updated>${new Date(post.created_at).toISOString()}</updated>

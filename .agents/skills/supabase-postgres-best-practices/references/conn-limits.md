@@ -5,6 +5,8 @@ impactDescription: Prevent database crashes and memory exhaustion
 tags: connections, max-connections, limits, stability
 ---
 
+<!-- @format -->
+
 ## Set Appropriate Connection Limits
 
 Too many connections exhaust memory and degrade performance. Set limits based on available resources.

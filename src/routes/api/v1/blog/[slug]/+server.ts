@@ -11,7 +11,7 @@ export const GET: RequestHandler = async ({params, url, request, fetch}) => {
   const {slug: idOrSlug} = params
   const isUuid = UUID_REGEX.test(idOrSlug)
 
-  let query = supabase.from('posts').select('*').eq('published', true)
+  let query = supabase.from('db_posts').select('*').eq('published', true)
 
   if (isUuid) {
     query = query.eq('id', idOrSlug)
@@ -22,7 +22,11 @@ export const GET: RequestHandler = async ({params, url, request, fetch}) => {
   const {data: post, error: dbErr} = await query.maybeSingle()
 
   if (dbErr || !post) {
-    throw error(404, 'Blog post not found')
+    throw error(404, {
+      message: 'Blog post not found',
+      code: 'BLOG_POST_NOT_FOUND',
+      details: `No blog post exists with ${isUuid ? 'id' : 'slug'} '${idOrSlug}'.`
+    })
   }
 
   // Fetch comments count and views count
@@ -30,7 +34,7 @@ export const GET: RequestHandler = async ({params, url, request, fetch}) => {
   let viewsCount = 0
   try {
     const {count: cCount} = await supabase
-      .from('comments')
+      .from('db_comments')
       .select('*', {count: 'exact', head: true})
       .eq('post_id', post.id)
       .eq('is_approved', true)
@@ -100,7 +104,6 @@ ${rawMarkdown || post.excerpt || ''}
       published: post.published,
       created_at: post.created_at,
       updated_at: post.updated_at || post.created_at,
-      banner_path: post.banner_path,
       comment_count: commentCount,
       views_count: viewsCount,
       content: rawMarkdown

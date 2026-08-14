@@ -2,10 +2,6 @@
 
 import {marked} from 'marked'
 
-/**
- * Transforms GitHub Flavored Markdown blockquote alerts ([!NOTE], [!TIP], [!IMPORTANT], [!WARNING], [!CAUTION])
- * into styled GitHub callout alert boxes.
- */
 export function parseMarkdownAlerts(html: string): string {
   if (!html) return ''
 
@@ -44,10 +40,82 @@ export function parseMarkdownAlerts(html: string): string {
   )
 }
 
-/**
- * Parses markdown text to HTML and applies GitHub alert transformations.
- */
 export async function renderMarkdown(markdown: string): Promise<string> {
   const rawHtml = await marked.parse(markdown)
   return parseMarkdownAlerts(rawHtml)
+}
+
+export function injectHeadingIds(html: string): string {
+  let index = 0
+  const usedIds = new Set<string>()
+
+  return html.replace(
+    /<h([23])([^>]*)>(.*?)<\/h\1>/gi,
+    (match, level, attrs, content) => {
+      if (attrs.includes('id=')) {
+        const idMatch = attrs.match(/id="([^"]*)"/)
+        if (idMatch) {
+          usedIds.add(idMatch[1])
+        }
+        return match
+      }
+
+      const text = content.replace(/<[^>]*>/g, '')
+      const baseId =
+        text ?
+          text
+            .toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .trim()
+        : `heading-${index++}`
+
+      let id = baseId
+      let counter = 1
+      while (usedIds.has(id)) {
+        id = `${baseId}-${counter++}`
+      }
+      usedIds.add(id)
+
+      return `<h${level}${attrs} id="${id}">${content}</h${level}>`
+    }
+  )
+}
+
+export interface HeadingItem {
+  id: string
+  text: string
+  level: number
+}
+
+function decodeHtmlEntities(str: string): string {
+  return str
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+}
+
+export function extractHeadings(html: string): HeadingItem[] {
+  const headings: HeadingItem[] = []
+  const headingRegex = /<h([23])\s+[^>]*id="([^"]*)"[^>]*>(.*?)<\/h\1>/gi
+  let match
+  while ((match = headingRegex.exec(html)) !== null) {
+    const level = parseInt(match[1], 10)
+    const id = match[2]
+    const text = decodeHtmlEntities(match[3].replace(/<[^>]*>/g, '').trim())
+    headings.push({id, text, level})
+  }
+  return headings
+}
+
+export async function prepareMarkdownPage(
+  markdown: string
+): Promise<{html: string; headings: HeadingItem[]}> {
+  const rawHtml = await renderMarkdown(markdown)
+  const html = injectHeadingIds(rawHtml)
+  const headings = extractHeadings(html)
+  return {html, headings}
 }

@@ -12,19 +12,23 @@
 
   interface Props {
     headings: HeadingItem[]
+    collapsible?: boolean
+    defaultCollapsed?: boolean
     class?: string
   }
 
-  let {headings = [], class: className = ''}: Props = $props()
+  let {
+    headings = [],
+    collapsible = false,
+    defaultCollapsed = false,
+    class: className = ''
+  }: Props = $props()
 
   let activeHeadingId = $state('')
   let indicatorTop = $state(0)
   let indicatorHeight = $state(0)
   let isIndicatorVisible = $state(false)
-  let isStretching = $state(false)
   let tocListEl = $state<HTMLUListElement | null>(null)
-  let railEl = $state<HTMLDivElement | null>(null)
-  let isDraggingRail = $state(false)
 
   // While true, the scrollspy is told to trust the manually-set active
   // heading instead of clearing it — otherwise a heading close to the top
@@ -57,48 +61,14 @@
     })
     pushState(`#${id}`, {})
     activeHeadingId = id
-    updateIndicatorPos(id, false)
-  }
-
-  function scrollToNearestHeading(clientY: number, instant = false) {
-    if (!tocListEl || headings.length === 0) return
-    const links = headings
-      .map(h => {
-        const link = tocListEl?.querySelector(
-          `[href="#${h.id}"]`
-        ) as HTMLElement | null
-        if (!link) return null
-        const rect = link.getBoundingClientRect()
-        return {id: h.id, center: rect.top + rect.height / 2}
-      })
-      .filter((l): l is {id: string; center: number} => l !== null)
-
-    if (links.length === 0) return
-
-    let nearest = links[0]
-    let nearestDist = Math.abs(clientY - nearest.center)
-    for (const link of links) {
-      const dist = Math.abs(clientY - link.center)
-      if (dist < nearestDist) {
-        nearest = link
-        nearestDist = dist
-      }
-    }
-    navigateToHeading(nearest.id, instant)
-  }
-
-  function handleRailPointerDown(e: MouseEvent) {
-    isDraggingRail = true
-    scrollToNearestHeading(e.clientY, true)
+    updateIndicatorPos(id)
   }
 
   function updateIndicatorPos(
     id: string,
-    stretching = false,
     forcedTop?: number,
     forcedHeight?: number
   ) {
-    isStretching = stretching
     if (!tocListEl) return
     const activeEl = tocListEl.querySelector(`[href="#${id}"]`) as HTMLElement
     if (activeEl) {
@@ -115,9 +85,7 @@
     if (headings.length === 0) return
 
     let headingObserver: IntersectionObserver | null = null
-    let scrollTimeout: ReturnType<typeof setTimeout>
     let rafId: number | null = null
-    let lastScrollY = window.scrollY
 
     const elements = headings
       .map(h => document.getElementById(h.id))
@@ -127,8 +95,6 @@
       if (isPinnedByClick) return
       if (!tocListEl || headings.length === 0) return
       const scrollY = window.scrollY
-      const isScrollingDown = scrollY > lastScrollY
-      lastScrollY = scrollY
 
       const tocLinks = headings
         .map(h => {
@@ -173,74 +139,12 @@
       }
 
       const hCurrent = headingPositions[currentIndex]
-      const hNext = headingPositions[currentIndex + 1]
       const lCurrent = tocLinks.find(l => l.id === hCurrent.id)
-      const lNext = hNext ? tocLinks.find(l => l.id === hNext.id) : null
 
       if (!lCurrent) return
 
-      if (!hNext || !lNext) {
-        activeHeadingId = hCurrent.id
-        updateIndicatorPos(hCurrent.id, false, lCurrent.top, lCurrent.height)
-        return
-      }
-
-      const segDistance = hNext.top - hCurrent.top
-      if (segDistance <= 0) {
-        activeHeadingId = hCurrent.id
-        updateIndicatorPos(hCurrent.id, false, lCurrent.top, lCurrent.height)
-        return
-      }
-
-      const rawProgress =
-        (scrollY - (hCurrent.top - viewportOffset)) / segDistance
-      const progress = Math.max(0, Math.min(1, rawProgress))
-
-      activeHeadingId = progress >= 0.5 ? hNext.id : hCurrent.id
-
-      if (progress > 0.08 && progress < 0.92) {
-        const stretchRatio = (progress - 0.08) / 0.84
-        if (isScrollingDown) {
-          const calcTop = lCurrent.top
-          const currentBottom = lCurrent.top + lCurrent.height
-          const targetBottom = lNext.top + lNext.height
-          const calcBottom =
-            currentBottom + (targetBottom - currentBottom) * stretchRatio
-          const calcHeight = calcBottom - calcTop
-          updateIndicatorPos(activeHeadingId, true, calcTop, calcHeight)
-        } else {
-          const calcBottom = lNext.top + lNext.height
-          const currentTop = lNext.top
-          const targetTop = lCurrent.top
-          const calcTop =
-            currentTop - (currentTop - targetTop) * (1 - stretchRatio)
-          const calcHeight = calcBottom - calcTop
-          updateIndicatorPos(activeHeadingId, true, calcTop, calcHeight)
-        }
-      } else {
-        const targetLink = progress >= 0.5 ? lNext : lCurrent
-        updateIndicatorPos(
-          activeHeadingId,
-          false,
-          targetLink.top,
-          targetLink.height
-        )
-      }
-
-      if (scrollTimeout) clearTimeout(scrollTimeout)
-      scrollTimeout = setTimeout(() => {
-        if (activeHeadingId) {
-          const activeLink = tocLinks.find(l => l.id === activeHeadingId)
-          if (activeLink) {
-            updateIndicatorPos(
-              activeHeadingId,
-              false,
-              activeLink.top,
-              activeLink.height
-            )
-          }
-        }
-      }, 150)
+      activeHeadingId = hCurrent.id
+      updateIndicatorPos(hCurrent.id, lCurrent.top, lCurrent.height)
     }
 
     const handleScroll = () => {
@@ -253,35 +157,13 @@
 
     window.addEventListener('scroll', handleScroll, {passive: true})
 
-    let dragRafId: number | null = null
-    let pendingDragY: number | null = null
-
-    const handleRailDrag = (e: MouseEvent) => {
-      if (!isDraggingRail) return
-      pendingDragY = e.clientY
-      if (dragRafId !== null) return
-      dragRafId = requestAnimationFrame(() => {
-        dragRafId = null
-        if (pendingDragY !== null) scrollToNearestHeading(pendingDragY, true)
-      })
-    }
-    const handleRailDragEnd = () => {
-      isDraggingRail = false
-      if (dragRafId !== null) {
-        cancelAnimationFrame(dragRafId)
-        dragRafId = null
-      }
-    }
-    window.addEventListener('mousemove', handleRailDrag)
-    window.addEventListener('mouseup', handleRailDragEnd)
-
     headingObserver = new IntersectionObserver(
       entries => {
         if (isPinnedByClick) return
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             activeHeadingId = entry.target.id
-            updateIndicatorPos(entry.target.id, false)
+            updateIndicatorPos(entry.target.id)
           }
         })
       },
@@ -292,12 +174,8 @@
 
     return () => {
       window.removeEventListener('scroll', handleScroll)
-      window.removeEventListener('mousemove', handleRailDrag)
-      window.removeEventListener('mouseup', handleRailDragEnd)
       headingObserver?.disconnect()
-      if (scrollTimeout) clearTimeout(scrollTimeout)
       if (rafId !== null) cancelAnimationFrame(rafId)
-      if (dragRafId !== null) cancelAnimationFrame(dragRafId)
     }
   })
   function formatHeadingText(text: string): string {
@@ -323,7 +201,7 @@
   <nav
     aria-label="Table of contents"
     class={cn(
-      'flex flex-col rounded-sm border border-border-subtle bg-surface-card/30 p-4 shadow-xs backdrop-blur-xl select-none',
+      'flex flex-col rounded-sm glass-card p-4 select-none',
       className
     )}>
     <h3
@@ -333,25 +211,12 @@
 
     <div class="relative min-h-0 overflow-y-auto pl-3">
       <div
-        bind:this={railEl}
-        onmousedown={handleRailPointerDown}
-        role="scrollbar"
-        aria-controls="toc-list"
-        aria-orientation="vertical"
-        aria-valuenow={0}
-        tabindex="-1"
-        class="absolute top-0 bottom-0 left-0 w-1.5 cursor-pointer rounded-sm bg-border-subtle/40">
+        class="pointer-events-none absolute top-0 bottom-0 left-0 w-0.5 bg-border-subtle/40">
       </div>
 
       {#if isIndicatorVisible}
         <div
-          onmousedown={handleRailPointerDown}
-          class="absolute top-[var(--indicator-top)] left-0 h-[var(--indicator-height)] w-1.5 rounded-sm bg-copilot shadow-xs transition-[top,height] {(
-            isStretching || isDraggingRail
-          ) ?
-            'duration-[120ms] ease-out'
-          : 'duration-[600ms] ease-in-out'} {isDraggingRail ? 'cursor-grabbing'
-          : 'cursor-grab'}"
+          class="pointer-events-none absolute top-(--indicator-top) left-0 h-(--indicator-height) w-0.5 bg-copilot shadow-xs"
           style="--indicator-top: {indicatorTop}px; --indicator-height: {indicatorHeight}px;"
           aria-hidden="true">
         </div>
@@ -364,10 +229,9 @@
         role="list">
         {#each headings as heading, index (heading.id + '-' + index)}
           {@const isActive = activeHeadingId === heading.id}
+          {@const isSub = heading.level > 2}
           {@const hasTopGap = index !== 0 && heading.level <= 2}
-          <li
-            class="pl-[var(--toc-indent)] text-xs {hasTopGap ? 'mt-1' : ''}"
-            style="--toc-indent: {(heading.level - 2) * 16}px;">
+          <li class="text-xs {hasTopGap ? 'mt-1' : ''}">
             <a
               href="#{heading.id}"
               onclick={e => {
@@ -375,12 +239,25 @@
                 navigateToHeading(heading.id)
               }}
               aria-current={isActive ? 'true' : undefined}
-              class="group relative block rounded-sm py-0.5 pr-2 leading-snug transition-colors duration-300 ease-in-out hover:text-copilot {(
+              class="-ml-3 flex items-start rounded-r-xs py-0.5 pr-2 leading-snug transition-colors duration-150 ease-in-out hover:text-copilot {(
                 isActive
               ) ?
-                'font-semibold text-copilot'
-              : 'font-normal text-text-secondary'}">
-              <span>{@html formatHeadingText(heading.text)}</span>
+                'bg-copilot/10 font-semibold text-copilot'
+              : 'font-normal text-text-secondary hover:bg-surface-hover/30'}"
+              style="padding-left: {isSub ?
+                `${6 + (heading.level - 3) * 10}px`
+              : '0.75rem'};">
+              {#if isSub}
+                <span
+                  class="mt-[0.55em] mr-1.5 inline-block h-0.5 w-3 shrink-0 rounded-full select-none {(
+                    isActive
+                  ) ?
+                    'bg-copilot/60'
+                  : 'bg-border-subtle/80'}"
+                  aria-hidden="true"></span>
+              {/if}
+              <span class="min-w-0 grow"
+                >{@html formatHeadingText(heading.text)}</span>
             </a>
           </li>
         {/each}

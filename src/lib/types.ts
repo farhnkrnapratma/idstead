@@ -43,13 +43,28 @@ export interface Comment {
   created_at: string
 }
 
+export interface ProjectLanguage {
+  name: string
+  percent: number
+  color: string
+}
+
 export interface Project {
   name: string
+  fullName: string
   desc: string
   tags: string[]
   url: string
+  cloneUrl: string
+  sshUrl: string
+  zipUrl: string
   lang?: string
   stars: number
+  forks: number
+  branches: number
+  commits: number
+  languages: ProjectLanguage[]
+  pushedAt: string | null
   licenseName: string | null
   licenseUrl: string | null
 }

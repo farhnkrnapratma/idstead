@@ -1,10 +1,6 @@
 /** @format */
 
 import type {RequestHandler} from './$types'
-// Bundled at build time via Vite's `?raw` import - `node:fs` reads of source
-// files don't resolve against the original repo tree on Cloudflare's
-// edge/worker runtime the way they do under local `vite dev`/Node, so the
-// previous readFile-at-request-time approach silently failed in production.
 import searchSource from '../../../api/v1/search/+server.ts?raw'
 import commentsSource from '../../../api/v1/blog/comments/+server.ts?raw'
 import viewsSource from '../../../api/v1/blog/views/+server.ts?raw'
@@ -42,7 +38,7 @@ export const GET: RequestHandler = async () => {
         name: 'comments',
         type: 'skill-md',
         description:
-          'GET /api/v1/blog/comments?postId=uuid returns approved comments for a post (postId omitted returns recent approved comments site-wide). POST /api/v1/blog/comments with {"postId": "uuid", "content": "string", "turnstileToken": "string", "authorName": "string", "isAnonymous": boolean, "parentId": "uuid|null"} submits a new comment; authorName is required unless isAnonymous is true, and turnstileToken (a Cloudflare Turnstile response token) is always required. No login required — comments are gated by Turnstile and moderated automatically, and may be held for approval.',
+          'GET /api/v1/blog/comments?postId=uuid returns approved comments for a post (postId omitted returns recent approved comments site-wide). Read-only — this API does not accept comment submissions.',
         url: 'https://fkp.my.id/api/v1/blog/comments',
         digest: commentsDigest
       },
@@ -50,7 +46,7 @@ export const GET: RequestHandler = async () => {
         name: 'views',
         type: 'skill-md',
         description:
-          'Record a page view (POST /api/v1/blog/views with {"postId": "string"}) or retrieve view counts (GET /api/v1/blog/views?postId=string).',
+          'Retrieve view counts (GET /api/v1/blog/views?postId=string). Read-only — this API does not record views.',
         url: 'https://fkp.my.id/api/v1/blog/views',
         digest: viewsDigest
       }

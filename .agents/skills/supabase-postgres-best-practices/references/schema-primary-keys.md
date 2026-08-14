@@ -5,10 +5,11 @@ impactDescription: Better index locality, reduced fragmentation
 tags: primary-key, identity, uuid, serial, schema
 ---
 
+<!-- @format -->
+
 ## Select Optimal Primary Key Strategy
 
-Primary key choice affects insert performance, index size, and replication
-efficiency.
+Primary key choice affects insert performance, index size, and replication efficiency.
 
 **Incorrect (problematic PK choices):**
 
@@ -50,12 +51,8 @@ create table events (
 Guidelines:
 
 - Single database: `bigint identity` (sequential, 8 bytes, SQL-standard)
-- Distributed/exposed IDs: UUIDv7 (requires pg_uuidv7) or ULID (time-ordered, no
-  fragmentation)
-- `serial` works but `identity` is SQL-standard and preferred for new
-  applications
-- Avoid random UUIDs (v4) as primary keys on large tables (causes index
-  fragmentation)
+- Distributed/exposed IDs: UUIDv7 (requires pg_uuidv7) or ULID (time-ordered, no fragmentation)
+- `serial` works but `identity` is SQL-standard and preferred for new applications
+- Avoid random UUIDs (v4) as primary keys on large tables (causes index fragmentation)
 
-Reference:
-[Identity Columns](https://www.postgresql.org/docs/current/sql-createtable.html#SQL-CREATETABLE-PARMS-GENERATED-IDENTITY)
+Reference: [Identity Columns](https://www.postgresql.org/docs/current/sql-createtable.html#SQL-CREATETABLE-PARMS-GENERATED-IDENTITY)

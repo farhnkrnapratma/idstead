@@ -5,6 +5,8 @@ impactDescription: 10x throughput for worker queues
 tags: skip-locked, queue, workers, concurrency
 ---
 
+<!-- @format -->
+
 ## Use SKIP LOCKED for Non-Blocking Queue Processing
 
 When multiple workers process a queue, SKIP LOCKED allows workers to process different rows without waiting.

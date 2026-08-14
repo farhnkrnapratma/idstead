@@ -102,7 +102,7 @@
     isSubmitting = true
 
     try {
-      const res = await fetch('/api/v1/admin/login', {
+      const res = await fetch('/api/internal/admin/login', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
@@ -144,7 +144,7 @@
 
 <svelte:head>
   <script
-    src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+    src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
     async
     defer></script>
 </svelte:head>
@@ -154,10 +154,10 @@
 <main
   id="main-content"
   class="relative flex min-h-dvh flex-col items-center justify-center font-sans">
-  <div class="flex w-full max-w-sm items-center justify-center px-6">
+  <div class="flex w-full max-w-md items-center justify-center px-4 sm:px-6">
     <Card
       variant="glass"
-      class="p-5">
+      class="w-full overflow-visible p-5 sm:p-6">
       <div class="mb-4 flex flex-col items-center text-center select-none">
         <div class="flex items-center gap-2">
           <i
@@ -173,7 +173,7 @@
       <form
         novalidate
         onsubmit={handleLogin}
-        class="flex flex-col gap-2.5">
+        class="flex w-full flex-col gap-2.5">
         <FormField
           id="login-email"
           label="Email"
@@ -205,49 +205,47 @@
           hideAsterisk
           error={errors.password}
           valid={valid.password}>
-          <div class="relative flex items-center">
-            <Input
-              type={showPassword ? 'text' : 'password'}
-              id="login-pass"
-              placeholder="••••••••"
-              autocomplete="current-password"
-              bind:value={password}
-              error={!!errors.password}
-              valid={valid.password}
-              oninput={() => {
-                errors.password = ''
-                valid.password = false
-                validatePasswordField()
-              }}
-              aria-required="true"
-              aria-invalid={!!errors.password}
-              class="pr-10" />
-            <div class="absolute right-1">
+          <Input
+            type={showPassword ? 'text' : 'password'}
+            id="login-pass"
+            placeholder="••••••••"
+            autocomplete="current-password"
+            bind:value={password}
+            error={!!errors.password}
+            valid={valid.password}
+            oninput={() => {
+              errors.password = ''
+              valid.password = false
+              validatePasswordField()
+            }}
+            aria-required="true"
+            aria-invalid={!!errors.password}>
+            {#snippet trailingSlot()}
               <IconButton
                 ariaLabel={showPassword ? 'Hide password' : 'Show password'}
                 variant="ghost"
-                size="sm"
+                size="md"
                 onclick={() => (showPassword = !showPassword)}>
                 <i
-                  class="bi {showPassword ? 'bi-eye-slash' : (
-                    'bi-eye'
-                  )} text-base"
+                  class="bi {showPassword ? 'bi-eye-slash' : 'bi-eye'}"
                   aria-hidden="true"></i>
               </IconButton>
-            </div>
-          </div>
+            {/snippet}
+          </Input>
         </FormField>
 
-        <div
-          bind:this={turnstileEl}
-          class="cf-turnstile"
-          data-action="turnstile-spin-v2"
-          use:turnstileWidget={{sitekey: turnstileSiteKey}}>
+        <div class="flex w-full items-center justify-center py-0.5">
+          <div
+            bind:this={turnstileEl}
+            class="min-h-16.25 w-full [&_iframe]:border-0!"
+            data-action="turnstile-spin-v2"
+            use:turnstileWidget={{sitekey: turnstileSiteKey, size: 'flexible'}}>
+          </div>
         </div>
 
         <Button
-          type="submit"
-          variant="primary"
+          htmlType="submit"
+          type="Primary"
           size="lg"
           isLoading={isSubmitting}
           class="mt-2 w-full">

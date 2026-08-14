@@ -13,16 +13,26 @@
 
 <div
   class={cn(
-    'flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs font-medium text-text-muted',
+    'flex w-full max-w-full flex-wrap items-center justify-center gap-x-4 gap-y-2 font-sans text-xs font-medium text-text-muted md:flex-nowrap',
     className
   )}>
   <span class="inline-flex shrink-0 items-center text-text-muted">
     &copy; {new Date().getFullYear()}{name ? ` ${name}.` : '.'}
   </span>
   <a
+    href="/terms"
+    class="inline-flex shrink-0 items-center transition-colors hover:text-text-primary focus-visible:text-text-primary focus-visible:outline-none">
+    Terms
+  </a>
+  <a
     href="/privacy"
     class="inline-flex shrink-0 items-center transition-colors hover:text-text-primary focus-visible:text-text-primary focus-visible:outline-none">
     Privacy
+  </a>
+  <a
+    href="/security"
+    class="inline-flex shrink-0 items-center transition-colors hover:text-text-primary focus-visible:text-text-primary focus-visible:outline-none">
+    Security
   </a>
   <button
     type="button"

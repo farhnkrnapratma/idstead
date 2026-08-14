@@ -2,6 +2,7 @@
 <script lang="ts">
   import {cn} from '../utils/cn'
   import ThemeSelect from '../components/filter/ThemeSelect.svelte'
+  import AccessibilitySelect from '../components/filter/AccessibilitySelect.svelte'
   import {themeStore} from '../stores/themeStore.svelte'
   import {sanitizeIconClass, type SocialLink} from '../author'
   import FooterLegalRow from './FooterLegalRow.svelte'
@@ -64,11 +65,10 @@
 
 <footer
   class={cn(
-    'relative z-10 mx-auto mt-auto w-full max-w-full overflow-hidden px-4 pt-0 pb-20 font-sans text-xs text-text-muted sm:px-6 md:w-[80%] md:pb-20 lg:w-[60%] lg:pb-6 xl:w-[50%]',
+    'relative z-10 mx-auto mt-auto w-full max-w-full overflow-hidden px-6 pt-0 pb-20 font-sans text-xs text-text-muted md:w-[80%] md:pb-20 lg:w-[65%] lg:pb-6 xl:w-[55%]',
     className
   )}>
-  <div
-    class="rounded-sm border border-border-subtle/80 bg-surface-card/60 p-4 shadow-2xs sm:p-6">
+  <div class="rounded-sm glass-card p-4 sm:p-6">
     <div class="grid grid-cols-1 gap-x-0 gap-y-1 md:grid-cols-12">
       <div class="md:col-span-12">
         <div class="flex min-w-0 flex-col gap-0.5">
@@ -148,13 +148,14 @@
         {/if}
 
         <div
-          class="relative w-fit {resolvedSocials.length === 0 ?
+          class="flex items-center gap-2 {resolvedSocials.length === 0 ?
             'ml-auto'
           : ''}">
           <ThemeSelect
             theme={themeStore.current}
             onThemeChange={themeStore.apply}
             dropdownDirection="up" />
+          <AccessibilitySelect dropdownDirection="up" />
         </div>
       </div>
     </div>

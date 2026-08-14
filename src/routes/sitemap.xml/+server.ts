@@ -7,7 +7,7 @@ const SITE_URL = 'https://fkp.my.id'
 
 export const GET: RequestHandler = async () => {
   const {data: posts} = await supabase
-    .from('posts')
+    .from('db_posts')
     .select('slug, created_at, title')
     .eq('published', true)
     .order('created_at', {ascending: false})

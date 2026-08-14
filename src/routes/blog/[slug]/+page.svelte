@@ -16,11 +16,14 @@
   import {
     TopNav,
     Button,
+    Card,
     Checkbox,
+    ImageWithSkeleton,
     CommentThread,
     EmptyState,
     StatusBanner,
     FormField,
+    Input,
     Textarea,
     FooterSection,
     TableOfContents,
@@ -34,7 +37,10 @@
     ArticleHeader,
     ShareDialog,
     ArticleMeta,
-    HelpfulBlock
+    HelpfulBlock,
+    formatAbsoluteDate,
+    Breadcrumb,
+    ConsentNotice
   } from '$lib'
   import {pushState} from '$app/navigation'
   import {page} from '$app/state'
@@ -181,7 +187,7 @@
 
     ;(async () => {
       try {
-        await fetch('/api/v1/blog/views', {
+        await fetch('/api/internal/blog/views', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({postId: post.id})
@@ -353,7 +359,7 @@
     feedbackMessage = null
 
     try {
-      const res = await fetch('/api/v1/blog/comments', {
+      const res = await fetch('/api/internal/blog/comments', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
@@ -397,8 +403,6 @@
       }
     } finally {
       isSubmitting = false
-      // Tokens are single-use; always reset so a retry gets a fresh one
-      // instead of being rejected as timeout-or-duplicate.
       resetTurnstile(turnstileEl)
     }
   }
@@ -511,32 +515,41 @@
   id="main-content"
   class="flex min-h-[calc(100vh-3.75rem)] flex-col pt-15 font-sans">
   <div
-    class="relative mx-auto w-full max-w-7xl px-6 pt-9 pb-16 xl:grid xl:grid-cols-12 xl:gap-8">
+    class="relative mx-auto w-full px-6 pt-3 pb-16 sm:pt-4 md:w-[80%] lg:w-[65%] xl:w-[55%]">
     <aside
-      class="sticky top-24 hidden h-fit max-h-[calc(100vh-8rem)] self-start pt-6 select-none xl:col-span-3 xl:col-start-1 xl:block"
+      class="sticky top-18 hidden h-fit max-h-[calc(100vh-5.5rem)] flex-col gap-4 self-start select-none xl:float-left xl:-ml-64 xl:flex xl:w-56"
       aria-label="Table of contents">
       <TableOfContents
         {headings}
-        class="max-h-[calc(100vh-8rem)]" />
+        class="max-h-[calc(100vh-5.5rem)]" />
+      <HelpfulBlock
+        onVote={helpful => handleHelpfulness(helpful ? 'yes' : 'no')} />
     </aside>
 
-    <article
-      class="mx-auto flex w-full flex-col pt-4 md:w-[80%] lg:w-[50%] xl:col-span-6 xl:col-start-4 xl:mx-0 xl:w-auto">
-      <ArticleHeader
-        title={post.title}
-        excerpt={post.excerpt || ''}>
+    <article class="flex w-full flex-col">
+      <Breadcrumb
+        items={[
+          {label: 'Home', href: '/'},
+          {label: 'Blog', href: '/#blog'},
+          {label: post.title}
+        ]}
+        class="mb-3" />
+
+      <ArticleHeader title={post.title}>
         {#snippet meta()}
           <div class="flex w-full items-center justify-between gap-2">
             <ArticleMeta
               date={post.created_at}
+              updatedAt={post.updated_at}
               readingTime={formatReadTime(post.read_time)}
               commentsCount={comments.length}
               views={viewCount !== null ? viewCount : undefined} />
 
-            <div class="relative inline-block shrink-0 text-left">
+            <div class="relative z-20 inline-block shrink-0 text-left">
               <DropdownTrigger
                 ariaLabel="Copy options menu"
                 isOpen={showCopyMenu}
+                class="glass-card"
                 onclick={toggleCopyMenu}>
                 <span class="inline-flex items-center gap-1.5">
                   <i
@@ -549,43 +562,28 @@
               {#if showCopyMenu}
                 <button
                   type="button"
-                  class="fixed inset-0 z-40 cursor-default"
+                  class="fixed inset-0 z-30 cursor-default"
                   onclick={() => (showCopyMenu = false)}
                   aria-label="Close menu"></button>
 
                 <div
                   role="menu"
-                  class="absolute right-0 z-50 mt-1.5 min-w-40 overflow-hidden rounded-sm border border-border-subtle bg-surface-elevated/70 py-1 shadow-xl backdrop-blur-lg">
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onclick={copyBlogUrl}
-                    class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
-                    <i
-                      class="bi bi-link text-xs"
-                      aria-hidden="true"></i>
-                    <span>Copy Blog URL</span>
-                  </button>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onclick={copyBlogId}
-                    class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
-                    <i
-                      class="bi bi-hash text-xs"
-                      aria-hidden="true"></i>
-                    <span>Copy Blog ID</span>
-                  </button>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onclick={copyBlogMarkdown}
-                    class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
-                    <i
-                      class="bi bi-markdown-fill text-xs"
-                      aria-hidden="true"></i>
-                    <span>Copy as Markdown</span>
-                  </button>
+                  class="absolute top-[calc(100%+8px)] left-1/2 z-40 flex w-max min-w-40 -translate-x-1/2 flex-col rounded-sm glass-overlay p-0 shadow-xl">
+                  <div
+                    class="relative z-10 flex flex-col overflow-hidden rounded-sm py-0.5">
+                    {#each [{icon: 'bi-link', label: 'Copy Blog URL', onclick: copyBlogUrl}, {icon: 'bi-hash', label: 'Copy Blog ID', onclick: copyBlogId}, {icon: 'bi-markdown-fill', label: 'Copy as Markdown', onclick: copyBlogMarkdown}] as item (item.label)}
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onclick={item.onclick}
+                        class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
+                        <i
+                          class="bi {item.icon} text-xs"
+                          aria-hidden="true"></i>
+                        <span>{item.label}</span>
+                      </button>
+                    {/each}
+                  </div>
                 </div>
               {/if}
             </div>
@@ -593,64 +591,60 @@
         {/snippet}
       </ArticleHeader>
 
-      <TableOfContents
-        {headings}
-        class="mt-3 xl:hidden" />
+      <div class="mt-3 flex flex-col gap-3 xl:hidden">
+        <TableOfContents
+          {headings}
+          collapsible={true}
+          defaultCollapsed={true} />
+        <HelpfulBlock
+          onVote={helpful => handleHelpfulness(helpful ? 'yes' : 'no')} />
+      </div>
 
       <div class="prose-custom w-full">
         {@html html}
       </div>
 
-      <HelpfulBlock
-        onVote={helpful => handleHelpfulness(helpful ? 'yes' : 'no')} />
-
       <div class="mt-12 border-t border-border-subtle pt-8 select-none">
         <h3 class="mb-4 text-sm font-bold tracking-tight text-text-primary">
           Share this article
         </h3>
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <button
+        <div class="grid w-full grid-cols-5 gap-2">
+          <Button
+            type="Secondary"
+            size="sm"
+            leadingIcon="bi-link"
             onclick={copyToClipboard}
-            class="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-sm border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors select-none hover:bg-surface-hover hover:text-copilot"
-            aria-label="Copy link to clipboard">
-            <i
-              class="bi bi-link text-base leading-none select-none"
-              aria-hidden="true"></i>
-            <span class="hidden sm:inline">Copy link</span>
-          </button>
+            aria-label="Copy URL to clipboard"
+            class="w-full justify-center px-1 sm:px-3">
+            <span class="truncate">Copy URL</span>
+          </Button>
           {#each [{href: `https://twitter.com/intent/tweet?url=${encodeURIComponent(page.url.href)}&text=${encodeURIComponent(post.title)}`, icon: 'bi-twitter-x', label: 'Share on X (opens in a new tab)', text: 'X'}, {href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(page.url.href)}`, icon: 'bi-facebook', label: 'Share on Facebook (opens in a new tab)', text: 'Facebook'}, {href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(page.url.href)}`, icon: 'bi-linkedin', label: 'Share on LinkedIn (opens in a new tab)', text: 'LinkedIn'}, {href: `mailto:?subject=${encodeURIComponent(post.title)}&body=${encodeURIComponent(page.url.href)}`, icon: 'bi-envelope-fill', label: 'Share via email', text: 'Email'}] as item (item.text)}
-            <a
+            <Button
               href={item.href}
               target={item.href.startsWith('mailto') ? undefined : '_blank'}
               rel="noopener noreferrer"
-              class="inline-flex h-9 items-center justify-center gap-2 rounded-sm border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors select-none hover:bg-surface-hover hover:text-copilot"
-              aria-label={item.label}>
-              <i
-                class="bi {item.icon}"
-                aria-hidden="true"></i>
-              <span class="hidden sm:inline">{item.text}</span>
-            </a>
+              type="Secondary"
+              size="sm"
+              leadingIcon={item.icon}
+              aria-label={item.label}
+              class="w-full justify-center px-1 sm:px-3">
+              <span class="truncate">{item.text}</span>
+            </Button>
           {/each}
         </div>
       </div>
 
       {#if author}
-        <div
-          class="mt-8 flex w-full max-w-full flex-col items-center gap-5 overflow-hidden rounded-sm border border-border-subtle bg-surface-card/30 p-5 shadow-xs backdrop-blur-xl select-none sm:flex-row sm:items-start sm:p-6">
-          <div
-            class="relative h-20 w-20 shrink-0 animate-pulse overflow-hidden rounded-full border border-border-subtle bg-surface-card/60">
-            <img
-              src={author.avatar}
-              alt={author.name}
-              loading="lazy"
-              onload={e =>
-                (
-                  e.currentTarget.closest(
-                    '.animate-pulse'
-                  ) as HTMLElement | null
-                )?.classList.remove('animate-pulse')}
-              class="h-full w-full object-cover object-top" />
-          </div>
+        <Card
+          variant="default"
+          class="mt-8 flex w-full max-w-full flex-col items-center gap-5 select-none sm:flex-row sm:items-start">
+          <ImageWithSkeleton
+            src={author.avatar}
+            alt={author.name}
+            referrerpolicy="no-referrer"
+            rounded="rounded-full"
+            class="h-20 w-20 shrink-0 border border-border-subtle"
+            imgClass="object-top" />
           <div class="w-full min-w-0 flex-1 text-center sm:text-left">
             <h4
               class="px-1 text-base leading-snug font-bold text-text-primary sm:px-0">
@@ -686,7 +680,7 @@
               </div>
             {/if}
           </div>
-        </div>
+        </Card>
       {/if}
 
       {#if relatedPosts.length > 0}
@@ -698,31 +692,34 @@
           </h3>
           <div class="relative z-0 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {#each relatedPosts as related (related.id)}
-              <div
-                class="relative flex h-full w-full flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-5 text-left shadow-xs">
-                <div
-                  class="relative aspect-video w-full overflow-hidden rounded-sm border border-border-subtle select-none">
-                  {#if related.bannerPublicUrl && !failedRelatedBanners.has(related.id)}
-                    <img
-                      src={related.bannerPublicUrl}
-                      alt={related.title}
-                      loading="lazy"
-                      onerror={() => markRelatedBannerFailed(related.id)}
-                      class="block h-full w-full object-cover" />
-                  {:else}
-                    <div
-                      class="to-palette-purple/15 flex h-full w-full items-center justify-center bg-linear-to-br from-accent/15 select-none">
-                      <i
-                        class="bi bi-journal-text text-2xl text-copilot/50"
-                        aria-hidden="true"></i>
-                    </div>
-                  {/if}
-                </div>
+              <Card
+                class="relative flex h-full w-full flex-col gap-3 text-left">
+                {#if related.bannerPublicUrl && !failedRelatedBanners.has(related.id)}
+                  <ImageWithSkeleton
+                    src={related.bannerPublicUrl}
+                    alt={related.title}
+                    aspectRatio="aspect-video"
+                    fallbackIcon="bi bi-file-richtext-fill"
+                    onerror={() => markRelatedBannerFailed(related.id)}
+                    class="w-full border border-border-subtle" />
+                {:else}
+                  <div
+                    class="to-palette-purple/15 relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-sm border border-border-subtle bg-linear-to-br from-accent/15 select-none">
+                    <i
+                      class="bi bi-file-richtext-fill text-2xl text-copilot/50"
+                      aria-hidden="true"></i>
+                  </div>
+                {/if}
 
                 <div class="flex flex-1 flex-col gap-1 font-sans">
                   <div
-                    class="flex min-h-[1.25rem] w-full [scrollbar-width:none] flex-wrap items-center gap-x-1.5 overflow-x-auto font-sans text-[11px] font-medium whitespace-nowrap text-text-muted select-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                    class="flex min-h-5 w-full scrollbar-none flex-wrap items-center gap-x-1.5 overflow-x-auto font-sans text-xxs font-medium whitespace-nowrap text-text-muted select-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                     <RelativeTime date={related.created_at} />
+                    <span aria-hidden="true">&middot;</span>
+                    <span
+                      >Last updated {formatAbsoluteDate(
+                        related.updated_at || related.created_at
+                      )}</span>
                     <span aria-hidden="true">&middot;</span>
                     <span>{formatReadTime(related.read_time)}</span>
                     <span aria-hidden="true">&middot;</span>
@@ -742,21 +739,23 @@
                   </div>
                   {#if related.excerpt}
                     <p
-                      class="min-h-[6.5rem] text-sm leading-normal text-text-secondary">
+                      class="min-h-26 text-sm leading-normal text-text-secondary">
                       {related.excerpt}
                     </p>
                   {/if}
 
                   <div class="relative z-20 mt-auto flex flex-col gap-2 pt-2">
                     <hr class="border-border-subtle" />
-                    <a
+                    <Button
                       href="/blog/{related.slug}"
-                      class="hover:bg-copilot-hover active:bg-copilot-active inline-flex h-9 w-full cursor-pointer items-center justify-center rounded-sm bg-copilot px-4 text-xs font-semibold text-text-on-accent shadow-xs transition-all select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:text-sm">
+                      type="Primary"
+                      size="md"
+                      fullWidth>
                       Read post
-                    </a>
+                    </Button>
                   </div>
                 </div>
-              </div>
+              </Card>
             {/each}
           </div>
         </section>
@@ -777,8 +776,9 @@
         {/if}
 
         {#if !replyTo}
-          <div
-            class="mb-8 rounded-sm border border-border-subtle bg-surface-card/30 p-5 text-left shadow-xs backdrop-blur-xl transition-colors duration-300">
+          <Card
+            variant="glass"
+            class="mb-8 overflow-visible text-left">
             <div class="mb-4 select-none">
               <h3 class="text-sm font-bold text-text-primary">
                 Leave a comment
@@ -800,58 +800,29 @@
                 If checked, your name is hidden and your comment is posted as
                 Anonymous.
               </span>
-              <div class="flex flex-col gap-1">
-                <label
-                  for="comment-author"
-                  class="text-xs font-bold text-text-primary select-none">
-                  Name {#if !isAnonymous}<span
-                      aria-hidden="true"
-                      class="text-danger">*</span
-                    ><span class="sr-only">(required)</span>{/if}
-                </label>
-                <div class="w-full">
-                  <input
-                    type="text"
-                    id="comment-author"
-                    disabled={isAnonymous}
-                    aria-required={!isAnonymous}
-                    autocomplete="name"
-                    aria-invalid={!!errors.authorName}
-                    aria-describedby="comment-author-fb"
-                    placeholder={isAnonymous ? 'Anonymous' : 'Enter your name'}
-                    bind:value={authorName}
-                    oninput={() => {
-                      errors.authorName = ''
-                      valid.authorName = false
-                      validateAuthorName()
-                    }}
-                    class="w-full rounded-sm border border-border-subtle bg-surface px-3 py-1.5 text-sm text-text-primary transition-colors placeholder:text-text-muted/70 disabled:opacity-60"
-                    class:border-danger={errors.authorName}
-                    class:input-valid={valid.authorName && !isAnonymous} />
-                  <div
-                    id="comment-author-fb"
-                    aria-live="polite"
-                    class="mt-1 h-4 text-xs leading-none font-medium">
-                    {#if errors.authorName}
-                      <span
-                        role="alert"
-                        class="flex items-center gap-1 text-danger">
-                        <i
-                          class="bi bi-exclamation-circle-fill"
-                          aria-hidden="true"></i
-                        >{errors.authorName}
-                      </span>
-                    {:else if valid.authorName && !isAnonymous}
-                      <span class="flex items-center gap-1 text-copilot">
-                        <i
-                          class="bi bi-check-circle-fill"
-                          aria-hidden="true"></i
-                        >Looks good
-                      </span>
-                    {/if}
-                  </div>
-                </div>
-              </div>
+              <FormField
+                id="comment-author"
+                label="Name"
+                required={!isAnonymous}
+                error={errors.authorName}
+                valid={valid.authorName && !isAnonymous}>
+                <Input
+                  type="text"
+                  id="comment-author"
+                  disabled={isAnonymous}
+                  aria-required={!isAnonymous}
+                  autocomplete="name"
+                  aria-invalid={!!errors.authorName}
+                  placeholder={isAnonymous ? 'Anonymous' : 'Enter your name'}
+                  bind:value={authorName}
+                  error={!!errors.authorName}
+                  valid={valid.authorName && !isAnonymous}
+                  oninput={() => {
+                    errors.authorName = ''
+                    valid.authorName = false
+                    validateAuthorName()
+                  }} />
+              </FormField>
 
               <FormField
                 id="comment-msg"
@@ -878,15 +849,20 @@
 
               <div
                 bind:this={turnstileEl}
-                class="cf-turnstile"
+                class="cf-turnstile w-full [&_iframe]:border-0!"
                 data-action="turnstile-spin-v2"
-                use:turnstileWidget={{sitekey: turnstileSiteKey}}>
+                use:turnstileWidget={{
+                  sitekey: turnstileSiteKey,
+                  size: 'flexible'
+                }}>
               </div>
+
+              <ConsentNotice action="posting a comment" />
 
               <div class="mt-2 flex justify-end">
                 <Button
-                  type="submit"
-                  variant="primary"
+                  htmlType="submit"
+                  type="Primary"
                   size="md"
                   disabled={isSubmitting}
                   isLoading={isSubmitting}>
@@ -894,7 +870,7 @@
                 </Button>
               </div>
             </form>
-          </div>
+          </Card>
         {/if}
 
         {#if comments.length === 0}
@@ -934,7 +910,7 @@
                     Replying to {getCommentAuthor(comment)}
                   </p>
                   <Button
-                    variant="ghost"
+                    type="Ghost"
                     size="sm"
                     showEscHint
                     onclick={cancelReply}>Cancel</Button>
@@ -953,60 +929,31 @@
                     as Anonymous.
                   </span>
 
-                  <div class="flex flex-col gap-1">
-                    <label
-                      for="reply-author-{comment.id}"
-                      class="text-xs font-bold text-text-primary select-none">
-                      Name {#if !isAnonymous}<span
-                          aria-hidden="true"
-                          class="text-danger">*</span
-                        ><span class="sr-only">(required)</span>{/if}
-                    </label>
-                    <div class="w-full">
-                      <input
-                        type="text"
-                        id="reply-author-{comment.id}"
-                        disabled={isAnonymous}
-                        aria-required={!isAnonymous}
-                        autocomplete="name"
-                        aria-invalid={!!errors.authorName}
-                        aria-describedby="reply-author-fb-{comment.id}"
-                        placeholder={isAnonymous ? 'Anonymous' : (
-                          'Enter your name'
-                        )}
-                        bind:value={authorName}
-                        oninput={() => {
-                          errors.authorName = ''
-                          valid.authorName = false
-                          validateAuthorName()
-                        }}
-                        class="w-full rounded-sm border border-border-subtle bg-surface-base px-3 py-1.5 text-sm text-text-primary transition-colors placeholder:text-text-muted/70 disabled:opacity-60"
-                        class:border-danger={errors.authorName}
-                        class:input-valid={valid.authorName && !isAnonymous} />
-                      <div
-                        id="reply-author-fb-{comment.id}"
-                        aria-live="polite"
-                        class="mt-1 h-4 text-xs leading-none font-medium">
-                        {#if errors.authorName}
-                          <span
-                            role="alert"
-                            class="flex items-center gap-1 text-danger">
-                            <i
-                              class="bi bi-exclamation-circle-fill"
-                              aria-hidden="true"></i
-                            >{errors.authorName}
-                          </span>
-                        {:else if valid.authorName && !isAnonymous}
-                          <span class="flex items-center gap-1 text-copilot">
-                            <i
-                              class="bi bi-check-circle-fill"
-                              aria-hidden="true"></i
-                            >Looks good
-                          </span>
-                        {/if}
-                      </div>
-                    </div>
-                  </div>
+                  <FormField
+                    id="reply-author-{comment.id}"
+                    label="Name"
+                    required={!isAnonymous}
+                    error={errors.authorName}
+                    valid={valid.authorName && !isAnonymous}>
+                    <Input
+                      type="text"
+                      id="reply-author-{comment.id}"
+                      disabled={isAnonymous}
+                      aria-required={!isAnonymous}
+                      autocomplete="name"
+                      aria-invalid={!!errors.authorName}
+                      placeholder={isAnonymous ? 'Anonymous' : (
+                        'Enter your name'
+                      )}
+                      bind:value={authorName}
+                      error={!!errors.authorName}
+                      valid={valid.authorName && !isAnonymous}
+                      oninput={() => {
+                        errors.authorName = ''
+                        valid.authorName = false
+                        validateAuthorName()
+                      }} />
+                  </FormField>
 
                   <FormField
                     id="reply-msg-{comment.id}"
@@ -1033,15 +980,20 @@
 
                   <div
                     bind:this={turnstileEl}
-                    class="cf-turnstile"
+                    class="cf-turnstile w-full [&_iframe]:border-0!"
                     data-action="turnstile-spin-v2"
-                    use:turnstileWidget={{sitekey: turnstileSiteKey}}>
+                    use:turnstileWidget={{
+                      sitekey: turnstileSiteKey,
+                      size: 'flexible'
+                    }}>
                   </div>
+
+                  <ConsentNotice action="posting a reply" />
 
                   <div class="flex justify-end">
                     <Button
-                      type="submit"
-                      variant="primary"
+                      htmlType="submit"
+                      type="Primary"
                       size="sm"
                       disabled={isSubmitting}
                       isLoading={isSubmitting}>
@@ -1079,14 +1031,14 @@
   }}>
   {#snippet footer()}
     <Button
-      variant="secondary"
+      type="Secondary"
       size="md"
       showEscHint
       onclick={() => {
         showNoFeedbackDialog = false
       }}>Cancel</Button>
     <Button
-      variant="primary"
+      type="Primary"
       size="md"
       onclick={() => {
         showNoFeedbackDialog = false
@@ -1096,26 +1048,26 @@
 </Dialog>
 
 <style>
-  @reference '../../global.css';
+  @reference "../../global.css";
 
   .prose-custom :global(h1),
   .prose-custom :global(h2),
   .prose-custom :global(h3) {
-    @apply font-serif;
+    @apply font-sans;
   }
 
   .prose-custom {
     @apply font-sans text-[0.9rem] leading-[1.7] text-(--color-body);
     --color-heading: var(--color-gh-gray-6);
     --color-body: var(--color-gh-gray-5);
-    --color-link: var(--color-copilot);
+    --color-link: var(--color-gh-gray-5);
     --color-link-hover: var(--color-copilot);
   }
 
   :global(:root.dark) .prose-custom {
     --color-heading: var(--color-gh-gray-1);
     --color-body: var(--color-gh-gray-3);
-    --color-link: var(--color-copilot);
+    --color-link: var(--color-gh-gray-3);
     --color-link-hover: var(--color-copilot);
   }
 
@@ -1157,14 +1109,14 @@
   }
 
   .prose-custom :global(pre) {
-    @apply mt-6 mb-6 [scrollbar-width:none]! overflow-x-auto rounded-sm border border-adwaita-border bg-adwaita-hover px-3! py-2! font-mono text-[0.8rem] leading-relaxed break-normal! whitespace-pre! [-ms-overflow-style:none]!;
+    @apply mt-6 mb-6 scrollbar-none! overflow-x-auto rounded-sm border border-adwaita-border bg-adwaita-hover px-3! py-2! font-mono text-[0.8rem] leading-relaxed break-normal! whitespace-pre! [-ms-overflow-style:none]!;
   }
 
   /* When a line-number gutter sits to the left (see enhanceCodeBlocks), it
      already provides its own edge padding — pre's own left padding on top of
      that doubled the visual gap between the divider and the code text. */
   .prose-custom :global(pre[data-enhanced='true']) {
-    @apply pl-2!;
+    @apply pr-3.5! pl-2!;
   }
 
   .prose-custom :global(pre)::-webkit-scrollbar {
@@ -1178,14 +1130,18 @@
   }
 
   .prose-custom :global(pre code) {
-    @apply overflow-visible! border-0 bg-transparent p-0 font-mono text-[0.8rem] leading-relaxed break-normal! whitespace-pre! text-inherit;
+    @apply block! w-max! min-w-full! overflow-visible! border-0 bg-transparent py-0! pr-3.5! pl-0! font-mono text-[0.8rem] leading-relaxed break-normal! whitespace-pre! text-inherit;
   }
 
-  .prose-custom :global(a) {
-    @apply text-(--color-link) underline;
+  .prose-custom :global(.code-line) {
+    @apply block! w-full! pr-3.5!;
   }
 
-  .prose-custom :global(a):hover {
+  .prose-custom :global(a:not(.anchor-link)) {
+    @apply text-(--color-link) underline transition-colors;
+  }
+
+  .prose-custom :global(a:not(.anchor-link):hover) {
     @apply text-(--color-link-hover);
   }
 
@@ -1254,24 +1210,20 @@
   }
 
   .prose-custom :global(table) {
-    @apply my-6 w-full max-w-full overflow-hidden rounded-sm border border-border-subtle text-left text-xs shadow-2xs;
-    display: block;
-    overflow-x: auto;
+    @apply my-6 w-full max-w-full table-fixed overflow-hidden rounded-sm border border-border-subtle text-left text-xs shadow-2xs;
     border-collapse: separate;
     border-spacing: 0;
-    table-layout: auto;
   }
 
   .prose-custom :global(thead) {
     @apply border-b border-border-subtle bg-surface-hover/80 font-semibold tracking-wider text-text-primary uppercase;
   }
 
-  /* Headers always render centered regardless of the column's markdown
-     alignment marker (`align` presentational attribute) - only body cells
-     follow per-column alignment. */
   .prose-custom :global(th) {
     @apply px-2.5 py-2 text-center font-semibold text-text-primary;
-    white-space: nowrap;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    width: 1%;
   }
 
   .prose-custom :global(tbody tr) {
@@ -1282,15 +1234,16 @@
     @apply border-r border-border-subtle/40 px-2.5 py-1.5 text-left leading-relaxed text-text-secondary last:border-r-0;
     overflow-wrap: break-word;
     word-break: break-word;
+    width: 1%;
   }
 
   .prose-custom :global(td code),
   .prose-custom :global(th code) {
-    white-space: nowrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    white-space: normal;
   }
 
-  /* GFM table alignment markers (`---:`, `:---:`) - e.g. numeric/money
-     columns marked right-aligned in the source markdown. */
   .prose-custom :global(td[align='right']) {
     @apply text-right;
   }
@@ -1301,6 +1254,56 @@
 
   .prose-custom :global(hr) {
     @apply my-8 h-px border-0 bg-border-default;
+  }
+
+  .prose-custom :global(blockquote:not(.markdown-alert)) {
+    @apply my-6 rounded-l-none rounded-r-sm border-l-2 border-copilot bg-surface-hover/50 py-2.5 pr-4 pl-4 font-sans text-sm leading-relaxed text-text-secondary shadow-2xs;
+  }
+
+  .prose-custom :global(blockquote:not(.markdown-alert) p) {
+    @apply my-1 text-text-secondary;
+  }
+
+  .prose-custom :global(ul:has(input[type='checkbox'])),
+  .prose-custom :global(ol:has(input[type='checkbox'])) {
+    @apply list-none! pl-0!;
+  }
+
+  .prose-custom :global(li:has(input[type='checkbox'])),
+  .prose-custom :global(li.task-list-item) {
+    @apply flex! list-none! items-center! gap-2.5! pl-0!;
+  }
+
+  .prose-custom :global(input[type='checkbox']) {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    width: 1.125rem !important;
+    height: 1.125rem !important;
+    flex-shrink: 0;
+    cursor: pointer;
+    border-radius: 0.25rem;
+    border: 1px solid var(--color-border-subtle, #30363d);
+    background-color: var(--color-surface-base, #0d1117);
+    display: inline-grid;
+    place-content: center;
+    margin: 0;
+    vertical-align: middle;
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease;
+  }
+
+  .prose-custom :global(input[type='checkbox']:checked) {
+    background-color: var(--color-copilot, #8534f3) !important;
+    border-color: var(--color-copilot, #8534f3) !important;
+  }
+
+  .prose-custom :global(input[type='checkbox']:checked::before) {
+    content: '';
+    width: 0.625rem;
+    height: 0.625rem;
+    background-color: #ffffff;
+    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
   }
 
   .prose-custom :global(.markdown-alert) {

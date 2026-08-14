@@ -11,6 +11,7 @@
     method?: 'POST' | 'GET' | 'post' | 'get' | 'dialog' | 'DIALOG'
     onsubmit?: (e: SubmitEvent) => void
     class?: string
+    bare?: boolean
     children?: Snippet
     headerActions?: Snippet
     actions?: Snippet
@@ -24,19 +25,27 @@
     method = 'POST',
     onsubmit,
     class: className = '',
+    bare = false,
     children,
     headerActions,
     actions
   }: Props = $props()
+  function handleSubmit(e: SubmitEvent) {
+    if (onsubmit) {
+      e.preventDefault()
+      onsubmit(e)
+    }
+  }
 </script>
 
 <form
   {action}
   {method}
-  {onsubmit}
+  onsubmit={handleSubmit}
   novalidate
   class={cn(
-    'flex flex-col gap-6 rounded-sm border border-border-subtle bg-surface-card p-6 shadow-xs',
+    'flex flex-col gap-6',
+    bare ? '' : 'rounded-sm glass-card p-6',
     className
   )}
   autocomplete="off">

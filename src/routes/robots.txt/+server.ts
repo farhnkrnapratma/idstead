@@ -9,6 +9,7 @@ Allow: /api/
 Allow: /llms.txt
 Allow: /.well-known/llms.txt
 Disallow: /admin/
+Disallow: /api/internal/
 
 # Content Signals (https://contentsignals.org/)
 Content-Signal: ai-train=no, search=yes, ai-input=yes

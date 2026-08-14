@@ -11,7 +11,10 @@
     Button,
     Dialog,
     TopNav,
-    FooterSection
+    FooterSection,
+    Section,
+    PageContainer,
+    ConsentNotice
   } from '$lib'
 
   let pageAuthor = $derived((page?.data as any)?.author)
@@ -208,208 +211,217 @@
 <main
   id="main-content"
   class="flex min-h-[calc(100vh-3.75rem)] flex-col pt-15 font-sans">
-  <section
-    class="relative z-10 mx-auto flex w-full flex-col gap-8 px-6 py-12 md:w-[80%] lg:w-[60%] xl:w-[50%]">
-    <div
-      class="pointer-events-none absolute top-12.5 left-[50%] z-0 h-80 w-[320px] translate-x-[-50%] rounded-full bg-copilot/10 blur-[80px]">
-    </div>
-
-    <div class="relative z-10 text-center select-none">
-      <h1
-        class="text-3xl font-bold tracking-tight text-text-primary md:text-4xl lg:text-5xl">
-        Your feedback matters
-      </h1>
-      <p
-        class="mx-auto mt-4 max-w-xl text-base leading-relaxed text-text-secondary">
-        Your valuable feedback helps improve the quality of articles and ensures
-        the website's technical systems run reliably. Please let us know if you
-        spot any issues.
-      </p>
-    </div>
-
-    <Card
-      variant="glass"
-      class="relative z-10 p-5 select-none">
-      <div class="flex flex-col gap-3">
-        <h2 class="text-sm font-bold text-text-primary">Feedback categories</h2>
-        <ul class="flex flex-col gap-2.5 text-xs text-text-secondary">
-          <li class="flex items-start gap-2">
-            <i
-              class="bi bi-check-circle-fill mt-0.5 text-copilot"
-              aria-hidden="true"></i>
-            <span
-              ><strong>Writing errors:</strong> Grammatical mistakes, typos, spelling,
-              or poor phrasing.</span>
-          </li>
-          <li class="flex items-start gap-2">
-            <i
-              class="bi bi-check-circle-fill mt-0.5 text-copilot"
-              aria-hidden="true"></i>
-            <span
-              ><strong>Technical inaccuracies:</strong> Code snippets that don't compile,
-              wrong command usages, or faulty explanation logic.</span>
-          </li>
-          <li class="flex items-start gap-2">
-            <i
-              class="bi bi-check-circle-fill mt-0.5 text-copilot"
-              aria-hidden="true"></i>
-            <span
-              ><strong>Outdated information:</strong> Deprecated package API calls,
-              tools that are no longer active, or outdated tutorial steps.</span>
-          </li>
-          <li class="flex items-start gap-2">
-            <i
-              class="bi bi-check-circle-fill mt-0.5 text-copilot"
-              aria-hidden="true"></i>
-            <span
-              ><strong>Broken links:</strong> 404 links, invalid references, or missing
-              static download files.</span>
-          </li>
-          <li class="flex items-start gap-2">
-            <i
-              class="bi bi-check-circle-fill mt-0.5 text-copilot"
-              aria-hidden="true"></i>
-            <span
-              ><strong>Website issues:</strong> UI layout bugs, visual display mistakes,
-              broken styling, accessibility complaints, or slow loading times.</span>
-          </li>
-        </ul>
+  <Section
+    spacing="none"
+    class="relative z-10 py-12">
+    <PageContainer
+      width="standard"
+      class="flex flex-col gap-8">
+      <div
+        class="pointer-events-none absolute top-12.5 left-[50%] z-0 h-80 w-[320px] translate-x-[-50%] rounded-full bg-copilot/10 blur-[80px]">
       </div>
-    </Card>
 
-    <form
-      bind:this={feedbackFormElement}
-      novalidate
-      action={contactEmail ? `https://formsubmit.co/${contactEmail}` : '#'}
-      method="POST"
-      onsubmit={validateForm}
-      class="relative z-10 flex w-full flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card/45 p-6 text-left shadow-xs backdrop-blur-xl transition-colors duration-300"
-      autocomplete="off">
-      <input
-        type="hidden"
-        name="_subject"
-        value="New feedback report from website!" />
-      <input
-        type="hidden"
-        name="_template"
-        value="table" />
-      <input
-        type="hidden"
-        name="_captcha"
-        value="true" />
-      <input
-        type="hidden"
-        name="_url"
-        value="{siteUrl}/feedback" />
-
-      <div class="mb-2 select-none">
-        <h2 class="text-sm font-bold text-text-primary">Report an issue</h2>
-        <p class="mt-0.5 text-xs text-text-muted">
-          Complete the fields below to submit your feedback directly.
+      <div class="relative z-10 text-center select-none">
+        <h1
+          class="text-3xl font-bold tracking-tight text-text-primary md:text-4xl lg:text-5xl">
+          Your feedback matters
+        </h1>
+        <p
+          class="mx-auto mt-4 max-w-xl text-base leading-relaxed text-text-secondary">
+          Your valuable feedback helps improve the quality of articles and
+          ensures the website's technical systems run reliably. Please let us
+          know if you spot any issues.
         </p>
       </div>
 
-      <FormField
-        id="form-name"
-        label="Name"
-        required
-        error={formErrors.name}
-        valid={formValid.name}>
-        <Input
-          type="text"
+      <Card
+        variant="glass"
+        class="relative z-10 p-5 select-none">
+        <div class="flex flex-col gap-3">
+          <h2 class="text-sm font-bold text-text-primary">
+            Feedback categories
+          </h2>
+          <ul class="flex flex-col gap-2.5 text-xs text-text-secondary">
+            <li class="flex items-start gap-2">
+              <i
+                class="bi bi-check-circle-fill mt-0.5 text-copilot"
+                aria-hidden="true"></i>
+              <span
+                ><strong>Writing errors:</strong> Grammatical mistakes, typos, spelling,
+                or poor phrasing.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i
+                class="bi bi-check-circle-fill mt-0.5 text-copilot"
+                aria-hidden="true"></i>
+              <span
+                ><strong>Technical inaccuracies:</strong> Code snippets that don't
+                compile, wrong command usages, or faulty explanation logic.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i
+                class="bi bi-check-circle-fill mt-0.5 text-copilot"
+                aria-hidden="true"></i>
+              <span
+                ><strong>Outdated information:</strong> Deprecated package API calls,
+                tools that are no longer active, or outdated tutorial steps.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i
+                class="bi bi-check-circle-fill mt-0.5 text-copilot"
+                aria-hidden="true"></i>
+              <span
+                ><strong>Broken links:</strong> 404 links, invalid references, or
+                missing static download files.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i
+                class="bi bi-check-circle-fill mt-0.5 text-copilot"
+                aria-hidden="true"></i>
+              <span
+                ><strong>Website issues:</strong> UI layout bugs, visual display mistakes,
+                broken styling, accessibility complaints, or slow loading times.</span>
+            </li>
+          </ul>
+        </div>
+      </Card>
+
+      <form
+        bind:this={feedbackFormElement}
+        novalidate
+        action={contactEmail ? `https://formsubmit.co/${contactEmail}` : '#'}
+        method="POST"
+        onsubmit={validateForm}
+        class="relative z-10 flex w-full flex-col gap-3 rounded-sm glass-card p-6 text-left"
+        autocomplete="off">
+        <input
+          type="hidden"
+          name="_subject"
+          value="New feedback report from website!" />
+        <input
+          type="hidden"
+          name="_template"
+          value="table" />
+        <input
+          type="hidden"
+          name="_captcha"
+          value="true" />
+        <input
+          type="hidden"
+          name="_url"
+          value="{siteUrl}/feedback" />
+
+        <div class="mb-2 select-none">
+          <h2 class="text-sm font-bold text-text-primary">Report an issue</h2>
+          <p class="mt-0.5 text-xs text-text-muted">
+            Complete the fields below to submit your feedback directly.
+          </p>
+        </div>
+
+        <FormField
           id="form-name"
-          name="name"
-          aria-required="true"
-          autocomplete="name"
-          placeholder="Enter your name"
-          bind:value={formName}
-          error={!!formErrors.name}
-          valid={formValid.name}
-          oninput={() => {
-            formErrors.name = ''
-            formValid.name = false
-            validateName()
-          }} />
-      </FormField>
+          label="Name"
+          required
+          error={formErrors.name}
+          valid={formValid.name}>
+          <Input
+            type="text"
+            id="form-name"
+            name="name"
+            aria-required="true"
+            autocomplete="name"
+            placeholder="Enter your name"
+            bind:value={formName}
+            error={!!formErrors.name}
+            valid={formValid.name}
+            oninput={() => {
+              formErrors.name = ''
+              formValid.name = false
+              validateName()
+            }} />
+        </FormField>
 
-      <FormField
-        id="form-email"
-        label="Email"
-        required
-        error={formErrors.email}
-        valid={formValid.email}>
-        <Input
-          type="text"
+        <FormField
           id="form-email"
-          name="email"
-          aria-required="true"
-          autocomplete="email"
-          placeholder="Enter your email"
-          bind:value={formEmail}
-          error={!!formErrors.email}
-          valid={formValid.email}
-          oninput={() => {
-            formErrors.email = ''
-            formValid.email = false
-            validateEmail()
-          }} />
-      </FormField>
+          label="Email"
+          required
+          error={formErrors.email}
+          valid={formValid.email}>
+          <Input
+            type="text"
+            id="form-email"
+            name="email"
+            aria-required="true"
+            autocomplete="email"
+            placeholder="Enter your email"
+            bind:value={formEmail}
+            error={!!formErrors.email}
+            valid={formValid.email}
+            oninput={() => {
+              formErrors.email = ''
+              formValid.email = false
+              validateEmail()
+            }} />
+        </FormField>
 
-      <FormField
-        id="form-url"
-        label="Which URL/page contains the issue?"
-        required
-        error={formErrors.url}
-        valid={formValid.url}>
-        <Input
-          type="text"
+        <FormField
           id="form-url"
-          name="url"
-          aria-required="true"
-          placeholder="Enter page path or full URL (e.g. Home, Blog, or link)"
-          bind:value={formUrl}
-          error={!!formErrors.url}
-          valid={formValid.url}
-          oninput={() => {
-            formErrors.url = ''
-            formValid.url = false
-            validateUrl()
-          }} />
-      </FormField>
+          label="Which URL/page contains the issue?"
+          required
+          error={formErrors.url}
+          valid={formValid.url}>
+          <Input
+            type="text"
+            id="form-url"
+            name="url"
+            aria-required="true"
+            placeholder="Enter page path or full URL (e.g. Home, Blog, or link)"
+            bind:value={formUrl}
+            error={!!formErrors.url}
+            valid={formValid.url}
+            oninput={() => {
+              formErrors.url = ''
+              formValid.url = false
+              validateUrl()
+            }} />
+        </FormField>
 
-      <FormField
-        id="form-message"
-        label="Message"
-        required
-        error={formErrors.message}
-        valid={formValid.message}
-        counter="{2000 - formMessage.length} left">
-        <Textarea
+        <FormField
           id="form-message"
-          name="message"
-          rows={4}
-          maxlength={2000}
-          placeholder="Describe the issue in detail…"
-          bind:value={formMessage}
-          error={!!formErrors.message}
+          label="Message"
+          required
+          error={formErrors.message}
           valid={formValid.message}
-          oninput={() => {
-            formErrors.message = ''
-            formValid.message = false
-            validateMessage()
-          }} />
-      </FormField>
+          counter="{2000 - formMessage.length} left">
+          <Textarea
+            id="form-message"
+            name="message"
+            rows={4}
+            maxlength={2000}
+            placeholder="Describe the issue in detail…"
+            bind:value={formMessage}
+            error={!!formErrors.message}
+            valid={formValid.message}
+            oninput={() => {
+              formErrors.message = ''
+              formValid.message = false
+              validateMessage()
+            }} />
+        </FormField>
 
-      <div class="mt-2 flex justify-end select-none">
-        <Button
-          type="submit"
-          variant="primary"
-          size="md">
-          Submit feedback
-        </Button>
-      </div>
-    </form>
-  </section>
+        <ConsentNotice action="submitting this feedback report" />
+
+        <div class="mt-2 flex justify-end select-none">
+          <Button
+            htmlType="submit"
+            type="Primary"
+            size="md">
+            Submit feedback
+          </Button>
+        </div>
+      </form>
+    </PageContainer>
+  </Section>
 
   <FooterSection />
 </main>
@@ -421,14 +433,14 @@
   onClose={() => (showSubmitDialog = false)}>
   {#snippet footer()}
     <Button
-      variant="secondary"
+      type="Secondary"
       size="md"
       showEscHint
       onclick={() => (showSubmitDialog = false)}>
       Cancel
     </Button>
     <Button
-      variant="primary"
+      type="Primary"
       size="md"
       onclick={executeSubmit}>
       Submit feedback

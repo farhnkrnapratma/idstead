@@ -1,42 +1,15 @@
-import type {RequestHandler} from './$types';
+/** @format */
 
-const yaml = `openapi: 3.0.3
-info:
-  title: fkp.my.id Public API
-  version: '1.0.0'
-  description: Machine-readable OpenAPI spec for the public REST endpoints.
-servers:
-  - url: https://fkp.my.id
-paths:
-  /api/blog:
-    get:
-      summary: List blog posts
-  /api/blog/{id_or_slug}:
-    get:
-      summary: Get blog post
-  /api/comments:
-    get:
-      summary: List approved comments
-    post:
-      summary: Submit comment
-  /api/views:
-    get:
-      summary: Get view count
-    post:
-      summary: Record view
-  /api/search:
-    get:
-      summary: Search posts
-  /api/author:
-    get:
-      summary: Author profile
-  /api/cv:
-    get:
-      summary: Download CV PDF
-`;
+import type {RequestHandler} from './$types'
+import {stringify} from 'yaml'
+import {openapiSpec} from '$lib/openapi'
 
 export const GET: RequestHandler = async () => {
-  return new Response(yaml, {
-    headers: {'Content-Type': 'text/yaml; charset=utf-8', 'Cache-Control': 'public, max-age=86400'}
+  return new Response(stringify(openapiSpec), {
+    headers: {
+      'Content-Type': 'text/yaml; charset=utf-8',
+      'Cache-Control': 'public, max-age=86400',
+      'Access-Control-Allow-Origin': '*'
+    }
   })
 }

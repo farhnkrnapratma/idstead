@@ -18,24 +18,17 @@ export const GET: RequestHandler = async ({url}) => {
   const limit = Math.min(Math.max(1, limitParam), 20)
 
   if (q.length < 2) {
-    return json({
-      query: q,
-      data: [],
-      results: [],
-      pagination: {limit, returned: 0}
-    })
+    return json({query: q, data: [], pagination: {limit, returned: 0}})
   }
 
   const results: SearchResult[] = []
-  const normalizedQuery = q.replace(/[,\n\r\t]/g, ' ').trim()
+  const normalizedQuery = q.replace(/[,().\n\r\t]/g, ' ').trim()
 
   const {data: posts, error: postsError} = await supabase
-    .from('posts')
+    .from('db_posts')
     .select('id, title, slug, excerpt')
     .eq('published', true)
-    .or(
-      `title.ilike.%${normalizedQuery}%,excerpt.ilike.%${normalizedQuery}%`
-    )
+    .or(`title.ilike.%${normalizedQuery}%,excerpt.ilike.%${normalizedQuery}%`)
     .order('created_at', {ascending: false})
     .limit(limit)
 
@@ -53,7 +46,6 @@ export const GET: RequestHandler = async ({url}) => {
   return json({
     query: q,
     data: results,
-    results,
     pagination: {limit, returned: results.length}
   })
 }

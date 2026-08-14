@@ -5,6 +5,8 @@ impactDescription: 100-1000x faster queries on large tables
 tags: indexes, performance, sequential-scan, query-optimization
 ---
 
+<!-- @format -->
+
 ## Add Indexes on WHERE and JOIN Columns
 
 Queries filtering or joining on unindexed columns cause full table scans, which become exponentially slower as tables grow.

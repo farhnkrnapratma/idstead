@@ -33,8 +33,7 @@ const blogPostSummarySchema = {
     slug: {type: 'string'},
     excerpt: {type: 'string', nullable: true},
     created_at: {type: 'string', format: 'date-time'},
-    updated_at: {type: 'string', format: 'date-time'},
-    banner_path: {type: 'string', nullable: true}
+    updated_at: {type: 'string', format: 'date-time'}
   }
 }
 
@@ -147,15 +146,6 @@ export const openapiSpec = {
   },
   servers: [{url: 'https://fkp.my.id'}],
   components: {
-    securitySchemes: {
-      bearerAuth: {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        description:
-          'Supabase Auth session token for the site admin. Required only for /api/v1/admin/* routes.'
-      }
-    },
     schemas: {
       Error: errorSchema,
       Pagination: paginationSchema,
@@ -352,12 +342,38 @@ export const openapiSpec = {
     },
     '/api/v1/cv': {
       get: {
-        summary: 'Download the active CV as a PDF',
+        summary: 'Download active CV PDF or SHA256 verification checksum',
+        parameters: [
+          {
+            name: 'download',
+            in: 'query',
+            required: false,
+            schema: {type: 'string', enum: ['1', 'true']},
+            description:
+              'Force Content-Disposition attachment header for direct file download using exact R2 filename.'
+          },
+          {
+            name: 'format',
+            in: 'query',
+            required: false,
+            schema: {type: 'string', enum: ['sha256']},
+            description:
+              'Download the SHA256 checksum verification sidecar text file.'
+          }
+        ],
         responses: {
           '200': {
             description: 'OK',
+            headers: {
+              'X-Checksum-SHA256': {
+                schema: {type: 'string'},
+                description:
+                  'Full 64-character SHA-256 cryptographic fingerprint hash of the CV PDF file.'
+              }
+            },
             content: {
-              'application/pdf': {schema: {type: 'string', format: 'binary'}}
+              'application/pdf': {schema: {type: 'string', format: 'binary'}},
+              'text/plain': {schema: {type: 'string'}}
             }
           },
           '302': {
@@ -436,84 +452,6 @@ export const openapiSpec = {
           },
           '400': errorResponses['400']
         }
-      },
-      post: {
-        summary: 'Submit a comment',
-        description:
-          'Public, no authentication required beyond a valid Cloudflare Turnstile token. Every submission is moderated with Cloudflare Workers AI '
-          + '(@cf/meta/llama-guard-3-8b), falling back to a rules-based heuristic if the AI binding is unavailable. '
-          + 'is_approved in the response indicates whether it is now publicly visible or held back.',
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                required: ['postId', 'content', 'turnstileToken'],
-                properties: {
-                  postId: {type: 'string', format: 'uuid'},
-                  parentId: {
-                    type: 'string',
-                    format: 'uuid',
-                    nullable: true,
-                    description: 'Set to reply to an existing comment.'
-                  },
-                  authorName: {
-                    type: 'string',
-                    description: 'Required unless isAnonymous is true.'
-                  },
-                  isAnonymous: {type: 'boolean', default: false},
-                  content: {type: 'string', maxLength: 2000},
-                  turnstileToken: {
-                    type: 'string',
-                    description:
-                      'Cloudflare Turnstile response token from the widget rendered on the comment form. Verified server-side via siteverify before the comment is accepted.'
-                  }
-                }
-              },
-              example: {
-                postId: '37f40194-33b8-47b1-9243-7a5c72877559',
-                authorName: 'Jane Doe',
-                isAnonymous: false,
-                content: 'Great post!',
-                turnstileToken: '0.AAAA...'
-              }
-            }
-          }
-        },
-        responses: {
-          '201': {
-            description: 'Created',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    is_approved: {type: 'boolean'},
-                    comment: commentSchema,
-                    moderation: {
-                      type: 'object',
-                      properties: {
-                        engine: {
-                          type: 'string',
-                          enum: ['llama-guard-3', 'heuristic']
-                        },
-                        categories: {
-                          type: 'array',
-                          items: {type: 'string'},
-                          description:
-                            'Llama Guard S1-S11 violation codes when unsafe, empty when safe.'
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          '400': errorResponses['400'],
-          '403': errorResponses['403']
-        }
       }
     },
     '/api/v1/blog/views': {
@@ -543,180 +481,6 @@ export const openapiSpec = {
             }
           },
           '400': errorResponses['400']
-        }
-      },
-      post: {
-        summary: 'Record a view (rate-limited, deduplicated per IP per day)',
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                required: ['postId'],
-                properties: {postId: {type: 'string', format: 'uuid'}}
-              }
-            }
-          }
-        },
-        responses: {
-          '201': {
-            description: 'View recorded',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {counted: {type: 'boolean', example: true}}
-                }
-              }
-            }
-          },
-          '200': {
-            description: 'Already counted for this IP today',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {counted: {type: 'boolean', example: false}}
-                }
-              }
-            }
-          },
-          '400': errorResponses['400']
-        }
-      }
-    },
-    '/api/v1/admin/login': {
-      post: {
-        summary: 'Admin: sign in',
-        description:
-          'Exchanges site-owner credentials plus a Cloudflare Turnstile token for a Supabase Auth session. Gated on Turnstile so this unauthenticated endpoint is not open to scripted brute-force. Returns the same session shape as the Supabase JS client, for the frontend to hydrate with supabase.auth.setSession().',
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                required: ['email', 'password', 'turnstileToken'],
-                properties: {
-                  email: {type: 'string', format: 'email'},
-                  password: {type: 'string', format: 'password'},
-                  turnstileToken: {
-                    type: 'string',
-                    description:
-                      'Cloudflare Turnstile response token from the widget rendered on the login form.'
-                  }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          '200': {
-            description: 'OK',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    session: {
-                      type: 'object',
-                      description: 'Supabase Auth session object.'
-                    }
-                  }
-                }
-              }
-            }
-          },
-          '400': errorResponses['400'],
-          '401': errorResponses['401'],
-          '403': errorResponses['403']
-        }
-      }
-    },
-    '/api/v1/admin/cv/upload': {
-      post: {
-        summary: 'Admin: upload a new CV PDF',
-        description:
-          'Proxied to a Supabase Edge Function, which stores the file in Cloudflare R2 and updates the CV record.',
-        security: [{bearerAuth: []}],
-        requestBody: {
-          required: true,
-          content: {
-            'multipart/form-data': {
-              schema: {
-                type: 'object',
-                required: ['file'],
-                properties: {
-                  file: {
-                    type: 'string',
-                    format: 'binary',
-                    description: 'PDF, max 10MB.'
-                  }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          '201': {
-            description: 'Created',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    success: {type: 'boolean'},
-                    filename: {type: 'string'},
-                    fileUrl: {type: 'string'},
-                    hash: {type: 'string'}
-                  }
-                }
-              }
-            }
-          },
-          '400': errorResponses['400'],
-          '401': errorResponses['401'],
-          '500': errorResponses['500']
-        }
-      }
-    },
-    '/api/v1/admin/cv/delete': {
-      post: {
-        summary: 'Admin: delete the current CV PDF',
-        description:
-          'Proxied to a Supabase Edge Function, which removes the file from R2 and its CV record.',
-        security: [{bearerAuth: []}],
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                required: ['filename'],
-                properties: {filename: {type: 'string'}}
-              }
-            }
-          }
-        },
-        responses: {
-          '200': {
-            description: 'OK',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    success: {type: 'boolean'},
-                    filename: {type: 'string'}
-                  }
-                }
-              }
-            }
-          },
-          '400': errorResponses['400'],
-          '401': errorResponses['401'],
-          '500': errorResponses['500']
         }
       }
     }

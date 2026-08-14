@@ -13,7 +13,7 @@ export const GET: RequestHandler = async ({fetch}) => {
   const authorBio = author?.bio || ''
 
   const {data: posts} = await supabase
-    .from('posts')
+    .from('db_posts')
     .select('id, title, slug, excerpt, created_at')
     .eq('published', true)
     .order('created_at', {ascending: false})
@@ -26,30 +26,30 @@ Welcome to the LLM & AI Agent directory for ${authorName}'s developer portfolio.
 
 ## Core Information & APIs
 
-- [Author Profile Markdown](${SITE_URL}/api/author?format=md): Full author profile, technical skills, experiences, and contact channels in Markdown.
-- [Public API Documentation](${SITE_URL}/api/README.md): Human-friendly documentation for REST & Markdown API endpoints.
+- [Profile Markdown](${SITE_URL}/api/v1/author?format=md): Full author profile, technical skills, experiences, and contact channels in Markdown.
+- [Public API Documentation](${SITE_URL}/api/v1): Human-friendly documentation for REST & Markdown API endpoints.
 - [OpenAPI (JSON)](${SITE_URL}/.well-known/openapi.json): Machine-readable OpenAPI v3 JSON specification for all public APIs.
 - [OpenAPI (YAML)](${SITE_URL}/.well-known/openapi.yaml): Same spec in YAML format.
 - [Atom RSS Feed](${SITE_URL}/atom.xml): Atom feed containing recent blog post summaries.
 - [XML Sitemap](${SITE_URL}/sitemap.xml): Complete URL index for web crawlers.
-- [CV Download PDF](${SITE_URL}/api/cv): Official curriculum vitae PDF file.
+- [CV Download PDF](${SITE_URL}/api/v1/cv): Official curriculum vitae PDF file.
 
-## Blog Posts (Markdown API)
+## Posts (Markdown API)
 
 `
 
   if (posts && posts.length > 0) {
     posts.forEach(post => {
       const dateStr = new Date(post.created_at).toISOString().split('T')[0]
-      md += `- [${post.title}](${SITE_URL}/api/blog/${post.slug}?format=md): Published on ${dateStr}. ID: \`${post.id}\`. ${post.excerpt ? `— ${post.excerpt}` : ''}\n`
+      md += `- [${post.title}](${SITE_URL}/api/v1/blog/${post.slug}?format=md): Published on ${dateStr}. ID: \`${post.id}\`. ${post.excerpt ? `— ${post.excerpt}` : ''}\n`
     })
   } else {
     md += `*No published posts available.*\n`
   }
 
   md += `\n## Optional & Additional Details\n\n`
-  md += `- [JSON Author API](${SITE_URL}/api/author): Full author dataset in JSON format.\n`
-  md += `- [JSON Blog Catalog](${SITE_URL}/api/blog): Catalog of published blog posts in JSON format.\n`
+  md += `- [JSON Author API](${SITE_URL}/api/v1/author): Full author dataset in JSON format.\n`
+  md += `- [JSON Blog Catalog](${SITE_URL}/api/v1/blog): Catalog of published blog posts in JSON format.\n`
 
   return new Response(md, {
     headers: {

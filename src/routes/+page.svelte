@@ -1,5 +1,6 @@
 <!-- @format -->
 <script lang="ts">
+  import {PUBLIC_CDN_BASE_URL} from '$env/static/public'
   import {onMount, tick} from 'svelte'
   import type {Snippet} from 'svelte'
   import {isNameReserved} from '$lib/utils/nameValidator'
@@ -7,11 +8,13 @@
     LinkListSection,
     ShinyText,
     SkipLink,
+    ImageWithSkeleton,
     SpotlightSearch,
     FormField,
     Input,
     Textarea,
     Button,
+    Badge,
     Dialog,
     EmptyState,
     CvEntryCard,
@@ -32,12 +35,20 @@
     SkillGroup,
     formatReadTime,
     formatCommentCount,
-    formatViewCount
+    formatViewCount,
+    formatAbsoluteDate,
+    Section,
+    PageContainer,
+    LogoLoop,
+    ConsentNotice
   } from '$lib'
   import {supabase} from '$lib/supabase'
   import {SvelteSet} from 'svelte/reactivity'
   import {formatMonthAbbrev, decodeHtmlEntities} from '$lib/author'
   import {themeStore} from '$lib/stores/themeStore.svelte'
+  import {a11yStore} from '$lib/stores/a11yStore.svelte'
+  import AccessibilitySelect from '$lib/components/filter/AccessibilitySelect.svelte'
+  import GradientWaves from '$lib/components/GradientWaves.svelte'
   import type {Theme, Project} from '$lib/types'
   import type {BlogPost} from './+page.server'
 
@@ -87,6 +98,45 @@
   let jobTitle = $derived(author?.jobTitle || '')
   let siteUrl = $derived(author?.siteUrl || '')
   let avatar = $derived(author?.avatar || '')
+  let skillBadges = $derived(
+    (headline || '')
+      .split(/[|,\n]/)
+      .map(s => s.trim())
+      .filter(Boolean)
+  )
+
+  let isDarkTheme = $derived.by(() => {
+    if (themeStore.current === 'dark') return true
+    if (themeStore.current === 'light') return false
+    if (typeof window !== 'undefined') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches
+    }
+    return true
+  })
+
+  const logoBaseUrl = (() => {
+    const base = (PUBLIC_CDN_BASE_URL ?? '').trim().replace(/\/+$/, '')
+    return base ? `${base}/logo/` : '/logo/'
+  })()
+
+  let logoCatalog = $derived(
+    Array.isArray(data.logoCatalog) ? data.logoCatalog : []
+  )
+
+  let techLogos = $derived(
+    logoCatalog.map(({name, extension, isThemeAware}) => {
+      const filename =
+        isThemeAware ?
+          `${name}-${isDarkTheme ? 'dark' : 'light'}.${extension}`
+        : `${name}.${extension}`
+
+      return {
+        src: `${logoBaseUrl}${filename}`,
+        alt: `${name} [icon] icon`,
+        title: name
+      }
+    })
+  )
 
   const navItems: NavItem[] = [
     {id: 'home', label: 'Home'},
@@ -344,7 +394,6 @@
 
   let activeSection = $state<Section>('home')
   let menuOpen = $state(false)
-  let themeDropdownOpen = $state(false)
   let mobileMenuRef = $state<HTMLElement | null>(null)
   let menuTriggerRef = $state<HTMLButtonElement | null>(null)
   let isDesktopViewport = $state(false)
@@ -481,16 +530,6 @@
       menuTriggerRef?.focus()
     }
   })
-
-  function getThemeIcon(selectedTheme = themeStore.current) {
-    if (selectedTheme === 'dark') return 'bi-moon-stars-fill'
-    if (selectedTheme === 'light') return 'bi-sun-fill'
-    return 'bi-circle-half'
-  }
-
-  function getThemeLabel(selectedTheme = themeStore.current) {
-    return selectedTheme.charAt(0).toUpperCase() + selectedTheme.slice(1)
-  }
 
   const blogFilterStore = createFilterSortStore({
     defaultSortField: 'date',
@@ -696,7 +735,7 @@
 </script>
 
 <svelte:head>
-  <title>{name} — {jobTitle}</title>
+  <title>{name}{headline ? ` — ${headline}` : ''}</title>
   <meta
     name="description"
     content={desc} />
@@ -777,7 +816,7 @@
 <SkipLink />
 
 <nav
-  class="fixed top-0 z-40 flex h-15 w-full items-center justify-between border-b border-border-subtle bg-surface-card/45 px-3 font-sans shadow-xs backdrop-blur-xl transition-colors duration-300 sm:px-5"
+  class="fixed top-0 z-40 flex h-15 w-full items-center justify-between glass-card border-b border-border-subtle/60 px-3 font-sans shadow-xs sm:px-5"
   aria-label="Main navigation">
   <button
     onclick={() => navigate('home')}
@@ -790,79 +829,11 @@
       id="mobile-menu"
       bind:this={mobileMenuRef}
       inert={!isDesktopViewport && !menuOpen}
-      class="fixed top-16 right-5 z-40 flex w-56 origin-top-right flex-col items-start gap-1 rounded-sm border border-border-subtle bg-surface-card p-2 shadow-lg transition-all duration-200 md:pointer-events-auto md:static md:h-auto md:w-auto md:translate-x-0 md:scale-100 md:flex-row md:items-center md:gap-1 md:rounded-none md:border-0 md:bg-transparent md:p-0 md:opacity-100 md:shadow-none"
-      class:opacity-0={!menuOpen}
-      class:scale-95={!menuOpen}
-      class:pointer-events-none={!menuOpen}
-      class:opacity-100={menuOpen}
-      class:scale-100={menuOpen}>
-      <div
-        class="w-full md:hidden"
-        role="group"
-        aria-label="Appearance">
-        <p
-          class="px-4 pt-1 pb-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase"
-          aria-hidden="true">
-          Appearance
-        </p>
-        <div class="relative w-full">
-          <button
-            onclick={() => (themeDropdownOpen = !themeDropdownOpen)}
-            class="flex h-11 w-full cursor-pointer items-center justify-between rounded-md px-4 text-sm font-semibold text-text-primary transition-colors hover:bg-surface-hover hover:text-copilot"
-            aria-label="Change theme"
-            aria-haspopup="listbox"
-            aria-expanded={themeDropdownOpen}>
-            <span class="inline-flex items-center gap-3">
-              <i
-                class="bi {getThemeIcon()} text-sm"
-                aria-hidden="true"></i>
-              {getThemeLabel()}
-            </span>
-            <span
-              class="inline-flex h-4 w-4 shrink-0 origin-center items-center justify-center text-text-muted transition-transform duration-200 ease-out {(
-                themeDropdownOpen
-              ) ?
-                'rotate-180'
-              : ''}">
-              <i
-                class="bi bi-chevron-down text-xs leading-none"
-                aria-hidden="true"></i>
-            </span>
-          </button>
-
-          {#if themeDropdownOpen}
-            <div
-              class="absolute top-12 right-0 left-0 z-50 flex w-full flex-col rounded-sm border border-border-subtle bg-surface-card p-1 shadow-lg"
-              role="listbox"
-              aria-label="Theme">
-              {#each ['auto', 'light', 'dark'] as themeOption (themeOption)}
-                <button
-                  role="option"
-                  aria-selected={themeStore.current === themeOption}
-                  onclick={() => {
-                    themeStore.apply(themeOption as Theme)
-                    themeDropdownOpen = false
-                  }}
-                  class="flex h-9 w-full cursor-pointer items-center gap-3 rounded-md px-3 text-left text-xs font-bold transition-colors hover:bg-surface-hover hover:text-copilot {(
-                    themeStore.current === themeOption
-                  ) ?
-                    'text-copilot'
-                  : 'text-text-primary'}">
-                  <i
-                    class="bi {getThemeIcon(themeOption as Theme)} text-sm"
-                    aria-hidden="true"></i>
-                  {getThemeLabel(themeOption as Theme)}
-                </button>
-              {/each}
-            </div>
-          {/if}
-        </div>
-      </div>
-
-      <hr
-        class="my-1 w-full border-border-subtle md:hidden"
-        aria-hidden="true" />
-
+      class={[
+        'fixed top-16 right-5 z-40 flex w-56 origin-top-right flex-col items-start gap-1 rounded-sm border border-border-subtle bg-surface-card p-2 shadow-lg transition-all duration-200 md:pointer-events-auto md:static md:h-auto md:w-auto md:translate-x-0 md:scale-100 md:flex-row md:items-center md:gap-1 md:rounded-none md:border-0 md:bg-transparent md:p-0 md:opacity-100 md:shadow-none',
+        !menuOpen && 'pointer-events-none scale-95 opacity-0',
+        menuOpen && 'scale-100 opacity-100'
+      ]}>
       <nav
         class="w-full md:contents"
         aria-label="Section navigation">
@@ -891,6 +862,18 @@
           {/each}
         </ul>
       </nav>
+
+      <hr
+        class="my-1 w-full border-border-subtle md:hidden"
+        aria-hidden="true" />
+
+      <div class="flex w-full items-center justify-between px-2 py-1 md:hidden">
+        <ThemeSelect
+          theme={themeStore.current}
+          onThemeChange={themeStore.apply}
+          dropdownDirection="up" />
+        <AccessibilitySelect dropdownDirection="up" />
+      </div>
     </div>
 
     <SpotlightSearch projects={data.projects} />
@@ -899,6 +882,7 @@
       theme={themeStore.current}
       onThemeChange={themeStore.apply}
       class="hidden md:inline-flex" />
+    <AccessibilitySelect class="hidden md:inline-flex" />
 
     <button
       bind:this={menuTriggerRef}
@@ -945,113 +929,114 @@
     tagItem: Snippet<[string]>
   )}
     <div
-      class="relative flex h-full flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-5 text-left shadow-xs {(
+      class="relative row-span-5 grid grid-rows-subgrid gap-3 rounded-sm glass-card p-5 text-left {(
         openCodeMenuId === project.name
       ) ?
         'z-30'
       : ''}">
-      <article class="contents">
-        <div class="flex flex-col gap-2">
-          <div class="flex flex-wrap items-center gap-1">
-            <svelte:element
-              this={headingTag}
-              class="text-xl leading-snug font-bold text-text-primary">
-              {project.name}
-            </svelte:element>
-            {#if project.lang}
-              <span class="inline-flex items-center gap-1 select-none">
-                <span
-                  class="rounded-md bg-border-subtle/30 px-1.5 py-0.5 font-mono text-[12px] font-semibold text-text-muted">
-                  {project.lang}
-                </span>
-              </span>
-            {/if}
-          </div>
-
-          <div
-            class="relative z-20 grid grid-cols-2 gap-x-4 gap-y-1 font-sans text-xs leading-5 font-medium text-text-muted select-none">
-            {#if project.licenseName}
-              <span class="inline-flex w-fit items-center gap-1">
-                <i
-                  class="bi bi-award text-xs leading-none"
-                  aria-hidden="true"></i>
-                {project.licenseName} License
-              </span>
-            {:else}
-              <span aria-hidden="true"></span>
-            {/if}
-            <span class="inline-flex w-fit items-center gap-1">
-              <i
-                class="bi bi-diagram-2 text-xs leading-none"
-                aria-hidden="true"></i>
-              {project.forks} forks
-            </span>
-            <span class="inline-flex w-fit items-center gap-1">
-              <i
-                class="bi bi-star-fill text-xs leading-none"
-                aria-hidden="true"></i>
-              {project.stars} stars
-            </span>
-            {#if project.pushedAt}
-              <span class="inline-flex w-fit items-center gap-1">
-                <i
-                  class="bi bi-clock-history text-xs leading-none"
-                  aria-hidden="true"></i>
-                <RelativeTime
-                  date={project.pushedAt}
-                  titlePrefix="Updated " />
-              </span>
-            {:else}
-              <span aria-hidden="true"></span>
-            {/if}
-            <span class="inline-flex w-fit items-center gap-1">
-              <i
-                class="bi bi-git text-xs leading-none"
-                aria-hidden="true"></i>
-              {project.branches} branches
-            </span>
-            <span class="inline-flex w-fit items-center gap-1">
-              <i
-                class="bi bi-activity text-xs leading-none"
-                aria-hidden="true"></i>
-              {project.commits} commits
-            </span>
-          </div>
-
-          {#if project.tags.length > 0}
-            <div class="relative z-20 flex flex-wrap items-center gap-1.5">
-              {#each project.tags as tag (tag)}
-                {@render tagItem(tag)}
-              {/each}
-            </div>
-          {/if}
+      <div class="flex flex-col gap-2">
+        <div class="flex flex-wrap items-center gap-1">
+          <svelte:element
+            this={headingTag}
+            class="line-clamp-1 text-xl leading-snug font-bold text-text-primary"
+            title={project.name}>
+            {project.name}
+          </svelte:element>
         </div>
 
-        <p class="min-h-[4rem] text-sm leading-normal text-text-secondary">
+        <div
+          class="relative z-20 grid grid-cols-2 gap-x-4 gap-y-1 font-sans text-xs leading-5 font-medium text-text-muted select-none">
+          {#if project.licenseName}
+            <span class="inline-flex w-fit items-center gap-1">
+              <i
+                class="bi bi-award text-xs leading-none"
+                aria-hidden="true"></i>
+              {project.licenseName} License
+            </span>
+          {:else}
+            <span aria-hidden="true"></span>
+          {/if}
+          <span class="inline-flex w-fit items-center gap-1">
+            <i
+              class="bi bi-diagram-2 text-xs leading-none"
+              aria-hidden="true"></i>
+            {project.forks} forks
+          </span>
+          <span class="inline-flex w-fit items-center gap-1">
+            <i
+              class="bi bi-star-fill text-xs leading-none"
+              aria-hidden="true"></i>
+            {project.stars} stars
+          </span>
+          {#if project.pushedAt}
+            <span class="inline-flex w-fit items-center gap-1">
+              <i
+                class="bi bi-clock-history text-xs leading-none"
+                aria-hidden="true"></i>
+              <RelativeTime
+                date={project.pushedAt}
+                titlePrefix="Last updated " />
+            </span>
+          {:else}
+            <span aria-hidden="true"></span>
+          {/if}
+          <span class="inline-flex w-fit items-center gap-1">
+            <i
+              class="bi bi-git text-xs leading-none"
+              aria-hidden="true"></i>
+            {project.branches} branches
+          </span>
+          <span class="inline-flex w-fit items-center gap-1">
+            <i
+              class="bi bi-activity text-xs leading-none"
+              aria-hidden="true"></i>
+            {project.commits} commits
+          </span>
+        </div>
+      </div>
+
+      <div
+        class="relative z-20 flex min-h-[24px] flex-wrap content-start items-start gap-1.5">
+        {#if project.tags.length > 0}
+          {#each project.tags as tag (tag)}
+            {@render tagItem(tag)}
+          {/each}
+        {:else}
+          <div
+            class="h-5 select-none"
+            aria-hidden="true">
+          </div>
+        {/if}
+      </div>
+
+      <div
+        class="flex flex-col justify-start border-y border-border-subtle py-3">
+        <p
+          class="text-[0.8125rem] leading-relaxed text-text-secondary"
+          title={project.desc}>
           {project.desc}
         </p>
+      </div>
 
+      <div class="relative z-20 flex flex-col justify-start">
         {#if project.languages.length > 0}
-          <div class="relative z-20 flex flex-col gap-2">
-            <span
-              class="text-[11px] font-bold tracking-wider text-text-secondary uppercase">
-              Languages
-            </span>
+          <div class="flex flex-col justify-start gap-2">
             <div
               class="flex h-1.5 w-full overflow-hidden rounded-full bg-border-subtle/30">
               {#each project.languages as language (language.name)}
                 <div
-                  class="w-[var(--lang-w)] bg-[var(--lang-color)]"
+                  class="w-(--lang-w) bg-(--lang-color)"
                   style="--lang-w: {language.percent}%; --lang-color: {language.color};">
                 </div>
               {/each}
             </div>
             <div
-              class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-muted">
+              class="flex flex-wrap items-start gap-x-3 gap-y-1 text-xs text-text-muted">
               {#each project.languages as language (language.name)}
-                <span class="inline-flex items-center gap-1.5">
+                <span
+                  class="inline-flex items-center gap-1.5 whitespace-nowrap">
                   <span
-                    class="h-2 w-2 shrink-0 rounded-full bg-[var(--lang-dot-color)]"
+                    class="h-2 w-2 shrink-0 rounded-full bg-(--lang-dot-color)"
                     style="--lang-dot-color: {language.color};"></span>
                   <span class="font-semibold text-text-primary"
                     >{language.name}</span>
@@ -1060,41 +1045,50 @@
               {/each}
             </div>
           </div>
+        {:else}
+          <div
+            class="flex flex-col justify-start gap-2 opacity-0 select-none"
+            aria-hidden="true">
+            <div class="h-1.5 w-full rounded-full bg-border-subtle/30"></div>
+            <span class="text-xs">No language data</span>
+          </div>
         {/if}
+      </div>
 
-        <div class="relative z-20 mt-auto flex flex-col gap-2 pt-2">
-          <hr class="border-border-subtle" />
+      <div class="relative z-20 mt-auto flex flex-col gap-2 pt-1">
+        <hr class="mb-1 border-border-subtle" />
 
-          <div class="grid grid-cols-2 gap-2">
-            <Button
-              variant="secondary"
-              size="md"
-              leadingIcon="bi-share-fill"
-              class="w-full"
-              onclick={() => shareProjectDialog(project)}>
-              Share
-            </Button>
+        <div class="grid grid-cols-2 gap-2">
+          <Button
+            type="Secondary"
+            size="md"
+            leadingIcon="bi-share-fill"
+            class="w-full"
+            onclick={() => shareProjectDialog(project)}>
+            Share
+          </Button>
 
-            <div
-              class="relative w-full"
-              data-code-dropdown={project.name}>
-              <DropdownTrigger
-                ariaLabel="Code options"
-                fullWidth
-                isOpen={openCodeMenuId === project.name}
-                onclick={() => toggleCodeMenu(project.name)}>
-                <span class="inline-flex items-center gap-1.5">
-                  <i
-                    class="bi bi-code text-xs"
-                    aria-hidden="true"></i>
-                  Code
-                </span>
-              </DropdownTrigger>
+          <div
+            class="relative w-full"
+            data-code-dropdown={project.name}>
+            <DropdownTrigger
+              ariaLabel="Code options"
+              fullWidth
+              isOpen={openCodeMenuId === project.name}
+              onclick={() => toggleCodeMenu(project.name)}>
+              <span class="inline-flex items-center gap-1.5">
+                <i
+                  class="bi bi-code text-xs"
+                  aria-hidden="true"></i>
+                Code
+              </span>
+            </DropdownTrigger>
 
-              {#if openCodeMenuId === project.name}
-                <div
-                  role="menu"
-                  class="absolute left-0 z-50 mt-1.5 w-72 overflow-hidden rounded-sm border border-border-subtle bg-surface-elevated/70 p-3 shadow-xl backdrop-blur-lg">
+            {#if openCodeMenuId === project.name}
+              <div
+                role="menu"
+                class="absolute top-[calc(100%+8px)] left-1/2 z-60 flex w-72 min-w-full -translate-x-1/2 flex-col rounded-sm glass-overlay p-0 shadow-xl">
+                <div class="relative z-10 flex flex-col p-3">
                   <div
                     class="flex items-center gap-1.5 text-xs font-bold text-text-primary">
                     <i
@@ -1122,7 +1116,7 @@
                   <div
                     class="mt-2.5 flex items-center gap-2 rounded-sm border border-border-subtle bg-surface-base/60 px-2.5 py-2">
                     <span
-                      class="min-w-0 flex-1 [scrollbar-width:none] overflow-x-auto font-mono text-[11px] whitespace-nowrap text-text-secondary select-all [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                      class="min-w-0 flex-1 scrollbar-none overflow-x-auto font-mono text-xxs whitespace-nowrap text-text-secondary select-all [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                       {codeCommand(project, getCodeTab(project.name))}
                     </span>
                     <button
@@ -1148,56 +1142,55 @@
                     Download ZIP
                   </a>
                 </div>
-              {/if}
-            </div>
+              </div>
+            {/if}
           </div>
-
-          <a
-            href={project.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="hover:bg-copilot-hover active:bg-copilot-active inline-flex h-9 w-full cursor-pointer items-center justify-center rounded-sm bg-copilot px-4 text-xs font-semibold text-text-on-accent shadow-xs transition-all select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:text-sm">
-            View repo
-          </a>
         </div>
-      </article>
+
+        <a
+          href={project.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="hover:bg-copilot-hover active:bg-copilot-active inline-flex h-9 w-full cursor-pointer items-center justify-center rounded-sm bg-copilot px-4 text-xs font-semibold text-text-on-accent shadow-xs transition-all select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:text-sm">
+          View repo
+        </a>
+      </div>
     </div>
   {/snippet}
 
   {#snippet blogPostCard(post: BlogPost)}
     <div
-      class="relative flex h-full w-full flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-5 text-left shadow-xs {(
+      class="relative flex h-full w-full flex-col gap-3 rounded-sm glass-card p-5 text-left {(
         openCopyMenuId === post.id
       ) ?
         'z-30'
       : ''}">
-      <div
-        class="relative aspect-video w-full overflow-hidden rounded-sm border border-border-subtle select-none">
-        {#if post.banner_path && !failedBanners.has(post.id)}
-          <img
-            src={getBannerUrl(post.banner_path)}
-            alt={post.title}
-            loading="lazy"
-            onload={e =>
-              (
-                e.currentTarget.closest('.animate-pulse') as HTMLElement | null
-              )?.classList.remove('animate-pulse')}
-            onerror={() => markBannerFailed(post.id)}
-            class="block h-full w-full object-cover" />
-        {:else}
-          <div
-            class="to-palette-purple/15 flex h-full w-full items-center justify-center bg-linear-to-br from-accent/15 select-none">
-            <i
-              class="bi bi-journal-text text-2xl text-copilot/50"
-              aria-hidden="true"></i>
-          </div>
-        {/if}
-      </div>
+      {#if post.banner_path && !failedBanners.has(post.id)}
+        <ImageWithSkeleton
+          src={getBannerUrl(post.banner_path)}
+          alt={post.title}
+          aspectRatio="aspect-video"
+          fallbackIcon="bi bi-file-richtext-fill"
+          onerror={() => markBannerFailed(post.id)}
+          class="w-full border border-border-subtle" />
+      {:else}
+        <div
+          class="to-palette-purple/15 relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-sm border border-border-subtle bg-linear-to-br from-accent/15 select-none">
+          <i
+            class="bi bi-file-richtext-fill text-2xl text-copilot/50"
+            aria-hidden="true"></i>
+        </div>
+      {/if}
 
       <div class="flex flex-1 flex-col gap-1 font-sans">
         <div
-          class="flex min-h-[1.25rem] w-full [scrollbar-width:none] flex-wrap items-center gap-x-1.5 overflow-x-auto font-sans text-[11px] font-medium whitespace-nowrap text-text-muted select-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          class="flex min-h-5 w-full scrollbar-none flex-wrap items-center gap-x-1.5 overflow-x-auto font-sans text-xxs font-medium whitespace-nowrap text-text-muted select-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <RelativeTime date={post.created_at} />
+          <span aria-hidden="true">&middot;</span>
+          <span
+            >Last updated {formatAbsoluteDate(
+              post.updated_at || post.created_at
+            )}</span>
           <span aria-hidden="true">&middot;</span>
           <span>{formatReadTime(post.read_time)}</span>
           <span aria-hidden="true">&middot;</span>
@@ -1207,6 +1200,7 @@
             <span>{formatViewCount(post.views_count)}</span>
           {/if}
         </div>
+        <hr class="my-1.5 border-border-subtle" />
         <div class="mt-1">
           <h4 class="text-lg leading-snug font-bold text-text-primary">
             <a
@@ -1217,7 +1211,7 @@
           </h4>
         </div>
         {#if post.excerpt}
-          <p class="min-h-[6.5rem] text-sm leading-normal text-text-secondary">
+          <p class="min-h-26 text-sm leading-normal text-text-secondary">
             {post.excerpt}
           </p>
         {/if}
@@ -1227,7 +1221,7 @@
 
           <div class="grid grid-cols-2 gap-2">
             <Button
-              variant="secondary"
+              type="Secondary"
               size="md"
               leadingIcon="bi-share-fill"
               class="w-full"
@@ -1254,37 +1248,40 @@
               {#if openCopyMenuId === post.id}
                 <div
                   role="menu"
-                  class="absolute left-0 z-50 mt-1.5 min-w-40 overflow-hidden rounded-sm border border-border-subtle bg-surface-elevated/70 py-1 shadow-xl backdrop-blur-lg">
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onclick={() => copyBlogUrl(post)}
-                    class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
-                    <i
-                      class="bi bi-link text-xs"
-                      aria-hidden="true"></i>
-                    <span>Copy Blog URL</span>
-                  </button>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onclick={() => copyBlogId(post)}
-                    class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
-                    <i
-                      class="bi bi-hash text-xs"
-                      aria-hidden="true"></i>
-                    <span>Copy Blog ID</span>
-                  </button>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onclick={() => copyBlogMarkdown(post)}
-                    class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
-                    <i
-                      class="bi bi-markdown-fill text-xs"
-                      aria-hidden="true"></i>
-                    <span>Copy as Markdown</span>
-                  </button>
+                  class="absolute top-[calc(100%+8px)] left-1/2 z-60 flex w-max min-w-40 -translate-x-1/2 flex-col rounded-sm glass-overlay p-0 shadow-xl">
+                  <div
+                    class="relative z-10 flex flex-col overflow-hidden rounded-sm py-0.5">
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onclick={() => copyBlogUrl(post)}
+                      class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
+                      <i
+                        class="bi bi-link text-xs"
+                        aria-hidden="true"></i>
+                      <span>Copy Blog URL</span>
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onclick={() => copyBlogId(post)}
+                      class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
+                      <i
+                        class="bi bi-hash text-xs"
+                        aria-hidden="true"></i>
+                      <span>Copy Blog ID</span>
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onclick={() => copyBlogMarkdown(post)}
+                      class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
+                      <i
+                        class="bi bi-markdown-fill text-xs"
+                        aria-hidden="true"></i>
+                      <span>Copy as Markdown</span>
+                    </button>
+                  </div>
                 </div>
               {/if}
             </div>
@@ -1301,341 +1298,414 @@
   {/snippet}
 
   {#if activeSection === 'home'}
-    <section
-      class="relative z-10 mx-auto flex w-full flex-col gap-8 px-6 pt-10 pb-24 md:w-[80%] md:max-w-none md:pt-14 md:pb-28 lg:w-[60%] xl:w-[50%]">
-      <div
-        class="pointer-events-none absolute top-12.5 left-[50%] z-0 h-80 w-[320px] translate-x-[-50%] rounded-full bg-copilot/10 blur-[80px]">
-      </div>
+    <div
+      class="pointer-events-none fixed inset-0 z-0 overflow-hidden opacity-85 select-none dark:opacity-75">
+      <GradientWaves
+        horizonColor="#1e0b4a"
+        waveColor="#9333ea"
+        crestColor="#34d399"
+        speed={0.45}
+        amplitude={3.0}
+        waveScale={0.65}
+        waveRatio={0.9}
+        swell={40}
+        turbulence={22}
+        tilt={1.11}
+        zoom={1.0}
+        height={5.5}
+        fogDepth={15}
+        detail="medium"
+        brightness={1.35}
+        opacity={1.0}
+        grain={true}
+        grainIntensity={0.04}
+        reduceMotion={a11yStore.current.reduceMotion} />
+    </div>
 
-      <div
-        class="relative z-10 flex flex-col items-center justify-center text-center">
-        <img
-          src={avatar}
-          alt={name || author?.name || ''}
-          loading="lazy"
-          referrerpolicy="no-referrer"
-          class="relative z-10 mb-6 h-28 w-28 rounded-full border-2 border-copilot object-cover object-top shadow-[0_0_20px_color-mix(in_srgb,var(--color-copilot)_25%,transparent)] transition-all duration-300 dark:shadow-[0_0_25px_color-mix(in_srgb,var(--color-copilot)_35%,transparent)]" />
-        <h1
-          class="relative z-10 px-2 text-2xl font-bold tracking-tight whitespace-nowrap text-text-primary sm:text-3xl md:text-4xl lg:text-5xl">
-          {name}
-        </h1>
-        <p
-          class="relative z-10 mt-3 mb-2 font-mono text-lg font-medium text-text-secondary">
-          {headline}
-        </p>
-        <p
-          class="relative z-10 mt-4 max-w-xl text-base leading-relaxed text-text-secondary/90">
-          {desc}
-        </p>
-
+    <Section
+      spacing="none"
+      class="relative z-10 pt-10 pb-6 md:pt-14 md:pb-8">
+      <PageContainer
+        width="standard"
+        class="flex flex-col gap-8">
         <div
-          class="relative z-10 mt-8 flex w-full flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-          {#if data.cvExists}
-            <a
-              href="/api/v1/cv"
-              download="Farhan_Kurnia_Pratama_CV.pdf"
-              class="hover:bg-copilot-hover active:bg-copilot-active inline-flex h-11 w-full cursor-pointer items-center justify-center gap-2.5 rounded-sm bg-copilot px-5 text-sm font-semibold whitespace-nowrap text-text-on-accent transition-all select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:w-48">
-              Download CV
-            </a>
-          {:else}
-            <button
-              type="button"
-              disabled
-              aria-disabled="true"
-              title="No CV document is available yet."
-              class="inline-flex h-11 w-full cursor-not-allowed items-center justify-center gap-2.5 rounded-sm bg-copilot/40 px-5 text-sm font-semibold whitespace-nowrap text-text-on-accent/70 select-none sm:w-48">
-              Download CV
-            </button>
-          {/if}
-          <Button
-            variant="secondary"
-            size="lg"
-            fullWidth
-            onclick={() => navigate('projects')}
-            class="sm:w-48">
-            Browse projects
-          </Button>
-          <Button
-            variant="secondary"
-            size="lg"
-            fullWidth
-            onclick={() => navigate('contact')}
-            class="sm:w-48">
-            Get in touch
-          </Button>
+          class="pointer-events-none absolute top-12.5 left-[50%] z-0 h-80 w-[320px] translate-x-[-50%] rounded-full bg-copilot/10 blur-[80px]">
         </div>
-      </div>
 
-      <div>
-        <h3 class="mb-4 text-lg font-bold tracking-tight text-text-primary">
-          Top projects
-        </h3>
-        {#if recentProjects.length === 0}
-          <EmptyState
-            icon="bi-folder2-open"
-            title="No projects yet"
-            description="Check back soon for featured repositories." />
-        {:else}
+        <div class="relative z-10 mx-auto w-full">
           <div
-            class="relative {openCodeMenuId ? 'z-40' : (
-              'z-0'
-            )} mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {#each recentProjects as project (project.name)}
-              {@render projectCard(project, 'h4', staticTag)}
-            {/each}
-          </div>
-        {/if}
-        {#if projects.length > 0}
-          <div class="mt-4 flex justify-end">
-            <button
-              onclick={() => navigate('projects')}
-              class="group inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-copilot hover:underline">
-              <span class="leading-none">View all projects</span>
-              <i
-                class="bi bi-arrow-right text-base leading-none transition-transform select-none group-hover:translate-x-0.5"
-                aria-hidden="true"></i>
-            </button>
-          </div>
-        {/if}
-      </div>
+            class="relative mt-12 flex flex-col items-center justify-center rounded-sm glass-card border border-border-subtle/60 bg-surface-card/40 p-6 pt-0 text-center shadow-xl backdrop-blur-xl sm:p-8 sm:pt-0 dark:border-white/10 dark:bg-surface-card/30">
+            {#if avatar}
+              <ImageWithSkeleton
+                src={avatar}
+                alt={name || author?.name || ''}
+                referrerpolicy="no-referrer"
+                rounded="rounded-full"
+                class="relative z-10 -mt-14 mb-2 h-28 w-28 border border-border-subtle/60 dark:border-white/10"
+                imgClass="object-top" />
+            {/if}
 
-      <div>
-        <h3 class="mb-4 text-lg font-bold tracking-tight text-text-primary">
-          Recent posts
-        </h3>
-        {#if posts.length === 0}
-          <EmptyState
-            icon="bi-journal-text"
-            title="No posts yet"
-            description="Check back soon for new articles." />
-        {:else}
-          <div class="relative z-0 mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {#each recentPosts as post (post.id)}
-              {@render blogPostCard(post)}
-            {/each}
-          </div>
-        {/if}
-        {#if posts.length > 0}
-          <div class="mt-4 flex justify-end">
-            <button
-              onclick={() => navigate('blog')}
-              class="group inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-copilot hover:underline">
-              <span class="leading-none">View all posts</span>
-              <i
-                class="bi bi-arrow-right text-base leading-none transition-transform select-none group-hover:translate-x-0.5"
-                aria-hidden="true"></i>
-            </button>
-          </div>
-        {/if}
-      </div>
+            <h1
+              class="relative z-10 max-w-full px-2 {avatar ? 'mt-4' : (
+                'pt-6'
+              )} line-clamp-2 text-2xl font-extrabold tracking-tight text-balance wrap-break-word text-text-primary sm:text-3xl md:text-4xl lg:text-5xl">
+              {name}
+            </h1>
 
-      <div>
-        <h3 class="mb-4 text-lg font-bold tracking-tight text-text-primary">
-          Skills
-        </h3>
-        {#if skillsSnapshot.length === 0}
-          <EmptyState
-            icon="bi-stack"
-            title="No skills listed yet"
-            description="Check back soon for updated skills." />
-        {:else}
-          <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            {#each skillsSnapshot as group (group.category)}
-              <div
-                class="sm:min-w-0 sm:shrink sm:grow sm:[flex-basis:var(--sg-basis)]"
-                style="--sg-basis: {skillGroupBasis(group.items.length)}px">
-                <SkillGroup
-                  category={group.category}
-                  skills={group.items}
-                  class="h-full" />
-              </div>
-            {/each}
-          </div>
-        {/if}
-      </div>
-
-      <div>
-        <h3 class="mb-4 text-lg font-bold tracking-tight text-text-primary">
-          Experience
-        </h3>
-        {#if experiences.length === 0}
-          <EmptyState
-            icon="bi-briefcase-fill"
-            title="No experience listed yet"
-            description="Check back soon for career history." />
-        {:else}
-          <div
-            class="divide-y divide-border-subtle overflow-hidden rounded-md border border-border-subtle bg-surface-card/45 text-left shadow-xs backdrop-blur-lg transition-colors duration-300">
-            {#each experiences.slice(0, 2) as exp (exp.title || exp.company)}
-              <CvEntryCard
-                role={exp.title}
-                organization={exp.company}
-                period={formatPeriod(
-                  exp.startMonth,
-                  exp.startYear,
-                  exp.endMonth,
-                  exp.endYear,
-                  exp.currentlyIn
-                )}
-                description={exp.description} />
-            {/each}
-          </div>
-        {/if}
-        <div class="mt-4 flex justify-end">
-          <button
-            onclick={() => navigate('cv')}
-            class="group inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-copilot hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-copilot"
-            aria-label="View full CV including education and experience">
-            <span class="leading-none">View full CV</span>
-            <i
-              class="bi bi-arrow-right text-base leading-none transition-transform select-none group-hover:translate-x-0.5"
-              aria-hidden="true"></i>
-          </button>
-        </div>
-      </div>
-
-      <div
-        class="divide-y divide-adwaita-border overflow-hidden rounded-md border border-copilot/30! bg-copilot/5! text-left shadow-xs backdrop-blur-lg transition-colors duration-300">
-        <div
-          class="flex flex-col justify-between gap-4 px-5 py-4 sm:flex-row sm:items-center">
-          <div class="flex items-start gap-4">
-            <i
-              class="bi bi-heart-fill mt-0.5 shrink-0 text-2xl text-copilot"
-              aria-hidden="true"></i>
-            <div>
-              <h4 class="text-sm font-bold">
-                <ShinyText
-                  text="Support Open Source Work"
-                  color="var(--color-copilot)"
-                  shineColor="var(--color-surface-card)"
-                  speed={1.5} />
-              </h4>
-              <p class="mt-0.5 text-xs leading-relaxed text-text-secondary">
-                Your support helps maintain and improve these open-source
-                projects
+            {#if headline}
+              <p
+                class="relative z-10 mt-1.5 max-w-lg font-sans text-sm leading-relaxed text-text-secondary/85 sm:text-base">
+                {headline}
               </p>
+            {/if}
+
+            {#if desc}
+              <p
+                class="text-md sm:text-md relative z-10 mt-3 max-w-lg font-sans leading-relaxed text-text-primary">
+                {desc}
+              </p>
+            {/if}
+
+            <div
+              class="relative z-10 mt-8 flex w-full flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-4">
+              {#if data.cvExists}
+                <Button
+                  type="Primary"
+                  tone="Neutral"
+                  size="lg"
+                  href="/api/v1/cv?download=1"
+                  download
+                  class="w-full px-5 sm:w-auto sm:px-6">
+                  Download CV
+                </Button>
+              {:else}
+                <Button
+                  type="Primary"
+                  tone="Neutral"
+                  size="lg"
+                  disabled
+                  title="No CV document is available yet."
+                  class="w-full px-5 sm:w-auto sm:px-6">
+                  Download CV
+                </Button>
+              {/if}
+
+              <Button
+                type="Tertiary"
+                size="lg"
+                onclick={() => navigate('projects')}
+                class="w-full px-5 sm:w-auto sm:px-6">
+                Browse projects
+              </Button>
+
+              <Button
+                type="Secondary"
+                size="lg"
+                onclick={() => navigate('contact')}
+                class="w-full px-5 sm:w-auto sm:px-6">
+                Get in touch
+              </Button>
             </div>
           </div>
-          <button
-            onclick={() => navigate('funding')}
-            class="hover:bg-copilot-hover inline-flex shrink-0 cursor-pointer items-center justify-center rounded-sm bg-copilot px-4 py-2 text-xs font-semibold text-white transition-colors">
-            Become a sponsor
-          </button>
-        </div>
-      </div>
-
-      <form
-        bind:this={contactFormElement}
-        novalidate
-        action="https://buttondown.email/api/v1/subscribers"
-        method="POST"
-        onsubmit={validateForm}
-        class="flex w-full flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card/45 p-6 text-left shadow-xs backdrop-blur-xl transition-colors duration-300"
-        autocomplete="off">
-        <input
-          type="hidden"
-          name="_subject"
-          value="New message from portfolio website!" />
-        <input
-          type="hidden"
-          name="_template"
-          value="table" />
-        <input
-          type="hidden"
-          name="_captcha"
-          value="true" />
-        <input
-          type="hidden"
-          name="_url"
-          value="https://fkp.my.id/" />
-
-        <div class="mb-2 select-none">
-          <h2 class="text-sm font-bold text-text-primary">Send a Message</h2>
-          <p class="mt-0.5 text-xs text-text-muted">
-            Feel free to drop me a line. I'll get back to you as soon as
-            possible.
-          </p>
         </div>
 
-        <FormField
-          id="form-name"
-          label="Name"
-          required
-          error={formErrors.name}
-          valid={formValid.name}>
-          <Input
-            type="text"
+        <div>
+          <h3 class="mb-4 text-lg font-bold tracking-tight text-text-primary">
+            Top projects
+          </h3>
+          {#if recentProjects.length === 0}
+            <EmptyState
+              icon="bi-box-seam-fill"
+              title="No projects yet"
+              description="Check back soon for featured repositories." />
+          {:else}
+            <div
+              class="relative {openCodeMenuId ? 'z-40' : (
+                'z-0'
+              )} mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {#each recentProjects as project (project.name)}
+                {@render projectCard(project, 'h4', staticTag)}
+              {/each}
+            </div>
+          {/if}
+          {#if projects.length > 0}
+            <div class="mt-4 flex justify-end">
+              <button
+                onclick={() => navigate('projects')}
+                class="group inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-copilot hover:underline">
+                <span class="leading-none">View all projects</span>
+                <i
+                  class="bi bi-arrow-right text-base leading-none transition-transform select-none group-hover:translate-x-0.5"
+                  aria-hidden="true"></i>
+              </button>
+            </div>
+          {/if}
+        </div>
+
+        <div>
+          <h3 class="mb-4 text-lg font-bold tracking-tight text-text-primary">
+            Recent posts
+          </h3>
+          {#if posts.length === 0}
+            <EmptyState
+              icon="bi-file-richtext-fill"
+              title="No posts yet"
+              description="Check back soon for new articles." />
+          {:else}
+            <div
+              class="relative z-0 mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {#each recentPosts as post (post.id)}
+                {@render blogPostCard(post)}
+              {/each}
+            </div>
+          {/if}
+          {#if posts.length > 0}
+            <div class="mt-4 flex justify-end">
+              <button
+                onclick={() => navigate('blog')}
+                class="group inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-copilot hover:underline">
+                <span class="leading-none">View all posts</span>
+                <i
+                  class="bi bi-arrow-right text-base leading-none transition-transform select-none group-hover:translate-x-0.5"
+                  aria-hidden="true"></i>
+              </button>
+            </div>
+          {/if}
+        </div>
+
+        <div>
+          <h3 class="mb-4 text-lg font-bold tracking-tight text-text-primary">
+            Skills
+          </h3>
+          {#if skillsSnapshot.length === 0}
+            <EmptyState
+              icon="bi-stack"
+              title="No skills listed yet"
+              description="Check back soon for updated skills." />
+          {:else}
+            <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              {#each skillsSnapshot as group (group.category)}
+                <div
+                  class="sm:min-w-0 sm:shrink sm:grow sm:basis-(--sg-basis)"
+                  style="--sg-basis: {skillGroupBasis(group.items.length)}px">
+                  <SkillGroup
+                    category={group.category}
+                    skills={group.items}
+                    class="h-full" />
+                </div>
+              {/each}
+            </div>
+          {/if}
+        </div>
+
+        <div>
+          <h3 class="mb-4 text-lg font-bold tracking-tight text-text-primary">
+            Experience
+          </h3>
+          {#if experiences.length === 0}
+            <EmptyState
+              icon="bi-briefcase-fill"
+              title="No experience listed yet"
+              description="Check back soon for career history." />
+          {:else}
+            <div
+              class="divide-y divide-border-subtle overflow-hidden rounded-md glass-card text-left">
+              {#each experiences.slice(0, 2) as exp (exp.title || exp.company)}
+                <CvEntryCard
+                  role={exp.title}
+                  organization={exp.company}
+                  period={formatPeriod(
+                    exp.startMonth,
+                    exp.startYear,
+                    exp.endMonth,
+                    exp.endYear,
+                    exp.currentlyIn
+                  )}
+                  description={exp.description} />
+              {/each}
+            </div>
+          {/if}
+          <div class="mt-4 flex justify-end">
+            <button
+              onclick={() => navigate('cv')}
+              class="group inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-copilot hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-copilot"
+              aria-label="View full CV including education and experience">
+              <span class="leading-none">View full CV</span>
+              <i
+                class="bi bi-arrow-right text-base leading-none transition-transform select-none group-hover:translate-x-0.5"
+                aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="divide-y divide-adwaita-border overflow-hidden rounded-md glass-card border-copilot/30! bg-copilot/5! text-left shadow-xs">
+          <div
+            class="flex flex-col justify-between gap-4 px-5 py-4 sm:flex-row sm:items-center">
+            <div class="flex items-start gap-4">
+              <i
+                class="bi bi-heart-fill mt-0.5 shrink-0 text-2xl text-copilot"
+                aria-hidden="true"></i>
+              <div>
+                <h4 class="text-sm font-bold">
+                  <ShinyText
+                    text="Support Open Source Work"
+                    color="var(--color-copilot)"
+                    shineColor="#ffffff"
+                    speed={3} />
+                </h4>
+                <p class="mt-0.5 text-xs leading-relaxed text-text-secondary">
+                  Your support helps maintain and improve these open-source
+                  projects
+                </p>
+              </div>
+            </div>
+            <button
+              onclick={() => navigate('funding')}
+              class="hover:bg-copilot-hover inline-flex shrink-0 cursor-pointer items-center justify-center rounded-sm bg-copilot px-4 py-2 text-xs font-semibold text-white transition-colors">
+              Become a sponsor
+            </button>
+          </div>
+        </div>
+
+        <form
+          bind:this={contactFormElement}
+          novalidate
+          action="https://buttondown.email/api/v1/subscribers"
+          method="POST"
+          onsubmit={validateForm}
+          class="flex w-full flex-col gap-3 rounded-sm glass-card p-6 text-left"
+          autocomplete="off">
+          <input
+            type="hidden"
+            name="_subject"
+            value="New message from portfolio website!" />
+          <input
+            type="hidden"
+            name="_template"
+            value="table" />
+          <input
+            type="hidden"
+            name="_captcha"
+            value="true" />
+          <input
+            type="hidden"
+            name="_url"
+            value="https://fkp.my.id/" />
+
+          <div class="mb-2 select-none">
+            <h2 class="text-sm font-bold text-text-primary">Send a Message</h2>
+            <p class="mt-0.5 text-xs text-text-muted">
+              Feel free to drop me a line. I'll get back to you as soon as
+              possible.
+            </p>
+          </div>
+
+          <FormField
             id="form-name"
-            name="name"
-            aria-required="true"
-            autocomplete="name"
-            placeholder="Enter your name"
-            bind:value={formName}
-            error={!!formErrors.name}
-            valid={formValid.name}
-            oninput={() => {
-              formErrors.name = ''
-              formValid.name = false
-              validateName()
-            }} />
-        </FormField>
+            label="Name"
+            required
+            error={formErrors.name}
+            valid={formValid.name}>
+            <Input
+              type="text"
+              id="form-name"
+              name="name"
+              aria-required="true"
+              autocomplete="name"
+              placeholder="Enter your name"
+              bind:value={formName}
+              error={!!formErrors.name}
+              valid={formValid.name}
+              oninput={() => {
+                formErrors.name = ''
+                formValid.name = false
+                validateName()
+              }} />
+          </FormField>
 
-        <FormField
-          id="form-email"
-          label="Email"
-          required
-          error={formErrors.email}
-          valid={formValid.email}>
-          <Input
-            type="text"
+          <FormField
             id="form-email"
-            name="email"
-            aria-required="true"
-            autocomplete="email"
-            placeholder="Enter your email"
-            bind:value={formEmail}
-            error={!!formErrors.email}
-            valid={formValid.email}
-            oninput={() => {
-              formErrors.email = ''
-              formValid.email = false
-              validateEmail()
-            }} />
-        </FormField>
+            label="Email"
+            required
+            error={formErrors.email}
+            valid={formValid.email}>
+            <Input
+              type="text"
+              id="form-email"
+              name="email"
+              aria-required="true"
+              autocomplete="email"
+              placeholder="Enter your email"
+              bind:value={formEmail}
+              error={!!formErrors.email}
+              valid={formValid.email}
+              oninput={() => {
+                formErrors.email = ''
+                formValid.email = false
+                validateEmail()
+              }} />
+          </FormField>
 
-        <FormField
-          id="form-message"
-          label="Message"
-          required
-          error={formErrors.message}
-          valid={formValid.message}
-          counter="{2000 - formMessage.length} left">
-          <Textarea
+          <FormField
             id="form-message"
-            name="message"
-            rows={4}
-            maxlength={2000}
-            placeholder="Write your message…"
-            bind:value={formMessage}
-            error={!!formErrors.message}
+            label="Message"
+            required
+            error={formErrors.message}
             valid={formValid.message}
-            oninput={() => {
-              formErrors.message = ''
-              formValid.message = false
-              validateMessage()
-            }} />
-        </FormField>
+            counter="{2000 - formMessage.length} left">
+            <Textarea
+              id="form-message"
+              name="message"
+              rows={4}
+              maxlength={2000}
+              placeholder="Write your message…"
+              bind:value={formMessage}
+              error={!!formErrors.message}
+              valid={formValid.message}
+              oninput={() => {
+                formErrors.message = ''
+                formValid.message = false
+                validateMessage()
+              }} />
+          </FormField>
 
-        <div class="mt-2 flex justify-end">
-          <Button
-            type="submit"
-            variant="primary"
-            size="md">
-            Send message
-          </Button>
+          <ConsentNotice action="sending this message" />
+
+          <div class="mt-2 flex justify-end">
+            <Button
+              htmlType="submit"
+              type="Primary"
+              size="md">
+              Send message
+            </Button>
+          </div>
+        </form>
+
+        <hr class="mt-10 mb-8 border-border-subtle" />
+
+        <div class="flex flex-col gap-7 select-none">
+          <div class="text-center">
+            <h3
+              class="text-xs font-bold tracking-wider text-text-muted uppercase">
+              Built With These Awesome Technologies & Tools
+            </h3>
+          </div>
+          <LogoLoop
+            logos={techLogos}
+            speed={40}
+            direction="left"
+            logoHeight={85}
+            gap={36}
+            pauseOnHover={false}
+            hoverSpeed={40}
+            scaleOnHover={false}
+            fadeOut={false}
+            ariaLabel="Technologies and tools used to build this website"
+            class="py-2" />
         </div>
-      </form>
-    </section>
+      </PageContainer>
+    </Section>
   {/if}
 
   {#if activeSection === 'contact'}
@@ -1643,352 +1713,375 @@
       title="Contact"
       subtitle="Feel free to reach out via any of the channels below."
       items={contactItems}
-      emptyIcon="bi-envelope-at-fill"
+      emptyIcon="bi-envelope-fill"
       emptyTitle="No contact channels yet"
       emptyDescription="Check back soon for ways to get in touch." />
   {/if}
 
   {#if activeSection === 'cv'}
-    <section
-      class="relative z-10 mx-auto w-full px-6 pt-10 pb-24 md:w-[80%] md:max-w-none md:pt-14 md:pb-28 lg:w-[60%] xl:w-[50%]">
-      <div
-        class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 class="text-3xl font-bold tracking-tight text-text-primary">
-            Curriculum Vitae
-          </h1>
-          <p class="mt-2 text-sm text-text-secondary">
-            Security-focused Software Engineer.
-          </p>
+    <Section
+      spacing="none"
+      class="relative z-10 pt-10 pb-6 md:pt-14 md:pb-8">
+      <PageContainer width="standard">
+        <div
+          class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 class="text-3xl font-bold tracking-tight text-text-primary">
+              Curriculum Vitae
+            </h1>
+            <p class="mt-2 text-sm text-text-secondary">
+              Security-focused Software Engineer.
+            </p>
+          </div>
+          {#if data.cvExists}
+            <div class="flex items-center gap-2">
+              <Button
+                type="Primary"
+                tone="Neutral"
+                size="md"
+                href="/api/v1/cv?download=1"
+                download>
+                Download PDF
+              </Button>
+              <Button
+                type="Secondary"
+                tone="Neutral"
+                size="sm"
+                href="/api/v1/cv?format=sha256"
+                download
+                title="Download SHA256 checksum verification file"
+                class="font-mono">
+                .sha256
+              </Button>
+            </div>
+          {:else}
+            <Button
+              type="Primary"
+              tone="Neutral"
+              size="md"
+              disabled
+              title="No CV document is available yet.">
+              Download PDF
+            </Button>
+          {/if}
         </div>
-        {#if data.cvExists}
-          <a
-            href="/api/v1/cv"
-            download="Farhan_Kurnia_Pratama_CV.pdf"
-            class="hover:bg-copilot-hover inline-flex items-center justify-center rounded-sm bg-copilot px-4 py-2.5 text-sm font-semibold text-white transition-colors">
-            Download PDF
-          </a>
-        {:else}
-          <button
-            type="button"
-            disabled
-            aria-disabled="true"
-            title="No CV document is available yet."
-            class="inline-flex cursor-not-allowed items-center justify-center rounded-sm bg-copilot/40 px-4 py-2.5 text-sm font-semibold text-white/70">
-            Download PDF
-          </button>
-        {/if}
-      </div>
 
-      <div class="mt-10">
-        <h2
-          class="text-sm font-bold tracking-wider text-text-secondary uppercase">
-          Experience
-        </h2>
-        {#if experiences.length === 0}
-          <div class="mt-4">
-            <EmptyState
-              icon="bi-briefcase-fill"
-              title="No experience listed yet"
-              description="Check back soon for career history." />
-          </div>
-        {:else}
-          <div
-            class="mt-4 divide-y divide-border-subtle overflow-hidden rounded-md border border-border-subtle bg-surface-card/45 shadow-xs backdrop-blur-lg transition-colors duration-300">
-            {#each experiences as exp, idx (idx)}
-              <CvEntryCard
-                role={exp.title}
-                organization={exp.company}
-                period={formatPeriod(
-                  exp.startMonth,
-                  exp.startYear,
-                  exp.endMonth,
-                  exp.endYear,
-                  exp.currentlyIn
-                )}
-                description={exp.description} />
-            {/each}
-          </div>
-        {/if}
-      </div>
+        <div class="mt-10">
+          <h2
+            class="text-sm font-bold tracking-wider text-text-secondary uppercase">
+            Experience
+          </h2>
+          {#if experiences.length === 0}
+            <div class="mt-4">
+              <EmptyState
+                icon="bi-briefcase-fill"
+                title="No experience listed yet"
+                description="Check back soon for career history." />
+            </div>
+          {:else}
+            <div
+              class="mt-4 divide-y divide-border-subtle overflow-hidden rounded-md glass-card">
+              {#each experiences as exp (exp.company + exp.startYear)}
+                <CvEntryCard
+                  role={exp.title}
+                  organization={exp.company}
+                  period={formatPeriod(
+                    exp.startMonth,
+                    exp.startYear,
+                    exp.endMonth,
+                    exp.endYear,
+                    exp.currentlyIn
+                  )}
+                  description={exp.description} />
+              {/each}
+            </div>
+          {/if}
+        </div>
 
-      <div class="mt-10">
-        <h2
-          class="text-sm font-bold tracking-wider text-text-secondary uppercase">
-          Education
-        </h2>
-        {#if education.length === 0}
-          <div class="mt-4">
-            <EmptyState
-              icon="bi-mortarboard-fill"
-              title="No education listed yet"
-              description="Check back soon for academic history." />
-          </div>
-        {:else}
-          <div
-            class="mt-4 divide-y divide-border-subtle overflow-hidden rounded-md border border-border-subtle bg-surface-card/45 shadow-xs backdrop-blur-lg transition-colors duration-300">
-            {#each education as edu, idx (idx)}
-              <CvEntryCard
-                role={edu.degree}
-                organization={edu.institution}
-                period={formatPeriod(
-                  edu.startMonth,
-                  edu.startYear,
-                  edu.endMonth,
-                  edu.endYear,
-                  edu.currentlyIn
-                )}
-                description={edu.description} />
-            {/each}
-          </div>
-        {/if}
-      </div>
+        <div class="mt-10">
+          <h2
+            class="text-sm font-bold tracking-wider text-text-secondary uppercase">
+            Education
+          </h2>
+          {#if education.length === 0}
+            <div class="mt-4">
+              <EmptyState
+                icon="bi-mortarboard-fill"
+                title="No education listed yet"
+                description="Check back soon for academic history." />
+            </div>
+          {:else}
+            <div
+              class="mt-4 divide-y divide-border-subtle overflow-hidden rounded-md glass-card">
+              {#each education as edu (edu.institution + edu.startYear)}
+                <CvEntryCard
+                  role={edu.degree}
+                  organization={edu.institution}
+                  period={formatPeriod(
+                    edu.startMonth,
+                    edu.startYear,
+                    edu.endMonth,
+                    edu.endYear,
+                    edu.currentlyIn
+                  )}
+                  description={edu.description} />
+              {/each}
+            </div>
+          {/if}
+        </div>
 
-      <div class="mt-10">
-        <h2
-          class="text-sm font-bold tracking-wider text-text-secondary uppercase">
-          Skills
-        </h2>
-        {#if skills.length === 0}
-          <div class="mt-4">
-            <EmptyState
-              icon="bi-stack"
-              title="No skills listed yet"
-              description="Check back soon for updated skills." />
-          </div>
-        {:else}
-          <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            {#each skills as group (group.category)}
-              <div
-                class="sm:min-w-0 sm:shrink sm:grow sm:[flex-basis:var(--sg-basis)]"
-                style="--sg-basis: {skillGroupBasis(group.items.length)}px">
-                <SkillGroup
-                  category={group.category}
-                  skills={group.items}
-                  class="h-full" />
-              </div>
-            {/each}
-          </div>
-        {/if}
-      </div>
-    </section>
+        <div class="mt-10">
+          <h2
+            class="text-sm font-bold tracking-wider text-text-secondary uppercase">
+            Skills
+          </h2>
+          {#if skills.length === 0}
+            <div class="mt-4">
+              <EmptyState
+                icon="bi-stack"
+                title="No skills listed yet"
+                description="Check back soon for updated skills." />
+            </div>
+          {:else}
+            <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              {#each skills as group (group.category)}
+                <div
+                  class="sm:min-w-0 sm:shrink sm:grow sm:basis-(--sg-basis)"
+                  style="--sg-basis: {skillGroupBasis(group.items.length)}px">
+                  <SkillGroup
+                    category={group.category}
+                    skills={group.items}
+                    class="h-full" />
+                </div>
+              {/each}
+            </div>
+          {/if}
+        </div>
+      </PageContainer>
+    </Section>
   {/if}
 
   {#if activeSection === 'blog'}
-    <section
-      class="relative z-10 mx-auto w-full px-6 pt-10 pb-24 md:w-[80%] md:max-w-none md:pt-14 md:pb-28 lg:w-[60%] xl:w-[50%]">
-      <div class="mb-6 flex items-end justify-between gap-4">
-        <div>
-          <h1 class="text-3xl font-bold tracking-tight text-text-primary">
-            Blog
-          </h1>
-          <p class="mt-2 text-sm text-text-secondary">
-            Thoughts on Linux, security, and open source.
-          </p>
+    <Section
+      spacing="none"
+      class="relative z-10 pt-10 pb-6 md:pt-14 md:pb-8">
+      <PageContainer width="standard">
+        <div class="mb-6 flex items-end justify-between gap-4">
+          <div>
+            <h1 class="text-3xl font-bold tracking-tight text-text-primary">
+              Blog
+            </h1>
+            <p class="mt-2 text-sm text-text-secondary">
+              Thoughts on Linux, security, and open source.
+            </p>
+          </div>
+          <a
+            href="/atom.xml"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Subscribe via Atom/RSS feed"
+            aria-label="Subscribe via Atom/RSS feed"
+            class="mb-0.5 inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-sm border border-border-subtle bg-surface-card px-3 text-xs font-semibold text-text-muted transition-colors select-none hover:bg-surface-hover hover:text-brand-rss">
+            <i
+              class="bi bi-rss-fill text-xs select-none"
+              aria-hidden="true"></i>
+            <span class="hidden items-center sm:inline">Feed</span>
+          </a>
         </div>
-        <a
-          href="/atom.xml"
-          target="_blank"
-          rel="noopener noreferrer"
-          title="Subscribe via Atom/RSS feed"
-          aria-label="Subscribe via Atom/RSS feed"
-          class="mb-0.5 inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-sm border border-border-subtle bg-surface-card px-3 text-xs font-semibold text-text-muted transition-colors select-none hover:bg-surface-hover hover:text-(--color-brand-rss)">
-          <i
-            class="bi bi-rss-fill text-xs select-none"
-            aria-hidden="true"></i>
-          <span class="hidden items-center sm:inline">Feed</span>
-        </a>
-      </div>
 
-      {#if posts.length > 0}
-        <div class="mb-6">
-          <FilterToolbar title="Blog posts filter">
-            {#snippet searchSlot()}
-              <div class="w-full sm:w-60">
-                <Input
-                  type="search"
-                  placeholder="Search articles..."
-                  value={blogFilterStore.search}
-                  oninput={e =>
-                    blogFilterStore.setSearch(
-                      (e.target as HTMLInputElement).value
-                    )}
-                  size="sm"
-                  aria-label="Search blog articles" />
-              </div>
-            {/snippet}
+        {#if posts.length > 0}
+          <div class="mb-6">
+            <FilterToolbar title="Blog posts filter">
+              {#snippet searchSlot()}
+                <div class="w-full sm:w-60">
+                  <Input
+                    type="search"
+                    placeholder="Search articles..."
+                    value={blogFilterStore.search}
+                    oninput={e =>
+                      blogFilterStore.setSearch(
+                        (e.target as HTMLInputElement).value
+                      )}
+                    size="sm"
+                    aria-label="Search blog articles" />
+                </div>
+              {/snippet}
 
-            {#snippet filterControlsSlot()}
-              {#if allBlogTags.length > 0}
-                <FilterCheckboxGroup
-                  label="Category/Tag"
-                  options={allBlogTags.map(t => ({value: t, label: t}))}
-                  selectedValues={blogFilterStore.filters['tag'] || []}
-                  onChange={val =>
-                    blogFilterStore.toggleMultiFilter('tag', val)} />
-              {/if}
-            {/snippet}
+              {#snippet filterControlsSlot()}
+                {#if allBlogTags.length > 0}
+                  <FilterCheckboxGroup
+                    label="Category/Tag"
+                    options={allBlogTags.map(t => ({value: t, label: t}))}
+                    selectedValues={blogFilterStore.filters['tag'] || []}
+                    onChange={val =>
+                      blogFilterStore.toggleMultiFilter('tag', val)} />
+                {/if}
+              {/snippet}
 
-            {#snippet countSlot()}
-              <SearchResultCount
-                count={filteredBlogPosts.length}
-                total={posts.length}
-                itemLabel="articles" />
-            {/snippet}
+              {#snippet countSlot()}
+                <SearchResultCount
+                  count={filteredBlogPosts.length}
+                  total={posts.length}
+                  itemLabel="articles" />
+              {/snippet}
 
-            {#snippet sortSlot()}
-              <SortControl
-                fields={[
-                  {value: 'date', label: 'Date'},
-                  {value: 'views', label: 'Views'},
-                  {value: 'comments', label: 'Comments'},
-                  {value: 'readingTime', label: 'Reading time'},
-                  {value: 'title', label: 'Title'}
-                ]}
-                currentField={blogFilterStore.sort.field}
-                currentDirection={blogFilterStore.sort.direction}
-                onFieldChange={field => blogFilterStore.setSort(field)}
-                onDirectionToggle={() =>
-                  blogFilterStore.toggleSortDirection()} />
-            {/snippet}
+              {#snippet sortSlot()}
+                <SortControl
+                  fields={[
+                    {value: 'date', label: 'Date'},
+                    {value: 'views', label: 'Views'},
+                    {value: 'comments', label: 'Comments'},
+                    {value: 'readingTime', label: 'Reading time'},
+                    {value: 'title', label: 'Title'}
+                  ]}
+                  currentField={blogFilterStore.sort.field}
+                  currentDirection={blogFilterStore.sort.direction}
+                  onFieldChange={field => blogFilterStore.setSort(field)}
+                  onDirectionToggle={() =>
+                    blogFilterStore.toggleSortDirection()} />
+              {/snippet}
 
-            {#snippet chipsSlot()}
-              <FilterChipGroup
-                chips={blogFilterStore.activeChips}
-                onRemove={(type, val) =>
-                  blogFilterStore.removeFilter(type, val)}
-                onClearAll={() => blogFilterStore.clearAllFilters()} />
-            {/snippet}
-          </FilterToolbar>
-        </div>
-      {/if}
+              {#snippet chipsSlot()}
+                <FilterChipGroup
+                  chips={blogFilterStore.activeChips}
+                  onRemove={(type, val) =>
+                    blogFilterStore.removeFilter(type, val)}
+                  onClearAll={() => blogFilterStore.clearAllFilters()} />
+              {/snippet}
+            </FilterToolbar>
+          </div>
+        {/if}
 
-      {#if posts.length === 0}
-        <EmptyState
-          icon="bi-journal-x"
-          title="No posts yet"
-          description="Articles will appear here once published." />
-      {:else if filteredBlogPosts.length === 0}
-        <FilterEmptyState
-          title="No articles match these filters"
-          description="Try adjusting your tag filters or search keyword."
-          onClearFilters={() => blogFilterStore.clearAllFilters()} />
-      {:else}
-        <div class="relative z-0 mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {#each paginatedBlogPosts as post (post.id)}
-            {@render blogPostCard(post)}
-          {/each}
-        </div>
-        <div class="mt-6">
-          <Pagination
-            page={blogPageClamped}
-            totalPages={blogTotalPages}
-            onPageChange={p => (blogPage = p)} />
-        </div>
-      {/if}
-    </section>
+        {#if posts.length === 0}
+          <EmptyState
+            icon="bi-file-richtext-fill"
+            title="No posts yet"
+            description="Articles will appear here once published." />
+        {:else if filteredBlogPosts.length === 0}
+          <FilterEmptyState
+            title="No articles match these filters"
+            description="Try adjusting your tag filters or search keyword."
+            onClearFilters={() => blogFilterStore.clearAllFilters()} />
+        {:else}
+          <div class="relative z-0 mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {#each paginatedBlogPosts as post (post.id)}
+              {@render blogPostCard(post)}
+            {/each}
+          </div>
+          <div class="mt-6">
+            <Pagination
+              page={blogPageClamped}
+              totalPages={blogTotalPages}
+              onPageChange={p => (blogPage = p)} />
+          </div>
+        {/if}
+      </PageContainer>
+    </Section>
   {/if}
 
   {#if activeSection === 'projects'}
-    <section
-      class="relative z-10 mx-auto w-full px-6 pt-10 pb-24 md:w-[80%] md:max-w-none md:pt-14 md:pb-28 lg:w-[60%] xl:w-[50%]">
-      <div class="mb-6">
-        <h1 class="text-3xl font-bold tracking-tight text-text-primary">
-          Projects
-        </h1>
-        <p class="mt-2 text-sm text-text-secondary">
-          Open source work on GitHub.
-        </p>
-      </div>
-
-      {#if projects.length > 0}
+    <Section
+      spacing="none"
+      class="relative z-10 pt-10 pb-6 md:pt-14 md:pb-8">
+      <PageContainer width="standard">
         <div class="mb-6">
-          <FilterToolbar title="Projects filter">
-            {#snippet searchSlot()}
-              <div class="w-full sm:w-60">
-                <Input
-                  type="search"
-                  placeholder="Search projects..."
-                  value={projectFilterStore.search}
-                  oninput={e =>
-                    projectFilterStore.setSearch(
-                      (e.target as HTMLInputElement).value
-                    )}
-                  size="sm"
-                  aria-label="Search projects" />
-              </div>
-            {/snippet}
-
-            {#snippet filterControlsSlot()}
-              {#if allProjectTags.length > 0}
-                <FilterCheckboxGroup
-                  label="Topics"
-                  options={allProjectTags.map(t => ({value: t, label: t}))}
-                  selectedValues={projectFilterStore.filters['tag'] || []}
-                  onChange={val =>
-                    projectFilterStore.toggleMultiFilter('tag', val)} />
-              {/if}
-            {/snippet}
-
-            {#snippet countSlot()}
-              <SearchResultCount
-                count={filteredProjectList.length}
-                total={projects.length}
-                itemLabel="projects" />
-            {/snippet}
-
-            {#snippet sortSlot()}
-              <SortControl
-                fields={[
-                  {value: 'name', label: 'Name'},
-                  {value: 'stars', label: 'Stars'},
-                  {value: 'license', label: 'License'}
-                ]}
-                currentField={projectFilterStore.sort.field}
-                currentDirection={projectFilterStore.sort.direction}
-                onFieldChange={field => projectFilterStore.setSort(field)}
-                onDirectionToggle={() =>
-                  projectFilterStore.toggleSortDirection()} />
-            {/snippet}
-
-            {#snippet chipsSlot()}
-              <FilterChipGroup
-                chips={projectFilterStore.activeChips}
-                onRemove={(type, val) =>
-                  projectFilterStore.removeFilter(type, val)}
-                onClearAll={() => projectFilterStore.clearAllFilters()} />
-            {/snippet}
-          </FilterToolbar>
+          <h1 class="text-3xl font-bold tracking-tight text-text-primary">
+            Projects
+          </h1>
+          <p class="mt-2 text-sm text-text-secondary">
+            Open source work on GitHub.
+          </p>
         </div>
-      {/if}
 
-      {#if projects.length === 0}
-        <EmptyState
-          icon="bi-box-seam"
-          title="No projects yet"
-          description="Projects will appear here." />
-      {:else if filteredProjectList.length === 0}
-        <FilterEmptyState
-          title="No projects match these filters"
-          description="Try adjusting your tech stack filters or search keyword."
-          onClearFilters={() => projectFilterStore.clearAllFilters()} />
-      {:else}
-        <div
-          class="relative {openCodeMenuId ? 'z-40' : (
-            'z-0'
-          )} mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {#each paginatedProjectList as project (project.name)}
-            {@render projectCard(project, 'h3', filterableTag)}
-          {/each}
-        </div>
-        <div class="mt-6">
-          <Pagination
-            page={projectPageClamped}
-            totalPages={projectTotalPages}
-            onPageChange={p => (projectPage = p)} />
-        </div>
-      {/if}
-    </section>
+        {#if projects.length > 0}
+          <div class="mb-6">
+            <FilterToolbar title="Projects filter">
+              {#snippet searchSlot()}
+                <div class="w-full sm:w-60">
+                  <Input
+                    type="search"
+                    placeholder="Search projects..."
+                    value={projectFilterStore.search}
+                    oninput={e =>
+                      projectFilterStore.setSearch(
+                        (e.target as HTMLInputElement).value
+                      )}
+                    size="sm"
+                    aria-label="Search projects" />
+                </div>
+              {/snippet}
+
+              {#snippet filterControlsSlot()}
+                {#if allProjectTags.length > 0}
+                  <FilterCheckboxGroup
+                    label="Topics"
+                    options={allProjectTags.map(t => ({value: t, label: t}))}
+                    selectedValues={projectFilterStore.filters['tag'] || []}
+                    onChange={val =>
+                      projectFilterStore.toggleMultiFilter('tag', val)} />
+                {/if}
+              {/snippet}
+
+              {#snippet countSlot()}
+                <SearchResultCount
+                  count={filteredProjectList.length}
+                  total={projects.length}
+                  itemLabel="projects" />
+              {/snippet}
+
+              {#snippet sortSlot()}
+                <SortControl
+                  fields={[
+                    {value: 'name', label: 'Name'},
+                    {value: 'stars', label: 'Stars'},
+                    {value: 'license', label: 'License'}
+                  ]}
+                  currentField={projectFilterStore.sort.field}
+                  currentDirection={projectFilterStore.sort.direction}
+                  onFieldChange={field => projectFilterStore.setSort(field)}
+                  onDirectionToggle={() =>
+                    projectFilterStore.toggleSortDirection()} />
+              {/snippet}
+
+              {#snippet chipsSlot()}
+                <FilterChipGroup
+                  chips={projectFilterStore.activeChips}
+                  onRemove={(type, val) =>
+                    projectFilterStore.removeFilter(type, val)}
+                  onClearAll={() => projectFilterStore.clearAllFilters()} />
+              {/snippet}
+            </FilterToolbar>
+          </div>
+        {/if}
+
+        {#if projects.length === 0}
+          <EmptyState
+            icon="bi-box-seam-fill"
+            title="No projects yet"
+            description="Projects will appear here." />
+        {:else if filteredProjectList.length === 0}
+          <FilterEmptyState
+            title="No projects match these filters"
+            description="Try adjusting your tech stack filters or search keyword."
+            onClearFilters={() => projectFilterStore.clearAllFilters()} />
+        {:else}
+          <div
+            class="relative {openCodeMenuId ? 'z-40' : (
+              'z-0'
+            )} mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {#each paginatedProjectList as project (project.name)}
+              {@render projectCard(project, 'h3', filterableTag)}
+            {/each}
+          </div>
+          <div class="mt-6">
+            <Pagination
+              page={projectPageClamped}
+              totalPages={projectTotalPages}
+              onPageChange={p => (projectPage = p)} />
+          </div>
+        {/if}
+      </PageContainer>
+    </Section>
   {/if}
 
   {#if activeSection === 'funding'}
@@ -2000,6 +2093,16 @@
       emptyTitle="No funding platforms yet"
       emptyDescription="Check back soon for ways to support this work." />
   {/if}
+
+  <div
+    class="mx-auto w-full max-w-full px-6 md:w-[80%] lg:w-[65%] xl:w-[55%] {(
+      activeSection === 'home'
+    ) ?
+      'my-6'
+    : 'mt-2 mb-6'}"
+    aria-hidden="true">
+    <div class="w-full border-t border-border-subtle/60"></div>
+  </div>
 
   <FooterSection
     onNavClick={url => {
@@ -2023,12 +2126,12 @@
   onClose={() => (showSendMessageDialog = false)}>
   {#snippet footer()}
     <Button
-      variant="secondary"
+      type="Secondary"
       size="md"
       showEscHint
       onclick={() => (showSendMessageDialog = false)}>Cancel</Button>
     <Button
-      variant="primary"
+      type="Primary"
       size="md"
       onclick={executeSendMessage}>Send message</Button>
   {/snippet}

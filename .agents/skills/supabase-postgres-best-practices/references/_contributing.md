@@ -1,7 +1,8 @@
+<!-- @format -->
+
 # Writing Guidelines for Postgres References
 
-This document provides guidelines for creating effective Postgres best
-practice references that work well with AI agents and LLMs.
+This document provides guidelines for creating effective Postgres best practice references that work well with AI agents and LLMs.
 
 ## Key Principles
 
@@ -9,13 +10,11 @@ practice references that work well with AI agents and LLMs.
 
 Show exact SQL rewrites. Avoid philosophical advice.
 
-**Good:** "Use `WHERE id = ANY(ARRAY[...])` instead of
-`WHERE id IN (SELECT ...)`" **Bad:** "Design good schemas"
+**Good:** "Use `WHERE id = ANY(ARRAY[...])` instead of `WHERE id IN (SELECT ...)`" **Bad:** "Design good schemas"
 
 ### 2. Error-First Structure
 
-Always show the problematic pattern first, then the solution. This trains agents
-to recognize anti-patterns.
+Always show the problematic pattern first, then the solution. This trains agents to recognize anti-patterns.
 
 ```markdown
 **Incorrect (sequential queries):** [bad example]
@@ -27,13 +26,11 @@ to recognize anti-patterns.
 
 Include specific metrics. Helps agents prioritize fixes.
 
-**Good:** "10x faster queries", "50% smaller index", "Eliminates N+1" 
-**Bad:** "Faster", "Better", "More efficient"
+**Good:** "10x faster queries", "50% smaller index", "Eliminates N+1" **Bad:** "Faster", "Better", "More efficient"
 
 ### 4. Self-Contained Examples
 
-Examples should be complete and runnable (or close to it). Include `CREATE TABLE`
-if context is needed.
+Examples should be complete and runnable (or close to it). Include `CREATE TABLE` if context is needed.
 
 ```sql
 -- Include table definition when needed for clarity
@@ -51,8 +48,7 @@ CREATE INDEX users_active_email_idx ON users(email) WHERE deleted_at IS NULL;
 
 Use meaningful table/column names. Names carry intent for LLMs.
 
-**Good:** `users`, `email`, `created_at`, `is_active`
-**Bad:** `table1`, `col1`, `field`, `flag`
+**Good:** `users`, `email`, `created_at`, `is_active` **Bad:** `table1`, `col1`, `field`, `flag`
 
 ---
 
@@ -105,9 +101,9 @@ Most references should focus on pure SQL patterns. This keeps examples portable.
 
 ```typescript
 for (const user of users) {
-  const posts = await db.query("SELECT * FROM posts WHERE user_id = $1", [
-    user.id,
-  ]);
+  const posts = await db.query('SELECT * FROM posts WHERE user_id = $1', [
+    user.id
+  ])
 }
 ```
 ````
@@ -115,9 +111,9 @@ for (const user of users) {
 **Correct (batch query):**
 
 ```typescript
-const posts = await db.query("SELECT * FROM posts WHERE user_id = ANY($1)", [
-  userIds,
-]);
+const posts = await db.query('SELECT * FROM posts WHERE user_id = ANY($1)', [
+  userIds
+])
 ```
 
 ---
@@ -125,7 +121,7 @@ const posts = await db.query("SELECT * FROM posts WHERE user_id = ANY($1)", [
 ## Impact Level Guidelines
 
 | Level | Improvement | Use When |
-|-------|-------------|----------|
+| --- | --- | --- |
 | **CRITICAL** | 10-100x | Missing indexes, connection exhaustion, sequential scans on large tables |
 | **HIGH** | 5-20x | Wrong index types, poor partitioning, missing covering indexes |
 | **MEDIUM-HIGH** | 2-5x | N+1 queries, inefficient pagination, RLS optimization |
@@ -147,8 +143,7 @@ const posts = await db.query("SELECT * FROM posts WHERE user_id = ANY($1)", [
 **Format:**
 
 ```markdown
-Reference:
-[Postgres Indexes](https://www.postgresql.org/docs/current/indexes.html)
+Reference: [Postgres Indexes](https://www.postgresql.org/docs/current/indexes.html)
 ```
 
 ---

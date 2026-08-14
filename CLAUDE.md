@@ -14,8 +14,10 @@ Package manager is **bun** — never use npm/npx/yarn/pnpm in this repo (`bun.lo
 
 ```sh
 bun install          # install deps
-bun run dev [--host]  # start Vite dev server
-bun run build         # production build -> .svelte-kit/cloudflare
+bun run dev [--host]  # start Vite dev server (mode: development)
+bun run dev:preview    # start Vite dev server against Preview-tier config (mode: preview)
+bun run build         # production build -> .svelte-kit/cloudflare (mode: production)
+bun run build:preview  # build against Preview-tier config (mode: preview)
 bun run preview       # preview the production build
 bun run check          # svelte-kit sync + svelte-check (type checking)
 bun run check:watch    # same, in watch mode
@@ -25,9 +27,23 @@ bun run format           # prettier --write .
 
 There is no test runner configured in this repo — `bun run check` (types) and `bun run lint` are the correctness gates. Always run `check` and `lint` after non-trivial changes.
 
-Requires a `.env` (copy from `.env.example`) with at least `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY` for the dev server to start. Other vars: Cloudflare R2 (CV file storage), Sentry, Turnstile (bot protection), `IP_SALT` (hashing client IPs), `SUPABASE_SERVICE_ROLE_KEY` (server-only, bypasses RLS).
+Requires a `.env` (copy from `.env.example`) with at least `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY` for the dev server to start. Other vars: Cloudflare R2 (CV file storage), Sentry, Turnstile (bot protection), `IP_SALT` (hashing client IPs), `SUPABASE_SERVICE_ROLE_KEY` (server-only, bypasses RLS), `CLOUDFLARE_API_TOKEN` (wrangler CLI auth — needed for the `AI` binding's `remote: true` mode in `wrangler.jsonc` to actually reach Cloudflare instead of silently falling back to the heuristic comment-moderation check). Turnstile keys differ per deploy tier — layer `.env.production.example` or `.env.preview.example` on top as `.env.production`/`.env.preview` to match the tier you're targeting locally (see [Environments](#environments) below).
 
 Nix/NixOS users can also `nix develop` for a dev shell (`flake.nix`).
+
+### Container images
+
+Three container artefacts live at the repo root — do **not** delete or regenerate them without updating both this file and `README.md`:
+
+| File | Toolchain |
+| --- | --- |
+| `Dockerfile` | Docker multi-stage (deps → builder → runner via `oven/bun:1-alpine`) |
+| `Containerfile` | Podman / OCI — identical logic, fully-qualified `docker.io/` image names |
+| `docker.nix` | Nix `dockerTools.buildLayeredImage` — reproducible, no Dockerfile |
+
+`.dockerignore` excludes `node_modules`, `.env*`, `.git`, agent tooling, and Nix `result` symlinks from the Docker build context. `docker.nix`'s own Nix source filter mirrors that `.env*` exclusion separately (Nix doesn't read `.dockerignore`) — keep both in sync when adding new secret-bearing file patterns. `SENTRY_AUTH_TOKEN` is passed as a BuildKit `--secret` (not a `--build-arg`) in `Dockerfile`/`Containerfile`, since build args are persisted in image history — never move it back to a plain `ARG`.
+
+All images expose port **8788** and run `wrangler pages dev .svelte-kit/cloudflare` for local preview. `PUBLIC_*` env vars are injected at build-time (`ARG`); secrets must be supplied at `run` time via `--env-file .env`.
 
 ## Architecture
 
@@ -47,7 +63,8 @@ Full endpoint reference and error-code table: [src/routes/api/v1/README.md](src/
 - **Error envelope**: route handlers return a flat `{code, message, details?}` body via `apiError()` (`src/lib/server/apiError.ts`); `src/hooks.server.ts` is the single place that wraps this into the public `{error: {...}}` shape. Never hand-roll error JSON in a route — always go through `apiError`.
 - **Error codes** are stable and per-endpoint (e.g. `BLOG_POST_NOT_FOUND`, `BLOG_COMMENT_TURNSTILE_FAILED`) — add new codes to both the handler and the README table, don't reuse generic ones.
 - **Versioning**: breaking changes ship under a new `/api/v2/`, never in place under `/api/v1`.
-- **CORS + rate limiting** are handled centrally in `src/hooks.server.ts` (60 req/min/IP via Cloudflare's `API_RATE_LIMITER` binding, with an in-memory-per-isolate fallback for local dev) — `/api/v1/admin/*` is exempted from the general limiter but has its own lockout (`src/lib/server/loginRateLimit.ts`, 5 failed attempts / 15 min).
+- **`/api/v1` is strictly read-only (`GET` only)** — no route under it may export a mutating method (`POST`/`PUT`/`PATCH`/`DELETE`). Anything that needs to write data (comment submission, view counting, admin login/CV upload/delete) lives under `/api/internal/**` instead — unversioned, undocumented, first-party-only (no `Access-Control-Allow-Origin` wildcard, gated by `isSameOriginRequest()` from `src/lib/server/sameOrigin.ts` where there's no other auth). Never add a mutating handler under `/api/v1`.
+- **CORS + rate limiting** are handled centrally in `src/hooks.server.ts` (60 req/min/IP via Cloudflare's `API_RATE_LIMITER` binding, with an in-memory-per-isolate fallback for local dev) — `/api/internal/admin/*` is exempted from the general limiter but has its own lockout (`src/lib/server/loginRateLimit.ts`, 5 failed attempts / 15 min).
 - **Markdown responses**: `?format=md` / `Accept: text/markdown` is supported only on `/api/v1/blog`, `/api/v1/blog/{id_or_slug}`, and `/api/v1/author` — don't assume it works elsewhere.
 - Keep `src/lib/openapi.ts` and `/.well-known/openapi.{json,yaml}` in sync with any route/schema changes.
 
@@ -60,6 +77,15 @@ Full endpoint reference and error-code table: [src/routes/api/v1/README.md](src/
 - `supabase/functions/` — Supabase Edge Functions (`admin`, `admin-cv-upload`, `admin-cv-delete`) deployed separately from the SvelteKit app.
 - Comment moderation: submissions are checked by Llama Guard 3 (via the Cloudflare `AI` binding declared in `wrangler.jsonc`), falling back to a heuristic keyword/pattern check if that binding is unavailable. `is_approved: false` means held back, not published.
 - **No hardcoded/raw content data in application code.** Author name, bio, contact info, CV entries, funding links, skills, etc. must always be fetched from Supabase via `author.ts`/`authorApi.ts` — never inline a literal value (e.g. the author's name or bio) directly in a component or route as a stand-in for real data. This doesn't apply to files that are inherently static by format/platform convention (`.github/FUNDING.yml`, `SECURITY.md`, `package.json` metadata, etc.) — those aren't rendered app content.
+
+### Environments
+
+Two Cloudflare Pages tiers, each with its own dashboard-configured environment variable set (Cloudflare Pages always builds with the single `bun run build` command for both tiers — there's no per-environment build command — so the variable set is what differentiates a deployment, never a committed `.env.*` file, which is for local dev only):
+
+- **Production** — `main` branch, deploys to `fkp.my.id`. Real Turnstile keys, `PUBLIC_SENTRY_ENVIRONMENT=production`.
+- **Preview** — `develop` branch (and PRs), deploys to a `*.pages.dev` URL. Cloudflare's [dummy Turnstile testing keys](https://developers.cloudflare.com/turnstile/troubleshooting/testing/) instead of real ones (preview URLs aren't a verified Turnstile domain), `PUBLIC_SENTRY_ENVIRONMENT=preview`.
+
+Both tiers share the same Supabase project and `wrangler.jsonc` bindings (`AI`, `API_RATE_LIMITER`) — no per-tier split there. `src/hooks.server.ts` and `src/hooks.client.ts` tag Sentry events with `PUBLIC_SENTRY_ENVIRONMENT`, falling back to `import.meta.env.MODE` when that var is unset (local dev), so `production`/`preview`/`development` events never mix in Sentry. `.env.production.example` / `.env.preview.example` document only the values that differ per tier (`PUBLIC_SENTRY_ENVIRONMENT`, Turnstile); everything else stays in `.env.example`. `bun run dev:preview` / `bun run build:preview` (Vite mode `preview`) are local-only conveniences for testing against a `.env.preview` overlay — they have no effect on what Cloudflare Pages actually deploys.
 
 ### `src/hooks.server.ts`
 
@@ -78,6 +104,15 @@ Single `sequence()`-composed `Handle` doing, in order: Sentry init/handle, `www.
 
 `.agents/` and `agent/skills/` hold Supabase and security-audit skill references used by AI coding agents working in this repo (Postgres best practices, security audit checklists) — not part of the application runtime.
 
+### Svelte MCP tooling
+
+Claude Code can use the Svelte MCP server, which provides comprehensive Svelte 5 and SvelteKit documentation. Follow this workflow when working on Svelte or SvelteKit topics:
+
+- Use `list-sections` first to discover available documentation sections. It returns titles, use cases, and paths.
+- After `list-sections`, analyze the returned sections, especially `use_cases`, and use `get-documentation` to retrieve every section relevant to the task. The tool accepts one or multiple sections.
+- Use `svelte-autofixer` whenever writing Svelte code, before presenting it to the user. Continue calling it until it returns no issues or suggestions.
+- After completing code, ask the user whether they want a Svelte Playground link. Call `playground-link` only after the user confirms, and never call it when the code was written to project files.
+
 ## Code style
 
 Enforced by `prettier.config.ts` + `eslint.config.js` — run `bun run format` before committing. Notable non-defaults: no semicolons, single quotes, no trailing commas, no bracket spacing (`{foo}` not `{ foo }`), `arrowParens: 'avoid'`, 2-space indent. Files start with a `/** @format */` pragma (`insertPragma: true`). Svelte 5 runes syntax (`$state`, `$derived`, etc.) is used throughout — this is not Svelte 4/Options API.
@@ -90,8 +125,8 @@ Enforced by `prettier.config.ts` + `eslint.config.js` — run `bun run format` b
 
 This repo uses **git-flow-next** (classic preset — https://git-flow.sh/), initialized via `git-flow init --preset=classic --defaults --main main`. Config lives in local `.git/config` (`gitflow.*` keys), not committed — re-run that command on a fresh clone.
 
-- `main` — production/release only. Never commit directly; only `release/*` and `hotfix/*` branches merge into it (and get tagged).
-- `develop` — integration branch. `feature/*` and `bugfix/*` branch from and merge back into it.
+- `main` — production/release only. Never commit directly; only `release/*` and `hotfix/*` branches merge into it (and get tagged). Deploys to Cloudflare Pages **Production** (see [Environments](#environments)).
+- `develop` — integration branch. `feature/*` and `bugfix/*` branch from and merge back into it. Deploys to Cloudflare Pages **Preview**.
 - `feature/<name>`, `bugfix/<name>` — parent `develop`. `git-flow feature start <name>` / `git-flow feature finish <name>`.
 - `release/<name>`, `hotfix/<name>` — parent `main`, started from `develop`/`main` respectively, merge into `main`, tagged on finish.
 

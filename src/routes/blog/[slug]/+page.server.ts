@@ -2,9 +2,8 @@
 
 import {supabase} from '$lib/supabase'
 import {error} from '@sveltejs/kit'
-import {renderMarkdown} from '$lib/markdown'
+import {renderMarkdown, injectHeadingIds} from '$lib/markdown'
 import type {PageServerLoad} from './$types'
-import {fetchAuthorProfile} from '$lib/author'
 
 export interface BlogComment {
   id: string
@@ -17,42 +16,17 @@ export interface BlogComment {
   created_at: string
 }
 
-function injectHeadingIds(html: string): string {
-  let index = 0
-  const usedIds = new Set<string>()
-
-  return html.replace(
-    /<h([23])([^>]*)>(.*?)<\/h\1>/gi,
-    (match, level, attrs, content) => {
-      if (attrs.includes('id=')) {
-        const idMatch = attrs.match(/id="([^"]*)"/)
-        if (idMatch) {
-          usedIds.add(idMatch[1])
-        }
-        return match
-      }
-
-      const text = content.replace(/<[^>]*>/g, '')
-      const baseId =
-        text ?
-          text
-            .toLowerCase()
-            .replace(/[^a-z0-9\s-]/g, '')
-            .replace(/\s+/g, '-')
-            .replace(/-+/g, '-')
-            .trim()
-        : `heading-${index++}`
-
-      let id = baseId
-      let counter = 1
-      while (usedIds.has(id)) {
-        id = `${baseId}-${counter++}`
-      }
-      usedIds.add(id)
-
-      return `<h${level}${attrs} id="${id}">${content}</h${level}>`
-    }
-  )
+export interface RelatedPost {
+  id: string
+  title: string
+  slug: string
+  excerpt: string | null
+  created_at: string | null
+  updated_at: string | null
+  bannerPublicUrl: string | null
+  read_time: string
+  comment_count: number
+  views_count: number
 }
 
 function estimateReadTime(markdown: string): string {
@@ -61,15 +35,27 @@ function estimateReadTime(markdown: string): string {
   return `${minutes} min${minutes > 1 ? 's' : ''} read`
 }
 
+function getRelatedWindow<T extends {id: string}>(
+  posts: T[],
+  currentId: string
+): T[] {
+  const idx = posts.findIndex(p => p.id === currentId)
+  if (idx === -1) return []
+  if (idx === 0) return posts.slice(1, 3)
+  if (idx === posts.length - 1) return posts.slice(Math.max(0, idx - 2), idx)
+  return [posts[idx - 1], posts[idx + 1]]
+}
+
 export const load: PageServerLoad = async ({params, fetch}) => {
   const {slug} = params
 
   let post
   try {
     const {data, error: postError} = await supabase
-      .from('posts')
+      .from('db_posts')
       .select('*')
       .eq('slug', slug)
+      .eq('published', true)
       .single()
 
     if (postError || !data) {
@@ -130,7 +116,7 @@ export const load: PageServerLoad = async ({params, fetch}) => {
   let comments: BlogComment[] = []
   try {
     const {data, error: commentsError} = await supabase
-      .from('comments')
+      .from('db_comments')
       .select('*')
       .eq('post_id', post.id)
       .eq('is_approved', true)
@@ -153,7 +139,83 @@ export const load: PageServerLoad = async ({params, fetch}) => {
     bannerPublicUrl = bannerRes?.publicUrl || null
   }
 
-  const author = await fetchAuthorProfile(supabase)
+  let relatedPosts: RelatedPost[] = []
+  try {
+    const {data, error: relatedError} = await supabase
+      .from('db_posts')
+      .select(
+        'id, title, slug, excerpt, created_at, updated_at, banner_path, storage_path'
+      )
+      .eq('published', true)
+      .order('created_at', {ascending: false})
+
+    if (relatedError) {
+      console.error('Error fetching related posts:', relatedError)
+    } else if (data) {
+      relatedPosts = await Promise.all(
+        getRelatedWindow(data, post.id).map(async p => {
+          let relatedBannerUrl: string | null = null
+          if (p.banner_path) {
+            const {data: bannerRes} = supabase.storage
+              .from('blog-posts')
+              .getPublicUrl(p.banner_path)
+            relatedBannerUrl = bannerRes?.publicUrl || null
+          }
+
+          let readTime = '1 min read'
+          try {
+            const {data: urlData} = supabase.storage
+              .from('blog-posts')
+              .getPublicUrl(p.storage_path)
+            const fileRes = await fetch(urlData.publicUrl)
+            if (fileRes.ok) {
+              readTime = estimateReadTime(await fileRes.text())
+            }
+          } catch (err) {
+            console.error('Error estimating related post read time:', err)
+          }
+
+          let commentCount = 0
+          try {
+            const {count} = await supabase
+              .from('db_comments')
+              .select('*', {count: 'exact', head: true})
+              .eq('post_id', p.id)
+              .eq('is_approved', true)
+            commentCount = count ?? 0
+          } catch (err) {
+            console.error('Error counting related post comments:', err)
+          }
+
+          let viewsCount = 0
+          try {
+            const {count} = await supabase
+              .from('post_views')
+              .select('*', {count: 'exact', head: true})
+              .eq('post_id', p.id)
+            viewsCount = count ?? 0
+          } catch (err) {
+            console.error('Error counting related post views:', err)
+          }
+
+          return {
+            id: p.id,
+            title: p.title,
+            slug: p.slug,
+            excerpt: p.excerpt ?? null,
+            created_at: p.created_at,
+            updated_at: p.updated_at ?? null,
+            bannerPublicUrl: relatedBannerUrl,
+            read_time: readTime,
+            comment_count: commentCount,
+            views_count: viewsCount
+          }
+        })
+      )
+    }
+  } catch (err) {
+    console.error('Database error fetching related posts:', err)
+  }
 
   return {
     post: {...post, read_time: readTime},
@@ -161,6 +223,6 @@ export const load: PageServerLoad = async ({params, fetch}) => {
     html,
     headings,
     comments,
-    author
+    relatedPosts
   }
 }

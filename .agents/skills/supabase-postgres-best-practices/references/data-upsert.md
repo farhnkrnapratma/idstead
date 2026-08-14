@@ -5,6 +5,8 @@ impactDescription: Atomic operation, eliminates race conditions
 tags: upsert, on-conflict, insert, update
 ---
 
+<!-- @format -->
+
 ## Use UPSERT for Insert-or-Update Operations
 
 Using separate SELECT-then-INSERT/UPDATE creates race conditions. Use INSERT ... ON CONFLICT for atomic upserts.

@@ -10,10 +10,10 @@ Only the code and infrastructure in this repository and its live deployment at f
 
 Areas of particular interest:
 
-- Authentication and admin access (`/admin`, `/api/v1/admin/*`, Supabase Auth)
+- Authentication and admin access (`/admin`, `/api/internal/admin/*`, Supabase Auth)
 - Row Level Security (RLS) policies and any service-role (`supabaseAdmin`) code path
 - The public API (`/api/v1/**`) — input validation, rate limiting, CORS
-- Comment submission and moderation (Turnstile + AI moderation pipeline)
+- The internal API (`/api/internal/**`) — comment submission, view counting, and admin auth/CV endpoints; same-origin enforcement, Turnstile + AI moderation pipeline
 
 Out of scope: findings that require physical access, social engineering, or third-party services this project doesn't control (Cloudflare, Supabase, Sentry infrastructure itself).
 

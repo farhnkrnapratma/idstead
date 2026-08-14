@@ -5,6 +5,8 @@ impactDescription: 100x faster than LIKE, with ranking support
 tags: full-text-search, tsvector, gin, search
 ---
 
+<!-- @format -->
+
 ## Use tsvector for Full-Text Search
 
 LIKE with wildcards can't use indexes. Full-text search with tsvector is orders of magnitude faster.

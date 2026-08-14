@@ -21,8 +21,7 @@ export async function proxyToSupabaseEdgeFunction(
 ) {
   const baseUrl = getSupabaseBaseUrl()
   const anonKey =
-    publicEnv.PUBLIC_SUPABASE_PUBLISHABLE_KEY
-    || PUBLIC_SUPABASE_PUBLISHABLE_KEY
+    publicEnv.PUBLIC_SUPABASE_PUBLISHABLE_KEY || PUBLIC_SUPABASE_PUBLISHABLE_KEY
 
   if (!baseUrl || !anonKey) {
     return new Response(
@@ -46,10 +45,7 @@ export async function proxyToSupabaseEdgeFunction(
   const contentType = request.headers.get('content-type')
   const accepts = request.headers.get('accept') || 'application/json'
 
-  const headers = new Headers({
-    apikey: anonKey,
-    Accept: accepts
-  })
+  const headers = new Headers({apikey: anonKey, Accept: accepts})
 
   if (contentType) {
     headers.set('Content-Type', contentType)
@@ -59,12 +55,16 @@ export async function proxyToSupabaseEdgeFunction(
   }
 
   const method = request.method.toUpperCase()
+  const hasBody = method !== 'GET' && method !== 'HEAD'
   const edgeResponse = await fetch(functionUrl, {
     method,
     headers,
-    body:
-      method === 'GET' || method === 'HEAD' ? undefined : (request.body ?? null)
-  })
+    body: hasBody ? (request.body ?? null) : undefined,
+    // Required whenever a streamed (ReadableStream) body is forwarded to
+    // fetch() - both the Cloudflare Workers runtime and Node 18+/undici
+    // throw "duplex option is required" without this.
+    ...(hasBody ? {duplex: 'half'} : {})
+  } as RequestInit)
 
   const resultBody = await edgeResponse.arrayBuffer()
   const responseHeaders = new Headers()

@@ -1,11 +1,16 @@
 <!-- @format -->
 <script lang="ts">
   import {cn} from '../utils/cn'
-  import {formatCommentCount, formatViewCount} from '../utils/formatters'
+  import {
+    formatCommentCount,
+    formatViewCount,
+    formatAbsoluteDate
+  } from '../utils/formatters'
   import RelativeTime from '../components/RelativeTime.svelte'
 
   interface Props {
     date?: string
+    updatedAt?: string
     readingTime?: string
     views?: number
     commentsCount?: number
@@ -15,6 +20,7 @@
 
   let {
     date = '',
+    updatedAt = '',
     readingTime = '',
     views,
     commentsCount,
@@ -48,6 +54,8 @@
       <RelativeTime
         {date}
         tag="time" />
+      <span aria-hidden="true">&middot;</span>
+      <span>Last updated {formatAbsoluteDate(updatedAt || date)}</span>
     {:else if part === 'readingTime'}
       <span>{readingTime}</span>
     {:else if part === 'comments'}

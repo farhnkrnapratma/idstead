@@ -48,7 +48,7 @@ const config: Config = {
       }
     }
   ],
-  tailwindStylesheet: './src/routes/layout.css'
+  tailwindStylesheet: './src/routes/global.css'
 }
 
 export default config

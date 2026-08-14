@@ -3,8 +3,12 @@
 <!doctype html>
 <html
   lang="en"
-  translate="no">
+  translate="no"
+  class="scroll-pt-17 scroll-pb-21 overflow-x-clip scroll-smooth font-sans text-[122%]">
   <head>
+    <script>
+      document.documentElement.classList.add('dark')
+    </script>
     <script>
       window.dataLayer = window.dataLayer || []
 
@@ -16,7 +20,9 @@
       try {
         const stored = localStorage.getItem('fkp_cookie_consent_v2')
         if (stored) savedConsent = JSON.parse(stored)
-      } catch (e) {}
+      } catch (e) {
+        /* ignore localStorage parse errors */
+      }
 
       const defaultConsent = {
         analytics_storage: 'denied',
@@ -60,24 +66,24 @@
     <link
       rel="apple-touch-icon"
       sizes="180x180"
-      href="https://cdn.fkp.my.id/apple-touch-icon.png" />
+      href="%sveltekit.env.PUBLIC_CDN_BASE_URL%/apple-touch-icon.png" />
     <link
       rel="icon"
       type="image/png"
       sizes="32x32"
-      href="https://cdn.fkp.my.id/favicon-32x32.png" />
+      href="%sveltekit.env.PUBLIC_CDN_BASE_URL%/favicon-32x32.png" />
     <link
       rel="icon"
       type="image/png"
       sizes="16x16"
-      href="https://cdn.fkp.my.id/favicon-16x16.png" />
+      href="%sveltekit.env.PUBLIC_CDN_BASE_URL%/favicon-16x16.png" />
     <link
       rel="icon"
       type="image/x-icon"
-      href="https://cdn.fkp.my.id/favicon.ico" />
+      href="%sveltekit.env.PUBLIC_CDN_BASE_URL%/favicon.ico" />
     <link
       rel="manifest"
-      href="https://cdn.fkp.my.id/site.webmanifest" />
+      href="%sveltekit.env.PUBLIC_CDN_BASE_URL%/site.webmanifest" />
     <link
       rel="preconnect"
       href="https://fonts.googleapis.com" />
@@ -86,14 +92,12 @@
       href="https://fonts.gstatic.com"
       crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,100..900;1,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Space+Grotesk:wght@300..700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Space+Grotesk:wght@300..700&family=Lexend:wght@300..700&display=swap"
       rel="stylesheet" />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     %sveltekit.head%
   </head>
-  <body class="min-h-screen">
+  <body
+    class="m-0 min-h-screen w-full overflow-x-clip bg-adwaita-bg p-0 font-sans text-adwaita-text transition-colors duration-300">
     <noscript
       ><iframe
         src="https://www.googletagmanager.com/ns.html?id=GTM-TSBRHB6V"
