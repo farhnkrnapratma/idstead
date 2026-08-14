@@ -41,7 +41,8 @@
     PageContainer,
     LogoLoop,
     ConsentNotice,
-    staggerChildren
+    staggerChildren,
+    withViewTransition
   } from '$lib'
   import {supabase} from '$lib/supabase'
   import {SvelteSet} from 'svelte/reactivity'
@@ -502,11 +503,13 @@
   }
 
   function navigate(section: Section) {
-    activeSection = section
-    menuOpen = false
-    if (typeof window !== 'undefined') {
-      window.location.hash = section === 'home' ? '' : section
-    }
+    withViewTransition(() => {
+      activeSection = section
+      menuOpen = false
+      if (typeof window !== 'undefined') {
+        window.location.hash = section === 'home' ? '' : section
+      }
+    }, 'context')
   }
 
   function handleMenuKeydown(event: KeyboardEvent) {
