@@ -1205,8 +1205,11 @@
           {/if}
         </div>
         <hr class="my-1.5 border-border-subtle" />
+        <!-- @format -->
         <div class="mt-1">
-          <h4 class="text-lg leading-snug font-bold text-text-primary">
+          <h4
+            style="view-transition-name: post-title-{post.slug}"
+            class="text-lg leading-snug font-bold text-text-primary">
             <a
               href="/blog/{post.slug}"
               class="rounded-xs outline-none after:absolute after:inset-0 focus-visible:ring-2 focus-visible:ring-copilot focus-visible:ring-offset-2 focus-visible:ring-offset-surface-card">

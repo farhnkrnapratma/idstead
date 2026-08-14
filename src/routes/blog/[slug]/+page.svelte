@@ -535,7 +535,9 @@
         ]}
         class="mb-3" />
 
-      <ArticleHeader title={post.title}>
+      <ArticleHeader
+        title={post.title}
+        titleViewTransitionName="post-title-{post.slug}">
         {#snippet meta()}
           <div class="flex w-full items-center justify-between gap-2">
             <ArticleMeta
