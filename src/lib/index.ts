@@ -2,6 +2,7 @@
 
 export {autoResize, staggerChildren} from './utils/actions'
 export {cn} from './utils/cn'
+export {withViewTransition} from './utils/viewTransition'
 export type {
   Theme,
   Section as SectionId,
