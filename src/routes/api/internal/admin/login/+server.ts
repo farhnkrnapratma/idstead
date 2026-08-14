@@ -15,7 +15,6 @@ function getClientIp(request: Request, getClientAddress: () => string) {
   try {
     return (
       request.headers.get('cf-connecting-ip')
-      || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
       || getClientAddress()
       || '127.0.0.1'
     )
