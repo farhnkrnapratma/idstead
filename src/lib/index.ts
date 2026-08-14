@@ -1,6 +1,6 @@
 /** @format */
 
-export {autoResize} from './utils/actions'
+export {autoResize, staggerChildren} from './utils/actions'
 export {cn} from './utils/cn'
 export type {
   Theme,
