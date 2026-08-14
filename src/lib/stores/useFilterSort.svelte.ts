@@ -2,6 +2,7 @@
 
 import {replaceState} from '$app/navigation'
 import {SvelteURL} from 'svelte/reactivity'
+import {withViewTransition} from '../utils/viewTransition'
 
 export interface SortState {
   field: string
@@ -66,19 +67,40 @@ export function createFilterSortStore(options: FilterSortOptions = {}) {
   }
 
   function setSingleFilter(type: string, value: string) {
-    if (!value || value === 'all') {
-      const next = {...filters}
-      delete next[type]
-      filters = next
-    } else {
-      filters = {...filters, [type]: [value]}
-    }
-    syncToUrl()
+    withViewTransition(() => {
+      if (!value || value === 'all') {
+        const next = {...filters}
+        delete next[type]
+        filters = next
+      } else {
+        filters = {...filters, [type]: [value]}
+      }
+      syncToUrl()
+    }, 'context')
   }
 
   function toggleMultiFilter(type: string, value: string) {
-    const current = filters[type] || []
-    if (current.includes(value)) {
+    withViewTransition(() => {
+      const current = filters[type] || []
+      if (current.includes(value)) {
+        const nextArr = current.filter(v => v !== value)
+        if (nextArr.length === 0) {
+          const next = {...filters}
+          delete next[type]
+          filters = next
+        } else {
+          filters = {...filters, [type]: nextArr}
+        }
+      } else {
+        filters = {...filters, [type]: [...current, value]}
+      }
+      syncToUrl()
+    }, 'context')
+  }
+
+  function removeFilter(type: string, value: string) {
+    withViewTransition(() => {
+      const current = filters[type] || []
       const nextArr = current.filter(v => v !== value)
       if (nextArr.length === 0) {
         const next = {...filters}
@@ -87,49 +109,40 @@ export function createFilterSortStore(options: FilterSortOptions = {}) {
       } else {
         filters = {...filters, [type]: nextArr}
       }
-    } else {
-      filters = {...filters, [type]: [...current, value]}
-    }
-    syncToUrl()
-  }
-
-  function removeFilter(type: string, value: string) {
-    const current = filters[type] || []
-    const nextArr = current.filter(v => v !== value)
-    if (nextArr.length === 0) {
-      const next = {...filters}
-      delete next[type]
-      filters = next
-    } else {
-      filters = {...filters, [type]: nextArr}
-    }
-    syncToUrl()
+      syncToUrl()
+    }, 'context')
   }
 
   function clearAllFilters() {
-    search = ''
-    filters = {}
-    sort = {...defaultSort}
-    syncToUrl()
+    withViewTransition(() => {
+      search = ''
+      filters = {}
+      sort = {...defaultSort}
+      syncToUrl()
+    }, 'context')
   }
 
   function setSort(field: string, direction?: 'asc' | 'desc') {
-    if (direction) {
-      sort = {field, direction}
-    } else {
-      const nextDir =
-        sort.field === field && sort.direction === 'desc' ? 'asc' : 'desc'
-      sort = {field, direction: nextDir}
-    }
-    syncToUrl()
+    withViewTransition(() => {
+      if (direction) {
+        sort = {field, direction}
+      } else {
+        const nextDir =
+          sort.field === field && sort.direction === 'desc' ? 'asc' : 'desc'
+        sort = {field, direction: nextDir}
+      }
+      syncToUrl()
+    }, 'context')
   }
 
   function toggleSortDirection() {
-    sort = {
-      field: sort.field,
-      direction: sort.direction === 'asc' ? 'desc' : 'asc'
-    }
-    syncToUrl()
+    withViewTransition(() => {
+      sort = {
+        field: sort.field,
+        direction: sort.direction === 'asc' ? 'desc' : 'asc'
+      }
+      syncToUrl()
+    }, 'context')
   }
 
   function syncToUrl() {
