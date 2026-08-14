@@ -52,7 +52,7 @@
   {/if}
   {#snippet footer()}
     <Button
-      variant="secondary"
+      type="Secondary"
       size="md"
       onclick={close}>
       <span class="inline-flex items-center gap-1.5">
@@ -64,7 +64,7 @@
       </span>
     </Button>
     <Button
-      variant={isDestructive ? 'destructive' : 'primary'}
+      type={isDestructive ? 'Danger' : 'Primary'}
       size="md"
       {isLoading}
       onclick={confirm}>

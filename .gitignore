@@ -18,6 +18,8 @@ Thumbs.db
 .env.*
 !.env.example
 !.env.test
+!.env.production.example
+!.env.preview.example
 
 # Vite
 vite.config.js.timestamp-*
@@ -32,3 +34,8 @@ vite.config.ts.timestamp-*
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+# Caches and Temporary Files
+graphify-out/cache/
+supabase/.temp/
+

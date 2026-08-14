@@ -1,0 +1,510 @@
+/** @format */
+
+@import 'tailwindcss';
+@import '../lib/tokens.css';
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
+@layer base {
+  h1,
+  h2,
+  h3,
+  .font-sans {
+    @apply font-sans;
+  }
+
+  code,
+  kbd,
+  pre,
+  .font-mono {
+    @apply font-mono;
+  }
+
+  *,
+  ::before,
+  ::after {
+    @apply box-border;
+  }
+
+  ::-webkit-scrollbar-button,
+  *::-webkit-scrollbar-button {
+    @apply hidden! h-0! w-0!;
+  }
+
+  *:not(pre):not(pre *) {
+    @apply [scrollbar-width:none] [-ms-overflow-style:none];
+  }
+
+  *:not(pre):not(pre *)::-webkit-scrollbar {
+    @apply hidden;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      @apply [scroll-behavior:auto]! [transition-duration:0.01ms]! [animation-duration:0.01ms]! [animation-iteration-count:1]!;
+    }
+  }
+
+  :root[data-reduce-motion='true'] *,
+  :root[data-reduce-motion='true'] ::before,
+  :root[data-reduce-motion='true'] ::after {
+    @apply [scroll-behavior:auto]! [transition-duration:0.01ms]! [animation-duration:0.01ms]! [animation-iteration-count:1]!;
+  }
+}
+
+nav[aria-label='Table of contents'] code {
+  @apply rounded bg-adwaita-hover px-1 py-0.5 font-mono [font-size:inherit]! font-normal text-inherit;
+}
+
+button,
+.bi,
+::placeholder,
+.parent-avatar,
+.last-reply-avatar,
+.trunk-line-single {
+  @apply select-none;
+}
+
+::placeholder {
+  @apply text-(--color-adwaita-label)! opacity-75!;
+}
+
+a:focus-visible,
+button:focus-visible,
+[role='button']:focus-visible,
+[role='link']:focus-visible,
+[role='menuitem']:focus-visible,
+[role='tab']:focus-visible,
+[role='option']:focus-visible,
+[role='combobox']:focus-visible,
+select:focus-visible,
+details:focus-visible,
+summary:focus-visible,
+[tabindex='0']:focus-visible {
+  @apply rounded-md outline-2! outline-offset-2! outline-copilot!;
+}
+
+:root[data-focus-highlight='true']
+  :is(
+    a,
+    button,
+    [role='button'],
+    [role='link'],
+    [role='menuitem'],
+    [role='tab'],
+    [role='option'],
+    [role='combobox'],
+    [role='switch'],
+    [role='radio'],
+    select,
+    details,
+    summary,
+    [tabindex='0']
+  ):focus-visible {
+  @apply rounded-md outline-4! outline-offset-4! outline-a11y-focus!;
+}
+
+input:focus-visible,
+textarea:focus-visible {
+  @apply outline-none!;
+}
+
+input:not([type='range']):focus,
+textarea:focus,
+select:focus {
+  @apply border-copilot! ring-2! ring-[color-mix(in_srgb,var(--color-copilot)_20%,transparent)]!;
+}
+
+input.input-valid,
+textarea.input-valid {
+  @apply border-copilot!;
+}
+
+input[type='text'],
+input[type='email'],
+input[type='password'],
+input[type='search'],
+textarea,
+select {
+  @apply pt-[0.55rem]! pb-[0.55rem]!;
+}
+
+@utility glass-card {
+  @apply border border-border-subtle/60 bg-surface-card/60 text-text-primary shadow-md backdrop-blur-md dark:border-white/10 dark:bg-surface-card/35;
+}
+
+@utility glass-overlay {
+  @apply border border-border-subtle/70 bg-surface-elevated/75 text-text-primary shadow-2xl backdrop-blur-xl dark:border-white/15 dark:bg-surface-elevated/55;
+}
+
+@utility glass-button {
+  @apply border border-border-subtle/70 bg-surface-card/55 text-text-primary shadow-xs backdrop-blur-md transition-all hover:border-copilot hover:bg-surface-card/85 dark:border-white/10 dark:bg-surface-card/40 dark:hover:bg-surface-card/65;
+}
+
+:root[data-solid-surfaces='true'] .glass-card {
+  @apply bg-surface-card! backdrop-blur-none!;
+}
+
+:root[data-solid-surfaces='true'] .glass-overlay {
+  @apply bg-surface-elevated! backdrop-blur-none!;
+}
+
+:root[data-solid-surfaces='true'] .glass-button {
+  @apply bg-surface-card! backdrop-blur-none!;
+}
+
+:root[data-high-contrast='true'] {
+  --color-text-secondary: var(--color-text-primary);
+  --color-text-muted: var(--color-text-secondary);
+}
+
+:root[data-dyslexic-font='true'] {
+  --font-sans: 'Lexend', ui-sans-serif, system-ui, sans-serif;
+}
+
+:root[data-dyslexic-font='true'] body {
+  letter-spacing: 0.02em;
+  line-height: 1.8;
+}
+
+:root {
+  --a11y-scale: 1;
+}
+
+:root[data-font-scale='110'] {
+  --a11y-scale: 1.1;
+}
+
+:root[data-font-scale='120'] {
+  --a11y-scale: 1.2;
+}
+
+:root[data-font-scale='130'] {
+  --a11y-scale: 1.3;
+}
+
+:root[data-font-scale='140'] {
+  --a11y-scale: 1.4;
+}
+
+:root[data-font-scale='150'] {
+  --a11y-scale: 1.5;
+}
+
+:root {
+  --text-3xs: calc(0.5625rem * var(--a11y-scale));
+  --text-2xs: calc(0.625rem * var(--a11y-scale));
+  --text-xxs: calc(0.6875rem * var(--a11y-scale));
+  --text-xs: calc(0.75rem * var(--a11y-scale));
+  --text-sm: calc(0.875rem * var(--a11y-scale));
+  --text-base: calc(1rem * var(--a11y-scale));
+  --text-lg: calc(1.125rem * var(--a11y-scale));
+  --text-xl: calc(1.25rem * var(--a11y-scale));
+  --text-2xl: calc(1.5rem * var(--a11y-scale));
+  --text-3xl: calc(1.875rem * var(--a11y-scale));
+  --text-4xl: calc(2.25rem * var(--a11y-scale));
+  --text-5xl: calc(3rem * var(--a11y-scale));
+}
+
+@layer base {
+  .prose-custom h1,
+  .prose-custom h2,
+  .prose-custom h3 {
+    @apply font-sans;
+  }
+
+  .prose-custom {
+    @apply font-sans text-[0.9rem] leading-[1.7] text-(--color-body);
+    --color-heading: var(--color-gh-gray-6);
+    --color-body: var(--color-gh-gray-5);
+    --color-link: var(--color-gh-gray-5);
+    --color-link-hover: var(--color-copilot);
+  }
+
+  :root.dark .prose-custom {
+    --color-heading: var(--color-gh-gray-1);
+    --color-body: var(--color-gh-gray-3);
+    --color-link: var(--color-gh-gray-3);
+    --color-link-hover: var(--color-copilot);
+  }
+
+  .prose-custom > *:first-child {
+    margin-top: 0 !important;
+  }
+
+  .prose-custom p {
+    @apply mt-4 mb-4 text-(--color-body);
+  }
+
+  .prose-custom h1,
+  .prose-custom h2,
+  .prose-custom h3,
+  .prose-custom h4,
+  .prose-custom h5,
+  .prose-custom h6 {
+    @apply font-sans text-(--color-heading);
+  }
+
+  .prose-custom h1 {
+    @apply mt-6 mb-2 text-3xl font-extrabold;
+  }
+
+  .prose-custom h2 {
+    @apply mt-5 mb-1.5 text-2xl font-bold;
+  }
+
+  .prose-custom h3 {
+    @apply mt-4 mb-1 text-xl font-semibold;
+  }
+
+  .prose-custom h4,
+  .prose-custom h5,
+  .prose-custom h6 {
+    @apply mt-4 mb-1 text-lg font-semibold;
+  }
+
+  .prose-custom h1 + *,
+  .prose-custom h2 + *,
+  .prose-custom h3 + *,
+  .prose-custom h4 + *,
+  .prose-custom h5 + *,
+  .prose-custom h6 + * {
+    margin-top: 0.5rem !important;
+  }
+
+  .prose-custom ul {
+    @apply mt-4 mb-4 list-disc pl-6;
+  }
+
+  .prose-custom ol {
+    @apply mt-4 mb-4 list-decimal pl-6;
+  }
+
+  .prose-custom li {
+    @apply mt-1 mb-1;
+  }
+
+  .prose-custom pre {
+    @apply mt-6 mb-6 overflow-x-auto rounded-sm border border-adwaita-border bg-adwaita-hover px-3 py-2 font-mono text-[0.8rem] leading-relaxed break-normal whitespace-pre;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .prose-custom pre[data-enhanced='true'] {
+    @apply pl-2;
+  }
+
+  .prose-custom pre::-webkit-scrollbar {
+    display: none;
+    height: 0;
+    width: 0;
+  }
+
+  .prose-custom code:not(pre code) {
+    @apply rounded bg-adwaita-hover px-1 py-px font-mono text-xs font-normal text-inherit;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .prose-custom :is(h1, h2, h3, h4, h5, h6) code:not(pre code) {
+    font-size: inherit !important;
+  }
+
+  .prose-custom pre code {
+    @apply border-0 bg-transparent p-0 font-mono text-[0.8rem] leading-relaxed break-normal whitespace-pre text-inherit;
+    overflow: visible;
+  }
+
+  .prose-custom a:not(.anchor-link) {
+    @apply text-(--color-link) underline transition-colors;
+  }
+
+  .prose-custom a:not(.anchor-link):hover {
+    @apply text-(--color-link-hover);
+  }
+
+  .prose-custom .heading-text {
+    display: inline;
+    transition: none;
+  }
+
+  .prose-custom a.anchor-link {
+    margin-left: 0.35rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    line-height: 1;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: none;
+    @apply text-adwaita-text;
+  }
+
+  :root.dark .prose-custom a.anchor-link {
+    @apply text-gh-gray-4;
+  }
+
+  .prose-custom a.anchor-link .bi {
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 0.85em;
+    line-height: 1;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .prose-custom h1:hover .heading-text,
+  .prose-custom h2:hover .heading-text,
+  .prose-custom h3:hover .heading-text,
+  .prose-custom h4:hover .heading-text,
+  .prose-custom h5:hover .heading-text,
+  .prose-custom h6:hover .heading-text,
+  .prose-custom .heading-text:hover,
+  :root.dark .prose-custom h1:hover .heading-text,
+  :root.dark .prose-custom h2:hover .heading-text,
+  :root.dark .prose-custom h3:hover .heading-text,
+  :root.dark .prose-custom h4:hover .heading-text,
+  :root.dark .prose-custom h5:hover .heading-text,
+  :root.dark .prose-custom h6:hover .heading-text,
+  :root.dark .prose-custom .heading-text:hover {
+    @apply text-copilot underline underline-offset-4;
+  }
+
+  .prose-custom h1:hover a.anchor-link,
+  .prose-custom h2:hover a.anchor-link,
+  .prose-custom h3:hover a.anchor-link,
+  .prose-custom h4:hover a.anchor-link,
+  .prose-custom h5:hover a.anchor-link,
+  .prose-custom h6:hover a.anchor-link,
+  .prose-custom a.anchor-link:hover,
+  :root.dark .prose-custom h1:hover a.anchor-link,
+  :root.dark .prose-custom h2:hover a.anchor-link,
+  :root.dark .prose-custom h3:hover a.anchor-link,
+  :root.dark .prose-custom h4:hover a.anchor-link,
+  :root.dark .prose-custom h5:hover a.anchor-link,
+  :root.dark .prose-custom h6:hover a.anchor-link,
+  :root.dark .prose-custom a.anchor-link:hover,
+  .prose-custom h1:hover a.anchor-link .bi,
+  .prose-custom h2:hover a.anchor-link .bi,
+  .prose-custom h3:hover a.anchor-link .bi,
+  .prose-custom h4:hover a.anchor-link .bi,
+  .prose-custom h5:hover a.anchor-link .bi,
+  .prose-custom h6:hover a.anchor-link .bi,
+  .prose-custom a.anchor-link:hover .bi,
+  :root.dark .prose-custom h1:hover a.anchor-link .bi,
+  :root.dark .prose-custom h2:hover a.anchor-link .bi,
+  :root.dark .prose-custom h3:hover a.anchor-link .bi,
+  :root.dark .prose-custom h4:hover a.anchor-link .bi,
+  :root.dark .prose-custom h5:hover a.anchor-link .bi,
+  :root.dark .prose-custom h6:hover a.anchor-link .bi,
+  :root.dark .prose-custom a.anchor-link:hover .bi {
+    @apply text-copilot! no-underline! opacity-100!;
+    text-decoration: none;
+  }
+
+  .prose-custom table {
+    @apply my-6 w-full max-w-full overflow-hidden rounded-sm border border-border-subtle text-left text-xs shadow-2xs;
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .prose-custom thead {
+    @apply border-b border-border-subtle bg-surface-hover/80 font-semibold tracking-wider text-text-primary uppercase;
+  }
+
+  .prose-custom th {
+    @apply px-2.5 py-2 text-center font-semibold text-text-primary;
+    white-space: nowrap;
+  }
+
+  .prose-custom tbody tr {
+    @apply transition-colors hover:bg-surface-hover/30;
+  }
+
+  .prose-custom td {
+    @apply border-r border-border-subtle/40 px-2.5 py-1.5 text-left leading-relaxed text-text-secondary last:border-r-0;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .prose-custom td code,
+  .prose-custom th code {
+    white-space: nowrap;
+  }
+
+  .prose-custom td[align='right'] {
+    @apply text-right;
+  }
+
+  .prose-custom td[align='center'] {
+    @apply text-center;
+  }
+
+  .prose-custom hr {
+    @apply my-8 h-px border-0 bg-border-default;
+  }
+
+  .prose-custom .markdown-alert {
+    @apply my-6 rounded-r-xl border-l-4 p-4 text-xs shadow-2xs transition-colors duration-200 sm:text-sm;
+  }
+
+  .prose-custom .markdown-alert-title {
+    @apply mb-1.5 flex items-center gap-2 text-xs font-bold select-none sm:text-sm;
+  }
+
+  .prose-custom .markdown-alert-content {
+    @apply leading-relaxed text-text-secondary;
+  }
+
+  .prose-custom .markdown-alert-content > p {
+    @apply my-1 text-text-secondary;
+  }
+
+  .prose-custom .markdown-alert-content > *:first-child {
+    margin-top: 0;
+  }
+
+  .prose-custom .markdown-alert-content > *:last-child {
+    margin-bottom: 0;
+  }
+
+  .prose-custom .markdown-alert-note {
+    @apply border-(--color-security) bg-security-subtle text-(--color-body);
+  }
+  .prose-custom .markdown-alert-note .markdown-alert-title {
+    @apply text-(--color-security);
+  }
+
+  .prose-custom .markdown-alert-tip {
+    @apply border-(--color-success) bg-(--color-success-subtle) text-(--color-body);
+  }
+  .prose-custom .markdown-alert-tip .markdown-alert-title {
+    @apply text-(--color-success);
+  }
+
+  .prose-custom .markdown-alert-important {
+    @apply border-(--color-copilot) bg-copilot-subtle text-(--color-body);
+  }
+  .prose-custom .markdown-alert-important .markdown-alert-title {
+    @apply text-(--color-copilot);
+  }
+
+  .prose-custom .markdown-alert-warning {
+    @apply border-(--color-warning) bg-warning-subtle text-(--color-body);
+  }
+  .prose-custom .markdown-alert-warning .markdown-alert-title {
+    @apply text-(--color-warning-strong);
+  }
+
+  .prose-custom .markdown-alert-caution {
+    @apply border-(--color-danger) bg-danger-subtle text-(--color-body);
+  }
+  .prose-custom .markdown-alert-caution .markdown-alert-title {
+    @apply text-(--color-danger);
+  }
+}

@@ -1,0 +1,103 @@
+<!-- @format -->
+<script lang="ts">
+  import {cn} from '../utils/cn'
+
+  interface Props {
+    page: number
+    totalPages: number
+    onPageChange: (page: number) => void
+    class?: string
+  }
+
+  let {page, totalPages, onPageChange, class: className = ''}: Props = $props()
+
+  function goTo(target: number) {
+    const clamped = Math.min(Math.max(target, 1), totalPages)
+    if (clamped !== page) onPageChange(clamped)
+  }
+
+  const pageNumbers = $derived.by(() => {
+    const pages: number[] = []
+    const windowSize = 1
+
+    const addPage = (n: number) => {
+      if (!pages.includes(n)) pages.push(n)
+    }
+
+    addPage(1)
+    for (
+      let n = Math.max(2, page - windowSize);
+      n <= Math.min(totalPages - 1, page + windowSize);
+      n++
+    ) {
+      addPage(n)
+    }
+    if (totalPages > 1) addPage(totalPages)
+
+    const withEllipses: (number | 'ellipsis')[] = []
+    let prev = 0
+    for (const n of pages) {
+      if (prev && n - prev > 1) withEllipses.push('ellipsis')
+      withEllipses.push(n)
+      prev = n
+    }
+    return withEllipses
+  })
+</script>
+
+<nav
+  aria-label="Pagination"
+  class={cn(
+    'flex flex-wrap items-center justify-center gap-1.5 select-none sm:justify-between',
+    className
+  )}>
+  <button
+    type="button"
+    onclick={() => goTo(page - 1)}
+    disabled={page <= 1}
+    aria-label="Previous page"
+    class="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-sm border border-border-subtle bg-surface px-3 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover hover:text-copilot focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-surface disabled:hover:text-text-primary">
+    <i
+      class="bi bi-arrow-left text-2xs"
+      aria-hidden="true"></i>
+    <span class="hidden sm:inline">Previous</span>
+  </button>
+
+  <div class="flex items-center gap-1">
+    {#each pageNumbers as entry, i (entry === 'ellipsis' ? `ellipsis-${i}` : entry)}
+      {#if entry === 'ellipsis'}
+        <span
+          class="inline-flex h-9 w-9 items-center justify-center text-xs font-semibold text-text-muted"
+          aria-hidden="true">
+          &hellip;
+        </span>
+      {:else}
+        <button
+          type="button"
+          onclick={() => goTo(entry)}
+          aria-label="Go to page {entry}"
+          aria-current={entry === page ? 'page' : undefined}
+          class={cn(
+            'inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring',
+            entry === page ?
+              'bg-copilot text-white shadow-xs'
+            : 'border border-border-subtle bg-surface text-text-primary hover:bg-surface-hover hover:text-copilot'
+          )}>
+          {entry}
+        </button>
+      {/if}
+    {/each}
+  </div>
+
+  <button
+    type="button"
+    onclick={() => goTo(page + 1)}
+    disabled={page >= totalPages}
+    aria-label="Next page"
+    class="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-sm border border-border-subtle bg-surface px-3 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover hover:text-copilot focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-surface disabled:hover:text-text-primary">
+    <span class="hidden sm:inline">Next</span>
+    <i
+      class="bi bi-chevron-right text-2xs"
+      aria-hidden="true"></i>
+  </button>
+</nav>

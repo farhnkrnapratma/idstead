@@ -1,0 +1,32 @@
+INFO  2026-08-07 21:23:09,907 serena.cli:health_check:928 - Starting health check for project: /home/hanz/Projects/www
+INFO  2026-08-07 21:23:09,907 serena.cli:health_check:932 - Creating SerenaAgent with disabled dashboard...
+INFO  2026-08-07 21:23:09,911 serena.util.file_system:_load_gitignore_files:152 - Processing .gitignore file: /home/hanz/Projects/www/.serena/.gitignore
+INFO  2026-08-07 21:23:09,923 serena.config.serena_config:from_config_file:1021 - Loading Serena configuration from /home/hanz/.serena/serena_config.yml
+ERROR 2026-08-07 21:23:09,943 serena.cli:health_check:1040 - Health check failed with exception: [Errno 30] Read-only file system: '/home/hanz/.serena/serena_config.yml.165ti5f1.tmp'
+Traceback (most recent call last):
+  File "/home/hanz/.local/share/uv/tools/serena-agent/lib/python3.13/site-packages/serena/cli.py", line 934, in health_check
+    agent = SerenaAgent(project=project_path, serena_config=serena_config)
+  File "/home/hanz/.local/share/uv/tools/serena-agent/lib/python3.13/site-packages/serena/agent.py", line 577, in __init__
+    self.serena_config.get_registered_project(project, autoregister=True) if project is not None else None
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hanz/.local/share/uv/tools/serena-agent/lib/python3.13/site-packages/serena/config/serena_config.py", line 1211, in get_registered_project
+    self.add_registered_project(registered_project)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/home/hanz/.local/share/uv/tools/serena-agent/lib/python3.13/site-packages/serena/config/serena_config.py", line 1228, in add_registered_project
+    self._persist_projects()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/hanz/.local/share/uv/tools/serena-agent/lib/python3.13/site-packages/serena/config/serena_config.py", line 1291, in _persist_projects
+    persisted._save()
+    ~~~~~~~~~~~~~~~^^
+  File "/home/hanz/.local/share/uv/tools/serena-agent/lib/python3.13/site-packages/serena/config/serena_config.py", line 1329, in _save
+    save_yaml(self.config_file_path, commented_yaml)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hanz/.local/share/uv/tools/serena-agent/lib/python3.13/site-packages/serena/util/yaml.py", line 222, in save_yaml
+    fd, tmp = tempfile.mkstemp(dir=target_dir, prefix=os.path.basename(path) + ".", suffix=".tmp")
+              ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hanz/.local/share/uv/python/cpython-3.13.14-linux-x86_64-gnu/lib/python3.13/tempfile.py", line 354, in mkstemp
+    return _mkstemp_inner(dir, prefix, suffix, flags, output_type)
+  File "/home/hanz/.local/share/uv/python/cpython-3.13.14-linux-x86_64-gnu/lib/python3.13/tempfile.py", line 255, in _mkstemp_inner
+    fd = _os.open(file, flags, 0o600)
+OSError: [Errno 30] Read-only file system: '/home/hanz/.serena/serena_config.yml.165ti5f1.tmp'
+INFO  2026-08-07 21:23:09,948 serena.agent:on_shutdown:1420 - SerenaAgent is shutting down ...
