@@ -6,7 +6,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.110.8",
     "bootstrap-icons": "^1.13.1",
-    "highlight.js": "^11.11.1",
+    "highlight.js": "^11.11.2",
     "marked": "^18.0.7"
   },
   "devDependencies": {
