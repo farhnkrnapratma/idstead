@@ -1,5 +1,3 @@
-/** @format */
-
 import {json} from '@sveltejs/kit'
 import {supabase} from '$lib/supabase'
 import {

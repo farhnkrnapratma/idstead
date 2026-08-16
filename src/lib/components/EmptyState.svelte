@@ -1,21 +1,21 @@
-<!-- @format -->
 <script lang="ts">
   import type {Snippet} from 'svelte'
+  import {Inbox} from '@lucide/svelte'
   import {cn} from '../utils/cn'
 
   interface Props {
     title: string
     description?: string
-    icon?: string
     class?: string
+    icon?: Snippet
     actions?: Snippet
   }
 
   let {
     title,
     description = '',
-    icon = 'bi-inbox',
     class: className = '',
+    icon,
     actions
   }: Props = $props()
 </script>
@@ -26,9 +26,11 @@
     className
   )}>
   <div class="mb-3 flex items-center justify-center text-text-muted">
-    <i
-      class="bi {icon} text-2xl"
-      aria-hidden="true"></i>
+    {#if icon}
+      {@render icon()}
+    {:else}
+      <Inbox class="size-7" />
+    {/if}
   </div>
   <h3 class="text-sm font-bold text-text-primary">{title}</h3>
   {#if description}

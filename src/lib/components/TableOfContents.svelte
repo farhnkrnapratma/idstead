@@ -1,4 +1,3 @@
-<!-- @format -->
 <script lang="ts">
   import {pushState} from '$app/navigation'
   import {onMount} from 'svelte'
@@ -30,11 +29,6 @@
   let isIndicatorVisible = $state(false)
   let tocListEl = $state<HTMLUListElement | null>(null)
 
-  // While true, the scrollspy is told to trust the manually-set active
-  // heading instead of clearing it — otherwise a heading close to the top
-  // of the page (most commonly the first one) can read as "not yet reached"
-  // for a transient scrollY sample mid-navigation, hiding the indicator
-  // until the next unrelated scroll happens to fix it.
   let isPinnedByClick = false
   let unpinTimeout: ReturnType<typeof setTimeout> | undefined
 
@@ -186,11 +180,11 @@
     return text
       .replace(
         /`([^`]+)`/g,
-        '<code class="font-mono text-inherit px-1 py-0.5 rounded-sm bg-adwaita-hover font-normal">$1</code>'
+        '<code class="font-mono text-inherit px-1 py-0.5 rounded-sm bg-surface-hover font-normal">$1</code>'
       )
       .replace(
         /\[([^\]]+)\]/g,
-        '<code class="font-mono text-inherit px-1 py-0.5 rounded-sm bg-adwaita-hover font-normal">[$1]</code>'
+        '<code class="font-mono text-inherit px-1 py-0.5 rounded-sm bg-surface-hover font-normal">[$1]</code>'
       )
       .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
       .replace(/\*([^*]+)\*/g, '<em>$1</em>')

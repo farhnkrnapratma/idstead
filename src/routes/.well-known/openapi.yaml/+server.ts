@@ -1,5 +1,3 @@
-/** @format */
-
 import type {RequestHandler} from './$types'
 import {stringify} from 'yaml'
 import {openapiSpec} from '$lib/openapi'

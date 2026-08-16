@@ -1,8 +1,6 @@
-<!-- @format -->
-
 # Repository Guidelines
 
-This file provides guidance to Codex CLI and other coding agents when working with code in this repository.
+This file provides guidance to Codex CLI, Claude Code, Antigravity, and other AI coding agents when working with code in this repository.
 
 ## Project
 
@@ -14,8 +12,10 @@ Package manager is **bun** — never use npm/npx/yarn/pnpm in this repo (`bun.lo
 
 ```sh
 bun install          # install deps
-bun run dev [--host]  # start Vite dev server
-bun run build         # production build -> .svelte-kit/cloudflare
+bun run dev [--host]  # start Vite dev server (mode: development)
+bun run dev:preview    # start Vite dev server against Preview-tier config (mode: preview)
+bun run build         # production build -> .svelte-kit/cloudflare (mode: production)
+bun run build:preview  # build against Preview-tier config (mode: preview)
 bun run preview       # preview the production build
 bun run check          # svelte-kit sync + svelte-check (type checking)
 bun run check:watch    # same, in watch mode
@@ -25,23 +25,7 @@ bun run format           # prettier --write .
 
 There is no test runner configured in this repo — `bun run check` (types) and `bun run lint` are the correctness gates. Always run `check` and `lint` after non-trivial changes.
 
-Requires a `.env` (copy from `.env.example`) with at least `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY` for the dev server to start. Other vars: Cloudflare R2 (CV file storage), Sentry, Turnstile (bot protection), `IP_SALT` (hashing client IPs), `SUPABASE_SERVICE_ROLE_KEY` (server-only, bypasses RLS).
-
-Nix/NixOS users can also `nix develop` for a dev shell (`flake.nix`).
-
-### Container images
-
-Three container artefacts live at the repo root — do **not** delete or regenerate them without updating both this file and `README.md`:
-
-| File | Toolchain |
-| --- | --- |
-| `Dockerfile` | Docker multi-stage (deps → builder → runner via `oven/bun:1-alpine`) |
-| `Containerfile` | Podman / OCI — identical logic, fully-qualified `docker.io/` image names |
-| `docker.nix` | Nix `dockerTools.buildLayeredImage` — reproducible, no Dockerfile |
-
-`.dockerignore` excludes `node_modules`, `.env*`, `.git`, agent tooling, and Nix `result` symlinks from the Docker build context. Keep it in sync when adding new artefact dirs.
-
-All images expose port **8788** and run `wrangler pages dev .svelte-kit/cloudflare` for local preview. `PUBLIC_*` env vars are injected at build-time (`ARG`); secrets must be supplied at `run` time via `--env-file .env`.
+Requires a `.env` (copy from `.env.preview.example` or `.env.production.example`) with at least `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY` for the dev server to start. Other vars: Cloudflare R2 (CV file storage), Sentry, Turnstile (bot protection), `IP_SALT` (hashing client IPs), `SUPABASE_SERVICE_ROLE_KEY` (server-only, bypasses RLS), `CLOUDFLARE_API_TOKEN` (wrangler CLI auth — needed for the `AI` binding's `remote: true` mode in `wrangler.jsonc` to reach Cloudflare; without it comment moderation returns `BLOG_COMMENT_MODERATION_UNAVAILABLE`). Tier templates are `.env.production.example` / `.env.preview.example` — copy to `.env.production` / `.env.preview` (and optionally `.env`) for the tier you're targeting locally (see [Environments](#environments) below).
 
 ## Architecture
 
@@ -73,8 +57,17 @@ Full endpoint reference and error-code table: [src/routes/api/v1/README.md](src/
 - `src/lib/authorApi.ts` / `src/lib/author.ts` — fetch/shape the author profile (CV, funding, contact, skills, socials) consumed by both the root layout and `/api/v1/author*`.
 - `src/lib/supabaseFunctions.ts` — Supabase Edge Function calls from the app.
 - `supabase/functions/` — Supabase Edge Functions (`admin`, `admin-cv-upload`, `admin-cv-delete`) deployed separately from the SvelteKit app.
-- Comment moderation: submissions are checked by Llama Guard 3 (via the Cloudflare `AI` binding declared in `wrangler.jsonc`), falling back to a heuristic keyword/pattern check if that binding is unavailable. `is_approved: false` means held back, not published.
+- Comment moderation: submissions are checked by Llama Guard 3 (via the Cloudflare `AI` binding declared in `wrangler.jsonc`). If that binding is unavailable or the model call fails, the request is rejected with `BLOG_COMMENT_MODERATION_UNAVAILABLE` (503) — there is no heuristic fallback. `is_approved: false` means the AI held the comment back, not published.
 - **No hardcoded/raw content data in application code.** Author name, bio, contact info, CV entries, funding links, skills, etc. must always be fetched from Supabase via `author.ts`/`authorApi.ts` — never inline a literal value (e.g. the author's name or bio) directly in a component or route as a stand-in for real data. This doesn't apply to files that are inherently static by format/platform convention (`.github/FUNDING.yml`, `SECURITY.md`, `package.json` metadata, etc.) — those aren't rendered app content.
+
+### Environments
+
+Two Cloudflare Pages tiers, each with its own dashboard-configured environment variable set (Cloudflare Pages always builds with the single `bun run build` command for both tiers — there's no per-environment build command — so the variable set is what differentiates a deployment, never a committed `.env.*` file, which is for local dev only):
+
+- **Production** — `main` branch, deploys to `fkp.my.id`. Real Turnstile keys, `PUBLIC_SENTRY_ENVIRONMENT=production`.
+- **Preview** — `develop` branch (and PRs), deploys to a `*.pages.dev` URL. Cloudflare's [dummy Turnstile testing keys](https://developers.cloudflare.com/turnstile/troubleshooting/testing/) instead of real ones (preview URLs aren't a verified Turnstile domain), `PUBLIC_SENTRY_ENVIRONMENT=preview`.
+
+Both tiers share the same Supabase project and `wrangler.jsonc` bindings (`AI`, `API_RATE_LIMITER`) — no per-tier split there. `src/hooks.server.ts` and `src/hooks.client.ts` tag Sentry events with `PUBLIC_SENTRY_ENVIRONMENT`, falling back to `import.meta.env.MODE` when that var is unset (local dev), so `production`/`preview`/`development` events never mix in Sentry. Canonical templates are `.env.production.example` / `.env.preview.example` (full variable sets per tier, including Turnstile and `PUBLIC_SENTRY_ENVIRONMENT`). `bun run dev:preview` / `bun run build:preview` (Vite mode `preview`) are local-only conveniences for testing against a `.env.preview` overlay — they have no effect on what Cloudflare Pages actually deploys.
 
 ### `src/hooks.server.ts`
 
@@ -104,9 +97,9 @@ The agent can use the Svelte MCP server, which provides comprehensive Svelte 5 a
 
 ## Code style
 
-Enforced by `prettier.config.ts` + `eslint.config.js` — run `bun run format` before committing. Notable non-defaults: no semicolons, single quotes, no trailing commas, no bracket spacing (`{foo}` not `{ foo }`), `arrowParens: 'avoid'`, 2-space indent. Files start with a `/** @format */` pragma (`insertPragma: true`). Svelte 5 runes syntax (`$state`, `$derived`, etc.) is used throughout — this is not Svelte 4/Options API.
+Enforced by `prettier.config.ts` + `eslint.config.js` — run `bun run format` before committing. Notable non-defaults: no semicolons, single quotes, no trailing commas, no bracket spacing (`{foo}` not `{ foo }`), `arrowParens: 'avoid'`, 2-space indent. Svelte 5 runes syntax (`$state`, `$derived`, etc.) is used throughout — this is not Svelte 4/Options API.
 
-- **No explanatory comments in code.** The only comments allowed are tool-directive ones — formatter pragmas (`/** @format */`), ESLint/Prettier disable/ignore directives, `@ts-expect-error`, and similar machine-read directives. Don't add comments describing what code does or why, even for non-obvious logic — prefer clear naming/structure instead.
+- **No comments in code.** Don't add comments describing what code does or why, even for non-obvious logic — prefer clear naming/structure instead.
 - **Prefer Tailwind utility classes over hand-written CSS** wherever Tailwind can express it. Only drop into a `<style>` block for things Tailwind genuinely can't do (e.g. complex selectors, animations Tailwind doesn't cover).
 - **Always write security-aware code.** Validate/sanitize untrusted input at every boundary, avoid injection/XSS/auth-bypass-shaped patterns, and default to the same scrutiny the `security-audit` skill and `security-reviewer` agent apply — don't wait to be asked to "think about security" on a given change.
 
@@ -114,8 +107,8 @@ Enforced by `prettier.config.ts` + `eslint.config.js` — run `bun run format` b
 
 This repo uses **git-flow-next** (classic preset — https://git-flow.sh/), initialized via `git-flow init --preset=classic --defaults --main main`. Config lives in local `.git/config` (`gitflow.*` keys), not committed — re-run that command on a fresh clone.
 
-- `main` — production/release only. Never commit directly; only `release/*` and `hotfix/*` branches merge into it (and get tagged).
-- `develop` — integration branch. `feature/*` and `bugfix/*` branch from and merge back into it.
+- `main` — production/release only. Never commit directly; only `release/*` and `hotfix/*` branches merge into it (and get tagged). Deploys to Cloudflare Pages **Production** (see [Environments](#environments)).
+- `develop` — integration branch. `feature/*` and `bugfix/*` branch from and merge back into it. Deploys to Cloudflare Pages **Preview**.
 - `feature/<name>`, `bugfix/<name>` — parent `develop`. `git-flow feature start <name>` / `git-flow feature finish <name>`.
 - `release/<name>`, `hotfix/<name>` — parent `main`, started from `develop`/`main` respectively, merge into `main`, tagged on finish.
 

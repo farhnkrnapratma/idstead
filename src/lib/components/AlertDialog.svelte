@@ -1,4 +1,3 @@
-<!-- @format -->
 <script lang="ts">
   import Dialog from './Dialog.svelte'
   import Button from './Button.svelte'
@@ -31,7 +30,7 @@
   {onClose}>
   {#snippet footer()}
     <Button
-      type="Primary"
+      type="primary"
       size="md"
       onclick={onClose}>
       {buttonLabel}

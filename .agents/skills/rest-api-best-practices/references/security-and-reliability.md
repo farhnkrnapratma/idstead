@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # Security, Idempotency, Observability, and Reliability
 
 ## Authentication

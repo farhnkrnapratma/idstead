@@ -1,5 +1,3 @@
-/** @format */
-
 export type ToastType = 'success' | 'error'
 
 let message = $state('')
@@ -27,9 +25,7 @@ function formatToastMessage(val: unknown): string {
     try {
       const str = JSON.stringify(val)
       if (str && str !== '{}') return str
-    } catch {
-      /* ignore JSON serialization errors */
-    }
+    } catch {}
   }
   return String(val)
 }

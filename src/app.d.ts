@@ -1,5 +1,3 @@
-/** @format */
-
 interface R2Object {
   key: string
   version: string

@@ -3,8 +3,6 @@ name: api-contract-check
 description: Verify src/routes/api/v1 routes follow this repo's API conventions — apiError() usage, error codes documented in README, and openapi.ts/well-known specs in sync. Use after adding or changing any /api/v1 route, or before a release touching the API.
 ---
 
-<!-- @format -->
-
 # API contract check
 
 `src/routes/api/v1/README.md` is the source of truth for this repo's public API and is also served live at `GET /api/v1`. Route handlers, the README, and `src/lib/openapi.ts` must all agree. Run this check after touching anything under `src/routes/api/v1`.

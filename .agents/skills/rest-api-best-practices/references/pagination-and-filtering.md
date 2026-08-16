@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # Pagination, Filtering, Sorting, Search
 
 ## Pagination strategies

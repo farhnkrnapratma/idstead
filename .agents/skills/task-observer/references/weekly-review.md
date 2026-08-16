@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # Comprehensive Review (scheduled or fallback)
 
 Cross-checks all OPEN observations against all skills, propagates cross-cutting principles, and applies improvements that don't need user input. Two modes:

@@ -5,8 +5,6 @@ impactDescription: 50% storage reduction, faster comparisons
 tags: data-types, schema, storage, performance
 ---
 
-<!-- @format -->
-
 ## Choose Appropriate Data Types
 
 Using the right data types reduces storage, improves query performance, and prevents bugs.

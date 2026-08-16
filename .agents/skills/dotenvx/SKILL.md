@@ -9,8 +9,6 @@ metadata:
   source: https://github.com/dotenvx/dotenvx
 ---
 
-<!-- @format -->
-
 # dotenvx
 
 Use this skill when users need encrypted env workflows, multi-environment loading, or runtime env injection for any language.

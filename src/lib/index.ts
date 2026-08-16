@@ -1,7 +1,8 @@
-/** @format */
-
 export {autoResize} from './utils/actions'
 export {cn} from './utils/cn'
+export {sanitizeInput} from './utils/sanitizeInput'
+export {decodeHtmlEntities} from './utils/formatters'
+export {tryEscapeComma, splitEscapedCommas} from './utils/pillParsing'
 export type {
   Theme,
   Section as SectionId,
@@ -18,6 +19,7 @@ export {default as IconButton} from './components/IconButton.svelte'
 export {default as Badge} from './components/Badge.svelte'
 export {default as Chip} from './components/Chip.svelte'
 export {default as Tag} from './components/Tag.svelte'
+export {default as PillInput} from './components/PillInput.svelte'
 export {default as Card} from './components/Card.svelte'
 export {default as Pagination} from './components/Pagination.svelte'
 export {default as Toast} from './components/Toast.svelte'
@@ -112,9 +114,11 @@ export {default as FilterCheckboxGroup} from './components/filter/FilterCheckbox
 export {default as SearchResultCount} from './components/filter/SearchResultCount.svelte'
 export {default as FilterEmptyState} from './components/filter/FilterEmptyState.svelte'
 export {default as ThemeSelect} from './components/filter/ThemeSelect.svelte'
+export {default as ContentFontSelect} from './components/filter/ContentFontSelect.svelte'
 export {default as AccessibilitySelect} from './components/filter/AccessibilitySelect.svelte'
 export * from './stores/useFilterSort.svelte'
 export * from './stores/a11yStore.svelte'
+export * from './stores/contentFontStore.svelte'
 
 export {default as ShinyText} from './components/ShinyText.svelte'
 export {default as LinkListSection} from './components/LinkListSection.svelte'

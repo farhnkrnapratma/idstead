@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # Client-Side and Browser Hunting
 
 #### When to use this file

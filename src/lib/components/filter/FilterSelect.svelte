@@ -1,5 +1,5 @@
-<!-- @format -->
 <script lang="ts">
+  import {Check} from '@lucide/svelte'
   import {cn} from '../../utils/cn'
   import DropdownTrigger from './DropdownTrigger.svelte'
 
@@ -79,9 +79,7 @@
               : 'text-text-primary hover:bg-surface-hover'}">
               <span>{option.label}</span>
               {#if option.value === value}
-                <i
-                  class="bi bi-check2 shrink-0 text-sm text-copilot"
-                  aria-hidden="true"></i>
+                <Check class="size-3.5 shrink-0 text-copilot" />
               {/if}
             </button>
           {/each}

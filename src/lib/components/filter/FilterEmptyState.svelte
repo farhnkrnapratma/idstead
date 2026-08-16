@@ -1,5 +1,5 @@
-<!-- @format -->
 <script lang="ts">
+  import {X} from '@lucide/svelte'
   import EmptyState from '../EmptyState.svelte'
   import Button from '../Button.svelte'
 
@@ -23,14 +23,15 @@
 <EmptyState
   {title}
   {description}
-  icon="bi-filter-circle"
   class={className}>
   {#snippet actions()}
     <Button
-      type="Secondary"
+      type="secondary"
       size="md"
-      leadingIcon="bi-x-circle"
       onclick={onClearFilters}>
+      {#snippet leading()}
+        <X class="size-3.5" />
+      {/snippet}
       {clearLabel}
     </Button>
   {/snippet}

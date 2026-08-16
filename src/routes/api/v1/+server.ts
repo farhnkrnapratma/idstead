@@ -1,9 +1,5 @@
-/** @format */
-
 import type {RequestHandler} from './$types'
-// Bundled at build time via Vite's `?raw` import - `node:fs` reads of source
-// files don't work at runtime on Cloudflare's edge/worker runtime (no access
-// to the original source tree), unlike local `vite dev`/Node.
+
 import readme from './README.md?raw'
 
 export const GET: RequestHandler = async () => {

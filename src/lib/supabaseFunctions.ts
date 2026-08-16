@@ -1,5 +1,3 @@
-/** @format */
-
 import {env as publicEnv} from '$env/dynamic/public'
 import {
   PUBLIC_SUPABASE_PUBLISHABLE_KEY,
@@ -60,9 +58,7 @@ export async function proxyToSupabaseEdgeFunction(
     method,
     headers,
     body: hasBody ? (request.body ?? null) : undefined,
-    // Required whenever a streamed (ReadableStream) body is forwarded to
-    // fetch() - both the Cloudflare Workers runtime and Node 18+/undici
-    // throw "duplex option is required" without this.
+
     ...(hasBody ? {duplex: 'half'} : {})
   } as RequestInit)
 

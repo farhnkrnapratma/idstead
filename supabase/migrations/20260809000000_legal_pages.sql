@@ -1,6 +1,6 @@
--- Migration: legal_pages
--- Created: 2026-08-09
--- Purpose: Table and SECURITY DEFINER RPC to store and manage site legal pages (privacy, security, terms)
+
+
+
 
 CREATE TABLE IF NOT EXISTS public.legal_pages (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -11,17 +11,17 @@ CREATE TABLE IF NOT EXISTS public.legal_pages (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
--- Enable RLS
+
 ALTER TABLE public.legal_pages ENABLE ROW LEVEL SECURITY;
 
--- Allow public read access
+
 CREATE POLICY "Public read legal pages"
   ON public.legal_pages
   FOR SELECT
   TO public
   USING (true);
 
--- Allow authenticated users to insert/update/delete
+
 CREATE POLICY "Authenticated users manage legal pages"
   ON public.legal_pages
   FOR ALL
@@ -29,7 +29,7 @@ CREATE POLICY "Authenticated users manage legal pages"
   USING (true)
   WITH CHECK (true);
 
--- Atomic save RPC function
+
 CREATE OR REPLACE FUNCTION public.save_legal_page(
   p_slug text,
   p_title text,
@@ -58,7 +58,7 @@ $$;
 REVOKE ALL ON FUNCTION public.save_legal_page(text, text, text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.save_legal_page(text, text, text) TO authenticated;
 
--- Seed initial database entries for privacy, security, and terms
+
 INSERT INTO public.legal_pages (slug, title, content)
 VALUES
   (

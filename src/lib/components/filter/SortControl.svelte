@@ -1,7 +1,8 @@
-<!-- @format -->
 <script lang="ts">
+  import {Check, ArrowUpNarrowWide, ArrowDownWideNarrow} from '@lucide/svelte'
   import {cn} from '../../utils/cn'
   import DropdownTrigger from './DropdownTrigger.svelte'
+  import IconButton from '../IconButton.svelte'
 
   interface SortOption {
     value: string
@@ -18,80 +19,66 @@
   }
 
   let {
-    fields = [],
+    fields,
     currentField,
-    currentDirection = 'desc',
-    onFieldChange = () => {},
-    onDirectionToggle = () => {},
+    currentDirection,
+    onFieldChange,
+    onDirectionToggle,
     class: className = ''
   }: Props = $props()
 
   let isOpen = $state(false)
 
-  let selectedLabel = $derived(
-    fields.find(f => f.value === currentField)?.label
-      ?? fields[0]?.label
-      ?? 'Sort by'
-  )
-
-  let resolvedField = $derived(
-    fields.some(f => f.value === currentField) ? currentField : (
-      (fields[0]?.value ?? '')
-    )
+  let currentFieldOption = $derived(
+    fields.find(f => f.value === currentField) ?? fields[0]
   )
 
   function selectField(value: string) {
-    onFieldChange(value)
+    onFieldChange?.(value)
     isOpen = false
   }
 </script>
 
-<div
-  class={cn(
-    'relative flex items-center gap-2 select-none',
-    isOpen ? 'z-50' : 'z-20',
-    className
-  )}>
-  <span class="text-xs font-medium whitespace-nowrap text-text-secondary"
-    >Sort by</span>
-
-  <div class="relative">
+<div class={cn('flex items-center gap-1.5', className)}>
+  <div class="relative inline-block">
     <DropdownTrigger
-      ariaLabel="Sort by: {selectedLabel}"
-      options={fields}
+      ariaLabel="Sort by: {currentFieldOption?.label ?? 'Select'}"
       {isOpen}
-      onclick={() => (isOpen = !isOpen)}>
-      {selectedLabel}
+      onclick={() => (isOpen = !isOpen)}
+      options={fields}>
+      <span class="inline-flex min-w-0 items-center gap-1.5 truncate">
+        <span class="truncate"
+          >{currentFieldOption?.label ?? 'Sort field'}</span>
+      </span>
     </DropdownTrigger>
 
     {#if isOpen}
       <button
         type="button"
-        class="fixed inset-0 z-40 cursor-default"
+        class="fixed inset-0 z-30 cursor-default"
         onclick={() => (isOpen = false)}
-        aria-label="Close sort options"></button>
+        aria-label="Close sort menu"></button>
 
       <div
         role="listbox"
-        aria-label="Sort field options"
-        class="absolute top-[calc(100%+8px)] left-1/2 z-60 flex w-full w-max min-w-full -translate-x-1/2 flex-col rounded-sm glass-overlay p-0 shadow-xl">
+        aria-label="Sort options"
+        class="absolute top-[calc(100%+8px)] left-0 z-40 flex w-max min-w-full flex-col rounded-sm glass-overlay p-0 shadow-xl">
         <div class="relative z-10 flex flex-col overflow-hidden rounded-sm">
           {#each fields as field (field.value)}
             <button
               type="button"
               role="option"
-              aria-selected={field.value === resolvedField}
+              aria-selected={currentField === field.value}
               onclick={() => selectField(field.value)}
-              class="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-xs font-medium transition-colors {(
-                field.value === resolvedField
-              ) ?
-                'bg-copilot/10 text-copilot'
-              : 'text-text-primary hover:bg-surface-hover'}">
-              <span>{field.label}</span>
-              {#if field.value === resolvedField}
-                <i
-                  class="bi bi-check2 shrink-0 text-sm text-copilot"
-                  aria-hidden="true"></i>
+              class={cn(
+                'flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-2 text-left text-xs font-medium transition-colors',
+                currentField === field.value ?
+                  'bg-copilot/10 font-semibold text-copilot'
+                : 'text-text-primary hover:bg-surface-hover hover:text-copilot'
+              )}>
+              <span class="truncate">{field.label}</span>
+              {#if currentField === field.value}
+                <Check class="size-3.5 shrink-0 text-copilot" />
               {/if}
             </button>
           {/each}
@@ -100,18 +87,20 @@
     {/if}
   </div>
 
-  <button
-    type="button"
-    onclick={onDirectionToggle}
-    aria-label="Sort direction: {currentDirection === 'asc' ? 'Ascending' : (
+  <IconButton
+    ariaLabel="Sort direction: {currentDirection === 'asc' ? 'Ascending' : (
       'Descending'
     )}"
-    title="Toggle sort direction"
-    class="inline-flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-sm glass-card text-text-secondary shadow-2xs transition-all hover:text-text-primary focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
-    <i
-      class="bi {currentDirection === 'asc' ? 'bi-sort-up' : (
-        'bi-sort-down'
-      )} text-xs"
-      aria-hidden="true"></i>
-  </button>
+    tooltip={currentDirection === 'asc' ? 'Sort: Ascending' : (
+      'Sort: Descending'
+    )}
+    size="sm"
+    onclick={onDirectionToggle}
+    class="border-border-subtle bg-surface-card text-text-secondary shadow-2xs hover:text-text-primary">
+    {#if currentDirection === 'asc'}
+      <ArrowUpNarrowWide class="size-4" />
+    {:else}
+      <ArrowDownWideNarrow class="size-4" />
+    {/if}
+  </IconButton>
 </div>

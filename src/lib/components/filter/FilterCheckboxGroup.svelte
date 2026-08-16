@@ -1,6 +1,6 @@
-<!-- @format -->
 <script lang="ts">
   import Checkbox from '../Checkbox.svelte'
+  import Input from '../Input.svelte'
   import {cn} from '../../utils/cn'
   import DropdownTrigger from './DropdownTrigger.svelte'
 
@@ -28,10 +28,29 @@
   }: Props = $props()
 
   let isOpen = $state(false)
+  let searchQuery = $state('')
 
   let triggerLabel = $derived(
     selectedValues.length > 0 ? `${selectedValues.length} selected` : 'All'
   )
+
+  let sortedOptions = $derived(
+    [...options].sort((a, b) => a.label.localeCompare(b.label))
+  )
+
+  let filteredOptions = $derived.by(() => {
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return sortedOptions
+    return sortedOptions.filter(
+      opt =>
+        opt.label.toLowerCase().includes(q)
+        || opt.value.toLowerCase().includes(q)
+    )
+  })
+
+  $effect(() => {
+    if (isOpen) searchQuery = ''
+  })
 </script>
 
 <div
@@ -64,9 +83,17 @@
           role="group"
           aria-label="{label} filters"
           class="absolute top-[calc(100%+8px)] left-1/2 z-60 flex w-full w-max min-w-full -translate-x-1/2 flex-col rounded-sm glass-overlay p-0 shadow-xl">
+          <div class="relative z-10 p-1.5 pb-1">
+            <Input
+              type="search"
+              size="sm"
+              placeholder="Search..."
+              bind:value={searchQuery}
+              aria-label="Search {label} options" />
+          </div>
           <div
-            class="relative z-10 flex max-h-52 [scrollbar-width:none] flex-col overflow-y-auto p-1.5 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-            {#each options as opt (opt.value)}
+            class="relative z-10 flex max-h-52 [scrollbar-width:none] flex-col overflow-y-auto p-1.5 pt-0.5 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            {#each filteredOptions as opt (opt.value)}
               <label
                 class="flex cursor-pointer items-center gap-2.5 rounded-sm px-2 py-1.5 text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover/70">
                 <Checkbox
@@ -74,6 +101,10 @@
                   onchange={() => onChange(opt.value)} />
                 <span class="leading-none">{opt.label}</span>
               </label>
+            {:else}
+              <p class="px-2 py-3 text-center text-2xs text-text-muted">
+                No matches found
+              </p>
             {/each}
           </div>
         </div>

@@ -1,11 +1,10 @@
-<!-- @format -->
 <script lang="ts">
   import type {Snippet} from 'svelte'
   import type {HTMLAttributes} from 'svelte/elements'
   import {cn} from '../utils/cn'
 
   interface Props extends HTMLAttributes<HTMLDivElement> {
-    variant?: 'default' | 'glass' | 'bordered'
+    variant?: 'default' | 'glass' | 'bordered' | 'solid'
     density?: 'padded' | 'compact' | 'none'
     interactive?: boolean
     header?: Snippet
@@ -28,7 +27,9 @@
   const variantStyles = {
     default: 'glass-card',
     glass: 'glass-card',
-    bordered: 'bg-transparent border border-border-subtle'
+    bordered: 'bg-transparent border border-border-subtle',
+    solid:
+      'border border-border-subtle bg-surface-card text-text-primary shadow-xs'
   }
 
   const densityStyles = {

@@ -1,11 +1,4 @@
 #!/usr/bin/env bash
-# PreToolUse hook, filtered to Bash(git commit:*): block commits directly to
-# main (git-flow-next reserves it for release/*/hotfix/* merges per
-# CLAUDE.md), format the tree and block if that leaves newly-unstaged
-# changes (so formatted content doesn't silently get left out of the
-# commit), then block if the repo's correctness gates (bun run check/lint)
-# are currently failing. Complements check-before-stop.sh, which only warns
-# after the fact.
 branch=$(git branch --show-current 2>/dev/null)
 if [ "$branch" = "main" ]; then
   jq -n '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "Direct commits to main are not allowed - this repo uses git-flow-next (see CLAUDE.md); main only receives merges from release/* or hotfix/* branches. Commit to develop/feature/bugfix instead, or use git-flow release/hotfix start."}}'

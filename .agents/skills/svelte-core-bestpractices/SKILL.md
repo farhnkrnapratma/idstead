@@ -4,8 +4,6 @@ description: >-
   Guidance on writing fast, robust, modern Svelte code. Load this skill whenever in a Svelte project and asked to write/edit or analyze a Svelte component or module. Covers reactivity, event handling, styling, integration with libraries and more.
 ---
 
-<!-- @format -->
-
 # svelte-core-bestpractices
 
 Guidance on writing fast, robust, modern Svelte code. Load this skill whenever in a Svelte project and asked to write/edit or analyze a Svelte component or module. Covers reactivity, event handling, styling, integration with libraries and more.
@@ -74,10 +72,10 @@ Any element attribute starting with `on` is treated as an event listener:
 ```svelte
 <button onclick={() => {...}}>click me</button>
 
-<!-- attribute shorthand also works -->
+
 <button {onclick}>...</button>
 
-<!-- so do spread attributes -->
+
 <button {...props}>...</button>
 ```
 
@@ -95,7 +93,6 @@ Avoid using `onMount` or `$effect` for this.
 Snippets are a way to define reusable chunks of markup that can be instantiated with the `{@render ...}` tag, or passed to components as props. They must be declared within the template.
 
 ```svelte
-<!-- @format -->
 {#snippet greeting(name)}
   <p>hello {name}!</p>
 {/snippet}
@@ -118,7 +115,7 @@ Avoid destructuring if you need to mutate the item (with something like `bind:va
 If you have a JS variable that you want to use inside CSS you can set a CSS custom property with the `style:` directive.
 
 ```svelte
-<!-- @format --><div style:--columns={columns}>...</div>
+<div style:--columns={columns}>...</div>
 ```
 
 You can then reference `var(--columns)` inside the component's `<style>`.
@@ -128,11 +125,8 @@ You can then reference `var(--columns)` inside the component's `<style>`.
 The CSS in a component's `<style>` is scoped to that component. If a parent component needs to control the child's styles, the preferred way is to use CSS custom properties:
 
 ```svelte
-<!-- @format -->
-<!-- Parent.svelte -->
 <Child --color="red" />
 
-<!-- Child.svelte -->
 <h1>Hello</h1>
 
 <style>
@@ -145,7 +139,6 @@ The CSS in a component's `<style>` is scoped to that component. If a parent comp
 If this is impossible (for example, the child component comes from a library) you can use `:global` to override styles:
 
 ```svelte
-<!-- @format -->
 <div>
   <Child />
 </div>

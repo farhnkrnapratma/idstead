@@ -1,8 +1,8 @@
-<!-- @format -->
 <script lang="ts">
   import SkipLink from './SkipLink.svelte'
   import SpotlightSearch from './SpotlightSearch.svelte'
   import ThemeSelect from './filter/ThemeSelect.svelte'
+  import ContentFontSelect from './filter/ContentFontSelect.svelte'
   import AccessibilitySelect from './filter/AccessibilitySelect.svelte'
   import {themeStore} from '../stores/themeStore.svelte'
 
@@ -10,9 +10,10 @@
     ariaLabel: string
     backHref: string
     backLabel: string
+    showFontSelect?: boolean
   }
 
-  let {ariaLabel, backHref, backLabel}: Props = $props()
+  let {ariaLabel, backHref, backLabel, showFontSelect = false}: Props = $props()
 </script>
 
 <SkipLink />
@@ -32,6 +33,9 @@
       theme={themeStore.current}
       onThemeChange={themeStore.apply}
       class="hidden md:inline-flex" />
+    {#if showFontSelect}
+      <ContentFontSelect class="hidden md:inline-flex" />
+    {/if}
     <AccessibilitySelect class="hidden md:inline-flex" />
   </div>
 </nav>

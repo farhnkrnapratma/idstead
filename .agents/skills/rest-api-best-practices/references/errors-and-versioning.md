@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # Error Responses and Versioning
 
 ## Standardized error structure

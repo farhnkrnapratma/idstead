@@ -1,7 +1,7 @@
-<!-- @format -->
 <script lang="ts">
   import Tag from '../components/Tag.svelte'
   import {cn} from '../utils/cn'
+  import {decodeHtmlEntities} from '../utils/formatters'
 
   interface Props {
     category: string
@@ -37,7 +37,7 @@
     {#each skills as skill (skill)}
       <Tag
         variant="subtle"
-        size="md">{skill}</Tag>
+        size="md">{decodeHtmlEntities(skill)}</Tag>
     {/each}
   </div>
 </div>

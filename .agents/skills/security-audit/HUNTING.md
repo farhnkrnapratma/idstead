@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # Vulnerability Hunting
 
 ### Phase 2: Hunt for vulnerabilities

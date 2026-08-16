@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # graphify reference: add a URL and watch a folder
 
 Load this when the user ran `/graphify add <url>` or passed `--watch`. Neither is part of the default build.

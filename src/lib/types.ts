@@ -1,5 +1,3 @@
-/** @format */
-
 export type Theme = 'auto' | 'dark' | 'light'
 
 export type Section =

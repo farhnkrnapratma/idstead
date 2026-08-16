@@ -1,8 +1,8 @@
-<!-- @format -->
 <script lang="ts">
   import {page} from '$app/state'
   import {supabase} from '$lib/supabase'
   import {onMount} from 'svelte'
+  import {Terminal, Eye, EyeOff} from '@lucide/svelte'
   import {Card, FormField, Input, Button, IconButton, SkipLink} from '$lib'
   import {toastStore} from '$lib/stores/toastStore.svelte'
   import {
@@ -135,8 +135,7 @@
       toastStore.error(message || 'Invalid email or password.')
     } finally {
       isSubmitting = false
-      // Tokens are single-use; always reset so a retry gets a fresh one
-      // instead of being rejected as timeout-or-duplicate.
+
       resetTurnstile(turnstileEl)
     }
   }
@@ -156,13 +155,11 @@
   class="relative flex min-h-dvh flex-col items-center justify-center font-sans">
   <div class="flex w-full max-w-md items-center justify-center px-4 sm:px-6">
     <Card
-      variant="glass"
+      variant="solid"
       class="w-full overflow-visible p-5 sm:p-6">
       <div class="mb-4 flex flex-col items-center text-center select-none">
         <div class="flex items-center gap-2">
-          <i
-            class="bi bi-terminal-fill text-2xl text-copilot select-none"
-            aria-hidden="true"></i>
+          <Terminal class="size-6 text-copilot select-none" />
           <h1 class="text-xl font-bold text-text-primary">Console</h1>
         </div>
         <p class="mt-1 text-xs text-text-secondary">
@@ -226,9 +223,11 @@
                 variant="ghost"
                 size="md"
                 onclick={() => (showPassword = !showPassword)}>
-                <i
-                  class="bi {showPassword ? 'bi-eye-slash' : 'bi-eye'}"
-                  aria-hidden="true"></i>
+                {#if showPassword}
+                  <EyeOff class="size-4" />
+                {:else}
+                  <Eye class="size-4" />
+                {/if}
               </IconButton>
             {/snippet}
           </Input>
@@ -238,6 +237,7 @@
           <div
             bind:this={turnstileEl}
             class="min-h-16.25 w-full [&_iframe]:border-0!"
+            data-sitekey={turnstileSiteKey}
             data-action="turnstile-spin-v2"
             use:turnstileWidget={{sitekey: turnstileSiteKey, size: 'flexible'}}>
           </div>
@@ -245,7 +245,7 @@
 
         <Button
           htmlType="submit"
-          type="Primary"
+          type="primary"
           size="lg"
           isLoading={isSubmitting}
           class="mt-2 w-full">

@@ -1,5 +1,5 @@
-<!-- @format -->
 <script lang="ts">
+  import {X} from '@lucide/svelte'
   import IconButton from './IconButton.svelte'
 
   interface Props {
@@ -11,12 +11,11 @@
 </script>
 
 <IconButton
-  ariaLabel="Close dialog"
+  ariaLabel="Close"
+  tooltip="Close"
   variant="ghost"
   size="sm"
   class={className}
   onclick={onClose}>
-  <i
-    class="bi bi-x-lg text-xs"
-    aria-hidden="true"></i>
+  <X class="size-3.5" />
 </IconButton>

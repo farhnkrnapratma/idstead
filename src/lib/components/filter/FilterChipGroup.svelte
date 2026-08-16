@@ -1,4 +1,3 @@
-<!-- @format -->
 <script lang="ts">
   import FilterChip from './FilterChip.svelte'
   import Button from '../Button.svelte'
@@ -41,7 +40,7 @@
     {/each}
 
     <Button
-      type="Ghost"
+      type="ghost"
       size="sm"
       onclick={onClearAll}
       class="text-xs text-text-muted hover:text-text-primary">

@@ -1,9 +1,41 @@
-<!-- @format -->
 <script lang="ts">
   import {page} from '$app/state'
   import {replaceState} from '$app/navigation'
   import {supabase} from '$lib/supabase'
+  import {
+    FileText,
+    User,
+    FileUser,
+    Layers,
+    Share2,
+    Heart,
+    Mail,
+    Lock,
+    ShieldCheck,
+    ScrollText,
+    Image as ImageIcon,
+    ZoomIn,
+    Trash2,
+    ArrowUp,
+    ArrowDown,
+    Copy,
+    ExternalLink,
+    BadgeCheck,
+    PlusCircle,
+    Rocket,
+    Cpu,
+    X,
+    Plus,
+    Pencil,
+    LogOut,
+    Eye,
+    EyeOff,
+    Menu
+  } from '@lucide/svelte'
   import hljs from 'highlight.js'
+  import {a11yStore} from '$lib/stores/a11yStore.svelte'
+  import {codeBlockPrefsStore} from '$lib/stores/codeBlockPrefsStore.svelte'
+  import {resolveHljsTheme} from '$lib/utils/hljsTheme'
   import {renderMarkdown} from '$lib/markdown'
   import {
     enhanceCodeBlocks,
@@ -30,6 +62,7 @@
     SkipLink,
     FilterToolbar,
     FilterSelect,
+    FilterCheckboxGroup,
     DropdownSelect,
     SortControl,
     SearchResultCount,
@@ -46,14 +79,14 @@
     formatAbsoluteDate,
     FormSection,
     FormActions,
-    FileUploadField,
-    MarkdownEditor
+    MarkdownEditor,
+    PillInput,
+    sanitizeInput,
+    decodeHtmlEntities,
+    splitEscapedCommas
   } from '$lib'
 
   import {themeStore} from '$lib/stores/themeStore.svelte'
-  function focusOnMount(node: HTMLElement) {
-    node.focus()
-  }
   import {
     fetchAuthorProfile,
     fetchCvEntries,
@@ -83,6 +116,7 @@
     updated_at?: string | null
     banner_path?: string | null
     excerpt?: string | null
+    tags?: string[] | null
     read_time?: string | null
   }
 
@@ -186,7 +220,7 @@
     return years
   }
 
-  function getEndYearOptions(startYear?: number) {
+  function getEndYearOptions(startYear?: number | null) {
     const start = startYear || currentYear
     const years: number[] = []
     for (let y = start; y <= currentYear + 100; y++) {
@@ -236,6 +270,14 @@
 
   let isDark = $state(false)
 
+  const hljsTheme = $derived(
+    resolveHljsTheme(
+      a11yStore.current.highContrast,
+      isDark,
+      codeBlockPrefsStore.current.colorScheme
+    )
+  )
+
   onMount(() => {
     isDark = document.documentElement.classList.contains('dark')
     const themeObserver = new MutationObserver(() => {
@@ -263,9 +305,7 @@
           }
         }
       }
-    } catch {
-      // fallback
-    }
+    } catch {}
   }
 
   async function handleSaveLegalPage(
@@ -553,6 +593,7 @@
     hash: '',
     isActive: true
   })
+  let isGeneratingPdf = $state(false)
 
   function debounceAdmin<T extends unknown[]>(
     cb: (...args: T) => void,
@@ -659,8 +700,8 @@
   }, 400)
 
   const validateSocialField = debounceAdmin(
-    (idx: number, field: 'icon' | 'platform' | 'url') => {
-      const labels = {icon: 'Icon', platform: 'Platform', url: 'URL'}
+    (idx: number, field: 'platform' | 'url') => {
+      const labels = {platform: 'Platform', url: 'URL'}
       validateRequiredField(
         socialErrors,
         socialValid,
@@ -675,11 +716,10 @@
   )
 
   const validateSponsorshipField = debounceAdmin(
-    (idx: number, field: 'platform' | 'displayValue' | 'icon' | 'url') => {
+    (idx: number, field: 'platform' | 'displayValue' | 'url') => {
       const labels = {
         platform: 'Platform',
         displayValue: 'Display text',
-        icon: 'Icon',
         url: 'URL'
       }
       validateRequiredField(
@@ -696,11 +736,10 @@
   )
 
   const validateContactField = debounceAdmin(
-    (idx: number, field: 'platform' | 'displayValue' | 'icon' | 'href') => {
+    (idx: number, field: 'platform' | 'displayValue' | 'href') => {
       const labels = {
         platform: 'Platform',
         displayValue: 'Display text',
-        icon: 'Icon',
         href: 'URL'
       }
       validateRequiredField(
@@ -795,17 +834,6 @@
           socialErrors,
           socialValid,
           idx,
-          'icon',
-          'Icon',
-          item.icon || ''
-        )
-      )
-        ok = false
-      if (
-        !validateRequiredField(
-          socialErrors,
-          socialValid,
-          idx,
           'platform',
           'Platform',
           item.platform || ''
@@ -858,17 +886,6 @@
           sponsorshipErrors,
           sponsorshipValid,
           idx,
-          'icon',
-          'Icon',
-          item.icon || ''
-        )
-      )
-        ok = false
-      if (
-        !validateRequiredField(
-          sponsorshipErrors,
-          sponsorshipValid,
-          idx,
           'url',
           'URL',
           item.url || '',
@@ -910,17 +927,6 @@
           contactErrors,
           contactValid,
           idx,
-          'icon',
-          'Icon',
-          item.icon || ''
-        )
-      )
-        ok = false
-      if (
-        !validateRequiredField(
-          contactErrors,
-          contactValid,
-          idx,
           'href',
           'URL',
           item.href || '',
@@ -934,33 +940,8 @@
 
   let isClearingAuthor = $state(false)
 
-  let selectedPdfFile = $state<File | null>(null)
-  let isUploadingPdf = $state(false)
   let pdfUploadError = $state('')
   let pdfUploadSuccess = $state('')
-
-  function handleCvFileSelect(file: File | null) {
-    if (!file) {
-      selectedPdfFile = null
-      pdfUploadError = ''
-      return
-    }
-    const isPdf =
-      file.type === 'application/pdf'
-      || file.name.toLowerCase().endsWith('.pdf')
-    if (!isPdf) {
-      pdfUploadError = 'Only PDF files are supported.'
-      selectedPdfFile = null
-      return
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      pdfUploadError = 'File size exceeds 10 MB limit.'
-      selectedPdfFile = null
-      return
-    }
-    selectedPdfFile = file
-    pdfUploadError = ''
-  }
 
   let isSavingCv = $state(false)
   let cvSaveSuccess = $state(false)
@@ -973,59 +954,6 @@
   let isSavingContact = $state(false)
   let contactSaveSuccess = $state(false)
 
-  let editingSkillKey = $state<string | null>(null)
-  let editingSkillText = $state<string>('')
-  let draggedSkillIdx = $state<number | null>(null)
-
-  function startEditSkill(
-    catIdx: number,
-    skillIdx: number,
-    currentText: string
-  ) {
-    editingSkillKey = `${catIdx}-${skillIdx}`
-    editingSkillText = currentText
-  }
-
-  // Typing "\," anywhere in a skill name inserts a literal comma there
-  // instead of committing/splitting the skill. Checks the character right
-  // before the caret rather than the end of the whole string, so the escape
-  // works when editing mid-string (e.g. "Governance\, Risk and Compliance"),
-  // not just when appending at the end.
-  function tryEscapeComma(
-    value: string,
-    cursor: number
-  ): {value: string; cursor: number} | null {
-    if (cursor > 0 && value[cursor - 1] === '\\') {
-      return {
-        value: value.slice(0, cursor - 1) + ',' + value.slice(cursor),
-        cursor
-      }
-    }
-    return null
-  }
-
-  // Splits on unescaped commas; "\," becomes a literal "," in the output.
-  // Trims each resulting item and drops empty ones.
-  function splitEscapedCommas(text: string): string[] {
-    const parts: string[] = []
-    let current = ''
-    for (let i = 0; i < text.length; i++) {
-      if (text[i] === '\\' && text[i + 1] === ',') {
-        current += ','
-        i++
-      } else if (text[i] === ',') {
-        parts.push(current)
-        current = ''
-      } else {
-        current += text[i]
-      }
-    }
-    parts.push(current)
-    return parts.map(s => s.trim()).filter(Boolean)
-  }
-
-  // "Category: a, b, c" -> {category: "Category", skills: [a,b,c]}
-  // "a, b, c" (no colon) -> {category: null, skills: [a,b,c]}
   function parsePastedSkillsText(text: string): {
     category: string | null
     skills: string[]
@@ -1080,67 +1008,17 @@
     ;(e.currentTarget as HTMLInputElement).value = ''
   }
 
-  function saveEditSkill(catIdx: number, skillIdx: number) {
-    if (editingSkillKey === `${catIdx}-${skillIdx}`) {
-      // A trailing "\" here is only ever a literal backslash the user typed
-      // and didn't follow with "," - the ",": keydown handler below already
-      // consumes it into a real comma the moment an escape sequence
-      // completes, so nothing dangling ever reaches this point. Stripping it
-      // unconditionally used to silently swallow that character (and, if it
-      // was the only character being typed, reduce the value to empty and
-      // discard the edit entirely - closing the pill without saving).
-      const trimmed = editingSkillText.trim()
-      if (trimmed) {
-        skillsState[catIdx].skills[skillIdx] = trimmed
-      }
-      editingSkillKey = null
-      editingSkillText = ''
-    }
-  }
-
-  function createSkillDragImage(sourceEl: HTMLElement): HTMLElement {
-    const clone = sourceEl.cloneNode(true) as HTMLElement
-    const rect = sourceEl.getBoundingClientRect()
-    const computed = getComputedStyle(sourceEl)
-    Object.assign(clone.style, {
-      position: 'fixed',
-      top: '-1000px',
-      left: '-1000px',
-      width: `${rect.width}px`,
-      height: `${rect.height}px`,
-      margin: '0',
-      borderRadius: computed.borderRadius,
-      background: computed.backgroundColor,
-      border: computed.border,
-      pointerEvents: 'none'
-    })
-    document.body.appendChild(clone)
-    return clone
-  }
-
-  function handleSkillDragStart(sIdx: number, e: DragEvent) {
-    draggedSkillIdx = sIdx
-    if (e.dataTransfer) {
-      e.dataTransfer.effectAllowed = 'move'
-      e.dataTransfer.setData('text/plain', String(sIdx))
-      const ghost = createSkillDragImage(e.currentTarget as HTMLElement)
-      e.dataTransfer.setDragImage(ghost, 12, 12)
-      setTimeout(() => ghost.remove(), 0)
-    }
-  }
-
-  function handleSkillDrop(catIdx: number, targetIdx: number, e: DragEvent) {
-    e.preventDefault()
-    if (draggedSkillIdx !== null && draggedSkillIdx !== targetIdx) {
-      const skills = [...skillsState[catIdx].skills]
-      const [removed] = skills.splice(draggedSkillIdx, 1)
-      skills.splice(targetIdx, 0, removed)
-      skillsState[catIdx].skills = skills
-    }
-    draggedSkillIdx = null
-  }
-
   const statusFilter = $derived(filterStore.filters['status']?.[0] || 'all')
+
+  const allPostTags = $derived.by(() => {
+    const set = new SvelteSet<string>()
+    for (const post of posts) {
+      if (post.tags) {
+        post.tags.forEach(t => set.add(decodeHtmlEntities(t)))
+      }
+    }
+    return Array.from(set).sort()
+  })
 
   const postViewsMap = $state(new Map<string, number>())
 
@@ -1184,6 +1062,13 @@
       result = result.filter(p => p.published)
     } else if (statusFilter === 'draft') {
       result = result.filter(p => !p.published)
+    }
+
+    const selectedTags = filterStore.filters['tag'] || []
+    if (selectedTags.length > 0) {
+      result = result.filter(
+        p => p.tags && p.tags.some(t => selectedTags.includes(t))
+      )
     }
 
     const {field, direction} = filterStore.sort
@@ -1256,28 +1141,6 @@
     }
   }
 
-  function sanitizeInput(text: string): string {
-    if (!text) return ''
-    return text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#x27;')
-      .replace(/\//g, '&#x2F;')
-  }
-
-  function getCommentIcon(comment: AdminComment): string {
-    if (
-      comment.author_name === 'Admin'
-      || (comment.author_name
-        && comment.author_name.toLowerCase().includes('farhan'))
-    ) {
-      return 'bi-shield-lock'
-    }
-    return comment.is_anonymous ? 'bi-person-circle' : 'bi-person'
-  }
-
   async function handleAdminSubmit(
     e: SubmitEvent,
     parentId: string,
@@ -1326,7 +1189,7 @@
   }
 
   let sessionTimeoutMultiplier = $state(1)
-  let BASE_IDLE_TIMEOUT_MS = 30 * 60 * 1000 // 30 minutes
+  let BASE_IDLE_TIMEOUT_MS = 30 * 60 * 1000
   let idleWarnTimer: ReturnType<typeof setTimeout>
   let showSessionTimeoutDialog = $state(false)
   let countdownSeconds = $state(30)
@@ -1465,7 +1328,7 @@
       const {data, error} = await supabase
         .from('db_posts')
         .select(
-          'id, title, slug, published, storage_path, created_at, updated_at, banner_path, excerpt'
+          'id, title, slug, published, storage_path, created_at, updated_at, banner_path, excerpt, tags'
         )
         .order('created_at', {ascending: false})
 
@@ -1495,9 +1358,7 @@
                   const minutes = Math.max(1, Math.ceil(words / 200))
                   readTime = `${minutes} min${minutes > 1 ? 's' : ''} read`
                 }
-              } catch {
-                // Ignore background fetch timeout/error
-              }
+              } catch {}
             }
             return {...post, read_time: readTime}
           })
@@ -1837,7 +1698,6 @@
         return data.id
       }
 
-      // Auto-insert author profile if none exists using only user-entered state
       const {data: created, error} = await supabase
         .from('db_profiles')
         .insert({
@@ -1922,6 +1782,7 @@
       cvSaveSuccess = true
       setTimeout(() => (cvSaveSuccess = false), 2500)
       toastStore.success('CV entries saved.')
+      executeGenerateCvPdf('patch')
     } catch (err: any) {
       console.error('Error saving CV entries:', err)
       const msg = err?.message || err?.error || 'Failed to save CV entries.'
@@ -1989,7 +1850,7 @@
         platform: sanitizeInput(item.platform.trim()),
         display_value: null,
         url: item.url.trim(),
-        icon: sanitizeIconClass(item.icon, 'bi-people'),
+        icon: '',
         sort_order: idx + 1
       }))
 
@@ -2030,7 +1891,7 @@
         platform: sanitizeInput(item.platform.trim()),
         display_value: sanitizeInput(item.displayValue.trim()),
         url: item.url.trim(),
-        icon: sanitizeIconClass(item.icon, 'bi-currency-dollar'),
+        icon: '',
         sort_order: idx + 1
       }))
 
@@ -2072,7 +1933,7 @@
         platform: sanitizeInput(item.platform.trim()),
         display_value: sanitizeInput(item.displayValue.trim()),
         url: item.href.trim(),
-        icon: sanitizeIconClass(item.icon, 'bi-person'),
+        icon: '',
         sort_order: idx + 1
       }))
 
@@ -2096,11 +1957,10 @@
     }
   }
 
-  async function handleUploadPdf(e: SubmitEvent) {
-    e.preventDefault()
-    if (!selectedPdfFile || isUploadingPdf) return
-
-    isUploadingPdf = true
+  async function executeGenerateCvPdf(
+    bumpType: 'patch' | 'minor' | 'major' = 'patch'
+  ) {
+    isGeneratingPdf = true
     pdfUploadError = ''
     pdfUploadSuccess = ''
 
@@ -2112,28 +1972,29 @@
       if (userError || !user) {
         throw new Error('Your admin session has expired. Please log in again.')
       }
+
       const {data: sessionData} = await supabase.auth.getSession()
       const accessToken = sessionData.session?.access_token
       if (!accessToken) {
         throw new Error('Your admin session has expired. Please log in again.')
       }
 
-      const formData = new FormData()
-      formData.append('file', selectedPdfFile)
-
-      const response = await fetch('/api/internal/admin/cv/upload', {
+      const response = await fetch('/api/internal/admin/cv/generate', {
         method: 'POST',
-        headers: {Authorization: `Bearer ${accessToken}`},
-        body: formData
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({bumpType})
       })
 
       const res = await response.json()
       if (!response.ok || !res.success) {
         const errorMsg =
           typeof res?.message === 'string' ? res.message
-          : typeof res?.error === 'string' ? res.error
           : typeof res?.error?.message === 'string' ? res.error.message
-          : 'Failed to upload PDF file'
+          : typeof res?.error === 'string' ? res.error
+          : 'Failed to generate CV PDF'
         throw new Error(errorMsg)
       }
 
@@ -2145,23 +2006,17 @@
       }
 
       const provider = res.storageProvider || 'R2'
-      pdfUploadSuccess = `Successfully uploaded ${res.filename} to ${provider} & synced database!`
-      selectedPdfFile = null
-
-      const fileInput = document.getElementById(
-        'cv-pdf-upload'
-      ) as HTMLInputElement
-      if (fileInput) fileInput.value = ''
-      toastStore.success('CV document uploaded.')
+      pdfUploadSuccess = `Successfully generated ${res.filename} (v${res.version}) & synced to ${provider}!`
+      toastStore.success(`CV PDF generated (v${res.version})`)
     } catch (err: any) {
-      console.error('PDF upload error:', err)
+      console.error('PDF generation error:', err)
       pdfUploadError =
         typeof err?.message === 'string' ? err.message
         : typeof err === 'string' ? err
-        : 'Failed to upload PDF'
+        : 'Failed to generate CV PDF'
       toastStore.error(pdfUploadError)
     } finally {
-      isUploadingPdf = false
+      isGeneratingPdf = false
     }
   }
 
@@ -2205,6 +2060,7 @@
       } else {
         const errMsg =
           typeof result?.message === 'string' ? result.message
+          : typeof result?.error?.message === 'string' ? result.error.message
           : typeof result?.error === 'string' ? result.error
           : 'Failed to delete CV document.'
         toastStore.error(errMsg)
@@ -2226,7 +2082,7 @@
           type: '',
           company: '',
           startMonth: '',
-          startYear: currentYear,
+          startYear: null,
           endMonth: null,
           endYear: null,
           currentlyIn: false,
@@ -2243,7 +2099,7 @@
           degree: '',
           field: '',
           startMonth: '',
-          startYear: currentYear,
+          startYear: null,
           endMonth: null,
           endYear: null,
           currentlyIn: false,
@@ -2351,78 +2207,32 @@
   const adminNavLinks: {
     id: typeof activeAdminTab
     label: string
-    icon: string
+    icon: any
     section: 'content' | 'profile' | 'legal'
   }[] = [
-    {
-      id: 'posts',
-      label: 'Posts',
-      icon: 'bi-file-richtext-fill',
-      section: 'content'
-    },
-    {
-      id: 'profile',
-      label: 'Profile',
-      icon: 'bi-person-vcard-fill',
-      section: 'profile'
-    },
-    {
-      id: 'resume',
-      label: 'Resume',
-      icon: 'bi-file-earmark-person-fill',
-      section: 'profile'
-    },
-    {id: 'skills', label: 'Skills', icon: 'bi-stack', section: 'profile'},
-    {
-      id: 'socials',
-      label: 'Social Links',
-      icon: 'bi-share-fill',
-      section: 'profile'
-    },
-    {
-      id: 'sponsorship',
-      label: 'Sponsorship',
-      icon: 'bi-heart-fill',
-      section: 'profile'
-    },
-    {
-      id: 'contact',
-      label: 'Contact',
-      icon: 'bi-envelope-fill',
-      section: 'profile'
-    },
-    {
-      id: 'privacy',
-      label: 'Privacy Policy',
-      icon: 'bi-shield-lock-fill',
-      section: 'legal'
-    },
+    {id: 'posts', label: 'Posts', icon: FileText, section: 'content'},
+    {id: 'profile', label: 'Profile', icon: User, section: 'profile'},
+    {id: 'resume', label: 'Resume', icon: FileUser, section: 'profile'},
+    {id: 'skills', label: 'Skills', icon: Layers, section: 'profile'},
+    {id: 'socials', label: 'Social Links', icon: Share2, section: 'profile'},
+    {id: 'sponsorship', label: 'Sponsorship', icon: Heart, section: 'profile'},
+    {id: 'contact', label: 'Contact', icon: Mail, section: 'profile'},
+    {id: 'privacy', label: 'Privacy Policy', icon: Lock, section: 'legal'},
     {
       id: 'security',
       label: 'Security Policy',
-      icon: 'bi-shield-fill-check',
+      icon: ShieldCheck,
       section: 'legal'
     },
-    {
-      id: 'terms',
-      label: 'Terms of Service',
-      icon: 'bi-file-text-fill',
-      section: 'legal'
-    }
+    {id: 'terms', label: 'Terms of Service', icon: ScrollText, section: 'legal'}
   ]
 </script>
 
 <svelte:head>
   <title>Admin Console</title>
-  {#if isDark}
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
-  {:else}
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
-  {/if}
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/{hljsTheme}.min.css" />
 </svelte:head>
 
 <SkipLink />
@@ -2470,8 +2280,8 @@
       <div class="flex items-center gap-3">
         <Button
           htmlType="button"
-          type="Danger"
-          tone="Critical"
+          type="danger"
+          tone="critical"
           size="md"
           onclick={handleLogout}
           disabled={isLoggingOut}>
@@ -2479,7 +2289,7 @@
         </Button>
         <Button
           htmlType="button"
-          type="Primary"
+          type="primary"
           size="md"
           onclick={handleExtendSession}>
           Extend session
@@ -2490,13 +2300,17 @@
 </Dialog>
 
 <div
-  class="fixed top-0 z-40 flex h-14 w-full items-center justify-between glass-card border-b border-border-subtle/60 px-4 md:hidden">
+  class="fixed top-0 z-40 flex h-14 w-full items-center justify-between border-b border-border-subtle bg-surface-card px-4 md:hidden">
   <div class="flex items-center gap-2">
     <IconButton
       onclick={() => (sidebarMobileOpen = !sidebarMobileOpen)}
       aria-expanded={sidebarMobileOpen}
       ariaLabel={sidebarMobileOpen ? 'Close sidebar' : 'Open sidebar'}>
-      <i class="bi {sidebarMobileOpen ? 'bi-x-lg' : 'bi-list'} text-lg"></i>
+      {#if sidebarMobileOpen}
+        <X class="size-5" />
+      {:else}
+        <Menu class="size-5" />
+      {/if}
     </IconButton>
     <span class="text-base font-bold text-text-primary">Admin Console</span>
   </div>
@@ -2507,13 +2321,13 @@
 
 <div class="flex min-h-screen pt-14 md:pt-0">
   <aside
-    class="fixed inset-y-0 left-0 z-50 flex w-56 shrink-0 flex-col justify-between overflow-y-auto glass-card border-r border-border-subtle/60 transition-transform duration-200 ease-in-out md:sticky md:top-0 md:h-screen md:w-56 md:translate-x-0 {(
+    class="fixed inset-y-0 left-0 z-50 flex w-56 shrink-0 flex-col justify-between overflow-y-auto border-r border-border-subtle bg-surface-card transition-transform duration-200 ease-in-out md:sticky md:top-0 md:h-screen md:w-56 md:translate-x-0 {(
       sidebarMobileOpen
     ) ?
       'translate-x-0 shadow-2xl'
     : '-translate-x-full'}">
     <div
-      class="flex items-center justify-between border-b border-border-subtle/60 px-3.5 py-2.5">
+      class="flex items-center justify-between border-b border-border-subtle px-3.5 py-2.5">
       <h1 class="text-xs font-bold tracking-tight text-text-primary">
         Admin Console
       </h1>
@@ -2539,7 +2353,7 @@
             ) ?
               'border-l-2 border-copilot bg-copilot-subtle font-bold text-copilot shadow-2xs'
             : 'border-l-2 border-transparent text-text-primary hover:bg-surface-hover hover:text-copilot'}">
-            <i class="bi {link.icon} text-sm transition-colors"></i>
+            <link.icon class="size-4 shrink-0 transition-colors" />
             <span class="truncate">{link.label}</span>
           </button>
         {/each}
@@ -2559,7 +2373,7 @@
             ) ?
               'border-l-2 border-copilot bg-copilot-subtle font-bold text-copilot shadow-2xs'
             : 'border-l-2 border-transparent text-text-primary hover:bg-surface-hover hover:text-copilot'}">
-            <i class="bi {link.icon} text-sm transition-colors"></i>
+            <link.icon class="size-4 shrink-0 transition-colors" />
             <span class="truncate">{link.label}</span>
           </button>
         {/each}
@@ -2579,7 +2393,7 @@
             ) ?
               'border-l-2 border-copilot bg-copilot-subtle font-bold text-copilot shadow-2xs'
             : 'border-l-2 border-transparent text-text-primary hover:bg-surface-hover hover:text-copilot'}">
-            <i class="bi {link.icon} text-sm transition-colors"></i>
+            <link.icon class="size-4 shrink-0 transition-colors" />
             <span class="truncate">{link.label}</span>
           </button>
         {/each}
@@ -2587,7 +2401,7 @@
     </nav>
 
     <div
-      class="sticky bottom-0 z-10 mt-auto glass-card border-t border-border-subtle/60 px-3 py-2.5">
+      class="sticky bottom-0 z-10 mt-auto border-t border-border-subtle bg-surface-card px-3 py-2.5">
       <div class="flex items-center justify-between gap-2">
         <div class="flex min-w-0 items-center gap-2">
           {#if authorState.avatar}
@@ -2596,11 +2410,10 @@
               alt={authorState.name || 'Admin'}
               referrerpolicy="no-referrer"
               rounded="rounded-full"
-              fallbackIcon="bi bi-person-circle"
               class="h-7 w-7 shrink-0 border border-border-subtle"
               imgClass="object-top" />
           {:else}
-            <span class="bi bi-person-circle shrink-0 text-xl"></span>
+            <User class="size-5 shrink-0 text-text-muted" />
           {/if}
           <div class="flex flex-col truncate">
             {#if isLoading || (!authorState.name && !adminUserEmail)}
@@ -2625,7 +2438,7 @@
         </div>
 
         <Button
-          type="Secondary"
+          type="secondary"
           size="sm"
           onclick={handleLogout}
           disabled={isLoggingOut}
@@ -2640,7 +2453,7 @@
   {#if sidebarMobileOpen}
     <button
       type="button"
-      class="fixed inset-0 z-40 bg-overlay/50 backdrop-blur-md md:hidden"
+      class="fixed inset-0 z-40 bg-overlay md:hidden"
       onclick={() => (sidebarMobileOpen = false)}
       aria-label="Close sidebar"></button>
   {/if}
@@ -2670,9 +2483,11 @@
 
         <Button
           href="/admin/new"
-          type="Primary"
-          size="md"
-          leadingIcon="bi-plus-lg">
+          type="primary"
+          size="md">
+          {#snippet leading()}
+            <Plus class="size-3.5" />
+          {/snippet}
           New Post
         </Button>
       </div>
@@ -2706,6 +2521,13 @@
               {value: 'draft', label: 'Draft'}
             ]}
             onChange={val => filterStore.setSingleFilter('status', val)} />
+          {#if allPostTags.length > 0}
+            <FilterCheckboxGroup
+              label="Tag"
+              options={allPostTags.map(t => ({value: t, label: t}))}
+              selectedValues={filterStore.filters['tag'] || []}
+              onChange={val => filterStore.toggleMultiFilter('tag', val)} />
+          {/if}
         {/snippet}
         {#snippet sortSlot()}
           <SortControl
@@ -2751,15 +2573,12 @@
                   src={getBannerUrl(post.banner_path)}
                   alt={post.title}
                   aspectRatio="aspect-video"
-                  fallbackIcon="bi bi-file-richtext-fill"
                   onerror={() => markBannerFailed(post.id)}
                   class="w-full border border-border-subtle" />
               {:else}
                 <div
-                  class="to-palette-purple/15 relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-sm border border-border-subtle bg-linear-to-br from-copilot/15 select-none">
-                  <i
-                    class="bi bi-file-richtext-fill text-2xl text-copilot/50"
-                    aria-hidden="true"></i>
+                  class="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-sm border border-border-subtle bg-linear-to-br from-accent/15 to-copilot/15 select-none">
+                  <ImageIcon class="size-8 text-copilot/50" />
                 </div>
               {/if}
 
@@ -2794,6 +2613,24 @@
                 </h3>
               </div>
 
+              {#if post.tags && post.tags.length > 0}
+                <div class="flex min-h-[24px] flex-wrap items-start gap-1.5">
+                  {#each post.tags as tag (tag)}
+                    {@const cleanTag = decodeHtmlEntities(tag)}
+                    <button
+                      type="button"
+                      onclick={() => filterStore.toggleMultiFilter('tag', tag)}
+                      class="cursor-pointer rounded-md bg-border-subtle/30 px-1.5 py-0.5 font-mono text-[12px] font-medium transition-colors hover:bg-surface-hover hover:text-copilot {(
+                        filterStore.filters['tag']?.includes(tag)
+                      ) ?
+                        'font-semibold text-copilot'
+                      : 'text-text-muted'}">
+                      {cleanTag}
+                    </button>
+                  {/each}
+                </div>
+              {/if}
+
               {#if post.excerpt}
                 <p
                   class="min-h-16 text-xs leading-relaxed font-normal text-text-primary">
@@ -2807,7 +2644,7 @@
                   class="flex w-full flex-wrap items-center justify-between gap-2 sm:w-auto sm:justify-start">
                   <Button
                     htmlType="button"
-                    type="Primary"
+                    type="primary"
                     size="sm"
                     onclick={() =>
                       (window.location.href = `/admin/new?id=${post.id}`)}>
@@ -2816,7 +2653,7 @@
 
                   <Button
                     htmlType="button"
-                    type="Secondary"
+                    type="secondary"
                     size="sm"
                     aria-expanded={expandedPostIds.has(post.id)}
                     aria-controls="comments-{post.id}"
@@ -2828,7 +2665,7 @@
 
                   <Button
                     htmlType="button"
-                    type="Secondary"
+                    type="secondary"
                     size="sm"
                     onclick={() => handleTogglePublished(post)}>
                     {post.published ? 'Unpublish' : 'Publish'}
@@ -2838,8 +2675,8 @@
                 <div class="flex w-full items-center gap-2 sm:w-auto">
                   <Button
                     htmlType="button"
-                    type="Danger"
-                    tone="Critical"
+                    type="danger"
+                    tone="critical"
                     size="sm"
                     class="w-full sm:w-auto"
                     onclick={() => confirmDeletePost(post)}>
@@ -2860,8 +2697,7 @@
                   {:else}
                     <CommentThread
                       comments={getPostComments(post.id)}
-                      {replyTo}
-                      getIcon={getCommentIcon}>
+                      {replyTo}>
                       {#snippet statusBadge(comment)}
                         <Badge
                           variant={comment.is_approved ? 'success' : 'warning'}>
@@ -2916,7 +2752,7 @@
                               : comment.author_name}
                             </p>
                             <Button
-                              type="Ghost"
+                              type="ghost"
                               size="sm"
                               onclick={() => (replyTo = null)}>Cancel</Button>
                           </div>
@@ -2937,7 +2773,7 @@
                           <div class="mt-3 flex justify-end">
                             <Button
                               htmlType="submit"
-                              type="Primary"
+                              type="primary"
                               size="sm"
                               disabled={isSubmitting}
                               isLoading={isSubmitting}>
@@ -3081,9 +2917,7 @@
                     {#if authorState.avatar}
                       <div
                         class="absolute inset-0 z-0 flex items-center justify-center bg-surface-subtle">
-                        <i
-                          class="bi bi-person-fill text-lg text-text-muted"
-                          aria-hidden="true"></i>
+                        <User class="size-5 text-text-muted" />
                       </div>
                       {#key authorState.avatar}
                         <img
@@ -3101,14 +2935,12 @@
                       {/key}
                       <div
                         class="absolute inset-0 z-20 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                        <i class="bi bi-zoom-in text-lg text-white"></i>
+                        <ZoomIn class="size-5 text-white" />
                       </div>
                     {:else}
                       <div
                         class="absolute inset-0 flex items-center justify-center bg-surface-subtle">
-                        <i
-                          class="bi bi-person-fill text-lg text-text-muted"
-                          aria-hidden="true"></i>
+                        <User class="size-5 text-text-muted" />
                       </div>
                     {/if}
                   </button>
@@ -3264,20 +3096,20 @@
             {/if}
             <Button
               htmlType="button"
-              type="Danger"
-              tone="Critical"
+              type="danger"
+              tone="critical"
               size="md"
               disabled={!authorState.id}
               onclick={confirmClearAuthor}
               isLoading={isClearingAuthor}>
-              <i
-                class="bi bi-trash3 text-xs"
-                aria-hidden="true"></i>
+              {#snippet leading()}
+                <Trash2 class="size-3.5" />
+              {/snippet}
               <span>Delete Profile</span>
             </Button>
             <Button
               htmlType="submit"
-              type="Primary"
+              type="primary"
               size="md"
               disabled={!authorIsDirty}
               isLoading={isSavingAuthor}>
@@ -3316,23 +3148,24 @@
             </div>
             <Button
               htmlType="button"
-              type="Primary"
+              type="primary"
               size="sm"
-              leadingIcon="bi-plus-lg"
               onclick={() => handleAddCvEntry('experience')}>
+              {#snippet leading()}
+                <Plus class="size-3.5" />
+              {/snippet}
               Add Experience
             </Button>
           </div>
           <div class="flex flex-col gap-6">
             {#if cvState.experience.length === 0}
               <EmptyState
-                icon="bi-briefcase-fill"
                 title="No experience entries yet"
                 description="Add your first experience entry below." />
             {/if}
             {#each cvState.experience as exp, idx (exp.id ?? idx)}
               <div
-                class="flex flex-col gap-4 rounded-sm border border-border-subtle/80 bg-surface-base p-4">
+                class="flex flex-col gap-4 rounded-sm border border-border-subtle bg-surface-card p-4">
                 <div
                   class="flex items-center justify-between border-b border-border-subtle/40 pb-2">
                   <span class="font-mono text-xs font-light text-text-muted"
@@ -3340,7 +3173,7 @@
                   <div class="flex items-center gap-1">
                     <Button
                       htmlType="button"
-                      type="Ghost"
+                      type="ghost"
                       size="sm"
                       aria-label="Move experience item up"
                       title="Move experience item up"
@@ -3350,14 +3183,10 @@
                           cvState.experience,
                           idx,
                           'up'
-                        ))}
-                      ><i
-                        class="bi bi-arrow-up"
-                        aria-hidden="true"></i
-                      ></Button>
+                        ))}><ArrowUp class="size-3.5" /></Button>
                     <Button
                       htmlType="button"
-                      type="Ghost"
+                      type="ghost"
                       size="sm"
                       aria-label="Move experience item down"
                       title="Move experience item down"
@@ -3367,15 +3196,11 @@
                           cvState.experience,
                           idx,
                           'down'
-                        ))}
-                      ><i
-                        class="bi bi-arrow-down"
-                        aria-hidden="true"></i
-                      ></Button>
+                        ))}><ArrowDown class="size-3.5" /></Button>
                     <Button
                       htmlType="button"
-                      type="Danger"
-                      tone="Critical"
+                      type="danger"
+                      tone="critical"
                       size="sm"
                       onclick={() => confirmRemoveCvEntry('experience', idx)}
                       >Delete</Button>
@@ -3502,10 +3327,13 @@
                         class="w-full" />
                       <DropdownSelect
                         placeholder="Year"
-                        options={getStartYearOptions().map(y => ({
-                          value: y,
-                          label: String(y)
-                        }))}
+                        options={[
+                          {value: null, label: 'Year'},
+                          ...getStartYearOptions().map(y => ({
+                            value: y,
+                            label: String(y)
+                          }))
+                        ]}
                         bind:value={exp.startYear}
                         class="w-full" />
                     </div>
@@ -3588,7 +3416,7 @@
             {/if}
             <Button
               htmlType="submit"
-              type="Primary"
+              type="primary"
               size="md"
               disabled={!cvIsDirty}
               isLoading={isSavingCv}>Save Experiences</Button>
@@ -3605,23 +3433,24 @@
             </div>
             <Button
               htmlType="button"
-              type="Primary"
+              type="primary"
               size="sm"
-              leadingIcon="bi-plus-lg"
               onclick={() => handleAddCvEntry('education')}>
+              {#snippet leading()}
+                <Plus class="size-3.5" />
+              {/snippet}
               Add Education
             </Button>
           </div>
           <div class="flex flex-col gap-6">
             {#if cvState.education.length === 0}
               <EmptyState
-                icon="bi-mortarboard-fill"
                 title="No education entries yet"
                 description="Add your first education entry below." />
             {/if}
             {#each cvState.education as edu, idx (edu.id ?? idx)}
               <div
-                class="flex flex-col gap-4 rounded-sm border border-border-subtle/80 bg-surface-base p-4">
+                class="flex flex-col gap-4 rounded-sm border border-border-subtle bg-surface-card p-4">
                 <div
                   class="flex items-center justify-between border-b border-border-subtle/40 pb-2">
                   <span class="font-mono text-xs font-light text-text-muted"
@@ -3629,7 +3458,7 @@
                   <div class="flex items-center gap-1">
                     <Button
                       htmlType="button"
-                      type="Ghost"
+                      type="ghost"
                       size="sm"
                       aria-label="Move education item up"
                       title="Move education item up"
@@ -3639,14 +3468,10 @@
                           cvState.education,
                           idx,
                           'up'
-                        ))}
-                      ><i
-                        class="bi bi-arrow-up"
-                        aria-hidden="true"></i
-                      ></Button>
+                        ))}><ArrowUp class="size-3.5" /></Button>
                     <Button
                       htmlType="button"
-                      type="Ghost"
+                      type="ghost"
                       size="sm"
                       aria-label="Move education item down"
                       title="Move education item down"
@@ -3656,15 +3481,11 @@
                           cvState.education,
                           idx,
                           'down'
-                        ))}
-                      ><i
-                        class="bi bi-arrow-down"
-                        aria-hidden="true"></i
-                      ></Button>
+                        ))}><ArrowDown class="size-3.5" /></Button>
                     <Button
                       htmlType="button"
-                      type="Danger"
-                      tone="Critical"
+                      type="danger"
+                      tone="critical"
                       size="sm"
                       onclick={() => confirmRemoveCvEntry('education', idx)}
                       >Delete</Button>
@@ -3790,10 +3611,13 @@
                         class="w-full" />
                       <DropdownSelect
                         placeholder="Year"
-                        options={getStartYearOptions().map(y => ({
-                          value: y,
-                          label: String(y)
-                        }))}
+                        options={[
+                          {value: null, label: 'Year'},
+                          ...getStartYearOptions().map(y => ({
+                            value: y,
+                            label: String(y)
+                          }))
+                        ]}
                         bind:value={edu.startYear}
                         class="w-full" />
                     </div>
@@ -3876,7 +3700,7 @@
             {/if}
             <Button
               htmlType="submit"
-              type="Primary"
+              type="primary"
               size="md"
               disabled={!cvIsDirty}
               isLoading={isSavingCv}>Save Education</Button>
@@ -3884,7 +3708,6 @@
         </Card>
       </form>
 
-      <!-- CV Document Management -->
       <Card
         variant="glass"
         class="mt-10 flex flex-col gap-5">
@@ -3910,14 +3733,11 @@
         {/if}
 
         <div class="flex flex-col gap-5">
-          <!-- Current document -->
           {#if cvDocState && cvDocState.filename}
             <div
-              class="flex flex-col gap-3 rounded-sm border border-border-subtle bg-surface/50 p-4">
+              class="flex flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-4">
               <div class="flex items-center gap-3">
-                <i
-                  class="bi bi-file-earmark-pdf-fill text-xl text-copilot"
-                  aria-hidden="true"></i>
+                <FileText class="size-6 shrink-0 text-copilot" />
                 <div class="min-w-0 flex-1">
                   <p
                     class="mb-1 text-xxs font-semibold tracking-wide text-text-muted uppercase">
@@ -3953,9 +3773,7 @@
                           .catch(() => toastStore.error('Failed to copy'))
                       }}
                       ariaLabel="Copy SHA-256 checksum">
-                      <i
-                        class="bi bi-copy text-xs"
-                        aria-hidden="true"></i>
+                      <Copy class="size-3.5" />
                     </IconButton>
                   </div>
                 </div>
@@ -3964,74 +3782,102 @@
               <div class="flex items-center gap-2 pt-1">
                 <Button
                   htmlType="button"
-                  type="Secondary"
+                  type="secondary"
                   size="sm"
                   onclick={() =>
                     window.open(cvDocState.fileUrl || '/cv.pdf', '_blank')}>
-                  <i
-                    class="bi bi-box-arrow-up-right text-xs"
-                    aria-hidden="true"></i>
-                  <span>Open</span>
+                  {#snippet leading()}
+                    <ExternalLink class="size-3.5" />
+                  {/snippet}
+                  <span>Open CDN PDF</span>
                 </Button>
                 <Button
                   htmlType="button"
-                  type="Secondary"
-                  size="sm"
-                  onclick={() =>
-                    document.getElementById('cv-pdf-upload')?.click()}>
-                  <i
-                    class="bi bi-arrow-repeat text-xs"
-                    aria-hidden="true"></i>
-                  <span>Replace</span>
-                </Button>
-                <Button
-                  htmlType="button"
-                  type="Danger"
-                  tone="Critical"
+                  type="danger"
+                  tone="critical"
                   size="sm"
                   class="ml-auto"
                   onclick={confirmDeleteCvDoc}>
-                  <i
-                    class="bi bi-trash3 text-xs"
-                    aria-hidden="true"></i>
+                  {#snippet leading()}
+                    <Trash2 class="size-3.5" />
+                  {/snippet}
                   <span>Delete</span>
                 </Button>
               </div>
             </div>
           {:else}
             <EmptyState
-              icon="bi-file-earmark-pdf"
-              title="No CV uploaded yet"
-              description="Upload a PDF to make it available on your portfolio and API." />
+              title="No CV PDF generated yet"
+              description="Click regenerate below to build your CV PDF from Supabase data." />
           {/if}
 
-          <!-- Upload -->
-          <form
-            onsubmit={handleUploadPdf}
-            class="flex flex-col gap-4">
-            <FileUploadField
-              id="cv-pdf-upload"
-              label="Drop PDF here or click to browse"
-              hint="Max 10 MB"
-              accept="application/pdf,.pdf"
-              disabled={isUploadingPdf}
-              isUploading={isUploadingPdf}
-              selectedFileName={selectedPdfFile?.name || ''}
-              fileSize={selectedPdfFile ?
-                `${(selectedPdfFile.size / (1024 * 1024)).toFixed(2)} MB`
-              : ''}
-              onFileSelect={handleCvFileSelect} />
+          <div
+            class="flex flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-4">
+            <div class="flex flex-col gap-1">
+              <span class="text-xs font-semibold text-text-primary"
+                >Server-Side PDF Auto-Generator</span>
+              <span class="text-xxs text-text-muted"
+                >Generates a standard multi-section PDF document directly from
+                your profile, experiences, education, and skills data in
+                Supabase.</span>
+            </div>
+
+            <div class="flex flex-col gap-2 pt-1">
+              <span
+                class="text-xxs font-semibold tracking-wide text-text-muted uppercase"
+                >Select Version Increment (SemVer)</span>
+              <div class="grid grid-cols-3 gap-2">
+                <Button
+                  htmlType="button"
+                  type="secondary"
+                  size="sm"
+                  disabled={isGeneratingPdf}
+                  onclick={() => executeGenerateCvPdf('patch')}>
+                  {#snippet leading()}
+                    <BadgeCheck class="size-3.5" />
+                  {/snippet}
+                  <span>Patch (+0.0.1)</span>
+                </Button>
+                <Button
+                  htmlType="button"
+                  type="secondary"
+                  size="sm"
+                  disabled={isGeneratingPdf}
+                  onclick={() => executeGenerateCvPdf('minor')}>
+                  {#snippet leading()}
+                    <PlusCircle class="size-3.5" />
+                  {/snippet}
+                  <span>Minor (+0.1.0)</span>
+                </Button>
+                <Button
+                  htmlType="button"
+                  type="secondary"
+                  size="sm"
+                  disabled={isGeneratingPdf}
+                  onclick={() => executeGenerateCvPdf('major')}>
+                  {#snippet leading()}
+                    <Rocket class="size-3.5" />
+                  {/snippet}
+                  <span>Major (+1.0.0)</span>
+                </Button>
+              </div>
+            </div>
 
             <Button
-              htmlType="submit"
-              type="Primary"
+              htmlType="button"
+              type="primary"
               size="md"
               fullWidth
-              disabled={!selectedPdfFile || isUploadingPdf}
-              isLoading={isUploadingPdf}>
-              Upload CV Document
+              class="mt-1"
+              disabled={isGeneratingPdf}
+              isLoading={isGeneratingPdf}
+              onclick={() => executeGenerateCvPdf('patch')}>
+              {#snippet leading()}
+                <Cpu class="mr-1 size-4" />
+              {/snippet}
+              Regenerate CV PDF Now
             </Button>
-          </form>
+          </div>
         </div>
       </Card>
     {:else if activeAdminTab === 'skills'}
@@ -4042,10 +3888,12 @@
         {#snippet headerActions()}
           <Button
             htmlType="button"
-            type="Primary"
+            type="primary"
             size="md"
-            leadingIcon="bi-plus-lg"
             onclick={handleAddSkill}>
+            {#snippet leading()}
+              <Plus class="size-3.5" />
+            {/snippet}
             Add Skill
           </Button>
         {/snippet}
@@ -4057,13 +3905,12 @@
         <div class="flex flex-col gap-4">
           {#if skillsState.length === 0}
             <EmptyState
-              icon="bi-stack"
               title="No skill groups yet"
               description="Add your first skill group below." />
           {/if}
           {#each skillsState as item, idx (item.id ?? idx)}
             <div
-              class="flex flex-col gap-3 rounded-sm border border-border-subtle/80 bg-surface-base p-4">
+              class="flex flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-4">
               <div
                 class="flex items-center justify-between border-b border-border-subtle/40 pb-2">
                 <span class="font-mono text-xs font-light text-text-muted"
@@ -4071,34 +3918,28 @@
                 <div class="flex items-center gap-1">
                   <Button
                     htmlType="button"
-                    type="Ghost"
+                    type="ghost"
                     size="sm"
                     aria-label="Move skill up"
                     title="Move skill up"
                     disabled={idx === 0}
                     onclick={() =>
                       (skillsState = moveArrayItem(skillsState, idx, 'up'))}
-                    ><i
-                      class="bi bi-arrow-up"
-                      aria-hidden="true"></i
-                    ></Button>
+                    ><ArrowUp class="size-3.5" /></Button>
                   <Button
                     htmlType="button"
-                    type="Ghost"
+                    type="ghost"
                     size="sm"
                     aria-label="Move skill down"
                     title="Move skill down"
                     disabled={idx === skillsState.length - 1}
                     onclick={() =>
                       (skillsState = moveArrayItem(skillsState, idx, 'down'))}
-                    ><i
-                      class="bi bi-arrow-down"
-                      aria-hidden="true"></i
-                    ></Button>
+                    ><ArrowDown class="size-3.5" /></Button>
                   <Button
                     htmlType="button"
-                    type="Danger"
-                    tone="Critical"
+                    type="danger"
+                    tone="critical"
                     size="sm"
                     onclick={() => confirmRemoveSkill(idx)}>Delete</Button>
                 </div>
@@ -4127,141 +3968,22 @@
 
               <FormField
                 id={'sk-list-' + idx}
-                label="Skills Set">
+                label="Skills Set"
+                counter={`${item.skills.length}/20`}>
                 {#snippet hintSnippet()}
-                  Separate multiple skills with commas. To include a comma
-                  within a skill name, use a backslash (e.g., UI\,UX Design).
+                  Up to 20 skills, 30 characters each. Separate multiple skills
+                  with commas. To include a comma within a skill name, use a
+                  backslash (e.g., UI\,UX Design).
                 {/snippet}
-                <div
-                  class="flex flex-wrap items-center gap-2 rounded-sm border border-border-subtle bg-surface-base p-2 focus-within:border-copilot focus-within:ring-2 focus-within:ring-copilot/20 focus-within:outline-none">
-                  {#each item.skills as skill, sIdx (sIdx)}
-                    <span
-                      role="group"
-                      aria-label={`Skill: ${skill}`}
-                      draggable="true"
-                      ondragstart={e => handleSkillDragStart(sIdx, e)}
-                      ondragover={e => e.preventDefault()}
-                      ondrop={e => handleSkillDrop(idx, sIdx, e)}
-                      class="inline-flex items-center gap-1 rounded-full border border-copilot/30 bg-copilot/10 py-1 pr-1.5 pl-2 font-mono text-xs font-medium text-copilot transition-all hover:border-copilot/50">
-                      <span
-                        class="cursor-grab text-copilot/60 hover:text-copilot active:cursor-grabbing">
-                        <i
-                          class="bi bi-grip-horizontal text-xs leading-none"
-                          aria-hidden="true"></i>
-                      </span>
-                      {#if editingSkillKey === `${idx}-${sIdx}`}
-                        <input
-                          type="text"
-                          id={`sk-edit-${idx}-${sIdx}`}
-                          bind:value={editingSkillText}
-                          style="--sk-w: {Math.max(
-                            editingSkillText.length,
-                            3
-                          )}ch"
-                          class="w-(--sk-w) border-0 border-none bg-transparent font-mono text-xs font-medium text-copilot shadow-none ring-0 outline-none focus:border-none! focus:ring-0! focus:outline-none! focus-visible:border-none! focus-visible:ring-0! focus-visible:outline-none!"
-                          onkeydown={e => {
-                            const target = e.currentTarget as HTMLInputElement
-                            if (e.key === ',') {
-                              e.preventDefault()
-                              const cursor =
-                                target.selectionStart ?? editingSkillText.length
-                              const escaped = tryEscapeComma(
-                                editingSkillText,
-                                cursor
-                              )
-                              if (escaped) {
-                                editingSkillText = escaped.value
-                                tick().then(() =>
-                                  target.setSelectionRange(
-                                    escaped.cursor,
-                                    escaped.cursor
-                                  )
-                                )
-                              } else {
-                                saveEditSkill(idx, sIdx)
-                              }
-                            } else if (e.key === 'Enter') {
-                              e.preventDefault()
-                              saveEditSkill(idx, sIdx)
-                            }
-                          }}
-                          onblur={() => saveEditSkill(idx, sIdx)}
-                          use:focusOnMount />
-                      {:else}
-                        <span
-                          role="button"
-                          tabindex="0"
-                          class="cursor-pointer hover:underline"
-                          onclick={() => startEditSkill(idx, sIdx, skill)}
-                          onkeydown={e => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault()
-                              startEditSkill(idx, sIdx, skill)
-                            }
-                          }}>
-                          {skill}
-                        </span>
-                      {/if}
-                      <button
-                        type="button"
-                        class="ml-0.5 inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full text-copilot hover:bg-copilot/20 focus:outline-none"
-                        aria-label="Remove {skill}"
-                        onclick={() => {
-                          item.skills = item.skills.filter((_, i) => i !== sIdx)
-                        }}>
-                        <i
-                          class="bi bi-x text-xs leading-none"
-                          aria-hidden="true"></i>
-                      </button>
-                    </span>
-                  {/each}
-                  <input
-                    id={'sk-list-' + idx}
-                    type="text"
-                    class="min-w-35 flex-1 border-0 border-none bg-transparent font-mono text-xs text-text-primary shadow-none ring-0 outline-none placeholder:text-text-muted focus:border-none! focus:ring-0! focus:outline-none! focus-visible:border-none! focus-visible:ring-0! focus-visible:outline-none!"
-                    placeholder={item.skills.length === 0 ?
-                      'Type skill and press comma...'
-                    : 'Add skill...'}
-                    onkeydown={e => {
-                      if (e.key === ',') {
-                        e.preventDefault()
-                        const target = e.currentTarget as HTMLInputElement
-                        const cursor =
-                          target.selectionStart ?? target.value.length
-                        const escaped = tryEscapeComma(target.value, cursor)
-                        if (escaped) {
-                          target.value = escaped.value
-                          target.setSelectionRange(
-                            escaped.cursor,
-                            escaped.cursor
-                          )
-                          return
-                        }
-                        const val = target.value.trim()
-                        if (val && !item.skills.includes(val)) {
-                          item.skills = [...item.skills, val]
-                        }
-                        target.value = ''
-                      } else if (e.key === 'Enter') {
-                        e.preventDefault()
-                        const target = e.currentTarget as HTMLInputElement
-                        const val = target.value.trim()
-                        if (val && !item.skills.includes(val)) {
-                          item.skills = [...item.skills, val]
-                        }
-                        target.value = ''
-                      }
-                    }}
-                    onblur={e => {
-                      const target = e.currentTarget as HTMLInputElement
-                      const val = target.value.trim()
-                      if (val && !item.skills.includes(val)) {
-                        item.skills = [...item.skills, val]
-                      }
-                      target.value = ''
-                    }}
-                    onpaste={e => handleSkillsSetPaste(idx, e)} />
-                </div>
+                <PillInput
+                  id={'sk-list-' + idx}
+                  bind:value={item.skills}
+                  itemLabel="Skill"
+                  placeholderEmpty="Type skill and press comma..."
+                  placeholderFilled="Add skill..."
+                  maxItems={20}
+                  maxItemLength={30}
+                  onPaste={e => handleSkillsSetPaste(idx, e)} />
               </FormField>
             </div>
           {/each}
@@ -4276,7 +3998,7 @@
             {/if}
             <Button
               htmlType="submit"
-              type="Primary"
+              type="primary"
               size="md"
               disabled={!skillsIsDirty}
               isLoading={isSavingSkills}>Save Skills</Button>
@@ -4291,10 +4013,12 @@
         {#snippet headerActions()}
           <Button
             htmlType="button"
-            type="Primary"
+            type="primary"
             size="md"
-            leadingIcon="bi-plus-lg"
             onclick={handleAddSocial}>
+            {#snippet leading()}
+              <Plus class="size-3.5" />
+            {/snippet}
             Add Social Link
           </Button>
         {/snippet}
@@ -4306,86 +4030,47 @@
         <div class="flex flex-col gap-4">
           {#if socialState.length === 0}
             <EmptyState
-              icon="bi-share-fill"
               title="No social links yet"
               description="Add your first social link below." />
           {/if}
           {#each socialState as item, idx (item.id ?? idx)}
             <div
-              class="flex flex-col gap-3 rounded-sm border border-border-subtle/80 bg-surface-base p-4">
+              class="flex flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-4">
               <div
                 class="flex items-center justify-between border-b border-border-subtle/40 pb-2">
-                <span class="font-mono text-xs text-text-muted"
+                <span class="font-mono text-xs font-light text-text-muted"
                   >Social #{idx + 1}</span>
                 <div class="flex items-center gap-1">
                   <Button
                     htmlType="button"
-                    type="Ghost"
+                    type="ghost"
                     size="sm"
                     aria-label="Move social link up"
                     title="Move social link up"
                     disabled={idx === 0}
                     onclick={() =>
                       (socialState = moveArrayItem(socialState, idx, 'up'))}
-                    ><i
-                      class="bi bi-arrow-up"
-                      aria-hidden="true"></i
-                    ></Button>
+                    ><ArrowUp class="size-3.5" /></Button>
                   <Button
                     htmlType="button"
-                    type="Ghost"
+                    type="ghost"
                     size="sm"
                     aria-label="Move social link down"
                     title="Move social link down"
                     disabled={idx === socialState.length - 1}
                     onclick={() =>
                       (socialState = moveArrayItem(socialState, idx, 'down'))}
-                    ><i
-                      class="bi bi-arrow-down"
-                      aria-hidden="true"></i
-                    ></Button>
+                    ><ArrowDown class="size-3.5" /></Button>
                   <Button
                     htmlType="button"
-                    type="Danger"
-                    tone="Critical"
+                    type="danger"
+                    tone="critical"
                     size="sm"
                     onclick={() => confirmRemoveSocial(idx)}>Delete</Button>
                 </div>
               </div>
 
               <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <FormField
-                  id={'soc-icon-' + idx}
-                  label="Icon"
-                  required
-                  error={socialErrors[idx]?.icon}
-                  valid={socialValid[idx]?.icon}
-                  counter={`${(item.icon || '').length}/50`}>
-                  <div class="flex items-center gap-2">
-                    <div
-                      class="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-border-subtle bg-surface-card text-copilot">
-                      <i
-                        class="bi {sanitizeIconClass(
-                          item.icon,
-                          'bi-people'
-                        )} text-base {item.icon?.trim() ?
-                          'text-copilot'
-                        : 'text-text-muted opacity-50'}"></i>
-                    </div>
-                    <Input
-                      id={'soc-icon-' + idx}
-                      bind:value={item.icon}
-                      placeholder="default: bi-people"
-                      maxlength={50}
-                      error={!!socialErrors[idx]?.icon}
-                      valid={socialValid[idx]?.icon}
-                      oninput={() => {
-                        clearFieldError(socialErrors, socialValid, idx, 'icon')
-                        validateSocialField(idx, 'icon')
-                      }} />
-                  </div>
-                </FormField>
-
                 <FormField
                   id={'soc-plat-' + idx}
                   label="Platform"
@@ -4410,27 +4095,27 @@
                       validateSocialField(idx, 'platform')
                     }} />
                 </FormField>
-              </div>
 
-              <FormField
-                id={'soc-url-' + idx}
-                label="URL"
-                required
-                error={socialErrors[idx]?.url}
-                valid={socialValid[idx]?.url}
-                counter={`${(item.url || '').length}/100`}>
-                <Input
+                <FormField
                   id={'soc-url-' + idx}
-                  bind:value={item.url}
-                  placeholder="Ex: https://github.com/torvalds"
-                  maxlength={100}
-                  error={!!socialErrors[idx]?.url}
+                  label="URL"
+                  required
+                  error={socialErrors[idx]?.url}
                   valid={socialValid[idx]?.url}
-                  oninput={() => {
-                    clearFieldError(socialErrors, socialValid, idx, 'url')
-                    validateSocialField(idx, 'url')
-                  }} />
-              </FormField>
+                  counter={`${(item.url || '').length}/100`}>
+                  <Input
+                    id={'soc-url-' + idx}
+                    bind:value={item.url}
+                    placeholder="Ex: https://github.com/torvalds"
+                    maxlength={100}
+                    error={!!socialErrors[idx]?.url}
+                    valid={socialValid[idx]?.url}
+                    oninput={() => {
+                      clearFieldError(socialErrors, socialValid, idx, 'url')
+                      validateSocialField(idx, 'url')
+                    }} />
+                </FormField>
+              </div>
             </div>
           {/each}
         </div>
@@ -4444,7 +4129,7 @@
             {/if}
             <Button
               htmlType="submit"
-              type="Primary"
+              type="primary"
               size="md"
               disabled={!socialIsDirty}
               isLoading={isSavingSocials}>Save Social Links</Button>
@@ -4459,10 +4144,12 @@
         {#snippet headerActions()}
           <Button
             htmlType="button"
-            type="Primary"
+            type="primary"
             size="md"
-            leadingIcon="bi-plus-lg"
             onclick={handleAddSponsorship}>
+            {#snippet leading()}
+              <Plus class="size-3.5" />
+            {/snippet}
             Add Sponsorship
           </Button>
         {/snippet}
@@ -4474,21 +4161,20 @@
         <div class="flex flex-col gap-4">
           {#if sponsorshipState.length === 0}
             <EmptyState
-              icon="bi-heart-fill"
               title="No funding platforms yet"
               description="Add your first funding platform below." />
           {/if}
           {#each sponsorshipState as item, idx (item.id ?? idx)}
             <div
-              class="flex flex-col gap-3 rounded-sm border border-border-subtle/80 bg-surface-base p-4">
+              class="flex flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-4">
               <div
                 class="flex items-center justify-between border-b border-border-subtle/40 pb-2">
-                <span class="font-mono text-xs text-text-muted"
+                <span class="font-mono text-xs font-light text-text-muted"
                   >Sponsorship #{idx + 1}</span>
                 <div class="flex items-center gap-1">
                   <Button
                     htmlType="button"
-                    type="Ghost"
+                    type="ghost"
                     size="sm"
                     aria-label="Move sponsorship link up"
                     title="Move sponsorship link up"
@@ -4498,14 +4184,10 @@
                         sponsorshipState,
                         idx,
                         'up'
-                      ))}
-                    ><i
-                      class="bi bi-arrow-up"
-                      aria-hidden="true"></i
-                    ></Button>
+                      ))}><ArrowUp class="size-3.5" /></Button>
                   <Button
                     htmlType="button"
-                    type="Ghost"
+                    type="ghost"
                     size="sm"
                     aria-label="Move sponsorship link down"
                     title="Move sponsorship link down"
@@ -4515,22 +4197,18 @@
                         sponsorshipState,
                         idx,
                         'down'
-                      ))}
-                    ><i
-                      class="bi bi-arrow-down"
-                      aria-hidden="true"></i
-                    ></Button>
+                      ))}><ArrowDown class="size-3.5" /></Button>
                   <Button
                     htmlType="button"
-                    type="Danger"
-                    tone="Critical"
+                    type="danger"
+                    tone="critical"
                     size="sm"
                     onclick={() => confirmRemoveSponsorship(idx)}
                     >Delete</Button>
                 </div>
               </div>
 
-              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <FormField
                   id={'sp-plat-' + idx}
                   label="Platform"
@@ -4579,43 +4257,6 @@
                       )
                       validateSponsorshipField(idx, 'displayValue')
                     }} />
-                </FormField>
-
-                <FormField
-                  id={'sp-icon-' + idx}
-                  label="Icon"
-                  required
-                  error={sponsorshipErrors[idx]?.icon}
-                  valid={sponsorshipValid[idx]?.icon}
-                  counter={`${(item.icon || '').length}/50`}>
-                  <div class="flex items-center gap-2">
-                    <div
-                      class="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-border-subtle bg-surface-card text-copilot">
-                      <i
-                        class="bi {sanitizeIconClass(
-                          item.icon,
-                          'bi-currency-dollar'
-                        )} text-base {item.icon?.trim() ?
-                          'text-copilot'
-                        : 'text-text-muted opacity-50'}"></i>
-                    </div>
-                    <Input
-                      id={'sp-icon-' + idx}
-                      bind:value={item.icon}
-                      placeholder="default: bi-currency-dollar"
-                      maxlength={50}
-                      error={!!sponsorshipErrors[idx]?.icon}
-                      valid={sponsorshipValid[idx]?.icon}
-                      oninput={() => {
-                        clearFieldError(
-                          sponsorshipErrors,
-                          sponsorshipValid,
-                          idx,
-                          'icon'
-                        )
-                        validateSponsorshipField(idx, 'icon')
-                      }} />
-                  </div>
                 </FormField>
 
                 <FormField
@@ -4668,7 +4309,7 @@
             {/if}
             <Button
               htmlType="submit"
-              type="Primary"
+              type="primary"
               size="md"
               disabled={!sponsorshipIsDirty}
               isLoading={isSavingSponsorship}>Save Sponsorship</Button>
@@ -4683,10 +4324,12 @@
         {#snippet headerActions()}
           <Button
             htmlType="button"
-            type="Primary"
+            type="primary"
             size="md"
-            leadingIcon="bi-plus-lg"
             onclick={handleAddContact}>
+            {#snippet leading()}
+              <Plus class="size-3.5" />
+            {/snippet}
             Add Contact
           </Button>
         {/snippet}
@@ -4698,54 +4341,47 @@
         <div class="flex flex-col gap-4">
           {#if contactState.length === 0}
             <EmptyState
-              icon="bi-envelope-fill"
               title="No contact channels yet"
               description="Add your first contact channel below." />
           {/if}
           {#each contactState as item, idx (item.id ?? idx)}
             <div
-              class="flex flex-col gap-3 rounded-sm border border-border-subtle/80 bg-surface-base p-4">
+              class="flex flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-4">
               <div
                 class="flex items-center justify-between border-b border-border-subtle/40 pb-2">
-                <span class="font-mono text-xs text-text-muted"
+                <span class="font-mono text-xs font-light text-text-muted"
                   >Contact #{idx + 1}</span>
                 <div class="flex items-center gap-1">
                   <Button
                     htmlType="button"
-                    type="Ghost"
+                    type="ghost"
                     size="sm"
                     aria-label="Move contact item up"
                     title="Move contact item up"
                     disabled={idx === 0}
                     onclick={() =>
                       (contactState = moveArrayItem(contactState, idx, 'up'))}
-                    ><i
-                      class="bi bi-arrow-up"
-                      aria-hidden="true"></i
-                    ></Button>
+                    ><ArrowUp class="size-3.5" /></Button>
                   <Button
                     htmlType="button"
-                    type="Ghost"
+                    type="ghost"
                     size="sm"
                     aria-label="Move contact item down"
                     title="Move contact item down"
                     disabled={idx === contactState.length - 1}
                     onclick={() =>
                       (contactState = moveArrayItem(contactState, idx, 'down'))}
-                    ><i
-                      class="bi bi-arrow-down"
-                      aria-hidden="true"></i
-                    ></Button>
+                    ><ArrowDown class="size-3.5" /></Button>
                   <Button
                     htmlType="button"
-                    type="Danger"
-                    tone="Critical"
+                    type="danger"
+                    tone="critical"
                     size="sm"
                     onclick={() => confirmRemoveContact(idx)}>Delete</Button>
                 </div>
               </div>
 
-              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <FormField
                   id={'ct-plat-' + idx}
                   label="Platform"
@@ -4797,43 +4433,6 @@
                 </FormField>
 
                 <FormField
-                  id={'ct-icon-' + idx}
-                  label="Icon"
-                  required
-                  error={contactErrors[idx]?.icon}
-                  valid={contactValid[idx]?.icon}
-                  counter={`${(item.icon || '').length}/50`}>
-                  <div class="flex items-center gap-2">
-                    <div
-                      class="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-border-subtle bg-surface-card text-copilot">
-                      <i
-                        class="bi {sanitizeIconClass(
-                          item.icon,
-                          'bi-person'
-                        )} text-base {item.icon?.trim() ?
-                          'text-copilot'
-                        : 'text-text-muted opacity-50'}"></i>
-                    </div>
-                    <Input
-                      id={'ct-icon-' + idx}
-                      bind:value={item.icon}
-                      placeholder="default: bi-person"
-                      maxlength={50}
-                      error={!!contactErrors[idx]?.icon}
-                      valid={contactValid[idx]?.icon}
-                      oninput={() => {
-                        clearFieldError(
-                          contactErrors,
-                          contactValid,
-                          idx,
-                          'icon'
-                        )
-                        validateContactField(idx, 'icon')
-                      }} />
-                  </div>
-                </FormField>
-
-                <FormField
                   id={'ct-url-' + idx}
                   label="URL"
                   required
@@ -4866,7 +4465,7 @@
             {/if}
             <Button
               htmlType="submit"
-              type="Primary"
+              type="primary"
               size="md"
               disabled={!contactIsDirty}
               isLoading={isSavingContact}>Save Contact</Button>
@@ -4883,7 +4482,7 @@
         {#snippet headerActions()}
           <Button
             htmlType="submit"
-            type="Primary"
+            type="primary"
             size="md"
             isLoading={isSavingLegal}
             disabled={isSavingLegal}>
@@ -4906,7 +4505,7 @@
         {#snippet headerActions()}
           <Button
             htmlType="submit"
-            type="Primary"
+            type="primary"
             size="md"
             isLoading={isSavingLegal}
             disabled={isSavingLegal}>
@@ -4929,7 +4528,7 @@
         {#snippet headerActions()}
           <Button
             htmlType="submit"
-            type="Primary"
+            type="primary"
             size="md"
             isLoading={isSavingLegal}
             disabled={isSavingLegal}>
@@ -4998,9 +4597,7 @@
     {#if authorState.avatar}
       <div
         class="absolute inset-0 z-0 flex items-center justify-center bg-surface-subtle">
-        <i
-          class="bi bi-person-fill text-4xl text-text-muted"
-          aria-hidden="true"></i>
+        <User class="size-12 text-text-muted" />
       </div>
       {#key authorState.avatar}
         <img
@@ -5015,9 +4612,7 @@
     {:else}
       <div
         class="flex h-full w-full items-center justify-center bg-surface-subtle">
-        <i
-          class="bi bi-person-fill text-4xl text-text-muted"
-          aria-hidden="true"></i>
+        <User class="size-12 text-text-muted" />
       </div>
     {/if}
 
@@ -5027,9 +4622,7 @@
       size="sm"
       class="absolute top-2 right-2 bg-black/40! text-white! hover:bg-black/60!"
       onclick={() => (showAvatarPreviewDialog = false)}>
-      <i
-        class="bi bi-x-lg text-sm"
-        aria-hidden="true"></i>
+      <X class="size-4" />
     </IconButton>
   </div>
 
@@ -5037,8 +4630,8 @@
     <div class="flex w-full items-center justify-between">
       <Button
         htmlType="button"
-        type="Danger"
-        tone="Critical"
+        type="danger"
+        tone="critical"
         size="md"
         onclick={() => {
           authorState.avatar = ''
@@ -5049,7 +4642,7 @@
       </Button>
       <Button
         htmlType="button"
-        type="Primary"
+        type="primary"
         size="md"
         onclick={() => (showAvatarPreviewDialog = false)}>
         Looks good
@@ -5152,12 +4745,9 @@
   }
 
   .prose-custom :global(pre) {
-    @apply mt-6 mb-6 scrollbar-none! overflow-x-auto rounded-sm border border-adwaita-border bg-adwaita-hover px-3! py-2! font-mono text-[0.8rem] leading-relaxed break-normal! whitespace-pre! [-ms-overflow-style:none]!;
+    @apply mt-6 mb-6 scrollbar-none! overflow-x-auto rounded-sm border border-border-subtle bg-surface-hover px-3! py-2! font-mono text-[0.8rem] leading-relaxed break-normal! whitespace-pre! [-ms-overflow-style:none]!;
   }
 
-  /* When a line-number gutter sits to the left (see enhanceCodeBlocks), it
-     already provides its own edge padding — pre's own left padding on top of
-     that doubled the visual gap between the divider and the code text. */
   .prose-custom :global(pre[data-enhanced='true']) {
     @apply pr-3.5! pl-2!;
   }
@@ -5167,7 +4757,7 @@
   }
 
   .prose-custom :global(code:not(pre code)) {
-    @apply rounded bg-adwaita-hover px-1 py-px font-mono text-xs font-normal text-inherit;
+    @apply rounded bg-surface-hover px-1 py-px font-mono text-xs font-normal text-inherit;
     overflow-wrap: break-word;
     word-break: break-word;
   }
@@ -5193,14 +4783,14 @@
   }
 
   .prose-custom :global(a.anchor-link) {
-    @apply ml-[0.35rem]! inline-flex! items-center! justify-center! align-middle! leading-none! whitespace-nowrap! text-adwaita-text! no-underline! transition-none!;
+    @apply ml-[0.35rem]! inline-flex! items-center! justify-center! align-middle! leading-none! whitespace-nowrap! text-text-primary! no-underline! transition-none!;
   }
 
   :global(:root.dark) .prose-custom :global(a.anchor-link) {
     @apply text-gh-gray-4!;
   }
 
-  .prose-custom :global(a.anchor-link .bi) {
+  .prose-custom :global(a.anchor-link svg) {
     @apply inline-block! align-middle! text-[0.85em]! leading-none! text-inherit! no-underline!;
   }
 
@@ -5235,20 +4825,20 @@
   :global(:root.dark) .prose-custom :global(h5:hover a.anchor-link),
   :global(:root.dark) .prose-custom :global(h6:hover a.anchor-link),
   :global(:root.dark) .prose-custom :global(a.anchor-link):hover,
-  .prose-custom :global(h1:hover a.anchor-link .bi),
-  .prose-custom :global(h2:hover a.anchor-link .bi),
-  .prose-custom :global(h3:hover a.anchor-link .bi),
-  .prose-custom :global(h4:hover a.anchor-link .bi),
-  .prose-custom :global(h5:hover a.anchor-link .bi),
-  .prose-custom :global(h6:hover a.anchor-link .bi),
-  .prose-custom :global(a.anchor-link):hover :global(.bi),
-  :global(:root.dark) .prose-custom :global(h1:hover a.anchor-link .bi),
-  :global(:root.dark) .prose-custom :global(h2:hover a.anchor-link .bi),
-  :global(:root.dark) .prose-custom :global(h3:hover a.anchor-link .bi),
-  :global(:root.dark) .prose-custom :global(h4:hover a.anchor-link .bi),
-  :global(:root.dark) .prose-custom :global(h5:hover a.anchor-link .bi),
-  :global(:root.dark) .prose-custom :global(h6:hover a.anchor-link .bi),
-  :global(:root.dark) .prose-custom :global(a.anchor-link):hover :global(.bi) {
+  .prose-custom :global(h1:hover a.anchor-link svg),
+  .prose-custom :global(h2:hover a.anchor-link svg),
+  .prose-custom :global(h3:hover a.anchor-link svg),
+  .prose-custom :global(h4:hover a.anchor-link svg),
+  .prose-custom :global(h5:hover a.anchor-link svg),
+  .prose-custom :global(h6:hover a.anchor-link svg),
+  .prose-custom :global(a.anchor-link):hover :global(svg),
+  :global(:root.dark) .prose-custom :global(h1:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(h2:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(h3:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(h4:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(h5:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(h6:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(a.anchor-link):hover :global(svg) {
     @apply text-copilot! no-underline! opacity-100;
   }
 
@@ -5263,9 +4853,6 @@
     @apply border-b border-border-subtle bg-surface-hover/80 font-semibold tracking-wider text-text-primary uppercase;
   }
 
-  /* Headers always render centered regardless of the column's markdown
-     alignment marker (`align` presentational attribute) - only body cells
-     follow per-column alignment. */
   .prose-custom :global(th) {
     @apply px-2.5 py-2 text-center font-semibold text-text-primary;
     overflow-wrap: break-word;
@@ -5289,8 +4876,6 @@
     white-space: normal;
   }
 
-  /* GFM table alignment markers (`---:`, `:---:`) - e.g. numeric/money
-     columns marked right-aligned in the source markdown. */
   .prose-custom :global(td[align='right']) {
     @apply text-right;
   }

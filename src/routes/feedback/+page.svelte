@@ -1,7 +1,7 @@
-<!-- @format -->
 <script lang="ts">
   import {page} from '$app/state'
   import {onMount} from 'svelte'
+  import {CheckCircle2} from '@lucide/svelte'
   import {isNameReserved} from '$lib/utils/nameValidator'
   import {
     Card,
@@ -243,41 +243,31 @@
           </h2>
           <ul class="flex flex-col gap-2.5 text-xs text-text-secondary">
             <li class="flex items-start gap-2">
-              <i
-                class="bi bi-check-circle-fill mt-0.5 text-copilot"
-                aria-hidden="true"></i>
+              <CheckCircle2 class="mt-0.5 size-3.5 shrink-0 text-copilot" />
               <span
                 ><strong>Writing errors:</strong> Grammatical mistakes, typos, spelling,
                 or poor phrasing.</span>
             </li>
             <li class="flex items-start gap-2">
-              <i
-                class="bi bi-check-circle-fill mt-0.5 text-copilot"
-                aria-hidden="true"></i>
+              <CheckCircle2 class="mt-0.5 size-3.5 shrink-0 text-copilot" />
               <span
                 ><strong>Technical inaccuracies:</strong> Code snippets that don't
                 compile, wrong command usages, or faulty explanation logic.</span>
             </li>
             <li class="flex items-start gap-2">
-              <i
-                class="bi bi-check-circle-fill mt-0.5 text-copilot"
-                aria-hidden="true"></i>
+              <CheckCircle2 class="mt-0.5 size-3.5 shrink-0 text-copilot" />
               <span
                 ><strong>Outdated information:</strong> Deprecated package API calls,
                 tools that are no longer active, or outdated tutorial steps.</span>
             </li>
             <li class="flex items-start gap-2">
-              <i
-                class="bi bi-check-circle-fill mt-0.5 text-copilot"
-                aria-hidden="true"></i>
+              <CheckCircle2 class="mt-0.5 size-3.5 shrink-0 text-copilot" />
               <span
                 ><strong>Broken links:</strong> 404 links, invalid references, or
                 missing static download files.</span>
             </li>
             <li class="flex items-start gap-2">
-              <i
-                class="bi bi-check-circle-fill mt-0.5 text-copilot"
-                aria-hidden="true"></i>
+              <CheckCircle2 class="mt-0.5 size-3.5 shrink-0 text-copilot" />
               <span
                 ><strong>Website issues:</strong> UI layout bugs, visual display mistakes,
                 broken styling, accessibility complaints, or slow loading times.</span>
@@ -414,7 +404,7 @@
         <div class="mt-2 flex justify-end select-none">
           <Button
             htmlType="submit"
-            type="Primary"
+            type="primary"
             size="md">
             Submit feedback
           </Button>
@@ -433,14 +423,14 @@
   onClose={() => (showSubmitDialog = false)}>
   {#snippet footer()}
     <Button
-      type="Secondary"
+      type="secondary"
       size="md"
       showEscHint
       onclick={() => (showSubmitDialog = false)}>
       Cancel
     </Button>
     <Button
-      type="Primary"
+      type="primary"
       size="md"
       onclick={executeSubmit}>
       Submit feedback

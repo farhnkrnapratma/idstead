@@ -1,5 +1,3 @@
-/** @format */
-
 import {marked} from 'marked'
 
 export function parseMarkdownAlerts(html: string): string {
@@ -11,12 +9,27 @@ export function parseMarkdownAlerts(html: string): string {
       const type = typeUpper.toLowerCase() as
         'note' | 'tip' | 'important' | 'warning' | 'caution'
 
-      const config: Record<string, {title: string; icon: string}> = {
-        note: {title: 'Note', icon: 'bi-info-circle-fill'},
-        tip: {title: 'Tip', icon: 'bi-lightbulb-fill'},
-        important: {title: 'Important', icon: 'bi-exclamation-circle-fill'},
-        warning: {title: 'Warning', icon: 'bi-exclamation-triangle-fill'},
-        caution: {title: 'Caution', icon: 'bi-octagon-fill'}
+      const config: Record<string, {title: string; svg: string}> = {
+        note: {
+          title: 'Note',
+          svg: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-info shrink-0"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>'
+        },
+        tip: {
+          title: 'Tip',
+          svg: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lightbulb shrink-0"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>'
+        },
+        important: {
+          title: 'Important',
+          svg: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-alert-circle shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>'
+        },
+        warning: {
+          title: 'Warning',
+          svg: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-alert-triangle shrink-0"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>'
+        },
+        caution: {
+          title: 'Caution',
+          svg: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-octagon-alert shrink-0"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>'
+        }
       }
 
       const alertConfig = config[type]
@@ -29,7 +42,7 @@ export function parseMarkdownAlerts(html: string): string {
 
       return `<div class="markdown-alert markdown-alert-${type}">
   <div class="markdown-alert-title">
-    <i class="bi ${alertConfig.icon} text-base leading-none" aria-hidden="true"></i>
+    ${alertConfig.svg}
     <span>${alertConfig.title}</span>
   </div>
   <div class="markdown-alert-content">

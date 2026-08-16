@@ -1,17 +1,17 @@
--- Migration: atomic_save_rpcs
--- Created: 2026-08-05
--- Purpose: Replace raw delete+insert patterns with atomic Postgres RPC
---          functions that run inside a single transaction with SECURITY DEFINER
---          to safely handle atomic updates without table-level RLS restrictions.
 
--- ============================================================
--- RPC: save_author_links
--- Atomic replace-all for social / funding / contact categories
--- ============================================================
+
+
+
+
+
+
+
+
+
 CREATE OR REPLACE FUNCTION public.save_author_links(
   p_author_id uuid,
   p_category   text,
-  p_items      jsonb   -- array of {platform, display_value, url, icon, sort_order}
+  p_items      jsonb   
 )
 RETURNS void
 LANGUAGE plpgsql
@@ -50,14 +50,14 @@ $$;
 REVOKE ALL ON FUNCTION public.save_author_links(uuid, text, jsonb) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.save_author_links(uuid, text, jsonb) TO authenticated;
 
--- ============================================================
--- RPC: save_skills
--- Atomic replace-all for skill_categories + skill_items
--- (skill_items cascade-deletes when skill_categories is deleted)
--- ============================================================
+
+
+
+
+
 CREATE OR REPLACE FUNCTION public.save_skills(
   p_author_id  uuid,
-  p_categories jsonb  -- array of {category, sort_order, skills: string[]}
+  p_categories jsonb  
 )
 RETURNS void
 LANGUAGE plpgsql
@@ -104,10 +104,10 @@ $$;
 REVOKE ALL ON FUNCTION public.save_skills(uuid, jsonb) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.save_skills(uuid, jsonb) TO authenticated;
 
--- ============================================================
--- RPC: save_cv_entries
--- Atomic replace-all for experiences + education
--- ============================================================
+
+
+
+
 CREATE OR REPLACE FUNCTION public.save_cv_entries(
   p_author_id    uuid,
   p_experiences  jsonb,

@@ -1,5 +1,3 @@
-/** @format */
-
 import {SvelteDate} from 'svelte/reactivity'
 
 export type ConsentStatus = 'granted' | 'denied'

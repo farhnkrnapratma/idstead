@@ -1,4 +1,3 @@
-<!-- @format -->
 <script lang="ts">
   import LegalPageLayout from '$lib/components/LegalPageLayout.svelte'
 

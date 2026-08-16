@@ -1,6 +1,6 @@
-<!-- @format -->
 <script lang="ts">
   import type {Snippet} from 'svelte'
+  import {AlertCircle, CheckCircle2} from '@lucide/svelte'
   import {cn} from '../utils/cn'
 
   interface Props {
@@ -72,16 +72,12 @@
         id="{id}-error"
         role="alert"
         class="flex items-start gap-1.5 text-danger">
-        <i
-          class="bi bi-exclamation-circle-fill mt-px shrink-0 self-start text-xs leading-none"
-          aria-hidden="true"></i>
+        <AlertCircle class="mt-px size-3 shrink-0 self-start" />
         <span class="min-w-0 flex-1 wrap-break-word">{error}</span>
       </span>
     {:else if valid}
       <span class="flex items-start gap-1.5 text-copilot">
-        <i
-          class="bi bi-check-circle-fill mt-px shrink-0 self-start text-xs leading-none"
-          aria-hidden="true"></i>
+        <CheckCircle2 class="mt-px size-3 shrink-0 self-start" />
         <span class="min-w-0 flex-1">Looks good</span>
       </span>
     {:else if hintSnippet}

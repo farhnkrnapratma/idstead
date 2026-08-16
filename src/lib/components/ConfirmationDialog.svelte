@@ -1,4 +1,3 @@
-<!-- @format -->
 <script lang="ts">
   import Dialog from './Dialog.svelte'
   import Button from './Button.svelte'
@@ -52,7 +51,7 @@
   {/if}
   {#snippet footer()}
     <Button
-      type="Secondary"
+      type="secondary"
       size="md"
       onclick={close}>
       <span class="inline-flex items-center gap-1.5">
@@ -64,7 +63,7 @@
       </span>
     </Button>
     <Button
-      type={isDestructive ? 'Danger' : 'Primary'}
+      type={isDestructive ? 'danger' : 'primary'}
       size="md"
       {isLoading}
       onclick={confirm}>

@@ -9,8 +9,6 @@ metadata:
   source: https://github.com/motdotla/dotenv
 ---
 
-<!-- @format -->
-
 # dotenv
 
 ## Installation

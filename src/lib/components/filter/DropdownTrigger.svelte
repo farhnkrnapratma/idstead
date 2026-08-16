@@ -1,13 +1,14 @@
-<!-- @format -->
 <script lang="ts">
-  import {cn} from '../../utils/cn'
   import type {Snippet} from 'svelte'
+  import {ChevronDown} from '@lucide/svelte'
+  import {cn} from '../../utils/cn'
 
   interface Props {
     ariaLabel: string
     isOpen?: boolean
     disabled?: boolean
     fullWidth?: boolean
+    size?: 'sm' | 'md'
     variant?: 'secondary' | 'primary'
     class?: string
     options?: Array<{label: string}>
@@ -20,6 +21,7 @@
     isOpen = false,
     disabled = false,
     fullWidth = false,
+    size = 'md',
     variant = 'secondary',
     class: className = '',
     options = [],
@@ -36,15 +38,21 @@
   aria-expanded={isOpen}
   aria-haspopup="listbox"
   class={cn(
-    'inline-flex cursor-pointer items-center justify-between gap-1.5 rounded-sm border font-medium disabled:cursor-not-allowed disabled:opacity-50',
-    fullWidth ? 'w-full' : 'min-w-22',
+    'inline-flex cursor-pointer items-center justify-between gap-1 rounded-sm border font-medium disabled:cursor-not-allowed disabled:opacity-50',
+    fullWidth ? 'w-full'
+    : size === 'sm' ? 'min-w-0'
+    : 'min-w-22',
     variant === 'primary' ?
       cn(
-        'h-10 border-copilot/50 bg-copilot px-3 text-xs text-white shadow-lg sm:px-4 sm:text-sm',
+        size === 'sm' ?
+          'h-7 border-copilot/50 bg-copilot px-2 text-2xs text-white shadow-xs'
+        : 'h-10 border-copilot/50 bg-copilot px-3 text-xs text-white shadow-lg sm:px-4 sm:text-sm',
         !disabled && 'transition-all hover:brightness-110'
       )
     : cn(
-        'h-9 glass-card px-3 text-xs text-text-primary shadow-2xs',
+        size === 'sm' ?
+          'h-7 glass-card px-2 text-2xs text-text-primary shadow-2xs'
+        : 'h-9 glass-card px-3 text-xs text-text-primary shadow-2xs',
         !disabled && 'hover:text-copilot',
         isOpen && 'border-copilot/60 bg-surface-card/70 text-copilot'
       ),
@@ -71,15 +79,13 @@
     </span>
   {/if}
   <span
-    class="h-4 w-4 shrink-0 origin-center items-center justify-center transition-transform duration-200 ease-out {(
-      variant === 'primary'
+    class="shrink-0 origin-center items-center justify-center transition-transform duration-200 ease-out {(
+      size === 'sm'
     ) ?
-      'hidden sm:inline-flex'
-    : 'inline-flex'} {variant === 'primary' ? 'text-white/80' : (
-      'text-text-muted'
-    )} {isOpen ? 'rotate-180' : ''}">
-    <i
-      class="bi bi-chevron-down text-2xs leading-none"
-      aria-hidden="true"></i>
+      'size-3'
+    : 'size-4'} {variant === 'primary' ?
+      'hidden text-white/80 sm:inline-flex'
+    : 'inline-flex text-text-muted'} {isOpen ? 'rotate-180' : ''}">
+    <ChevronDown class="{size === 'sm' ? 'size-2.5' : 'size-3'} leading-none" />
   </span>
 </button>

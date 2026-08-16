@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # Validation, Reporting, and Verification
 
 ### Phase 3: Validate findings

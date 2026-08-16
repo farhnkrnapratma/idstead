@@ -1,6 +1,5 @@
 node_modules
 
-# Output
 .output
 .vercel
 .netlify
@@ -9,33 +8,26 @@ node_modules
 /build
 /dist
 
-# OS
 .DS_Store
 Thumbs.db
 
-# Env
 .env
 .env.*
-!.env.example
 !.env.test
 !.env.production.example
 !.env.preview.example
 
-# Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
-# Editor
 .vscode
 
-# Git worktrees
 .claude/worktrees/
 .worktrees/
 
-# Sentry Config File
 .env.sentry-build-plugin
 
-# Caches and Temporary Files
 graphify-out/cache/
 supabase/.temp/
+.playwright-mcp/
 

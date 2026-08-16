@@ -1,5 +1,3 @@
-/** @format */
-
 import type {RequestHandler} from './$types'
 import searchSource from '../../../api/v1/search/+server.ts?raw'
 import commentsSource from '../../../api/v1/blog/comments/+server.ts?raw'

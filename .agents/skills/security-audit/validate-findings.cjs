@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 /**
  * Validates findings.json against report-schema.json.
  * Usage: node validate-findings.cjs <path-to-findings.json>
@@ -14,8 +15,6 @@
  * semantic layer after schema validation.
  *
  * Zero dependencies. Exits 0 on success, 1 on validation failure.
- *
- * @format
  */
 
 const fs = require('fs')

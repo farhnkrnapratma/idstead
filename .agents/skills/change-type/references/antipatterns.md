@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # Anti-Pattern Guide untuk Change Type Framework
 
 Kegagalan AI coding agent paling sering disebabkan oleh beberapa pola di bawah. Gunakan dokumen ini sebagai checklist sebelum dan selama eksekusi.

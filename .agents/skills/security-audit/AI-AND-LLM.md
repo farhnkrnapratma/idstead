@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # AI, LLM, and Agent Hunting
 
 #### When to use this file

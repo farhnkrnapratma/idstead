@@ -1,10 +1,4 @@
 #!/usr/bin/env bash
-# Stop hook: format, then run the repo's type-check and lint gates and
-# surface failures as a systemMessage so issues introduced this session
-# aren't left silently broken. format runs first (not just lint's
-# prettier --check) so formatting drift gets fixed in place instead of
-# just reported, leaving lint to catch only real issues. Informational
-# only (never blocks) to avoid a Stop-hook loop.
 bun run format >/dev/null 2>&1
 check_out=$(bun run check 2>&1)
 check_status=$?

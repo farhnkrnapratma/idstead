@@ -5,8 +5,6 @@ impactDescription: 5-20x query speedup for filtered queries
 tags: indexes, query-optimization, performance
 ---
 
-<!-- @format -->
-
 ## [Rule Title]
 
 [1-2 sentence explanation of the problem and why it matters. Focus on performance impact.]

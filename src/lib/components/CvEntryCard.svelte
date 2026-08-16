@@ -1,8 +1,8 @@
-<!-- @format -->
 <script lang="ts">
   import Tag from '../components/Tag.svelte'
   import TagGroup from '../components/TagGroup.svelte'
   import {cn} from '../utils/cn'
+  import {decodeHtmlEntities} from '../utils/formatters'
 
   interface Props {
     role: string
@@ -66,7 +66,7 @@
       {#each tags as t (t)}
         <Tag
           variant="neutral"
-          size="sm">{t}</Tag>
+          size="sm">{decodeHtmlEntities(t)}</Tag>
       {/each}
     </TagGroup>
   {/if}

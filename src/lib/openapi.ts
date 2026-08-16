@@ -1,5 +1,3 @@
-/** @format */
-
 const errorSchema = {
   type: 'object',
   properties: {
@@ -32,6 +30,7 @@ const blogPostSummarySchema = {
     title: {type: 'string'},
     slug: {type: 'string'},
     excerpt: {type: 'string', nullable: true},
+    tags: {type: 'array', items: {type: 'string'}, nullable: true},
     created_at: {type: 'string', format: 'date-time'},
     updated_at: {type: 'string', format: 'date-time'}
   }

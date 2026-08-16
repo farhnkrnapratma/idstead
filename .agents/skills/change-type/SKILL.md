@@ -4,8 +4,6 @@ description: >-
   Framework operasional untuk mendefinisikan Change Type sebelum agent melakukan perubahan kode. Aktifkan skill ini ketika user menyebutkan kata kunci seperti PATCH, HOTFIX, BUG-FIX, ENHANCEMENT, FEATURE, REFACTOR, MIGRATION, UPDATE, UPGRADE, OPTIMIZATION, ROLLBACK, HARDENING, REWRITE, REWORK, PORTING, INTEGRATION, MODERNIZATION, MAINTENANCE, DEPLOYMENT, atau RELEASE — atau ketika user meminta perbaikan bug, fitur baru, refactoring, migrasi, deployment, atau aktivitas pemeliharaan sistem. Skill ini memastikan agent beroperasi dengan batasan yang jelas, mengurangi over-engineering dan perubahan di luar scope.
 ---
 
-<!-- @format -->
-
 # Change Type Framework
 
 Setiap permintaan coding harus dimulai dengan menentukan **Change Type** secara eksplisit. Ini bukan formalitas — ini adalah kontrak operasional antara user dan agent yang menentukan apa yang boleh berubah, apa yang tidak boleh, dan bagaimana keberhasilan diukur.

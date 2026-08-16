@@ -1,5 +1,5 @@
-<!-- @format -->
 <script lang="ts">
+  import {ThumbsUp, ThumbsDown, CheckCircle2} from '@lucide/svelte'
   import Button from '../components/Button.svelte'
   import {cn} from '../utils/cn'
 
@@ -29,30 +29,29 @@
 
   {#if voted !== null}
     <span class="flex items-center gap-1.5 text-xs font-semibold text-copilot">
-      <i
-        class="bi bi-check-circle-fill"
-        aria-hidden="true"></i> Thanks for your feedback!
+      <CheckCircle2 class="size-3.5 shrink-0" />
+      Thanks for your feedback!
     </span>
   {:else}
     <div class="flex items-center gap-1.5">
       <Button
-        type="Secondary"
+        type="secondary"
         size="sm"
         class="h-6.5! gap-1.5! px-2.5! text-xs! text-text-muted!"
         onclick={() => handleVote(true)}>
-        <i
-          class="bi bi-hand-thumbs-up text-xs leading-none text-text-muted select-none"
-          aria-hidden="true"></i>
+        {#snippet leading()}
+          <ThumbsUp class="size-3 text-text-muted select-none" />
+        {/snippet}
         <span class="text-text-muted">Yes</span>
       </Button>
       <Button
-        type="Secondary"
+        type="secondary"
         size="sm"
         class="h-6.5! gap-1.5! px-2.5! text-xs! text-text-muted!"
         onclick={() => handleVote(false)}>
-        <i
-          class="bi bi-hand-thumbs-down text-xs leading-none text-text-muted select-none"
-          aria-hidden="true"></i>
+        {#snippet leading()}
+          <ThumbsDown class="size-3 text-text-muted select-none" />
+        {/snippet}
         <span class="text-text-muted">No</span>
       </Button>
     </div>

@@ -1,6 +1,6 @@
-<!-- @format -->
 <script lang="ts">
   import type {Snippet} from 'svelte'
+  import {SquareArrowOutUpRight} from '@lucide/svelte'
   import {cn} from '../utils/cn'
 
   interface Props {
@@ -9,8 +9,7 @@
     href?: string
     target?: string
     rel?: string
-    icon?: string
-    iconColor?: string
+    leading?: Snippet
     actions?: Snippet
     children?: Snippet
     class?: string
@@ -22,8 +21,7 @@
     href,
     target,
     rel,
-    icon = '',
-    iconColor = 'text-text-secondary',
+    leading,
     actions,
     children,
     class: className = ''
@@ -36,17 +34,14 @@
     {target}
     {rel}
     class={cn(
-      'group flex items-center justify-between gap-3 px-4 py-3.5 transition-colors hover:bg-surface-hover',
+      'group flex items-center justify-between gap-3 px-4 py-2.5 transition-colors hover:bg-surface-hover',
       className
     )}>
-    <div class="flex min-w-0 shrink-0 items-center gap-3.5">
-      {#if icon}
-        <i
-          class="bi {icon} text-lg {iconColor} transition-colors group-hover:text-copilot"
-          aria-hidden="true"></i>
-      {/if}
+    <div class="flex min-w-0 shrink-0 items-center gap-3">
+      {@render leading?.()}
       <div class="flex min-w-0 flex-col">
-        <span class="truncate text-sm font-semibold text-text-primary"
+        <span
+          class="truncate text-xs font-semibold text-text-primary sm:text-sm"
           >{title}</span>
         {#if subtitle}
           <span class="mt-0.5 truncate text-xs text-text-muted"
@@ -56,23 +51,18 @@
     </div>
     <div class="flex min-w-0 items-center justify-end gap-3">
       {@render children?.()}
-      <i
-        class="bi bi-chevron-right shrink-0 text-xs text-text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-copilot"
-        aria-hidden="true"></i>
+      <SquareArrowOutUpRight
+        class="size-4 shrink-0 text-text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-copilot" />
     </div>
   </a>
 {:else}
   <div
     class={cn(
-      'flex items-center justify-between gap-3 px-4 py-3.5 transition-colors hover:bg-surface-hover',
+      'flex items-center justify-between gap-3 px-4 py-2.5 transition-colors hover:bg-surface-hover',
       className
     )}>
-    <div class="flex min-w-0 shrink-0 items-center gap-3.5">
-      {#if icon}
-        <i
-          class="bi {icon} text-lg {iconColor}"
-          aria-hidden="true"></i>
-      {/if}
+    <div class="flex min-w-0 shrink-0 items-center gap-3">
+      {@render leading?.()}
       <div class="flex min-w-0 flex-col">
         <span class="truncate text-sm font-semibold text-text-primary"
           >{title}</span>

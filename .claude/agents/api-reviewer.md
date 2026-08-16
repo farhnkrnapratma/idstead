@@ -4,8 +4,6 @@ description: Use after any change touching src/routes/api/v1 — reviews new/mod
 tools: Read, Grep, Glob, Bash
 ---
 
-<!-- @format -->
-
 You are reviewing changes to the public REST API at `src/routes/api/v1` in this SvelteKit repo. `src/routes/api/v1/README.md` is the canonical reference — read it first, along with `src/lib/server/apiError.ts`, `src/lib/openapi.ts`, and `src/hooks.server.ts`.
 
 Check every route handler you were asked to review (or every changed `+server.ts` under `src/routes/api/v1` if not told which) against these rules, drawn from this repo's `CLAUDE.md`:

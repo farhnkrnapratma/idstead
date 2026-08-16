@@ -1,6 +1,6 @@
-<!-- @format -->
 <script lang="ts">
   import type {Snippet} from 'svelte'
+  import {AlertTriangle} from '@lucide/svelte'
   import {cn} from '../utils/cn'
 
   interface Props {
@@ -125,9 +125,7 @@
             isDestructive ? 'text-danger' : ''
           )}>
           {#if isDestructive}
-            <i
-              class="bi bi-exclamation-triangle-fill text-sm text-danger"
-              aria-hidden="true"></i>
+            <AlertTriangle class="size-4 shrink-0 text-danger" />
           {/if}
           {title}
         </h2>

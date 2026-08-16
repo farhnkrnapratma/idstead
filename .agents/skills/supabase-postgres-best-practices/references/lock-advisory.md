@@ -5,8 +5,6 @@ impactDescription: Efficient coordination without row-level lock overhead
 tags: advisory-locks, coordination, application-locks
 ---
 
-<!-- @format -->
-
 ## Use Advisory Locks for Application-Level Locking
 
 Advisory locks provide application-level coordination without requiring database rows to lock.

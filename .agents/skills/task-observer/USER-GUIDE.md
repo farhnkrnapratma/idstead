@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # Getting Started with the task-observer meta-skill (aka "One skill to rule them all")
 
 This guide includes practical tips for getting value out of the meta-skill. It's based on my own daily usage of the skill across Claude Cowork, the web interface, Claude Code (only via the desktop app) and the mobile app. I've been using this skill for six months now and it has logged and applied more than 900 improvements across my 50 skills, all of which were themselves created based on observations by the meta-skill.

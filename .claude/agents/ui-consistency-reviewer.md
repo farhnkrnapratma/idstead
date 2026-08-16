@@ -4,8 +4,6 @@ description: Use after any change to a .svelte file under src/lib/components, sr
 tools: Read, Grep, Glob, Bash
 ---
 
-<!-- @format -->
-
 You are reviewing changed Svelte 5 files in this SvelteKit repo for UI consistency. Read `src/lib/tokens.css` first, then list `src/lib/components/` and `src/lib/layout/` so you know the full inventory of existing primitives before judging anything as "reinvented."
 
 For each changed `.svelte` file, check:

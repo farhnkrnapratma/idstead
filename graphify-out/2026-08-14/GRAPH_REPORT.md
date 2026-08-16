@@ -1,16 +1,16 @@
 # Graph Report - www  (2026-08-14)
 
 ## Corpus Check
-- 310 files · ~351,428 words
+- 312 files · ~337,463 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1705 nodes · 1995 edges · 251 communities (141 shown, 110 thin omitted)
-- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 35 edges (avg confidence: 0.76)
+- 1727 nodes · 2030 edges · 253 communities (144 shown, 109 thin omitted)
+- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 34 edges (avg confidence: 0.75)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `44cfdf1b`
+- Built from commit: `987b1fea`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -29,15 +29,15 @@
 - Button.svelte
 - dependencies
 - Anti-Patterns to Avoid & Related
-- scripts
 - brandkit/SKILL.md
 - Global Constraints
 - admin/index.ts & Related
 - Attack Classes Overview & Related
+- scripts
 - app.d.ts & Related
 - HUNTING.md & Related
 - _sections.md & Related
-- svelte/elements
+- package.json
 - README.md & Related
 - 7. DIAL DEFINITIONS (Technical Reference)
 - CORE DIRECTIVE: PREMIUM MOBILE APP IMAGE DIRECTION
@@ -48,7 +48,7 @@
 - AI-AND-LLM.md & Related
 - validate-findings.cjs & Related
 - supabase/CHANGELOG.md & Related
-- package.json
+- keywords
 - eslint
 - Design Audit
 - Cookie Consent Default (Google Consent Mode v2) Script & Related
@@ -58,7 +58,7 @@
 - Authentication-protocol attack classes (subagent_type: `general`) & Related
 - 20260809000000_legal_pages.sql
 - Agent Skill: Principal UI/UX Architect & Motion Choreographer (Awwwards-Tier)
-- proxyToSupabaseEdgeFunction
+- supabaseFunctions.ts
 - conn-limits.md & Related
 - supabase-postgres-best-practices/SKILL.md & Related
 - author.ts
@@ -85,7 +85,7 @@
 - Audit Validation Rules & Related
 - Bun Package Ecosystem Weekly Updates & Related
 - AGENTS.md & Related
-- Graphify Knowledge Graph Rules for Agents & Related
+- Graphify Knowledge Graph Rules for Agents
 - rules/graphify.md & Related
 - advanced-full-text-search.md & Related
 - advanced-jsonb-indexing.md & Related
@@ -155,11 +155,12 @@
 - Supabase Model Context Protocol (MCP) Server Setup
 - Specialized Index Selection (B-tree, GIN, GiST, BRIN, Hash)
 - Lowercase Unquoted snake_case Identifier Conventions
-- LegalPageLayout.svelte
+- utils/turnstile.ts
 - Personal Website Overview
 - tasteskill: Anti-Slop Frontend Skill
 - CORE DIRECTIVE: AWWWARDS-LEVEL DESIGN ENGINEERING
 - 22. STYLE VARIATION ENGINE
+- types.ts
 - Protocol: Premium Utilitarian Minimalism UI Architect
 - Finish feature
 - graphify-refresh.sh
@@ -189,6 +190,7 @@
 - 20. EXAMPLE INTERPRETATIONS
 - task-observer - One Skill to Rule Them All
 - Getting Started with the task-observer meta-skill (aka "One skill to rule them all")
+- files
 - dotenvx
 - svelte-core-bestpractices
 - Task Observer — Continuous Skill Discovery & Improvement
@@ -223,7 +225,6 @@
 - public.posts
 - public.skill_categories
 - public.skill_items
-- keywords
 - globals
 - prettier
 - prettier-plugin-tailwindcss
@@ -242,16 +243,16 @@
 - vite
 - yaml
 - routes/+page.svelte
-- files
-- DropdownTrigger.svelte
+- AccessibilitySelect.svelte
+- SortControl.svelte
 - Motion & transition system design
-- themeStore.svelte.ts
+- LegalPageLayout.svelte
 - toastStore.svelte.ts
 
 ## God Nodes (most connected - your core abstractions)
 1. `CORE DIRECTIVE: PREMIUM MOBILE APP IMAGE DIRECTION` - 39 edges
-2. `Definisi Operasional Change Type` - 23 edges
-3. `supabase` - 22 edges
+2. `supabase` - 23 edges
+3. `Definisi Operasional Change Type` - 23 edges
 4. `CORE DIRECTIVE: AWWWARDS-LEVEL IMAGE ART DIRECTION` - 22 edges
 5. `tasteskill: Anti-Slop Frontend Skill` - 16 edges
 6. `task-observer - One Skill to Rule Them All` - 16 edges
@@ -265,8 +266,8 @@
   .agents/skills/supabase-postgres-best-practices/references/data-batch-inserts.md → .agents/skills/supabase-postgres-best-practices/references/data-n-plus-one.md
 - `Web Application Tech Stack` --references--> `Supabase Agent Skill Overview`  [INFERRED]
   README.md → .agents/skills/supabase/SKILL.md
-- `fetchLogoCatalog()` --indirect_call--> `error()`  [INFERRED]
-  src/routes/+page.server.ts → src/lib/stores/toastStore.svelte.ts
+- `Optimize RLS Policies for Performance` --semantically_similar_to--> `Supabase Security Pitfalls Checklist`  [INFERRED] [semantically similar]
+  .agents/skills/supabase-postgres-best-practices/references/security-rls-performance.md → .agents/skills/supabase/SKILL.md
 - `Eliminate N+1 Queries with Batch Loading` --semantically_similar_to--> `Use Cursor-Based Pagination Instead of OFFSET`  [INFERRED] [semantically similar]
   .agents/skills/supabase-postgres-best-practices/references/data-n-plus-one.md → .agents/skills/supabase-postgres-best-practices/references/data-pagination.md
 - `Use UPSERT for Insert-or-Update Operations` --semantically_similar_to--> `Eliminate N+1 Queries with Batch Loading`  [INFERRED] [semantically similar]
@@ -276,18 +277,18 @@
 - None detected.
 
 ## Hyperedges (group relationships)
-- **Database Access & Concurrency Optimization Patterns** — agents_skills_supabase_postgres_best_practices_references_data_n_plus_one_eliminate_n_1_queries_with_batch_loading, agents_skills_supabase_postgres_best_practices_references_data_pagination_use_cursor_based_pagination_instead_of_offset, agents_skills_supabase_postgres_best_practices_references_data_upsert_use_upsert_for_insert_or_update_operations [INFERRED 0.85]
-- **Supabase RLS & Security Best Practices Architecture** — agents_skills_supabase_postgres_best_practices_references_security_rls_basics_enable_row_level_security_for_multi_tenant_data, agents_skills_supabase_postgres_best_practices_references_security_rls_performance_optimize_rls_policies_for_performance, _agents_skills_supabase_skill_security_checklist [EXTRACTED 1.00]
-- **Supabase Local Development & Tooling Ecosystem** — _agents_skills_supabase_skill_supabase_cli, _agents_skills_supabase_skill_supabase_mcp_server, _agents_skills_supabase_skill_schema_management [EXTRACTED 1.00]
+- **PostgreSQL Concurrency & Transaction Lock Management Patterns** — agents_skills_supabase_postgres_best_practices_references_lock_advisory_pg_advisory_locks, agents_skills_supabase_postgres_best_practices_references_lock_deadlock_prevention_consistent_lock_ordering, agents_skills_supabase_postgres_best_practices_references_lock_short_transactions_short_transaction_scope, agents_skills_supabase_postgres_best_practices_references_lock_skip_locked_for_update_skip_locked [EXTRACTED 1.00]
+- **Database Query Indexing & Access Path Optimization Suite** — agents_skills_supabase_postgres_best_practices_references_query_composite_indexes_composite_indexing_strategy, agents_skills_supabase_postgres_best_practices_references_query_covering_indexes_covering_index_include, agents_skills_supabase_postgres_best_practices_references_query_index_types_specialized_index_types, agents_skills_supabase_postgres_best_practices_references_query_missing_indexes_where_join_indexing, agents_skills_supabase_postgres_best_practices_references_query_partial_indexes_partial_indexing_where [EXTRACTED 1.00]
 - **Domain-Specific Security Hunting Companions** — _agents_skills_security_audit_attack_classes_attack_classes_overview, agents_skills_security_audit_ai_and_llm_ai_llm_and_agent_hunting, agents_skills_security_audit_client_side_client_side_and_browser_hunting, _agents_skills_security_audit_memory_safety_and_binary_memory_safety_hunting, _agents_skills_security_audit_web_protocol_and_auth_web_protocol_hunting [EXTRACTED 1.00]
 - **Security Audit Methodology Lifecycle** — _agents_skills_security_audit_reconnaissance_phase_1_recon, _agents_skills_security_audit_hunting_phase_2_hunting, _agents_skills_security_audit_validation_and_reporting_phase_3_validation, _agents_skills_security_audit_validation_and_reporting_phase_5_structured_output, _agents_skills_security_audit_validation_and_reporting_phase_6_independent_verification [EXTRACTED 1.00]
-- **Postgres Connection Scalability and Resource Management** — agents_skills_supabase_postgres_best_practices_references_conn_idle_timeout_configure_idle_connection_timeouts, agents_skills_supabase_postgres_best_practices_references_conn_limits_set_appropriate_connection_limits, agents_skills_supabase_postgres_best_practices_references_conn_pooling_use_connection_pooling_for_all_applications, agents_skills_supabase_postgres_best_practices_references_conn_prepared_statements_use_prepared_statements_correctly_with_pooling [INFERRED 0.85]
-- **Database Query Indexing & Access Path Optimization Suite** — agents_skills_supabase_postgres_best_practices_references_query_composite_indexes_composite_indexing_strategy, agents_skills_supabase_postgres_best_practices_references_query_covering_indexes_covering_index_include, agents_skills_supabase_postgres_best_practices_references_query_index_types_specialized_index_types, agents_skills_supabase_postgres_best_practices_references_query_missing_indexes_where_join_indexing, agents_skills_supabase_postgres_best_practices_references_query_partial_indexes_partial_indexing_where [EXTRACTED 1.00]
-- **PostgreSQL Concurrency & Transaction Lock Management Patterns** — agents_skills_supabase_postgres_best_practices_references_lock_advisory_pg_advisory_locks, agents_skills_supabase_postgres_best_practices_references_lock_deadlock_prevention_consistent_lock_ordering, agents_skills_supabase_postgres_best_practices_references_lock_short_transactions_short_transaction_scope, agents_skills_supabase_postgres_best_practices_references_lock_skip_locked_for_update_skip_locked [EXTRACTED 1.00]
-- **Database Performance Monitoring & Diagnostic System** — agents_skills_supabase_postgres_best_practices_references_monitor_explain_analyze_explain_analyze_profiling, agents_skills_supabase_postgres_best_practices_references_monitor_pg_stat_statements_pg_stat_statements_monitoring, agents_skills_supabase_postgres_best_practices_references_monitor_vacuum_analyze_vacuum_analyze_maintenance [INFERRED 0.95]
+- **Supabase Local Development & Tooling Ecosystem** — _agents_skills_supabase_skill_supabase_cli, _agents_skills_supabase_skill_supabase_mcp_server, _agents_skills_supabase_skill_schema_management [EXTRACTED 1.00]
+- **Supabase RLS & Security Best Practices Architecture** — agents_skills_supabase_postgres_best_practices_references_security_rls_basics_enable_row_level_security_for_multi_tenant_data, agents_skills_supabase_postgres_best_practices_references_security_rls_performance_optimize_rls_policies_for_performance, _agents_skills_supabase_skill_security_checklist [EXTRACTED 1.00]
 - **App.html Pre-Hydration Bootstrap Scripts** — src_app_html_dark_mode_init_script, src_app_html_consent_mode_script, src_app_html_gtm_loader_script [INFERRED 0.85]
+- **Database Access & Concurrency Optimization Patterns** — agents_skills_supabase_postgres_best_practices_references_data_n_plus_one_eliminate_n_1_queries_with_batch_loading, agents_skills_supabase_postgres_best_practices_references_data_pagination_use_cursor_based_pagination_instead_of_offset, agents_skills_supabase_postgres_best_practices_references_data_upsert_use_upsert_for_insert_or_update_operations [INFERRED 0.85]
+- **Postgres Connection Scalability and Resource Management** — agents_skills_supabase_postgres_best_practices_references_conn_idle_timeout_configure_idle_connection_timeouts, agents_skills_supabase_postgres_best_practices_references_conn_limits_set_appropriate_connection_limits, agents_skills_supabase_postgres_best_practices_references_conn_pooling_use_connection_pooling_for_all_applications, agents_skills_supabase_postgres_best_practices_references_conn_prepared_statements_use_prepared_statements_correctly_with_pooling [INFERRED 0.85]
+- **Database Performance Monitoring & Diagnostic System** — agents_skills_supabase_postgres_best_practices_references_monitor_explain_analyze_explain_analyze_profiling, agents_skills_supabase_postgres_best_practices_references_monitor_pg_stat_statements_pg_stat_statements_monitoring, agents_skills_supabase_postgres_best_practices_references_monitor_vacuum_analyze_vacuum_analyze_maintenance [INFERRED 0.95]
 
-## Communities (251 total, 110 thin omitted)
+## Communities (253 total, 109 thin omitted)
 
 ### Community 0 - "dotenv"
 Cohesion: 0.14
@@ -298,12 +299,12 @@ Cohesion: 0.22
 Nodes (9): eslint-config-prettier, eslint-plugin-svelte, devDependencies, eslint-config-prettier, eslint-plugin-svelte, prettier-plugin-svelte, @tailwindcss/vite, prettier-plugin-svelte (+1 more)
 
 ### Community 2 - "lib/index.ts"
-Cohesion: 0.06
-Nodes (3): cn(), familyOf(), TEXT_SIZE_KEYWORDS
+Cohesion: 0.05
+Nodes (4): autoResize(), cn(), familyOf(), TEXT_SIZE_KEYWORDS
 
 ### Community 3 - "internal/blog/comments/+server.ts"
-Cohesion: 0.12
-Nodes (22): AttemptRecord, attempts, checkLoginLockout(), clearLoginAttempts(), pruneOld(), recordFailedLogin(), isSameOriginRequest(), getSupabaseAdminClient() (+14 more)
+Cohesion: 0.10
+Nodes (30): getAdminDb(), getR2Credentials(), jsonResponse(), processCvDelete(), processCvUpload(), requireAdminAuth(), AttemptRecord, attempts (+22 more)
 
 ### Community 4 - "Architecture"
 Cohesion: 0.06
@@ -341,10 +342,6 @@ Nodes (15): @aws-sdk/client-s3, bootstrap-icons, marked, dependencies, @aws-sdk/
 Cohesion: 0.17
 Nodes (12): Anti-Patterns to Avoid, Confirm dynamically when you can, Core Principles, Coverage and prior runs, Defense-in-depth gaps are not vulnerabilities, Determine the baseline dynamically, Only report what you can exploit, Platform terminology (+4 more)
 
-### Community 14 - "scripts"
-Cohesion: 0.17
-Nodes (12): scripts, build, build:preview, check, check:watch, dev, dev:preview, format (+4 more)
-
 ### Community 15 - "brandkit/SKILL.md"
 Cohesion: 0.05
 Nodes (43): 1. Logo Cover, 1. Monogram + Meaning, 2 × 3 REFERENCE-STYLE LAYOUT, 2. Logo Construction, 2. Product Action, 3. Digital Application, 3. Metaphor Fusion, 4. Brand Essence (+35 more)
@@ -361,6 +358,10 @@ Nodes (11): CORS_HEADERS, getR2Client(), handleCvDelete(), handleCvUpload(), jso
 Cohesion: 0.18
 Nodes (11): Attack Classes Overview, Memory Safety Binary Kernel Hunting, HTTP Protocol and Auth Hunting, Agent and tool-calling attack classes (subagent_type: `general`), AI, LLM, and Agent Hunting, Core discipline (include in every agent prompt for this domain), Output-handling and disclosure attack classes (subagent_type: `general`), Prompt-injection attack classes (subagent_type: `general`) (+3 more)
 
+### Community 19 - "scripts"
+Cohesion: 0.17
+Nodes (12): scripts, build, build:preview, check, check:watch, dev, dev:preview, format (+4 more)
+
 ### Community 20 - "app.d.ts & Related"
 Cohesion: 0.18
 Nodes (6): App, Error, Platform, R2Bucket, R2Object, RateLimit
@@ -372,6 +373,10 @@ Nodes (8): Hunting methodology — include in every Phase 2 agent prompt, Phase 
 ### Community 22 - "_sections.md & Related"
 Cohesion: 0.20
 Nodes (9): 1. Query Performance (query), 2. Connection Management (conn), 3. Security & RLS (security), 4. Schema Design (schema), 5. Concurrency & Locking (lock), 6. Data Access Patterns (data), 7. Monitoring & Diagnostics (monitor), 8. Advanced Features (advanced) (+1 more)
+
+### Community 23 - "package.json"
+Cohesion: 0.18
+Nodes (10): exports, license, name, private, sideEffects, svelte, type, types (+2 more)
 
 ### Community 24 - "README.md & Related"
 Cohesion: 0.20
@@ -409,9 +414,9 @@ Nodes (7): collect(), findDiscriminator(), fs, path, schemaPath, typeOf(), valid
 Cohesion: 0.46
 Nodes (7): [0.1.3](https://github.com/supabase/agent-skills/compare/v0.1.2...v0.1.3) (2026-06-02), [0.1.4](https://github.com/supabase/agent-skills/compare/v0.1.3...v0.1.4) (2026-06-05), [0.1.5](https://github.com/supabase/agent-skills/compare/v0.1.4...v0.1.5) (2026-07-10), [0.1.6](https://github.com/supabase/agent-skills/compare/v0.1.5...supabase-v0.1.6) (2026-07-30), Bug Fixes, Changelog, Features
 
-### Community 34 - "package.json"
-Cohesion: 0.18
-Nodes (10): exports, license, name, private, sideEffects, svelte, type, types (+2 more)
+### Community 34 - "keywords"
+Cohesion: 0.25
+Nodes (8): keywords, farhan, farhan kurnia pratama, kurnia, pratama, svelte, sveltekit, tailwindcss
 
 ### Community 36 - "Design Audit"
 Cohesion: 0.10
@@ -441,10 +446,6 @@ Nodes (7): Authentication-protocol attack classes (subagent_type: `general`), Co
 Cohesion: 0.11
 Nodes (17): 1. Meta Information & Core Directive, 2. THE "ABSOLUTE ZERO" DIRECTIVE (STRICT ANTI-PATTERNS), 3. THE CREATIVE VARIANCE ENGINE, 4. HAPTIC MICRO-AESTHETICS (COMPONENT MASTERY), 5. MOTION CHOREOGRAPHY (FLUID DYNAMICS), 6. PERFORMANCE GUARDRAILS, 7. EXECUTION PROTOCOL, 8. PRE-OUTPUT CHECKLIST (+9 more)
 
-### Community 44 - "proxyToSupabaseEdgeFunction"
-Cohesion: 0.52
-Nodes (4): getSupabaseBaseUrl(), proxyToSupabaseEdgeFunction(), POST(), POST()
-
 ### Community 45 - "conn-limits.md & Related"
 Cohesion: 0.33
 Nodes (3): Set Appropriate Connection Limits, Use Connection Pooling for All Applications, Use Prepared Statements Correctly with Pooling
@@ -454,8 +455,8 @@ Cohesion: 0.33
 Nodes (5): How to Use, References, Rule Categories by Priority, Supabase Postgres Best Practices, When to Apply
 
 ### Community 47 - "author.ts"
-Cohesion: 0.05
-Nodes (63): AuthorProfile, ContactInfo, CvDocument, decodeHtmlEntities(), EducationItem, ExperienceItem, fetchActiveCvDocument(), fetchAuthorProfile() (+55 more)
+Cohesion: 0.06
+Nodes (57): AuthorProfile, ContactInfo, CvDocument, decodeHtmlEntities(), EducationItem, ExperienceItem, fetchActiveCvDocument(), fetchAuthorProfile() (+49 more)
 
 ### Community 48 - "svelte & Related"
 Cohesion: 0.33
@@ -466,8 +467,8 @@ Cohesion: 0.33
 Nodes (5): Recognition, Reporting a Vulnerability, Scope, Security Policy, What to Expect
 
 ### Community 50 - "hooks.server.ts"
-Cohesion: 0.29
-Nodes (4): handle, handleError, rateLimitMap, RateLimitRecord
+Cohesion: 0.38
+Nodes (6): getCdnBaseUrl(), getClientIp(), handle, handleError, rateLimitMap, RateLimitRecord
 
 ### Community 51 - "useFilterSort.svelte.ts"
 Cohesion: 0.33
@@ -542,12 +543,16 @@ Cohesion: 0.17
 Nodes (12): 4.10 Quotes & Testimonials, 4.11 Page Theme Lock (Light / Dark Mode Consistency), 4.1 Typography, 4.2 Color Calibration, 4.3 Layout Diversification, 4.4 Materiality, Shadows, Cards, 4.5 Interactive UI States, 4.6 Data & Form Patterns (+4 more)
 
 ### Community 112 - "markdown.ts"
-Cohesion: 0.12
-Nodes (20): LegalPageData, decodeHtmlEntities(), extractHeadings(), HeadingItem, injectHeadingIds(), parseMarkdownAlerts(), prepareMarkdownPage(), renderMarkdown() (+12 more)
+Cohesion: 0.18
+Nodes (17): LegalPageData, decodeHtmlEntities(), extractHeadings(), HeadingItem, injectHeadingIds(), parseMarkdownAlerts(), prepareMarkdownPage(), renderMarkdown() (+9 more)
 
 ### Community 113 - "10. REFERENCE VOCABULARY (Pattern Names the Agent Should Know)"
 Cohesion: 0.20
 Nodes (10): 10. REFERENCE VOCABULARY (Pattern Names the Agent Should Know), Animation Library Choice, Cards & Containers, Galleries & Media, Hero Paradigms, Layout & Grids, Micro-Interactions & Effects, Navigation & Menus (+2 more)
+
+### Community 148 - "utils/turnstile.ts"
+Cohesion: 0.29
+Nodes (3): turnstileSiteKey, TurnstileWidgetOptions, Window
 
 ### Community 151 - "tasteskill: Anti-Slop Frontend Skill"
 Cohesion: 0.20
@@ -560,6 +565,10 @@ Nodes (9): 1. PYTHON-DRIVEN TRUE RANDOMIZATION (BREAKING THE LOOP), 2. AIDA STRU
 ### Community 153 - "22. STYLE VARIATION ENGINE"
 Cohesion: 0.20
 Nodes (10): 22. STYLE VARIATION ENGINE, Decorative Asset Set, Image Art Direction Bias, Motion-Implied Language, Palette Logic, Signature Component Set, Structure Bias, Texture / Surface Treatment (+2 more)
+
+### Community 154 - "types.ts"
+Cohesion: 0.20
+Nodes (6): Comment, NavItem, Post, Project, SearchResult, Section
 
 ### Community 157 - "Protocol: Premium Utilitarian Minimalism UI Architect"
 Cohesion: 0.20
@@ -669,6 +678,10 @@ Nodes (16): Claude environment notes, Compatibility, Contributing, Further readi
 Cohesion: 0.12
 Nodes (15): Checking in on observations, Checking whether the skill has loaded, Dual-layer activation, Getting kickstarted, Getting Started with the task-observer meta-skill (aka "One skill to rule them all"), How the skill works during a session, Making the skill your own, Open-source vs internal skills (+7 more)
 
+### Community 187 - "files"
+Cohesion: 0.50
+Nodes (4): files, dist, !dist/**/*.spec.*, !dist/**/*.test.*
+
 ### Community 188 - "dotenvx"
 Cohesion: 0.18
 Nodes (10): Agent Usage, Core Capability Guidance, dotenvx, Installation, Node Integration, References, Safety Rules, Usage (+2 more)
@@ -753,53 +766,49 @@ Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphif
 Cohesion: 0.50
 Nodes (3): Output, Steps, UI consistency check
 
-### Community 227 - "keywords"
-Cohesion: 0.25
-Nodes (8): keywords, farhan, farhan kurnia pratama, kurnia, pratama, svelte, sveltekit, tailwindcss
-
 ### Community 245 - "routes/+page.svelte"
-Cohesion: 0.17
-Nodes (4): A11ySettings, a11yStore, defaults, FontScale
+Cohesion: 0.12
+Nodes (10): contact, education, experiences, openShareDialog(), rawSkills, shareBlogPostDialog(), shareProjectDialog(), showShareDialog (+2 more)
 
-### Community 246 - "files"
-Cohesion: 0.50
-Nodes (4): files, dist, !dist/**/*.spec.*, !dist/**/*.test.*
+### Community 249 - "AccessibilitySelect.svelte"
+Cohesion: 0.12
+Nodes (4): A11ySettings, a11yStore, defaults, FontScale
 
 ### Community 254 - "Motion & transition system design"
 Cohesion: 0.18
 Nodes (10): 1. CSS stagger-in (hierarchy load motion), 2. View Transitions (Context / Drill / Continuity), Architecture, Browser support / fallback, Context, Goals, Motion & transition system design, Non-goals (+2 more)
 
-### Community 257 - "themeStore.svelte.ts"
-Cohesion: 0.11
+### Community 257 - "LegalPageLayout.svelte"
+Cohesion: 0.08
 Nodes (7): themeStore, Theme, enhanceCodeBlocks(), getPrettyLanguage(), LANGUAGE_NAMES, splitHighlightedHtmlLines(), ./$types
 
 ### Community 260 - "toastStore.svelte.ts"
-Cohesion: 0.19
-Nodes (9): error(), formatToastMessage(), message, show(), success(), toastStore, ToastType, type (+1 more)
+Cohesion: 0.13
+Nodes (10): error(), formatToastMessage(), message, show(), success(), toastStore, ToastType, type (+2 more)
 
 ## Ambiguous Edges - Review These
 - `Blocking Dark-Mode Default Script` → `themeStore.init() (theme store correction call)`  [AMBIGUOUS]
   src/app.html · relation: references
 
 ## Knowledge Gaps
-- **942 isolated node(s):** `supabase`, `@sveltejs/mcp`, `sentry`, `context7`, `cloudflare-observability` (+937 more)
+- **949 isolated node(s):** `supabase`, `@sveltejs/mcp`, `sentry`, `context7`, `cloudflare-observability` (+944 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **110 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **109 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **What is the exact relationship between `Blocking Dark-Mode Default Script` and `themeStore.init() (theme store correction call)`?**
   _Edge tagged AMBIGUOUS (relation: references) - confidence is low._
-- **Why does `tasteskill: Anti-Slop Frontend Skill` connect `tasteskill: Anti-Slop Frontend Skill` to `9. AI TELLS (Forbidden Patterns)`, `11. REDESIGN PROTOCOL`, `3. DEFAULT ARCHITECTURE & CONVENTIONS`, `6. PERFORMANCE & ACCESSIBILITY GUARDRAILS`, `0. BRIEF INFERENCE (Read the Room Before Anything Else)`, `12. THE BLOCK LIBRARY (Contract - Implementations Land Here Iteratively)`, `4. DESIGN ENGINEERING DIRECTIVES (Bias Correction)`, `10. REFERENCE VOCABULARY (Pattern Names the Agent Should Know)`, `5. CONTEXT-AWARE PROACTIVITY`, `8. DARK MODE PROTOCOL`, `7. DIAL DEFINITIONS (Technical Reference)`, `Appendix B - Canonical Sources (read these before reinventing)`?**
-  _High betweenness centrality (0.004) - this node is a cross-community bridge._
 - **Why does `devDependencies` connect `devDependencies` to `package.json`, `eslint`, `svelte & Related`, `@eslint/js`, `globals`, `prettier`, `prettier-plugin-tailwindcss`, `@prettier/plugin-xml`, `prettier-plugin-yaml`, `publint`, `svelte-check`, `@sveltejs/adapter-cloudflare`, `@sveltejs/package`, `@sveltejs/vite-plugin-svelte`, `tailwindcss`, `@types/marked`, `@types/node`, `typescript`, `typescript-eslint`, `vite`, `yaml`?**
   _High betweenness centrality (0.003) - this node is a cross-community bridge._
-- **Why does `dependencies` connect `dependencies` to `package.json`?**
+- **Why does `tasteskill: Anti-Slop Frontend Skill` connect `tasteskill: Anti-Slop Frontend Skill` to `9. AI TELLS (Forbidden Patterns)`, `11. REDESIGN PROTOCOL`, `3. DEFAULT ARCHITECTURE & CONVENTIONS`, `6. PERFORMANCE & ACCESSIBILITY GUARDRAILS`, `0. BRIEF INFERENCE (Read the Room Before Anything Else)`, `12. THE BLOCK LIBRARY (Contract - Implementations Land Here Iteratively)`, `4. DESIGN ENGINEERING DIRECTIVES (Bias Correction)`, `10. REFERENCE VOCABULARY (Pattern Names the Agent Should Know)`, `5. CONTEXT-AWARE PROACTIVITY`, `8. DARK MODE PROTOCOL`, `7. DIAL DEFINITIONS (Technical Reference)`, `Appendix B - Canonical Sources (read these before reinventing)`?**
+  _High betweenness centrality (0.003) - this node is a cross-community bridge._
+- **Why does `supabase` connect `author.ts` to `markdown.ts`, `internal/blog/comments/+server.ts`?**
   _High betweenness centrality (0.002) - this node is a cross-community bridge._
 - **What connects `supabase`, `@sveltejs/mcp`, `sentry` to the rest of the system?**
-  _942 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _949 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `dotenv` be split into smaller, more focused modules?**
   _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._
 - **Should `lib/index.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.05874125874125874 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05368382080710848 - nodes in this community are weakly interconnected._

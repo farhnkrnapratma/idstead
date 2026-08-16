@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # task-observer - One Skill to Rule Them All
 
 ## The meta-skill that builds and improves all your skills, including itself.

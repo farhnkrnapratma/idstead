@@ -1,4 +1,3 @@
-<!-- @format -->
 <script lang="ts">
   interface Props {
     action: string
@@ -11,10 +10,10 @@
   By {action}, you agree to our
   <a
     href="/terms"
-    class="hover:text-copilot-hover text-copilot underline">Terms of Service</a>
+    class="text-copilot underline hover:text-copilot-hover">Terms of Service</a>
   and
   <a
     href="/privacy"
-    class="hover:text-copilot-hover text-copilot underline">Privacy Policy</a
+    class="text-copilot underline hover:text-copilot-hover">Privacy Policy</a
   >.
 </p>

@@ -1,8 +1,5 @@
-/** @format */
-
 @import 'tailwindcss';
 @import '../lib/tokens.css';
-@import 'bootstrap-icons/font/bootstrap-icons.css';
 
 @layer base {
   h1,
@@ -10,6 +7,10 @@
   h3,
   .font-sans {
     @apply font-sans;
+  }
+
+  .font-serif {
+    @apply font-serif;
   }
 
   code,
@@ -54,11 +55,11 @@
 }
 
 nav[aria-label='Table of contents'] code {
-  @apply rounded bg-adwaita-hover px-1 py-0.5 font-mono [font-size:inherit]! font-normal text-inherit;
+  @apply rounded bg-surface-hover px-1 py-0.5 font-mono [font-size:inherit]! font-normal text-inherit;
 }
 
 button,
-.bi,
+svg,
 ::placeholder,
 .parent-avatar,
 .last-reply-avatar,
@@ -67,7 +68,7 @@ button,
 }
 
 ::placeholder {
-  @apply text-(--color-adwaita-label)! opacity-75!;
+  @apply text-text-muted! opacity-75!;
 }
 
 a:focus-visible,
@@ -135,23 +136,67 @@ select {
 }
 
 @utility glass-overlay {
-  @apply border border-border-subtle/70 bg-surface-elevated/75 text-text-primary shadow-2xl backdrop-blur-xl dark:border-white/15 dark:bg-surface-elevated/55;
+  @apply border border-border-subtle/80 bg-surface-card/92 text-text-primary shadow-xl backdrop-blur-xs dark:border-white/15 dark:bg-surface-card/90;
 }
 
 @utility glass-button {
   @apply border border-border-subtle/70 bg-surface-card/55 text-text-primary shadow-xs backdrop-blur-md transition-all hover:border-copilot hover:bg-surface-card/85 dark:border-white/10 dark:bg-surface-card/40 dark:hover:bg-surface-card/65;
 }
 
-:root[data-solid-surfaces='true'] .glass-card {
-  @apply bg-surface-card! backdrop-blur-none!;
+:root[data-solid-surfaces='true']
+  :is(
+    .glass-card,
+    .glass-overlay,
+    .glass-button,
+    input,
+    select,
+    textarea,
+    button,
+    nav,
+    aside,
+    header,
+    footer,
+    dialog,
+    [role='dialog'],
+    [role='menu'],
+    [role='listbox'],
+    [class*='backdrop-blur'],
+    [class*='glass-']
+  ) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
-:root[data-solid-surfaces='true'] .glass-overlay {
-  @apply bg-surface-elevated! backdrop-blur-none!;
+:root[data-solid-surfaces='true']
+  :is(
+    .glass-card,
+    .glass-overlay,
+    input:not([type='checkbox']):not([type='radio']),
+    select,
+    textarea:not(.editor-textarea),
+    [class*='bg-surface/'],
+    [class*='bg-surface-card/'],
+    [class*='bg-surface-subtle/'],
+    [class*='bg-surface-elevated/']
+  ) {
+  background-color: var(--color-surface-card) !important;
+  border-color: var(--color-border-subtle) !important;
+  opacity: 1 !important;
 }
 
 :root[data-solid-surfaces='true'] .glass-button {
-  @apply bg-surface-card! backdrop-blur-none!;
+  background-color: var(--color-surface-card) !important;
+  border-color: var(--color-border-subtle) !important;
+  opacity: 1 !important;
+}
+
+:root[data-solid-surfaces='true'] .glass-button:hover {
+  background-color: var(--color-surface-hover) !important;
+}
+
+:root[data-solid-surfaces='true'] [class*='bg-overlay'] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 :root[data-high-contrast='true'] {
@@ -208,24 +253,18 @@ select {
 }
 
 @layer base {
-  .prose-custom h1,
-  .prose-custom h2,
-  .prose-custom h3 {
-    @apply font-sans;
-  }
-
   .prose-custom {
-    @apply font-sans text-[0.9rem] leading-[1.7] text-(--color-body);
-    --color-heading: var(--color-gh-gray-6);
-    --color-body: var(--color-gh-gray-5);
-    --color-link: var(--color-gh-gray-5);
+    @apply text-[0.975rem] leading-[1.75] text-(--color-body);
+    --color-heading: var(--color-text-primary);
+    --color-body: var(--color-text-secondary);
+    --color-link: var(--color-text-secondary);
     --color-link-hover: var(--color-copilot);
   }
 
   :root.dark .prose-custom {
-    --color-heading: var(--color-gh-gray-1);
-    --color-body: var(--color-gh-gray-3);
-    --color-link: var(--color-gh-gray-3);
+    --color-heading: var(--color-text-primary);
+    --color-body: var(--color-text-secondary);
+    --color-link: var(--color-text-secondary);
     --color-link-hover: var(--color-copilot);
   }
 
@@ -234,7 +273,7 @@ select {
   }
 
   .prose-custom p {
-    @apply mt-4 mb-4 text-(--color-body);
+    @apply mt-5 mb-5 text-(--color-body);
   }
 
   .prose-custom h1,
@@ -243,25 +282,31 @@ select {
   .prose-custom h4,
   .prose-custom h5,
   .prose-custom h6 {
-    @apply font-sans text-(--color-heading);
+    @apply text-(--color-heading);
   }
 
   .prose-custom h1 {
-    @apply mt-6 mb-2 text-3xl font-extrabold;
+    @apply mt-8 mb-4 text-3xl font-extrabold;
   }
 
   .prose-custom h2 {
-    @apply mt-5 mb-1.5 text-2xl font-bold;
+    @apply mt-7 mb-3 text-2xl font-bold;
   }
 
   .prose-custom h3 {
-    @apply mt-4 mb-1 text-xl font-semibold;
+    @apply mt-6 mb-2 text-xl font-semibold;
   }
 
-  .prose-custom h4,
-  .prose-custom h5,
+  .prose-custom h4 {
+    @apply mt-5 mb-2 text-lg font-semibold;
+  }
+
+  .prose-custom h5 {
+    @apply mt-4 mb-2 text-base font-semibold;
+  }
+
   .prose-custom h6 {
-    @apply mt-4 mb-1 text-lg font-semibold;
+    @apply mt-4 mb-2 text-sm font-semibold;
   }
 
   .prose-custom h1 + *,
@@ -286,7 +331,7 @@ select {
   }
 
   .prose-custom pre {
-    @apply mt-6 mb-6 overflow-x-auto rounded-sm border border-adwaita-border bg-adwaita-hover px-3 py-2 font-mono text-[0.8rem] leading-relaxed break-normal whitespace-pre;
+    @apply mt-6 mb-6 overflow-x-auto rounded-sm border border-border-subtle bg-surface-hover px-3 py-2 font-mono text-[0.8rem] leading-relaxed break-normal whitespace-pre;
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
@@ -302,7 +347,7 @@ select {
   }
 
   .prose-custom code:not(pre code) {
-    @apply rounded bg-adwaita-hover px-1 py-px font-mono text-xs font-normal text-inherit;
+    @apply rounded bg-surface-hover px-1 py-px font-mono text-xs font-normal text-inherit;
     overflow-wrap: break-word;
     word-break: break-word;
   }
@@ -339,17 +384,18 @@ select {
     white-space: nowrap;
     text-decoration: none;
     transition: none;
-    @apply text-adwaita-text;
+    @apply text-text-primary;
   }
 
   :root.dark .prose-custom a.anchor-link {
     @apply text-gh-gray-4;
   }
 
-  .prose-custom a.anchor-link .bi {
+  .prose-custom a.anchor-link svg {
     display: inline-block;
     vertical-align: middle;
-    font-size: 0.85em;
+    width: 0.85em;
+    height: 0.85em;
     line-height: 1;
     color: inherit;
     text-decoration: none;
@@ -386,20 +432,20 @@ select {
   :root.dark .prose-custom h5:hover a.anchor-link,
   :root.dark .prose-custom h6:hover a.anchor-link,
   :root.dark .prose-custom a.anchor-link:hover,
-  .prose-custom h1:hover a.anchor-link .bi,
-  .prose-custom h2:hover a.anchor-link .bi,
-  .prose-custom h3:hover a.anchor-link .bi,
-  .prose-custom h4:hover a.anchor-link .bi,
-  .prose-custom h5:hover a.anchor-link .bi,
-  .prose-custom h6:hover a.anchor-link .bi,
-  .prose-custom a.anchor-link:hover .bi,
-  :root.dark .prose-custom h1:hover a.anchor-link .bi,
-  :root.dark .prose-custom h2:hover a.anchor-link .bi,
-  :root.dark .prose-custom h3:hover a.anchor-link .bi,
-  :root.dark .prose-custom h4:hover a.anchor-link .bi,
-  :root.dark .prose-custom h5:hover a.anchor-link .bi,
-  :root.dark .prose-custom h6:hover a.anchor-link .bi,
-  :root.dark .prose-custom a.anchor-link:hover .bi {
+  .prose-custom h1:hover a.anchor-link svg,
+  .prose-custom h2:hover a.anchor-link svg,
+  .prose-custom h3:hover a.anchor-link svg,
+  .prose-custom h4:hover a.anchor-link svg,
+  .prose-custom h5:hover a.anchor-link svg,
+  .prose-custom h6:hover a.anchor-link svg,
+  .prose-custom a.anchor-link:hover svg,
+  :root.dark .prose-custom h1:hover a.anchor-link svg,
+  :root.dark .prose-custom h2:hover a.anchor-link svg,
+  :root.dark .prose-custom h3:hover a.anchor-link svg,
+  :root.dark .prose-custom h4:hover a.anchor-link svg,
+  :root.dark .prose-custom h5:hover a.anchor-link svg,
+  :root.dark .prose-custom h6:hover a.anchor-link svg,
+  :root.dark .prose-custom a.anchor-link:hover svg {
     @apply text-copilot! no-underline! opacity-100!;
     text-decoration: none;
   }
@@ -506,5 +552,54 @@ select {
   }
   .prose-custom .markdown-alert-caution .markdown-alert-title {
     @apply text-(--color-danger);
+  }
+
+  @keyframes code-icon-out {
+    to {
+      opacity: 0;
+      transform: scale(0.5) rotate(-90deg);
+    }
+  }
+
+  @keyframes code-icon-in {
+    from {
+      opacity: 0;
+      transform: scale(0.5) rotate(90deg);
+    }
+  }
+
+  .code-icon-out {
+    animation: code-icon-out 120ms ease-in forwards;
+  }
+
+  .code-icon-in {
+    animation: code-icon-in 150ms ease-out forwards;
+  }
+
+  .font-content-sans,
+  .font-content-sans :is(h1, h2, h3, h4, h5, h6) {
+    font-family: var(--font-sans);
+  }
+
+  .font-content-serif,
+  .font-content-serif :is(h1, h2, h3, h4, h5, h6) {
+    font-family: var(--font-serif);
+  }
+
+  .font-content-mono,
+  .font-content-mono :is(h1, h2, h3, h4, h5, h6) {
+    font-family: var(--font-mono);
+  }
+
+  .prose-custom :is(h1, h2, h3, h4, h5, h6) {
+    font-family: inherit;
+  }
+
+  .prose-custom code,
+  .prose-custom pre,
+  .prose-custom kbd,
+  .prose-custom .hljs,
+  .prose-custom pre code {
+    font-family: var(--font-mono) !important;
   }
 }

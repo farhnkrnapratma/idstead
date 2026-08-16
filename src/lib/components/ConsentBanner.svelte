@@ -1,7 +1,7 @@
-<!-- @format -->
 <script lang="ts">
   import {onMount} from 'svelte'
   import {fade} from 'svelte/transition'
+  import {ShieldCheck, X, ChevronDown, Check, Trash2} from '@lucide/svelte'
   import {consentStore, type ConsentStatus} from '../stores/consentStore.svelte'
   import Button from './Button.svelte'
   import Dialog from './Dialog.svelte'
@@ -63,9 +63,6 @@
     activeDropdown = null
   }
 
-  // 0 = Allow All (green), 1 = Analytics Only (yellow/warning), 2 = Deny All
-  // (red, the default) - a custom combination that matches neither preset
-  // exactly reads as the "in-between"/Analytics Only position.
   const presetSliderValue = $derived(
     (
       tempAnalytics === 'granted'
@@ -116,9 +113,7 @@
         <div class="flex items-center gap-2.5">
           <div
             class="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-copilot/15 text-copilot">
-            <i
-              class="bi bi-shield-fill-check text-base"
-              aria-hidden="true"></i>
+            <ShieldCheck class="size-4" />
           </div>
           <div>
             <h3 class="text-sm font-bold text-text-primary">
@@ -135,9 +130,7 @@
           onclick={consentStore.closeBanner}
           aria-label="Dismiss banner"
           class="shrink-0 text-text-muted hover:text-text-primary">
-          <i
-            class="bi bi-x-lg text-xs"
-            aria-hidden="true"></i>
+          <X class="size-3.5" />
         </button>
       </div>
 
@@ -145,25 +138,25 @@
         Choose which data processing signals you wish to allow. You can update
         your choice at any time. See our <a
           href="/privacy"
-          class="hover:text-copilot-hover font-semibold text-copilot underline"
+          class="font-semibold text-copilot underline hover:text-copilot-hover"
           >Privacy Policy</a> for full details.
       </p>
 
       <div class="flex flex-wrap items-center gap-2 pt-1">
         <Button
-          type="Primary"
+          type="primary"
           size="sm"
           onclick={consentStore.acceptAll}>
           Accept all
         </Button>
         <Button
-          type="Secondary"
+          type="secondary"
           size="sm"
           onclick={consentStore.acceptAnalyticsOnly}>
           Analytics only
         </Button>
         <Button
-          type="Ghost"
+          type="ghost"
           size="sm"
           onclick={consentStore.rejectAll}>
           Reject all
@@ -258,9 +251,7 @@
               ) ?
                 'rotate-180'
               : ''}">
-              <i
-                class="bi bi-chevron-down text-2xs leading-none"
-                aria-hidden="true"></i>
+              <ChevronDown class="size-3 leading-none" />
             </span>
           </button>
 
@@ -291,9 +282,7 @@
                   : 'text-text-primary hover:bg-surface-hover'}">
                   <span>Deny</span>
                   {#if tempAnalytics === 'denied'}
-                    <i
-                      class="bi bi-check2 shrink-0 text-copilot"
-                      aria-hidden="true"></i>
+                    <Check class="size-3.5 shrink-0 text-copilot" />
                   {/if}
                 </button>
                 <button
@@ -311,9 +300,7 @@
                   : 'text-text-primary hover:bg-surface-hover'}">
                   <span>Allow</span>
                   {#if tempAnalytics === 'granted'}
-                    <i
-                      class="bi bi-check2 shrink-0 text-copilot"
-                      aria-hidden="true"></i>
+                    <Check class="size-3.5 shrink-0 text-copilot" />
                   {/if}
                 </button>
               </div>
@@ -350,9 +337,7 @@
               ) ?
                 'rotate-180'
               : ''}">
-              <i
-                class="bi bi-chevron-down text-2xs leading-none"
-                aria-hidden="true"></i>
+              <ChevronDown class="size-3 leading-none" />
             </span>
           </button>
 
@@ -383,9 +368,7 @@
                   : 'text-text-primary hover:bg-surface-hover'}">
                   <span>Deny</span>
                   {#if tempAdStorage === 'denied'}
-                    <i
-                      class="bi bi-check2 shrink-0 text-copilot"
-                      aria-hidden="true"></i>
+                    <Check class="size-3.5 shrink-0 text-copilot" />
                   {/if}
                 </button>
                 <button
@@ -403,9 +386,7 @@
                   : 'text-text-primary hover:bg-surface-hover'}">
                   <span>Allow</span>
                   {#if tempAdStorage === 'granted'}
-                    <i
-                      class="bi bi-check2 shrink-0 text-copilot"
-                      aria-hidden="true"></i>
+                    <Check class="size-3.5 shrink-0 text-copilot" />
                   {/if}
                 </button>
               </div>
@@ -440,9 +421,7 @@
               ) ?
                 'rotate-180'
               : ''}">
-              <i
-                class="bi bi-chevron-down text-2xs leading-none"
-                aria-hidden="true"></i>
+              <ChevronDown class="size-3 leading-none" />
             </span>
           </button>
 
@@ -473,9 +452,7 @@
                   : 'text-text-primary hover:bg-surface-hover'}">
                   <span>Deny</span>
                   {#if tempAdUserData === 'denied'}
-                    <i
-                      class="bi bi-check2 shrink-0 text-copilot"
-                      aria-hidden="true"></i>
+                    <Check class="size-3.5 shrink-0 text-copilot" />
                   {/if}
                 </button>
                 <button
@@ -493,9 +470,7 @@
                   : 'text-text-primary hover:bg-surface-hover'}">
                   <span>Allow</span>
                   {#if tempAdUserData === 'granted'}
-                    <i
-                      class="bi bi-check2 shrink-0 text-copilot"
-                      aria-hidden="true"></i>
+                    <Check class="size-3.5 shrink-0 text-copilot" />
                   {/if}
                 </button>
               </div>
@@ -534,9 +509,7 @@
               ) ?
                 'rotate-180'
               : ''}">
-              <i
-                class="bi bi-chevron-down text-2xs leading-none"
-                aria-hidden="true"></i>
+              <ChevronDown class="size-3 leading-none" />
             </span>
           </button>
 
@@ -567,9 +540,7 @@
                   : 'text-text-primary hover:bg-surface-hover'}">
                   <span>Deny</span>
                   {#if tempAdPersonalization === 'denied'}
-                    <i
-                      class="bi bi-check2 shrink-0 text-copilot"
-                      aria-hidden="true"></i>
+                    <Check class="size-3.5 shrink-0 text-copilot" />
                   {/if}
                 </button>
                 <button
@@ -587,9 +558,7 @@
                   : 'text-text-primary hover:bg-surface-hover'}">
                   <span>Allow</span>
                   {#if tempAdPersonalization === 'granted'}
-                    <i
-                      class="bi bi-check2 shrink-0 text-copilot"
-                      aria-hidden="true"></i>
+                    <Check class="size-3.5 shrink-0 text-copilot" />
                   {/if}
                 </button>
               </div>
@@ -606,9 +575,7 @@
         type="button"
         onclick={consentStore.resetVisitorConsent}
         class="inline-flex cursor-pointer items-center gap-1.5 rounded-sm border border-danger/30 bg-danger/10 px-2.5 py-1 text-xs font-semibold text-danger transition-colors hover:border-danger/50 hover:bg-danger/20">
-        <i
-          class="bi bi-trash3 text-2xs"
-          aria-hidden="true"></i>
+        <Trash2 class="size-3" />
         Reset choice
       </button>
     </div>
@@ -618,7 +585,7 @@
     <div
       class="flex w-full flex-col-reverse items-center justify-end gap-2 sm:flex-row">
       <Button
-        type="Secondary"
+        type="secondary"
         size="md"
         showEscHint
         onclick={() => consentStore.closeCustomizeModal()}
@@ -627,7 +594,7 @@
       </Button>
 
       <Button
-        type="Secondary"
+        type="secondary"
         size="md"
         onclick={() => {
           applyPreset('all')
@@ -638,7 +605,7 @@
       </Button>
 
       <Button
-        type="Primary"
+        type="primary"
         size="md"
         onclick={saveCustomPreferences}
         class="w-full sm:w-auto">

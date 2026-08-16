@@ -1,6 +1,6 @@
-<!-- @format -->
 <script lang="ts">
   import {page} from '$app/state'
+  import {ArrowLeft, Bug} from '@lucide/svelte'
   import {Button, SkipLink, ErrorState, FooterLegalRow} from '$lib'
 
   let pageAuthor = $derived((page?.data as any)?.author)
@@ -77,9 +77,8 @@
       description={errorDescription}>
       {#snippet actions()}
         <Button
-          type="Primary"
+          type="primary"
           size="md"
-          leadingIcon="bi-arrow-left"
           onclick={() => {
             if (typeof window !== 'undefined' && window.history.length > 1) {
               window.history.back()
@@ -87,13 +86,18 @@
               window.location.href = '/'
             }
           }}>
+          {#snippet leading()}
+            <ArrowLeft class="size-3.5" />
+          {/snippet}
           Go back
         </Button>
         <a href="/feedback">
           <Button
-            type="Secondary"
-            leadingIcon="bi-bug-fill"
+            type="secondary"
             size="md">
+            {#snippet leading()}
+              <Bug class="size-3.5" />
+            {/snippet}
             Feedback
           </Button>
         </a>

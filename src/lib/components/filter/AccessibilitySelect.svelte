@@ -1,5 +1,5 @@
-<!-- @format -->
 <script lang="ts">
+  import {Accessibility} from '@lucide/svelte'
   import {cn} from '../../utils/cn'
   import IconButton from '../IconButton.svelte'
   import {a11yStore, type FontScale} from '../../stores/a11yStore.svelte'
@@ -69,8 +69,20 @@
     }
   ]
 
+  let containerRef: HTMLDivElement | undefined = $state()
+
   function close() {
     isOpen = false
+  }
+
+  function handleWindowPointerDown(event: PointerEvent) {
+    if (
+      isOpen
+      && containerRef
+      && !containerRef.contains(event.target as Node)
+    ) {
+      close()
+    }
   }
 
   function handleKeydown(event: KeyboardEvent) {
@@ -81,7 +93,9 @@
   }
 </script>
 
-<svelte:window onkeydown={handleKeydown} />
+<svelte:window
+  onpointerdown={handleWindowPointerDown}
+  onkeydown={handleKeydown} />
 
 <div
   class={cn(
@@ -89,9 +103,14 @@
     isOpen ? 'z-60' : 'z-20',
     className.includes('hidden') ? className : `inline-flex ${className}`
   )}>
-  <div class="relative inline-block">
+  <div
+    bind:this={containerRef}
+    class="relative inline-block">
     <IconButton
-      ariaLabel="Accessibility settings"
+      ariaLabel="Accessibility"
+      tooltip="Accessibility"
+      tooltipPlacement={dropdownDirection === 'up' ? 'top' : 'bottom'}
+      tooltipAlign="right"
       size="sm"
       aria-haspopup="true"
       aria-expanded={isOpen}
@@ -100,9 +119,7 @@
         'border-border-subtle bg-surface backdrop-blur-none hover:border-copilot hover:bg-surface-hover',
         isOpen && 'border-copilot text-copilot'
       )}>
-      <i
-        class="bi bi-universal-access text-sm"
-        aria-hidden="true"></i>
+      <Accessibility class="size-4" />
     </IconButton>
 
     {#if isOpen}
@@ -110,20 +127,34 @@
         type="button"
         class="fixed inset-0 z-65 cursor-default"
         onclick={close}
-        aria-label="Close accessibility settings"></button>
+        aria-label="Close accessibility selector"></button>
 
       <div
+        role="dialog"
+        aria-labelledby="a11y-settings-heading"
         class={cn(
-          'absolute right-0 z-70 flex w-64 max-w-[calc(100vw-1.5rem)] flex-col gap-2.5 rounded-sm glass-overlay p-3 shadow-xl',
+          'absolute right-0 z-70 flex w-72 max-w-[calc(100vw-1.5rem)] flex-col rounded-sm glass-overlay p-4 shadow-xl',
           dropdownDirection === 'up' ?
             'bottom-[calc(100%+8px)]'
           : 'top-[calc(100%+8px)]'
         )}>
-        <div class="relative z-10 flex flex-col gap-2.5">
-          <p
-            class="text-2xs font-semibold tracking-wider text-text-muted uppercase"
-            id="a11y-settings-heading">
-            Accessibility
+        <div class="relative z-10 flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <span
+              id="a11y-settings-heading"
+              class="text-xs font-bold tracking-tight text-text-primary">
+              Accessibility
+            </span>
+            <button
+              type="button"
+              onclick={a11yStore.reset}
+              class="cursor-pointer text-2xs font-medium text-text-secondary transition-colors hover:text-copilot">
+              Reset
+            </button>
+          </div>
+
+          <p class="text-3xs text-text-muted">
+            Customize display preferences for improved accessibility.
           </p>
 
           <div
@@ -133,9 +164,7 @@
             {#each toggles as item (item.key)}
               {@const checked = a11yStore.current[item.key]}
               <div class="flex items-center justify-between gap-2">
-                <span
-                  class="truncate text-xs font-semibold text-text-primary"
-                  title={item.description}>
+                <span class="truncate text-xs font-semibold text-text-primary">
                   {item.label}
                 </span>
                 <button

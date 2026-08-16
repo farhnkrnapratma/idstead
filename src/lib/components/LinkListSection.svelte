@@ -1,4 +1,3 @@
-<!-- @format -->
 <script lang="ts">
   import ListRow from './ListRow.svelte'
   import Card from './Card.svelte'
@@ -11,7 +10,7 @@
     value: string
     shortValue?: string
     href: string
-    icon: string
+    icon?: string
     color?: string
   }
 
@@ -19,7 +18,6 @@
     title,
     subtitle,
     items,
-    emptyIcon = 'bi-inbox',
     emptyTitle = 'Nothing here yet',
     emptyDescription = 'Check back soon.',
     class: className = ''
@@ -27,7 +25,6 @@
     title: string
     subtitle: string
     items: ListItem[]
-    emptyIcon?: string
     emptyTitle?: string
     emptyDescription?: string
     class?: string
@@ -46,7 +43,6 @@
   {#if items.length === 0}
     <div class="mt-8">
       <EmptyState
-        icon={emptyIcon}
         title={emptyTitle}
         description={emptyDescription} />
     </div>
@@ -59,9 +55,7 @@
           title={item.label}
           href={item.href}
           target="_blank"
-          rel="noopener noreferrer"
-          icon={item.icon}
-          iconColor={item.color || 'text-text-secondary'}>
+          rel="noopener noreferrer">
           <span
             class="hidden truncate font-mono text-xs font-light text-text-secondary sm:inline">
             {item.value}

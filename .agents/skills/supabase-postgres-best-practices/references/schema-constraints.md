@@ -5,8 +5,6 @@ impactDescription: Prevents migration failures and enables idempotent schema cha
 tags: constraints, migrations, schema, alter-table
 ---
 
-<!-- @format -->
-
 ## Add Constraints Safely in Migrations
 
 PostgreSQL does not support `ADD CONSTRAINT IF NOT EXISTS`. Migrations using this syntax will fail.

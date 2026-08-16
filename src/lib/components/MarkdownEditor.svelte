@@ -1,6 +1,27 @@
-<!-- @format -->
 <script lang="ts">
   import {onMount, tick} from 'svelte'
+  import {
+    Heading1,
+    Heading2,
+    Heading3,
+    Bold,
+    Italic,
+    Underline,
+    Strikethrough,
+    Code,
+    Image as ImageIcon,
+    Link2 as LinkIcon,
+    ListOrdered,
+    List,
+    ListTodo,
+    Quote,
+    SquareCode,
+    Table as TableIcon,
+    Minus,
+    Indent,
+    ChevronDown,
+    Check
+  } from '@lucide/svelte'
   import {renderMarkdown} from '$lib/markdown'
   import {
     enhanceCodeBlocks,
@@ -232,7 +253,6 @@
         insertMarkdown(`![${file.name.replace(/\.[^/.]+$/, '')}](${url})`)
       }
     } catch {
-      // handled by parent caller
     } finally {
       input.value = ''
     }
@@ -250,7 +270,6 @@
     aria-hidden="true">
   </div>
 
-  <!-- Header Bar: Tab Switcher + Autosave + Configuration Dropdowns -->
   <div
     class="sticky {stickyTopClass} z-30 flex items-center border-b border-border-subtle bg-surface-card px-4 py-2.5 shadow-2xs transition-[border-radius,box-shadow] duration-150 select-none {(
       isHeaderStuck
@@ -312,16 +331,13 @@
               </span>
             {:else}
               <span class="inline-flex items-center gap-1.5">
-                <i
-                  class="bi bi-cloud-check text-[13px] text-text-muted"
-                  aria-hidden="true"></i>
+                <Check class="size-3.5 text-copilot" />
                 Saved
               </span>
             {/if}
           </div>
         {/if}
 
-        <!-- Indent Mode Dropdown -->
         <div class="relative">
           <button
             type="button"
@@ -340,7 +356,7 @@
               ) ?
                 'rotate-180'
               : ''}">
-              <i class="bi bi-chevron-down text-[9px] leading-none"></i>
+              <ChevronDown class="size-3 leading-none" />
             </span>
           </button>
           {#if indentModeDropdownOpen}
@@ -362,7 +378,7 @@
                   class="flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-left text-xs text-text-primary transition-colors hover:bg-surface-hover">
                   <span>{mode === 'spaces' ? 'Spaces' : 'Tabs'}</span>
                   {#if indentMode === mode}
-                    <i class="bi bi-check text-copilot"></i>
+                    <Check class="size-3.5 text-copilot" />
                   {/if}
                 </button>
               {/each}
@@ -370,7 +386,6 @@
           {/if}
         </div>
 
-        <!-- Indent Size Dropdown -->
         <div class="relative">
           <button
             type="button"
@@ -389,7 +404,7 @@
               ) ?
                 'rotate-180'
               : ''}">
-              <i class="bi bi-chevron-down text-[9px] leading-none"></i>
+              <ChevronDown class="size-3 leading-none" />
             </span>
           </button>
           {#if indentSizeDropdownOpen}
@@ -411,7 +426,7 @@
                   class="flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-left text-xs text-text-primary transition-colors hover:bg-surface-hover">
                   <span>{size}</span>
                   {#if indentSize === size}
-                    <i class="bi bi-check text-copilot"></i>
+                    <Check class="size-3.5 text-copilot" />
                   {/if}
                 </button>
               {/each}
@@ -419,7 +434,6 @@
           {/if}
         </div>
 
-        <!-- Wrap Mode Dropdown -->
         <div class="relative">
           <button
             type="button"
@@ -438,7 +452,7 @@
               ) ?
                 'rotate-180'
               : ''}">
-              <i class="bi bi-chevron-down text-[9px] leading-none"></i>
+              <ChevronDown class="size-3 leading-none" />
             </span>
           </button>
           {#if wrapModeDropdownOpen}
@@ -460,7 +474,7 @@
                   class="flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-left text-xs text-text-primary transition-colors hover:bg-surface-hover">
                   <span>{mode === 'soft' ? 'Soft wrap' : 'No wrap'}</span>
                   {#if lineWrapMode === mode}
-                    <i class="bi bi-check text-copilot"></i>
+                    <Check class="size-3.5 text-copilot" />
                   {/if}
                 </button>
               {/each}
@@ -471,7 +485,6 @@
     {/if}
   </div>
 
-  <!-- Content Area -->
   <div
     class="bg-surface-base"
     style={minHeight ? `min-height: ${minHeight};` : ''}>
@@ -522,7 +535,7 @@
             onkeyup={updateCursorPosition}
             onfocus={updateCursorPosition}
             onkeydown={handleTextareaKeyDown}
-            class="editor-textarea relative m-0! box-border! w-full! resize-none! overflow-y-hidden! border-0! bg-transparent pt-5! pr-5! pb-5! pl-4! text-transparent caret-text-primary focus:border-transparent! focus:shadow-none! focus:ring-0 focus:outline-none {(
+            class="editor-textarea relative m-0! box-border! w-full! resize-none! overflow-y-hidden! border-0! bg-transparent pt-5! pr-5! pb-5! pl-4! text-transparent caret-text-primary placeholder:text-text-muted/60 focus:border-transparent! focus:shadow-none! focus:ring-0 focus:outline-none {(
               lineWrapMode === 'soft'
             ) ?
               'overflow-x-hidden! break-normal! wrap-break-word! whitespace-pre-wrap!'
@@ -540,7 +553,6 @@
     {/if}
   </div>
 
-  <!-- Bottom Toolbar & Status Bar -->
   {#if activeTab === 'editor'}
     <div
       class="sticky bottom-0 z-30 flex flex-wrap items-center justify-between border-t border-border-subtle bg-surface-card px-3 py-1.5 text-xs text-text-secondary shadow-2xs transition-[border-radius,box-shadow] duration-150 select-none {(
@@ -552,30 +564,26 @@
         class="flex items-center gap-1"
         role="toolbar"
         aria-label="Formatting tools">
-        {#each [{action: () => insertMarkdown('# '), icon: 'bi-type-h1', label: 'H1 heading'}, {action: () => insertMarkdown('## '), icon: 'bi-type-h2', label: 'H2 heading'}, {action: () => insertMarkdown('### '), icon: 'bi-type-h3', label: 'H3 heading'}] as const as item (item.icon)}
+        {#each [{action: () => insertMarkdown('# '), icon: Heading1, label: 'H1 heading'}, {action: () => insertMarkdown('## '), icon: Heading2, label: 'H2 heading'}, {action: () => insertMarkdown('### '), icon: Heading3, label: 'H3 heading'}] as const as item (item.label)}
           <button
             type="button"
             onclick={item.action}
             aria-label={item.label}
             class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
-            <i
-              class="bi {item.icon} text-base"
-              aria-hidden="true"></i>
+            <item.icon class="size-4" />
           </button>
         {/each}
         <div
           class="mx-1 h-4 w-px bg-border-subtle"
           aria-hidden="true">
         </div>
-        {#each [{action: () => insertMarkdown('**', '**'), icon: 'bi-type-bold', label: 'Bold'}, {action: () => insertMarkdown('*', '*'), icon: 'bi-type-italic', label: 'Italic'}, {action: () => insertMarkdown('<u>', '</u>'), icon: 'bi-type-underline', label: 'Underline'}, {action: () => insertMarkdown('~~', '~~'), icon: 'bi-type-strikethrough', label: 'Strikethrough'}, {action: () => insertMarkdown('`', '`'), icon: 'bi-code', label: 'Inline code'}] as const as item (item.icon)}
+        {#each [{action: () => insertMarkdown('**', '**'), icon: Bold, label: 'Bold'}, {action: () => insertMarkdown('*', '*'), icon: Italic, label: 'Italic'}, {action: () => insertMarkdown('<u>', '</u>'), icon: Underline, label: 'Underline'}, {action: () => insertMarkdown('~~', '~~'), icon: Strikethrough, label: 'Strikethrough'}, {action: () => insertMarkdown('`', '`'), icon: Code, label: 'Inline code'}] as const as item (item.label)}
           <button
             type="button"
             onclick={item.action}
             aria-label={item.label}
             class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
-            <i
-              class="bi {item.icon} text-base"
-              aria-hidden="true"></i>
+            <item.icon class="size-4" />
           </button>
         {/each}
         <div
@@ -587,9 +595,7 @@
           onclick={handleImageClick}
           aria-label="Insert image"
           class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
-          <i
-            class="bi bi-image-fill text-base"
-            aria-hidden="true"></i>
+          <ImageIcon class="size-4" />
         </button>
         <input
           type="file"
@@ -598,30 +604,26 @@
           onchange={handleFileSelected}
           class="hidden"
           aria-label="Upload image file" />
-        {#each [{action: () => insertMarkdown('[', '](url)'), icon: 'bi-link', label: 'Insert link'}, {action: () => insertMarkdown('1. '), icon: 'bi-list-ol', label: 'Numbered list'}, {action: () => insertMarkdown('- '), icon: 'bi-list-ul', label: 'Bulleted list'}, {action: () => insertMarkdown('- [ ] '), icon: 'bi-check2-square', label: 'Task list'}, {action: () => insertMarkdown('> '), icon: 'bi-quote', label: 'Blockquote'}] as const as item (item.icon)}
+        {#each [{action: () => insertMarkdown('[', '](url)'), icon: LinkIcon, label: 'Insert link'}, {action: () => insertMarkdown('1. '), icon: ListOrdered, label: 'Numbered list'}, {action: () => insertMarkdown('- '), icon: List, label: 'Bulleted list'}, {action: () => insertMarkdown('- [ ] '), icon: ListTodo, label: 'Task list'}, {action: () => insertMarkdown('> '), icon: Quote, label: 'Blockquote'}] as const as item (item.label)}
           <button
             type="button"
             onclick={item.action}
             aria-label={item.label}
             class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
-            <i
-              class="bi {item.icon} text-base"
-              aria-hidden="true"></i>
+            <item.icon class="size-4" />
           </button>
         {/each}
         <div
           class="mx-1 h-4 w-px bg-border-subtle"
           aria-hidden="true">
         </div>
-        {#each [{action: () => insertMarkdown('```\n', '\n```'), icon: 'bi-code-square', label: 'Code block'}, {action: () => insertMarkdown('| Header 1 | Header 2 |\n|----------|----------|\n|  Cell 1  |  Cell 2  |\n'), icon: 'bi-table', label: 'Add table'}, {action: () => insertMarkdown('\n---\n'), icon: 'bi-hr', label: 'Horizontal line'}] as const as item (item.icon)}
+        {#each [{action: () => insertMarkdown('```\n', '\n```'), icon: SquareCode, label: 'Code block'}, {action: () => insertMarkdown('| Header 1 | Header 2 |\n|----------|----------|\n|  Cell 1  |  Cell 2  |\n'), icon: TableIcon, label: 'Add table'}, {action: () => insertMarkdown('\n---\n'), icon: Minus, label: 'Horizontal line'}] as const as item (item.label)}
           <button
             type="button"
             onclick={item.action}
             aria-label={item.label}
             class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
-            <i
-              class="bi {item.icon} text-base"
-              aria-hidden="true"></i>
+            <item.icon class="size-4" />
           </button>
         {/each}
       </div>
@@ -631,23 +633,12 @@
           >{currentLine}:{currentColumn}</span>
         <span
           class="flex items-center gap-1 text-[12.5px] font-semibold tracking-wide">
-          <i
-            class="bi bi-indent text-[14px]"
-            aria-hidden="true"></i>
+          <Indent class="size-3.5" />
           {indentSize}
         </span>
         <span class="text-[12.5px] font-semibold tracking-wide">UTF-8</span>
         <span class="text-[12.5px] font-semibold tracking-wide"
           >{lineEnding}</span>
-        <span class="group relative flex cursor-help items-center">
-          <i
-            class="bi bi-markdown-fill text-[16px]"
-            aria-label="Markdown formatting supported"></i>
-          <span
-            class="absolute right-0 bottom-full mb-1.5 hidden rounded-sm border border-border-subtle bg-surface-elevated px-2 py-1 font-sans text-[10px] whitespace-nowrap text-text-primary shadow-md group-hover:block">
-            Markdown formatting is supported
-          </span>
-        </span>
       </div>
     </div>
   {/if}
@@ -677,6 +668,13 @@
 
   .editor-textarea {
     @apply m-0! box-border! border-0! outline-hidden!;
+    background-color: transparent !important;
+    background: transparent !important;
+    caret-color: var(--color-text-primary) !important;
+  }
+
+  .editor-pre {
+    color: var(--color-text-primary) !important;
   }
 
   .editor-textarea:focus-visible {
@@ -739,7 +737,7 @@
   }
 
   .prose-custom :global(pre) {
-    @apply mt-6 mb-6 [scrollbar-width:none]! overflow-x-auto rounded-sm border border-adwaita-border bg-adwaita-hover px-3! py-2! font-mono text-[0.8rem] leading-relaxed break-normal! whitespace-pre! [-ms-overflow-style:none]!;
+    @apply mt-6 mb-6 [scrollbar-width:none]! overflow-x-auto rounded-sm border border-border-subtle bg-surface-hover px-3! py-2! font-mono text-[0.8rem] leading-relaxed break-normal! whitespace-pre! [-ms-overflow-style:none]!;
   }
 
   .prose-custom :global(pre[data-enhanced='true']) {
@@ -751,7 +749,7 @@
   }
 
   .prose-custom :global(code:not(pre code)) {
-    @apply rounded bg-adwaita-hover px-1 py-px font-mono text-xs font-normal text-inherit;
+    @apply rounded bg-surface-hover px-1 py-px font-mono text-xs font-normal text-inherit;
     overflow-wrap: break-word;
     word-break: break-word;
   }
@@ -777,14 +775,14 @@
   }
 
   .prose-custom :global(a.anchor-link) {
-    @apply ml-[0.35rem]! inline-flex! items-center! justify-center! align-middle! leading-none! whitespace-nowrap! text-adwaita-text! no-underline! transition-none!;
+    @apply ml-[0.35rem]! inline-flex! items-center! justify-center! align-middle! leading-none! whitespace-nowrap! text-text-primary! no-underline! transition-none!;
   }
 
   :global(:root.dark) .prose-custom :global(a.anchor-link) {
     @apply text-gh-gray-4!;
   }
 
-  .prose-custom :global(a.anchor-link .bi) {
+  .prose-custom :global(a.anchor-link svg) {
     @apply inline-block! align-middle! text-[0.85em]! leading-none! text-inherit! no-underline!;
   }
 
@@ -819,20 +817,20 @@
   :global(:root.dark) .prose-custom :global(h5:hover a.anchor-link),
   :global(:root.dark) .prose-custom :global(h6:hover a.anchor-link),
   :global(:root.dark) .prose-custom :global(a.anchor-link):hover,
-  .prose-custom :global(h1:hover a.anchor-link .bi),
-  .prose-custom :global(h2:hover a.anchor-link .bi),
-  .prose-custom :global(h3:hover a.anchor-link .bi),
-  .prose-custom :global(h4:hover a.anchor-link .bi),
-  .prose-custom :global(h5:hover a.anchor-link .bi),
-  .prose-custom :global(h6:hover a.anchor-link .bi),
-  .prose-custom :global(a.anchor-link):hover :global(.bi),
-  :global(:root.dark) .prose-custom :global(h1:hover a.anchor-link .bi),
-  :global(:root.dark) .prose-custom :global(h2:hover a.anchor-link .bi),
-  :global(:root.dark) .prose-custom :global(h3:hover a.anchor-link .bi),
-  :global(:root.dark) .prose-custom :global(h4:hover a.anchor-link .bi),
-  :global(:root.dark) .prose-custom :global(h5:hover a.anchor-link .bi),
-  :global(:root.dark) .prose-custom :global(h6:hover a.anchor-link .bi),
-  :global(:root.dark) .prose-custom :global(a.anchor-link):hover :global(.bi) {
+  .prose-custom :global(h1:hover a.anchor-link svg),
+  .prose-custom :global(h2:hover a.anchor-link svg),
+  .prose-custom :global(h3:hover a.anchor-link svg),
+  .prose-custom :global(h4:hover a.anchor-link svg),
+  .prose-custom :global(h5:hover a.anchor-link svg),
+  .prose-custom :global(h6:hover a.anchor-link svg),
+  .prose-custom :global(a.anchor-link):hover :global(svg),
+  :global(:root.dark) .prose-custom :global(h1:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(h2:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(h3:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(h4:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(h5:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(h6:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(a.anchor-link):hover :global(svg) {
     @apply text-copilot! no-underline! opacity-100;
   }
 
@@ -909,8 +907,8 @@
     flex-shrink: 0;
     cursor: pointer;
     border-radius: 0.25rem;
-    border: 1px solid var(--color-border-subtle, #30363d);
-    background-color: var(--color-surface-base, #0d1117);
+    border: 1px solid var(--color-border-subtle);
+    background-color: var(--color-surface-base);
     display: inline-grid;
     place-content: center;
     margin: 0;
@@ -921,8 +919,8 @@
   }
 
   .prose-custom :global(input[type='checkbox']:checked) {
-    background-color: var(--color-copilot, #8534f3) !important;
-    border-color: var(--color-copilot, #8534f3) !important;
+    background-color: var(--color-copilot) !important;
+    border-color: var(--color-copilot) !important;
   }
 
   .prose-custom :global(input[type='checkbox']:checked::before) {

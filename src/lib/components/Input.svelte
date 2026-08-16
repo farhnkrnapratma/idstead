@@ -1,4 +1,3 @@
-<!-- @format -->
 <script lang="ts">
   import type {Snippet} from 'svelte'
   import type {HTMLInputAttributes} from 'svelte/elements'
@@ -56,7 +55,7 @@
     bind:value
     {disabled}
     class={cn(
-      'border border-border-subtle/70 bg-surface-card/50 text-text-primary backdrop-blur-md transition-colors placeholder:text-text-secondary/70 focus:border-copilot focus:bg-surface-card/75 focus:ring-2 focus:ring-copilot/20 focus:outline-none disabled:cursor-not-allowed disabled:border-border-subtle/30 disabled:bg-surface-card/20 disabled:opacity-50 disabled:backdrop-blur-none dark:border-white/10 dark:bg-surface-card/35 dark:focus:bg-surface-card/60',
+      'border border-border-subtle/70 bg-surface-card/85 text-text-primary backdrop-blur-xs transition-colors placeholder:text-text-secondary/70 focus:border-copilot focus:bg-surface-card focus:ring-2 focus:ring-copilot/20 focus:outline-none disabled:cursor-not-allowed disabled:border-border-subtle/30 disabled:bg-surface-card/20 disabled:opacity-50 disabled:backdrop-blur-none dark:border-white/10 dark:bg-surface-card/70 dark:focus:bg-surface-card/90',
       fullWidth ? 'w-full' : '',
       sizeStyles[size],
       leadingIcon || leadingSlot ? 'pl-9' : '',

@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # Reconnaissance
 
 ### Phase 1: Understand the application

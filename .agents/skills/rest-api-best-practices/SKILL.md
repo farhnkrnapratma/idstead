@@ -3,8 +3,6 @@ name: rest-api-best-practices
 description: Reference guide for designing, reviewing, or refactoring REST APIs — resource naming, HTTP methods, status codes, error formats, versioning, pagination, filtering, authentication, idempotency, CORS, documentation, and observability. Use this skill whenever the user is designing a new REST API, adding endpoints to an existing one, reviewing API design for consistency, writing API documentation, debugging inconsistent status codes or error responses, or asks "is this good REST API design" — even if they don't say "REST" or "API best practices" explicitly. Also trigger for questions about endpoint naming, HTTP verb choice, pagination strategy, API versioning strategy, or error response structure.
 ---
 
-<!-- @format -->
-
 # REST API Best Practices
 
 Source: Postman Team, "REST API Best Practices: A Developer's Guide to Building Reliable APIs" (Dec 2025). Adapted as an operational checklist for designing and reviewing APIs.

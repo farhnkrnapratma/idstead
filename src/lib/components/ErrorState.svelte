@@ -1,14 +1,13 @@
-<!-- @format -->
 <script lang="ts">
+  import type {Snippet} from 'svelte'
+  import {AlertTriangle, RotateCw} from '@lucide/svelte'
   import Button from './Button.svelte'
   import ShinyText from './ShinyText.svelte'
   import {cn} from '../utils/cn'
-  import type {Snippet} from 'svelte'
 
   interface Props {
     title?: string
     description?: string
-    icon?: string
     code?: string | number
     size?: 'inline' | 'page'
     onRetry?: () => void
@@ -20,7 +19,6 @@
   let {
     title = 'Something went wrong',
     description = 'We encountered an unexpected error while loading this content.',
-    icon = 'bi-exclamation-triangle',
     code,
     size = 'inline',
     onRetry,
@@ -66,10 +64,12 @@
     {:else if onRetry}
       <div class="mt-10">
         <Button
-          type="Secondary"
+          type="secondary"
           size="md"
-          leadingIcon="bi-arrow-clockwise"
           onclick={onRetry}>
+          {#snippet leading()}
+            <RotateCw class="size-4" />
+          {/snippet}
           {retryLabel}
         </Button>
       </div>
@@ -85,9 +85,7 @@
     )}>
     <div
       class="mb-3 flex h-12 w-12 items-center justify-center rounded-sm bg-danger-subtle/30 text-danger">
-      <i
-        class="bi {icon} text-2xl"
-        aria-hidden="true"></i>
+      <AlertTriangle class="size-6" />
     </div>
     <h3 class="text-sm font-bold text-text-primary">{title}</h3>
     {#if description}
@@ -97,10 +95,12 @@
     {#if onRetry}
       <div class="mt-4">
         <Button
-          type="Secondary"
+          type="secondary"
           size="sm"
-          leadingIcon="bi-arrow-clockwise"
           onclick={onRetry}>
+          {#snippet leading()}
+            <RotateCw class="size-3.5" />
+          {/snippet}
           {retryLabel}
         </Button>
       </div>

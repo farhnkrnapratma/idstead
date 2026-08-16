@@ -1,4 +1,3 @@
-/** @format */
 import {supabase} from '../supabase'
 import type {LegalPageData} from '../legalDefaults'
 

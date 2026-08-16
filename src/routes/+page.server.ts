@@ -1,11 +1,10 @@
-/** @format */
-
 import {env as privateEnv} from '$env/dynamic/private'
 import {S3Client, ListObjectsV2Command} from '@aws-sdk/client-s3'
 import {supabase} from '$lib/supabase'
 import type {PageServerLoad} from './$types'
 import type {Project, ProjectLanguage} from '$lib/types'
 import {getLanguageColor} from '$lib/utils/githubLanguageColors'
+import {decodeHtmlEntities} from '$lib/utils/formatters'
 import {
   fetchAuthorProfileWithSocials,
   fetchCvEntries,
@@ -336,6 +335,10 @@ export const load: PageServerLoad = async ({fetch, platform, locals}) => {
 
           return {
             ...post,
+            tags:
+              Array.isArray(post.tags) ?
+                post.tags.map(decodeHtmlEntities)
+              : post.tags,
             read_time: readTime,
             comment_count: commentCount,
             views_count: viewsCount

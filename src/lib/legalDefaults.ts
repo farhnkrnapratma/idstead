@@ -1,4 +1,3 @@
-/** @format */
 export interface LegalPageData {
   slug: string
   title: string

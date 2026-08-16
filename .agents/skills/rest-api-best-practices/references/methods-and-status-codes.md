@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # Resource Naming, HTTP Methods, and Status Codes
 
 ## Resource naming

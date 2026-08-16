@@ -1,5 +1,5 @@
-<!-- @format -->
 <script lang="ts">
+  import {FileCheck2, UploadCloud, AlertCircle} from '@lucide/svelte'
   import {cn} from '../utils/cn'
 
   interface Props {
@@ -126,9 +126,7 @@
         {uploadingLabel}
       </p>
     {:else if selectedFileName}
-      <i
-        class="bi bi-file-earmark-check-fill text-2xl text-copilot"
-        aria-hidden="true"></i>
+      <FileCheck2 class="size-8 text-copilot" />
       <p
         class="max-w-full truncate font-mono text-sm font-semibold text-text-primary">
         {selectedFileName}
@@ -146,9 +144,8 @@
         Remove
       </button>
     {:else}
-      <i
-        class="bi bi-cloud-arrow-up text-2xl text-text-secondary transition-colors group-hover:text-copilot"
-        aria-hidden="true"></i>
+      <UploadCloud
+        class="size-8 text-text-secondary transition-colors group-hover:text-copilot" />
       <span class="text-sm font-medium text-text-primary">{label}</span>
       {#if hint}
         <span class="text-xs text-text-muted">{hint}</span>
@@ -160,9 +157,7 @@
     <span
       role="alert"
       class="mt-1 flex items-center gap-1 text-xxs font-medium text-danger">
-      <i
-        class="bi bi-exclamation-circle-fill"
-        aria-hidden="true"></i>
+      <AlertCircle class="size-3 shrink-0" />
       {error}
     </span>
   {/if}

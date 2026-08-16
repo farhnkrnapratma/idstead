@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # Definisi Operasional Change Type
 
 Setiap Change Type mendefinisikan **kontrak perilaku** agent: apa yang boleh disentuh, apa yang terlarang, dan bagaimana keberhasilan dibuktikan.

@@ -1,18 +1,17 @@
-<!-- @format -->
 <script lang="ts">
   import type {Snippet} from 'svelte'
   import type {HTMLButtonAttributes} from 'svelte/elements'
   import {cn} from '../utils/cn'
 
   interface Props extends Omit<HTMLButtonAttributes, 'type'> {
-    type?: 'Primary' | 'Danger' | 'Outline' | 'Ghost' | 'Secondary' | 'Tertiary'
-    tone?: 'Neutral' | 'Critical'
+    type?: 'primary' | 'danger' | 'outline' | 'ghost' | 'secondary' | 'tertiary'
+    tone?: 'neutral' | 'critical'
     htmlType?: 'button' | 'submit' | 'reset'
     size?: 'sm' | 'md' | 'lg'
     isLoading?: boolean
     fullWidth?: boolean
-    leadingIcon?: string
-    trailingIcon?: string
+    leading?: Snippet
+    trailing?: Snippet
     showEscHint?: boolean
     href?: string
     target?: string
@@ -22,15 +21,15 @@
   }
 
   let {
-    type = 'Primary',
-    tone = 'Neutral',
+    type = 'primary',
+    tone = 'neutral',
     htmlType = 'button',
     size = 'md',
     isLoading = false,
     disabled = false,
     fullWidth = false,
-    leadingIcon = '',
-    trailingIcon = '',
+    leading,
+    trailing,
     showEscHint = false,
     href = '',
     target,
@@ -45,32 +44,32 @@
     'inline-flex items-center justify-center font-semibold whitespace-nowrap transition-all cursor-pointer select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50 disabled:cursor-not-allowed'
 
   const typeToneStyles: Record<string, string> = {
-    'Primary:Neutral':
-      'bg-solid-neutral text-text-on-accent hover:bg-solid-neutral-hover active:bg-solid-neutral-active disabled:hover:bg-solid-neutral disabled:active:bg-solid-neutral shadow-xs',
-    'Primary:Critical':
+    'primary:neutral':
+      'bg-copilot text-text-on-accent hover:bg-copilot-hover active:bg-copilot-active disabled:hover:bg-copilot disabled:active:bg-copilot shadow-xs',
+    'primary:critical':
       'bg-danger text-text-on-accent hover:bg-danger-hover active:bg-danger-hover disabled:hover:bg-danger shadow-xs',
-    'Secondary:Neutral':
-      'border border-border-subtle/70 bg-surface-card/55 text-text-primary shadow-xs backdrop-blur-sm hover:bg-surface-card/85 hover:border-copilot disabled:hover:bg-surface-card/55 disabled:hover:border-border-subtle/70 dark:border-white/10 dark:bg-surface-card/40 dark:hover:bg-surface-card/65',
-    'Secondary:Critical':
+    'secondary:neutral':
+      'glass-button hover:border-copilot disabled:hover:border-border-subtle/70',
+    'secondary:critical':
       'border border-danger/30 bg-surface-card/55 text-danger shadow-xs backdrop-blur-sm hover:bg-danger-subtle/40 hover:border-danger/50 disabled:hover:bg-surface-card/55 dark:bg-surface-card/40 dark:hover:bg-danger-subtle/30',
-    'Tertiary:Neutral':
+    'tertiary:neutral':
       'border border-border-default/60 bg-surface-subtle text-text-secondary hover:bg-surface-hover hover:text-text-primary hover:border-border-default disabled:hover:bg-surface-subtle font-bold dark:bg-surface-subtle/40 dark:hover:bg-surface-hover',
-    'Tertiary:Critical':
+    'tertiary:critical':
       'border border-danger/30 bg-danger-subtle/70 text-danger hover:bg-danger-subtle disabled:hover:bg-danger-subtle/70 dark:bg-danger-subtle/40',
-    'Outline:Neutral':
+    'outline:neutral':
       'border border-border-default bg-transparent text-text-primary hover:bg-surface-hover hover:border-border-strong disabled:hover:bg-transparent disabled:hover:border-border-default dark:hover:bg-surface-hover',
-    'Outline:Critical':
+    'outline:critical':
       'border border-danger bg-transparent text-danger hover:bg-danger-subtle disabled:hover:bg-transparent',
-    'Ghost:Neutral':
+    'ghost:neutral':
       'text-text-secondary hover:text-text-primary hover:bg-surface-hover disabled:hover:text-text-secondary disabled:hover:bg-transparent',
-    'Ghost:Critical':
+    'ghost:critical':
       'text-danger hover:text-danger-hover hover:bg-danger-subtle disabled:hover:text-danger disabled:hover:bg-transparent',
-    'Danger:Critical':
+    'danger:critical':
       'border border-danger/30 bg-danger-subtle/70 text-danger backdrop-blur-sm hover:bg-danger hover:text-text-on-accent disabled:hover:bg-danger-subtle/70 shadow-xs dark:bg-danger-subtle/40 dark:hover:bg-danger'
   }
 
   const styleKey = $derived(
-    type === 'Danger' ? 'Danger:Critical' : `${type}:${tone}`
+    type === 'danger' ? 'danger:critical' : `${type}:${tone}`
   )
 
   const sizeStyles = {
@@ -85,7 +84,11 @@
   href={href || undefined}
   {target}
   {rel}
-  download={href ? download : undefined}
+  download={href ?
+    download === true ?
+      ''
+    : download
+  : undefined}
   type={href ? undefined : htmlType}
   disabled={href ? undefined : disabled || isLoading}
   aria-disabled={href && (disabled || isLoading) ? 'true' : undefined}
@@ -115,18 +118,14 @@
         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
       ></path>
     </svg>
-  {:else if leadingIcon}
-    <i
-      class="bi {leadingIcon} inline-flex items-center text-sm leading-none"
-      aria-hidden="true"></i>
+  {:else if leading}
+    {@render leading()}
   {/if}
 
   {@render children?.()}
 
-  {#if trailingIcon && !isLoading}
-    <i
-      class="bi {trailingIcon} inline-flex items-center text-sm leading-none"
-      aria-hidden="true"></i>
+  {#if trailing && !isLoading}
+    {@render trailing()}
   {/if}
 
   {#if showEscHint && !isLoading}

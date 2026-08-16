@@ -5,8 +5,6 @@ impactDescription: 10-100x faster JSONB queries with proper indexing
 tags: jsonb, gin, indexes, json
 ---
 
-<!-- @format -->
-
 ## Index JSONB Columns for Efficient Querying
 
 JSONB queries without indexes scan the entire table. Use GIN indexes for containment queries.

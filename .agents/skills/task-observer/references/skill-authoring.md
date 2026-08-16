@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # Skill Authoring — taxonomy, licensing, confidentiality, editing rules
 
 Load this before creating any skill or making substantial changes to one.

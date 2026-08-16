@@ -1,5 +1,3 @@
-/** @format */
-
 type PlatformEnv = {env?: {TURNSTILE_SECRET?: string}}
 
 interface SiteverifyResponse {

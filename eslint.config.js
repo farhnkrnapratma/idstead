@@ -1,5 +1,3 @@
-/** @format */
-
 import path from 'node:path'
 import globals from 'globals'
 import js from '@eslint/js'
@@ -37,7 +35,8 @@ export default defineConfig(
       'svelte/no-navigation-without-resolve': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/no-require-imports': 'off'
+      '@typescript-eslint/no-require-imports': 'off',
+      'no-empty': ['error', {allowEmptyCatch: true}]
     }
   }
 )

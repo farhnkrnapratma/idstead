@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # fkp.my.id — Public REST API (v1)
 
 Public, read-only endpoints documentation for this website ([fkp.my.id](https://fkp.my.id)), served under `/api/v1/`. No authentication required for anything below. This document is also served live at `GET /api/v1` as `text/markdown`. Full machine-readable spec: `/.well-known/openapi.json` / `/.well-known/openapi.yaml`.

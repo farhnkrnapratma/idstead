@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # Environments, Activation Setup, and Handoff-Doc Mode
 
 Load this for setup questions, compaction/resume behaviour, or when running in an environment without filesystem access.

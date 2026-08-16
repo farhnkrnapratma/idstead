@@ -1,4 +1,3 @@
-<!-- @format -->
 <script lang="ts">
   import {onMount} from 'svelte'
   import {Renderer, Program, Mesh, Triangle} from 'ogl'
@@ -337,9 +336,7 @@ void main() {
       canvas.removeEventListener('pointerleave', onPointerLeave)
       try {
         container.removeChild(canvas)
-      } catch {
-        // Empty block statement no-empty
-      }
+      } catch {}
       gl.getExtension('WEBGL_lose_context')?.loseContext()
       tryStartLoop = undefined
       tryStopLoop = undefined

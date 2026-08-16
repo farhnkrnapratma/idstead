@@ -1,5 +1,3 @@
-/** @format */
-
 import type {RequestHandler} from './$types'
 import {supabase} from '$lib/supabase'
 import {fetchActiveCvDocument} from '$lib/author'
@@ -57,5 +55,5 @@ export const GET: RequestHandler = async ({fetch, locals, url}) => {
     console.error('Failed to proxy CV PDF:', err)
   }
 
-  return Response.redirect(pdfUrl, 302)
+  return apiError(502, 'CV_FETCH_FAILED', 'Failed to fetch CV file.')
 }

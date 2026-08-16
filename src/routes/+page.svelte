@@ -1,8 +1,29 @@
-<!-- @format -->
 <script lang="ts">
   import {PUBLIC_CDN_BASE_URL} from '$env/static/public'
   import {onMount, tick} from 'svelte'
   import type {Snippet} from 'svelte'
+  import {
+    Award,
+    GitFork,
+    Astroid,
+    Clock,
+    GitBranch,
+    Activity,
+    Code,
+    Terminal,
+    Copy,
+    FolderArchive,
+    Share2,
+    Link2 as LinkIcon,
+    Hash,
+    Image as ImageIcon,
+    ArrowRight,
+    Heart,
+    Rss,
+    Menu,
+    X,
+    Download
+  } from '@lucide/svelte'
   import {isNameReserved} from '$lib/utils/nameValidator'
   import {
     LinkListSection,
@@ -37,6 +58,7 @@
     formatCommentCount,
     formatViewCount,
     formatAbsoluteDate,
+    decodeHtmlEntities,
     Section,
     PageContainer,
     LogoLoop,
@@ -44,7 +66,7 @@
   } from '$lib'
   import {supabase} from '$lib/supabase'
   import {SvelteSet} from 'svelte/reactivity'
-  import {formatMonthAbbrev, decodeHtmlEntities} from '$lib/author'
+  import {formatMonthAbbrev} from '$lib/author'
   import {themeStore} from '$lib/stores/themeStore.svelte'
   import {a11yStore} from '$lib/stores/a11yStore.svelte'
   import AccessibilitySelect from '$lib/components/filter/AccessibilitySelect.svelte'
@@ -148,6 +170,26 @@
   ]
 
   const posts = $derived(data.posts || [])
+
+  function handleCvDownload(e: MouseEvent) {
+    e.preventDefault()
+
+    const pdfAnchor = document.createElement('a')
+    pdfAnchor.href = '/api/v1/cv?download=1'
+    pdfAnchor.download = ''
+    document.body.appendChild(pdfAnchor)
+    pdfAnchor.click()
+    document.body.removeChild(pdfAnchor)
+
+    setTimeout(() => {
+      const checksumAnchor = document.createElement('a')
+      checksumAnchor.href = '/api/v1/cv?checksum=1'
+      checksumAnchor.download = ''
+      document.body.appendChild(checksumAnchor)
+      checksumAnchor.click()
+      document.body.removeChild(checksumAnchor)
+    }, 250)
+  }
 
   function getBannerUrl(bannerPath: string | null | undefined): string | null {
     if (!bannerPath) return null
@@ -333,9 +375,13 @@
     return 160 + skillCount * 24
   }
 
+  function pluralize(count: number, singular: string, plural: string): string {
+    return count > 1 ? plural : singular
+  }
+
   function formatPeriod(
     startMonth?: string,
-    startYear?: number,
+    startYear?: number | null,
     endMonth?: string | null,
     endYear?: number | null,
     currentlyIn?: boolean
@@ -356,7 +402,7 @@
       label: c.platform || c.displayValue,
       value: c.displayValue,
       href: c.href,
-      icon: c.icon || 'bi-person'
+      icon: c.icon || ''
     }))
   )
 
@@ -374,7 +420,7 @@
       label: f.platform,
       value: f.displayValue || f.platform,
       href: f.url,
-      icon: f.icon || 'bi-heart-fill'
+      icon: f.icon || ''
     }))
   )
 
@@ -545,7 +591,7 @@
     const set = new SvelteSet<string>()
     for (const post of posts) {
       if (post.tags) {
-        post.tags.forEach((t: string) => set.add(t))
+        post.tags.forEach((t: string) => set.add(decodeHtmlEntities(t)))
       }
     }
     return Array.from(set)
@@ -891,9 +937,11 @@
       aria-label="Menu"
       aria-expanded={menuOpen}
       aria-controls="mobile-menu">
-      <i
-        class="bi {menuOpen ? 'bi-x-lg' : 'bi-list'} text-text-primary"
-        aria-hidden="true"></i>
+      {#if menuOpen}
+        <X class="size-5 text-text-primary" />
+      {:else}
+        <Menu class="size-5 text-text-primary" />
+      {/if}
     </button>
   </div>
 </nav>
@@ -906,11 +954,12 @@
   {#snippet staticTag(tag: string)}
     <span
       class="rounded-md bg-border-subtle/30 px-1.5 py-0.5 font-mono text-[12px] font-medium text-text-muted transition-colors">
-      {tag}
+      {decodeHtmlEntities(tag)}
     </span>
   {/snippet}
 
   {#snippet filterableTag(tag: string)}
+    {@const cleanTag = decodeHtmlEntities(tag)}
     <button
       type="button"
       onclick={() => projectFilterStore.toggleMultiFilter('tag', tag)}
@@ -919,7 +968,21 @@
       ) ?
         'font-semibold text-copilot'
       : 'text-text-muted'}">
-      {tag}
+      {cleanTag}
+    </button>
+  {/snippet}
+
+  {#snippet blogFilterableTag(tag: string)}
+    {@const cleanTag = decodeHtmlEntities(tag)}
+    <button
+      type="button"
+      onclick={() => blogFilterStore.toggleMultiFilter('tag', tag)}
+      class="cursor-pointer rounded-md bg-border-subtle/30 px-1.5 py-0.5 font-mono text-[12px] font-medium transition-colors hover:bg-surface-hover hover:text-copilot {(
+        blogFilterStore.filters['tag']?.includes(tag)
+      ) ?
+        'font-semibold text-copilot'
+      : 'text-text-muted'}">
+      {cleanTag}
     </button>
   {/snippet}
 
@@ -948,31 +1011,25 @@
           class="relative z-20 grid grid-cols-2 gap-x-4 gap-y-1 font-sans text-xs leading-5 font-medium text-text-muted select-none">
           {#if project.licenseName}
             <span class="inline-flex w-fit items-center gap-1">
-              <i
-                class="bi bi-award text-xs leading-none"
-                aria-hidden="true"></i>
+              <Award class="size-3 leading-none" />
               {project.licenseName} License
             </span>
           {:else}
             <span aria-hidden="true"></span>
           {/if}
           <span class="inline-flex w-fit items-center gap-1">
-            <i
-              class="bi bi-diagram-2 text-xs leading-none"
-              aria-hidden="true"></i>
-            {project.forks} forks
+            <GitFork class="size-3 leading-none" />
+            {project.forks}
+            {pluralize(project.forks, 'fork', 'forks')}
           </span>
           <span class="inline-flex w-fit items-center gap-1">
-            <i
-              class="bi bi-star-fill text-xs leading-none"
-              aria-hidden="true"></i>
-            {project.stars} stars
+            <Astroid class="size-3 leading-none" />
+            {project.stars}
+            {pluralize(project.stars, 'star', 'stars')}
           </span>
           {#if project.pushedAt}
             <span class="inline-flex w-fit items-center gap-1">
-              <i
-                class="bi bi-clock-history text-xs leading-none"
-                aria-hidden="true"></i>
+              <Clock class="size-3 leading-none" />
               <RelativeTime
                 date={project.pushedAt}
                 titlePrefix="Last updated " />
@@ -981,16 +1038,14 @@
             <span aria-hidden="true"></span>
           {/if}
           <span class="inline-flex w-fit items-center gap-1">
-            <i
-              class="bi bi-git text-xs leading-none"
-              aria-hidden="true"></i>
-            {project.branches} branches
+            <GitBranch class="size-3 leading-none" />
+            {project.branches}
+            {pluralize(project.branches, 'branch', 'branches')}
           </span>
           <span class="inline-flex w-fit items-center gap-1">
-            <i
-              class="bi bi-activity text-xs leading-none"
-              aria-hidden="true"></i>
-            {project.commits} commits
+            <Activity class="size-3 leading-none" />
+            {project.commits}
+            {pluralize(project.commits, 'commit', 'commits')}
           </span>
         </div>
       </div>
@@ -1060,11 +1115,13 @@
 
         <div class="grid grid-cols-2 gap-2">
           <Button
-            type="Secondary"
+            type="secondary"
             size="md"
-            leadingIcon="bi-share-fill"
             class="w-full"
             onclick={() => shareProjectDialog(project)}>
+            {#snippet leading()}
+              <Share2 class="size-3.5" />
+            {/snippet}
             Share
           </Button>
 
@@ -1077,9 +1134,7 @@
               isOpen={openCodeMenuId === project.name}
               onclick={() => toggleCodeMenu(project.name)}>
               <span class="inline-flex items-center gap-1.5">
-                <i
-                  class="bi bi-code text-xs"
-                  aria-hidden="true"></i>
+                <Code class="size-3.5" />
                 Code
               </span>
             </DropdownTrigger>
@@ -1091,9 +1146,7 @@
                 <div class="relative z-10 flex flex-col p-3">
                   <div
                     class="flex items-center gap-1.5 text-xs font-bold text-text-primary">
-                    <i
-                      class="bi bi-terminal text-xs"
-                      aria-hidden="true"></i>
+                    <Terminal class="size-3.5" />
                     Clone
                   </div>
 
@@ -1125,9 +1178,7 @@
                         copyCodeCommand(project, getCodeTab(project.name))}
                       aria-label="Copy clone command"
                       class="shrink-0 cursor-pointer text-text-secondary transition-colors hover:text-copilot">
-                      <i
-                        class="bi bi-copy text-xs"
-                        aria-hidden="true"></i>
+                      <Copy class="size-3.5" />
                     </button>
                   </div>
 
@@ -1136,9 +1187,7 @@
                   <a
                     href={project.zipUrl}
                     class="flex items-center gap-2 rounded-sm px-2 py-1.5 text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
-                    <i
-                      class="bi bi-file-earmark-zip text-xs"
-                      aria-hidden="true"></i>
+                    <FolderArchive class="size-3.5" />
                     Download ZIP
                   </a>
                 </div>
@@ -1151,14 +1200,14 @@
           href={project.url}
           target="_blank"
           rel="noopener noreferrer"
-          class="hover:bg-copilot-hover active:bg-copilot-active inline-flex h-9 w-full cursor-pointer items-center justify-center rounded-sm bg-copilot px-4 text-xs font-semibold text-text-on-accent shadow-xs transition-all select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:text-sm">
+          class="inline-flex h-9 w-full cursor-pointer items-center justify-center rounded-sm bg-copilot px-4 text-xs font-semibold text-text-on-accent shadow-xs transition-all select-none hover:bg-copilot-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring active:bg-copilot-active sm:text-sm">
           View repo
         </a>
       </div>
     </div>
   {/snippet}
 
-  {#snippet blogPostCard(post: BlogPost)}
+  {#snippet blogPostCard(post: BlogPost, tagItem: Snippet<[string]>)}
     <div
       class="relative flex h-full w-full flex-col gap-3 rounded-sm glass-card p-5 text-left {(
         openCopyMenuId === post.id
@@ -1170,15 +1219,12 @@
           src={getBannerUrl(post.banner_path)}
           alt={post.title}
           aspectRatio="aspect-video"
-          fallbackIcon="bi bi-file-richtext-fill"
           onerror={() => markBannerFailed(post.id)}
           class="w-full border border-border-subtle" />
       {:else}
         <div
-          class="to-palette-purple/15 relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-sm border border-border-subtle bg-linear-to-br from-accent/15 select-none">
-          <i
-            class="bi bi-file-richtext-fill text-2xl text-copilot/50"
-            aria-hidden="true"></i>
+          class="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-sm border border-border-subtle bg-linear-to-br from-accent/15 to-copilot/15 select-none">
+          <ImageIcon class="size-8 text-copilot/50" />
         </div>
       {/if}
 
@@ -1210,6 +1256,13 @@
             </a>
           </h4>
         </div>
+        {#if post.tags && post.tags.length > 0}
+          <div class="flex min-h-[24px] flex-wrap items-start gap-1.5">
+            {#each post.tags as tag (tag)}
+              {@render tagItem(tag)}
+            {/each}
+          </div>
+        {/if}
         {#if post.excerpt}
           <p class="min-h-26 text-sm leading-normal text-text-secondary">
             {post.excerpt}
@@ -1221,11 +1274,13 @@
 
           <div class="grid grid-cols-2 gap-2">
             <Button
-              type="Secondary"
+              type="secondary"
               size="md"
-              leadingIcon="bi-share-fill"
               class="w-full"
               onclick={() => shareBlogPostDialog(post)}>
+              {#snippet leading()}
+                <Share2 class="size-3.5" />
+              {/snippet}
               Share
             </Button>
 
@@ -1238,9 +1293,7 @@
                 isOpen={openCopyMenuId === post.id}
                 onclick={() => toggleCopyMenu(post.id)}>
                 <span class="inline-flex items-center gap-1.5">
-                  <i
-                    class="bi bi-copy text-xs"
-                    aria-hidden="true"></i>
+                  <Copy class="size-3.5" />
                   Copy
                 </span>
               </DropdownTrigger>
@@ -1256,19 +1309,15 @@
                       role="menuitem"
                       onclick={() => copyBlogUrl(post)}
                       class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
-                      <i
-                        class="bi bi-link text-xs"
-                        aria-hidden="true"></i>
-                      <span>Copy Blog URL</span>
+                      <LinkIcon class="size-3.5" />
+                      <span>Copy URL</span>
                     </button>
                     <button
                       type="button"
                       role="menuitem"
                       onclick={() => copyBlogId(post)}
                       class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
-                      <i
-                        class="bi bi-hash text-xs"
-                        aria-hidden="true"></i>
+                      <Hash class="size-3.5" />
                       <span>Copy Blog ID</span>
                     </button>
                     <button
@@ -1276,9 +1325,13 @@
                       role="menuitem"
                       onclick={() => copyBlogMarkdown(post)}
                       class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
-                      <i
-                        class="bi bi-markdown-fill text-xs"
-                        aria-hidden="true"></i>
+                      <svg
+                        class="size-3.5 fill-current"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true">
+                        <path
+                          d="M2.5 4A1.5 1.5 0 0 0 1 5.5v13A1.5 1.5 0 0 0 2.5 20h19a1.5 1.5 0 0 0 1.5-1.5v-13A1.5 1.5 0 0 0 21.5 4h-19zm1 3h3l2 2.5 2-2.5h3v10h-2.5v-5.5L9.5 13.5 8 11.5v5.5H3.5V7zm13 0h4l-3 4.5h2V17h-2.5v-5.5h-2L16.5 7z" />
+                      </svg>
                       <span>Copy as Markdown</span>
                     </button>
                   </div>
@@ -1289,7 +1342,7 @@
 
           <a
             href="/blog/{post.slug}"
-            class="hover:bg-copilot-hover active:bg-copilot-active inline-flex h-9 w-full cursor-pointer items-center justify-center rounded-sm bg-copilot px-4 text-xs font-semibold text-text-on-accent shadow-xs transition-all select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:text-sm">
+            class="inline-flex h-9 w-full cursor-pointer items-center justify-center rounded-sm bg-copilot px-4 text-xs font-semibold text-text-on-accent shadow-xs transition-all select-none hover:bg-copilot-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring active:bg-copilot-active sm:text-sm">
             Read post
           </a>
         </div>
@@ -1301,9 +1354,9 @@
     <div
       class="pointer-events-none fixed inset-0 z-0 overflow-hidden opacity-85 select-none dark:opacity-75">
       <GradientWaves
-        horizonColor="#1e0b4a"
-        waveColor="#9333ea"
-        crestColor="#34d399"
+        horizonColor="#5227FF"
+        waveColor="#FF9FFC"
+        crestColor="#FFFFFF"
         speed={0.45}
         amplitude={3.0}
         waveScale={0.65}
@@ -1334,7 +1387,7 @@
 
         <div class="relative z-10 mx-auto w-full">
           <div
-            class="relative mt-12 flex flex-col items-center justify-center rounded-sm glass-card border border-border-subtle/60 bg-surface-card/40 p-6 pt-0 text-center shadow-xl backdrop-blur-xl sm:p-8 sm:pt-0 dark:border-white/10 dark:bg-surface-card/30">
+            class="relative mt-12 flex flex-col items-center justify-center rounded-sm glass-card p-6 pt-0 text-center shadow-xl sm:p-8 sm:pt-0">
             {#if avatar}
               <ImageWithSkeleton
                 src={avatar}
@@ -1370,28 +1423,35 @@
               class="relative z-10 mt-8 flex w-full flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-4">
               {#if data.cvExists}
                 <Button
-                  type="Primary"
-                  tone="Neutral"
+                  type="primary"
+                  tone="neutral"
                   size="lg"
                   href="/api/v1/cv?download=1"
                   download
+                  onclick={handleCvDownload}
                   class="w-full px-5 sm:w-auto sm:px-6">
+                  {#snippet leading()}
+                    <Download class="size-4" />
+                  {/snippet}
                   Download CV
                 </Button>
               {:else}
                 <Button
-                  type="Primary"
-                  tone="Neutral"
+                  type="primary"
+                  tone="neutral"
                   size="lg"
                   disabled
                   title="No CV document is available yet."
                   class="w-full px-5 sm:w-auto sm:px-6">
+                  {#snippet leading()}
+                    <Download class="size-4" />
+                  {/snippet}
                   Download CV
                 </Button>
               {/if}
 
               <Button
-                type="Tertiary"
+                type="secondary"
                 size="lg"
                 onclick={() => navigate('projects')}
                 class="w-full px-5 sm:w-auto sm:px-6">
@@ -1399,7 +1459,7 @@
               </Button>
 
               <Button
-                type="Secondary"
+                type="ghost"
                 size="lg"
                 onclick={() => navigate('contact')}
                 class="w-full px-5 sm:w-auto sm:px-6">
@@ -1415,7 +1475,6 @@
           </h3>
           {#if recentProjects.length === 0}
             <EmptyState
-              icon="bi-box-seam-fill"
               title="No projects yet"
               description="Check back soon for featured repositories." />
           {:else}
@@ -1434,9 +1493,8 @@
                 onclick={() => navigate('projects')}
                 class="group inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-copilot hover:underline">
                 <span class="leading-none">View all projects</span>
-                <i
-                  class="bi bi-arrow-right text-base leading-none transition-transform select-none group-hover:translate-x-0.5"
-                  aria-hidden="true"></i>
+                <ArrowRight
+                  class="size-4 transition-transform select-none group-hover:translate-x-0.5" />
               </button>
             </div>
           {/if}
@@ -1448,14 +1506,13 @@
           </h3>
           {#if posts.length === 0}
             <EmptyState
-              icon="bi-file-richtext-fill"
               title="No posts yet"
               description="Check back soon for new articles." />
           {:else}
             <div
               class="relative z-0 mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
               {#each recentPosts as post (post.id)}
-                {@render blogPostCard(post)}
+                {@render blogPostCard(post, staticTag)}
               {/each}
             </div>
           {/if}
@@ -1465,9 +1522,8 @@
                 onclick={() => navigate('blog')}
                 class="group inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-copilot hover:underline">
                 <span class="leading-none">View all posts</span>
-                <i
-                  class="bi bi-arrow-right text-base leading-none transition-transform select-none group-hover:translate-x-0.5"
-                  aria-hidden="true"></i>
+                <ArrowRight
+                  class="size-4 transition-transform select-none group-hover:translate-x-0.5" />
               </button>
             </div>
           {/if}
@@ -1479,7 +1535,6 @@
           </h3>
           {#if skillsSnapshot.length === 0}
             <EmptyState
-              icon="bi-stack"
               title="No skills listed yet"
               description="Check back soon for updated skills." />
           {:else}
@@ -1504,7 +1559,6 @@
           </h3>
           {#if experiences.length === 0}
             <EmptyState
-              icon="bi-briefcase-fill"
               title="No experience listed yet"
               description="Check back soon for career history." />
           {:else}
@@ -1531,21 +1585,18 @@
               class="group inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-copilot hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-copilot"
               aria-label="View full CV including education and experience">
               <span class="leading-none">View full CV</span>
-              <i
-                class="bi bi-arrow-right text-base leading-none transition-transform select-none group-hover:translate-x-0.5"
-                aria-hidden="true"></i>
+              <ArrowRight
+                class="size-4 transition-transform select-none group-hover:translate-x-0.5" />
             </button>
           </div>
         </div>
 
         <div
-          class="divide-y divide-adwaita-border overflow-hidden rounded-md glass-card border-copilot/30! bg-copilot/5! text-left shadow-xs">
+          class="divide-y divide-border-subtle overflow-hidden rounded-md glass-card border-copilot/30 bg-copilot/5 text-left shadow-xs">
           <div
             class="flex flex-col justify-between gap-4 px-5 py-4 sm:flex-row sm:items-center">
             <div class="flex items-start gap-4">
-              <i
-                class="bi bi-heart-fill mt-0.5 shrink-0 text-2xl text-copilot"
-                aria-hidden="true"></i>
+              <Heart class="mt-0.5 size-6 shrink-0 fill-current text-copilot" />
               <div>
                 <h4 class="text-sm font-bold">
                   <ShinyText
@@ -1562,7 +1613,7 @@
             </div>
             <button
               onclick={() => navigate('funding')}
-              class="hover:bg-copilot-hover inline-flex shrink-0 cursor-pointer items-center justify-center rounded-sm bg-copilot px-4 py-2 text-xs font-semibold text-white transition-colors">
+              class="inline-flex shrink-0 cursor-pointer items-center justify-center rounded-sm bg-copilot px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-copilot-hover">
               Become a sponsor
             </button>
           </div>
@@ -1675,7 +1726,7 @@
           <div class="mt-2 flex justify-end">
             <Button
               htmlType="submit"
-              type="Primary"
+              type="primary"
               size="md">
               Send message
             </Button>
@@ -1695,7 +1746,7 @@
             logos={techLogos}
             speed={40}
             direction="left"
-            logoHeight={85}
+            logoHeight={75}
             gap={36}
             pauseOnHover={false}
             hoverSpeed={40}
@@ -1713,7 +1764,6 @@
       title="Contact"
       subtitle="Feel free to reach out via any of the channels below."
       items={contactItems}
-      emptyIcon="bi-envelope-fill"
       emptyTitle="No contact channels yet"
       emptyDescription="Check back soon for ways to get in touch." />
   {/if}
@@ -1734,34 +1784,29 @@
             </p>
           </div>
           {#if data.cvExists}
-            <div class="flex items-center gap-2">
-              <Button
-                type="Primary"
-                tone="Neutral"
-                size="md"
-                href="/api/v1/cv?download=1"
-                download>
-                Download PDF
-              </Button>
-              <Button
-                type="Secondary"
-                tone="Neutral"
-                size="sm"
-                href="/api/v1/cv?format=sha256"
-                download
-                title="Download SHA256 checksum verification file"
-                class="font-mono">
-                .sha256
-              </Button>
-            </div>
+            <Button
+              type="primary"
+              tone="neutral"
+              size="md"
+              href="/api/v1/cv?download=1"
+              download
+              onclick={handleCvDownload}>
+              {#snippet leading()}
+                <Download class="size-4" />
+              {/snippet}
+              Download CV
+            </Button>
           {:else}
             <Button
-              type="Primary"
-              tone="Neutral"
+              type="primary"
+              tone="neutral"
               size="md"
               disabled
               title="No CV document is available yet.">
-              Download PDF
+              {#snippet leading()}
+                <Download class="size-4" />
+              {/snippet}
+              Download CV
             </Button>
           {/if}
         </div>
@@ -1774,7 +1819,6 @@
           {#if experiences.length === 0}
             <div class="mt-4">
               <EmptyState
-                icon="bi-briefcase-fill"
                 title="No experience listed yet"
                 description="Check back soon for career history." />
             </div>
@@ -1806,7 +1850,6 @@
           {#if education.length === 0}
             <div class="mt-4">
               <EmptyState
-                icon="bi-mortarboard-fill"
                 title="No education listed yet"
                 description="Check back soon for academic history." />
             </div>
@@ -1838,7 +1881,6 @@
           {#if skills.length === 0}
             <div class="mt-4">
               <EmptyState
-                icon="bi-stack"
                 title="No skills listed yet"
                 description="Check back soon for updated skills." />
             </div>
@@ -1875,18 +1917,23 @@
               Thoughts on Linux, security, and open source.
             </p>
           </div>
-          <a
-            href="/atom.xml"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Subscribe via Atom/RSS feed"
-            aria-label="Subscribe via Atom/RSS feed"
-            class="mb-0.5 inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-sm border border-border-subtle bg-surface-card px-3 text-xs font-semibold text-text-muted transition-colors select-none hover:bg-surface-hover hover:text-brand-rss">
-            <i
-              class="bi bi-rss-fill text-xs select-none"
-              aria-hidden="true"></i>
-            <span class="hidden items-center sm:inline">Feed</span>
-          </a>
+          <div class="group relative inline-flex">
+            <a
+              href="/atom.xml"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Subscribe via Atom/RSS feed"
+              class="mb-0.5 inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-sm border border-border-subtle bg-surface-card px-3 text-xs font-semibold text-text-muted transition-colors select-none hover:bg-surface-hover hover:text-brand-rss">
+              <Rss class="size-3.5 select-none" />
+              <span class="hidden items-center sm:inline">Feed</span>
+            </a>
+
+            <div
+              role="tooltip"
+              class="pointer-events-none absolute top-[calc(100%+6px)] right-0 z-70 rounded-sm glass-overlay px-2 py-1 text-3xs font-medium whitespace-nowrap text-text-primary opacity-0 shadow-lg transition-opacity duration-150 group-focus-within:opacity-100 group-hover:opacity-100 sm:hidden">
+              <span class="relative z-10">RSS Feed</span>
+            </div>
+          </div>
         </div>
 
         {#if posts.length > 0}
@@ -1910,7 +1957,7 @@
               {#snippet filterControlsSlot()}
                 {#if allBlogTags.length > 0}
                   <FilterCheckboxGroup
-                    label="Category/Tag"
+                    label="Tag"
                     options={allBlogTags.map(t => ({value: t, label: t}))}
                     selectedValues={blogFilterStore.filters['tag'] || []}
                     onChange={val =>
@@ -1954,7 +2001,6 @@
 
         {#if posts.length === 0}
           <EmptyState
-            icon="bi-file-richtext-fill"
             title="No posts yet"
             description="Articles will appear here once published." />
         {:else if filteredBlogPosts.length === 0}
@@ -1965,7 +2011,7 @@
         {:else}
           <div class="relative z-0 mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {#each paginatedBlogPosts as post (post.id)}
-              {@render blogPostCard(post)}
+              {@render blogPostCard(post, blogFilterableTag)}
             {/each}
           </div>
           <div class="mt-6">
@@ -2056,7 +2102,6 @@
 
         {#if projects.length === 0}
           <EmptyState
-            icon="bi-box-seam-fill"
             title="No projects yet"
             description="Projects will appear here." />
         {:else if filteredProjectList.length === 0}
@@ -2089,7 +2134,6 @@
       title="Supporting & Funding"
       subtitle="Support open-source development and maintenance through these platforms."
       items={fundingPlatforms}
-      emptyIcon="bi-heart-fill"
       emptyTitle="No funding platforms yet"
       emptyDescription="Check back soon for ways to support this work." />
   {/if}
@@ -2126,12 +2170,12 @@
   onClose={() => (showSendMessageDialog = false)}>
   {#snippet footer()}
     <Button
-      type="Secondary"
+      type="secondary"
       size="md"
       showEscHint
       onclick={() => (showSendMessageDialog = false)}>Cancel</Button>
     <Button
-      type="Primary"
+      type="primary"
       size="md"
       onclick={executeSendMessage}>Send message</Button>
   {/snippet}

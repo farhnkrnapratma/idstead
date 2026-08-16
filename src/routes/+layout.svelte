@@ -1,4 +1,3 @@
-<!-- @format -->
 <script lang="ts">
   import './global.css'
   import {onMount} from 'svelte'
@@ -7,6 +6,8 @@
 
   import {themeStore} from '$lib/stores/themeStore.svelte'
   import {a11yStore} from '$lib/stores/a11yStore.svelte'
+  import {codeBlockPrefsStore} from '$lib/stores/codeBlockPrefsStore.svelte'
+  import {refreshCodeBlockPrefs} from '$lib/utils/codeBlocks'
 
   const {data, children} = $props()
 
@@ -47,10 +48,14 @@
   onMount(() => {
     const cleanupTheme = themeStore.init()
     const cleanupA11y = a11yStore.init()
+    const cleanupCodeBlockPrefs = codeBlockPrefsStore.init(
+      refreshCodeBlockPrefs
+    )
     handleScroll()
     return () => {
       cleanupTheme?.()
       cleanupA11y?.()
+      cleanupCodeBlockPrefs?.()
     }
   })
 </script>

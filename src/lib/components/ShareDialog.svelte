@@ -1,8 +1,7 @@
-<!-- @format -->
 <script lang="ts">
+  import {Check, Copy, SquareArrowOutUpRight} from '@lucide/svelte'
   import Dialog from './Dialog.svelte'
   import Button from './Button.svelte'
-  import IconButton from './IconButton.svelte'
 
   interface Props {
     isOpen: boolean
@@ -52,110 +51,96 @@
   size="md"
   class={className}
   {onClose}>
-  <div class="flex flex-col gap-4">
-    <div class="flex justify-center">
-      <Button
-        type={copied ? 'Tertiary' : 'Secondary'}
-        size="md"
-        onclick={copyUrl}>
+  <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+    <Button
+      type={copied ? 'tertiary' : 'secondary'}
+      size="md"
+      class="w-full justify-center"
+      onclick={copyUrl}>
+      {#snippet leading()}
         {#if copied}
-          <i
-            class="bi bi-check2 text-copilot"
-            aria-hidden="true"></i> Copied!
+          <Check class="size-3.5 text-copilot" />
         {:else}
-          <i
-            class="bi bi-copy"
-            aria-hidden="true"></i> Copy URL
+          <Copy class="size-3.5" />
         {/if}
+      {/snippet}
+      {copied ? 'Copied!' : 'Copy URL'}
+    </Button>
+
+    <Button
+      href="https://x.com/intent/post?url={encodedUrl}&text={encodedTitle}"
+      target="_blank"
+      rel="noopener noreferrer"
+      type="secondary"
+      size="md"
+      class="w-full justify-between px-3"
+      aria-label="Share on X (opens in a new tab)">
+      <span>X</span>
+      {#snippet trailing()}
+        <SquareArrowOutUpRight class="size-3.5 text-text-muted" />
+      {/snippet}
+    </Button>
+
+    <Button
+      href="https://linkedin.com/sharing/share-offsite/?url={encodedUrl}"
+      target="_blank"
+      rel="noopener noreferrer"
+      type="secondary"
+      size="md"
+      class="w-full justify-between px-3"
+      aria-label="Share on LinkedIn (opens in a new tab)">
+      <span>LinkedIn</span>
+      {#snippet trailing()}
+        <SquareArrowOutUpRight class="size-3.5 text-text-muted" />
+      {/snippet}
+    </Button>
+
+    <Button
+      href="https://www.facebook.com/sharer/sharer.php?u={encodedUrl}"
+      target="_blank"
+      rel="noopener noreferrer"
+      type="secondary"
+      size="md"
+      class="w-full justify-between px-3"
+      aria-label="Share on Facebook (opens in a new tab)">
+      <span>Facebook</span>
+      {#snippet trailing()}
+        <SquareArrowOutUpRight class="size-3.5 text-text-muted" />
+      {/snippet}
+    </Button>
+
+    <Button
+      href="https://reddit.com/submit?url={encodedUrl}&title={encodedTitle}"
+      target="_blank"
+      rel="noopener noreferrer"
+      type="secondary"
+      size="md"
+      class="w-full justify-between px-3"
+      aria-label="Share on Reddit (opens in a new tab)">
+      <span>Reddit</span>
+      {#snippet trailing()}
+        <SquareArrowOutUpRight class="size-3.5 text-text-muted" />
+      {/snippet}
+    </Button>
+
+    {#if showEmail}
+      <Button
+        href="mailto:?subject={encodedTitle}&body={encodedUrl}"
+        type="secondary"
+        size="md"
+        class="w-full justify-between px-3"
+        aria-label="Share via email">
+        <span>Email</span>
+        {#snippet trailing()}
+          <SquareArrowOutUpRight class="size-3.5 text-text-muted" />
+        {/snippet}
       </Button>
-    </div>
-
-    <div class="flex items-center justify-center gap-3 pt-2">
-      <a
-        href="https://x.com/intent/post?url={encodedUrl}&text={encodedTitle}"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Share on X (opens in a new tab)"
-        title="Share on X (opens in a new tab)">
-        <IconButton
-          ariaLabel="Share on X"
-          variant="default"
-          size="lg">
-          <i
-            class="bi bi-twitter-x text-lg"
-            aria-hidden="true"></i>
-        </IconButton>
-      </a>
-
-      <a
-        href="https://linkedin.com/sharing/share-offsite/?url={encodedUrl}"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Share on LinkedIn (opens in a new tab)"
-        title="Share on LinkedIn (opens in a new tab)">
-        <IconButton
-          ariaLabel="Share on LinkedIn"
-          variant="default"
-          size="lg">
-          <i
-            class="bi bi-linkedin text-lg text-brand-linkedin"
-            aria-hidden="true"></i>
-        </IconButton>
-      </a>
-
-      <a
-        href="https://www.facebook.com/sharer/sharer.php?u={encodedUrl}"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Share on Facebook (opens in a new tab)"
-        title="Share on Facebook (opens in a new tab)">
-        <IconButton
-          ariaLabel="Share on Facebook"
-          variant="default"
-          size="lg">
-          <i
-            class="bi bi-facebook text-lg text-brand-facebook"
-            aria-hidden="true"></i>
-        </IconButton>
-      </a>
-
-      <a
-        href="https://reddit.com/submit?url={encodedUrl}&title={encodedTitle}"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Share on Reddit (opens in a new tab)"
-        title="Share on Reddit (opens in a new tab)">
-        <IconButton
-          ariaLabel="Share on Reddit"
-          variant="default"
-          size="lg">
-          <i
-            class="bi bi-reddit text-lg text-brand-reddit"
-            aria-hidden="true"></i>
-        </IconButton>
-      </a>
-
-      {#if showEmail}
-        <a
-          href="mailto:?subject={encodedTitle}&body={encodedUrl}"
-          aria-label="Share via email"
-          title="Share via email">
-          <IconButton
-            ariaLabel="Share via email"
-            variant="default"
-            size="lg">
-            <i
-              class="bi bi-envelope-fill text-lg"
-              aria-hidden="true"></i>
-          </IconButton>
-        </a>
-      {/if}
-    </div>
+    {/if}
   </div>
 
   {#snippet footer()}
     <Button
-      type="Secondary"
+      type="secondary"
       size="md"
       onclick={onClose}>
       <span class="inline-flex items-center gap-1.5">

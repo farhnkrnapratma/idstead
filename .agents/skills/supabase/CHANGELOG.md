@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # Changelog
 
 ## [0.1.7](https://github.com/supabase/agent-skills/compare/v0.1.6...supabase-v0.1.7) (2026-08-12)

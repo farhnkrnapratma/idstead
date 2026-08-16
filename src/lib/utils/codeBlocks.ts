@@ -1,4 +1,7 @@
-/** @format */
+import {codeBlockPrefsStore} from '../stores/codeBlockPrefsStore.svelte'
+import type {CodeColorScheme} from './hljsTheme'
+import {getDownloadFilename} from './codeBlockExtensions'
+import {cn} from './cn'
 
 const LANGUAGE_NAMES: Record<string, string> = {
   js: 'JavaScript',
@@ -76,9 +79,154 @@ export function splitHighlightedHtmlLines(html: string): string[] {
   return result
 }
 
+const ICON_BUTTON_CLASS =
+  'flex h-5 w-5 items-center justify-center rounded-sm border border-border-subtle/30 hover:bg-surface-hover/30 hover:text-text-primary transition-colors cursor-pointer text-text-secondary leading-none'
+
+const ICONS = {
+  copy: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>',
+  sun: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>',
+  moon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg>',
+  sunMoon:
+    '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun-moon"><path d="M12 2v2"/><path d="M14.837 16.385a6 6 0 1 1-7.223-7.222c.624-.147.97.66.715 1.248a4 4 0 0 0 5.26 5.259c.589-.255 1.396.09 1.248.715"/><path d="M16 12a4 4 0 0 0-4-4"/><path d="m19 5-1.256 1.256"/><path d="M20 12h2"/></svg>',
+  kebab:
+    '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ellipsis-vertical"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>',
+  download:
+    '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-download"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>',
+  check:
+    '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><path d="M20 6 9 17l-5-5"/></svg>'
+}
+
+const THEME_ICONS: Record<CodeColorScheme, string> = {
+  auto: ICONS.sunMoon,
+  light: ICONS.sun,
+  dark: ICONS.moon
+}
+
+const THEME_LABELS: Record<CodeColorScheme, string> = {
+  auto: 'Auto',
+  light: 'Light',
+  dark: 'Dark'
+}
+
+const LIGHT_CHROME_VARS: Record<string, string> = {
+  '--color-surface-hover': 'rgba(16, 20, 17, 0.04)',
+  '--color-surface-card': '#ffffff',
+  '--color-code-chrome': '#e9ece9',
+  '--color-border-subtle': '#e4ebe6',
+  '--color-border-default': '#b6bfb8',
+  '--color-text-secondary': '#232925',
+  '--color-text-primary': '#101411',
+  '--color-text-muted': '#909692',
+  '--color-copilot': '#8534f3',
+  '--color-code-thumb': 'var(--color-gh-gray-3)',
+  '--color-code-thumb-hover': 'var(--color-gh-gray-4)'
+}
+
+const DARK_CHROME_VARS: Record<string, string> = {
+  '--color-surface-hover': 'rgba(242, 245, 243, 0.05)',
+  '--color-surface-card': '#101411',
+  '--color-code-chrome': '#111311',
+  '--color-border-subtle': 'rgba(228, 235, 230, 0.12)',
+  '--color-border-default': 'rgba(182, 191, 184, 0.25)',
+  '--color-text-secondary': '#b6bfb8',
+  '--color-text-primary': '#f2f5f3',
+  '--color-text-muted': '#909692',
+  '--color-copilot': '#b870ff',
+  '--color-code-thumb': 'var(--color-gh-gray-6)',
+  '--color-code-thumb-hover': 'var(--color-gh-gray-5)'
+}
+
+function applyChromeVars(el: HTMLElement, isDark: boolean) {
+  const vars = isDark ? DARK_CHROME_VARS : LIGHT_CHROME_VARS
+  for (const [key, value] of Object.entries(vars)) {
+    el.style.setProperty(key, value)
+  }
+}
+
+function resolveEffectiveIsDark(scheme: CodeColorScheme): boolean {
+  if (scheme === 'light') return false
+  if (scheme === 'dark') return true
+  return document.documentElement.classList.contains('dark')
+}
+
+interface EnhancedBlock {
+  pre: HTMLElement
+  applyPrefs: () => void
+}
+
+const enhancedBlocks: EnhancedBlock[] = []
+let siteThemeObserverAttached = false
+
+export function refreshCodeBlockPrefs() {
+  for (let i = enhancedBlocks.length - 1; i >= 0; i--) {
+    const block = enhancedBlocks[i]
+    if (!document.contains(block.pre)) {
+      enhancedBlocks.splice(i, 1)
+      continue
+    }
+    block.applyPrefs()
+  }
+}
+
+function ensureSiteThemeObserver() {
+  if (siteThemeObserverAttached) return
+  siteThemeObserverAttached = true
+
+  const observer = new MutationObserver(() => {
+    if (codeBlockPrefsStore.current.colorScheme === 'auto') {
+      refreshCodeBlockPrefs()
+    }
+  })
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class']
+  })
+}
+
+function buildMenuCheckboxRow(
+  label: string,
+  getChecked: () => boolean,
+  onToggle: () => void
+) {
+  const row = document.createElement('button')
+  row.type = 'button'
+  row.setAttribute('role', 'menuitemcheckbox')
+  row.className =
+    'flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover'
+
+  const box = document.createElement('span')
+  const labelEl = document.createElement('span')
+  labelEl.textContent = label
+
+  row.appendChild(box)
+  row.appendChild(labelEl)
+
+  function sync() {
+    const checked = getChecked()
+    row.setAttribute('aria-checked', String(checked))
+    box.innerHTML = checked ? ICONS.check : ''
+    box.className = cn(
+      'flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-[3px] border transition-colors',
+      checked ?
+        'border-copilot bg-copilot text-text-on-accent'
+      : 'border-border-default text-transparent'
+    )
+  }
+
+  row.addEventListener('click', () => {
+    onToggle()
+    refreshCodeBlockPrefs()
+  })
+
+  sync()
+  return {row, sync}
+}
+
 export function enhanceCodeBlocks(triggerToast: (message: string) => void) {
   const container = document.querySelector('.prose-custom')
   if (!container) return
+
+  ensureSiteThemeObserver()
 
   container.querySelectorAll('pre').forEach(el => {
     const pre = el as HTMLElement
@@ -90,7 +238,7 @@ export function enhanceCodeBlocks(triggerToast: (message: string) => void) {
 
     const headerBar = document.createElement('div')
     headerBar.className =
-      'code-header-bar flex items-center justify-between bg-gh-gray-6 border border-border-subtle rounded-t-sm px-4 py-1.5 text-xs text-text-secondary font-semibold select-none mt-6'
+      'code-header-bar flex items-center justify-between bg-(--color-code-chrome) border border-border-subtle rounded-t-sm px-3 py-1 text-xs text-text-secondary font-semibold select-none mt-6'
 
     const leftSpan = document.createElement('span')
     leftSpan.className =
@@ -98,11 +246,15 @@ export function enhanceCodeBlocks(triggerToast: (message: string) => void) {
     leftSpan.innerText = prettyLang
     headerBar.appendChild(leftSpan)
 
+    const controls = document.createElement('div')
+    controls.className = 'flex items-center gap-1'
+    headerBar.appendChild(controls)
+
     const copyBtn = document.createElement('button')
     copyBtn.type = 'button'
-    copyBtn.className =
-      'flex h-5 w-5 items-center justify-center rounded-sm border border-border-subtle/30 hover:bg-surface-hover/30 hover:text-text-primary transition-colors cursor-pointer text-text-secondary leading-none'
-    copyBtn.innerHTML = '<i class="bi bi-copy text-xs" aria-hidden="true"></i>'
+    copyBtn.className = ICON_BUTTON_CLASS
+    copyBtn.setAttribute('aria-label', 'Copy code')
+    copyBtn.innerHTML = ICONS.copy
 
     copyBtn.addEventListener('click', () => {
       if (!codeElement) return
@@ -117,11 +269,124 @@ export function enhanceCodeBlocks(triggerToast: (message: string) => void) {
         })
     })
 
-    headerBar.appendChild(copyBtn)
+    controls.appendChild(copyBtn)
+
+    const themeToggleBtn = document.createElement('button')
+    themeToggleBtn.type = 'button'
+    themeToggleBtn.className = ICON_BUTTON_CLASS
+    const themeIconStage = document.createElement('span')
+    themeIconStage.className = 'inline-flex items-center justify-center'
+    themeToggleBtn.appendChild(themeIconStage)
+    controls.appendChild(themeToggleBtn)
+
+    themeToggleBtn.addEventListener('click', () => {
+      themeIconStage.classList.remove('code-icon-in')
+      themeIconStage.classList.add('code-icon-out')
+
+      themeIconStage.addEventListener(
+        'animationend',
+        () => {
+          themeIconStage.classList.remove('code-icon-out')
+          codeBlockPrefsStore.cycleColorScheme()
+          refreshCodeBlockPrefs()
+          themeIconStage.classList.add('code-icon-in')
+          themeIconStage.addEventListener(
+            'animationend',
+            () => themeIconStage.classList.remove('code-icon-in'),
+            {once: true}
+          )
+        },
+        {once: true}
+      )
+    })
+
+    const kebabWrapper = document.createElement('div')
+    kebabWrapper.className = 'relative'
+    controls.appendChild(kebabWrapper)
+
+    const kebabBtn = document.createElement('button')
+    kebabBtn.type = 'button'
+    kebabBtn.className = ICON_BUTTON_CLASS
+    kebabBtn.setAttribute('aria-label', 'Code block options')
+    kebabBtn.setAttribute('aria-haspopup', 'true')
+    kebabBtn.setAttribute('aria-expanded', 'false')
+    kebabBtn.innerHTML = ICONS.kebab
+    kebabWrapper.appendChild(kebabBtn)
+
+    const kebabPanel = document.createElement('div')
+    kebabPanel.setAttribute('role', 'menu')
+    kebabPanel.className =
+      'hidden absolute right-0 top-[calc(100%+6px)] z-20 w-44 flex-col rounded-sm glass-overlay p-1 shadow-xl'
+    kebabWrapper.appendChild(kebabPanel)
+
+    function closeKebab() {
+      kebabPanel.classList.add('hidden')
+      kebabPanel.classList.remove('flex')
+      kebabBtn.setAttribute('aria-expanded', 'false')
+    }
+
+    function openKebab() {
+      kebabPanel.classList.remove('hidden')
+      kebabPanel.classList.add('flex')
+      kebabBtn.setAttribute('aria-expanded', 'true')
+    }
+
+    kebabBtn.addEventListener('click', e => {
+      e.stopPropagation()
+      if (kebabPanel.classList.contains('hidden')) openKebab()
+      else closeKebab()
+    })
+
+    document.addEventListener('click', e => {
+      if (!kebabWrapper.contains(e.target as Node)) closeKebab()
+    })
+
+    const lineNumbersRow = buildMenuCheckboxRow(
+      'Line numbers',
+      () => codeBlockPrefsStore.current.lineNumbers,
+      () => codeBlockPrefsStore.toggleLineNumbers()
+    )
+    const wrapRow = buildMenuCheckboxRow(
+      'Wrap',
+      () => codeBlockPrefsStore.current.wrap,
+      () => codeBlockPrefsStore.toggleWrap()
+    )
+
+    const divider = document.createElement('div')
+    divider.className = 'my-1 h-px bg-border-subtle'
+
+    const downloadRow = document.createElement('button')
+    downloadRow.type = 'button'
+    downloadRow.setAttribute('role', 'menuitem')
+    downloadRow.className =
+      'flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover'
+    downloadRow.innerHTML = `<span class="flex h-3.5 w-3.5 shrink-0 items-center justify-center text-text-secondary">${ICONS.download}</span><span>Download as file</span>`
+
+    downloadRow.addEventListener('click', () => {
+      if (!codeElement) return
+      const filename = getDownloadFilename(codeElement.className)
+      const text = codeElement.innerText || codeElement.textContent || ''
+      const blob = new Blob([text], {type: 'text/plain'})
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+      closeKebab()
+      triggerToast(`Downloaded ${filename}`)
+    })
+
+    kebabPanel.appendChild(lineNumbersRow.row)
+    kebabPanel.appendChild(wrapRow.row)
+    kebabPanel.appendChild(divider)
+    kebabPanel.appendChild(downloadRow)
 
     const codeBody = document.createElement('div')
     codeBody.className =
-      'code-body flex w-full flex-row items-stretch overflow-hidden rounded-sm border border-border-subtle bg-gh-gray-6'
+      'code-body flex w-full flex-row items-stretch overflow-hidden rounded-sm border border-border-subtle bg-(--color-code-chrome)'
     codeBody.style.marginTop = '0px'
     codeBody.style.borderTopWidth = '0px'
     codeBody.style.borderTopLeftRadius = '0px'
@@ -142,10 +407,10 @@ export function enhanceCodeBlocks(triggerToast: (message: string) => void) {
 
       gutter = document.createElement('div')
       gutter.className =
-        'code-line-numbers shrink-0 border-r border-border-subtle/30 bg-gh-gray-5/50 py-2 font-mono text-[0.8rem] leading-relaxed text-text-muted/50 select-none'
+        'code-line-numbers shrink-0 border-r border-border-subtle/30 bg-(--color-code-chrome) py-1.5 font-mono text-[0.8rem] leading-snug text-text-muted/50 select-none'
       lines.forEach((_, i) => {
         const num = document.createElement('div')
-        num.className = 'pr-2 pl-3 text-right'
+        num.className = 'pr-1.5 pl-2 text-right'
         num.textContent = String(i + 1)
         gutter?.appendChild(num)
       })
@@ -172,30 +437,25 @@ export function enhanceCodeBlocks(triggerToast: (message: string) => void) {
       })
     }
 
-    syncGutterRowHeights()
-    if (typeof document !== 'undefined' && document.fonts?.ready) {
-      document.fonts.ready.then(syncGutterRowHeights)
-    }
-
     const wrapperBar = document.createElement('div')
     wrapperBar.className =
-      'code-scrollbar-wrapper flex w-full flex-row items-stretch bg-gh-gray-6 border-x border-b border-border-subtle rounded-b-sm select-none mb-6 overflow-hidden transition-all'
+      'code-scrollbar-wrapper flex w-full flex-row items-stretch bg-(--color-code-chrome) border-x border-b border-border-subtle rounded-b-sm select-none mb-6 overflow-hidden transition-all'
 
     const gutterSpace = document.createElement('div')
     gutterSpace.className =
-      'code-scrollbar-gutter-space shrink-0 bg-gh-gray-5/50 border-r border-border-subtle/30 py-1.5 min-h-[1.25rem] box-border'
+      'code-scrollbar-gutter-space shrink-0 bg-(--color-code-chrome) border-r border-border-subtle/30 py-1 min-h-[1.25rem] box-border'
 
     const codeSpace = document.createElement('div')
     codeSpace.className =
-      'code-scrollbar-code-space flex flex-1 min-w-0 items-center px-2 py-1.5 bg-gh-gray-6'
+      'code-scrollbar-code-space flex flex-1 min-w-0 items-center px-2 py-1 bg-(--color-code-chrome)'
 
     const trackBar = document.createElement('div')
     trackBar.className =
-      'code-scrollbar-track relative w-full h-1.5 rounded-full bg-border-subtle/30 cursor-pointer'
+      'code-scrollbar-track relative w-full h-2 rounded-full bg-border-subtle/30 cursor-pointer'
 
     const thumbBar = document.createElement('div')
     thumbBar.className =
-      'code-scrollbar-thumb absolute top-0 left-0 h-full rounded-full bg-gh-gray-5 border border-border-subtle/40 shadow-xs transition-[left,width,background-color] duration-75 hover:bg-gh-gray-3 cursor-grab active:cursor-grabbing'
+      'code-scrollbar-thumb absolute top-0 left-0 h-full rounded-full bg-(--color-code-thumb) border border-border-subtle/40 shadow-xs transition-[left,width,background-color] duration-75 hover:bg-(--color-code-thumb-hover) cursor-grab active:cursor-grabbing'
 
     trackBar.appendChild(thumbBar)
     codeSpace.appendChild(trackBar)
@@ -207,8 +467,10 @@ export function enhanceCodeBlocks(triggerToast: (message: string) => void) {
       const scrollWidth = pre.scrollWidth
       const clientWidth = pre.clientWidth
 
-      if (gutter) {
+      if (gutter && gutter.style.display !== 'none') {
         gutterSpace.style.width = `${gutter.getBoundingClientRect().width}px`
+      } else {
+        gutterSpace.style.width = '0px'
       }
 
       if (scrollWidth <= clientWidth + 2) {
@@ -261,7 +523,7 @@ export function enhanceCodeBlocks(triggerToast: (message: string) => void) {
           - thumbBar.getBoundingClientRect().width,
         1
       )
-      thumbBar.style.backgroundColor = 'var(--color-gh-gray-3)'
+      thumbBar.style.backgroundColor = 'var(--color-code-thumb-hover)'
       document.body.style.userSelect = 'none'
       e.preventDefault()
     })
@@ -282,6 +544,57 @@ export function enhanceCodeBlocks(triggerToast: (message: string) => void) {
     })
 
     codeBody.parentNode?.insertBefore(wrapperBar, codeBody.nextSibling)
+
+    function applyPrefs() {
+      const prefs = codeBlockPrefsStore.current
+      const effectiveIsDark = resolveEffectiveIsDark(prefs.colorScheme)
+
+      applyChromeVars(headerBar, effectiveIsDark)
+      applyChromeVars(codeBody, effectiveIsDark)
+      applyChromeVars(wrapperBar, effectiveIsDark)
+
+      themeIconStage.innerHTML = THEME_ICONS[prefs.colorScheme]
+      themeToggleBtn.setAttribute(
+        'aria-label',
+        `Code color scheme: ${THEME_LABELS[prefs.colorScheme]}`
+      )
+      themeToggleBtn.title = `Code color scheme: ${THEME_LABELS[prefs.colorScheme]} (click to change)`
+
+      lineNumbersRow.sync()
+      wrapRow.sync()
+
+      if (gutter) gutter.style.display = prefs.lineNumbers ? '' : 'none'
+      gutterSpace.style.display = prefs.lineNumbers ? '' : 'none'
+
+      if (codeElement) {
+        if (prefs.wrap) {
+          codeElement.style.setProperty('white-space', 'pre-wrap', 'important')
+          codeElement.style.setProperty('width', '100%', 'important')
+          codeElement.style.setProperty(
+            'overflow-wrap',
+            'anywhere',
+            'important'
+          )
+        } else {
+          codeElement.style.removeProperty('white-space')
+          codeElement.style.removeProperty('width')
+          codeElement.style.removeProperty('overflow-wrap')
+        }
+      }
+
+      syncGutterRowHeights()
+      updateCustomScrollbar()
+    }
+
+    applyPrefs()
+    if (typeof document !== 'undefined' && document.fonts?.ready) {
+      document.fonts.ready.then(() => {
+        syncGutterRowHeights()
+        updateCustomScrollbar()
+      })
+    }
     setTimeout(updateCustomScrollbar, 50)
+
+    enhancedBlocks.push({pre, applyPrefs})
   })
 }

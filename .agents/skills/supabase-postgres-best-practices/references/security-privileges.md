@@ -5,8 +5,6 @@ impactDescription: Reduced attack surface, better audit trail
 tags: privileges, security, roles, permissions
 ---
 
-<!-- @format -->
-
 ## Apply Principle of Least Privilege
 
 Grant only the minimum permissions required. Never use superuser for application queries.

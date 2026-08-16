@@ -1,10 +1,10 @@
-<!-- @format -->
 <script lang="ts">
   import {cn} from '../utils/cn'
   import ThemeSelect from '../components/filter/ThemeSelect.svelte'
+  import ContentFontSelect from '../components/filter/ContentFontSelect.svelte'
   import AccessibilitySelect from '../components/filter/AccessibilitySelect.svelte'
   import {themeStore} from '../stores/themeStore.svelte'
-  import {sanitizeIconClass, type SocialLink} from '../author'
+  import {type SocialLink} from '../author'
   import FooterLegalRow from './FooterLegalRow.svelte'
 
   import {page} from '$app/state'
@@ -21,6 +21,7 @@
     navItems?: NavItem[]
     socials?: SocialLink[]
     onNavClick?: (url: string) => void
+    showFontSelect?: boolean
     class?: string
   }
 
@@ -40,6 +41,7 @@
     navItems = [],
     socials = [],
     onNavClick,
+    showFontSelect = false,
     class: className = ''
   }: Props = $props()
 
@@ -65,7 +67,7 @@
 
 <footer
   class={cn(
-    'relative z-10 mx-auto mt-auto w-full max-w-full overflow-hidden px-6 pt-0 pb-20 font-sans text-xs text-text-muted md:w-[80%] md:pb-20 lg:w-[65%] lg:pb-6 xl:w-[55%]',
+    'relative z-10 mx-auto mt-auto w-full max-w-full px-6 pt-0 pb-20 font-sans text-xs text-text-muted md:w-[80%] md:pb-20 lg:w-[65%] lg:pb-6 xl:w-[55%]',
     className
   )}>
   <div class="rounded-sm glass-card p-4 sm:p-6">
@@ -128,20 +130,19 @@
         class="flex flex-wrap items-center justify-between gap-3 pt-4 md:col-span-12">
         {#if resolvedSocials.length > 0}
           <div
-            class="flex max-w-[calc(6*2.25rem+5*0.625rem)] flex-wrap items-center gap-2 sm:gap-2.5">
-            {#each resolvedSocials as item (item.url + item.platform)}
+            class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-text-muted">
+            {#each resolvedSocials as item, idx (item.url + item.platform)}
+              {#if idx > 0}
+                <span
+                  class="text-text-muted/60 select-none"
+                  aria-hidden="true">·</span>
+              {/if}
               <a
                 href={item.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                class="inline-flex h-8 w-8 items-center justify-center rounded-sm border border-border-subtle bg-surface text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
-                aria-label={item.platform}>
-                <i
-                  class="{sanitizeIconClass(
-                    item.icon,
-                    'bi bi-people'
-                  )} text-base leading-none"
-                  aria-hidden="true"></i>
+                class="font-medium text-text-secondary transition-colors hover:text-copilot focus-visible:text-copilot focus-visible:outline-none">
+                {item.platform}
               </a>
             {/each}
           </div>
@@ -155,6 +156,9 @@
             theme={themeStore.current}
             onThemeChange={themeStore.apply}
             dropdownDirection="up" />
+          {#if showFontSelect}
+            <ContentFontSelect dropdownDirection="up" />
+          {/if}
           <AccessibilitySelect dropdownDirection="up" />
         </div>
       </div>

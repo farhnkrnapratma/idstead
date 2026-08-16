@@ -1,5 +1,5 @@
-<!-- @format -->
 <script lang="ts">
+  import {X} from '@lucide/svelte'
   import {cn} from '../../utils/cn'
 
   interface Props {
@@ -29,8 +29,6 @@
     onclick={onRemove}
     aria-label="Remove filter: {label} {value}"
     class="ml-0.5 inline-flex h-4 w-4 cursor-pointer items-center justify-center rounded-sm text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-copilot">
-    <i
-      class="bi bi-x text-sm leading-none"
-      aria-hidden="true"></i>
+    <X class="size-3.5 leading-none" />
   </button>
 </div>

@@ -1,5 +1,5 @@
-<!-- @format -->
 <script lang="ts">
+  import {AlertCircle, CheckCircle2, AlertTriangle, Info} from '@lucide/svelte'
   import {cn} from '../utils/cn'
 
   interface Props {
@@ -17,13 +17,6 @@
     warning: 'text-warning',
     info: 'text-text-muted'
   }
-
-  const iconStyles = {
-    error: 'bi-exclamation-circle-fill',
-    success: 'bi-check-circle-fill',
-    warning: 'bi-exclamation-triangle-fill',
-    info: 'bi-info-circle-fill'
-  }
 </script>
 
 {#if message}
@@ -36,9 +29,15 @@
       variantStyles[variant],
       className
     )}>
-    <i
-      class="bi {iconStyles[variant]} text-xs"
-      aria-hidden="true"></i>
+    {#if variant === 'error'}
+      <AlertCircle class="size-3 shrink-0" />
+    {:else if variant === 'success'}
+      <CheckCircle2 class="size-3 shrink-0" />
+    {:else if variant === 'warning'}
+      <AlertTriangle class="size-3 shrink-0" />
+    {:else}
+      <Info class="size-3 shrink-0" />
+    {/if}
     <span>{message}</span>
   </div>
 {/if}

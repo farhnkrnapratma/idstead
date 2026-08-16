@@ -4,8 +4,6 @@ description: Scaffold a new Supabase migration file in supabase/migrations/, fol
 disable-model-invocation: true
 ---
 
-<!-- @format -->
-
 # Create migration
 
 This repo's migrations live in `supabase/migrations/` and are named `YYYYMMDDHHMMSS_description.sql` (see `2026080500000_atomic_save_rpcs.sql`). Schema is protected by RLS; anything that needs to bypass RLS for a legitimate write (e.g. an atomic replace-all from an admin form) goes through a `SECURITY DEFINER` RPC function, never a direct table grant to `anon`/`authenticated`.

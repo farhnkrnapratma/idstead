@@ -1,5 +1,5 @@
-<!-- @format -->
 <script lang="ts">
+  import {ChevronRight} from '@lucide/svelte'
   import {cn} from '../utils/cn'
 
   export interface BreadcrumbItem {
@@ -61,15 +61,13 @@
       {#each processedItems as item, index (item.href ?? item.displayLabel)}
         <li class="inline-flex items-center gap-1.5">
           {#if index > 0}
-            <i
-              class="bi bi-chevron-right text-2xs text-text-muted/60"
-              aria-hidden="true"></i>
+            <ChevronRight class="size-3 text-text-muted/60" />
           {/if}
 
           {#if item.isCurrent || !item.href}
             <span
               class={item.isCurrent ?
-                'max-w-xs truncate font-semibold text-text-primary sm:max-w-md'
+                'max-w-xs truncate font-semibold text-text-secondary sm:max-w-md'
               : 'text-text-muted transition-colors hover:text-copilot'}
               aria-current={item.isCurrent ? 'page' : undefined}>
               {item.displayLabel}

@@ -1,13 +1,16 @@
-<!-- @format -->
 <script lang="ts">
   import {supabase} from '$lib/supabase'
   import {onMount, tick} from 'svelte'
+  import {X, Image as ImageIcon, AlertCircle} from '@lucide/svelte'
   import {renderMarkdown} from '$lib/markdown'
   import {
     enhanceCodeBlocks,
     splitHighlightedHtmlLines
   } from '$lib/utils/codeBlocks'
   import hljs from 'highlight.js'
+  import {a11yStore} from '$lib/stores/a11yStore.svelte'
+  import {codeBlockPrefsStore} from '$lib/stores/codeBlockPrefsStore.svelte'
+  import {resolveHljsTheme} from '$lib/utils/hljsTheme'
   import {
     SkipLink,
     LoadingState,
@@ -22,7 +25,10 @@
     MarkdownEditor,
     ThemeSelect,
     Dialog,
-    toastStore
+    toastStore,
+    PillInput,
+    decodeHtmlEntities,
+    sanitizeInput
   } from '$lib'
   import {themeStore} from '$lib/stores/themeStore.svelte'
 
@@ -30,11 +36,20 @@
   let title = $state('')
   let slug = $derived(generateSlug(title))
   let excerpt = $state('')
+  let tags = $state<string[]>([])
   let markdownContent = $state(
     '# New Post\n\nWrite your markdown content here...'
   )
 
   let isDark = $state(false)
+
+  const hljsTheme = $derived(
+    resolveHljsTheme(
+      a11yStore.current.highContrast,
+      isDark,
+      codeBlockPrefsStore.current.colorScheme
+    )
+  )
 
   let isSubmitting = $state(false)
   let errorMessage = $state<string | null>(null)
@@ -52,11 +67,13 @@
 
   let initialTitle = $state('')
   let initialExcerpt = $state('')
+  let initialTags = $state<string[]>([])
   let initialMarkdownContent = $state('')
 
   const isDirty = $derived(
     title.trim() !== initialTitle.trim()
       || excerpt.trim() !== initialExcerpt.trim()
+      || JSON.stringify(tags) !== JSON.stringify(initialTags)
       || markdownContent.trim() !== initialMarkdownContent.trim()
   )
 
@@ -65,6 +82,9 @@
 
   let excerptError = $state('')
   let excerptValid = $state(false)
+
+  let tagsError = $state('')
+  let tagsValid = $state(false)
 
   let showCancelDialog = $state(false)
   let showPublishDialog = $state(false)
@@ -121,6 +141,7 @@
         } else {
           initialTitle = ''
           initialExcerpt = ''
+          initialTags = []
           initialMarkdownContent =
             '# New Post\n\nWrite your markdown content here...'
         }
@@ -135,6 +156,10 @@
             if (!id) {
               title = parsed.title || title
               excerpt = parsed.excerpt || excerpt
+              tags =
+                Array.isArray(parsed.tags) ?
+                  parsed.tags.map((t: any) => decodeHtmlEntities(String(t)))
+                : tags
               if (
                 parsed.markdownContent
                 && parsed.markdownContent !== defaultTemplate
@@ -149,6 +174,10 @@
               ) {
                 title = parsed.title || title
                 excerpt = parsed.excerpt || excerpt
+                tags =
+                  Array.isArray(parsed.tags) ?
+                    parsed.tags.map((t: any) => decodeHtmlEntities(String(t)))
+                  : tags
                 markdownContent = parsed.markdownContent
               }
             }
@@ -192,6 +221,10 @@
       title = post.title
       originalSlug = post.slug
       excerpt = post.excerpt || ''
+      tags =
+        Array.isArray(post.tags) ?
+          post.tags.map((t: string) => decodeHtmlEntities(t))
+        : []
 
       let fileText = ''
       if (post.storage_path) {
@@ -219,6 +252,7 @@
       markdownContent = fileText
       initialTitle = title
       initialExcerpt = excerpt
+      initialTags = [...tags]
       initialMarkdownContent = markdownContent
 
       bannerPath = post.banner_path || null
@@ -457,7 +491,13 @@
       clearTimeout(autoSaveTimer)
       autoSaveTimer = setTimeout(() => {
         const key = editId ? `autosave_edit_${editId}` : 'autosave_new'
-        const data = {title, excerpt, markdownContent, timestamp: Date.now()}
+        const data = {
+          title,
+          excerpt,
+          tags,
+          markdownContent,
+          timestamp: Date.now()
+        }
         localStorage.setItem(key, JSON.stringify(data))
         autoSaveStatus = 'saved'
         setTimeout(() => {
@@ -501,6 +541,29 @@
       excerptValid = true
     }
   }, 500)
+
+  const validateTagsField = debounce(() => {
+    if (tags.length === 0) {
+      tagsError = 'At least 1 tag is required.'
+      tagsValid = false
+    } else if (tags.length > 5) {
+      tagsError = 'Maximum 5 tags allowed.'
+      tagsValid = false
+    } else {
+      tagsError = ''
+      tagsValid = true
+    }
+  }, 300)
+
+  $effect(() => {
+    if (tags.length > 0 && tags.length <= 5) {
+      tagsError = ''
+      tagsValid = true
+    } else if (tags.length > 5) {
+      tagsError = 'Maximum 5 tags allowed.'
+      tagsValid = false
+    }
+  })
 
   function validateImageDimensions(file: File): Promise<boolean> {
     return new Promise(resolve => {
@@ -567,8 +630,23 @@
       return false
     }
 
+    if (tags.length === 0) {
+      tagsError = 'At least 1 tag is required.'
+      tagsValid = false
+      errorMessage = 'At least 1 tag is required.'
+      return false
+    }
+    if (tags.length > 5) {
+      tagsError = 'Maximum 5 tags allowed.'
+      tagsValid = false
+      errorMessage = 'Maximum 5 tags allowed.'
+      return false
+    }
+
     titleError = ''
     titleValid = true
+    tagsError = ''
+    tagsValid = true
     return true
   }
 
@@ -601,7 +679,6 @@
     errorMessage = null
 
     try {
-      // Ensure Supabase auth session is valid before storage or database operations
       const {data: userData, error: userError} = await supabase.auth.getUser()
       if (userError || !userData?.user) {
         const {data: refreshData, error: refreshError} =
@@ -654,6 +731,10 @@
         title: title.trim(),
         slug: slug.trim(),
         excerpt: excerpt.trim() || null,
+        tags:
+          tags.length > 0 ?
+            tags.map(t => decodeHtmlEntities(t.trim())).filter(Boolean)
+          : null,
         published: toBePublished,
         storage_path: storagePath,
         banner_path: finalBannerPath
@@ -743,21 +824,15 @@
 
 <svelte:head>
   <title>{isEditMode ? 'Edit post' : 'New post'} — Console</title>
-  {#if isDark}
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
-  {:else}
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
-  {/if}
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/{hljsTheme}.min.css" />
 </svelte:head>
 
 <SkipLink />
 
 <nav
-  class="fixed top-0 z-40 flex h-15 w-full items-center justify-between glass-card border-b border-border-subtle/60 px-5 font-sans shadow-xs"
+  class="fixed top-0 z-40 flex h-15 w-full items-center justify-between border-b border-border-subtle bg-surface-card px-5 font-sans shadow-xs"
   aria-label="Editor navigation">
   <button
     type="button"
@@ -795,7 +870,8 @@
         onsubmit={e => e.preventDefault()}
         novalidate
         class="flex flex-col gap-4">
-        <div class="rounded-sm glass-card p-6 text-left">
+        <div
+          class="rounded-sm border border-border-subtle bg-surface-card p-6 text-left">
           <h2 class="mb-4 text-base font-bold text-text-primary select-none">
             {isEditMode ? 'Edit post details' : 'Post details'}
           </h2>
@@ -825,14 +901,12 @@
                     }}
                     class="absolute top-2 right-2 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-white/20 bg-black/70 text-white transition-colors hover:bg-black/90"
                     aria-label="Remove banner">
-                    <i
-                      class="bi bi-x-lg text-base leading-none"
-                      aria-hidden="true"></i>
+                    <X class="size-4 leading-none" />
                   </button>
                 {:else}
                   <div
                     class="flex flex-col items-center gap-2 text-text-muted/65">
-                    <i class="bi bi-file-richtext-fill text-3xl"></i>
+                    <ImageIcon class="size-8" />
                     <span class="text-2xs">No banner uploaded</span>
                   </div>
                 {/if}
@@ -853,9 +927,8 @@
                   <span
                     role="alert"
                     class="flex items-start gap-1.5 text-danger">
-                    <i
-                      class="bi bi-exclamation-circle-fill mt-px shrink-0 self-start text-xs leading-none"
-                      aria-hidden="true"></i>
+                    <AlertCircle
+                      class="mt-px size-3.5 shrink-0 self-start leading-none" />
                     <span class="min-w-0 flex-1 wrap-break-word"
                       >{bannerError}</span>
                   </span>
@@ -907,6 +980,25 @@
                     validateExcerptField()
                   }} />
               </FormField>
+
+              <FormField
+                id="post-tags"
+                label="Tags"
+                counter={`${tags.length}/5`}>
+                {#snippet hintSnippet()}
+                  Up to 5 tags, 30 characters each. Separate multiple tags with
+                  commas. To include a comma within a tag name, use a backslash
+                  (e.g., UI\,UX Design).
+                {/snippet}
+                <PillInput
+                  id="post-tags"
+                  bind:value={tags}
+                  itemLabel="Tag"
+                  placeholderEmpty="Type tag and press comma..."
+                  placeholderFilled="Add tag..."
+                  maxItems={5}
+                  maxItemLength={30} />
+              </FormField>
             </div>
           </div>
         </div>
@@ -921,20 +1013,20 @@
 
         <div class="mt-4 mb-10 flex flex-wrap justify-end gap-3 select-none">
           <Button
-            type="Ghost"
+            type="ghost"
             size="md"
             onclick={handleCancelClick}>
             Cancel
           </Button>
           <Button
-            type="Secondary"
+            type="secondary"
             size="md"
             onclick={() => handleSaveClick(false)}
             disabled={isSubmitting}>
             Save draft
           </Button>
           <Button
-            type="Primary"
+            type="primary"
             size="md"
             onclick={() => handleSaveClick(true)}
             disabled={isSubmitting}
@@ -954,13 +1046,13 @@
   onClose={() => (showCancelDialog = false)}>
   {#snippet footer()}
     <Button
-      type="Secondary"
+      type="secondary"
       size="md"
       showEscHint
       onclick={() => (showCancelDialog = false)}>Keep editing</Button>
     <Button
-      type="Danger"
-      tone="Critical"
+      type="danger"
+      tone="critical"
       size="md"
       onclick={() => (window.location.href = '/admin')}>Discard changes</Button>
   {/snippet}
@@ -973,12 +1065,12 @@
   onClose={() => (showPublishDialog = false)}>
   {#snippet footer()}
     <Button
-      type="Secondary"
+      type="secondary"
       size="md"
       showEscHint
       onclick={() => (showPublishDialog = false)}>Cancel</Button>
     <Button
-      type="Primary"
+      type="primary"
       size="md"
       onclick={() => executeSave(true)}>Publish post</Button>
   {/snippet}
@@ -991,12 +1083,12 @@
   onClose={() => (showSaveDraftDialog = false)}>
   {#snippet footer()}
     <Button
-      type="Secondary"
+      type="secondary"
       size="md"
       showEscHint
       onclick={() => (showSaveDraftDialog = false)}>Cancel</Button>
     <Button
-      type="Primary"
+      type="primary"
       size="md"
       onclick={() => executeSave(false)}>Save draft</Button>
   {/snippet}
@@ -1096,12 +1188,9 @@
   }
 
   .prose-custom :global(pre) {
-    @apply mt-6 mb-6 scrollbar-none! overflow-x-auto rounded-sm border border-adwaita-border bg-adwaita-hover px-3! py-2! font-mono text-[0.8rem] leading-relaxed break-normal! whitespace-pre! [-ms-overflow-style:none]!;
+    @apply mt-6 mb-6 scrollbar-none! overflow-x-auto rounded-sm border border-border-subtle bg-surface-hover px-3! py-2! font-mono text-[0.8rem] leading-relaxed break-normal! whitespace-pre! [-ms-overflow-style:none]!;
   }
 
-  /* When a line-number gutter sits to the left (see enhanceCodeBlocks), it
-     already provides its own edge padding — pre's own left padding on top of
-     that doubled the visual gap between the divider and the code text. */
   .prose-custom :global(pre[data-enhanced='true']) {
     @apply pr-3.5! pl-2!;
   }
@@ -1111,7 +1200,7 @@
   }
 
   .prose-custom :global(code:not(pre code)) {
-    @apply rounded bg-adwaita-hover px-1 py-px font-mono text-xs font-normal text-inherit;
+    @apply rounded bg-surface-hover px-1 py-px font-mono text-xs font-normal text-inherit;
     overflow-wrap: break-word;
     word-break: break-word;
   }
@@ -1137,14 +1226,14 @@
   }
 
   .prose-custom :global(a.anchor-link) {
-    @apply ml-[0.35rem]! inline-flex! items-center! justify-center! align-middle! leading-none! whitespace-nowrap! text-adwaita-text! no-underline! transition-none!;
+    @apply ml-[0.35rem]! inline-flex! items-center! justify-center! align-middle! leading-none! whitespace-nowrap! text-text-primary! no-underline! transition-none!;
   }
 
   :global(:root.dark) .prose-custom :global(a.anchor-link) {
     @apply text-gh-gray-4!;
   }
 
-  .prose-custom :global(a.anchor-link .bi) {
+  .prose-custom :global(a.anchor-link svg) {
     @apply inline-block! align-middle! text-[0.85em]! leading-none! text-inherit! no-underline!;
   }
 
@@ -1179,20 +1268,20 @@
   :global(:root.dark) .prose-custom :global(h5:hover a.anchor-link),
   :global(:root.dark) .prose-custom :global(h6:hover a.anchor-link),
   :global(:root.dark) .prose-custom :global(a.anchor-link):hover,
-  .prose-custom :global(h1:hover a.anchor-link .bi),
-  .prose-custom :global(h2:hover a.anchor-link .bi),
-  .prose-custom :global(h3:hover a.anchor-link .bi),
-  .prose-custom :global(h4:hover a.anchor-link .bi),
-  .prose-custom :global(h5:hover a.anchor-link .bi),
-  .prose-custom :global(h6:hover a.anchor-link .bi),
-  .prose-custom :global(a.anchor-link):hover :global(.bi),
-  :global(:root.dark) .prose-custom :global(h1:hover a.anchor-link .bi),
-  :global(:root.dark) .prose-custom :global(h2:hover a.anchor-link .bi),
-  :global(:root.dark) .prose-custom :global(h3:hover a.anchor-link .bi),
-  :global(:root.dark) .prose-custom :global(h4:hover a.anchor-link .bi),
-  :global(:root.dark) .prose-custom :global(h5:hover a.anchor-link .bi),
-  :global(:root.dark) .prose-custom :global(h6:hover a.anchor-link .bi),
-  :global(:root.dark) .prose-custom :global(a.anchor-link):hover :global(.bi) {
+  .prose-custom :global(h1:hover a.anchor-link svg),
+  .prose-custom :global(h2:hover a.anchor-link svg),
+  .prose-custom :global(h3:hover a.anchor-link svg),
+  .prose-custom :global(h4:hover a.anchor-link svg),
+  .prose-custom :global(h5:hover a.anchor-link svg),
+  .prose-custom :global(h6:hover a.anchor-link svg),
+  .prose-custom :global(a.anchor-link):hover :global(svg),
+  :global(:root.dark) .prose-custom :global(h1:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(h2:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(h3:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(h4:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(h5:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(h6:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(a.anchor-link):hover :global(svg) {
     @apply text-copilot! no-underline! opacity-100;
   }
 
@@ -1207,9 +1296,6 @@
     @apply border-b border-border-subtle bg-surface-hover/80 font-semibold tracking-wider text-text-primary uppercase;
   }
 
-  /* Headers always render centered regardless of the column's markdown
-     alignment marker (`align` presentational attribute) - only body cells
-     follow per-column alignment. */
   .prose-custom :global(th) {
     @apply px-2.5 py-2 text-center font-semibold text-text-primary;
     overflow-wrap: break-word;
@@ -1233,8 +1319,6 @@
     white-space: normal;
   }
 
-  /* GFM table alignment markers (`---:`, `:---:`) - e.g. numeric/money
-     columns marked right-aligned in the source markdown. */
   .prose-custom :global(td[align='right']) {
     @apply text-right;
   }

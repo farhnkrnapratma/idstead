@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # HTTP-Protocol and Authentication Hunting
 
 #### When to use this file

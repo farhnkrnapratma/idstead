@@ -1,4 +1,4 @@
--- Rename Tables to db_* prefix
+
 ALTER TABLE IF EXISTS public.posts RENAME TO db_posts;
 ALTER TABLE IF EXISTS public.comments RENAME TO db_comments;
 ALTER TABLE IF EXISTS public.post_views RENAME TO db_views;
@@ -9,12 +9,12 @@ ALTER TABLE IF EXISTS public.cv_documents RENAME TO db_documents;
 ALTER TABLE IF EXISTS public.skill_categories RENAME TO db_categories;
 ALTER TABLE IF EXISTS public.skill_items RENAME TO db_items;
 ALTER TABLE IF EXISTS public.author_links RENAME TO db_links;
--- Drop legacy views
+
 DROP VIEW IF EXISTS public.contact_info, public.funding, public.skills, public.socials CASCADE;
 
--- Re-create / Rename RPC Functions
 
--- 1. db_save_links
+
+
 CREATE OR REPLACE FUNCTION public.db_save_links(
   p_author_id uuid,
   p_contact_email text,
@@ -60,7 +60,7 @@ $$;
 REVOKE ALL ON FUNCTION public.db_save_links(uuid, text, jsonb) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.db_save_links(uuid, text, jsonb) TO authenticated;
 
--- 2. db_save_skills
+
 CREATE OR REPLACE FUNCTION public.db_save_skills(
   p_author_id uuid,
   p_categories jsonb
@@ -109,7 +109,7 @@ $$;
 REVOKE ALL ON FUNCTION public.db_save_skills(uuid, jsonb) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.db_save_skills(uuid, jsonb) TO authenticated;
 
--- 3. db_save_cv
+
 CREATE OR REPLACE FUNCTION public.db_save_cv(
   p_author_id uuid,
   p_experiences jsonb,
@@ -172,7 +172,7 @@ $$;
 REVOKE ALL ON FUNCTION public.db_save_cv(uuid, jsonb, jsonb) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.db_save_cv(uuid, jsonb, jsonb) TO authenticated;
 
--- 4. db_save_legal
+
 CREATE OR REPLACE FUNCTION public.db_save_legal(
   p_slug text,
   p_title text,
@@ -201,7 +201,7 @@ $$;
 REVOKE ALL ON FUNCTION public.db_save_legal(text, text, text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.db_save_legal(text, text, text) TO authenticated;
 
--- 5. db_increment_view
+
 CREATE OR REPLACE FUNCTION public.db_increment_view(
   p_post_id uuid,
   p_ip_hash text

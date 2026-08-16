@@ -1,5 +1,3 @@
-/** @format */
-
 import {replaceState} from '$app/navigation'
 import {SvelteURL} from 'svelte/reactivity'
 

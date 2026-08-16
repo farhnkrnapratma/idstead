@@ -1,5 +1,3 @@
-/** @format */
-
 import {json, error} from '@sveltejs/kit'
 import type {RequestHandler} from './$types'
 import {supabase} from '$lib/supabase'
@@ -29,7 +27,6 @@ export const GET: RequestHandler = async ({params, url, request, fetch}) => {
     })
   }
 
-  // Fetch comments count and views count
   let commentCount = 0
   let viewsCount = 0
   try {
@@ -41,7 +38,7 @@ export const GET: RequestHandler = async ({params, url, request, fetch}) => {
     commentCount = cCount ?? 0
 
     const {count: vCount} = await supabase
-      .from('post_views')
+      .from('db_views')
       .select('*', {count: 'exact', head: true})
       .eq('post_id', post.id)
     viewsCount = vCount ?? 0
@@ -49,7 +46,6 @@ export const GET: RequestHandler = async ({params, url, request, fetch}) => {
     console.error('Error fetching post counts:', err)
   }
 
-  // Fetch raw markdown content from storage
   let rawMarkdown = ''
   if (post.storage_path) {
     try {

@@ -1,6 +1,6 @@
-<!-- @format -->
 <script lang="ts">
   import type {HTMLImgAttributes} from 'svelte/elements'
+  import {Image as ImageIcon} from '@lucide/svelte'
   import {cn} from '../utils/cn'
 
   interface Props {
@@ -10,7 +10,6 @@
     imgClass?: string
     loading?: 'lazy' | 'eager'
     referrerpolicy?: HTMLImgAttributes['referrerpolicy']
-    fallbackIcon?: string
     aspectRatio?: string
     rounded?: string
     onload?: () => void
@@ -24,7 +23,6 @@
     imgClass = '',
     loading = 'lazy',
     referrerpolicy,
-    fallbackIcon,
     aspectRatio,
     rounded = 'rounded-sm',
     onload,
@@ -44,7 +42,6 @@
 
     isError = false
 
-    // Check if image is already cached/completed by the browser
     if (imgElement && imgElement.complete && imgElement.naturalWidth > 0) {
       isLoaded = true
       onload?.()
@@ -73,23 +70,18 @@
   {#if isError || !src}
     <div
       class="absolute inset-0 flex h-full w-full items-center justify-center bg-gh-gray-2 p-1 text-text-muted select-none dark:bg-gh-gray-5">
-      <i
-        class={cn(
-          fallbackIcon || 'bi bi-file-richtext-fill',
-          'flex items-center justify-center text-center text-[clamp(0.625rem,30cqw,2.5rem)] leading-none text-copilot/50'
-        )}
-        aria-hidden="true"></i>
+      <ImageIcon
+        class="size-8 text-copilot/50"
+        aria-hidden="true" />
     </div>
   {:else}
     {#if !isLoaded}
       <div
         class="absolute inset-0 flex h-full w-full animate-pulse items-center justify-center border border-border-subtle/40 bg-gh-gray-2 dark:bg-gh-gray-5"
         aria-hidden="true">
-        <i
-          class={cn(
-            fallbackIcon || 'bi bi-file-richtext-fill',
-            'flex items-center justify-center text-center text-[clamp(0.625rem,30cqw,2.5rem)] leading-none text-text-muted/40 dark:text-text-muted/30'
-          )}></i>
+        <ImageIcon
+          class="size-8 text-text-muted/40 dark:text-text-muted/30"
+          aria-hidden="true" />
       </div>
     {/if}
     <img

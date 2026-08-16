@@ -5,8 +5,6 @@ impactDescription: 5-10x faster multi-column queries
 tags: indexes, composite-index, multi-column, query-optimization
 ---
 
-<!-- @format -->
-
 ## Create Composite Indexes for Multi-Column Queries
 
 When queries filter on multiple columns, a composite index is more efficient than separate single-column indexes.

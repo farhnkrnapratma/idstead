@@ -1,6 +1,6 @@
-<!-- @format -->
 <script lang="ts">
   import type {Snippet} from 'svelte'
+  import {ArrowUpRight} from '@lucide/svelte'
   import {cn} from '../utils/cn'
 
   interface Props {
@@ -48,9 +48,8 @@
         {/if}
       </h3>
       {#if href && interactive}
-        <i
-          class="bi bi-arrow-up-right mt-1 shrink-0 text-xs text-text-muted transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-copilot"
-          aria-hidden="true"></i>
+        <ArrowUpRight
+          class="mt-1 size-3.5 shrink-0 text-text-muted transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-copilot" />
       {/if}
     </div>
 

@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # Attack Classes
 
 #### Attack classes — choose and split based on Phase 1

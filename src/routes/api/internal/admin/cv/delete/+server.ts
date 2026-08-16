@@ -1,8 +1,6 @@
-/** @format */
-
 import type {RequestHandler} from './$types'
-import {proxyToSupabaseEdgeFunction} from '$lib/supabaseFunctions'
+import {processCvDelete} from '$lib/server/adminCv'
 
-export const POST: RequestHandler = async ({request}) => {
-  return proxyToSupabaseEdgeFunction(request, 'admin/cv/delete')
+export const POST: RequestHandler = async ({request, platform}) => {
+  return processCvDelete(request, platform)
 }

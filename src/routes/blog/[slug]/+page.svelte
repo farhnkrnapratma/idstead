@@ -1,7 +1,13 @@
-<!-- @format -->
 <script lang="ts">
   import {onMount, tick} from 'svelte'
   import {SvelteSet} from 'svelte/reactivity'
+  import {
+    Copy,
+    Link2 as LinkIcon,
+    Hash,
+    Mail,
+    Image as ImageIcon
+  } from '@lucide/svelte'
   import type {PageProps} from './$types'
   import type {BlogComment} from './+page.server'
   import hljs from 'highlight.js'
@@ -46,7 +52,10 @@
   import {page} from '$app/state'
   import {supabase} from '$lib/supabase'
   import {themeStore} from '$lib/stores/themeStore.svelte'
-  import {sanitizeIconClass} from '$lib/author'
+  import {a11yStore} from '$lib/stores/a11yStore.svelte'
+  import {contentFontStore} from '$lib/stores/contentFontStore.svelte'
+  import {codeBlockPrefsStore} from '$lib/stores/codeBlockPrefsStore.svelte'
+  import {resolveHljsTheme} from '$lib/utils/hljsTheme'
 
   let {data}: PageProps = $props()
   const post = $derived(data.post)
@@ -84,6 +93,14 @@
     failedRelatedBanners.add(postId)
   }
   let isDark = $state(false)
+
+  const hljsTheme = $derived(
+    resolveHljsTheme(
+      a11yStore.current.highContrast,
+      isDark,
+      codeBlockPrefsStore.current.colorScheme
+    )
+  )
 
   const bannerPublicUrl = $derived(
     data.bannerPublicUrl
@@ -141,7 +158,7 @@
           anchor.href = `#${el.id}`
           anchor.className = 'anchor-link select-none'
           anchor.innerHTML =
-            '<i class="bi bi-link text-[0.85em] leading-none inline-block align-middle select-none opacity-0" aria-hidden="true"></i>'
+            '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link-2 text-[0.85em] leading-none inline-block align-middle select-none opacity-0" aria-hidden="true"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" x2="16" y1="12" y2="12"/></svg>'
 
           el.onclick = async e => {
             e.preventDefault()
@@ -167,13 +184,6 @@
   onMount(() => {
     isDark = document.documentElement.classList.contains('dark')
 
-    // Dark/light syntax colors come from the swapped highlight.js stylesheet
-    // link below (driven by `isDark`), not from re-tokenizing - the code
-    // block markup here has already been restructured into per-line
-    // `.code-line` divs by enhanceCodeBlocks. Re-running hljs.highlightAll()
-    // reads the elements' textContent, which loses the newlines between
-    // those divs and collapses the block to one line while the line-number
-    // gutter (built once, not rebuilt) keeps the old row count.
     const observer = new MutationObserver(() => {
       isDark = document.documentElement.classList.contains('dark')
     })
@@ -208,6 +218,17 @@
   })
 
   let showCopyMenu = $state(false)
+  let copyMenuRef: HTMLDivElement | undefined = $state()
+
+  function handleWindowPointerDown(e: PointerEvent) {
+    if (
+      showCopyMenu
+      && copyMenuRef
+      && !copyMenuRef.contains(e.target as Node)
+    ) {
+      showCopyMenu = false
+    }
+  }
 
   function toggleCopyMenu() {
     showCopyMenu = !showCopyMenu
@@ -263,11 +284,6 @@
 
   function getCommentAuthor(comment: BlogComment) {
     return comment.is_anonymous ? 'Anonymous' : comment.author_name
-  }
-
-  function getCommentIcon(comment: BlogComment) {
-    if (comment.author_name === 'Admin') return 'bi-person-fill-lock'
-    return comment.is_anonymous ? 'bi-incognito' : 'bi-person'
   }
 
   function cancelReply() {
@@ -375,7 +391,11 @@
       const result = await res.json()
 
       if (!res.ok) {
-        throw new Error(result.error || 'Failed to submit comment')
+        const apiMessage =
+          typeof result?.error?.message === 'string' ? result.error.message
+          : typeof result?.message === 'string' ? result.message
+          : 'Failed to submit comment'
+        throw new Error(apiMessage)
       }
 
       if (result.is_approved) {
@@ -430,7 +450,7 @@
 <svelte:head>
   <title>{post.title}{author?.name ? ` | ${author.name}` : ''}</title>
   <script
-    src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+    src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
     async
     defer></script>
   {#if post.excerpt}
@@ -495,21 +515,18 @@
       content={bannerPublicUrl} />
   {/if}
 
-  {#if isDark}
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
-  {:else}
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
-  {/if}
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/{hljsTheme}.min.css" />
 </svelte:head>
+
+<svelte:window onpointerdown={handleWindowPointerDown} />
 
 <TopNav
   ariaLabel="Article navigation"
   backHref="/#blog"
-  backLabel="Back to Blog" />
+  backLabel="Back to Blog"
+  showFontSelect={true} />
 
 <main
   id="main-content"
@@ -545,16 +562,16 @@
               commentsCount={comments.length}
               views={viewCount !== null ? viewCount : undefined} />
 
-            <div class="relative z-20 inline-block shrink-0 text-left">
+            <div
+              bind:this={copyMenuRef}
+              class="relative z-20 inline-block shrink-0 text-left">
               <DropdownTrigger
                 ariaLabel="Copy options menu"
                 isOpen={showCopyMenu}
-                class="glass-card"
+                size="sm"
                 onclick={toggleCopyMenu}>
-                <span class="inline-flex items-center gap-1.5">
-                  <i
-                    class="bi bi-copy text-xs"
-                    aria-hidden="true"></i>
+                <span class="inline-flex items-center gap-1">
+                  <Copy class="size-3" />
                   Copy
                 </span>
               </DropdownTrigger>
@@ -571,18 +588,36 @@
                   class="absolute top-[calc(100%+8px)] left-1/2 z-40 flex w-max min-w-40 -translate-x-1/2 flex-col rounded-sm glass-overlay p-0 shadow-xl">
                   <div
                     class="relative z-10 flex flex-col overflow-hidden rounded-sm py-0.5">
-                    {#each [{icon: 'bi-link', label: 'Copy Blog URL', onclick: copyBlogUrl}, {icon: 'bi-hash', label: 'Copy Blog ID', onclick: copyBlogId}, {icon: 'bi-markdown-fill', label: 'Copy as Markdown', onclick: copyBlogMarkdown}] as item (item.label)}
-                      <button
-                        type="button"
-                        role="menuitem"
-                        onclick={item.onclick}
-                        class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
-                        <i
-                          class="bi {item.icon} text-xs"
-                          aria-hidden="true"></i>
-                        <span>{item.label}</span>
-                      </button>
-                    {/each}
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onclick={copyBlogUrl}
+                      class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
+                      <LinkIcon class="size-3.5" />
+                      <span>Copy URL</span>
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onclick={copyBlogId}
+                      class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
+                      <Hash class="size-3.5" />
+                      <span>Copy Blog ID</span>
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onclick={copyBlogMarkdown}
+                      class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
+                      <svg
+                        class="size-3.5 fill-current"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true">
+                        <path
+                          d="M2.5 4A1.5 1.5 0 0 0 1 5.5v13A1.5 1.5 0 0 0 2.5 20h19a1.5 1.5 0 0 0 1.5-1.5v-13A1.5 1.5 0 0 0 21.5 4h-19zm1 3h3l2 2.5 2-2.5h3v10h-2.5v-5.5L9.5 13.5 8 11.5v5.5H3.5V7zm13 0h4l-3 4.5h2V17h-2.5v-5.5h-2L16.5 7z" />
+                      </svg>
+                      <span>Copy as Markdown</span>
+                    </button>
                   </div>
                 </div>
               {/if}
@@ -600,7 +635,7 @@
           onVote={helpful => handleHelpfulness(helpful ? 'yes' : 'no')} />
       </div>
 
-      <div class="prose-custom w-full">
+      <div class="prose-custom font-content-{contentFontStore.current} w-full">
         {@html html}
       </div>
 
@@ -610,27 +645,51 @@
         </h3>
         <div class="grid w-full grid-cols-5 gap-2">
           <Button
-            type="Secondary"
+            type="secondary"
             size="sm"
-            leadingIcon="bi-link"
             onclick={copyToClipboard}
             aria-label="Copy URL to clipboard"
             class="w-full justify-center px-1 sm:px-3">
             <span class="truncate">Copy URL</span>
           </Button>
-          {#each [{href: `https://twitter.com/intent/tweet?url=${encodeURIComponent(page.url.href)}&text=${encodeURIComponent(post.title)}`, icon: 'bi-twitter-x', label: 'Share on X (opens in a new tab)', text: 'X'}, {href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(page.url.href)}`, icon: 'bi-facebook', label: 'Share on Facebook (opens in a new tab)', text: 'Facebook'}, {href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(page.url.href)}`, icon: 'bi-linkedin', label: 'Share on LinkedIn (opens in a new tab)', text: 'LinkedIn'}, {href: `mailto:?subject=${encodeURIComponent(post.title)}&body=${encodeURIComponent(page.url.href)}`, icon: 'bi-envelope-fill', label: 'Share via email', text: 'Email'}] as item (item.text)}
-            <Button
-              href={item.href}
-              target={item.href.startsWith('mailto') ? undefined : '_blank'}
-              rel="noopener noreferrer"
-              type="Secondary"
-              size="sm"
-              leadingIcon={item.icon}
-              aria-label={item.label}
-              class="w-full justify-center px-1 sm:px-3">
-              <span class="truncate">{item.text}</span>
-            </Button>
-          {/each}
+          <Button
+            href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(page.url.href)}&text=${encodeURIComponent(post.title)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            type="secondary"
+            size="sm"
+            aria-label="Share on X (opens in a new tab)"
+            class="w-full justify-center px-1 sm:px-3">
+            <span class="truncate">X</span>
+          </Button>
+          <Button
+            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(page.url.href)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            type="secondary"
+            size="sm"
+            aria-label="Share on Facebook (opens in a new tab)"
+            class="w-full justify-center px-1 sm:px-3">
+            <span class="truncate">Facebook</span>
+          </Button>
+          <Button
+            href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(page.url.href)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            type="secondary"
+            size="sm"
+            aria-label="Share on LinkedIn (opens in a new tab)"
+            class="w-full justify-center px-1 sm:px-3">
+            <span class="truncate">LinkedIn</span>
+          </Button>
+          <Button
+            href={`mailto:?subject=${encodeURIComponent(post.title)}&body=${encodeURIComponent(page.url.href)}`}
+            type="secondary"
+            size="sm"
+            aria-label="Share via email"
+            class="w-full justify-center px-1 sm:px-3">
+            <span class="truncate">Email</span>
+          </Button>
         </div>
       </div>
 
@@ -661,20 +720,20 @@
 
             {#if author?.socialLinks && author.socialLinks.length > 0}
               <div
-                class="mt-4 flex flex-wrap items-center justify-center gap-2.5 px-1 sm:justify-start sm:gap-4 sm:px-0">
-                {#each author.socialLinks as item (item.url + item.platform)}
+                class="mt-4 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-1 text-xs text-text-muted sm:justify-start sm:px-0">
+                {#each author.socialLinks as item, idx (item.url + item.platform)}
+                  {#if idx > 0}
+                    <span
+                      class="text-text-muted/60 select-none"
+                      aria-hidden="true">·</span>
+                  {/if}
                   <a
                     href={item.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="inline-flex h-8 w-8 items-center justify-center rounded-sm border border-border-subtle bg-surface-card text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot"
+                    class="font-medium text-text-secondary transition-colors hover:text-copilot focus-visible:text-copilot focus-visible:outline-none"
                     aria-label="{item.platform} (opens in a new tab)">
-                    <i
-                      class="{sanitizeIconClass(
-                        item.icon,
-                        'bi bi-people'
-                      )} flex items-center justify-center text-base leading-none"
-                      aria-hidden="true"></i>
+                    {item.platform}
                   </a>
                 {/each}
               </div>
@@ -699,15 +758,12 @@
                     src={related.bannerPublicUrl}
                     alt={related.title}
                     aspectRatio="aspect-video"
-                    fallbackIcon="bi bi-file-richtext-fill"
                     onerror={() => markRelatedBannerFailed(related.id)}
                     class="w-full border border-border-subtle" />
                 {:else}
                   <div
-                    class="to-palette-purple/15 relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-sm border border-border-subtle bg-linear-to-br from-accent/15 select-none">
-                    <i
-                      class="bi bi-file-richtext-fill text-2xl text-copilot/50"
-                      aria-hidden="true"></i>
+                    class="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-sm border border-border-subtle bg-linear-to-br from-accent/15 to-copilot/15 select-none">
+                    <ImageIcon class="size-8 text-copilot/50" />
                   </div>
                 {/if}
 
@@ -748,7 +804,7 @@
                     <hr class="border-border-subtle" />
                     <Button
                       href="/blog/{related.slug}"
-                      type="Primary"
+                      type="primary"
                       size="md"
                       fullWidth>
                       Read post
@@ -850,6 +906,7 @@
               <div
                 bind:this={turnstileEl}
                 class="cf-turnstile w-full [&_iframe]:border-0!"
+                data-sitekey={turnstileSiteKey}
                 data-action="turnstile-spin-v2"
                 use:turnstileWidget={{
                   sitekey: turnstileSiteKey,
@@ -862,7 +919,7 @@
               <div class="mt-2 flex justify-end">
                 <Button
                   htmlType="submit"
-                  type="Primary"
+                  type="primary"
                   size="md"
                   disabled={isSubmitting}
                   isLoading={isSubmitting}>
@@ -875,14 +932,12 @@
 
         {#if comments.length === 0}
           <EmptyState
-            icon="bi-chat-square"
             title="No comments yet"
             description="Be the first to share your thoughts on this article." />
         {:else}
           <CommentThread
             {comments}
-            {replyTo}
-            getIcon={getCommentIcon}>
+            {replyTo}>
             {#snippet actions(comment)}
               <RelativeTime
                 date={comment.created_at}
@@ -910,7 +965,7 @@
                     Replying to {getCommentAuthor(comment)}
                   </p>
                   <Button
-                    type="Ghost"
+                    type="ghost"
                     size="sm"
                     showEscHint
                     onclick={cancelReply}>Cancel</Button>
@@ -981,6 +1036,7 @@
                   <div
                     bind:this={turnstileEl}
                     class="cf-turnstile w-full [&_iframe]:border-0!"
+                    data-sitekey={turnstileSiteKey}
                     data-action="turnstile-spin-v2"
                     use:turnstileWidget={{
                       sitekey: turnstileSiteKey,
@@ -993,7 +1049,7 @@
                   <div class="flex justify-end">
                     <Button
                       htmlType="submit"
-                      type="Primary"
+                      type="primary"
                       size="sm"
                       disabled={isSubmitting}
                       isLoading={isSubmitting}>
@@ -1009,7 +1065,7 @@
     </article>
   </div>
 
-  <FooterSection />
+  <FooterSection showFontSelect={true} />
 </main>
 
 <ShareDialog
@@ -1031,14 +1087,14 @@
   }}>
   {#snippet footer()}
     <Button
-      type="Secondary"
+      type="secondary"
       size="md"
       showEscHint
       onclick={() => {
         showNoFeedbackDialog = false
       }}>Cancel</Button>
     <Button
-      type="Primary"
+      type="primary"
       size="md"
       onclick={() => {
         showNoFeedbackDialog = false
@@ -1050,24 +1106,11 @@
 <style>
   @reference "../../global.css";
 
-  .prose-custom :global(h1),
-  .prose-custom :global(h2),
-  .prose-custom :global(h3) {
-    @apply font-sans;
-  }
-
   .prose-custom {
-    @apply font-sans text-[0.9rem] leading-[1.7] text-(--color-body);
-    --color-heading: var(--color-gh-gray-6);
-    --color-body: var(--color-gh-gray-5);
-    --color-link: var(--color-gh-gray-5);
-    --color-link-hover: var(--color-copilot);
-  }
-
-  :global(:root.dark) .prose-custom {
-    --color-heading: var(--color-gh-gray-1);
-    --color-body: var(--color-gh-gray-3);
-    --color-link: var(--color-gh-gray-3);
+    @apply text-[0.975rem] leading-[1.75] text-(--color-body);
+    --color-heading: var(--color-text-primary);
+    --color-body: var(--color-text-secondary);
+    --color-link: var(--color-text-secondary);
     --color-link-hover: var(--color-copilot);
   }
 
@@ -1081,7 +1124,7 @@
   .prose-custom :global(h4),
   .prose-custom :global(h5),
   .prose-custom :global(h6) {
-    @apply font-sans text-(--color-heading);
+    @apply text-(--color-heading);
   }
 
   .prose-custom :global(h1) {
@@ -1109,12 +1152,9 @@
   }
 
   .prose-custom :global(pre) {
-    @apply mt-6 mb-6 scrollbar-none! overflow-x-auto rounded-sm border border-adwaita-border bg-adwaita-hover px-3! py-2! font-mono text-[0.8rem] leading-relaxed break-normal! whitespace-pre! [-ms-overflow-style:none]!;
+    @apply mt-6 mb-6 scrollbar-none! overflow-x-auto rounded-sm border border-border-subtle bg-surface-hover px-3! py-1.5! font-mono text-[0.8rem] leading-snug break-normal! whitespace-pre! [-ms-overflow-style:none]!;
   }
 
-  /* When a line-number gutter sits to the left (see enhanceCodeBlocks), it
-     already provides its own edge padding — pre's own left padding on top of
-     that doubled the visual gap between the divider and the code text. */
   .prose-custom :global(pre[data-enhanced='true']) {
     @apply pr-3.5! pl-2!;
   }
@@ -1124,13 +1164,13 @@
   }
 
   .prose-custom :global(code:not(pre code)) {
-    @apply rounded bg-adwaita-hover px-1 py-px font-mono text-xs font-normal text-inherit;
+    @apply rounded bg-surface-hover px-1 py-px font-mono text-xs font-normal text-inherit;
     overflow-wrap: break-word;
     word-break: break-word;
   }
 
   .prose-custom :global(pre code) {
-    @apply block! w-max! min-w-full! overflow-visible! border-0 bg-transparent py-0! pr-3.5! pl-0! font-mono text-[0.8rem] leading-relaxed break-normal! whitespace-pre! text-inherit;
+    @apply block! w-max! min-w-full! overflow-visible! border-0 bg-transparent py-0! pr-3.5! pl-0! font-mono text-[0.8rem] leading-snug break-normal! whitespace-pre! text-inherit;
   }
 
   .prose-custom :global(.code-line) {
@@ -1150,14 +1190,14 @@
   }
 
   .prose-custom :global(a.anchor-link) {
-    @apply ml-[0.35rem]! inline-flex! items-center! justify-center! align-middle! leading-none! whitespace-nowrap! text-adwaita-text! no-underline! transition-none!;
+    @apply ml-[0.35rem]! inline-flex! items-center! justify-center! align-middle! leading-none! whitespace-nowrap! text-text-primary! no-underline! transition-none!;
   }
 
   :global(:root.dark) .prose-custom :global(a.anchor-link) {
     @apply text-gh-gray-4!;
   }
 
-  .prose-custom :global(a.anchor-link .bi) {
+  .prose-custom :global(a.anchor-link svg) {
     @apply inline-block! align-middle! text-[0.85em]! leading-none! text-inherit! no-underline!;
   }
 
@@ -1192,20 +1232,20 @@
   :global(:root.dark) .prose-custom :global(h5:hover a.anchor-link),
   :global(:root.dark) .prose-custom :global(h6:hover a.anchor-link),
   :global(:root.dark) .prose-custom :global(a.anchor-link):hover,
-  .prose-custom :global(h1:hover a.anchor-link .bi),
-  .prose-custom :global(h2:hover a.anchor-link .bi),
-  .prose-custom :global(h3:hover a.anchor-link .bi),
-  .prose-custom :global(h4:hover a.anchor-link .bi),
-  .prose-custom :global(h5:hover a.anchor-link .bi),
-  .prose-custom :global(h6:hover a.anchor-link .bi),
-  .prose-custom :global(a.anchor-link):hover :global(.bi),
-  :global(:root.dark) .prose-custom :global(h1:hover a.anchor-link .bi),
-  :global(:root.dark) .prose-custom :global(h2:hover a.anchor-link .bi),
-  :global(:root.dark) .prose-custom :global(h3:hover a.anchor-link .bi),
-  :global(:root.dark) .prose-custom :global(h4:hover a.anchor-link .bi),
-  :global(:root.dark) .prose-custom :global(h5:hover a.anchor-link .bi),
-  :global(:root.dark) .prose-custom :global(h6:hover a.anchor-link .bi),
-  :global(:root.dark) .prose-custom :global(a.anchor-link):hover :global(.bi) {
+  .prose-custom :global(h1:hover a.anchor-link svg),
+  .prose-custom :global(h2:hover a.anchor-link svg),
+  .prose-custom :global(h3:hover a.anchor-link svg),
+  .prose-custom :global(h4:hover a.anchor-link svg),
+  .prose-custom :global(h5:hover a.anchor-link svg),
+  .prose-custom :global(h6:hover a.anchor-link svg),
+  .prose-custom :global(a.anchor-link):hover :global(svg),
+  :global(:root.dark) .prose-custom :global(h1:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(h2:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(h3:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(h4:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(h5:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(h6:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(a.anchor-link):hover :global(svg) {
     @apply text-copilot! no-underline! opacity-100;
   }
 
@@ -1257,7 +1297,7 @@
   }
 
   .prose-custom :global(blockquote:not(.markdown-alert)) {
-    @apply my-6 rounded-l-none rounded-r-sm border-l-2 border-copilot bg-surface-hover/50 py-2.5 pr-4 pl-4 font-sans text-sm leading-relaxed text-text-secondary shadow-2xs;
+    @apply my-6 rounded-l-none rounded-r-sm border-l-2 border-copilot bg-surface-hover/50 py-2.5 pr-4 pl-4 text-sm leading-relaxed text-text-secondary shadow-2xs;
   }
 
   .prose-custom :global(blockquote:not(.markdown-alert) p) {
@@ -1282,8 +1322,8 @@
     flex-shrink: 0;
     cursor: pointer;
     border-radius: 0.25rem;
-    border: 1px solid var(--color-border-subtle, #30363d);
-    background-color: var(--color-surface-base, #0d1117);
+    border: 1px solid var(--color-border-subtle);
+    background-color: var(--color-surface-base);
     display: inline-grid;
     place-content: center;
     margin: 0;
@@ -1294,8 +1334,8 @@
   }
 
   .prose-custom :global(input[type='checkbox']:checked) {
-    background-color: var(--color-copilot, #8534f3) !important;
-    border-color: var(--color-copilot, #8534f3) !important;
+    background-color: var(--color-copilot) !important;
+    border-color: var(--color-copilot) !important;
   }
 
   .prose-custom :global(input[type='checkbox']:checked::before) {

@@ -1,5 +1,3 @@
-/** @format */
-
 export function autoResize(node: HTMLTextAreaElement, value?: string) {
   void value
 

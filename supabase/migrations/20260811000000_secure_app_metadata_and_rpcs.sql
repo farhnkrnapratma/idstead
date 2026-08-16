@@ -1,4 +1,4 @@
--- Update RPC functions to strictly enforce public.is_admin() checking app_metadata ->> 'role' = 'admin'
+
 
 CREATE OR REPLACE FUNCTION public.db_save_links(
   p_author_id uuid,
@@ -187,7 +187,7 @@ REVOKE ALL ON FUNCTION public.db_save_legal(text, text, text) FROM PUBLIC;
 REVOKE EXECUTE ON FUNCTION public.db_save_legal(text, text, text) FROM anon;
 GRANT EXECUTE ON FUNCTION public.db_save_legal(text, text, text) TO authenticated;
 
--- Helper function to safely grant admin role in raw_app_meta_data by email
+
 CREATE OR REPLACE FUNCTION public.grant_admin_role_by_email(target_email text)
 RETURNS void
 LANGUAGE plpgsql

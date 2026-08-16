@@ -1,5 +1,5 @@
-<!-- @format -->
 <script lang="ts">
+  import {OctagonAlert} from '@lucide/svelte'
   import {cn} from '../utils/cn'
 
   interface Props {
@@ -24,9 +24,7 @@
       className
     )}>
     <div class="flex items-center gap-2 font-bold text-danger">
-      <i
-        class="bi bi-exclamation-octagon-fill text-sm"
-        aria-hidden="true"></i>
+      <OctagonAlert class="size-4 shrink-0" />
       <span>{title}</span>
     </div>
     <ul class="mt-2 flex list-disc flex-col gap-1 pl-5 font-medium text-danger">

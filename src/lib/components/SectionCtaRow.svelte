@@ -1,5 +1,5 @@
-<!-- @format -->
 <script lang="ts">
+  import {ArrowRight} from '@lucide/svelte'
   import {cn} from '../utils/cn'
 
   interface Props {
@@ -20,8 +20,7 @@
     {href}
     class="group inline-flex items-center gap-1.5 rounded-sm text-xs font-semibold text-text-secondary transition-colors hover:text-copilot focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
     <span>{label}</span>
-    <i
-      class="bi bi-arrow-right text-xs leading-none transition-transform select-none group-hover:translate-x-1"
-      aria-hidden="true"></i>
+    <ArrowRight
+      class="size-3.5 transition-transform select-none group-hover:translate-x-1" />
   </a>
 </div>

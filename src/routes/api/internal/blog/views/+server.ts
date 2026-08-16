@@ -1,5 +1,3 @@
-/** @format */
-
 import {supabase} from '$lib/supabase'
 import {json} from '@sveltejs/kit'
 import type {RequestHandler} from './$types'
@@ -28,10 +26,7 @@ export const POST: RequestHandler = async ({
     }
 
     const ip = getClientAddress()
-    // platform.env is how Cloudflare Pages exposes configured secrets at
-    // runtime - process.env is not populated from Cloudflare's own env/secret
-    // store, so reading it there would silently always fall through to the
-    // hardcoded default in production.
+
     const ipSalt =
       (platform as unknown as {env?: {IP_SALT?: string}})?.env?.IP_SALT
       ?? process.env.IP_SALT

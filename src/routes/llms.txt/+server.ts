@@ -1,5 +1,3 @@
-/** @format */
-
 import type {RequestHandler} from './$types'
 import {supabase} from '$lib/supabase'
 import {fetchAuthorProfile} from '$lib/author'

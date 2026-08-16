@@ -1,4 +1,3 @@
-<!-- @format -->
 <script
   lang="ts"
   module>
@@ -25,6 +24,7 @@
   generics="T extends CommentItem">
   import type {Snippet} from 'svelte'
   import {SvelteMap, SvelteSet} from 'svelte/reactivity'
+  import {ShieldCheck, User} from '@lucide/svelte'
   import RelativeTime from './RelativeTime.svelte'
   import {cn} from '../utils/cn'
 
@@ -32,7 +32,6 @@
     class?: string
     comments: T[]
     replyTo?: T | null
-    getIcon?: (comment: T) => string
     statusBadge?: Snippet<[comment: T]>
     actions?: Snippet<[comment: T]>
     replyForm?: Snippet<[comment: T]>
@@ -42,7 +41,6 @@
     class: className = '',
     comments = [],
     replyTo = null,
-    getIcon = getCommentIcon,
     statusBadge,
     actions,
     replyForm
@@ -51,13 +49,6 @@
   function getCommentAuthor(comment: T): string {
     if (comment.is_anonymous || !comment.author_name) return 'Anonymous'
     return comment.author_name
-  }
-
-  function getCommentIcon(comment: T): string {
-    if (comment.is_anonymous || !comment.author_name) return 'bi-person-circle'
-    if (comment.author_name.toLowerCase().includes('farhan'))
-      return 'bi-shield-lock'
-    return 'bi-person'
   }
 
   function buildCommentTree(items: T[]): CommentTreeNode<T>[] {
@@ -149,9 +140,13 @@
     <div
       class="z-10 flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-full border border-border-subtle bg-surface-card text-text-secondary select-none sm:h-8 sm:w-8"
       aria-hidden="true">
-      <i
-        class="bi {getIcon(comment)} text-sm sm:text-base"
-        aria-hidden="true"></i>
+      {#if comment.author_name
+        ?.toLowerCase()
+        .includes('farhan') || comment.author_name === 'Admin'}
+        <ShieldCheck class="size-4 text-copilot" />
+      {:else}
+        <User class="size-4" />
+      {/if}
     </div>
 
     <div class="min-w-0 flex-1">

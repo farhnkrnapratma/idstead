@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # Memory Safety, Binary, and Kernel Hunting
 
 #### When to use this file

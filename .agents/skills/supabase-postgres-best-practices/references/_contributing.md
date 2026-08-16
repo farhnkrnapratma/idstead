@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # Writing Guidelines for Postgres References
 
 This document provides guidelines for creating effective Postgres best practice references that work well with AI agents and LLMs.

@@ -1,5 +1,3 @@
-/** @format */
-
 import {sequence} from '@sveltejs/kit/hooks'
 import * as Sentry from '@sentry/sveltekit'
 import {redirect, type Handle} from '@sveltejs/kit'
@@ -57,14 +55,42 @@ export const handle: Handle = sequence(
     const cdnBaseUrl = getCdnBaseUrl()
 
     if (
+      event.url.pathname.startsWith('/fonts/')
+      || event.url.pathname === '/site.webmanifest'
+    ) {
+      if (cdnBaseUrl) {
+        try {
+          const cdnRes = await event.fetch(`${cdnBaseUrl}${event.url.pathname}`)
+          if (cdnRes.ok) {
+            const ext = event.url.pathname.split('.').pop()?.toLowerCase()
+            const mime =
+              ext === 'otf' ? 'font/otf'
+              : ext === 'woff2' ? 'font/woff2'
+              : ext === 'webmanifest' || ext === 'json' ?
+                'application/manifest+json'
+              : cdnRes.headers.get('content-type') || 'application/octet-stream'
+
+            return new Response(cdnRes.body, {
+              status: 200,
+              headers: {
+                'Content-Type': mime,
+                'Access-Control-Allow-Origin': '*',
+                'Cache-Control': 'public, max-age=31536000, immutable'
+              }
+            })
+          }
+        } catch {}
+      }
+    }
+
+    if (
       [
         '/favicon.ico',
         '/favicon-16x16.png',
         '/favicon-32x32.png',
         '/apple-touch-icon.png',
         '/android-chrome-192x192.png',
-        '/android-chrome-512x512.png',
-        '/site.webmanifest'
+        '/android-chrome-512x512.png'
       ].includes(event.url.pathname)
     ) {
       if (!cdnBaseUrl) {
@@ -96,7 +122,6 @@ export const handle: Handle = sequence(
 
     let rateLimitHeaders: Record<string, string> = {}
 
-    // Apply Rate Limiting to Public API Endpoints (including OPTIONS)
     if (isApiRequest && !isAdminApi) {
       const clientIp = getClientIp(event)
       const now = Date.now()
@@ -106,12 +131,6 @@ export const handle: Handle = sequence(
         t => now - t < RATE_LIMIT_WINDOW_MS
       )
 
-      // Cloudflare's Rate Limiting binding is the authoritative, distributed
-      // decision - it's consistent across every edge isolate, unlike the
-      // in-memory map below which only tracks requests seen by THIS isolate
-      // and can't enforce a real global limit on its own. When the binding
-      // isn't available (local dev without the Cloudflare runtime), fall
-      // back to the in-memory count so rate limiting still does something.
       const limiter = event.platform?.env?.API_RATE_LIMITER
       const isLimited =
         limiter ?
@@ -178,7 +197,15 @@ export const handle: Handle = sequence(
       })
     }
 
-    const response = await resolve(event)
+    const response = await resolve(event, {
+      transformPageChunk: ({html}) => {
+        const cdn = getCdnBaseUrl()
+        if (cdn) {
+          return html.replaceAll(`${cdn}//`, `${cdn}/`)
+        }
+        return html
+      }
+    })
     const contentType = response.headers.get('content-type') ?? ''
 
     if (isApiRequest) {
@@ -246,9 +273,7 @@ export const handle: Handle = sequence(
               errorDetails = rawDetails
             }
           }
-        } catch (err) {
-          // Fall back to the defaults above
-        }
+        } catch (err) {}
       }
 
       const errHeaders: Record<string, string> = {

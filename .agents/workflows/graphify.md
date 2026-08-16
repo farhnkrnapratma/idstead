@@ -3,8 +3,6 @@ name: graphify
 description: Turn any folder of files into a navigable knowledge graph
 ---
 
-<!-- @format -->
-
 # Workflow: graphify
 
 Follow the graphify skill to run the full pipeline.

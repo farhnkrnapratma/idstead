@@ -1,5 +1,3 @@
-/** @format */
-
 import {supabase} from '$lib/supabase'
 import type {RequestHandler} from './$types'
 

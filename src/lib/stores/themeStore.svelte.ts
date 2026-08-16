@@ -1,5 +1,3 @@
-/** @format */
-
 import type {Theme} from '$lib/types'
 import {browser} from '$app/environment'
 
@@ -39,11 +37,24 @@ function createThemeStore() {
     }
   }
 
+  function cycle(): Theme {
+    const order: Theme[] = ['auto', 'light', 'dark']
+    const nextTheme = order[(order.indexOf(theme) + 1) % order.length]
+    apply(nextTheme)
+    return nextTheme
+  }
+
+  function toggle(): Theme {
+    return cycle()
+  }
+
   return {
     get current() {
       return theme
     },
     apply,
+    cycle,
+    toggle,
     init
   }
 }

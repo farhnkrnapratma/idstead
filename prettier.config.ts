@@ -1,5 +1,3 @@
-/** @format */
-
 import {type Config} from 'prettier'
 
 const config: Config = {
@@ -18,7 +16,7 @@ const config: Config = {
   bracketSameLine: true,
   arrowParens: 'avoid',
   requirePragma: false,
-  insertPragma: true,
+  insertPragma: false,
   checkIgnorePragma: true,
   proseWrap: 'never',
   htmlWhitespaceSensitivity: 'css',

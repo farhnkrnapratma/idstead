@@ -5,8 +5,6 @@ impactDescription: Reclaim 30-50% of connection slots from idle clients
 tags: connections, timeout, idle, resource-management
 ---
 
-<!-- @format -->
-
 ## Configure Idle Connection Timeouts
 
 Idle connections waste resources. Configure timeouts to automatically reclaim them.

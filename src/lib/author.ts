@@ -1,12 +1,10 @@
-/** @format */
-
 export interface ExperienceItem {
   id?: string
   title: string
   type: string
   company: string
   startMonth: string
-  startYear: number
+  startYear: number | null
   endMonth?: string | null
   endYear?: number | null
   currentlyIn: boolean
@@ -22,7 +20,7 @@ export interface EducationItem {
   degree: string
   field: string
   startMonth: string
-  startYear: number
+  startYear: number | null
   endMonth?: string | null
   endYear?: number | null
   currentlyIn: boolean
@@ -230,13 +228,10 @@ export function formatMonthAbbrev(month: string | null | undefined): string {
 
 export function sanitizeIconClass(
   icon: string | undefined,
-  fallback: string
+  fallback = ''
 ): string {
   if (!icon || !icon.trim()) return fallback
-  const trimmed = icon.trim()
-  if (trimmed.startsWith('bi bi-')) return trimmed
-  if (trimmed.startsWith('bi-')) return `bi ${trimmed}`
-  return `bi bi-${trimmed}`
+  return icon.trim().replace(/[^a-zA-Z0-9_\-\s]/g, '')
 }
 
 export async function fetchAuthorProfile(
@@ -269,9 +264,7 @@ export async function fetchAuthorProfile(
       jobTitle: decodeHtmlEntities(data.job_title || ''),
       bio: decodeHtmlEntities(data.bio || ''),
       avatar: decodeHtmlEntities(data.avatar || ''),
-      // Not returned unless explicitly requested (admin editor only) - this
-      // is the site's Supabase Auth login identity and must not leak into
-      // any publicly-served page data or API response.
+
       email: options?.includeEmail ? decodeHtmlEntities(data.email || '') : '',
       city,
       postalCode,
@@ -318,7 +311,7 @@ export async function fetchSocials(
       id: item.id,
       platform: item.platform,
       url: item.url,
-      icon: item.icon || 'bi-people',
+      icon: item.icon || '',
       sortOrder: item.sort_order
     }))
   } catch (e) {
@@ -456,7 +449,7 @@ export async function fetchSponsorship(
       platform: decodeHtmlEntities(item.platform || ''),
       displayValue: decodeHtmlEntities(item.display_value || ''),
       url: decodeHtmlEntities(item.url || ''),
-      icon: item.icon || 'bi-currency-dollar',
+      icon: item.icon || '',
       description: decodeHtmlEntities(item.description || ''),
       sortOrder: item.sort_order
     }))
@@ -490,7 +483,7 @@ export async function fetchContactInfo(
       platform: decodeHtmlEntities(item.platform || item.label || ''),
       displayValue: decodeHtmlEntities(item.display_value || item.value || ''),
       href: decodeHtmlEntities(item.url || item.href || ''),
-      icon: item.icon || 'bi-person',
+      icon: item.icon || '',
       sortOrder: item.sort_order
     }))
   } catch (e) {

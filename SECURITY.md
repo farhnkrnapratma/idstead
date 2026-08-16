@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # Security Policy
 
 This is the personal website and API for Farhan Kurnia Pratama (fkp.my.id) — a SvelteKit app with a Supabase backend, deployed to Cloudflare Pages, and a public read-only REST API under `/api/v1`.

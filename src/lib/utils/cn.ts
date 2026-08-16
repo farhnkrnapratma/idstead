@@ -1,5 +1,3 @@
-/** @format */
-
 const RADIUS_RE = /^rounded(-(?:t|r|b|l|tl|tr|br|bl|s|e|ss|se|ee|es))?(?:-|$)/
 const OVERFLOW_RE = /^overflow(-[xy])?-/
 const TEXT_SIZE_KEYWORDS = new Set([

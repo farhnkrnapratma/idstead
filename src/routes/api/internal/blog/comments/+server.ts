@@ -1,5 +1,3 @@
-/** @format */
-
 import {json} from '@sveltejs/kit'
 import type {RequestHandler} from './$types'
 import {isNameReserved} from '$lib/utils/nameValidator'
@@ -11,85 +9,44 @@ import {isSameOriginRequest} from '$lib/server/sameOrigin'
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-// Fallback moderation used only when the Cloudflare Workers AI binding is
-// unavailable (e.g. plain `vite dev` without `wrangler pages dev --ai AI`, or
-// a transient AI call failure). Rules-based, not an AI classifier.
-const BLOCKED_PATTERNS: RegExp[] = [
-  /\bviagra\b/i,
-  /\bcasino\b/i,
-  /\bporn(hub)?\b/i,
-  /\bxxx\b/i,
-  /f+u+c+k+/i,
-  /\bsh[i1]t\b/i,
-  /\bb[i1]tch\b/i,
-  /\bassh[o0]le\b/i
-]
-
 interface ModerationResult {
   safe: boolean
   categories: string[]
-  engine: 'llama-guard-3' | 'heuristic'
+  engine: 'llama-guard-3'
 }
 
-function heuristicModerate(content: string): Omit<ModerationResult, 'engine'> {
-  const trimmed = content.trim()
-  if (!trimmed || trimmed.length > 2000)
-    return {safe: false, categories: ['length']}
-
-  const urlCount = (trimmed.match(/https?:\/\//gi) || []).length
-  if (urlCount >= 3) return {safe: false, categories: ['S11']}
-
-  const letters = trimmed.replace(/[^a-zA-Z]/g, '')
-  const upper = trimmed.replace(/[^A-Z]/g, '')
-  if (letters.length > 20 && upper.length / letters.length > 0.7)
-    return {safe: false, categories: ['S11']}
-
-  if (/(.)\1{9,}/.test(trimmed)) return {safe: false, categories: ['S11']}
-
-  if (BLOCKED_PATTERNS.some(re => re.test(trimmed)))
-    return {safe: false, categories: ['S4']}
-
-  // Send to manual moderation queue instead of auto-approving when AI is down
-  return {safe: false, categories: ['pending-manual-review']}
-}
-
-// Cloudflare AI binding isn't typed without @cloudflare/workers-types, so this
-// takes the loosely-typed `platform.env.AI` and narrows it defensively.
 async function moderateContent(
   content: string,
   ai: unknown
-): Promise<ModerationResult> {
-  if (ai && typeof (ai as {run?: unknown}).run === 'function') {
-    try {
-      const runner = ai as {
-        run: (model: string, input: unknown) => Promise<unknown>
-      }
-      const result = await runner.run('@cf/meta/llama-guard-3-8b', {
-        messages: [{role: 'user', content}],
-        max_tokens: 128,
-        temperature: 0
-      })
-      const text = String(
-        (result as {response?: string})?.response ?? ''
-      ).trim()
-      const isSafe = text.toLowerCase().startsWith('safe')
-      const categories =
-        isSafe ?
-          []
-        : (text
-            .split('\n')[1]
-            ?.split(',')
-            .map(s => s.trim())
-            .filter(Boolean) ?? [])
-      return {safe: isSafe, categories, engine: 'llama-guard-3'}
-    } catch (err) {
-      console.error(
-        'Llama Guard moderation failed, falling back to heuristic:',
-        err
-      )
-    }
+): Promise<ModerationResult | null> {
+  if (!ai || typeof (ai as {run?: unknown}).run !== 'function') {
+    return null
   }
-  return {...heuristicModerate(content), engine: 'heuristic'}
+
+  try {
+    const runner = ai as {
+      run: (model: string, input: unknown) => Promise<unknown>
+    }
+    const result = await runner.run('@cf/meta/llama-guard-3-8b', {
+      messages: [{role: 'user', content}],
+      max_tokens: 128,
+      temperature: 0
+    })
+    const text = String((result as {response?: string})?.response ?? '').trim()
+    const isSafe = text.toLowerCase().startsWith('safe')
+    const categories =
+      isSafe ?
+        []
+      : (text
+          .split('\n')[1]
+          ?.split(',')
+          .map(s => s.trim())
+          .filter(Boolean) ?? [])
+    return {safe: isSafe, categories, engine: 'llama-guard-3'}
+  } catch (err) {
+    console.error('Llama Guard moderation failed:', err)
+    return null
+  }
 }
 
 export const POST: RequestHandler = async ({
@@ -186,12 +143,14 @@ export const POST: RequestHandler = async ({
     content,
     (platform as unknown as {env?: {AI?: unknown}})?.env?.AI
   )
+  if (!moderation) {
+    return apiError(
+      503,
+      'BLOG_COMMENT_MODERATION_UNAVAILABLE',
+      'Comment moderation is temporarily unavailable. Please try again later.'
+    )
+  }
 
-  // Comments RLS no longer grants anon/authenticated an INSERT policy at
-  // all (a direct REST call with only the public anon key could previously
-  // insert a pre-approved comment, bypassing Turnstile and moderation
-  // entirely) - the moderated insert now requires the service-role client,
-  // which only this trusted server route has access to.
   const adminClient = getSupabaseAdminClient(platform)
   if (!adminClient) {
     return apiError(

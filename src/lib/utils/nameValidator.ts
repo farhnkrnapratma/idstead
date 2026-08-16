@@ -1,5 +1,3 @@
-/** @format */
-
 export function normalizeName(name: string): string {
   let normalized = name.trim().toLowerCase().normalize('NFKC')
   normalized = normalized.normalize('NFD').replace(/[\u0300-\u036f]/g, '')

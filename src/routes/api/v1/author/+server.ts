@@ -1,5 +1,3 @@
-/** @format */
-
 import type {RequestHandler} from './$types'
 import {handleAuthorJsonRequest} from '$lib/authorApi'
 

@@ -4,8 +4,6 @@ description: Finish a git-flow-next feature/bugfix branch in this repo - runs th
 disable-model-invocation: true
 ---
 
-<!-- @format -->
-
 # Finish feature
 
 Wraps this repo's git-flow-next `feature finish`/`bugfix finish` workflow (see `CLAUDE.md`'s Git workflow section) so it's not re-derived from memory each session, and never skips the signed-commit convention.

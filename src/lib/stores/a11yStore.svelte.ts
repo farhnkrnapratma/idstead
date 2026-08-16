@@ -1,5 +1,3 @@
-/** @format */
-
 import {browser} from '$app/environment'
 
 export type FontScale = 100 | 110 | 120 | 130 | 140 | 150

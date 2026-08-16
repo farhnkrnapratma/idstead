@@ -36,21 +36,6 @@
       "serverUrl": "https://bindings.mcp.cloudflare.com/mcp"
     },
     "playwright": {"type": "stdio", "command": "playwright-mcp", "args": []},
-
-    "headroom": {
-      "type": "stdio",
-      "command": "headroom",
-      "args": ["mcp", "serve"]
-    },
-    "serena": {
-      "type": "stdio",
-      "command": "serena",
-      "args": [
-        "start-mcp-server",
-        "--context=claude-code",
-        "--project-from-cwd"
-      ]
-    },
     "graphify": {
       "type": "stdio",
       "command": "uv",

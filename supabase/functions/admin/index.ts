@@ -1,5 +1,3 @@
-/** @format */
-
 import {createClient} from 'jsr:@supabase/supabase-js@2'
 import {
   S3Client,
@@ -63,9 +61,6 @@ async function requireAdmin(req: Request): Promise<Response | null> {
     )
   }
 
-  // app_metadata is only settable via the service role / Admin API, unlike
-  // user_metadata which the authenticated user can set on themselves - using
-  // user_metadata here would let any signed-up account self-escalate.
   const role = (user.app_metadata as {role?: string} | null)?.role
   if (role !== 'admin') {
     return jsonResponse(
@@ -103,7 +98,7 @@ async function handleCvUpload(req: Request): Promise<Response> {
   const supabaseDb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
   let {data: author} = await supabaseDb
     .from('db_profiles')
-    .select('id, username')
+    .select('id, name, username')
     .limit(1)
     .maybeSingle()
 
@@ -111,7 +106,7 @@ async function handleCvUpload(req: Request): Promise<Response> {
     const {data: createdAuthor, error: createError} = await supabaseDb
       .from('db_profiles')
       .insert({name: '', username: ''})
-      .select('id, username')
+      .select('id, name, username')
       .maybeSingle()
 
     if (createError || !createdAuthor?.id) {
@@ -196,18 +191,63 @@ async function handleCvUpload(req: Request): Promise<Response> {
     .join('')
   const shortHash = fullHash.slice(0, 7)
 
-  const slugBase = (author.username || 'cv')
+  const authorName = (author.name || author.username || 'cv').trim()
+  const slugBase = authorName
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '_')
     .replace(/^_+|_+$/g, '')
   const slug = slugBase || 'cv'
+
   const now = new Date()
-  const version = `v${String(now.getFullYear()).slice(-2)}${String(now.getMonth() + 1).padStart(2, '0')}`
+  const yearSuffix = String(now.getFullYear()).slice(-2)
+  const monthSuffix = String(now.getMonth() + 1).padStart(2, '0')
+  const version = `v${yearSuffix}${monthSuffix}`
+
   const filename = `${slug}-${shortHash}-${version}.pdf`
+  const sha256Filename = `${filename}.sha256`
+  const sha256Content = `${fullHash}  ${filename}\n`
+  const sha256Bytes = new TextEncoder().encode(sha256Content)
+
+  const r2 = getR2Client()
+
+  const {data: previousDocs} = await supabaseDb
+    .from('db_documents')
+    .select('id, filename')
+    .eq('is_active', true)
+
+  if (previousDocs && previousDocs.length > 0) {
+    for (const oldDoc of previousDocs) {
+      if (oldDoc.filename) {
+        const oldPdfKey = oldDoc.filename
+        const oldShaKey = `${oldDoc.filename}.sha256`
+        if (r2 && R2_BUCKET_NAME) {
+          try {
+            await r2.send(
+              new DeleteObjectCommand({Bucket: R2_BUCKET_NAME, Key: oldPdfKey})
+            )
+            await r2.send(
+              new DeleteObjectCommand({Bucket: R2_BUCKET_NAME, Key: oldShaKey})
+            )
+          } catch (delErr) {
+            console.error('R2 deletion warning for old CV file:', delErr)
+          }
+        }
+        try {
+          await supabaseDb.storage
+            .from('cv_documents')
+            .remove([oldPdfKey, oldShaKey])
+        } catch (delStorageErr) {
+          console.error(
+            'Supabase storage deletion warning for old CV file:',
+            delStorageErr
+          )
+        }
+      }
+    }
+  }
 
   let fileUrl = ''
   let storageProvider: 'R2' | 'Supabase Storage' = 'R2'
-  const r2 = getR2Client()
 
   if (r2 && R2_BUCKET_NAME) {
     try {
@@ -217,6 +257,14 @@ async function handleCvUpload(req: Request): Promise<Response> {
           Key: filename,
           Body: bytes,
           ContentType: 'application/pdf'
+        })
+      )
+      await r2.send(
+        new PutObjectCommand({
+          Bucket: R2_BUCKET_NAME,
+          Key: sha256Filename,
+          Body: sha256Bytes,
+          ContentType: 'text/plain; charset=utf-8'
         })
       )
       fileUrl = `${R2_PUBLIC_URL}/${filename}`
@@ -230,7 +278,6 @@ async function handleCvUpload(req: Request): Promise<Response> {
 
   if (!fileUrl) {
     storageProvider = 'Supabase Storage'
-    // Fallback: upload to Supabase Storage
     const {error: storageError} = await supabaseDb.storage
       .from('cv_documents')
       .upload(filename, bytes, {contentType: 'application/pdf', upsert: true})
@@ -246,6 +293,13 @@ async function handleCvUpload(req: Request): Promise<Response> {
       )
     }
 
+    await supabaseDb.storage
+      .from('cv_documents')
+      .upload(sha256Filename, sha256Bytes, {
+        contentType: 'text/plain; charset=utf-8',
+        upsert: true
+      })
+
     const {data: publicUrlData} = supabaseDb.storage
       .from('cv_documents')
       .getPublicUrl(filename)
@@ -257,6 +311,7 @@ async function handleCvUpload(req: Request): Promise<Response> {
     .from('db_documents')
     .update({is_active: false})
     .eq('is_active', true)
+
   if (deactivateError) {
     return jsonResponse(
       {
@@ -278,6 +333,7 @@ async function handleCvUpload(req: Request): Promise<Response> {
       hash: fullHash,
       is_active: true
     })
+
   if (insertError) {
     return jsonResponse(
       {
@@ -299,21 +355,16 @@ async function handleCvUpload(req: Request): Promise<Response> {
 async function handleCvDelete(req: Request): Promise<Response> {
   const supabaseDb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
-  // Try to get filename from request body first (targeted delete),
-  // fall back to is_active lookup for backward compatibility.
   let targetFilename: string | null = null
   try {
     const body = await req.json()
     if (typeof body?.filename === 'string' && body.filename.trim()) {
       targetFilename = body.filename.trim()
     }
-  } catch {
-    // body may be empty — fall through to is_active lookup
-  }
+  } catch {}
 
   let filename: string
   if (targetFilename) {
-    // Verify the record actually exists before touching R2/Storage
     const {data: doc, error: lookupError} = await supabaseDb
       .from('db_documents')
       .select('filename')
@@ -333,7 +384,6 @@ async function handleCvDelete(req: Request): Promise<Response> {
     }
     filename = doc.filename
   } else {
-    // Fallback: find the currently active document
     const {data: activeDoc, error: lookupError} = await supabaseDb
       .from('db_documents')
       .select('filename')
@@ -354,20 +404,26 @@ async function handleCvDelete(req: Request): Promise<Response> {
     filename = activeDoc.filename
   }
 
+  const sha256Filename = `${filename}.sha256`
+
   const r2 = getR2Client()
   if (r2 && R2_BUCKET_NAME) {
     try {
       await r2.send(
         new DeleteObjectCommand({Bucket: R2_BUCKET_NAME, Key: filename})
       )
+      await r2.send(
+        new DeleteObjectCommand({Bucket: R2_BUCKET_NAME, Key: sha256Filename})
+      )
     } catch (err) {
       console.error('R2 deletion warning:', err)
     }
   }
 
-  // Always attempt Supabase Storage removal as well
   try {
-    await supabaseDb.storage.from('cv_documents').remove([filename])
+    await supabaseDb.storage
+      .from('cv_documents')
+      .remove([filename, sha256Filename])
   } catch (err) {
     console.error('Supabase storage removal warning:', err)
   }
@@ -376,6 +432,7 @@ async function handleCvDelete(req: Request): Promise<Response> {
     .from('db_documents')
     .delete()
     .eq('filename', filename)
+
   if (deleteError) {
     return jsonResponse(
       {

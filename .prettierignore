@@ -1,2 +1,4 @@
 **/.svelte-kit/generated/
 graphify-out/
+supabase/migrations/*.sql
+

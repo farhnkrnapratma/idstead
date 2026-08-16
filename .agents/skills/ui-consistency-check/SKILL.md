@@ -3,8 +3,6 @@ name: ui-consistency-check
 description: Check a new or changed Svelte component/page against this repo's existing design tokens, layout components, and shared UI primitives (Button, Dialog family, EmptyState, ErrorState, Toast, etc.) for consistency. Use after writing or editing anything under src/lib/components, src/lib/layout, or src/routes/**/*.svelte.
 ---
 
-<!-- @format -->
-
 # UI consistency check
 
 This repo already has a well-stocked shared component library (`src/lib/components/`, ~60 primitives) and layout scaffolding (`src/lib/layout/`) plus design tokens in `src/lib/tokens.css`. New or edited UI code should reuse these rather than reinventing them — hardcoded fallbacks, missing empty states, ad-hoc dialogs, inconsistent typography, and inconsistent layout width are the recurring drift patterns to watch for in this codebase.

@@ -1,4 +1,3 @@
-/** @format */
 import type {PageServerLoad} from './$types'
 import {getLegalPage} from '$lib/server/legalPages'
 import {prepareMarkdownPage} from '$lib/markdown'

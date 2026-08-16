@@ -1,10 +1,4 @@
 #!/usr/bin/env bash
-# PreToolUse hook for Edit|Write: ask for confirmation before editing files
-# that control the production deploy (Cloudflare bindings, CI gates, security
-# headers) - a wrong edit here breaks the deploy or the CI safety net in ways
-# `bun run check`/`lint` won't catch. Unlike block-sensitive-file-edits.sh
-# (bun.lock/.env - never hand-edit), these are legitimately edited sometimes,
-# so this asks rather than denies outright.
 jq -r '.tool_input.file_path // empty' | {
   read -r f
   [ -z "$f" ] && { echo '{}'; exit 0; }

@@ -1,5 +1,3 @@
-/** @format */
-
 import {supabase} from '$lib/supabase'
 import {error} from '@sveltejs/kit'
 import {renderMarkdown, injectHeadingIds} from '$lib/markdown'
@@ -190,7 +188,7 @@ export const load: PageServerLoad = async ({params, fetch}) => {
           let viewsCount = 0
           try {
             const {count} = await supabase
-              .from('post_views')
+              .from('db_views')
               .select('*', {count: 'exact', head: true})
               .eq('post_id', p.id)
             viewsCount = count ?? 0

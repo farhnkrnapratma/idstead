@@ -1,5 +1,3 @@
-/** @format */
-
 import {PUBLIC_TURNSTILE_SITE_KEY} from '$env/static/public'
 import {env} from '$env/dynamic/public'
 
@@ -41,18 +39,30 @@ export function turnstileWidget(
   options: TurnstileWidgetOptions
 ) {
   let destroyed = false
+  let widgetId: string | undefined
 
   function render() {
     if (destroyed) return
+    const key =
+      typeof options?.sitekey === 'string' ? options.sitekey.trim()
+      : typeof turnstileSiteKey === 'string' ? turnstileSiteKey.trim()
+      : ''
+
+    if (!key) return
+
     if (window.turnstile) {
       node.innerHTML = ''
-      window.turnstile.render(node, {
-        sitekey: options.sitekey,
-        action: options.action ?? 'turnstile-spin-v2',
-        size: options.size ?? 'flexible',
-        theme: options.theme ?? 'auto',
-        appearance: options.appearance ?? 'always'
-      })
+      try {
+        widgetId = window.turnstile.render(node, {
+          sitekey: key,
+          action: options.action ?? 'turnstile-spin-v2',
+          size: options.size ?? 'flexible',
+          theme: options.theme ?? 'auto',
+          appearance: options.appearance ?? 'always'
+        })
+      } catch (err) {
+        console.error('Turnstile render error:', err)
+      }
     } else {
       setTimeout(render, 50)
     }
@@ -63,7 +73,15 @@ export function turnstileWidget(
   return {
     destroy() {
       destroyed = true
-      window.turnstile?.remove(node)
+      if (widgetId && window.turnstile) {
+        try {
+          window.turnstile.remove(widgetId)
+        } catch {}
+      } else if (window.turnstile) {
+        try {
+          window.turnstile.remove(node)
+        } catch {}
+      }
     }
   }
 }
