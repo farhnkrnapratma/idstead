@@ -1,7 +1,7 @@
 # Graph Report - www  (2026-08-16)
 
 ## Corpus Check
-- 323 files · ~294,593 words
+- 323 files · ~305,293 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `8564dee1`
+- Built from commit: `20aab885`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -58,7 +58,7 @@
 - 2. THE COMBINATORIAL VARIATION ENGINE
 - svelte-core-bestpractices
 - compilerOptions
-- eslint-config-prettier
+- themeStore.svelte.ts
 - @tailwindcss/vite
 - Agent Skill: Principal UI/UX Architect & Motion Choreographer (Awwwards-Tier)
 - createA11yStore
@@ -69,7 +69,9 @@
 - scripts
 - admin/index.ts
 - Supabase Skill Guide
+- 5. MOTION CHOREOGRAPHY (FLUID DYNAMICS)
 - Security, Idempotency, Observability, and Reliability
+- eslint-config-prettier
 - app.d.ts
 - formatters.ts
 - 10. REFERENCE VOCABULARY (Pattern Names the Agent Should Know)
@@ -80,8 +82,9 @@
 - Protocol: Premium Utilitarian Minimalism UI Architect
 - Validation, Reporting, and Verification
 - Section Definitions
+- prettier-plugin-tailwindcss
 - Get Started
-- themeStore.svelte.ts
+- @sveltejs/vite-plugin-svelte
 - CORE DIRECTIVE: AWWWARDS-LEVEL DESIGN ENGINEERING
 - svelte-check
 - 11. COMPONENT EXECUTION GUIDELINES
@@ -173,7 +176,6 @@
 - Postgres Reference Writing Guidelines
 - Covering Indexes (INCLUDE Clause)
 - Task Observer Release Bundle CI Workflow
-- 4. HAPTIC MICRO-AESTHETICS (COMPONENT MASTERY)
 - LegalPageLayout.svelte
 - AGENTS.md
 - rules/graphify.md
@@ -219,9 +221,7 @@
 - guard-deploy-config.sh
 - eslint.config.js
 - /graphify
-- publint
 - @sveltejs/package
-- @sveltejs/vite-plugin-svelte
 - @types/node
 - typescript
 - prettier.config.ts
@@ -469,9 +469,13 @@ Nodes (13): Avoid legacy features, Context, `$derived`, Each blocks, `$effect`, 
 Cohesion: 0.14
 Nodes (13): node, ./.svelte-kit/tsconfig.json, compilerOptions, allowJs, checkJs, forceConsistentCasingInFileNames, resolveJsonModule, rewriteRelativeImportExtensions (+5 more)
 
+### Community 43 - "themeStore.svelte.ts"
+Cohesion: 0.13
+Nodes (7): themeStore, Comment, NavItem, Post, SearchResult, Section, Theme
+
 ### Community 45 - "Agent Skill: Principal UI/UX Architect & Motion Choreographer (Awwwards-Tier)"
 Cohesion: 0.15
-Nodes (13): 1. Meta Information & Core Directive, 2. THE "ABSOLUTE ZERO" DIRECTIVE (STRICT ANTI-PATTERNS), 3. THE CREATIVE VARIANCE ENGINE, 5. MOTION CHOREOGRAPHY (FLUID DYNAMICS), 6. PERFORMANCE GUARDRAILS, 7. EXECUTION PROTOCOL, 8. PRE-OUTPUT CHECKLIST, A. The "Fluid Island" Nav & Hamburger Reveal (+5 more)
+Nodes (13): 1. Meta Information & Core Directive, 2. THE "ABSOLUTE ZERO" DIRECTIVE (STRICT ANTI-PATTERNS), 3. THE CREATIVE VARIANCE ENGINE, 4. HAPTIC MICRO-AESTHETICS (COMPONENT MASTERY), 6. PERFORMANCE GUARDRAILS, 7. EXECUTION PROTOCOL, 8. PRE-OUTPUT CHECKLIST, A. The "Double-Bezel" (Doppelrand / Nested Architecture) (+5 more)
 
 ### Community 46 - "createA11yStore"
 Cohesion: 0.31
@@ -500,6 +504,10 @@ Nodes (11): CORS_HEADERS, getR2Client(), handleCvDelete(), handleCvUpload(), jso
 ### Community 53 - "Supabase Skill Guide"
 Cohesion: 0.20
 Nodes (11): Supabase Skill Feedback Issue Template, Supabase Agent Skill Changelog, Least Privilege Database Roles and Permissions, Row Level Security (RLS) Basics, Row Level Security (RLS) Performance Optimization, Security Definer Helper Functions in RLS, Supabase Skill Feedback Workflow, Declarative vs Imperative Migrations Workflow (+3 more)
+
+### Community 54 - "5. MOTION CHOREOGRAPHY (FLUID DYNAMICS)"
+Cohesion: 0.50
+Nodes (4): 5. MOTION CHOREOGRAPHY (FLUID DYNAMICS), A. The "Fluid Island" Nav & Hamburger Reveal, B. Magnetic Button Hover Physics, C. Scroll Interpolation (Entry Animations)
 
 ### Community 55 - "Security, Idempotency, Observability, and Reliability"
 Cohesion: 0.18
@@ -548,10 +556,6 @@ Nodes (9): 1. Query Performance (query), 2. Connection Management (conn), 3. Sec
 ### Community 68 - "Get Started"
 Cohesion: 0.20
 Nodes (9): Build for Production, Code Quality Checks, Configure Environment Variables, Get Started, Install Dependencies, License, Prerequisites, Preview Production Build (+1 more)
-
-### Community 69 - "themeStore.svelte.ts"
-Cohesion: 0.13
-Nodes (7): themeStore, Comment, NavItem, Post, SearchResult, Section, Theme
 
 ### Community 70 - "CORE DIRECTIVE: AWWWARDS-LEVEL DESIGN ENGINEERING"
 Cohesion: 0.22
@@ -868,10 +872,6 @@ Nodes (3): Dependabot Configuration, Check and Lint Job, GitHub Actions CI Workf
 ### Community 161 - "fetchAuthorProfile"
 Cohesion: 0.39
 Nodes (4): fetchAuthorProfile(), escapeXml(), GET(), GET()
-
-### Community 168 - "4. HAPTIC MICRO-AESTHETICS (COMPONENT MASTERY)"
-Cohesion: 0.50
-Nodes (4): 4. HAPTIC MICRO-AESTHETICS (COMPONENT MASTERY), A. The "Double-Bezel" (Doppelrand / Nested Architecture), B. Nested CTA & "Island" Button Architecture, C. Spatial Rhythm & Tension
 
 ### Community 170 - "LegalPageLayout.svelte"
 Cohesion: 0.10

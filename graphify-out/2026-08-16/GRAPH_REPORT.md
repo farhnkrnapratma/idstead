@@ -1,16 +1,16 @@
 # Graph Report - www  (2026-08-16)
 
 ## Corpus Check
-- 323 files · ~294,624 words
+- 323 files · ~294,593 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 2003 nodes · 2478 edges · 267 communities (159 shown, 108 thin omitted)
+- 1984 nodes · 2436 edges · 268 communities (162 shown, 106 thin omitted)
 - Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 95 edges (avg confidence: 0.68)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `8564dee1`
+- Built from commit: `20aab885`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -58,20 +58,18 @@
 - 2. THE COMBINATORIAL VARIATION ENGINE
 - svelte-core-bestpractices
 - compilerOptions
-- eslint
-- @eslint/js
+- types.ts
+- @tailwindcss/vite
 - Agent Skill: Principal UI/UX Architect & Motion Choreographer (Awwwards-Tier)
 - createA11yStore
 - 4. DESIGN ENGINEERING DIRECTIVES (Bias Correction)
 - Core Principles
 - Skill Authoring — taxonomy, licensing, confidentiality, editing rules
-- svelte/elements
 - scripts
 - admin/index.ts
 - Supabase Skill Guide
-- globals
+- contentFontStore.svelte.ts
 - Security, Idempotency, Observability, and Reliability
-- prettier
 - app.d.ts
 - formatters.ts
 - 10. REFERENCE VOCABULARY (Pattern Names the Agent Should Know)
@@ -82,9 +80,8 @@
 - Protocol: Premium Utilitarian Minimalism UI Architect
 - Validation, Reporting, and Verification
 - Section Definitions
-- @prettier/plugin-xml
+- createThemeStore
 - Get Started
-- themeStore.svelte.ts
 - CORE DIRECTIVE: AWWWARDS-LEVEL DESIGN ENGINEERING
 - svelte-check
 - 11. COMPONENT EXECUTION GUIDELINES
@@ -122,7 +119,7 @@
 - Endpoints
 - fkp.my.id — Public REST API (v1)
 - API Reviewer Agent
-- @types/marked
+- scroll.ts
 - design-taste-frontend/SKILL.md
 - APPENDICES - Real Source-Backed Reference Material
 - add-watch.md
@@ -136,8 +133,8 @@
 - Comprehensive Review (scheduled or fallback)
 - peerDependencies
 - createFilterSortStore
-- typescript-eslint
-- vite
+- eslint
+- @eslint/js
 - WHERE and JOIN Column Indexing
 - Svelte Core Best Practices Guide
 - FUNDING.yml Sponsorship Configuration
@@ -167,6 +164,7 @@
 - UI consistency check
 - Pre-Deployment Checklist (Cloudflare Preview / `develop` Branch)
 - internal/blog/comments/+server.ts
+- globals
 - supabase-postgres-best-practices Changelog
 - Primary Key Strategy Guidelines
 - GitHub Actions CI Workflow
@@ -175,12 +173,13 @@
 - supabaseFunctions.ts
 - fetchAuthorProfile
 - index.json/+server.ts
-- createThemeStore
+- prettier
 - pillParsing.ts
 - Postgres Reference Writing Guidelines
 - Covering Indexes (INCLUDE Clause)
 - Task Observer Release Bundle CI Workflow
 - 4. HAPTIC MICRO-AESTHETICS (COMPONENT MASTERY)
+- prettier-plugin-svelte
 - LegalPageLayout.svelte
 - AGENTS.md
 - rules/graphify.md
@@ -225,13 +224,14 @@
 - graphify-refresh.sh
 - guard-deploy-config.sh
 - eslint.config.js
+- @prettier/plugin-xml
 - /graphify
-- prettier-plugin-tailwindcss
 - prettier-plugin-yaml
-- publint
 - @sveltejs/adapter-cloudflare
+- publint
+- typescript-eslint
 - @sveltejs/package
-- @sveltejs/vite-plugin-svelte
+- vite
 - @types/node
 - typescript
 - prettier.config.ts
@@ -268,12 +268,11 @@
 - Table Partitioning by Range
 - Task Observer CC BY 4.0 License
 - utils/turnstile.ts
-- createContentFontStore
 
 ## God Nodes (most connected - your core abstractions)
 1. `CORE DIRECTIVE: PREMIUM MOBILE APP IMAGE DIRECTION` - 39 edges
-2. `Definisi Operasional Change Type` - 23 edges
-3. `supabase` - 23 edges
+2. `supabase` - 23 edges
+3. `Definisi Operasional Change Type` - 23 edges
 4. `CORE DIRECTIVE: AWWWARDS-LEVEL IMAGE ART DIRECTION` - 22 edges
 5. `task-observer - One Skill to Rule Them All` - 16 edges
 6. `tasteskill: Anti-Slop Frontend Skill` - 16 edges
@@ -318,7 +317,11 @@
 - **Postgres Indexing Strategies and Optimization** — _agents_skills_supabase_postgres_best_practices_references_query_covering_indexes_covering_indexes, _agents_skills_supabase_postgres_best_practices_references_query_index_types_postgres_index_types, _agents_skills_supabase_postgres_best_practices_references_query_missing_indexes_where_and_join_indexes, _agents_skills_supabase_postgres_best_practices_references_query_partial_indexes_partial_indexes, _agents_skills_supabase_postgres_best_practices_references_schema_foreign_key_indexes_foreign_key_indexing [INFERRED 0.95]
 - **Database Security and Row Level Security Controls** — _agents_skills_supabase_postgres_best_practices_references_security_privileges_least_privilege_roles, _agents_skills_supabase_postgres_best_practices_references_security_rls_basics_row_level_security_basics, _agents_skills_supabase_postgres_best_practices_references_security_rls_performance_rls_performance_optimization, _agents_skills_supabase_skill_rls_security_rules [INFERRED 0.95]
 
-## Communities (267 total, 108 thin omitted)
+## Communities (268 total, 106 thin omitted)
+
+### Community 0 - "lib/index.ts"
+Cohesion: 0.06
+Nodes (3): autoResize(), TEXT_SIZE_KEYWORDS, sanitizeInput()
 
 ### Community 1 - "brandkit/SKILL.md"
 Cohesion: 0.04
@@ -342,7 +345,7 @@ Nodes (34): 10. DEVICE MOCKUP FRAME RULE, 11. ONBOARDING FLOW RULE, 12. FIRST SC
 
 ### Community 6 - "codeBlocks.ts"
 Cohesion: 0.11
-Nodes (24): codeBlockPrefsStore, cn(), familyOf(), EXTENSIONS, getDownloadFilename(), applyChromeVars(), buildMenuCheckboxRow(), sync() (+16 more)
+Nodes (23): cn(), familyOf(), EXTENSIONS, getDownloadFilename(), applyChromeVars(), buildMenuCheckboxRow(), sync(), DARK_CHROME_VARS (+15 more)
 
 ### Community 7 - "adminCv.ts"
 Cohesion: 0.13
@@ -353,8 +356,8 @@ Cohesion: 0.07
 Nodes (29): Agent Usage, Common Tasks, Decision Guide: dotenv vs dotenvx, dotenv, dotenv Loading Mechanism, Environment File Safety Rules, Installation, Production Guidance (+21 more)
 
 ### Community 9 - ".mcp.json"
-Cohesion: 0.11
-Nodes (22): chrome-devtools, cloudflare-bindings, cloudflare-observability, context7, graphify, playwright, sentry, supabase (+14 more)
+Cohesion: 0.15
+Nodes (13): bunx, playwright-mcp, uv, chrome-devtools, cloudflare-bindings, cloudflare-observability, context7, graphify (+5 more)
 
 ### Community 10 - "Task Observer — Continuous Skill Discovery & Improvement"
 Cohesion: 0.07
@@ -366,15 +369,15 @@ Nodes (26): Postgres Best Practices Section Definitions, tsvector Full-Text Sear
 
 ### Community 12 - "devDependencies"
 Cohesion: 0.22
-Nodes (9): eslint-config-prettier, eslint-plugin-svelte, devDependencies, eslint-config-prettier, eslint-plugin-svelte, prettier-plugin-svelte, @tailwindcss/vite, prettier-plugin-svelte (+1 more)
+Nodes (9): eslint-config-prettier, eslint-plugin-svelte, devDependencies, eslint-config-prettier, eslint-plugin-svelte, prettier-plugin-tailwindcss, @sveltejs/vite-plugin-svelte, prettier-plugin-tailwindcss (+1 more)
 
 ### Community 13 - "markdown.ts"
 Cohesion: 0.17
 Nodes (17): LegalPageData, decodeHtmlEntities(), extractHeadings(), HeadingItem, injectHeadingIds(), parseMarkdownAlerts(), prepareMarkdownPage(), renderMarkdown() (+9 more)
 
 ### Community 14 - "supabase.ts"
-Cohesion: 0.20
-Nodes (9): apiError(), supabase, GET(), GET(), GET(), GET(), SearchResult, escapeXml() (+1 more)
+Cohesion: 0.18
+Nodes (11): fetchActiveCvDocument(), apiError(), supabase, POST(), GET(), GET(), GET(), GET() (+3 more)
 
 ### Community 15 - "openapi.ts"
 Cohesion: 0.11
@@ -390,7 +393,7 @@ Nodes (10): contact, education, experiences, openShareDialog(), rawSkills, share
 
 ### Community 18 - "author.ts"
 Cohesion: 0.15
-Nodes (18): AuthorProfile, ContactInfo, CvDocument, decodeHtmlEntities(), EducationItem, ExperienceItem, fetchEducation(), fetchExperiences() (+10 more)
+Nodes (17): AuthorProfile, ContactInfo, CvDocument, decodeHtmlEntities(), EducationItem, ExperienceItem, fetchEducation(), fetchExperiences() (+9 more)
 
 ### Community 19 - "imagegen-frontend-mobile Skill"
 Cohesion: 0.11
@@ -405,8 +408,8 @@ Cohesion: 0.50
 Nodes (4): files, dist, !dist/**/*.spec.*, !dist/**/*.test.*
 
 ### Community 22 - "toastStore.svelte.ts"
-Cohesion: 0.13
-Nodes (10): error(), formatToastMessage(), message, show(), success(), toastStore, ToastType, type (+2 more)
+Cohesion: 0.19
+Nodes (9): error(), formatToastMessage(), message, show(), success(), toastStore, ToastType, type (+1 more)
 
 ### Community 23 - "createCodeBlockPrefsStore"
 Cohesion: 0.43
@@ -434,7 +437,7 @@ Nodes (16): Claude environment notes, Compatibility, Contributing, Further readi
 
 ### Community 29 - "dependencies"
 Cohesion: 0.12
-Nodes (17): @aws-sdk/client-s3, @lucide/svelte, marked, dependencies, @aws-sdk/client-s3, highlight.js, @lucide/svelte, marked (+9 more)
+Nodes (17): @aws-sdk/client-s3, highlight.js, @lucide/svelte, marked, ogl, dependencies, @aws-sdk/client-s3, highlight.js (+9 more)
 
 ### Community 30 - "Writing Guidelines for Postgres References"
 Cohesion: 0.12
@@ -480,6 +483,10 @@ Nodes (13): Avoid legacy features, Context, `$derived`, Each blocks, `$effect`, 
 Cohesion: 0.14
 Nodes (13): node, ./.svelte-kit/tsconfig.json, compilerOptions, allowJs, checkJs, forceConsistentCasingInFileNames, resolveJsonModule, rewriteRelativeImportExtensions (+5 more)
 
+### Community 43 - "types.ts"
+Cohesion: 0.18
+Nodes (7): Comment, NavItem, Post, Project, ProjectLanguage, SearchResult, Section
+
 ### Community 45 - "Agent Skill: Principal UI/UX Architect & Motion Choreographer (Awwwards-Tier)"
 Cohesion: 0.15
 Nodes (13): 1. Meta Information & Core Directive, 2. THE "ABSOLUTE ZERO" DIRECTIVE (STRICT ANTI-PATTERNS), 3. THE CREATIVE VARIANCE ENGINE, 5. MOTION CHOREOGRAPHY (FLUID DYNAMICS), 6. PERFORMANCE GUARDRAILS, 7. EXECUTION PROTOCOL, 8. PRE-OUTPUT CHECKLIST, A. The "Fluid Island" Nav & Hamburger Reveal (+5 more)
@@ -512,6 +519,10 @@ Nodes (11): CORS_HEADERS, getR2Client(), handleCvDelete(), handleCvUpload(), jso
 Cohesion: 0.20
 Nodes (11): Supabase Skill Feedback Issue Template, Supabase Agent Skill Changelog, Least Privilege Database Roles and Permissions, Row Level Security (RLS) Basics, Row Level Security (RLS) Performance Optimization, Security Definer Helper Functions in RLS, Supabase Skill Feedback Workflow, Declarative vs Imperative Migrations Workflow (+3 more)
 
+### Community 54 - "contentFontStore.svelte.ts"
+Cohesion: 0.33
+Nodes (5): ContentFont, contentFontStore, createContentFontStore(), reset(), setFont()
+
 ### Community 55 - "Security, Idempotency, Observability, and Reliability"
 Cohesion: 0.18
 Nodes (10): Authentication, Content types, CORS, Documentation as contract, Idempotency, Observability, Rate limiting, Response shaping (+2 more)
@@ -521,7 +532,7 @@ Cohesion: 0.18
 Nodes (6): App, Error, Platform, R2Bucket, R2Object, RateLimit
 
 ### Community 58 - "formatters.ts"
-Cohesion: 0.15
+Cohesion: 0.12
 Nodes (6): formatRelativeTime(), getRelativeTimeNextUpdateMs(), matchRelativeUnit(), RELATIVE_UNITS, RelativeUnit, toDate()
 
 ### Community 59 - "10. REFERENCE VOCABULARY (Pattern Names the Agent Should Know)"
@@ -556,13 +567,13 @@ Nodes (8): Hunting methodology — include in every Phase 2 agent prompt, Phase 
 Cohesion: 0.20
 Nodes (9): 1. Query Performance (query), 2. Connection Management (conn), 3. Security & RLS (security), 4. Schema Design (schema), 5. Concurrency & Locking (lock), 6. Data Access Patterns (data), 7. Monitoring & Diagnostics (monitor), 8. Advanced Features (advanced) (+1 more)
 
+### Community 67 - "createThemeStore"
+Cohesion: 0.80
+Nodes (5): createThemeStore(), apply(), cycle(), init(), toggle()
+
 ### Community 68 - "Get Started"
 Cohesion: 0.20
 Nodes (9): Build for Production, Code Quality Checks, Configure Environment Variables, Get Started, Install Dependencies, License, Prerequisites, Preview Production Build (+1 more)
-
-### Community 69 - "themeStore.svelte.ts"
-Cohesion: 0.12
-Nodes (9): themeStore, Comment, NavItem, Post, Project, ProjectLanguage, SearchResult, Section (+1 more)
 
 ### Community 70 - "CORE DIRECTIVE: AWWWARDS-LEVEL DESIGN ENGINEERING"
 Cohesion: 0.22
@@ -629,8 +640,8 @@ Cohesion: 0.25
 Nodes (8): keywords, farhan, farhan kurnia pratama, kurnia, pratama, svelte, sveltekit, tailwindcss
 
 ### Community 89 - "authorApi.ts"
-Cohesion: 0.27
-Nodes (12): fetchContactInfo(), fetchCvEntries(), fetchGroupedSkills(), fetchSocials(), generateAuthorMarkdown(), handleAuthorJsonRequest(), sanitizePublicApiData(), GET() (+4 more)
+Cohesion: 0.25
+Nodes (13): fetchContactInfo(), fetchCvEntries(), fetchGroupedSkills(), fetchSkills(), fetchSocials(), generateAuthorMarkdown(), handleAuthorJsonRequest(), sanitizePublicApiData() (+5 more)
 
 ### Community 90 - "11. REDESIGN PROTOCOL"
 Cohesion: 0.29
@@ -797,8 +808,8 @@ Cohesion: 0.33
 Nodes (5): Recognition, Reporting a Vulnerability, Scope, Security Policy, What to Expect
 
 ### Community 135 - "routes/+page.server.ts"
-Cohesion: 0.20
-Nodes (13): fetchActiveCvDocument(), fetchAuthorProfileWithSocials(), decodeHtmlEntities(), getLanguageColor(), GITHUB_LANGUAGE_COLORS, load(), BlogPost, fetchLogoCatalog() (+5 more)
+Cohesion: 0.21
+Nodes (12): fetchAuthorProfileWithSocials(), decodeHtmlEntities(), getLanguageColor(), GITHUB_LANGUAGE_COLORS, load(), BlogPost, fetchLogoCatalog(), fetchRepoExtras() (+4 more)
 
 ### Community 136 - "PostgreSQL Index Types Guide"
 Cohesion: 0.50
@@ -862,7 +873,7 @@ Nodes (8): 1. 🏗️ Build & Code Correctness Gates, 2. 🔐 Konfigurasi Enviro
 
 ### Community 151 - "internal/blog/comments/+server.ts"
 Cohesion: 0.23
-Nodes (10): isSameOriginRequest(), PlatformEnv, SiteverifyResponse, verifyTurnstileToken(), isNameReserved(), normalizeName(), moderateContent(), ModerationResult (+2 more)
+Nodes (9): isSameOriginRequest(), PlatformEnv, SiteverifyResponse, verifyTurnstileToken(), isNameReserved(), normalizeName(), moderateContent(), ModerationResult (+1 more)
 
 ### Community 153 - "supabase-postgres-best-practices Changelog"
 Cohesion: 0.67
@@ -880,49 +891,41 @@ Nodes (3): Dependabot Configuration, Check and Lint Job, GitHub Actions CI Workf
 Cohesion: 0.39
 Nodes (4): fetchAuthorProfile(), escapeXml(), GET(), GET()
 
-### Community 163 - "createThemeStore"
-Cohesion: 0.80
-Nodes (5): createThemeStore(), apply(), cycle(), init(), toggle()
-
 ### Community 168 - "4. HAPTIC MICRO-AESTHETICS (COMPONENT MASTERY)"
 Cohesion: 0.50
 Nodes (4): 4. HAPTIC MICRO-AESTHETICS (COMPONENT MASTERY), A. The "Double-Bezel" (Doppelrand / Nested Architecture), B. Nested CTA & "Island" Button Architecture, C. Spatial Rhythm & Tension
 
 ### Community 170 - "LegalPageLayout.svelte"
-Cohesion: 0.09
-Nodes (10): A11ySettings, a11yStore, defaults, FontScale, CodeBlockPrefs, defaults, ContentFont, contentFontStore (+2 more)
+Cohesion: 0.13
+Nodes (10): A11ySettings, a11yStore, defaults, FontScale, CodeBlockPrefs, codeBlockPrefsStore, defaults, themeStore (+2 more)
 
 ### Community 215 - "/graphify"
 Cohesion: 0.22
 Nodes (9): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands, Usage (+1 more)
 
 ### Community 262 - "utils/turnstile.ts"
-Cohesion: 0.25
+Cohesion: 0.22
 Nodes (4): turnstileSiteKey, turnstileWidget(), TurnstileWidgetOptions, Window
 
-### Community 263 - "createContentFontStore"
-Cohesion: 1.00
-Nodes (3): createContentFontStore(), reset(), setFont()
-
 ## Knowledge Gaps
-- **1067 isolated node(s):** `supabase`, `sentry`, `context7`, `cloudflare-observability`, `cloudflare-bindings` (+1062 more)
+- **1064 isolated node(s):** `name`, `version`, `private`, `license`, `@aws-sdk/client-s3` (+1059 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **108 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **106 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `createA11yStore()` connect `createA11yStore` to `LegalPageLayout.svelte`?**
-  _High betweenness centrality (0.009) - this node is a cross-community bridge._
-- **Why does `createCodeBlockPrefsStore()` connect `createCodeBlockPrefsStore` to `LegalPageLayout.svelte`?**
+  _High betweenness centrality (0.004) - this node is a cross-community bridge._
+- **Why does `supabase` connect `supabase.ts` to `fetchAuthorProfile`, `adminCv.ts`, `routes/+page.server.ts`, `login/+server.ts`, `markdown.ts`, `author.ts`, `authorApi.ts`?**
   _High betweenness centrality (0.003) - this node is a cross-community bridge._
-- **Why does `supabase` connect `supabase.ts` to `fetchAuthorProfile`, `adminCv.ts`, `routes/+page.server.ts`, `login/+server.ts`, `markdown.ts`, `author.ts`, `internal/blog/comments/+server.ts`, `authorApi.ts`?**
-  _High betweenness centrality (0.003) - this node is a cross-community bridge._
-- **What connects `supabase`, `sentry`, `context7` to the rest of the system?**
-  _1067 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **What connects `name`, `version`, `private` to the rest of the system?**
+  _1064 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `lib/index.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.05257312106627175 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05687645687645688 - nodes in this community are weakly interconnected._
 - **Should `brandkit/SKILL.md` be split into smaller, more focused modules?**
   _Cohesion score 0.0425531914893617 - nodes in this community are weakly interconnected._
 - **Should `Security Audit Attack Classes Reference` be split into smaller, more focused modules?**
   _Cohesion score 0.048726467331118496 - nodes in this community are weakly interconnected._
+- **Should `antipatterns.md` be split into smaller, more focused modules?**
+  _Cohesion score 0.053426248548199766 - nodes in this community are weakly interconnected._

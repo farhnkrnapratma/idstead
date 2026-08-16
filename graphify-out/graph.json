@@ -276,7 +276,7 @@
       "label": "RateLimitRecord",
       "file_type": "code",
       "source_file": "src/hooks.server.ts",
-      "source_location": "L16",
+      "source_location": "L18",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -754,6 +754,84 @@
       "norm_label": "window"
     },
     {
+      "label": "Comment",
+      "file_type": "code",
+      "source_file": "src/lib/types.ts",
+      "source_location": "L33",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "src_lib_types_comment",
+      "community": 43,
+      "community_name": "themeStore.svelte.ts",
+      "norm_label": "comment"
+    },
+    {
+      "label": "NavItem",
+      "file_type": "code",
+      "source_file": "src/lib/types.ts",
+      "source_location": "L6",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "src_lib_types_navitem",
+      "community": 43,
+      "community_name": "themeStore.svelte.ts",
+      "norm_label": "navitem"
+    },
+    {
+      "label": "Post",
+      "file_type": "code",
+      "source_file": "src/lib/types.ts",
+      "source_location": "L19",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "src_lib_types_post",
+      "community": 43,
+      "community_name": "themeStore.svelte.ts",
+      "norm_label": "post"
+    },
+    {
+      "label": "SearchResult",
+      "file_type": "code",
+      "source_file": "src/lib/types.ts",
+      "source_location": "L11",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "src_lib_types_searchresult",
+      "community": 43,
+      "community_name": "themeStore.svelte.ts",
+      "norm_label": "searchresult"
+    },
+    {
+      "label": "Section",
+      "file_type": "code",
+      "source_file": "src/lib/types.ts",
+      "source_location": "L3",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "src_lib_types_section",
+      "community": 43,
+      "community_name": "themeStore.svelte.ts",
+      "norm_label": "section"
+    },
+    {
+      "label": "Theme",
+      "file_type": "code",
+      "source_file": "src/lib/types.ts",
+      "source_location": "L1",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "src_lib_types_theme",
+      "community": 43,
+      "community_name": "themeStore.svelte.ts",
+      "norm_label": "theme"
+    },
+    {
       "label": "Error",
       "file_type": "code",
       "source_file": "src/app.d.ts",
@@ -843,84 +921,6 @@
       "community": 6,
       "community_name": "codeBlocks.ts",
       "norm_label": "enhancedblock"
-    },
-    {
-      "label": "Comment",
-      "file_type": "code",
-      "source_file": "src/lib/types.ts",
-      "source_location": "L33",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "src_lib_types_comment",
-      "community": 69,
-      "community_name": "themeStore.svelte.ts",
-      "norm_label": "comment"
-    },
-    {
-      "label": "NavItem",
-      "file_type": "code",
-      "source_file": "src/lib/types.ts",
-      "source_location": "L6",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "src_lib_types_navitem",
-      "community": 69,
-      "community_name": "themeStore.svelte.ts",
-      "norm_label": "navitem"
-    },
-    {
-      "label": "Post",
-      "file_type": "code",
-      "source_file": "src/lib/types.ts",
-      "source_location": "L19",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "src_lib_types_post",
-      "community": 69,
-      "community_name": "themeStore.svelte.ts",
-      "norm_label": "post"
-    },
-    {
-      "label": "SearchResult",
-      "file_type": "code",
-      "source_file": "src/lib/types.ts",
-      "source_location": "L11",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "src_lib_types_searchresult",
-      "community": 69,
-      "community_name": "themeStore.svelte.ts",
-      "norm_label": "searchresult"
-    },
-    {
-      "label": "Section",
-      "file_type": "code",
-      "source_file": "src/lib/types.ts",
-      "source_location": "L3",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "src_lib_types_section",
-      "community": 69,
-      "community_name": "themeStore.svelte.ts",
-      "norm_label": "section"
-    },
-    {
-      "label": "Theme",
-      "file_type": "code",
-      "source_file": "src/lib/types.ts",
-      "source_location": "L1",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "src_lib_types_theme",
-      "community": 69,
-      "community_name": "themeStore.svelte.ts",
-      "norm_label": "theme"
     },
     {
       "label": "AuthorCvData",
@@ -1189,7 +1189,7 @@
       "label": "getCdnBaseUrl()",
       "file_type": "code",
       "source_file": "src/hooks.server.ts",
-      "source_location": "L10",
+      "source_location": "L12",
       "_callable": true,
       "_origin": "ast",
       "id": "src_hooks_server_getcdnbaseurl",
@@ -1201,7 +1201,7 @@
       "label": "getClientIp()",
       "file_type": "code",
       "source_file": "src/hooks.server.ts",
-      "source_location": "L22",
+      "source_location": "L24",
       "_callable": true,
       "_origin": "ast",
       "id": "src_hooks_server_getclientip",
@@ -2782,6 +2782,42 @@
       "norm_label": "children()"
     },
     {
+      "label": "filter()",
+      "file_type": "code",
+      "source_file": "src/lib/components/SpotlightSearch.svelte",
+      "source_location": "L420",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "src_lib_components_spotlightsearch_filter",
+      "community": 43,
+      "community_name": "themeStore.svelte.ts",
+      "norm_label": "filter()"
+    },
+    {
+      "label": "some()",
+      "file_type": "code",
+      "source_file": "src/lib/components/SpotlightSearch.svelte",
+      "source_location": "L367",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "src_lib_components_spotlightsearch_some",
+      "community": 43,
+      "community_name": "themeStore.svelte.ts",
+      "norm_label": "some()"
+    },
+    {
+      "label": "getFullYear()",
+      "file_type": "code",
+      "source_file": "src/lib/layout/FooterLegalRow.svelte",
+      "source_location": "L19",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "src_lib_layout_footerlegalrow_getfullyear",
+      "community": 43,
+      "community_name": "themeStore.svelte.ts",
+      "norm_label": "getfullyear()"
+    },
+    {
       "label": "createA11yStore()",
       "file_type": "code",
       "source_file": "src/lib/stores/a11yStore.svelte.ts",
@@ -3416,42 +3452,6 @@
       "community": 6,
       "community_name": "codeBlocks.ts",
       "norm_label": "splithighlightedhtmllines()"
-    },
-    {
-      "label": "filter()",
-      "file_type": "code",
-      "source_file": "src/lib/components/SpotlightSearch.svelte",
-      "source_location": "L420",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "src_lib_components_spotlightsearch_filter",
-      "community": 69,
-      "community_name": "themeStore.svelte.ts",
-      "norm_label": "filter()"
-    },
-    {
-      "label": "some()",
-      "file_type": "code",
-      "source_file": "src/lib/components/SpotlightSearch.svelte",
-      "source_location": "L367",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "src_lib_components_spotlightsearch_some",
-      "community": 69,
-      "community_name": "themeStore.svelte.ts",
-      "norm_label": "some()"
-    },
-    {
-      "label": "getFullYear()",
-      "file_type": "code",
-      "source_file": "src/lib/layout/FooterLegalRow.svelte",
-      "source_location": "L19",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "src_lib_layout_footerlegalrow_getfullyear",
-      "community": 69,
-      "community_name": "themeStore.svelte.ts",
-      "norm_label": "getfullyear()"
     },
     {
       "label": "bumpSemver()",
@@ -5540,7 +5540,7 @@
       "label": "handle",
       "file_type": "code",
       "source_file": "src/hooks.server.ts",
-      "source_location": "L35",
+      "source_location": "L37",
       "_origin": "ast",
       "id": "src_hooks_server_handle",
       "community": 103,
@@ -5551,7 +5551,7 @@
       "label": "handleError",
       "file_type": "code",
       "source_file": "src/hooks.server.ts",
-      "source_location": "L321",
+      "source_location": "L299",
       "_origin": "ast",
       "id": "src_hooks_server_handleerror",
       "community": 103,
@@ -5562,7 +5562,7 @@
       "label": "rateLimitMap",
       "file_type": "code",
       "source_file": "src/hooks.server.ts",
-      "source_location": "L20",
+      "source_location": "L22",
       "_origin": "ast",
       "id": "src_hooks_server_ratelimitmap",
       "community": 103,
@@ -5722,6 +5722,17 @@
       "community_name": "fkp.my.id \u2014 Public REST API (v1)",
       "norm_label": "rate limits",
       "id": "src_routes_api_v1_readme_rate_limits"
+    },
+    {
+      "label": "highlight.js",
+      "file_type": "code",
+      "source_file": "highlight.js",
+      "confidence": "EXTRACTED",
+      "_origin": "ast",
+      "id": "highlight_js_highlight_js",
+      "community": 107,
+      "community_name": "highlight.js",
+      "norm_label": "highlight.js"
     },
     {
       "label": "design-taste-frontend/SKILL.md",
@@ -6450,17 +6461,6 @@
       "norm_label": "prettier-plugin-svelte"
     },
     {
-      "label": "prettier-plugin-tailwindcss",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L30",
-      "_origin": "ast",
-      "id": "package_devdependencies_prettier_plugin_tailwindcss",
-      "community": 12,
-      "community_name": "devDependencies",
-      "norm_label": "prettier-plugin-tailwindcss"
-    },
-    {
       "label": "@prettier/plugin-xml",
       "file_type": "code",
       "source_file": "package.json",
@@ -6481,6 +6481,17 @@
       "community": 12,
       "community_name": "devDependencies",
       "norm_label": "prettier-plugin-yaml"
+    },
+    {
+      "label": "publint",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L32",
+      "_origin": "ast",
+      "id": "package_devdependencies_publint",
+      "community": 12,
+      "community_name": "devDependencies",
+      "norm_label": "publint"
     },
     {
       "label": "@sveltejs/adapter-cloudflare",
@@ -6582,17 +6593,6 @@
       "norm_label": "prettier-plugin-svelte"
     },
     {
-      "label": "prettier-plugin-tailwindcss",
-      "file_type": "concept",
-      "source_file": "package.json",
-      "source_location": "L30",
-      "_origin": "ast",
-      "id": "prettier_plugin_tailwindcss",
-      "community": 12,
-      "community_name": "devDependencies",
-      "norm_label": "prettier-plugin-tailwindcss"
-    },
-    {
       "label": "@prettier/plugin-xml",
       "file_type": "concept",
       "source_file": "package.json",
@@ -6613,6 +6613,17 @@
       "community": 12,
       "community_name": "devDependencies",
       "norm_label": "prettier-plugin-yaml"
+    },
+    {
+      "label": "publint",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L32",
+      "_origin": "ast",
+      "id": "publint",
+      "community": 12,
+      "community_name": "devDependencies",
+      "norm_label": "publint"
     },
     {
       "label": "@sveltejs/adapter-cloudflare",
@@ -6657,6 +6668,28 @@
       "community": 120,
       "community_name": "createFilterSortStore",
       "norm_label": "usefiltersort.svelte.ts"
+    },
+    {
+      "label": "@lucide/svelte",
+      "file_type": "code",
+      "source_file": "@lucide/svelte",
+      "confidence": "EXTRACTED",
+      "_origin": "ast",
+      "id": "lucide_svelte_svelte",
+      "community": 121,
+      "community_name": "@lucide/svelte",
+      "norm_label": "@lucide/svelte"
+    },
+    {
+      "label": "ogl",
+      "file_type": "code",
+      "source_file": "ogl",
+      "confidence": "EXTRACTED",
+      "_origin": "ast",
+      "id": "ogl_ogl",
+      "community": 122,
+      "community_name": "ogl",
+      "norm_label": "ogl"
     },
     {
       "label": "yaml",
@@ -8144,17 +8177,6 @@
       "norm_label": "feedback/+page.svelte"
     },
     {
-      "label": "@lucide/svelte",
-      "file_type": "code",
-      "source_file": "@lucide/svelte",
-      "confidence": "EXTRACTED",
-      "_origin": "ast",
-      "id": "lucide_svelte_svelte",
-      "community": 152,
-      "community_name": "@lucide/svelte",
-      "norm_label": "@lucide/svelte"
-    },
-    {
       "label": "RECONNAISSANCE.md",
       "file_type": "document",
       "source_file": ".agents/skills/security-audit/RECONNAISSANCE.md",
@@ -8505,50 +8527,6 @@
       "community": 164,
       "community_name": "pillParsing.ts",
       "norm_label": "pillparsing.ts"
-    },
-    {
-      "label": "4. HAPTIC MICRO-AESTHETICS (COMPONENT MASTERY)",
-      "file_type": "document",
-      "source_file": ".agents/skills/high-end-visual-design/SKILL.md",
-      "source_location": "L47",
-      "_origin": "ast",
-      "community": 168,
-      "community_name": "4. HAPTIC MICRO-AESTHETICS (COMPONENT MASTERY)",
-      "norm_label": "4. haptic micro-aesthetics (component mastery)",
-      "id": "agents_skills_high_end_visual_design_skill_4_haptic_micro_aesthetics_component_mastery"
-    },
-    {
-      "label": "A. The \"Double-Bezel\" (Doppelrand / Nested Architecture)",
-      "file_type": "document",
-      "source_file": ".agents/skills/high-end-visual-design/SKILL.md",
-      "source_location": "L49",
-      "_origin": "ast",
-      "community": 168,
-      "community_name": "4. HAPTIC MICRO-AESTHETICS (COMPONENT MASTERY)",
-      "norm_label": "a. the \"double-bezel\" (doppelrand / nested architecture)",
-      "id": "agents_skills_high_end_visual_design_skill_a_the_double_bezel_doppelrand_nested_architecture"
-    },
-    {
-      "label": "B. Nested CTA & \"Island\" Button Architecture",
-      "file_type": "document",
-      "source_file": ".agents/skills/high-end-visual-design/SKILL.md",
-      "source_location": "L56",
-      "_origin": "ast",
-      "community": 168,
-      "community_name": "4. HAPTIC MICRO-AESTHETICS (COMPONENT MASTERY)",
-      "norm_label": "b. nested cta & \"island\" button architecture",
-      "id": "agents_skills_high_end_visual_design_skill_b_nested_cta_island_button_architecture"
-    },
-    {
-      "label": "C. Spatial Rhythm & Tension",
-      "file_type": "document",
-      "source_file": ".agents/skills/high-end-visual-design/SKILL.md",
-      "source_location": "L61",
-      "_origin": "ast",
-      "community": 168,
-      "community_name": "4. HAPTIC MICRO-AESTHETICS (COMPONENT MASTERY)",
-      "norm_label": "c. spatial rhythm & tension",
-      "id": "agents_skills_high_end_visual_design_skill_c_spatial_rhythm_tension"
     },
     {
       "label": "$env/dynamic/public",
@@ -10290,28 +10268,6 @@
       "id": "agents_skills_graphify_skill_what_graphify_is_for"
     },
     {
-      "label": "publint",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L32",
-      "_origin": "ast",
-      "id": "package_devdependencies_publint",
-      "community": 218,
-      "community_name": "publint",
-      "norm_label": "publint"
-    },
-    {
-      "label": "publint",
-      "file_type": "concept",
-      "source_file": "package.json",
-      "source_location": "L32",
-      "_origin": "ast",
-      "id": "publint",
-      "community": 218,
-      "community_name": "publint",
-      "norm_label": "publint"
-    },
-    {
       "label": "svelte/transition",
       "file_type": "code",
       "source_file": "svelte/transition",
@@ -10464,28 +10420,6 @@
       "community": 220,
       "community_name": "@sveltejs/package",
       "norm_label": "@sveltejs/package"
-    },
-    {
-      "label": "@sveltejs/vite-plugin-svelte",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L21",
-      "_origin": "ast",
-      "id": "package_devdependencies_sveltejs_vite_plugin_svelte",
-      "community": 221,
-      "community_name": "@sveltejs/vite-plugin-svelte",
-      "norm_label": "@sveltejs/vite-plugin-svelte"
-    },
-    {
-      "label": "@sveltejs/vite-plugin-svelte",
-      "file_type": "concept",
-      "source_file": "package.json",
-      "source_location": "L21",
-      "_origin": "ast",
-      "id": "sveltejs_vite_plugin_svelte",
-      "community": 221,
-      "community_name": "@sveltejs/vite-plugin-svelte",
-      "norm_label": "@sveltejs/vite-plugin-svelte"
     },
     {
       "label": "@types/node",
@@ -11234,28 +11168,6 @@
       "community_name": "Supabase",
       "norm_label": "supabase mcp server",
       "id": "agents_skills_supabase_skill_supabase_mcp_server"
-    },
-    {
-      "label": "highlight.js",
-      "file_type": "code",
-      "source_file": "highlight.js",
-      "confidence": "EXTRACTED",
-      "_origin": "ast",
-      "id": "highlight_js_highlight_js",
-      "community": 270,
-      "community_name": "highlight.js",
-      "norm_label": "highlight.js"
-    },
-    {
-      "label": "ogl",
-      "file_type": "code",
-      "source_file": "ogl",
-      "confidence": "EXTRACTED",
-      "_origin": "ast",
-      "id": "ogl_ogl",
-      "community": 271,
-      "community_name": "ogl",
-      "norm_label": "ogl"
     },
     {
       "label": "task-observer/README.md",
@@ -13785,26 +13697,136 @@
       "norm_label": "./.svelte-kit/tsconfig.json"
     },
     {
-      "label": "eslint-config-prettier",
+      "label": "DialogCloseButton.svelte",
       "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L25",
+      "source_file": "src/lib/components/DialogCloseButton.svelte",
+      "source_location": "L1",
       "_origin": "ast",
-      "id": "package_devdependencies_eslint_config_prettier",
+      "id": "src_lib_components_dialogclosebutton",
       "community": 43,
-      "community_name": "eslint-config-prettier",
-      "norm_label": "eslint-config-prettier"
+      "community_name": "themeStore.svelte.ts",
+      "norm_label": "dialogclosebutton.svelte"
     },
     {
-      "label": "eslint-config-prettier",
-      "file_type": "concept",
-      "source_file": "package.json",
-      "source_location": "L25",
+      "label": "AccessibilitySelect.svelte",
+      "file_type": "code",
+      "source_file": "src/lib/components/filter/AccessibilitySelect.svelte",
+      "source_location": "L1",
       "_origin": "ast",
-      "id": "eslint_config_prettier",
+      "id": "src_lib_components_filter_accessibilityselect",
       "community": 43,
-      "community_name": "eslint-config-prettier",
-      "norm_label": "eslint-config-prettier"
+      "community_name": "themeStore.svelte.ts",
+      "norm_label": "accessibilityselect.svelte"
+    },
+    {
+      "label": "ContentFontSelect.svelte",
+      "file_type": "code",
+      "source_file": "src/lib/components/filter/ContentFontSelect.svelte",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_lib_components_filter_contentfontselect",
+      "community": 43,
+      "community_name": "themeStore.svelte.ts",
+      "norm_label": "contentfontselect.svelte"
+    },
+    {
+      "label": "ThemeSelect.svelte",
+      "file_type": "code",
+      "source_file": "src/lib/components/filter/ThemeSelect.svelte",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_lib_components_filter_themeselect",
+      "community": 43,
+      "community_name": "themeStore.svelte.ts",
+      "norm_label": "themeselect.svelte"
+    },
+    {
+      "label": "IconButton.svelte",
+      "file_type": "code",
+      "source_file": "src/lib/components/IconButton.svelte",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_lib_components_iconbutton",
+      "community": 43,
+      "community_name": "themeStore.svelte.ts",
+      "norm_label": "iconbutton.svelte"
+    },
+    {
+      "label": "SpotlightSearch.svelte",
+      "file_type": "code",
+      "source_file": "src/lib/components/SpotlightSearch.svelte",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_lib_components_spotlightsearch",
+      "community": 43,
+      "community_name": "themeStore.svelte.ts",
+      "norm_label": "spotlightsearch.svelte"
+    },
+    {
+      "label": "TopNav.svelte",
+      "file_type": "code",
+      "source_file": "src/lib/components/TopNav.svelte",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_lib_components_topnav",
+      "community": 43,
+      "community_name": "themeStore.svelte.ts",
+      "norm_label": "topnav.svelte"
+    },
+    {
+      "label": "FooterLegalRow.svelte",
+      "file_type": "code",
+      "source_file": "src/lib/layout/FooterLegalRow.svelte",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_lib_layout_footerlegalrow",
+      "community": 43,
+      "community_name": "themeStore.svelte.ts",
+      "norm_label": "footerlegalrow.svelte"
+    },
+    {
+      "label": "FooterSection.svelte",
+      "file_type": "code",
+      "source_file": "src/lib/layout/FooterSection.svelte",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_lib_layout_footersection",
+      "community": 43,
+      "community_name": "themeStore.svelte.ts",
+      "norm_label": "footersection.svelte"
+    },
+    {
+      "label": "themeStore.svelte.ts",
+      "file_type": "code",
+      "source_file": "src/lib/stores/themeStore.svelte.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_lib_stores_themestore_svelte",
+      "community": 43,
+      "community_name": "themeStore.svelte.ts",
+      "norm_label": "themestore.svelte.ts"
+    },
+    {
+      "label": "themeStore",
+      "file_type": "code",
+      "source_file": "src/lib/stores/themeStore.svelte.ts",
+      "source_location": "L62",
+      "_origin": "ast",
+      "id": "src_lib_stores_themestore_svelte_themestore",
+      "community": 43,
+      "community_name": "themeStore.svelte.ts",
+      "norm_label": "themestore"
+    },
+    {
+      "label": "types.ts",
+      "file_type": "code",
+      "source_file": "src/lib/types.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_lib_types",
+      "community": 43,
+      "community_name": "themeStore.svelte.ts",
+      "norm_label": "types.ts"
     },
     {
       "label": "@tailwindcss/vite",
@@ -13862,15 +13884,15 @@
       "id": "agents_skills_high_end_visual_design_skill_3_the_creative_variance_engine"
     },
     {
-      "label": "5. MOTION CHOREOGRAPHY (FLUID DYNAMICS)",
+      "label": "4. HAPTIC MICRO-AESTHETICS (COMPONENT MASTERY)",
       "file_type": "document",
       "source_file": ".agents/skills/high-end-visual-design/SKILL.md",
-      "source_location": "L66",
+      "source_location": "L47",
       "_origin": "ast",
       "community": 45,
       "community_name": "Agent Skill: Principal UI/UX Architect & Motion Choreographer (Awwwards-Tier)",
-      "norm_label": "5. motion choreography (fluid dynamics)",
-      "id": "agents_skills_high_end_visual_design_skill_5_motion_choreography_fluid_dynamics"
+      "norm_label": "4. haptic micro-aesthetics (component mastery)",
+      "id": "agents_skills_high_end_visual_design_skill_4_haptic_micro_aesthetics_component_mastery"
     },
     {
       "label": "6. PERFORMANCE GUARDRAILS",
@@ -13906,15 +13928,15 @@
       "id": "agents_skills_high_end_visual_design_skill_8_pre_output_checklist"
     },
     {
-      "label": "A. The \"Fluid Island\" Nav & Hamburger Reveal",
+      "label": "A. The \"Double-Bezel\" (Doppelrand / Nested Architecture)",
       "file_type": "document",
       "source_file": ".agents/skills/high-end-visual-design/SKILL.md",
-      "source_location": "L70",
+      "source_location": "L49",
       "_origin": "ast",
       "community": 45,
       "community_name": "Agent Skill: Principal UI/UX Architect & Motion Choreographer (Awwwards-Tier)",
-      "norm_label": "a. the \"fluid island\" nav & hamburger reveal",
-      "id": "agents_skills_high_end_visual_design_skill_a_the_fluid_island_nav_hamburger_reveal"
+      "norm_label": "a. the \"double-bezel\" (doppelrand / nested architecture)",
+      "id": "agents_skills_high_end_visual_design_skill_a_the_double_bezel_doppelrand_nested_architecture"
     },
     {
       "label": "A. Vibe & Texture Archetypes (Pick 1)",
@@ -13950,26 +13972,26 @@
       "id": "agents_skills_high_end_visual_design_skill_b_layout_archetypes_pick_1"
     },
     {
-      "label": "B. Magnetic Button Hover Physics",
+      "label": "B. Nested CTA & \"Island\" Button Architecture",
       "file_type": "document",
       "source_file": ".agents/skills/high-end-visual-design/SKILL.md",
-      "source_location": "L77",
+      "source_location": "L56",
       "_origin": "ast",
       "community": 45,
       "community_name": "Agent Skill: Principal UI/UX Architect & Motion Choreographer (Awwwards-Tier)",
-      "norm_label": "b. magnetic button hover physics",
-      "id": "agents_skills_high_end_visual_design_skill_b_magnetic_button_hover_physics"
+      "norm_label": "b. nested cta & \"island\" button architecture",
+      "id": "agents_skills_high_end_visual_design_skill_b_nested_cta_island_button_architecture"
     },
     {
-      "label": "C. Scroll Interpolation (Entry Animations)",
+      "label": "C. Spatial Rhythm & Tension",
       "file_type": "document",
       "source_file": ".agents/skills/high-end-visual-design/SKILL.md",
-      "source_location": "L83",
+      "source_location": "L61",
       "_origin": "ast",
       "community": 45,
       "community_name": "Agent Skill: Principal UI/UX Architect & Motion Choreographer (Awwwards-Tier)",
-      "norm_label": "c. scroll interpolation (entry animations)",
-      "id": "agents_skills_high_end_visual_design_skill_c_scroll_interpolation_entry_animations"
+      "norm_label": "c. spatial rhythm & tension",
+      "id": "agents_skills_high_end_visual_design_skill_c_spatial_rhythm_tension"
     },
     {
       "label": "4.10 Quotes & Testimonials",
@@ -15072,6 +15094,50 @@
       "norm_label": "r2_secret_access_key"
     },
     {
+      "label": "5. MOTION CHOREOGRAPHY (FLUID DYNAMICS)",
+      "file_type": "document",
+      "source_file": ".agents/skills/high-end-visual-design/SKILL.md",
+      "source_location": "L66",
+      "_origin": "ast",
+      "community": 54,
+      "community_name": "5. MOTION CHOREOGRAPHY (FLUID DYNAMICS)",
+      "norm_label": "5. motion choreography (fluid dynamics)",
+      "id": "agents_skills_high_end_visual_design_skill_5_motion_choreography_fluid_dynamics"
+    },
+    {
+      "label": "A. The \"Fluid Island\" Nav & Hamburger Reveal",
+      "file_type": "document",
+      "source_file": ".agents/skills/high-end-visual-design/SKILL.md",
+      "source_location": "L70",
+      "_origin": "ast",
+      "community": 54,
+      "community_name": "5. MOTION CHOREOGRAPHY (FLUID DYNAMICS)",
+      "norm_label": "a. the \"fluid island\" nav & hamburger reveal",
+      "id": "agents_skills_high_end_visual_design_skill_a_the_fluid_island_nav_hamburger_reveal"
+    },
+    {
+      "label": "B. Magnetic Button Hover Physics",
+      "file_type": "document",
+      "source_file": ".agents/skills/high-end-visual-design/SKILL.md",
+      "source_location": "L77",
+      "_origin": "ast",
+      "community": 54,
+      "community_name": "5. MOTION CHOREOGRAPHY (FLUID DYNAMICS)",
+      "norm_label": "b. magnetic button hover physics",
+      "id": "agents_skills_high_end_visual_design_skill_b_magnetic_button_hover_physics"
+    },
+    {
+      "label": "C. Scroll Interpolation (Entry Animations)",
+      "file_type": "document",
+      "source_file": ".agents/skills/high-end-visual-design/SKILL.md",
+      "source_location": "L83",
+      "_origin": "ast",
+      "community": 54,
+      "community_name": "5. MOTION CHOREOGRAPHY (FLUID DYNAMICS)",
+      "norm_label": "c. scroll interpolation (entry animations)",
+      "id": "agents_skills_high_end_visual_design_skill_c_scroll_interpolation_entry_animations"
+    },
+    {
       "label": "security-and-reliability.md",
       "file_type": "document",
       "source_file": ".agents/skills/rest-api-best-practices/references/security-and-reliability.md",
@@ -15191,6 +15257,28 @@
       "community_name": "Security, Idempotency, Observability, and Reliability",
       "norm_label": "testing dimensions",
       "id": "agents_skills_rest_api_best_practices_references_security_and_reliability_testing_dimensions"
+    },
+    {
+      "label": "eslint-config-prettier",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L25",
+      "_origin": "ast",
+      "id": "package_devdependencies_eslint_config_prettier",
+      "community": 56,
+      "community_name": "eslint-config-prettier",
+      "norm_label": "eslint-config-prettier"
+    },
+    {
+      "label": "eslint-config-prettier",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L25",
+      "_origin": "ast",
+      "id": "eslint_config_prettier",
+      "community": 56,
+      "community_name": "eslint-config-prettier",
+      "norm_label": "eslint-config-prettier"
     },
     {
       "label": "app.d.ts",
@@ -16249,6 +16337,28 @@
       "id": "agents_skills_supabase_postgres_best_practices_references_sections_section_definitions"
     },
     {
+      "label": "prettier-plugin-tailwindcss",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L30",
+      "_origin": "ast",
+      "id": "package_devdependencies_prettier_plugin_tailwindcss",
+      "community": 67,
+      "community_name": "prettier-plugin-tailwindcss",
+      "norm_label": "prettier-plugin-tailwindcss"
+    },
+    {
+      "label": "prettier-plugin-tailwindcss",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L30",
+      "_origin": "ast",
+      "id": "prettier_plugin_tailwindcss",
+      "community": 67,
+      "community_name": "prettier-plugin-tailwindcss",
+      "norm_label": "prettier-plugin-tailwindcss"
+    },
+    {
       "label": "README.md",
       "file_type": "document",
       "source_file": "README.md",
@@ -16359,136 +16469,26 @@
       "id": "readme_start_development_server"
     },
     {
-      "label": "DialogCloseButton.svelte",
+      "label": "@sveltejs/vite-plugin-svelte",
       "file_type": "code",
-      "source_file": "src/lib/components/DialogCloseButton.svelte",
-      "source_location": "L1",
+      "source_file": "package.json",
+      "source_location": "L21",
       "_origin": "ast",
-      "id": "src_lib_components_dialogclosebutton",
+      "id": "package_devdependencies_sveltejs_vite_plugin_svelte",
       "community": 69,
-      "community_name": "themeStore.svelte.ts",
-      "norm_label": "dialogclosebutton.svelte"
+      "community_name": "@sveltejs/vite-plugin-svelte",
+      "norm_label": "@sveltejs/vite-plugin-svelte"
     },
     {
-      "label": "AccessibilitySelect.svelte",
-      "file_type": "code",
-      "source_file": "src/lib/components/filter/AccessibilitySelect.svelte",
-      "source_location": "L1",
+      "label": "@sveltejs/vite-plugin-svelte",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L21",
       "_origin": "ast",
-      "id": "src_lib_components_filter_accessibilityselect",
+      "id": "sveltejs_vite_plugin_svelte",
       "community": 69,
-      "community_name": "themeStore.svelte.ts",
-      "norm_label": "accessibilityselect.svelte"
-    },
-    {
-      "label": "ContentFontSelect.svelte",
-      "file_type": "code",
-      "source_file": "src/lib/components/filter/ContentFontSelect.svelte",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "src_lib_components_filter_contentfontselect",
-      "community": 69,
-      "community_name": "themeStore.svelte.ts",
-      "norm_label": "contentfontselect.svelte"
-    },
-    {
-      "label": "ThemeSelect.svelte",
-      "file_type": "code",
-      "source_file": "src/lib/components/filter/ThemeSelect.svelte",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "src_lib_components_filter_themeselect",
-      "community": 69,
-      "community_name": "themeStore.svelte.ts",
-      "norm_label": "themeselect.svelte"
-    },
-    {
-      "label": "IconButton.svelte",
-      "file_type": "code",
-      "source_file": "src/lib/components/IconButton.svelte",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "src_lib_components_iconbutton",
-      "community": 69,
-      "community_name": "themeStore.svelte.ts",
-      "norm_label": "iconbutton.svelte"
-    },
-    {
-      "label": "SpotlightSearch.svelte",
-      "file_type": "code",
-      "source_file": "src/lib/components/SpotlightSearch.svelte",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "src_lib_components_spotlightsearch",
-      "community": 69,
-      "community_name": "themeStore.svelte.ts",
-      "norm_label": "spotlightsearch.svelte"
-    },
-    {
-      "label": "TopNav.svelte",
-      "file_type": "code",
-      "source_file": "src/lib/components/TopNav.svelte",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "src_lib_components_topnav",
-      "community": 69,
-      "community_name": "themeStore.svelte.ts",
-      "norm_label": "topnav.svelte"
-    },
-    {
-      "label": "FooterLegalRow.svelte",
-      "file_type": "code",
-      "source_file": "src/lib/layout/FooterLegalRow.svelte",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "src_lib_layout_footerlegalrow",
-      "community": 69,
-      "community_name": "themeStore.svelte.ts",
-      "norm_label": "footerlegalrow.svelte"
-    },
-    {
-      "label": "FooterSection.svelte",
-      "file_type": "code",
-      "source_file": "src/lib/layout/FooterSection.svelte",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "src_lib_layout_footersection",
-      "community": 69,
-      "community_name": "themeStore.svelte.ts",
-      "norm_label": "footersection.svelte"
-    },
-    {
-      "label": "themeStore.svelte.ts",
-      "file_type": "code",
-      "source_file": "src/lib/stores/themeStore.svelte.ts",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "src_lib_stores_themestore_svelte",
-      "community": 69,
-      "community_name": "themeStore.svelte.ts",
-      "norm_label": "themestore.svelte.ts"
-    },
-    {
-      "label": "themeStore",
-      "file_type": "code",
-      "source_file": "src/lib/stores/themeStore.svelte.ts",
-      "source_location": "L62",
-      "_origin": "ast",
-      "id": "src_lib_stores_themestore_svelte_themestore",
-      "community": 69,
-      "community_name": "themeStore.svelte.ts",
-      "norm_label": "themestore"
-    },
-    {
-      "label": "types.ts",
-      "file_type": "code",
-      "source_file": "src/lib/types.ts",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "src_lib_types",
-      "community": 69,
-      "community_name": "themeStore.svelte.ts",
-      "norm_label": "types.ts"
+      "community_name": "@sveltejs/vite-plugin-svelte",
+      "norm_label": "@sveltejs/vite-plugin-svelte"
     },
     {
       "label": "adminCv.ts",
@@ -23958,7 +23958,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/hooks.server.ts",
-      "source_location": "L125",
+      "source_location": "L103",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_hooks_server_handle",
@@ -23970,7 +23970,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/hooks.server.ts",
-      "source_location": "L54",
+      "source_location": "L56",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_hooks_server_handle",
@@ -40922,7 +40922,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/hooks.server.ts",
-      "source_location": "L10",
+      "source_location": "L12",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_hooks_server",
@@ -40933,7 +40933,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/hooks.server.ts",
-      "source_location": "L16",
+      "source_location": "L18",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_hooks_server",
@@ -40944,7 +40944,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/hooks.server.ts",
-      "source_location": "L20",
+      "source_location": "L22",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_hooks_server",
@@ -40955,7 +40955,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/hooks.server.ts",
-      "source_location": "L22",
+      "source_location": "L24",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_hooks_server",
@@ -40966,7 +40966,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/hooks.server.ts",
-      "source_location": "L321",
+      "source_location": "L299",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_hooks_server",
@@ -40977,7 +40977,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/hooks.server.ts",
-      "source_location": "L35",
+      "source_location": "L37",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_hooks_server",
@@ -51364,5 +51364,5 @@
       "source_file": ".agents/skills/supabase-postgres-best-practices/references/security-rls-basics.md"
     }
   ],
-  "built_at_commit": "8564dee102559b5589e88d5259325f0da082cd58"
+  "built_at_commit": "20aab8850b38d0c05c4bfd761d5b04ba0b404699"
 }
