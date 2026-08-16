@@ -1,11 +1,7 @@
 import {env as publicEnv} from '$env/dynamic/public'
-import {
-  PUBLIC_SUPABASE_PUBLISHABLE_KEY,
-  PUBLIC_SUPABASE_URL
-} from '$env/static/public'
 
 function getSupabaseBaseUrl() {
-  const urlRaw = publicEnv.PUBLIC_SUPABASE_URL || PUBLIC_SUPABASE_URL
+  const urlRaw = publicEnv.PUBLIC_SUPABASE_URL
   if (!urlRaw) return null
   if (urlRaw.endsWith('/rest/v1') || urlRaw.endsWith('/rest/v1/')) {
     return urlRaw.replace(/\/rest\/v1\/?$/, '')
@@ -18,8 +14,7 @@ export async function proxyToSupabaseEdgeFunction(
   functionName: string
 ) {
   const baseUrl = getSupabaseBaseUrl()
-  const anonKey =
-    publicEnv.PUBLIC_SUPABASE_PUBLISHABLE_KEY || PUBLIC_SUPABASE_PUBLISHABLE_KEY
+  const anonKey = publicEnv.PUBLIC_SUPABASE_PUBLISHABLE_KEY
 
   if (!baseUrl || !anonKey) {
     return new Response(

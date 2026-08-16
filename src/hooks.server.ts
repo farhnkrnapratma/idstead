@@ -1,7 +1,6 @@
 import {sequence} from '@sveltejs/kit/hooks'
 import * as Sentry from '@sentry/sveltekit'
 import {redirect, type Handle} from '@sveltejs/kit'
-import {PUBLIC_CDN_BASE_URL, PUBLIC_SENTRY_DSN} from '$env/static/public'
 import {env as publicEnv} from '$env/dynamic/public'
 import {dev} from '$app/environment'
 
@@ -9,7 +8,7 @@ const RATE_LIMIT_WINDOW_MS = 60 * 1000
 const MAX_REQUESTS_PER_WINDOW = 60
 
 function getCdnBaseUrl(): string {
-  const base = (PUBLIC_CDN_BASE_URL ?? '').trim()
+  const base = (publicEnv.PUBLIC_CDN_BASE_URL ?? '').trim()
   if (!base) return ''
   return base.replace(/\/+$/, '')
 }
@@ -35,7 +34,7 @@ function getClientIp(event: any): string {
 
 export const handle: Handle = sequence(
   Sentry.initCloudflareSentryHandle({
-    dsn: PUBLIC_SENTRY_DSN,
+    dsn: publicEnv.PUBLIC_SENTRY_DSN || '',
     environment: publicEnv.PUBLIC_SENTRY_ENVIRONMENT || import.meta.env.MODE,
     tracesSampleRate: dev ? 0 : 1.0,
     enableLogs: !dev

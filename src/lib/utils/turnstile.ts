@@ -1,8 +1,6 @@
-import {PUBLIC_TURNSTILE_SITE_KEY} from '$env/static/public'
 import {env} from '$env/dynamic/public'
 
-export const turnstileSiteKey =
-  env.PUBLIC_TURNSTILE_SITE_KEY || PUBLIC_TURNSTILE_SITE_KEY || ''
+export const turnstileSiteKey = env.PUBLIC_TURNSTILE_SITE_KEY || ''
 
 declare global {
   interface Window {

@@ -1,16 +1,16 @@
 # Graph Report - www  (2026-08-16)
 
 ## Corpus Check
-- 323 files · ~294,484 words
+- 323 files · ~294,624 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1994 nodes · 2464 edges · 267 communities (159 shown, 108 thin omitted)
+- 2003 nodes · 2478 edges · 267 communities (159 shown, 108 thin omitted)
 - Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 95 edges (avg confidence: 0.68)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `987b1fea`
+- Built from commit: `8564dee1`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -180,7 +180,7 @@
 - Postgres Reference Writing Guidelines
 - Covering Indexes (INCLUDE Clause)
 - Task Observer Release Bundle CI Workflow
-- 5. MOTION CHOREOGRAPHY (FLUID DYNAMICS)
+- 4. HAPTIC MICRO-AESTHETICS (COMPONENT MASTERY)
 - LegalPageLayout.svelte
 - AGENTS.md
 - rules/graphify.md
@@ -272,8 +272,8 @@
 
 ## God Nodes (most connected - your core abstractions)
 1. `CORE DIRECTIVE: PREMIUM MOBILE APP IMAGE DIRECTION` - 39 edges
-2. `supabase` - 23 edges
-3. `Definisi Operasional Change Type` - 23 edges
+2. `Definisi Operasional Change Type` - 23 edges
+3. `supabase` - 23 edges
 4. `CORE DIRECTIVE: AWWWARDS-LEVEL IMAGE ART DIRECTION` - 22 edges
 5. `task-observer - One Skill to Rule Them All` - 16 edges
 6. `tasteskill: Anti-Slop Frontend Skill` - 16 edges
@@ -353,8 +353,8 @@ Cohesion: 0.07
 Nodes (29): Agent Usage, Common Tasks, Decision Guide: dotenv vs dotenvx, dotenv, dotenv Loading Mechanism, Environment File Safety Rules, Installation, Production Guidance (+21 more)
 
 ### Community 9 - ".mcp.json"
-Cohesion: 0.15
-Nodes (13): bunx, playwright-mcp, uv, chrome-devtools, cloudflare-bindings, cloudflare-observability, context7, graphify (+5 more)
+Cohesion: 0.11
+Nodes (22): chrome-devtools, cloudflare-bindings, cloudflare-observability, context7, graphify, playwright, sentry, supabase (+14 more)
 
 ### Community 10 - "Task Observer — Continuous Skill Discovery & Improvement"
 Cohesion: 0.07
@@ -390,7 +390,7 @@ Nodes (10): contact, education, experiences, openShareDialog(), rawSkills, share
 
 ### Community 18 - "author.ts"
 Cohesion: 0.15
-Nodes (18): AuthorProfile, ContactInfo, CvDocument, decodeHtmlEntities(), EducationItem, ExperienceItem, fetchCvEntries(), fetchEducation() (+10 more)
+Nodes (18): AuthorProfile, ContactInfo, CvDocument, decodeHtmlEntities(), EducationItem, ExperienceItem, fetchEducation(), fetchExperiences() (+10 more)
 
 ### Community 19 - "imagegen-frontend-mobile Skill"
 Cohesion: 0.11
@@ -482,7 +482,7 @@ Nodes (13): node, ./.svelte-kit/tsconfig.json, compilerOptions, allowJs, checkJs
 
 ### Community 45 - "Agent Skill: Principal UI/UX Architect & Motion Choreographer (Awwwards-Tier)"
 Cohesion: 0.15
-Nodes (13): 1. Meta Information & Core Directive, 2. THE "ABSOLUTE ZERO" DIRECTIVE (STRICT ANTI-PATTERNS), 3. THE CREATIVE VARIANCE ENGINE, 4. HAPTIC MICRO-AESTHETICS (COMPONENT MASTERY), 6. PERFORMANCE GUARDRAILS, 7. EXECUTION PROTOCOL, 8. PRE-OUTPUT CHECKLIST, A. The "Double-Bezel" (Doppelrand / Nested Architecture) (+5 more)
+Nodes (13): 1. Meta Information & Core Directive, 2. THE "ABSOLUTE ZERO" DIRECTIVE (STRICT ANTI-PATTERNS), 3. THE CREATIVE VARIANCE ENGINE, 5. MOTION CHOREOGRAPHY (FLUID DYNAMICS), 6. PERFORMANCE GUARDRAILS, 7. EXECUTION PROTOCOL, 8. PRE-OUTPUT CHECKLIST, A. The "Fluid Island" Nav & Hamburger Reveal (+5 more)
 
 ### Community 46 - "createA11yStore"
 Cohesion: 0.31
@@ -630,7 +630,7 @@ Nodes (8): keywords, farhan, farhan kurnia pratama, kurnia, pratama, svelte, sve
 
 ### Community 89 - "authorApi.ts"
 Cohesion: 0.27
-Nodes (12): fetchContactInfo(), fetchFundingLinks(), fetchGroupedSkills(), fetchSocials(), generateAuthorMarkdown(), handleAuthorJsonRequest(), sanitizePublicApiData(), GET() (+4 more)
+Nodes (12): fetchContactInfo(), fetchCvEntries(), fetchGroupedSkills(), fetchSocials(), generateAuthorMarkdown(), handleAuthorJsonRequest(), sanitizePublicApiData(), GET() (+4 more)
 
 ### Community 90 - "11. REDESIGN PROTOCOL"
 Cohesion: 0.29
@@ -884,9 +884,9 @@ Nodes (4): fetchAuthorProfile(), escapeXml(), GET(), GET()
 Cohesion: 0.80
 Nodes (5): createThemeStore(), apply(), cycle(), init(), toggle()
 
-### Community 168 - "5. MOTION CHOREOGRAPHY (FLUID DYNAMICS)"
+### Community 168 - "4. HAPTIC MICRO-AESTHETICS (COMPONENT MASTERY)"
 Cohesion: 0.50
-Nodes (4): 5. MOTION CHOREOGRAPHY (FLUID DYNAMICS), A. The "Fluid Island" Nav & Hamburger Reveal, B. Magnetic Button Hover Physics, C. Scroll Interpolation (Entry Animations)
+Nodes (4): 4. HAPTIC MICRO-AESTHETICS (COMPONENT MASTERY), A. The "Double-Bezel" (Doppelrand / Nested Architecture), B. Nested CTA & "Island" Button Architecture, C. Spatial Rhythm & Tension
 
 ### Community 170 - "LegalPageLayout.svelte"
 Cohesion: 0.09
@@ -905,7 +905,7 @@ Cohesion: 1.00
 Nodes (3): createContentFontStore(), reset(), setFont()
 
 ## Knowledge Gaps
-- **1065 isolated node(s):** `supabase`, `@sveltejs/mcp`, `sentry`, `context7`, `cloudflare-observability` (+1060 more)
+- **1067 isolated node(s):** `supabase`, `sentry`, `context7`, `cloudflare-observability`, `cloudflare-bindings` (+1062 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **108 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -913,16 +913,16 @@ Nodes (3): createContentFontStore(), reset(), setFont()
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `createA11yStore()` connect `createA11yStore` to `LegalPageLayout.svelte`?**
-  _High betweenness centrality (0.004) - this node is a cross-community bridge._
+  _High betweenness centrality (0.009) - this node is a cross-community bridge._
 - **Why does `createCodeBlockPrefsStore()` connect `createCodeBlockPrefsStore` to `LegalPageLayout.svelte`?**
   _High betweenness centrality (0.003) - this node is a cross-community bridge._
-- **What connects `supabase`, `@sveltejs/mcp`, `sentry` to the rest of the system?**
-  _1065 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `supabase` connect `supabase.ts` to `fetchAuthorProfile`, `adminCv.ts`, `routes/+page.server.ts`, `login/+server.ts`, `markdown.ts`, `author.ts`, `internal/blog/comments/+server.ts`, `authorApi.ts`?**
+  _High betweenness centrality (0.003) - this node is a cross-community bridge._
+- **What connects `supabase`, `sentry`, `context7` to the rest of the system?**
+  _1067 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `lib/index.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.0539906103286385 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05257312106627175 - nodes in this community are weakly interconnected._
 - **Should `brandkit/SKILL.md` be split into smaller, more focused modules?**
   _Cohesion score 0.0425531914893617 - nodes in this community are weakly interconnected._
 - **Should `Security Audit Attack Classes Reference` be split into smaller, more focused modules?**
   _Cohesion score 0.048726467331118496 - nodes in this community are weakly interconnected._
-- **Should `antipatterns.md` be split into smaller, more focused modules?**
-  _Cohesion score 0.053426248548199766 - nodes in this community are weakly interconnected._

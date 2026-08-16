@@ -1078,6 +1078,18 @@
       "norm_label": "cn()"
     },
     {
+      "label": "children()",
+      "file_type": "code",
+      "source_file": "src/lib/components/Card.svelte",
+      "source_location": "L66",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "src_lib_components_card_children",
+      "community": 0,
+      "community_name": "lib/index.ts",
+      "norm_label": "children()"
+    },
+    {
       "label": "cn()",
       "file_type": "code",
       "source_file": "src/lib/components/Chip.svelte",
@@ -2362,18 +2374,6 @@
       "norm_label": "decodehtmlentities()"
     },
     {
-      "label": "fetchCvEntries()",
-      "file_type": "code",
-      "source_file": "src/lib/author.ts",
-      "source_location": "L425",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "src_lib_author_fetchcventries",
-      "community": 18,
-      "community_name": "author.ts",
-      "norm_label": "fetchcventries()"
-    },
-    {
       "label": "fetchEducation()",
       "file_type": "code",
       "source_file": "src/lib/author.ts",
@@ -2396,6 +2396,18 @@
       "community": 18,
       "community_name": "author.ts",
       "norm_label": "fetchexperiences()"
+    },
+    {
+      "label": "fetchFundingLinks()",
+      "file_type": "code",
+      "source_file": "src/lib/author.ts",
+      "source_location": "L461",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "src_lib_author_fetchfundinglinks",
+      "community": 18,
+      "community_name": "author.ts",
+      "norm_label": "fetchfundinglinks()"
     },
     {
       "label": "fetchSkills()",
@@ -2460,11 +2472,11 @@
     {
       "label": "GET()",
       "file_type": "code",
-      "source_file": "src/routes/api/v1/author/cv/+server.ts",
+      "source_file": "src/routes/api/v1/author/funding/+server.ts",
       "source_location": "L7",
       "_callable": true,
       "_origin": "ast",
-      "id": "src_routes_api_v1_author_cv_server_get",
+      "id": "src_routes_api_v1_author_funding_server_get",
       "community": 18,
       "community_name": "author.ts",
       "norm_label": "get()"
@@ -2665,7 +2677,7 @@
       "label": "getTurnstileResponse()",
       "file_type": "code",
       "source_file": "src/lib/utils/turnstile.ts",
-      "source_location": "L69",
+      "source_location": "L89",
       "_callable": true,
       "_origin": "ast",
       "id": "src_lib_utils_turnstile_getturnstileresponse",
@@ -2677,7 +2689,7 @@
       "label": "resetTurnstile()",
       "file_type": "code",
       "source_file": "src/lib/utils/turnstile.ts",
-      "source_location": "L74",
+      "source_location": "L94",
       "_callable": true,
       "_origin": "ast",
       "id": "src_lib_utils_turnstile_resetturnstile",
@@ -2701,7 +2713,7 @@
       "label": "render()",
       "file_type": "code",
       "source_file": "src/lib/utils/turnstile.ts",
-      "source_location": "L43",
+      "source_location": "L44",
       "_callable": true,
       "_origin": "ast",
       "id": "src_lib_utils_turnstile_turnstilewidget_render",
@@ -2936,18 +2948,6 @@
       "community": 46,
       "community_name": "createA11yStore",
       "norm_label": "togglesolidsurfaces()"
-    },
-    {
-      "label": "children()",
-      "file_type": "code",
-      "source_file": "src/lib/components/Card.svelte",
-      "source_location": "L66",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "src_lib_components_card_children",
-      "community": 50,
-      "community_name": "svelte/elements",
-      "norm_label": "children()"
     },
     {
       "label": "cn()",
@@ -3898,16 +3898,16 @@
       "norm_label": "fetchcontactinfo()"
     },
     {
-      "label": "fetchFundingLinks()",
+      "label": "fetchCvEntries()",
       "file_type": "code",
       "source_file": "src/lib/author.ts",
-      "source_location": "L461",
+      "source_location": "L425",
       "_callable": true,
       "_origin": "ast",
-      "id": "src_lib_author_fetchfundinglinks",
+      "id": "src_lib_author_fetchcventries",
       "community": 89,
       "community_name": "authorApi.ts",
-      "norm_label": "fetchfundinglinks()"
+      "norm_label": "fetchcventries()"
     },
     {
       "label": "fetchGroupedSkills()",
@@ -3984,11 +3984,11 @@
     {
       "label": "GET()",
       "file_type": "code",
-      "source_file": "src/routes/api/v1/author/funding/+server.ts",
+      "source_file": "src/routes/api/v1/author/cv/+server.ts",
       "source_location": "L7",
       "_callable": true,
       "_origin": "ast",
-      "id": "src_routes_api_v1_author_funding_server_get",
+      "id": "src_routes_api_v1_author_cv_server_get",
       "community": 89,
       "community_name": "authorApi.ts",
       "norm_label": "get()"
@@ -4083,6 +4083,17 @@
       "community": 0,
       "community_name": "lib/index.ts",
       "norm_label": "breakpointvisibility.svelte"
+    },
+    {
+      "label": "Card.svelte",
+      "file_type": "code",
+      "source_file": "src/lib/components/Card.svelte",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_lib_components_card",
+      "community": 0,
+      "community_name": "lib/index.ts",
+      "norm_label": "card.svelte"
     },
     {
       "label": "CharacterCounter.svelte",
@@ -5595,7 +5606,7 @@
       "label": "handleError",
       "file_type": "code",
       "source_file": "src/hooks.server.ts",
-      "source_location": "L294",
+      "source_location": "L322",
       "_origin": "ast",
       "id": "src_hooks_server_handleerror",
       "community": 103,
@@ -8419,48 +8430,48 @@
       "norm_label": "pillparsing.ts"
     },
     {
-      "label": "5. MOTION CHOREOGRAPHY (FLUID DYNAMICS)",
+      "label": "4. HAPTIC MICRO-AESTHETICS (COMPONENT MASTERY)",
       "file_type": "document",
       "source_file": ".agents/skills/high-end-visual-design/SKILL.md",
-      "source_location": "L66",
+      "source_location": "L47",
       "_origin": "ast",
       "community": 168,
-      "community_name": "5. MOTION CHOREOGRAPHY (FLUID DYNAMICS)",
-      "norm_label": "5. motion choreography (fluid dynamics)",
-      "id": "agents_skills_high_end_visual_design_skill_5_motion_choreography_fluid_dynamics"
+      "community_name": "4. HAPTIC MICRO-AESTHETICS (COMPONENT MASTERY)",
+      "norm_label": "4. haptic micro-aesthetics (component mastery)",
+      "id": "agents_skills_high_end_visual_design_skill_4_haptic_micro_aesthetics_component_mastery"
     },
     {
-      "label": "A. The \"Fluid Island\" Nav & Hamburger Reveal",
+      "label": "A. The \"Double-Bezel\" (Doppelrand / Nested Architecture)",
       "file_type": "document",
       "source_file": ".agents/skills/high-end-visual-design/SKILL.md",
-      "source_location": "L70",
+      "source_location": "L49",
       "_origin": "ast",
       "community": 168,
-      "community_name": "5. MOTION CHOREOGRAPHY (FLUID DYNAMICS)",
-      "norm_label": "a. the \"fluid island\" nav & hamburger reveal",
-      "id": "agents_skills_high_end_visual_design_skill_a_the_fluid_island_nav_hamburger_reveal"
+      "community_name": "4. HAPTIC MICRO-AESTHETICS (COMPONENT MASTERY)",
+      "norm_label": "a. the \"double-bezel\" (doppelrand / nested architecture)",
+      "id": "agents_skills_high_end_visual_design_skill_a_the_double_bezel_doppelrand_nested_architecture"
     },
     {
-      "label": "B. Magnetic Button Hover Physics",
+      "label": "B. Nested CTA & \"Island\" Button Architecture",
       "file_type": "document",
       "source_file": ".agents/skills/high-end-visual-design/SKILL.md",
-      "source_location": "L77",
+      "source_location": "L56",
       "_origin": "ast",
       "community": 168,
-      "community_name": "5. MOTION CHOREOGRAPHY (FLUID DYNAMICS)",
-      "norm_label": "b. magnetic button hover physics",
-      "id": "agents_skills_high_end_visual_design_skill_b_magnetic_button_hover_physics"
+      "community_name": "4. HAPTIC MICRO-AESTHETICS (COMPONENT MASTERY)",
+      "norm_label": "b. nested cta & \"island\" button architecture",
+      "id": "agents_skills_high_end_visual_design_skill_b_nested_cta_island_button_architecture"
     },
     {
-      "label": "C. Scroll Interpolation (Entry Animations)",
+      "label": "C. Spatial Rhythm & Tension",
       "file_type": "document",
       "source_file": ".agents/skills/high-end-visual-design/SKILL.md",
-      "source_location": "L83",
+      "source_location": "L61",
       "_origin": "ast",
       "community": 168,
-      "community_name": "5. MOTION CHOREOGRAPHY (FLUID DYNAMICS)",
-      "norm_label": "c. scroll interpolation (entry animations)",
-      "id": "agents_skills_high_end_visual_design_skill_c_scroll_interpolation_entry_animations"
+      "community_name": "4. HAPTIC MICRO-AESTHETICS (COMPONENT MASTERY)",
+      "norm_label": "c. spatial rhythm & tension",
+      "id": "agents_skills_high_end_visual_design_skill_c_spatial_rhythm_tension"
     },
     {
       "label": "$env/static/public",
@@ -9057,15 +9068,15 @@
       "norm_label": "author.ts"
     },
     {
-      "label": "author/cv/+server.ts",
+      "label": "funding/+server.ts",
       "file_type": "code",
-      "source_file": "src/routes/api/v1/author/cv/+server.ts",
+      "source_file": "src/routes/api/v1/author/funding/+server.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_routes_api_v1_author_cv_server",
+      "id": "src_routes_api_v1_author_funding_server",
       "community": 18,
       "community_name": "author.ts",
-      "norm_label": "author/cv/+server.ts"
+      "norm_label": "funding/+server.ts"
     },
     {
       "label": "data-n-plus-one.md",
@@ -13625,10 +13636,10 @@
       "source_file": "tsconfig.json",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "tsconfig",
       "community": 42,
       "community_name": "compilerOptions",
-      "norm_label": "tsconfig.json"
+      "norm_label": "tsconfig.json",
+      "id": "tsconfig"
     },
     {
       "label": "compilerOptions",
@@ -13636,10 +13647,10 @@
       "source_file": "tsconfig.json",
       "source_location": "L3",
       "_origin": "ast",
-      "id": "tsconfig_compileroptions",
       "community": 42,
       "community_name": "compilerOptions",
-      "norm_label": "compileroptions"
+      "norm_label": "compileroptions",
+      "id": "tsconfig_compileroptions"
     },
     {
       "label": "allowJs",
@@ -13647,10 +13658,10 @@
       "source_file": "tsconfig.json",
       "source_location": "L5",
       "_origin": "ast",
-      "id": "tsconfig_compileroptions_allowjs",
       "community": 42,
       "community_name": "compilerOptions",
-      "norm_label": "allowjs"
+      "norm_label": "allowjs",
+      "id": "tsconfig_compileroptions_allowjs"
     },
     {
       "label": "checkJs",
@@ -13658,10 +13669,10 @@
       "source_file": "tsconfig.json",
       "source_location": "L6",
       "_origin": "ast",
-      "id": "tsconfig_compileroptions_checkjs",
       "community": 42,
       "community_name": "compilerOptions",
-      "norm_label": "checkjs"
+      "norm_label": "checkjs",
+      "id": "tsconfig_compileroptions_checkjs"
     },
     {
       "label": "forceConsistentCasingInFileNames",
@@ -13669,10 +13680,10 @@
       "source_file": "tsconfig.json",
       "source_location": "L7",
       "_origin": "ast",
-      "id": "tsconfig_compileroptions_forceconsistentcasinginfilenames",
       "community": 42,
       "community_name": "compilerOptions",
-      "norm_label": "forceconsistentcasinginfilenames"
+      "norm_label": "forceconsistentcasinginfilenames",
+      "id": "tsconfig_compileroptions_forceconsistentcasinginfilenames"
     },
     {
       "label": "resolveJsonModule",
@@ -13680,10 +13691,10 @@
       "source_file": "tsconfig.json",
       "source_location": "L8",
       "_origin": "ast",
-      "id": "tsconfig_compileroptions_resolvejsonmodule",
       "community": 42,
       "community_name": "compilerOptions",
-      "norm_label": "resolvejsonmodule"
+      "norm_label": "resolvejsonmodule",
+      "id": "tsconfig_compileroptions_resolvejsonmodule"
     },
     {
       "label": "rewriteRelativeImportExtensions",
@@ -13691,10 +13702,10 @@
       "source_file": "tsconfig.json",
       "source_location": "L4",
       "_origin": "ast",
-      "id": "tsconfig_compileroptions_rewriterelativeimportextensions",
       "community": 42,
       "community_name": "compilerOptions",
-      "norm_label": "rewriterelativeimportextensions"
+      "norm_label": "rewriterelativeimportextensions",
+      "id": "tsconfig_compileroptions_rewriterelativeimportextensions"
     },
     {
       "label": "skipLibCheck",
@@ -13702,10 +13713,10 @@
       "source_file": "tsconfig.json",
       "source_location": "L9",
       "_origin": "ast",
-      "id": "tsconfig_compileroptions_skiplibcheck",
       "community": 42,
       "community_name": "compilerOptions",
-      "norm_label": "skiplibcheck"
+      "norm_label": "skiplibcheck",
+      "id": "tsconfig_compileroptions_skiplibcheck"
     },
     {
       "label": "sourceMap",
@@ -13713,10 +13724,10 @@
       "source_file": "tsconfig.json",
       "source_location": "L10",
       "_origin": "ast",
-      "id": "tsconfig_compileroptions_sourcemap",
       "community": 42,
       "community_name": "compilerOptions",
-      "norm_label": "sourcemap"
+      "norm_label": "sourcemap",
+      "id": "tsconfig_compileroptions_sourcemap"
     },
     {
       "label": "strict",
@@ -13724,10 +13735,10 @@
       "source_file": "tsconfig.json",
       "source_location": "L11",
       "_origin": "ast",
-      "id": "tsconfig_compileroptions_strict",
       "community": 42,
       "community_name": "compilerOptions",
-      "norm_label": "strict"
+      "norm_label": "strict",
+      "id": "tsconfig_compileroptions_strict"
     },
     {
       "label": "types",
@@ -13735,10 +13746,10 @@
       "source_file": "tsconfig.json",
       "source_location": "L12",
       "_origin": "ast",
-      "id": "tsconfig_compileroptions_types",
       "community": 42,
       "community_name": "compilerOptions",
-      "norm_label": "types"
+      "norm_label": "types",
+      "id": "tsconfig_compileroptions_types"
     },
     {
       "label": "extends",
@@ -13746,10 +13757,10 @@
       "source_file": "tsconfig.json",
       "source_location": "L2",
       "_origin": "ast",
-      "id": "tsconfig_extends",
       "community": 42,
       "community_name": "compilerOptions",
-      "norm_label": "extends"
+      "norm_label": "extends",
+      "id": "tsconfig_extends"
     },
     {
       "label": "node",
@@ -13757,10 +13768,10 @@
       "source_file": "tsconfig.json",
       "source_location": "L12",
       "_origin": "ast",
-      "id": "ref_node",
       "community": 42,
       "community_name": "compilerOptions",
-      "norm_label": "node"
+      "norm_label": "node",
+      "id": "ref_node"
     },
     {
       "label": "./.svelte-kit/tsconfig.json",
@@ -13768,10 +13779,10 @@
       "source_file": "tsconfig.json",
       "source_location": "L2",
       "_origin": "ast",
-      "id": "ref_svelte_kit_tsconfig_json",
       "community": 42,
       "community_name": "compilerOptions",
-      "norm_label": "./.svelte-kit/tsconfig.json"
+      "norm_label": "./.svelte-kit/tsconfig.json",
+      "id": "ref_svelte_kit_tsconfig_json"
     },
     {
       "label": "eslint",
@@ -13851,15 +13862,15 @@
       "id": "agents_skills_high_end_visual_design_skill_3_the_creative_variance_engine"
     },
     {
-      "label": "4. HAPTIC MICRO-AESTHETICS (COMPONENT MASTERY)",
+      "label": "5. MOTION CHOREOGRAPHY (FLUID DYNAMICS)",
       "file_type": "document",
       "source_file": ".agents/skills/high-end-visual-design/SKILL.md",
-      "source_location": "L47",
+      "source_location": "L66",
       "_origin": "ast",
       "community": 45,
       "community_name": "Agent Skill: Principal UI/UX Architect & Motion Choreographer (Awwwards-Tier)",
-      "norm_label": "4. haptic micro-aesthetics (component mastery)",
-      "id": "agents_skills_high_end_visual_design_skill_4_haptic_micro_aesthetics_component_mastery"
+      "norm_label": "5. motion choreography (fluid dynamics)",
+      "id": "agents_skills_high_end_visual_design_skill_5_motion_choreography_fluid_dynamics"
     },
     {
       "label": "6. PERFORMANCE GUARDRAILS",
@@ -13895,15 +13906,15 @@
       "id": "agents_skills_high_end_visual_design_skill_8_pre_output_checklist"
     },
     {
-      "label": "A. The \"Double-Bezel\" (Doppelrand / Nested Architecture)",
+      "label": "A. The \"Fluid Island\" Nav & Hamburger Reveal",
       "file_type": "document",
       "source_file": ".agents/skills/high-end-visual-design/SKILL.md",
-      "source_location": "L49",
+      "source_location": "L70",
       "_origin": "ast",
       "community": 45,
       "community_name": "Agent Skill: Principal UI/UX Architect & Motion Choreographer (Awwwards-Tier)",
-      "norm_label": "a. the \"double-bezel\" (doppelrand / nested architecture)",
-      "id": "agents_skills_high_end_visual_design_skill_a_the_double_bezel_doppelrand_nested_architecture"
+      "norm_label": "a. the \"fluid island\" nav & hamburger reveal",
+      "id": "agents_skills_high_end_visual_design_skill_a_the_fluid_island_nav_hamburger_reveal"
     },
     {
       "label": "A. Vibe & Texture Archetypes (Pick 1)",
@@ -13939,26 +13950,26 @@
       "id": "agents_skills_high_end_visual_design_skill_b_layout_archetypes_pick_1"
     },
     {
-      "label": "B. Nested CTA & \"Island\" Button Architecture",
+      "label": "B. Magnetic Button Hover Physics",
       "file_type": "document",
       "source_file": ".agents/skills/high-end-visual-design/SKILL.md",
-      "source_location": "L56",
+      "source_location": "L77",
       "_origin": "ast",
       "community": 45,
       "community_name": "Agent Skill: Principal UI/UX Architect & Motion Choreographer (Awwwards-Tier)",
-      "norm_label": "b. nested cta & \"island\" button architecture",
-      "id": "agents_skills_high_end_visual_design_skill_b_nested_cta_island_button_architecture"
+      "norm_label": "b. magnetic button hover physics",
+      "id": "agents_skills_high_end_visual_design_skill_b_magnetic_button_hover_physics"
     },
     {
-      "label": "C. Spatial Rhythm & Tension",
+      "label": "C. Scroll Interpolation (Entry Animations)",
       "file_type": "document",
       "source_file": ".agents/skills/high-end-visual-design/SKILL.md",
-      "source_location": "L61",
+      "source_location": "L83",
       "_origin": "ast",
       "community": 45,
       "community_name": "Agent Skill: Principal UI/UX Architect & Motion Choreographer (Awwwards-Tier)",
-      "norm_label": "c. spatial rhythm & tension",
-      "id": "agents_skills_high_end_visual_design_skill_c_spatial_rhythm_tension"
+      "norm_label": "c. scroll interpolation (entry animations)",
+      "id": "agents_skills_high_end_visual_design_skill_c_scroll_interpolation_entry_animations"
     },
     {
       "label": "4.10 Quotes & Testimonials",
@@ -14751,17 +14762,6 @@
       "community": 50,
       "community_name": "svelte/elements",
       "norm_label": "svelte/elements"
-    },
-    {
-      "label": "Card.svelte",
-      "file_type": "code",
-      "source_file": "src/lib/components/Card.svelte",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "src_lib_components_card",
-      "community": 50,
-      "community_name": "svelte/elements",
-      "norm_label": "card.svelte"
     },
     {
       "label": "Checkbox.svelte",
@@ -18317,15 +18317,15 @@
       "norm_label": "contact/+server.ts"
     },
     {
-      "label": "funding/+server.ts",
+      "label": "author/cv/+server.ts",
       "file_type": "code",
-      "source_file": "src/routes/api/v1/author/funding/+server.ts",
+      "source_file": "src/routes/api/v1/author/cv/+server.ts",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_routes_api_v1_author_funding_server",
+      "id": "src_routes_api_v1_author_cv_server",
       "community": 89,
       "community_name": "authorApi.ts",
-      "norm_label": "funding/+server.ts"
+      "norm_label": "author/cv/+server.ts"
     },
     {
       "label": "author/+server.ts",
@@ -18359,6 +18359,132 @@
       "community": 89,
       "community_name": "authorApi.ts",
       "norm_label": "socials/+server.ts"
+    },
+    {
+      "label": "chrome-devtools",
+      "file_type": "code",
+      "source_file": ".mcp.json",
+      "source_location": "L1",
+      "metadata": {
+        "mcp_kind": "mcp_server"
+      },
+      "_origin": "ast",
+      "id": "home_hanz_projects_www_mcp_mcp_server_chrome_devtools",
+      "community": 9,
+      "community_name": ".mcp.json",
+      "norm_label": "chrome-devtools"
+    },
+    {
+      "label": "cloudflare-bindings",
+      "file_type": "code",
+      "source_file": ".mcp.json",
+      "source_location": "L1",
+      "metadata": {
+        "mcp_kind": "mcp_server"
+      },
+      "_origin": "ast",
+      "id": "home_hanz_projects_www_mcp_mcp_server_cloudflare_bindings",
+      "community": 9,
+      "community_name": ".mcp.json",
+      "norm_label": "cloudflare-bindings"
+    },
+    {
+      "label": "cloudflare-observability",
+      "file_type": "code",
+      "source_file": ".mcp.json",
+      "source_location": "L1",
+      "metadata": {
+        "mcp_kind": "mcp_server"
+      },
+      "_origin": "ast",
+      "id": "home_hanz_projects_www_mcp_mcp_server_cloudflare_observability",
+      "community": 9,
+      "community_name": ".mcp.json",
+      "norm_label": "cloudflare-observability"
+    },
+    {
+      "label": "context7",
+      "file_type": "code",
+      "source_file": ".mcp.json",
+      "source_location": "L1",
+      "metadata": {
+        "mcp_kind": "mcp_server"
+      },
+      "_origin": "ast",
+      "id": "home_hanz_projects_www_mcp_mcp_server_context7",
+      "community": 9,
+      "community_name": ".mcp.json",
+      "norm_label": "context7"
+    },
+    {
+      "label": "graphify",
+      "file_type": "code",
+      "source_file": ".mcp.json",
+      "source_location": "L1",
+      "metadata": {
+        "mcp_kind": "mcp_server"
+      },
+      "_origin": "ast",
+      "id": "home_hanz_projects_www_mcp_mcp_server_graphify",
+      "community": 9,
+      "community_name": ".mcp.json",
+      "norm_label": "graphify"
+    },
+    {
+      "label": "playwright",
+      "file_type": "code",
+      "source_file": ".mcp.json",
+      "source_location": "L1",
+      "metadata": {
+        "mcp_kind": "mcp_server"
+      },
+      "_origin": "ast",
+      "id": "home_hanz_projects_www_mcp_mcp_server_playwright",
+      "community": 9,
+      "community_name": ".mcp.json",
+      "norm_label": "playwright"
+    },
+    {
+      "label": "sentry",
+      "file_type": "code",
+      "source_file": ".mcp.json",
+      "source_location": "L1",
+      "metadata": {
+        "mcp_kind": "mcp_server"
+      },
+      "_origin": "ast",
+      "id": "home_hanz_projects_www_mcp_mcp_server_sentry",
+      "community": 9,
+      "community_name": ".mcp.json",
+      "norm_label": "sentry"
+    },
+    {
+      "label": "supabase",
+      "file_type": "code",
+      "source_file": ".mcp.json",
+      "source_location": "L1",
+      "metadata": {
+        "mcp_kind": "mcp_server"
+      },
+      "_origin": "ast",
+      "id": "home_hanz_projects_www_mcp_mcp_server_supabase",
+      "community": 9,
+      "community_name": ".mcp.json",
+      "norm_label": "supabase"
+    },
+    {
+      "label": "svelte",
+      "file_type": "code",
+      "source_file": ".mcp.json",
+      "source_location": "L1",
+      "metadata": {
+        "mcp_kind": "mcp_server"
+      },
+      "_origin": "ast",
+      "id": "home_hanz_projects_www_mcp_mcp_server_svelte",
+      "community": 9,
+      "community_name": ".mcp.json",
+      "norm_label": "svelte"
     },
     {
       "label": ".mcp.json",
@@ -18425,10 +18551,10 @@
         "mcp_kind": "mcp_server"
       },
       "_origin": "ast",
-      "id": "mcp_mcp_server_chrome_devtools",
       "community": 9,
       "community_name": ".mcp.json",
-      "norm_label": "chrome-devtools"
+      "norm_label": "chrome-devtools",
+      "id": "mcp_mcp_server_chrome_devtools"
     },
     {
       "label": "cloudflare-bindings",
@@ -18439,10 +18565,10 @@
         "mcp_kind": "mcp_server"
       },
       "_origin": "ast",
-      "id": "mcp_mcp_server_cloudflare_bindings",
       "community": 9,
       "community_name": ".mcp.json",
-      "norm_label": "cloudflare-bindings"
+      "norm_label": "cloudflare-bindings",
+      "id": "mcp_mcp_server_cloudflare_bindings"
     },
     {
       "label": "cloudflare-observability",
@@ -18453,10 +18579,10 @@
         "mcp_kind": "mcp_server"
       },
       "_origin": "ast",
-      "id": "mcp_mcp_server_cloudflare_observability",
       "community": 9,
       "community_name": ".mcp.json",
-      "norm_label": "cloudflare-observability"
+      "norm_label": "cloudflare-observability",
+      "id": "mcp_mcp_server_cloudflare_observability"
     },
     {
       "label": "context7",
@@ -18467,10 +18593,10 @@
         "mcp_kind": "mcp_server"
       },
       "_origin": "ast",
-      "id": "mcp_mcp_server_context7",
       "community": 9,
       "community_name": ".mcp.json",
-      "norm_label": "context7"
+      "norm_label": "context7",
+      "id": "mcp_mcp_server_context7"
     },
     {
       "label": "graphify",
@@ -18481,10 +18607,10 @@
         "mcp_kind": "mcp_server"
       },
       "_origin": "ast",
-      "id": "mcp_mcp_server_graphify",
       "community": 9,
       "community_name": ".mcp.json",
-      "norm_label": "graphify"
+      "norm_label": "graphify",
+      "id": "mcp_mcp_server_graphify"
     },
     {
       "label": "playwright",
@@ -18495,10 +18621,10 @@
         "mcp_kind": "mcp_server"
       },
       "_origin": "ast",
-      "id": "mcp_mcp_server_playwright",
       "community": 9,
       "community_name": ".mcp.json",
-      "norm_label": "playwright"
+      "norm_label": "playwright",
+      "id": "mcp_mcp_server_playwright"
     },
     {
       "label": "sentry",
@@ -18509,10 +18635,10 @@
         "mcp_kind": "mcp_server"
       },
       "_origin": "ast",
-      "id": "mcp_mcp_server_sentry",
       "community": 9,
       "community_name": ".mcp.json",
-      "norm_label": "sentry"
+      "norm_label": "sentry",
+      "id": "mcp_mcp_server_sentry"
     },
     {
       "label": "supabase",
@@ -18523,10 +18649,10 @@
         "mcp_kind": "mcp_server"
       },
       "_origin": "ast",
-      "id": "mcp_mcp_server_supabase",
       "community": 9,
       "community_name": ".mcp.json",
-      "norm_label": "supabase"
+      "norm_label": "supabase",
+      "id": "mcp_mcp_server_supabase"
     },
     {
       "label": "svelte",
@@ -18537,10 +18663,10 @@
         "mcp_kind": "mcp_server"
       },
       "_origin": "ast",
-      "id": "mcp_mcp_server_svelte",
       "community": 9,
       "community_name": ".mcp.json",
-      "norm_label": "svelte"
+      "norm_label": "svelte",
+      "id": "mcp_mcp_server_svelte"
     },
     {
       "label": "@sveltejs/mcp",
@@ -23980,11 +24106,11 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/hooks.server.ts",
-      "source_location": "L55",
+      "source_location": "L126",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_hooks_server_handle",
-      "target": "src_hooks_server_getcdnbaseurl",
+      "target": "src_hooks_server_getclientip",
       "confidence_score": 1.0
     },
     {
@@ -23992,11 +24118,11 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/hooks.server.ts",
-      "source_location": "L98",
+      "source_location": "L55",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_hooks_server_handle",
-      "target": "src_hooks_server_getclientip",
+      "target": "src_hooks_server_getcdnbaseurl",
       "confidence_score": 1.0
     },
     {
@@ -26188,7 +26314,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/lib/utils/turnstile.ts",
-      "source_location": "L43",
+      "source_location": "L44",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_lib_utils_turnstile_turnstilewidget",
@@ -26206,6 +26332,54 @@
       "source": "src_routes_blog_slug_page_server_load",
       "target": "src_routes_blog_slug_page_server_load_decodehtmlentities",
       "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".mcp.json",
+      "source_location": "L1",
+      "weight": 1.0,
+      "context": "command",
+      "_origin": "ast",
+      "source": "home_hanz_projects_www_mcp_mcp_server_chrome_devtools",
+      "target": "mcp_command_bunx"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".mcp.json",
+      "source_location": "L1",
+      "weight": 1.0,
+      "context": "command",
+      "_origin": "ast",
+      "source": "home_hanz_projects_www_mcp_mcp_server_graphify",
+      "target": "mcp_command_uv"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".mcp.json",
+      "source_location": "L1",
+      "weight": 1.0,
+      "context": "command",
+      "_origin": "ast",
+      "source": "home_hanz_projects_www_mcp_mcp_server_playwright",
+      "target": "mcp_command_playwright_mcp"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".mcp.json",
+      "source_location": "L1",
+      "weight": 1.0,
+      "context": "command",
+      "_origin": "ast",
+      "source": "home_hanz_projects_www_mcp_mcp_server_svelte",
+      "target": "mcp_command_bunx"
     },
     {
       "relation": "references",
@@ -27751,9 +27925,9 @@
       "weight": 1.0,
       "context": "import",
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "tsconfig",
-      "target": "ref_svelte_kit_tsconfig_json",
-      "confidence_score": 1.0
+      "target": "ref_svelte_kit_tsconfig_json"
     },
     {
       "relation": "extends",
@@ -27763,9 +27937,9 @@
       "weight": 1.0,
       "context": "import",
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "tsconfig_compileroptions_types",
-      "target": "ref_node",
-      "confidence_score": 1.0
+      "target": "ref_node"
     },
     {
       "relation": "imports",
@@ -30298,6 +30472,18 @@
       "source": "src_routes_well_known_openapi_yaml_server",
       "target": "src_lib_openapi",
       "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".mcp.json",
+      "source_location": "L1",
+      "weight": 1.0,
+      "context": "package",
+      "_origin": "ast",
+      "source": "home_hanz_projects_www_mcp_mcp_server_svelte",
+      "target": "mcp_package_sveltejs_mcp"
     },
     {
       "relation": "references",
@@ -39971,6 +40157,105 @@
       "weight": 1.0,
       "_origin": "ast",
       "source": "mcp",
+      "target": "home_hanz_projects_www_mcp_mcp_server_chrome_devtools"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".mcp.json",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "mcp",
+      "target": "home_hanz_projects_www_mcp_mcp_server_cloudflare_bindings"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".mcp.json",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "mcp",
+      "target": "home_hanz_projects_www_mcp_mcp_server_cloudflare_observability"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".mcp.json",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "mcp",
+      "target": "home_hanz_projects_www_mcp_mcp_server_context7"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".mcp.json",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "mcp",
+      "target": "home_hanz_projects_www_mcp_mcp_server_graphify"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".mcp.json",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "mcp",
+      "target": "home_hanz_projects_www_mcp_mcp_server_playwright"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".mcp.json",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "mcp",
+      "target": "home_hanz_projects_www_mcp_mcp_server_sentry"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".mcp.json",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "mcp",
+      "target": "home_hanz_projects_www_mcp_mcp_server_supabase"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".mcp.json",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "mcp",
+      "target": "home_hanz_projects_www_mcp_mcp_server_svelte"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".mcp.json",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "mcp",
       "target": "mcp_mcp_server_chrome_devtools"
     },
     {
@@ -41011,7 +41296,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/hooks.server.ts",
-      "source_location": "L294",
+      "source_location": "L322",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_hooks_server",
@@ -43288,7 +43573,18 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/lib/utils/turnstile.ts",
-      "source_location": "L69",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_lib_utils_turnstile",
+      "target": "src_lib_utils_turnstile_window",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/lib/utils/turnstile.ts",
+      "source_location": "L89",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_lib_utils_turnstile",
@@ -43299,22 +43595,11 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/lib/utils/turnstile.ts",
-      "source_location": "L74",
+      "source_location": "L94",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_lib_utils_turnstile",
       "target": "src_lib_utils_turnstile_resetturnstile",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/lib/utils/turnstile.ts",
-      "source_location": "L8",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_lib_utils_turnstile",
-      "target": "src_lib_utils_turnstile_window",
       "confidence_score": 1.0
     },
     {
@@ -44391,9 +44676,9 @@
       "source_location": "L2",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "tsconfig",
-      "target": "tsconfig_extends",
-      "confidence_score": 1.0
+      "target": "tsconfig_extends"
     },
     {
       "relation": "contains",
@@ -44402,9 +44687,9 @@
       "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "tsconfig",
-      "target": "tsconfig_compileroptions",
-      "confidence_score": 1.0
+      "target": "tsconfig_compileroptions"
     },
     {
       "relation": "contains",
@@ -44413,9 +44698,9 @@
       "source_location": "L10",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "tsconfig_compileroptions",
-      "target": "tsconfig_compileroptions_sourcemap",
-      "confidence_score": 1.0
+      "target": "tsconfig_compileroptions_sourcemap"
     },
     {
       "relation": "contains",
@@ -44424,9 +44709,9 @@
       "source_location": "L11",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "tsconfig_compileroptions",
-      "target": "tsconfig_compileroptions_strict",
-      "confidence_score": 1.0
+      "target": "tsconfig_compileroptions_strict"
     },
     {
       "relation": "contains",
@@ -44435,9 +44720,9 @@
       "source_location": "L12",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "tsconfig_compileroptions",
-      "target": "tsconfig_compileroptions_types",
-      "confidence_score": 1.0
+      "target": "tsconfig_compileroptions_types"
     },
     {
       "relation": "contains",
@@ -44446,9 +44731,9 @@
       "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "tsconfig_compileroptions",
-      "target": "tsconfig_compileroptions_rewriterelativeimportextensions",
-      "confidence_score": 1.0
+      "target": "tsconfig_compileroptions_rewriterelativeimportextensions"
     },
     {
       "relation": "contains",
@@ -44457,9 +44742,9 @@
       "source_location": "L5",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "tsconfig_compileroptions",
-      "target": "tsconfig_compileroptions_allowjs",
-      "confidence_score": 1.0
+      "target": "tsconfig_compileroptions_allowjs"
     },
     {
       "relation": "contains",
@@ -44468,9 +44753,9 @@
       "source_location": "L6",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "tsconfig_compileroptions",
-      "target": "tsconfig_compileroptions_checkjs",
-      "confidence_score": 1.0
+      "target": "tsconfig_compileroptions_checkjs"
     },
     {
       "relation": "contains",
@@ -44479,9 +44764,9 @@
       "source_location": "L7",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "tsconfig_compileroptions",
-      "target": "tsconfig_compileroptions_forceconsistentcasinginfilenames",
-      "confidence_score": 1.0
+      "target": "tsconfig_compileroptions_forceconsistentcasinginfilenames"
     },
     {
       "relation": "contains",
@@ -44490,9 +44775,9 @@
       "source_location": "L8",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "tsconfig_compileroptions",
-      "target": "tsconfig_compileroptions_resolvejsonmodule",
-      "confidence_score": 1.0
+      "target": "tsconfig_compileroptions_resolvejsonmodule"
     },
     {
       "relation": "contains",
@@ -44501,9 +44786,9 @@
       "source_location": "L9",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "tsconfig_compileroptions",
-      "target": "tsconfig_compileroptions_skiplibcheck",
-      "confidence_score": 1.0
+      "target": "tsconfig_compileroptions_skiplibcheck"
     },
     {
       "relation": "imports_from",
@@ -51409,5 +51694,5 @@
       "source_file": ".agents/skills/supabase-postgres-best-practices/references/security-rls-basics.md"
     }
   ],
-  "built_at_commit": "987b1feadc23676baab2067c2581e4d4e51eca9c"
+  "built_at_commit": "8564dee102559b5589e88d5259325f0da082cd58"
 }

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {PUBLIC_CDN_BASE_URL} from '$env/static/public'
+  import {env as publicEnv} from '$env/dynamic/public'
   import {onMount, tick} from 'svelte'
   import type {Snippet} from 'svelte'
   import {
@@ -137,7 +137,9 @@
   })
 
   const logoBaseUrl = (() => {
-    const base = (PUBLIC_CDN_BASE_URL ?? '').trim().replace(/\/+$/, '')
+    const base = (publicEnv.PUBLIC_CDN_BASE_URL ?? '')
+      .trim()
+      .replace(/\/+$/, '')
     return base ? `${base}/logo/` : '/logo/'
   })()
 
