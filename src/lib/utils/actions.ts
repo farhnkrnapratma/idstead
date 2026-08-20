@@ -36,3 +36,22 @@ export function autoResize(node: HTMLTextAreaElement, value?: string) {
     }
   };
 }
+
+export function staggerChildren(node: HTMLElement) {
+  const assignIndices = () => {
+    Array.from(node.children).forEach((child, i) => {
+      (child as HTMLElement).style.setProperty('--stagger-i', String(i));
+    });
+  };
+
+  assignIndices();
+
+  const observer = new MutationObserver(assignIndices);
+  observer.observe(node, {childList: true});
+
+  return {
+    destroy() {
+      observer.disconnect();
+    }
+  };
+}

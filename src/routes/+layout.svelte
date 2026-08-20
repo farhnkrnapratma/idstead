@@ -1,6 +1,7 @@
 <script lang="ts">
   import './global.css';
   import {onMount} from 'svelte';
+  import {onNavigate} from '$app/navigation';
   import {page} from '$app/state';
   import {ConsentBanner, Toast, ScrollToTopButton, FeedbackButton} from '$lib';
 
@@ -56,6 +57,29 @@
       cleanupA11y?.();
       cleanupCodeBlockPrefs?.();
     };
+  });
+
+  const BLOG_POST_ROUTE_ID = '/blog/[slug]';
+
+  onNavigate(navigation => {
+    if (!document.startViewTransition || a11yStore.current.reduceMotion) return;
+
+    const isBlogPostTransition =
+      navigation.to?.route.id === BLOG_POST_ROUTE_ID
+      || navigation.from?.route.id === BLOG_POST_ROUTE_ID;
+    if (!isBlogPostTransition) return;
+
+    return new Promise(resolve => {
+      const root = document.documentElement;
+      root.dataset.transitionType = 'drill';
+      const transition = document.startViewTransition(async () => {
+        resolve();
+        await navigation.complete;
+      });
+      void transition.finished.finally(() => {
+        delete root.dataset.transitionType;
+      });
+    });
   });
 </script>
 

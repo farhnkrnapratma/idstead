@@ -62,10 +62,9 @@
     formatViewCount,
     formatAbsoluteDate,
     decodeHtmlEntities,
-    Section,
-    PageContainer,
-    LogoLoop,
-    ConsentNotice
+    ConsentNotice,
+    staggerChildren,
+    withViewTransition
   } from '$lib';
   import {supabase} from '$lib/supabase';
   import {SvelteSet} from 'svelte/reactivity';
@@ -553,11 +552,13 @@
   }
 
   function navigate(section: Section) {
-    activeSection = section;
-    menuOpen = false;
-    if (typeof window !== 'undefined') {
-      window.location.hash = section === 'home' ? '' : section;
-    }
+    withViewTransition(() => {
+      activeSection = section;
+      menuOpen = false;
+      if (typeof window !== 'undefined') {
+        window.location.hash = section === 'home' ? '' : section;
+      }
+    }, 'context');
   }
 
   function handleMenuKeydown(event: KeyboardEvent) {
@@ -1257,8 +1258,11 @@
           {/if}
         </div>
         <hr class="my-1.5 border-border-subtle" />
+        <!-- @format -->
         <div class="mt-1">
-          <h4 class="text-lg leading-snug font-bold text-text-primary">
+          <h4
+            style="view-transition-name: post-title-{post.slug}"
+            class="text-lg leading-snug font-bold text-text-primary">
             <a
               href="/blog/{post.slug}"
               class="rounded-xs outline-none after:absolute after:inset-0 focus-visible:ring-2 focus-visible:ring-copilot focus-visible:ring-offset-2 focus-visible:ring-offset-surface-card">
@@ -1397,7 +1401,8 @@
 
         <div class="relative z-10 mx-auto w-full">
           <div
-            class="relative mt-12 flex flex-col items-center justify-center rounded-sm glass-card p-6 pt-0 text-center shadow-xl sm:p-8 sm:pt-0">
+            use:staggerChildren
+            class="stagger-children relative mt-12 flex flex-col items-center justify-center rounded-sm glass-card p-6 pt-0 text-center shadow-xl sm:p-8 sm:pt-0">
             {#if avatar}
               <ImageWithSkeleton
                 src={avatar}
@@ -2019,7 +2024,9 @@
             description="Try adjusting your tag filters or search keyword."
             onClearFilters={() => blogFilterStore.clearAllFilters()} />
         {:else}
-          <div class="relative z-0 mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div
+            use:staggerChildren
+            class="stagger-children relative z-0 mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {#each paginatedBlogPosts as post (post.id)}
               {@render blogPostCard(post, blogFilterableTag)}
             {/each}
@@ -2121,7 +2128,8 @@
             onClearFilters={() => projectFilterStore.clearAllFilters()} />
         {:else}
           <div
-            class="relative {openCodeMenuId ? 'z-40' : (
+            use:staggerChildren
+            class="stagger-children relative {openCodeMenuId ? 'z-40' : (
               'z-0'
             )} mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {#each paginatedProjectList as project (project.name)}

@@ -8,6 +8,7 @@
     excerpt?: string;
     class?: string;
     titleClass?: string;
+    titleViewTransitionName?: string;
     meta?: Snippet;
   }
 
@@ -16,12 +17,16 @@
     excerpt = '',
     class: className = '',
     titleClass = '',
+    titleViewTransitionName = '',
     meta
   }: Props = $props();
 </script>
 
 <header class={cn('border-b border-b-border-subtle pb-4', className)}>
   <h1
+    style={titleViewTransitionName ?
+      `view-transition-name: ${titleViewTransitionName}`
+    : undefined}
     class={cn(
       'font-content-' + contentFontStore.current,
       'text-3xl leading-tight font-bold tracking-tight text-text-secondary md:text-4xl',
