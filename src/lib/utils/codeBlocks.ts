@@ -119,7 +119,8 @@ const LIGHT_CHROME_VARS: Record<string, string> = {
   '--color-text-muted': '#909692',
   '--color-copilot': '#8534f3',
   '--color-code-thumb': 'var(--color-gh-gray-3)',
-  '--color-code-thumb-hover': 'var(--color-gh-gray-4)'
+  '--color-code-thumb-hover': 'var(--color-gh-gray-4)',
+  '--color-accent-subtle': 'rgba(15, 191, 62, 0.08)'
 };
 
 const DARK_CHROME_VARS: Record<string, string> = {
@@ -133,7 +134,8 @@ const DARK_CHROME_VARS: Record<string, string> = {
   '--color-text-muted': '#909692',
   '--color-copilot': '#b870ff',
   '--color-code-thumb': 'var(--color-gh-gray-6)',
-  '--color-code-thumb-hover': 'var(--color-gh-gray-5)'
+  '--color-code-thumb-hover': 'var(--color-gh-gray-5)',
+  '--color-accent-subtle': 'rgba(15, 191, 62, 0.14)'
 };
 
 function applyChromeVars(el: HTMLElement, isDark: boolean) {
@@ -235,6 +237,13 @@ export function enhanceCodeBlocks(triggerToast: (message: string) => void) {
 
     const codeElement = pre.querySelector('code');
     const prettyLang = getPrettyLanguage(codeElement?.className || '');
+
+    const highlightedLines = new Set(
+      (pre.dataset.highlightLines || '')
+        .split(',')
+        .map(part => parseInt(part, 10))
+        .filter(line => Number.isInteger(line) && line > 0)
+    );
 
     const headerBar = document.createElement('div');
     headerBar.className =
@@ -402,7 +411,14 @@ export function enhanceCodeBlocks(triggerToast: (message: string) => void) {
         codeElement.innerHTML.replace(/\n$/, '')
       );
       codeElement.innerHTML = lines
-        .map(line => `<div class="code-line m-0 p-0 pr-3.5">${line}</div>`)
+        .map((line, i) => {
+          const cls = cn(
+            'code-line m-0 p-0 pr-3.5',
+            highlightedLines.has(i + 1)
+              && 'code-line-highlighted bg-(--color-accent-subtle)'
+          );
+          return `<div class="${cls}">${line}</div>`;
+        })
         .join('');
 
       gutter = document.createElement('div');
@@ -410,7 +426,11 @@ export function enhanceCodeBlocks(triggerToast: (message: string) => void) {
         'code-line-numbers shrink-0 border-r border-border-subtle/30 bg-(--color-code-chrome) py-1.5 font-mono text-[0.8rem] leading-snug text-text-muted/50 select-none';
       lines.forEach((_, i) => {
         const num = document.createElement('div');
-        num.className = 'pr-1.5 pl-2 text-right';
+        num.className = cn(
+          'pr-1.5 pl-2 text-right',
+          highlightedLines.has(i + 1)
+            && 'bg-(--color-accent-subtle) text-(--color-palette-primary)'
+        );
         num.textContent = String(i + 1);
         gutter?.appendChild(num);
       });
