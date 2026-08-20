@@ -198,6 +198,58 @@
       "source_location": "L3"
     },
     {
+      "id": "src_routes_page_server_blogpost",
+      "label": "BlogPost",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 156,
+      "community_name": "routes/+page.server.ts",
+      "file_type": "code",
+      "norm_label": "blogpost",
+      "source_file": "src/routes/+page.server.ts",
+      "source_location": "L181"
+    },
+    {
+      "id": "src_routes_page_server_githubrepo",
+      "label": "GitHubRepo",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 156,
+      "community_name": "routes/+page.server.ts",
+      "file_type": "code",
+      "norm_label": "githubrepo",
+      "source_file": "src/routes/+page.server.ts",
+      "source_location": "L17"
+    },
+    {
+      "id": "src_routes_page_server_logocatalogitem",
+      "label": "LogoCatalogItem",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 156,
+      "community_name": "routes/+page.server.ts",
+      "file_type": "code",
+      "norm_label": "logocatalogitem",
+      "source_file": "src/routes/+page.server.ts",
+      "source_location": "L42"
+    },
+    {
+      "id": "src_lib_server_loginratelimit_attemptrecord",
+      "label": "AttemptRecord",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 159,
+      "community_name": "login/+server.ts",
+      "file_type": "code",
+      "norm_label": "attemptrecord",
+      "source_file": "src/lib/server/loginRateLimit.ts",
+      "source_location": "L4"
+    },
+    {
       "id": "src_lib_stores_consentstore_svelte_consentsignals",
       "label": "ConsentSignals",
       "_callable": true,
@@ -419,26 +471,13 @@
       "source_location": "L32"
     },
     {
-      "id": "src_lib_server_loginratelimit_attemptrecord",
-      "label": "AttemptRecord",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 30,
-      "community_name": "internal/blog/comments/+server.ts",
-      "file_type": "code",
-      "norm_label": "attemptrecord",
-      "source_file": "src/lib/server/loginRateLimit.ts",
-      "source_location": "L4"
-    },
-    {
       "id": "src_lib_server_supabaseadmin_platformenv",
       "label": "PlatformEnv",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "community": 30,
-      "community_name": "internal/blog/comments/+server.ts",
+      "community": 3,
+      "community_name": "adminCv.ts",
       "file_type": "code",
       "norm_label": "platformenv",
       "source_file": "src/lib/server/supabaseAdmin.ts",
@@ -560,19 +599,6 @@
       "norm_label": "ratelimit",
       "source_file": "src/app.d.ts",
       "source_location": "L29"
-    },
-    {
-      "id": "src_lib_stores_contentfontstore_svelte_contentfont",
-      "label": "ContentFont",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 45,
-      "community_name": "IconButton.svelte",
-      "file_type": "code",
-      "norm_label": "contentfont",
-      "source_file": "src/lib/stores/contentFontStore.svelte.ts",
-      "source_location": "L3"
     },
     {
       "id": "src_lib_types_comment",
@@ -770,13 +796,26 @@
       "source_location": "L6"
     },
     {
+      "id": "src_routes_api_v1_search_server_searchresult",
+      "label": "SearchResult",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "supabase.ts",
+      "file_type": "code",
+      "norm_label": "searchresult",
+      "source_file": "src/routes/api/v1/search/+server.ts",
+      "source_location": "L5"
+    },
+    {
       "id": "src_lib_stores_codeblockprefsstore_svelte_codeblockprefs",
       "label": "CodeBlockPrefs",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 82,
-      "community_name": "LegalPageLayout.svelte",
+      "community_name": "codeBlockPrefsStore.svelte.ts",
       "file_type": "code",
       "norm_label": "codeblockprefs",
       "source_file": "src/lib/stores/codeBlockPrefsStore.svelte.ts",
@@ -789,11 +828,24 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 82,
-      "community_name": "LegalPageLayout.svelte",
+      "community_name": "codeBlockPrefsStore.svelte.ts",
       "file_type": "code",
       "norm_label": "codecolorscheme",
       "source_file": "src/lib/utils/hljsTheme.ts",
       "source_location": "L1"
+    },
+    {
+      "id": "src_lib_stores_contentfontstore_svelte_contentfont",
+      "label": "ContentFont",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 83,
+      "community_name": "LegalPageLayout.svelte",
+      "file_type": "code",
+      "norm_label": "contentfont",
+      "source_file": "src/lib/stores/contentFontStore.svelte.ts",
+      "source_location": "L3"
     },
     {
       "id": "src_lib_author_authorprofile",
@@ -913,58 +965,6 @@
       "source_location": "L54"
     },
     {
-      "id": "src_routes_api_v1_search_server_searchresult",
-      "label": "SearchResult",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "searchresult",
-      "source_file": "src/routes/api/v1/search/+server.ts",
-      "source_location": "L5"
-    },
-    {
-      "id": "src_routes_page_server_blogpost",
-      "label": "BlogPost",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "blogpost",
-      "source_file": "src/routes/+page.server.ts",
-      "source_location": "L181"
-    },
-    {
-      "id": "src_routes_page_server_githubrepo",
-      "label": "GitHubRepo",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "githubrepo",
-      "source_file": "src/routes/+page.server.ts",
-      "source_location": "L17"
-    },
-    {
-      "id": "src_routes_page_server_logocatalogitem",
-      "label": "LogoCatalogItem",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "logocatalogitem",
-      "source_file": "src/routes/+page.server.ts",
-      "source_location": "L42"
-    },
-    {
       "id": "src_lib_components_badge_cn",
       "label": "cn()",
       "_callable": true,
@@ -1013,18 +1013,6 @@
       "source_location": "L14"
     },
     {
-      "id": "src_lib_components_statsgrid_cn",
-      "label": "cn()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "lib/index.ts",
-      "file_type": "code",
-      "norm_label": "cn()",
-      "source_file": "src/lib/components/StatsGrid.svelte",
-      "source_location": "L20"
-    },
-    {
       "id": "src_lib_components_statusbanner_cn",
       "label": "cn()",
       "_callable": true,
@@ -1047,6 +1035,162 @@
       "norm_label": "sanitizeinput()",
       "source_file": "src/lib/utils/sanitizeInput.ts",
       "source_location": "L1"
+    },
+    {
+      "id": "src_lib_author_fetchcontactinfo",
+      "label": "fetchContactInfo()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 100,
+      "community_name": "authorApi.ts",
+      "file_type": "code",
+      "norm_label": "fetchcontactinfo()",
+      "source_file": "src/lib/author.ts",
+      "source_location": "L467"
+    },
+    {
+      "id": "src_lib_author_fetchcventries",
+      "label": "fetchCvEntries()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 100,
+      "community_name": "authorApi.ts",
+      "file_type": "code",
+      "norm_label": "fetchcventries()",
+      "source_file": "src/lib/author.ts",
+      "source_location": "L425"
+    },
+    {
+      "id": "src_lib_author_fetchfundinglinks",
+      "label": "fetchFundingLinks()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 100,
+      "community_name": "authorApi.ts",
+      "file_type": "code",
+      "norm_label": "fetchfundinglinks()",
+      "source_file": "src/lib/author.ts",
+      "source_location": "L461"
+    },
+    {
+      "id": "src_lib_author_fetchsocials",
+      "label": "fetchSocials()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 100,
+      "community_name": "authorApi.ts",
+      "file_type": "code",
+      "norm_label": "fetchsocials()",
+      "source_file": "src/lib/author.ts",
+      "source_location": "L296"
+    },
+    {
+      "id": "src_lib_author_fetchsponsorship",
+      "label": "fetchSponsorship()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 100,
+      "community_name": "authorApi.ts",
+      "file_type": "code",
+      "norm_label": "fetchsponsorship()",
+      "source_file": "src/lib/author.ts",
+      "source_location": "L433"
+    },
+    {
+      "id": "src_lib_authorapi_generateauthormarkdown",
+      "label": "generateAuthorMarkdown()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 100,
+      "community_name": "authorApi.ts",
+      "file_type": "code",
+      "norm_label": "generateauthormarkdown()",
+      "source_file": "src/lib/authorApi.ts",
+      "source_location": "L74"
+    },
+    {
+      "id": "src_lib_authorapi_handleauthorjsonrequest",
+      "label": "handleAuthorJsonRequest()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 100,
+      "community_name": "authorApi.ts",
+      "file_type": "code",
+      "norm_label": "handleauthorjsonrequest()",
+      "source_file": "src/lib/authorApi.ts",
+      "source_location": "L188"
+    },
+    {
+      "id": "src_lib_authorapi_sanitizepublicapidata",
+      "label": "sanitizePublicApiData()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 100,
+      "community_name": "authorApi.ts",
+      "file_type": "code",
+      "norm_label": "sanitizepublicapidata()",
+      "source_file": "src/lib/authorApi.ts",
+      "source_location": "L12"
+    },
+    {
+      "id": "src_routes_api_v1_author_contact_server_get",
+      "label": "GET()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 100,
+      "community_name": "authorApi.ts",
+      "file_type": "code",
+      "norm_label": "get()",
+      "source_file": "src/routes/api/v1/author/contact/+server.ts",
+      "source_location": "L7"
+    },
+    {
+      "id": "src_routes_api_v1_author_cv_server_get",
+      "label": "GET()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 100,
+      "community_name": "authorApi.ts",
+      "file_type": "code",
+      "norm_label": "get()",
+      "source_file": "src/routes/api/v1/author/cv/+server.ts",
+      "source_location": "L7"
+    },
+    {
+      "id": "src_routes_api_v1_author_funding_server_get",
+      "label": "GET()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 100,
+      "community_name": "authorApi.ts",
+      "file_type": "code",
+      "norm_label": "get()",
+      "source_file": "src/routes/api/v1/author/funding/+server.ts",
+      "source_location": "L7"
+    },
+    {
+      "id": "src_routes_api_v1_author_server_get",
+      "label": "GET()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 100,
+      "community_name": "authorApi.ts",
+      "file_type": "code",
+      "norm_label": "get()",
+      "source_file": "src/routes/api/v1/author/+server.ts",
+      "source_location": "L4"
+    },
+    {
+      "id": "src_routes_api_v1_author_socials_server_get",
+      "label": "GET()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 100,
+      "community_name": "authorApi.ts",
+      "file_type": "code",
+      "norm_label": "get()",
+      "source_file": "src/routes/api/v1/author/socials/+server.ts",
+      "source_location": "L7"
     },
     {
       "id": "src_lib_components_filter_filtertoolbar_searchslot",
@@ -1277,6 +1421,258 @@
       "source_location": "L50"
     },
     {
+      "id": "src_lib_utils_scroll_scrolltotop",
+      "label": "scrollToTop()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 145,
+      "community_name": "Toast.svelte",
+      "file_type": "code",
+      "norm_label": "scrolltotop()",
+      "source_file": "src/lib/utils/scroll.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_lib_author_fetchauthorprofile",
+      "label": "fetchAuthorProfile()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 150,
+      "community_name": "fetchAuthorProfile",
+      "file_type": "code",
+      "norm_label": "fetchauthorprofile()",
+      "source_file": "src/lib/author.ts",
+      "source_location": "L237"
+    },
+    {
+      "id": "src_routes_atom_xml_server_escapexml",
+      "label": "escapeXml()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 150,
+      "community_name": "fetchAuthorProfile",
+      "file_type": "code",
+      "norm_label": "escapexml()",
+      "source_file": "src/routes/atom.xml/+server.ts",
+      "source_location": "L104"
+    },
+    {
+      "id": "src_routes_atom_xml_server_get",
+      "label": "GET()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 150,
+      "community_name": "fetchAuthorProfile",
+      "file_type": "code",
+      "norm_label": "get()",
+      "source_file": "src/routes/atom.xml/+server.ts",
+      "source_location": "L6"
+    },
+    {
+      "id": "src_routes_llms_txt_server_get",
+      "label": "GET()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 150,
+      "community_name": "fetchAuthorProfile",
+      "file_type": "code",
+      "norm_label": "get()",
+      "source_file": "src/routes/llms.txt/+server.ts",
+      "source_location": "L5"
+    },
+    {
+      "id": "src_routes_robots_txt_server_get",
+      "label": "GET()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 150,
+      "community_name": "fetchAuthorProfile",
+      "file_type": "code",
+      "norm_label": "get()",
+      "source_file": "src/routes/robots.txt/+server.ts",
+      "source_location": "L5"
+    },
+    {
+      "id": "src_routes_sitemap_xml_server_escapexml",
+      "label": "escapeXml()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 150,
+      "community_name": "fetchAuthorProfile",
+      "file_type": "code",
+      "norm_label": "escapexml()",
+      "source_file": "src/routes/sitemap.xml/+server.ts",
+      "source_location": "L85"
+    },
+    {
+      "id": "src_routes_sitemap_xml_server_get",
+      "label": "GET()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 150,
+      "community_name": "fetchAuthorProfile",
+      "file_type": "code",
+      "norm_label": "get()",
+      "source_file": "src/routes/sitemap.xml/+server.ts",
+      "source_location": "L5"
+    },
+    {
+      "id": "src_routes_well_known_agent_skills_index_json_server_digest",
+      "label": "digest()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 150,
+      "community_name": "fetchAuthorProfile",
+      "file_type": "code",
+      "norm_label": "digest()",
+      "source_file": "src/routes/.well-known/agent-skills/index.json/+server.ts",
+      "source_location": "L8"
+    },
+    {
+      "id": "src_routes_well_known_agent_skills_index_json_server_get",
+      "label": "GET()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 150,
+      "community_name": "fetchAuthorProfile",
+      "file_type": "code",
+      "norm_label": "get()",
+      "source_file": "src/routes/.well-known/agent-skills/index.json/+server.ts",
+      "source_location": "L19"
+    },
+    {
+      "id": "src_routes_well_known_api_catalog_server_get",
+      "label": "GET()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 150,
+      "community_name": "fetchAuthorProfile",
+      "file_type": "code",
+      "norm_label": "get()",
+      "source_file": "src/routes/.well-known/api-catalog/+server.ts",
+      "source_location": "L6"
+    },
+    {
+      "id": "src_routes_well_known_llms_txt_server_get",
+      "label": "GET()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 150,
+      "community_name": "fetchAuthorProfile",
+      "file_type": "code",
+      "norm_label": "get()",
+      "source_file": "src/routes/.well-known/llms.txt/+server.ts",
+      "source_location": "L4"
+    },
+    {
+      "id": "src_lib_author_fetchauthorprofilewithsocials",
+      "label": "fetchAuthorProfileWithSocials()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 156,
+      "community_name": "routes/+page.server.ts",
+      "file_type": "code",
+      "norm_label": "fetchauthorprofilewithsocials()",
+      "source_file": "src/lib/author.ts",
+      "source_location": "L284"
+    },
+    {
+      "id": "src_lib_utils_formatters_decodehtmlentities",
+      "label": "decodeHtmlEntities()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 156,
+      "community_name": "routes/+page.server.ts",
+      "file_type": "code",
+      "norm_label": "decodehtmlentities()",
+      "source_file": "src/lib/utils/formatters.ts",
+      "source_location": "L108"
+    },
+    {
+      "id": "src_lib_utils_githublanguagecolors_getlanguagecolor",
+      "label": "getLanguageColor()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 156,
+      "community_name": "routes/+page.server.ts",
+      "file_type": "code",
+      "norm_label": "getlanguagecolor()",
+      "source_file": "src/lib/utils/githubLanguageColors.ts",
+      "source_location": "L37"
+    },
+    {
+      "id": "src_routes_layout_server_load",
+      "label": "load()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 156,
+      "community_name": "routes/+page.server.ts",
+      "file_type": "code",
+      "norm_label": "load()",
+      "source_file": "src/routes/+layout.server.ts",
+      "source_location": "L5"
+    },
+    {
+      "id": "src_routes_page_server_extractgithubusername",
+      "label": "extractGitHubUsername()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 156,
+      "community_name": "routes/+page.server.ts",
+      "file_type": "code",
+      "norm_label": "extractgithubusername()",
+      "source_file": "src/routes/+page.server.ts",
+      "source_location": "L198"
+    },
+    {
+      "id": "src_routes_page_server_fetchlogocatalog",
+      "label": "fetchLogoCatalog()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 156,
+      "community_name": "routes/+page.server.ts",
+      "file_type": "code",
+      "norm_label": "fetchlogocatalog()",
+      "source_file": "src/routes/+page.server.ts",
+      "source_location": "L48"
+    },
+    {
+      "id": "src_routes_page_server_fetchrepoextras",
+      "label": "fetchRepoExtras()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 156,
+      "community_name": "routes/+page.server.ts",
+      "file_type": "code",
+      "norm_label": "fetchrepoextras()",
+      "source_file": "src/routes/+page.server.ts",
+      "source_location": "L132"
+    },
+    {
+      "id": "src_routes_page_server_getlastpagecount",
+      "label": "getLastPageCount()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 156,
+      "community_name": "routes/+page.server.ts",
+      "file_type": "code",
+      "norm_label": "getlastpagecount()",
+      "source_file": "src/routes/+page.server.ts",
+      "source_location": "L35"
+    },
+    {
+      "id": "src_routes_page_server_load",
+      "label": "load()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 156,
+      "community_name": "routes/+page.server.ts",
+      "file_type": "code",
+      "norm_label": "load()",
+      "source_file": "src/routes/+page.server.ts",
+      "source_location": "L214"
+    },
+    {
       "id": "src_lib_stores_codeblockprefsstore_svelte_createcodeblockprefsstore",
       "label": "createCodeBlockPrefsStore()",
       "_callable": true,
@@ -1385,16 +1781,76 @@
       "source_location": "L5"
     },
     {
-      "id": "src_lib_utils_scroll_scrolltotop",
-      "label": "scrollToTop()",
+      "id": "src_lib_server_loginratelimit_checkloginlockout",
+      "label": "checkLoginLockout()",
       "_callable": true,
       "_origin": "ast",
       "community": 159,
-      "community_name": "Toast.svelte",
+      "community_name": "login/+server.ts",
       "file_type": "code",
-      "norm_label": "scrolltotop()",
-      "source_file": "src/lib/utils/scroll.ts",
-      "source_location": "L1"
+      "norm_label": "checkloginlockout()",
+      "source_file": "src/lib/server/loginRateLimit.ts",
+      "source_location": "L14"
+    },
+    {
+      "id": "src_lib_server_loginratelimit_clearloginattempts",
+      "label": "clearLoginAttempts()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 159,
+      "community_name": "login/+server.ts",
+      "file_type": "code",
+      "norm_label": "clearloginattempts()",
+      "source_file": "src/lib/server/loginRateLimit.ts",
+      "source_location": "L43"
+    },
+    {
+      "id": "src_lib_server_loginratelimit_pruneold",
+      "label": "pruneOld()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 159,
+      "community_name": "login/+server.ts",
+      "file_type": "code",
+      "norm_label": "pruneold()",
+      "source_file": "src/lib/server/loginRateLimit.ts",
+      "source_location": "L10"
+    },
+    {
+      "id": "src_lib_server_loginratelimit_recordfailedlogin",
+      "label": "recordFailedLogin()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 159,
+      "community_name": "login/+server.ts",
+      "file_type": "code",
+      "norm_label": "recordfailedlogin()",
+      "source_file": "src/lib/server/loginRateLimit.ts",
+      "source_location": "L35"
+    },
+    {
+      "id": "src_routes_api_internal_admin_login_server_getclientip",
+      "label": "getClientIp()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 159,
+      "community_name": "login/+server.ts",
+      "file_type": "code",
+      "norm_label": "getclientip()",
+      "source_file": "src/routes/api/internal/admin/login/+server.ts",
+      "source_location": "L12"
+    },
+    {
+      "id": "src_routes_api_internal_admin_login_server_post",
+      "label": "POST()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 159,
+      "community_name": "login/+server.ts",
+      "file_type": "code",
+      "norm_label": "post()",
+      "source_file": "src/routes/api/internal/admin/login/+server.ts",
+      "source_location": "L24"
     },
     {
       "id": "src_lib_components_consentbanner_handlepresetslider",
@@ -1587,6 +2043,18 @@
       "norm_label": "cn()",
       "source_file": "src/lib/components/Tag.svelte",
       "source_location": "L30"
+    },
+    {
+      "id": "src_lib_components_statsgrid_cn",
+      "label": "cn()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 198,
+      "community_name": "StatsGrid.svelte",
+      "file_type": "code",
+      "norm_label": "cn()",
+      "source_file": "src/lib/components/StatsGrid.svelte",
+      "source_location": "L20"
     },
     {
       "id": "src_lib_stores_toaststore_svelte_error",
@@ -2033,6 +2501,30 @@
       "source_location": "L96"
     },
     {
+      "id": "src_lib_server_supabaseadmin_getsupabaseadminclient",
+      "label": "getSupabaseAdminClient()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "adminCv.ts",
+      "file_type": "code",
+      "norm_label": "getsupabaseadminclient()",
+      "source_file": "src/lib/server/supabaseAdmin.ts",
+      "source_location": "L19"
+    },
+    {
+      "id": "src_lib_server_supabaseadmin_getsupabaseurl",
+      "label": "getSupabaseUrl()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "adminCv.ts",
+      "file_type": "code",
+      "norm_label": "getsupabaseurl()",
+      "source_file": "src/lib/server/supabaseAdmin.ts",
+      "source_location": "L7"
+    },
+    {
       "id": "src_routes_api_internal_admin_cv_delete_server_post",
       "label": "POST()",
       "_callable": true,
@@ -2067,102 +2559,6 @@
       "norm_label": "post()",
       "source_file": "src/routes/api/internal/admin/cv/upload/+server.ts",
       "source_location": "L4"
-    },
-    {
-      "id": "src_lib_server_apierror_apierror",
-      "label": "apiError()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 30,
-      "community_name": "internal/blog/comments/+server.ts",
-      "file_type": "code",
-      "norm_label": "apierror()",
-      "source_file": "src/lib/server/apiError.ts",
-      "source_location": "L3"
-    },
-    {
-      "id": "src_lib_server_loginratelimit_checkloginlockout",
-      "label": "checkLoginLockout()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 30,
-      "community_name": "internal/blog/comments/+server.ts",
-      "file_type": "code",
-      "norm_label": "checkloginlockout()",
-      "source_file": "src/lib/server/loginRateLimit.ts",
-      "source_location": "L14"
-    },
-    {
-      "id": "src_lib_server_loginratelimit_clearloginattempts",
-      "label": "clearLoginAttempts()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 30,
-      "community_name": "internal/blog/comments/+server.ts",
-      "file_type": "code",
-      "norm_label": "clearloginattempts()",
-      "source_file": "src/lib/server/loginRateLimit.ts",
-      "source_location": "L43"
-    },
-    {
-      "id": "src_lib_server_loginratelimit_pruneold",
-      "label": "pruneOld()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 30,
-      "community_name": "internal/blog/comments/+server.ts",
-      "file_type": "code",
-      "norm_label": "pruneold()",
-      "source_file": "src/lib/server/loginRateLimit.ts",
-      "source_location": "L10"
-    },
-    {
-      "id": "src_lib_server_loginratelimit_recordfailedlogin",
-      "label": "recordFailedLogin()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 30,
-      "community_name": "internal/blog/comments/+server.ts",
-      "file_type": "code",
-      "norm_label": "recordfailedlogin()",
-      "source_file": "src/lib/server/loginRateLimit.ts",
-      "source_location": "L35"
-    },
-    {
-      "id": "src_lib_server_sameorigin_issameoriginrequest",
-      "label": "isSameOriginRequest()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 30,
-      "community_name": "internal/blog/comments/+server.ts",
-      "file_type": "code",
-      "norm_label": "issameoriginrequest()",
-      "source_file": "src/lib/server/sameOrigin.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_lib_server_supabaseadmin_getsupabaseadminclient",
-      "label": "getSupabaseAdminClient()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 30,
-      "community_name": "internal/blog/comments/+server.ts",
-      "file_type": "code",
-      "norm_label": "getsupabaseadminclient()",
-      "source_file": "src/lib/server/supabaseAdmin.ts",
-      "source_location": "L19"
-    },
-    {
-      "id": "src_lib_server_supabaseadmin_getsupabaseurl",
-      "label": "getSupabaseUrl()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 30,
-      "community_name": "internal/blog/comments/+server.ts",
-      "file_type": "code",
-      "norm_label": "getsupabaseurl()",
-      "source_file": "src/lib/server/supabaseAdmin.ts",
-      "source_location": "L7"
     },
     {
       "id": "src_lib_server_turnstile_verifyturnstiletoken",
@@ -2213,30 +2609,6 @@
       "source_location": "L1"
     },
     {
-      "id": "src_routes_api_internal_admin_login_server_getclientip",
-      "label": "getClientIp()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 30,
-      "community_name": "internal/blog/comments/+server.ts",
-      "file_type": "code",
-      "norm_label": "getclientip()",
-      "source_file": "src/routes/api/internal/admin/login/+server.ts",
-      "source_location": "L12"
-    },
-    {
-      "id": "src_routes_api_internal_admin_login_server_post",
-      "label": "POST()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 30,
-      "community_name": "internal/blog/comments/+server.ts",
-      "file_type": "code",
-      "norm_label": "post()",
-      "source_file": "src/routes/api/internal/admin/login/+server.ts",
-      "source_location": "L24"
-    },
-    {
       "id": "src_routes_api_internal_blog_comments_server_moderatecontent",
       "label": "moderateContent()",
       "_callable": true,
@@ -2259,54 +2631,6 @@
       "norm_label": "post()",
       "source_file": "src/routes/api/internal/blog/comments/+server.ts",
       "source_location": "L57"
-    },
-    {
-      "id": "src_routes_api_internal_blog_views_server_post",
-      "label": "POST()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 30,
-      "community_name": "internal/blog/comments/+server.ts",
-      "file_type": "code",
-      "norm_label": "post()",
-      "source_file": "src/routes/api/internal/blog/views/+server.ts",
-      "source_location": "L7"
-    },
-    {
-      "id": "src_routes_api_v1_blog_comments_server_get",
-      "label": "GET()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 30,
-      "community_name": "internal/blog/comments/+server.ts",
-      "file_type": "code",
-      "norm_label": "get()",
-      "source_file": "src/routes/api/v1/blog/comments/+server.ts",
-      "source_location": "L9"
-    },
-    {
-      "id": "src_routes_api_v1_blog_server_get",
-      "label": "GET()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 30,
-      "community_name": "internal/blog/comments/+server.ts",
-      "file_type": "code",
-      "norm_label": "get()",
-      "source_file": "src/routes/api/v1/blog/+server.ts",
-      "source_location": "L6"
-    },
-    {
-      "id": "src_routes_api_v1_blog_views_server_get",
-      "label": "GET()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 30,
-      "community_name": "internal/blog/comments/+server.ts",
-      "file_type": "code",
-      "norm_label": "get()",
-      "source_file": "src/routes/api/v1/blog/views/+server.ts",
-      "source_location": "L6"
     },
     {
       "id": "src_lib_stores_a11ystore_svelte_createa11ystore",
@@ -2861,6 +3185,30 @@
       "source_location": "L367"
     },
     {
+      "id": "src_lib_utils_pillparsing_splitescapedcommas",
+      "label": "splitEscapedCommas()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 49,
+      "community_name": "types.ts",
+      "file_type": "code",
+      "norm_label": "splitescapedcommas()",
+      "source_file": "src/lib/utils/pillParsing.ts",
+      "source_location": "L14"
+    },
+    {
+      "id": "src_lib_utils_pillparsing_tryescapecomma",
+      "label": "tryEscapeComma()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 49,
+      "community_name": "types.ts",
+      "file_type": "code",
+      "norm_label": "tryescapecomma()",
+      "source_file": "src/lib/utils/pillParsing.ts",
+      "source_location": "L1"
+    },
+    {
       "id": "src_hooks_server_getcdnbaseurl",
       "label": "getCdnBaseUrl()",
       "_callable": true,
@@ -3173,28 +3521,124 @@
       "source_location": "L42"
     },
     {
-      "id": "src_lib_utils_pillparsing_splitescapedcommas",
-      "label": "splitEscapedCommas()",
+      "id": "src_lib_author_fetchactivecvdocument",
+      "label": "fetchActiveCvDocument()",
       "_callable": true,
       "_origin": "ast",
       "community": 8,
-      "community_name": "pillParsing.ts",
+      "community_name": "supabase.ts",
       "file_type": "code",
-      "norm_label": "splitescapedcommas()",
-      "source_file": "src/lib/utils/pillParsing.ts",
-      "source_location": "L14"
+      "norm_label": "fetchactivecvdocument()",
+      "source_file": "src/lib/author.ts",
+      "source_location": "L494"
     },
     {
-      "id": "src_lib_utils_pillparsing_tryescapecomma",
-      "label": "tryEscapeComma()",
+      "id": "src_lib_server_apierror_apierror",
+      "label": "apiError()",
       "_callable": true,
       "_origin": "ast",
       "community": 8,
-      "community_name": "pillParsing.ts",
+      "community_name": "supabase.ts",
       "file_type": "code",
-      "norm_label": "tryescapecomma()",
-      "source_file": "src/lib/utils/pillParsing.ts",
+      "norm_label": "apierror()",
+      "source_file": "src/lib/server/apiError.ts",
+      "source_location": "L3"
+    },
+    {
+      "id": "src_lib_server_sameorigin_issameoriginrequest",
+      "label": "isSameOriginRequest()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "supabase.ts",
+      "file_type": "code",
+      "norm_label": "issameoriginrequest()",
+      "source_file": "src/lib/server/sameOrigin.ts",
       "source_location": "L1"
+    },
+    {
+      "id": "src_routes_api_internal_blog_views_server_post",
+      "label": "POST()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "supabase.ts",
+      "file_type": "code",
+      "norm_label": "post()",
+      "source_file": "src/routes/api/internal/blog/views/+server.ts",
+      "source_location": "L7"
+    },
+    {
+      "id": "src_routes_api_v1_blog_comments_server_get",
+      "label": "GET()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "supabase.ts",
+      "file_type": "code",
+      "norm_label": "get()",
+      "source_file": "src/routes/api/v1/blog/comments/+server.ts",
+      "source_location": "L9"
+    },
+    {
+      "id": "src_routes_api_v1_blog_server_get",
+      "label": "GET()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "supabase.ts",
+      "file_type": "code",
+      "norm_label": "get()",
+      "source_file": "src/routes/api/v1/blog/+server.ts",
+      "source_location": "L6"
+    },
+    {
+      "id": "src_routes_api_v1_blog_slug_server_get",
+      "label": "GET()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "supabase.ts",
+      "file_type": "code",
+      "norm_label": "get()",
+      "source_file": "src/routes/api/v1/blog/[slug]/+server.ts",
+      "source_location": "L8"
+    },
+    {
+      "id": "src_routes_api_v1_blog_views_server_get",
+      "label": "GET()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "supabase.ts",
+      "file_type": "code",
+      "norm_label": "get()",
+      "source_file": "src/routes/api/v1/blog/views/+server.ts",
+      "source_location": "L6"
+    },
+    {
+      "id": "src_routes_api_v1_cv_server_get",
+      "label": "GET()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "supabase.ts",
+      "file_type": "code",
+      "norm_label": "get()",
+      "source_file": "src/routes/api/v1/cv/+server.ts",
+      "source_location": "L6"
+    },
+    {
+      "id": "src_routes_api_v1_search_server_get",
+      "label": "GET()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "supabase.ts",
+      "file_type": "code",
+      "norm_label": "get()",
+      "source_file": "src/routes/api/v1/search/+server.ts",
+      "source_location": "L13"
     },
     {
       "id": "src_lib_utils_hljstheme_resolvehljstheme",
@@ -3202,7 +3646,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 82,
-      "community_name": "LegalPageLayout.svelte",
+      "community_name": "codeBlockPrefsStore.svelte.ts",
       "file_type": "code",
       "norm_label": "resolvehljstheme()",
       "source_file": "src/lib/utils/hljsTheme.ts",
@@ -3214,7 +3658,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 82,
-      "community_name": "LegalPageLayout.svelte",
+      "community_name": "codeBlockPrefsStore.svelte.ts",
       "file_type": "code",
       "norm_label": "if()",
       "source_file": "src/routes/admin/new/+page.svelte",
@@ -3226,7 +3670,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 83,
-      "community_name": "createContentFontStore",
+      "community_name": "LegalPageLayout.svelte",
       "file_type": "code",
       "norm_label": "createcontentfontstore()",
       "source_file": "src/lib/stores/contentFontStore.svelte.ts",
@@ -3238,7 +3682,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 83,
-      "community_name": "createContentFontStore",
+      "community_name": "LegalPageLayout.svelte",
       "file_type": "code",
       "norm_label": "reset()",
       "source_file": "src/lib/stores/contentFontStore.svelte.ts",
@@ -3250,7 +3694,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 83,
-      "community_name": "createContentFontStore",
+      "community_name": "LegalPageLayout.svelte",
       "file_type": "code",
       "norm_label": "setfont()",
       "source_file": "src/lib/stores/contentFontStore.svelte.ts",
@@ -3267,66 +3711,6 @@
       "norm_label": "decodehtmlentities()",
       "source_file": "src/lib/author.ts",
       "source_location": "L103"
-    },
-    {
-      "id": "src_lib_author_fetchactivecvdocument",
-      "label": "fetchActiveCvDocument()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "fetchactivecvdocument()",
-      "source_file": "src/lib/author.ts",
-      "source_location": "L494"
-    },
-    {
-      "id": "src_lib_author_fetchauthorprofile",
-      "label": "fetchAuthorProfile()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "fetchauthorprofile()",
-      "source_file": "src/lib/author.ts",
-      "source_location": "L237"
-    },
-    {
-      "id": "src_lib_author_fetchauthorprofilewithsocials",
-      "label": "fetchAuthorProfileWithSocials()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "fetchauthorprofilewithsocials()",
-      "source_file": "src/lib/author.ts",
-      "source_location": "L284"
-    },
-    {
-      "id": "src_lib_author_fetchcontactinfo",
-      "label": "fetchContactInfo()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "fetchcontactinfo()",
-      "source_file": "src/lib/author.ts",
-      "source_location": "L467"
-    },
-    {
-      "id": "src_lib_author_fetchcventries",
-      "label": "fetchCvEntries()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "fetchcventries()",
-      "source_file": "src/lib/author.ts",
-      "source_location": "L425"
     },
     {
       "id": "src_lib_author_fetcheducation",
@@ -3353,18 +3737,6 @@
       "source_location": "L360"
     },
     {
-      "id": "src_lib_author_fetchfundinglinks",
-      "label": "fetchFundingLinks()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "fetchfundinglinks()",
-      "source_file": "src/lib/author.ts",
-      "source_location": "L461"
-    },
-    {
       "id": "src_lib_author_fetchgroupedskills",
       "label": "fetchGroupedSkills()",
       "_callable": true,
@@ -3387,30 +3759,6 @@
       "norm_label": "fetchskills()",
       "source_file": "src/lib/author.ts",
       "source_location": "L322"
-    },
-    {
-      "id": "src_lib_author_fetchsocials",
-      "label": "fetchSocials()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "fetchsocials()",
-      "source_file": "src/lib/author.ts",
-      "source_location": "L296"
-    },
-    {
-      "id": "src_lib_author_fetchsponsorship",
-      "label": "fetchSponsorship()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "fetchsponsorship()",
-      "source_file": "src/lib/author.ts",
-      "source_location": "L433"
     },
     {
       "id": "src_lib_author_formatmonthabbrev",
@@ -3449,114 +3797,6 @@
       "source_location": "L229"
     },
     {
-      "id": "src_lib_authorapi_generateauthormarkdown",
-      "label": "generateAuthorMarkdown()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "generateauthormarkdown()",
-      "source_file": "src/lib/authorApi.ts",
-      "source_location": "L74"
-    },
-    {
-      "id": "src_lib_authorapi_handleauthorjsonrequest",
-      "label": "handleAuthorJsonRequest()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "handleauthorjsonrequest()",
-      "source_file": "src/lib/authorApi.ts",
-      "source_location": "L188"
-    },
-    {
-      "id": "src_lib_authorapi_sanitizepublicapidata",
-      "label": "sanitizePublicApiData()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "sanitizepublicapidata()",
-      "source_file": "src/lib/authorApi.ts",
-      "source_location": "L12"
-    },
-    {
-      "id": "src_lib_utils_formatters_decodehtmlentities",
-      "label": "decodeHtmlEntities()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "decodehtmlentities()",
-      "source_file": "src/lib/utils/formatters.ts",
-      "source_location": "L108"
-    },
-    {
-      "id": "src_lib_utils_githublanguagecolors_getlanguagecolor",
-      "label": "getLanguageColor()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "getlanguagecolor()",
-      "source_file": "src/lib/utils/githubLanguageColors.ts",
-      "source_location": "L37"
-    },
-    {
-      "id": "src_routes_api_v1_author_contact_server_get",
-      "label": "GET()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "get()",
-      "source_file": "src/routes/api/v1/author/contact/+server.ts",
-      "source_location": "L7"
-    },
-    {
-      "id": "src_routes_api_v1_author_cv_server_get",
-      "label": "GET()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "get()",
-      "source_file": "src/routes/api/v1/author/cv/+server.ts",
-      "source_location": "L7"
-    },
-    {
-      "id": "src_routes_api_v1_author_funding_server_get",
-      "label": "GET()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "get()",
-      "source_file": "src/routes/api/v1/author/funding/+server.ts",
-      "source_location": "L7"
-    },
-    {
-      "id": "src_routes_api_v1_author_server_get",
-      "label": "GET()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "get()",
-      "source_file": "src/routes/api/v1/author/+server.ts",
-      "source_location": "L4"
-    },
-    {
       "id": "src_routes_api_v1_author_skills_server_get",
       "label": "GET()",
       "_callable": true,
@@ -3567,246 +3807,6 @@
       "norm_label": "get()",
       "source_file": "src/routes/api/v1/author/skills/+server.ts",
       "source_location": "L7"
-    },
-    {
-      "id": "src_routes_api_v1_author_socials_server_get",
-      "label": "GET()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "get()",
-      "source_file": "src/routes/api/v1/author/socials/+server.ts",
-      "source_location": "L7"
-    },
-    {
-      "id": "src_routes_api_v1_blog_slug_server_get",
-      "label": "GET()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "get()",
-      "source_file": "src/routes/api/v1/blog/[slug]/+server.ts",
-      "source_location": "L8"
-    },
-    {
-      "id": "src_routes_api_v1_cv_server_get",
-      "label": "GET()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "get()",
-      "source_file": "src/routes/api/v1/cv/+server.ts",
-      "source_location": "L6"
-    },
-    {
-      "id": "src_routes_api_v1_search_server_get",
-      "label": "GET()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "get()",
-      "source_file": "src/routes/api/v1/search/+server.ts",
-      "source_location": "L13"
-    },
-    {
-      "id": "src_routes_atom_xml_server_escapexml",
-      "label": "escapeXml()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "escapexml()",
-      "source_file": "src/routes/atom.xml/+server.ts",
-      "source_location": "L104"
-    },
-    {
-      "id": "src_routes_atom_xml_server_get",
-      "label": "GET()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "get()",
-      "source_file": "src/routes/atom.xml/+server.ts",
-      "source_location": "L6"
-    },
-    {
-      "id": "src_routes_layout_server_load",
-      "label": "load()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "load()",
-      "source_file": "src/routes/+layout.server.ts",
-      "source_location": "L5"
-    },
-    {
-      "id": "src_routes_llms_txt_server_get",
-      "label": "GET()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "get()",
-      "source_file": "src/routes/llms.txt/+server.ts",
-      "source_location": "L5"
-    },
-    {
-      "id": "src_routes_page_server_extractgithubusername",
-      "label": "extractGitHubUsername()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "extractgithubusername()",
-      "source_file": "src/routes/+page.server.ts",
-      "source_location": "L198"
-    },
-    {
-      "id": "src_routes_page_server_fetchlogocatalog",
-      "label": "fetchLogoCatalog()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "fetchlogocatalog()",
-      "source_file": "src/routes/+page.server.ts",
-      "source_location": "L48"
-    },
-    {
-      "id": "src_routes_page_server_fetchrepoextras",
-      "label": "fetchRepoExtras()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "fetchrepoextras()",
-      "source_file": "src/routes/+page.server.ts",
-      "source_location": "L132"
-    },
-    {
-      "id": "src_routes_page_server_getlastpagecount",
-      "label": "getLastPageCount()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "getlastpagecount()",
-      "source_file": "src/routes/+page.server.ts",
-      "source_location": "L35"
-    },
-    {
-      "id": "src_routes_page_server_load",
-      "label": "load()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "load()",
-      "source_file": "src/routes/+page.server.ts",
-      "source_location": "L214"
-    },
-    {
-      "id": "src_routes_robots_txt_server_get",
-      "label": "GET()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "get()",
-      "source_file": "src/routes/robots.txt/+server.ts",
-      "source_location": "L5"
-    },
-    {
-      "id": "src_routes_sitemap_xml_server_escapexml",
-      "label": "escapeXml()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "escapexml()",
-      "source_file": "src/routes/sitemap.xml/+server.ts",
-      "source_location": "L85"
-    },
-    {
-      "id": "src_routes_sitemap_xml_server_get",
-      "label": "GET()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "get()",
-      "source_file": "src/routes/sitemap.xml/+server.ts",
-      "source_location": "L5"
-    },
-    {
-      "id": "src_routes_well_known_agent_skills_index_json_server_digest",
-      "label": "digest()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "digest()",
-      "source_file": "src/routes/.well-known/agent-skills/index.json/+server.ts",
-      "source_location": "L8"
-    },
-    {
-      "id": "src_routes_well_known_agent_skills_index_json_server_get",
-      "label": "GET()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "get()",
-      "source_file": "src/routes/.well-known/agent-skills/index.json/+server.ts",
-      "source_location": "L19"
-    },
-    {
-      "id": "src_routes_well_known_api_catalog_server_get",
-      "label": "GET()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "get()",
-      "source_file": "src/routes/.well-known/api-catalog/+server.ts",
-      "source_location": "L6"
-    },
-    {
-      "id": "src_routes_well_known_llms_txt_server_get",
-      "label": "GET()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "get()",
-      "source_file": "src/routes/.well-known/llms.txt/+server.ts",
-      "source_location": "L4"
     },
     {
       "id": "src_lib_stores_themestore_svelte_createthemestore",
@@ -3882,6 +3882,28 @@
       "source_file": ".agents/skills/task-observer/.github/workflows/release-bundle.yml",
       "source_location": "L1",
       "source_url": null
+    },
+    {
+      "id": "src_lib_article_articleheader",
+      "label": "ArticleHeader.svelte",
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "lib/index.ts",
+      "file_type": "code",
+      "norm_label": "articleheader.svelte",
+      "source_file": "src/lib/article/ArticleHeader.svelte",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_lib_article_articleheader_title_excerpt_class_classname_titleclass_meta",
+      "label": "{\n    title,\n    excerpt = '',\n    class: className = '',\n    titleClass = '',\n    meta\n  }",
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "lib/index.ts",
+      "file_type": "code",
+      "norm_label": "{\n    title,\n    excerpt = '',\n    class: classname = '',\n    titleclass = '',\n    meta\n  }",
+      "source_file": "src/lib/article/ArticleHeader.svelte",
+      "source_location": "L14"
     },
     {
       "id": "src_lib_components_actiongroup",
@@ -4049,36 +4071,25 @@
       "source_location": "L1"
     },
     {
-      "id": "src_lib_components_filter_dropdownselect",
-      "label": "DropdownSelect.svelte",
+      "id": "src_lib_components_filter_filterchip",
+      "label": "FilterChip.svelte",
       "_origin": "ast",
       "community": 0,
       "community_name": "lib/index.ts",
       "file_type": "code",
-      "norm_label": "dropdownselect.svelte",
-      "source_file": "src/lib/components/filter/DropdownSelect.svelte",
+      "norm_label": "filterchip.svelte",
+      "source_file": "src/lib/components/filter/FilterChip.svelte",
       "source_location": "L1"
     },
     {
-      "id": "src_lib_components_filter_dropdowntrigger",
-      "label": "DropdownTrigger.svelte",
+      "id": "src_lib_components_filter_filterchipgroup",
+      "label": "FilterChipGroup.svelte",
       "_origin": "ast",
       "community": 0,
       "community_name": "lib/index.ts",
       "file_type": "code",
-      "norm_label": "dropdowntrigger.svelte",
-      "source_file": "src/lib/components/filter/DropdownTrigger.svelte",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_lib_components_filter_filterselect",
-      "label": "FilterSelect.svelte",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "lib/index.ts",
-      "file_type": "code",
-      "norm_label": "filterselect.svelte",
-      "source_file": "src/lib/components/filter/FilterSelect.svelte",
+      "norm_label": "filterchipgroup.svelte",
+      "source_file": "src/lib/components/filter/FilterChipGroup.svelte",
       "source_location": "L1"
     },
     {
@@ -4090,17 +4101,6 @@
       "file_type": "code",
       "norm_label": "searchresultcount.svelte",
       "source_file": "src/lib/components/filter/SearchResultCount.svelte",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_lib_components_filter_sortcontrol",
-      "label": "SortControl.svelte",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "lib/index.ts",
-      "file_type": "code",
-      "norm_label": "sortcontrol.svelte",
-      "source_file": "src/lib/components/filter/SortControl.svelte",
       "source_location": "L1"
     },
     {
@@ -4255,17 +4255,6 @@
       "file_type": "code",
       "norm_label": "skeletonblock.svelte",
       "source_file": "src/lib/components/SkeletonBlock.svelte",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_lib_components_statsgrid",
-      "label": "StatsGrid.svelte",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "lib/index.ts",
-      "file_type": "code",
-      "norm_label": "statsgrid.svelte",
-      "source_file": "src/lib/components/StatsGrid.svelte",
       "source_location": "L1"
     },
     {
@@ -4777,26 +4766,70 @@
       "source_location": "L113"
     },
     {
-      "id": "package_devdependencies_tailwindcss",
-      "label": "tailwindcss",
+      "id": "src_lib_authorapi",
+      "label": "authorApi.ts",
       "_origin": "ast",
       "community": 100,
-      "community_name": "tailwindcss",
+      "community_name": "authorApi.ts",
       "file_type": "code",
-      "norm_label": "tailwindcss",
-      "source_file": "package.json",
-      "source_location": "L35"
+      "norm_label": "authorapi.ts",
+      "source_file": "src/lib/authorApi.ts",
+      "source_location": "L1"
     },
     {
-      "id": "tailwindcss",
-      "label": "tailwindcss",
+      "id": "src_routes_api_v1_author_contact_server",
+      "label": "contact/+server.ts",
       "_origin": "ast",
       "community": 100,
-      "community_name": "tailwindcss",
-      "file_type": "concept",
-      "norm_label": "tailwindcss",
-      "source_file": "package.json",
-      "source_location": "L35"
+      "community_name": "authorApi.ts",
+      "file_type": "code",
+      "norm_label": "contact/+server.ts",
+      "source_file": "src/routes/api/v1/author/contact/+server.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_routes_api_v1_author_cv_server",
+      "label": "author/cv/+server.ts",
+      "_origin": "ast",
+      "community": 100,
+      "community_name": "authorApi.ts",
+      "file_type": "code",
+      "norm_label": "author/cv/+server.ts",
+      "source_file": "src/routes/api/v1/author/cv/+server.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_routes_api_v1_author_funding_server",
+      "label": "funding/+server.ts",
+      "_origin": "ast",
+      "community": 100,
+      "community_name": "authorApi.ts",
+      "file_type": "code",
+      "norm_label": "funding/+server.ts",
+      "source_file": "src/routes/api/v1/author/funding/+server.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_routes_api_v1_author_server",
+      "label": "author/+server.ts",
+      "_origin": "ast",
+      "community": 100,
+      "community_name": "authorApi.ts",
+      "file_type": "code",
+      "norm_label": "author/+server.ts",
+      "source_file": "src/routes/api/v1/author/+server.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_routes_api_v1_author_socials_server",
+      "label": "socials/+server.ts",
+      "_origin": "ast",
+      "community": 100,
+      "community_name": "authorApi.ts",
+      "file_type": "code",
+      "norm_label": "socials/+server.ts",
+      "source_file": "src/routes/api/v1/author/socials/+server.ts",
+      "source_location": "L1"
     },
     {
       "id": "supabase_migrations_20260805000000_atomic_save_rpcs",
@@ -6604,28 +6637,6 @@
       "source_location": "L1"
     },
     {
-      "id": "src_lib_components_filter_filterchip",
-      "label": "FilterChip.svelte",
-      "_origin": "ast",
-      "community": 14,
-      "community_name": "Button.svelte",
-      "file_type": "code",
-      "norm_label": "filterchip.svelte",
-      "source_file": "src/lib/components/filter/FilterChip.svelte",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_lib_components_filter_filterchipgroup",
-      "label": "FilterChipGroup.svelte",
-      "_origin": "ast",
-      "community": 14,
-      "community_name": "Button.svelte",
-      "file_type": "code",
-      "norm_label": "filterchipgroup.svelte",
-      "source_file": "src/lib/components/filter/FilterChipGroup.svelte",
-      "source_location": "L1"
-    },
-    {
       "id": "src_lib_components_sharedialog",
       "label": "ShareDialog.svelte",
       "_origin": "ast",
@@ -6739,13 +6750,13 @@
     },
     {
       "id": "eslint_config",
-      "label": "eslint.config.js",
+      "label": "eslint.config.ts",
       "_origin": "ast",
       "community": 143,
       "community_name": "eslint.config.js",
       "file_type": "code",
-      "norm_label": "eslint.config.js",
-      "source_file": "eslint.config.js",
+      "norm_label": "eslint.config.ts",
+      "source_file": "eslint.config.ts",
       "source_location": "L1"
     },
     {
@@ -6756,129 +6767,85 @@
       "community_name": "eslint.config.js",
       "file_type": "code",
       "norm_label": "gitignorepath",
-      "source_file": "eslint.config.js",
+      "source_file": "eslint.config.ts",
       "source_location": "L9"
     },
     {
-      "id": "package_devdependencies",
-      "label": "devDependencies",
+      "id": "package_devdependencies_commitlint_cli",
+      "label": "@commitlint/cli",
       "_origin": "ast",
       "community": 144,
-      "community_name": "devDependencies",
+      "community_name": "@commitlint/cli",
       "file_type": "code",
-      "norm_label": "devdependencies",
+      "norm_label": "@commitlint/cli",
       "source_file": "package.json",
-      "source_location": "L16"
+      "source_location": "L17"
     },
     {
-      "id": "package_devdependencies_eslint_config_prettier",
-      "label": "eslint-config-prettier",
+      "id": "commitlint_cli",
+      "label": "@commitlint/cli",
       "_origin": "ast",
       "community": 144,
-      "community_name": "devDependencies",
-      "file_type": "code",
-      "norm_label": "eslint-config-prettier",
-      "source_file": "package.json",
-      "source_location": "L25"
-    },
-    {
-      "id": "package_devdependencies_eslint_plugin_svelte",
-      "label": "eslint-plugin-svelte",
-      "_origin": "ast",
-      "community": 144,
-      "community_name": "devDependencies",
-      "file_type": "code",
-      "norm_label": "eslint-plugin-svelte",
-      "source_file": "package.json",
-      "source_location": "L26"
-    },
-    {
-      "id": "package_devdependencies_prettier_plugin_tailwindcss",
-      "label": "prettier-plugin-tailwindcss",
-      "_origin": "ast",
-      "community": 144,
-      "community_name": "devDependencies",
-      "file_type": "code",
-      "norm_label": "prettier-plugin-tailwindcss",
-      "source_file": "package.json",
-      "source_location": "L30"
-    },
-    {
-      "id": "package_devdependencies_sveltejs_vite_plugin_svelte",
-      "label": "@sveltejs/vite-plugin-svelte",
-      "_origin": "ast",
-      "community": 144,
-      "community_name": "devDependencies",
-      "file_type": "code",
-      "norm_label": "@sveltejs/vite-plugin-svelte",
-      "source_file": "package.json",
-      "source_location": "L21"
-    },
-    {
-      "id": "eslint_config_prettier",
-      "label": "eslint-config-prettier",
-      "_origin": "ast",
-      "community": 144,
-      "community_name": "devDependencies",
+      "community_name": "@commitlint/cli",
       "file_type": "concept",
-      "norm_label": "eslint-config-prettier",
+      "norm_label": "@commitlint/cli",
       "source_file": "package.json",
-      "source_location": "L25"
+      "source_location": "L17"
     },
     {
-      "id": "eslint_plugin_svelte",
-      "label": "eslint-plugin-svelte",
-      "_origin": "ast",
-      "community": 144,
-      "community_name": "devDependencies",
-      "file_type": "concept",
-      "norm_label": "eslint-plugin-svelte",
-      "source_file": "package.json",
-      "source_location": "L26"
-    },
-    {
-      "id": "prettier_plugin_tailwindcss",
-      "label": "prettier-plugin-tailwindcss",
-      "_origin": "ast",
-      "community": 144,
-      "community_name": "devDependencies",
-      "file_type": "concept",
-      "norm_label": "prettier-plugin-tailwindcss",
-      "source_file": "package.json",
-      "source_location": "L30"
-    },
-    {
-      "id": "sveltejs_vite_plugin_svelte",
-      "label": "@sveltejs/vite-plugin-svelte",
-      "_origin": "ast",
-      "community": 144,
-      "community_name": "devDependencies",
-      "file_type": "concept",
-      "norm_label": "@sveltejs/vite-plugin-svelte",
-      "source_file": "package.json",
-      "source_location": "L21"
-    },
-    {
-      "id": "package_devdependencies_types_node",
-      "label": "@types/node",
+      "id": "transition",
+      "label": "svelte/transition",
       "_origin": "ast",
       "community": 145,
-      "community_name": "@types/node",
+      "community_name": "Toast.svelte",
+      "confidence": "EXTRACTED",
       "file_type": "code",
-      "norm_label": "@types/node",
-      "source_file": "package.json",
-      "source_location": "L23"
+      "norm_label": "svelte/transition",
+      "source_file": "svelte/transition"
     },
     {
-      "id": "types_node",
-      "label": "@types/node",
+      "id": "src_lib_components_feedbackbutton",
+      "label": "FeedbackButton.svelte",
       "_origin": "ast",
       "community": 145,
-      "community_name": "@types/node",
-      "file_type": "concept",
-      "norm_label": "@types/node",
-      "source_file": "package.json",
-      "source_location": "L23"
+      "community_name": "Toast.svelte",
+      "file_type": "code",
+      "norm_label": "feedbackbutton.svelte",
+      "source_file": "src/lib/components/FeedbackButton.svelte",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_lib_components_scrolltotopbutton",
+      "label": "ScrollToTopButton.svelte",
+      "_origin": "ast",
+      "community": 145,
+      "community_name": "Toast.svelte",
+      "file_type": "code",
+      "norm_label": "scrolltotopbutton.svelte",
+      "source_file": "src/lib/components/ScrollToTopButton.svelte",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_lib_components_toast",
+      "label": "Toast.svelte",
+      "_origin": "ast",
+      "community": 145,
+      "community_name": "Toast.svelte",
+      "file_type": "code",
+      "norm_label": "toast.svelte",
+      "source_file": "src/lib/components/Toast.svelte",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_lib_utils_scroll",
+      "label": "scroll.ts",
+      "_origin": "ast",
+      "community": 145,
+      "community_name": "Toast.svelte",
+      "file_type": "code",
+      "norm_label": "scroll.ts",
+      "source_file": "src/lib/utils/scroll.ts",
+      "source_location": "L1"
     },
     {
       "id": "package_devdependencies_typescript_eslint",
@@ -6889,7 +6856,7 @@
       "file_type": "code",
       "norm_label": "typescript-eslint",
       "source_file": "package.json",
-      "source_location": "L37"
+      "source_location": "L40"
     },
     {
       "id": "typescript_eslint",
@@ -6900,7 +6867,7 @@
       "file_type": "concept",
       "norm_label": "typescript-eslint",
       "source_file": "package.json",
-      "source_location": "L37"
+      "source_location": "L40"
     },
     {
       "id": "package_devdependencies_publint",
@@ -6911,7 +6878,7 @@
       "file_type": "code",
       "norm_label": "publint",
       "source_file": "package.json",
-      "source_location": "L32"
+      "source_location": "L35"
     },
     {
       "id": "publint",
@@ -6922,7 +6889,7 @@
       "file_type": "concept",
       "norm_label": "publint",
       "source_file": "package.json",
-      "source_location": "L32"
+      "source_location": "L35"
     },
     {
       "id": "package_devdependencies_sveltejs_package",
@@ -6933,7 +6900,7 @@
       "file_type": "code",
       "norm_label": "@sveltejs/package",
       "source_file": "package.json",
-      "source_location": "L20"
+      "source_location": "L22"
     },
     {
       "id": "sveltejs_package",
@@ -6944,29 +6911,29 @@
       "file_type": "concept",
       "norm_label": "@sveltejs/package",
       "source_file": "package.json",
-      "source_location": "L20"
+      "source_location": "L22"
     },
     {
-      "id": "package_devdependencies_yaml",
-      "label": "yaml",
+      "id": "package_devdependencies_eslint_plugin_svelte",
+      "label": "eslint-plugin-svelte",
       "_origin": "ast",
       "community": 149,
-      "community_name": "yaml",
+      "community_name": "eslint-plugin-svelte",
       "file_type": "code",
-      "norm_label": "yaml",
+      "norm_label": "eslint-plugin-svelte",
       "source_file": "package.json",
-      "source_location": "L39"
+      "source_location": "L28"
     },
     {
-      "id": "yaml",
-      "label": "yaml",
+      "id": "eslint_plugin_svelte",
+      "label": "eslint-plugin-svelte",
       "_origin": "ast",
       "community": 149,
-      "community_name": "yaml",
+      "community_name": "eslint-plugin-svelte",
       "file_type": "concept",
-      "norm_label": "yaml",
+      "norm_label": "eslint-plugin-svelte",
       "source_file": "package.json",
-      "source_location": "L39"
+      "source_location": "L28"
     },
     {
       "id": "package_devdependencies_eslint_js",
@@ -6977,7 +6944,7 @@
       "file_type": "code",
       "norm_label": "@eslint/js",
       "source_file": "package.json",
-      "source_location": "L17"
+      "source_location": "L19"
     },
     {
       "id": "eslint_js",
@@ -6988,29 +6955,84 @@
       "file_type": "concept",
       "norm_label": "@eslint/js",
       "source_file": "package.json",
-      "source_location": "L17"
+      "source_location": "L19"
     },
     {
-      "id": "package_devdependencies_tailwindcss_vite",
-      "label": "@tailwindcss/vite",
+      "id": "src_routes_atom_xml_server",
+      "label": "atom.xml/+server.ts",
       "_origin": "ast",
       "community": 150,
-      "community_name": "@tailwindcss/vite",
+      "community_name": "fetchAuthorProfile",
       "file_type": "code",
-      "norm_label": "@tailwindcss/vite",
-      "source_file": "package.json",
-      "source_location": "L22"
+      "norm_label": "atom.xml/+server.ts",
+      "source_file": "src/routes/atom.xml/+server.ts",
+      "source_location": "L1"
     },
     {
-      "id": "tailwindcss_vite",
-      "label": "@tailwindcss/vite",
+      "id": "src_routes_llms_txt_server",
+      "label": "routes/llms.txt/+server.ts",
       "_origin": "ast",
       "community": 150,
-      "community_name": "@tailwindcss/vite",
-      "file_type": "concept",
-      "norm_label": "@tailwindcss/vite",
-      "source_file": "package.json",
-      "source_location": "L22"
+      "community_name": "fetchAuthorProfile",
+      "file_type": "code",
+      "norm_label": "routes/llms.txt/+server.ts",
+      "source_file": "src/routes/llms.txt/+server.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_routes_robots_txt_server",
+      "label": "robots.txt/+server.ts",
+      "_origin": "ast",
+      "community": 150,
+      "community_name": "fetchAuthorProfile",
+      "file_type": "code",
+      "norm_label": "robots.txt/+server.ts",
+      "source_file": "src/routes/robots.txt/+server.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_routes_sitemap_xml_server",
+      "label": "sitemap.xml/+server.ts",
+      "_origin": "ast",
+      "community": 150,
+      "community_name": "fetchAuthorProfile",
+      "file_type": "code",
+      "norm_label": "sitemap.xml/+server.ts",
+      "source_file": "src/routes/sitemap.xml/+server.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_routes_well_known_agent_skills_index_json_server",
+      "label": "index.json/+server.ts",
+      "_origin": "ast",
+      "community": 150,
+      "community_name": "fetchAuthorProfile",
+      "file_type": "code",
+      "norm_label": "index.json/+server.ts",
+      "source_file": "src/routes/.well-known/agent-skills/index.json/+server.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_routes_well_known_api_catalog_server",
+      "label": "api-catalog/+server.ts",
+      "_origin": "ast",
+      "community": 150,
+      "community_name": "fetchAuthorProfile",
+      "file_type": "code",
+      "norm_label": "api-catalog/+server.ts",
+      "source_file": "src/routes/.well-known/api-catalog/+server.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_routes_well_known_llms_txt_server",
+      "label": ".well-known/llms.txt/+server.ts",
+      "_origin": "ast",
+      "community": 150,
+      "community_name": "fetchAuthorProfile",
+      "file_type": "code",
+      "norm_label": ".well-known/llms.txt/+server.ts",
+      "source_file": "src/routes/.well-known/llms.txt/+server.ts",
+      "source_location": "L1"
     },
     {
       "id": "package_devdependencies_typescript",
@@ -7021,7 +7043,7 @@
       "file_type": "code",
       "norm_label": "typescript",
       "source_file": "package.json",
-      "source_location": "L36"
+      "source_location": "L39"
     },
     {
       "id": "typescript",
@@ -7032,29 +7054,29 @@
       "file_type": "concept",
       "norm_label": "typescript",
       "source_file": "package.json",
-      "source_location": "L36"
+      "source_location": "L39"
     },
     {
-      "id": "package_devdependencies_vite",
-      "label": "vite",
+      "id": "package_devdependencies_jiti",
+      "label": "jiti",
       "_origin": "ast",
       "community": 152,
-      "community_name": "vite",
+      "community_name": "jiti",
       "file_type": "code",
-      "norm_label": "vite",
+      "norm_label": "jiti",
       "source_file": "package.json",
-      "source_location": "L38"
+      "source_location": "L30"
     },
     {
-      "id": "vite",
-      "label": "vite",
+      "id": "jiti",
+      "label": "jiti",
       "_origin": "ast",
       "community": 152,
-      "community_name": "vite",
+      "community_name": "jiti",
       "file_type": "concept",
-      "norm_label": "vite",
+      "norm_label": "jiti",
       "source_file": "package.json",
-      "source_location": "L38"
+      "source_location": "L30"
     },
     {
       "id": "prettier_config",
@@ -7101,112 +7123,48 @@
       "source_location": "L16"
     },
     {
-      "id": "agents_agent_skills_tooling",
-      "label": "Agent/skills tooling",
+      "id": "src_lib_utils_githublanguagecolors",
+      "label": "githubLanguageColors.ts",
       "_origin": "ast",
       "community": 156,
-      "community_name": "Architecture",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "agent/skills tooling",
-      "source_file": "AGENTS.md",
-      "source_location": "L85"
+      "community_name": "routes/+page.server.ts",
+      "file_type": "code",
+      "norm_label": "githublanguagecolors.ts",
+      "source_file": "src/lib/utils/githubLanguageColors.ts",
+      "source_location": "L1"
     },
     {
-      "id": "agents_architecture",
-      "label": "Architecture",
+      "id": "src_lib_utils_githublanguagecolors_github_language_colors",
+      "label": "GITHUB_LANGUAGE_COLORS",
       "_origin": "ast",
       "community": 156,
-      "community_name": "Architecture",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "architecture",
-      "source_file": "AGENTS.md",
-      "source_location": "L30"
+      "community_name": "routes/+page.server.ts",
+      "file_type": "code",
+      "norm_label": "github_language_colors",
+      "source_file": "src/lib/utils/githubLanguageColors.ts",
+      "source_location": "L1"
     },
     {
-      "id": "agents_components_src_lib",
-      "label": "Components (`src/lib`)",
+      "id": "src_routes_layout_server",
+      "label": "+layout.server.ts",
       "_origin": "ast",
       "community": 156,
-      "community_name": "Architecture",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "components (`src/lib`)",
-      "source_file": "AGENTS.md",
-      "source_location": "L76"
+      "community_name": "routes/+page.server.ts",
+      "file_type": "code",
+      "norm_label": "+layout.server.ts",
+      "source_file": "src/routes/+layout.server.ts",
+      "source_location": "L1"
     },
     {
-      "id": "agents_data_layer",
-      "label": "Data layer",
+      "id": "src_routes_page_server",
+      "label": "routes/+page.server.ts",
       "_origin": "ast",
       "community": 156,
-      "community_name": "Architecture",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "data layer",
-      "source_file": "AGENTS.md",
-      "source_location": "L53"
-    },
-    {
-      "id": "agents_environments",
-      "label": "Environments",
-      "_origin": "ast",
-      "community": 156,
-      "community_name": "Architecture",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "environments",
-      "source_file": "AGENTS.md",
-      "source_location": "L63"
-    },
-    {
-      "id": "agents_public_api_src_routes_api_v1",
-      "label": "Public API (`src/routes/api/v1`)",
-      "_origin": "ast",
-      "community": 156,
-      "community_name": "Architecture",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "public api (`src/routes/api/v1`)",
-      "source_file": "AGENTS.md",
-      "source_location": "L41"
-    },
-    {
-      "id": "agents_routing_src_routes",
-      "label": "Routing (`src/routes`)",
-      "_origin": "ast",
-      "community": 156,
-      "community_name": "Architecture",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "routing (`src/routes`)",
-      "source_file": "AGENTS.md",
-      "source_location": "L32"
-    },
-    {
-      "id": "agents_src_hooks_server_ts",
-      "label": "`src/hooks.server.ts`",
-      "_origin": "ast",
-      "community": 156,
-      "community_name": "Architecture",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "`src/hooks.server.ts`",
-      "source_file": "AGENTS.md",
-      "source_location": "L72"
-    },
-    {
-      "id": "agents_svelte_mcp_tooling",
-      "label": "Svelte MCP tooling",
-      "_origin": "ast",
-      "community": 156,
-      "community_name": "Architecture",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "svelte mcp tooling",
-      "source_file": "AGENTS.md",
-      "source_location": "L89"
+      "community_name": "routes/+page.server.ts",
+      "file_type": "code",
+      "norm_label": "routes/+page.server.ts",
+      "source_file": "src/routes/+page.server.ts",
+      "source_location": "L1"
     },
     {
       "id": "src_routes_api_v1_server",
@@ -7220,58 +7178,36 @@
       "source_location": "L1"
     },
     {
-      "id": "transition",
-      "label": "svelte/transition",
+      "id": "src_lib_server_loginratelimit",
+      "label": "loginRateLimit.ts",
       "_origin": "ast",
       "community": 159,
-      "community_name": "Toast.svelte",
-      "confidence": "EXTRACTED",
+      "community_name": "login/+server.ts",
       "file_type": "code",
-      "norm_label": "svelte/transition",
-      "source_file": "svelte/transition"
-    },
-    {
-      "id": "src_lib_components_feedbackbutton",
-      "label": "FeedbackButton.svelte",
-      "_origin": "ast",
-      "community": 159,
-      "community_name": "Toast.svelte",
-      "file_type": "code",
-      "norm_label": "feedbackbutton.svelte",
-      "source_file": "src/lib/components/FeedbackButton.svelte",
+      "norm_label": "loginratelimit.ts",
+      "source_file": "src/lib/server/loginRateLimit.ts",
       "source_location": "L1"
     },
     {
-      "id": "src_lib_components_scrolltotopbutton",
-      "label": "ScrollToTopButton.svelte",
+      "id": "src_lib_server_loginratelimit_attempts",
+      "label": "attempts",
       "_origin": "ast",
       "community": 159,
-      "community_name": "Toast.svelte",
+      "community_name": "login/+server.ts",
       "file_type": "code",
-      "norm_label": "scrolltotopbutton.svelte",
-      "source_file": "src/lib/components/ScrollToTopButton.svelte",
-      "source_location": "L1"
+      "norm_label": "attempts",
+      "source_file": "src/lib/server/loginRateLimit.ts",
+      "source_location": "L8"
     },
     {
-      "id": "src_lib_components_toast",
-      "label": "Toast.svelte",
+      "id": "src_routes_api_internal_admin_login_server",
+      "label": "login/+server.ts",
       "_origin": "ast",
       "community": 159,
-      "community_name": "Toast.svelte",
+      "community_name": "login/+server.ts",
       "file_type": "code",
-      "norm_label": "toast.svelte",
-      "source_file": "src/lib/components/Toast.svelte",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_lib_utils_scroll",
-      "label": "scroll.ts",
-      "_origin": "ast",
-      "community": 159,
-      "community_name": "Toast.svelte",
-      "file_type": "code",
-      "norm_label": "scroll.ts",
-      "source_file": "src/lib/utils/scroll.ts",
+      "norm_label": "login/+server.ts",
+      "source_file": "src/routes/api/internal/admin/login/+server.ts",
       "source_location": "L1"
     },
     {
@@ -7746,7 +7682,7 @@
       "file_type": "code",
       "norm_label": "globals",
       "source_file": "package.json",
-      "source_location": "L27"
+      "source_location": "L29"
     },
     {
       "id": "globals",
@@ -7757,7 +7693,7 @@
       "file_type": "concept",
       "norm_label": "globals",
       "source_file": "package.json",
-      "source_location": "L27"
+      "source_location": "L29"
     },
     {
       "id": "public_post_views",
@@ -7890,6 +7826,94 @@
       "norm_label": "taggroup.svelte",
       "source_file": "src/lib/components/TagGroup.svelte",
       "source_location": "L1"
+    },
+    {
+      "id": "claude_skills_committing_with_commitlint_skill",
+      "label": "committing-with-commitlint/SKILL.md",
+      "_origin": "ast",
+      "community": 189,
+      "community_name": "Committing in a repository that uses commitlint",
+      "file_type": "document",
+      "frontmatter": {
+        "name": "committing-with-commitlint",
+        "description": "Use when writing a git commit message in a repository that uses commitlint \u2014 read the enforced convention first, write a compliant message, and self-correct from hook rejections instead of bypassing them"
+      },
+      "node_kind": "page",
+      "norm_label": "committing-with-commitlint/skill.md",
+      "source_file": ".claude/skills/committing-with-commitlint/SKILL.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "claude_skills_committing_with_commitlint_skill_1_detect_whether_the_repository_uses_commitlint",
+      "label": "1. Detect whether the repository uses commitlint",
+      "_origin": "ast",
+      "community": 189,
+      "community_name": "Committing in a repository that uses commitlint",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "1. detect whether the repository uses commitlint",
+      "source_file": ".claude/skills/committing-with-commitlint/SKILL.md",
+      "source_location": "L10"
+    },
+    {
+      "id": "claude_skills_committing_with_commitlint_skill_2_read_the_enforced_rules",
+      "label": "2. Read the enforced rules",
+      "_origin": "ast",
+      "community": 189,
+      "community_name": "Committing in a repository that uses commitlint",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "2. read the enforced rules",
+      "source_file": ".claude/skills/committing-with-commitlint/SKILL.md",
+      "source_location": "L18"
+    },
+    {
+      "id": "claude_skills_committing_with_commitlint_skill_3_write_the_message",
+      "label": "3. Write the message",
+      "_origin": "ast",
+      "community": 189,
+      "community_name": "Committing in a repository that uses commitlint",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "3. write the message",
+      "source_file": ".claude/skills/committing-with-commitlint/SKILL.md",
+      "source_location": "L47"
+    },
+    {
+      "id": "claude_skills_committing_with_commitlint_skill_4_validate_before_committing",
+      "label": "4. Validate before committing",
+      "_origin": "ast",
+      "community": 189,
+      "community_name": "Committing in a repository that uses commitlint",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "4. validate before committing",
+      "source_file": ".claude/skills/committing-with-commitlint/SKILL.md",
+      "source_location": "L62"
+    },
+    {
+      "id": "claude_skills_committing_with_commitlint_skill_5_self_correct_when_the_commit_msg_hook_rejects",
+      "label": "5. Self-correct when the commit-msg hook rejects",
+      "_origin": "ast",
+      "community": 189,
+      "community_name": "Committing in a repository that uses commitlint",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "5. self-correct when the commit-msg hook rejects",
+      "source_file": ".claude/skills/committing-with-commitlint/SKILL.md",
+      "source_location": "L74"
+    },
+    {
+      "id": "claude_skills_committing_with_commitlint_skill_committing_in_a_repository_that_uses_commitlint",
+      "label": "Committing in a repository that uses commitlint",
+      "_origin": "ast",
+      "community": 189,
+      "community_name": "Committing in a repository that uses commitlint",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "committing in a repository that uses commitlint",
+      "source_file": ".claude/skills/committing-with-commitlint/SKILL.md",
+      "source_location": "L6"
     },
     {
       "id": "agents_skills_supabase_skill",
@@ -8110,6 +8134,243 @@
       "norm_label": "supabase mcp server",
       "source_file": ".agents/skills/supabase/SKILL.md",
       "source_location": "L90"
+    },
+    {
+      "id": "readme",
+      "label": "README.md",
+      "_origin": "ast",
+      "community": 190,
+      "community_name": "README.md",
+      "file_type": "document",
+      "node_kind": "page",
+      "norm_label": "readme.md",
+      "source_file": "README.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "readme_contributing",
+      "label": "Contributing",
+      "_origin": "ast",
+      "community": 190,
+      "community_name": "README.md",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "contributing",
+      "source_file": "README.md",
+      "source_location": "L137"
+    },
+    {
+      "id": "readme_deployment",
+      "label": "Deployment",
+      "_origin": "ast",
+      "community": 190,
+      "community_name": "README.md",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "deployment",
+      "source_file": "README.md",
+      "source_location": "L126"
+    },
+    {
+      "id": "readme_license",
+      "label": "License",
+      "_origin": "ast",
+      "community": 190,
+      "community_name": "README.md",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "license",
+      "source_file": "README.md",
+      "source_location": "L143"
+    },
+    {
+      "id": "readme_public_api",
+      "label": "Public API",
+      "_origin": "ast",
+      "community": 190,
+      "community_name": "README.md",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "public api",
+      "source_file": "README.md",
+      "source_location": "L122"
+    },
+    {
+      "id": "security",
+      "label": "SECURITY.md",
+      "_origin": "ast",
+      "community": 190,
+      "community_name": "README.md",
+      "file_type": "document",
+      "node_kind": "page",
+      "norm_label": "security.md",
+      "source_file": "SECURITY.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "commitlint_config",
+      "label": "commitlint.config.ts",
+      "_origin": "ast",
+      "community": 191,
+      "community_name": "commitlint.config.ts",
+      "file_type": "code",
+      "norm_label": "commitlint.config.ts",
+      "source_file": "commitlint.config.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "commitlint_config_config",
+      "label": "config",
+      "_origin": "ast",
+      "community": 191,
+      "community_name": "commitlint.config.ts",
+      "file_type": "code",
+      "norm_label": "config",
+      "source_file": "commitlint.config.ts",
+      "source_location": "L3"
+    },
+    {
+      "id": "package_devdependencies_eslint",
+      "label": "eslint",
+      "_origin": "ast",
+      "community": 192,
+      "community_name": "eslint",
+      "file_type": "code",
+      "norm_label": "eslint",
+      "source_file": "package.json",
+      "source_location": "L26"
+    },
+    {
+      "id": "eslint",
+      "label": "eslint",
+      "_origin": "ast",
+      "community": 192,
+      "community_name": "eslint",
+      "file_type": "concept",
+      "norm_label": "eslint",
+      "source_file": "package.json",
+      "source_location": "L26"
+    },
+    {
+      "id": "package_devdependencies_eslint_config_prettier",
+      "label": "eslint-config-prettier",
+      "_origin": "ast",
+      "community": 193,
+      "community_name": "eslint-config-prettier",
+      "file_type": "code",
+      "norm_label": "eslint-config-prettier",
+      "source_file": "package.json",
+      "source_location": "L27"
+    },
+    {
+      "id": "eslint_config_prettier",
+      "label": "eslint-config-prettier",
+      "_origin": "ast",
+      "community": 193,
+      "community_name": "eslint-config-prettier",
+      "file_type": "concept",
+      "norm_label": "eslint-config-prettier",
+      "source_file": "package.json",
+      "source_location": "L27"
+    },
+    {
+      "id": "package_devdependencies_prettier_plugin_tailwindcss",
+      "label": "prettier-plugin-tailwindcss",
+      "_origin": "ast",
+      "community": 194,
+      "community_name": "prettier-plugin-tailwindcss",
+      "file_type": "code",
+      "norm_label": "prettier-plugin-tailwindcss",
+      "source_file": "package.json",
+      "source_location": "L33"
+    },
+    {
+      "id": "prettier_plugin_tailwindcss",
+      "label": "prettier-plugin-tailwindcss",
+      "_origin": "ast",
+      "community": 194,
+      "community_name": "prettier-plugin-tailwindcss",
+      "file_type": "concept",
+      "norm_label": "prettier-plugin-tailwindcss",
+      "source_file": "package.json",
+      "source_location": "L33"
+    },
+    {
+      "id": "package_devdependencies_sveltejs_vite_plugin_svelte",
+      "label": "@sveltejs/vite-plugin-svelte",
+      "_origin": "ast",
+      "community": 195,
+      "community_name": "@sveltejs/vite-plugin-svelte",
+      "file_type": "code",
+      "norm_label": "@sveltejs/vite-plugin-svelte",
+      "source_file": "package.json",
+      "source_location": "L23"
+    },
+    {
+      "id": "sveltejs_vite_plugin_svelte",
+      "label": "@sveltejs/vite-plugin-svelte",
+      "_origin": "ast",
+      "community": 195,
+      "community_name": "@sveltejs/vite-plugin-svelte",
+      "file_type": "concept",
+      "norm_label": "@sveltejs/vite-plugin-svelte",
+      "source_file": "package.json",
+      "source_location": "L23"
+    },
+    {
+      "id": "package_devdependencies_tailwindcss",
+      "label": "tailwindcss",
+      "_origin": "ast",
+      "community": 196,
+      "community_name": "tailwindcss",
+      "file_type": "code",
+      "norm_label": "tailwindcss",
+      "source_file": "package.json",
+      "source_location": "L38"
+    },
+    {
+      "id": "tailwindcss",
+      "label": "tailwindcss",
+      "_origin": "ast",
+      "community": 196,
+      "community_name": "tailwindcss",
+      "file_type": "concept",
+      "norm_label": "tailwindcss",
+      "source_file": "package.json",
+      "source_location": "L38"
+    },
+    {
+      "id": "package_devdependencies_tailwindcss_vite",
+      "label": "@tailwindcss/vite",
+      "_origin": "ast",
+      "community": 197,
+      "community_name": "@tailwindcss/vite",
+      "file_type": "code",
+      "norm_label": "@tailwindcss/vite",
+      "source_file": "package.json",
+      "source_location": "L24"
+    },
+    {
+      "id": "tailwindcss_vite",
+      "label": "@tailwindcss/vite",
+      "_origin": "ast",
+      "community": 197,
+      "community_name": "@tailwindcss/vite",
+      "file_type": "concept",
+      "norm_label": "@tailwindcss/vite",
+      "source_file": "package.json",
+      "source_location": "L24"
+    },
+    {
+      "id": "src_lib_components_statsgrid",
+      "label": "StatsGrid.svelte",
+      "_origin": "ast",
+      "community": 198,
+      "community_name": "StatsGrid.svelte",
+      "file_type": "code",
+      "norm_label": "statsgrid.svelte",
+      "source_file": "src/lib/components/StatsGrid.svelte",
+      "source_location": "L1"
     },
     {
       "id": "agents_skills_change_type_skill",
@@ -9718,6 +9979,17 @@
       "source_location": "L1"
     },
     {
+      "id": "src_lib_server_supabaseadmin",
+      "label": "supabaseAdmin.ts",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "adminCv.ts",
+      "file_type": "code",
+      "norm_label": "supabaseadmin.ts",
+      "source_file": "src/lib/server/supabaseAdmin.ts",
+      "source_location": "L1"
+    },
+    {
       "id": "src_routes_api_internal_admin_cv_delete_server",
       "label": "delete/+server.ts",
       "_origin": "ast",
@@ -9751,61 +10023,6 @@
       "source_location": "L1"
     },
     {
-      "id": "src_lib_server_apierror",
-      "label": "apiError.ts",
-      "_origin": "ast",
-      "community": 30,
-      "community_name": "internal/blog/comments/+server.ts",
-      "file_type": "code",
-      "norm_label": "apierror.ts",
-      "source_file": "src/lib/server/apiError.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_lib_server_loginratelimit",
-      "label": "loginRateLimit.ts",
-      "_origin": "ast",
-      "community": 30,
-      "community_name": "internal/blog/comments/+server.ts",
-      "file_type": "code",
-      "norm_label": "loginratelimit.ts",
-      "source_file": "src/lib/server/loginRateLimit.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_lib_server_loginratelimit_attempts",
-      "label": "attempts",
-      "_origin": "ast",
-      "community": 30,
-      "community_name": "internal/blog/comments/+server.ts",
-      "file_type": "code",
-      "norm_label": "attempts",
-      "source_file": "src/lib/server/loginRateLimit.ts",
-      "source_location": "L8"
-    },
-    {
-      "id": "src_lib_server_sameorigin",
-      "label": "sameOrigin.ts",
-      "_origin": "ast",
-      "community": 30,
-      "community_name": "internal/blog/comments/+server.ts",
-      "file_type": "code",
-      "norm_label": "sameorigin.ts",
-      "source_file": "src/lib/server/sameOrigin.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_lib_server_supabaseadmin",
-      "label": "supabaseAdmin.ts",
-      "_origin": "ast",
-      "community": 30,
-      "community_name": "internal/blog/comments/+server.ts",
-      "file_type": "code",
-      "norm_label": "supabaseadmin.ts",
-      "source_file": "src/lib/server/supabaseAdmin.ts",
-      "source_location": "L1"
-    },
-    {
       "id": "src_lib_server_turnstile",
       "label": "server/turnstile.ts",
       "_origin": "ast",
@@ -9828,17 +10045,6 @@
       "source_location": "L1"
     },
     {
-      "id": "src_routes_api_internal_admin_login_server",
-      "label": "login/+server.ts",
-      "_origin": "ast",
-      "community": 30,
-      "community_name": "internal/blog/comments/+server.ts",
-      "file_type": "code",
-      "norm_label": "login/+server.ts",
-      "source_file": "src/routes/api/internal/admin/login/+server.ts",
-      "source_location": "L1"
-    },
-    {
       "id": "src_routes_api_internal_blog_comments_server",
       "label": "internal/blog/comments/+server.ts",
       "_origin": "ast",
@@ -9847,50 +10053,6 @@
       "file_type": "code",
       "norm_label": "internal/blog/comments/+server.ts",
       "source_file": "src/routes/api/internal/blog/comments/+server.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_api_internal_blog_views_server",
-      "label": "internal/blog/views/+server.ts",
-      "_origin": "ast",
-      "community": 30,
-      "community_name": "internal/blog/comments/+server.ts",
-      "file_type": "code",
-      "norm_label": "internal/blog/views/+server.ts",
-      "source_file": "src/routes/api/internal/blog/views/+server.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_api_v1_blog_comments_server",
-      "label": "v1/blog/comments/+server.ts",
-      "_origin": "ast",
-      "community": 30,
-      "community_name": "internal/blog/comments/+server.ts",
-      "file_type": "code",
-      "norm_label": "v1/blog/comments/+server.ts",
-      "source_file": "src/routes/api/v1/blog/comments/+server.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_api_v1_blog_server",
-      "label": "blog/+server.ts",
-      "_origin": "ast",
-      "community": 30,
-      "community_name": "internal/blog/comments/+server.ts",
-      "file_type": "code",
-      "norm_label": "blog/+server.ts",
-      "source_file": "src/routes/api/v1/blog/+server.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_api_v1_blog_views_server",
-      "label": "v1/blog/views/+server.ts",
-      "_origin": "ast",
-      "community": 30,
-      "community_name": "internal/blog/comments/+server.ts",
-      "file_type": "code",
-      "norm_label": "v1/blog/views/+server.ts",
-      "source_file": "src/routes/api/v1/blog/views/+server.ts",
       "source_location": "L1"
     },
     {
@@ -10433,7 +10595,7 @@
       "file_type": "code",
       "norm_label": "scripts",
       "source_file": "package.json",
-      "source_location": "L65"
+      "source_location": "L68"
     },
     {
       "id": "package_scripts_build",
@@ -10444,7 +10606,7 @@
       "file_type": "code",
       "norm_label": "build",
       "source_file": "package.json",
-      "source_location": "L69"
+      "source_location": "L72"
     },
     {
       "id": "package_scripts_build_preview",
@@ -10455,7 +10617,7 @@
       "file_type": "code",
       "norm_label": "build:preview",
       "source_file": "package.json",
-      "source_location": "L70"
+      "source_location": "L73"
     },
     {
       "id": "package_scripts_check",
@@ -10466,7 +10628,7 @@
       "file_type": "code",
       "norm_label": "check",
       "source_file": "package.json",
-      "source_location": "L74"
+      "source_location": "L77"
     },
     {
       "id": "package_scripts_check_watch",
@@ -10477,7 +10639,7 @@
       "file_type": "code",
       "norm_label": "check:watch",
       "source_file": "package.json",
-      "source_location": "L75"
+      "source_location": "L78"
     },
     {
       "id": "package_scripts_dev",
@@ -10488,7 +10650,7 @@
       "file_type": "code",
       "norm_label": "dev",
       "source_file": "package.json",
-      "source_location": "L66"
+      "source_location": "L69"
     },
     {
       "id": "package_scripts_dev_preview",
@@ -10499,7 +10661,7 @@
       "file_type": "code",
       "norm_label": "dev:preview",
       "source_file": "package.json",
-      "source_location": "L68"
+      "source_location": "L71"
     },
     {
       "id": "package_scripts_dev_production",
@@ -10510,7 +10672,7 @@
       "file_type": "code",
       "norm_label": "dev:production",
       "source_file": "package.json",
-      "source_location": "L67"
+      "source_location": "L70"
     },
     {
       "id": "package_scripts_format",
@@ -10521,7 +10683,7 @@
       "file_type": "code",
       "norm_label": "format",
       "source_file": "package.json",
-      "source_location": "L77"
+      "source_location": "L80"
     },
     {
       "id": "package_scripts_lint",
@@ -10532,7 +10694,7 @@
       "file_type": "code",
       "norm_label": "lint",
       "source_file": "package.json",
-      "source_location": "L76"
+      "source_location": "L79"
     },
     {
       "id": "package_scripts_prepack",
@@ -10543,7 +10705,7 @@
       "file_type": "code",
       "norm_label": "prepack",
       "source_file": "package.json",
-      "source_location": "L73"
+      "source_location": "L76"
     },
     {
       "id": "package_scripts_prepare",
@@ -10554,7 +10716,7 @@
       "file_type": "code",
       "norm_label": "prepare",
       "source_file": "package.json",
-      "source_location": "L72"
+      "source_location": "L75"
     },
     {
       "id": "package_scripts_preview",
@@ -10565,7 +10727,7 @@
       "file_type": "code",
       "norm_label": "preview",
       "source_file": "package.json",
-      "source_location": "L71"
+      "source_location": "L74"
     },
     {
       "id": "supabase_functions_admin_index",
@@ -11184,6 +11346,28 @@
       "source_location": "L1"
     },
     {
+      "id": "src_lib_components_filter_dropdownselect",
+      "label": "DropdownSelect.svelte",
+      "_origin": "ast",
+      "community": 42,
+      "community_name": "svelte/elements",
+      "file_type": "code",
+      "norm_label": "dropdownselect.svelte",
+      "source_file": "src/lib/components/filter/DropdownSelect.svelte",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_lib_components_filter_dropdowntrigger",
+      "label": "DropdownTrigger.svelte",
+      "_origin": "ast",
+      "community": 42,
+      "community_name": "svelte/elements",
+      "file_type": "code",
+      "norm_label": "dropdowntrigger.svelte",
+      "source_file": "src/lib/components/filter/DropdownTrigger.svelte",
+      "source_location": "L1"
+    },
+    {
       "id": "src_lib_components_filter_filtercheckboxgroup",
       "label": "FilterCheckboxGroup.svelte",
       "_origin": "ast",
@@ -11192,6 +11376,28 @@
       "file_type": "code",
       "norm_label": "filtercheckboxgroup.svelte",
       "source_file": "src/lib/components/filter/FilterCheckboxGroup.svelte",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_lib_components_filter_filterselect",
+      "label": "FilterSelect.svelte",
+      "_origin": "ast",
+      "community": 42,
+      "community_name": "svelte/elements",
+      "file_type": "code",
+      "norm_label": "filterselect.svelte",
+      "source_file": "src/lib/components/filter/FilterSelect.svelte",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_lib_components_filter_sortcontrol",
+      "label": "SortControl.svelte",
+      "_origin": "ast",
+      "community": 42,
+      "community_name": "svelte/elements",
+      "file_type": "code",
+      "norm_label": "sortcontrol.svelte",
+      "source_file": "src/lib/components/filter/SortControl.svelte",
       "source_location": "L1"
     },
     {
@@ -11280,7 +11486,7 @@
       "file_type": "code",
       "norm_label": "exports",
       "source_file": "package.json",
-      "source_location": "L45"
+      "source_location": "L48"
     },
     {
       "id": "package_license",
@@ -11324,7 +11530,7 @@
       "file_type": "code",
       "norm_label": "sideeffects",
       "source_file": "package.json",
-      "source_location": "L79"
+      "source_location": "L82"
     },
     {
       "id": "package_svelte",
@@ -11335,7 +11541,7 @@
       "file_type": "code",
       "norm_label": "svelte",
       "source_file": "package.json",
-      "source_location": "L82"
+      "source_location": "L85"
     },
     {
       "id": "package_type",
@@ -11346,7 +11552,7 @@
       "file_type": "code",
       "norm_label": "type",
       "source_file": "package.json",
-      "source_location": "L83"
+      "source_location": "L86"
     },
     {
       "id": "package_types",
@@ -11357,7 +11563,7 @@
       "file_type": "code",
       "norm_label": "types",
       "source_file": "package.json",
-      "source_location": "L84"
+      "source_location": "L87"
     },
     {
       "id": "package_version",
@@ -11379,7 +11585,7 @@
       "file_type": "concept",
       "norm_label": "**/*.css",
       "source_file": "package.json",
-      "source_location": "L79"
+      "source_location": "L82"
     },
     {
       "id": "src_app_d",
@@ -11402,28 +11608,6 @@
       "norm_label": "app",
       "source_file": "src/app.d.ts",
       "source_location": "L34"
-    },
-    {
-      "id": "src_lib_article_articleheader",
-      "label": "ArticleHeader.svelte",
-      "_origin": "ast",
-      "community": 45,
-      "community_name": "IconButton.svelte",
-      "file_type": "code",
-      "norm_label": "articleheader.svelte",
-      "source_file": "src/lib/article/ArticleHeader.svelte",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_lib_article_articleheader_title_excerpt_class_classname_titleclass_meta",
-      "label": "{\n    title,\n    excerpt = '',\n    class: className = '',\n    titleClass = '',\n    meta\n  }",
-      "_origin": "ast",
-      "community": 45,
-      "community_name": "IconButton.svelte",
-      "file_type": "code",
-      "norm_label": "{\n    title,\n    excerpt = '',\n    class: classname = '',\n    titleclass = '',\n    meta\n  }",
-      "source_file": "src/lib/article/ArticleHeader.svelte",
-      "source_location": "L14"
     },
     {
       "id": "src_lib_components_dialogclosebutton",
@@ -11534,28 +11718,6 @@
       "norm_label": "footersection.svelte",
       "source_file": "src/lib/layout/FooterSection.svelte",
       "source_location": "L1"
-    },
-    {
-      "id": "src_lib_stores_contentfontstore_svelte",
-      "label": "contentFontStore.svelte.ts",
-      "_origin": "ast",
-      "community": 45,
-      "community_name": "IconButton.svelte",
-      "file_type": "code",
-      "norm_label": "contentfontstore.svelte.ts",
-      "source_file": "src/lib/stores/contentFontStore.svelte.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_lib_stores_contentfontstore_svelte_contentfontstore",
-      "label": "contentFontStore",
-      "_origin": "ast",
-      "community": 45,
-      "community_name": "IconButton.svelte",
-      "file_type": "code",
-      "norm_label": "contentfontstore",
-      "source_file": "src/lib/stores/contentFontStore.svelte.ts",
-      "source_location": "L45"
     },
     {
       "id": "security_recognition",
@@ -11858,6 +12020,17 @@
       "source_location": "L1"
     },
     {
+      "id": "src_lib_components_pillinput",
+      "label": "PillInput.svelte",
+      "_origin": "ast",
+      "community": 49,
+      "community_name": "types.ts",
+      "file_type": "code",
+      "norm_label": "pillinput.svelte",
+      "source_file": "src/lib/components/PillInput.svelte",
+      "source_location": "L1"
+    },
+    {
       "id": "src_lib_components_spotlightsearch",
       "label": "SpotlightSearch.svelte",
       "_origin": "ast",
@@ -11880,26 +12053,114 @@
       "source_location": "L1"
     },
     {
-      "id": "package_devdependencies_eslint",
-      "label": "eslint",
+      "id": "src_lib_utils_pillparsing",
+      "label": "pillParsing.ts",
       "_origin": "ast",
-      "community": 5,
-      "community_name": "eslint",
+      "community": 49,
+      "community_name": "types.ts",
       "file_type": "code",
-      "norm_label": "eslint",
-      "source_file": "package.json",
-      "source_location": "L24"
+      "norm_label": "pillparsing.ts",
+      "source_file": "src/lib/utils/pillParsing.ts",
+      "source_location": "L1"
     },
     {
-      "id": "eslint",
-      "label": "eslint",
+      "id": "package_devdependencies",
+      "label": "devDependencies",
       "_origin": "ast",
       "community": 5,
-      "community_name": "eslint",
-      "file_type": "concept",
-      "norm_label": "eslint",
+      "community_name": "devDependencies",
+      "file_type": "code",
+      "norm_label": "devdependencies",
       "source_file": "package.json",
-      "source_location": "L24"
+      "source_location": "L16"
+    },
+    {
+      "id": "package_devdependencies_commitlint_config_conventional",
+      "label": "@commitlint/config-conventional",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "devDependencies",
+      "file_type": "code",
+      "norm_label": "@commitlint/config-conventional",
+      "source_file": "package.json",
+      "source_location": "L18"
+    },
+    {
+      "id": "package_devdependencies_types_node",
+      "label": "@types/node",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "devDependencies",
+      "file_type": "code",
+      "norm_label": "@types/node",
+      "source_file": "package.json",
+      "source_location": "L25"
+    },
+    {
+      "id": "package_devdependencies_vite",
+      "label": "vite",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "devDependencies",
+      "file_type": "code",
+      "norm_label": "vite",
+      "source_file": "package.json",
+      "source_location": "L41"
+    },
+    {
+      "id": "package_devdependencies_yaml",
+      "label": "yaml",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "devDependencies",
+      "file_type": "code",
+      "norm_label": "yaml",
+      "source_file": "package.json",
+      "source_location": "L42"
+    },
+    {
+      "id": "commitlint_config_conventional",
+      "label": "@commitlint/config-conventional",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "devDependencies",
+      "file_type": "concept",
+      "norm_label": "@commitlint/config-conventional",
+      "source_file": "package.json",
+      "source_location": "L18"
+    },
+    {
+      "id": "types_node",
+      "label": "@types/node",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "devDependencies",
+      "file_type": "concept",
+      "norm_label": "@types/node",
+      "source_file": "package.json",
+      "source_location": "L25"
+    },
+    {
+      "id": "vite",
+      "label": "vite",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "devDependencies",
+      "file_type": "concept",
+      "norm_label": "vite",
+      "source_file": "package.json",
+      "source_location": "L41"
+    },
+    {
+      "id": "yaml",
+      "label": "yaml",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "devDependencies",
+      "file_type": "concept",
+      "norm_label": "yaml",
+      "source_file": "package.json",
+      "source_location": "L42"
     },
     {
       "id": "package_devdependencies_prettier",
@@ -11910,7 +12171,7 @@
       "file_type": "code",
       "norm_label": "prettier",
       "source_file": "package.json",
-      "source_location": "L28"
+      "source_location": "L31"
     },
     {
       "id": "prettier",
@@ -11921,7 +12182,7 @@
       "file_type": "concept",
       "norm_label": "prettier",
       "source_file": "package.json",
-      "source_location": "L28"
+      "source_location": "L31"
     },
     {
       "id": "agents_skills_security_audit_client_side_client_side_and_browser_hunting",
@@ -12503,7 +12764,7 @@
       "file_type": "code",
       "norm_label": "prettier-plugin-svelte",
       "source_file": "package.json",
-      "source_location": "L29"
+      "source_location": "L32"
     },
     {
       "id": "prettier_plugin_svelte",
@@ -12514,7 +12775,7 @@
       "file_type": "concept",
       "norm_label": "prettier-plugin-svelte",
       "source_file": "package.json",
-      "source_location": "L29"
+      "source_location": "L32"
     },
     {
       "id": "agents",
@@ -12599,78 +12860,6 @@
       "norm_label": "project",
       "source_file": "CLAUDE.md",
       "source_location": "L5"
-    },
-    {
-      "id": "readme",
-      "label": "README.md",
-      "_origin": "ast",
-      "community": 57,
-      "community_name": "CLAUDE.md",
-      "file_type": "document",
-      "node_kind": "page",
-      "norm_label": "readme.md",
-      "source_file": "README.md",
-      "source_location": "L1"
-    },
-    {
-      "id": "readme_contributing",
-      "label": "Contributing",
-      "_origin": "ast",
-      "community": 57,
-      "community_name": "CLAUDE.md",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "contributing",
-      "source_file": "README.md",
-      "source_location": "L137"
-    },
-    {
-      "id": "readme_deployment",
-      "label": "Deployment",
-      "_origin": "ast",
-      "community": 57,
-      "community_name": "CLAUDE.md",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "deployment",
-      "source_file": "README.md",
-      "source_location": "L126"
-    },
-    {
-      "id": "readme_license",
-      "label": "License",
-      "_origin": "ast",
-      "community": 57,
-      "community_name": "CLAUDE.md",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "license",
-      "source_file": "README.md",
-      "source_location": "L143"
-    },
-    {
-      "id": "readme_public_api",
-      "label": "Public API",
-      "_origin": "ast",
-      "community": 57,
-      "community_name": "CLAUDE.md",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "public api",
-      "source_file": "README.md",
-      "source_location": "L122"
-    },
-    {
-      "id": "security",
-      "label": "SECURITY.md",
-      "_origin": "ast",
-      "community": 57,
-      "community_name": "CLAUDE.md",
-      "file_type": "document",
-      "node_kind": "page",
-      "norm_label": "security.md",
-      "source_file": "SECURITY.md",
-      "source_location": "L1"
     },
     {
       "id": "src_routes_api_v1_readme",
@@ -13010,7 +13199,7 @@
       "file_type": "code",
       "norm_label": "keywords",
       "source_file": "package.json",
-      "source_location": "L56"
+      "source_location": "L59"
     },
     {
       "id": "ref_farhan",
@@ -13021,7 +13210,7 @@
       "file_type": "concept",
       "norm_label": "farhan",
       "source_file": "package.json",
-      "source_location": "L56"
+      "source_location": "L59"
     },
     {
       "id": "ref_farhan_kurnia_pratama",
@@ -13032,7 +13221,7 @@
       "file_type": "concept",
       "norm_label": "farhan kurnia pratama",
       "source_file": "package.json",
-      "source_location": "L56"
+      "source_location": "L59"
     },
     {
       "id": "ref_kurnia",
@@ -13043,7 +13232,7 @@
       "file_type": "concept",
       "norm_label": "kurnia",
       "source_file": "package.json",
-      "source_location": "L56"
+      "source_location": "L59"
     },
     {
       "id": "ref_pratama",
@@ -13054,7 +13243,7 @@
       "file_type": "concept",
       "norm_label": "pratama",
       "source_file": "package.json",
-      "source_location": "L56"
+      "source_location": "L59"
     },
     {
       "id": "ref_svelte",
@@ -13065,7 +13254,7 @@
       "file_type": "concept",
       "norm_label": "svelte",
       "source_file": "package.json",
-      "source_location": "L56"
+      "source_location": "L59"
     },
     {
       "id": "ref_sveltekit",
@@ -13076,7 +13265,7 @@
       "file_type": "concept",
       "norm_label": "sveltekit",
       "source_file": "package.json",
-      "source_location": "L56"
+      "source_location": "L59"
     },
     {
       "id": "ref_tailwindcss",
@@ -13087,7 +13276,7 @@
       "file_type": "concept",
       "norm_label": "tailwindcss",
       "source_file": "package.json",
-      "source_location": "L56"
+      "source_location": "L59"
     },
     {
       "id": "readme_build_for_production",
@@ -13194,7 +13383,7 @@
       "file_type": "code",
       "norm_label": "@prettier/plugin-xml",
       "source_file": "package.json",
-      "source_location": "L18"
+      "source_location": "L20"
     },
     {
       "id": "prettier_plugin_xml",
@@ -13205,7 +13394,7 @@
       "file_type": "concept",
       "norm_label": "@prettier/plugin-xml",
       "source_file": "package.json",
-      "source_location": "L18"
+      "source_location": "L20"
     },
     {
       "id": "src_lib_components_card",
@@ -13293,7 +13482,7 @@
       "file_type": "code",
       "norm_label": "prettier-plugin-yaml",
       "source_file": "package.json",
-      "source_location": "L31"
+      "source_location": "L34"
     },
     {
       "id": "prettier_plugin_yaml",
@@ -13304,7 +13493,7 @@
       "file_type": "concept",
       "norm_label": "prettier-plugin-yaml",
       "source_file": "package.json",
-      "source_location": "L31"
+      "source_location": "L34"
     },
     {
       "id": "src_lib_utils_turnstile",
@@ -13533,6 +13722,30 @@
       "source_location": "L35"
     },
     {
+      "id": "agents_agent_skills_tooling",
+      "label": "Agent/skills tooling",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "Repository Guidelines",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "agent/skills tooling",
+      "source_file": "AGENTS.md",
+      "source_location": "L85"
+    },
+    {
+      "id": "agents_architecture",
+      "label": "Architecture",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "Repository Guidelines",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "architecture",
+      "source_file": "AGENTS.md",
+      "source_location": "L30"
+    },
+    {
       "id": "agents_code_style",
       "label": "Code style",
       "_origin": "ast",
@@ -13555,6 +13768,42 @@
       "norm_label": "commands",
       "source_file": "AGENTS.md",
       "source_location": "L9"
+    },
+    {
+      "id": "agents_components_src_lib",
+      "label": "Components (`src/lib`)",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "Repository Guidelines",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "components (`src/lib`)",
+      "source_file": "AGENTS.md",
+      "source_location": "L76"
+    },
+    {
+      "id": "agents_data_layer",
+      "label": "Data layer",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "Repository Guidelines",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "data layer",
+      "source_file": "AGENTS.md",
+      "source_location": "L53"
+    },
+    {
+      "id": "agents_environments",
+      "label": "Environments",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "Repository Guidelines",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "environments",
+      "source_file": "AGENTS.md",
+      "source_location": "L63"
     },
     {
       "id": "agents_git_workflow",
@@ -13581,6 +13830,18 @@
       "source_location": "L5"
     },
     {
+      "id": "agents_public_api_src_routes_api_v1",
+      "label": "Public API (`src/routes/api/v1`)",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "Repository Guidelines",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "public api (`src/routes/api/v1`)",
+      "source_file": "AGENTS.md",
+      "source_location": "L41"
+    },
+    {
       "id": "agents_repository_guidelines",
       "label": "Repository Guidelines",
       "_origin": "ast",
@@ -13591,6 +13852,42 @@
       "norm_label": "repository guidelines",
       "source_file": "AGENTS.md",
       "source_location": "L1"
+    },
+    {
+      "id": "agents_routing_src_routes",
+      "label": "Routing (`src/routes`)",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "Repository Guidelines",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "routing (`src/routes`)",
+      "source_file": "AGENTS.md",
+      "source_location": "L32"
+    },
+    {
+      "id": "agents_src_hooks_server_ts",
+      "label": "`src/hooks.server.ts`",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "Repository Guidelines",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "`src/hooks.server.ts`",
+      "source_file": "AGENTS.md",
+      "source_location": "L72"
+    },
+    {
+      "id": "agents_svelte_mcp_tooling",
+      "label": "Svelte MCP tooling",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "Repository Guidelines",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "svelte mcp tooling",
+      "source_file": "AGENTS.md",
+      "source_location": "L89"
     },
     {
       "id": "agents_skills_security_audit_memory_safety_and_binary_core_discipline_include_in_every_agent_prompt_for_this_domain",
@@ -14377,25 +14674,124 @@
       "source_location": "L17"
     },
     {
-      "id": "src_lib_components_pillinput",
-      "label": "PillInput.svelte",
+      "id": "src_lib_server_apierror",
+      "label": "apiError.ts",
       "_origin": "ast",
       "community": 8,
-      "community_name": "pillParsing.ts",
+      "community_name": "supabase.ts",
       "file_type": "code",
-      "norm_label": "pillinput.svelte",
-      "source_file": "src/lib/components/PillInput.svelte",
+      "norm_label": "apierror.ts",
+      "source_file": "src/lib/server/apiError.ts",
       "source_location": "L1"
     },
     {
-      "id": "src_lib_utils_pillparsing",
-      "label": "pillParsing.ts",
+      "id": "src_lib_server_sameorigin",
+      "label": "sameOrigin.ts",
       "_origin": "ast",
       "community": 8,
-      "community_name": "pillParsing.ts",
+      "community_name": "supabase.ts",
       "file_type": "code",
-      "norm_label": "pillparsing.ts",
-      "source_file": "src/lib/utils/pillParsing.ts",
+      "norm_label": "sameorigin.ts",
+      "source_file": "src/lib/server/sameOrigin.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_lib_supabase",
+      "label": "supabase.ts",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "supabase.ts",
+      "file_type": "code",
+      "norm_label": "supabase.ts",
+      "source_file": "src/lib/supabase.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_lib_supabase_supabase",
+      "label": "supabase",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "supabase.ts",
+      "file_type": "code",
+      "norm_label": "supabase",
+      "source_file": "src/lib/supabase.ts",
+      "source_location": "L14"
+    },
+    {
+      "id": "src_routes_api_internal_blog_views_server",
+      "label": "internal/blog/views/+server.ts",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "supabase.ts",
+      "file_type": "code",
+      "norm_label": "internal/blog/views/+server.ts",
+      "source_file": "src/routes/api/internal/blog/views/+server.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_routes_api_v1_blog_comments_server",
+      "label": "v1/blog/comments/+server.ts",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "supabase.ts",
+      "file_type": "code",
+      "norm_label": "v1/blog/comments/+server.ts",
+      "source_file": "src/routes/api/v1/blog/comments/+server.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_routes_api_v1_blog_server",
+      "label": "blog/+server.ts",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "supabase.ts",
+      "file_type": "code",
+      "norm_label": "blog/+server.ts",
+      "source_file": "src/routes/api/v1/blog/+server.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_routes_api_v1_blog_slug_server",
+      "label": "[slug]/+server.ts",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "supabase.ts",
+      "file_type": "code",
+      "norm_label": "[slug]/+server.ts",
+      "source_file": "src/routes/api/v1/blog/[slug]/+server.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_routes_api_v1_blog_views_server",
+      "label": "v1/blog/views/+server.ts",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "supabase.ts",
+      "file_type": "code",
+      "norm_label": "v1/blog/views/+server.ts",
+      "source_file": "src/routes/api/v1/blog/views/+server.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_routes_api_v1_cv_server",
+      "label": "v1/cv/+server.ts",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "supabase.ts",
+      "file_type": "code",
+      "norm_label": "v1/cv/+server.ts",
+      "source_file": "src/routes/api/v1/cv/+server.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_routes_api_v1_search_server",
+      "label": "search/+server.ts",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "supabase.ts",
+      "file_type": "code",
+      "norm_label": "search/+server.ts",
+      "source_file": "src/routes/api/v1/search/+server.ts",
       "source_location": "L1"
     },
     {
@@ -14479,7 +14875,7 @@
       "file_type": "code",
       "norm_label": "svelte",
       "source_file": "package.json",
-      "source_location": "L33"
+      "source_location": "L36"
     },
     {
       "id": "package_peerdependencies",
@@ -14490,7 +14886,7 @@
       "file_type": "code",
       "norm_label": "peerdependencies",
       "source_file": "package.json",
-      "source_location": "L41"
+      "source_location": "L44"
     },
     {
       "id": "package_peerdependencies_svelte",
@@ -14501,7 +14897,7 @@
       "file_type": "code",
       "norm_label": "svelte",
       "source_file": "package.json",
-      "source_location": "L43"
+      "source_location": "L46"
     },
     {
       "id": "package_peerdependencies_sveltejs_kit",
@@ -14512,7 +14908,7 @@
       "file_type": "code",
       "norm_label": "@sveltejs/kit",
       "source_file": "package.json",
-      "source_location": "L42"
+      "source_location": "L45"
     },
     {
       "id": "package_json_svelte",
@@ -14523,7 +14919,7 @@
       "file_type": "concept",
       "norm_label": "svelte",
       "source_file": "package.json",
-      "source_location": "L33"
+      "source_location": "L36"
     },
     {
       "id": "sveltejs_kit",
@@ -14534,25 +14930,14 @@
       "file_type": "concept",
       "norm_label": "@sveltejs/kit",
       "source_file": "package.json",
-      "source_location": "L42"
-    },
-    {
-      "id": "src_lib_components_legalpagelayout",
-      "label": "LegalPageLayout.svelte",
-      "_origin": "ast",
-      "community": 82,
-      "community_name": "LegalPageLayout.svelte",
-      "file_type": "code",
-      "norm_label": "legalpagelayout.svelte",
-      "source_file": "src/lib/components/LegalPageLayout.svelte",
-      "source_location": "L1"
+      "source_location": "L45"
     },
     {
       "id": "src_lib_stores_codeblockprefsstore_svelte",
       "label": "codeBlockPrefsStore.svelte.ts",
       "_origin": "ast",
       "community": 82,
-      "community_name": "LegalPageLayout.svelte",
+      "community_name": "codeBlockPrefsStore.svelte.ts",
       "file_type": "code",
       "norm_label": "codeblockprefsstore.svelte.ts",
       "source_file": "src/lib/stores/codeBlockPrefsStore.svelte.ts",
@@ -14563,7 +14948,7 @@
       "label": "codeBlockPrefsStore",
       "_origin": "ast",
       "community": 82,
-      "community_name": "LegalPageLayout.svelte",
+      "community_name": "codeBlockPrefsStore.svelte.ts",
       "file_type": "code",
       "norm_label": "codeblockprefsstore",
       "source_file": "src/lib/stores/codeBlockPrefsStore.svelte.ts",
@@ -14574,7 +14959,7 @@
       "label": "defaults",
       "_origin": "ast",
       "community": 82,
-      "community_name": "LegalPageLayout.svelte",
+      "community_name": "codeBlockPrefsStore.svelte.ts",
       "file_type": "code",
       "norm_label": "defaults",
       "source_file": "src/lib/stores/codeBlockPrefsStore.svelte.ts",
@@ -14585,7 +14970,7 @@
       "label": "hljsTheme.ts",
       "_origin": "ast",
       "community": 82,
-      "community_name": "LegalPageLayout.svelte",
+      "community_name": "codeBlockPrefsStore.svelte.ts",
       "file_type": "code",
       "norm_label": "hljstheme.ts",
       "source_file": "src/lib/utils/hljsTheme.ts",
@@ -14596,17 +14981,50 @@
       "label": "new/+page.svelte",
       "_origin": "ast",
       "community": 82,
-      "community_name": "LegalPageLayout.svelte",
+      "community_name": "codeBlockPrefsStore.svelte.ts",
       "file_type": "code",
       "norm_label": "new/+page.svelte",
       "source_file": "src/routes/admin/new/+page.svelte",
       "source_location": "L1"
     },
     {
+      "id": "src_lib_components_legalpagelayout",
+      "label": "LegalPageLayout.svelte",
+      "_origin": "ast",
+      "community": 83,
+      "community_name": "LegalPageLayout.svelte",
+      "file_type": "code",
+      "norm_label": "legalpagelayout.svelte",
+      "source_file": "src/lib/components/LegalPageLayout.svelte",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_lib_stores_contentfontstore_svelte",
+      "label": "contentFontStore.svelte.ts",
+      "_origin": "ast",
+      "community": 83,
+      "community_name": "LegalPageLayout.svelte",
+      "file_type": "code",
+      "norm_label": "contentfontstore.svelte.ts",
+      "source_file": "src/lib/stores/contentFontStore.svelte.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_lib_stores_contentfontstore_svelte_contentfontstore",
+      "label": "contentFontStore",
+      "_origin": "ast",
+      "community": 83,
+      "community_name": "LegalPageLayout.svelte",
+      "file_type": "code",
+      "norm_label": "contentfontstore",
+      "source_file": "src/lib/stores/contentFontStore.svelte.ts",
+      "source_location": "L45"
+    },
+    {
       "id": "src_routes_privacy_page",
       "label": "privacy/+page.svelte",
       "_origin": "ast",
-      "community": 82,
+      "community": 83,
       "community_name": "LegalPageLayout.svelte",
       "file_type": "code",
       "norm_label": "privacy/+page.svelte",
@@ -14617,7 +15035,7 @@
       "id": "src_routes_security_page",
       "label": "security/+page.svelte",
       "_origin": "ast",
-      "community": 82,
+      "community": 83,
       "community_name": "LegalPageLayout.svelte",
       "file_type": "code",
       "norm_label": "security/+page.svelte",
@@ -14628,7 +15046,7 @@
       "id": "src_routes_terms_page",
       "label": "terms/+page.svelte",
       "_origin": "ast",
-      "community": 82,
+      "community": 83,
       "community_name": "LegalPageLayout.svelte",
       "file_type": "code",
       "norm_label": "terms/+page.svelte",
@@ -14927,105 +15345,6 @@
       "source_location": "L1"
     },
     {
-      "id": "src_lib_authorapi",
-      "label": "authorApi.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "authorapi.ts",
-      "source_file": "src/lib/authorApi.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_lib_supabase",
-      "label": "supabase.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "supabase.ts",
-      "source_file": "src/lib/supabase.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_lib_supabase_supabase",
-      "label": "supabase",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "supabase",
-      "source_file": "src/lib/supabase.ts",
-      "source_location": "L14"
-    },
-    {
-      "id": "src_lib_utils_githublanguagecolors",
-      "label": "githubLanguageColors.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "githublanguagecolors.ts",
-      "source_file": "src/lib/utils/githubLanguageColors.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_lib_utils_githublanguagecolors_github_language_colors",
-      "label": "GITHUB_LANGUAGE_COLORS",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "github_language_colors",
-      "source_file": "src/lib/utils/githubLanguageColors.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_api_v1_author_contact_server",
-      "label": "contact/+server.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "contact/+server.ts",
-      "source_file": "src/routes/api/v1/author/contact/+server.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_api_v1_author_cv_server",
-      "label": "author/cv/+server.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "author/cv/+server.ts",
-      "source_file": "src/routes/api/v1/author/cv/+server.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_api_v1_author_funding_server",
-      "label": "funding/+server.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "funding/+server.ts",
-      "source_file": "src/routes/api/v1/author/funding/+server.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_api_v1_author_server",
-      "label": "author/+server.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "author/+server.ts",
-      "source_file": "src/routes/api/v1/author/+server.ts",
-      "source_location": "L1"
-    },
-    {
       "id": "src_routes_api_v1_author_skills_server",
       "label": "skills/+server.ts",
       "_origin": "ast",
@@ -15037,149 +15356,6 @@
       "source_location": "L1"
     },
     {
-      "id": "src_routes_api_v1_author_socials_server",
-      "label": "socials/+server.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "socials/+server.ts",
-      "source_file": "src/routes/api/v1/author/socials/+server.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_api_v1_blog_slug_server",
-      "label": "[slug]/+server.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "[slug]/+server.ts",
-      "source_file": "src/routes/api/v1/blog/[slug]/+server.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_api_v1_cv_server",
-      "label": "v1/cv/+server.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "v1/cv/+server.ts",
-      "source_file": "src/routes/api/v1/cv/+server.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_api_v1_search_server",
-      "label": "search/+server.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "search/+server.ts",
-      "source_file": "src/routes/api/v1/search/+server.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_atom_xml_server",
-      "label": "atom.xml/+server.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "atom.xml/+server.ts",
-      "source_file": "src/routes/atom.xml/+server.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_layout_server",
-      "label": "+layout.server.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "+layout.server.ts",
-      "source_file": "src/routes/+layout.server.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_llms_txt_server",
-      "label": "routes/llms.txt/+server.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "routes/llms.txt/+server.ts",
-      "source_file": "src/routes/llms.txt/+server.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_page_server",
-      "label": "routes/+page.server.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "routes/+page.server.ts",
-      "source_file": "src/routes/+page.server.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_robots_txt_server",
-      "label": "robots.txt/+server.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "robots.txt/+server.ts",
-      "source_file": "src/routes/robots.txt/+server.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_sitemap_xml_server",
-      "label": "sitemap.xml/+server.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "sitemap.xml/+server.ts",
-      "source_file": "src/routes/sitemap.xml/+server.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_well_known_agent_skills_index_json_server",
-      "label": "index.json/+server.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "index.json/+server.ts",
-      "source_file": "src/routes/.well-known/agent-skills/index.json/+server.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_well_known_api_catalog_server",
-      "label": "api-catalog/+server.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": "api-catalog/+server.ts",
-      "source_file": "src/routes/.well-known/api-catalog/+server.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_routes_well_known_llms_txt_server",
-      "label": ".well-known/llms.txt/+server.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "author.ts",
-      "file_type": "code",
-      "norm_label": ".well-known/llms.txt/+server.ts",
-      "source_file": "src/routes/.well-known/llms.txt/+server.ts",
-      "source_location": "L1"
-    },
-    {
       "id": "package_devdependencies_svelte_check",
       "label": "svelte-check",
       "_origin": "ast",
@@ -15188,7 +15364,7 @@
       "file_type": "code",
       "norm_label": "svelte-check",
       "source_file": "package.json",
-      "source_location": "L34"
+      "source_location": "L37"
     },
     {
       "id": "svelte_check",
@@ -15199,7 +15375,7 @@
       "file_type": "concept",
       "norm_label": "svelte-check",
       "source_file": "package.json",
-      "source_location": "L34"
+      "source_location": "L37"
     },
     {
       "id": "package_devdependencies_sveltejs_adapter_cloudflare",
@@ -15210,7 +15386,7 @@
       "file_type": "code",
       "norm_label": "@sveltejs/adapter-cloudflare",
       "source_file": "package.json",
-      "source_location": "L19"
+      "source_location": "L21"
     },
     {
       "id": "sveltejs_adapter_cloudflare",
@@ -15221,7 +15397,7 @@
       "file_type": "concept",
       "norm_label": "@sveltejs/adapter-cloudflare",
       "source_file": "package.json",
-      "source_location": "L19"
+      "source_location": "L21"
     },
     {
       "id": "agents_skills_api_contract_check_skill",
@@ -15442,7 +15618,7 @@
       "file_type": "code",
       "norm_label": "files",
       "source_file": "package.json",
-      "source_location": "L51"
+      "source_location": "L54"
     },
     {
       "id": "ref_dist",
@@ -15453,7 +15629,7 @@
       "file_type": "concept",
       "norm_label": "dist",
       "source_file": "package.json",
-      "source_location": "L51"
+      "source_location": "L54"
     },
     {
       "id": "ref_dist_spec",
@@ -15464,7 +15640,7 @@
       "file_type": "concept",
       "norm_label": "!dist/**/*.spec.*",
       "source_file": "package.json",
-      "source_location": "L51"
+      "source_location": "L54"
     },
     {
       "id": "ref_dist_test",
@@ -15475,7 +15651,7 @@
       "file_type": "concept",
       "norm_label": "!dist/**/*.test.*",
       "source_file": "package.json",
-      "source_location": "L51"
+      "source_location": "L54"
     },
     {
       "id": "_agents_skills_dotenv_skill_dotenv_vs_dotenvx",
@@ -18998,7 +19174,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/lib/utils/codeBlocks.ts",
-      "source_location": "L586",
+      "source_location": "L590",
       "weight": 1.0
     },
     {
@@ -21446,7 +21622,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L51",
+      "source_location": "L54",
       "weight": 1.0
     },
     {
@@ -21458,7 +21634,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L51",
+      "source_location": "L54",
       "weight": 1.0
     },
     {
@@ -21470,7 +21646,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L51",
+      "source_location": "L54",
       "weight": 1.0
     },
     {
@@ -21482,7 +21658,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L56",
+      "source_location": "L59",
       "weight": 1.0
     },
     {
@@ -21494,7 +21670,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L56",
+      "source_location": "L59",
       "weight": 1.0
     },
     {
@@ -21506,7 +21682,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L56",
+      "source_location": "L59",
       "weight": 1.0
     },
     {
@@ -21518,7 +21694,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L56",
+      "source_location": "L59",
       "weight": 1.0
     },
     {
@@ -21530,7 +21706,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L56",
+      "source_location": "L59",
       "weight": 1.0
     },
     {
@@ -21542,7 +21718,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L56",
+      "source_location": "L59",
       "weight": 1.0
     },
     {
@@ -21554,7 +21730,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L56",
+      "source_location": "L59",
       "weight": 1.0
     },
     {
@@ -21566,7 +21742,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L79",
+      "source_location": "L82",
       "weight": 1.0
     },
     {
@@ -21690,6 +21866,30 @@
       "weight": 1.0
     },
     {
+      "source": "package_devdependencies_commitlint_cli",
+      "target": "commitlint_cli",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "package.json",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "package_devdependencies_commitlint_config_conventional",
+      "target": "commitlint_config_conventional",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "package.json",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
       "source": "package_devdependencies_eslint",
       "target": "eslint",
       "relation": "imports",
@@ -21698,7 +21898,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L24",
+      "source_location": "L26",
       "weight": 1.0
     },
     {
@@ -21710,7 +21910,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L25",
+      "source_location": "L27",
       "weight": 1.0
     },
     {
@@ -21722,7 +21922,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L17",
+      "source_location": "L19",
       "weight": 1.0
     },
     {
@@ -21734,7 +21934,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L26",
+      "source_location": "L28",
       "weight": 1.0
     },
     {
@@ -21746,7 +21946,19 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L27",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "package_devdependencies_jiti",
+      "target": "jiti",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "package.json",
+      "source_location": "L30",
       "weight": 1.0
     },
     {
@@ -21758,7 +21970,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L28",
+      "source_location": "L31",
       "weight": 1.0
     },
     {
@@ -21770,7 +21982,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L29",
+      "source_location": "L32",
       "weight": 1.0
     },
     {
@@ -21782,7 +21994,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L30",
+      "source_location": "L33",
       "weight": 1.0
     },
     {
@@ -21794,7 +22006,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L18",
+      "source_location": "L20",
       "weight": 1.0
     },
     {
@@ -21806,7 +22018,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L31",
+      "source_location": "L34",
       "weight": 1.0
     },
     {
@@ -21818,7 +22030,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L32",
+      "source_location": "L35",
       "weight": 1.0
     },
     {
@@ -21830,7 +22042,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L33",
+      "source_location": "L36",
       "weight": 1.0
     },
     {
@@ -21842,7 +22054,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L34",
+      "source_location": "L37",
       "weight": 1.0
     },
     {
@@ -21854,7 +22066,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L19",
+      "source_location": "L21",
       "weight": 1.0
     },
     {
@@ -21866,7 +22078,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L20",
+      "source_location": "L22",
       "weight": 1.0
     },
     {
@@ -21878,7 +22090,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L21",
+      "source_location": "L23",
       "weight": 1.0
     },
     {
@@ -21890,7 +22102,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L35",
+      "source_location": "L38",
       "weight": 1.0
     },
     {
@@ -21902,7 +22114,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L22",
+      "source_location": "L24",
       "weight": 1.0
     },
     {
@@ -21914,7 +22126,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L23",
+      "source_location": "L25",
       "weight": 1.0
     },
     {
@@ -21926,7 +22138,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L36",
+      "source_location": "L39",
       "weight": 1.0
     },
     {
@@ -21938,7 +22150,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L37",
+      "source_location": "L40",
       "weight": 1.0
     },
     {
@@ -21950,7 +22162,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L38",
+      "source_location": "L41",
       "weight": 1.0
     },
     {
@@ -21962,7 +22174,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L39",
+      "source_location": "L42",
       "weight": 1.0
     },
     {
@@ -21974,7 +22186,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L43",
+      "source_location": "L46",
       "weight": 1.0
     },
     {
@@ -21986,7 +22198,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "package.json",
-      "source_location": "L42",
+      "source_location": "L45",
       "weight": 1.0
     },
     {
@@ -29067,13 +29279,90 @@
       "weight": 1.0
     },
     {
+      "source": "claude_skills_committing_with_commitlint_skill",
+      "target": "claude_skills_committing_with_commitlint_skill_committing_in_a_repository_that_uses_commitlint",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".claude/skills/committing-with-commitlint/SKILL.md",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "claude_skills_committing_with_commitlint_skill_committing_in_a_repository_that_uses_commitlint",
+      "target": "claude_skills_committing_with_commitlint_skill_1_detect_whether_the_repository_uses_commitlint",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".claude/skills/committing-with-commitlint/SKILL.md",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "claude_skills_committing_with_commitlint_skill_committing_in_a_repository_that_uses_commitlint",
+      "target": "claude_skills_committing_with_commitlint_skill_2_read_the_enforced_rules",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".claude/skills/committing-with-commitlint/SKILL.md",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "claude_skills_committing_with_commitlint_skill_committing_in_a_repository_that_uses_commitlint",
+      "target": "claude_skills_committing_with_commitlint_skill_3_write_the_message",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".claude/skills/committing-with-commitlint/SKILL.md",
+      "source_location": "L47",
+      "weight": 1.0
+    },
+    {
+      "source": "claude_skills_committing_with_commitlint_skill_committing_in_a_repository_that_uses_commitlint",
+      "target": "claude_skills_committing_with_commitlint_skill_4_validate_before_committing",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".claude/skills/committing-with-commitlint/SKILL.md",
+      "source_location": "L62",
+      "weight": 1.0
+    },
+    {
+      "source": "claude_skills_committing_with_commitlint_skill_committing_in_a_repository_that_uses_commitlint",
+      "target": "claude_skills_committing_with_commitlint_skill_5_self_correct_when_the_commit_msg_hook_rejects",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".claude/skills/committing-with-commitlint/SKILL.md",
+      "source_location": "L74",
+      "weight": 1.0
+    },
+    {
+      "source": "commitlint_config",
+      "target": "commitlint_config_config",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "commitlint.config.ts",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
       "source": "eslint_config",
       "target": "eslint_config_gitignorepath",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "eslint.config.js",
+      "source_file": "eslint.config.ts",
       "source_location": "L9",
       "weight": 1.0
     },
@@ -29305,7 +29594,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "package.json",
-      "source_location": "L41",
+      "source_location": "L44",
       "weight": 1.0
     },
     {
@@ -29316,7 +29605,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "package.json",
-      "source_location": "L45",
+      "source_location": "L48",
       "weight": 1.0
     },
     {
@@ -29338,7 +29627,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "package.json",
-      "source_location": "L51",
+      "source_location": "L54",
       "weight": 1.0
     },
     {
@@ -29349,7 +29638,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "package.json",
-      "source_location": "L56",
+      "source_location": "L59",
       "weight": 1.0
     },
     {
@@ -29371,7 +29660,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "package.json",
-      "source_location": "L65",
+      "source_location": "L68",
       "weight": 1.0
     },
     {
@@ -29382,7 +29671,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "package.json",
-      "source_location": "L79",
+      "source_location": "L82",
       "weight": 1.0
     },
     {
@@ -29393,7 +29682,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "package.json",
-      "source_location": "L82",
+      "source_location": "L85",
       "weight": 1.0
     },
     {
@@ -29404,7 +29693,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "package.json",
-      "source_location": "L83",
+      "source_location": "L86",
       "weight": 1.0
     },
     {
@@ -29415,7 +29704,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "package.json",
-      "source_location": "L84",
+      "source_location": "L87",
       "weight": 1.0
     },
     {
@@ -29508,7 +29797,7 @@
     },
     {
       "source": "package_devdependencies",
-      "target": "package_devdependencies_eslint_js",
+      "target": "package_devdependencies_commitlint_cli",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -29519,7 +29808,7 @@
     },
     {
       "source": "package_devdependencies",
-      "target": "package_devdependencies_prettier_plugin_xml",
+      "target": "package_devdependencies_commitlint_config_conventional",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -29530,7 +29819,7 @@
     },
     {
       "source": "package_devdependencies",
-      "target": "package_devdependencies_sveltejs_adapter_cloudflare",
+      "target": "package_devdependencies_eslint_js",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -29541,7 +29830,7 @@
     },
     {
       "source": "package_devdependencies",
-      "target": "package_devdependencies_sveltejs_package",
+      "target": "package_devdependencies_prettier_plugin_xml",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -29552,7 +29841,7 @@
     },
     {
       "source": "package_devdependencies",
-      "target": "package_devdependencies_sveltejs_vite_plugin_svelte",
+      "target": "package_devdependencies_sveltejs_adapter_cloudflare",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -29563,7 +29852,7 @@
     },
     {
       "source": "package_devdependencies",
-      "target": "package_devdependencies_tailwindcss_vite",
+      "target": "package_devdependencies_sveltejs_package",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -29574,7 +29863,7 @@
     },
     {
       "source": "package_devdependencies",
-      "target": "package_devdependencies_types_node",
+      "target": "package_devdependencies_sveltejs_vite_plugin_svelte",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -29585,7 +29874,7 @@
     },
     {
       "source": "package_devdependencies",
-      "target": "package_devdependencies_eslint",
+      "target": "package_devdependencies_tailwindcss_vite",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -29596,7 +29885,7 @@
     },
     {
       "source": "package_devdependencies",
-      "target": "package_devdependencies_eslint_config_prettier",
+      "target": "package_devdependencies_types_node",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -29607,7 +29896,7 @@
     },
     {
       "source": "package_devdependencies",
-      "target": "package_devdependencies_eslint_plugin_svelte",
+      "target": "package_devdependencies_eslint",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -29618,7 +29907,7 @@
     },
     {
       "source": "package_devdependencies",
-      "target": "package_devdependencies_globals",
+      "target": "package_devdependencies_eslint_config_prettier",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -29629,7 +29918,7 @@
     },
     {
       "source": "package_devdependencies",
-      "target": "package_devdependencies_prettier",
+      "target": "package_devdependencies_eslint_plugin_svelte",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -29640,7 +29929,7 @@
     },
     {
       "source": "package_devdependencies",
-      "target": "package_devdependencies_prettier_plugin_svelte",
+      "target": "package_devdependencies_globals",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -29651,7 +29940,7 @@
     },
     {
       "source": "package_devdependencies",
-      "target": "package_devdependencies_prettier_plugin_tailwindcss",
+      "target": "package_devdependencies_jiti",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -29662,7 +29951,7 @@
     },
     {
       "source": "package_devdependencies",
-      "target": "package_devdependencies_prettier_plugin_yaml",
+      "target": "package_devdependencies_prettier",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -29673,7 +29962,7 @@
     },
     {
       "source": "package_devdependencies",
-      "target": "package_devdependencies_publint",
+      "target": "package_devdependencies_prettier_plugin_svelte",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -29684,7 +29973,7 @@
     },
     {
       "source": "package_devdependencies",
-      "target": "package_devdependencies_svelte",
+      "target": "package_devdependencies_prettier_plugin_tailwindcss",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -29695,7 +29984,7 @@
     },
     {
       "source": "package_devdependencies",
-      "target": "package_devdependencies_svelte_check",
+      "target": "package_devdependencies_prettier_plugin_yaml",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -29706,7 +29995,7 @@
     },
     {
       "source": "package_devdependencies",
-      "target": "package_devdependencies_tailwindcss",
+      "target": "package_devdependencies_publint",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -29717,7 +30006,7 @@
     },
     {
       "source": "package_devdependencies",
-      "target": "package_devdependencies_typescript",
+      "target": "package_devdependencies_svelte",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -29728,7 +30017,7 @@
     },
     {
       "source": "package_devdependencies",
-      "target": "package_devdependencies_typescript_eslint",
+      "target": "package_devdependencies_svelte_check",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -29739,7 +30028,7 @@
     },
     {
       "source": "package_devdependencies",
-      "target": "package_devdependencies_vite",
+      "target": "package_devdependencies_tailwindcss",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -29750,7 +30039,7 @@
     },
     {
       "source": "package_devdependencies",
-      "target": "package_devdependencies_yaml",
+      "target": "package_devdependencies_typescript",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -29760,8 +30049,30 @@
       "weight": 1.0
     },
     {
-      "source": "package_peerdependencies",
-      "target": "package_peerdependencies_sveltejs_kit",
+      "source": "package_devdependencies",
+      "target": "package_devdependencies_typescript_eslint",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "package.json",
+      "source_location": "L40",
+      "weight": 1.0
+    },
+    {
+      "source": "package_devdependencies",
+      "target": "package_devdependencies_vite",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "package.json",
+      "source_location": "L41",
+      "weight": 1.0
+    },
+    {
+      "source": "package_devdependencies",
+      "target": "package_devdependencies_yaml",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -29772,13 +30083,24 @@
     },
     {
       "source": "package_peerdependencies",
+      "target": "package_peerdependencies_sveltejs_kit",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "package.json",
+      "source_location": "L45",
+      "weight": 1.0
+    },
+    {
+      "source": "package_peerdependencies",
       "target": "package_peerdependencies_svelte",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "package.json",
-      "source_location": "L43",
+      "source_location": "L46",
       "weight": 1.0
     },
     {
@@ -29789,7 +30111,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "package.json",
-      "source_location": "L66",
+      "source_location": "L69",
       "weight": 1.0
     },
     {
@@ -29800,7 +30122,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "package.json",
-      "source_location": "L67",
+      "source_location": "L70",
       "weight": 1.0
     },
     {
@@ -29811,7 +30133,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "package.json",
-      "source_location": "L68",
+      "source_location": "L71",
       "weight": 1.0
     },
     {
@@ -29822,7 +30144,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "package.json",
-      "source_location": "L69",
+      "source_location": "L72",
       "weight": 1.0
     },
     {
@@ -29833,7 +30155,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "package.json",
-      "source_location": "L70",
+      "source_location": "L73",
       "weight": 1.0
     },
     {
@@ -29844,7 +30166,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "package.json",
-      "source_location": "L71",
+      "source_location": "L74",
       "weight": 1.0
     },
     {
@@ -29855,7 +30177,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "package.json",
-      "source_location": "L72",
+      "source_location": "L75",
       "weight": 1.0
     },
     {
@@ -29866,7 +30188,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "package.json",
-      "source_location": "L73",
+      "source_location": "L76",
       "weight": 1.0
     },
     {
@@ -29877,7 +30199,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "package.json",
-      "source_location": "L74",
+      "source_location": "L77",
       "weight": 1.0
     },
     {
@@ -29888,7 +30210,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "package.json",
-      "source_location": "L75",
+      "source_location": "L78",
       "weight": 1.0
     },
     {
@@ -29899,7 +30221,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "package.json",
-      "source_location": "L76",
+      "source_location": "L79",
       "weight": 1.0
     },
     {
@@ -29910,7 +30232,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "package.json",
-      "source_location": "L77",
+      "source_location": "L80",
       "weight": 1.0
     },
     {
@@ -39202,5 +39524,5 @@
       "source_file": ".agents/skills/security-audit/WEB-PROTOCOL-AND-AUTH.md"
     }
   ],
-  "built_at_commit": "19900df540aa6deaeb43874d8b39142df331252e"
+  "built_at_commit": "30e5fb27533e4a2ade518a7a634d9f7ce2291536"
 }

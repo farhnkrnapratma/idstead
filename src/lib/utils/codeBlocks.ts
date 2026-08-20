@@ -575,10 +575,14 @@ export function enhanceCodeBlocks(triggerToast: (message: string) => void) {
             'anywhere',
             'important'
           );
+          pre.classList.add('code-wrap');
+          pre.dataset.wrap = 'true';
         } else {
           codeElement.style.removeProperty('white-space');
           codeElement.style.removeProperty('width');
           codeElement.style.removeProperty('overflow-wrap');
+          pre.classList.remove('code-wrap');
+          pre.removeAttribute('data-wrap');
         }
       }
 

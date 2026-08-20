@@ -361,6 +361,15 @@ select {
     overflow: visible;
   }
 
+  .prose-custom .code-line {
+    @apply block w-full pr-3.5;
+  }
+
+  .prose-custom :is(pre.code-wrap, pre[data-wrap='true']) .code-line {
+    padding-left: 4ch;
+    text-indent: -4ch;
+  }
+
   .prose-custom a:not(.anchor-link) {
     @apply text-(--color-link) underline transition-colors;
   }

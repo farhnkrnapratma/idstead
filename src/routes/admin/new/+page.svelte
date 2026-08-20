@@ -1022,6 +1022,12 @@
     @apply block! w-full! pr-3.5!;
   }
 
+  .prose-custom :global(pre.code-wrap .code-line),
+  .prose-custom :global(pre[data-wrap='true'] .code-line) {
+    padding-left: 4ch;
+    text-indent: -4ch;
+  }
+
   .prose-custom :global(a) {
     @apply text-(--color-link) underline;
   }
