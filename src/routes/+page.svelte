@@ -62,6 +62,9 @@
     formatViewCount,
     formatAbsoluteDate,
     decodeHtmlEntities,
+    Section,
+    PageContainer,
+    LogoLoop,
     ConsentNotice,
     staggerChildren,
     withViewTransition

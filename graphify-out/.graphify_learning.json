@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-08-20T08:12:31.387783+00:00",
+  "generated_at": "2026-08-20T11:25:03.573007+00:00",
   "nodes": {
     "package": {
-      "code_fingerprint": "2167356b1aaf964f6d9d18f65c003a28bc0b2084314a12a951179aefae6579a4",
+      "code_fingerprint": "7372793fec55c427423833923f2ecfdf6e14d46fc572ca4d47ac971fb593654d",
       "label": "package.json",
       "last": "2026-08-19T11:24:58.309289+00:00",
       "provenance": [
@@ -12,7 +12,7 @@
           "q": "Mengapa saat bun run dev yang dibaca adalah .env? Bagaimana agar bun run dev menggunakan .env.production dan bun run dev:preview menggunakan .env.preview?"
         }
       ],
-      "score": 0.980181959,
+      "score": 0.977158593,
       "source_file": "package.json",
       "status": "tentative",
       "uses": 1
@@ -28,7 +28,7 @@
           "q": "Why does createA11yStore() connect to Security Auditing & Hardening?"
         }
       ],
-      "score": 0.979241554,
+      "score": 0.976221089,
       "source_file": "src/lib/stores/a11yStore.svelte.ts",
       "status": "tentative",
       "uses": 1
@@ -44,7 +44,7 @@
           "q": "Why does createA11yStore() connect to Security Auditing & Hardening?"
         }
       ],
-      "score": 0.979241554,
+      "score": 0.976221089,
       "source_file": "src/lib/stores/a11yStore.svelte.ts",
       "status": "tentative",
       "uses": 1
@@ -60,7 +60,7 @@
           "q": "Mengapa saat bun run dev yang dibaca adalah .env? Bagaimana agar bun run dev menggunakan .env.production dan bun run dev:preview menggunakan .env.preview?"
         }
       ],
-      "score": 0.980181959,
+      "score": 0.977158593,
       "source_file": "vite.config.ts",
       "status": "tentative",
       "uses": 1
