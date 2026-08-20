@@ -1,4 +1,44 @@
-import {marked} from 'marked'
+import {marked, Renderer} from 'marked'
+
+const HIGHLIGHT_META_RE = /\{([\d,\s]+)\}/
+
+function parseHighlightedLines(
+  infostring: string,
+  totalLines: number
+): number[] {
+  const match = infostring.match(HIGHLIGHT_META_RE)
+  if (!match) return []
+
+  const lines = new Set<number>()
+  for (const part of match[1].split(',')) {
+    const line = Number(part.trim())
+    if (Number.isInteger(line) && line >= 1 && line <= totalLines) {
+      lines.add(line)
+    }
+  }
+  return [...lines].sort((a, b) => a - b)
+}
+
+const defaultCodeRenderer = new Renderer()
+
+marked.use({
+  renderer: {
+    code(token) {
+      const infostring = token.lang || ''
+      const lang = infostring.replace(HIGHLIGHT_META_RE, '').trim()
+      const html = defaultCodeRenderer.code({...token, lang})
+
+      const totalLines = token.text.replace(/\n$/, '').split('\n').length
+      const highlightedLines = parseHighlightedLines(infostring, totalLines)
+      if (!highlightedLines.length) return html
+
+      return html.replace(
+        /^<pre>/,
+        `<pre data-highlight-lines="${highlightedLines.join(',')}">`
+      )
+    }
+  }
+})
 
 export function parseMarkdownAlerts(html: string): string {
   if (!html) return ''
