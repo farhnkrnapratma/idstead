@@ -1,23 +1,9 @@
-import {env} from '$env/dynamic/private';
-
 type PlatformEnv = {env?: {TURNSTILE_SECRET?: string}};
 
 interface SiteverifyResponse {
   success: boolean;
   'error-codes'?: string[];
 }
-
-const DUMMY_PASS_SECRETS = new Set([
-  '1x0000000000000000000000000000000AA',
-  '2x0000000000000000000000000000000AA',
-  '3x0000000000000000000000000000000AA',
-  '1x0000000000000000000000000000000BB'
-]);
-
-const DUMMY_FAIL_SECRETS = new Set([
-  '1x0000000000000000000000000000000AB',
-  '2x0000000000000000000000000000000AB'
-]);
 
 function isPublicIp(ip: string | undefined | null): boolean {
   if (!ip) return false;
@@ -52,20 +38,11 @@ export async function verifyTurnstileToken(
 
   const secret =
     (platform as PlatformEnv | undefined)?.env?.TURNSTILE_SECRET
-    ?? env.TURNSTILE_SECRET
     ?? process.env.TURNSTILE_SECRET;
 
   if (!secret) {
     console.error('TURNSTILE_SECRET is not configured.');
     return false;
-  }
-
-  if (DUMMY_FAIL_SECRETS.has(secret)) {
-    return false;
-  }
-
-  if (DUMMY_PASS_SECRETS.has(secret)) {
-    return true;
   }
 
   try {
