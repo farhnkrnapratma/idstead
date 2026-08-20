@@ -31,3 +31,25 @@ jobs:
 
       - name: Build (verifies the Cloudflare adapter build succeeds)
         run: bun run build
+
+  docs-sync-check:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: CLAUDE.md and AGENTS.md must change together
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          changed=$(git diff --name-only "origin/$BASE_REF...HEAD")
+          claude_changed=no
+          agents_changed=no
+          echo "$changed" | grep -qx 'CLAUDE.md' && claude_changed=yes
+          echo "$changed" | grep -qx 'AGENTS.md' && agents_changed=yes
+          if [ "$claude_changed" != "$agents_changed" ]; then
+            echo "::error::CLAUDE.md and AGENTS.md must be updated together. The .claude/hooks/sync-claude-agents-md.sh hook keeps them in sync automatically during Claude Code sessions, but this PR only touched one of them - update the other by hand to match."
+            exit 1
+          fi
