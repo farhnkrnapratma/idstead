@@ -53,3 +53,22 @@ jobs:
             echo "::error::CLAUDE.md and AGENTS.md must be updated together. The .claude/hooks/sync-claude-agents-md.sh hook keeps them in sync automatically during Claude Code sessions, but this PR only touched one of them - update the other by hand to match."
             exit 1
           fi
+
+  commitlint:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - run: bun install --frozen-lockfile
+
+      - name: Lint commit messages since base branch
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: bunx commitlint --from "origin/$BASE_REF" --to HEAD --verbose
