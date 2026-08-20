@@ -1,13 +1,13 @@
 <script lang="ts">
-  import {cn} from '../utils/cn'
-  import {consentStore} from '../stores/consentStore.svelte'
+  import {cn} from '../utils/cn';
+  import {consentStore} from '../stores/consentStore.svelte';
 
   interface Props {
-    name?: string
-    class?: string
+    name?: string;
+    class?: string;
   }
 
-  let {name = '', class: className = ''}: Props = $props()
+  let {name = '', class: className = ''}: Props = $props();
 </script>
 
 <div

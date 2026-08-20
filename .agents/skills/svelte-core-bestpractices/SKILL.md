@@ -20,14 +20,14 @@ To compute something from state, use `$derived` rather than `$effect`:
 
 ```js
 // do this
-let square = $derived(num * num)
+let square = $derived(num * num);
 
 // don't do this
-let square
+let square;
 
 $effect(() => {
-  square = num * num
-})
+  square = num * num;
+});
 ```
 
 > [!NOTE] `$derived` is given an expression, _not_ a function. If you need to use a function (because the expression is complex, for example) use `$derived.by`.
@@ -52,13 +52,13 @@ Never wrap the contents of an effect in `if (browser) {...}` or similar — effe
 Treat props as though they will change. For example, values that depend on props should usually use `$derived`:
 
 ```js
-let {type} = $props()
+let {type} = $props();
 
 // do this
-let color = $derived(type === 'danger' ? 'red' : 'green')
+let color = $derived(type === 'danger' ? 'red' : 'green');
 
 // don't do this — `color` will not update if `type` changes
-let color = type === 'danger' ? 'red' : 'green'
+let color = type === 'danger' ? 'red' : 'green';
 ```
 
 ## `$inspect.trace`

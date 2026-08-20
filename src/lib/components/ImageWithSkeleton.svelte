@@ -1,19 +1,19 @@
 <script lang="ts">
-  import type {HTMLImgAttributes} from 'svelte/elements'
-  import {Image as ImageIcon} from '@lucide/svelte'
-  import {cn} from '../utils/cn'
+  import type {HTMLImgAttributes} from 'svelte/elements';
+  import {Image as ImageIcon} from '@lucide/svelte';
+  import {cn} from '../utils/cn';
 
   interface Props {
-    src?: string | null
-    alt: string
-    class?: string
-    imgClass?: string
-    loading?: 'lazy' | 'eager'
-    referrerpolicy?: HTMLImgAttributes['referrerpolicy']
-    aspectRatio?: string
-    rounded?: string
-    onload?: () => void
-    onerror?: () => void
+    src?: string | null;
+    alt: string;
+    class?: string;
+    imgClass?: string;
+    loading?: 'lazy' | 'eager';
+    referrerpolicy?: HTMLImgAttributes['referrerpolicy'];
+    aspectRatio?: string;
+    rounded?: string;
+    onload?: () => void;
+    onerror?: () => void;
   }
 
   let {
@@ -27,36 +27,36 @@
     rounded = 'rounded-sm',
     onload,
     onerror
-  }: Props = $props()
+  }: Props = $props();
 
-  let isLoaded = $state(false)
-  let isError = $state(false)
-  let imgElement = $state<HTMLImageElement | null>(null)
+  let isLoaded = $state(false);
+  let isError = $state(false);
+  let imgElement = $state<HTMLImageElement | null>(null);
 
   $effect(() => {
     if (!src) {
-      isLoaded = false
-      isError = true
-      return
+      isLoaded = false;
+      isError = true;
+      return;
     }
 
-    isError = false
+    isError = false;
 
     if (imgElement && imgElement.complete && imgElement.naturalWidth > 0) {
-      isLoaded = true
-      onload?.()
+      isLoaded = true;
+      onload?.();
     }
-  })
+  });
 
   function handleLoad() {
-    isLoaded = true
-    onload?.()
+    isLoaded = true;
+    onload?.();
   }
 
   function handleError() {
-    isError = true
-    isLoaded = true
-    onerror?.()
+    isError = true;
+    isLoaded = true;
+    onerror?.();
   }
 </script>
 

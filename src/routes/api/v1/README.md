@@ -1,13 +1,13 @@
-# fkp.my.id — Public REST API (v1)
+# Public REST API (v1)
 
-Public, read-only endpoints documentation for this website ([fkp.my.id](https://fkp.my.id)), served under `/api/v1/`. No authentication required for anything below. This document is also served live at `GET /api/v1` as `text/markdown`. Full machine-readable spec: `/.well-known/openapi.json` / `/.well-known/openapi.yaml`.
+Public, read-only endpoints documentation served under `/api/v1/`. No authentication required for anything below. This document is also served live at `GET /api/v1` as `text/markdown`. Full machine-readable spec: `/.well-known/openapi.json` / `/.well-known/openapi.yaml`.
 
-**Base URL**: `https://fkp.my.id`. Versioned by URL path — breaking changes ship under `/api/v2/`, not in place.
+**Base URL**: `/api/v1`. Versioned by URL path — breaking changes ship under `/api/v2/`, not in place.
 
 Found a bug or a security issue with this API? See `SECURITY.md` in the repo root for how to report it privately — please don't open a public issue for a suspected vulnerability.
 
 ```sh
-curl https://fkp.my.id/api/v1/blog
+curl https://example.com/api/v1/blog
 ```
 
 ## Errors
@@ -71,7 +71,7 @@ This shape is enforced by one shared handler for the whole API, so it's the same
 Read-only — this API does not accept comment submissions. `GET` returns `{"data": [...]}`, each comment shaped as `{id, post_id, parent_id, author_name, content, is_anonymous, is_approved, created_at}`; only approved comments are ever returned. This endpoint does not paginate — it's capped by `limit`, no `pagination` object.
 
 ```sh
-curl "https://fkp.my.id/api/v1/blog/comments?postId=<uuid>"
+curl "https://example.com/api/v1/blog/comments?postId=<uuid>"
 ```
 
 #### Views
@@ -79,7 +79,7 @@ curl "https://fkp.my.id/api/v1/blog/comments?postId=<uuid>"
 Read-only — this API does not record views.
 
 ```sh
-curl "https://fkp.my.id/api/v1/blog/views?postId=<uuid>"
+curl "https://example.com/api/v1/blog/views?postId=<uuid>"
 ```
 
 ```json

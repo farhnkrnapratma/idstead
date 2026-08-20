@@ -1,21 +1,21 @@
 <script lang="ts">
-  import FilterChip from './FilterChip.svelte'
-  import Button from '../Button.svelte'
-  import {cn} from '../../utils/cn'
+  import FilterChip from './FilterChip.svelte';
+  import Button from '../Button.svelte';
+  import {cn} from '../../utils/cn';
 
   interface ChipItem {
-    id: string
-    type: string
-    value: string
-    label: string
+    id: string;
+    type: string;
+    value: string;
+    label: string;
   }
 
   interface Props {
-    chips: ChipItem[]
-    onRemove?: (type: string, value: string) => void
-    onClearAll?: () => void
-    clearAllLabel?: string
-    class?: string
+    chips: ChipItem[];
+    onRemove?: (type: string, value: string) => void;
+    onClearAll?: () => void;
+    clearAllLabel?: string;
+    class?: string;
   }
 
   let {
@@ -24,7 +24,7 @@
     onClearAll = () => {},
     clearAllLabel = 'Clear all',
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 </script>
 
 {#if chips.length > 0}

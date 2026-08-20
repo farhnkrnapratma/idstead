@@ -1,10 +1,10 @@
-import type {PageServerLoad} from './$types'
-import {getLegalPage} from '$lib/server/legalPages'
-import {prepareMarkdownPage} from '$lib/markdown'
+import type {PageServerLoad} from './$types';
+import {getLegalPage} from '$lib/server/legalPages';
+import {prepareMarkdownPage} from '$lib/markdown';
 
 export const load: PageServerLoad = async () => {
-  const pageData = await getLegalPage('terms')
-  const {html, headings} = await prepareMarkdownPage(pageData.content)
+  const pageData = await getLegalPage('terms');
+  const {html, headings} = await prepareMarkdownPage(pageData.content);
 
-  return {pageData, html, headings}
-}
+  return {pageData, html, headings};
+};

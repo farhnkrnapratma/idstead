@@ -1,45 +1,45 @@
-import {browser} from '$app/environment'
+import {browser} from '$app/environment';
 
-export type ContentFont = 'sans' | 'serif' | 'mono'
+export type ContentFont = 'sans' | 'serif' | 'mono';
 
-const STORAGE_KEY = 'fkp_content_font'
-const DEFAULT_FONT: ContentFont = 'sans'
+const STORAGE_KEY = 'fkp_content_font';
+const DEFAULT_FONT: ContentFont = 'sans';
 
 function createContentFontStore() {
-  let current = $state<ContentFont>(DEFAULT_FONT)
+  let current = $state<ContentFont>(DEFAULT_FONT);
 
   if (browser) {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY) as ContentFont | null
+      const stored = localStorage.getItem(STORAGE_KEY) as ContentFont | null;
       if (
         stored
         && (stored === 'sans' || stored === 'serif' || stored === 'mono')
       ) {
-        current = stored
+        current = stored;
       }
     } catch {}
   }
 
   function setFont(font: ContentFont) {
-    current = font
+    current = font;
     if (browser) {
       try {
-        localStorage.setItem(STORAGE_KEY, font)
+        localStorage.setItem(STORAGE_KEY, font);
       } catch {}
     }
   }
 
   function reset() {
-    setFont(DEFAULT_FONT)
+    setFont(DEFAULT_FONT);
   }
 
   return {
     get current() {
-      return current
+      return current;
     },
     setFont,
     reset
-  }
+  };
 }
 
-export const contentFontStore = createContentFontStore()
+export const contentFontStore = createContentFontStore();

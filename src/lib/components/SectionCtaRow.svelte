@@ -1,14 +1,14 @@
 <script lang="ts">
-  import {ArrowRight} from '@lucide/svelte'
-  import {cn} from '../utils/cn'
+  import {ArrowRight} from '@lucide/svelte';
+  import {cn} from '../utils/cn';
 
   interface Props {
-    label: string
-    href: string
-    class?: string
+    label: string;
+    href: string;
+    class?: string;
   }
 
-  let {label, href, class: className = ''}: Props = $props()
+  let {label, href, class: className = ''}: Props = $props();
 </script>
 
 <div

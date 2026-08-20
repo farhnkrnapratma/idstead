@@ -1,12 +1,12 @@
 <script lang="ts">
-  import {cn} from '../utils/cn'
+  import {cn} from '../utils/cn';
 
   interface Props {
-    label?: string
-    size?: 'sm' | 'md' | 'lg'
-    variant?: 'skeleton' | 'spinner'
-    count?: number
-    class?: string
+    label?: string;
+    size?: 'sm' | 'md' | 'lg';
+    variant?: 'skeleton' | 'spinner';
+    count?: number;
+    class?: string;
   }
 
   let {
@@ -15,13 +15,13 @@
     variant = 'skeleton',
     count = 3,
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 
   const sizeStyles = {
     sm: 'h-4 w-4 border-2',
     md: 'h-6 w-6 border-2',
     lg: 'h-8 w-8 border-3'
-  }
+  };
 </script>
 
 {#if variant === 'skeleton'}
@@ -30,7 +30,7 @@
     aria-live="polite"
     aria-busy="true"
     class={cn('w-full space-y-3 p-4 select-none', className)}>
-    {#each Array(count) as _, i (i)}
+    {#each Array.from({length: count}, (_, i) => i) as itemIndex (itemIndex)}
       <div
         class="animate-pulse rounded-sm border border-border-subtle bg-surface-card p-4 shadow-2xs">
         <div class="flex items-center gap-3">

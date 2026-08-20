@@ -1,18 +1,18 @@
 <script lang="ts">
-  import type {Snippet} from 'svelte'
-  import {ArrowUpRight} from '@lucide/svelte'
-  import {cn} from '../utils/cn'
+  import type {Snippet} from 'svelte';
+  import {ArrowUpRight} from '@lucide/svelte';
+  import {cn} from '../utils/cn';
 
   interface Props {
-    title: string
-    href?: string
-    description?: string
-    interactive?: boolean
-    class?: string
-    meta?: Snippet
-    tags?: Snippet
-    actions?: Snippet
-    children?: Snippet
+    title: string;
+    href?: string;
+    description?: string;
+    interactive?: boolean;
+    class?: string;
+    meta?: Snippet;
+    tags?: Snippet;
+    actions?: Snippet;
+    children?: Snippet;
   }
 
   let {
@@ -25,7 +25,7 @@
     tags,
     actions,
     children
-  }: Props = $props()
+  }: Props = $props();
 </script>
 
 <div

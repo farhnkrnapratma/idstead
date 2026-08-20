@@ -1,15 +1,16 @@
 <script lang="ts">
+  import {untrack} from 'svelte';
   import {
     formatRelativeTime,
     getRelativeTimeNextUpdateMs
-  } from '$lib/utils/formatters'
+  } from '$lib/utils/formatters';
 
   interface Props {
-    date: string | Date | null | undefined
-    class?: string
-    tag?: 'span' | 'time'
-    titlePrefix?: string
-    prefix?: string
+    date: string | Date | null | undefined;
+    class?: string;
+    tag?: 'span' | 'time';
+    titlePrefix?: string;
+    prefix?: string;
   }
 
   let {
@@ -18,26 +19,28 @@
     tag = 'span',
     titlePrefix,
     prefix = ''
-  }: Props = $props()
+  }: Props = $props();
 
-  let now = $state(new Date())
+  let now = $state(new Date());
 
   let text = $derived(
     (prefix ? `${prefix} ` : '') + formatRelativeTime(date, now)
-  )
+  );
   let titleAttr = $derived(
     titlePrefix !== undefined ? `${titlePrefix}${text}` : undefined
-  )
+  );
 
   $effect(() => {
-    let timer: ReturnType<typeof setTimeout>
+    void date;
+    let timer: ReturnType<typeof setTimeout>;
     const tick = () => {
-      now = new Date()
-      timer = setTimeout(tick, getRelativeTimeNextUpdateMs(date, now))
-    }
-    timer = setTimeout(tick, getRelativeTimeNextUpdateMs(date, now))
-    return () => clearTimeout(timer)
-  })
+      now = new Date();
+      timer = setTimeout(tick, getRelativeTimeNextUpdateMs(date, now));
+    };
+    const currentNow = untrack(() => now);
+    timer = setTimeout(tick, getRelativeTimeNextUpdateMs(date, currentNow));
+    return () => clearTimeout(timer);
+  });
 </script>
 
 {#if tag === 'time'}

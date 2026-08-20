@@ -1,19 +1,19 @@
 <script lang="ts">
-  import type {Snippet} from 'svelte'
-  import {ChevronDown} from '@lucide/svelte'
-  import {cn} from '../../utils/cn'
+  import type {Snippet} from 'svelte';
+  import {ChevronDown} from '@lucide/svelte';
+  import {cn} from '../../utils/cn';
 
   interface Props {
-    ariaLabel: string
-    isOpen?: boolean
-    disabled?: boolean
-    fullWidth?: boolean
-    size?: 'sm' | 'md'
-    variant?: 'secondary' | 'primary'
-    class?: string
-    options?: Array<{label: string}>
-    children: Snippet
-    onclick?: () => void
+    ariaLabel: string;
+    isOpen?: boolean;
+    disabled?: boolean;
+    fullWidth?: boolean;
+    size?: 'sm' | 'md';
+    variant?: 'secondary' | 'primary';
+    class?: string;
+    options?: Array<{label: string}>;
+    children: Snippet;
+    onclick?: () => void;
   }
 
   let {
@@ -27,7 +27,7 @@
     options = [],
     children,
     onclick
-  }: Props = $props()
+  }: Props = $props();
 </script>
 
 <button

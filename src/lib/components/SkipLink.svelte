@@ -1,17 +1,17 @@
 <script lang="ts">
-  import {cn} from '../utils/cn'
+  import {cn} from '../utils/cn';
 
   interface Props {
-    targetId?: string
-    label?: string
-    class?: string
+    targetId?: string;
+    label?: string;
+    class?: string;
   }
 
   let {
     targetId = 'main-content',
     label = 'Skip to main content',
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 </script>
 
 <a

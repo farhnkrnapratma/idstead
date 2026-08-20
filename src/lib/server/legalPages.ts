@@ -1,7 +1,7 @@
-import {supabase} from '../supabase'
-import type {LegalPageData} from '../legalDefaults'
+import {supabase} from '../supabase';
+import type {LegalPageData} from '../legalDefaults';
 
-export type {LegalPageData}
+export type {LegalPageData};
 
 export async function getLegalPage(slug: string): Promise<LegalPageData> {
   try {
@@ -9,10 +9,10 @@ export async function getLegalPage(slug: string): Promise<LegalPageData> {
       .from('db_legals')
       .select('slug, title, content, updated_at')
       .eq('slug', slug)
-      .maybeSingle()
+      .maybeSingle();
 
     if (error || !data) {
-      return {slug, title: '', content: ''}
+      return {slug, title: '', content: ''};
     }
 
     return {
@@ -20,8 +20,8 @@ export async function getLegalPage(slug: string): Promise<LegalPageData> {
       title: data.title || '',
       content: data.content || '',
       updated_at: data.updated_at
-    }
+    };
   } catch {
-    return {slug, title: '', content: ''}
+    return {slug, title: '', content: ''};
   }
 }

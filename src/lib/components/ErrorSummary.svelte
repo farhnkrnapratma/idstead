@@ -1,18 +1,18 @@
 <script lang="ts">
-  import {OctagonAlert} from '@lucide/svelte'
-  import {cn} from '../utils/cn'
+  import {OctagonAlert} from '@lucide/svelte';
+  import {cn} from '../utils/cn';
 
   interface Props {
-    title?: string
-    errors: string[]
-    class?: string
+    title?: string;
+    errors: string[];
+    class?: string;
   }
 
   let {
     title = 'Please fix the following errors:',
     errors = [],
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 </script>
 
 {#if errors.length > 0}

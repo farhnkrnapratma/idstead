@@ -1,14 +1,14 @@
 <script lang="ts">
-  import {fade} from 'svelte/transition'
-  import {AlertCircle, CheckCircle2} from '@lucide/svelte'
-  import {toastStore} from '../stores/toastStore.svelte'
-  import {cn} from '../utils/cn'
+  import {fade} from 'svelte/transition';
+  import {AlertCircle, CheckCircle2} from '@lucide/svelte';
+  import {toastStore} from '../stores/toastStore.svelte';
+  import {cn} from '../utils/cn';
 
   interface Props {
-    class?: string
+    class?: string;
   }
 
-  let {class: className = ''}: Props = $props()
+  let {class: className = ''}: Props = $props();
 </script>
 
 {#if toastStore.visible}

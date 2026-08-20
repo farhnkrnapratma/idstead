@@ -47,10 +47,10 @@ As early as possible in your application, import and configure dotenvx:
 
 ```javascript
 // index.js
-require('@dotenvx/dotenvx').config()
+require('@dotenvx/dotenvx').config();
 // or import '@dotenvx/dotenvx/config' // for esm
 
-console.log(`Hello ${process.env.HELLO}`)
+console.log(`Hello ${process.env.HELLO}`);
 ```
 
 ```sh
@@ -88,7 +88,7 @@ That's it. `process.env` now has the keys and decrypted values you defined in yo
 ## Node Integration
 
 ```js
-require('@dotenvx/dotenvx').config()
+require('@dotenvx/dotenvx').config();
 // or: import '@dotenvx/dotenvx/config'
 ```
 

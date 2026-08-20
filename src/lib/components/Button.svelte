@@ -1,23 +1,24 @@
 <script lang="ts">
-  import type {Snippet} from 'svelte'
-  import type {HTMLButtonAttributes} from 'svelte/elements'
-  import {cn} from '../utils/cn'
+  import type {Snippet} from 'svelte';
+  import type {HTMLButtonAttributes} from 'svelte/elements';
+  import {cn} from '../utils/cn';
 
   interface Props extends Omit<HTMLButtonAttributes, 'type'> {
-    type?: 'primary' | 'danger' | 'outline' | 'ghost' | 'secondary' | 'tertiary'
-    tone?: 'neutral' | 'critical'
-    htmlType?: 'button' | 'submit' | 'reset'
-    size?: 'sm' | 'md' | 'lg'
-    isLoading?: boolean
-    fullWidth?: boolean
-    leading?: Snippet
-    trailing?: Snippet
-    showEscHint?: boolean
-    href?: string
-    target?: string
-    rel?: string
-    download?: boolean | string
-    children?: Snippet
+    type?:
+      'primary' | 'danger' | 'outline' | 'ghost' | 'secondary' | 'tertiary';
+    tone?: 'neutral' | 'critical';
+    htmlType?: 'button' | 'submit' | 'reset';
+    size?: 'sm' | 'md' | 'lg';
+    isLoading?: boolean;
+    fullWidth?: boolean;
+    leading?: Snippet;
+    trailing?: Snippet;
+    showEscHint?: boolean;
+    href?: string;
+    target?: string;
+    rel?: string;
+    download?: boolean | string;
+    children?: Snippet;
   }
 
   let {
@@ -38,10 +39,10 @@
     class: className = '',
     children,
     ...restProps
-  }: Props = $props()
+  }: Props = $props();
 
   const baseStyles =
-    'inline-flex items-center justify-center font-semibold whitespace-nowrap transition-all cursor-pointer select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50 disabled:cursor-not-allowed'
+    'inline-flex items-center justify-center font-semibold whitespace-nowrap transition-all cursor-pointer select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50 disabled:cursor-not-allowed';
 
   const typeToneStyles: Record<string, string> = {
     'primary:neutral':
@@ -66,17 +67,17 @@
       'text-danger hover:text-danger-hover hover:bg-danger-subtle disabled:hover:text-danger disabled:hover:bg-transparent',
     'danger:critical':
       'border border-danger/30 bg-danger-subtle/70 text-danger backdrop-blur-sm hover:bg-danger hover:text-text-on-accent disabled:hover:bg-danger-subtle/70 shadow-xs dark:bg-danger-subtle/40 dark:hover:bg-danger'
-  }
+  };
 
   const styleKey = $derived(
     type === 'danger' ? 'danger:critical' : `${type}:${tone}`
-  )
+  );
 
   const sizeStyles = {
     sm: 'h-8 px-3 text-xs gap-1.5 rounded-sm',
     md: 'h-9 px-4 text-xs sm:text-sm gap-2 rounded-sm',
     lg: 'h-11 px-5 text-sm gap-2.5 rounded-sm'
-  }
+  };
 </script>
 
 <svelte:element

@@ -1,19 +1,19 @@
 <script lang="ts">
-  import {cn} from '../utils/cn'
+  import {cn} from '../utils/cn';
 
   interface StatItem {
-    label: string
-    value: string
-    description?: string
-    icon?: string
+    label: string;
+    value: string;
+    description?: string;
+    icon?: string;
   }
 
   interface Props {
-    stats: StatItem[]
-    class?: string
+    stats: StatItem[];
+    class?: string;
   }
 
-  let {stats = [], class: className = ''}: Props = $props()
+  let {stats = [], class: className = ''}: Props = $props();
 </script>
 
 <div

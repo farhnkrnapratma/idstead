@@ -1,19 +1,19 @@
 <script lang="ts">
-  import type {Snippet} from 'svelte'
-  import {AlertTriangle, RotateCw} from '@lucide/svelte'
-  import Button from './Button.svelte'
-  import ShinyText from './ShinyText.svelte'
-  import {cn} from '../utils/cn'
+  import type {Snippet} from 'svelte';
+  import {AlertTriangle, RotateCw} from '@lucide/svelte';
+  import Button from './Button.svelte';
+  import ShinyText from './ShinyText.svelte';
+  import {cn} from '../utils/cn';
 
   interface Props {
-    title?: string
-    description?: string
-    code?: string | number
-    size?: 'inline' | 'page'
-    onRetry?: () => void
-    retryLabel?: string
-    actions?: Snippet
-    class?: string
+    title?: string;
+    description?: string;
+    code?: string | number;
+    size?: 'inline' | 'page';
+    onRetry?: () => void;
+    retryLabel?: string;
+    actions?: Snippet;
+    class?: string;
   }
 
   let {
@@ -25,7 +25,7 @@
     retryLabel = 'Try Again',
     actions,
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 </script>
 
 {#if size === 'page'}

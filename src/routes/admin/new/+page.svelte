@@ -1,16 +1,16 @@
 <script lang="ts">
-  import {supabase} from '$lib/supabase'
-  import {onMount, tick} from 'svelte'
-  import {X, Image as ImageIcon, AlertCircle} from '@lucide/svelte'
-  import {renderMarkdown} from '$lib/markdown'
+  import {supabase} from '$lib/supabase';
+  import {onMount, tick} from 'svelte';
+  import {X, Image as ImageIcon, AlertCircle} from '@lucide/svelte';
+  import {renderMarkdown} from '$lib/markdown';
   import {
     enhanceCodeBlocks,
     splitHighlightedHtmlLines
-  } from '$lib/utils/codeBlocks'
-  import hljs from 'highlight.js'
-  import {a11yStore} from '$lib/stores/a11yStore.svelte'
-  import {codeBlockPrefsStore} from '$lib/stores/codeBlockPrefsStore.svelte'
-  import {resolveHljsTheme} from '$lib/utils/hljsTheme'
+  } from '$lib/utils/codeBlocks';
+  import hljs from 'highlight.js';
+  import {a11yStore} from '$lib/stores/a11yStore.svelte';
+  import {codeBlockPrefsStore} from '$lib/stores/codeBlockPrefsStore.svelte';
+  import {resolveHljsTheme} from '$lib/utils/hljsTheme';
   import {
     SkipLink,
     LoadingState,
@@ -29,19 +29,19 @@
     PillInput,
     decodeHtmlEntities,
     sanitizeInput
-  } from '$lib'
-  import {themeStore} from '$lib/stores/themeStore.svelte'
+  } from '$lib';
+  import {themeStore} from '$lib/stores/themeStore.svelte';
 
-  let isCheckingAuth = $state(true)
-  let title = $state('')
-  let slug = $derived(generateSlug(title))
-  let excerpt = $state('')
-  let tags = $state<string[]>([])
+  let isCheckingAuth = $state(true);
+  let title = $state('');
+  let slug = $derived(generateSlug(title));
+  let excerpt = $state('');
+  let tags = $state<string[]>([]);
   let markdownContent = $state(
     '# New Post\n\nWrite your markdown content here...'
-  )
+  );
 
-  let isDark = $state(false)
+  let isDark = $state(false);
 
   const hljsTheme = $derived(
     resolveHljsTheme(
@@ -49,70 +49,66 @@
       isDark,
       codeBlockPrefsStore.current.colorScheme
     )
-  )
+  );
 
-  let isSubmitting = $state(false)
-  let errorMessage = $state<string | null>(null)
-  let activeTab = $state<'editor' | 'preview'>('editor')
-  let previewHtml = $state('')
+  let isSubmitting = $state(false);
+  let errorMessage = $state<string | null>(null);
 
-  let isEditMode = $state(false)
-  let editId = $state<string | null>(null)
-  let originalSlug = ''
+  let isEditMode = $state(false);
+  let editId = $state<string | null>(null);
+  let originalSlug = '';
 
-  let bannerFile = $state<File | null>(null)
-  let bannerPreview = $state<string | null>(null)
-  let bannerPath = $state<string | null>(null)
-  let bannerError = $state<string | null>(null)
+  let bannerFile = $state<File | null>(null);
+  let bannerPreview = $state<string | null>(null);
+  let bannerPath = $state<string | null>(null);
+  let bannerError = $state<string | null>(null);
 
-  let initialTitle = $state('')
-  let initialExcerpt = $state('')
-  let initialTags = $state<string[]>([])
-  let initialMarkdownContent = $state('')
+  let initialTitle = $state('');
+  let initialExcerpt = $state('');
+  let initialTags = $state<string[]>([]);
+  let initialMarkdownContent = $state('');
 
   const isDirty = $derived(
     title.trim() !== initialTitle.trim()
       || excerpt.trim() !== initialExcerpt.trim()
       || JSON.stringify(tags) !== JSON.stringify(initialTags)
       || markdownContent.trim() !== initialMarkdownContent.trim()
-  )
+  );
 
-  let titleError = $state('')
-  let titleValid = $state(false)
+  let titleError = $state('');
+  let titleValid = $state(false);
 
-  let excerptError = $state('')
-  let excerptValid = $state(false)
+  let excerptError = $state('');
+  let excerptValid = $state(false);
 
-  let tagsError = $state('')
-  let tagsValid = $state(false)
+  let tagsError = $state('');
+  let tagsValid = $state(false);
 
-  let showCancelDialog = $state(false)
-  let showPublishDialog = $state(false)
-  let showSaveDraftDialog = $state(false)
+  let showCancelDialog = $state(false);
+  let showPublishDialog = $state(false);
+  let showSaveDraftDialog = $state(false);
 
   $effect(() => {
-    if (typeof window !== 'undefined') {
-      isDark = document.documentElement.classList.contains('dark')
-      const observer = new MutationObserver(() => {
-        isDark = document.documentElement.classList.contains('dark')
-      })
-      observer.observe(document.documentElement, {
-        attributes: true,
-        attributeFilter: ['class']
-      })
-      return () => observer.disconnect()
-    }
-  })
+    isDark = document.documentElement.classList.contains('dark');
+    const observer = new MutationObserver(() => {
+      isDark = document.documentElement.classList.contains('dark');
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+    return () => observer.disconnect();
+  });
 
-  const IDLE_TIMEOUT_MS = 30 * 60 * 1000
-  let idleTimer: ReturnType<typeof setTimeout>
+  const IDLE_TIMEOUT_MS = 30 * 60 * 1000;
+  let idleTimer: ReturnType<typeof setTimeout>;
 
   function resetIdleTimer() {
-    clearTimeout(idleTimer)
+    clearTimeout(idleTimer);
     idleTimer = setTimeout(async () => {
-      await supabase.auth.signOut()
-      window.location.href = '/admin/login'
-    }, IDLE_TIMEOUT_MS)
+      await supabase.auth.signOut();
+      window.location.href = '/admin/login';
+    }, IDLE_TIMEOUT_MS);
   }
 
   const ACTIVITY_EVENTS = [
@@ -121,50 +117,50 @@
     'keydown',
     'scroll',
     'touchstart'
-  ] as const
+  ] as const;
 
   onMount(() => {
-    ;(async () => {
+    (async () => {
       try {
-        const {data: sessionData} = await supabase.auth.getSession()
+        const {data: sessionData} = await supabase.auth.getSession();
         if (!sessionData.session) {
-          window.location.href = '/admin/login'
-          return
+          window.location.href = '/admin/login';
+          return;
         }
 
-        const params = new URLSearchParams(window.location.search)
-        const id = params.get('id')
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
         if (id) {
-          editId = id
-          isEditMode = true
-          await loadPostForEdit(id)
+          editId = id;
+          isEditMode = true;
+          await loadPostForEdit(id);
         } else {
-          initialTitle = ''
-          initialExcerpt = ''
-          initialTags = []
+          initialTitle = '';
+          initialExcerpt = '';
+          initialTags = [];
           initialMarkdownContent =
-            '# New Post\n\nWrite your markdown content here...'
+            '# New Post\n\nWrite your markdown content here...';
         }
 
-        const key = id ? `autosave_edit_${id}` : 'autosave_new'
-        const savedDraft = localStorage.getItem(key)
+        const key = id ? `autosave_edit_${id}` : 'autosave_new';
+        const savedDraft = localStorage.getItem(key);
         if (savedDraft) {
           try {
-            const parsed = JSON.parse(savedDraft)
+            const parsed = JSON.parse(savedDraft);
             const defaultTemplate =
-              '# New Post\n\nWrite your markdown content here...'
+              '# New Post\n\nWrite your markdown content here...';
             if (!id) {
-              title = parsed.title || title
-              excerpt = parsed.excerpt || excerpt
+              title = parsed.title || title;
+              excerpt = parsed.excerpt || excerpt;
               tags =
                 Array.isArray(parsed.tags) ?
                   parsed.tags.map((t: any) => decodeHtmlEntities(String(t)))
-                : tags
+                : tags;
               if (
                 parsed.markdownContent
                 && parsed.markdownContent !== defaultTemplate
               ) {
-                markdownContent = parsed.markdownContent
+                markdownContent = parsed.markdownContent;
               }
             } else {
               if (
@@ -172,39 +168,39 @@
                 && parsed.markdownContent !== defaultTemplate
                 && parsed.markdownContent !== markdownContent
               ) {
-                title = parsed.title || title
-                excerpt = parsed.excerpt || excerpt
+                title = parsed.title || title;
+                excerpt = parsed.excerpt || excerpt;
                 tags =
                   Array.isArray(parsed.tags) ?
                     parsed.tags.map((t: any) => decodeHtmlEntities(String(t)))
-                  : tags
-                markdownContent = parsed.markdownContent
+                  : tags;
+                markdownContent = parsed.markdownContent;
               }
             }
           } catch (e) {
-            console.error('Failed to parse autosave draft', e)
+            console.error('Failed to parse autosave draft', e);
           }
         }
       } catch (err: any) {
-        console.error('Failed initializing edit page:', err)
-        errorMessage = err?.message || 'Failed loading post data.'
+        console.error('Failed initializing edit page:', err);
+        errorMessage = err?.message || 'Failed loading post data.';
       } finally {
-        isCheckingAuth = false
+        isCheckingAuth = false;
       }
-    })()
+    })();
 
-    resetIdleTimer()
+    resetIdleTimer();
     ACTIVITY_EVENTS.forEach(evt =>
       window.addEventListener(evt, resetIdleTimer, {passive: true})
-    )
+    );
 
     return () => {
-      clearTimeout(idleTimer)
+      clearTimeout(idleTimer);
       ACTIVITY_EVENTS.forEach(evt =>
         window.removeEventListener(evt, resetIdleTimer)
-      )
-    }
-  })
+      );
+    };
+  });
 
   async function loadPostForEdit(id: string) {
     try {
@@ -212,61 +208,61 @@
         .from('db_posts')
         .select('*')
         .eq('id', id)
-        .single()
+        .single();
 
       if (error || !post) {
-        throw error || new Error('Post not found')
+        throw error || new Error('Post not found');
       }
 
-      title = post.title
-      originalSlug = post.slug
-      excerpt = post.excerpt || ''
+      title = post.title;
+      originalSlug = post.slug;
+      excerpt = post.excerpt || '';
       tags =
         Array.isArray(post.tags) ?
           post.tags.map((t: string) => decodeHtmlEntities(t))
-        : []
+        : [];
 
-      let fileText = ''
+      let fileText = '';
       if (post.storage_path) {
         try {
           const {data: fileData, error: fileError} = await supabase.storage
             .from('blog-posts')
-            .download(post.storage_path)
+            .download(post.storage_path);
 
           if (!fileError && fileData) {
-            fileText = await fileData.text()
+            fileText = await fileData.text();
           } else {
             const {data: publicUrlData} = supabase.storage
               .from('blog-posts')
-              .getPublicUrl(post.storage_path)
-            const fileRes = await fetch(publicUrlData.publicUrl)
+              .getPublicUrl(post.storage_path);
+            const fileRes = await fetch(publicUrlData.publicUrl);
             if (fileRes.ok) {
-              fileText = await fileRes.text()
+              fileText = await fileRes.text();
             }
           }
         } catch (storageErr) {
-          console.error('Failed downloading post markdown file:', storageErr)
+          console.error('Failed downloading post markdown file:', storageErr);
         }
       }
 
-      markdownContent = fileText
-      initialTitle = title
-      initialExcerpt = excerpt
-      initialTags = [...tags]
-      initialMarkdownContent = markdownContent
+      markdownContent = fileText;
+      initialTitle = title;
+      initialExcerpt = excerpt;
+      initialTags = [...tags];
+      initialMarkdownContent = markdownContent;
 
-      bannerPath = post.banner_path || null
+      bannerPath = post.banner_path || null;
       if (post.banner_path) {
         const {data: publicUrl} = supabase.storage
           .from('blog-posts')
-          .getPublicUrl(post.banner_path)
-        bannerPreview = publicUrl.publicUrl
+          .getPublicUrl(post.banner_path);
+        bannerPreview = publicUrl.publicUrl;
       } else {
-        bannerPreview = null
+        bannerPreview = null;
       }
     } catch (err: any) {
-      console.error('Failed in loadPostForEdit:', err)
-      errorMessage = err?.message || 'Failed to load post for editing'
+      console.error('Failed in loadPostForEdit:', err);
+      errorMessage = err?.message || 'Failed to load post for editing';
     }
   }
 
@@ -276,455 +272,266 @@
       .replace(/[^a-z\s-]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
-      .replace(/^-+|-+$/g, '')
-  }
-
-  $effect(() => {
-    if (markdownContent) {
-      renderMarkdown(markdownContent).then(html => {
-        previewHtml = html
-      })
-    }
-  })
-
-  $effect(() => {
-    if (activeTab === 'preview' && previewHtml) {
-      tick().then(() => {
-        const blocks = document.querySelectorAll('.prose-custom pre code')
-        blocks.forEach(block => {
-          hljs.highlightElement(block as HTMLElement)
-        })
-        enhanceCodeBlocks(toastStore.success)
-      })
-    }
-  })
-
-  let lineHeights = $state<number[]>([])
-
-  function updateLineHeights() {
-    if (lineWrapMode !== 'soft') {
-      lineHeights = []
-      return
-    }
-    if (typeof document === 'undefined') return
-    tick().then(() => {
-      if (!preElement) return
-      const lineEls =
-        preElement.querySelectorAll<HTMLElement>('.editor-code-line')
-      const heights: number[] = []
-      lineEls.forEach(el => {
-        heights.push(el.offsetHeight || 24)
-      })
-      lineHeights = heights
-    })
-  }
-
-  $effect(() => {
-    if (
-      markdownContent !== undefined
-      || lineWrapMode !== undefined
-      || activeTab !== undefined
-    ) {
-      updateLineHeights()
-    }
-  })
-
-  const highlightedMarkdown = $derived(
-    hljs.highlight(markdownContent || '', {language: 'markdown'}).value
-      + (markdownContent.endsWith('\n') ? '\n ' : '')
-  )
-
-  let isToolbarStuck = $state(false)
-  let editorSentinelElement = $state<HTMLDivElement | null>(null)
-
-  $effect(() => {
-    if (typeof window === 'undefined' || !editorSentinelElement) return
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        isToolbarStuck = !entry.isIntersecting
-      },
-      {threshold: 0, rootMargin: '0px'}
-    )
-    observer.observe(editorSentinelElement)
-    return () => observer.disconnect()
-  })
-
-  let excerptTextareaElement = $state<HTMLTextAreaElement | null>(null)
-
-  $effect(() => {
-    if (excerpt !== undefined && excerptTextareaElement) {
-      excerptTextareaElement.style.height = 'auto'
-      excerptTextareaElement.style.height = `${excerptTextareaElement.scrollHeight}px`
-    }
-  })
-
-  let markdownTextareaElement = $state<HTMLTextAreaElement | null>(null)
-
-  $effect(() => {
-    if (markdownContent !== undefined && markdownTextareaElement) {
-      markdownTextareaElement.style.height = 'auto'
-      markdownTextareaElement.style.height = `${markdownTextareaElement.scrollHeight}px`
-    }
-  })
-
-  $effect(() => {
-    if (markdownTextareaElement) {
-      textareaElement = markdownTextareaElement
-    }
-  })
-
-  let preElement = $state<HTMLElement | null>(null)
-  let textareaElement = $state<HTMLTextAreaElement | null>(null)
-
-  let indentMode = $state<'spaces' | 'tabs'>('spaces')
-  let indentSize = $state(4)
-  let lineWrapMode = $state<'soft' | 'none'>('soft')
-
-  let indentModeDropdownOpen = $state(false)
-  let indentSizeDropdownOpen = $state(false)
-  let wrapModeDropdownOpen = $state(false)
-
-  let currentLine = $state(1)
-  let currentColumn = $state(1)
-
-  let imageFileInput = $state<HTMLInputElement | null>(null)
-
-  let lineCount = $derived(markdownContent.split('\n').length)
-
-  let lineEnding = $derived(markdownContent.includes('\r\n') ? 'CRLF' : 'LF')
-
-  function updateCursorPosition() {
-    if (!textareaElement) return
-    const textBeforeCursor = markdownContent.substring(
-      0,
-      textareaElement.selectionStart
-    )
-    const lines = textBeforeCursor.split('\n')
-    currentLine = lines.length
-    currentColumn = lines[lines.length - 1].length + 1
-  }
-
-  function handleTextareaKeyDown(e: KeyboardEvent) {
-    if (e.key === 'Tab') {
-      e.preventDefault()
-      const target = e.currentTarget as HTMLTextAreaElement
-      const start = target.selectionStart
-      const end = target.selectionEnd
-      const indentStr = indentMode === 'spaces' ? ' '.repeat(indentSize) : '\t'
-      markdownContent =
-        markdownContent.substring(0, start)
-        + indentStr
-        + markdownContent.substring(end)
-      tick().then(() => {
-        target.selectionStart = target.selectionEnd = start + indentStr.length
-        syncScroll()
-        updateCursorPosition()
-      })
-    }
-  }
-
-  function insertMarkdown(prefix: string, suffix: string = '') {
-    if (!textareaElement) return
-    const start = textareaElement.selectionStart
-    const end = textareaElement.selectionEnd
-    const selectedText = markdownContent.substring(start, end)
-    const replacement = prefix + selectedText + suffix
-    markdownContent =
-      markdownContent.substring(0, start)
-      + replacement
-      + markdownContent.substring(end)
-    tick().then(() => {
-      textareaElement!.focus()
-      textareaElement!.selectionStart = start + prefix.length
-      textareaElement!.selectionEnd =
-        start + prefix.length + selectedText.length
-      syncScroll()
-      updateCursorPosition()
-    })
+      .replace(/^-+|-+$/g, '');
   }
 
   async function handleImageUploadFile(file: File): Promise<string | null> {
-    const allowedTypes = ['image/png', 'image/webp', 'image/jpeg', 'image/jpg']
+    const allowedTypes = ['image/png', 'image/webp', 'image/jpeg', 'image/jpg'];
     if (!allowedTypes.includes(file.type)) {
-      errorMessage = 'Supported image formats are PNG, WebP, JPEG, JPG.'
-      return null
+      errorMessage = 'Supported image formats are PNG, WebP, JPEG, JPG.';
+      return null;
     }
     if (file.size > 5 * 1024 * 1024) {
-      errorMessage = 'Image size must be 5MB or less.'
-      return null
+      errorMessage = 'Image size must be 5MB or less.';
+      return null;
     }
-    isSubmitting = true
-    errorMessage = null
+    isSubmitting = true;
+    errorMessage = null;
     try {
-      const ext = file.name.split('.').pop() || 'png'
-      const path = `images/${slug || 'post'}-${Date.now()}.${ext}`
+      const ext = file.name.split('.').pop() || 'png';
+      const path = `images/${slug || 'post'}-${Date.now()}.${ext}`;
       const {error: uploadError} = await supabase.storage
         .from('blog-posts')
-        .upload(path, file, {cacheControl: '3600', upsert: true})
-      if (uploadError) throw uploadError
+        .upload(path, file, {cacheControl: '3600', upsert: true});
+      if (uploadError) throw uploadError;
       const {data: urlData} = supabase.storage
         .from('blog-posts')
-        .getPublicUrl(path)
-      return urlData.publicUrl
+        .getPublicUrl(path);
+      return urlData.publicUrl;
     } catch (err) {
-      const error = err as Error
-      errorMessage = error.message || 'Failed to upload image.'
-      return null
+      const error = err as Error;
+      errorMessage = error.message || 'Failed to upload image.';
+      return null;
     } finally {
-      isSubmitting = false
+      isSubmitting = false;
     }
   }
-
-  function syncScroll() {
-    if (textareaElement && preElement) {
-      preElement.scrollTop = textareaElement.scrollTop
-      preElement.scrollLeft = textareaElement.scrollLeft
-    }
-  }
-
-  let autoSaveStatus = $state<'saving' | 'saved' | 'idle'>('idle')
-  let autoSaveTimer: ReturnType<typeof setTimeout>
 
   $effect(() => {
     if (markdownContent && !isCheckingAuth) {
-      autoSaveStatus = 'saving'
-      clearTimeout(autoSaveTimer)
-      autoSaveTimer = setTimeout(() => {
-        const key = editId ? `autosave_edit_${editId}` : 'autosave_new'
+      const timer = setTimeout(() => {
+        const key = editId ? `autosave_edit_${editId}` : 'autosave_new';
         const data = {
           title,
           excerpt,
           tags,
           markdownContent,
           timestamp: Date.now()
-        }
-        localStorage.setItem(key, JSON.stringify(data))
-        autoSaveStatus = 'saved'
-        setTimeout(() => {
-          if (autoSaveStatus === 'saved') autoSaveStatus = 'idle'
-        }, 1500)
-      }, 500)
+        };
+        localStorage.setItem(key, JSON.stringify(data));
+      }, 500);
+      return () => clearTimeout(timer);
     }
-  })
+  });
 
   function debounce<T extends unknown[]>(cb: (...args: T) => void, ms: number) {
-    let timer: ReturnType<typeof setTimeout>
+    let timer: ReturnType<typeof setTimeout>;
     return (...args: T) => {
-      clearTimeout(timer)
-      timer = setTimeout(() => cb(...args), ms)
-    }
+      clearTimeout(timer);
+      timer = setTimeout(() => cb(...args), ms);
+    };
   }
 
   const validateTitleField = debounce(() => {
     if (title.trim() === '') {
-      titleError = ''
-      titleValid = false
+      titleError = '';
+      titleValid = false;
     } else if (title.trim().length > 60) {
-      titleError = 'Title must be 60 characters or less.'
-      titleValid = false
+      titleError = 'Title must be 60 characters or less.';
+      titleValid = false;
     } else {
-      titleError = ''
-      titleValid = true
+      titleError = '';
+      titleValid = true;
     }
-  }, 500)
+  }, 500);
 
   const validateExcerptField = debounce(() => {
-    const val = excerpt.trim()
+    const val = excerpt.trim();
     if (val === '') {
-      excerptError = ''
-      excerptValid = false
+      excerptError = '';
+      excerptValid = false;
     } else if (val.length > 250) {
-      excerptError = 'Excerpt must be 250 characters or less.'
-      excerptValid = false
+      excerptError = 'Excerpt must be 250 characters or less.';
+      excerptValid = false;
     } else {
-      excerptError = ''
-      excerptValid = true
+      excerptError = '';
+      excerptValid = true;
     }
-  }, 500)
+  }, 500);
 
   const validateTagsField = debounce(() => {
     if (tags.length === 0) {
-      tagsError = 'At least 1 tag is required.'
-      tagsValid = false
+      tagsError = 'At least 1 tag is required.';
+      tagsValid = false;
     } else if (tags.length > 5) {
-      tagsError = 'Maximum 5 tags allowed.'
-      tagsValid = false
+      tagsError = 'Maximum 5 tags allowed.';
+      tagsValid = false;
     } else {
-      tagsError = ''
-      tagsValid = true
+      tagsError = '';
+      tagsValid = true;
     }
-  }, 300)
-
-  $effect(() => {
-    if (tags.length > 0 && tags.length <= 5) {
-      tagsError = ''
-      tagsValid = true
-    } else if (tags.length > 5) {
-      tagsError = 'Maximum 5 tags allowed.'
-      tagsValid = false
-    }
-  })
+  }, 300);
 
   function validateImageDimensions(file: File): Promise<boolean> {
     return new Promise(resolve => {
-      const img = new Image()
+      const img = new Image();
       img.onload = () => {
-        const ratio = img.width / img.height
+        const ratio = img.width / img.height;
         const valid =
           (img.width === 1280 && img.height === 640)
-          || Math.abs(ratio - 2.0) < 0.05
-        resolve(valid)
-      }
+          || Math.abs(ratio - 2.0) < 0.05;
+        resolve(valid);
+      };
       img.onerror = () => {
-        resolve(false)
-      }
-      img.src = URL.createObjectURL(file)
-    })
+        resolve(false);
+      };
+      img.src = URL.createObjectURL(file);
+    });
   }
 
   async function handleBannerChange(e: Event) {
-    bannerError = null
-    const input = e.target as HTMLInputElement
-    const file = input.files?.[0]
-    if (!file) return
+    bannerError = null;
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
 
-    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp']
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
     if (!validTypes.includes(file.type)) {
-      bannerError = 'Banner must be a PNG, JPG, or WebP image.'
-      input.value = ''
-      return
+      bannerError = 'Banner must be a PNG, JPG, or WebP image.';
+      input.value = '';
+      return;
     }
 
-    const isValidDimensions = await validateImageDimensions(file)
+    const isValidDimensions = await validateImageDimensions(file);
     if (!isValidDimensions) {
       bannerError =
-        'Banner dimensions must have a 2:1 ratio (e.g. 1280x640 pixels).'
-      input.value = ''
-      return
+        'Banner dimensions must have a 2:1 ratio (e.g. 1280x640 pixels).';
+      input.value = '';
+      return;
     }
 
-    bannerFile = file
-    bannerPreview = URL.createObjectURL(file)
+    bannerFile = file;
+    bannerPreview = URL.createObjectURL(file);
   }
 
   function validate() {
-    const titleVal = title.trim()
+    const titleVal = title.trim();
     if (titleVal === '') {
-      titleError = 'Title is required.'
-      titleValid = false
-      return false
+      titleError = 'Title is required.';
+      titleValid = false;
+      return false;
     }
     if (titleVal.length > 60) {
-      titleError = 'Title must be 60 characters or less.'
-      titleValid = false
-      return false
+      titleError = 'Title must be 60 characters or less.';
+      titleValid = false;
+      return false;
     }
 
-    const excerptVal = excerpt.trim()
+    const excerptVal = excerpt.trim();
     if (excerptVal === '') {
-      errorMessage = 'Excerpt is required.'
-      return false
+      errorMessage = 'Excerpt is required.';
+      return false;
     }
     if (excerptVal.length > 250) {
-      errorMessage = 'Excerpt must be 250 characters or less.'
-      return false
+      errorMessage = 'Excerpt must be 250 characters or less.';
+      return false;
     }
 
     if (tags.length === 0) {
-      tagsError = 'At least 1 tag is required.'
-      tagsValid = false
-      errorMessage = 'At least 1 tag is required.'
-      return false
+      tagsError = 'At least 1 tag is required.';
+      tagsValid = false;
+      errorMessage = 'At least 1 tag is required.';
+      return false;
     }
     if (tags.length > 5) {
-      tagsError = 'Maximum 5 tags allowed.'
-      tagsValid = false
-      errorMessage = 'Maximum 5 tags allowed.'
-      return false
+      tagsError = 'Maximum 5 tags allowed.';
+      tagsValid = false;
+      errorMessage = 'Maximum 5 tags allowed.';
+      return false;
     }
 
-    titleError = ''
-    titleValid = true
-    tagsError = ''
-    tagsValid = true
-    return true
+    titleError = '';
+    titleValid = true;
+    tagsError = '';
+    tagsValid = true;
+    return true;
   }
 
   function handleCancelClick() {
     if (isDirty) {
-      showCancelDialog = true
+      showCancelDialog = true;
     } else {
-      window.location.href = '/admin'
+      window.location.href = '/admin';
     }
   }
 
   function handleSaveClick(toBePublished: boolean) {
-    if (!validate()) return
+    if (!validate()) return;
     if (!markdownContent.trim()) {
-      errorMessage = 'Markdown content is required.'
-      return
+      errorMessage = 'Markdown content is required.';
+      return;
     }
 
     if (toBePublished) {
-      showPublishDialog = true
+      showPublishDialog = true;
     } else {
-      showSaveDraftDialog = true
+      showSaveDraftDialog = true;
     }
   }
 
   async function executeSave(toBePublished: boolean) {
-    showPublishDialog = false
-    showSaveDraftDialog = false
-    isSubmitting = true
-    errorMessage = null
+    showPublishDialog = false;
+    showSaveDraftDialog = false;
+    isSubmitting = true;
+    errorMessage = null;
 
     try {
-      const {data: userData, error: userError} = await supabase.auth.getUser()
+      const {data: userData, error: userError} = await supabase.auth.getUser();
       if (userError || !userData?.user) {
         const {data: refreshData, error: refreshError} =
-          await supabase.auth.refreshSession()
+          await supabase.auth.refreshSession();
         if (refreshError || !refreshData?.session) {
-          throw new Error('Your session has expired. Please log in again.')
+          throw new Error('Your session has expired. Please log in again.');
         }
       }
 
-      const activeUser = (await supabase.auth.getUser()).data?.user
+      const activeUser = (await supabase.auth.getUser()).data?.user;
 
       if (title.trim().length > 60) {
         throw new Error(
           'Title exceeds backend maximum length of 60 characters.'
-        )
+        );
       }
       if (!/^[a-z-]*$/.test(slug)) {
         throw new Error(
           'Slug contains invalid characters. Only a-z and - are allowed.'
-        )
+        );
       }
 
-      const fileName = `${slug}.md`
-      const storagePath = `${fileName}`
+      const fileName = `${slug}.md`;
+      const storagePath = `${fileName}`;
 
-      const mdBlob = new Blob([markdownContent], {type: 'text/markdown'})
-      const mdFile = new File([mdBlob], fileName, {type: 'text/markdown'})
+      const mdBlob = new Blob([markdownContent], {type: 'text/markdown'});
+      const mdFile = new File([mdBlob], fileName, {type: 'text/markdown'});
 
-      let finalBannerPath = bannerPath
+      let finalBannerPath = bannerPath;
 
       if (bannerFile) {
         if (bannerFile.type !== 'image/png') {
-          throw new Error('Backend Validation: Banner must be a PNG image.')
+          throw new Error('Backend Validation: Banner must be a PNG image.');
         }
-        const bannerFileName = `banners/${slug}.png`
+        const bannerFileName = `banners/${slug}.png`;
         const {error: bannerUploadError} = await supabase.storage
           .from('blog-posts')
           .upload(bannerFileName, bannerFile, {
             cacheControl: '3600',
             upsert: true
-          })
+          });
 
         if (bannerUploadError) {
-          throw new Error(`Banner upload failed: ${bannerUploadError.message}`)
+          throw new Error(`Banner upload failed: ${bannerUploadError.message}`);
         }
-        finalBannerPath = bannerFileName
+        finalBannerPath = bannerFileName;
       }
 
       const payload = {
@@ -738,26 +545,26 @@
         published: toBePublished,
         storage_path: storagePath,
         banner_path: finalBannerPath
-      }
+      };
 
       if (isEditMode && editId) {
         const {error: uploadError} = await supabase.storage
           .from('blog-posts')
-          .upload(storagePath, mdFile, {cacheControl: '3600', upsert: true})
+          .upload(storagePath, mdFile, {cacheControl: '3600', upsert: true});
 
         if (uploadError) {
-          throw new Error(`Storage upload failed: ${uploadError.message}`)
+          throw new Error(`Storage upload failed: ${uploadError.message}`);
         }
 
         const updatePayload: Record<string, any> = {
           ...payload,
           updated_at: new Date().toISOString()
-        }
+        };
 
         let {error: dbError} = await supabase
           .from('db_posts')
           .update(updatePayload)
-          .eq('id', editId)
+          .eq('id', editId);
 
         if (
           dbError
@@ -767,57 +574,59 @@
           const {error: dbError2} = await supabase
             .from('db_posts')
             .update(payload)
-            .eq('id', editId)
-          dbError = dbError2
+            .eq('id', editId);
+          dbError = dbError2;
         }
 
         if (dbError) {
-          throw dbError
+          throw dbError;
         }
 
         if (originalSlug && originalSlug !== slug) {
           await supabase.storage
             .from('blog-posts')
-            .remove([`${originalSlug}.md`, `banners/${originalSlug}.png`])
+            .remove([`${originalSlug}.md`, `banners/${originalSlug}.png`]);
         }
       } else {
         const {error: uploadError} = await supabase.storage
           .from('blog-posts')
-          .upload(storagePath, mdFile, {cacheControl: '3600', upsert: true})
+          .upload(storagePath, mdFile, {cacheControl: '3600', upsert: true});
 
         if (uploadError) {
-          throw new Error(`Storage upload failed: ${uploadError.message}`)
+          throw new Error(`Storage upload failed: ${uploadError.message}`);
         }
 
-        const {error: dbError} = await supabase.from('db_posts').insert(payload)
+        const {error: dbError} = await supabase
+          .from('db_posts')
+          .insert(payload);
 
         if (dbError) {
-          await supabase.storage.from('blog-posts').remove([storagePath])
-          throw dbError
+          await supabase.storage.from('blog-posts').remove([storagePath]);
+          throw dbError;
         }
       }
 
-      const key = editId ? `autosave_edit_${editId}` : 'autosave_new'
-      localStorage.removeItem(key)
+      const key = editId ? `autosave_edit_${editId}` : 'autosave_new';
+      localStorage.removeItem(key);
 
       const successMessage =
         isEditMode ?
           toBePublished ? 'Post updated and published.'
           : 'Post updated and saved as draft.'
         : toBePublished ? 'Post published.'
-        : 'Post saved as draft.'
+        : 'Post saved as draft.';
       sessionStorage.setItem(
         'admin_toast',
         JSON.stringify({message: successMessage, type: 'success'})
-      )
-      window.location.href = '/admin'
+      );
+      window.location.href = '/admin';
     } catch (err) {
-      const error = err as Error
-      console.error('Error saving post:', error)
-      errorMessage = error.message || 'Failed to save blog post.'
-      toastStore.error(errorMessage)
+      const error = err as Error;
+      console.error('Error saving post:', error);
+      errorMessage = error.message || 'Failed to save blog post.';
+      toastStore.error(errorMessage);
     } finally {
-      isSubmitting = false
+      isSubmitting = false;
     }
   }
 </script>
@@ -895,9 +704,9 @@
                   <button
                     type="button"
                     onclick={() => {
-                      bannerFile = null
-                      bannerPreview = null
-                      bannerPath = null
+                      bannerFile = null;
+                      bannerPreview = null;
+                      bannerPath = null;
                     }}
                     class="absolute top-2 right-2 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-white/20 bg-black/70 text-white transition-colors hover:bg-black/90"
                     aria-label="Remove banner">
@@ -953,9 +762,9 @@
                   error={!!titleError}
                   valid={titleValid}
                   oninput={() => {
-                    titleError = ''
-                    titleValid = false
-                    validateTitleField()
+                    titleError = '';
+                    titleValid = false;
+                    validateTitleField();
                   }} />
               </FormField>
 
@@ -975,9 +784,9 @@
                   error={!!excerptError}
                   valid={excerptValid}
                   oninput={() => {
-                    excerptError = ''
-                    excerptValid = false
-                    validateExcerptField()
+                    excerptError = '';
+                    excerptValid = false;
+                    validateExcerptField();
                   }} />
               </FormField>
 

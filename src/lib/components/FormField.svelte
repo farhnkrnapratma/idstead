@@ -1,22 +1,22 @@
 <script lang="ts">
-  import type {Snippet} from 'svelte'
-  import {AlertCircle, CheckCircle2} from '@lucide/svelte'
-  import {cn} from '../utils/cn'
+  import type {Snippet} from 'svelte';
+  import {AlertCircle, CheckCircle2} from '@lucide/svelte';
+  import {cn} from '../utils/cn';
 
   interface Props {
-    id: string
-    label: string
-    description?: string
-    required?: boolean
-    hideAsterisk?: boolean
-    error?: string
-    valid?: boolean
-    hint?: string
-    hintSnippet?: Snippet
-    counter?: string
-    disabled?: boolean
-    children?: Snippet
-    class?: string
+    id: string;
+    label: string;
+    description?: string;
+    required?: boolean;
+    hideAsterisk?: boolean;
+    error?: string;
+    valid?: boolean;
+    hint?: string;
+    hintSnippet?: Snippet;
+    counter?: string;
+    disabled?: boolean;
+    children?: Snippet;
+    class?: string;
   }
 
   let {
@@ -33,7 +33,7 @@
     disabled = false,
     children,
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 </script>
 
 <div

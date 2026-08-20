@@ -1,12 +1,12 @@
 <script lang="ts">
-  import type {Snippet} from 'svelte'
-  import {cn} from '../utils/cn'
+  import type {Snippet} from 'svelte';
+  import {cn} from '../utils/cn';
 
   interface Props {
-    position?: 'inline' | 'sticky'
-    align?: 'left' | 'between' | 'right'
-    class?: string
-    children?: Snippet
+    position?: 'inline' | 'sticky';
+    align?: 'left' | 'between' | 'right';
+    class?: string;
+    children?: Snippet;
   }
 
   let {
@@ -14,13 +14,13 @@
     align = 'right',
     class: className = '',
     children
-  }: Props = $props()
+  }: Props = $props();
 
   const alignStyles = {
     left: 'justify-start',
     between: 'justify-between',
     right: 'justify-end'
-  }
+  };
 </script>
 
 <div

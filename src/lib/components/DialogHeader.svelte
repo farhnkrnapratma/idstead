@@ -1,14 +1,14 @@
 <script lang="ts">
-  import {X} from '@lucide/svelte'
-  import IconButton from './IconButton.svelte'
-  import {cn} from '../utils/cn'
+  import {X} from '@lucide/svelte';
+  import IconButton from './IconButton.svelte';
+  import {cn} from '../utils/cn';
 
   interface Props {
-    title: string
-    description?: string
-    showClose?: boolean
-    onClose?: () => void
-    class?: string
+    title: string;
+    description?: string;
+    showClose?: boolean;
+    onClose?: () => void;
+    class?: string;
   }
 
   let {
@@ -17,7 +17,7 @@
     showClose = false,
     onClose,
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 </script>
 
 <div

@@ -1,18 +1,18 @@
 <script lang="ts">
-  import Tag from '../components/Tag.svelte'
-  import TagGroup from '../components/TagGroup.svelte'
-  import {cn} from '../utils/cn'
-  import {decodeHtmlEntities} from '../utils/formatters'
+  import Tag from '../components/Tag.svelte';
+  import TagGroup from '../components/TagGroup.svelte';
+  import {cn} from '../utils/cn';
+  import {decodeHtmlEntities} from '../utils/formatters';
 
   interface Props {
-    role: string
-    organization: string
-    period: string
-    location?: string
-    description?: string
-    highlights?: string[]
-    tags?: string[]
-    class?: string
+    role: string;
+    organization: string;
+    period: string;
+    location?: string;
+    description?: string;
+    highlights?: string[];
+    tags?: string[];
+    class?: string;
   }
 
   let {
@@ -24,7 +24,7 @@
     highlights = [],
     tags = [],
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 </script>
 
 <div

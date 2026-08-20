@@ -1,15 +1,15 @@
 <script lang="ts">
-  import {cn} from '../utils/cn'
+  import {cn} from '../utils/cn';
 
   interface Props {
-    value: number
-    label?: string
-    class?: string
+    value: number;
+    label?: string;
+    class?: string;
   }
 
-  let {value = 0, label = '', class: className = ''}: Props = $props()
+  let {value = 0, label = '', class: className = ''}: Props = $props();
 
-  const clampedValue = $derived(Math.max(0, Math.min(100, value)))
+  const clampedValue = $derived(Math.max(0, Math.min(100, value)));
 </script>
 
 <div class={cn('flex w-full flex-col gap-1.5 select-none', className)}>

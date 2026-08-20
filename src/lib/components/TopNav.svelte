@@ -1,19 +1,24 @@
 <script lang="ts">
-  import SkipLink from './SkipLink.svelte'
-  import SpotlightSearch from './SpotlightSearch.svelte'
-  import ThemeSelect from './filter/ThemeSelect.svelte'
-  import ContentFontSelect from './filter/ContentFontSelect.svelte'
-  import AccessibilitySelect from './filter/AccessibilitySelect.svelte'
-  import {themeStore} from '../stores/themeStore.svelte'
+  import SkipLink from './SkipLink.svelte';
+  import SpotlightSearch from './SpotlightSearch.svelte';
+  import ThemeSelect from './filter/ThemeSelect.svelte';
+  import ContentFontSelect from './filter/ContentFontSelect.svelte';
+  import AccessibilitySelect from './filter/AccessibilitySelect.svelte';
+  import {themeStore} from '../stores/themeStore.svelte';
 
   interface Props {
-    ariaLabel: string
-    backHref: string
-    backLabel: string
-    showFontSelect?: boolean
+    ariaLabel: string;
+    backHref: string;
+    backLabel: string;
+    showFontSelect?: boolean;
   }
 
-  let {ariaLabel, backHref, backLabel, showFontSelect = false}: Props = $props()
+  let {
+    ariaLabel,
+    backHref,
+    backLabel,
+    showFontSelect = false
+  }: Props = $props();
 </script>
 
 <SkipLink />

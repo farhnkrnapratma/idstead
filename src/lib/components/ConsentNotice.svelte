@@ -1,9 +1,9 @@
 <script lang="ts">
   interface Props {
-    action: string
+    action: string;
   }
 
-  let {action}: Props = $props()
+  let {action}: Props = $props();
 </script>
 
 <p class="text-xs text-text-secondary">

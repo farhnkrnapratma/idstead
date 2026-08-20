@@ -1,19 +1,19 @@
 <script lang="ts">
-  import {pushState} from '$app/navigation'
-  import {onMount} from 'svelte'
-  import {cn} from '../utils/cn'
+  import {pushState} from '$app/navigation';
+  import {onMount} from 'svelte';
+  import {cn} from '../utils/cn';
 
   interface HeadingItem {
-    id: string
-    text: string
-    level: number
+    id: string;
+    text: string;
+    level: number;
   }
 
   interface Props {
-    headings: HeadingItem[]
-    collapsible?: boolean
-    defaultCollapsed?: boolean
-    class?: string
+    headings: HeadingItem[];
+    collapsible?: boolean;
+    defaultCollapsed?: boolean;
+    class?: string;
   }
 
   let {
@@ -21,41 +21,41 @@
     collapsible = false,
     defaultCollapsed = false,
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 
-  let activeHeadingId = $state('')
-  let indicatorTop = $state(0)
-  let indicatorHeight = $state(0)
-  let isIndicatorVisible = $state(false)
-  let tocListEl = $state<HTMLUListElement | null>(null)
+  let activeHeadingId = $state('');
+  let indicatorTop = $state(0);
+  let indicatorHeight = $state(0);
+  let isIndicatorVisible = $state(false);
+  let tocListEl = $state<HTMLUListElement | null>(null);
 
-  let isPinnedByClick = false
-  let unpinTimeout: ReturnType<typeof setTimeout> | undefined
+  let isPinnedByClick = false;
+  let unpinTimeout: ReturnType<typeof setTimeout> | undefined;
 
   function unpinAfterSettle() {
-    if (unpinTimeout) clearTimeout(unpinTimeout)
-    window.removeEventListener('scrollend', unpinAfterSettle)
-    isPinnedByClick = false
+    if (unpinTimeout) clearTimeout(unpinTimeout);
+    window.removeEventListener('scrollend', unpinAfterSettle);
+    isPinnedByClick = false;
   }
 
   function pinActiveHeading() {
-    isPinnedByClick = true
-    if (unpinTimeout) clearTimeout(unpinTimeout)
-    window.addEventListener('scrollend', unpinAfterSettle, {once: true})
-    unpinTimeout = setTimeout(unpinAfterSettle, 1500)
+    isPinnedByClick = true;
+    if (unpinTimeout) clearTimeout(unpinTimeout);
+    window.addEventListener('scrollend', unpinAfterSettle, {once: true});
+    unpinTimeout = setTimeout(unpinAfterSettle, 1500);
   }
 
   function navigateToHeading(id: string, instant = false) {
-    const target = document.getElementById(id)
-    if (!target) return
-    pinActiveHeading()
+    const target = document.getElementById(id);
+    if (!target) return;
+    pinActiveHeading();
     target.scrollIntoView({
       behavior: instant ? 'auto' : 'smooth',
       block: 'start'
-    })
-    pushState(`#${id}`, {})
-    activeHeadingId = id
-    updateIndicatorPos(id)
+    });
+    pushState(`#${id}`, {});
+    activeHeadingId = id;
+    updateIndicatorPos(id);
   }
 
   function updateIndicatorPos(
@@ -63,119 +63,119 @@
     forcedTop?: number,
     forcedHeight?: number
   ) {
-    if (!tocListEl) return
-    const activeEl = tocListEl.querySelector(`[href="#${id}"]`) as HTMLElement
+    if (!tocListEl) return;
+    const activeEl = tocListEl.querySelector(`[href="#${id}"]`) as HTMLElement;
     if (activeEl) {
-      const top = forcedTop !== undefined ? forcedTop : activeEl.offsetTop
+      const top = forcedTop !== undefined ? forcedTop : activeEl.offsetTop;
       const height =
-        forcedHeight !== undefined ? forcedHeight : activeEl.offsetHeight
-      indicatorTop = top
-      indicatorHeight = height
-      isIndicatorVisible = true
+        forcedHeight !== undefined ? forcedHeight : activeEl.offsetHeight;
+      indicatorTop = top;
+      indicatorHeight = height;
+      isIndicatorVisible = true;
     }
   }
 
   onMount(() => {
-    if (headings.length === 0) return
+    if (headings.length === 0) return;
 
-    let headingObserver: IntersectionObserver | null = null
-    let rafId: number | null = null
+    let headingObserver: IntersectionObserver | null = null;
+    let rafId: number | null = null;
 
     const elements = headings
       .map(h => document.getElementById(h.id))
-      .filter((el): el is HTMLElement => el !== null)
+      .filter((el): el is HTMLElement => el !== null);
 
     const updateScrollspyPosition = () => {
-      if (isPinnedByClick) return
-      if (!tocListEl || headings.length === 0) return
-      const scrollY = window.scrollY
+      if (isPinnedByClick) return;
+      if (!tocListEl || headings.length === 0) return;
+      const scrollY = window.scrollY;
 
       const tocLinks = headings
         .map(h => {
           const link = tocListEl?.querySelector(
             `[href="#${h.id}"]`
-          ) as HTMLElement
+          ) as HTMLElement;
           return link ?
               {id: h.id, top: link.offsetTop, height: link.offsetHeight}
-            : null
+            : null;
         })
         .filter(
           (l): l is {id: string; top: number; height: number} => l !== null
-        )
+        );
 
-      if (tocLinks.length === 0) return
+      if (tocLinks.length === 0) return;
 
-      const viewportOffset = 160
+      const viewportOffset = 160;
       const headingPositions = headings
         .map(h => {
-          const el = document.getElementById(h.id)
+          const el = document.getElementById(h.id);
           return el ?
               {id: h.id, top: el.getBoundingClientRect().top + scrollY}
-            : null
+            : null;
         })
-        .filter((h): h is {id: string; top: number} => h !== null)
+        .filter((h): h is {id: string; top: number} => h !== null);
 
-      if (headingPositions.length === 0) return
+      if (headingPositions.length === 0) return;
 
-      let currentIndex = -1
+      let currentIndex = -1;
       for (let i = 0; i < headingPositions.length; i++) {
         if (scrollY >= headingPositions[i].top - viewportOffset) {
-          currentIndex = i
+          currentIndex = i;
         } else {
-          break
+          break;
         }
       }
 
       if (currentIndex === -1) {
-        activeHeadingId = ''
-        isIndicatorVisible = false
-        return
+        activeHeadingId = '';
+        isIndicatorVisible = false;
+        return;
       }
 
-      const hCurrent = headingPositions[currentIndex]
-      const lCurrent = tocLinks.find(l => l.id === hCurrent.id)
+      const hCurrent = headingPositions[currentIndex];
+      const lCurrent = tocLinks.find(l => l.id === hCurrent.id);
 
-      if (!lCurrent) return
+      if (!lCurrent) return;
 
-      activeHeadingId = hCurrent.id
-      updateIndicatorPos(hCurrent.id, lCurrent.top, lCurrent.height)
-    }
+      activeHeadingId = hCurrent.id;
+      updateIndicatorPos(hCurrent.id, lCurrent.top, lCurrent.height);
+    };
 
     const handleScroll = () => {
-      if (rafId !== null) return
+      if (rafId !== null) return;
       rafId = requestAnimationFrame(() => {
-        rafId = null
-        updateScrollspyPosition()
-      })
-    }
+        rafId = null;
+        updateScrollspyPosition();
+      });
+    };
 
-    window.addEventListener('scroll', handleScroll, {passive: true})
+    window.addEventListener('scroll', handleScroll, {passive: true});
 
     headingObserver = new IntersectionObserver(
       entries => {
-        if (isPinnedByClick) return
+        if (isPinnedByClick) return;
         entries.forEach(entry => {
           if (entry.isIntersecting) {
-            activeHeadingId = entry.target.id
-            updateIndicatorPos(entry.target.id)
+            activeHeadingId = entry.target.id;
+            updateIndicatorPos(entry.target.id);
           }
-        })
+        });
       },
       {root: null, rootMargin: '0px 0px -70% 0px', threshold: 0.1}
-    )
+    );
 
-    elements.forEach(el => headingObserver?.observe(el))
+    elements.forEach(el => headingObserver?.observe(el));
 
     return () => {
-      window.removeEventListener('scroll', handleScroll)
-      headingObserver?.disconnect()
-      if (rafId !== null) cancelAnimationFrame(rafId)
-    }
-  })
+      window.removeEventListener('scroll', handleScroll);
+      headingObserver?.disconnect();
+      if (rafId !== null) cancelAnimationFrame(rafId);
+    };
+  });
   function formatHeadingText(text: string): string {
-    if (!text) return ''
+    if (!text) return '';
     if (/<[a-z][\s\S]*>/i.test(text)) {
-      return text
+      return text;
     }
     return text
       .replace(
@@ -187,7 +187,7 @@
         '<code class="font-mono text-inherit px-1 py-0.5 rounded-sm bg-surface-hover font-normal">[$1]</code>'
       )
       .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+      .replace(/\*([^*]+)\*/g, '<em>$1</em>');
   }
 </script>
 
@@ -229,8 +229,8 @@
             <a
               href="#{heading.id}"
               onclick={e => {
-                e.preventDefault()
-                navigateToHeading(heading.id)
+                e.preventDefault();
+                navigateToHeading(heading.id);
               }}
               aria-current={isActive ? 'true' : undefined}
               class="-ml-3 flex items-start rounded-r-xs py-0.5 pr-2 leading-snug transition-colors duration-150 ease-in-out hover:text-copilot {(

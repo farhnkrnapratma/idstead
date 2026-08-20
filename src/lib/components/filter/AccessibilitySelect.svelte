@@ -1,22 +1,22 @@
 <script lang="ts">
-  import {Accessibility} from '@lucide/svelte'
-  import {cn} from '../../utils/cn'
-  import IconButton from '../IconButton.svelte'
-  import {a11yStore, type FontScale} from '../../stores/a11yStore.svelte'
+  import {Accessibility} from '@lucide/svelte';
+  import {cn} from '../../utils/cn';
+  import IconButton from '../IconButton.svelte';
+  import {a11yStore, type FontScale} from '../../stores/a11yStore.svelte';
 
   interface Props {
-    class?: string
-    dropdownDirection?: 'up' | 'down'
+    class?: string;
+    dropdownDirection?: 'up' | 'down';
   }
 
-  let {class: className = '', dropdownDirection = 'down'}: Props = $props()
+  let {class: className = '', dropdownDirection = 'down'}: Props = $props();
 
-  let isOpen = $state(false)
+  let isOpen = $state(false);
 
   const fontScaleOptions: {
-    value: FontScale
-    label: string
-    previewClass: string
+    value: FontScale;
+    label: string;
+    previewClass: string;
   }[] = [
     {value: 100, label: '100%', previewClass: 'text-xs'},
     {value: 110, label: '110%', previewClass: 'text-sm'},
@@ -24,7 +24,7 @@
     {value: 130, label: '130%', previewClass: 'text-lg'},
     {value: 140, label: '140%', previewClass: 'text-xl'},
     {value: 150, label: '150%', previewClass: 'text-2xl'}
-  ]
+  ];
 
   const toggles: {
     key:
@@ -32,10 +32,10 @@
       | 'solidSurfaces'
       | 'highContrast'
       | 'focusHighlight'
-      | 'dyslexicFont'
-    label: string
-    description: string
-    toggle: () => void
+      | 'dyslexicFont';
+    label: string;
+    description: string;
+    toggle: () => void;
   }[] = [
     {
       key: 'reduceMotion',
@@ -67,12 +67,12 @@
       description: 'Use a more legible font stack',
       toggle: a11yStore.toggleDyslexicFont
     }
-  ]
+  ];
 
-  let containerRef: HTMLDivElement | undefined = $state()
+  let containerRef: HTMLDivElement | undefined = $state();
 
   function close() {
-    isOpen = false
+    isOpen = false;
   }
 
   function handleWindowPointerDown(event: PointerEvent) {
@@ -81,14 +81,14 @@
       && containerRef
       && !containerRef.contains(event.target as Node)
     ) {
-      close()
+      close();
     }
   }
 
   function handleKeydown(event: KeyboardEvent) {
     if (event.key === 'Escape' && isOpen) {
-      event.preventDefault()
-      close()
+      event.preventDefault();
+      close();
     }
   }
 </script>

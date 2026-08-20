@@ -1,4 +1,4 @@
-import {type Config} from 'prettier'
+import {type Config} from 'prettier';
 
 const config: Config = {
   experimentalTernaries: true,
@@ -6,7 +6,7 @@ const config: Config = {
   printWidth: 80,
   tabWidth: 2,
   useTabs: false,
-  semi: false,
+  semi: true,
   singleQuote: true,
   quoteProps: 'as-needed',
   jsxSingleQuote: true,
@@ -47,6 +47,6 @@ const config: Config = {
     }
   ],
   tailwindStylesheet: './src/routes/global.css'
-}
+};
 
-export default config
+export default config;

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {onMount, tick} from 'svelte'
+  import {onMount, tick} from 'svelte';
   import {
     Heading1,
     Heading2,
@@ -21,23 +21,23 @@
     Indent,
     ChevronDown,
     Check
-  } from '@lucide/svelte'
-  import {renderMarkdown} from '$lib/markdown'
+  } from '@lucide/svelte';
+  import {renderMarkdown} from '$lib/markdown';
   import {
     enhanceCodeBlocks,
     splitHighlightedHtmlLines
-  } from '$lib/utils/codeBlocks'
-  import hljs from 'highlight.js'
-  import {cn} from '$lib/utils/cn'
+  } from '$lib/utils/codeBlocks';
+  import hljs from 'highlight.js';
+  import {cn} from '$lib/utils/cn';
 
   interface Props {
-    value?: string
-    autosaveKey?: string
-    placeholder?: string
-    minHeight?: string
-    stickyTopClass?: string
-    class?: string
-    onImageUpload?: (file: File) => Promise<string | null>
+    value?: string;
+    autosaveKey?: string;
+    placeholder?: string;
+    minHeight?: string;
+    stickyTopClass?: string;
+    class?: string;
+    onImageUpload?: (file: File) => Promise<string | null>;
   }
 
   let {
@@ -48,115 +48,115 @@
     stickyTopClass = 'top-0',
     class: className = '',
     onImageUpload
-  }: Props = $props()
+  }: Props = $props();
 
-  let activeTab = $state<'editor' | 'preview'>('editor')
-  let previewHtml = $state('')
-  let lineWrapMode = $state<'soft' | 'none'>('soft')
-  let indentMode = $state<'spaces' | 'tabs'>('spaces')
-  let indentSize = $state(4)
+  let activeTab = $state<'editor' | 'preview'>('editor');
+  let previewHtml = $state('');
+  let lineWrapMode = $state<'soft' | 'none'>('soft');
+  let indentMode = $state<'spaces' | 'tabs'>('spaces');
+  let indentSize = $state(4);
 
-  let indentModeDropdownOpen = $state(false)
-  let indentSizeDropdownOpen = $state(false)
-  let wrapModeDropdownOpen = $state(false)
+  let indentModeDropdownOpen = $state(false);
+  let indentSizeDropdownOpen = $state(false);
+  let wrapModeDropdownOpen = $state(false);
 
-  let currentLine = $state(1)
-  let currentColumn = $state(1)
-  let lineHeights = $state<number[]>([])
+  let currentLine = $state(1);
+  let currentColumn = $state(1);
+  let lineHeights = $state<number[]>([]);
 
-  let markdownTextareaElement = $state<HTMLTextAreaElement | null>(null)
-  let preElement = $state<HTMLPreElement | null>(null)
-  let headerSentinelElement = $state<HTMLDivElement | null>(null)
-  let toolbarSentinelElement = $state<HTMLDivElement | null>(null)
-  let isHeaderStuck = $state(false)
-  let isToolbarStuck = $state(false)
-  let imageFileInput = $state<HTMLInputElement | null>(null)
+  let markdownTextareaElement = $state<HTMLTextAreaElement | null>(null);
+  let preElement = $state<HTMLPreElement | null>(null);
+  let headerSentinelElement = $state<HTMLDivElement | null>(null);
+  let toolbarSentinelElement = $state<HTMLDivElement | null>(null);
+  let isHeaderStuck = $state(false);
+  let isToolbarStuck = $state(false);
+  let imageFileInput = $state<HTMLInputElement | null>(null);
 
-  let autoSaveStatus = $state<'saving' | 'saved' | 'idle'>('idle')
-  let autoSaveTimer: ReturnType<typeof setTimeout>
+  let autoSaveStatus = $state<'saving' | 'saved' | 'idle'>('idle');
+  let autoSaveTimer: ReturnType<typeof setTimeout>;
 
-  const lineCount = $derived((value || '').split('\n').length)
-  const lineEnding = $derived((value || '').includes('\r\n') ? 'CRLF' : 'LF')
+  const lineCount = $derived((value || '').split('\n').length);
+  const lineEnding = $derived((value || '').includes('\r\n') ? 'CRLF' : 'LF');
 
   const highlightedMarkdown = $derived.by(() => {
     try {
-      const code = value || ''
-      const res = hljs.highlight(code, {language: 'markdown'}).value
-      return res + (code.endsWith('\n') ? '\n ' : '')
+      const code = value || '';
+      const res = hljs.highlight(code, {language: 'markdown'}).value;
+      return res + (code.endsWith('\n') ? '\n ' : '');
     } catch {
-      return value || ''
+      return value || '';
     }
-  })
+  });
 
   $effect(() => {
-    if (typeof window === 'undefined' || !headerSentinelElement) return
+    if (typeof window === 'undefined' || !headerSentinelElement) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
-        isHeaderStuck = !entry.isIntersecting
+        isHeaderStuck = !entry.isIntersecting;
       },
       {threshold: 0}
-    )
-    observer.observe(headerSentinelElement)
-    return () => observer.disconnect()
-  })
+    );
+    observer.observe(headerSentinelElement);
+    return () => observer.disconnect();
+  });
 
   $effect(() => {
-    if (typeof window === 'undefined' || !toolbarSentinelElement) return
+    if (typeof window === 'undefined' || !toolbarSentinelElement) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
-        isToolbarStuck = !entry.isIntersecting
+        isToolbarStuck = !entry.isIntersecting;
       },
       {threshold: 0}
-    )
-    observer.observe(toolbarSentinelElement)
-    return () => observer.disconnect()
-  })
+    );
+    observer.observe(toolbarSentinelElement);
+    return () => observer.disconnect();
+  });
 
   $effect(() => {
     if (autosaveKey && value) {
-      autoSaveStatus = 'saving'
-      clearTimeout(autoSaveTimer)
+      autoSaveStatus = 'saving';
+      clearTimeout(autoSaveTimer);
       autoSaveTimer = setTimeout(() => {
-        const data = {content: value, timestamp: Date.now()}
-        localStorage.setItem(autosaveKey, JSON.stringify(data))
-        autoSaveStatus = 'saved'
+        const data = {content: value, timestamp: Date.now()};
+        localStorage.setItem(autosaveKey, JSON.stringify(data));
+        autoSaveStatus = 'saved';
         setTimeout(() => {
-          if (autoSaveStatus === 'saved') autoSaveStatus = 'idle'
-        }, 1500)
-      }, 500)
+          if (autoSaveStatus === 'saved') autoSaveStatus = 'idle';
+        }, 1500);
+      }, 500);
     }
-  })
+  });
 
   $effect(() => {
     if (value !== undefined && markdownTextareaElement) {
-      markdownTextareaElement.style.height = 'auto'
-      markdownTextareaElement.style.height = `${markdownTextareaElement.scrollHeight}px`
+      markdownTextareaElement.style.height = 'auto';
+      markdownTextareaElement.style.height = `${markdownTextareaElement.scrollHeight}px`;
     }
-  })
+  });
 
   function syncScroll() {
     if (markdownTextareaElement && preElement) {
-      preElement.scrollTop = markdownTextareaElement.scrollTop
-      preElement.scrollLeft = markdownTextareaElement.scrollLeft
+      preElement.scrollTop = markdownTextareaElement.scrollTop;
+      preElement.scrollLeft = markdownTextareaElement.scrollLeft;
     }
   }
 
   function updateLineHeights() {
     if (lineWrapMode !== 'soft') {
-      lineHeights = []
-      return
+      lineHeights = [];
+      return;
     }
-    if (typeof document === 'undefined') return
+    if (typeof document === 'undefined') return;
     tick().then(() => {
-      if (!preElement) return
+      if (!preElement) return;
       const lineEls =
-        preElement.querySelectorAll<HTMLElement>('.editor-code-line')
-      const heights: number[] = []
+        preElement.querySelectorAll<HTMLElement>('.editor-code-line');
+      const heights: number[] = [];
       lineEls.forEach(el => {
-        heights.push(el.offsetHeight || 24)
-      })
-      lineHeights = heights
-    })
+        heights.push(el.offsetHeight || 24);
+      });
+      lineHeights = heights;
+    });
   }
 
   $effect(() => {
@@ -165,96 +165,96 @@
       || lineWrapMode !== undefined
       || activeTab !== undefined
     ) {
-      updateLineHeights()
+      updateLineHeights();
     }
-  })
+  });
 
   $effect(() => {
     if (value !== undefined) {
       renderMarkdown(value).then(html => {
-        previewHtml = html
-      })
+        previewHtml = html;
+      });
     }
-  })
+  });
 
   $effect(() => {
     if (activeTab === 'preview' && previewHtml) {
       tick().then(() => {
-        const blocks = document.querySelectorAll('.prose-custom pre code')
+        const blocks = document.querySelectorAll('.prose-custom pre code');
         blocks.forEach(block => {
-          hljs.highlightElement(block as HTMLElement)
-        })
-        enhanceCodeBlocks(() => {})
-      })
+          hljs.highlightElement(block as HTMLElement);
+        });
+        enhanceCodeBlocks(() => {});
+      });
     }
-  })
+  });
 
   function updateCursorPosition() {
-    if (!markdownTextareaElement) return
+    if (!markdownTextareaElement) return;
     const textBeforeCursor = (value || '').substring(
       0,
       markdownTextareaElement.selectionStart
-    )
-    const lines = textBeforeCursor.split('\n')
-    currentLine = lines.length
-    currentColumn = lines[lines.length - 1].length + 1
+    );
+    const lines = textBeforeCursor.split('\n');
+    currentLine = lines.length;
+    currentColumn = lines[lines.length - 1].length + 1;
   }
 
   function handleTextareaKeyDown(e: KeyboardEvent) {
     if (e.key === 'Tab') {
-      e.preventDefault()
-      const target = e.currentTarget as HTMLTextAreaElement
-      const start = target.selectionStart
-      const end = target.selectionEnd
-      const indentStr = indentMode === 'spaces' ? ' '.repeat(indentSize) : '\t'
-      const val = value || ''
-      value = val.substring(0, start) + indentStr + val.substring(end)
+      e.preventDefault();
+      const target = e.currentTarget as HTMLTextAreaElement;
+      const start = target.selectionStart;
+      const end = target.selectionEnd;
+      const indentStr = indentMode === 'spaces' ? ' '.repeat(indentSize) : '\t';
+      const val = value || '';
+      value = val.substring(0, start) + indentStr + val.substring(end);
       tick().then(() => {
-        target.selectionStart = target.selectionEnd = start + indentStr.length
-        syncScroll()
-        updateCursorPosition()
-      })
+        target.selectionStart = target.selectionEnd = start + indentStr.length;
+        syncScroll();
+        updateCursorPosition();
+      });
     }
   }
 
   export function insertMarkdown(prefix: string, suffix: string = '') {
-    if (!markdownTextareaElement) return
-    const start = markdownTextareaElement.selectionStart
-    const end = markdownTextareaElement.selectionEnd
-    const val = value || ''
-    const selectedText = val.substring(start, end)
-    const replacement = prefix + selectedText + suffix
-    value = val.substring(0, start) + replacement + val.substring(end)
+    if (!markdownTextareaElement) return;
+    const start = markdownTextareaElement.selectionStart;
+    const end = markdownTextareaElement.selectionEnd;
+    const val = value || '';
+    const selectedText = val.substring(start, end);
+    const replacement = prefix + selectedText + suffix;
+    value = val.substring(0, start) + replacement + val.substring(end);
     tick().then(() => {
-      markdownTextareaElement!.focus()
-      markdownTextareaElement!.selectionStart = start + prefix.length
+      markdownTextareaElement!.focus();
+      markdownTextareaElement!.selectionStart = start + prefix.length;
       markdownTextareaElement!.selectionEnd =
-        start + prefix.length + selectedText.length
-      syncScroll()
-      updateCursorPosition()
-    })
+        start + prefix.length + selectedText.length;
+      syncScroll();
+      updateCursorPosition();
+    });
   }
 
   function handleImageClick() {
     if (onImageUpload) {
-      imageFileInput?.click()
+      imageFileInput?.click();
     } else {
-      insertMarkdown('![', '](url)')
+      insertMarkdown('![', '](url)');
     }
   }
 
   async function handleFileSelected(e: Event) {
-    const input = e.target as HTMLInputElement
-    const file = input.files?.[0]
-    if (!file || !onImageUpload) return
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || !onImageUpload) return;
     try {
-      const url = await onImageUpload(file)
+      const url = await onImageUpload(file);
       if (url) {
-        insertMarkdown(`![${file.name.replace(/\.[^/.]+$/, '')}](${url})`)
+        insertMarkdown(`![${file.name.replace(/\.[^/.]+$/, '')}](${url})`);
       }
     } catch {
     } finally {
-      input.value = ''
+      input.value = '';
     }
   }
 </script>
@@ -342,9 +342,9 @@
           <button
             type="button"
             onclick={() => {
-              indentModeDropdownOpen = !indentModeDropdownOpen
-              indentSizeDropdownOpen = false
-              wrapModeDropdownOpen = false
+              indentModeDropdownOpen = !indentModeDropdownOpen;
+              indentSizeDropdownOpen = false;
+              wrapModeDropdownOpen = false;
             }}
             class="inline-flex h-8 cursor-pointer items-center justify-between gap-1.5 rounded-sm border border-border-subtle bg-surface-card px-3 text-xs font-medium text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
             aria-haspopup="true"
@@ -372,8 +372,8 @@
                   type="button"
                   role="menuitem"
                   onclick={() => {
-                    indentMode = mode
-                    indentModeDropdownOpen = false
+                    indentMode = mode;
+                    indentModeDropdownOpen = false;
                   }}
                   class="flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-left text-xs text-text-primary transition-colors hover:bg-surface-hover">
                   <span>{mode === 'spaces' ? 'Spaces' : 'Tabs'}</span>
@@ -390,9 +390,9 @@
           <button
             type="button"
             onclick={() => {
-              indentSizeDropdownOpen = !indentSizeDropdownOpen
-              indentModeDropdownOpen = false
-              wrapModeDropdownOpen = false
+              indentSizeDropdownOpen = !indentSizeDropdownOpen;
+              indentModeDropdownOpen = false;
+              wrapModeDropdownOpen = false;
             }}
             class="inline-flex h-8 cursor-pointer items-center justify-between gap-1.5 rounded-sm border border-border-subtle bg-surface-card px-3 text-xs font-medium text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
             aria-haspopup="true"
@@ -420,8 +420,8 @@
                   type="button"
                   role="menuitem"
                   onclick={() => {
-                    indentSize = size
-                    indentSizeDropdownOpen = false
+                    indentSize = size;
+                    indentSizeDropdownOpen = false;
                   }}
                   class="flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-left text-xs text-text-primary transition-colors hover:bg-surface-hover">
                   <span>{size}</span>
@@ -438,9 +438,9 @@
           <button
             type="button"
             onclick={() => {
-              wrapModeDropdownOpen = !wrapModeDropdownOpen
-              indentModeDropdownOpen = false
-              indentSizeDropdownOpen = false
+              wrapModeDropdownOpen = !wrapModeDropdownOpen;
+              indentModeDropdownOpen = false;
+              indentSizeDropdownOpen = false;
             }}
             class="inline-flex h-8 cursor-pointer items-center justify-between gap-1.5 rounded-sm border border-border-subtle bg-surface-card px-3 text-xs font-medium text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
             aria-haspopup="true"
@@ -468,8 +468,8 @@
                   type="button"
                   role="menuitem"
                   onclick={() => {
-                    lineWrapMode = mode
-                    wrapModeDropdownOpen = false
+                    lineWrapMode = mode;
+                    wrapModeDropdownOpen = false;
                   }}
                   class="flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-left text-xs text-text-primary transition-colors hover:bg-surface-hover">
                   <span>{mode === 'soft' ? 'Soft wrap' : 'No wrap'}</span>
@@ -528,8 +528,8 @@
             bind:value
             onscroll={syncScroll}
             oninput={() => {
-              syncScroll()
-              updateCursorPosition()
+              syncScroll();
+              updateCursorPosition();
             }}
             onclick={updateCursorPosition}
             onkeyup={updateCursorPosition}

@@ -1,14 +1,14 @@
 <script lang="ts">
-  import type {Snippet} from 'svelte'
-  import {cn} from '../utils/cn'
+  import type {Snippet} from 'svelte';
+  import {cn} from '../utils/cn';
 
   interface Props {
-    active?: boolean
-    disabled?: boolean
-    size?: 'sm' | 'md'
-    onclick?: () => void
-    children?: Snippet
-    class?: string
+    active?: boolean;
+    disabled?: boolean;
+    size?: 'sm' | 'md';
+    onclick?: () => void;
+    children?: Snippet;
+    class?: string;
   }
 
   let {
@@ -18,12 +18,12 @@
     onclick,
     children,
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 
   const sizeStyles = {
     sm: 'px-2.5 py-1 text-xs gap-1.5',
     md: 'px-3.5 py-1.5 text-xs font-semibold gap-2'
-  }
+  };
 </script>
 
 <button

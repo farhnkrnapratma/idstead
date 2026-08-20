@@ -1,17 +1,17 @@
 <script lang="ts">
-  import {ChevronRight} from '@lucide/svelte'
-  import {cn} from '../utils/cn'
+  import {ChevronRight} from '@lucide/svelte';
+  import {cn} from '../utils/cn';
 
   export interface BreadcrumbItem {
-    label: string
-    href?: string
+    label: string;
+    href?: string;
   }
 
   interface Props {
-    items: BreadcrumbItem[]
-    maxItems?: number
-    minItems?: number
-    class?: string
+    items: BreadcrumbItem[];
+    maxItems?: number;
+    minItems?: number;
+    class?: string;
   }
 
   let {
@@ -19,9 +19,9 @@
     maxItems = 5,
     minItems = 3,
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 
-  const ORDINALS = ['first', 'second', 'third', 'fourth', 'fifth']
+  const ORDINALS = ['first', 'second', 'third', 'fourth', 'fifth'];
 
   let processedItems = $derived.by(() => {
     if (items.length <= maxItems) {
@@ -29,25 +29,25 @@
         ...item,
         isCurrent: index === items.length - 1,
         displayLabel: item.label
-      }))
+      }));
     }
 
-    const first = items[0]
-    const last = items[items.length - 1]
+    const first = items[0];
+    const last = items[items.length - 1];
     const middleItems = items
       .slice(1, -1)
       .map((item, idx) => ({
         ...item,
         isCurrent: false,
         displayLabel: ORDINALS[idx] || item.label
-      }))
+      }));
 
     return [
       {...first, isCurrent: false, displayLabel: first.label},
       ...middleItems.slice(0, maxItems - 2),
       {...last, isCurrent: true, displayLabel: last.label}
-    ]
-  })
+    ];
+  });
 </script>
 
 {#if items.length >= minItems}

@@ -1,13 +1,13 @@
 <script lang="ts">
-  import type {Snippet} from 'svelte'
-  import {cn} from '../utils/cn'
+  import type {Snippet} from 'svelte';
+  import {cn} from '../utils/cn';
 
   interface Props {
     width?:
-      'reading' | 'standard' | 'listing' | 'admin' | 'form' | 'editor' | 'full'
-    as?: string
-    class?: string
-    children?: Snippet
+      'reading' | 'standard' | 'listing' | 'admin' | 'form' | 'editor' | 'full';
+    as?: string;
+    class?: string;
+    children?: Snippet;
   }
 
   let {
@@ -15,7 +15,7 @@
     as = 'div',
     class: className = '',
     children
-  }: Props = $props()
+  }: Props = $props();
 
   const widthStyles = {
     reading: 'w-full md:w-[80%] lg:w-[65%] xl:w-[55%]',
@@ -25,7 +25,7 @@
     listing: 'w-full md:w-[80%] lg:w-[65%] xl:w-[55%]',
     admin: 'w-full max-w-7xl',
     full: 'max-w-7xl'
-  }
+  };
 </script>
 
 <svelte:element

@@ -1,17 +1,17 @@
 <script lang="ts">
-  import {cn} from '../utils/cn'
+  import {cn} from '../utils/cn';
 
   interface Column {
-    key: string
-    header: string
-    align?: 'left' | 'center' | 'right'
+    key: string;
+    header: string;
+    align?: 'left' | 'center' | 'right';
   }
 
   interface Props {
-    caption?: string
-    columns: Column[]
-    data: Record<string, unknown>[]
-    class?: string
+    caption?: string;
+    columns: Column[];
+    data: Record<string, unknown>[];
+    class?: string;
   }
 
   let {
@@ -19,13 +19,13 @@
     columns = [],
     data = [],
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 
   const alignStyles = {
     left: 'text-left',
     center: 'text-center',
     right: 'text-right'
-  }
+  };
 </script>
 
 <div
@@ -48,7 +48,7 @@
       </tr>
     </thead>
     <tbody class="divide-y divide-border-subtle/50 bg-surface/50">
-      {#each data as row, i (i)}
+      {#each data as row, i (row.id ?? row.key ?? `${i}-${String(row[columns[0]?.key] ?? '')}`)}
         <tr class="transition-colors hover:bg-surface-hover">
           {#each columns as col (col.key)}
             <td

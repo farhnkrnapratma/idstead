@@ -1,12 +1,12 @@
 <script lang="ts">
-  import {X} from '@lucide/svelte'
-  import {cn} from '../../utils/cn'
+  import {X} from '@lucide/svelte';
+  import {cn} from '../../utils/cn';
 
   interface Props {
-    label: string
-    value: string
-    onRemove?: () => void
-    class?: string
+    label: string;
+    value: string;
+    onRemove?: () => void;
+    class?: string;
   }
 
   let {
@@ -14,7 +14,7 @@
     value,
     onRemove = () => {},
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 </script>
 
 <div

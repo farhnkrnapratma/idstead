@@ -13,19 +13,19 @@
     delay = 0,
     ...restProps
   } = $props<{
-    text: string
-    disabled?: boolean
-    speed?: number
-    class?: string
-    color?: string
-    shineColor?: string
-    spread?: number
-    yoyo?: boolean
-    pauseOnHover?: boolean
-    direction?: 'left' | 'right'
-    delay?: number
-    [key: string]: unknown
-  }>()
+    text: string;
+    disabled?: boolean;
+    speed?: number;
+    class?: string;
+    color?: string;
+    shineColor?: string;
+    spread?: number;
+    yoyo?: boolean;
+    pauseOnHover?: boolean;
+    direction?: 'left' | 'right';
+    delay?: number;
+    [key: string]: unknown;
+  }>();
 </script>
 
 <span

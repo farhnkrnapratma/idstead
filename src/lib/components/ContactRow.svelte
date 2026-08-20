@@ -1,15 +1,15 @@
 <script lang="ts">
-  import type {Snippet} from 'svelte'
-  import {Copy, Check} from '@lucide/svelte'
-  import {cn} from '../utils/cn'
+  import type {Snippet} from 'svelte';
+  import {Copy, Check} from '@lucide/svelte';
+  import {cn} from '../utils/cn';
 
   interface Props {
-    title: string
-    subtitle?: string
-    href?: string
-    copyableText?: string
-    class?: string
-    trailing?: Snippet
+    title: string;
+    subtitle?: string;
+    href?: string;
+    copyableText?: string;
+    class?: string;
+    trailing?: Snippet;
   }
 
   let {
@@ -19,16 +19,16 @@
     copyableText = '',
     class: className = '',
     trailing
-  }: Props = $props()
+  }: Props = $props();
 
-  let copied = $state(false)
+  let copied = $state(false);
 
   function handleCopy() {
-    if (!copyableText || typeof window === 'undefined') return
+    if (!copyableText || typeof window === 'undefined') return;
     navigator.clipboard.writeText(copyableText).then(() => {
-      copied = true
-      setTimeout(() => (copied = false), 2000)
-    })
+      copied = true;
+      setTimeout(() => (copied = false), 2000);
+    });
   }
 </script>
 

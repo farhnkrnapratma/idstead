@@ -1,18 +1,18 @@
 <script lang="ts">
-  import type {Snippet} from 'svelte'
-  import type {HTMLInputAttributes} from 'svelte/elements'
-  import {cn} from '../utils/cn'
+  import type {Snippet} from 'svelte';
+  import type {HTMLInputAttributes} from 'svelte/elements';
+  import {cn} from '../utils/cn';
 
   interface Props extends Omit<HTMLInputAttributes, 'size'> {
-    value?: string | number
-    error?: boolean
-    valid?: boolean
-    size?: 'sm' | 'md' | 'lg'
-    fullWidth?: boolean
-    leadingIcon?: string
-    trailingIcon?: string
-    leadingSlot?: Snippet
-    trailingSlot?: Snippet
+    value?: string | number;
+    error?: boolean;
+    valid?: boolean;
+    size?: 'sm' | 'md' | 'lg';
+    fullWidth?: boolean;
+    leadingIcon?: string;
+    trailingIcon?: string;
+    leadingSlot?: Snippet;
+    trailingSlot?: Snippet;
   }
 
   let {
@@ -28,13 +28,13 @@
     class: className = '',
     disabled = false,
     ...restProps
-  }: Props = $props()
+  }: Props = $props();
 
   const sizeStyles = {
     sm: 'h-8 text-xs rounded-sm px-2.5',
     md: 'h-9 text-sm rounded-sm px-3',
     lg: 'h-11 text-base rounded-sm px-4'
-  }
+  };
 </script>
 
 <div class={cn('relative flex items-center', fullWidth ? 'w-full' : '')}>

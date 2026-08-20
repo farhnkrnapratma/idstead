@@ -5,19 +5,19 @@
   class="scroll-pt-17 scroll-pb-21 overflow-x-clip scroll-smooth font-sans text-[122%]">
   <head>
     <script>
-      document.documentElement.classList.add('dark')
+      document.documentElement.classList.add('dark');
     </script>
     <script>
-      window.dataLayer = window.dataLayer || []
+      window.dataLayer = window.dataLayer || [];
 
       function gtag(...args) {
-        dataLayer.push(args)
+        dataLayer.push(args);
       }
 
-      let savedConsent = null
+      let savedConsent = null;
       try {
-        const stored = localStorage.getItem('fkp_cookie_consent_v2')
-        if (stored) savedConsent = JSON.parse(stored)
+        const stored = localStorage.getItem('fkp_cookie_consent_v2');
+        if (stored) savedConsent = JSON.parse(stored);
       } catch (e) {}
 
       const defaultConsent = {
@@ -25,32 +25,32 @@
         ad_storage: 'denied',
         ad_user_data: 'denied',
         ad_personalization: 'denied'
-      }
+      };
 
       if (savedConsent) {
         defaultConsent.analytics_storage =
-          savedConsent.analytics_storage || 'denied'
-        defaultConsent.ad_storage = savedConsent.ad_storage || 'denied'
-        defaultConsent.ad_user_data = savedConsent.ad_user_data || 'denied'
+          savedConsent.analytics_storage || 'denied';
+        defaultConsent.ad_storage = savedConsent.ad_storage || 'denied';
+        defaultConsent.ad_user_data = savedConsent.ad_user_data || 'denied';
         defaultConsent.ad_personalization =
-          savedConsent.ad_personalization || 'denied'
+          savedConsent.ad_personalization || 'denied';
       } else {
-        defaultConsent.wait_for_update = 500
+        defaultConsent.wait_for_update = 500;
       }
 
-      gtag('consent', 'default', defaultConsent)
-      gtag('set', 'url_passthrough', true)
+      gtag('consent', 'default', defaultConsent);
+      gtag('set', 'url_passthrough', true);
 
-      ;(function (w, d, s, l, i) {
-        w[l] = w[l] || []
-        w[l].push({'gtm.start': new Date().getTime(), event: 'gtm.js'})
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({'gtm.start': new Date().getTime(), event: 'gtm.js'});
         var f = d.getElementsByTagName(s)[0],
           j = d.createElement(s),
-          dl = l != 'dataLayer' ? '&l=' + l : ''
-        j.async = true
-        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl
-        f.parentNode.insertBefore(j, f)
-      })(window, document, 'script', 'dataLayer', 'GTM-TSBRHB6V')
+          dl = l != 'dataLayer' ? '&l=' + l : '';
+        j.async = true;
+        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', 'GTM-TSBRHB6V');
     </script>
     <meta charset="utf-8" />
     <meta

@@ -1,14 +1,14 @@
 <script lang="ts">
-  import {X} from '@lucide/svelte'
-  import EmptyState from '../EmptyState.svelte'
-  import Button from '../Button.svelte'
+  import {X} from '@lucide/svelte';
+  import EmptyState from '../EmptyState.svelte';
+  import Button from '../Button.svelte';
 
   interface Props {
-    title?: string
-    description?: string
-    onClearFilters?: () => void
-    clearLabel?: string
-    class?: string
+    title?: string;
+    description?: string;
+    onClearFilters?: () => void;
+    clearLabel?: string;
+    class?: string;
   }
 
   let {
@@ -17,7 +17,7 @@
     onClearFilters = () => {},
     clearLabel = 'Clear filters',
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 </script>
 
 <EmptyState

@@ -39,10 +39,10 @@ As early as possible in your application, import and configure dotenv:
 
 ```javascript
 // index.js
-require('dotenv').config()
+require('dotenv').config();
 // or import 'dotenv/config' // for esm
 
-console.log(`Hello ${process.env.HELLO}`)
+console.log(`Hello ${process.env.HELLO}`);
 ```
 
 ```sh
@@ -79,48 +79,48 @@ Git policy baseline:
 Specify a custom path if your file containing environment variables is located elsewhere.
 
 ```js
-require('dotenv').config({path: '/custom/path/to/.env'})
+require('dotenv').config({path: '/custom/path/to/.env'});
 ```
 
 Suppress runtime logging message.
 
 ```js
-require('dotenv').config({quiet: false}) // change to true to suppress
+require('dotenv').config({quiet: false}); // change to true to suppress
 ```
 
 Turn on logging to help debug why certain keys or values are not being set as you expect.
 
 ```js
-require('dotenv').config({debug: true})
+require('dotenv').config({debug: true});
 ```
 
 Override any environment variables that have already been set on your machine with values from your .env file(s). If multiple files have been provided in `option.path` the override will also be used as each file is combined with the next. Without `override` being set, the first value wins. With `override` set the last value wins.
 
 ```js
-require('dotenv').config({override: true})
+require('dotenv').config({override: true});
 ```
 
 Parse and validate content:
 
 ```js
-const dotenv = require('dotenv')
-const parsed = dotenv.parse(Buffer.from('BASIC=basic'))
-const required = ['DATABASE_URL', 'SECRET_KEY']
+const dotenv = require('dotenv');
+const parsed = dotenv.parse(Buffer.from('BASIC=basic'));
+const required = ['DATABASE_URL', 'SECRET_KEY'];
 for (const key of required) {
   if (!parsed[key] || parsed[key].trim() === '')
-    throw new Error(`Missing ${key}`)
+    throw new Error(`Missing ${key}`);
 }
 ```
 
 Startup validation should fail fast during boot, not later at first usage:
 
 ```js
-const required = ['DATABASE_URL', 'SECRET_KEY']
+const required = ['DATABASE_URL', 'SECRET_KEY'];
 const missing = required.filter(
   key => !process.env[key] || process.env[key].trim() === ''
-)
+);
 if (missing.length)
-  throw new Error(`Missing required env vars: ${missing.join(', ')}`)
+  throw new Error(`Missing required env vars: ${missing.join(', ')}`);
 ```
 
 Type parsing reminder:
@@ -135,7 +135,7 @@ const isDebug = ['1', 'true', 'yes', 'on'].includes(
   String(process.env.DEBUG || '')
     .trim()
     .toLowerCase()
-)
+);
 ```
 
 ## What Good Looks Like

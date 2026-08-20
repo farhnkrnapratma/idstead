@@ -1,7 +1,7 @@
 <script lang="ts">
-  import {page} from '$app/state'
-  import {replaceState} from '$app/navigation'
-  import {supabase} from '$lib/supabase'
+  import {page} from '$app/state';
+  import {replaceState} from '$app/navigation';
+  import {supabase} from '$lib/supabase';
   import {
     FileText,
     User,
@@ -31,18 +31,18 @@
     Eye,
     EyeOff,
     Menu
-  } from '@lucide/svelte'
-  import hljs from 'highlight.js'
-  import {a11yStore} from '$lib/stores/a11yStore.svelte'
-  import {codeBlockPrefsStore} from '$lib/stores/codeBlockPrefsStore.svelte'
-  import {resolveHljsTheme} from '$lib/utils/hljsTheme'
-  import {renderMarkdown} from '$lib/markdown'
+  } from '@lucide/svelte';
+  import hljs from 'highlight.js';
+  import {a11yStore} from '$lib/stores/a11yStore.svelte';
+  import {codeBlockPrefsStore} from '$lib/stores/codeBlockPrefsStore.svelte';
+  import {resolveHljsTheme} from '$lib/utils/hljsTheme';
+  import {renderMarkdown} from '$lib/markdown';
   import {
     enhanceCodeBlocks,
     splitHighlightedHtmlLines
-  } from '$lib/utils/codeBlocks'
-  import {onMount, tick} from 'svelte'
-  import {SvelteSet} from 'svelte/reactivity'
+  } from '$lib/utils/codeBlocks';
+  import {onMount, tick, untrack} from 'svelte';
+  import {SvelteSet} from 'svelte/reactivity';
   import {
     Dialog,
     Button,
@@ -84,9 +84,9 @@
     sanitizeInput,
     decodeHtmlEntities,
     splitEscapedCommas
-  } from '$lib'
+  } from '$lib';
 
-  import {themeStore} from '$lib/stores/themeStore.svelte'
+  import {themeStore} from '$lib/stores/themeStore.svelte';
   import {
     fetchAuthorProfile,
     fetchCvEntries,
@@ -104,72 +104,72 @@
     type SocialLink,
     type SkillItem,
     type CvDocument
-  } from '$lib/author'
+  } from '$lib/author';
 
   interface AdminPost {
-    id: string
-    title: string
-    slug: string
-    published: boolean
-    storage_path: string
-    created_at: string
-    updated_at?: string | null
-    banner_path?: string | null
-    excerpt?: string | null
-    tags?: string[] | null
-    read_time?: string | null
+    id: string;
+    title: string;
+    slug: string;
+    published: boolean;
+    storage_path: string;
+    created_at: string;
+    updated_at?: string | null;
+    banner_path?: string | null;
+    excerpt?: string | null;
+    tags?: string[] | null;
+    read_time?: string | null;
   }
 
   function getBannerUrl(bannerPath: string | null | undefined): string | null {
-    if (!bannerPath) return null
+    if (!bannerPath) return null;
     const {data: res} = supabase.storage
       .from('blog-posts')
-      .getPublicUrl(bannerPath)
-    return res.publicUrl
+      .getPublicUrl(bannerPath);
+    return res.publicUrl;
   }
 
-  const failedBanners = new SvelteSet<string>()
+  const failedBanners = new SvelteSet<string>();
 
   function markBannerFailed(postId: string) {
-    failedBanners.add(postId)
+    failedBanners.add(postId);
   }
 
-  let isLoading = $state(true)
-  let posts = $state<AdminPost[]>([])
-  let isLoggingOut = $state(false)
-  let adminUserEmail = $state('')
+  let isLoading = $state(true);
+  let posts = $state<AdminPost[]>([]);
+  let isLoggingOut = $state(false);
+  let adminUserEmail = $state('');
 
   const filterStore = createFilterSortStore({
     defaultSortField: 'date',
     defaultSortDir: 'desc'
-  })
+  });
 
-  let showDeletePostDialog = $state(false)
-  let postToDelete = $state<AdminPost | null>(null)
-  let showDeleteCommentDialog = $state(false)
-  let commentIdToDelete = $state<string | null>(null)
-  let showClearAuthorDialog = $state(false)
-  let showDeleteCvDocDialog = $state(false)
-  let showAvatarPreviewDialog = $state(false)
+  let showDeletePostDialog = $state(false);
+  let postToDelete = $state<AdminPost | null>(null);
+  let showDeleteCommentDialog = $state(false);
+  let commentIdToDelete = $state<string | null>(null);
+  let showClearAuthorDialog = $state(false);
+  let showDeleteCvDocDialog = $state(false);
+  let showAvatarPreviewDialog = $state(false);
 
   interface AdminComment {
-    id: string
-    post_id: string
-    parent_id: string | null
-    author_name: string
-    content: string
-    is_anonymous?: boolean
-    is_approved: boolean
-    created_at: string
-    posts?: {title: string}
+    id: string;
+    post_id: string;
+    parent_id: string | null;
+    author_name: string;
+    content: string;
+    is_anonymous?: boolean;
+    is_approved: boolean;
+    created_at: string;
+    posts?: {title: string};
   }
 
-  let comments = $state<AdminComment[]>([])
-  let replyTo = $state<AdminComment | null>(null)
-  let commentContent = $state('')
-  let isSubmitting = $state(false)
+  let comments = $state<AdminComment[]>([]);
+  let replyTo = $state<AdminComment | null>(null);
+  let commentContent = $state('');
+  let isSubmitting = $state(false);
 
-  let initialTab = page.url.searchParams.get('tab')
+  let initialTab = page.url.searchParams.get('tab');
 
   let activeAdminTab = $state<
     | 'posts'
@@ -182,18 +182,18 @@
     | 'privacy'
     | 'security'
     | 'terms'
-  >((initialTab as any) || 'posts')
-  let sidebarMobileOpen = $state(false)
+  >((initialTab as any) || 'posts');
+  let sidebarMobileOpen = $state(false);
 
   function selectTab(id: typeof activeAdminTab) {
-    activeAdminTab = id
-    sidebarMobileOpen = false
-    const url = new URL(page.url)
-    url.searchParams.set('tab', id)
-    replaceState(url, page.state)
+    activeAdminTab = id;
+    sidebarMobileOpen = false;
+    const url = new URL(page.url);
+    url.searchParams.set('tab', id);
+    replaceState(url, page.state);
   }
 
-  type Theme = 'auto' | 'dark' | 'light'
+  type Theme = 'auto' | 'dark' | 'light';
 
   const MONTHS = [
     'January',
@@ -208,25 +208,25 @@
     'October',
     'November',
     'December'
-  ] as const
+  ] as const;
 
-  const currentYear = new Date().getFullYear()
+  const currentYear = new Date().getFullYear();
 
   function getStartYearOptions() {
-    const years: number[] = []
+    const years: number[] = [];
     for (let y = currentYear; y >= currentYear - 100; y--) {
-      years.push(y)
+      years.push(y);
     }
-    return years
+    return years;
   }
 
   function getEndYearOptions(startYear?: number | null) {
-    const start = startYear || currentYear
-    const years: number[] = []
+    const start = startYear || currentYear;
+    const years: number[] = [];
     for (let y = start; y <= currentYear + 100; y++) {
-      years.push(y)
+      years.push(y);
     }
-    return years
+    return years;
   }
 
   const EMPLOYMENT_TYPES = [
@@ -238,9 +238,9 @@
     'Internship',
     'Apprenticeship',
     'Seasonal'
-  ] as const
+  ] as const;
 
-  const LOCATION_TYPES = ['On-Site', 'Remote', 'Hybrid'] as const
+  const LOCATION_TYPES = ['On-Site', 'Remote', 'Hybrid'] as const;
 
   let authorState = $state<AuthorProfile>({
     name: '',
@@ -255,7 +255,7 @@
     country: '',
     siteUrl: '',
     skills: []
-  })
+  });
 
   let legalPagesData = $state<Record<string, {title: string; content: string}>>(
     {
@@ -263,12 +263,12 @@
       security: {title: 'Security Policy', content: ''},
       terms: {title: 'Terms of Service', content: ''}
     }
-  )
-  let isSavingLegal = $state(false)
-  let legalSaveSuccess = $state(false)
-  let legalSaveError = $state('')
+  );
+  let isSavingLegal = $state(false);
+  let legalSaveSuccess = $state(false);
+  let legalSaveError = $state('');
 
-  let isDark = $state(false)
+  let isDark = $state(false);
 
   const hljsTheme = $derived(
     resolveHljsTheme(
@@ -276,32 +276,32 @@
       isDark,
       codeBlockPrefsStore.current.colorScheme
     )
-  )
+  );
 
   onMount(() => {
-    isDark = document.documentElement.classList.contains('dark')
+    isDark = document.documentElement.classList.contains('dark');
     const themeObserver = new MutationObserver(() => {
-      isDark = document.documentElement.classList.contains('dark')
-    })
+      isDark = document.documentElement.classList.contains('dark');
+    });
     themeObserver.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ['class']
-    })
-    return () => themeObserver.disconnect()
-  })
+    });
+    return () => themeObserver.disconnect();
+  });
 
   async function loadLegalPagesFromSupabase() {
     try {
       const {data, error} = await supabase
         .from('db_legals')
-        .select('slug, title, content')
+        .select('slug, title, content');
       if (!error && data && data.length > 0) {
         for (const item of data) {
           if (item.slug && legalPagesData[item.slug]) {
             legalPagesData[item.slug] = {
               title: item.title || legalPagesData[item.slug].title || '',
               content: item.content ?? legalPagesData[item.slug].content ?? ''
-            }
+            };
           }
         }
       }
@@ -312,23 +312,23 @@
     targetSlug?: 'privacy' | 'security' | 'terms',
     e?: SubmitEvent
   ) {
-    if (e) e.preventDefault()
-    if (isSavingLegal) return
+    if (e) e.preventDefault();
+    if (isSavingLegal) return;
     const slugToSave =
-      targetSlug || (activeAdminTab as 'privacy' | 'security' | 'terms')
-    if (!slugToSave || !legalPagesData[slugToSave]) return
+      targetSlug || (activeAdminTab as 'privacy' | 'security' | 'terms');
+    if (!slugToSave || !legalPagesData[slugToSave]) return;
 
-    isSavingLegal = true
-    legalSaveError = ''
-    legalSaveSuccess = false
+    isSavingLegal = true;
+    legalSaveError = '';
+    legalSaveSuccess = false;
 
-    const pageToSave = legalPagesData[slugToSave]
+    const pageToSave = legalPagesData[slugToSave];
     try {
       const {error} = await supabase.rpc('db_save_legal', {
         p_slug: slugToSave,
         p_title: pageToSave.title,
         p_content: pageToSave.content
-      })
+      });
 
       if (error) {
         const {error: upsertErr} = await supabase
@@ -341,29 +341,29 @@
               updated_at: new Date().toISOString()
             },
             {onConflict: 'slug'}
-          )
+          );
 
         if (upsertErr) {
-          throw upsertErr
+          throw upsertErr;
         }
       }
 
-      legalSaveSuccess = true
-      toastStore.success(`${pageToSave.title} saved successfully`)
-      setTimeout(() => (legalSaveSuccess = false), 3000)
+      legalSaveSuccess = true;
+      toastStore.success(`${pageToSave.title} saved successfully`);
+      setTimeout(() => (legalSaveSuccess = false), 3000);
     } catch (err: any) {
-      legalSaveError = err?.message || 'Failed to save legal page'
-      toastStore.error(`Error: ${legalSaveError}`)
+      legalSaveError = err?.message || 'Failed to save legal page';
+      toastStore.error(`Error: ${legalSaveError}`);
     } finally {
-      isSavingLegal = false
+      isSavingLegal = false;
     }
   }
-  let isSavingAuthor = $state(false)
-  let authorSaveSuccess = $state(false)
-  let authorSaveError = $state('')
+  let isSavingAuthor = $state(false);
+  let authorSaveSuccess = $state(false);
+  let authorSaveError = $state('');
 
-  const authorEmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  const authorUrlRegex = /^(https?:\/\/|\/)/
+  const authorEmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const authorUrlRegex = /^(https?:\/\/|\/)/;
 
   let authorErrors = $state({
     name: '',
@@ -377,7 +377,7 @@
     country: '',
     siteUrl: '',
     bio: ''
-  })
+  });
 
   let authorValid = $state({
     name: false,
@@ -391,9 +391,9 @@
     country: false,
     siteUrl: false,
     bio: false
-  })
+  });
 
-  let authorInitial = $state<typeof authorState | null>(null)
+  let authorInitial = $state<typeof authorState | null>(null);
 
   const authorIsDirty = $derived(
     authorInitial !== null
@@ -423,49 +423,50 @@
           siteUrl: authorInitial.siteUrl,
           bio: authorInitial.bio
         })
-  )
+  );
 
-  const avatarPreviewUrl = $derived(authorState.avatar.trim())
+  const avatarPreviewUrl = $derived(authorState.avatar.trim());
 
   function debounceAuthor<T extends unknown[]>(
     cb: (...args: T) => void,
     ms: number
   ) {
-    let timer: ReturnType<typeof setTimeout>
+    let timer: ReturnType<typeof setTimeout>;
     return (...args: T) => {
-      clearTimeout(timer)
-      timer = setTimeout(() => cb(...args), ms)
-    }
+      clearTimeout(timer);
+      timer = setTimeout(() => cb(...args), ms);
+    };
   }
 
   const validateAuthorField = debounceAuthor(
     (field: keyof typeof authorErrors) => {
       const v =
-        (authorState[field as keyof typeof authorState] as string)?.trim() || ''
+        (authorState[field as keyof typeof authorState] as string)?.trim()
+        || '';
       if (field === 'email') {
         if (!v) {
-          authorErrors.email = 'Email is required.'
-          authorValid.email = false
+          authorErrors.email = 'Email is required.';
+          authorValid.email = false;
         } else if (!authorEmailRegex.test(v)) {
-          authorErrors.email = 'Please enter a valid email address.'
-          authorValid.email = false
+          authorErrors.email = 'Please enter a valid email address.';
+          authorValid.email = false;
         } else {
-          authorErrors.email = ''
-          authorValid.email = true
+          authorErrors.email = '';
+          authorValid.email = true;
         }
       } else if (field === 'avatar' || field === 'siteUrl') {
         if (!v) {
           authorErrors[field] =
             field === 'avatar' ?
               'Avatar URL is required.'
-            : 'Site URL is required.'
-          authorValid[field] = false
+            : 'Site URL is required.';
+          authorValid[field] = false;
         } else if (!authorUrlRegex.test(v)) {
-          authorErrors[field] = 'Must start with http:// or https://'
-          authorValid[field] = false
+          authorErrors[field] = 'Must start with http:// or https://';
+          authorValid[field] = false;
         } else {
-          authorErrors[field] = ''
-          authorValid[field] = true
+          authorErrors[field] = '';
+          authorValid[field] = true;
         }
       } else {
         if (!v) {
@@ -478,55 +479,56 @@
             postalCode: 'Postal code',
             country: 'Country',
             bio: 'Description'
-          }
-          authorErrors[field] = `${labels[field] || 'This field'} is required.`
-          authorValid[field as keyof typeof authorValid] = false
+          };
+          authorErrors[field] = `${labels[field] || 'This field'} is required.`;
+          authorValid[field as keyof typeof authorValid] = false;
         } else {
-          authorErrors[field] = ''
-          authorValid[field as keyof typeof authorValid] = true
+          authorErrors[field] = '';
+          authorValid[field as keyof typeof authorValid] = true;
         }
       }
     },
     400
-  )
+  );
 
   function onAuthorInput(field: keyof typeof authorErrors) {
-    authorErrors[field] = ''
-    authorValid[field as keyof typeof authorValid] = false
-    validateAuthorField(field)
+    authorErrors[field] = '';
+    authorValid[field as keyof typeof authorValid] = false;
+    validateAuthorField(field);
   }
 
   function validateAllAuthorFields(): boolean {
-    const fields = Object.keys(authorErrors) as (keyof typeof authorErrors)[]
-    let valid = true
+    const fields = Object.keys(authorErrors) as (keyof typeof authorErrors)[];
+    let valid = true;
     for (const field of fields) {
       const v =
-        (authorState[field as keyof typeof authorState] as string)?.trim() || ''
+        (authorState[field as keyof typeof authorState] as string)?.trim()
+        || '';
       if (field === 'email') {
         if (!v || !authorEmailRegex.test(v)) {
           authorErrors[field] =
-            !v ? 'Email is required.' : 'Please enter a valid email address.'
-          authorValid[field] = false
-          valid = false
+            !v ? 'Email is required.' : 'Please enter a valid email address.';
+          authorValid[field] = false;
+          valid = false;
         } else {
-          authorErrors[field] = ''
-          authorValid[field] = true
+          authorErrors[field] = '';
+          authorValid[field] = true;
         }
       } else if (field === 'avatar' || field === 'siteUrl') {
         if (!v) {
           authorErrors[field] =
             field === 'avatar' ?
               'Avatar URL is required.'
-            : 'Site URL is required.'
-          authorValid[field] = false
-          valid = false
+            : 'Site URL is required.';
+          authorValid[field] = false;
+          valid = false;
         } else if (!authorUrlRegex.test(v)) {
-          authorErrors[field] = 'Must start with http:// or https://'
-          authorValid[field] = false
-          valid = false
+          authorErrors[field] = 'Must start with http:// or https://';
+          authorValid[field] = false;
+          valid = false;
         } else {
-          authorErrors[field] = ''
-          authorValid[field] = true
+          authorErrors[field] = '';
+          authorValid[field] = true;
         }
       } else {
         if (!v) {
@@ -539,87 +541,87 @@
             postalCode: 'Postal code',
             country: 'Country',
             bio: 'Description'
-          }
-          authorErrors[field] = `${labels[field] || 'This field'} is required.`
-          authorValid[field as keyof typeof authorValid] = false
-          valid = false
+          };
+          authorErrors[field] = `${labels[field] || 'This field'} is required.`;
+          authorValid[field as keyof typeof authorValid] = false;
+          valid = false;
         } else {
-          authorErrors[field] = ''
-          authorValid[field as keyof typeof authorValid] = true
+          authorErrors[field] = '';
+          authorValid[field as keyof typeof authorValid] = true;
         }
       }
     }
-    return valid
+    return valid;
   }
 
   let cvState = $state<{
-    experience: ExperienceItem[]
-    education: EducationItem[]
-  }>({experience: [], education: []})
+    experience: ExperienceItem[];
+    education: EducationItem[];
+  }>({experience: [], education: []});
 
-  let skillsState = $state<SkillItem[]>([])
-  let socialState = $state<SocialLink[]>([])
-  let sponsorshipState = $state<SponsorshipLink[]>([])
-  let contactState = $state<ContactInfo[]>([])
+  let skillsState = $state<SkillItem[]>([]);
+  let socialState = $state<SocialLink[]>([]);
+  let sponsorshipState = $state<SponsorshipLink[]>([]);
+  let contactState = $state<ContactInfo[]>([]);
 
-  let cvInitial = $state<typeof cvState | null>(null)
-  let skillsInitial = $state<SkillItem[] | null>(null)
-  let socialInitial = $state<SocialLink[] | null>(null)
-  let sponsorshipInitial = $state<SponsorshipLink[] | null>(null)
-  let contactInitial = $state<ContactInfo[] | null>(null)
+  let cvInitial = $state<typeof cvState | null>(null);
+  let skillsInitial = $state<SkillItem[] | null>(null);
+  let socialInitial = $state<SocialLink[] | null>(null);
+  let sponsorshipInitial = $state<SponsorshipLink[] | null>(null);
+  let contactInitial = $state<ContactInfo[] | null>(null);
 
   const cvIsDirty = $derived(
     cvInitial !== null && JSON.stringify(cvState) !== JSON.stringify(cvInitial)
-  )
+  );
   const skillsIsDirty = $derived(
     skillsInitial !== null
       && JSON.stringify(skillsState) !== JSON.stringify(skillsInitial)
-  )
+  );
   const socialIsDirty = $derived(
     socialInitial !== null
       && JSON.stringify(socialState) !== JSON.stringify(socialInitial)
-  )
+  );
   const sponsorshipIsDirty = $derived(
     sponsorshipInitial !== null
       && JSON.stringify(sponsorshipState) !== JSON.stringify(sponsorshipInitial)
-  )
+  );
   const contactIsDirty = $derived(
     contactInitial !== null
       && JSON.stringify(contactState) !== JSON.stringify(contactInitial)
-  )
+  );
   let cvDocState = $state<CvDocument>({
     filename: '',
     fileUrl: '',
     hash: '',
     isActive: true
-  })
-  let isGeneratingPdf = $state(false)
+  });
+  let isGeneratingPdf = $state(false);
 
   function debounceAdmin<T extends unknown[]>(
     cb: (...args: T) => void,
     ms: number
   ) {
-    let timer: ReturnType<typeof setTimeout>
+    let timer: ReturnType<typeof setTimeout>;
     return (...args: T) => {
-      clearTimeout(timer)
-      timer = setTimeout(() => cb(...args), ms)
-    }
+      clearTimeout(timer);
+      timer = setTimeout(() => cb(...args), ms);
+    };
   }
 
-  let experienceErrors = $state<Record<number, Record<string, string>>>({})
-  let experienceValid = $state<Record<number, Record<string, boolean>>>({})
-  let educationErrors = $state<Record<number, Record<string, string>>>({})
-  let educationValid = $state<Record<number, Record<string, boolean>>>({})
-  let skillsErrors = $state<Record<number, Record<string, string>>>({})
-  let skillsValid = $state<Record<number, Record<string, boolean>>>({})
-  let socialErrors = $state<Record<number, Record<string, string>>>({})
-  let socialValid = $state<Record<number, Record<string, boolean>>>({})
-  let sponsorshipErrors = $state<Record<number, Record<string, string>>>({})
-  let sponsorshipValid = $state<Record<number, Record<string, boolean>>>({})
-  let contactErrors = $state<Record<number, Record<string, string>>>({})
-  let contactValid = $state<Record<number, Record<string, boolean>>>({})
+  let experienceErrors = $state<Record<number, Record<string, string>>>({});
+  let experienceValid = $state<Record<number, Record<string, boolean>>>({});
+  let educationErrors = $state<Record<number, Record<string, string>>>({});
+  let educationValid = $state<Record<number, Record<string, boolean>>>({});
+  let skillsErrors = $state<Record<number, Record<string, string>>>({});
+  let skillsValid = $state<Record<number, Record<string, boolean>>>({});
+  let socialErrors = $state<Record<number, Record<string, string>>>({});
+  let socialValid = $state<Record<number, Record<string, boolean>>>({});
+  let sponsorshipErrors = $state<Record<number, Record<string, string>>>({});
+  let sponsorshipValid = $state<Record<number, Record<string, boolean>>>({});
+  let contactErrors = $state<Record<number, Record<string, string>>>({});
+  let contactValid = $state<Record<number, Record<string, boolean>>>({});
 
-  const urlRegex = /^(https?:\/\/|mailto:|tel:).+/i
+  const urlRegex = /^(https?:\/\/|mailto:|tel:).+/i;
 
   function validateRequiredField(
     errors: Record<number, Record<string, string>>,
@@ -630,22 +632,23 @@
     value: string,
     isUrl = false
   ): boolean {
-    if (!errors[idx]) errors[idx] = {}
-    if (!valid[idx]) valid[idx] = {}
-    const v = value.trim()
+    if (!errors[idx]) errors[idx] = {};
+    if (!valid[idx]) valid[idx] = {};
+    const v = value.trim();
     if (!v) {
-      errors[idx][field] = `${label} is required.`
-      valid[idx][field] = false
-      return false
+      errors[idx][field] = `${label} is required.`;
+      valid[idx][field] = false;
+      return false;
     }
     if (isUrl && !urlRegex.test(v)) {
-      errors[idx][field] = 'Must start with http://, https://, mailto:, or tel:'
-      valid[idx][field] = false
-      return false
+      errors[idx][field] =
+        'Must start with http://, https://, mailto:, or tel:';
+      valid[idx][field] = false;
+      return false;
     }
-    errors[idx][field] = ''
-    valid[idx][field] = true
-    return true
+    errors[idx][field] = '';
+    valid[idx][field] = true;
+    return true;
   }
 
   function clearFieldError(
@@ -654,13 +657,13 @@
     idx: number,
     field: string
   ) {
-    if (errors[idx]) errors[idx][field] = ''
-    if (valid[idx]) valid[idx][field] = false
+    if (errors[idx]) errors[idx][field] = '';
+    if (valid[idx]) valid[idx][field] = false;
   }
 
   const validateExperienceField = debounceAdmin(
     (idx: number, field: keyof ExperienceItem, label: string) => {
-      const value = String(cvState.experience[idx]?.[field] ?? '')
+      const value = String(cvState.experience[idx]?.[field] ?? '');
       validateRequiredField(
         experienceErrors,
         experienceValid,
@@ -668,14 +671,14 @@
         field,
         label,
         value
-      )
+      );
     },
     400
-  )
+  );
 
   const validateEducationField = debounceAdmin(
     (idx: number, field: keyof EducationItem, label: string) => {
-      const value = String(cvState.education[idx]?.[field] ?? '')
+      const value = String(cvState.education[idx]?.[field] ?? '');
       validateRequiredField(
         educationErrors,
         educationValid,
@@ -683,10 +686,10 @@
         field,
         label,
         value
-      )
+      );
     },
     400
-  )
+  );
 
   const validateSkillField = debounceAdmin((idx: number) => {
     validateRequiredField(
@@ -696,12 +699,12 @@
       'category',
       'Area of expertise',
       skillsState[idx]?.category || ''
-    )
-  }, 400)
+    );
+  }, 400);
 
   const validateSocialField = debounceAdmin(
     (idx: number, field: 'platform' | 'url') => {
-      const labels = {platform: 'Platform', url: 'URL'}
+      const labels = {platform: 'Platform', url: 'URL'};
       validateRequiredField(
         socialErrors,
         socialValid,
@@ -710,10 +713,10 @@
         labels[field],
         socialState[idx]?.[field] || '',
         field === 'url'
-      )
+      );
     },
     400
-  )
+  );
 
   const validateSponsorshipField = debounceAdmin(
     (idx: number, field: 'platform' | 'displayValue' | 'url') => {
@@ -721,7 +724,7 @@
         platform: 'Platform',
         displayValue: 'Display text',
         url: 'URL'
-      }
+      };
       validateRequiredField(
         sponsorshipErrors,
         sponsorshipValid,
@@ -730,10 +733,10 @@
         labels[field],
         sponsorshipState[idx]?.[field] || '',
         field === 'url'
-      )
+      );
     },
     400
-  )
+  );
 
   const validateContactField = debounceAdmin(
     (idx: number, field: 'platform' | 'displayValue' | 'href') => {
@@ -741,7 +744,7 @@
         platform: 'Platform',
         displayValue: 'Display text',
         href: 'URL'
-      }
+      };
       validateRequiredField(
         contactErrors,
         contactValid,
@@ -750,20 +753,20 @@
         labels[field],
         contactState[idx]?.[field] || '',
         field === 'href'
-      )
+      );
     },
     400
-  )
+  );
 
   function validateAllExperience(): boolean {
-    let ok = true
+    let ok = true;
     cvState.experience.forEach((exp, idx) => {
       const fields: [keyof ExperienceItem, string][] = [
         ['title', 'Title'],
         ['company', 'Company'],
         ['location', 'Location'],
         ['description', 'Description']
-      ]
+      ];
       for (const [field, label] of fields) {
         if (
           !validateRequiredField(
@@ -775,14 +778,14 @@
             String(exp[field] ?? '')
           )
         )
-          ok = false
+          ok = false;
       }
-    })
-    return ok
+    });
+    return ok;
   }
 
   function validateAllEducation(): boolean {
-    let ok = true
+    let ok = true;
     cvState.education.forEach((edu, idx) => {
       const fields: [keyof EducationItem, string][] = [
         ['institution', 'Institution'],
@@ -790,7 +793,7 @@
         ['field', 'Field of study'],
         ['grade', 'Grade'],
         ['description', 'Description']
-      ]
+      ];
       for (const [field, label] of fields) {
         if (
           !validateRequiredField(
@@ -802,14 +805,14 @@
             String(edu[field] ?? '')
           )
         )
-          ok = false
+          ok = false;
       }
-    })
-    return ok
+    });
+    return ok;
   }
 
   function validateAllSkills(): boolean {
-    let ok = true
+    let ok = true;
     skillsState.forEach((item, idx) => {
       if (
         !validateRequiredField(
@@ -821,13 +824,13 @@
           item.category || ''
         )
       )
-        ok = false
-    })
-    return ok
+        ok = false;
+    });
+    return ok;
   }
 
   function validateAllSocials(): boolean {
-    let ok = true
+    let ok = true;
     socialState.forEach((item, idx) => {
       if (
         !validateRequiredField(
@@ -839,7 +842,7 @@
           item.platform || ''
         )
       )
-        ok = false
+        ok = false;
       if (
         !validateRequiredField(
           socialErrors,
@@ -851,13 +854,13 @@
           true
         )
       )
-        ok = false
-    })
-    return ok
+        ok = false;
+    });
+    return ok;
   }
 
   function validateAllSponsorship(): boolean {
-    let ok = true
+    let ok = true;
     sponsorshipState.forEach((item, idx) => {
       if (
         !validateRequiredField(
@@ -869,7 +872,7 @@
           item.platform || ''
         )
       )
-        ok = false
+        ok = false;
       if (
         !validateRequiredField(
           sponsorshipErrors,
@@ -880,7 +883,7 @@
           item.displayValue || ''
         )
       )
-        ok = false
+        ok = false;
       if (
         !validateRequiredField(
           sponsorshipErrors,
@@ -892,13 +895,13 @@
           true
         )
       )
-        ok = false
-    })
-    return ok
+        ok = false;
+    });
+    return ok;
   }
 
   function validateAllContact(): boolean {
-    let ok = true
+    let ok = true;
     contactState.forEach((item, idx) => {
       if (
         !validateRequiredField(
@@ -910,7 +913,7 @@
           item.platform || ''
         )
       )
-        ok = false
+        ok = false;
       if (
         !validateRequiredField(
           contactErrors,
@@ -921,7 +924,7 @@
           item.displayValue || ''
         )
       )
-        ok = false
+        ok = false;
       if (
         !validateRequiredField(
           contactErrors,
@@ -933,146 +936,146 @@
           true
         )
       )
-        ok = false
-    })
-    return ok
+        ok = false;
+    });
+    return ok;
   }
 
-  let isClearingAuthor = $state(false)
+  let isClearingAuthor = $state(false);
 
-  let pdfUploadError = $state('')
-  let pdfUploadSuccess = $state('')
+  let pdfUploadError = $state('');
+  let pdfUploadSuccess = $state('');
 
-  let isSavingCv = $state(false)
-  let cvSaveSuccess = $state(false)
-  let isSavingSkills = $state(false)
-  let skillsSaveSuccess = $state(false)
-  let isSavingSocials = $state(false)
-  let socialsSaveSuccess = $state(false)
-  let isSavingSponsorship = $state(false)
-  let sponsorshipSaveSuccess = $state(false)
-  let isSavingContact = $state(false)
-  let contactSaveSuccess = $state(false)
+  let isSavingCv = $state(false);
+  let cvSaveSuccess = $state(false);
+  let isSavingSkills = $state(false);
+  let skillsSaveSuccess = $state(false);
+  let isSavingSocials = $state(false);
+  let socialsSaveSuccess = $state(false);
+  let isSavingSponsorship = $state(false);
+  let sponsorshipSaveSuccess = $state(false);
+  let isSavingContact = $state(false);
+  let contactSaveSuccess = $state(false);
 
   function parsePastedSkillsText(text: string): {
-    category: string | null
-    skills: string[]
+    category: string | null;
+    skills: string[];
   } {
-    const colonIdx = text.indexOf(':')
+    const colonIdx = text.indexOf(':');
     if (colonIdx === -1) {
-      return {category: null, skills: splitEscapedCommas(text)}
+      return {category: null, skills: splitEscapedCommas(text)};
     }
-    const category = text.slice(0, colonIdx).trim()
+    const category = text.slice(0, colonIdx).trim();
     return {
       category: category || null,
       skills: splitEscapedCommas(text.slice(colonIdx + 1))
-    }
+    };
   }
 
   function mergeSkills(existing: string[], toAdd: string[]): string[] {
-    const result = [...existing]
+    const result = [...existing];
     for (const s of toAdd) {
-      if (s && !result.includes(s)) result.push(s)
+      if (s && !result.includes(s)) result.push(s);
     }
-    return result
+    return result;
   }
 
   function handleCategoryPaste(idx: number, e: ClipboardEvent) {
-    const text = e.clipboardData?.getData('text/plain') ?? ''
-    const parsed = parsePastedSkillsText(text)
-    if (parsed.category === null) return
-    e.preventDefault()
-    skillsState[idx].category = parsed.category
+    const text = e.clipboardData?.getData('text/plain') ?? '';
+    const parsed = parsePastedSkillsText(text);
+    if (parsed.category === null) return;
+    e.preventDefault();
+    skillsState[idx].category = parsed.category;
     skillsState[idx].skills = mergeSkills(
       skillsState[idx].skills,
       parsed.skills
-    )
-    clearFieldError(skillsErrors, skillsValid, idx, 'category')
-    validateSkillField(idx)
+    );
+    clearFieldError(skillsErrors, skillsValid, idx, 'category');
+    validateSkillField(idx);
   }
 
   function handleSkillsSetPaste(idx: number, e: ClipboardEvent) {
-    const text = e.clipboardData?.getData('text/plain') ?? ''
-    const parsed = parsePastedSkillsText(text)
-    if (parsed.skills.length === 0 && parsed.category === null) return
-    e.preventDefault()
+    const text = e.clipboardData?.getData('text/plain') ?? '';
+    const parsed = parsePastedSkillsText(text);
+    if (parsed.skills.length === 0 && parsed.category === null) return;
+    e.preventDefault();
     if (parsed.category !== null) {
-      skillsState[idx].category = parsed.category
-      clearFieldError(skillsErrors, skillsValid, idx, 'category')
-      validateSkillField(idx)
+      skillsState[idx].category = parsed.category;
+      clearFieldError(skillsErrors, skillsValid, idx, 'category');
+      validateSkillField(idx);
     }
     skillsState[idx].skills = mergeSkills(
       skillsState[idx].skills,
       parsed.skills
-    )
-    ;(e.currentTarget as HTMLInputElement).value = ''
+    );
+    (e.currentTarget as HTMLInputElement).value = '';
   }
 
-  const statusFilter = $derived(filterStore.filters['status']?.[0] || 'all')
+  const statusFilter = $derived(filterStore.filters['status']?.[0] || 'all');
 
   const allPostTags = $derived.by(() => {
-    const set = new SvelteSet<string>()
+    const set = new SvelteSet<string>();
     for (const post of posts) {
       if (post.tags) {
-        post.tags.forEach(t => set.add(decodeHtmlEntities(t)))
+        post.tags.forEach(t => set.add(decodeHtmlEntities(t)));
       }
     }
-    return Array.from(set).sort()
-  })
+    return Array.from(set).sort();
+  });
 
-  const postViewsMap = $state(new Map<string, number>())
+  const postViewsMap = $state(new Map<string, number>());
 
   async function fetchPostViews(postId: string) {
-    if (postViewsMap.has(postId)) return
+    if (postViewsMap.has(postId)) return;
     try {
-      const res = await fetch(`/api/v1/blog/views?postId=${postId}`)
+      const res = await fetch(`/api/v1/blog/views?postId=${postId}`);
       if (res.ok) {
-        const data = await res.json()
-        postViewsMap.set(postId, data.views || 0)
+        const data = await res.json();
+        postViewsMap.set(postId, data.views || 0);
       }
     } catch (err) {
-      console.error('Failed to fetch views for post:', postId, err)
+      console.error('Failed to fetch views for post:', postId, err);
     }
   }
 
   $effect(() => {
     if (posts.length > 0) {
-      posts.forEach(post => fetchPostViews(post.id))
+      posts.forEach(post => fetchPostViews(post.id));
     }
-  })
+  });
 
   function getPostComments(postId: string): AdminComment[] {
-    return comments.filter(c => c.post_id === postId)
+    return comments.filter(c => c.post_id === postId);
   }
 
   let filteredPosts = $derived.by(() => {
-    let result = [...posts]
+    let result = [...posts];
 
     if (filterStore.search.trim()) {
-      const q = filterStore.search.toLowerCase().trim()
+      const q = filterStore.search.toLowerCase().trim();
       result = result.filter(
         p =>
           p.title.toLowerCase().includes(q)
           || p.slug.toLowerCase().includes(q)
           || (p.excerpt && p.excerpt.toLowerCase().includes(q))
-      )
+      );
     }
 
     if (statusFilter === 'published') {
-      result = result.filter(p => p.published)
+      result = result.filter(p => p.published);
     } else if (statusFilter === 'draft') {
-      result = result.filter(p => !p.published)
+      result = result.filter(p => !p.published);
     }
 
-    const selectedTags = filterStore.filters['tag'] || []
+    const selectedTags = filterStore.filters['tag'] || [];
     if (selectedTags.length > 0) {
       result = result.filter(
         p => p.tags && p.tags.some(t => selectedTags.includes(t))
-      )
+      );
     }
 
-    const {field, direction} = filterStore.sort
-    const mult = direction === 'asc' ? 1 : -1
+    const {field, direction} = filterStore.sort;
+    const mult = direction === 'asc' ? 1 : -1;
 
     result.sort((a, b) => {
       if (field === 'date') {
@@ -1080,64 +1083,66 @@
           mult
           * (new Date(a.created_at).getTime()
             - new Date(b.created_at).getTime())
-        )
+        );
       }
       if (field === 'title') {
-        return mult * a.title.localeCompare(b.title)
+        return mult * a.title.localeCompare(b.title);
       }
       if (field === 'status') {
-        return mult * (Number(a.published) - Number(b.published))
+        return mult * (Number(a.published) - Number(b.published));
       }
       if (field === 'views') {
-        const vA = postViewsMap.get(a.id) ?? 0
-        const vB = postViewsMap.get(b.id) ?? 0
-        return mult * (vA - vB)
+        const vA = postViewsMap.get(a.id) ?? 0;
+        const vB = postViewsMap.get(b.id) ?? 0;
+        return mult * (vA - vB);
       }
       if (field === 'comments') {
-        const cA = getPostComments(a.id).length
-        const cB = getPostComments(b.id).length
-        return mult * (cA - cB)
+        const cA = getPostComments(a.id).length;
+        const cB = getPostComments(b.id).length;
+        return mult * (cA - cB);
       }
       if (field === 'readingTime') {
-        const rA = parseInt(a.read_time || '0', 10)
-        const rB = parseInt(b.read_time || '0', 10)
-        return mult * (rA - rB)
+        const rA = parseInt(a.read_time || '0', 10);
+        const rB = parseInt(b.read_time || '0', 10);
+        return mult * (rA - rB);
       }
-      return 0
-    })
+      return 0;
+    });
 
-    return result
-  })
+    return result;
+  });
 
-  const POSTS_PAGE_SIZE = 10
+  const POSTS_PAGE_SIZE = 10;
 
-  let postsPage = $state(1)
+  let postsPage = $state(1);
 
   const postsTotalPages = $derived(
     Math.max(1, Math.ceil(filteredPosts.length / POSTS_PAGE_SIZE))
-  )
-  const postsPageClamped = $derived(Math.min(postsPage, postsTotalPages))
+  );
+  const postsPageClamped = $derived(Math.min(postsPage, postsTotalPages));
   const paginatedPosts = $derived(
     filteredPosts.slice(
       (postsPageClamped - 1) * POSTS_PAGE_SIZE,
       postsPageClamped * POSTS_PAGE_SIZE
     )
-  )
+  );
 
   $effect(() => {
-    void filterStore.search
-    void filterStore.filters
-    void filterStore.sort
-    postsPage = 1
-  })
+    void filterStore.search;
+    void filterStore.filters;
+    void filterStore.sort;
+    untrack(() => {
+      postsPage = 1;
+    });
+  });
 
-  const expandedPostIds = new SvelteSet<string>()
+  const expandedPostIds = new SvelteSet<string>();
 
   function toggleComments(postId: string) {
     if (expandedPostIds.has(postId)) {
-      expandedPostIds.delete(postId)
+      expandedPostIds.delete(postId);
     } else {
-      expandedPostIds.add(postId)
+      expandedPostIds.add(postId);
     }
   }
 
@@ -1146,13 +1151,13 @@
     parentId: string,
     postId: string
   ) {
-    e.preventDefault()
-    if (isSubmitting) return
+    e.preventDefault();
+    if (isSubmitting) return;
 
-    const trimmed = commentContent.trim()
-    if (!trimmed) return
+    const trimmed = commentContent.trim();
+    if (!trimmed) return;
 
-    isSubmitting = true
+    isSubmitting = true;
     try {
       const {data, error} = await supabase
         .from('db_comments')
@@ -1165,64 +1170,64 @@
           is_approved: true
         })
         .select('*')
-        .single()
+        .single();
 
-      if (error) throw error
+      if (error) throw error;
 
       if (data) {
-        const postObj = posts.find(p => p.id === postId)
+        const postObj = posts.find(p => p.id === postId);
         const newComment: AdminComment = {
           ...data,
           posts: {title: postObj?.title || ''}
-        }
-        comments = [...comments, newComment]
-        commentContent = ''
-        replyTo = null
-        toastStore.success('Reply posted.')
+        };
+        comments = [...comments, newComment];
+        commentContent = '';
+        replyTo = null;
+        toastStore.success('Reply posted.');
       }
     } catch (err) {
-      console.error('Error posting admin reply:', err)
-      toastStore.error('Failed to post reply.')
+      console.error('Error posting admin reply:', err);
+      toastStore.error('Failed to post reply.');
     } finally {
-      isSubmitting = false
+      isSubmitting = false;
     }
   }
 
-  let sessionTimeoutMultiplier = $state(1)
-  let BASE_IDLE_TIMEOUT_MS = 30 * 60 * 1000
-  let idleWarnTimer: ReturnType<typeof setTimeout>
-  let showSessionTimeoutDialog = $state(false)
-  let countdownSeconds = $state(30)
-  let countdownInterval: ReturnType<typeof setInterval>
+  let sessionTimeoutMultiplier = $state(1);
+  let BASE_IDLE_TIMEOUT_MS = 30 * 60 * 1000;
+  let idleWarnTimer: ReturnType<typeof setTimeout>;
+  let showSessionTimeoutDialog = $state(false);
+  let countdownSeconds = $state(30);
+  let countdownInterval: ReturnType<typeof setInterval>;
 
   function startIdleTimer() {
-    clearTimeout(idleWarnTimer)
-    clearInterval(countdownInterval)
-    const warnMs = BASE_IDLE_TIMEOUT_MS * sessionTimeoutMultiplier - 30000
+    clearTimeout(idleWarnTimer);
+    clearInterval(countdownInterval);
+    const warnMs = BASE_IDLE_TIMEOUT_MS * sessionTimeoutMultiplier - 30000;
 
     idleWarnTimer = setTimeout(() => {
-      showSessionTimeoutDialog = true
-      countdownSeconds = 30
+      showSessionTimeoutDialog = true;
+      countdownSeconds = 30;
       countdownInterval = setInterval(() => {
-        countdownSeconds -= 1
+        countdownSeconds -= 1;
         if (countdownSeconds <= 0) {
-          clearInterval(countdownInterval)
-          handleLogout()
+          clearInterval(countdownInterval);
+          handleLogout();
         }
-      }, 1000)
-    }, warnMs)
+      }, 1000);
+    }, warnMs);
   }
 
   async function handleExtendSession() {
-    sessionTimeoutMultiplier *= 2
-    showSessionTimeoutDialog = false
-    clearInterval(countdownInterval)
+    sessionTimeoutMultiplier *= 2;
+    showSessionTimeoutDialog = false;
+    clearInterval(countdownInterval);
     try {
-      await supabase.auth.refreshSession()
+      await supabase.auth.refreshSession();
     } catch (err) {
-      console.error('Failed to refresh session:', err)
+      console.error('Failed to refresh session:', err);
     }
-    startIdleTimer()
+    startIdleTimer();
   }
 
   const ACTIVITY_EVENTS = [
@@ -1231,43 +1236,43 @@
     'keydown',
     'scroll',
     'touchstart'
-  ] as const
+  ] as const;
 
   function handleUserActivity() {
     if (!showSessionTimeoutDialog) {
-      startIdleTimer()
+      startIdleTimer();
     }
   }
 
   onMount(() => {
-    ;(async () => {
-      const {data: sessionData} = await supabase.auth.getSession()
+    (async () => {
+      const {data: sessionData} = await supabase.auth.getSession();
       if (!sessionData.session) {
-        window.location.href = '/admin/login'
-        return
+        window.location.href = '/admin/login';
+        return;
       }
 
       if (sessionData.session.user?.email) {
-        adminUserEmail = sessionData.session.user.email
+        adminUserEmail = sessionData.session.user.email;
       }
 
-      void loadLegalPagesFromSupabase()
+      void loadLegalPagesFromSupabase();
 
-      const pendingToast = sessionStorage.getItem('admin_toast')
+      const pendingToast = sessionStorage.getItem('admin_toast');
       if (pendingToast) {
-        sessionStorage.removeItem('admin_toast')
+        sessionStorage.removeItem('admin_toast');
         try {
-          const {message, type} = JSON.parse(pendingToast)
-          if (message) toastStore.show(message, type)
+          const {message, type} = JSON.parse(pendingToast);
+          if (message) toastStore.show(message, type);
         } catch (err) {
-          console.error('Failed to parse pending toast:', err)
+          console.error('Failed to parse pending toast:', err);
         }
       }
 
-      startIdleTimer()
+      startIdleTimer();
       ACTIVITY_EVENTS.forEach(evt =>
         window.addEventListener(evt, handleUserActivity, {passive: true})
-      )
+      );
 
       try {
         await Promise.allSettled([
@@ -1275,24 +1280,24 @@
           fetchComments(),
           loadAdminData(),
           loadLegalPagesFromSupabase()
-        ])
+        ]);
       } catch (err) {
-        console.error('Error loading admin dashboard data:', err)
+        console.error('Error loading admin dashboard data:', err);
       } finally {
-        isLoading = false
+        isLoading = false;
       }
-    })()
+    })();
 
     return () => {
-      clearTimeout(idleWarnTimer)
-      clearInterval(countdownInterval)
+      clearTimeout(idleWarnTimer);
+      clearInterval(countdownInterval);
       if (typeof window !== 'undefined') {
         ACTIVITY_EVENTS.forEach(evt =>
           window.removeEventListener(evt, handleUserActivity)
-        )
+        );
       }
-    }
-  })
+    };
+  });
 
   async function loadAdminData() {
     try {
@@ -1304,22 +1309,27 @@
         fetchSocials(supabase),
         fetchSkills(supabase),
         fetchActiveCvDocument(supabase)
-      ])
-      if (p) authorState = p
-      authorInitial = {...authorState}
-      if (cv) cvState = cv
-      cvInitial = $state.snapshot(cvState)
-      if (sp) sponsorshipState = sp
-      sponsorshipInitial = $state.snapshot(sponsorshipState)
-      if (ct) contactState = ct
-      contactInitial = $state.snapshot(contactState)
-      if (soc) socialState = soc
-      socialInitial = $state.snapshot(socialState)
-      if (sk) skillsState = sk
-      skillsInitial = $state.snapshot(skillsState)
-      cvDocState = doc || {filename: '', fileUrl: '', hash: '', isActive: false}
+      ]);
+      if (p) authorState = p;
+      authorInitial = {...authorState};
+      if (cv) cvState = cv;
+      cvInitial = $state.snapshot(cvState);
+      if (sp) sponsorshipState = sp;
+      sponsorshipInitial = $state.snapshot(sponsorshipState);
+      if (ct) contactState = ct;
+      contactInitial = $state.snapshot(contactState);
+      if (soc) socialState = soc;
+      socialInitial = $state.snapshot(socialState);
+      if (sk) skillsState = sk;
+      skillsInitial = $state.snapshot(skillsState);
+      cvDocState = doc || {
+        filename: '',
+        fileUrl: '',
+        hash: '',
+        isActive: false
+      };
     } catch (err) {
-      console.error('Failed to load admin supplementary data:', err)
+      console.error('Failed to load admin supplementary data:', err);
     }
   }
 
@@ -1330,43 +1340,43 @@
         .select(
           'id, title, slug, published, storage_path, created_at, updated_at, banner_path, excerpt, tags'
         )
-        .order('created_at', {ascending: false})
+        .order('created_at', {ascending: false});
 
-      if (error) throw error
+      if (error) throw error;
 
-      const rawPosts = data || []
-      posts = rawPosts.map(post => ({...post, read_time: '1 min read'}))
+      const rawPosts = data || [];
+      posts = rawPosts.map(post => ({...post, read_time: '1 min read'}));
 
       void (async () => {
         const postsWithReadTime = await Promise.all(
           rawPosts.map(async post => {
-            let readTime = '1 min read'
+            let readTime = '1 min read';
             if (post.storage_path) {
               try {
                 const {data: urlData} = supabase.storage
                   .from('blog-posts')
-                  .getPublicUrl(post.storage_path)
-                const controller = new AbortController()
-                const timer = setTimeout(() => controller.abort(), 2000)
+                  .getPublicUrl(post.storage_path);
+                const controller = new AbortController();
+                const timer = setTimeout(() => controller.abort(), 2000);
                 const fileRes = await fetch(urlData.publicUrl, {
                   signal: controller.signal
-                })
-                clearTimeout(timer)
+                });
+                clearTimeout(timer);
                 if (fileRes.ok) {
-                  const text = await fileRes.text()
-                  const words = text.trim().split(/\s+/).filter(Boolean).length
-                  const minutes = Math.max(1, Math.ceil(words / 200))
-                  readTime = `${minutes} min${minutes > 1 ? 's' : ''} read`
+                  const text = await fileRes.text();
+                  const words = text.trim().split(/\s+/).filter(Boolean).length;
+                  const minutes = Math.max(1, Math.ceil(words / 200));
+                  readTime = `${minutes} min${minutes > 1 ? 's' : ''} read`;
                 }
               } catch {}
             }
-            return {...post, read_time: readTime}
+            return {...post, read_time: readTime};
           })
-        )
-        posts = postsWithReadTime
-      })()
+        );
+        posts = postsWithReadTime;
+      })();
     } catch (err) {
-      console.error('Error fetching admin posts:', err)
+      console.error('Error fetching admin posts:', err);
     }
   }
 
@@ -1375,143 +1385,143 @@
       const {data, error} = await supabase
         .from('db_comments')
         .select('*, posts:post_id(title)')
-        .order('created_at', {ascending: false})
+        .order('created_at', {ascending: false});
 
-      if (error) throw error
-      comments = (data as any) || []
+      if (error) throw error;
+      comments = (data as any) || [];
     } catch (err) {
-      console.error('Error fetching admin comments:', err)
+      console.error('Error fetching admin comments:', err);
     }
   }
 
   async function handleLogout() {
-    isLoggingOut = true
+    isLoggingOut = true;
     try {
-      await supabase.auth.signOut()
-      window.location.href = '/admin/login'
+      await supabase.auth.signOut();
+      window.location.href = '/admin/login';
     } catch (err) {
-      console.error('Error signing out:', err)
-      isLoggingOut = false
+      console.error('Error signing out:', err);
+      isLoggingOut = false;
     }
   }
 
   async function handleTogglePublished(post: AdminPost) {
     try {
-      const nextPublished = !post.published
+      const nextPublished = !post.published;
       const {error} = await supabase
         .from('db_posts')
         .update({published: nextPublished})
-        .eq('id', post.id)
+        .eq('id', post.id);
 
-      if (error) throw error
+      if (error) throw error;
       posts = posts.map(p =>
         p.id === post.id ? {...p, published: nextPublished} : p
-      )
+      );
       toastStore.success(
         nextPublished ? 'Post published.' : 'Post unpublished.'
-      )
+      );
     } catch (err) {
-      console.error('Error updating post published status:', err)
-      toastStore.error('Failed to update post status.')
+      console.error('Error updating post published status:', err);
+      toastStore.error('Failed to update post status.');
     }
   }
 
   function confirmDeletePost(post: AdminPost) {
-    postToDelete = post
-    showDeletePostDialog = true
+    postToDelete = post;
+    showDeletePostDialog = true;
   }
 
   async function executeDeletePost() {
-    if (!postToDelete) return
+    if (!postToDelete) return;
     try {
       if (postToDelete.storage_path) {
         await supabase.storage
           .from('blog-posts')
-          .remove([postToDelete.storage_path])
+          .remove([postToDelete.storage_path]);
       }
       if (postToDelete.banner_path) {
         await supabase.storage
           .from('blog-posts')
-          .remove([postToDelete.banner_path])
+          .remove([postToDelete.banner_path]);
       }
       const {error} = await supabase
         .from('db_posts')
         .delete()
-        .eq('id', postToDelete.id)
-      if (error) throw error
-      posts = posts.filter(p => p.id !== postToDelete!.id)
-      toastStore.success('Post deleted.')
+        .eq('id', postToDelete.id);
+      if (error) throw error;
+      posts = posts.filter(p => p.id !== postToDelete!.id);
+      toastStore.success('Post deleted.');
     } catch (err) {
-      console.error('Error deleting post:', err)
-      toastStore.error('Failed to delete post.')
+      console.error('Error deleting post:', err);
+      toastStore.error('Failed to delete post.');
     } finally {
-      showDeletePostDialog = false
-      postToDelete = null
+      showDeletePostDialog = false;
+      postToDelete = null;
     }
   }
 
   function confirmDeleteComment(id: string) {
-    commentIdToDelete = id
-    showDeleteCommentDialog = true
+    commentIdToDelete = id;
+    showDeleteCommentDialog = true;
   }
 
   function getCommentDescendantIds(
     targetId: string,
     allComments: AdminComment[]
   ): string[] {
-    const ids = new SvelteSet<string>([targetId])
-    let prevSize = 0
+    const ids = new SvelteSet<string>([targetId]);
+    let prevSize = 0;
     while (ids.size > prevSize) {
-      prevSize = ids.size
+      prevSize = ids.size;
       for (const c of allComments) {
         if (c.parent_id && ids.has(c.parent_id)) {
-          ids.add(c.id)
+          ids.add(c.id);
         }
       }
     }
-    return Array.from(ids)
+    return Array.from(ids);
   }
 
   async function executeDeleteComment() {
-    if (!commentIdToDelete) return
+    if (!commentIdToDelete) return;
     try {
-      const idsToDelete = getCommentDescendantIds(commentIdToDelete, comments)
+      const idsToDelete = getCommentDescendantIds(commentIdToDelete, comments);
 
       const {error} = await supabase
         .from('db_comments')
         .delete()
-        .in('id', idsToDelete)
-      if (error) throw error
+        .in('id', idsToDelete);
+      if (error) throw error;
 
-      comments = comments.filter(c => !idsToDelete.includes(c.id))
-      toastStore.success('Comment deleted.')
+      comments = comments.filter(c => !idsToDelete.includes(c.id));
+      toastStore.success('Comment deleted.');
     } catch (err) {
-      console.error('Error deleting comment:', err)
-      toastStore.error('Failed to delete comment.')
+      console.error('Error deleting comment:', err);
+      toastStore.error('Failed to delete comment.');
     } finally {
-      showDeleteCommentDialog = false
-      commentIdToDelete = null
+      showDeleteCommentDialog = false;
+      commentIdToDelete = null;
     }
   }
 
   async function toggleCommentApproval(comment: AdminComment) {
     try {
-      const nextApproved = !comment.is_approved
+      const nextApproved = !comment.is_approved;
       const {error} = await supabase
         .from('db_comments')
         .update({is_approved: nextApproved})
-        .eq('id', comment.id)
+        .eq('id', comment.id);
 
-      if (error) throw error
+      if (error) throw error;
       comments = comments.map(c =>
         c.id === comment.id ? {...c, is_approved: nextApproved} : c
-      )
+      );
       toastStore.success(
         nextApproved ? 'Comment approved.' : 'Comment held for review.'
-      )
+      );
     } catch (err) {
-      console.error('Error toggling comment approval:', err)
-      toastStore.error('Failed to update comment.')
+      console.error('Error toggling comment approval:', err);
+      toastStore.error('Failed to update comment.');
     }
   }
 
@@ -1520,27 +1530,27 @@
     fromIndex: number,
     direction: 'up' | 'down'
   ): T[] {
-    const toIndex = direction === 'up' ? fromIndex - 1 : fromIndex + 1
-    if (toIndex < 0 || toIndex >= arr.length) return arr
-    const updated = [...arr]
-    const [moved] = updated.splice(fromIndex, 1)
-    updated.splice(toIndex, 0, moved)
-    return updated
+    const toIndex = direction === 'up' ? fromIndex - 1 : fromIndex + 1;
+    if (toIndex < 0 || toIndex >= arr.length) return arr;
+    const updated = [...arr];
+    const [moved] = updated.splice(fromIndex, 1);
+    updated.splice(toIndex, 0, moved);
+    return updated;
   }
 
   async function handleSaveAuthor(e: SubmitEvent) {
-    e.preventDefault()
-    if (isSavingAuthor) return
-    if (!validateAllAuthorFields()) return
-    isSavingAuthor = true
-    authorSaveSuccess = false
-    authorSaveError = ''
+    e.preventDefault();
+    if (isSavingAuthor) return;
+    if (!validateAllAuthorFields()) return;
+    isSavingAuthor = true;
+    authorSaveSuccess = false;
+    authorSaveError = '';
     try {
-      let cleanUsername = authorState.username.trim()
+      let cleanUsername = authorState.username.trim();
       if (cleanUsername.startsWith('@')) {
-        cleanUsername = cleanUsername.replace(/^@+/, '')
+        cleanUsername = cleanUsername.replace(/^@+/, '');
       }
-      cleanUsername = cleanUsername.replace(/\s+/g, '')
+      cleanUsername = cleanUsername.replace(/\s+/g, '');
 
       const payload = {
         name: sanitizeInput(authorState.name.trim()),
@@ -1554,111 +1564,111 @@
         postal_code: sanitizeInput(authorState.postalCode.trim()),
         country: sanitizeInput(authorState.country.trim()),
         site_url: authorState.siteUrl.trim()
-      }
+      };
 
       if (authorState.id) {
         const {data, error} = await supabase
           .from('db_profiles')
           .update(payload)
           .eq('id', authorState.id)
-          .select()
-        if (error) throw error
+          .select();
+        if (error) throw error;
 
         if (!data || data.length === 0) {
           const {data: existingRows} = await supabase
             .from('db_profiles')
             .select('id')
-            .limit(1)
+            .limit(1);
           if (existingRows && existingRows.length > 0) {
-            const realId = existingRows[0].id
-            authorState.id = realId
+            const realId = existingRows[0].id;
+            authorState.id = realId;
             const {data: updated2, error: err2} = await supabase
               .from('db_profiles')
               .update(payload)
               .eq('id', realId)
-              .select()
-            if (err2) throw err2
+              .select();
+            if (err2) throw err2;
             if (!updated2 || updated2.length === 0) {
-              throw new Error('Could not update author profile record.')
+              throw new Error('Could not update author profile record.');
             }
           } else {
             const {data: inserted, error: err3} = await supabase
               .from('db_profiles')
               .insert(payload)
               .select()
-              .single()
-            if (err3) throw err3
-            if (inserted) authorState.id = inserted.id
+              .single();
+            if (err3) throw err3;
+            if (inserted) authorState.id = inserted.id;
           }
         }
       } else {
         const {data: existingRows} = await supabase
           .from('db_profiles')
           .select('id')
-          .limit(1)
+          .limit(1);
         if (existingRows && existingRows.length > 0) {
-          const realId = existingRows[0].id
-          authorState.id = realId
+          const realId = existingRows[0].id;
+          authorState.id = realId;
           const {data: updated, error: err4} = await supabase
             .from('db_profiles')
             .update(payload)
             .eq('id', realId)
-            .select()
-          if (err4) throw err4
+            .select();
+          if (err4) throw err4;
         } else {
           const {data: inserted, error: err5} = await supabase
             .from('db_profiles')
             .insert(payload)
             .select()
-            .single()
-          if (err5) throw err5
-          if (inserted) authorState.id = inserted.id
+            .single();
+          if (err5) throw err5;
+          if (inserted) authorState.id = inserted.id;
         }
       }
 
-      authorState.username = cleanUsername
-      authorSaveSuccess = true
-      authorInitial = {...authorState}
-      setTimeout(() => (authorSaveSuccess = false), 2500)
-      toastStore.success('Author profile saved.')
+      authorState.username = cleanUsername;
+      authorSaveSuccess = true;
+      authorInitial = {...authorState};
+      setTimeout(() => (authorSaveSuccess = false), 2500);
+      toastStore.success('Author profile saved.');
     } catch (err: any) {
-      console.error('Error saving author profile:', err)
-      authorSaveError = err.message || 'Failed to save author profile.'
-      toastStore.error(authorSaveError)
+      console.error('Error saving author profile:', err);
+      authorSaveError = err.message || 'Failed to save author profile.';
+      toastStore.error(authorSaveError);
     } finally {
-      isSavingAuthor = false
+      isSavingAuthor = false;
     }
   }
 
   function confirmClearAuthor() {
-    if (!authorState.id) return
-    showClearAuthorDialog = true
+    if (!authorState.id) return;
+    showClearAuthorDialog = true;
   }
 
   async function executeClearAuthor() {
-    showClearAuthorDialog = false
-    isClearingAuthor = true
+    showClearAuthorDialog = false;
+    isClearingAuthor = true;
     try {
       const {
         data: {user},
         error: userError
-      } = await supabase.auth.getUser()
+      } = await supabase.auth.getUser();
       if (userError || !user) {
-        throw new Error('Your admin session has expired. Please log in again.')
+        throw new Error('Your admin session has expired. Please log in again.');
       }
 
       if (authorState.id) {
         const {error} = await supabase
           .from('db_profiles')
           .delete()
-          .eq('id', authorState.id)
-        if (error) throw error
+          .eq('id', authorState.id);
+        if (error) throw error;
       } else {
         const {error} = await supabase
           .from('db_profiles')
           .delete()
-          .neq('id', '00000000-0000-0000-0000-000000000000')
-        if (error) throw error
+          .neq('id', '00000000-0000-0000-0000-000000000000');
+        if (error) throw error;
       }
 
       authorState = {
@@ -1674,28 +1684,28 @@
         postalCode: '',
         country: '',
         siteUrl: ''
-      }
-      authorInitial = {...authorState}
-      toastStore.success('Author profile cleared.')
+      };
+      authorInitial = {...authorState};
+      toastStore.success('Author profile cleared.');
     } catch (err: any) {
-      console.error('Failed to clear author profile:', err)
-      toastStore.error(err?.message || 'Failed to clear author profile.')
+      console.error('Failed to clear author profile:', err);
+      toastStore.error(err?.message || 'Failed to clear author profile.');
     } finally {
-      isClearingAuthor = false
+      isClearingAuthor = false;
     }
   }
 
   async function getAuthorId(): Promise<string | null> {
-    if (authorState.id) return authorState.id
+    if (authorState.id) return authorState.id;
     try {
       const {data} = await supabase
         .from('db_profiles')
         .select('id')
         .limit(1)
-        .maybeSingle()
+        .maybeSingle();
       if (data?.id) {
-        authorState.id = data.id
-        return data.id
+        authorState.id = data.id;
+        return data.id;
       }
 
       const {data: created, error} = await supabase
@@ -1715,32 +1725,32 @@
           site_url: authorState.siteUrl ? authorState.siteUrl.trim() : ''
         })
         .select('id')
-        .maybeSingle()
+        .maybeSingle();
 
       if (created?.id) {
-        authorState.id = created.id
-        return created.id
+        authorState.id = created.id;
+        return created.id;
       }
     } catch (err) {
-      console.error('Error fetching or creating author_id:', err)
+      console.error('Error fetching or creating author_id:', err);
     }
-    return null
+    return null;
   }
 
   async function handleSaveCv(e: SubmitEvent) {
-    e.preventDefault()
-    if (isSavingCv) return
-    const experienceOk = validateAllExperience()
-    const educationOk = validateAllEducation()
+    e.preventDefault();
+    if (isSavingCv) return;
+    const experienceOk = validateAllExperience();
+    const educationOk = validateAllEducation();
     if (!experienceOk || !educationOk) {
-      toastStore.error('Please fix the errors below before saving.')
-      return
+      toastStore.error('Please fix the errors below before saving.');
+      return;
     }
-    isSavingCv = true
-    cvSaveSuccess = false
+    isSavingCv = true;
+    cvSaveSuccess = false;
     try {
-      const authorId = await getAuthorId()
-      if (!authorId) throw new Error('Could not resolve author ID.')
+      const authorId = await getAuthorId();
+      if (!authorId) throw new Error('Could not resolve author ID.');
 
       const experiences = cvState.experience.map((item, idx) => ({
         title: sanitizeInput(item.title.trim()),
@@ -1755,7 +1765,7 @@
         loc_type: item.locType || '',
         description: sanitizeInput(item.description.trim()),
         sort_order: idx + 1
-      }))
+      }));
 
       const education = cvState.education.map((item, idx) => ({
         institution: sanitizeInput(item.institution.trim()),
@@ -1769,41 +1779,41 @@
         grade: sanitizeInput(item.grade.trim()),
         description: sanitizeInput(item.description.trim()),
         sort_order: idx + 1
-      }))
+      }));
 
       const {error} = await supabase.rpc('db_save_cv', {
         p_author_id: authorId,
         p_experiences: experiences,
         p_education: education
-      })
-      if (error) throw error
+      });
+      if (error) throw error;
 
-      cvInitial = $state.snapshot(cvState)
-      cvSaveSuccess = true
-      setTimeout(() => (cvSaveSuccess = false), 2500)
-      toastStore.success('CV entries saved.')
-      executeGenerateCvPdf('patch')
+      cvInitial = $state.snapshot(cvState);
+      cvSaveSuccess = true;
+      setTimeout(() => (cvSaveSuccess = false), 2500);
+      toastStore.success('CV entries saved.');
+      executeGenerateCvPdf('patch');
     } catch (err: any) {
-      console.error('Error saving CV entries:', err)
-      const msg = err?.message || err?.error || 'Failed to save CV entries.'
-      toastStore.error(msg)
+      console.error('Error saving CV entries:', err);
+      const msg = err?.message || err?.error || 'Failed to save CV entries.';
+      toastStore.error(msg);
     } finally {
-      isSavingCv = false
+      isSavingCv = false;
     }
   }
 
   async function handleSaveSkills(e: SubmitEvent) {
-    e.preventDefault()
-    if (isSavingSkills) return
+    e.preventDefault();
+    if (isSavingSkills) return;
     if (!validateAllSkills()) {
-      toastStore.error('Please fix the errors below before saving.')
-      return
+      toastStore.error('Please fix the errors below before saving.');
+      return;
     }
-    isSavingSkills = true
-    skillsSaveSuccess = false
+    isSavingSkills = true;
+    skillsSaveSuccess = false;
     try {
-      const authorId = await getAuthorId()
-      if (!authorId) throw new Error('Could not resolve author ID.')
+      const authorId = await getAuthorId();
+      if (!authorId) throw new Error('Could not resolve author ID.');
 
       const categories = skillsState.map((item, idx) => ({
         category: sanitizeInput(item.category.trim()),
@@ -1812,39 +1822,39 @@
           Array.isArray(item.skills) ?
             item.skills.map(s => sanitizeInput(s.trim())).filter(Boolean)
           : []
-      }))
+      }));
 
       const {error} = await supabase.rpc('db_save_skills', {
         p_author_id: authorId,
         p_categories: categories
-      })
-      if (error) throw error
+      });
+      if (error) throw error;
 
-      skillsInitial = $state.snapshot(skillsState)
-      skillsSaveSuccess = true
-      setTimeout(() => (skillsSaveSuccess = false), 2500)
-      toastStore.success('Skills saved.')
+      skillsInitial = $state.snapshot(skillsState);
+      skillsSaveSuccess = true;
+      setTimeout(() => (skillsSaveSuccess = false), 2500);
+      toastStore.success('Skills saved.');
     } catch (err: any) {
-      console.error('Error saving skills:', err)
-      const msg = err?.message || err?.error || 'Failed to save skills.'
-      toastStore.error(msg)
+      console.error('Error saving skills:', err);
+      const msg = err?.message || err?.error || 'Failed to save skills.';
+      toastStore.error(msg);
     } finally {
-      isSavingSkills = false
+      isSavingSkills = false;
     }
   }
 
   async function handleSaveSocials(e: SubmitEvent) {
-    e.preventDefault()
-    if (isSavingSocials) return
+    e.preventDefault();
+    if (isSavingSocials) return;
     if (!validateAllSocials()) {
-      toastStore.error('Please fix the errors below before saving.')
-      return
+      toastStore.error('Please fix the errors below before saving.');
+      return;
     }
-    isSavingSocials = true
-    socialsSaveSuccess = false
+    isSavingSocials = true;
+    socialsSaveSuccess = false;
     try {
-      const authorId = await getAuthorId()
-      if (!authorId) throw new Error('Could not resolve author ID.')
+      const authorId = await getAuthorId();
+      if (!authorId) throw new Error('Could not resolve author ID.');
 
       const items = socialState.map((item, idx) => ({
         platform: sanitizeInput(item.platform.trim()),
@@ -1852,40 +1862,40 @@
         url: item.url.trim(),
         icon: '',
         sort_order: idx + 1
-      }))
+      }));
 
       const {error} = await supabase.rpc('db_save_links', {
         p_author_id: authorId,
         p_category: 'social',
         p_items: items
-      })
-      if (error) throw error
+      });
+      if (error) throw error;
 
-      socialInitial = $state.snapshot(socialState)
-      socialsSaveSuccess = true
-      setTimeout(() => (socialsSaveSuccess = false), 2500)
-      toastStore.success('Social links saved.')
+      socialInitial = $state.snapshot(socialState);
+      socialsSaveSuccess = true;
+      setTimeout(() => (socialsSaveSuccess = false), 2500);
+      toastStore.success('Social links saved.');
     } catch (err: any) {
-      console.error('Error saving socials:', err)
-      const msg = err?.message || err?.error || 'Failed to save social links.'
-      toastStore.error(msg)
+      console.error('Error saving socials:', err);
+      const msg = err?.message || err?.error || 'Failed to save social links.';
+      toastStore.error(msg);
     } finally {
-      isSavingSocials = false
+      isSavingSocials = false;
     }
   }
 
   async function handleSaveSponsorship(e: SubmitEvent) {
-    e.preventDefault()
-    if (isSavingSponsorship) return
+    e.preventDefault();
+    if (isSavingSponsorship) return;
     if (!validateAllSponsorship()) {
-      toastStore.error('Please fix the errors below before saving.')
-      return
+      toastStore.error('Please fix the errors below before saving.');
+      return;
     }
-    isSavingSponsorship = true
-    sponsorshipSaveSuccess = false
+    isSavingSponsorship = true;
+    sponsorshipSaveSuccess = false;
     try {
-      const authorId = await getAuthorId()
-      if (!authorId) throw new Error('Could not resolve author ID.')
+      const authorId = await getAuthorId();
+      if (!authorId) throw new Error('Could not resolve author ID.');
 
       const items = sponsorshipState.map((item, idx) => ({
         platform: sanitizeInput(item.platform.trim()),
@@ -1893,41 +1903,41 @@
         url: item.url.trim(),
         icon: '',
         sort_order: idx + 1
-      }))
+      }));
 
       const {error} = await supabase.rpc('db_save_links', {
         p_author_id: authorId,
         p_category: 'funding',
         p_items: items
-      })
-      if (error) throw error
+      });
+      if (error) throw error;
 
-      sponsorshipInitial = $state.snapshot(sponsorshipState)
-      sponsorshipSaveSuccess = true
-      setTimeout(() => (sponsorshipSaveSuccess = false), 2500)
-      toastStore.success('Sponsorship links saved.')
+      sponsorshipInitial = $state.snapshot(sponsorshipState);
+      sponsorshipSaveSuccess = true;
+      setTimeout(() => (sponsorshipSaveSuccess = false), 2500);
+      toastStore.success('Sponsorship links saved.');
     } catch (err: any) {
-      console.error('Error saving sponsorship links:', err)
+      console.error('Error saving sponsorship links:', err);
       const msg =
-        err?.message || err?.error || 'Failed to save sponsorship links.'
-      toastStore.error(msg)
+        err?.message || err?.error || 'Failed to save sponsorship links.';
+      toastStore.error(msg);
     } finally {
-      isSavingSponsorship = false
+      isSavingSponsorship = false;
     }
   }
 
   async function handleSaveContact(e: SubmitEvent) {
-    e.preventDefault()
-    if (isSavingContact) return
+    e.preventDefault();
+    if (isSavingContact) return;
     if (!validateAllContact()) {
-      toastStore.error('Please fix the errors below before saving.')
-      return
+      toastStore.error('Please fix the errors below before saving.');
+      return;
     }
-    isSavingContact = true
-    contactSaveSuccess = false
+    isSavingContact = true;
+    contactSaveSuccess = false;
     try {
-      const authorId = await getAuthorId()
-      if (!authorId) throw new Error('Could not resolve author ID.')
+      const authorId = await getAuthorId();
+      if (!authorId) throw new Error('Could not resolve author ID.');
 
       const items = contactState.map((item, idx) => ({
         platform: sanitizeInput(item.platform.trim()),
@@ -1935,48 +1945,48 @@
         url: item.href.trim(),
         icon: '',
         sort_order: idx + 1
-      }))
+      }));
 
       const {error} = await supabase.rpc('db_save_links', {
         p_author_id: authorId,
         p_category: 'contact',
         p_items: items
-      })
-      if (error) throw error
+      });
+      if (error) throw error;
 
-      contactInitial = $state.snapshot(contactState)
-      contactSaveSuccess = true
-      setTimeout(() => (contactSaveSuccess = false), 2500)
-      toastStore.success('Contact info saved.')
+      contactInitial = $state.snapshot(contactState);
+      contactSaveSuccess = true;
+      setTimeout(() => (contactSaveSuccess = false), 2500);
+      toastStore.success('Contact info saved.');
     } catch (err: any) {
-      console.error('Error saving contact info:', err)
-      const msg = err?.message || err?.error || 'Failed to save contact info.'
-      toastStore.error(msg)
+      console.error('Error saving contact info:', err);
+      const msg = err?.message || err?.error || 'Failed to save contact info.';
+      toastStore.error(msg);
     } finally {
-      isSavingContact = false
+      isSavingContact = false;
     }
   }
 
   async function executeGenerateCvPdf(
     bumpType: 'patch' | 'minor' | 'major' = 'patch'
   ) {
-    isGeneratingPdf = true
-    pdfUploadError = ''
-    pdfUploadSuccess = ''
+    isGeneratingPdf = true;
+    pdfUploadError = '';
+    pdfUploadSuccess = '';
 
     try {
       const {
         data: {user},
         error: userError
-      } = await supabase.auth.getUser()
+      } = await supabase.auth.getUser();
       if (userError || !user) {
-        throw new Error('Your admin session has expired. Please log in again.')
+        throw new Error('Your admin session has expired. Please log in again.');
       }
 
-      const {data: sessionData} = await supabase.auth.getSession()
-      const accessToken = sessionData.session?.access_token
+      const {data: sessionData} = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
       if (!accessToken) {
-        throw new Error('Your admin session has expired. Please log in again.')
+        throw new Error('Your admin session has expired. Please log in again.');
       }
 
       const response = await fetch('/api/internal/admin/cv/generate', {
@@ -1986,16 +1996,16 @@
           Authorization: `Bearer ${accessToken}`
         },
         body: JSON.stringify({bumpType})
-      })
+      });
 
-      const res = await response.json()
+      const res = await response.json();
       if (!response.ok || !res.success) {
         const errorMsg =
           typeof res?.message === 'string' ? res.message
           : typeof res?.error?.message === 'string' ? res.error.message
           : typeof res?.error === 'string' ? res.error
-          : 'Failed to generate CV PDF'
-        throw new Error(errorMsg)
+          : 'Failed to generate CV PDF';
+        throw new Error(errorMsg);
       }
 
       cvDocState = {
@@ -2003,42 +2013,42 @@
         fileUrl: res.fileUrl,
         hash: res.hash,
         isActive: true
-      }
+      };
 
-      const provider = res.storageProvider || 'R2'
-      pdfUploadSuccess = `Successfully generated ${res.filename} (v${res.version}) & synced to ${provider}!`
-      toastStore.success(`CV PDF generated (v${res.version})`)
+      const provider = res.storageProvider || 'R2';
+      pdfUploadSuccess = `Successfully generated ${res.filename} (v${res.version}) & synced to ${provider}!`;
+      toastStore.success(`CV PDF generated (v${res.version})`);
     } catch (err: any) {
-      console.error('PDF generation error:', err)
+      console.error('PDF generation error:', err);
       pdfUploadError =
         typeof err?.message === 'string' ? err.message
         : typeof err === 'string' ? err
-        : 'Failed to generate CV PDF'
-      toastStore.error(pdfUploadError)
+        : 'Failed to generate CV PDF';
+      toastStore.error(pdfUploadError);
     } finally {
-      isGeneratingPdf = false
+      isGeneratingPdf = false;
     }
   }
 
   function confirmDeleteCvDoc() {
-    if (!cvDocState.filename) return
-    showDeleteCvDocDialog = true
+    if (!cvDocState.filename) return;
+    showDeleteCvDocDialog = true;
   }
 
   async function executeDeleteCvDoc() {
-    showDeleteCvDocDialog = false
+    showDeleteCvDocDialog = false;
     try {
       const {
         data: {user},
         error: userError
-      } = await supabase.auth.getUser()
+      } = await supabase.auth.getUser();
       if (userError || !user) {
-        throw new Error('Your admin session has expired. Please log in again.')
+        throw new Error('Your admin session has expired. Please log in again.');
       }
-      const {data: sessionData} = await supabase.auth.getSession()
-      const accessToken = sessionData.session?.access_token
+      const {data: sessionData} = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
       if (!accessToken) {
-        throw new Error('Your admin session has expired. Please log in again.')
+        throw new Error('Your admin session has expired. Please log in again.');
       }
 
       const response = await fetch('/api/internal/admin/cv/delete', {
@@ -2048,28 +2058,28 @@
           Authorization: `Bearer ${accessToken}`
         },
         body: JSON.stringify({filename: cvDocState.filename})
-      })
+      });
 
-      const result = await response.json().catch(() => ({}))
+      const result = await response.json().catch(() => ({}));
 
       if (response.ok) {
-        cvDocState = {filename: '', fileUrl: '', hash: '', isActive: false}
-        pdfUploadSuccess = 'CV document deleted successfully.'
-        setTimeout(() => (pdfUploadSuccess = ''), 3000)
-        toastStore.success('CV document deleted.')
+        cvDocState = {filename: '', fileUrl: '', hash: '', isActive: false};
+        pdfUploadSuccess = 'CV document deleted successfully.';
+        setTimeout(() => (pdfUploadSuccess = ''), 3000);
+        toastStore.success('CV document deleted.');
       } else {
         const errMsg =
           typeof result?.message === 'string' ? result.message
           : typeof result?.error?.message === 'string' ? result.error.message
           : typeof result?.error === 'string' ? result.error
-          : 'Failed to delete CV document.'
-        toastStore.error(errMsg)
+          : 'Failed to delete CV document.';
+        toastStore.error(errMsg);
       }
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : 'Failed to delete CV document.'
-      console.error('Failed to delete CV document:', err)
-      toastStore.error(message)
+        err instanceof Error ? err.message : 'Failed to delete CV document.';
+      console.error('Failed to delete CV document:', err);
+      toastStore.error(message);
     }
   }
 
@@ -2090,7 +2100,7 @@
           locType: '',
           description: ''
         }
-      ]
+      ];
     } else {
       cvState.education = [
         ...cvState.education,
@@ -2106,7 +2116,7 @@
           grade: '',
           description: ''
         }
-      ]
+      ];
     }
   }
 
@@ -2116,9 +2126,9 @@
     | 'skill'
     | 'social'
     | 'sponsorship'
-    | 'contact'
-  let showRemoveEntryDialog = $state(false)
-  let pendingRemove = $state<{type: RemovableEntry; idx: number} | null>(null)
+    | 'contact';
+  let showRemoveEntryDialog = $state(false);
+  let pendingRemove = $state<{type: RemovableEntry; idx: number} | null>(null);
 
   const removeEntryLabels: Record<RemovableEntry, string> = {
     'cv-experience': 'this experience entry',
@@ -2127,88 +2137,88 @@
     social: 'this social link',
     sponsorship: 'this sponsorship link',
     contact: 'this contact'
-  }
+  };
   const removeEntryMessage = $derived(
     pendingRemove ?
       `Are you sure you want to remove ${removeEntryLabels[pendingRemove.type]}? This won't be saved until you click Save.`
     : ''
-  )
+  );
 
   function confirmRemoveCvEntry(type: 'experience' | 'education', idx: number) {
     pendingRemove = {
       type: type === 'experience' ? 'cv-experience' : 'cv-education',
       idx
-    }
-    showRemoveEntryDialog = true
+    };
+    showRemoveEntryDialog = true;
   }
 
   function confirmRemoveSkill(idx: number) {
-    pendingRemove = {type: 'skill', idx}
-    showRemoveEntryDialog = true
+    pendingRemove = {type: 'skill', idx};
+    showRemoveEntryDialog = true;
   }
 
   function confirmRemoveSocial(idx: number) {
-    pendingRemove = {type: 'social', idx}
-    showRemoveEntryDialog = true
+    pendingRemove = {type: 'social', idx};
+    showRemoveEntryDialog = true;
   }
 
   function confirmRemoveSponsorship(idx: number) {
-    pendingRemove = {type: 'sponsorship', idx}
-    showRemoveEntryDialog = true
+    pendingRemove = {type: 'sponsorship', idx};
+    showRemoveEntryDialog = true;
   }
 
   function confirmRemoveContact(idx: number) {
-    pendingRemove = {type: 'contact', idx}
-    showRemoveEntryDialog = true
+    pendingRemove = {type: 'contact', idx};
+    showRemoveEntryDialog = true;
   }
 
   function executeRemoveEntry() {
-    if (!pendingRemove) return
-    const {type, idx} = pendingRemove
+    if (!pendingRemove) return;
+    const {type, idx} = pendingRemove;
     if (type === 'cv-experience') {
-      cvState.experience = cvState.experience.filter((_, i) => i !== idx)
+      cvState.experience = cvState.experience.filter((_, i) => i !== idx);
     } else if (type === 'cv-education') {
-      cvState.education = cvState.education.filter((_, i) => i !== idx)
+      cvState.education = cvState.education.filter((_, i) => i !== idx);
     } else if (type === 'skill') {
-      skillsState = skillsState.filter((_, i) => i !== idx)
+      skillsState = skillsState.filter((_, i) => i !== idx);
     } else if (type === 'social') {
-      socialState = socialState.filter((_, i) => i !== idx)
+      socialState = socialState.filter((_, i) => i !== idx);
     } else if (type === 'sponsorship') {
-      sponsorshipState = sponsorshipState.filter((_, i) => i !== idx)
+      sponsorshipState = sponsorshipState.filter((_, i) => i !== idx);
     } else if (type === 'contact') {
-      contactState = contactState.filter((_, i) => i !== idx)
+      contactState = contactState.filter((_, i) => i !== idx);
     }
-    pendingRemove = null
-    showRemoveEntryDialog = false
+    pendingRemove = null;
+    showRemoveEntryDialog = false;
   }
 
   function handleAddSkill() {
-    skillsState = [...skillsState, {category: '', skills: []}]
+    skillsState = [...skillsState, {category: '', skills: []}];
   }
 
   function handleAddSocial() {
-    socialState = [...socialState, {platform: '', url: '', icon: ''}]
+    socialState = [...socialState, {platform: '', url: '', icon: ''}];
   }
 
   function handleAddSponsorship() {
     sponsorshipState = [
       ...sponsorshipState,
       {platform: '', displayValue: '', url: '', icon: '', description: ''}
-    ]
+    ];
   }
 
   function handleAddContact() {
     contactState = [
       ...contactState,
       {platform: '', displayValue: '', href: '', icon: ''}
-    ]
+    ];
   }
 
   const adminNavLinks: {
-    id: typeof activeAdminTab
-    label: string
-    icon: any
-    section: 'content' | 'profile' | 'legal'
+    id: typeof activeAdminTab;
+    label: string;
+    icon: any;
+    section: 'content' | 'profile' | 'legal';
   }[] = [
     {id: 'posts', label: 'Posts', icon: FileText, section: 'content'},
     {id: 'profile', label: 'Profile', icon: User, section: 'profile'},
@@ -2225,7 +2235,7 @@
       section: 'legal'
     },
     {id: 'terms', label: 'Terms of Service', icon: ScrollText, section: 'legal'}
-  ]
+  ];
 </script>
 
 <svelte:head>
@@ -2720,8 +2730,8 @@
                         <button
                           type="button"
                           onclick={() => {
-                            replyTo = comment
-                            commentContent = ''
+                            replyTo = comment;
+                            commentContent = '';
                           }}
                           class="cursor-pointer font-bold text-text-muted transition-colors hover:text-copilot focus-visible:outline-none">
                           Reply
@@ -2911,7 +2921,7 @@
                     type="button"
                     class="group relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border-subtle bg-surface-base transition-transform select-none hover:scale-105 active:scale-95"
                     onclick={() => {
-                      if (authorState.avatar) showAvatarPreviewDialog = true
+                      if (authorState.avatar) showAvatarPreviewDialog = true;
                     }}
                     aria-label="Preview avatar">
                     {#if authorState.avatar}
@@ -3228,8 +3238,8 @@
                           experienceValid,
                           idx,
                           'title'
-                        )
-                        validateExperienceField(idx, 'title', 'Title')
+                        );
+                        validateExperienceField(idx, 'title', 'Title');
                       }} />
                   </FormField>
 
@@ -3268,8 +3278,8 @@
                         experienceValid,
                         idx,
                         'company'
-                      )
-                      validateExperienceField(idx, 'company', 'Company')
+                      );
+                      validateExperienceField(idx, 'company', 'Company');
                     }} />
                 </FormField>
 
@@ -3294,8 +3304,8 @@
                           experienceValid,
                           idx,
                           'location'
-                        )
-                        validateExperienceField(idx, 'location', 'Location')
+                        );
+                        validateExperienceField(idx, 'location', 'Location');
                       }} />
                   </FormField>
 
@@ -3371,8 +3381,8 @@
                         label="I am currently working here"
                         onchange={e => {
                           if ((e.currentTarget as HTMLInputElement).checked) {
-                            exp.endMonth = null
-                            exp.endYear = null
+                            exp.endMonth = null;
+                            exp.endYear = null;
                           }
                         }} />
                     </div>
@@ -3400,8 +3410,12 @@
                         experienceValid,
                         idx,
                         'description'
-                      )
-                      validateExperienceField(idx, 'description', 'Description')
+                      );
+                      validateExperienceField(
+                        idx,
+                        'description',
+                        'Description'
+                      );
                     }} />
                 </FormField>
               </div>
@@ -3513,12 +3527,12 @@
                           educationValid,
                           idx,
                           'institution'
-                        )
+                        );
                         validateEducationField(
                           idx,
                           'institution',
                           'Institution'
-                        )
+                        );
                       }} />
                   </FormField>
 
@@ -3542,8 +3556,8 @@
                           educationValid,
                           idx,
                           'degree'
-                        )
-                        validateEducationField(idx, 'degree', 'Degree')
+                        );
+                        validateEducationField(idx, 'degree', 'Degree');
                       }} />
                   </FormField>
 
@@ -3567,8 +3581,8 @@
                           educationValid,
                           idx,
                           'field'
-                        )
-                        validateEducationField(idx, 'field', 'Field of study')
+                        );
+                        validateEducationField(idx, 'field', 'Field of study');
                       }} />
                   </FormField>
 
@@ -3592,8 +3606,8 @@
                           educationValid,
                           idx,
                           'grade'
-                        )
-                        validateEducationField(idx, 'grade', 'Grade')
+                        );
+                        validateEducationField(idx, 'grade', 'Grade');
                       }} />
                   </FormField>
                 </div>
@@ -3655,8 +3669,8 @@
                         label="I am currently studying here"
                         onchange={e => {
                           if ((e.currentTarget as HTMLInputElement).checked) {
-                            edu.endMonth = null
-                            edu.endYear = null
+                            edu.endMonth = null;
+                            edu.endYear = null;
                           }
                         }} />
                     </div>
@@ -3684,8 +3698,8 @@
                         educationValid,
                         idx,
                         'description'
-                      )
-                      validateEducationField(idx, 'description', 'Description')
+                      );
+                      validateEducationField(idx, 'description', 'Description');
                     }} />
                 </FormField>
               </div>
@@ -3770,7 +3784,7 @@
                         navigator.clipboard
                           .writeText(cvDocState.hash || '')
                           .then(() => toastStore.success('Copied!'))
-                          .catch(() => toastStore.error('Failed to copy'))
+                          .catch(() => toastStore.error('Failed to copy'));
                       }}
                       ariaLabel="Copy SHA-256 checksum">
                       <Copy class="size-3.5" />
@@ -3960,8 +3974,8 @@
                   error={!!skillsErrors[idx]?.category}
                   valid={skillsValid[idx]?.category}
                   oninput={() => {
-                    clearFieldError(skillsErrors, skillsValid, idx, 'category')
-                    validateSkillField(idx)
+                    clearFieldError(skillsErrors, skillsValid, idx, 'category');
+                    validateSkillField(idx);
                   }}
                   onpaste={e => handleCategoryPaste(idx, e)} />
               </FormField>
@@ -4091,8 +4105,8 @@
                         socialValid,
                         idx,
                         'platform'
-                      )
-                      validateSocialField(idx, 'platform')
+                      );
+                      validateSocialField(idx, 'platform');
                     }} />
                 </FormField>
 
@@ -4111,8 +4125,8 @@
                     error={!!socialErrors[idx]?.url}
                     valid={socialValid[idx]?.url}
                     oninput={() => {
-                      clearFieldError(socialErrors, socialValid, idx, 'url')
-                      validateSocialField(idx, 'url')
+                      clearFieldError(socialErrors, socialValid, idx, 'url');
+                      validateSocialField(idx, 'url');
                     }} />
                 </FormField>
               </div>
@@ -4229,8 +4243,8 @@
                         sponsorshipValid,
                         idx,
                         'platform'
-                      )
-                      validateSponsorshipField(idx, 'platform')
+                      );
+                      validateSponsorshipField(idx, 'platform');
                     }} />
                 </FormField>
 
@@ -4254,8 +4268,8 @@
                         sponsorshipValid,
                         idx,
                         'displayValue'
-                      )
-                      validateSponsorshipField(idx, 'displayValue')
+                      );
+                      validateSponsorshipField(idx, 'displayValue');
                     }} />
                 </FormField>
 
@@ -4279,8 +4293,8 @@
                         sponsorshipValid,
                         idx,
                         'url'
-                      )
-                      validateSponsorshipField(idx, 'url')
+                      );
+                      validateSponsorshipField(idx, 'url');
                     }} />
                 </FormField>
               </div>
@@ -4402,8 +4416,8 @@
                         contactValid,
                         idx,
                         'platform'
-                      )
-                      validateContactField(idx, 'platform')
+                      );
+                      validateContactField(idx, 'platform');
                     }} />
                 </FormField>
 
@@ -4417,7 +4431,7 @@
                   <Input
                     id={'ct-val-' + idx}
                     bind:value={item.displayValue}
-                    placeholder="Ex: contact@fkp.my.id"
+                    placeholder="Ex: contact@example.com"
                     maxlength={50}
                     error={!!contactErrors[idx]?.displayValue}
                     valid={contactValid[idx]?.displayValue}
@@ -4427,8 +4441,8 @@
                         contactValid,
                         idx,
                         'displayValue'
-                      )
-                      validateContactField(idx, 'displayValue')
+                      );
+                      validateContactField(idx, 'displayValue');
                     }} />
                 </FormField>
 
@@ -4442,13 +4456,13 @@
                   <Input
                     id={'ct-url-' + idx}
                     bind:value={item.href}
-                    placeholder="Ex: mailto:contact@fkp.my.id"
+                    placeholder="Ex: mailto:contact@example.com"
                     maxlength={100}
                     error={!!contactErrors[idx]?.href}
                     valid={contactValid[idx]?.href}
                     oninput={() => {
-                      clearFieldError(contactErrors, contactValid, idx, 'href')
-                      validateContactField(idx, 'href')
+                      clearFieldError(contactErrors, contactValid, idx, 'href');
+                      validateContactField(idx, 'href');
                     }} />
                 </FormField>
               </div>
@@ -4634,9 +4648,9 @@
         tone="critical"
         size="md"
         onclick={() => {
-          authorState.avatar = ''
-          showAvatarPreviewDialog = false
-          onAuthorInput('avatar')
+          authorState.avatar = '';
+          showAvatarPreviewDialog = false;
+          onAuthorInput('avatar');
         }}>
         Delete
       </Button>

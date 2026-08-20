@@ -9,7 +9,7 @@ const errorSchema = {
     }
   },
   required: ['code', 'error']
-}
+};
 
 const paginationSchema = {
   type: 'object',
@@ -21,7 +21,7 @@ const paginationSchema = {
     hasNextPage: {type: 'boolean'},
     hasPrevPage: {type: 'boolean'}
   }
-}
+};
 
 const blogPostSummarySchema = {
   type: 'object',
@@ -34,7 +34,7 @@ const blogPostSummarySchema = {
     created_at: {type: 'string', format: 'date-time'},
     updated_at: {type: 'string', format: 'date-time'}
   }
-}
+};
 
 const blogPostDetailSchema = {
   allOf: [
@@ -49,7 +49,7 @@ const blogPostDetailSchema = {
       }
     }
   ]
-}
+};
 
 const commentSchema = {
   type: 'object',
@@ -67,7 +67,7 @@ const commentSchema = {
     },
     created_at: {type: 'string', format: 'date-time'}
   }
-}
+};
 
 const searchResultSchema = {
   type: 'object',
@@ -78,34 +78,34 @@ const searchResultSchema = {
     url: {type: 'string'},
     tags: {type: 'array', items: {type: 'string'}}
   }
-}
+};
 
 const authorSubResourceSchema = {
   type: 'object',
   description:
     'Shape varies by field and is sanitized of internal/legacy keys (id, sortOrder, etc). See GET /api/v1/author for a combined example.',
   additionalProperties: true
-}
+};
 
 const pageParam = {
   name: 'page',
   in: 'query',
   schema: {type: 'integer', default: 1, minimum: 1},
   description: '1-based page number.'
-}
+};
 const limitParam = (def: number, max: number) => ({
   name: 'limit',
   in: 'query',
   schema: {type: 'integer', default: def, minimum: 1, maximum: max},
   description: `Results per page (max ${max}).`
-})
+});
 const formatParam = {
   name: 'format',
   in: 'query',
   schema: {type: 'string', enum: ['json', 'md', 'markdown']},
   description:
     'Overrides the Accept header. "md"/"markdown" returns text/markdown instead of JSON.'
-}
+};
 
 const errorResponses = {
   '400': {
@@ -132,18 +132,18 @@ const errorResponses = {
     description: 'Internal Server Error',
     content: {'application/json': {schema: errorSchema}}
   }
-}
+};
 
 export const openapiSpec = {
   openapi: '3.0.3',
   info: {
-    title: 'fkp.my.id Public API',
+    title: 'Public REST API',
     version: '1.0.0',
     description:
-      'Machine-readable OpenAPI spec for the public REST endpoints served at fkp.my.id under /api/v1/. '
-      + 'See GET /api/v1 (or src/routes/api/v1/README.md) for the human-readable reference and CORS/versioning notes.'
+      'Machine-readable OpenAPI spec for the public REST endpoints served under /api/v1/. '
+      + 'See GET /api/v1 for the human-readable reference and CORS/versioning notes.'
   },
-  servers: [{url: 'https://fkp.my.id'}],
+  servers: [{url: '/'}],
   components: {
     schemas: {
       Error: errorSchema,
@@ -484,4 +484,4 @@ export const openapiSpec = {
       }
     }
   }
-}
+};

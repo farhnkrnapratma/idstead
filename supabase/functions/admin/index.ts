@@ -1,37 +1,39 @@
-import {createClient} from 'jsr:@supabase/supabase-js@2'
+import {createClient} from 'jsr:@supabase/supabase-js@2';
 import {
   S3Client,
   PutObjectCommand,
   DeleteObjectCommand
-} from 'npm:@aws-sdk/client-s3@3'
+} from 'npm:@aws-sdk/client-s3@3';
 
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
-const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-const R2_ACCOUNT_ID = Deno.env.get('R2_ACCOUNT_ID')
-const R2_ACCESS_KEY_ID = Deno.env.get('R2_ACCESS_KEY_ID')
-const R2_SECRET_ACCESS_KEY = Deno.env.get('R2_SECRET_ACCESS_KEY')
-const R2_BUCKET_NAME = Deno.env.get('R2_BUCKET_NAME')
+const R2_ACCOUNT_ID = Deno.env.get('R2_ACCOUNT_ID');
+const R2_ACCESS_KEY_ID = Deno.env.get('R2_ACCESS_KEY_ID');
+const R2_SECRET_ACCESS_KEY = Deno.env.get('R2_SECRET_ACCESS_KEY');
+const R2_BUCKET_NAME = Deno.env.get('R2_BUCKET_NAME');
 const R2_PUBLIC_URL = (
-  Deno.env.get('R2_PUBLIC_URL') || 'https://cdn.fkp.my.id'
-).replace(/\/$/, '')
+  Deno.env.get('R2_PUBLIC_URL')
+  || Deno.env.get('PUBLIC_CDN_BASE_URL')
+  || ''
+).replace(/\/$/, '');
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'authorization, apikey, content-type'
-}
+};
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
     headers: {'Content-Type': 'application/json', ...CORS_HEADERS}
-  })
+  });
 }
 
 async function requireAdmin(req: Request): Promise<Response | null> {
-  const auth = req.headers.get('authorization')
+  const auth = req.headers.get('authorization');
   if (!auth) {
     return jsonResponse(
       {
@@ -40,15 +42,15 @@ async function requireAdmin(req: Request): Promise<Response | null> {
         message: 'Missing Authorization header.'
       },
       401
-    )
+    );
   }
 
-  const token = auth.replace(/^Bearer\s+/i, '').trim()
-  const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  const token = auth.replace(/^Bearer\s+/i, '').trim();
+  const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const {
     data: {user},
     error: userError
-  } = await authClient.auth.getUser(token)
+  } = await authClient.auth.getUser(token);
 
   if (userError || !user) {
     return jsonResponse(
@@ -58,10 +60,10 @@ async function requireAdmin(req: Request): Promise<Response | null> {
         message: 'Invalid or expired token.'
       },
       401
-    )
+    );
   }
 
-  const role = (user.app_metadata as {role?: string} | null)?.role
+  const role = (user.app_metadata as {role?: string} | null)?.role;
   if (role !== 'admin') {
     return jsonResponse(
       {
@@ -70,10 +72,10 @@ async function requireAdmin(req: Request): Promise<Response | null> {
         message: 'Admin privileges required.'
       },
       403
-    )
+    );
   }
 
-  return null
+  return null;
 }
 
 function getR2Client(): S3Client | null {
@@ -83,7 +85,7 @@ function getR2Client(): S3Client | null {
     || !R2_SECRET_ACCESS_KEY
     || !R2_BUCKET_NAME
   )
-    return null
+    return null;
   return new S3Client({
     region: 'auto',
     endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
@@ -91,23 +93,23 @@ function getR2Client(): S3Client | null {
       accessKeyId: R2_ACCESS_KEY_ID,
       secretAccessKey: R2_SECRET_ACCESS_KEY
     }
-  })
+  });
 }
 
 async function handleCvUpload(req: Request): Promise<Response> {
-  const supabaseDb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+  const supabaseDb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
   let {data: author} = await supabaseDb
     .from('db_profiles')
     .select('id, name, username')
     .limit(1)
-    .maybeSingle()
+    .maybeSingle();
 
   if (!author?.id) {
     const {data: createdAuthor, error: createError} = await supabaseDb
       .from('db_profiles')
       .insert({name: '', username: ''})
       .select('id, name, username')
-      .maybeSingle()
+      .maybeSingle();
 
     if (createError || !createdAuthor?.id) {
       return jsonResponse(
@@ -118,14 +120,14 @@ async function handleCvUpload(req: Request): Promise<Response> {
           message: 'Could not resolve or create author profile.'
         },
         500
-      )
+      );
     }
-    author = createdAuthor
+    author = createdAuthor;
   }
 
-  let form: FormData
+  let form: FormData;
   try {
-    form = await req.formData()
+    form = await req.formData();
   } catch {
     return jsonResponse(
       {
@@ -135,10 +137,10 @@ async function handleCvUpload(req: Request): Promise<Response> {
         message: 'Expected multipart/form-data with a file field.'
       },
       400
-    )
+    );
   }
 
-  const file = form.get('file')
+  const file = form.get('file');
   if (!(file instanceof File)) {
     return jsonResponse(
       {
@@ -147,7 +149,7 @@ async function handleCvUpload(req: Request): Promise<Response> {
         message: 'file field is required.'
       },
       400
-    )
+    );
   }
   if (file.type !== 'application/pdf') {
     return jsonResponse(
@@ -157,9 +159,9 @@ async function handleCvUpload(req: Request): Promise<Response> {
         message: 'file must be a PDF.'
       },
       400
-    )
+    );
   }
-  const MAX_BYTES = 10 * 1024 * 1024
+  const MAX_BYTES = 10 * 1024 * 1024;
   if (file.size > MAX_BYTES) {
     return jsonResponse(
       {
@@ -168,12 +170,12 @@ async function handleCvUpload(req: Request): Promise<Response> {
         message: 'file exceeds 10MB limit.'
       },
       400
-    )
+    );
   }
 
-  const bytes = new Uint8Array(await file.arrayBuffer())
+  const bytes = new Uint8Array(await file.arrayBuffer());
 
-  const magic = new TextDecoder().decode(bytes.slice(0, 5))
+  const magic = new TextDecoder().decode(bytes.slice(0, 5));
   if (magic !== '%PDF-') {
     return jsonResponse(
       {
@@ -182,72 +184,72 @@ async function handleCvUpload(req: Request): Promise<Response> {
         message: 'file is not a valid PDF.'
       },
       400
-    )
+    );
   }
 
-  const digestBuffer = await crypto.subtle.digest('SHA-256', bytes)
+  const digestBuffer = await crypto.subtle.digest('SHA-256', bytes);
   const fullHash = Array.from(new Uint8Array(digestBuffer))
     .map(b => b.toString(16).padStart(2, '0'))
-    .join('')
-  const shortHash = fullHash.slice(0, 7)
+    .join('');
+  const shortHash = fullHash.slice(0, 7);
 
-  const authorName = (author.name || author.username || 'cv').trim()
+  const authorName = (author.name || author.username || 'cv').trim();
   const slugBase = authorName
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '')
-  const slug = slugBase || 'cv'
+    .replace(/^_+|_+$/g, '');
+  const slug = slugBase || 'cv';
 
-  const now = new Date()
-  const yearSuffix = String(now.getFullYear()).slice(-2)
-  const monthSuffix = String(now.getMonth() + 1).padStart(2, '0')
-  const version = `v${yearSuffix}${monthSuffix}`
+  const now = new Date();
+  const yearSuffix = String(now.getFullYear()).slice(-2);
+  const monthSuffix = String(now.getMonth() + 1).padStart(2, '0');
+  const version = `v${yearSuffix}${monthSuffix}`;
 
-  const filename = `${slug}-${shortHash}-${version}.pdf`
-  const sha256Filename = `${filename}.sha256`
-  const sha256Content = `${fullHash}  ${filename}\n`
-  const sha256Bytes = new TextEncoder().encode(sha256Content)
+  const filename = `${slug}-${shortHash}-${version}.pdf`;
+  const sha256Filename = `${filename}.sha256`;
+  const sha256Content = `${fullHash}  ${filename}\n`;
+  const sha256Bytes = new TextEncoder().encode(sha256Content);
 
-  const r2 = getR2Client()
+  const r2 = getR2Client();
 
   const {data: previousDocs} = await supabaseDb
     .from('db_documents')
     .select('id, filename')
-    .eq('is_active', true)
+    .eq('is_active', true);
 
   if (previousDocs && previousDocs.length > 0) {
     for (const oldDoc of previousDocs) {
       if (oldDoc.filename) {
-        const oldPdfKey = oldDoc.filename
-        const oldShaKey = `${oldDoc.filename}.sha256`
+        const oldPdfKey = oldDoc.filename;
+        const oldShaKey = `${oldDoc.filename}.sha256`;
         if (r2 && R2_BUCKET_NAME) {
           try {
             await r2.send(
               new DeleteObjectCommand({Bucket: R2_BUCKET_NAME, Key: oldPdfKey})
-            )
+            );
             await r2.send(
               new DeleteObjectCommand({Bucket: R2_BUCKET_NAME, Key: oldShaKey})
-            )
+            );
           } catch (delErr) {
-            console.error('R2 deletion warning for old CV file:', delErr)
+            console.error('R2 deletion warning for old CV file:', delErr);
           }
         }
         try {
           await supabaseDb.storage
             .from('cv_documents')
-            .remove([oldPdfKey, oldShaKey])
+            .remove([oldPdfKey, oldShaKey]);
         } catch (delStorageErr) {
           console.error(
             'Supabase storage deletion warning for old CV file:',
             delStorageErr
-          )
+          );
         }
       }
     }
   }
 
-  let fileUrl = ''
-  let storageProvider: 'R2' | 'Supabase Storage' = 'R2'
+  let fileUrl = '';
+  let storageProvider: 'R2' | 'Supabase Storage' = 'R2';
 
   if (r2 && R2_BUCKET_NAME) {
     try {
@@ -258,7 +260,7 @@ async function handleCvUpload(req: Request): Promise<Response> {
           Body: bytes,
           ContentType: 'application/pdf'
         })
-      )
+      );
       await r2.send(
         new PutObjectCommand({
           Bucket: R2_BUCKET_NAME,
@@ -266,21 +268,21 @@ async function handleCvUpload(req: Request): Promise<Response> {
           Body: sha256Bytes,
           ContentType: 'text/plain; charset=utf-8'
         })
-      )
-      fileUrl = `${R2_PUBLIC_URL}/${filename}`
+      );
+      fileUrl = `${R2_PUBLIC_URL}/${filename}`;
     } catch (r2Err) {
       console.error(
         'R2 upload failed, trying Supabase Storage fallback:',
         r2Err
-      )
+      );
     }
   }
 
   if (!fileUrl) {
-    storageProvider = 'Supabase Storage'
+    storageProvider = 'Supabase Storage';
     const {error: storageError} = await supabaseDb.storage
       .from('cv_documents')
-      .upload(filename, bytes, {contentType: 'application/pdf', upsert: true})
+      .upload(filename, bytes, {contentType: 'application/pdf', upsert: true});
 
     if (storageError) {
       return jsonResponse(
@@ -290,7 +292,7 @@ async function handleCvUpload(req: Request): Promise<Response> {
           message: `Failed to upload storage file: ${storageError.message}`
         },
         500
-      )
+      );
     }
 
     await supabaseDb.storage
@@ -298,19 +300,19 @@ async function handleCvUpload(req: Request): Promise<Response> {
       .upload(sha256Filename, sha256Bytes, {
         contentType: 'text/plain; charset=utf-8',
         upsert: true
-      })
+      });
 
     const {data: publicUrlData} = supabaseDb.storage
       .from('cv_documents')
-      .getPublicUrl(filename)
+      .getPublicUrl(filename);
 
-    fileUrl = publicUrlData.publicUrl
+    fileUrl = publicUrlData.publicUrl;
   }
 
   const {error: deactivateError} = await supabaseDb
     .from('db_documents')
     .update({is_active: false})
-    .eq('is_active', true)
+    .eq('is_active', true);
 
   if (deactivateError) {
     return jsonResponse(
@@ -321,7 +323,7 @@ async function handleCvUpload(req: Request): Promise<Response> {
         message: 'Uploaded file but failed to deactivate previous CV record.'
       },
       500
-    )
+    );
   }
 
   const {error: insertError} = await supabaseDb
@@ -332,7 +334,7 @@ async function handleCvUpload(req: Request): Promise<Response> {
       file_url: fileUrl,
       hash: fullHash,
       is_active: true
-    })
+    });
 
   if (insertError) {
     return jsonResponse(
@@ -343,34 +345,34 @@ async function handleCvUpload(req: Request): Promise<Response> {
         message: 'Uploaded file but failed to save database record.'
       },
       500
-    )
+    );
   }
 
   return jsonResponse(
     {success: true, filename, fileUrl, hash: fullHash, storageProvider},
     201
-  )
+  );
 }
 
 async function handleCvDelete(req: Request): Promise<Response> {
-  const supabaseDb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+  const supabaseDb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-  let targetFilename: string | null = null
+  let targetFilename: string | null = null;
   try {
-    const body = await req.json()
+    const body = await req.json();
     if (typeof body?.filename === 'string' && body.filename.trim()) {
-      targetFilename = body.filename.trim()
+      targetFilename = body.filename.trim();
     }
   } catch {}
 
-  let filename: string
+  let filename: string;
   if (targetFilename) {
     const {data: doc, error: lookupError} = await supabaseDb
       .from('db_documents')
       .select('filename')
       .eq('filename', targetFilename)
       .limit(1)
-      .maybeSingle()
+      .maybeSingle();
 
     if (lookupError || !doc?.filename) {
       return jsonResponse(
@@ -380,16 +382,16 @@ async function handleCvDelete(req: Request): Promise<Response> {
           message: 'CV document not found.'
         },
         404
-      )
+      );
     }
-    filename = doc.filename
+    filename = doc.filename;
   } else {
     const {data: activeDoc, error: lookupError} = await supabaseDb
       .from('db_documents')
       .select('filename')
       .eq('is_active', true)
       .limit(1)
-      .maybeSingle()
+      .maybeSingle();
 
     if (lookupError || !activeDoc?.filename) {
       return jsonResponse(
@@ -399,39 +401,39 @@ async function handleCvDelete(req: Request): Promise<Response> {
           message: 'No active CV document to delete.'
         },
         404
-      )
+      );
     }
-    filename = activeDoc.filename
+    filename = activeDoc.filename;
   }
 
-  const sha256Filename = `${filename}.sha256`
+  const sha256Filename = `${filename}.sha256`;
 
-  const r2 = getR2Client()
+  const r2 = getR2Client();
   if (r2 && R2_BUCKET_NAME) {
     try {
       await r2.send(
         new DeleteObjectCommand({Bucket: R2_BUCKET_NAME, Key: filename})
-      )
+      );
       await r2.send(
         new DeleteObjectCommand({Bucket: R2_BUCKET_NAME, Key: sha256Filename})
-      )
+      );
     } catch (err) {
-      console.error('R2 deletion warning:', err)
+      console.error('R2 deletion warning:', err);
     }
   }
 
   try {
     await supabaseDb.storage
       .from('cv_documents')
-      .remove([filename, sha256Filename])
+      .remove([filename, sha256Filename]);
   } catch (err) {
-    console.error('Supabase storage removal warning:', err)
+    console.error('Supabase storage removal warning:', err);
   }
 
   const {error: deleteError} = await supabaseDb
     .from('db_documents')
     .delete()
-    .eq('filename', filename)
+    .eq('filename', filename);
 
   if (deleteError) {
     return jsonResponse(
@@ -442,15 +444,15 @@ async function handleCvDelete(req: Request): Promise<Response> {
         message: 'Deleted file from R2 but failed to remove database record.'
       },
       500
-    )
+    );
   }
 
-  return jsonResponse({success: true, filename})
+  return jsonResponse({success: true, filename});
 }
 
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, {status: 204, headers: CORS_HEADERS})
+    return new Response(null, {status: 204, headers: CORS_HEADERS});
   }
   if (req.method !== 'POST') {
     return jsonResponse(
@@ -460,21 +462,21 @@ Deno.serve(async (req: Request) => {
         message: 'Method Not Allowed'
       },
       405
-    )
+    );
   }
 
-  const authFailure = await requireAdmin(req)
+  const authFailure = await requireAdmin(req);
   if (authFailure) {
-    return authFailure
+    return authFailure;
   }
 
-  const path = new URL(req.url).pathname
+  const path = new URL(req.url).pathname;
 
   if (path.endsWith('/cv/upload')) {
-    return handleCvUpload(req)
+    return handleCvUpload(req);
   }
   if (path.endsWith('/cv/delete')) {
-    return handleCvDelete(req)
+    return handleCvDelete(req);
   }
 
   return jsonResponse(
@@ -484,5 +486,5 @@ Deno.serve(async (req: Request) => {
       message: 'Unknown admin route.'
     },
     404
-  )
-})
+  );
+});

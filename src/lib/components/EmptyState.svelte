@@ -1,14 +1,14 @@
 <script lang="ts">
-  import type {Snippet} from 'svelte'
-  import {Inbox} from '@lucide/svelte'
-  import {cn} from '../utils/cn'
+  import type {Snippet} from 'svelte';
+  import {Inbox} from '@lucide/svelte';
+  import {cn} from '../utils/cn';
 
   interface Props {
-    title: string
-    description?: string
-    class?: string
-    icon?: Snippet
-    actions?: Snippet
+    title: string;
+    description?: string;
+    class?: string;
+    icon?: Snippet;
+    actions?: Snippet;
   }
 
   let {
@@ -17,7 +17,7 @@
     class: className = '',
     icon,
     actions
-  }: Props = $props()
+  }: Props = $props();
 </script>
 
 <div

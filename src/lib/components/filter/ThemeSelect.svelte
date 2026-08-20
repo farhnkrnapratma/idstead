@@ -1,18 +1,18 @@
 <script lang="ts">
-  import {Sun, Moon, SunMoon} from '@lucide/svelte'
-  import {cn} from '../../utils/cn'
-  import IconButton from '../IconButton.svelte'
-  import {themeStore} from '../../stores/themeStore.svelte'
-  import {toastStore} from '../../stores/toastStore.svelte'
+  import {Sun, Moon, SunMoon} from '@lucide/svelte';
+  import {cn} from '../../utils/cn';
+  import IconButton from '../IconButton.svelte';
+  import {themeStore} from '../../stores/themeStore.svelte';
+  import {toastStore} from '../../stores/toastStore.svelte';
 
-  type Theme = 'auto' | 'dark' | 'light'
+  type Theme = 'auto' | 'dark' | 'light';
 
   interface Props {
-    label?: string
-    theme?: Theme
-    onThemeChange?: (newTheme: Theme) => void
-    class?: string
-    dropdownDirection?: 'up' | 'down'
+    label?: string;
+    theme?: Theme;
+    onThemeChange?: (newTheme: Theme) => void;
+    class?: string;
+    dropdownDirection?: 'up' | 'down';
   }
 
   let {
@@ -21,51 +21,51 @@
     onThemeChange,
     class: className = '',
     dropdownDirection = 'down'
-  }: Props = $props()
+  }: Props = $props();
 
-  let iconState = $state<'idle' | 'out' | 'in'>('idle')
+  let iconState = $state<'idle' | 'out' | 'in'>('idle');
 
-  let currentTheme = $derived(themeStore.current || theme)
+  let currentTheme = $derived(themeStore.current || theme);
 
   let themeInfo = $derived.by(() => {
     switch (currentTheme) {
       case 'light':
-        return {currentLabel: 'Light', nextTheme: 'dark' as Theme, icon: Sun}
+        return {currentLabel: 'Light', nextTheme: 'dark' as Theme, icon: Sun};
       case 'dark':
-        return {currentLabel: 'Dark', nextTheme: 'auto' as Theme, icon: Moon}
+        return {currentLabel: 'Dark', nextTheme: 'auto' as Theme, icon: Moon};
       case 'auto':
       default:
         return {
           currentLabel: 'Auto',
           nextTheme: 'light' as Theme,
           icon: SunMoon
-        }
+        };
     }
-  })
+  });
 
-  let tooltipText = $derived(`Theme: ${themeInfo.currentLabel}`)
+  let tooltipText = $derived(`Theme: ${themeInfo.currentLabel}`);
 
   function handleToggle() {
-    if (iconState !== 'idle') return
+    if (iconState !== 'idle') return;
 
-    iconState = 'out'
+    iconState = 'out';
     setTimeout(() => {
-      const next = themeInfo.nextTheme
+      const next = themeInfo.nextTheme;
       if (onThemeChange) {
-        onThemeChange(next)
+        onThemeChange(next);
       } else {
-        themeStore.apply(next)
+        themeStore.apply(next);
       }
       const toastLabel =
         next === 'auto' ? 'Auto (System)'
         : next === 'light' ? 'Light'
-        : 'Dark'
-      toastStore.show(`Switched to ${toastLabel} theme`)
-      iconState = 'in'
+        : 'Dark';
+      toastStore.show(`Switched to ${toastLabel} theme`);
+      iconState = 'in';
       setTimeout(() => {
-        iconState = 'idle'
-      }, 150)
-    }, 120)
+        iconState = 'idle';
+      }, 150);
+    }, 120);
   }
 </script>
 

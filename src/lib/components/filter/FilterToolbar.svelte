@@ -1,15 +1,15 @@
 <script lang="ts">
-  import type {Snippet} from 'svelte'
-  import {cn} from '../../utils/cn'
+  import type {Snippet} from 'svelte';
+  import {cn} from '../../utils/cn';
 
   interface Props {
-    title?: string
-    searchSlot?: Snippet
-    filterControlsSlot?: Snippet
-    sortSlot?: Snippet
-    chipsSlot?: Snippet
-    countSlot?: Snippet
-    class?: string
+    title?: string;
+    searchSlot?: Snippet;
+    filterControlsSlot?: Snippet;
+    sortSlot?: Snippet;
+    chipsSlot?: Snippet;
+    countSlot?: Snippet;
+    class?: string;
   }
 
   let {
@@ -20,7 +20,7 @@
     chipsSlot,
     countSlot,
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 </script>
 
 <div

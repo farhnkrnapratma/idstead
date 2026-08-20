@@ -1,48 +1,48 @@
 <script lang="ts">
-  import {ArrowLeft, ArrowRight} from '@lucide/svelte'
-  import {cn} from '../utils/cn'
+  import {ArrowLeft, ArrowRight} from '@lucide/svelte';
+  import {cn} from '../utils/cn';
 
   interface Props {
-    page: number
-    totalPages: number
-    onPageChange: (page: number) => void
-    class?: string
+    page: number;
+    totalPages: number;
+    onPageChange: (page: number) => void;
+    class?: string;
   }
 
-  let {page, totalPages, onPageChange, class: className = ''}: Props = $props()
+  let {page, totalPages, onPageChange, class: className = ''}: Props = $props();
 
   function goTo(target: number) {
-    const clamped = Math.min(Math.max(target, 1), totalPages)
-    if (clamped !== page) onPageChange(clamped)
+    const clamped = Math.min(Math.max(target, 1), totalPages);
+    if (clamped !== page) onPageChange(clamped);
   }
 
   const pageNumbers = $derived.by(() => {
-    const pages: number[] = []
-    const windowSize = 1
+    const pages: number[] = [];
+    const windowSize = 1;
 
     const addPage = (n: number) => {
-      if (!pages.includes(n)) pages.push(n)
-    }
+      if (!pages.includes(n)) pages.push(n);
+    };
 
-    addPage(1)
+    addPage(1);
     for (
       let n = Math.max(2, page - windowSize);
       n <= Math.min(totalPages - 1, page + windowSize);
       n++
     ) {
-      addPage(n)
+      addPage(n);
     }
-    if (totalPages > 1) addPage(totalPages)
+    if (totalPages > 1) addPage(totalPages);
 
-    const withEllipses: (number | 'ellipsis')[] = []
-    let prev = 0
+    const withEllipses: (number | 'ellipsis')[] = [];
+    let prev = 0;
     for (const n of pages) {
-      if (prev && n - prev > 1) withEllipses.push('ellipsis')
-      withEllipses.push(n)
-      prev = n
+      if (prev && n - prev > 1) withEllipses.push('ellipsis');
+      withEllipses.push(n);
+      prev = n;
     }
-    return withEllipses
-  })
+    return withEllipses;
+  });
 </script>
 
 <nav

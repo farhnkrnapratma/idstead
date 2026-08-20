@@ -1,19 +1,19 @@
 <script lang="ts">
-  import type {Snippet} from 'svelte'
-  import {cn} from '../utils/cn'
+  import type {Snippet} from 'svelte';
+  import {cn} from '../utils/cn';
 
   interface Props {
-    title?: string
-    description?: string
-    titleClass?: string
-    action?: string
-    method?: 'POST' | 'GET' | 'post' | 'get' | 'dialog' | 'DIALOG'
-    onsubmit?: (e: SubmitEvent) => void
-    class?: string
-    bare?: boolean
-    children?: Snippet
-    headerActions?: Snippet
-    actions?: Snippet
+    title?: string;
+    description?: string;
+    titleClass?: string;
+    action?: string;
+    method?: 'POST' | 'GET' | 'post' | 'get' | 'dialog' | 'DIALOG';
+    onsubmit?: (e: SubmitEvent) => void;
+    class?: string;
+    bare?: boolean;
+    children?: Snippet;
+    headerActions?: Snippet;
+    actions?: Snippet;
   }
 
   let {
@@ -28,11 +28,11 @@
     children,
     headerActions,
     actions
-  }: Props = $props()
+  }: Props = $props();
   function handleSubmit(e: SubmitEvent) {
     if (onsubmit) {
-      e.preventDefault()
-      onsubmit(e)
+      e.preventDefault();
+      onsubmit(e);
     }
   }
 </script>

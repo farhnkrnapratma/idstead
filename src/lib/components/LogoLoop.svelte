@@ -1,36 +1,36 @@
 <script lang="ts">
-  import {onMount} from 'svelte'
-  import {a11yStore} from '../stores/a11yStore.svelte'
-  import {cn} from '../utils/cn'
+  import {onMount} from 'svelte';
+  import {a11yStore} from '../stores/a11yStore.svelte';
+  import {cn} from '../utils/cn';
 
   export interface LogoItem {
-    src?: string
-    srcSet?: string
-    sizes?: string
-    width?: number
-    height?: number
-    alt?: string
-    title?: string
-    href?: string
-    ariaLabel?: string
+    src?: string;
+    srcSet?: string;
+    sizes?: string;
+    width?: number;
+    height?: number;
+    alt?: string;
+    title?: string;
+    href?: string;
+    ariaLabel?: string;
   }
 
   interface Props {
-    logos: LogoItem[]
-    speed?: number
-    direction?: 'left' | 'right' | 'up' | 'down'
-    width?: number | string
-    logoHeight?: number
-    logoHeightMobile?: number
-    logoHeightMd?: number
-    gap?: number
-    pauseOnHover?: boolean
-    hoverSpeed?: number
-    fadeOut?: boolean
-    fadeOutColor?: string
-    scaleOnHover?: boolean
-    ariaLabel?: string
-    class?: string
+    logos: LogoItem[];
+    speed?: number;
+    direction?: 'left' | 'right' | 'up' | 'down';
+    width?: number | string;
+    logoHeight?: number;
+    logoHeightMobile?: number;
+    logoHeightMd?: number;
+    gap?: number;
+    pauseOnHover?: boolean;
+    hoverSpeed?: number;
+    fadeOut?: boolean;
+    fadeOutColor?: string;
+    scaleOnHover?: boolean;
+    ariaLabel?: string;
+    class?: string;
   }
 
   let {
@@ -49,160 +49,160 @@
     scaleOnHover = false,
     ariaLabel = 'Partner logos',
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 
-  const ANIMATION_CONFIG = {SMOOTH_TAU: 0.25, MIN_COPIES: 2, COPY_HEADROOM: 2}
+  const ANIMATION_CONFIG = {SMOOTH_TAU: 0.25, MIN_COPIES: 2, COPY_HEADROOM: 2};
 
-  let isReducedMotion = $derived(a11yStore.current.reduceMotion)
+  let isReducedMotion = $derived(a11yStore.current.reduceMotion);
 
-  let containerEl = $state<HTMLDivElement | null>(null)
-  let trackEl = $state<HTMLDivElement | null>(null)
-  let seqEl = $state<HTMLUListElement | null>(null)
+  let containerEl = $state<HTMLDivElement | null>(null);
+  let trackEl = $state<HTMLDivElement | null>(null);
+  let seqEl = $state<HTMLUListElement | null>(null);
 
-  let seqWidth = $state(0)
-  let seqHeight = $state(0)
-  let copyCount = $state(ANIMATION_CONFIG.MIN_COPIES)
-  let isHovered = $state(false)
+  let seqWidth = $state(0);
+  let seqHeight = $state(0);
+  let copyCount = $state(ANIMATION_CONFIG.MIN_COPIES);
+  let isHovered = $state(false);
 
   let effectiveHoverSpeed = $derived.by(() => {
-    if (hoverSpeed !== undefined) return hoverSpeed
-    if (pauseOnHover === true) return 0
-    if (pauseOnHover === false) return undefined
-    return 0
-  })
+    if (hoverSpeed !== undefined) return hoverSpeed;
+    if (pauseOnHover === true) return 0;
+    if (pauseOnHover === false) return undefined;
+    return 0;
+  });
 
-  let isVertical = $derived(direction === 'up' || direction === 'down')
+  let isVertical = $derived(direction === 'up' || direction === 'down');
 
   let targetVelocity = $derived.by(() => {
-    const magnitude = Math.abs(speed)
-    let directionMultiplier: number
+    const magnitude = Math.abs(speed);
+    let directionMultiplier: number;
     if (isVertical) {
-      directionMultiplier = direction === 'up' ? 1 : -1
+      directionMultiplier = direction === 'up' ? 1 : -1;
     } else {
-      directionMultiplier = direction === 'left' ? 1 : -1
+      directionMultiplier = direction === 'left' ? 1 : -1;
     }
-    const speedMultiplier = speed < 0 ? -1 : 1
-    return magnitude * directionMultiplier * speedMultiplier
-  })
+    const speedMultiplier = speed < 0 ? -1 : 1;
+    return magnitude * directionMultiplier * speedMultiplier;
+  });
 
   function toCssLength(value: number | string | undefined): string | undefined {
-    if (typeof value === 'number') return `${value}px`
-    return value ?? undefined
+    if (typeof value === 'number') return `${value}px`;
+    return value ?? undefined;
   }
 
   function updateDimensions() {
-    if (isReducedMotion || !containerEl || !seqEl) return
-    const containerWidth = containerEl.clientWidth ?? 0
-    const sequenceRect = seqEl.getBoundingClientRect()
-    const sequenceWidth = sequenceRect?.width ?? 0
-    const sequenceHeight = sequenceRect?.height ?? 0
+    if (isReducedMotion || !containerEl || !seqEl) return;
+    const containerWidth = containerEl.clientWidth ?? 0;
+    const sequenceRect = seqEl.getBoundingClientRect();
+    const sequenceWidth = sequenceRect?.width ?? 0;
+    const sequenceHeight = sequenceRect?.height ?? 0;
 
     if (isVertical) {
-      const parentHeight = containerEl.parentElement?.clientHeight ?? 0
+      const parentHeight = containerEl.parentElement?.clientHeight ?? 0;
       if (parentHeight > 0) {
-        containerEl.style.height = `${Math.ceil(parentHeight)}px`
+        containerEl.style.height = `${Math.ceil(parentHeight)}px`;
       }
       if (sequenceHeight > 0) {
-        seqHeight = Math.ceil(sequenceHeight)
+        seqHeight = Math.ceil(sequenceHeight);
         const viewport =
-          containerEl.clientHeight || parentHeight || sequenceHeight
+          containerEl.clientHeight || parentHeight || sequenceHeight;
         const copiesNeeded =
-          Math.ceil(viewport / sequenceHeight) + ANIMATION_CONFIG.COPY_HEADROOM
-        copyCount = Math.max(ANIMATION_CONFIG.MIN_COPIES, copiesNeeded)
+          Math.ceil(viewport / sequenceHeight) + ANIMATION_CONFIG.COPY_HEADROOM;
+        copyCount = Math.max(ANIMATION_CONFIG.MIN_COPIES, copiesNeeded);
       }
     } else if (sequenceWidth > 0) {
-      seqWidth = Math.ceil(sequenceWidth)
+      seqWidth = Math.ceil(sequenceWidth);
       const copiesNeeded =
         Math.ceil(containerWidth / sequenceWidth)
-        + ANIMATION_CONFIG.COPY_HEADROOM
-      copyCount = Math.max(ANIMATION_CONFIG.MIN_COPIES, copiesNeeded)
+        + ANIMATION_CONFIG.COPY_HEADROOM;
+      copyCount = Math.max(ANIMATION_CONFIG.MIN_COPIES, copiesNeeded);
     }
   }
 
   onMount(() => {
-    updateDimensions()
+    updateDimensions();
 
-    let resizeObserver: ResizeObserver | null = null
+    let resizeObserver: ResizeObserver | null = null;
     if (window.ResizeObserver) {
       resizeObserver = new ResizeObserver(() => {
-        updateDimensions()
-      })
-      if (containerEl) resizeObserver.observe(containerEl)
-      if (seqEl) resizeObserver.observe(seqEl)
+        updateDimensions();
+      });
+      if (containerEl) resizeObserver.observe(containerEl);
+      if (seqEl) resizeObserver.observe(seqEl);
     } else {
-      window.addEventListener('resize', updateDimensions)
+      window.addEventListener('resize', updateDimensions);
     }
 
-    let rafId: number | null = null
-    let lastTimestamp: number | null = null
-    let offset = 0
-    let velocity = 0
+    let rafId: number | null = null;
+    let lastTimestamp: number | null = null;
+    let offset = 0;
+    let velocity = 0;
 
     const animate = (timestamp: number) => {
       if (isReducedMotion || !trackEl) {
-        rafId = requestAnimationFrame(animate)
-        return
+        rafId = requestAnimationFrame(animate);
+        return;
       }
 
       if (lastTimestamp === null) {
-        lastTimestamp = timestamp
+        lastTimestamp = timestamp;
       }
 
-      const deltaTime = Math.max(0, timestamp - lastTimestamp) / 1000
-      lastTimestamp = timestamp
+      const deltaTime = Math.max(0, timestamp - lastTimestamp) / 1000;
+      lastTimestamp = timestamp;
 
       const target =
         isHovered && effectiveHoverSpeed !== undefined ?
           effectiveHoverSpeed
-        : targetVelocity
+        : targetVelocity;
 
       const easingFactor =
-        1 - Math.exp(-deltaTime / ANIMATION_CONFIG.SMOOTH_TAU)
-      velocity += (target - velocity) * easingFactor
+        1 - Math.exp(-deltaTime / ANIMATION_CONFIG.SMOOTH_TAU);
+      velocity += (target - velocity) * easingFactor;
 
-      const seqSize = isVertical ? seqHeight : seqWidth
+      const seqSize = isVertical ? seqHeight : seqWidth;
 
       if (seqSize > 0) {
-        offset += velocity * deltaTime
-        offset = ((offset % seqSize) + seqSize) % seqSize
+        offset += velocity * deltaTime;
+        offset = ((offset % seqSize) + seqSize) % seqSize;
 
         const transformValue =
           isVertical ?
             `translate3d(0, ${-offset}px, 0)`
-          : `translate3d(${-offset}px, 0, 0)`
-        trackEl.style.transform = transformValue
+          : `translate3d(${-offset}px, 0, 0)`;
+        trackEl.style.transform = transformValue;
       }
 
-      rafId = requestAnimationFrame(animate)
-    }
+      rafId = requestAnimationFrame(animate);
+    };
 
-    rafId = requestAnimationFrame(animate)
+    rafId = requestAnimationFrame(animate);
 
     return () => {
       if (resizeObserver) {
-        resizeObserver.disconnect()
+        resizeObserver.disconnect();
       } else {
-        window.removeEventListener('resize', updateDimensions)
+        window.removeEventListener('resize', updateDimensions);
       }
       if (rafId !== null) {
-        cancelAnimationFrame(rafId)
+        cancelAnimationFrame(rafId);
       }
-    }
-  })
+    };
+  });
 
   function handleMouseEnter() {
-    if (effectiveHoverSpeed !== undefined) isHovered = true
+    if (effectiveHoverSpeed !== undefined) isHovered = true;
   }
 
   function handleMouseLeave() {
-    if (effectiveHoverSpeed !== undefined) isHovered = false
+    if (effectiveHoverSpeed !== undefined) isHovered = false;
   }
 
   function handleImageLoad() {
-    updateDimensions()
+    updateDimensions();
   }
 
-  let copiesArray = $derived(Array.from({length: copyCount}))
+  let copiesArray = $derived(Array.from({length: copyCount}));
 </script>
 
 {#if isReducedMotion}

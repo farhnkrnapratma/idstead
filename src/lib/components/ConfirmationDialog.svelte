@@ -1,19 +1,19 @@
 <script lang="ts">
-  import Dialog from './Dialog.svelte'
-  import Button from './Button.svelte'
+  import Dialog from './Dialog.svelte';
+  import Button from './Button.svelte';
 
   interface Props {
-    isOpen: boolean
-    title: string
-    message?: string
-    confirmLabel?: string
-    cancelLabel?: string
-    isDestructive?: boolean
-    isLoading?: boolean
-    onConfirm?: () => void
-    onCancel?: () => void
-    children?: import('svelte').Snippet
-    class?: string
+    isOpen: boolean;
+    title: string;
+    message?: string;
+    confirmLabel?: string;
+    cancelLabel?: string;
+    isDestructive?: boolean;
+    isLoading?: boolean;
+    onConfirm?: () => void;
+    onCancel?: () => void;
+    children?: import('svelte').Snippet;
+    class?: string;
   }
 
   let {
@@ -28,15 +28,15 @@
     onCancel = () => {},
     children,
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 
   function close() {
-    isOpen = false
-    onCancel()
+    isOpen = false;
+    onCancel();
   }
 
   function confirm() {
-    onConfirm()
+    onConfirm();
   }
 </script>
 

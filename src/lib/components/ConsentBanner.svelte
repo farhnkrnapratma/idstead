@@ -1,36 +1,41 @@
 <script lang="ts">
-  import {onMount} from 'svelte'
-  import {fade} from 'svelte/transition'
-  import {ShieldCheck, X, ChevronDown, Check, Trash2} from '@lucide/svelte'
-  import {consentStore, type ConsentStatus} from '../stores/consentStore.svelte'
-  import Button from './Button.svelte'
-  import Dialog from './Dialog.svelte'
+  import {onMount, untrack} from 'svelte';
+  import {fade} from 'svelte/transition';
+  import {ShieldCheck, X, ChevronDown, Check, Trash2} from '@lucide/svelte';
+  import {
+    consentStore,
+    type ConsentStatus
+  } from '../stores/consentStore.svelte';
+  import Button from './Button.svelte';
+  import Dialog from './Dialog.svelte';
 
-  let tempAnalytics = $state<ConsentStatus>('denied')
-  let tempAdStorage = $state<ConsentStatus>('denied')
-  let tempAdUserData = $state<ConsentStatus>('denied')
-  let tempAdPersonalization = $state<ConsentStatus>('denied')
+  let tempAnalytics = $state<ConsentStatus>('denied');
+  let tempAdStorage = $state<ConsentStatus>('denied');
+  let tempAdUserData = $state<ConsentStatus>('denied');
+  let tempAdPersonalization = $state<ConsentStatus>('denied');
 
   type DropdownKey =
-    'analytics' | 'ad_storage' | 'ad_user_data' | 'ad_personalization' | null
-  let activeDropdown = $state<DropdownKey>(null)
+    'analytics' | 'ad_storage' | 'ad_user_data' | 'ad_personalization' | null;
+  let activeDropdown = $state<DropdownKey>(null);
 
   onMount(() => {
-    consentStore.init()
-  })
+    consentStore.init();
+  });
 
   $effect(() => {
     if (consentStore.isCustomizeModalOpen) {
-      tempAnalytics = consentStore.signals.analytics_storage
-      tempAdStorage = consentStore.signals.ad_storage
-      tempAdUserData = consentStore.signals.ad_user_data
-      tempAdPersonalization = consentStore.signals.ad_personalization
-      activeDropdown = null
+      untrack(() => {
+        tempAnalytics = consentStore.signals.analytics_storage;
+        tempAdStorage = consentStore.signals.ad_storage;
+        tempAdUserData = consentStore.signals.ad_user_data;
+        tempAdPersonalization = consentStore.signals.ad_personalization;
+        activeDropdown = null;
+      });
     }
-  })
+  });
 
   function openCustomize() {
-    consentStore.openCustomizeModal()
+    consentStore.openCustomizeModal();
   }
 
   function saveCustomPreferences() {
@@ -39,28 +44,28 @@
       ad_storage: tempAdStorage,
       ad_user_data: tempAdUserData,
       ad_personalization: tempAdPersonalization
-    })
-    consentStore.closeCustomizeModal()
+    });
+    consentStore.closeCustomizeModal();
   }
 
   function applyPreset(type: 'all' | 'analytics' | 'deny') {
     if (type === 'all') {
-      tempAnalytics = 'granted'
-      tempAdStorage = 'granted'
-      tempAdUserData = 'granted'
-      tempAdPersonalization = 'granted'
+      tempAnalytics = 'granted';
+      tempAdStorage = 'granted';
+      tempAdUserData = 'granted';
+      tempAdPersonalization = 'granted';
     } else if (type === 'analytics') {
-      tempAnalytics = 'granted'
-      tempAdStorage = 'denied'
-      tempAdUserData = 'denied'
-      tempAdPersonalization = 'denied'
+      tempAnalytics = 'granted';
+      tempAdStorage = 'denied';
+      tempAdUserData = 'denied';
+      tempAdPersonalization = 'denied';
     } else {
-      tempAnalytics = 'denied'
-      tempAdStorage = 'denied'
-      tempAdUserData = 'denied'
-      tempAdPersonalization = 'denied'
+      tempAnalytics = 'denied';
+      tempAdStorage = 'denied';
+      tempAdUserData = 'denied';
+      tempAdPersonalization = 'denied';
     }
-    activeDropdown = null
+    activeDropdown = null;
   }
 
   const presetSliderValue = $derived(
@@ -79,27 +84,27 @@
     ) ?
       2
     : 1
-  )
+  );
 
   const presetColor = $derived(
     presetSliderValue === 0 ? 'var(--color-success)'
     : presetSliderValue === 1 ? 'var(--color-warning)'
     : 'var(--color-danger)'
-  )
+  );
 
   const presetLabel = $derived(
     presetSliderValue === 0 ? 'Allow All'
     : presetSliderValue === 1 ? 'Analytics Only'
     : 'Deny All'
-  )
+  );
 
   function handlePresetSlider(e: Event) {
-    const value = Number((e.currentTarget as HTMLInputElement).value)
+    const value = Number((e.currentTarget as HTMLInputElement).value);
     applyPreset(
       value === 0 ? 'all'
       : value === 1 ? 'analytics'
       : 'deny'
-    )
+    );
   }
 </script>
 
@@ -272,8 +277,8 @@
                   role="option"
                   aria-selected={tempAnalytics === 'denied'}
                   onclick={() => {
-                    tempAnalytics = 'denied'
-                    activeDropdown = null
+                    tempAnalytics = 'denied';
+                    activeDropdown = null;
                   }}
                   class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
                     tempAnalytics === 'denied'
@@ -290,8 +295,8 @@
                   role="option"
                   aria-selected={tempAnalytics === 'granted'}
                   onclick={() => {
-                    tempAnalytics = 'granted'
-                    activeDropdown = null
+                    tempAnalytics = 'granted';
+                    activeDropdown = null;
                   }}
                   class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
                     tempAnalytics === 'granted'
@@ -358,8 +363,8 @@
                   role="option"
                   aria-selected={tempAdStorage === 'denied'}
                   onclick={() => {
-                    tempAdStorage = 'denied'
-                    activeDropdown = null
+                    tempAdStorage = 'denied';
+                    activeDropdown = null;
                   }}
                   class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
                     tempAdStorage === 'denied'
@@ -376,8 +381,8 @@
                   role="option"
                   aria-selected={tempAdStorage === 'granted'}
                   onclick={() => {
-                    tempAdStorage = 'granted'
-                    activeDropdown = null
+                    tempAdStorage = 'granted';
+                    activeDropdown = null;
                   }}
                   class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
                     tempAdStorage === 'granted'
@@ -442,8 +447,8 @@
                   role="option"
                   aria-selected={tempAdUserData === 'denied'}
                   onclick={() => {
-                    tempAdUserData = 'denied'
-                    activeDropdown = null
+                    tempAdUserData = 'denied';
+                    activeDropdown = null;
                   }}
                   class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
                     tempAdUserData === 'denied'
@@ -460,8 +465,8 @@
                   role="option"
                   aria-selected={tempAdUserData === 'granted'}
                   onclick={() => {
-                    tempAdUserData = 'granted'
-                    activeDropdown = null
+                    tempAdUserData = 'granted';
+                    activeDropdown = null;
                   }}
                   class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
                     tempAdUserData === 'granted'
@@ -530,8 +535,8 @@
                   role="option"
                   aria-selected={tempAdPersonalization === 'denied'}
                   onclick={() => {
-                    tempAdPersonalization = 'denied'
-                    activeDropdown = null
+                    tempAdPersonalization = 'denied';
+                    activeDropdown = null;
                   }}
                   class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
                     tempAdPersonalization === 'denied'
@@ -548,8 +553,8 @@
                   role="option"
                   aria-selected={tempAdPersonalization === 'granted'}
                   onclick={() => {
-                    tempAdPersonalization = 'granted'
-                    activeDropdown = null
+                    tempAdPersonalization = 'granted';
+                    activeDropdown = null;
                   }}
                   class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
                     tempAdPersonalization === 'granted'
@@ -597,8 +602,8 @@
         type="secondary"
         size="md"
         onclick={() => {
-          applyPreset('all')
-          saveCustomPreferences()
+          applyPreset('all');
+          saveCustomPreferences();
         }}
         class="w-full sm:w-auto">
         Accept All

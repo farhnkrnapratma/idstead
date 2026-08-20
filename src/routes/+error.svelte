@@ -1,67 +1,67 @@
 <script lang="ts">
-  import {page} from '$app/state'
-  import {ArrowLeft, Bug} from '@lucide/svelte'
-  import {Button, SkipLink, ErrorState, FooterLegalRow} from '$lib'
+  import {page} from '$app/state';
+  import {ArrowLeft, Bug} from '@lucide/svelte';
+  import {Button, SkipLink, ErrorState, FooterLegalRow} from '$lib';
 
-  let pageAuthor = $derived((page?.data as any)?.author)
-  let name = $derived(pageAuthor?.name || '')
+  let pageAuthor = $derived((page?.data as any)?.author);
+  let name = $derived(pageAuthor?.name || '');
 
   let errorTitle = $derived.by(() => {
     switch (page.status) {
       case 400:
-        return 'Bad request'
+        return 'Bad request';
       case 401:
-        return 'Authentication required'
+        return 'Authentication required';
       case 403:
-        return 'Access denied'
+        return 'Access denied';
       case 404:
-        return 'Page not found'
+        return 'Page not found';
       case 408:
-        return 'Request timed out'
+        return 'Request timed out';
       case 429:
-        return 'Too many requests'
+        return 'Too many requests';
       case 500:
-        return 'Something went wrong'
+        return 'Something went wrong';
       case 502:
-        return 'Bad gateway'
+        return 'Bad gateway';
       case 503:
-        return 'Service unavailable'
+        return 'Service unavailable';
       case 504:
-        return 'Gateway timeout'
+        return 'Gateway timeout';
       default:
-        return 'An error occurred'
+        return 'An error occurred';
     }
-  })
+  });
 
   let errorDescription = $derived.by(() => {
     switch (page.status) {
       case 400:
-        return 'The request could not be processed. Please check the link or try again.'
+        return 'The request could not be processed. Please check the link or try again.';
       case 401:
-        return 'You need to sign in before continuing.'
+        return 'You need to sign in before continuing.';
       case 403:
-        return 'You do not have permission to view this page.'
+        return 'You do not have permission to view this page.';
       case 404:
-        return 'The page you’re looking for doesn’t exist or may have been moved.'
+        return 'The page you’re looking for doesn’t exist or may have been moved.';
       case 408:
-        return 'The request took too long to complete. Please try again.'
+        return 'The request took too long to complete. Please try again.';
       case 429:
-        return 'You’ve made too many requests. Please wait a moment and try again.'
+        return 'You’ve made too many requests. Please wait a moment and try again.';
       case 500:
-        return 'Something went wrong on our side. Please try again in a moment.'
+        return 'Something went wrong on our side. Please try again in a moment.';
       case 502:
-        return 'The server received an invalid response from an upstream service.'
+        return 'The server received an invalid response from an upstream service.';
       case 503:
-        return 'The service is temporarily unavailable. Please try again shortly.'
+        return 'The service is temporarily unavailable. Please try again shortly.';
       case 504:
-        return 'The server did not respond in time. Please try again shortly.'
+        return 'The server did not respond in time. Please try again shortly.';
       default:
         return (
           page.error?.message
           || 'Something went wrong on our end. Please try again.'
-        )
+        );
     }
-  })
+  });
 </script>
 
 <SkipLink />
@@ -81,9 +81,9 @@
           size="md"
           onclick={() => {
             if (typeof window !== 'undefined' && window.history.length > 1) {
-              window.history.back()
+              window.history.back();
             } else {
-              window.location.href = '/'
+              window.location.href = '/';
             }
           }}>
           {#snippet leading()}

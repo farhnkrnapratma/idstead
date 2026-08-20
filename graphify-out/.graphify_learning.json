@@ -1,0 +1,70 @@
+{
+  "generated_at": "2026-08-20T01:30:20.632566+00:00",
+  "nodes": {
+    "package": {
+      "code_fingerprint": "2167356b1aaf964f6d9d18f65c003a28bc0b2084314a12a951179aefae6579a4",
+      "label": "package.json",
+      "last": "2026-08-19T11:24:58.309289+00:00",
+      "provenance": [
+        {
+          "date": "2026-08-19T11:24:58.309289+00:00",
+          "outcome": "useful",
+          "q": "Mengapa saat bun run dev yang dibaca adalah .env? Bagaimana agar bun run dev menggunakan .env.production dan bun run dev:preview menggunakan .env.preview?"
+        }
+      ],
+      "score": 0.98652752,
+      "source_file": "package.json",
+      "status": "tentative",
+      "uses": 1
+    },
+    "src_lib_stores_a11ystore_svelte": {
+      "code_fingerprint": "628622c44ebc1a7cb9b203c48fad57faaa434f5410fb42aea7f88855f265074f",
+      "label": "a11yStore.svelte.ts",
+      "last": "2026-08-19T10:25:08.876469+00:00",
+      "provenance": [
+        {
+          "date": "2026-08-19T10:25:08.876469+00:00",
+          "outcome": "useful",
+          "q": "Why does createA11yStore() connect to Security Auditing & Hardening?"
+        }
+      ],
+      "score": 0.985581028,
+      "source_file": "src/lib/stores/a11yStore.svelte.ts",
+      "status": "tentative",
+      "uses": 1
+    },
+    "src_lib_stores_a11ystore_svelte_createa11ystore": {
+      "code_fingerprint": "628622c44ebc1a7cb9b203c48fad57faaa434f5410fb42aea7f88855f265074f",
+      "label": "createA11yStore()",
+      "last": "2026-08-19T10:25:08.876469+00:00",
+      "provenance": [
+        {
+          "date": "2026-08-19T10:25:08.876469+00:00",
+          "outcome": "useful",
+          "q": "Why does createA11yStore() connect to Security Auditing & Hardening?"
+        }
+      ],
+      "score": 0.985581028,
+      "source_file": "src/lib/stores/a11yStore.svelte.ts",
+      "status": "tentative",
+      "uses": 1
+    },
+    "vite_config": {
+      "code_fingerprint": "00ad55fb4465d411af9563d88906751de48bb0050234b24c977f7d2769f38d9c",
+      "label": "vite.config.ts",
+      "last": "2026-08-19T11:24:58.309289+00:00",
+      "provenance": [
+        {
+          "date": "2026-08-19T11:24:58.309289+00:00",
+          "outcome": "useful",
+          "q": "Mengapa saat bun run dev yang dibaca adalah .env? Bagaimana agar bun run dev menggunakan .env.production dan bun run dev:preview menggunakan .env.preview?"
+        }
+      ],
+      "score": 0.98652752,
+      "source_file": "vite.config.ts",
+      "status": "tentative",
+      "uses": 1
+    }
+  },
+  "version": 1
+}

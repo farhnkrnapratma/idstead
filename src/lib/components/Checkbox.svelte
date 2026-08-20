@@ -1,11 +1,11 @@
 <script lang="ts">
-  import type {HTMLInputAttributes} from 'svelte/elements'
-  import {cn} from '../utils/cn'
+  import type {HTMLInputAttributes} from 'svelte/elements';
+  import {cn} from '../utils/cn';
 
   interface Props extends Omit<HTMLInputAttributes, 'type'> {
-    checked?: boolean
-    label?: string
-    description?: string
+    checked?: boolean;
+    label?: string;
+    description?: string;
   }
 
   let {
@@ -16,7 +16,7 @@
     disabled = false,
     class: className = '',
     ...restProps
-  }: Props = $props()
+  }: Props = $props();
 </script>
 
 <label

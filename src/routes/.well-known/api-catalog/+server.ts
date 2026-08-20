@@ -1,54 +1,59 @@
-import {json} from '@sveltejs/kit'
-import type {RequestHandler} from './$types'
+import {json} from '@sveltejs/kit';
+import type {RequestHandler} from './$types';
+import {supabase} from '$lib/supabase';
+import {fetchAuthorProfile} from '$lib/author';
 
 export const GET: RequestHandler = async () => {
+  const authorProfile = await fetchAuthorProfile(supabase);
+  const siteUrl = (authorProfile?.siteUrl || '').replace(/\/$/, '');
+
   const catalog = {
     linkset: [
       {
-        anchor: 'https://fkp.my.id/api/v1/search',
+        anchor: `${siteUrl}/api/v1/search`,
         'service-doc': [
           {
-            href: 'https://fkp.my.id/api/v1/search',
+            href: `${siteUrl}/api/v1/search`,
             type: 'text/html',
             title: 'Search API — full-text search over blog posts'
           }
         ]
       },
       {
-        anchor: 'https://fkp.my.id/api/v1/blog/comments',
+        anchor: `${siteUrl}/api/v1/blog/comments`,
         'service-doc': [
           {
-            href: 'https://fkp.my.id/api/v1/blog/comments',
+            href: `${siteUrl}/api/v1/blog/comments`,
             type: 'text/html',
             title: 'Comments API — read comments on blog entries'
           }
         ]
       },
       {
-        anchor: 'https://fkp.my.id/api/v1/blog/views',
+        anchor: `${siteUrl}/api/v1/blog/views`,
         'service-doc': [
           {
-            href: 'https://fkp.my.id/api/v1/blog/views',
+            href: `${siteUrl}/api/v1/blog/views`,
             type: 'text/html',
             title: 'Views API — retrieve post view counts'
           }
         ]
       },
       {
-        anchor: 'https://fkp.my.id/.well-known/openapi.json',
+        anchor: `${siteUrl}/.well-known/openapi.json`,
         'service-doc': [
           {
-            href: 'https://fkp.my.id/.well-known/openapi.json',
+            href: `${siteUrl}/.well-known/openapi.json`,
             type: 'application/json',
             title: 'OpenAPI (machine-readable) — public API specification'
           }
         ]
       },
       {
-        anchor: 'https://fkp.my.id/api/v1',
+        anchor: `${siteUrl}/api/v1`,
         'service-doc': [
           {
-            href: 'https://fkp.my.id/api/v1',
+            href: `${siteUrl}/api/v1`,
             type: 'text/markdown',
             title:
               'Public API reference (human-readable) — all v1 endpoints, auth, CORS, versioning'
@@ -56,29 +61,29 @@ export const GET: RequestHandler = async () => {
         ]
       },
       {
-        anchor: 'https://fkp.my.id',
+        anchor: siteUrl,
         describedby: [
           {
-            href: 'https://fkp.my.id/.well-known/agent-skills/index.json',
+            href: `${siteUrl}/.well-known/agent-skills/index.json`,
             type: 'application/json',
             title: 'Agent Skills Discovery Index'
           }
         ],
         alternate: [
           {
-            href: 'https://fkp.my.id/sitemap.xml',
+            href: `${siteUrl}/sitemap.xml`,
             type: 'application/xml',
             title: 'Sitemap'
           },
           {
-            href: 'https://fkp.my.id/atom.xml',
+            href: `${siteUrl}/atom.xml`,
             type: 'application/atom+xml',
             title: 'Atom Feed'
           }
         ]
       }
     ]
-  }
+  };
 
   return json(catalog, {
     headers: {
@@ -86,5 +91,5 @@ export const GET: RequestHandler = async () => {
       'Cache-Control': 'public, max-age=3600',
       'Access-Control-Allow-Origin': '*'
     }
-  })
-}
+  });
+};

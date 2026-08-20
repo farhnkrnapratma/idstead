@@ -1,6 +1,6 @@
 <script lang="ts">
-  import {onMount, tick} from 'svelte'
-  import {Copy, Link2 as LinkIcon} from '@lucide/svelte'
+  import {onMount, tick} from 'svelte';
+  import {Copy, Link2 as LinkIcon} from '@lucide/svelte';
   import {
     TopNav,
     Breadcrumb,
@@ -10,30 +10,30 @@
     DropdownTrigger,
     FooterSection,
     SkipLink
-  } from '$lib'
-  import ArticleHeader from '$lib/article/ArticleHeader.svelte'
-  import AlertDialog from './AlertDialog.svelte'
-  import {toastStore} from '$lib/stores/toastStore.svelte'
-  import type {HeadingItem} from '$lib/markdown'
-  import {formatAbsoluteDate} from '$lib/utils/formatters'
-  import {enhanceCodeBlocks} from '$lib/utils/codeBlocks'
-  import hljs from 'highlight.js'
-  import {themeStore} from '$lib/stores/themeStore.svelte'
-  import {a11yStore} from '$lib/stores/a11yStore.svelte'
-  import {contentFontStore} from '$lib/stores/contentFontStore.svelte'
-  import {codeBlockPrefsStore} from '$lib/stores/codeBlockPrefsStore.svelte'
-  import {resolveHljsTheme} from '$lib/utils/hljsTheme'
-  import {pushState} from '$app/navigation'
+  } from '$lib';
+  import ArticleHeader from '$lib/article/ArticleHeader.svelte';
+  import AlertDialog from './AlertDialog.svelte';
+  import {toastStore} from '$lib/stores/toastStore.svelte';
+  import type {HeadingItem} from '$lib/markdown';
+  import {formatAbsoluteDate} from '$lib/utils/formatters';
+  import {enhanceCodeBlocks} from '$lib/utils/codeBlocks';
+  import hljs from 'highlight.js';
+  import {themeStore} from '$lib/stores/themeStore.svelte';
+  import {a11yStore} from '$lib/stores/a11yStore.svelte';
+  import {contentFontStore} from '$lib/stores/contentFontStore.svelte';
+  import {codeBlockPrefsStore} from '$lib/stores/codeBlockPrefsStore.svelte';
+  import {resolveHljsTheme} from '$lib/utils/hljsTheme';
+  import {pushState} from '$app/navigation';
 
   interface Props {
-    title: string
-    slug: string
-    content: string
-    html: string
-    headings: HeadingItem[]
-    updatedAt?: string
-    authorName?: string
-    siteUrl?: string
+    title: string;
+    slug: string;
+    content: string;
+    html: string;
+    headings: HeadingItem[];
+    updatedAt?: string;
+    authorName?: string;
+    siteUrl?: string;
   }
 
   let {
@@ -43,15 +43,15 @@
     html,
     headings = [],
     updatedAt,
-    authorName = 'Farhan Kurnia Pratama',
-    siteUrl = 'https://fkp.my.id'
-  }: Props = $props()
+    authorName = '',
+    siteUrl = ''
+  }: Props = $props();
 
-  let showCopyMenu = $state(false)
-  let copyMenuRef: HTMLDivElement | undefined = $state()
-  let showYesFeedbackDialog = $state(false)
-  let showNoFeedbackDialog = $state(false)
-  let isDark = $state(false)
+  let showCopyMenu = $state(false);
+  let copyMenuRef: HTMLDivElement | undefined = $state();
+  let showYesFeedbackDialog = $state(false);
+  let showNoFeedbackDialog = $state(false);
+  let isDark = $state(false);
 
   function handleWindowPointerDown(e: PointerEvent) {
     if (
@@ -59,7 +59,7 @@
       && copyMenuRef
       && !copyMenuRef.contains(e.target as Node)
     ) {
-      showCopyMenu = false
+      showCopyMenu = false;
     }
   }
 
@@ -69,131 +69,138 @@
       isDark,
       codeBlockPrefsStore.current.colorScheme
     )
-  )
+  );
 
   function triggerToast(message: string, isError = false) {
     if (isError) {
-      toastStore.error(message)
+      toastStore.error(message);
     } else {
-      toastStore.success(message)
+      toastStore.success(message);
     }
   }
 
   function toggleCopyMenu() {
-    showCopyMenu = !showCopyMenu
+    showCopyMenu = !showCopyMenu;
   }
 
   async function copyPageUrl() {
-    showCopyMenu = false
+    showCopyMenu = false;
     try {
-      await navigator.clipboard.writeText(`${siteUrl}/${slug}`)
-      triggerToast('Page URL copied to clipboard')
+      const baseUrl =
+        siteUrl
+        || (typeof window !== 'undefined' ? window.location.origin : '');
+      await navigator.clipboard.writeText(`${baseUrl}/${slug}`);
+      triggerToast('Page URL copied to clipboard');
     } catch {
-      triggerToast('Failed to copy URL', true)
+      triggerToast('Failed to copy URL', true);
     }
   }
 
   async function copyAsMarkdown() {
-    showCopyMenu = false
+    showCopyMenu = false;
     try {
-      await navigator.clipboard.writeText(content)
-      triggerToast('Raw Markdown copied to clipboard')
+      await navigator.clipboard.writeText(content);
+      triggerToast('Raw Markdown copied to clipboard');
     } catch {
-      triggerToast('Failed to copy Markdown', true)
+      triggerToast('Failed to copy Markdown', true);
     }
   }
 
   function handleHelpfulness(value: 'yes' | 'no') {
     if (value === 'yes') {
-      showYesFeedbackDialog = true
+      showYesFeedbackDialog = true;
     } else {
-      showNoFeedbackDialog = true
+      showNoFeedbackDialog = true;
     }
   }
 
   $effect(() => {
-    void html
+    void html;
 
     tick().then(() => {
-      const container = document.querySelector('.prose-custom')
+      const container = document.querySelector('.prose-custom');
       if (container) {
-        enhanceCodeBlocks(triggerToast)
+        enhanceCodeBlocks(triggerToast);
         const elements = Array.from(
           container.querySelectorAll('h2, h3')
-        ) as HTMLElement[]
-        if (elements.length === 0) return
+        ) as HTMLElement[];
+        if (elements.length === 0) return;
 
         elements.forEach(el => {
-          el.classList.add('group', 'scroll-mt-20', 'cursor-pointer')
+          el.classList.add('group', 'scroll-mt-20', 'cursor-pointer');
 
-          const existingAnchor = el.querySelector('.anchor-link')
+          const existingAnchor = el.querySelector('.anchor-link');
           if (existingAnchor) {
-            existingAnchor.remove()
+            existingAnchor.remove();
           }
 
-          const headingText = el.querySelector('.heading-text')
+          const headingText = el.querySelector('.heading-text');
           if (!headingText) {
-            const span = document.createElement('span')
-            span.className = 'heading-text'
+            const span = document.createElement('span');
+            span.className = 'heading-text';
             while (el.firstChild) {
-              span.appendChild(el.firstChild)
+              span.appendChild(el.firstChild);
             }
-            el.appendChild(span)
+            el.appendChild(span);
           }
 
-          const anchor = document.createElement('a')
-          anchor.href = `#${el.id}`
-          anchor.className = 'anchor-link select-none'
+          const anchor = document.createElement('a');
+          anchor.href = `#${el.id}`;
+          anchor.className = 'anchor-link select-none';
           anchor.innerHTML =
-            '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link-2 text-[0.85em] leading-none inline-block align-middle select-none opacity-0" aria-hidden="true"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" x2="16" y1="12" y2="12"/></svg>'
+            '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link-2 text-[0.85em] leading-none inline-block align-middle select-none opacity-0" aria-hidden="true"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" x2="16" y1="12" y2="12"/></svg>';
 
           el.onclick = async e => {
-            e.preventDefault()
-            const url = `${window.location.origin}${window.location.pathname}#${el.id}`
+            e.preventDefault();
+            const url = `${window.location.origin}${window.location.pathname}#${el.id}`;
             try {
-              await navigator.clipboard.writeText(url)
-              triggerToast('Subheading link copied to clipboard')
+              await navigator.clipboard.writeText(url);
+              triggerToast('Subheading link copied to clipboard');
             } catch {}
-            const target = document.getElementById(el.id)
+            const target = document.getElementById(el.id);
             if (target) {
-              target.scrollIntoView({behavior: 'smooth', block: 'start'})
-              pushState(`#${el.id}`, {})
+              target.scrollIntoView({behavior: 'smooth', block: 'start'});
+              pushState(`#${el.id}`, {});
             }
-          }
-          el.appendChild(anchor)
-        })
+          };
+          el.appendChild(anchor);
+        });
       }
-    })
-  })
+    });
+  });
 
   onMount(() => {
-    isDark = document.documentElement.classList.contains('dark')
+    isDark = document.documentElement.classList.contains('dark');
 
     const observer = new MutationObserver(() => {
-      isDark = document.documentElement.classList.contains('dark')
-    })
+      isDark = document.documentElement.classList.contains('dark');
+    });
 
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ['class']
-    })
+    });
 
-    hljs.highlightAll()
+    hljs.highlightAll();
 
     return () => {
-      observer.disconnect()
-    }
-  })
+      observer.disconnect();
+    };
+  });
 </script>
 
 <svelte:head>
   <title>{title}{authorName ? ` — ${authorName}` : ''}</title>
   <meta
     name="description"
-    content="{title} for {authorName} portfolio and services." />
-  <link
-    rel="canonical"
-    href="{siteUrl}/{slug}" />
+    content="{title}{authorName ?
+      ` for ${authorName} portfolio and services.`
+    : ''}" />
+  {#if siteUrl}
+    <link
+      rel="canonical"
+      href="{siteUrl}/{slug}" />
+  {/if}
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/{hljsTheme}.min.css" />

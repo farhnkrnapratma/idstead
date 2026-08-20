@@ -1,14 +1,14 @@
 <script lang="ts">
-  import type {Snippet} from 'svelte'
-  import {cn} from '../utils/cn'
+  import type {Snippet} from 'svelte';
+  import {cn} from '../utils/cn';
 
   interface Props {
-    as?: string
-    class?: string
-    children?: Snippet
+    as?: string;
+    class?: string;
+    children?: Snippet;
   }
 
-  let {as = 'span', class: className = '', children}: Props = $props()
+  let {as = 'span', class: className = '', children}: Props = $props();
 </script>
 
 <svelte:element

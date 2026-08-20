@@ -1,41 +1,43 @@
-import {supabase} from '$lib/supabase'
-import type {RequestHandler} from './$types'
+import {supabase} from '$lib/supabase';
+import type {RequestHandler} from './$types';
 
-import {fetchAuthorProfile} from '$lib/author'
+import {fetchAuthorProfile} from '$lib/author';
 
 export const GET: RequestHandler = async ({fetch, url}) => {
-  const authorProfile = await fetchAuthorProfile(supabase, {includeEmail: true})
-  const AUTHOR_NAME = authorProfile?.name || ''
-  const AUTHOR_EMAIL = authorProfile?.email || ''
-  const FEED_SUBTITLE = authorProfile?.bio || ''
+  const authorProfile = await fetchAuthorProfile(supabase, {
+    includeEmail: true
+  });
+  const AUTHOR_NAME = authorProfile?.name || '';
+  const AUTHOR_EMAIL = authorProfile?.email || '';
+  const FEED_SUBTITLE = authorProfile?.bio || '';
 
-  const rawSiteUrl = authorProfile?.siteUrl || url.origin
-  const SITE_URL = rawSiteUrl.replace(/\/$/, '')
-  let domain: string
+  const rawSiteUrl = authorProfile?.siteUrl || url.origin;
+  const SITE_URL = rawSiteUrl.replace(/\/$/, '');
+  let domain: string;
   try {
-    domain = new URL(SITE_URL).hostname
+    domain = new URL(SITE_URL).hostname;
   } catch {
-    domain = url.hostname
+    domain = url.hostname;
   }
-  const FEED_TITLE = `${domain} — Blog`
+  const FEED_TITLE = `${domain} — Blog`;
 
   const {data: posts} = await supabase
     .from('db_posts')
     .select('id, title, slug, excerpt, created_at, storage_path')
     .eq('published', true)
     .order('created_at', {ascending: false})
-    .limit(20)
+    .limit(20);
 
   const enriched = await Promise.all(
     (posts ?? []).map(async post => {
-      let content = post.excerpt ?? ''
+      let content = post.excerpt ?? '';
       try {
         const {data: urlData} = supabase.storage
           .from('blog-posts')
-          .getPublicUrl(post.storage_path)
-        const fileRes = await fetch(urlData.publicUrl)
+          .getPublicUrl(post.storage_path);
+        const fileRes = await fetch(urlData.publicUrl);
         if (fileRes.ok) {
-          const md = await fileRes.text()
+          const md = await fileRes.text();
           content = md
             .replace(/^#{1,6}\s+.*/gm, '')
             .replace(/!\[.*?\]\(.*?\)/g, '')
@@ -43,20 +45,20 @@ export const GET: RequestHandler = async ({fetch, url}) => {
             .replace(/[*_`~>#|-]/g, '')
             .replace(/\s+/g, ' ')
             .trim()
-            .slice(0, 500)
-          if (md.length > 500) content += '…'
+            .slice(0, 500);
+          if (md.length > 500) content += '…';
         }
       } catch {
-        content = post.excerpt ?? ''
+        content = post.excerpt ?? '';
       }
-      return {...post, summary: content}
+      return {...post, summary: content};
     })
-  )
+  );
 
   const updatedDate =
     enriched.length > 0 ?
       new Date(enriched[0].created_at).toISOString()
-    : new Date().toISOString()
+    : new Date().toISOString();
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
@@ -89,15 +91,15 @@ ${enriched
   </entry>`
   )
   .join('\n')}
-</feed>`
+</feed>`;
 
   return new Response(xml, {
     headers: {
       'Content-Type': 'application/atom+xml; charset=utf-8',
       'Cache-Control': 'public, max-age=1800, s-maxage=1800'
     }
-  })
-}
+  });
+};
 
 function escapeXml(str: string): string {
   return str
@@ -105,5 +107,5 @@ function escapeXml(str: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;')
+    .replace(/'/g, '&apos;');
 }

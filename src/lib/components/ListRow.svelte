@@ -1,18 +1,18 @@
 <script lang="ts">
-  import type {Snippet} from 'svelte'
-  import {SquareArrowOutUpRight} from '@lucide/svelte'
-  import {cn} from '../utils/cn'
+  import type {Snippet} from 'svelte';
+  import {SquareArrowOutUpRight} from '@lucide/svelte';
+  import {cn} from '../utils/cn';
 
   interface Props {
-    title: string
-    subtitle?: string
-    href?: string
-    target?: string
-    rel?: string
-    leading?: Snippet
-    actions?: Snippet
-    children?: Snippet
-    class?: string
+    title: string;
+    subtitle?: string;
+    href?: string;
+    target?: string;
+    rel?: string;
+    leading?: Snippet;
+    actions?: Snippet;
+    children?: Snippet;
+    class?: string;
   }
 
   let {
@@ -25,7 +25,7 @@
     actions,
     children,
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 </script>
 
 {#if href}

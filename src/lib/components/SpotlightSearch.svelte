@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {goto} from '$app/navigation'
+  import {goto} from '$app/navigation';
   import {
     Search,
     FileText,
@@ -7,38 +7,38 @@
     ExternalLink,
     ArrowUpDown,
     CornerDownLeft
-  } from '@lucide/svelte'
-  import type {Project} from '$lib/types'
-  import {cn} from '../utils/cn'
-  import {decodeHtmlEntities} from '../utils/formatters'
+  } from '@lucide/svelte';
+  import type {Project} from '$lib/types';
+  import {cn} from '../utils/cn';
+  import {decodeHtmlEntities} from '../utils/formatters';
 
   interface SearchResult {
-    type: 'post' | 'project'
-    title: string
-    subtitle: string
-    url: string
-    tags?: string[]
+    type: 'post' | 'project';
+    title: string;
+    subtitle: string;
+    url: string;
+    tags?: string[];
   }
 
   interface Props {
-    projects?: Project[]
-    class?: string
+    projects?: Project[];
+    class?: string;
   }
 
-  let {projects = [], class: className = ''}: Props = $props()
+  let {projects = [], class: className = ''}: Props = $props();
 
-  let isOpen = $state(false)
-  let query = $state('')
-  let results = $state<SearchResult[]>([])
-  let activeIndex = $state(-1)
-  let isLoading = $state(false)
-  let inputEl = $state<HTMLInputElement | null>(null)
-  let listEl = $state<HTMLUListElement | null>(null)
+  let isOpen = $state(false);
+  let query = $state('');
+  let results = $state<SearchResult[]>([]);
+  let activeIndex = $state(-1);
+  let isLoading = $state(false);
+  let inputEl = $state<HTMLInputElement | null>(null);
+  let listEl = $state<HTMLUListElement | null>(null);
 
-  let debounceTimer: ReturnType<typeof setTimeout>
+  let debounceTimer: ReturnType<typeof setTimeout>;
 
   function searchProjects(q: string): SearchResult[] {
-    const lower = q.toLowerCase()
+    const lower = q.toLowerCase();
     return projects
       .filter(
         p =>
@@ -53,154 +53,154 @@
         subtitle: p.desc,
         url: p.url,
         tags: p.tags.slice(0, 3)
-      }))
+      }));
   }
 
   async function runSearch(q: string) {
     if (q.length < 2) {
-      results = []
-      isLoading = false
-      return
+      results = [];
+      isLoading = false;
+      return;
     }
 
-    isLoading = true
-    activeIndex = -1
+    isLoading = true;
+    activeIndex = -1;
 
-    const projectMatches = searchProjects(q)
+    const projectMatches = searchProjects(q);
 
     try {
-      const res = await fetch(`/api/v1/search?q=${encodeURIComponent(q)}`)
-      const data = await res.json()
-      const postResults: SearchResult[] = data.data ?? []
-      results = [...postResults, ...projectMatches]
+      const res = await fetch(`/api/v1/search?q=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      const postResults: SearchResult[] = data.data ?? [];
+      results = [...postResults, ...projectMatches];
     } catch {
-      results = projectMatches
+      results = projectMatches;
     }
 
-    isLoading = false
+    isLoading = false;
   }
 
   function handleInput() {
-    clearTimeout(debounceTimer)
+    clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
-      runSearch(query)
-    }, 250)
+      runSearch(query);
+    }, 250);
   }
 
-  let previouslyFocusedElement = $state<HTMLElement | null>(null)
+  let previouslyFocusedElement = $state<HTMLElement | null>(null);
 
   function open() {
     if (typeof document !== 'undefined') {
-      previouslyFocusedElement = document.activeElement as HTMLElement
+      previouslyFocusedElement = document.activeElement as HTMLElement;
     }
-    isOpen = true
-    query = ''
-    results = []
-    activeIndex = -1
-    setTimeout(() => inputEl?.focus(), 30)
+    isOpen = true;
+    query = '';
+    results = [];
+    activeIndex = -1;
+    setTimeout(() => inputEl?.focus(), 30);
   }
 
   function close() {
-    isOpen = false
-    query = ''
-    results = []
-    activeIndex = -1
+    isOpen = false;
+    query = '';
+    results = [];
+    activeIndex = -1;
     if (previouslyFocusedElement) {
       setTimeout(() => {
-        previouslyFocusedElement?.focus()
-        previouslyFocusedElement = null
-      }, 30)
+        previouslyFocusedElement?.focus();
+        previouslyFocusedElement = null;
+      }, 30);
     }
   }
 
   function select(result: SearchResult) {
-    close()
+    close();
     if (result.url.startsWith('http')) {
-      window.open(result.url, '_blank', 'noopener,noreferrer')
+      window.open(result.url, '_blank', 'noopener,noreferrer');
     } else {
-      goto(result.url)
+      goto(result.url);
     }
   }
 
   function handleKeydown(e: KeyboardEvent) {
-    if (!isOpen) return
+    if (!isOpen) return;
 
     switch (e.key) {
       case 'ArrowDown':
-        e.preventDefault()
-        activeIndex = Math.min(activeIndex + 1, results.length - 1)
-        scrollActiveIntoView()
-        break
+        e.preventDefault();
+        activeIndex = Math.min(activeIndex + 1, results.length - 1);
+        scrollActiveIntoView();
+        break;
       case 'ArrowUp':
-        e.preventDefault()
-        activeIndex = Math.max(activeIndex - 1, -1)
-        scrollActiveIntoView()
-        break
+        e.preventDefault();
+        activeIndex = Math.max(activeIndex - 1, -1);
+        scrollActiveIntoView();
+        break;
       case 'Enter':
-        e.preventDefault()
+        e.preventDefault();
         if (activeIndex >= 0 && results[activeIndex]) {
-          select(results[activeIndex])
+          select(results[activeIndex]);
         }
-        break
+        break;
       case 'Escape':
-        e.preventDefault()
-        close()
-        break
+        e.preventDefault();
+        close();
+        break;
     }
   }
 
   function scrollActiveIntoView() {
-    if (!listEl || activeIndex < 0) return
-    const items = listEl.querySelectorAll('[data-result-item]')
-    items[activeIndex]?.scrollIntoView({block: 'nearest'})
+    if (!listEl || activeIndex < 0) return;
+    const items = listEl.querySelectorAll('[data-result-item]');
+    items[activeIndex]?.scrollIntoView({block: 'nearest'});
   }
 
   function handleResultKeydown(e: KeyboardEvent, result: SearchResult) {
     if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      select(result)
+      e.preventDefault();
+      select(result);
     }
   }
 
   function handleGlobalKeydown(e: KeyboardEvent) {
     if (isOpen && e.key === 'Escape') {
-      e.preventDefault()
-      close()
-      return
+      e.preventDefault();
+      close();
+      return;
     }
     const inInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes(
       (e.target as HTMLElement)?.tagName
-    )
+    );
     if ((e.ctrlKey && e.key === 'k') || (!inInput && e.key === '/')) {
-      e.preventDefault()
+      e.preventDefault();
       if (isOpen) {
-        close()
+        close();
       } else {
-        open()
+        open();
       }
     }
   }
 
   function portal(node: HTMLElement) {
-    document.body.appendChild(node)
+    document.body.appendChild(node);
     return {
       destroy() {
         if (node.parentNode) {
-          node.parentNode.removeChild(node)
+          node.parentNode.removeChild(node);
         }
       }
-    }
+    };
   }
 
   $effect(() => {
-    if (isOpen && typeof document !== 'undefined') {
-      const originalOverflow = document.body.style.overflow
-      document.body.style.overflow = 'hidden'
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
       return () => {
-        document.body.style.overflow = originalOverflow
-      }
+        document.body.style.overflow = originalOverflow;
+      };
     }
-  })
+  });
 
   function escapeHtml(unsafe: string) {
     return unsafe
@@ -208,21 +208,21 @@
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;')
+      .replace(/'/g, '&#039;');
   }
 
   function highlight(text: string, q: string): string {
-    const safeText = escapeHtml(text || '')
-    if (!q || q.length < 2) return safeText
-    const safeQ = escapeHtml(q)
+    const safeText = escapeHtml(text || '');
+    if (!q || q.length < 2) return safeText;
+    const safeQ = escapeHtml(q);
     const escaped = safeQ.replace(
       /[.*+?^${}()|[\]\\]/g,
       '\\___SVELTE_BLOCK_0___'
-    )
+    );
     return safeText.replace(
       new RegExp(`(${escaped})`, 'gi'),
       '<mark class="bg-copilot/20 text-copilot rounded-[2px] px-[1px] not-italic font-semibold">$1</mark>'
-    )
+    );
   }
 </script>
 
@@ -336,7 +336,7 @@
           </div>
         {:else if isLoading}
           <div class="space-y-2 p-3">
-            {#each [1, 2, 3] as _, i (i)}
+            {#each [1, 2, 3] as placeholderId (placeholderId)}
               <div
                 class="flex animate-pulse items-center gap-3 rounded-sm border border-border-subtle bg-surface-hover p-3 select-none">
                 <div class="h-5 w-5 shrink-0 rounded-xs bg-border-default">
@@ -370,7 +370,7 @@
                     class="text-xxs font-bold tracking-widest text-text-muted uppercase select-none"
                     >Blog posts</span>
                 </li>
-                {#each results.filter(r => r.type === 'post') as result, i (i)}
+                {#each results.filter(r => r.type === 'post') as result (result.url)}
                   {@const globalIdx = results.indexOf(result)}
                   <li
                     id="result-{globalIdx}"
@@ -417,7 +417,7 @@
                     class="text-xxs font-bold tracking-widest text-text-muted uppercase select-none"
                     >GitHub projects</span>
                 </li>
-                {#each results.filter(r => r.type === 'project') as result, i (i)}
+                {#each results.filter(r => r.type === 'project') as result (result.url)}
                   {@const globalIdx = results.indexOf(result)}
                   <li
                     id="result-{globalIdx}"

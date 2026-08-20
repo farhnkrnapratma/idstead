@@ -1,16 +1,16 @@
 <script lang="ts">
-  import type {Snippet} from 'svelte'
-  import type {HTMLAttributes} from 'svelte/elements'
-  import {cn} from '../utils/cn'
+  import type {Snippet} from 'svelte';
+  import type {HTMLAttributes} from 'svelte/elements';
+  import {cn} from '../utils/cn';
 
   interface Props extends HTMLAttributes<HTMLDivElement> {
-    variant?: 'default' | 'glass' | 'bordered' | 'solid'
-    density?: 'padded' | 'compact' | 'none'
-    interactive?: boolean
-    header?: Snippet
-    footer?: Snippet
-    children?: Snippet
-    class?: string
+    variant?: 'default' | 'glass' | 'bordered' | 'solid';
+    density?: 'padded' | 'compact' | 'none';
+    interactive?: boolean;
+    header?: Snippet;
+    footer?: Snippet;
+    children?: Snippet;
+    class?: string;
   }
 
   let {
@@ -22,7 +22,7 @@
     children,
     class: className = '',
     ...restProps
-  }: Props = $props()
+  }: Props = $props();
 
   const variantStyles = {
     default: 'glass-card',
@@ -30,19 +30,19 @@
     bordered: 'bg-transparent border border-border-subtle',
     solid:
       'border border-border-subtle bg-surface-card text-text-primary shadow-xs'
-  }
+  };
 
   const densityStyles = {
     padded: 'p-5 sm:p-6',
     compact: 'p-3 sm:p-4',
     none: 'p-0'
-  }
+  };
 
   const interactiveStyles = $derived(
     interactive ?
       'cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring'
     : ''
-  )
+  );
 </script>
 
 {#if interactive}

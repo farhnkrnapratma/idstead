@@ -1,8 +1,11 @@
 <script lang="ts">
-  import {page} from '$app/state'
-  import {onMount} from 'svelte'
-  import {CheckCircle2} from '@lucide/svelte'
-  import {isNameReserved} from '$lib/utils/nameValidator'
+  import {page} from '$app/state';
+  import {onMount} from 'svelte';
+  import {CheckCircle2} from '@lucide/svelte';
+  import {
+    isNameReserved,
+    extractAuthorNameTokens
+  } from '$lib/utils/nameValidator';
   import {
     Card,
     FormField,
@@ -15,90 +18,91 @@
     Section,
     PageContainer,
     ConsentNotice
-  } from '$lib'
+  } from '$lib';
 
-  let pageAuthor = $derived((page?.data as any)?.author)
-  let authorName = $derived(pageAuthor?.name || '')
+  let pageAuthor = $derived((page?.data as any)?.author);
+  let authorName = $derived(pageAuthor?.name || '');
+  let authorTokens = $derived(extractAuthorNameTokens(pageAuthor));
   let siteUrl = $derived(
-    ((page?.data as any)?.author?.siteUrl || page.url.origin).replace(/\/$/, '')
-  )
-  let contactEmail = $derived(pageAuthor?.email || '')
+    ((page?.data as any)?.author?.siteUrl || '').replace(/\/$/, '')
+  );
+  let contactEmail = $derived(pageAuthor?.email || '');
 
-  let formName = $state('')
-  let formEmail = $state('')
-  let formUrl = $state('')
-  let formMessage = $state('')
+  let formName = $state('');
+  let formEmail = $state('');
+  let formUrl = $state('');
+  let formMessage = $state('');
 
-  let formErrors = $state({name: '', email: '', url: '', message: ''})
+  let formErrors = $state({name: '', email: '', url: '', message: ''});
   let formValid = $state({
     name: false,
     email: false,
     url: false,
     message: false
-  })
+  });
 
-  let showSubmitDialog = $state(false)
-  let feedbackFormElement = $state<HTMLFormElement | null>(null)
+  let showSubmitDialog = $state(false);
+  let feedbackFormElement = $state<HTMLFormElement | null>(null);
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   function debounce<T extends unknown[]>(cb: (...args: T) => void, ms: number) {
-    let timer: ReturnType<typeof setTimeout>
+    let timer: ReturnType<typeof setTimeout>;
     return (...args: T) => {
-      clearTimeout(timer)
-      timer = setTimeout(() => cb(...args), ms)
-    }
+      clearTimeout(timer);
+      timer = setTimeout(() => cb(...args), ms);
+    };
   }
 
   const validateName = debounce(() => {
-    const val = formName.trim()
+    const val = formName.trim();
     if (val === '') {
-      formErrors.name = ''
-      formValid.name = false
-    } else if (isNameReserved(val)) {
-      formErrors.name = 'This name cannot be used. Please use another name.'
-      formValid.name = false
+      formErrors.name = '';
+      formValid.name = false;
+    } else if (isNameReserved(val, authorTokens)) {
+      formErrors.name = 'This name cannot be used. Please use another name.';
+      formValid.name = false;
     } else {
-      formErrors.name = ''
-      formValid.name = true
+      formErrors.name = '';
+      formValid.name = true;
     }
-  }, 500)
+  }, 500);
 
   const validateEmail = debounce(() => {
-    const val = formEmail.trim()
+    const val = formEmail.trim();
     if (val === '') {
-      formErrors.email = ''
-      formValid.email = false
+      formErrors.email = '';
+      formValid.email = false;
     } else if (!emailRegex.test(val)) {
-      formErrors.email = 'Please enter a valid email address.'
-      formValid.email = false
+      formErrors.email = 'Please enter a valid email address.';
+      formValid.email = false;
     } else {
-      formErrors.email = ''
-      formValid.email = true
+      formErrors.email = '';
+      formValid.email = true;
     }
-  }, 500)
+  }, 500);
 
   const validateUrl = debounce(() => {
-    const val = formUrl.trim()
+    const val = formUrl.trim();
     if (val === '') {
-      formErrors.url = ''
-      formValid.url = false
+      formErrors.url = '';
+      formValid.url = false;
     } else {
-      formErrors.url = ''
-      formValid.url = true
+      formErrors.url = '';
+      formValid.url = true;
     }
-  }, 500)
+  }, 500);
 
   const validateMessage = debounce(() => {
-    const val = formMessage.trim()
+    const val = formMessage.trim();
     if (val === '') {
-      formErrors.message = ''
-      formValid.message = false
+      formErrors.message = '';
+      formValid.message = false;
     } else {
-      formErrors.message = ''
-      formValid.message = true
+      formErrors.message = '';
+      formValid.message = true;
     }
-  }, 500)
+  }, 500);
 
   function sanitizeInput(text: string): string {
     return text
@@ -107,37 +111,37 @@
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#x27;')
-      .replace(/\//g, '&#x2F;')
+      .replace(/\//g, '&#x2F;');
   }
 
   function validateForm(e: Event) {
-    const nameErr = formName.trim() === '' ? 'Name is required.' : ''
-    const emailErr = formEmail.trim() === '' ? 'Email is required.' : ''
-    const urlErr = formUrl.trim() === '' ? 'URL/Page is required.' : ''
-    const msgErr = formMessage.trim() === '' ? 'Message is required.' : ''
+    const nameErr = formName.trim() === '' ? 'Name is required.' : '';
+    const emailErr = formEmail.trim() === '' ? 'Email is required.' : '';
+    const urlErr = formUrl.trim() === '' ? 'URL/Page is required.' : '';
+    const msgErr = formMessage.trim() === '' ? 'Message is required.' : '';
 
     const emailFormatErr =
       !emailErr && !emailRegex.test(formEmail.trim()) ?
         'Please enter a valid email address.'
-      : ''
+      : '';
     const nameReservedErr =
-      !nameErr && isNameReserved(formName) ?
+      !nameErr && isNameReserved(formName, authorTokens) ?
         'This name cannot be used. Please use another name.'
-      : ''
+      : '';
 
     formErrors = {
       name: nameErr || nameReservedErr,
       email: emailErr || emailFormatErr,
       url: urlErr,
       message: msgErr
-    }
+    };
 
-    if (formErrors.name) formValid.name = false
-    if (formErrors.email) formValid.email = false
-    if (formErrors.url) formValid.url = false
-    if (formErrors.message) formValid.message = false
+    if (formErrors.name) formValid.name = false;
+    if (formErrors.email) formValid.email = false;
+    if (formErrors.url) formValid.url = false;
+    if (formErrors.message) formValid.message = false;
 
-    e.preventDefault()
+    e.preventDefault();
 
     if (
       !formErrors.name
@@ -145,17 +149,17 @@
       && !formErrors.url
       && !formErrors.message
     ) {
-      formName = sanitizeInput(formName.trim())
-      formEmail = sanitizeInput(formEmail.trim())
-      formUrl = sanitizeInput(formUrl.trim())
-      formMessage = sanitizeInput(formMessage.trim())
-      showSubmitDialog = true
+      formName = sanitizeInput(formName.trim());
+      formEmail = sanitizeInput(formEmail.trim());
+      formUrl = sanitizeInput(formUrl.trim());
+      formMessage = sanitizeInput(formMessage.trim());
+      showSubmitDialog = true;
     }
   }
 
   function executeSubmit() {
     if (feedbackFormElement) {
-      feedbackFormElement.submit()
+      feedbackFormElement.submit();
     }
   }
 </script>
@@ -325,9 +329,9 @@
             error={!!formErrors.name}
             valid={formValid.name}
             oninput={() => {
-              formErrors.name = ''
-              formValid.name = false
-              validateName()
+              formErrors.name = '';
+              formValid.name = false;
+              validateName();
             }} />
         </FormField>
 
@@ -348,9 +352,9 @@
             error={!!formErrors.email}
             valid={formValid.email}
             oninput={() => {
-              formErrors.email = ''
-              formValid.email = false
-              validateEmail()
+              formErrors.email = '';
+              formValid.email = false;
+              validateEmail();
             }} />
         </FormField>
 
@@ -370,9 +374,9 @@
             error={!!formErrors.url}
             valid={formValid.url}
             oninput={() => {
-              formErrors.url = ''
-              formValid.url = false
-              validateUrl()
+              formErrors.url = '';
+              formValid.url = false;
+              validateUrl();
             }} />
         </FormField>
 
@@ -393,9 +397,9 @@
             error={!!formErrors.message}
             valid={formValid.message}
             oninput={() => {
-              formErrors.message = ''
-              formValid.message = false
-              validateMessage()
+              formErrors.message = '';
+              formValid.message = false;
+              validateMessage();
             }} />
         </FormField>
 

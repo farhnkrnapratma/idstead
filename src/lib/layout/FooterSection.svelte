@@ -1,28 +1,28 @@
 <script lang="ts">
-  import {cn} from '../utils/cn'
-  import ThemeSelect from '../components/filter/ThemeSelect.svelte'
-  import ContentFontSelect from '../components/filter/ContentFontSelect.svelte'
-  import AccessibilitySelect from '../components/filter/AccessibilitySelect.svelte'
-  import {themeStore} from '../stores/themeStore.svelte'
-  import {type SocialLink} from '../author'
-  import FooterLegalRow from './FooterLegalRow.svelte'
+  import {cn} from '../utils/cn';
+  import ThemeSelect from '../components/filter/ThemeSelect.svelte';
+  import ContentFontSelect from '../components/filter/ContentFontSelect.svelte';
+  import AccessibilitySelect from '../components/filter/AccessibilitySelect.svelte';
+  import {themeStore} from '../stores/themeStore.svelte';
+  import {type SocialLink} from '../author';
+  import FooterLegalRow from './FooterLegalRow.svelte';
 
-  import {page} from '$app/state'
+  import {page} from '$app/state';
 
   interface NavItem {
-    label: string
-    url: string
+    label: string;
+    url: string;
   }
 
   interface Props {
-    name?: string
-    headline?: string
-    description?: string
-    navItems?: NavItem[]
-    socials?: SocialLink[]
-    onNavClick?: (url: string) => void
-    showFontSelect?: boolean
-    class?: string
+    name?: string;
+    headline?: string;
+    description?: string;
+    navItems?: NavItem[];
+    socials?: SocialLink[];
+    onNavClick?: (url: string) => void;
+    showFontSelect?: boolean;
+    class?: string;
   }
 
   const defaultNavItems: NavItem[] = [
@@ -32,7 +32,7 @@
     {label: 'CV', url: '/#cv'},
     {label: 'Funding', url: '/#funding'},
     {label: 'Contact', url: '/#contact'}
-  ]
+  ];
 
   let {
     name = '',
@@ -43,26 +43,26 @@
     onNavClick,
     showFontSelect = false,
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 
-  let pageAuthor = $derived((page?.data as any)?.author)
+  let pageAuthor = $derived((page?.data as any)?.author);
 
-  let resolvedName = $derived(name || pageAuthor?.name || '')
+  let resolvedName = $derived(name || pageAuthor?.name || '');
   let resolvedHeadline = $derived(
     headline || pageAuthor?.headline || pageAuthor?.jobTitle || ''
-  )
-  let resolvedDescription = $derived(description || pageAuthor?.bio || '')
+  );
+  let resolvedDescription = $derived(description || pageAuthor?.bio || '');
 
   let resolvedNavItems = $derived(
     navItems.length > 0 ? navItems : defaultNavItems
-  )
+  );
 
   let resolvedSocials = $derived(
     Array.isArray(socials) && socials.length > 0 ? socials
     : pageAuthor?.socialLinks && pageAuthor.socialLinks.length > 0 ?
       pageAuthor.socialLinks
     : []
-  )
+  );
 </script>
 
 <footer

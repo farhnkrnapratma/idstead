@@ -1,4 +1,4 @@
-import {json} from '@sveltejs/kit'
+import {json} from '@sveltejs/kit';
 
 export function apiError(
   status: number,
@@ -6,5 +6,5 @@ export function apiError(
   message: string,
   details?: string
 ) {
-  return json({code, message, ...(details ? {details} : {})}, {status})
+  return json({code, message, ...(details ? {details} : {})}, {status});
 }

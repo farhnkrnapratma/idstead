@@ -1,6 +1,6 @@
-import type {RequestHandler} from './$types'
+import type {RequestHandler} from './$types';
 
-import readme from './README.md?raw'
+import readme from './README.md?raw';
 
 export const GET: RequestHandler = async () => {
   return new Response(readme, {
@@ -9,5 +9,5 @@ export const GET: RequestHandler = async () => {
       'Cache-Control': 'public, max-age=3600, s-maxage=86400',
       'Access-Control-Allow-Origin': '*'
     }
-  })
-}
+  });
+};

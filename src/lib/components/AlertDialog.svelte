@@ -1,14 +1,14 @@
 <script lang="ts">
-  import Dialog from './Dialog.svelte'
-  import Button from './Button.svelte'
+  import Dialog from './Dialog.svelte';
+  import Button from './Button.svelte';
 
   interface Props {
-    isOpen: boolean
-    title: string
-    description?: string
-    buttonLabel?: string
-    onClose: () => void
-    class?: string
+    isOpen: boolean;
+    title: string;
+    description?: string;
+    buttonLabel?: string;
+    onClose: () => void;
+    class?: string;
   }
 
   let {
@@ -18,7 +18,7 @@
     buttonLabel = 'OK',
     onClose,
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 </script>
 
 <Dialog

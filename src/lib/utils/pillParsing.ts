@@ -6,25 +6,25 @@ export function tryEscapeComma(
     return {
       value: value.slice(0, cursor - 1) + ',' + value.slice(cursor),
       cursor
-    }
+    };
   }
-  return null
+  return null;
 }
 
 export function splitEscapedCommas(text: string): string[] {
-  const parts: string[] = []
-  let current = ''
+  const parts: string[] = [];
+  let current = '';
   for (let i = 0; i < text.length; i++) {
     if (text[i] === '\\' && text[i + 1] === ',') {
-      current += ','
-      i++
+      current += ',';
+      i++;
     } else if (text[i] === ',') {
-      parts.push(current)
-      current = ''
+      parts.push(current);
+      current = '';
     } else {
-      current += text[i]
+      current += text[i];
     }
   }
-  parts.push(current)
-  return parts.map(s => s.trim()).filter(Boolean)
+  parts.push(current);
+  return parts.map(s => s.trim()).filter(Boolean);
 }

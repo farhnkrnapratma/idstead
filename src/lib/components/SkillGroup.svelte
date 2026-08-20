@@ -1,13 +1,13 @@
 <script lang="ts">
-  import Tag from '../components/Tag.svelte'
-  import {cn} from '../utils/cn'
-  import {decodeHtmlEntities} from '../utils/formatters'
+  import Tag from '../components/Tag.svelte';
+  import {cn} from '../utils/cn';
+  import {decodeHtmlEntities} from '../utils/formatters';
 
   interface Props {
-    category: string
-    skills: string[]
-    icon?: string
-    class?: string
+    category: string;
+    skills: string[];
+    icon?: string;
+    class?: string;
   }
 
   let {
@@ -15,7 +15,7 @@
     skills = [],
     icon = '',
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 </script>
 
 <div

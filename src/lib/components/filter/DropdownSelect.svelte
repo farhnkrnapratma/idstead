@@ -1,21 +1,21 @@
 <script lang="ts">
-  import {Check} from '@lucide/svelte'
-  import {cn} from '../../utils/cn'
-  import DropdownTrigger from './DropdownTrigger.svelte'
+  import {Check} from '@lucide/svelte';
+  import {cn} from '../../utils/cn';
+  import DropdownTrigger from './DropdownTrigger.svelte';
 
   interface Option {
-    value: string | number | null
-    label: string
+    value: string | number | null;
+    label: string;
   }
 
   interface Props {
-    label?: string
-    placeholder?: string
-    options: Option[]
-    value?: string | number | null
-    disabled?: boolean
-    onChange?: (val: any) => void
-    class?: string
+    label?: string;
+    placeholder?: string;
+    options: Option[];
+    value?: string | number | null;
+    disabled?: boolean;
+    onChange?: (val: any) => void;
+    class?: string;
   }
 
   let {
@@ -26,41 +26,41 @@
     disabled = false,
     onChange = () => {},
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 
-  let isOpen = $state(false)
+  let isOpen = $state(false);
 
   let displayLabel = $derived.by(() => {
     if (value === null || value === undefined || value === '')
-      return placeholder
-    const valStr = String(value).trim().toLowerCase()
+      return placeholder;
+    const valStr = String(value).trim().toLowerCase();
     const found = options.find(o => {
-      if (o.value === null || o.value === undefined) return false
-      return String(o.value).trim().toLowerCase() === valStr
-    })
-    return found?.label ?? String(value)
-  })
+      if (o.value === null || o.value === undefined) return false;
+      return String(o.value).trim().toLowerCase() === valStr;
+    });
+    return found?.label ?? String(value);
+  });
 
   function select(val: any) {
-    value = val
-    onChange(val)
-    isOpen = false
+    value = val;
+    onChange(val);
+    isOpen = false;
   }
 
   function isSelected(optValue: string | number | null): boolean {
-    if (optValue === value) return true
+    if (optValue === value) return true;
     if (
       optValue === null
       || optValue === undefined
       || value === null
       || value === undefined
     ) {
-      return optValue === value
+      return optValue === value;
     }
     return (
       String(optValue).trim().toLowerCase()
       === String(value).trim().toLowerCase()
-    )
+    );
   }
 </script>
 
@@ -84,7 +84,7 @@
       {disabled}
       fullWidth={true}
       onclick={() => {
-        if (!disabled) isOpen = !isOpen
+        if (!disabled) isOpen = !isOpen;
       }}>
       {displayLabel}
     </DropdownTrigger>

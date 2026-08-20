@@ -1,14 +1,18 @@
-import {supabase} from '$lib/supabase'
-import type {RequestHandler} from './$types'
-
-const SITE_URL = 'https://fkp.my.id'
+import {supabase} from '$lib/supabase';
+import type {RequestHandler} from './$types';
+import {fetchAuthorProfile} from '$lib/author';
 
 export const GET: RequestHandler = async () => {
-  const {data: posts} = await supabase
-    .from('db_posts')
-    .select('slug, created_at, title')
-    .eq('published', true)
-    .order('created_at', {ascending: false})
+  const [authorProfile, {data: posts}] = await Promise.all([
+    fetchAuthorProfile(supabase),
+    supabase
+      .from('db_posts')
+      .select('slug, created_at, title')
+      .eq('published', true)
+      .order('created_at', {ascending: false})
+  ]);
+
+  const SITE_URL = (authorProfile?.siteUrl || '').replace(/\/$/, '');
 
   const staticRoutes = [
     {
@@ -28,17 +32,29 @@ export const GET: RequestHandler = async () => {
       lastmod: new Date().toISOString().split('T')[0],
       priority: '0.5',
       changefreq: 'monthly'
+    },
+    {
+      url: `${SITE_URL}/terms`,
+      lastmod: new Date().toISOString().split('T')[0],
+      priority: '0.5',
+      changefreq: 'monthly'
+    },
+    {
+      url: `${SITE_URL}/security`,
+      lastmod: new Date().toISOString().split('T')[0],
+      priority: '0.5',
+      changefreq: 'monthly'
     }
-  ]
+  ];
 
   const postRoutes = (posts ?? []).map(post => ({
     url: `${SITE_URL}/blog/${post.slug}`,
     lastmod: new Date(post.created_at).toISOString().split('T')[0],
     priority: '0.8',
     changefreq: 'monthly'
-  }))
+  }));
 
-  const allRoutes = [...staticRoutes, ...postRoutes]
+  const allRoutes = [...staticRoutes, ...postRoutes];
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset
@@ -56,15 +72,15 @@ ${allRoutes
   </url>`
   )
   .join('\n')}
-</urlset>`
+</urlset>`;
 
   return new Response(xml, {
     headers: {
       'Content-Type': 'application/xml; charset=utf-8',
       'Cache-Control': 'public, max-age=3600, s-maxage=3600'
     }
-  })
-}
+  });
+};
 
 function escapeXml(str: string): string {
   return str
@@ -72,5 +88,5 @@ function escapeXml(str: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;')
+    .replace(/'/g, '&apos;');
 }

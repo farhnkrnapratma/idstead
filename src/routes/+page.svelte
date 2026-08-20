@@ -1,7 +1,7 @@
 <script lang="ts">
-  import {env as publicEnv} from '$env/dynamic/public'
-  import {onMount, tick} from 'svelte'
-  import type {Snippet} from 'svelte'
+  import {env as publicEnv} from '$env/dynamic/public';
+  import {onMount, tick, untrack} from 'svelte';
+  import type {Snippet} from 'svelte';
   import {
     Award,
     GitFork,
@@ -23,8 +23,11 @@
     Menu,
     X,
     Download
-  } from '@lucide/svelte'
-  import {isNameReserved} from '$lib/utils/nameValidator'
+  } from '@lucide/svelte';
+  import {
+    isNameReserved,
+    extractAuthorNameTokens
+  } from '$lib/utils/nameValidator';
   import {
     LinkListSection,
     ShinyText,
@@ -63,104 +66,105 @@
     PageContainer,
     LogoLoop,
     ConsentNotice
-  } from '$lib'
-  import {supabase} from '$lib/supabase'
-  import {SvelteSet} from 'svelte/reactivity'
-  import {formatMonthAbbrev} from '$lib/author'
-  import {themeStore} from '$lib/stores/themeStore.svelte'
-  import {a11yStore} from '$lib/stores/a11yStore.svelte'
-  import AccessibilitySelect from '$lib/components/filter/AccessibilitySelect.svelte'
-  import GradientWaves from '$lib/components/GradientWaves.svelte'
-  import type {Theme, Project} from '$lib/types'
-  import type {BlogPost} from './+page.server'
+  } from '$lib';
+  import {supabase} from '$lib/supabase';
+  import {SvelteSet} from 'svelte/reactivity';
+  import {formatMonthAbbrev} from '$lib/author';
+  import {themeStore} from '$lib/stores/themeStore.svelte';
+  import {a11yStore} from '$lib/stores/a11yStore.svelte';
+  import AccessibilitySelect from '$lib/components/filter/AccessibilitySelect.svelte';
+  import GradientWaves from '$lib/components/GradientWaves.svelte';
+  import type {Theme, Project} from '$lib/types';
+  import type {BlogPost} from './+page.server';
 
-  let {data} = $props()
+  let {data} = $props();
 
-  type Section = 'home' | 'blog' | 'contact' | 'cv' | 'projects' | 'funding'
+  type Section = 'home' | 'blog' | 'contact' | 'cv' | 'projects' | 'funding';
 
   interface NavItem {
-    id: Section
-    label: string
+    id: Section;
+    label: string;
   }
 
   interface Contact {
-    label: string
-    value: string
-    shortValue?: string
-    href: string
-    icon: string
+    label: string;
+    value: string;
+    shortValue?: string;
+    href: string;
+    icon: string;
   }
 
   interface Experience {
-    role: string
-    company: string
-    period: string
-    desc: string
+    role: string;
+    company: string;
+    period: string;
+    desc: string;
   }
 
   interface Education {
-    degree: string
-    major: string
-    faculty: string
-    university: string
-    url?: string
-    period: string
-    gpa?: string
+    degree: string;
+    major: string;
+    faculty: string;
+    university: string;
+    url?: string;
+    period: string;
+    gpa?: string;
   }
 
-  let author = $derived(data.author)
-  let cvData = $derived(data.cv || {experience: [], education: []})
-  let fundingData = $derived(data.funding || [])
-  let contactData = $derived(data.contact || [])
+  let author = $derived(data.author);
+  let authorTokens = $derived(extractAuthorNameTokens(author));
+  let cvData = $derived(data.cv || {experience: [], education: []});
+  let fundingData = $derived(data.funding || []);
+  let contactData = $derived(data.contact || []);
 
-  let name = $derived(author?.name || '')
-  let username = $derived(author?.username || '')
-  let desc = $derived(author?.bio || '')
-  let headline = $derived(author?.headline || '')
-  let jobTitle = $derived(author?.jobTitle || '')
-  let siteUrl = $derived(author?.siteUrl || '')
-  let avatar = $derived(author?.avatar || '')
+  let name = $derived(author?.name || '');
+  let username = $derived(author?.username || '');
+  let desc = $derived(author?.bio || '');
+  let headline = $derived(author?.headline || '');
+  let jobTitle = $derived(author?.jobTitle || '');
+  let siteUrl = $derived(author?.siteUrl || '');
+  let avatar = $derived(author?.avatar || '');
   let skillBadges = $derived(
     (headline || '')
       .split(/[|,\n]/)
       .map(s => s.trim())
       .filter(Boolean)
-  )
+  );
 
   let isDarkTheme = $derived.by(() => {
-    if (themeStore.current === 'dark') return true
-    if (themeStore.current === 'light') return false
+    if (themeStore.current === 'dark') return true;
+    if (themeStore.current === 'light') return false;
     if (typeof window !== 'undefined') {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
     }
-    return true
-  })
+    return true;
+  });
 
   const logoBaseUrl = (() => {
     const base = (publicEnv.PUBLIC_CDN_BASE_URL ?? '')
       .trim()
-      .replace(/\/+$/, '')
-    return base ? `${base}/logo/` : '/logo/'
-  })()
+      .replace(/\/+$/, '');
+    return base ? `${base}/logo/` : '/logo/';
+  })();
 
   let logoCatalog = $derived(
     Array.isArray(data.logoCatalog) ? data.logoCatalog : []
-  )
+  );
 
   let techLogos = $derived(
     logoCatalog.map(({name, extension, isThemeAware}) => {
       const filename =
         isThemeAware ?
           `${name}-${isDarkTheme ? 'dark' : 'light'}.${extension}`
-        : `${name}.${extension}`
+        : `${name}.${extension}`;
 
       return {
         src: `${logoBaseUrl}${filename}`,
         alt: `${name} [icon] icon`,
         title: name
-      }
+      };
     })
-  )
+  );
 
   const navItems: NavItem[] = [
     {id: 'home', label: 'Home'},
@@ -169,47 +173,47 @@
     {id: 'cv', label: 'CV'},
     {id: 'funding', label: 'Funding'},
     {id: 'contact', label: 'Contact'}
-  ]
+  ];
 
-  const posts = $derived(data.posts || [])
+  const posts = $derived(data.posts || []);
 
   function handleCvDownload(e: MouseEvent) {
-    e.preventDefault()
+    e.preventDefault();
 
-    const pdfAnchor = document.createElement('a')
-    pdfAnchor.href = '/api/v1/cv?download=1'
-    pdfAnchor.download = ''
-    document.body.appendChild(pdfAnchor)
-    pdfAnchor.click()
-    document.body.removeChild(pdfAnchor)
+    const pdfAnchor = document.createElement('a');
+    pdfAnchor.href = '/api/v1/cv?download=1';
+    pdfAnchor.download = '';
+    document.body.appendChild(pdfAnchor);
+    pdfAnchor.click();
+    document.body.removeChild(pdfAnchor);
 
     setTimeout(() => {
-      const checksumAnchor = document.createElement('a')
-      checksumAnchor.href = '/api/v1/cv?checksum=1'
-      checksumAnchor.download = ''
-      document.body.appendChild(checksumAnchor)
-      checksumAnchor.click()
-      document.body.removeChild(checksumAnchor)
-    }, 250)
+      const checksumAnchor = document.createElement('a');
+      checksumAnchor.href = '/api/v1/cv?checksum=1';
+      checksumAnchor.download = '';
+      document.body.appendChild(checksumAnchor);
+      checksumAnchor.click();
+      document.body.removeChild(checksumAnchor);
+    }, 250);
   }
 
   function getBannerUrl(bannerPath: string | null | undefined): string | null {
-    if (!bannerPath) return null
+    if (!bannerPath) return null;
     const {data: res} = supabase.storage
       .from('blog-posts')
-      .getPublicUrl(bannerPath)
-    return res.publicUrl
+      .getPublicUrl(bannerPath);
+    return res.publicUrl;
   }
 
-  const failedBanners = new SvelteSet<string>()
+  const failedBanners = new SvelteSet<string>();
 
   function markBannerFailed(postId: string) {
-    failedBanners.add(postId)
+    failedBanners.add(postId);
   }
 
-  let openCopyMenuId = $state<string | null>(null)
+  let openCopyMenuId = $state<string | null>(null);
   function toggleCopyMenu(postId: string) {
-    openCopyMenuId = openCopyMenuId === postId ? null : postId
+    openCopyMenuId = openCopyMenuId === postId ? null : postId;
   }
 
   function isOutsideDropdown(
@@ -217,8 +221,8 @@
     attr: string,
     id: string
   ): boolean {
-    const el = (target as HTMLElement | null)?.closest?.(`[${attr}]`)
-    return el?.getAttribute(attr) !== id
+    const el = (target as HTMLElement | null)?.closest?.(`[${attr}]`);
+    return el?.getAttribute(attr) !== id;
   }
 
   function handleDropdownOutsideClick(event: MouseEvent) {
@@ -226,99 +230,99 @@
       openCopyMenuId
       && isOutsideDropdown(event.target, 'data-copy-dropdown', openCopyMenuId)
     ) {
-      openCopyMenuId = null
+      openCopyMenuId = null;
     }
     if (
       openCodeMenuId
       && isOutsideDropdown(event.target, 'data-code-dropdown', openCodeMenuId)
     ) {
-      openCodeMenuId = null
+      openCodeMenuId = null;
     }
   }
 
-  let shareDialogData = $state<{title: string; url: string} | null>(null)
-  let showShareDialog = $state(false)
+  let shareDialogData = $state<{title: string; url: string} | null>(null);
+  let showShareDialog = $state(false);
 
   function openShareDialog(data: {title: string; url: string}) {
-    shareDialogData = data
-    showShareDialog = true
+    shareDialogData = data;
+    showShareDialog = true;
   }
 
   function shareBlogPostDialog(post: {title: string; slug: string}) {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined') return;
     openShareDialog({
       title: post.title,
       url: `${window.location.origin}/blog/${post.slug}`
-    })
+    });
   }
 
   function shareProjectDialog(project: {name: string; url: string}) {
-    openShareDialog({title: project.name, url: project.url})
+    openShareDialog({title: project.name, url: project.url});
   }
 
   async function copyBlogId(post: {id: string}) {
-    openCopyMenuId = null
+    openCopyMenuId = null;
     try {
-      await navigator.clipboard.writeText(post.id)
-      toastStore.success('Copied!')
+      await navigator.clipboard.writeText(post.id);
+      toastStore.success('Copied!');
     } catch {
-      toastStore.error('Failed to copy')
+      toastStore.error('Failed to copy');
     }
   }
 
   async function copyBlogMarkdown(post: {id: string; slug: string}) {
-    openCopyMenuId = null
+    openCopyMenuId = null;
     try {
-      const res = await fetch(`/api/v1/blog/${post.slug}?format=md`)
+      const res = await fetch(`/api/v1/blog/${post.slug}?format=md`);
       if (res.ok) {
-        const mdText = await res.text()
-        await navigator.clipboard.writeText(mdText)
-        toastStore.success('Copied!')
+        const mdText = await res.text();
+        await navigator.clipboard.writeText(mdText);
+        toastStore.success('Copied!');
       } else {
-        toastStore.error('Failed to fetch Markdown')
+        toastStore.error('Failed to fetch Markdown');
       }
     } catch {
-      toastStore.error('Failed to copy')
+      toastStore.error('Failed to copy');
     }
   }
 
   async function copyBlogUrl(post: {id: string; slug: string}) {
-    openCopyMenuId = null
-    if (typeof window === 'undefined') return
+    openCopyMenuId = null;
+    if (typeof window === 'undefined') return;
     try {
       await navigator.clipboard.writeText(
         `${window.location.origin}/blog/${post.slug}`
-      )
-      toastStore.success('Copied!')
+      );
+      toastStore.success('Copied!');
     } catch {
-      toastStore.error('Failed to copy')
+      toastStore.error('Failed to copy');
     }
   }
 
-  type CodeTab = 'https' | 'ssh' | 'cli'
+  type CodeTab = 'https' | 'ssh' | 'cli';
 
-  let openCodeMenuId = $state<string | null>(null)
-  let codeTabByProject = $state<Record<string, CodeTab>>({})
+  let openCodeMenuId = $state<string | null>(null);
+  let codeTabByProject = $state<Record<string, CodeTab>>({});
 
   function toggleCodeMenu(name: string) {
-    openCodeMenuId = openCodeMenuId === name ? null : name
+    openCodeMenuId = openCodeMenuId === name ? null : name;
   }
 
   function getCodeTab(name: string): CodeTab {
-    return codeTabByProject[name] ?? 'https'
+    return codeTabByProject[name] ?? 'https';
   }
 
   function setCodeTab(name: string, tab: CodeTab) {
-    codeTabByProject = {...codeTabByProject, [name]: tab}
+    codeTabByProject = {...codeTabByProject, [name]: tab};
   }
 
   function codeCommand(
     project: {fullName: string; cloneUrl: string; sshUrl: string},
     tab: CodeTab
   ): string {
-    if (tab === 'ssh') return `git clone ${project.sshUrl}`
-    if (tab === 'cli') return `gh repo clone ${project.fullName}`
-    return `git clone ${project.cloneUrl}`
+    if (tab === 'ssh') return `git clone ${project.sshUrl}`;
+    if (tab === 'cli') return `gh repo clone ${project.fullName}`;
+    return `git clone ${project.cloneUrl}`;
   }
 
   async function copyCodeCommand(
@@ -326,23 +330,23 @@
     tab: CodeTab
   ) {
     try {
-      await navigator.clipboard.writeText(codeCommand(project, tab))
-      toastStore.success('Copied!')
+      await navigator.clipboard.writeText(codeCommand(project, tab));
+      toastStore.success('Copied!');
     } catch {
-      toastStore.error('Failed to copy')
+      toastStore.error('Failed to copy');
     }
   }
 
-  let experiences = $derived(cvData.experience || [])
-  let education = $derived(cvData.education || [])
-  let contact = $derived(contactData || [])
+  let experiences = $derived(cvData.experience || []);
+  let education = $derived(cvData.education || []);
+  let contact = $derived(contactData || []);
 
   interface SkillGroup {
-    category: string
-    items: string[]
+    category: string;
+    items: string[];
   }
 
-  let rawSkills = $derived(data.skills || author?.skills || [])
+  let rawSkills = $derived(data.skills || author?.skills || []);
   let skills = $derived<SkillGroup[]>(
     (Array.isArray(rawSkills) ?
       rawSkills.map((s: any) =>
@@ -355,7 +359,7 @@
       )
     : []
     ).sort((a, b) => a.items.length - b.items.length)
-  )
+  );
 
   const snapshotSkillGroups = [
     'Software Engineering',
@@ -366,19 +370,19 @@
     'DevOps & Tooling',
     'Cybersecurity',
     'Artificial Intelligence'
-  ]
+  ];
   const skillsSnapshot = $derived(
     skills.filter(g => snapshotSkillGroups.includes(g.category)).length > 0 ?
       skills.filter(g => snapshotSkillGroups.includes(g.category))
     : skills.slice(0, 6)
-  )
+  );
 
   function skillGroupBasis(skillCount: number): number {
-    return 160 + skillCount * 24
+    return 160 + skillCount * 24;
   }
 
   function pluralize(count: number, singular: string, plural: string): string {
-    return count > 1 ? plural : singular
+    return count > 1 ? plural : singular;
   }
 
   function formatPeriod(
@@ -388,15 +392,15 @@
     endYear?: number | null,
     currentlyIn?: boolean
   ): string {
-    const sMonth = formatMonthAbbrev(startMonth)
-    const eMonth = formatMonthAbbrev(endMonth)
-    const start = [sMonth, startYear].filter(Boolean).join(' ')
-    if (currentlyIn) return `${start} - Present`
-    const end = [eMonth, endYear].filter(Boolean).join(' ')
-    if (start && end) return `${start} - ${end}`
-    if (start) return start
-    if (end) return end
-    return ''
+    const sMonth = formatMonthAbbrev(startMonth);
+    const eMonth = formatMonthAbbrev(endMonth);
+    const start = [sMonth, startYear].filter(Boolean).join(' ');
+    if (currentlyIn) return `${start} - Present`;
+    const end = [eMonth, endYear].filter(Boolean).join(' ');
+    if (start && end) return `${start} - ${end}`;
+    if (start) return start;
+    if (end) return end;
+    return '';
   }
 
   let contactItems = $derived(
@@ -406,15 +410,15 @@
       href: c.href,
       icon: c.icon || ''
     }))
-  )
+  );
 
   interface FundingPlatform {
-    label: string
-    value: string
-    shortValue?: string
-    href: string
-    icon: string
-    color?: string
+    label: string;
+    value: string;
+    shortValue?: string;
+    href: string;
+    icon: string;
+    color?: string;
   }
 
   let fundingPlatforms = $derived<FundingPlatform[]>(
@@ -424,9 +428,9 @@
       href: f.url,
       icon: f.icon || ''
     }))
-  )
+  );
 
-  const projects = $derived(data.projects || [])
+  const projects = $derived(data.projects || []);
 
   const recentProjects = $derived(
     [...projects]
@@ -436,69 +440,69 @@
           - new Date(a.pushedAt || 0).getTime()
       )
       .slice(0, 2)
-  )
+  );
 
-  const recentPosts = $derived(posts.slice(0, 2))
+  const recentPosts = $derived(posts.slice(0, 2));
 
-  let activeSection = $state<Section>('home')
-  let menuOpen = $state(false)
-  let mobileMenuRef = $state<HTMLElement | null>(null)
-  let menuTriggerRef = $state<HTMLButtonElement | null>(null)
-  let isDesktopViewport = $state(false)
-  let menuHasBeenOpened = false
-  let formName = $state('')
-  let formEmail = $state('')
-  let formMessage = $state('')
-  let formErrors = $state({name: '', email: '', message: ''})
-  let formValid = $state({name: false, email: false, message: false})
-  let showSendMessageDialog = $state(false)
-  let contactFormElement = $state<HTMLFormElement | null>(null)
+  let activeSection = $state<Section>('home');
+  let menuOpen = $state(false);
+  let mobileMenuRef = $state<HTMLElement | null>(null);
+  let menuTriggerRef = $state<HTMLButtonElement | null>(null);
+  let isDesktopViewport = $state(false);
+  let menuHasBeenOpened = false;
+  let formName = $state('');
+  let formEmail = $state('');
+  let formMessage = $state('');
+  let formErrors = $state({name: '', email: '', message: ''});
+  let formValid = $state({name: false, email: false, message: false});
+  let showSendMessageDialog = $state(false);
+  let contactFormElement = $state<HTMLFormElement | null>(null);
 
   function debounce<T extends unknown[]>(cb: (...args: T) => void, ms: number) {
-    let timer: ReturnType<typeof setTimeout>
+    let timer: ReturnType<typeof setTimeout>;
     return (...args: T) => {
-      clearTimeout(timer)
-      timer = setTimeout(() => cb(...args), ms)
-    }
+      clearTimeout(timer);
+      timer = setTimeout(() => cb(...args), ms);
+    };
   }
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const validateName = debounce(() => {
     if (formName.trim() === '') {
-      formErrors.name = ''
-      formValid.name = false
-    } else if (isNameReserved(formName)) {
-      formErrors.name = 'This name cannot be used. Please use another name.'
-      formValid.name = false
+      formErrors.name = '';
+      formValid.name = false;
+    } else if (isNameReserved(formName, authorTokens)) {
+      formErrors.name = 'This name cannot be used. Please use another name.';
+      formValid.name = false;
     } else {
-      formErrors.name = ''
-      formValid.name = true
+      formErrors.name = '';
+      formValid.name = true;
     }
-  }, 500)
+  }, 500);
 
   const validateEmail = debounce(() => {
     if (formEmail.trim() === '') {
-      formErrors.email = ''
-      formValid.email = false
+      formErrors.email = '';
+      formValid.email = false;
     } else if (!emailRegex.test(formEmail.trim())) {
-      formErrors.email = 'Please enter a valid email address.'
-      formValid.email = false
+      formErrors.email = 'Please enter a valid email address.';
+      formValid.email = false;
     } else {
-      formErrors.email = ''
-      formValid.email = true
+      formErrors.email = '';
+      formValid.email = true;
     }
-  }, 500)
+  }, 500);
 
   const validateMessage = debounce(() => {
     if (formMessage.trim() === '') {
-      formErrors.message = ''
-      formValid.message = false
+      formErrors.message = '';
+      formValid.message = false;
     } else {
-      formErrors.message = ''
-      formValid.message = true
+      formErrors.message = '';
+      formValid.message = true;
     }
-  }, 500)
+  }, 500);
 
   function sanitizeInput(text: string): string {
     return text
@@ -507,264 +511,268 @@
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#x27;')
-      .replace(/\//g, '&#x2F;')
+      .replace(/\//g, '&#x2F;');
   }
 
   function validateForm(e: Event) {
-    const nameErr = formName.trim() === '' ? 'Name is required.' : ''
-    const emailErr = formEmail.trim() === '' ? 'Email is required.' : ''
-    const msgErr = formMessage.trim() === '' ? 'Message is required.' : ''
+    const nameErr = formName.trim() === '' ? 'Name is required.' : '';
+    const emailErr = formEmail.trim() === '' ? 'Email is required.' : '';
+    const msgErr = formMessage.trim() === '' ? 'Message is required.' : '';
     const emailFormatErr =
       !emailErr && !emailRegex.test(formEmail.trim()) ?
         'Please enter a valid email address.'
-      : ''
+      : '';
     const nameReservedErr =
-      !nameErr && isNameReserved(formName) ?
+      !nameErr && isNameReserved(formName, authorTokens) ?
         'This name cannot be used. Please use another name.'
-      : ''
+      : '';
 
     formErrors = {
       name: nameErr || nameReservedErr,
       email: emailErr || emailFormatErr,
       message: msgErr
-    }
-    if (formErrors.name) formValid.name = false
-    if (formErrors.email) formValid.email = false
-    if (formErrors.message) formValid.message = false
+    };
+    if (formErrors.name) formValid.name = false;
+    if (formErrors.email) formValid.email = false;
+    if (formErrors.message) formValid.message = false;
 
-    e.preventDefault()
+    e.preventDefault();
 
     if (!formErrors.name && !formErrors.email && !formErrors.message) {
-      formName = sanitizeInput(formName.trim())
-      formEmail = sanitizeInput(formEmail.trim())
-      formMessage = sanitizeInput(formMessage.trim())
-      showSendMessageDialog = true
+      formName = sanitizeInput(formName.trim());
+      formEmail = sanitizeInput(formEmail.trim());
+      formMessage = sanitizeInput(formMessage.trim());
+      showSendMessageDialog = true;
     }
   }
 
   function executeSendMessage() {
     if (contactFormElement) {
-      contactFormElement.submit()
+      contactFormElement.submit();
     }
   }
 
   function navigate(section: Section) {
-    activeSection = section
-    menuOpen = false
+    activeSection = section;
+    menuOpen = false;
     if (typeof window !== 'undefined') {
-      window.location.hash = section === 'home' ? '' : section
+      window.location.hash = section === 'home' ? '' : section;
     }
   }
 
   function handleMenuKeydown(event: KeyboardEvent) {
     if (event.key === 'Escape' && menuOpen) {
-      event.preventDefault()
-      menuOpen = false
+      event.preventDefault();
+      menuOpen = false;
     }
   }
 
   $effect(() => {
-    if (typeof document === 'undefined') return
+    if (typeof document === 'undefined') return;
 
     if (menuOpen) {
-      menuHasBeenOpened = true
+      menuHasBeenOpened = true;
       tick().then(() => {
         const firstFocusable = mobileMenuRef?.querySelector<HTMLElement>(
           'button, [href], [tabindex]:not([tabindex="-1"])'
-        )
-        firstFocusable?.focus()
-      })
+        );
+        firstFocusable?.focus();
+      });
     } else if (menuHasBeenOpened) {
-      menuTriggerRef?.focus()
+      menuTriggerRef?.focus();
     }
-  })
+  });
 
   const blogFilterStore = createFilterSortStore({
     defaultSortField: 'date',
     defaultSortDir: 'desc'
-  })
+  });
 
   const projectFilterStore = createFilterSortStore({
     defaultSortField: 'date',
     defaultSortDir: 'desc'
-  })
+  });
 
   const allBlogTags = $derived.by(() => {
-    const set = new SvelteSet<string>()
+    const set = new SvelteSet<string>();
     for (const post of posts) {
       if (post.tags) {
-        post.tags.forEach((t: string) => set.add(decodeHtmlEntities(t)))
+        post.tags.forEach((t: string) => set.add(decodeHtmlEntities(t)));
       }
     }
-    return Array.from(set)
-  })
+    return Array.from(set);
+  });
 
   const filteredBlogPosts = $derived.by(() => {
-    let list = posts
+    let list = posts;
 
-    const q = blogFilterStore.search.trim().toLowerCase()
+    const q = blogFilterStore.search.trim().toLowerCase();
     if (q) {
       list = list.filter(
         p =>
           p.title.toLowerCase().includes(q)
           || (p.excerpt && p.excerpt.toLowerCase().includes(q))
-      )
+      );
     }
 
-    const selectedTags = blogFilterStore.filters['tag'] || []
+    const selectedTags = blogFilterStore.filters['tag'] || [];
     if (selectedTags.length > 0) {
       list = list.filter(
         p => p.tags && p.tags.some((t: string) => selectedTags.includes(t))
-      )
+      );
     }
 
-    const sortField = blogFilterStore.sort.field
-    const sortDir = blogFilterStore.sort.direction === 'asc' ? 1 : -1
+    const sortField = blogFilterStore.sort.field;
+    const sortDir = blogFilterStore.sort.direction === 'asc' ? 1 : -1;
 
     return [...list].sort((a, b) => {
       if (sortField === 'title') {
-        return a.title.localeCompare(b.title) * sortDir
+        return a.title.localeCompare(b.title) * sortDir;
       } else if (sortField === 'readingTime') {
-        const readingA = parseInt(a.read_time || '0', 10)
-        const readingB = parseInt(b.read_time || '0', 10)
-        return (readingA - readingB) * sortDir
+        const readingA = parseInt(a.read_time || '0', 10);
+        const readingB = parseInt(b.read_time || '0', 10);
+        return (readingA - readingB) * sortDir;
       } else if (sortField === 'views') {
-        const viewsA = a.views_count ?? 0
-        const viewsB = b.views_count ?? 0
-        return (viewsA - viewsB) * sortDir
+        const viewsA = a.views_count ?? 0;
+        const viewsB = b.views_count ?? 0;
+        return (viewsA - viewsB) * sortDir;
       } else if (sortField === 'comments') {
-        const commentsA = a.comment_count ?? 0
-        const commentsB = b.comment_count ?? 0
-        return (commentsA - commentsB) * sortDir
+        const commentsA = a.comment_count ?? 0;
+        const commentsB = b.comment_count ?? 0;
+        return (commentsA - commentsB) * sortDir;
       } else {
-        const dateA = new Date(a.created_at || 0).getTime()
-        const dateB = new Date(b.created_at || 0).getTime()
-        return (dateA - dateB) * sortDir
+        const dateA = new Date(a.created_at || 0).getTime();
+        const dateB = new Date(b.created_at || 0).getTime();
+        return (dateA - dateB) * sortDir;
       }
-    })
-  })
+    });
+  });
 
   const allProjectTags = $derived.by(() => {
-    const set = new SvelteSet<string>()
+    const set = new SvelteSet<string>();
     for (const p of projects) {
       if (p.tags) {
-        p.tags.forEach(t => set.add(t))
+        p.tags.forEach(t => set.add(t));
       }
     }
-    return Array.from(set)
-  })
+    return Array.from(set);
+  });
 
   const filteredProjectList = $derived.by(() => {
-    let list = projects
+    let list = projects;
 
-    const q = projectFilterStore.search.trim().toLowerCase()
+    const q = projectFilterStore.search.trim().toLowerCase();
     if (q) {
       list = list.filter(
         p =>
           p.name.toLowerCase().includes(q)
           || p.desc.toLowerCase().includes(q)
           || (p.lang && p.lang.toLowerCase().includes(q))
-      )
+      );
     }
 
-    const selectedTags = projectFilterStore.filters['tag'] || []
+    const selectedTags = projectFilterStore.filters['tag'] || [];
     if (selectedTags.length > 0) {
       list = list.filter(
         p => p.tags && p.tags.some(t => selectedTags.includes(t))
-      )
+      );
     }
 
-    const sortField = projectFilterStore.sort.field
-    const sortDir = projectFilterStore.sort.direction === 'asc' ? 1 : -1
+    const sortField = projectFilterStore.sort.field;
+    const sortDir = projectFilterStore.sort.direction === 'asc' ? 1 : -1;
 
     return [...list].sort((a, b) => {
       if (sortField === 'name') {
-        return a.name.localeCompare(b.name) * sortDir
+        return a.name.localeCompare(b.name) * sortDir;
       } else if (sortField === 'stars') {
-        return ((a.stars || 0) - (b.stars || 0)) * sortDir
+        return ((a.stars || 0) - (b.stars || 0)) * sortDir;
       } else if (sortField === 'license') {
-        const lA = a.licenseName || ''
-        const lB = b.licenseName || ''
-        return lA.localeCompare(lB) * sortDir
+        const lA = a.licenseName || '';
+        const lB = b.licenseName || '';
+        return lA.localeCompare(lB) * sortDir;
       } else {
-        return a.name.localeCompare(b.name) * sortDir
+        return a.name.localeCompare(b.name) * sortDir;
       }
-    })
-  })
+    });
+  });
 
-  const PAGE_SIZE = 6
+  const PAGE_SIZE = 6;
 
-  let blogPage = $state(1)
-  let projectPage = $state(1)
+  let blogPage = $state(1);
+  let projectPage = $state(1);
 
   const blogTotalPages = $derived(
     Math.max(1, Math.ceil(filteredBlogPosts.length / PAGE_SIZE))
-  )
-  const blogPageClamped = $derived(Math.min(blogPage, blogTotalPages))
+  );
+  const blogPageClamped = $derived(Math.min(blogPage, blogTotalPages));
   const paginatedBlogPosts = $derived(
     filteredBlogPosts.slice(
       (blogPageClamped - 1) * PAGE_SIZE,
       blogPageClamped * PAGE_SIZE
     )
-  )
+  );
 
   const projectTotalPages = $derived(
     Math.max(1, Math.ceil(filteredProjectList.length / PAGE_SIZE))
-  )
-  const projectPageClamped = $derived(Math.min(projectPage, projectTotalPages))
+  );
+  const projectPageClamped = $derived(Math.min(projectPage, projectTotalPages));
   const paginatedProjectList = $derived(
     filteredProjectList.slice(
       (projectPageClamped - 1) * PAGE_SIZE,
       projectPageClamped * PAGE_SIZE
     )
-  )
+  );
 
   $effect(() => {
-    void blogFilterStore.search
-    void blogFilterStore.filters
-    void blogFilterStore.sort
-    blogPage = 1
-  })
+    void blogFilterStore.search;
+    void blogFilterStore.filters;
+    void blogFilterStore.sort;
+    untrack(() => {
+      blogPage = 1;
+    });
+  });
 
   $effect(() => {
-    void projectFilterStore.search
-    void projectFilterStore.filters
-    void projectFilterStore.sort
-    projectPage = 1
-  })
+    void projectFilterStore.search;
+    void projectFilterStore.filters;
+    void projectFilterStore.sort;
+    untrack(() => {
+      projectPage = 1;
+    });
+  });
 
   onMount(() => {
-    blogFilterStore.parseFromUrl(new URL(window.location.href))
-    projectFilterStore.parseFromUrl(new URL(window.location.href))
+    blogFilterStore.parseFromUrl(new URL(window.location.href));
+    projectFilterStore.parseFromUrl(new URL(window.location.href));
 
     const handleHashChange = () => {
       if (typeof window !== 'undefined' && window.location.hash) {
-        const hash = window.location.hash.substring(1) as Section
+        const hash = window.location.hash.substring(1) as Section;
         if (
           ['home', 'blog', 'contact', 'cv', 'projects', 'funding'].includes(
             hash
           )
         ) {
-          activeSection = hash
+          activeSection = hash;
         }
       }
-    }
-    handleHashChange()
-    window.addEventListener('hashchange', handleHashChange)
+    };
+    handleHashChange();
+    window.addEventListener('hashchange', handleHashChange);
 
-    const desktopQuery = window.matchMedia('(min-width: 768px)')
-    isDesktopViewport = desktopQuery.matches
+    const desktopQuery = window.matchMedia('(min-width: 768px)');
+    isDesktopViewport = desktopQuery.matches;
     const handleViewportChange = (e: MediaQueryListEvent) => {
-      isDesktopViewport = e.matches
-      if (e.matches) menuOpen = false
-    }
-    desktopQuery.addEventListener('change', handleViewportChange)
+      isDesktopViewport = e.matches;
+      if (e.matches) menuOpen = false;
+    };
+    desktopQuery.addEventListener('change', handleViewportChange);
 
     return () => {
-      window.removeEventListener('hashchange', handleHashChange)
-      desktopQuery.removeEventListener('change', handleViewportChange)
-    }
-  })
+      window.removeEventListener('hashchange', handleHashChange);
+      desktopQuery.removeEventListener('change', handleViewportChange);
+    };
+  });
 
   let jsonLdScript = $derived(
     '<script type="application/ld+json">'
@@ -779,7 +787,7 @@
       }).replace(/</g, '\\u003c')
       + '</'
       + 'script>'
-  )
+  );
 </script>
 
 <svelte:head>
@@ -896,8 +904,8 @@
             <li class="w-full md:w-auto">
               <button
                 onclick={() => {
-                  navigate(item.id)
-                  menuOpen = false
+                  navigate(item.id);
+                  menuOpen = false;
                 }}
                 class="text-md flex h-11 w-full cursor-pointer items-center justify-start rounded-sm border-0 px-4 leading-none font-medium whitespace-nowrap transition-all md:h-9 md:justify-center md:rounded-sm md:px-3 md:text-sm {(
                   activeSection === item.id
@@ -1644,7 +1652,7 @@
           <input
             type="hidden"
             name="_url"
-            value="https://fkp.my.id/" />
+            value={siteUrl ? `${siteUrl}/` : '/'} />
 
           <div class="mb-2 select-none">
             <h2 class="text-sm font-bold text-text-primary">Send a Message</h2>
@@ -1671,9 +1679,9 @@
               error={!!formErrors.name}
               valid={formValid.name}
               oninput={() => {
-                formErrors.name = ''
-                formValid.name = false
-                validateName()
+                formErrors.name = '';
+                formValid.name = false;
+                validateName();
               }} />
           </FormField>
 
@@ -1694,9 +1702,9 @@
               error={!!formErrors.email}
               valid={formValid.email}
               oninput={() => {
-                formErrors.email = ''
-                formValid.email = false
-                validateEmail()
+                formErrors.email = '';
+                formValid.email = false;
+                validateEmail();
               }} />
           </FormField>
 
@@ -1717,9 +1725,9 @@
               error={!!formErrors.message}
               valid={formValid.message}
               oninput={() => {
-                formErrors.message = ''
-                formValid.message = false
-                validateMessage()
+                formErrors.message = '';
+                formValid.message = false;
+                validateMessage();
               }} />
           </FormField>
 
@@ -2153,14 +2161,14 @@
   <FooterSection
     onNavClick={url => {
       if (url.startsWith('/#')) {
-        const sectionId = url.replace('/#', '')
-        navigate(sectionId as Section)
-        window.scrollTo({top: 0, behavior: 'smooth'})
+        const sectionId = url.replace('/#', '');
+        navigate(sectionId as Section);
+        window.scrollTo({top: 0, behavior: 'smooth'});
       } else if (url === '/') {
-        navigate('home')
-        window.scrollTo({top: 0, behavior: 'smooth'})
+        navigate('home');
+        window.scrollTo({top: 0, behavior: 'smooth'});
       } else {
-        window.location.href = url
+        window.location.href = url;
       }
     }} />
 </main>

@@ -1,17 +1,17 @@
 <script lang="ts">
-  import {cn} from '../utils/cn'
+  import {cn} from '../utils/cn';
 
   interface Props {
-    height?: string
-    width?: string
-    class?: string
+    height?: string;
+    width?: string;
+    class?: string;
   }
 
   let {
     height = 'h-16',
     width = 'w-full',
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 </script>
 
 <div

@@ -62,16 +62,16 @@ bun install
 Copy the tier template that matches how you want to run locally, then fill in real values:
 
 ```sh
-# Preview-tier (default for local work) — dummy Turnstile, Sentry=preview
-cp .env.preview.example .env.preview
-cp .env.preview.example .env
+# Development-tier (default for local work) — dummy Turnstile, Sentry=development
+cp .env.development.example .env.development
+cp .env.development.example .env
 
 # Or production-tier locally
 cp .env.production.example .env.production
 cp .env.production.example .env
 ```
 
-`bun run dev` / `bun run build` load `.env` (and `.env.production` on production builds). Prefer `bun run dev:preview` / `bun run build:preview` when working against `.env.preview` overlays.
+`bun run dev` (Vite mode `development`) automatically loads `.env.development`, and `bun run build` loads `.env.production`.
 
 The dev server will not start correctly without a valid `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY` at minimum.
 
@@ -128,11 +128,11 @@ This site also publishes a public, read-only REST API under `/api/v1` (blog post
 The site deploys to [Cloudflare Pages](https://pages.cloudflare.com/) via [`@sveltejs/adapter-cloudflare`](https://kit.svelte.dev/docs/adapter-cloudflare), building to `.svelte-kit/cloudflare`. Cloudflare Pages is connected directly to this repository — there's no separate manual deploy step or GitHub Actions deploy job, and both tiers below build with the same `bun run build` command (Cloudflare Pages doesn't support a per-environment build command). Two tiers are configured in the Cloudflare Pages dashboard, each with its own environment variable set:
 
 - **Production** — pushes to `main` deploy to `fkp.my.id`. Needs the variables in `.env.production.example`, including real `PUBLIC_TURNSTILE_SITE_KEY`/`TURNSTILE_SECRET` and `PUBLIC_SENTRY_ENVIRONMENT=production`.
-- **Preview** — pushes to `develop` (and PRs) deploy to a `*.pages.dev` preview URL. Needs the variables in `.env.preview.example`, which uses Cloudflare's [dummy Turnstile testing keys](https://developers.cloudflare.com/turnstile/troubleshooting/testing/) instead of real ones and `PUBLIC_SENTRY_ENVIRONMENT=preview`, so preview builds don't need a verified domain and don't pollute production error tracking.
+- **Preview** — pushes to `develop` (and PRs) deploy to a `*.pages.dev` preview URL. Uses Cloudflare's [dummy Turnstile testing keys](https://developers.cloudflare.com/turnstile/troubleshooting/testing/) instead of real ones and `PUBLIC_SENTRY_ENVIRONMENT=preview`, so preview builds don't need a verified domain and don't pollute production error tracking.
 
 Both tiers share the same Supabase project. Bindings (rate limiter, Workers AI) are declared in `wrangler.jsonc` and are shared across tiers too.
 
-For local development against a given tier's config, copy the matching template on top of `.env` — e.g. `cp .env.preview.example .env.preview && bun run dev:preview` — Vite layers `.env` → `.env.[mode]` automatically. This is a local-only convenience; it has no effect on what Cloudflare Pages deploys.
+For local development against a given tier's config, copy the matching template on top of `.env` or use `.env.development` / `.env.production` — Vite layers `.env` → `.env.[mode]` automatically. This is a local-only convenience; it has no effect on what Cloudflare Pages deploys.
 
 ## Contributing
 

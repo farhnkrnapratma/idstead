@@ -1,21 +1,21 @@
 <script lang="ts">
-  import {Check, ArrowUpNarrowWide, ArrowDownWideNarrow} from '@lucide/svelte'
-  import {cn} from '../../utils/cn'
-  import DropdownTrigger from './DropdownTrigger.svelte'
-  import IconButton from '../IconButton.svelte'
+  import {Check, ArrowUpNarrowWide, ArrowDownWideNarrow} from '@lucide/svelte';
+  import {cn} from '../../utils/cn';
+  import DropdownTrigger from './DropdownTrigger.svelte';
+  import IconButton from '../IconButton.svelte';
 
   interface SortOption {
-    value: string
-    label: string
+    value: string;
+    label: string;
   }
 
   interface Props {
-    fields: SortOption[]
-    currentField: string
-    currentDirection: 'asc' | 'desc'
-    onFieldChange?: (field: string) => void
-    onDirectionToggle?: () => void
-    class?: string
+    fields: SortOption[];
+    currentField: string;
+    currentDirection: 'asc' | 'desc';
+    onFieldChange?: (field: string) => void;
+    onDirectionToggle?: () => void;
+    class?: string;
   }
 
   let {
@@ -25,17 +25,17 @@
     onFieldChange,
     onDirectionToggle,
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 
-  let isOpen = $state(false)
+  let isOpen = $state(false);
 
   let currentFieldOption = $derived(
     fields.find(f => f.value === currentField) ?? fields[0]
-  )
+  );
 
   function selectField(value: string) {
-    onFieldChange?.(value)
-    isOpen = false
+    onFieldChange?.(value);
+    isOpen = false;
   }
 </script>
 

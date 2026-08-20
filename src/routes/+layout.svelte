@@ -1,63 +1,62 @@
 <script lang="ts">
-  import './global.css'
-  import {onMount} from 'svelte'
-  import {page} from '$app/state'
-  import {ConsentBanner, Toast, ScrollToTopButton, FeedbackButton} from '$lib'
+  import './global.css';
+  import {onMount} from 'svelte';
+  import {page} from '$app/state';
+  import {ConsentBanner, Toast, ScrollToTopButton, FeedbackButton} from '$lib';
 
-  import {themeStore} from '$lib/stores/themeStore.svelte'
-  import {a11yStore} from '$lib/stores/a11yStore.svelte'
-  import {codeBlockPrefsStore} from '$lib/stores/codeBlockPrefsStore.svelte'
-  import {refreshCodeBlockPrefs} from '$lib/utils/codeBlocks'
+  import {themeStore} from '$lib/stores/themeStore.svelte';
+  import {a11yStore} from '$lib/stores/a11yStore.svelte';
+  import {codeBlockPrefsStore} from '$lib/stores/codeBlockPrefsStore.svelte';
+  import {refreshCodeBlockPrefs} from '$lib/utils/codeBlocks';
 
-  const {data, children} = $props()
+  const {data, children} = $props();
 
-  let name = $derived(data?.author?.name || '')
-  let siteUrl = $derived(
-    (data?.author?.siteUrl || 'https://fkp.my.id').replace(/\/$/, '')
-  )
+  let name = $derived(data?.author?.name || '');
+  let siteUrl = $derived((data?.author?.siteUrl || '').replace(/\/$/, ''));
 
   let feedTitle = $derived(
     name ?
-      `${name} (${siteUrl}/blog) — RSS Feed`
-    : `${siteUrl.replace(/^https?:\/\//, '')}/blog — RSS Feed`
-  )
+      `${name}${siteUrl ? ` (${siteUrl}/blog)` : ''} — RSS Feed`
+    : `${siteUrl ? siteUrl.replace(/^https?:\/\//, '') + '/blog' : 'Blog'} — RSS Feed`
+  );
 
-  let showScrollTop = $state(false)
-  let scrollProgress = $state(0)
+  let showScrollTop = $state(false);
+  let scrollProgress = $state(0);
 
-  const isAdminPage = $derived(page.url.pathname.startsWith('/admin'))
-  const isPostEditorPage = $derived(page.url.pathname === '/admin/new')
+  const isAdminPage = $derived(page.url.pathname.startsWith('/admin'));
+  const isPostEditorPage = $derived(page.url.pathname === '/admin/new');
   const isPageWithFeedback = $derived(
     !page.error
       && page.url.pathname !== '/feedback'
       && !page.url.pathname.startsWith('/admin')
-  )
-  const showScrollIndicator = $derived(!isAdminPage && !page.error)
+  );
+  const showScrollIndicator = $derived(!isAdminPage && !page.error);
 
   function handleScroll() {
-    showScrollTop = window.scrollY > 300
+    showScrollTop = window.scrollY > 300;
 
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight
+    const docHeight =
+      document.documentElement.scrollHeight - window.innerHeight;
     if (docHeight > 0) {
-      scrollProgress = (window.scrollY / docHeight) * 100
+      scrollProgress = (window.scrollY / docHeight) * 100;
     } else {
-      scrollProgress = 0
+      scrollProgress = 0;
     }
   }
 
   onMount(() => {
-    const cleanupTheme = themeStore.init()
-    const cleanupA11y = a11yStore.init()
+    const cleanupTheme = themeStore.init();
+    const cleanupA11y = a11yStore.init();
     const cleanupCodeBlockPrefs = codeBlockPrefsStore.init(
       refreshCodeBlockPrefs
-    )
-    handleScroll()
+    );
+    handleScroll();
     return () => {
-      cleanupTheme?.()
-      cleanupA11y?.()
-      cleanupCodeBlockPrefs?.()
-    }
-  })
+      cleanupTheme?.();
+      cleanupA11y?.();
+      cleanupCodeBlockPrefs?.();
+    };
+  });
 </script>
 
 <svelte:head>

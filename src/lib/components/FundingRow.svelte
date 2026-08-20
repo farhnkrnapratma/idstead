@@ -1,13 +1,13 @@
 <script lang="ts">
-  import {ExternalLink} from '@lucide/svelte'
-  import {cn} from '../utils/cn'
+  import {ExternalLink} from '@lucide/svelte';
+  import {cn} from '../utils/cn';
 
   interface Props {
-    platform: string
-    description?: string
-    href: string
-    badge?: string
-    class?: string
+    platform: string;
+    description?: string;
+    href: string;
+    badge?: string;
+    class?: string;
   }
 
   let {
@@ -16,7 +16,7 @@
     href,
     badge = '',
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 </script>
 
 <a

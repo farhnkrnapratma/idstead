@@ -1,20 +1,20 @@
 <script lang="ts">
-  import {cn} from '../utils/cn'
+  import {cn} from '../utils/cn';
   import {
     formatCommentCount,
     formatViewCount,
     formatAbsoluteDate
-  } from '../utils/formatters'
-  import RelativeTime from '../components/RelativeTime.svelte'
+  } from '../utils/formatters';
+  import RelativeTime from '../components/RelativeTime.svelte';
 
   interface Props {
-    date?: string
-    updatedAt?: string
-    readingTime?: string
-    views?: number
-    commentsCount?: number
-    author?: string
-    class?: string
+    date?: string;
+    updatedAt?: string;
+    readingTime?: string;
+    views?: number;
+    commentsCount?: number;
+    author?: string;
+    class?: string;
   }
 
   let {
@@ -25,7 +25,7 @@
     commentsCount,
     author = '',
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 
   const parts = $derived(
     (
@@ -37,7 +37,7 @@
         views !== undefined ? 'views' : null
       ] as const
     ).filter((p): p is NonNullable<typeof p> => p !== null)
-  )
+  );
 </script>
 
 <div

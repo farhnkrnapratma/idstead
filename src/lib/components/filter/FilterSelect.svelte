@@ -1,19 +1,19 @@
 <script lang="ts">
-  import {Check} from '@lucide/svelte'
-  import {cn} from '../../utils/cn'
-  import DropdownTrigger from './DropdownTrigger.svelte'
+  import {Check} from '@lucide/svelte';
+  import {cn} from '../../utils/cn';
+  import DropdownTrigger from './DropdownTrigger.svelte';
 
   interface Option {
-    value: string
-    label: string
+    value: string;
+    label: string;
   }
 
   interface Props {
-    label: string
-    options: Option[]
-    value: string
-    onChange?: (val: string) => void
-    class?: string
+    label: string;
+    options: Option[];
+    value: string;
+    onChange?: (val: string) => void;
+    class?: string;
   }
 
   let {
@@ -22,17 +22,17 @@
     value,
     onChange = () => {},
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 
-  let isOpen = $state(false)
+  let isOpen = $state(false);
 
   let displayLabel = $derived(
     options.find(o => o.value === value)?.label ?? options[0]?.label ?? label
-  )
+  );
 
   function select(val: string) {
-    onChange(val)
-    isOpen = false
+    onChange(val);
+    isOpen = false;
   }
 </script>
 

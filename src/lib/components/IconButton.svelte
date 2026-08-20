@@ -1,17 +1,17 @@
 <script lang="ts">
-  import type {Snippet} from 'svelte'
-  import type {HTMLButtonAttributes} from 'svelte/elements'
-  import {cn} from '../utils/cn'
+  import type {Snippet} from 'svelte';
+  import type {HTMLButtonAttributes} from 'svelte/elements';
+  import {cn} from '../utils/cn';
 
   interface Props extends HTMLButtonAttributes {
-    ariaLabel: string
-    variant?: 'default' | 'ghost' | 'borderless'
-    size?: 'sm' | 'md' | 'lg'
-    tooltip?: string
-    tooltipPlacement?: 'top' | 'bottom'
-    tooltipAlign?: 'center' | 'left' | 'right'
-    showTooltip?: boolean
-    children?: Snippet
+    ariaLabel: string;
+    variant?: 'default' | 'ghost' | 'borderless';
+    size?: 'sm' | 'md' | 'lg';
+    tooltip?: string;
+    tooltipPlacement?: 'top' | 'bottom';
+    tooltipAlign?: 'center' | 'left' | 'right';
+    showTooltip?: boolean;
+    children?: Snippet;
   }
 
   let {
@@ -26,9 +26,9 @@
     children,
     type = 'button',
     ...restProps
-  }: Props = $props()
+  }: Props = $props();
 
-  let tooltipContent = $derived(tooltip ?? ariaLabel)
+  let tooltipContent = $derived(tooltip ?? ariaLabel);
 
   const variantStyles = {
     default:
@@ -37,13 +37,13 @@
       'text-text-secondary hover:text-text-primary disabled:hover:bg-transparent disabled:hover:text-text-secondary',
     borderless:
       'bg-transparent text-text-secondary hover:text-copilot disabled:hover:text-text-secondary'
-  }
+  };
 
   const sizeStyles = {
     sm: 'h-8 w-8 text-xs',
     md: 'h-9 w-9 text-sm',
     lg: 'h-11 w-11 text-base'
-  }
+  };
 </script>
 
 <div class="group relative inline-flex">

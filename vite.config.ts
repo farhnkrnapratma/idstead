@@ -1,8 +1,8 @@
-import {defineConfig} from 'vite'
-import tailwindcss from '@tailwindcss/vite'
-import adapter from '@sveltejs/adapter-cloudflare'
-import {sveltekit} from '@sveltejs/kit/vite'
-import {sentrySvelteKit} from '@sentry/sveltekit'
+import {defineConfig} from 'vite';
+import tailwindcss from '@tailwindcss/vite';
+import adapter from '@sveltejs/adapter-cloudflare';
+import {sveltekit} from '@sveltejs/kit/vite';
+import {sentrySvelteKit} from '@sentry/sveltekit';
 
 export default defineConfig({
   plugins: [
@@ -22,4 +22,4 @@ export default defineConfig({
     })
   ],
   ssr: {noExternal: ['@lucide/svelte']}
-})
+});

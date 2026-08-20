@@ -1,25 +1,25 @@
 <script lang="ts">
-  import {ThumbsUp, ThumbsDown, CheckCircle2} from '@lucide/svelte'
-  import Button from '../components/Button.svelte'
-  import {cn} from '../utils/cn'
+  import {ThumbsUp, ThumbsDown, CheckCircle2} from '@lucide/svelte';
+  import Button from '../components/Button.svelte';
+  import {cn} from '../utils/cn';
 
   interface Props {
-    title?: string
-    onVote?: (helpful: boolean) => void
-    class?: string
+    title?: string;
+    onVote?: (helpful: boolean) => void;
+    class?: string;
   }
 
   let {
     title = 'Was this helpful?',
     onVote,
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 
-  let voted = $state<boolean | null>(null)
+  let voted = $state<boolean | null>(null);
 
   function handleVote(helpful: boolean) {
-    voted = helpful
-    onVote?.(helpful)
+    voted = helpful;
+    onVote?.(helpful);
   }
 </script>
 

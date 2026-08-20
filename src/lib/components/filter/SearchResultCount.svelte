@@ -1,11 +1,11 @@
 <script lang="ts">
-  import {cn} from '../../utils/cn'
+  import {cn} from '../../utils/cn';
 
   interface Props {
-    count: number
-    total: number
-    itemLabel?: string
-    class?: string
+    count: number;
+    total: number;
+    itemLabel?: string;
+    class?: string;
   }
 
   let {
@@ -13,7 +13,7 @@
     total,
     itemLabel = 'items',
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 </script>
 
 <div

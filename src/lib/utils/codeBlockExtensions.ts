@@ -25,14 +25,14 @@ const EXTENSIONS: Record<string, string> = {
   csharp: 'cs',
   cs: 'cs',
   sql: 'sql'
-}
+};
 
 export function getDownloadFilename(className: string): string {
-  const match = className.match(/language-(\S+)/)
-  const lang = match?.[1]?.toLowerCase() || ''
+  const match = className.match(/language-(\S+)/);
+  const lang = match?.[1]?.toLowerCase() || '';
 
-  if (lang === 'dockerfile' || lang === 'docker') return 'Dockerfile'
+  if (lang === 'dockerfile' || lang === 'docker') return 'Dockerfile';
 
-  const ext = EXTENSIONS[lang]
-  return ext ? `snippet.${ext}` : 'snippet.txt'
+  const ext = EXTENSIONS[lang];
+  return ext ? `snippet.${ext}` : 'snippet.txt';
 }

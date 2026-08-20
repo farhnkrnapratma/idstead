@@ -1,12 +1,12 @@
 <script lang="ts">
-  import type {Snippet} from 'svelte'
-  import {cn} from '../utils/cn'
+  import type {Snippet} from 'svelte';
+  import {cn} from '../utils/cn';
 
   interface Props {
-    align?: 'left' | 'center' | 'right' | 'between'
-    gap?: 'sm' | 'md' | 'lg'
-    children?: Snippet
-    class?: string
+    align?: 'left' | 'center' | 'right' | 'between';
+    gap?: 'sm' | 'md' | 'lg';
+    children?: Snippet;
+    class?: string;
   }
 
   let {
@@ -14,16 +14,16 @@
     gap = 'md',
     children,
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 
   const alignStyles = {
     left: 'justify-start',
     center: 'justify-center',
     right: 'justify-end',
     between: 'justify-between'
-  }
+  };
 
-  const gapStyles = {sm: 'gap-2', md: 'gap-3', lg: 'gap-4'}
+  const gapStyles = {sm: 'gap-2', md: 'gap-3', lg: 'gap-4'};
 </script>
 
 <div

@@ -1,20 +1,19 @@
-import type {RequestHandler} from './$types'
-import {supabase} from '$lib/supabase'
-import {fetchAuthorProfile} from '$lib/author'
+import type {RequestHandler} from './$types';
+import {supabase} from '$lib/supabase';
+import {fetchAuthorProfile} from '$lib/author';
 
-const SITE_URL = 'https://fkp.my.id'
-
-export const GET: RequestHandler = async ({fetch}) => {
-  const author = await fetchAuthorProfile(supabase)
-  const authorName = author?.name || 'Author'
-  const authorHeadline = author?.headline || 'Developer Portfolio'
-  const authorBio = author?.bio || ''
+export const GET: RequestHandler = async () => {
+  const author = await fetchAuthorProfile(supabase);
+  const authorName = author?.name || 'Author';
+  const authorHeadline = author?.headline || 'Developer Portfolio';
+  const authorBio = author?.bio || '';
+  const SITE_URL = (author?.siteUrl || '').replace(/\/$/, '');
 
   const {data: posts} = await supabase
     .from('db_posts')
     .select('id, title, slug, excerpt, created_at')
     .eq('published', true)
-    .order('created_at', {ascending: false})
+    .order('created_at', {ascending: false});
 
   let md = `# ${authorName} — ${authorHeadline}
 
@@ -34,20 +33,20 @@ Welcome to the LLM & AI Agent directory for ${authorName}'s developer portfolio.
 
 ## Posts (Markdown API)
 
-`
+`;
 
   if (posts && posts.length > 0) {
     posts.forEach(post => {
-      const dateStr = new Date(post.created_at).toISOString().split('T')[0]
-      md += `- [${post.title}](${SITE_URL}/api/v1/blog/${post.slug}?format=md): Published on ${dateStr}. ID: \`${post.id}\`. ${post.excerpt ? `— ${post.excerpt}` : ''}\n`
-    })
+      const dateStr = new Date(post.created_at).toISOString().split('T')[0];
+      md += `- [${post.title}](${SITE_URL}/api/v1/blog/${post.slug}?format=md): Published on ${dateStr}. ID: \`${post.id}\`. ${post.excerpt ? `— ${post.excerpt}` : ''}\n`;
+    });
   } else {
-    md += `*No published posts available.*\n`
+    md += `*No published posts available.*\n`;
   }
 
-  md += `\n## Optional & Additional Details\n\n`
-  md += `- [JSON Author API](${SITE_URL}/api/v1/author): Full author dataset in JSON format.\n`
-  md += `- [JSON Blog Catalog](${SITE_URL}/api/v1/blog): Catalog of published blog posts in JSON format.\n`
+  md += `\n## Optional & Additional Details\n\n`;
+  md += `- [JSON Author API](${SITE_URL}/api/v1/author): Full author dataset in JSON format.\n`;
+  md += `- [JSON Blog Catalog](${SITE_URL}/api/v1/blog): Catalog of published blog posts in JSON format.\n`;
 
   return new Response(md, {
     headers: {
@@ -55,5 +54,5 @@ Welcome to the LLM & AI Agent directory for ${authorName}'s developer portfolio.
       'Cache-Control': 'public, max-age=3600, s-maxage=86400',
       'X-Robots-Tag': 'index, follow'
     }
-  })
-}
+  });
+};

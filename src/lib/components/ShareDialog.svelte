@@ -1,16 +1,16 @@
 <script lang="ts">
-  import {Check, Copy, SquareArrowOutUpRight} from '@lucide/svelte'
-  import Dialog from './Dialog.svelte'
-  import Button from './Button.svelte'
+  import {Check, Copy, SquareArrowOutUpRight} from '@lucide/svelte';
+  import Dialog from './Dialog.svelte';
+  import Button from './Button.svelte';
 
   interface Props {
-    isOpen: boolean
-    title?: string
-    url?: string
-    articleTitle?: string
-    showEmail?: boolean
-    onClose: () => void
-    class?: string
+    isOpen: boolean;
+    title?: string;
+    url?: string;
+    articleTitle?: string;
+    showEmail?: boolean;
+    onClose: () => void;
+    class?: string;
   }
 
   let {
@@ -21,27 +21,27 @@
     showEmail = false,
     onClose,
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 
-  let copied = $state(false)
+  let copied = $state(false);
 
   function copyUrl() {
-    if (typeof window === 'undefined') return
-    const targetUrl = url || window.location.href
+    if (typeof window === 'undefined') return;
+    const targetUrl = url || window.location.href;
     navigator.clipboard.writeText(targetUrl).then(() => {
-      copied = true
+      copied = true;
       setTimeout(() => {
-        copied = false
-      }, 2500)
-    })
+        copied = false;
+      }, 2500);
+    });
   }
 
   const encodedUrl = $derived(
     encodeURIComponent(
       url || (typeof window !== 'undefined' ? window.location.href : '')
     )
-  )
-  const encodedTitle = $derived(encodeURIComponent(articleTitle))
+  );
+  const encodedTitle = $derived(encodeURIComponent(articleTitle));
 </script>
 
 <Dialog

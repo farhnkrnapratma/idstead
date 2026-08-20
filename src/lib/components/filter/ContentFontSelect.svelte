@@ -1,20 +1,20 @@
 <script lang="ts">
-  import {CaseSensitive} from '@lucide/svelte'
-  import {cn} from '../../utils/cn'
-  import IconButton from '../IconButton.svelte'
+  import {CaseSensitive} from '@lucide/svelte';
+  import {cn} from '../../utils/cn';
+  import IconButton from '../IconButton.svelte';
   import {
     contentFontStore,
     type ContentFont
-  } from '../../stores/contentFontStore.svelte'
+  } from '../../stores/contentFontStore.svelte';
 
   interface Props {
-    class?: string
-    dropdownDirection?: 'up' | 'down'
+    class?: string;
+    dropdownDirection?: 'up' | 'down';
   }
 
-  let {class: className = '', dropdownDirection = 'down'}: Props = $props()
+  let {class: className = '', dropdownDirection = 'down'}: Props = $props();
 
-  let isOpen = $state(false)
+  let isOpen = $state(false);
 
   const fontOptions: {value: ContentFont; label: string; fontClass: string}[] =
     [
@@ -29,12 +29,12 @@
         fontClass: 'font-serif'
       },
       {value: 'mono', label: 'Mono (Google Sans Code)', fontClass: 'font-mono'}
-    ]
+    ];
 
-  let containerRef: HTMLDivElement | undefined = $state()
+  let containerRef: HTMLDivElement | undefined = $state();
 
   function close() {
-    isOpen = false
+    isOpen = false;
   }
 
   function handleWindowPointerDown(event: PointerEvent) {
@@ -43,14 +43,14 @@
       && containerRef
       && !containerRef.contains(event.target as Node)
     ) {
-      close()
+      close();
     }
   }
 
   function handleKeydown(event: KeyboardEvent) {
     if (event.key === 'Escape' && isOpen) {
-      event.preventDefault()
-      close()
+      event.preventDefault();
+      close();
     }
   }
 </script>

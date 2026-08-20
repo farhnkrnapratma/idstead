@@ -1,26 +1,26 @@
-import {supabase} from '$lib/supabase'
-import {json} from '@sveltejs/kit'
-import type {RequestHandler} from './$types'
+import {supabase} from '$lib/supabase';
+import {json} from '@sveltejs/kit';
+import type {RequestHandler} from './$types';
 
 export interface SearchResult {
-  type: 'post' | 'project'
-  title: string
-  subtitle: string
-  url: string
-  tags?: string[]
+  type: 'post' | 'project';
+  title: string;
+  subtitle: string;
+  url: string;
+  tags?: string[];
 }
 
 export const GET: RequestHandler = async ({url}) => {
-  const q = url.searchParams.get('q')?.trim() ?? ''
-  const limitParam = parseInt(url.searchParams.get('limit') || '6', 10)
-  const limit = Math.min(Math.max(1, limitParam), 20)
+  const q = url.searchParams.get('q')?.trim() ?? '';
+  const limitParam = parseInt(url.searchParams.get('limit') || '6', 10);
+  const limit = Math.min(Math.max(1, limitParam), 20);
 
   if (q.length < 2) {
-    return json({query: q, data: [], pagination: {limit, returned: 0}})
+    return json({query: q, data: [], pagination: {limit, returned: 0}});
   }
 
-  const results: SearchResult[] = []
-  const normalizedQuery = q.replace(/[,().\n\r\t]/g, ' ').trim()
+  const results: SearchResult[] = [];
+  const normalizedQuery = q.replace(/[,().\n\r\t]/g, ' ').trim();
 
   const {data: posts, error: postsError} = await supabase
     .from('db_posts')
@@ -28,7 +28,7 @@ export const GET: RequestHandler = async ({url}) => {
     .eq('published', true)
     .or(`title.ilike.%${normalizedQuery}%,excerpt.ilike.%${normalizedQuery}%`)
     .order('created_at', {ascending: false})
-    .limit(limit)
+    .limit(limit);
 
   if (!postsError && posts) {
     for (const post of posts) {
@@ -37,7 +37,7 @@ export const GET: RequestHandler = async ({url}) => {
         title: post.title,
         subtitle: post.excerpt ?? 'Blog post',
         url: `/blog/${post.slug}`
-      })
+      });
     }
   }
 
@@ -45,5 +45,5 @@ export const GET: RequestHandler = async ({url}) => {
     query: q,
     data: results,
     pagination: {limit, returned: results.length}
-  })
-}
+  });
+};

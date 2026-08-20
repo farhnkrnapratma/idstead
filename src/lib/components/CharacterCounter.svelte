@@ -1,17 +1,17 @@
 <script lang="ts">
-  import {cn} from '../utils/cn'
+  import {cn} from '../utils/cn';
 
   interface Props {
-    current: number
-    max: number
-    id?: string
-    class?: string
+    current: number;
+    max: number;
+    id?: string;
+    class?: string;
   }
 
-  let {current, max, id, class: className = ''}: Props = $props()
+  let {current, max, id, class: className = ''}: Props = $props();
 
-  const isWarning = $derived(current >= max * 0.85 && current < max)
-  const isExceeded = $derived(current >= max)
+  const isWarning = $derived(current >= max * 0.85 && current < max);
+  const isExceeded = $derived(current >= max);
 </script>
 
 <span

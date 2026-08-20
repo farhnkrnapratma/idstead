@@ -1,17 +1,17 @@
-import {browser} from '$app/environment'
+import {browser} from '$app/environment';
 
-export type FontScale = 100 | 110 | 120 | 130 | 140 | 150
+export type FontScale = 100 | 110 | 120 | 130 | 140 | 150;
 
 interface A11ySettings {
-  reduceMotion: boolean
-  solidSurfaces: boolean
-  highContrast: boolean
-  fontScale: FontScale
-  focusHighlight: boolean
-  dyslexicFont: boolean
+  reduceMotion: boolean;
+  solidSurfaces: boolean;
+  highContrast: boolean;
+  fontScale: FontScale;
+  focusHighlight: boolean;
+  dyslexicFont: boolean;
 }
 
-const STORAGE_KEY = 'a11y_settings'
+const STORAGE_KEY = 'a11y_settings';
 
 const defaults: A11ySettings = {
   reduceMotion: false,
@@ -20,51 +20,51 @@ const defaults: A11ySettings = {
   fontScale: 100,
   focusHighlight: false,
   dyslexicFont: false
-}
+};
 
 function createA11yStore() {
-  let settings = $state<A11ySettings>({...defaults})
+  let settings = $state<A11ySettings>({...defaults});
 
   function syncDom() {
-    if (!browser) return
-    const root = document.documentElement
-    root.setAttribute('data-reduce-motion', String(settings.reduceMotion))
-    root.setAttribute('data-solid-surfaces', String(settings.solidSurfaces))
-    root.setAttribute('data-high-contrast', String(settings.highContrast))
-    root.setAttribute('data-font-scale', String(settings.fontScale))
-    root.setAttribute('data-focus-highlight', String(settings.focusHighlight))
-    root.setAttribute('data-dyslexic-font', String(settings.dyslexicFont))
+    if (!browser) return;
+    const root = document.documentElement;
+    root.setAttribute('data-reduce-motion', String(settings.reduceMotion));
+    root.setAttribute('data-solid-surfaces', String(settings.solidSurfaces));
+    root.setAttribute('data-high-contrast', String(settings.highContrast));
+    root.setAttribute('data-font-scale', String(settings.fontScale));
+    root.setAttribute('data-focus-highlight', String(settings.focusHighlight));
+    root.setAttribute('data-dyslexic-font', String(settings.dyslexicFont));
   }
 
   function persist() {
-    if (!browser) return
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
+    if (!browser) return;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
   }
 
   function apply(next: Partial<A11ySettings>) {
-    settings = {...settings, ...next}
-    syncDom()
-    persist()
+    settings = {...settings, ...next};
+    syncDom();
+    persist();
   }
 
   function parseStored(raw: string | null): Partial<A11ySettings> {
-    if (!raw) return {}
+    if (!raw) return {};
     try {
-      const parsed = JSON.parse(raw)
-      return typeof parsed === 'object' && parsed !== null ? parsed : {}
+      const parsed = JSON.parse(raw);
+      return typeof parsed === 'object' && parsed !== null ? parsed : {};
     } catch {
-      return {}
+      return {};
     }
   }
 
   function init() {
-    if (!browser) return
+    if (!browser) return;
 
-    const stored = parseStored(localStorage.getItem(STORAGE_KEY))
+    const stored = parseStored(localStorage.getItem(STORAGE_KEY));
     const reduceMotionQuery = window.matchMedia(
       '(prefers-reduced-motion: reduce)'
-    )
-    const hasStoredMotionPref = Object.hasOwn(stored, 'reduceMotion')
+    );
+    const hasStoredMotionPref = Object.hasOwn(stored, 'reduceMotion');
 
     settings = {
       ...defaults,
@@ -73,8 +73,8 @@ function createA11yStore() {
         hasStoredMotionPref ?
           Boolean(stored.reduceMotion)
         : reduceMotionQuery.matches
-    }
-    syncDom()
+    };
+    syncDom();
 
     const onMotionChange = (e: MediaQueryListEvent) => {
       if (
@@ -83,56 +83,56 @@ function createA11yStore() {
           'reduceMotion'
         )
       ) {
-        apply({reduceMotion: e.matches})
+        apply({reduceMotion: e.matches});
       }
-    }
+    };
 
     const onStorage = (e: StorageEvent) => {
-      if (e.key !== STORAGE_KEY) return
-      settings = {...defaults, ...parseStored(e.newValue)}
-      syncDom()
-    }
+      if (e.key !== STORAGE_KEY) return;
+      settings = {...defaults, ...parseStored(e.newValue)};
+      syncDom();
+    };
 
-    reduceMotionQuery.addEventListener('change', onMotionChange)
-    window.addEventListener('storage', onStorage)
+    reduceMotionQuery.addEventListener('change', onMotionChange);
+    window.addEventListener('storage', onStorage);
 
     return () => {
-      reduceMotionQuery.removeEventListener('change', onMotionChange)
-      window.removeEventListener('storage', onStorage)
-    }
+      reduceMotionQuery.removeEventListener('change', onMotionChange);
+      window.removeEventListener('storage', onStorage);
+    };
   }
 
   function toggleReduceMotion() {
-    apply({reduceMotion: !settings.reduceMotion})
+    apply({reduceMotion: !settings.reduceMotion});
   }
 
   function toggleSolidSurfaces() {
-    apply({solidSurfaces: !settings.solidSurfaces})
+    apply({solidSurfaces: !settings.solidSurfaces});
   }
 
   function toggleHighContrast() {
-    apply({highContrast: !settings.highContrast})
+    apply({highContrast: !settings.highContrast});
   }
 
   function toggleFocusHighlight() {
-    apply({focusHighlight: !settings.focusHighlight})
+    apply({focusHighlight: !settings.focusHighlight});
   }
 
   function toggleDyslexicFont() {
-    apply({dyslexicFont: !settings.dyslexicFont})
+    apply({dyslexicFont: !settings.dyslexicFont});
   }
 
   function setFontScale(scale: FontScale) {
-    apply({fontScale: scale})
+    apply({fontScale: scale});
   }
 
   function reset() {
-    apply({...defaults})
+    apply({...defaults});
   }
 
   return {
     get current() {
-      return settings
+      return settings;
     },
     init,
     toggleReduceMotion,
@@ -142,7 +142,7 @@ function createA11yStore() {
     toggleDyslexicFont,
     setFontScale,
     reset
-  }
+  };
 }
 
-export const a11yStore = createA11yStore()
+export const a11yStore = createA11yStore();

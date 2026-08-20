@@ -1,22 +1,22 @@
 <script lang="ts">
-  import {AlertCircle, CheckCircle2, AlertTriangle, Info} from '@lucide/svelte'
-  import {cn} from '../utils/cn'
+  import {AlertCircle, CheckCircle2, AlertTriangle, Info} from '@lucide/svelte';
+  import {cn} from '../utils/cn';
 
   interface Props {
-    variant?: 'error' | 'success' | 'warning' | 'info'
-    id?: string
-    message: string
-    class?: string
+    variant?: 'error' | 'success' | 'warning' | 'info';
+    id?: string;
+    message: string;
+    class?: string;
   }
 
-  let {variant = 'error', id, message, class: className = ''}: Props = $props()
+  let {variant = 'error', id, message, class: className = ''}: Props = $props();
 
   const variantStyles = {
     error: 'text-danger',
     success: 'text-copilot',
     warning: 'text-warning',
     info: 'text-text-muted'
-  }
+  };
 </script>
 
 {#if message}

@@ -1,13 +1,13 @@
 <script lang="ts">
-  import {X} from '@lucide/svelte'
-  import IconButton from './IconButton.svelte'
+  import {X} from '@lucide/svelte';
+  import IconButton from './IconButton.svelte';
 
   interface Props {
-    onClose: () => void
-    class?: string
+    onClose: () => void;
+    class?: string;
   }
 
-  let {onClose, class: className = ''}: Props = $props()
+  let {onClose, class: className = ''}: Props = $props();
 </script>
 
 <IconButton

@@ -1,14 +1,14 @@
 <script lang="ts">
-  import type {Snippet} from 'svelte'
-  import {cn} from '../utils/cn'
+  import type {Snippet} from 'svelte';
+  import {cn} from '../utils/cn';
 
   interface Props {
-    title?: string
-    description?: string
-    variant?: 'default' | 'highlight' | 'glass'
-    class?: string
-    actions?: Snippet
-    children?: Snippet
+    title?: string;
+    description?: string;
+    variant?: 'default' | 'highlight' | 'glass';
+    class?: string;
+    actions?: Snippet;
+    children?: Snippet;
   }
 
   let {
@@ -18,13 +18,13 @@
     class: className = '',
     actions,
     children
-  }: Props = $props()
+  }: Props = $props();
 
   const variantStyles = {
     default: 'bg-surface/50 border border-border-subtle',
     highlight: 'bg-copilot-subtle/20 border border-copilot/30',
     glass: 'glass-card'
-  }
+  };
 </script>
 
 <div

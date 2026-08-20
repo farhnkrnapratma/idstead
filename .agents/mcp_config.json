@@ -35,7 +35,6 @@
       "url": "https://bindings.mcp.cloudflare.com/mcp",
       "serverUrl": "https://bindings.mcp.cloudflare.com/mcp"
     },
-    "playwright": {"type": "stdio", "command": "playwright-mcp", "args": []},
     "graphify": {
       "type": "stdio",
       "command": "uv",

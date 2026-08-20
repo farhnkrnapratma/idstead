@@ -1,14 +1,14 @@
 <script lang="ts">
-  import {fade} from 'svelte/transition'
-  import {goto} from '$app/navigation'
-  import {Bug} from '@lucide/svelte'
+  import {fade} from 'svelte/transition';
+  import {goto} from '$app/navigation';
+  import {Bug} from '@lucide/svelte';
 
   interface Props {
-    show?: boolean
-    class?: string
+    show?: boolean;
+    class?: string;
   }
 
-  let {show = true, class: className = ''}: Props = $props()
+  let {show = true, class: className = ''}: Props = $props();
 </script>
 
 {#if show}

@@ -1,0 +1,1864 @@
+{
+  "communities": {
+    "0": [
+      "src_lib_author",
+      "src_lib_author_authorprofile",
+      "src_lib_author_contactinfo",
+      "src_lib_author_cvdocument",
+      "src_lib_author_decodehtmlentities",
+      "src_lib_author_educationitem",
+      "src_lib_author_experienceitem",
+      "src_lib_author_fetchactivecvdocument",
+      "src_lib_author_fetchauthorprofile",
+      "src_lib_author_fetchauthorprofilewithsocials",
+      "src_lib_author_fetchcontactinfo",
+      "src_lib_author_fetchcventries",
+      "src_lib_author_fetcheducation",
+      "src_lib_author_fetchexperiences",
+      "src_lib_author_fetchfundinglinks",
+      "src_lib_author_fetchgroupedskills",
+      "src_lib_author_fetchskills",
+      "src_lib_author_fetchsocials",
+      "src_lib_author_fetchsponsorship",
+      "src_lib_author_formatmonthabbrev",
+      "src_lib_author_formatmonthfull",
+      "src_lib_author_sanitizeiconclass",
+      "src_lib_author_skillcategorygroup",
+      "src_lib_author_skillitem",
+      "src_lib_author_sociallink",
+      "src_lib_author_sponsorshiplink",
+      "src_lib_authorapi",
+      "src_lib_authorapi_generateauthormarkdown",
+      "src_lib_authorapi_handleauthorjsonrequest",
+      "src_lib_authorapi_sanitizepublicapidata",
+      "src_lib_server_apierror",
+      "src_lib_server_apierror_apierror",
+      "src_lib_supabase",
+      "src_lib_supabase_supabase",
+      "src_lib_utils_formatters_decodehtmlentities",
+      "src_lib_utils_githublanguagecolors",
+      "src_lib_utils_githublanguagecolors_getlanguagecolor",
+      "src_lib_utils_githublanguagecolors_github_language_colors",
+      "src_routes_api_internal_blog_views_server",
+      "src_routes_api_internal_blog_views_server_post",
+      "src_routes_api_v1_author_contact_server",
+      "src_routes_api_v1_author_contact_server_get",
+      "src_routes_api_v1_author_cv_server",
+      "src_routes_api_v1_author_cv_server_get",
+      "src_routes_api_v1_author_funding_server",
+      "src_routes_api_v1_author_funding_server_get",
+      "src_routes_api_v1_author_server",
+      "src_routes_api_v1_author_server_get",
+      "src_routes_api_v1_author_skills_server",
+      "src_routes_api_v1_author_skills_server_get",
+      "src_routes_api_v1_author_socials_server",
+      "src_routes_api_v1_author_socials_server_get",
+      "src_routes_api_v1_blog_comments_server",
+      "src_routes_api_v1_blog_comments_server_get",
+      "src_routes_api_v1_blog_server",
+      "src_routes_api_v1_blog_server_get",
+      "src_routes_api_v1_blog_slug_server",
+      "src_routes_api_v1_blog_slug_server_get",
+      "src_routes_api_v1_blog_views_server",
+      "src_routes_api_v1_blog_views_server_get",
+      "src_routes_api_v1_cv_server",
+      "src_routes_api_v1_cv_server_get",
+      "src_routes_api_v1_search_server",
+      "src_routes_api_v1_search_server_get",
+      "src_routes_api_v1_search_server_searchresult",
+      "src_routes_atom_xml_server",
+      "src_routes_atom_xml_server_escapexml",
+      "src_routes_atom_xml_server_get",
+      "src_routes_layout_server",
+      "src_routes_layout_server_load",
+      "src_routes_llms_txt_server",
+      "src_routes_llms_txt_server_get",
+      "src_routes_page_server",
+      "src_routes_page_server_blogpost",
+      "src_routes_page_server_fetchlogocatalog",
+      "src_routes_page_server_fetchrepoextras",
+      "src_routes_page_server_getlastpagecount",
+      "src_routes_page_server_githubrepo",
+      "src_routes_page_server_load",
+      "src_routes_page_server_logocatalogitem",
+      "src_routes_sitemap_xml_server",
+      "src_routes_sitemap_xml_server_escapexml",
+      "src_routes_sitemap_xml_server_get",
+      "src_routes_well_known_llms_txt_server",
+      "src_routes_well_known_llms_txt_server_get"
+    ],
+    "1": [
+      "src_lib_article_articleheader",
+      "src_lib_article_articleheader_title_excerpt_class_classname_titleclass_meta",
+      "src_lib_components_actiongroup",
+      "src_lib_components_ariaannouncer",
+      "src_lib_components_badge",
+      "src_lib_components_badge_cn",
+      "src_lib_components_breadcrumb",
+      "src_lib_components_breakpointvisibility",
+      "src_lib_components_charactercounter",
+      "src_lib_components_chip",
+      "src_lib_components_chip_cn",
+      "src_lib_components_consentnotice",
+      "src_lib_components_contentblock",
+      "src_lib_components_datatable",
+      "src_lib_components_datatable_cn",
+      "src_lib_components_dialogbody",
+      "src_lib_components_dialogfooter",
+      "src_lib_components_errorsummary",
+      "src_lib_components_fieldmessage",
+      "src_lib_components_fileuploadfield",
+      "src_lib_components_filter_filterchip",
+      "src_lib_components_filter_filterchipgroup",
+      "src_lib_components_filter_searchresultcount",
+      "src_lib_components_formactions",
+      "src_lib_components_formfield",
+      "src_lib_components_fundingrow",
+      "src_lib_components_loadingstate",
+      "src_lib_components_logoloop",
+      "src_lib_components_markdowneditor",
+      "src_lib_components_metalist",
+      "src_lib_components_mobileactionbar",
+      "src_lib_components_mobileactionbar_cn",
+      "src_lib_components_pagination",
+      "src_lib_components_progressindicator",
+      "src_lib_components_responsivegrid",
+      "src_lib_components_responsivestack",
+      "src_lib_components_sectionctarow",
+      "src_lib_components_skeletonblock",
+      "src_lib_components_statusbanner",
+      "src_lib_components_statusbanner_cn",
+      "src_lib_components_tableofcontents",
+      "src_lib_components_visuallyhidden",
+      "src_lib_index",
+      "src_lib_layout_actionbar",
+      "src_lib_layout_appshell",
+      "src_lib_layout_contentstack",
+      "src_lib_layout_formsection",
+      "src_lib_layout_listsection",
+      "src_lib_layout_pageheader",
+      "src_lib_layout_readingcontainer",
+      "src_lib_layout_section",
+      "src_lib_layout_splitsection",
+      "src_lib_utils_cn",
+      "src_lib_utils_cn_text_size_keywords",
+      "src_lib_utils_sanitizeinput",
+      "src_lib_utils_sanitizeinput_sanitizeinput"
+    ],
+    "2": [
+      "agents_skills_change_type_references_antipatterns",
+      "agents_skills_change_type_references_antipatterns_anti_pattern_guide_untuk_change_type_framework",
+      "agents_skills_change_type_references_antipatterns_ap_01_scope_creep_paling_umum",
+      "agents_skills_change_type_references_antipatterns_ap_02_implicit_type_assumption",
+      "agents_skills_change_type_references_antipatterns_ap_03_risk_underestimation",
+      "agents_skills_change_type_references_antipatterns_ap_04_menggabungkan_multiple_change_types",
+      "agents_skills_change_type_references_antipatterns_ap_05_missing_forbidden_zone_awareness",
+      "agents_skills_change_type_references_antipatterns_ap_06_test_assumption_error",
+      "agents_skills_change_type_references_antipatterns_ap_07_rollback_plan_omission",
+      "agents_skills_change_type_references_antipatterns_ap_08_premature_optimization",
+      "agents_skills_change_type_references_antipatterns_checklist_pre_execution",
+      "agents_skills_change_type_references_types",
+      "agents_skills_change_type_references_types_bug_fix",
+      "agents_skills_change_type_references_types_definisi_operasional_change_type",
+      "agents_skills_change_type_references_types_deployment",
+      "agents_skills_change_type_references_types_enhancement",
+      "agents_skills_change_type_references_types_feature",
+      "agents_skills_change_type_references_types_hardening",
+      "agents_skills_change_type_references_types_hotfix",
+      "agents_skills_change_type_references_types_integration",
+      "agents_skills_change_type_references_types_kelompok_adaptive",
+      "agents_skills_change_type_references_types_kelompok_corrective",
+      "agents_skills_change_type_references_types_kelompok_perfective",
+      "agents_skills_change_type_references_types_kelompok_preventive",
+      "agents_skills_change_type_references_types_maintenance",
+      "agents_skills_change_type_references_types_migration",
+      "agents_skills_change_type_references_types_modernization",
+      "agents_skills_change_type_references_types_optimization",
+      "agents_skills_change_type_references_types_patch",
+      "agents_skills_change_type_references_types_porting",
+      "agents_skills_change_type_references_types_refactor",
+      "agents_skills_change_type_references_types_release",
+      "agents_skills_change_type_references_types_rework",
+      "agents_skills_change_type_references_types_rewrite",
+      "agents_skills_change_type_references_types_rollback",
+      "agents_skills_change_type_references_types_tabel_perbandingan_lengkap",
+      "agents_skills_change_type_references_types_taksonomi_4_dimensi_iso_iec_14764",
+      "agents_skills_change_type_references_types_update",
+      "agents_skills_change_type_references_types_upgrade",
+      "agents_skills_change_type_skill",
+      "agents_skills_change_type_skill_cara_menggunakan",
+      "agents_skills_change_type_skill_change_brief_format_wajib_ditampilkan_sebelum_eksekusi",
+      "agents_skills_change_type_skill_change_type_framework",
+      "agents_skills_change_type_skill_eskalasi_dan_interupsi",
+      "agents_skills_change_type_skill_referensi_lengkap",
+      "agents_skills_change_type_skill_tabel_risk_level"
+    ],
+    "3": [
+      "eslint",
+      "eslint_config_prettier",
+      "eslint_js",
+      "eslint_plugin_svelte",
+      "globals",
+      "package_devdependencies",
+      "package_devdependencies_eslint",
+      "package_devdependencies_eslint_config_prettier",
+      "package_devdependencies_eslint_js",
+      "package_devdependencies_eslint_plugin_svelte",
+      "package_devdependencies_globals",
+      "package_devdependencies_prettier",
+      "package_devdependencies_prettier_plugin_svelte",
+      "package_devdependencies_prettier_plugin_tailwindcss",
+      "package_devdependencies_prettier_plugin_xml",
+      "package_devdependencies_prettier_plugin_yaml",
+      "package_devdependencies_publint",
+      "package_devdependencies_svelte_check",
+      "package_devdependencies_sveltejs_adapter_cloudflare",
+      "package_devdependencies_sveltejs_package",
+      "package_devdependencies_sveltejs_vite_plugin_svelte",
+      "package_devdependencies_tailwindcss_vite",
+      "package_devdependencies_types_node",
+      "package_devdependencies_typescript",
+      "package_devdependencies_typescript_eslint",
+      "package_devdependencies_vite",
+      "package_devdependencies_yaml",
+      "prettier",
+      "prettier_plugin_svelte",
+      "prettier_plugin_tailwindcss",
+      "prettier_plugin_xml",
+      "prettier_plugin_yaml",
+      "publint",
+      "svelte_check",
+      "sveltejs_adapter_cloudflare",
+      "sveltejs_package",
+      "sveltejs_vite_plugin_svelte",
+      "tailwindcss_vite",
+      "types_node",
+      "typescript",
+      "typescript_eslint",
+      "vite",
+      "yaml"
+    ],
+    "4": [
+      "src_lib_server_admincv",
+      "src_lib_server_admincv_bumpsemver",
+      "src_lib_server_admincv_decodehtmlentities",
+      "src_lib_server_admincv_formatauthorslug",
+      "src_lib_server_admincv_getadmindb",
+      "src_lib_server_admincv_getr2credentials",
+      "src_lib_server_admincv_jsonresponse",
+      "src_lib_server_admincv_parsesemver",
+      "src_lib_server_admincv_processcvdelete",
+      "src_lib_server_admincv_processcvgenerate",
+      "src_lib_server_admincv_processcvupload",
+      "src_lib_server_admincv_requireadminauth",
+      "src_lib_server_pdfgenerator",
+      "src_lib_server_pdfgenerator_authorcvdata",
+      "src_lib_server_pdfgenerator_authorprofiledata",
+      "src_lib_server_pdfgenerator_educationdata",
+      "src_lib_server_pdfgenerator_experiencedata",
+      "src_lib_server_pdfgenerator_formatdaterange",
+      "src_lib_server_pdfgenerator_generatecvpdfbuffer",
+      "src_lib_server_pdfgenerator_sanitizepdftext",
+      "src_lib_server_pdfgenerator_skillcategorydata",
+      "src_lib_server_pdfgenerator_wraptext",
+      "src_routes_api_internal_admin_cv_delete_server",
+      "src_routes_api_internal_admin_cv_delete_server_post",
+      "src_routes_api_internal_admin_cv_generate_server",
+      "src_routes_api_internal_admin_cv_generate_server_post",
+      "src_routes_api_internal_admin_cv_upload_server",
+      "src_routes_api_internal_admin_cv_upload_server_post"
+    ],
+    "5": [
+      "src_lib_server_loginratelimit",
+      "src_lib_server_loginratelimit_attemptrecord",
+      "src_lib_server_loginratelimit_attempts",
+      "src_lib_server_loginratelimit_checkloginlockout",
+      "src_lib_server_loginratelimit_clearloginattempts",
+      "src_lib_server_loginratelimit_pruneold",
+      "src_lib_server_loginratelimit_recordfailedlogin",
+      "src_lib_server_sameorigin",
+      "src_lib_server_sameorigin_issameoriginrequest",
+      "src_lib_server_supabaseadmin",
+      "src_lib_server_supabaseadmin_getsupabaseadminclient",
+      "src_lib_server_supabaseadmin_getsupabaseurl",
+      "src_lib_server_supabaseadmin_platformenv",
+      "src_lib_server_turnstile",
+      "src_lib_server_turnstile_platformenv",
+      "src_lib_server_turnstile_siteverifyresponse",
+      "src_lib_server_turnstile_verifyturnstiletoken",
+      "src_lib_utils_namevalidator",
+      "src_lib_utils_namevalidator_isnamereserved",
+      "src_lib_utils_namevalidator_normalizename",
+      "src_routes_api_internal_admin_login_server",
+      "src_routes_api_internal_admin_login_server_getclientip",
+      "src_routes_api_internal_admin_login_server_post",
+      "src_routes_api_internal_blog_comments_server",
+      "src_routes_api_internal_blog_comments_server_moderatecontent",
+      "src_routes_api_internal_blog_comments_server_moderationresult",
+      "src_routes_api_internal_blog_comments_server_post",
+      "src_routes_feedback_page"
+    ],
+    "6": [
+      "src_lib_utils_cn_cn",
+      "src_lib_utils_cn_cn_process",
+      "src_lib_utils_cn_familyof",
+      "src_lib_utils_codeblockextensions",
+      "src_lib_utils_codeblockextensions_extensions",
+      "src_lib_utils_codeblockextensions_getdownloadfilename",
+      "src_lib_utils_codeblocks",
+      "src_lib_utils_codeblocks_applychromevars",
+      "src_lib_utils_codeblocks_buildmenucheckboxrow",
+      "src_lib_utils_codeblocks_buildmenucheckboxrow_sync",
+      "src_lib_utils_codeblocks_dark_chrome_vars",
+      "src_lib_utils_codeblocks_enhancecodeblocks",
+      "src_lib_utils_codeblocks_enhancecodeblocks_applyprefs",
+      "src_lib_utils_codeblocks_enhancecodeblocks_closekebab",
+      "src_lib_utils_codeblocks_enhancecodeblocks_openkebab",
+      "src_lib_utils_codeblocks_enhancecodeblocks_updatecustomscrollbar",
+      "src_lib_utils_codeblocks_enhancedblock",
+      "src_lib_utils_codeblocks_enhancedblocks",
+      "src_lib_utils_codeblocks_ensuresitethemeobserver",
+      "src_lib_utils_codeblocks_getprettylanguage",
+      "src_lib_utils_codeblocks_icons",
+      "src_lib_utils_codeblocks_language_names",
+      "src_lib_utils_codeblocks_light_chrome_vars",
+      "src_lib_utils_codeblocks_refreshcodeblockprefs",
+      "src_lib_utils_codeblocks_resolveeffectiveisdark",
+      "src_lib_utils_codeblocks_splithighlightedhtmllines",
+      "src_lib_utils_codeblocks_theme_icons",
+      "src_lib_utils_codeblocks_theme_labels"
+    ],
+    "7": [
+      "src_lib_legaldefaults",
+      "src_lib_legaldefaults_legalpagedata",
+      "src_lib_markdown",
+      "src_lib_markdown_decodehtmlentities",
+      "src_lib_markdown_extractheadings",
+      "src_lib_markdown_headingitem",
+      "src_lib_markdown_injectheadingids",
+      "src_lib_markdown_parsemarkdownalerts",
+      "src_lib_markdown_preparemarkdownpage",
+      "src_lib_markdown_rendermarkdown",
+      "src_lib_server_legalpages",
+      "src_lib_server_legalpages_getlegalpage",
+      "src_routes_blog_slug_page_server",
+      "src_routes_blog_slug_page_server_blogcomment",
+      "src_routes_blog_slug_page_server_estimatereadtime",
+      "src_routes_blog_slug_page_server_getrelatedwindow",
+      "src_routes_blog_slug_page_server_load",
+      "src_routes_blog_slug_page_server_load_decodehtmlentities",
+      "src_routes_blog_slug_page_server_relatedpost",
+      "src_routes_privacy_page_server",
+      "src_routes_privacy_page_server_load",
+      "src_routes_security_page_server",
+      "src_routes_security_page_server_load",
+      "src_routes_terms_page_server",
+      "src_routes_terms_page_server_load"
+    ],
+    "8": [
+      "src_lib_components_consentbanner",
+      "src_lib_components_consentbanner_handlepresetslider",
+      "src_lib_components_consentbanner_presetcolor",
+      "src_lib_components_consentbanner_presetlabel",
+      "src_lib_stores_consentstore_svelte",
+      "src_lib_stores_consentstore_svelte_consentsignals",
+      "src_lib_stores_consentstore_svelte_consentstatus",
+      "src_lib_stores_consentstore_svelte_consentstore",
+      "src_lib_stores_consentstore_svelte_createconsentstore",
+      "src_lib_stores_consentstore_svelte_createconsentstore_acceptall",
+      "src_lib_stores_consentstore_svelte_createconsentstore_acceptanalyticsonly",
+      "src_lib_stores_consentstore_svelte_createconsentstore_applygtagupdate",
+      "src_lib_stores_consentstore_svelte_createconsentstore_closebanner",
+      "src_lib_stores_consentstore_svelte_createconsentstore_init",
+      "src_lib_stores_consentstore_svelte_createconsentstore_openbanner",
+      "src_lib_stores_consentstore_svelte_createconsentstore_rejectall",
+      "src_lib_stores_consentstore_svelte_createconsentstore_resetvisitorconsent",
+      "src_lib_stores_consentstore_svelte_createconsentstore_saveretentionsettings",
+      "src_lib_stores_consentstore_svelte_createconsentstore_setselectedstream",
+      "src_lib_stores_consentstore_svelte_createconsentstore_updateconsent",
+      "src_lib_stores_consentstore_svelte_retentionperiod",
+      "src_lib_stores_consentstore_svelte_retentionsettings",
+      "src_lib_stores_consentstore_svelte_streaminfo",
+      "src_lib_stores_consentstore_svelte_window"
+    ],
+    "9": [
+      "claude_mcp",
+      "home_hanz_projects_www_claude_mcp_mcp_server_chrome_devtools",
+      "home_hanz_projects_www_claude_mcp_mcp_server_cloudflare_bindings",
+      "home_hanz_projects_www_claude_mcp_mcp_server_cloudflare_observability",
+      "home_hanz_projects_www_claude_mcp_mcp_server_context7",
+      "home_hanz_projects_www_claude_mcp_mcp_server_graphify",
+      "home_hanz_projects_www_claude_mcp_mcp_server_sentry",
+      "home_hanz_projects_www_claude_mcp_mcp_server_supabase",
+      "home_hanz_projects_www_claude_mcp_mcp_server_svelte",
+      "mcp",
+      "mcp_command_bunx",
+      "mcp_command_uv",
+      "mcp_mcp_server_chrome_devtools",
+      "mcp_mcp_server_cloudflare_bindings",
+      "mcp_mcp_server_cloudflare_observability",
+      "mcp_mcp_server_context7",
+      "mcp_mcp_server_graphify",
+      "mcp_mcp_server_sentry",
+      "mcp_mcp_server_supabase",
+      "mcp_mcp_server_svelte",
+      "mcp_package_sveltejs_mcp"
+    ],
+    "10": [
+      "src_lib_openapi",
+      "src_lib_openapi_authorsubresourceschema",
+      "src_lib_openapi_blogpostdetailschema",
+      "src_lib_openapi_blogpostsummaryschema",
+      "src_lib_openapi_commentschema",
+      "src_lib_openapi_errorresponses",
+      "src_lib_openapi_errorschema",
+      "src_lib_openapi_formatparam",
+      "src_lib_openapi_limitparam",
+      "src_lib_openapi_openapispec",
+      "src_lib_openapi_pageparam",
+      "src_lib_openapi_paginationschema",
+      "src_lib_openapi_searchresultschema",
+      "src_routes_api_v1_openapi_json_server",
+      "src_routes_api_v1_openapi_json_server_get",
+      "src_routes_api_v1_openapi_yaml_server",
+      "src_routes_api_v1_openapi_yaml_server_get",
+      "src_routes_well_known_openapi_json_server",
+      "src_routes_well_known_openapi_json_server_get",
+      "src_routes_well_known_openapi_yaml_server",
+      "src_routes_well_known_openapi_yaml_server_get"
+    ],
+    "11": [
+      "agents_skills_supabase_assets_feedback_issue_template",
+      "agents_skills_supabase_assets_feedback_issue_template_fix_suggestion",
+      "agents_skills_supabase_assets_feedback_issue_template_source",
+      "agents_skills_supabase_assets_feedback_issue_template_what_happened",
+      "agents_skills_supabase_references_skill_feedback",
+      "agents_skills_supabase_references_skill_feedback_skill_feedback",
+      "agents_skills_supabase_references_skill_feedback_steps",
+      "agents_skills_supabase_skill",
+      "agents_skills_supabase_skill_core_principles",
+      "agents_skills_supabase_skill_debugging",
+      "agents_skills_supabase_skill_making_and_committing_schema_changes",
+      "agents_skills_supabase_skill_option_a_declarative_schemas",
+      "agents_skills_supabase_skill_option_b_imperative_migrations",
+      "agents_skills_supabase_skill_reference_guides",
+      "agents_skills_supabase_skill_supabase",
+      "agents_skills_supabase_skill_supabase_cli",
+      "agents_skills_supabase_skill_supabase_documentation",
+      "agents_skills_supabase_skill_supabase_mcp_server"
+    ],
+    "12": [
+      "src_lib_components_pillinput",
+      "src_lib_components_spotlightsearch",
+      "src_lib_components_spotlightsearch_destroy",
+      "src_lib_components_spotlightsearch_filter",
+      "src_lib_components_spotlightsearch_if",
+      "src_lib_components_spotlightsearch_some",
+      "src_lib_types",
+      "src_lib_types_comment",
+      "src_lib_types_navitem",
+      "src_lib_types_post",
+      "src_lib_types_project",
+      "src_lib_types_projectlanguage",
+      "src_lib_types_searchresult",
+      "src_lib_types_section",
+      "src_lib_types_theme",
+      "src_lib_utils_pillparsing",
+      "src_lib_utils_pillparsing_splitescapedcommas",
+      "src_lib_utils_pillparsing_tryescapecomma"
+    ],
+    "13": [
+      "agents_skills_task_observer_readme",
+      "agents_skills_task_observer_readme_claude_environment_notes",
+      "agents_skills_task_observer_readme_compatibility",
+      "agents_skills_task_observer_readme_contributing",
+      "agents_skills_task_observer_readme_further_reading",
+      "agents_skills_task_observer_readme_how_it_works",
+      "agents_skills_task_observer_readme_installation",
+      "agents_skills_task_observer_readme_license",
+      "agents_skills_task_observer_readme_quick_start",
+      "agents_skills_task_observer_readme_recommended_by",
+      "agents_skills_task_observer_readme_security_audit",
+      "agents_skills_task_observer_readme_task_observer_one_skill_to_rule_them_all",
+      "agents_skills_task_observer_readme_the_meta_skill_that_builds_and_improves_all_your_skills_including_itself",
+      "agents_skills_task_observer_readme_the_self_improving_part",
+      "agents_skills_task_observer_readme_what_it_does",
+      "agents_skills_task_observer_readme_who_it_s_for",
+      "agents_skills_task_observer_readme_why_you_should_use_this_meta_skill"
+    ],
+    "14": [
+      "aws_sdk_client_s3",
+      "lucide_svelte",
+      "marked",
+      "package_dependencies",
+      "package_dependencies_aws_sdk_client_s3",
+      "package_dependencies_highlight_js",
+      "package_dependencies_lucide_svelte",
+      "package_dependencies_marked",
+      "package_dependencies_ogl",
+      "package_dependencies_pdf_lib",
+      "package_dependencies_sentry_sveltekit",
+      "package_dependencies_supabase_supabase_js",
+      "package_json_highlight_js",
+      "package_json_ogl",
+      "pdf_lib",
+      "sentry_sveltekit",
+      "supabase_supabase_js"
+    ],
+    "15": [
+      "navigation",
+      "reactivity",
+      "src_lib_stores_a11ystore_svelte",
+      "src_lib_stores_a11ystore_svelte_a11ysettings",
+      "src_lib_stores_a11ystore_svelte_a11ystore",
+      "src_lib_stores_a11ystore_svelte_defaults",
+      "src_lib_stores_a11ystore_svelte_fontscale",
+      "src_lib_stores_themestore_svelte",
+      "src_lib_stores_themestore_svelte_themestore",
+      "src_routes_admin_login_page",
+      "src_routes_admin_page",
+      "src_routes_admin_page_if",
+      "src_routes_blog_slug_page",
+      "src_routes_blog_slug_types",
+      "src_routes_error",
+      "src_routes_layout",
+      "state"
+    ],
+    "16": [
+      "agents_skills_supabase_postgres_best_practices_references_contributing",
+      "agents_skills_supabase_postgres_best_practices_references_contributing_1_concrete_transformation_patterns",
+      "agents_skills_supabase_postgres_best_practices_references_contributing_2_error_first_structure",
+      "agents_skills_supabase_postgres_best_practices_references_contributing_3_quantified_impact",
+      "agents_skills_supabase_postgres_best_practices_references_contributing_4_self_contained_examples",
+      "agents_skills_supabase_postgres_best_practices_references_contributing_5_semantic_naming",
+      "agents_skills_supabase_postgres_best_practices_references_contributing_code_example_standards",
+      "agents_skills_supabase_postgres_best_practices_references_contributing_comments",
+      "agents_skills_supabase_postgres_best_practices_references_contributing_impact_level_guidelines",
+      "agents_skills_supabase_postgres_best_practices_references_contributing_key_principles",
+      "agents_skills_supabase_postgres_best_practices_references_contributing_language_tags",
+      "agents_skills_supabase_postgres_best_practices_references_contributing_reference_standards",
+      "agents_skills_supabase_postgres_best_practices_references_contributing_review_checklist",
+      "agents_skills_supabase_postgres_best_practices_references_contributing_sql_formatting",
+      "agents_skills_supabase_postgres_best_practices_references_contributing_when_to_include_application_code",
+      "agents_skills_supabase_postgres_best_practices_references_contributing_writing_guidelines_for_postgres_references"
+    ],
+    "17": [
+      "agents_skills_task_observer_user_guide",
+      "agents_skills_task_observer_user_guide_checking_in_on_observations",
+      "agents_skills_task_observer_user_guide_checking_whether_the_skill_has_loaded",
+      "agents_skills_task_observer_user_guide_dual_layer_activation",
+      "agents_skills_task_observer_user_guide_getting_kickstarted",
+      "agents_skills_task_observer_user_guide_getting_started_with_the_task_observer_meta_skill_aka_one_skill_to_rule_them_all",
+      "agents_skills_task_observer_user_guide_how_the_skill_works_during_a_session",
+      "agents_skills_task_observer_user_guide_making_the_skill_your_own",
+      "agents_skills_task_observer_user_guide_open_source_vs_internal_skills",
+      "agents_skills_task_observer_user_guide_setting_up_your_shared_folder",
+      "agents_skills_task_observer_user_guide_the_cross_cutting_principles_file",
+      "agents_skills_task_observer_user_guide_the_skill_creator",
+      "agents_skills_task_observer_user_guide_the_weekly_review_now_possible_via_scheduled_tasks",
+      "agents_skills_task_observer_user_guide_using_the_skill_in_chats",
+      "agents_skills_task_observer_user_guide_what_gets_stored_where",
+      "agents_skills_task_observer_user_guide_where_the_skill_runs"
+    ],
+    "18": [
+      "src_lib_article_helpfulblock",
+      "src_lib_components_alertdialog",
+      "src_lib_components_button",
+      "src_lib_components_button_children",
+      "src_lib_components_button_sizestyles",
+      "src_lib_components_button_string",
+      "src_lib_components_button_stylekey",
+      "src_lib_components_button_trailing",
+      "src_lib_components_button_type_primary_tone_neutral_htmltype_button_size_md_isloading_false_disabled_false_fullwidth_false_leading_trailing_showeschint_false_href_target_rel_download_class_classname_children_restprops",
+      "src_lib_components_confirmationdialog",
+      "src_lib_components_confirmationdialog_children",
+      "src_lib_components_contactrow",
+      "src_lib_components_dialog",
+      "src_lib_components_errorstate",
+      "src_lib_components_sharedialog",
+      "src_lib_components_shinytext"
+    ],
+    "19": [
+      "elements",
+      "src_lib_components_checkbox",
+      "src_lib_components_filter_dropdownselect",
+      "src_lib_components_filter_dropdowntrigger",
+      "src_lib_components_filter_filtercheckboxgroup",
+      "src_lib_components_filter_filterselect",
+      "src_lib_components_filter_sortcontrol",
+      "src_lib_components_imagewithskeleton",
+      "src_lib_components_imagewithskeleton_cn",
+      "src_lib_components_input",
+      "src_lib_components_profilecard",
+      "src_lib_components_select",
+      "src_lib_components_textarea",
+      "src_lib_utils_actions",
+      "src_lib_utils_actions_autoresize"
+    ],
+    "20": [
+      "src_lib_stores_usefiltersort_svelte",
+      "src_lib_stores_usefiltersort_svelte_activefilterchip",
+      "src_lib_stores_usefiltersort_svelte_createfiltersortstore",
+      "src_lib_stores_usefiltersort_svelte_createfiltersortstore_clearallfilters",
+      "src_lib_stores_usefiltersort_svelte_createfiltersortstore_parsefromurl",
+      "src_lib_stores_usefiltersort_svelte_createfiltersortstore_removefilter",
+      "src_lib_stores_usefiltersort_svelte_createfiltersortstore_setsearch",
+      "src_lib_stores_usefiltersort_svelte_createfiltersortstore_setsinglefilter",
+      "src_lib_stores_usefiltersort_svelte_createfiltersortstore_setsort",
+      "src_lib_stores_usefiltersort_svelte_createfiltersortstore_synctourl",
+      "src_lib_stores_usefiltersort_svelte_createfiltersortstore_togglemultifilter",
+      "src_lib_stores_usefiltersort_svelte_createfiltersortstore_togglesortdirection",
+      "src_lib_stores_usefiltersort_svelte_filtersortoptions",
+      "src_lib_stores_usefiltersort_svelte_filtersortstore",
+      "src_lib_stores_usefiltersort_svelte_sortstate"
+    ],
+    "21": [
+      "agents_skills_dotenv_skill",
+      "agents_skills_dotenv_skill_agent_usage",
+      "agents_skills_dotenv_skill_common_tasks",
+      "agents_skills_dotenv_skill_decision_guide_dotenv_vs_dotenvx",
+      "agents_skills_dotenv_skill_dotenv",
+      "agents_skills_dotenv_skill_installation",
+      "agents_skills_dotenv_skill_production_guidance",
+      "agents_skills_dotenv_skill_recommend_dotenvx_when_appropriate",
+      "agents_skills_dotenv_skill_resources",
+      "agents_skills_dotenv_skill_safety_rules",
+      "agents_skills_dotenv_skill_troubleshooting_heuristics",
+      "agents_skills_dotenv_skill_usage",
+      "agents_skills_dotenv_skill_usage_tips",
+      "agents_skills_dotenv_skill_what_good_looks_like"
+    ],
+    "22": [
+      "agents_skills_svelte_core_bestpractices_skill",
+      "agents_skills_svelte_core_bestpractices_skill_avoid_legacy_features",
+      "agents_skills_svelte_core_bestpractices_skill_context",
+      "agents_skills_svelte_core_bestpractices_skill_derived",
+      "agents_skills_svelte_core_bestpractices_skill_each_blocks",
+      "agents_skills_svelte_core_bestpractices_skill_effect",
+      "agents_skills_svelte_core_bestpractices_skill_events",
+      "agents_skills_svelte_core_bestpractices_skill_inspect_trace",
+      "agents_skills_svelte_core_bestpractices_skill_props",
+      "agents_skills_svelte_core_bestpractices_skill_snippets",
+      "agents_skills_svelte_core_bestpractices_skill_state",
+      "agents_skills_svelte_core_bestpractices_skill_styling_child_components",
+      "agents_skills_svelte_core_bestpractices_skill_svelte_core_bestpractices",
+      "agents_skills_svelte_core_bestpractices_skill_using_javascript_variables_in_css"
+    ],
+    "23": [
+      "agents_skills_task_observer_skill",
+      "agents_skills_task_observer_skill_acting_on_observations",
+      "agents_skills_task_observer_skill_archival_on_write",
+      "agents_skills_task_observer_skill_how_to_log",
+      "agents_skills_task_observer_skill_log_structure",
+      "agents_skills_task_observer_skill_quick_reference",
+      "agents_skills_task_observer_skill_reference_files_load_on_demand_not_up_front",
+      "agents_skills_task_observer_skill_referencing_observations",
+      "agents_skills_task_observer_skill_session_start_protocol",
+      "agents_skills_task_observer_skill_surfacing_protocol",
+      "agents_skills_task_observer_skill_task_observer_continuous_skill_discovery_improvement",
+      "agents_skills_task_observer_skill_taxonomy_quick_version",
+      "agents_skills_task_observer_skill_what_to_watch_for",
+      "agents_skills_task_observer_skill_when_to_observe"
+    ],
+    "24": [
+      "ref_node",
+      "ref_svelte_kit_tsconfig_json",
+      "tsconfig",
+      "tsconfig_compileroptions",
+      "tsconfig_compileroptions_allowjs",
+      "tsconfig_compileroptions_checkjs",
+      "tsconfig_compileroptions_forceconsistentcasinginfilenames",
+      "tsconfig_compileroptions_resolvejsonmodule",
+      "tsconfig_compileroptions_rewriterelativeimportextensions",
+      "tsconfig_compileroptions_skiplibcheck",
+      "tsconfig_compileroptions_sourcemap",
+      "tsconfig_compileroptions_strict",
+      "tsconfig_compileroptions_types",
+      "tsconfig_extends"
+    ],
+    "25": [
+      "src_lib_stores_a11ystore_svelte_createa11ystore",
+      "src_lib_stores_a11ystore_svelte_createa11ystore_apply",
+      "src_lib_stores_a11ystore_svelte_createa11ystore_init",
+      "src_lib_stores_a11ystore_svelte_createa11ystore_parsestored",
+      "src_lib_stores_a11ystore_svelte_createa11ystore_persist",
+      "src_lib_stores_a11ystore_svelte_createa11ystore_reset",
+      "src_lib_stores_a11ystore_svelte_createa11ystore_setfontscale",
+      "src_lib_stores_a11ystore_svelte_createa11ystore_syncdom",
+      "src_lib_stores_a11ystore_svelte_createa11ystore_toggledyslexicfont",
+      "src_lib_stores_a11ystore_svelte_createa11ystore_togglefocushighlight",
+      "src_lib_stores_a11ystore_svelte_createa11ystore_togglehighcontrast",
+      "src_lib_stores_a11ystore_svelte_createa11ystore_togglereducemotion",
+      "src_lib_stores_a11ystore_svelte_createa11ystore_togglesolidsurfaces"
+    ],
+    "26": [
+      "agents_skills_security_audit_skill_anti_patterns_to_avoid",
+      "agents_skills_security_audit_skill_confirm_dynamically_when_you_can",
+      "agents_skills_security_audit_skill_core_principles",
+      "agents_skills_security_audit_skill_coverage_and_prior_runs",
+      "agents_skills_security_audit_skill_defense_in_depth_gaps_are_not_vulnerabilities",
+      "agents_skills_security_audit_skill_determine_the_baseline_dynamically",
+      "agents_skills_security_audit_skill_only_report_what_you_can_exploit",
+      "agents_skills_security_audit_skill_platform_terminology",
+      "agents_skills_security_audit_skill_security_audit",
+      "agents_skills_security_audit_skill_setup",
+      "agents_skills_security_audit_skill_severity_requires_impact",
+      "agents_skills_security_audit_skill_workflow_overview"
+    ],
+    "27": [
+      "agents_skills_task_observer_references_skill_authoring",
+      "agents_skills_task_observer_references_skill_authoring_author_attribution_template",
+      "agents_skills_task_observer_references_skill_authoring_confidentiality_layers",
+      "agents_skills_task_observer_references_skill_authoring_editing_skills_always_start_from_the_live_file",
+      "agents_skills_task_observer_references_skill_authoring_lean_content",
+      "agents_skills_task_observer_references_skill_authoring_licensing",
+      "agents_skills_task_observer_references_skill_authoring_new_skills",
+      "agents_skills_task_observer_references_skill_authoring_principle_propagation",
+      "agents_skills_task_observer_references_skill_authoring_skill_authoring_taxonomy_licensing_confidentiality_editing_rules",
+      "agents_skills_task_observer_references_skill_authoring_taxonomy_in_full",
+      "agents_skills_task_observer_references_skill_authoring_the_pre_flight_principle",
+      "agents_skills_task_observer_references_skill_authoring_verifying_relocations_and_restructures"
+    ],
+    "28": [
+      "package_scripts",
+      "package_scripts_build",
+      "package_scripts_build_preview",
+      "package_scripts_check",
+      "package_scripts_check_watch",
+      "package_scripts_dev",
+      "package_scripts_dev_preview",
+      "package_scripts_format",
+      "package_scripts_lint",
+      "package_scripts_prepack",
+      "package_scripts_prepare",
+      "package_scripts_preview"
+    ],
+    "29": [
+      "supabase_functions_admin_index",
+      "supabase_functions_admin_index_cors_headers",
+      "supabase_functions_admin_index_getr2client",
+      "supabase_functions_admin_index_handlecvdelete",
+      "supabase_functions_admin_index_handlecvupload",
+      "supabase_functions_admin_index_jsonresponse",
+      "supabase_functions_admin_index_r2_access_key_id",
+      "supabase_functions_admin_index_r2_account_id",
+      "supabase_functions_admin_index_r2_bucket_name",
+      "supabase_functions_admin_index_r2_public_url",
+      "supabase_functions_admin_index_r2_secret_access_key",
+      "supabase_functions_admin_index_requireadmin"
+    ],
+    "30": [
+      "agents_skills_dotenvx_skill",
+      "agents_skills_dotenvx_skill_agent_usage",
+      "agents_skills_dotenvx_skill_core_capability_guidance",
+      "agents_skills_dotenvx_skill_dotenvx",
+      "agents_skills_dotenvx_skill_installation",
+      "agents_skills_dotenvx_skill_node_integration",
+      "agents_skills_dotenvx_skill_references",
+      "agents_skills_dotenvx_skill_safety_rules",
+      "agents_skills_dotenvx_skill_usage",
+      "agents_skills_dotenvx_skill_what_good_looks_like",
+      "agents_skills_dotenvx_skill_when_to_recommend_dotenvx"
+    ],
+    "31": [
+      "agents_skills_rest_api_best_practices_references_security_and_reliability",
+      "agents_skills_rest_api_best_practices_references_security_and_reliability_authentication",
+      "agents_skills_rest_api_best_practices_references_security_and_reliability_content_types",
+      "agents_skills_rest_api_best_practices_references_security_and_reliability_cors",
+      "agents_skills_rest_api_best_practices_references_security_and_reliability_documentation_as_contract",
+      "agents_skills_rest_api_best_practices_references_security_and_reliability_idempotency",
+      "agents_skills_rest_api_best_practices_references_security_and_reliability_observability",
+      "agents_skills_rest_api_best_practices_references_security_and_reliability_rate_limiting",
+      "agents_skills_rest_api_best_practices_references_security_and_reliability_response_shaping",
+      "agents_skills_rest_api_best_practices_references_security_and_reliability_security_idempotency_observability_and_reliability",
+      "agents_skills_rest_api_best_practices_references_security_and_reliability_testing_dimensions"
+    ],
+    "32": [
+      "package",
+      "package_exports",
+      "package_license",
+      "package_name",
+      "package_private",
+      "package_sideeffects",
+      "package_svelte",
+      "package_type",
+      "package_types",
+      "package_version",
+      "ref_css"
+    ],
+    "33": [
+      "src_app_d",
+      "src_app_d_app",
+      "src_app_d_error",
+      "src_app_d_platform",
+      "src_app_d_r2bucket",
+      "src_app_d_r2bucket_delete",
+      "src_app_d_r2bucket_get",
+      "src_app_d_r2bucket_put",
+      "src_app_d_r2object",
+      "src_app_d_ratelimit",
+      "src_app_d_ratelimit_limit"
+    ],
+    "34": [
+      "src_lib_components_dialogclosebutton",
+      "src_lib_components_dialogheader",
+      "src_lib_components_filter_accessibilityselect",
+      "src_lib_components_filter_contentfontselect",
+      "src_lib_components_filter_themeselect",
+      "src_lib_components_iconbutton",
+      "src_lib_components_skiplink",
+      "src_lib_components_topnav",
+      "src_lib_layout_footerlegalrow",
+      "src_lib_layout_footerlegalrow_getfullyear",
+      "src_lib_layout_footersection"
+    ],
+    "35": [
+      "src_lib_utils_formatters",
+      "src_lib_utils_formatters_formatabsolutedate",
+      "src_lib_utils_formatters_formatcommentcount",
+      "src_lib_utils_formatters_formatreadtime",
+      "src_lib_utils_formatters_formatrelativetime",
+      "src_lib_utils_formatters_formatviewcount",
+      "src_lib_utils_formatters_getrelativetimenextupdatems",
+      "src_lib_utils_formatters_matchrelativeunit",
+      "src_lib_utils_formatters_relative_units",
+      "src_lib_utils_formatters_relativeunit",
+      "src_lib_utils_formatters_todate"
+    ],
+    "36": [
+      "agents_skills_security_audit_hunting",
+      "agents_skills_security_audit_hunting_hunting_methodology_include_in_every_phase_2_agent_prompt",
+      "agents_skills_security_audit_hunting_phase_2_hunt_for_vulnerabilities",
+      "agents_skills_security_audit_hunting_vulnerability_hunting",
+      "agents_skills_security_audit_validation_and_reporting",
+      "agents_skills_security_audit_validation_and_reporting_phase_3_validate_findings",
+      "agents_skills_security_audit_validation_and_reporting_phase_4_report",
+      "agents_skills_security_audit_validation_and_reporting_phase_5_structured_output_and_schema_check",
+      "agents_skills_security_audit_validation_and_reporting_phase_6_independent_verification",
+      "agents_skills_security_audit_validation_and_reporting_validation_reporting_and_verification"
+    ],
+    "37": [
+      "agents_skills_supabase_postgres_best_practices_references_sections",
+      "agents_skills_supabase_postgres_best_practices_references_sections_1_query_performance_query",
+      "agents_skills_supabase_postgres_best_practices_references_sections_2_connection_management_conn",
+      "agents_skills_supabase_postgres_best_practices_references_sections_3_security_rls_security",
+      "agents_skills_supabase_postgres_best_practices_references_sections_4_schema_design_schema",
+      "agents_skills_supabase_postgres_best_practices_references_sections_5_concurrency_locking_lock",
+      "agents_skills_supabase_postgres_best_practices_references_sections_6_data_access_patterns_data",
+      "agents_skills_supabase_postgres_best_practices_references_sections_7_monitoring_diagnostics_monitor",
+      "agents_skills_supabase_postgres_best_practices_references_sections_8_advanced_features_advanced",
+      "agents_skills_supabase_postgres_best_practices_references_sections_section_definitions"
+    ],
+    "38": [
+      "public",
+      "src_lib_components_gradientwaves",
+      "src_routes_page",
+      "src_routes_page_codecommand",
+      "src_routes_page_formatperiod",
+      "src_routes_page_pluralize",
+      "src_routes_page_skillgroupbasis",
+      "src_routes_page_skillssnapshot",
+      "src_routes_page_snapshotskillgroups",
+      "src_routes_page_tagitem"
+    ],
+    "39": [
+      "src_lib_components_legalpagelayout",
+      "src_lib_stores_contentfontstore_svelte",
+      "src_lib_stores_contentfontstore_svelte_contentfont",
+      "src_lib_stores_contentfontstore_svelte_contentfontstore",
+      "src_lib_stores_contentfontstore_svelte_createcontentfontstore",
+      "src_lib_stores_contentfontstore_svelte_createcontentfontstore_reset",
+      "src_lib_stores_contentfontstore_svelte_createcontentfontstore_setfont",
+      "src_routes_privacy_page",
+      "src_routes_security_page",
+      "src_routes_terms_page"
+    ],
+    "40": [
+      "src_lib_stores_toaststore_svelte",
+      "src_lib_stores_toaststore_svelte_error",
+      "src_lib_stores_toaststore_svelte_formattoastmessage",
+      "src_lib_stores_toaststore_svelte_message",
+      "src_lib_stores_toaststore_svelte_show",
+      "src_lib_stores_toaststore_svelte_success",
+      "src_lib_stores_toaststore_svelte_toaststore",
+      "src_lib_stores_toaststore_svelte_toasttype",
+      "src_lib_stores_toaststore_svelte_type",
+      "src_lib_stores_toaststore_svelte_visible"
+    ],
+    "41": [
+      "agents_agent_skills_tooling",
+      "agents_architecture",
+      "agents_components_src_lib",
+      "agents_data_layer",
+      "agents_environments",
+      "agents_public_api_src_routes_api_v1",
+      "agents_routing_src_routes",
+      "agents_src_hooks_server_ts",
+      "agents_svelte_mcp_tooling"
+    ],
+    "42": [
+      "agents_skills_security_audit_client_side_client_side_and_browser_hunting",
+      "agents_skills_security_audit_client_side_client_side_trust_and_messaging_attack_classes_subagent_type_general",
+      "agents_skills_security_audit_client_side_core_discipline_include_in_every_agent_prompt_for_this_domain",
+      "agents_skills_security_audit_client_side_dom_based_injection_attack_classes_subagent_type_general",
+      "agents_skills_security_audit_client_side_prototype_pollution_attack_classes_subagent_type_general",
+      "agents_skills_security_audit_client_side_ui_redress_and_navigation_attack_classes_subagent_type_general",
+      "agents_skills_security_audit_client_side_universal_moves_apply_across_the_above",
+      "agents_skills_security_audit_client_side_validation_rules_apply_before_reporting_any_finding_here",
+      "agents_skills_security_audit_client_side_when_to_use_this_file"
+    ],
+    "43": [
+      "agents_skills_supabase_changelog",
+      "agents_skills_supabase_changelog_0_1_3_https_github_com_supabase_agent_skills_compare_v0_1_2_v0_1_3_2026_06_02",
+      "agents_skills_supabase_changelog_0_1_4_https_github_com_supabase_agent_skills_compare_v0_1_3_v0_1_4_2026_06_05",
+      "agents_skills_supabase_changelog_0_1_5_https_github_com_supabase_agent_skills_compare_v0_1_4_v0_1_5_2026_07_10",
+      "agents_skills_supabase_changelog_0_1_6_https_github_com_supabase_agent_skills_compare_v0_1_5_supabase_v0_1_6_2026_07_30",
+      "agents_skills_supabase_changelog_0_1_7_https_github_com_supabase_agent_skills_compare_v0_1_6_supabase_v0_1_7_2026_08_12",
+      "agents_skills_supabase_changelog_bug_fixes",
+      "agents_skills_supabase_changelog_changelog",
+      "agents_skills_supabase_changelog_features"
+    ],
+    "44": [
+      "agents_skills_supabase_postgres_best_practices_changelog",
+      "agents_skills_supabase_postgres_best_practices_changelog_1_2_0_https_github_com_supabase_agent_skills_compare_v1_1_1_v1_2_0_2026_06_02",
+      "agents_skills_supabase_postgres_best_practices_changelog_1_3_0_https_github_com_supabase_agent_skills_compare_v1_2_0_v1_3_0_2026_06_05",
+      "agents_skills_supabase_postgres_best_practices_changelog_1_4_0_https_github_com_supabase_agent_skills_compare_v1_3_0_v1_4_0_2026_07_10",
+      "agents_skills_supabase_postgres_best_practices_changelog_1_5_0_https_github_com_supabase_agent_skills_compare_supabase_postgres_best_practices_v1_4_0_supabase_postgres_best_practices_v1_5_0_2026_07_30",
+      "agents_skills_supabase_postgres_best_practices_changelog_1_6_0_https_github_com_supabase_agent_skills_compare_supabase_postgres_best_practices_v1_5_0_supabase_postgres_best_practices_v1_6_0_2026_07_30",
+      "agents_skills_supabase_postgres_best_practices_changelog_bug_fixes",
+      "agents_skills_supabase_postgres_best_practices_changelog_changelog",
+      "agents_skills_supabase_postgres_best_practices_changelog_features"
+    ],
+    "45": [
+      "claude_agent_skills_tooling",
+      "claude_architecture",
+      "claude_components_src_lib",
+      "claude_data_layer",
+      "claude_environments",
+      "claude_public_api_src_routes_api_v1",
+      "claude_routing_src_routes",
+      "claude_src_hooks_server_ts",
+      "claude_svelte_mcp_tooling"
+    ],
+    "46": [
+      "src_hooks_server",
+      "src_hooks_server_getcdnbaseurl",
+      "src_hooks_server_getclientip",
+      "src_hooks_server_getstaticmimetype",
+      "src_hooks_server_handle",
+      "src_hooks_server_handleerror",
+      "src_hooks_server_ratelimitmap",
+      "src_hooks_server_ratelimitrecord",
+      "src_hooks_server_static_asset_paths"
+    ],
+    "47": [
+      "src_lib_stores_codeblockprefsstore_svelte",
+      "src_lib_stores_codeblockprefsstore_svelte_codeblockprefs",
+      "src_lib_stores_codeblockprefsstore_svelte_codeblockprefsstore",
+      "src_lib_stores_codeblockprefsstore_svelte_defaults",
+      "src_lib_utils_hljstheme",
+      "src_lib_utils_hljstheme_codecolorscheme",
+      "src_lib_utils_hljstheme_resolvehljstheme",
+      "src_routes_admin_new_page",
+      "src_routes_admin_new_page_if"
+    ],
+    "48": [
+      "agents_skills_security_audit_ai_and_llm",
+      "agents_skills_security_audit_attack_classes",
+      "agents_skills_security_audit_attack_classes_attack_classes",
+      "agents_skills_security_audit_attack_classes_attack_classes_choose_and_split_based_on_phase_1",
+      "agents_skills_security_audit_client_side",
+      "agents_skills_security_audit_memory_safety_and_binary",
+      "agents_skills_security_audit_skill",
+      "agents_skills_security_audit_web_protocol_and_auth"
+    ],
+    "49": [
+      "agents_skills_security_audit_ai_and_llm_agent_and_tool_calling_attack_classes_subagent_type_general",
+      "agents_skills_security_audit_ai_and_llm_ai_llm_and_agent_hunting",
+      "agents_skills_security_audit_ai_and_llm_core_discipline_include_in_every_agent_prompt_for_this_domain",
+      "agents_skills_security_audit_ai_and_llm_output_handling_and_disclosure_attack_classes_subagent_type_general",
+      "agents_skills_security_audit_ai_and_llm_prompt_injection_attack_classes_subagent_type_general",
+      "agents_skills_security_audit_ai_and_llm_universal_moves_apply_across_the_above",
+      "agents_skills_security_audit_ai_and_llm_validation_rules_apply_before_reporting_any_finding_here",
+      "agents_skills_security_audit_ai_and_llm_when_to_use_this_file"
+    ],
+    "50": [
+      "agents_skills_security_audit_validate_findings",
+      "agents_skills_security_audit_validate_findings_collect",
+      "agents_skills_security_audit_validate_findings_finddiscriminator",
+      "agents_skills_security_audit_validate_findings_fs",
+      "agents_skills_security_audit_validate_findings_path",
+      "agents_skills_security_audit_validate_findings_schemapath",
+      "agents_skills_security_audit_validate_findings_typeof",
+      "agents_skills_security_audit_validate_findings_validate"
+    ],
+    "51": [
+      "package_devdependencies_tailwindcss",
+      "package_keywords",
+      "ref_farhan",
+      "ref_farhan_kurnia_pratama",
+      "ref_kurnia",
+      "ref_pratama",
+      "ref_sveltekit",
+      "tailwindcss"
+    ],
+    "52": [
+      "readme_build_for_production",
+      "readme_code_quality_checks",
+      "readme_configure_environment_variables",
+      "readme_get_started",
+      "readme_install_dependencies",
+      "readme_prerequisites",
+      "readme_preview_production_build",
+      "readme_start_development_server"
+    ],
+    "53": [
+      "src_lib_components_card",
+      "src_lib_components_card_children",
+      "src_lib_components_emptystate",
+      "src_lib_components_filter_filteremptystate",
+      "src_lib_components_linklistsection",
+      "src_lib_components_listrow",
+      "src_lib_components_listrow_title_subtitle_href_target_rel_leading_actions_children_class_classname",
+      "src_lib_components_sectionheader"
+    ],
+    "54": [
+      "src_lib_stores_codeblockprefsstore_svelte_createcodeblockprefsstore",
+      "src_lib_stores_codeblockprefsstore_svelte_createcodeblockprefsstore_apply",
+      "src_lib_stores_codeblockprefsstore_svelte_createcodeblockprefsstore_cyclecolorscheme",
+      "src_lib_stores_codeblockprefsstore_svelte_createcodeblockprefsstore_init",
+      "src_lib_stores_codeblockprefsstore_svelte_createcodeblockprefsstore_parsestored",
+      "src_lib_stores_codeblockprefsstore_svelte_createcodeblockprefsstore_persist",
+      "src_lib_stores_codeblockprefsstore_svelte_createcodeblockprefsstore_togglelinenumbers",
+      "src_lib_stores_codeblockprefsstore_svelte_createcodeblockprefsstore_togglewrap"
+    ],
+    "55": [
+      "src_lib_utils_turnstile",
+      "src_lib_utils_turnstile_getturnstileresponse",
+      "src_lib_utils_turnstile_resetturnstile",
+      "src_lib_utils_turnstile_turnstilesitekey",
+      "src_lib_utils_turnstile_turnstilewidget",
+      "src_lib_utils_turnstile_turnstilewidget_render",
+      "src_lib_utils_turnstile_turnstilewidgetoptions",
+      "src_lib_utils_turnstile_window"
+    ],
+    "56": [
+      "agents",
+      "agents_code_style",
+      "agents_commands",
+      "agents_git_workflow",
+      "agents_project",
+      "agents_repository_guidelines",
+      "src_routes_api_v1_readme"
+    ],
+    "57": [
+      "agents_skills_rest_api_best_practices_references_errors_and_versioning",
+      "agents_skills_rest_api_best_practices_references_errors_and_versioning_backward_compatibility_principle",
+      "agents_skills_rest_api_best_practices_references_errors_and_versioning_deprecation_process",
+      "agents_skills_rest_api_best_practices_references_errors_and_versioning_error_responses_and_versioning",
+      "agents_skills_rest_api_best_practices_references_errors_and_versioning_standardized_error_structure",
+      "agents_skills_rest_api_best_practices_references_errors_and_versioning_validation_errors_return_all_at_once",
+      "agents_skills_rest_api_best_practices_references_errors_and_versioning_versioning"
+    ],
+    "58": [
+      "agents_skills_security_audit_memory_safety_and_binary_core_discipline_include_in_every_agent_prompt_for_this_domain",
+      "agents_skills_security_audit_memory_safety_and_binary_kernel_privileged_interface_attack_classes_subagent_type_general",
+      "agents_skills_security_audit_memory_safety_and_binary_memory_safety_attack_classes_subagent_type_general",
+      "agents_skills_security_audit_memory_safety_and_binary_memory_safety_binary_and_kernel_hunting",
+      "agents_skills_security_audit_memory_safety_and_binary_universal_moves_apply_across_the_above",
+      "agents_skills_security_audit_memory_safety_and_binary_validation_rules_apply_before_reporting_any_finding_here",
+      "agents_skills_security_audit_memory_safety_and_binary_when_to_use_this_file"
+    ],
+    "59": [
+      "agents_skills_security_audit_web_protocol_and_auth_authentication_protocol_attack_classes_subagent_type_general",
+      "agents_skills_security_audit_web_protocol_and_auth_core_discipline_include_in_every_agent_prompt_for_this_domain",
+      "agents_skills_security_audit_web_protocol_and_auth_http_protocol_and_authentication_hunting",
+      "agents_skills_security_audit_web_protocol_and_auth_http_request_framing_attack_classes_subagent_type_general",
+      "agents_skills_security_audit_web_protocol_and_auth_universal_moves_apply_across_the_above",
+      "agents_skills_security_audit_web_protocol_and_auth_validation_rules_apply_before_reporting_any_finding_here",
+      "agents_skills_security_audit_web_protocol_and_auth_when_to_use_this_file"
+    ],
+    "60": [
+      "agents_skills_svelte_code_writer_skill",
+      "agents_skills_svelte_code_writer_skill_cli_tools",
+      "agents_skills_svelte_code_writer_skill_get_documentation",
+      "agents_skills_svelte_code_writer_skill_list_documentation_sections",
+      "agents_skills_svelte_code_writer_skill_svelte_autofixer",
+      "agents_skills_svelte_code_writer_skill_svelte_code_writer",
+      "agents_skills_svelte_code_writer_skill_workflow"
+    ],
+    "61": [
+      "agents_skills_task_observer_references_environments",
+      "agents_skills_task_observer_references_environments_compaction_behaviour",
+      "agents_skills_task_observer_references_environments_environments_activation_setup_and_handoff_doc_mode",
+      "agents_skills_task_observer_references_environments_handoff_doc_analysis_when_one_arrives",
+      "agents_skills_task_observer_references_environments_handoff_doc_mode_no_persistent_storage",
+      "agents_skills_task_observer_references_environments_recommended_activation_setup",
+      "agents_skills_task_observer_references_environments_user_facing_documentation"
+    ],
+    "62": [
+      "src_routes_api_v1_readme_author",
+      "src_routes_api_v1_readme_blog",
+      "src_routes_api_v1_readme_comments",
+      "src_routes_api_v1_readme_discovery_machine_readable_docs",
+      "src_routes_api_v1_readme_endpoints",
+      "src_routes_api_v1_readme_search",
+      "src_routes_api_v1_readme_views"
+    ],
+    "63": [
+      "src_routes_api_v1_readme_cors",
+      "src_routes_api_v1_readme_error_codes",
+      "src_routes_api_v1_readme_errors",
+      "src_routes_api_v1_readme_fkp_my_id_public_rest_api_v1",
+      "src_routes_api_v1_readme_markdown_responses",
+      "src_routes_api_v1_readme_pagination",
+      "src_routes_api_v1_readme_rate_limits"
+    ],
+    "64": [
+      "agents_skills_rest_api_best_practices_references_methods_and_status_codes",
+      "agents_skills_rest_api_best_practices_references_methods_and_status_codes_examples",
+      "agents_skills_rest_api_best_practices_references_methods_and_status_codes_http_methods",
+      "agents_skills_rest_api_best_practices_references_methods_and_status_codes_http_status_codes",
+      "agents_skills_rest_api_best_practices_references_methods_and_status_codes_resource_naming",
+      "agents_skills_rest_api_best_practices_references_methods_and_status_codes_resource_naming_http_methods_and_status_codes"
+    ],
+    "65": [
+      "agents_skills_rest_api_best_practices_references_pagination_and_filtering",
+      "agents_skills_rest_api_best_practices_references_pagination_and_filtering_filtering",
+      "agents_skills_rest_api_best_practices_references_pagination_and_filtering_pagination_filtering_sorting_search",
+      "agents_skills_rest_api_best_practices_references_pagination_and_filtering_pagination_strategies",
+      "agents_skills_rest_api_best_practices_references_pagination_and_filtering_search",
+      "agents_skills_rest_api_best_practices_references_pagination_and_filtering_sorting"
+    ],
+    "66": [
+      "agents_skills_rest_api_best_practices_skill",
+      "agents_skills_rest_api_best_practices_skill_common_mistakes_to_flag_when_reviewing",
+      "agents_skills_rest_api_best_practices_skill_how_to_use_this_skill",
+      "agents_skills_rest_api_best_practices_skill_quick_reference_checklist",
+      "agents_skills_rest_api_best_practices_skill_references",
+      "agents_skills_rest_api_best_practices_skill_rest_api_best_practices"
+    ],
+    "67": [
+      "agents_skills_supabase_postgres_best_practices_skill",
+      "agents_skills_supabase_postgres_best_practices_skill_how_to_use",
+      "agents_skills_supabase_postgres_best_practices_skill_references",
+      "agents_skills_supabase_postgres_best_practices_skill_rule_categories_by_priority",
+      "agents_skills_supabase_postgres_best_practices_skill_supabase_postgres_best_practices",
+      "agents_skills_supabase_postgres_best_practices_skill_when_to_apply"
+    ],
+    "68": [
+      "agents_skills_task_observer_references_weekly_review",
+      "agents_skills_task_observer_references_weekly_review_approval_policy",
+      "agents_skills_task_observer_references_weekly_review_comprehensive_review_scheduled_or_fallback",
+      "agents_skills_task_observer_references_weekly_review_constraints",
+      "agents_skills_task_observer_references_weekly_review_delivering_updated_skills",
+      "agents_skills_task_observer_references_weekly_review_steps"
+    ],
+    "69": [
+      "claude",
+      "claude_code_style",
+      "claude_commands",
+      "claude_git_workflow",
+      "claude_graphify",
+      "claude_project"
+    ],
+    "70": [
+      "package_devdependencies_svelte",
+      "package_peerdependencies",
+      "package_peerdependencies_svelte",
+      "package_peerdependencies_sveltejs_kit",
+      "ref_svelte",
+      "sveltejs_kit"
+    ],
+    "71": [
+      "security",
+      "security_recognition",
+      "security_reporting_a_vulnerability",
+      "security_scope",
+      "security_security_policy",
+      "security_what_to_expect"
+    ],
+    "72": [
+      "src_lib_components_feedbackbutton",
+      "src_lib_components_scrolltotopbutton",
+      "src_lib_components_toast",
+      "src_lib_utils_scroll",
+      "src_lib_utils_scroll_scrolltotop",
+      "transition"
+    ],
+    "73": [
+      "supabase_migrations_20260810000000_rename_tables_to_db_prefix",
+      "supabase_migrations_20260810000000_rename_tables_to_db_prefix_public_db_increment_view",
+      "supabase_migrations_20260810000000_rename_tables_to_db_prefix_public_db_save_cv",
+      "supabase_migrations_20260810000000_rename_tables_to_db_prefix_public_db_save_legal",
+      "supabase_migrations_20260810000000_rename_tables_to_db_prefix_public_db_save_links",
+      "supabase_migrations_20260810000000_rename_tables_to_db_prefix_public_db_save_skills"
+    ],
+    "74": [
+      "supabase_migrations_20260811000000_secure_app_metadata_and_rpcs",
+      "supabase_migrations_20260811000000_secure_app_metadata_and_rpcs_public_db_save_cv",
+      "supabase_migrations_20260811000000_secure_app_metadata_and_rpcs_public_db_save_legal",
+      "supabase_migrations_20260811000000_secure_app_metadata_and_rpcs_public_db_save_links",
+      "supabase_migrations_20260811000000_secure_app_metadata_and_rpcs_public_db_save_skills",
+      "supabase_migrations_20260811000000_secure_app_metadata_and_rpcs_public_grant_admin_role_by_email"
+    ],
+    "75": [
+      "readme",
+      "readme_contributing",
+      "readme_deployment",
+      "readme_license",
+      "readme_public_api"
+    ],
+    "76": [
+      "src_lib_article_articlemeta",
+      "src_lib_components_commentthread",
+      "src_lib_components_commentthread_childnode",
+      "src_lib_components_commentthread_statusbadge",
+      "src_lib_components_relativetime"
+    ],
+    "77": [
+      "src_lib_components_cventrycard",
+      "src_lib_components_skillgroup",
+      "src_lib_components_tag",
+      "src_lib_components_tag_cn",
+      "src_lib_components_taggroup"
+    ],
+    "78": [
+      "src_lib_stores_themestore_svelte_createthemestore",
+      "src_lib_stores_themestore_svelte_createthemestore_apply",
+      "src_lib_stores_themestore_svelte_createthemestore_cycle",
+      "src_lib_stores_themestore_svelte_createthemestore_init",
+      "src_lib_stores_themestore_svelte_createthemestore_toggle"
+    ],
+    "79": [
+      "agents_skills_api_contract_check_skill",
+      "agents_skills_api_contract_check_skill_api_contract_check",
+      "agents_skills_api_contract_check_skill_output",
+      "agents_skills_api_contract_check_skill_steps"
+    ],
+    "80": [
+      "agents_skills_create_migration_skill",
+      "agents_skills_create_migration_skill_create_migration",
+      "agents_skills_create_migration_skill_output",
+      "agents_skills_create_migration_skill_steps"
+    ],
+    "81": [
+      "agents_skills_finish_feature_skill",
+      "agents_skills_finish_feature_skill_finish_feature",
+      "agents_skills_finish_feature_skill_output",
+      "agents_skills_finish_feature_skill_steps"
+    ],
+    "82": [
+      "agents_skills_ui_consistency_check_skill",
+      "agents_skills_ui_consistency_check_skill_output",
+      "agents_skills_ui_consistency_check_skill_steps",
+      "agents_skills_ui_consistency_check_skill_ui_consistency_check"
+    ],
+    "83": [
+      "package_files",
+      "ref_dist",
+      "ref_dist_spec",
+      "ref_dist_test"
+    ],
+    "84": [
+      "supabase_migrations_20260805000000_atomic_save_rpcs",
+      "supabase_migrations_20260805000000_atomic_save_rpcs_public_save_author_links",
+      "supabase_migrations_20260805000000_atomic_save_rpcs_public_save_cv_entries",
+      "supabase_migrations_20260805000000_atomic_save_rpcs_public_save_skills"
+    ],
+    "85": [
+      "supabase_migrations_20260807000000_close_rls_and_rpc_privilege_gaps",
+      "supabase_migrations_20260807000000_close_rls_and_rpc_privilege_gaps_public_save_author_links",
+      "supabase_migrations_20260807000000_close_rls_and_rpc_privilege_gaps_public_save_cv_entries",
+      "supabase_migrations_20260807000000_close_rls_and_rpc_privilege_gaps_public_save_skills"
+    ],
+    "86": [
+      "agents_skills_security_audit_reconnaissance",
+      "agents_skills_security_audit_reconnaissance_phase_1_understand_the_application",
+      "agents_skills_security_audit_reconnaissance_reconnaissance"
+    ],
+    "87": [
+      "src_lib_components_filter_filtertoolbar",
+      "src_lib_components_filter_filtertoolbar_searchslot",
+      "src_lib_components_filter_filtertoolbar_sortslot"
+    ],
+    "88": [
+      "src_lib_components_richcard",
+      "src_lib_components_richcard_children",
+      "src_lib_components_richcard_title_href_description_interactive_true_class_classname_meta_tags_actions_children"
+    ],
+    "89": [
+      "src_lib_layout_pagecontainer",
+      "src_lib_layout_pagecontainer_width_standard_as_div_class_classname_children",
+      "src_lib_layout_pagecontainer_widthstyles"
+    ],
+    "90": [
+      "src_lib_supabasefunctions",
+      "src_lib_supabasefunctions_getsupabasebaseurl",
+      "src_lib_supabasefunctions_proxytosupabaseedgefunction"
+    ],
+    "91": [
+      "src_routes_well_known_agent_skills_index_json_server",
+      "src_routes_well_known_agent_skills_index_json_server_digest",
+      "src_routes_well_known_agent_skills_index_json_server_get"
+    ],
+    "92": [
+      "supabase_migrations_20260809000000_legal_pages",
+      "supabase_migrations_20260809000000_legal_pages_public_legal_pages",
+      "supabase_migrations_20260809000000_legal_pages_public_save_legal_page"
+    ],
+    "93": [
+      "supabase_migrations_20260814000000_fix_parse_month_year_and_db_save_cv",
+      "supabase_migrations_20260814000000_fix_parse_month_year_and_db_save_cv_public_db_save_cv",
+      "supabase_migrations_20260814000000_fix_parse_month_year_and_db_save_cv_public_parse_month_year_to_date"
+    ],
+    "94": [
+      "agents_rules_graphify",
+      "agents_rules_graphify_graphify"
+    ],
+    "95": [
+      "agents_skills_supabase_postgres_best_practices_references_advanced_full_text_search",
+      "agents_skills_supabase_postgres_best_practices_references_advanced_full_text_search_use_tsvector_for_full_text_search"
+    ],
+    "96": [
+      "agents_skills_supabase_postgres_best_practices_references_advanced_jsonb_indexing",
+      "agents_skills_supabase_postgres_best_practices_references_advanced_jsonb_indexing_index_jsonb_columns_for_efficient_querying"
+    ],
+    "97": [
+      "agents_skills_supabase_postgres_best_practices_references_conn_idle_timeout",
+      "agents_skills_supabase_postgres_best_practices_references_conn_idle_timeout_configure_idle_connection_timeouts"
+    ],
+    "98": [
+      "agents_skills_supabase_postgres_best_practices_references_conn_limits",
+      "agents_skills_supabase_postgres_best_practices_references_conn_limits_set_appropriate_connection_limits"
+    ],
+    "99": [
+      "agents_skills_supabase_postgres_best_practices_references_conn_pooling",
+      "agents_skills_supabase_postgres_best_practices_references_conn_pooling_use_connection_pooling_for_all_applications"
+    ],
+    "100": [
+      "agents_skills_supabase_postgres_best_practices_references_conn_prepared_statements",
+      "agents_skills_supabase_postgres_best_practices_references_conn_prepared_statements_use_prepared_statements_correctly_with_pooling"
+    ],
+    "101": [
+      "agents_skills_supabase_postgres_best_practices_references_data_batch_inserts",
+      "agents_skills_supabase_postgres_best_practices_references_data_batch_inserts_batch_insert_statements_for_bulk_data"
+    ],
+    "102": [
+      "agents_skills_supabase_postgres_best_practices_references_data_n_plus_one",
+      "agents_skills_supabase_postgres_best_practices_references_data_n_plus_one_eliminate_n_1_queries_with_batch_loading"
+    ],
+    "103": [
+      "agents_skills_supabase_postgres_best_practices_references_data_pagination",
+      "agents_skills_supabase_postgres_best_practices_references_data_pagination_use_cursor_based_pagination_instead_of_offset"
+    ],
+    "104": [
+      "agents_skills_supabase_postgres_best_practices_references_data_upsert",
+      "agents_skills_supabase_postgres_best_practices_references_data_upsert_use_upsert_for_insert_or_update_operations"
+    ],
+    "105": [
+      "agents_skills_supabase_postgres_best_practices_references_lock_advisory",
+      "agents_skills_supabase_postgres_best_practices_references_lock_advisory_use_advisory_locks_for_application_level_locking"
+    ],
+    "106": [
+      "agents_skills_supabase_postgres_best_practices_references_lock_deadlock_prevention",
+      "agents_skills_supabase_postgres_best_practices_references_lock_deadlock_prevention_prevent_deadlocks_with_consistent_lock_ordering"
+    ],
+    "107": [
+      "agents_skills_supabase_postgres_best_practices_references_lock_short_transactions",
+      "agents_skills_supabase_postgres_best_practices_references_lock_short_transactions_keep_transactions_short_to_reduce_lock_contention"
+    ],
+    "108": [
+      "agents_skills_supabase_postgres_best_practices_references_lock_skip_locked",
+      "agents_skills_supabase_postgres_best_practices_references_lock_skip_locked_use_skip_locked_for_non_blocking_queue_processing"
+    ],
+    "109": [
+      "agents_skills_supabase_postgres_best_practices_references_monitor_explain_analyze",
+      "agents_skills_supabase_postgres_best_practices_references_monitor_explain_analyze_use_explain_analyze_to_diagnose_slow_queries"
+    ],
+    "110": [
+      "agents_skills_supabase_postgres_best_practices_references_monitor_pg_stat_statements",
+      "agents_skills_supabase_postgres_best_practices_references_monitor_pg_stat_statements_enable_pg_stat_statements_for_query_analysis"
+    ],
+    "111": [
+      "agents_skills_supabase_postgres_best_practices_references_monitor_vacuum_analyze",
+      "agents_skills_supabase_postgres_best_practices_references_monitor_vacuum_analyze_maintain_table_statistics_with_vacuum_and_analyze"
+    ],
+    "112": [
+      "agents_skills_supabase_postgres_best_practices_references_query_composite_indexes",
+      "agents_skills_supabase_postgres_best_practices_references_query_composite_indexes_create_composite_indexes_for_multi_column_queries"
+    ],
+    "113": [
+      "agents_skills_supabase_postgres_best_practices_references_query_covering_indexes",
+      "agents_skills_supabase_postgres_best_practices_references_query_covering_indexes_use_covering_indexes_to_avoid_table_lookups"
+    ],
+    "114": [
+      "agents_skills_supabase_postgres_best_practices_references_query_index_types",
+      "agents_skills_supabase_postgres_best_practices_references_query_index_types_choose_the_right_index_type_for_your_data"
+    ],
+    "115": [
+      "agents_skills_supabase_postgres_best_practices_references_query_missing_indexes",
+      "agents_skills_supabase_postgres_best_practices_references_query_missing_indexes_add_indexes_on_where_and_join_columns"
+    ],
+    "116": [
+      "agents_skills_supabase_postgres_best_practices_references_query_partial_indexes",
+      "agents_skills_supabase_postgres_best_practices_references_query_partial_indexes_use_partial_indexes_for_filtered_queries"
+    ],
+    "117": [
+      "agents_skills_supabase_postgres_best_practices_references_schema_constraints",
+      "agents_skills_supabase_postgres_best_practices_references_schema_constraints_add_constraints_safely_in_migrations"
+    ],
+    "118": [
+      "agents_skills_supabase_postgres_best_practices_references_schema_data_types",
+      "agents_skills_supabase_postgres_best_practices_references_schema_data_types_choose_appropriate_data_types"
+    ],
+    "119": [
+      "agents_skills_supabase_postgres_best_practices_references_schema_foreign_key_indexes",
+      "agents_skills_supabase_postgres_best_practices_references_schema_foreign_key_indexes_index_foreign_key_columns"
+    ],
+    "120": [
+      "agents_skills_supabase_postgres_best_practices_references_schema_lowercase_identifiers",
+      "agents_skills_supabase_postgres_best_practices_references_schema_lowercase_identifiers_use_lowercase_identifiers_for_compatibility"
+    ],
+    "121": [
+      "agents_skills_supabase_postgres_best_practices_references_schema_partitioning",
+      "agents_skills_supabase_postgres_best_practices_references_schema_partitioning_partition_large_tables_for_better_performance"
+    ],
+    "122": [
+      "agents_skills_supabase_postgres_best_practices_references_schema_primary_keys",
+      "agents_skills_supabase_postgres_best_practices_references_schema_primary_keys_select_optimal_primary_key_strategy"
+    ],
+    "123": [
+      "agents_skills_supabase_postgres_best_practices_references_security_privileges",
+      "agents_skills_supabase_postgres_best_practices_references_security_privileges_apply_principle_of_least_privilege"
+    ],
+    "124": [
+      "agents_skills_supabase_postgres_best_practices_references_security_rls_basics",
+      "agents_skills_supabase_postgres_best_practices_references_security_rls_basics_enable_row_level_security_for_multi_tenant_data"
+    ],
+    "125": [
+      "agents_skills_supabase_postgres_best_practices_references_security_rls_performance",
+      "agents_skills_supabase_postgres_best_practices_references_security_rls_performance_optimize_rls_policies_for_performance"
+    ],
+    "126": [
+      "agents_skills_supabase_postgres_best_practices_references_template",
+      "agents_skills_supabase_postgres_best_practices_references_template_rule_title"
+    ],
+    "127": [
+      "agents_workflows_graphify",
+      "agents_workflows_graphify_workflow_graphify"
+    ],
+    "128": [
+      "claude_claude_graphify",
+      "claude_claude_md_claude_claude"
+    ],
+    "129": [
+      "claude_hooks_block_bad_commit",
+      "claude_hooks_block_bad_commit_sh__entry"
+    ],
+    "130": [
+      "claude_hooks_block_sensitive_file_edits",
+      "claude_hooks_block_sensitive_file_edits_sh__entry"
+    ],
+    "131": [
+      "claude_hooks_block_supabase_admin_in_svelte",
+      "claude_hooks_block_supabase_admin_in_svelte_sh__entry"
+    ],
+    "132": [
+      "claude_hooks_check_before_stop",
+      "claude_hooks_check_before_stop_sh__entry"
+    ],
+    "133": [
+      "claude_hooks_format_on_write",
+      "claude_hooks_format_on_write_sh__entry"
+    ],
+    "134": [
+      "claude_hooks_graphify_refresh",
+      "claude_hooks_graphify_refresh_sh__entry"
+    ],
+    "135": [
+      "claude_hooks_guard_deploy_config",
+      "claude_hooks_guard_deploy_config_sh__entry"
+    ],
+    "136": [
+      "claude_hooks_sync_claude_agents_md",
+      "claude_hooks_sync_claude_agents_md_sh__entry"
+    ],
+    "137": [
+      "eslint_config",
+      "eslint_config_gitignorepath"
+    ],
+    "138": [
+      "prettier_config",
+      "prettier_config_config"
+    ],
+    "139": [
+      "src_hooks_client",
+      "src_hooks_client_handleerror"
+    ],
+    "140": [
+      "src_lib_components_statsgrid",
+      "src_lib_components_statsgrid_cn"
+    ],
+    "141": [
+      "src_routes_api_v1_server",
+      "src_routes_api_v1_server_get"
+    ],
+    "142": [
+      "src_routes_robots_txt_server",
+      "src_routes_robots_txt_server_get"
+    ],
+    "143": [
+      "src_routes_well_known_api_catalog_server",
+      "src_routes_well_known_api_catalog_server_get"
+    ],
+    "144": [
+      "supabase_migrations_20260815000000_add_tags_to_db_posts",
+      "supabase_migrations_20260815000000_add_tags_to_db_posts_public_validate_post_tags"
+    ],
+    "145": [
+      "claude_agents_api_reviewer"
+    ],
+    "146": [
+      "claude_agents_security_reviewer"
+    ],
+    "147": [
+      "claude_agents_ui_consistency_reviewer"
+    ],
+    "148": [
+      "highlight_js_highlight_js"
+    ],
+    "149": [
+      "lucide_svelte_svelte"
+    ],
+    "150": [
+      "ogl_ogl"
+    ],
+    "151": [
+      "public_author_links"
+    ],
+    "152": [
+      "public_author_profile"
+    ],
+    "153": [
+      "public_comments"
+    ],
+    "154": [
+      "public_cv_documents"
+    ],
+    "155": [
+      "public_db_posts"
+    ],
+    "156": [
+      "public_education"
+    ],
+    "157": [
+      "public_experiences"
+    ],
+    "158": [
+      "public_post_views"
+    ],
+    "159": [
+      "public_posts"
+    ],
+    "160": [
+      "public_skill_categories"
+    ],
+    "161": [
+      "public_skill_items"
+    ],
+    "162": [
+      "supabase_migrations_20260812000000_database_normalization_fixes"
+    ],
+    "163": [
+      "supabase_migrations_20260813000000_fix_admin_escalation_and_legal_rls"
+    ],
+    "164": [
+      "svelte_svelte"
+    ],
+    "165": [
+      "vite_config"
+    ]
+  },
+  "cohesion": {
+    "0": 0.05938375350140056,
+    "1": 0.06558441558441558,
+    "2": 0.043478260869565216,
+    "3": 0.046511627906976744,
+    "4": 0.15608465608465608,
+    "5": 0.12962962962962962,
+    "6": 0.11375661375661375,
+    "7": 0.16666666666666666,
+    "8": 0.10144927536231885,
+    "9": 0.11428571428571428,
+    "10": 0.11428571428571428,
+    "11": 0.1111111111111111,
+    "12": 0.10457516339869281,
+    "13": 0.11764705882352941,
+    "14": 0.11764705882352941,
+    "15": 0.16176470588235295,
+    "16": 0.125,
+    "17": 0.125,
+    "18": 0.14166666666666666,
+    "19": 0.14285714285714285,
+    "20": 0.2,
+    "21": 0.14285714285714285,
+    "22": 0.14285714285714285,
+    "23": 0.14285714285714285,
+    "24": 0.14285714285714285,
+    "25": 0.3076923076923077,
+    "26": 0.16666666666666666,
+    "27": 0.16666666666666666,
+    "28": 0.16666666666666666,
+    "29": 0.24242424242424243,
+    "30": 0.18181818181818182,
+    "31": 0.18181818181818182,
+    "32": 0.18181818181818182,
+    "33": 0.18181818181818182,
+    "34": 0.2545454545454545,
+    "35": 0.2545454545454545,
+    "36": 0.2,
+    "37": 0.2,
+    "38": 0.2,
+    "39": 0.2222222222222222,
+    "40": 0.26666666666666666,
+    "41": 0.2222222222222222,
+    "42": 0.2222222222222222,
+    "43": 0.4166666666666667,
+    "44": 0.4444444444444444,
+    "45": 0.2222222222222222,
+    "46": 0.3055555555555556,
+    "47": 0.3055555555555556,
+    "48": 0.39285714285714285,
+    "49": 0.25,
+    "50": 0.35714285714285715,
+    "51": 0.25,
+    "52": 0.25,
+    "53": 0.25,
+    "54": 0.42857142857142855,
+    "55": 0.25,
+    "56": 0.2857142857142857,
+    "57": 0.2857142857142857,
+    "58": 0.2857142857142857,
+    "59": 0.2857142857142857,
+    "60": 0.2857142857142857,
+    "61": 0.2857142857142857,
+    "62": 0.2857142857142857,
+    "63": 0.2857142857142857,
+    "64": 0.3333333333333333,
+    "65": 0.3333333333333333,
+    "66": 0.3333333333333333,
+    "67": 0.3333333333333333,
+    "68": 0.3333333333333333,
+    "69": 0.3333333333333333,
+    "70": 0.3333333333333333,
+    "71": 0.3333333333333333,
+    "72": 0.3333333333333333,
+    "73": 0.3333333333333333,
+    "74": 0.3333333333333333,
+    "75": 0.4,
+    "76": 0.4,
+    "77": 0.4,
+    "78": 0.8,
+    "79": 0.5,
+    "80": 0.5,
+    "81": 0.5,
+    "82": 0.5,
+    "83": 0.5,
+    "84": 0.5,
+    "85": 0.5,
+    "86": 0.6666666666666666,
+    "87": 0.6666666666666666,
+    "88": 0.6666666666666666,
+    "89": 0.6666666666666666,
+    "90": 1.0,
+    "91": 1.0,
+    "92": 0.6666666666666666,
+    "93": 0.6666666666666666,
+    "94": 1.0,
+    "95": 1.0,
+    "96": 1.0,
+    "97": 1.0,
+    "98": 1.0,
+    "99": 1.0,
+    "100": 1.0,
+    "101": 1.0,
+    "102": 1.0,
+    "103": 1.0,
+    "104": 1.0,
+    "105": 1.0,
+    "106": 1.0,
+    "107": 1.0,
+    "108": 1.0,
+    "109": 1.0,
+    "110": 1.0,
+    "111": 1.0,
+    "112": 1.0,
+    "113": 1.0,
+    "114": 1.0,
+    "115": 1.0,
+    "116": 1.0,
+    "117": 1.0,
+    "118": 1.0,
+    "119": 1.0,
+    "120": 1.0,
+    "121": 1.0,
+    "122": 1.0,
+    "123": 1.0,
+    "124": 1.0,
+    "125": 1.0,
+    "126": 1.0,
+    "127": 1.0,
+    "128": 1.0,
+    "129": 1.0,
+    "130": 1.0,
+    "131": 1.0,
+    "132": 1.0,
+    "133": 1.0,
+    "134": 1.0,
+    "135": 1.0,
+    "136": 1.0,
+    "137": 1.0,
+    "138": 1.0,
+    "139": 1.0,
+    "140": 1.0,
+    "141": 1.0,
+    "142": 1.0,
+    "143": 1.0,
+    "144": 1.0,
+    "145": 1.0,
+    "146": 1.0,
+    "147": 1.0,
+    "148": 1.0,
+    "149": 1.0,
+    "150": 1.0,
+    "151": 1.0,
+    "152": 1.0,
+    "153": 1.0,
+    "154": 1.0,
+    "155": 1.0,
+    "156": 1.0,
+    "157": 1.0,
+    "158": 1.0,
+    "159": 1.0,
+    "160": 1.0,
+    "161": 1.0,
+    "162": 1.0,
+    "163": 1.0,
+    "164": 1.0,
+    "165": 1.0
+  },
+  "gods": [
+    {
+      "id": "agents_skills_change_type_references_types_definisi_operasional_change_type",
+      "label": "Definisi Operasional Change Type",
+      "degree": 23
+    },
+    {
+      "id": "src_lib_supabase_supabase",
+      "label": "supabase",
+      "degree": 23
+    },
+    {
+      "id": "agents_skills_task_observer_readme_task_observer_one_skill_to_rule_them_all",
+      "label": "task-observer - One Skill to Rule Them All",
+      "degree": 16
+    },
+    {
+      "id": "src_lib_server_apierror_apierror",
+      "label": "apiError()",
+      "degree": 15
+    },
+    {
+      "id": "agents_skills_task_observer_user_guide_getting_started_with_the_task_observer_meta_skill_aka_one_skill_to_rule_them_all",
+      "label": "Getting Started with the task-observer meta-skill (aka \"One skill to rule them all\")",
+      "degree": 14
+    },
+    {
+      "id": "agents_skills_dotenv_skill_dotenv",
+      "label": "dotenv",
+      "degree": 13
+    },
+    {
+      "id": "agents_skills_svelte_core_bestpractices_skill_svelte_core_bestpractices",
+      "label": "svelte-core-bestpractices",
+      "degree": 13
+    },
+    {
+      "id": "agents_skills_task_observer_skill_task_observer_continuous_skill_discovery_improvement",
+      "label": "Task Observer \u2014 Continuous Skill Discovery & Improvement",
+      "degree": 13
+    },
+    {
+      "id": "src_lib_server_admincv_processcvgenerate",
+      "label": "processCvGenerate()",
+      "degree": 13
+    },
+    {
+      "id": "src_lib_stores_a11ystore_svelte_createa11ystore",
+      "label": "createA11yStore()",
+      "degree": 13
+    }
+  ],
+  "surprises": [
+    {
+      "source": "chrome-devtools",
+      "target": "bunx",
+      "source_files": [
+        ".claude/mcp.json",
+        ".mcp.json"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "connects across different repos/directories"
+    },
+    {
+      "source": "graphify",
+      "target": "uv",
+      "source_files": [
+        ".claude/mcp.json",
+        ".mcp.json"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "connects across different repos/directories"
+    },
+    {
+      "source": "svelte",
+      "target": "bunx",
+      "source_files": [
+        ".claude/mcp.json",
+        ".mcp.json"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "connects across different repos/directories"
+    },
+    {
+      "source": "svelte",
+      "target": "@sveltejs/mcp",
+      "source_files": [
+        ".claude/mcp.json",
+        ".mcp.json"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "connects across different repos/directories"
+    },
+    {
+      "source": "load()",
+      "target": "fetchAuthorProfileWithSocials()",
+      "source_files": [
+        "src/routes/+layout.server.ts",
+        "src/lib/author.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "peripheral node `load()` unexpectedly reaches hub `fetchAuthorProfileWithSocials()`"
+    }
+  ],
+  "tokens": {
+    "input": 0,
+    "output": 0
+  }
+}

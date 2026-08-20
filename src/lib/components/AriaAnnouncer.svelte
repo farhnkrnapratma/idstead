@@ -1,17 +1,17 @@
 <script lang="ts">
-  import {cn} from '../utils/cn'
+  import {cn} from '../utils/cn';
 
   interface Props {
-    message?: string
-    politeness?: 'polite' | 'assertive'
-    class?: string
+    message?: string;
+    politeness?: 'polite' | 'assertive';
+    class?: string;
   }
 
   let {
     message = '',
     politeness = 'polite',
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 </script>
 
 <div

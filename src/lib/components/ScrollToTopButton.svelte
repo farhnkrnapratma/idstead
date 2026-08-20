@@ -1,14 +1,14 @@
 <script lang="ts">
-  import {fade} from 'svelte/transition'
-  import {ArrowUp} from '@lucide/svelte'
-  import {scrollToTop} from '$lib/utils/scroll'
+  import {fade} from 'svelte/transition';
+  import {ArrowUp} from '@lucide/svelte';
+  import {scrollToTop} from '$lib/utils/scroll';
 
   interface Props {
-    show?: boolean
-    class?: string
+    show?: boolean;
+    class?: string;
   }
 
-  let {show = true, class: className = ''}: Props = $props()
+  let {show = true, class: className = ''}: Props = $props();
 </script>
 
 {#if show}

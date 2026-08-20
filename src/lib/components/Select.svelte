@@ -1,14 +1,14 @@
 <script lang="ts">
-  import type {HTMLSelectAttributes} from 'svelte/elements'
-  import type {Snippet} from 'svelte'
-  import {cn} from '../utils/cn'
+  import type {HTMLSelectAttributes} from 'svelte/elements';
+  import type {Snippet} from 'svelte';
+  import {cn} from '../utils/cn';
 
   interface Props extends Omit<HTMLSelectAttributes, 'size'> {
-    value?: string | number | null
-    error?: boolean
-    valid?: boolean
-    size?: 'sm' | 'md' | 'lg'
-    children?: Snippet
+    value?: string | number | null;
+    error?: boolean;
+    valid?: boolean;
+    size?: 'sm' | 'md' | 'lg';
+    children?: Snippet;
   }
 
   let {
@@ -20,13 +20,13 @@
     children,
     disabled = false,
     ...restProps
-  }: Props = $props()
+  }: Props = $props();
 
   const sizeStyles = {
     sm: 'h-8 px-2.5 text-xs rounded-sm',
     md: 'h-9 px-3 text-sm rounded-sm',
     lg: 'h-11 px-4 text-base rounded-sm'
-  }
+  };
 </script>
 
 <select

@@ -1,21 +1,21 @@
 <script lang="ts">
-  import Checkbox from '../Checkbox.svelte'
-  import Input from '../Input.svelte'
-  import {cn} from '../../utils/cn'
-  import DropdownTrigger from './DropdownTrigger.svelte'
+  import Checkbox from '../Checkbox.svelte';
+  import Input from '../Input.svelte';
+  import {cn} from '../../utils/cn';
+  import DropdownTrigger from './DropdownTrigger.svelte';
 
   interface Option {
-    value: string
-    label: string
+    value: string;
+    label: string;
   }
 
   interface Props {
-    label: string
-    options: Option[]
-    selectedValues: string[]
-    onChange?: (value: string) => void
-    collapsible?: boolean
-    class?: string
+    label: string;
+    options: Option[];
+    selectedValues: string[];
+    onChange?: (value: string) => void;
+    collapsible?: boolean;
+    class?: string;
   }
 
   let {
@@ -25,32 +25,33 @@
     onChange = () => {},
     collapsible = true,
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 
-  let isOpen = $state(false)
-  let searchQuery = $state('')
+  let isOpen = $state(false);
+  let searchQuery = $state('');
 
   let triggerLabel = $derived(
     selectedValues.length > 0 ? `${selectedValues.length} selected` : 'All'
-  )
+  );
 
   let sortedOptions = $derived(
     [...options].sort((a, b) => a.label.localeCompare(b.label))
-  )
+  );
 
   let filteredOptions = $derived.by(() => {
-    const q = searchQuery.trim().toLowerCase()
-    if (!q) return sortedOptions
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return sortedOptions;
     return sortedOptions.filter(
       opt =>
         opt.label.toLowerCase().includes(q)
         || opt.value.toLowerCase().includes(q)
-    )
-  })
+    );
+  });
 
-  $effect(() => {
-    if (isOpen) searchQuery = ''
-  })
+  function toggleDropdown() {
+    isOpen = !isOpen;
+    if (isOpen) searchQuery = '';
+  }
 </script>
 
 <div
@@ -68,7 +69,7 @@
         ariaLabel="{label}: {triggerLabel}"
         {isOpen}
         {options}
-        onclick={() => (isOpen = !isOpen)}>
+        onclick={toggleDropdown}>
         {triggerLabel}
       </DropdownTrigger>
 

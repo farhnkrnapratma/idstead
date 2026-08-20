@@ -1,16 +1,16 @@
 <script lang="ts">
-  import type {Snippet} from 'svelte'
-  import {cn} from '../utils/cn'
+  import type {Snippet} from 'svelte';
+  import {cn} from '../utils/cn';
 
-  import ImageWithSkeleton from './ImageWithSkeleton.svelte'
+  import ImageWithSkeleton from './ImageWithSkeleton.svelte';
 
   interface Props {
-    name: string
-    role?: string
-    avatarUrl?: string
-    bio?: string
-    class?: string
-    actions?: Snippet
+    name: string;
+    role?: string;
+    avatarUrl?: string;
+    bio?: string;
+    class?: string;
+    actions?: Snippet;
   }
 
   let {
@@ -20,7 +20,7 @@
     bio = '',
     class: className = '',
     actions
-  }: Props = $props()
+  }: Props = $props();
 </script>
 
 <div

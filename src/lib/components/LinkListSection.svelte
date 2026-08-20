@@ -1,17 +1,17 @@
 <script lang="ts">
-  import ListRow from './ListRow.svelte'
-  import Card from './Card.svelte'
-  import SectionHeader from './SectionHeader.svelte'
-  import EmptyState from './EmptyState.svelte'
-  import {cn} from '../utils/cn'
+  import ListRow from './ListRow.svelte';
+  import Card from './Card.svelte';
+  import SectionHeader from './SectionHeader.svelte';
+  import EmptyState from './EmptyState.svelte';
+  import {cn} from '../utils/cn';
 
   interface ListItem {
-    label: string
-    value: string
-    shortValue?: string
-    href: string
-    icon?: string
-    color?: string
+    label: string;
+    value: string;
+    shortValue?: string;
+    href: string;
+    icon?: string;
+    color?: string;
   }
 
   const {
@@ -22,13 +22,13 @@
     emptyDescription = 'Check back soon.',
     class: className = ''
   } = $props<{
-    title: string
-    subtitle: string
-    items: ListItem[]
-    emptyTitle?: string
-    emptyDescription?: string
-    class?: string
-  }>()
+    title: string;
+    subtitle: string;
+    items: ListItem[];
+    emptyTitle?: string;
+    emptyDescription?: string;
+    class?: string;
+  }>();
 </script>
 
 <section

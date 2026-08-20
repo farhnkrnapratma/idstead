@@ -2,91 +2,96 @@ import {
   S3Client,
   PutObjectCommand,
   DeleteObjectCommand
-} from '@aws-sdk/client-s3'
-import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin'
-import {supabase as publicSupabase} from '$lib/supabase'
+} from '@aws-sdk/client-s3';
+import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
+import {supabase as publicSupabase} from '$lib/supabase';
 import {
   generateCvPdfBuffer,
   type AuthorCvData,
   type ExperienceData,
   type EducationData,
   type SkillCategoryData
-} from '$lib/server/pdfGenerator'
+} from '$lib/server/pdfGenerator';
 
 function getAdminDb(platform?: unknown) {
-  return getSupabaseAdminClient(platform) || publicSupabase
+  return getSupabaseAdminClient(platform) || publicSupabase;
 }
 
 function getR2Credentials(platform?: any) {
-  const accountId = platform?.env?.R2_ACCOUNT_ID ?? process.env.R2_ACCOUNT_ID
+  const accountId = platform?.env?.R2_ACCOUNT_ID ?? process.env.R2_ACCOUNT_ID;
   const accessKeyId =
-    platform?.env?.R2_ACCESS_KEY_ID ?? process.env.R2_ACCESS_KEY_ID
+    platform?.env?.R2_ACCESS_KEY_ID ?? process.env.R2_ACCESS_KEY_ID;
   const secretAccessKey =
-    platform?.env?.R2_SECRET_ACCESS_KEY ?? process.env.R2_SECRET_ACCESS_KEY
-  const bucketName = platform?.env?.R2_BUCKET_NAME ?? process.env.R2_BUCKET_NAME
+    platform?.env?.R2_SECRET_ACCESS_KEY ?? process.env.R2_SECRET_ACCESS_KEY;
+  const bucketName =
+    platform?.env?.R2_BUCKET_NAME ?? process.env.R2_BUCKET_NAME;
   const rawCdnUrl =
-    platform?.env?.PUBLIC_CDN_BASE_URL
-    || process.env.PUBLIC_CDN_BASE_URL
-    || 'https://cdn.fkp.my.id'
-  const cdnUrl = rawCdnUrl.replace(/\/+$/, '')
+    platform?.env?.PUBLIC_CDN_BASE_URL || process.env.PUBLIC_CDN_BASE_URL || '';
+  const cdnUrl = rawCdnUrl.trim().replace(/\/+$/, '');
 
-  if (!accountId || !accessKeyId || !secretAccessKey || !bucketName) {
-    return null
+  if (
+    !accountId
+    || !accessKeyId
+    || !secretAccessKey
+    || !bucketName
+    || !cdnUrl
+  ) {
+    return null;
   }
 
-  return {accountId, accessKeyId, secretAccessKey, bucketName, cdnUrl}
+  return {accountId, accessKeyId, secretAccessKey, bucketName, cdnUrl};
 }
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
     headers: {'Content-Type': 'application/json; charset=utf-8'}
-  })
+  });
 }
 
 function decodeHtmlEntities(str: string): string {
-  if (!str) return ''
+  if (!str) return '';
   return str
     .replace(/&#x2F;/gi, '/')
     .replace(/&#39;/g, "'")
     .replace(/&quot;/g, '"')
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
+    .replace(/&gt;/g, '>');
 }
 
 async function requireAdminAuth(
   req: Request,
   platform?: unknown
 ): Promise<Response | null> {
-  const auth = req.headers.get('authorization')
+  const auth = req.headers.get('authorization');
   if (!auth) {
     return jsonResponse(
       {success: false, code: 401, message: 'Missing Authorization header.'},
       401
-    )
+    );
   }
 
-  const token = auth.replace(/^Bearer\s+/i, '').trim()
-  const db = getAdminDb(platform)
+  const token = auth.replace(/^Bearer\s+/i, '').trim();
+  const db = getAdminDb(platform);
 
-  let user: any
+  let user: any;
 
   try {
-    const res = await db.auth.getUser(token)
-    user = res.data?.user
+    const res = await db.auth.getUser(token);
+    user = res.data?.user;
   } catch {
-    user = null
+    user = null;
   }
 
   if (!user?.id && db !== publicSupabase) {
     try {
-      const fallbackRes = await publicSupabase.auth.getUser(token)
+      const fallbackRes = await publicSupabase.auth.getUser(token);
       if (fallbackRes.data?.user?.id) {
-        user = fallbackRes.data.user
+        user = fallbackRes.data.user;
       }
     } catch {
-      user = null
+      user = null;
     }
   }
 
@@ -94,48 +99,48 @@ async function requireAdminAuth(
     return jsonResponse(
       {success: false, code: 401, message: 'Invalid or expired admin token.'},
       401
-    )
+    );
   }
 
-  const role = (user.app_metadata as {role?: string} | null)?.role
+  const role = (user.app_metadata as {role?: string} | null)?.role;
   if (role !== 'admin' && role !== 'service_role') {
     return jsonResponse(
       {success: false, code: 403, message: 'Admin privileges required.'},
       403
-    )
+    );
   }
 
-  return null
+  return null;
 }
 
 export function formatAuthorSlug(name?: string): string {
-  if (!name || !name.trim()) return 'CV-Farhan_Kurnia_Pratama'
-  const cleanName = decodeHtmlEntities(name)
+  if (!name || !name.trim()) return 'CV-Profile';
+  const cleanName = decodeHtmlEntities(name);
   const words = cleanName
     .trim()
     .split(/[^a-zA-Z0-9]+/)
     .filter(Boolean)
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
 
-  const slug = words.join('_') || 'Farhan_Kurnia_Pratama'
-  return `CV-${slug}`
+  const slug = words.join('_') || 'Profile';
+  return `CV-${slug}`;
 }
 
 function parseSemver(filename?: string): {
-  major: number
-  minor: number
-  patch: number
+  major: number;
+  minor: number;
+  patch: number;
 } {
-  if (!filename) return {major: 1, minor: 0, patch: 0}
-  const match = filename.match(/-v(\d+)\.(\d+)\.(\d+)\.pdf$/i)
+  if (!filename) return {major: 1, minor: 0, patch: 0};
+  const match = filename.match(/-v(\d+)\.(\d+)\.(\d+)\.pdf$/i);
   if (match) {
     return {
       major: parseInt(match[1], 10),
       minor: parseInt(match[2], 10),
       patch: parseInt(match[3], 10)
-    }
+    };
   }
-  return {major: 1, minor: 0, patch: 0}
+  return {major: 1, minor: 0, patch: 0};
 }
 
 function bumpSemver(
@@ -143,11 +148,11 @@ function bumpSemver(
   bumpType: 'patch' | 'minor' | 'major' = 'patch'
 ): string {
   if (bumpType === 'major') {
-    return `${current.major + 1}.0.0`
+    return `${current.major + 1}.0.0`;
   } else if (bumpType === 'minor') {
-    return `${current.major}.${current.minor + 1}.0`
+    return `${current.major}.${current.minor + 1}.0`;
   } else {
-    return `${current.major}.${current.minor}.${current.patch + 1}`
+    return `${current.major}.${current.minor}.${current.patch + 1}`;
   }
 }
 
@@ -156,49 +161,40 @@ export async function processCvGenerate(
   platform?: unknown
 ): Promise<Response> {
   try {
-    const authError = await requireAdminAuth(req, platform)
-    if (authError) return authError
+    const authError = await requireAdminAuth(req, platform);
+    if (authError) return authError;
 
-    const db = getAdminDb(platform)
+    const db = getAdminDb(platform);
 
-    let bumpType: 'patch' | 'minor' | 'major' = 'patch'
+    let bumpType: 'patch' | 'minor' | 'major' = 'patch';
     try {
-      const body = await req.json()
+      const body = await req.json();
       if (
         body?.bumpType === 'major'
         || body?.bumpType === 'minor'
         || body?.bumpType === 'patch'
       ) {
-        bumpType = body.bumpType
+        bumpType = body.bumpType;
       }
     } catch {
-      bumpType = 'patch'
+      bumpType = 'patch';
     }
 
-    let {data: profile} = await db
+    const {data: profile} = await db
       .from('db_profiles')
       .select('*')
       .limit(1)
-      .maybeSingle()
-
-    if (!profile?.id) {
-      const {data: createdProfile} = await db
-        .from('db_profiles')
-        .insert({name: 'Farhan Kurnia Pratama', job_title: 'Software Engineer'})
-        .select('*')
-        .maybeSingle()
-      if (createdProfile?.id) profile = createdProfile
-    }
+      .maybeSingle();
 
     if (!profile?.id) {
       return jsonResponse(
         {
           success: false,
-          code: 500,
-          message: 'Could not resolve author profile.'
+          code: 404,
+          message: 'Author profile not found in database.'
         },
-        500
-      )
+        404
+      );
     }
 
     const {data: experiences} = await db
@@ -206,19 +202,19 @@ export async function processCvGenerate(
       .select(
         'role, company, location, start_date, end_date, is_current, description'
       )
-      .order('sort_order', {ascending: true})
+      .order('sort_order', {ascending: true});
 
     const {data: educations} = await db
       .from('db_educations')
       .select(
         'institution, degree, field_of_study, start_date, end_date, description'
       )
-      .order('sort_order', {ascending: true})
+      .order('sort_order', {ascending: true});
 
     const {data: categories} = await db
       .from('db_categories')
       .select('id, category, sort_order, db_items(id, name, sort_order)')
-      .order('sort_order', {ascending: true})
+      .order('sort_order', {ascending: true});
 
     const skillCategories: SkillCategoryData[] = (categories || []).map(
       (cat: any) => ({
@@ -227,16 +223,16 @@ export async function processCvGenerate(
           .sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
           .map((item: any) => decodeHtmlEntities(item.name))
       })
-    )
+    );
 
     const locationStr = [profile.city, profile.country]
       .filter(Boolean)
       .map(decodeHtmlEntities)
-      .join(', ')
+      .join(', ');
 
     const cvData: AuthorCvData = {
       profile: {
-        name: decodeHtmlEntities(profile.name || 'Farhan Kurnia Pratama'),
+        name: decodeHtmlEntities(profile.name || ''),
         title: decodeHtmlEntities(profile.job_title || profile.headline || ''),
         bio: decodeHtmlEntities(profile.bio || ''),
         avatar: profile.avatar || '',
@@ -259,40 +255,40 @@ export async function processCvGenerate(
         description: decodeHtmlEntities(ed.description || '')
       })),
       skills: skillCategories
-    }
+    };
 
-    const pdfBytes = await generateCvPdfBuffer(cvData)
+    const r2Creds = getR2Credentials(platform);
+    const pdfBytes = await generateCvPdfBuffer(cvData, r2Creds?.cdnUrl);
 
     const digestBuffer = await crypto.subtle.digest(
       'SHA-256',
       pdfBytes.buffer as ArrayBuffer
-    )
+    );
     const fullHash = Array.from(new Uint8Array(digestBuffer))
       .map(b => b.toString(16).padStart(2, '0'))
-      .join('')
-    const shortHash = fullHash.slice(0, 7)
+      .join('');
+    const shortHash = fullHash.slice(0, 7);
 
     const {data: activeDoc} = await db
       .from('db_documents')
       .select('filename')
       .eq('is_active', true)
       .limit(1)
-      .maybeSingle()
+      .maybeSingle();
 
-    let nextVersion = '1.0.0'
+    let nextVersion = '1.0.0';
     if (activeDoc?.filename) {
-      const currentVersionObj = parseSemver(activeDoc.filename)
-      nextVersion = bumpSemver(currentVersionObj, bumpType)
+      const currentVersionObj = parseSemver(activeDoc.filename);
+      nextVersion = bumpSemver(currentVersionObj, bumpType);
     }
 
-    const authorSlug = formatAuthorSlug(profile.name || 'Farhan Kurnia Pratama')
-    const filename = `${authorSlug}-${shortHash}-v${nextVersion}.pdf`
-    const sha256Filename = `${filename}.sha256`
-    const sha256Content = `${fullHash}  ${filename}\n`
-    const sha256Bytes = new TextEncoder().encode(sha256Content)
+    const authorSlug = formatAuthorSlug(profile.name);
+    const filename = `${authorSlug}-${shortHash}-v${nextVersion}.pdf`;
+    const sha256Filename = `${filename}.sha256`;
+    const sha256Content = `${fullHash}  ${filename}\n`;
+    const sha256Bytes = new TextEncoder().encode(sha256Content);
 
-    const r2Creds = getR2Credentials(platform)
-    let r2Client: S3Client | null = null
+    let r2Client: S3Client | null = null;
     if (r2Creds) {
       r2Client = new S3Client({
         region: 'auto',
@@ -301,19 +297,19 @@ export async function processCvGenerate(
           accessKeyId: r2Creds.accessKeyId,
           secretAccessKey: r2Creds.secretAccessKey
         }
-      })
+      });
     }
 
     const {data: previousDocs} = await db
       .from('db_documents')
       .select('id, filename')
-      .eq('is_active', true)
+      .eq('is_active', true);
 
     if (previousDocs && previousDocs.length > 0) {
       for (const oldDoc of previousDocs) {
         if (oldDoc.filename) {
-          const oldPdfKey = oldDoc.filename
-          const oldShaKey = `${oldDoc.filename}.sha256`
+          const oldPdfKey = oldDoc.filename;
+          const oldShaKey = `${oldDoc.filename}.sha256`;
           if (r2Client && r2Creds) {
             try {
               await r2Client.send(
@@ -321,28 +317,30 @@ export async function processCvGenerate(
                   Bucket: r2Creds.bucketName,
                   Key: oldPdfKey
                 })
-              )
+              );
               await r2Client.send(
                 new DeleteObjectCommand({
                   Bucket: r2Creds.bucketName,
                   Key: oldShaKey
                 })
-              )
+              );
             } catch (delErr) {
-              console.error('R2 deletion warning for old CV file:', delErr)
+              console.error('R2 deletion warning for old CV file:', delErr);
             }
           }
           try {
-            await db.storage.from('cv_documents').remove([oldPdfKey, oldShaKey])
+            await db.storage
+              .from('cv_documents')
+              .remove([oldPdfKey, oldShaKey]);
           } catch (delStorageErr) {
-            console.error('Supabase storage removal warning:', delStorageErr)
+            console.error('Supabase storage removal warning:', delStorageErr);
           }
         }
       }
     }
 
-    let fileUrl = ''
-    let storageProvider: 'R2' | 'Supabase Storage' = 'R2'
+    let fileUrl = '';
+    let storageProvider: 'R2' | 'Supabase Storage' = 'R2';
 
     if (r2Client && r2Creds) {
       try {
@@ -353,7 +351,7 @@ export async function processCvGenerate(
             Body: pdfBytes,
             ContentType: 'application/pdf'
           })
-        )
+        );
         await r2Client.send(
           new PutObjectCommand({
             Bucket: r2Creds.bucketName,
@@ -361,24 +359,24 @@ export async function processCvGenerate(
             Body: sha256Bytes,
             ContentType: 'text/plain; charset=utf-8'
           })
-        )
-        fileUrl = `${r2Creds.cdnUrl}/${filename}`
+        );
+        fileUrl = `${r2Creds.cdnUrl}/${filename}`;
       } catch (r2Err) {
         console.error(
           'R2 upload failed, trying Supabase Storage fallback:',
           r2Err
-        )
+        );
       }
     }
 
     if (!fileUrl) {
-      storageProvider = 'Supabase Storage'
+      storageProvider = 'Supabase Storage';
       const {error: storageError} = await db.storage
         .from('cv_documents')
         .upload(filename, pdfBytes, {
           contentType: 'application/pdf',
           upsert: true
-        })
+        });
 
       if (storageError) {
         return jsonResponse(
@@ -387,7 +385,7 @@ export async function processCvGenerate(
             message: `Failed to upload storage file: ${storageError.message}`
           },
           500
-        )
+        );
       }
 
       await db.storage
@@ -395,18 +393,18 @@ export async function processCvGenerate(
         .upload(sha256Filename, sha256Bytes, {
           contentType: 'text/plain; charset=utf-8',
           upsert: true
-        })
+        });
 
       const {data: publicUrlData} = db.storage
         .from('cv_documents')
-        .getPublicUrl(filename)
-      fileUrl = publicUrlData.publicUrl
+        .getPublicUrl(filename);
+      fileUrl = publicUrlData.publicUrl;
     }
 
     await db
       .from('db_documents')
       .update({is_active: false})
-      .eq('is_active', true)
+      .eq('is_active', true);
 
     const {error: insertError} = await db
       .from('db_documents')
@@ -416,7 +414,7 @@ export async function processCvGenerate(
         file_url: fileUrl,
         hash: fullHash,
         is_active: true
-      })
+      });
 
     if (insertError) {
       return jsonResponse(
@@ -425,7 +423,7 @@ export async function processCvGenerate(
           message: `Failed to save database record: ${insertError.message}`
         },
         500
-      )
+      );
     }
 
     return jsonResponse(
@@ -438,16 +436,16 @@ export async function processCvGenerate(
         storageProvider
       },
       200
-    )
+    );
   } catch (err: any) {
-    console.error('Unhandled processCvGenerate error:', err)
+    console.error('Unhandled processCvGenerate error:', err);
     return jsonResponse(
       {
         success: false,
         message: err?.message || 'Failed to auto-generate CV document.'
       },
       500
-    )
+    );
   }
 }
 
@@ -455,7 +453,7 @@ export async function processCvUpload(
   req: Request,
   platform?: unknown
 ): Promise<Response> {
-  return processCvGenerate(req, platform)
+  return processCvGenerate(req, platform);
 }
 
 export async function processCvDelete(
@@ -463,55 +461,55 @@ export async function processCvDelete(
   platform?: unknown
 ): Promise<Response> {
   try {
-    const authError = await requireAdminAuth(req, platform)
-    if (authError) return authError
+    const authError = await requireAdminAuth(req, platform);
+    if (authError) return authError;
 
-    const db = getAdminDb(platform)
-    let targetFilename: string | null = null
+    const db = getAdminDb(platform);
+    let targetFilename: string | null = null;
     try {
-      const body = await req.json()
+      const body = await req.json();
       if (typeof body?.filename === 'string' && body.filename.trim()) {
-        targetFilename = body.filename.trim()
+        targetFilename = body.filename.trim();
       }
     } catch {
-      targetFilename = null
+      targetFilename = null;
     }
 
-    let filename: string
+    let filename: string;
     if (targetFilename) {
       const {data: doc, error: lookupError} = await db
         .from('db_documents')
         .select('filename')
         .eq('filename', targetFilename)
         .limit(1)
-        .maybeSingle()
+        .maybeSingle();
 
       if (lookupError || !doc?.filename) {
         return jsonResponse(
           {success: false, message: 'CV document not found.'},
           404
-        )
+        );
       }
-      filename = doc.filename
+      filename = doc.filename;
     } else {
       const {data: activeDoc, error: lookupError} = await db
         .from('db_documents')
         .select('filename')
         .eq('is_active', true)
         .limit(1)
-        .maybeSingle()
+        .maybeSingle();
 
       if (lookupError || !activeDoc?.filename) {
         return jsonResponse(
           {success: false, message: 'No active CV document to delete.'},
           404
-        )
+        );
       }
-      filename = activeDoc.filename
+      filename = activeDoc.filename;
     }
 
-    const sha256Filename = `${filename}.sha256`
-    const r2Creds = getR2Credentials(platform)
+    const sha256Filename = `${filename}.sha256`;
+    const r2Creds = getR2Credentials(platform);
 
     if (r2Creds) {
       const r2Client = new S3Client({
@@ -521,32 +519,32 @@ export async function processCvDelete(
           accessKeyId: r2Creds.accessKeyId,
           secretAccessKey: r2Creds.secretAccessKey
         }
-      })
+      });
       try {
         await r2Client.send(
           new DeleteObjectCommand({Bucket: r2Creds.bucketName, Key: filename})
-        )
+        );
         await r2Client.send(
           new DeleteObjectCommand({
             Bucket: r2Creds.bucketName,
             Key: sha256Filename
           })
-        )
+        );
       } catch (err) {
-        console.error('R2 deletion warning:', err)
+        console.error('R2 deletion warning:', err);
       }
     }
 
     try {
-      await db.storage.from('cv_documents').remove([filename, sha256Filename])
+      await db.storage.from('cv_documents').remove([filename, sha256Filename]);
     } catch (err) {
-      console.error('Supabase storage removal warning:', err)
+      console.error('Supabase storage removal warning:', err);
     }
 
     const {error: deleteError} = await db
       .from('db_documents')
       .delete()
-      .eq('filename', filename)
+      .eq('filename', filename);
 
     if (deleteError) {
       return jsonResponse(
@@ -555,18 +553,18 @@ export async function processCvDelete(
           message: `Failed to remove database record: ${deleteError.message}`
         },
         500
-      )
+      );
     }
 
-    return jsonResponse({success: true, filename}, 200)
+    return jsonResponse({success: true, filename}, 200);
   } catch (err: any) {
-    console.error('Unhandled processCvDelete error:', err)
+    console.error('Unhandled processCvDelete error:', err);
     return jsonResponse(
       {
         success: false,
         message: err?.message || 'Failed to delete CV document.'
       },
       500
-    )
+    );
   }
 }

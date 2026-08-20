@@ -2,126 +2,141 @@
   lang="ts"
   module>
   export interface CommentItem {
-    id: string
-    post_id: string
-    parent_id: string | null
-    author_name: string | null
-    is_anonymous?: boolean
-    content: string
-    created_at: string
-    reply_to_author?: string | null
+    id: string;
+    post_id: string;
+    parent_id: string | null;
+    author_name: string | null;
+    is_anonymous?: boolean;
+    content: string;
+    created_at: string;
+    reply_to_author?: string | null;
   }
 
   export interface CommentTreeNode<T> {
-    comment: T
-    children: CommentTreeNode<T>[]
-    reply_to_author?: string
+    comment: T;
+    children: CommentTreeNode<T>[];
+    reply_to_author?: string;
   }
 </script>
 
 <script
   lang="ts"
   generics="T extends CommentItem">
-  import type {Snippet} from 'svelte'
-  import {SvelteMap, SvelteSet} from 'svelte/reactivity'
-  import {ShieldCheck, User} from '@lucide/svelte'
-  import RelativeTime from './RelativeTime.svelte'
-  import {cn} from '../utils/cn'
+  import type {Snippet} from 'svelte';
+  import {SvelteMap, SvelteSet} from 'svelte/reactivity';
+  import {ShieldCheck, User} from '@lucide/svelte';
+  import RelativeTime from './RelativeTime.svelte';
+  import {cn} from '../utils/cn';
 
   interface Props {
-    class?: string
-    comments: T[]
-    replyTo?: T | null
-    statusBadge?: Snippet<[comment: T]>
-    actions?: Snippet<[comment: T]>
-    replyForm?: Snippet<[comment: T]>
+    class?: string;
+    comments: T[];
+    replyTo?: T | null;
+    authorName?: string;
+    statusBadge?: Snippet<[comment: T]>;
+    actions?: Snippet<[comment: T]>;
+    replyForm?: Snippet<[comment: T]>;
   }
 
   let {
     class: className = '',
     comments = [],
     replyTo = null,
+    authorName = '',
     statusBadge,
     actions,
     replyForm
-  }: Props = $props()
+  }: Props = $props();
+
+  function isAuthorComment(comment: T): boolean {
+    if (comment.is_anonymous || !comment.author_name) return false;
+    if (comment.author_name === 'Admin') return true;
+    if (
+      authorName
+      && comment.author_name.trim().toLowerCase()
+        === authorName.trim().toLowerCase()
+    ) {
+      return true;
+    }
+    return false;
+  }
 
   function getCommentAuthor(comment: T): string {
-    if (comment.is_anonymous || !comment.author_name) return 'Anonymous'
-    return comment.author_name
+    if (comment.is_anonymous || !comment.author_name) return 'Anonymous';
+    return comment.author_name;
   }
 
   function buildCommentTree(items: T[]): CommentTreeNode<T>[] {
-    const map = new SvelteMap<string, CommentTreeNode<T>>()
+    const map = new SvelteMap<string, CommentTreeNode<T>>();
 
     for (const item of items) {
-      map.set(item.id, {comment: item, children: []})
+      map.set(item.id, {comment: item, children: []});
     }
 
-    const roots: CommentTreeNode<T>[] = []
+    const roots: CommentTreeNode<T>[] = [];
 
     function getRootNode(item: T): CommentTreeNode<T> | null {
-      let current: T = item
-      const visited = new SvelteSet<string>([item.id])
+      let current: T = item;
+      const visited = new SvelteSet<string>([item.id]);
 
       while (current.parent_id && map.has(current.parent_id)) {
-        const parentNode = map.get(current.parent_id)!
-        const parentId = parentNode.comment.id
-        if (visited.has(parentId)) break
+        const parentNode = map.get(current.parent_id)!;
+        const parentId = parentNode.comment.id;
+        if (visited.has(parentId)) break;
 
-        visited.add(parentId)
-        current = parentNode.comment
+        visited.add(parentId);
+        current = parentNode.comment;
       }
 
-      return map.get(current.id) ?? null
+      return map.get(current.id) ?? null;
     }
 
     for (const item of items) {
-      const node = map.get(item.id)!
+      const node = map.get(item.id)!;
       if (item.parent_id && map.has(item.parent_id)) {
-        const directParent = map.get(item.parent_id)!
-        node.reply_to_author = getCommentAuthor(directParent.comment)
+        const directParent = map.get(item.parent_id)!;
+        node.reply_to_author = getCommentAuthor(directParent.comment);
 
-        const rootNode = getRootNode(item)
+        const rootNode = getRootNode(item);
         if (rootNode && rootNode.comment.id !== node.comment.id) {
-          rootNode.children.push(node)
+          rootNode.children.push(node);
         } else {
-          roots.push(node)
+          roots.push(node);
         }
       } else {
-        roots.push(node)
+        roots.push(node);
       }
     }
 
     const sortFn = (a: CommentTreeNode<T>, b: CommentTreeNode<T>) =>
       new Date(a.comment.created_at).getTime()
-      - new Date(b.comment.created_at).getTime()
+      - new Date(b.comment.created_at).getTime();
 
-    roots.sort(sortFn)
+    roots.sort(sortFn);
     for (const root of roots) {
       if (root.children.length > 0) {
-        root.children.sort(sortFn)
+        root.children.sort(sortFn);
       }
     }
-    return roots
+    return roots;
   }
 
-  const commentTree = $derived(buildCommentTree(comments))
-  const expandedReplies = new SvelteSet<string>()
+  const commentTree = $derived(buildCommentTree(comments));
+  const expandedReplies = new SvelteSet<string>();
 
   function toggleReplies(commentId: string) {
     if (expandedReplies.has(commentId)) {
-      expandedReplies.delete(commentId)
-      return
+      expandedReplies.delete(commentId);
+      return;
     }
 
-    expandedReplies.add(commentId)
+    expandedReplies.add(commentId);
   }
 
   function getReplyToggleLabel(count: number, expanded: boolean): string {
-    const replyLabel = count === 1 ? 'reply' : 'replies'
-    if (expanded) return `Hide ${count} ${replyLabel}`
-    return `View ${count} ${replyLabel}`
+    const replyLabel = count === 1 ? 'reply' : 'replies';
+    if (expanded) return `Hide ${count} ${replyLabel}`;
+    return `View ${count} ${replyLabel}`;
   }
 </script>
 
@@ -140,9 +155,7 @@
     <div
       class="z-10 flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-full border border-border-subtle bg-surface-card text-text-secondary select-none sm:h-8 sm:w-8"
       aria-hidden="true">
-      {#if comment.author_name
-        ?.toLowerCase()
-        .includes('farhan') || comment.author_name === 'Admin'}
+      {#if isAuthorComment(comment)}
         <ShieldCheck class="size-4 text-copilot" />
       {:else}
         <User class="size-4" />

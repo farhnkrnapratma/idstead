@@ -1,5 +1,4 @@
 {
-  "enabledPlugins": {},
   "hooks": {
     "PreToolUse": [
       {
@@ -20,6 +19,17 @@
         ]
       },
       {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/block-bad-commit.sh",
+            "if": "Bash(git commit:*)",
+            "timeout": 120
+          }
+        ]
+      },
+      {
         "matcher": "Bash|Grep",
         "hooks": [
           {
@@ -34,17 +44,6 @@
           {
             "type": "command",
             "command": "/home/hanz/.local/bin/graphify hook-guard read"
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/block-bad-commit.sh",
-            "if": "Bash(git commit:*)",
-            "timeout": 120
           }
         ]
       }
@@ -80,5 +79,6 @@
         ]
       }
     ]
-  }
+  },
+  "enabledPlugins": {"typescript-lsp@claude-plugins-official": true}
 }

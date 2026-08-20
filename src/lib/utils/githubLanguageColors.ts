@@ -32,8 +32,8 @@ export const GITHUB_LANGUAGE_COLORS: Record<string, string> = {
   Perl: '#0298c3',
   Scala: '#c22d40',
   'Objective-C': '#438eff'
-}
+};
 
 export function getLanguageColor(name: string): string {
-  return GITHUB_LANGUAGE_COLORS[name] ?? '#909692'
+  return GITHUB_LANGUAGE_COLORS[name] ?? '#909692';
 }

@@ -1,14 +1,14 @@
 <script lang="ts">
-  import type {Snippet} from 'svelte'
-  import {cn} from '../utils/cn'
-  import {contentFontStore} from '../stores/contentFontStore.svelte'
+  import type {Snippet} from 'svelte';
+  import {cn} from '../utils/cn';
+  import {contentFontStore} from '../stores/contentFontStore.svelte';
 
   interface Props {
-    title: string
-    excerpt?: string
-    class?: string
-    titleClass?: string
-    meta?: Snippet
+    title: string;
+    excerpt?: string;
+    class?: string;
+    titleClass?: string;
+    meta?: Snippet;
   }
 
   let {
@@ -17,7 +17,7 @@
     class: className = '',
     titleClass = '',
     meta
-  }: Props = $props()
+  }: Props = $props();
 </script>
 
 <header class={cn('border-b border-b-border-subtle pb-4', className)}>

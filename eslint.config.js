@@ -1,12 +1,12 @@
-import path from 'node:path'
-import globals from 'globals'
-import js from '@eslint/js'
-import {defineConfig, includeIgnoreFile} from 'eslint/config'
-import tseslint from 'typescript-eslint'
-import svelte from 'eslint-plugin-svelte'
-import prettier from 'eslint-config-prettier'
+import path from 'node:path';
+import globals from 'globals';
+import js from '@eslint/js';
+import {defineConfig, includeIgnoreFile} from 'eslint/config';
+import tseslint from 'typescript-eslint';
+import svelte from 'eslint-plugin-svelte';
+import prettier from 'eslint-config-prettier';
 
-const gitignorePath = path.resolve(import.meta.dirname, '.gitignore')
+const gitignorePath = path.resolve(import.meta.dirname, '.gitignore');
 
 export default defineConfig(
   includeIgnoreFile(gitignorePath),
@@ -39,4 +39,4 @@ export default defineConfig(
       'no-empty': ['error', {allowEmptyCatch: true}]
     }
   }
-)
+);

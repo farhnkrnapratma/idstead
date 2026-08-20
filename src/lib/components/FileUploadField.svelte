@@ -1,20 +1,20 @@
 <script lang="ts">
-  import {FileCheck2, UploadCloud, AlertCircle} from '@lucide/svelte'
-  import {cn} from '../utils/cn'
+  import {FileCheck2, UploadCloud, AlertCircle} from '@lucide/svelte';
+  import {cn} from '../utils/cn';
 
   interface Props {
-    id: string
-    label?: string
-    hint?: string
-    accept?: string
-    disabled?: boolean
-    isUploading?: boolean
-    uploadingLabel?: string
-    error?: string
-    selectedFileName?: string
-    fileSize?: string
-    onFileSelect?: (file: File | null) => void
-    class?: string
+    id: string;
+    label?: string;
+    hint?: string;
+    accept?: string;
+    disabled?: boolean;
+    isUploading?: boolean;
+    uploadingLabel?: string;
+    error?: string;
+    selectedFileName?: string;
+    fileSize?: string;
+    onFileSelect?: (file: File | null) => void;
+    class?: string;
   }
 
   let {
@@ -30,42 +30,42 @@
     fileSize = '',
     onFileSelect,
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 
-  let fileInputRef = $state<HTMLInputElement | null>(null)
-  let isDragging = $state(false)
+  let fileInputRef = $state<HTMLInputElement | null>(null);
+  let isDragging = $state(false);
 
-  let isDisabled = $derived(disabled || isUploading)
+  let isDisabled = $derived(disabled || isUploading);
 
   function handleFileChange(e: Event) {
-    const input = e.target as HTMLInputElement
+    const input = e.target as HTMLInputElement;
     if (input.files && input.files[0]) {
-      onFileSelect?.(input.files[0])
+      onFileSelect?.(input.files[0]);
     }
   }
 
   function handleDrop(e: DragEvent) {
-    e.preventDefault()
-    isDragging = false
-    if (isDisabled) return
+    e.preventDefault();
+    isDragging = false;
+    if (isDisabled) return;
 
     if (e.dataTransfer?.files && e.dataTransfer.files[0]) {
-      onFileSelect?.(e.dataTransfer.files[0])
+      onFileSelect?.(e.dataTransfer.files[0]);
     }
   }
 
   function handleDragOver(e: DragEvent) {
-    e.preventDefault()
-    if (!isDisabled) isDragging = true
+    e.preventDefault();
+    if (!isDisabled) isDragging = true;
   }
 
   function handleDragLeave() {
-    isDragging = false
+    isDragging = false;
   }
 
   function clearFile() {
-    if (fileInputRef) fileInputRef.value = ''
-    onFileSelect?.(null)
+    if (fileInputRef) fileInputRef.value = '';
+    onFileSelect?.(null);
   }
 </script>
 
@@ -137,8 +137,8 @@
       <button
         type="button"
         onclick={e => {
-          e.stopPropagation()
-          clearFile()
+          e.stopPropagation();
+          clearFile();
         }}
         class="text-xs font-semibold text-text-muted transition-colors hover:text-danger">
         Remove

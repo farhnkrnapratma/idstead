@@ -1,13 +1,13 @@
-import {marked} from 'marked'
+import {marked} from 'marked';
 
 export function parseMarkdownAlerts(html: string): string {
-  if (!html) return ''
+  if (!html) return '';
 
   return html.replace(
     /<blockquote[^>]*>\s*(?:<p>)?\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\](?:\s*<\/p>|\s*<br\s*\/?>)?([\s\S]*?)<\/blockquote>/gi,
     (match, typeUpper, innerContent) => {
       const type = typeUpper.toLowerCase() as
-        'note' | 'tip' | 'important' | 'warning' | 'caution'
+        'note' | 'tip' | 'important' | 'warning' | 'caution';
 
       const config: Record<string, {title: string; svg: string}> = {
         note: {
@@ -30,14 +30,14 @@ export function parseMarkdownAlerts(html: string): string {
           title: 'Caution',
           svg: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-octagon-alert shrink-0"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>'
         }
-      }
+      };
 
-      const alertConfig = config[type]
-      let content = innerContent.trim()
-      content = content.replace(/^(?:<br\s*\/?>|&gt;|>|\s)+/gi, '').trim()
+      const alertConfig = config[type];
+      let content = innerContent.trim();
+      content = content.replace(/^(?:<br\s*\/?>|&gt;|>|\s)+/gi, '').trim();
 
       if (content && !content.startsWith('<')) {
-        content = `<p>${content}</p>`
+        content = `<p>${content}</p>`;
       }
 
       return `<div class="markdown-alert markdown-alert-${type}">
@@ -48,32 +48,32 @@ export function parseMarkdownAlerts(html: string): string {
   <div class="markdown-alert-content">
     ${content}
   </div>
-</div>`
+</div>`;
     }
-  )
+  );
 }
 
 export async function renderMarkdown(markdown: string): Promise<string> {
-  const rawHtml = await marked.parse(markdown)
-  return parseMarkdownAlerts(rawHtml)
+  const rawHtml = await marked.parse(markdown);
+  return parseMarkdownAlerts(rawHtml);
 }
 
 export function injectHeadingIds(html: string): string {
-  let index = 0
-  const usedIds = new Set<string>()
+  let index = 0;
+  const usedIds = new Set<string>();
 
   return html.replace(
     /<h([23])([^>]*)>(.*?)<\/h\1>/gi,
     (match, level, attrs, content) => {
       if (attrs.includes('id=')) {
-        const idMatch = attrs.match(/id="([^"]*)"/)
+        const idMatch = attrs.match(/id="([^"]*)"/);
         if (idMatch) {
-          usedIds.add(idMatch[1])
+          usedIds.add(idMatch[1]);
         }
-        return match
+        return match;
       }
 
-      const text = content.replace(/<[^>]*>/g, '')
+      const text = content.replace(/<[^>]*>/g, '');
       const baseId =
         text ?
           text
@@ -82,24 +82,24 @@ export function injectHeadingIds(html: string): string {
             .replace(/\s+/g, '-')
             .replace(/-+/g, '-')
             .trim()
-        : `heading-${index++}`
+        : `heading-${index++}`;
 
-      let id = baseId
-      let counter = 1
+      let id = baseId;
+      let counter = 1;
       while (usedIds.has(id)) {
-        id = `${baseId}-${counter++}`
+        id = `${baseId}-${counter++}`;
       }
-      usedIds.add(id)
+      usedIds.add(id);
 
-      return `<h${level}${attrs} id="${id}">${content}</h${level}>`
+      return `<h${level}${attrs} id="${id}">${content}</h${level}>`;
     }
-  )
+  );
 }
 
 export interface HeadingItem {
-  id: string
-  text: string
-  level: number
+  id: string;
+  text: string;
+  level: number;
 }
 
 function decodeHtmlEntities(str: string): string {
@@ -108,27 +108,27 @@ function decodeHtmlEntities(str: string): string {
     .replace(/&#39;/g, "'")
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
+    .replace(/&gt;/g, '>');
 }
 
 export function extractHeadings(html: string): HeadingItem[] {
-  const headings: HeadingItem[] = []
-  const headingRegex = /<h([23])\s+[^>]*id="([^"]*)"[^>]*>(.*?)<\/h\1>/gi
-  let match
+  const headings: HeadingItem[] = [];
+  const headingRegex = /<h([23])\s+[^>]*id="([^"]*)"[^>]*>(.*?)<\/h\1>/gi;
+  let match;
   while ((match = headingRegex.exec(html)) !== null) {
-    const level = parseInt(match[1], 10)
-    const id = match[2]
-    const text = decodeHtmlEntities(match[3].replace(/<[^>]*>/g, '').trim())
-    headings.push({id, text, level})
+    const level = parseInt(match[1], 10);
+    const id = match[2];
+    const text = decodeHtmlEntities(match[3].replace(/<[^>]*>/g, '').trim());
+    headings.push({id, text, level});
   }
-  return headings
+  return headings;
 }
 
 export async function prepareMarkdownPage(
   markdown: string
 ): Promise<{html: string; headings: HeadingItem[]}> {
-  const rawHtml = await renderMarkdown(markdown)
-  const html = injectHeadingIds(rawHtml)
-  const headings = extractHeadings(html)
-  return {html, headings}
+  const rawHtml = await renderMarkdown(markdown);
+  const html = injectHeadingIds(rawHtml);
+  const headings = extractHeadings(html);
+  return {html, headings};
 }

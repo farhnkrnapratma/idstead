@@ -1,12 +1,12 @@
 <script lang="ts">
-  import LegalPageLayout from '$lib/components/LegalPageLayout.svelte'
+  import LegalPageLayout from '$lib/components/LegalPageLayout.svelte';
 
-  let {data} = $props()
+  let {data} = $props();
 
-  let authorName = $derived(
-    (data as any)?.author?.name || 'Farhan Kurnia Pratama'
-  )
-  let siteUrl = $derived((data as any)?.siteUrl || 'https://fkp.my.id')
+  let authorName = $derived((data as any)?.author?.name || '');
+  let siteUrl = $derived(
+    (data as any)?.author?.siteUrl || (data as any)?.siteUrl || ''
+  );
 </script>
 
 <LegalPageLayout

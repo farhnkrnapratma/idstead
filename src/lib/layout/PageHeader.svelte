@@ -1,14 +1,14 @@
 <script lang="ts">
-  import type {Snippet} from 'svelte'
-  import {cn} from '../utils/cn'
+  import type {Snippet} from 'svelte';
+  import {cn} from '../utils/cn';
 
   interface Props {
-    eyebrow?: string
-    title: string
-    description?: string
-    align?: 'left' | 'center'
-    actions?: Snippet
-    class?: string
+    eyebrow?: string;
+    title: string;
+    description?: string;
+    align?: 'left' | 'center';
+    actions?: Snippet;
+    class?: string;
   }
 
   let {
@@ -18,7 +18,7 @@
     align = 'left',
     actions,
     class: className = ''
-  }: Props = $props()
+  }: Props = $props();
 </script>
 
 <div
