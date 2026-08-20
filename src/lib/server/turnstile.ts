@@ -5,6 +5,42 @@ interface SiteverifyResponse {
   'error-codes'?: string[];
 }
 
+const DUMMY_PASS_SECRETS = new Set([
+  '1x0000000000000000000000000000000AA',
+  '2x0000000000000000000000000000000AA',
+  '3x0000000000000000000000000000000AA',
+  '1x0000000000000000000000000000000BB'
+]);
+
+const DUMMY_FAIL_SECRETS = new Set([
+  '1x0000000000000000000000000000000AB',
+  '2x0000000000000000000000000000000AB'
+]);
+
+function isPublicIp(ip: string | undefined | null): boolean {
+  if (!ip) return false;
+  const clean = ip.trim().toLowerCase();
+  if (
+    clean === '127.0.0.1'
+    || clean === '::1'
+    || clean === 'localhost'
+    || clean.startsWith('10.')
+    || clean.startsWith('192.168.')
+    || clean.startsWith('169.254.')
+    || clean.startsWith('fe80:')
+    || clean.startsWith('fc00:')
+    || clean.startsWith('fd00:')
+  ) {
+    return false;
+  }
+  const match172 = clean.match(/^172\.(\d+)\./);
+  if (match172) {
+    const octet = parseInt(match172[1], 10);
+    if (octet >= 16 && octet <= 31) return false;
+  }
+  return true;
+}
+
 export async function verifyTurnstileToken(
   token: string | undefined | null,
   remoteip: string,
@@ -21,13 +57,26 @@ export async function verifyTurnstileToken(
     return false;
   }
 
+  if (DUMMY_FAIL_SECRETS.has(secret)) {
+    return false;
+  }
+
+  if (DUMMY_PASS_SECRETS.has(secret)) {
+    return true;
+  }
+
   try {
+    const formData = new URLSearchParams({secret, response: token});
+    if (remoteip && isPublicIp(remoteip)) {
+      formData.set('remoteip', remoteip);
+    }
+
     const res = await fetch(
       'https://challenges.cloudflare.com/turnstile/v0/siteverify',
       {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: new URLSearchParams({secret, response: token, remoteip})
+        body: formData
       }
     );
 
