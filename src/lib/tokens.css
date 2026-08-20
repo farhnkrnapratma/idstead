@@ -111,6 +111,7 @@
   --color-chip-border: #b6bfb8;
   --color-chip-text: #232925;
   --color-code-chrome: #e9ece9;
+  --color-code-line-highlight: rgba(0, 0, 0, 0.1);
 }
 
 :root.dark {
@@ -134,6 +135,7 @@
   --color-accent-hover: #5fed83;
   --color-accent-active: #8cf2a6;
   --color-accent-subtle: rgba(15, 191, 62, 0.14);
+  --color-code-line-highlight: rgba(255, 255, 255, 0.13);
   --color-copilot: #b870ff;
   --color-copilot-hover: #a050e6;
   --color-copilot-active: #8a3ecf;

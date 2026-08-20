@@ -112,15 +112,15 @@ const LIGHT_CHROME_VARS: Record<string, string> = {
   '--color-surface-hover': 'rgba(16, 20, 17, 0.04)',
   '--color-surface-card': '#ffffff',
   '--color-code-chrome': '#e9ece9',
-  '--color-border-subtle': '#e4ebe6',
-  '--color-border-default': '#b6bfb8',
+  '--color-border-subtle': '#c8d1ca',
+  '--color-border-default': '#a2aca4',
   '--color-text-secondary': '#232925',
   '--color-text-primary': '#101411',
   '--color-text-muted': '#909692',
   '--color-copilot': '#8534f3',
   '--color-code-thumb': 'var(--color-gh-gray-3)',
   '--color-code-thumb-hover': 'var(--color-gh-gray-4)',
-  '--color-accent-subtle': 'rgba(15, 191, 62, 0.08)'
+  '--color-code-line-highlight': 'rgba(0, 0, 0, 0.10)'
 };
 
 const DARK_CHROME_VARS: Record<string, string> = {
@@ -135,7 +135,7 @@ const DARK_CHROME_VARS: Record<string, string> = {
   '--color-copilot': '#b870ff',
   '--color-code-thumb': 'var(--color-gh-gray-6)',
   '--color-code-thumb-hover': 'var(--color-gh-gray-5)',
-  '--color-accent-subtle': 'rgba(15, 191, 62, 0.14)'
+  '--color-code-line-highlight': 'rgba(255, 255, 255, 0.13)'
 };
 
 function applyChromeVars(el: HTMLElement, isDark: boolean) {
@@ -413,9 +413,9 @@ export function enhanceCodeBlocks(triggerToast: (message: string) => void) {
       codeElement.innerHTML = lines
         .map((line, i) => {
           const cls = cn(
-            'code-line m-0 p-0 pr-3.5',
+            'code-line m-0 py-0 pl-2 pr-3.5',
             highlightedLines.has(i + 1)
-              && 'code-line-highlighted bg-(--color-accent-subtle)'
+              && 'code-line-highlighted bg-(--color-code-line-highlight)'
           );
           return `<div class="${cls}">${line}</div>`;
         })
@@ -427,9 +427,8 @@ export function enhanceCodeBlocks(triggerToast: (message: string) => void) {
       lines.forEach((_, i) => {
         const num = document.createElement('div');
         num.className = cn(
-          'pr-1.5 pl-2 text-right',
-          highlightedLines.has(i + 1)
-            && 'bg-(--color-accent-subtle) text-(--color-palette-primary)'
+          'px-2.5 text-right font-mono',
+          highlightedLines.has(i + 1) && 'bg-(--color-code-line-highlight)'
         );
         num.textContent = String(i + 1);
         gutter?.appendChild(num);
@@ -442,6 +441,10 @@ export function enhanceCodeBlocks(triggerToast: (message: string) => void) {
     pre.style.background = 'transparent';
     pre.style.margin = '0';
     pre.style.minWidth = '0';
+    pre.style.paddingLeft = '0';
+    pre.style.paddingRight = '0';
+    pre.style.paddingTop = '0.375rem';
+    pre.style.paddingBottom = '0.375rem';
     pre.style.flex = '1 1 0%';
 
     codeBody.appendChild(pre);

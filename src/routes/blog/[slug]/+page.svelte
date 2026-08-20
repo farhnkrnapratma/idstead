@@ -1166,7 +1166,7 @@
   }
 
   .prose-custom :global(pre[data-enhanced='true']) {
-    @apply pr-3.5! pl-2!;
+    @apply pr-3.5! pl-0!;
   }
 
   .prose-custom :global(pre)::-webkit-scrollbar {
@@ -1184,12 +1184,12 @@
   }
 
   .prose-custom :global(.code-line) {
-    @apply block! w-full! pr-3.5!;
+    @apply block! w-full! pr-3.5! pl-2!;
   }
 
   .prose-custom :global(pre.code-wrap .code-line),
   .prose-custom :global(pre[data-wrap='true'] .code-line) {
-    padding-left: 4ch;
+    padding-left: calc(0.5rem + 4ch) !important;
     text-indent: -4ch;
   }
 

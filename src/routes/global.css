@@ -397,7 +397,7 @@ select {
   }
 
   .prose-custom pre[data-enhanced='true'] {
-    @apply pl-2;
+    @apply pl-0;
   }
 
   .prose-custom pre::-webkit-scrollbar {
@@ -422,11 +422,11 @@ select {
   }
 
   .prose-custom .code-line {
-    @apply block w-full pr-3.5;
+    @apply block w-full pr-3.5 pl-2;
   }
 
   .prose-custom :is(pre.code-wrap, pre[data-wrap='true']) .code-line {
-    padding-left: 4ch;
+    padding-left: calc(0.5rem + 4ch) !important;
     text-indent: -4ch;
   }
 

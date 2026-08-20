@@ -366,9 +366,9 @@
     "semantic_hash": "5039d3e1f5b1a213ed6e3e3934f5b892"
   },
   "src/lib/components/MarkdownEditor.svelte": {
-    "mtime": 1787223495.7794242,
-    "seen": 1787223613.743308,
-    "ast_hash": "7d9141561e40d216cb5ef22f658457c1",
+    "mtime": 1787233607.0300233,
+    "seen": 1787233848.9641397,
+    "ast_hash": "bd27c0888aa1aff6380e47926970d79d",
     "semantic_hash": ""
   },
   "src/lib/components/MetaList.svelte": {
@@ -762,9 +762,9 @@
     "semantic_hash": "e266f8b9ea0b04c45b887ac1e9492c9a"
   },
   "src/lib/server/turnstile.ts": {
-    "mtime": 1787230791.9382968,
-    "seen": 1787231241.581626,
-    "ast_hash": "b60e12494aa7b36d0576be97b7dc588a",
+    "mtime": 1787231357.2388685,
+    "seen": 1787231951.6921668,
+    "ast_hash": "c9093b404aa7a32bc2bc3bd6fa155de7",
     "semantic_hash": ""
   },
   "src/lib/stores/a11yStore.svelte.ts": {
@@ -846,9 +846,9 @@
     "semantic_hash": "9e84a91aee565143ce09790de292aee0"
   },
   "src/lib/utils/codeBlocks.ts": {
-    "mtime": 1787224078.325315,
-    "seen": 1787224117.4179983,
-    "ast_hash": "00298ea21761e0e45a7b143d2ebbfd5e",
+    "mtime": 1787233737.387539,
+    "seen": 1787233848.9670658,
+    "ast_hash": "898fe8a86bd8f6d09911f91e991146af",
     "semantic_hash": ""
   },
   "src/lib/utils/formatters.ts": {
@@ -960,9 +960,9 @@
     "semantic_hash": "e6aadda7c4a54dc7b740a1873bff06f1"
   },
   "src/routes/admin/+page.svelte": {
-    "mtime": 1787223506.0415456,
-    "seen": 1787223613.747124,
-    "ast_hash": "1fe64338f7c574631fa7a49708ee73f1",
+    "mtime": 1787233615.3901205,
+    "seen": 1787233848.9677632,
+    "ast_hash": "5f08f747c4a721f983f12c8fbb3b0b1d",
     "semantic_hash": ""
   },
   "src/routes/admin/login/+page.svelte": {
@@ -972,9 +972,9 @@
     "semantic_hash": "1874f38efadbc4f0876c9a6a72a96123"
   },
   "src/routes/admin/new/+page.svelte": {
-    "mtime": 1787223514.0806406,
-    "seen": 1787223613.7471702,
-    "ast_hash": "bb742c9537809896272afbb143c7ba2d",
+    "mtime": 1787233626.2942474,
+    "seen": 1787233848.9678185,
+    "ast_hash": "20c14249381daade486a9b46484c8099",
     "semantic_hash": ""
   },
   "src/routes/api/internal/admin/cv/delete/+server.ts": {
@@ -1116,9 +1116,9 @@
     "semantic_hash": "674f832d9e245032d8b11d3b9b55cde0"
   },
   "src/routes/blog/[slug]/+page.svelte": {
-    "mtime": 1787224119.4508727,
-    "seen": 1787225103.4971595,
-    "ast_hash": "801e29f387cf616e4a4ed4f7613b116a",
+    "mtime": 1787233596.6069021,
+    "seen": 1787233848.9688885,
+    "ast_hash": "3f8fb967f502337194ece6ad6fb8d316",
     "semantic_hash": ""
   },
   "src/routes/feedback/+page.svelte": {
@@ -1802,55 +1802,55 @@
   ".agents/mcp_config.json": {
     "mtime": 1787213546.59784,
     "seen": 1787229015.7282815,
-    "ast_hash": "df05d9e161a6aba7aee8d2d29303d1eb",
+    "ast_hash": "",
     "semantic_hash": ""
   },
   ".claude/mcp.json": {
     "mtime": 1787213546.59784,
     "seen": 1787229015.7283287,
-    "ast_hash": "df05d9e161a6aba7aee8d2d29303d1eb",
+    "ast_hash": "",
     "semantic_hash": ""
   },
   ".mcp.json": {
     "mtime": 1787213546.59784,
     "seen": 1787229015.728336,
-    "ast_hash": "df05d9e161a6aba7aee8d2d29303d1eb",
+    "ast_hash": "",
     "semantic_hash": ""
   },
   ".agents/skills/security-audit/report-schema.json": {
     "mtime": 1787131306.1832278,
     "seen": 1787229015.7282925,
-    "ast_hash": "b9c223f9572718bbeefe55cfabfccb89",
+    "ast_hash": "",
     "semantic_hash": ""
   },
   ".agents/skills/task-observer/.tessl-plugin/plugin.json": {
     "mtime": 1786596595.3681657,
     "seen": 1787229015.728302,
-    "ast_hash": "dd09ccf633bc8acb411bd76e41192128",
+    "ast_hash": "",
     "semantic_hash": ""
   },
   ".claude/launch.json": {
     "mtime": 1786596595.3899796,
     "seen": 1787229015.7283263,
-    "ast_hash": "266c381cb8b65f66542f388c7c2e1e36",
+    "ast_hash": "",
     "semantic_hash": ""
   },
   ".claude/settings.json": {
     "mtime": 1787213546.59884,
     "seen": 1787229015.7283316,
-    "ast_hash": "3cd713e42fa006229a388534c194c5c3",
+    "ast_hash": "",
     "semantic_hash": ""
   },
   ".claude/settings.local.json": {
     "mtime": 1786868959.3488188,
     "seen": 1787229015.7283337,
-    "ast_hash": "1e721ca931e2b201f3f6f63c7d8d8482",
+    "ast_hash": "",
     "semantic_hash": ""
   },
   "skills-lock.json": {
     "mtime": 1787213546.6267447,
     "seen": 1787229015.7283492,
-    "ast_hash": "762732c3da6fa4fa20d190a2a4f0267f",
+    "ast_hash": "",
     "semantic_hash": ""
   },
   ".agents/rules/ripgrep.md": {
