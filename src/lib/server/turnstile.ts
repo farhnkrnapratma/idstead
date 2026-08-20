@@ -1,3 +1,5 @@
+import {env} from '$env/dynamic/private';
+
 type PlatformEnv = {env?: {TURNSTILE_SECRET?: string}};
 
 interface SiteverifyResponse {
@@ -50,6 +52,7 @@ export async function verifyTurnstileToken(
 
   const secret =
     (platform as PlatformEnv | undefined)?.env?.TURNSTILE_SECRET
+    ?? env.TURNSTILE_SECRET
     ?? process.env.TURNSTILE_SECRET;
 
   if (!secret) {
