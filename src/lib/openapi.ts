@@ -1,14 +1,20 @@
 const errorSchema = {
   type: 'object',
   properties: {
-    code: {type: 'integer', example: 404},
     error: {
-      type: 'string',
-      example:
-        '404 Not Found: Requested API endpoint or resource does not exist.'
+      type: 'object',
+      properties: {
+        code: {type: 'string', example: 'BLOG_POST_NOT_FOUND'},
+        message: {type: 'string', example: 'Blog post not found'},
+        details: {
+          type: 'string',
+          example: "No blog post exists with slug 'this-slug-does-not-exist'."
+        }
+      },
+      required: ['code', 'message']
     }
   },
-  required: ['code', 'error']
+  required: ['error']
 };
 
 const paginationSchema = {
@@ -30,7 +36,6 @@ const blogPostSummarySchema = {
     title: {type: 'string'},
     slug: {type: 'string'},
     excerpt: {type: 'string', nullable: true},
-    tags: {type: 'array', items: {type: 'string'}, nullable: true},
     created_at: {type: 'string', format: 'date-time'},
     updated_at: {type: 'string', format: 'date-time'}
   }
@@ -75,8 +80,7 @@ const searchResultSchema = {
     type: {type: 'string', enum: ['post', 'project']},
     title: {type: 'string'},
     subtitle: {type: 'string'},
-    url: {type: 'string'},
-    tags: {type: 'array', items: {type: 'string'}}
+    url: {type: 'string'}
   }
 };
 
@@ -358,6 +362,13 @@ export const openapiSpec = {
             schema: {type: 'string', enum: ['sha256']},
             description:
               'Download the SHA256 checksum verification sidecar text file.'
+          },
+          {
+            name: 'checksum',
+            in: 'query',
+            required: false,
+            schema: {type: 'string', enum: ['1', 'true']},
+            description: 'Alias for format=sha256.'
           }
         ],
         responses: {

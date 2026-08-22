@@ -1,6 +1,7 @@
-import {json, error} from '@sveltejs/kit';
+import {json} from '@sveltejs/kit';
 import type {RequestHandler} from './$types';
 import {supabase} from '$lib/supabase';
+import {apiError} from '$lib/server/apiError';
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -20,11 +21,12 @@ export const GET: RequestHandler = async ({params, url, request, fetch}) => {
   const {data: post, error: dbErr} = await query.maybeSingle();
 
   if (dbErr || !post) {
-    throw error(404, {
-      message: 'Blog post not found',
-      code: 'BLOG_POST_NOT_FOUND',
-      details: `No blog post exists with ${isUuid ? 'id' : 'slug'} '${idOrSlug}'.`
-    });
+    return apiError(
+      404,
+      'BLOG_POST_NOT_FOUND',
+      'Blog post not found',
+      `No blog post exists with ${isUuid ? 'id' : 'slug'} '${idOrSlug}'.`
+    );
   }
 
   let commentCount = 0;
