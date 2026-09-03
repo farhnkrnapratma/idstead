@@ -36,6 +36,7 @@
     sanitizeInput
   } from '$lib';
   import {themeStore} from '$lib/stores/themeStore.svelte';
+  import {compressImageToWebp} from '$lib/utils/imageCompressor';
 
   let isCheckingAuth = $state(true);
   let title = $state('');
@@ -422,34 +423,7 @@
 
     isCompressingBanner = true;
     try {
-      const {data: sessionData} = await supabase.auth.getSession();
-      const accessToken = sessionData.session?.access_token;
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const res = await fetch('/api/internal/blog/compress-banner', {
-        method: 'POST',
-        headers: {
-          ...(accessToken ? {Authorization: `Bearer ${accessToken}`} : {})
-        },
-        body: formData
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => null);
-        throw new Error(
-          err?.error?.message
-            || err?.message
-            || 'Failed to compress banner image.'
-        );
-      }
-
-      const blob = await res.blob();
-      const baseName = file.name.replace(/\.[^/.]+$/, '');
-      const compressedFile = new File([blob], `${baseName}.webp`, {
-        type: 'image/webp'
-      });
-
+      const compressedFile = await compressImageToWebp(file);
       bannerFile = compressedFile;
       bannerFileName = file.name;
       if (bannerPreview && bannerPreview.startsWith('blob:')) {

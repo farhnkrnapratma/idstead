@@ -54,9 +54,9 @@
     "semantic_hash": "70ef0c19f6492d9a57422edece187d24"
   },
   "package.json": {
-    "mtime": 1788354971.0232532,
-    "seen": 1788355589.6202166,
-    "ast_hash": "02e5cfaf59f10b905463f2f26f9b5025",
+    "mtime": 1788402379.864179,
+    "seen": 1788402443.2703454,
+    "ast_hash": "0d9dc4a2f0cbc51f9ccf80980f5a4b50",
     "semantic_hash": ""
   },
   "prettier.config.ts": {
@@ -474,9 +474,9 @@
     "semantic_hash": "9933bdcc62f63cb6041d7241e8c7c625"
   },
   "src/lib/components/SpotlightSearch.svelte": {
-    "mtime": 1788381454.4131808,
-    "seen": 1788381567.863411,
-    "ast_hash": "64bbeaf232ca4215bd0f27959e43eb1f",
+    "mtime": 1788381968.225417,
+    "seen": 1788382075.8382132,
+    "ast_hash": "eb68265fa30e0d51419bbbe43e2e4840",
     "semantic_hash": ""
   },
   "src/lib/components/StatsGrid.svelte": {
@@ -1098,9 +1098,9 @@
     "semantic_hash": ""
   },
   "src/routes/blog/[slug]/+page.svelte": {
-    "mtime": 1788381493.4206543,
-    "seen": 1788381567.8636446,
-    "ast_hash": "f9b2f7e6ac50cca465b96d44be1fdd76",
+    "mtime": 1788381713.6073267,
+    "seen": 1788381780.4152713,
+    "ast_hash": "cfa09eae00d2a4f80ea15440fc2d2b5f",
     "semantic_hash": ""
   },
   "src/routes/feedback/+page.svelte": {

@@ -1,22 +1,22 @@
 # Graph Report - www  (2026-09-03)
 
 ## Corpus Check
-- 408 files · ~373,472 words
+- 408 files · ~373,495 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 2341 nodes · 3446 edges · 307 communities (148 shown, 130 thin omitted)
+- 2326 nodes · 3404 edges · 294 communities (143 shown, 130 thin omitted)
 - Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 129 edges (avg confidence: 0.86)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `a24e6bde`
+- Built from commit: `725dbe2e`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - lib/index.ts
-- ISO/IEC 14764 4-Dimension Taxonomy
+- Change Type Framework
 - Definisi Operasional Change Type
 - New session - 2026-08-30T15:36:24.213Z
 - Core Principles
@@ -24,6 +24,7 @@
 - blog/+server.ts
 - Repository Guidelines
 - What You Must Do When Invoked
+- markdown.ts
 - svelte-core-bestpractices
 - mcp.json
 - Architecture
@@ -34,7 +35,7 @@
 - Writing Guidelines for Postgres References
 - blogTranslate.ts
 - Supabase
-- publint
+- LinkListSection.svelte
 - HTTP-Protocol and Authentication Hunting
 - task-observer - One Skill to Rule Them All
 - dependencies
@@ -44,7 +45,7 @@
 - Task Observer Skill
 - Dotenv Usage Dotenvx
 - Tsconfig Json Node
-- IconButton.svelte
+- LegalPageLayout.svelte
 - Conn Connection Pooling
 - Data Insert Batch
 - Lock Lock Advisory
@@ -59,7 +60,7 @@
 - public.db_comment_reports
 - @types/d3-time
 - app.d.ts
-- prettier-plugin-svelte
+- toastStore.svelte.ts
 - Security Policy
 - Validation, Reporting, and Verification
 - Section Definitions
@@ -156,12 +157,15 @@
 - graphify reference: query, path, explain
 - public.db_post_translations
 - [slug]/+page.svelte
+- [slug]/+page.server.ts
+- keywords
 - typescript
 - Button.svelte
 - prettier.config.ts
 - Google Tag Manager and Cookie Consent Integration
 - hooks.client.ts
 - scripts
+- InferenceQueue
 - context7.md
 - prettier
 - Ripgrep Search Rules
@@ -170,7 +174,7 @@
 - GitHub Funding Configuration
 - Task Observer Release Bundle CI/CD Workflow
 - public.db_posts
-- Anti-Pattern Guide untuk Change Type Framework
+- search/+server.ts
 - public.author_links
 - public.author_profile
 - public.comments
@@ -182,16 +186,19 @@
 - public.posts
 - public.skill_categories
 - public.skill_items
-- bootstrap-icons
+- @fontsource-variable/lexend
 - Step-by-Step Tutorial Timeline (`:::steps`)
 - Committing in a repository that uses commitlint
 - globals
 - commitlint.config.ts
 - peerDependencies
-- adminCv.ts
+- @fontsource-variable/noto-sans-sc
 - public.db_post_translations
 - bun.md
 - yaml
+- @lucide/svelte
+- @sveltejs/package
+- tailwindcss
 - 20260830000000_add_db_glossary_terms.sql
 - typescript-eslint
 - createSearchHistoryStore
@@ -204,16 +211,13 @@
 - Heading 2
 - PillInput.svelte
 - jiti
-- @fontsource-variable/google-sans-code
 - @fontsource-variable/google-sans-flex
-- LegalPageLayout.svelte
+- IconButton.svelte
 - @fontsource-variable/noto-sans-jp
 - @fontsource-variable/noto-sans-kr
-- supabase.ts
 - @fontsource-variable/noto-serif
 - @fontsource-variable/noto-serif-jp
 - @fontsource-variable/noto-serif-kr
-- @fontsource-variable/noto-serif-sc
 - @fontsource-variable/space-grotesk
 - js-yaml
 - katex
@@ -227,7 +231,7 @@
 - @sentry/sveltekit
 - @supabase/supabase-js
 - Code Blocks & Line Highlighting
-- types.ts
+- a11yStore.svelte.ts
 - marked-footnote
 - createA11yStore
 - graphify reference: extra exports and benchmark
@@ -252,12 +256,10 @@
 - Translation Control (`:::ignore-translate` & `:::translate-override`)
 - Multi-Variant Code Tabs (`:::tabs`)
 - graphify reference: add a URL and watch a folder
-- blogAi.ts
 - graphify reference: commit hook and native CLAUDE.md integration
 - graphify reference: incremental update and cluster-only
 - graphify reference: add a URL and watch a folder
 - graphify reference: commit hook and native CLAUDE.md integration
-- internal/blog/comments/+server.ts
 - codeBlocks.ts
 - graphify reference: incremental update and cluster-only
 - graphify reference: add a URL and watch a folder
@@ -278,21 +280,14 @@
 - .agents/skills/graphify/references/extraction-spec.md
 - .codex/skills/graphify/references/extraction-spec.md
 - .copilot/skills/graphify/references/extraction-spec.md
-- login/+server.ts
 - PageContainer.svelte
-- Change Type Framework
-- Tabel Perbandingan Lengkap
-- Change Type Anti-Patterns Guide
 - mermaid
 - createThemeStore
 - sharp
-- eslint
 - prettier-plugin-tailwindcss
 - prettier-plugin-yaml
 - @sveltejs/vite-plugin-svelte
-- @types/katex
 - admin/+layout.svelte
-- turnstileWidget
 
 ## God Nodes (most connected - your core abstractions)
 1. `New session - 2026-08-30T15:36:24.213Z` - 103 edges
@@ -335,39 +330,15 @@
 - **Postgres Connection Management Strategy** — _agents_skills_supabase_postgres_best_practices_references_conn_pooling_pgbouncer_modes, _agents_skills_supabase_postgres_best_practices_references_conn_limits_max_connections_sizing, _agents_skills_supabase_postgres_best_practices_references_conn_idle_timeout_idle_in_transaction_timeout, _agents_skills_supabase_postgres_best_practices_references_conn_prepared_statements_unnamed_statements [INFERRED 0.95]
 - **Web Identity and Authentication Attack Vectors** — _agents_skills_security_audit_web_protocol_and_auth_jwt_verification_defects, _agents_skills_security_audit_web_protocol_and_auth_oauth_oidc_flow_defects, _agents_skills_security_audit_web_protocol_and_auth_saml_assertion_defects, _agents_skills_security_audit_web_protocol_and_auth_session_management_defects [INFERRED 0.95]
 
-## Communities (307 total, 130 thin omitted)
+## Communities (294 total, 130 thin omitted)
 
-### Community 0 - "lib/index.ts"
-Cohesion: 0.04
-Nodes (6): actions(), {
-    title,
-    subtitle = '',
-    href,
-    target,
-    rel,
-    leading,
-    actions,
-    children,
-    class: className = ''
-  }, children(), {
-    title,
-    href = '',
-    description = '',
-    interactive = true,
-    class: className = '',
-    meta,
-    tags,
-    actions,
-    children
-  }, DISPLAY_KEYWORDS, TEXT_SIZE_KEYWORDS
-
-### Community 1 - "ISO/IEC 14764 4-Dimension Taxonomy"
-Cohesion: 0.07
-Nodes (34): FEATURE Change Type, HARDENING Change Type, HOTFIX Change Type, ISO/IEC 14764 4-Dimension Taxonomy, MIGRATION Change Type, PATCH Change Type, REFACTOR Change Type, Create Migration Skill (+26 more)
+### Community 1 - "Change Type Framework"
+Cohesion: 0.05
+Nodes (46): Change Type Anti-Patterns Guide, Rollback Plan Omission Anti-Pattern (AP-07), Scope Creep Anti-Pattern (AP-01), Test Assumption Error Anti-Pattern (AP-06), FEATURE Change Type, HARDENING Change Type, HOTFIX Change Type, ISO/IEC 14764 4-Dimension Taxonomy (+38 more)
 
 ### Community 2 - "Definisi Operasional Change Type"
-Cohesion: 0.09
-Nodes (22): BUG-FIX, Definisi Operasional Change Type, DEPLOYMENT, ENHANCEMENT, FEATURE, HARDENING, HOTFIX, INTEGRATION (+14 more)
+Cohesion: 0.05
+Nodes (37): Anti-Pattern Guide untuk Change Type Framework, AP-01: Scope Creep (Paling Umum), AP-02: Implicit Type Assumption, AP-03: Risk Underestimation, AP-04: Menggabungkan Multiple Change Types, AP-05: Missing Forbidden Zone Awareness, AP-06: Test Assumption Error, AP-07: Rollback Plan Omission (+29 more)
 
 ### Community 3 - "New session - 2026-08-30T15:36:24.213Z"
 Cohesion: 0.02
@@ -379,11 +350,11 @@ Nodes (12): Anti-Patterns to Avoid, Confirm dynamically when you can, Core Princ
 
 ### Community 5 - "define.ts"
 Cohesion: 0.06
-Nodes (63): ADDITIVE_MAP, ArrayLit, arrayVal(), Assignment, BinaryExpr, BoolLit, boolVal(), createDbRegistry() (+55 more)
+Nodes (62): ADDITIVE_MAP, ArrayLit, arrayVal(), Assignment, BinaryExpr, BoolLit, boolVal(), DbRegistry (+54 more)
 
 ### Community 6 - "blog/+server.ts"
-Cohesion: 0.31
-Nodes (11): buildTranslationDisclaimerMarkdown(), getTranslationDisclaimer(), englishFallback(), isTranslationLocale(), resolveTranslation(), resolveTranslationsBulk(), escapePostgrestFilter(), GET() (+3 more)
+Cohesion: 0.40
+Nodes (10): buildTranslationDisclaimerMarkdown(), getTranslationDisclaimer(), TranslationLocale, englishFallback(), isTranslationLocale(), ResolvedTranslation, resolveTranslation(), resolveTranslationsBulk() (+2 more)
 
 ### Community 7 - "Repository Guidelines"
 Cohesion: 0.14
@@ -392,6 +363,10 @@ Nodes (15): Graphify Knowledge Graph Rules, Cloudflare Pages Multi-Tier Environm
 ### Community 8 - "What You Must Do When Invoked"
 Cohesion: 0.08
 Nodes (24): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands, Part A - Structural extraction for code files (+16 more)
+
+### Community 9 - "markdown.ts"
+Cohesion: 0.15
+Nodes (24): createDbRegistry(), cleanListItemHtml(), code(), decodeMathEntities(), defaultCodeRenderer, escapeHtml(), extractAndRenderMath(), extractIgnoreRenderBlocks() (+16 more)
 
 ### Community 10 - "svelte-core-bestpractices"
 Cohesion: 0.10
@@ -426,12 +401,36 @@ Cohesion: 0.11
 Nodes (18): Error-First Reference Structure, Quantified Performance Impact Guideline, Postgres Best Practice Reference Template, 1. Concrete Transformation Patterns, 2. Error-First Structure, 3. Quantified Impact, 4. Self-Contained Examples, 5. Semantic Naming (+10 more)
 
 ### Community 18 - "blogTranslate.ts"
-Cohesion: 0.06
-Nodes (62): protectDefineBlockForTranslation(), resolveProtectedInterpolationTokens(), cleanListItemHtml(), code(), decodeHtmlEntities(), decodeMathEntities(), defaultCodeRenderer, escapeHtml() (+54 more)
+Cohesion: 0.11
+Nodes (28): AiRunner, buildPrompt(), cleanMarkdown(), cleanText(), cleanTldr(), CloudflareAccessRedirectError, countMatches(), escapeRegExp() (+20 more)
 
 ### Community 19 - "Supabase"
 Cohesion: 0.11
 Nodes (15): Fix suggestion, Source, What happened, Skill Feedback, Steps, Core Principles, Debugging, Making and Committing Schema Changes (+7 more)
+
+### Community 20 - "LinkListSection.svelte"
+Cohesion: 0.15
+Nodes (4): actions(), {
+    title,
+    subtitle = '',
+    href,
+    target,
+    rel,
+    leading,
+    actions,
+    children,
+    class: className = ''
+  }, children(), {
+    title,
+    href = '',
+    description = '',
+    interactive = true,
+    class: className = '',
+    meta,
+    tags,
+    actions,
+    children
+  }
 
 ### Community 21 - "HTTP-Protocol and Authentication Hunting"
 Cohesion: 0.13
@@ -443,7 +442,7 @@ Nodes (16): Claude environment notes, Compatibility, Contributing, Further readi
 
 ### Community 23 - "dependencies"
 Cohesion: 0.22
-Nodes (9): @aws-sdk/client-s3, @fontsource-variable/lexend, @fontsource-variable/noto-sans-sc, @lucide/svelte, dependencies, @aws-sdk/client-s3, @fontsource-variable/lexend, @fontsource-variable/noto-sans-sc (+1 more)
+Nodes (9): @aws-sdk/client-s3, bootstrap-icons, @fontsource-variable/google-sans-code, @fontsource-variable/noto-serif-sc, dependencies, @aws-sdk/client-s3, bootstrap-icons, @fontsource-variable/google-sans-code (+1 more)
 
 ### Community 25 - "Getting Started with the task-observer meta-skill (aka "One skill to rule them all")"
 Cohesion: 0.13
@@ -465,9 +464,16 @@ Nodes (13): Agent Usage, Common Tasks, Decision Guide: dotenv vs dotenvx, dotenv
 Cohesion: 0.14
 Nodes (13): node, ./.svelte-kit/tsconfig.json, compilerOptions, allowJs, checkJs, forceConsistentCasingInFileNames, resolveJsonModule, rewriteRelativeImportExtensions (+5 more)
 
-### Community 30 - "IconButton.svelte"
-Cohesion: 0.12
-Nodes (5): ContentFont, contentFontStore, createContentFontStore(), reset(), setFont()
+### Community 30 - "LegalPageLayout.svelte"
+Cohesion: 0.14
+Nodes (7): {
+    title,
+    excerpt = '',
+    class: className = '',
+    titleClass = 'text-text-secondary',
+    titleViewTransitionName = '',
+    meta
+  }, titleParts, ContentFont, contentFontStore, createContentFontStore(), reset(), setFont()
 
 ### Community 31 - "Conn Connection Pooling"
 Cohesion: 0.17
@@ -490,8 +496,8 @@ Cohesion: 0.13
 Nodes (14): exports, files, license, name, private, sideEffects, svelte, type (+6 more)
 
 ### Community 36 - "author.ts"
-Cohesion: 0.06
-Nodes (61): ALLOWED_LUCIDE_PROPS, AuthorProfile, ContactInfo, CvDocument, decodeHtmlEntities(), EducationItem, ExperienceItem, fetchActiveCvDocument() (+53 more)
+Cohesion: 0.05
+Nodes (68): ALLOWED_LUCIDE_PROPS, AuthorProfile, ContactInfo, CvDocument, decodeHtmlEntities(), EducationItem, ExperienceItem, fetchActiveCvDocument() (+60 more)
 
 ### Community 37 - "REST API Best Practices Skill"
 Cohesion: 0.17
@@ -517,6 +523,10 @@ Nodes (10): Author Attribution Template, Editing skills — always start from th
 Cohesion: 0.17
 Nodes (7): App, Error, Locals, Platform, R2Bucket, R2Object, RateLimit
 
+### Community 45 - "toastStore.svelte.ts"
+Cohesion: 0.24
+Nodes (8): formatToastMessage(), message, show(), success(), toastStore, ToastType, type, visible
+
 ### Community 46 - "Security Policy"
 Cohesion: 0.22
 Nodes (10): API Reviewer Agent, Security Reviewer Agent, Recognition, Reporting a Vulnerability, Scope, Security Policy, What to Expect, Public API v1 Endpoints Specification (+2 more)
@@ -534,8 +544,8 @@ Cohesion: 0.17
 Nodes (17): categorizedResults, close(), escapeHtml(), flatItems, handleGlobalKeydown(), handleHistoryKeydown(), handleInput(), handleKeydown() (+9 more)
 
 ### Community 50 - "devDependencies"
-Cohesion: 0.09
-Nodes (23): @commitlint/cli, @commitlint/config-conventional, eslint-config-prettier, eslint-plugin-svelte, devDependencies, @commitlint/cli, @commitlint/config-conventional, eslint-config-prettier (+15 more)
+Cohesion: 0.07
+Nodes (27): @commitlint/cli, @commitlint/config-conventional, eslint, eslint-config-prettier, eslint-plugin-svelte, devDependencies, @commitlint/cli, @commitlint/config-conventional (+19 more)
 
 ### Community 51 - "Client-Side and Browser Hunting"
 Cohesion: 0.22
@@ -719,11 +729,19 @@ Nodes (3): public.db_post_translations, public, public.db_posts
 
 ### Community 147 - "[slug]/+page.svelte"
 Cohesion: 0.12
-Nodes (12): ensureTurnstileScript(), executeTurnstile(), executionResolvers, resetTurnstile(), turnstileSiteKey, TurnstileWidgetOptions, Window, handleSubmit() (+4 more)
+Nodes (15): ensureTurnstileScript(), executeTurnstile(), executionResolvers, resetTurnstile(), turnstileSiteKey, turnstileWidget(), collapseNode(), expandNode() (+7 more)
+
+### Community 149 - "[slug]/+page.server.ts"
+Cohesion: 0.33
+Nodes (8): decodeHtmlEntities(), extractHeadings(), injectHeadingIds(), BlogComment, estimateReadTime(), getRelatedWindow(), load(), RelatedPost
+
+### Community 150 - "keywords"
+Cohesion: 0.29
+Nodes (7): keywords, farhan, farhan kurnia pratama, kurnia, pratama, sveltekit, tailwindcss
 
 ### Community 152 - "Button.svelte"
-Cohesion: 0.08
-Nodes (16): sizeStyles, string, styleKey, {
+Cohesion: 0.09
+Nodes (12): sizeStyles, string, styleKey, {
     type = 'primary',
     tone = 'neutral',
     htmlType = 'button',
@@ -741,15 +759,15 @@ Nodes (16): sizeStyles, string, styleKey, {
     class: className = '',
     children,
     ...restProps
-  }, error(), formatToastMessage(), message, show() (+8 more)
+  }, BlogPost, Comment, FormFieldContext, NavItem (+4 more)
 
 ### Community 156 - "scripts"
 Cohesion: 0.15
 Nodes (13): scripts, build, build:preview, check, check:watch, dev, dev:preview, dev:production (+5 more)
 
-### Community 171 - "Anti-Pattern Guide untuk Change Type Framework"
-Cohesion: 0.20
-Nodes (10): Anti-Pattern Guide untuk Change Type Framework, AP-01: Scope Creep (Paling Umum), AP-02: Implicit Type Assumption, AP-03: Risk Underestimation, AP-04: Menggabungkan Multiple Change Types, AP-05: Missing Forbidden Zone Awareness, AP-06: Test Assumption Error, AP-07: Rollback Plan Omission (+2 more)
+### Community 171 - "search/+server.ts"
+Cohesion: 0.60
+Nodes (3): escapePostgrestFilter(), GET(), SearchResult
 
 ### Community 177 - "graphify reference: query, path, explain"
 Cohesion: 0.33
@@ -765,11 +783,7 @@ Nodes (6): 1. Detect whether the repository uses commitlint, 2. Read the enforce
 
 ### Community 192 - "peerDependencies"
 Cohesion: 0.33
-Nodes (6): svelte, svelte, peerDependencies, svelte, @sveltejs/kit, @sveltejs/kit
-
-### Community 193 - "adminCv.ts"
-Cohesion: 0.19
-Nodes (20): bumpSemver(), decodeHtmlEntities(), fail(), formatAuthorSlug(), getAdminDb(), getR2Credentials(), jsonResponse(), parseSemver() (+12 more)
+Nodes (6): svelte, peerDependencies, svelte, @sveltejs/kit, svelte, @sveltejs/kit
 
 ### Community 205 - "createSearchHistoryStore"
 Cohesion: 0.36
@@ -791,20 +805,9 @@ Nodes (5): For /graphify explain, For /graphify path, graphify reference: query,
 Cohesion: 0.40
 Nodes (5): Heading 2, Heading 3, Heading 4, Heading 5, Heading 6
 
-### Community 217 - "LegalPageLayout.svelte"
-Cohesion: 0.08
-Nodes (7): {
-    title,
-    excerpt = '',
-    class: className = '',
-    titleClass = 'text-text-secondary',
-    titleViewTransitionName = '',
-    meta
-  }, titleParts, createScrollStore(), handleScroll(), init(), scrollStore, scrollToTop()
-
-### Community 220 - "supabase.ts"
-Cohesion: 0.26
-Nodes (11): LegalPageData, prepareMarkdownPage(), getLegalPage(), supabase, decodeHtmlEntities(), markdownToPlainText(), GET(), LEGAL_SLUGS (+3 more)
+### Community 217 - "IconButton.svelte"
+Cohesion: 0.10
+Nodes (4): autoResize(), portal(), staggerChildren(), scrollToTop()
 
 ### Community 232 - "Lists & Interactive Task Lists"
 Cohesion: 0.50
@@ -814,9 +817,9 @@ Nodes (4): Bulleted (Unordered) List, Lists & Interactive Task Lists, Numbered (
 Cohesion: 0.50
 Nodes (4): Code Blocks & Line Highlighting, Diff Highlighting, Python Data Science Snippet, TypeScript Code Block with Line Highlighting (`{2,5-7}`)
 
-### Community 238 - "types.ts"
-Cohesion: 0.08
-Nodes (15): A11Y_TOGGLES, A11ySettings, a11yStore, defaults, FontScale, themeStore, BlogPost, Comment (+7 more)
+### Community 238 - "a11yStore.svelte.ts"
+Cohesion: 0.07
+Nodes (9): A11Y_TOGGLES, A11ySettings, a11yStore, defaults, FontScale, themeStore, error(), Theme (+1 more)
 
 ### Community 240 - "createA11yStore"
 Cohesion: 0.31
@@ -890,10 +893,6 @@ Nodes (3): Multi-Variant Code Tabs (`:::tabs`), Package Manager Installation (`k
 Cohesion: 0.50
 Nodes (3): For /graphify add, For --watch, graphify reference: add a URL and watch a folder
 
-### Community 265 - "blogAi.ts"
-Cohesion: 0.29
-Nodes (17): AiRunner, BANNED_PHRASES, cleanBulletList(), cleanParagraph(), generateExcerpt(), generateSummary(), generateTldr(), generateWithRetry() (+9 more)
-
 ### Community 266 - "graphify reference: commit hook and native CLAUDE.md integration"
 Cohesion: 0.50
 Nodes (3): For git commit hook, For native CLAUDE.md integration, graphify reference: commit hook and native CLAUDE.md integration
@@ -910,13 +909,9 @@ Nodes (3): For /graphify add, For --watch, graphify reference: add a URL and wat
 Cohesion: 0.50
 Nodes (3): For git commit hook, For native CLAUDE.md integration, graphify reference: commit hook and native CLAUDE.md integration
 
-### Community 270 - "internal/blog/comments/+server.ts"
-Cohesion: 0.22
-Nodes (12): isPublicIp(), PlatformEnv, SiteverifyResponse, verifyTurnstileToken(), extractAuthorNameTokens(), isNameReserved(), normalizeName(), POST() (+4 more)
-
 ### Community 271 - "codeBlocks.ts"
 Cohesion: 0.05
-Nodes (62): keywords, farhan, farhan kurnia pratama, kurnia, pratama, svelte, sveltekit, tailwindcss (+54 more)
+Nodes (59): svelte, CodeBlockPrefs, codeBlockPrefsStore, defaults, createScrollStore(), handleScroll(), init(), scrollStore (+51 more)
 
 ### Community 272 - "graphify reference: incremental update and cluster-only"
 Cohesion: 0.50
@@ -931,15 +926,15 @@ Cohesion: 0.50
 Nodes (3): For git commit hook, For native CLAUDE.md integration, graphify reference: commit hook and native CLAUDE.md integration
 
 ### Community 276 - "apiError"
-Cohesion: 0.14
-Nodes (28): fetchGlossaryTerms(), extractPostConfig(), processCvUpload(), requireAdminAuth(), apiError(), TRANSLATION_LOCALES, TranslationLocale, ResolvedTranslation (+20 more)
+Cohesion: 0.05
+Nodes (88): fetchGlossaryTerms(), extractDefineBlock(), validateDefineForSave(), extractPostConfig(), bumpSemver(), decodeHtmlEntities(), fail(), formatAuthorSlug() (+80 more)
 
 ### Community 277 - "Q: Fix statusline sticky and toolbar clipping beneath the admin navbar"
 Cohesion: 0.40
 Nodes (4): Answer, Outcome, Q: Fix statusline sticky and toolbar clipping beneath the admin navbar, Source Nodes
 
 ### Community 278 - "formatters.ts"
-Cohesion: 0.18
+Cohesion: 0.16
 Nodes (6): formatRelativeTime(), getRelativeTimeNextUpdateMs(), matchRelativeUnit(), RELATIVE_UNITS, RelativeUnit, toDate()
 
 ### Community 280 - "Q: Align Markdown editor active-line highlight with gutter and extend gutter background to the editor bottom"
@@ -950,49 +945,34 @@ Nodes (4): Answer, Outcome, Q: Align Markdown editor active-line highlight with 
 Cohesion: 0.50
 Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphify reference: incremental update and cluster-only
 
-### Community 291 - "login/+server.ts"
-Cohesion: 0.40
-Nodes (8): AttemptRecord, attempts, checkLoginLockout(), clearLoginAttempts(), pruneOld(), recordFailedLogin(), getClientIp(), POST()
-
-### Community 293 - "Change Type Framework"
-Cohesion: 0.25
-Nodes (8): Change Brief Contract, Scope Alert Escalation, Cara Menggunakan, Change Brief Format (Wajib Ditampilkan Sebelum Eksekusi), Change Type Framework, Eskalasi dan Interupsi, Referensi Lengkap, Tabel Risk Level
-
-### Community 294 - "Tabel Perbandingan Lengkap"
-Cohesion: 0.40
-Nodes (5): Kelompok Adaptive, Kelompok Corrective, Kelompok Perfective, Kelompok Preventive, Tabel Perbandingan Lengkap
-
-### Community 295 - "Change Type Anti-Patterns Guide"
-Cohesion: 0.50
-Nodes (4): Change Type Anti-Patterns Guide, Rollback Plan Omission Anti-Pattern (AP-07), Scope Creep Anti-Pattern (AP-01), Test Assumption Error Anti-Pattern (AP-06)
-
 ### Community 298 - "createThemeStore"
 Cohesion: 0.73
 Nodes (6): createThemeStore(), apply(), checkIsDark(), cycle(), init(), toggle()
 
-### Community 306 - "turnstileWidget"
-Cohesion: 0.83
-Nodes (4): turnstileWidget(), collapseNode(), expandNode(), render()
-
 ## Knowledge Gaps
-- **1063 isolated node(s):** `fs`, `path`, `schemaPath`, `block-bad-commit.sh script`, `block-sensitive-file-edits.sh script` (+1058 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1348 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **1063 isolated node(s):** `name`, `version`, `private`, `license`, `@aws-sdk/client-s3` (+1058 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1340 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **130 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+
+## Work-memory lessons
+
+**Preferred sources** — corroborated by past sessions; start here.
+- `MarkdownEditor.svelte` (2× useful, score=1.968946229)
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `svelte` connect `codeBlocks.ts` to `types.ts`?**
-  _High betweenness centrality (0.057) - this node is a cross-community bridge._
-- **Why does `keywords` connect `codeBlocks.ts` to `package.json`?**
-  _High betweenness centrality (0.057) - this node is a cross-community bridge._
-- **Why does `devDependencies` connect `devDependencies` to `publint`, `typescript`, `prettier`, `package.json`, `@types/d3-time`, `eslint`, `prettier-plugin-svelte`, `prettier-plugin-tailwindcss`, `prettier-plugin-yaml`, `@sveltejs/vite-plugin-svelte`, `@types/katex`, `@eslint/js`, `globals`, `peerDependencies`, `yaml`, `typescript-eslint`, `@types/d3-array`, `@tailwindcss/vite`, `@types/d3-scale`, `jiti`, `svelte-check`, `@sveltejs/adapter-cloudflare`, `@types/d3-shape`?**
-  _High betweenness centrality (0.030) - this node is a cross-community bridge._
-- **What connects `fs`, `path`, `schemaPath` to the rest of the system?**
+- **Why does `svelte` connect `codeBlocks.ts` to `keywords`, `a11yStore.svelte.ts`?**
+  _High betweenness centrality (0.047) - this node is a cross-community bridge._
+- **Why does `keywords` connect `keywords` to `package.json`, `codeBlocks.ts`?**
+  _High betweenness centrality (0.047) - this node is a cross-community bridge._
+- **Why does `devDependencies` connect `devDependencies` to `typescript`, `prettier`, `package.json`, `@types/d3-time`, `prettier-plugin-tailwindcss`, `prettier-plugin-yaml`, `@sveltejs/vite-plugin-svelte`, `@eslint/js`, `globals`, `peerDependencies`, `yaml`, `@sveltejs/package`, `tailwindcss`, `typescript-eslint`, `@types/d3-array`, `@tailwindcss/vite`, `@types/d3-scale`, `jiti`, `svelte-check`, `@sveltejs/adapter-cloudflare`, `@types/d3-shape`?**
+  _High betweenness centrality (0.029) - this node is a cross-community bridge._
+- **What connects `name`, `version`, `private` to the rest of the system?**
   _1063 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `lib/index.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.044647031323048154 - nodes in this community are weakly interconnected._
-- **Should `ISO/IEC 14764 4-Dimension Taxonomy` be split into smaller, more focused modules?**
-  _Cohesion score 0.0659536541889483 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05257312106627175 - nodes in this community are weakly interconnected._
+- **Should `Change Type Framework` be split into smaller, more focused modules?**
+  _Cohesion score 0.04734299516908213 - nodes in this community are weakly interconnected._
 - **Should `Definisi Operasional Change Type` be split into smaller, more focused modules?**
-  _Cohesion score 0.09090909090909091 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05 - nodes in this community are weakly interconnected._

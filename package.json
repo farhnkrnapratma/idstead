@@ -33,8 +33,7 @@
     "marked-footnote": "^1.4.0",
     "mermaid": "^11.17.2",
     "pdf-lib": "^1.17.1",
-    "qreator": "^10.0.2",
-    "sharp": "^0.35.4"
+    "qreator": "^10.0.2"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.2",
