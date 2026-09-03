@@ -5,6 +5,7 @@
 
   interface Props {
     ariaLabel: string;
+    labelPrefix?: string;
     isOpen?: boolean;
     disabled?: boolean;
     fullWidth?: boolean;
@@ -18,6 +19,7 @@
 
   let {
     ariaLabel,
+    labelPrefix,
     isOpen = false,
     disabled = false,
     fullWidth = false,
@@ -38,54 +40,65 @@
   aria-expanded={isOpen}
   aria-haspopup="listbox"
   class={cn(
-    'inline-flex cursor-pointer items-center justify-between gap-1 rounded-sm border font-medium disabled:cursor-not-allowed disabled:opacity-50',
+    'inline-flex cursor-pointer items-center justify-between gap-1 rounded-sm font-sans-title font-medium disabled:cursor-not-allowed disabled:opacity-50',
     fullWidth ? 'w-full'
-    : size === 'sm' ? 'min-w-0'
-    : 'min-w-22',
+    : size === 'sm' ? 'w-full min-w-0 sm:w-auto'
+    : 'w-full min-w-22 sm:w-auto',
     variant === 'primary' ?
       cn(
         size === 'sm' ?
-          'h-7 border-copilot/50 bg-copilot px-2 text-2xs text-white shadow-xs'
-        : 'h-10 border-copilot/50 bg-copilot px-3 text-xs text-white shadow-lg sm:px-4 sm:text-sm',
+          'h-8 border border-copilot/50 bg-copilot px-2.5 text-xs text-white shadow-xs'
+        : 'h-10 border border-copilot/50 bg-copilot px-3 text-xs text-white shadow-lg sm:px-4 sm:text-sm',
         !disabled && 'transition-all hover:brightness-110'
       )
     : cn(
-        size === 'sm' ?
-          'h-7 glass-card px-2 text-2xs text-text-primary shadow-2xs'
-        : 'h-9 glass-card px-3 text-xs text-text-primary shadow-2xs',
+        'glass-button',
+        size === 'sm' ? 'h-8 px-2.5 text-xs' : 'h-9 px-3 text-xs',
         !disabled && 'hover:text-copilot',
-        isOpen && 'border-copilot/60 bg-surface-card/70 text-copilot'
+        isOpen && 'border-copilot/60 bg-surface-card text-copilot'
       ),
     'focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none',
     className
   )}>
   {#if options && options.length > 0}
-    <span class="grid grid-cols-1 grid-rows-1 items-center overflow-hidden">
+    <span
+      class="grid min-w-0 grid-cols-1 grid-rows-1 items-center overflow-hidden">
       {#each options as opt (opt.label)}
         <span
-          class="pointer-events-none invisible col-start-1 row-start-1 inline-flex items-center gap-1.5 truncate leading-none"
+          class="pointer-events-none invisible col-start-1 row-start-1 inline-flex items-center gap-1 truncate leading-none"
           aria-hidden="true">
-          {opt.label}
+          {#if labelPrefix}
+            <span class="font-normal text-text-muted">{labelPrefix}:</span>
+          {/if}
+          <span>{opt.label}</span>
         </span>
       {/each}
       <span
-        class="col-start-1 row-start-1 inline-flex items-center gap-1.5 truncate leading-none">
-        {@render children()}
+        class="col-start-1 row-start-1 inline-flex min-w-0 items-center gap-1 truncate leading-none">
+        {#if labelPrefix}
+          <span class="shrink-0 font-normal text-text-muted"
+            >{labelPrefix}:</span>
+        {/if}
+        <span class="truncate">{@render children()}</span>
       </span>
     </span>
   {:else}
-    <span class="inline-flex items-center gap-1.5 truncate leading-none">
-      {@render children()}
+    <span class="inline-flex min-w-0 items-center gap-1 truncate leading-none">
+      {#if labelPrefix}
+        <span class="shrink-0 font-normal text-text-muted">{labelPrefix}:</span>
+      {/if}
+      <span class="truncate">{@render children()}</span>
     </span>
   {/if}
   <span
-    class="shrink-0 origin-center items-center justify-center transition-transform duration-200 ease-out {(
-      size === 'sm'
-    ) ?
-      'size-3'
-    : 'size-4'} {variant === 'primary' ?
-      'hidden text-white/80 sm:inline-flex'
-    : 'inline-flex text-text-muted'} {isOpen ? 'rotate-180' : ''}">
-    <ChevronDown class="{size === 'sm' ? 'size-2.5' : 'size-3'} leading-none" />
+    class={cn(
+      'shrink-0 origin-center items-center justify-center transition-transform duration-200 ease-out',
+      size === 'sm' ? 'size-3.5' : 'size-4',
+      variant === 'primary' ? 'hidden text-white/80 sm:inline-flex'
+      : isOpen ? 'inline-flex text-copilot'
+      : 'inline-flex text-text-muted',
+      isOpen && 'rotate-180'
+    )}>
+    <ChevronDown class="{size === 'sm' ? 'size-3' : 'size-3'} leading-none" />
   </span>
 </button>

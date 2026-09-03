@@ -1,7 +1,7 @@
 <script lang="ts">
   import {onMount, untrack} from 'svelte';
   import {fade} from 'svelte/transition';
-  import {ShieldCheck, X, ChevronDown, Check, Trash2} from '@lucide/svelte';
+  import {ShieldCheck, X, ChevronDown, Check, Trash} from '@lucide/svelte';
   import {
     consentStore,
     type ConsentStatus
@@ -87,9 +87,9 @@
   );
 
   const presetColor = $derived(
-    presetSliderValue === 0 ? 'var(--color-success)'
+    presetSliderValue === 0 ? 'var(--color-danger)'
     : presetSliderValue === 1 ? 'var(--color-warning)'
-    : 'var(--color-danger)'
+    : 'var(--color-success)'
   );
 
   const presetLabel = $derived(
@@ -130,13 +130,14 @@
             </p>
           </div>
         </div>
-        <button
-          type="button"
+        <Button
+          type="ghost"
+          size="xs"
           onclick={consentStore.closeBanner}
           aria-label="Dismiss banner"
-          class="shrink-0 text-text-muted hover:text-text-primary">
+          class="shrink-0 px-1">
           <X class="size-3.5" />
-        </button>
+        </Button>
       </div>
 
       <p class="text-xs leading-relaxed text-text-secondary">
@@ -166,12 +167,13 @@
           onclick={consentStore.rejectAll}>
           Reject all
         </Button>
-        <button
-          type="button"
+        <Button
+          type="ghost"
+          size="sm"
           onclick={openCustomize}
-          class="ml-auto text-xs font-semibold text-text-muted hover:text-copilot hover:underline">
+          class="ml-auto">
           Cookie Settings
-        </button>
+        </Button>
       </div>
     </div>
   </aside>
@@ -191,8 +193,8 @@
         <span class="text-xs font-semibold text-text-secondary"
           >Quick Presets</span>
         <span
-          class="text-xs font-bold text-(--preset-color) transition-colors"
-          style="--preset-color: {presetColor}">
+          class="text-xs font-bold transition-colors"
+          style="color: {presetColor}">
           {presetLabel}
         </span>
       </div>
@@ -202,9 +204,9 @@
           class="pointer-events-none absolute inset-x-0 h-1.5 rounded-full bg-border-subtle">
         </div>
         <div
-          class="pointer-events-none absolute inset-y-0 left-0 h-1.5 w-(--preset-slider-w) self-center rounded-full bg-(--preset-color) transition-[width,background-color] duration-200"
-          style="--preset-slider-w: {(presetSliderValue / 2)
-            * 100}%; --preset-color: {presetColor};">
+          class="pointer-events-none absolute inset-y-0 left-0 h-1.5 self-center rounded-full transition-[width,background-color] duration-200"
+          style="width: {(presetSliderValue / 2)
+            * 100}%; background-color: {presetColor}">
         </div>
         <input
           type="range"
@@ -214,8 +216,8 @@
           value={presetSliderValue}
           oninput={handlePresetSlider}
           aria-label="Quick cookie preset: allow all, analytics only, or deny all"
-          class="preset-slider relative z-10 w-full cursor-pointer appearance-none bg-transparent"
-          style="--thumb-color: {presetColor}" />
+          style="--thumb-color: {presetColor}"
+          class="preset-slider relative z-10 h-5 w-full cursor-pointer appearance-none bg-transparent outline-none focus:shadow-none focus:outline-none focus-visible:shadow-none focus-visible:outline-none" />
       </div>
 
       <div
@@ -269,7 +271,7 @@
             <div
               role="listbox"
               aria-label="Behavioral Analytics options"
-              class="absolute top-[calc(100%+8px)] left-1/2 z-60 flex w-full w-max min-w-full -translate-x-1/2 flex-col rounded-sm glass-overlay p-0 shadow-xl">
+              class="absolute top-[calc(100%+8px)] left-1/2 z-60 flex w-max min-w-full -translate-x-1/2 flex-col popover-surface p-0">
               <div
                 class="relative z-10 flex flex-col overflow-hidden rounded-sm">
                 <button
@@ -355,7 +357,7 @@
             <div
               role="listbox"
               aria-label="Advertising Storage options"
-              class="absolute top-[calc(100%+8px)] left-1/2 z-60 flex w-full w-max min-w-full -translate-x-1/2 flex-col rounded-sm glass-overlay p-0 shadow-xl">
+              class="absolute top-[calc(100%+8px)] left-1/2 z-60 flex w-max min-w-full -translate-x-1/2 flex-col popover-surface p-0">
               <div
                 class="relative z-10 flex flex-col overflow-hidden rounded-sm">
                 <button
@@ -439,7 +441,7 @@
             <div
               role="listbox"
               aria-label="Ad User Data options"
-              class="absolute top-[calc(100%+8px)] left-1/2 z-60 flex w-full w-max min-w-full -translate-x-1/2 flex-col rounded-sm glass-overlay p-0 shadow-xl">
+              class="absolute top-[calc(100%+8px)] left-1/2 z-60 flex w-max min-w-full -translate-x-1/2 flex-col popover-surface p-0">
               <div
                 class="relative z-10 flex flex-col overflow-hidden rounded-sm">
                 <button
@@ -527,7 +529,7 @@
             <div
               role="listbox"
               aria-label="Ad Personalization options"
-              class="absolute top-[calc(100%+8px)] left-1/2 z-60 flex w-full w-max min-w-full -translate-x-1/2 flex-col rounded-sm glass-overlay p-0 shadow-xl">
+              class="absolute top-[calc(100%+8px)] left-1/2 z-60 flex w-max min-w-full -translate-x-1/2 flex-col popover-surface p-0">
               <div
                 class="relative z-10 flex flex-col overflow-hidden rounded-sm">
                 <button
@@ -573,31 +575,25 @@
       </div>
     </div>
 
-    <div class="flex items-center justify-between gap-3 px-1 pt-1">
+    <div
+      class="flex flex-col items-start gap-2 px-1 pt-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
       <span class="text-xxs text-text-secondary"
         >Need to clear stored choices?</span>
-      <button
-        type="button"
+      <Button
+        type="secondary"
+        tone="critical"
+        size="sm"
         onclick={consentStore.resetVisitorConsent}
-        class="inline-flex cursor-pointer items-center gap-1.5 rounded-sm border border-danger/30 bg-danger/10 px-2.5 py-1 text-xs font-semibold text-danger transition-colors hover:border-danger/50 hover:bg-danger/20">
-        <Trash2 class="size-3" />
+        class="w-full sm:w-auto">
+        <Trash class="size-3" />
         Reset choice
-      </button>
+      </Button>
     </div>
   </div>
 
   {#snippet footer()}
     <div
       class="flex w-full flex-col-reverse items-center justify-end gap-2 sm:flex-row">
-      <Button
-        type="secondary"
-        size="md"
-        showEscHint
-        onclick={() => consentStore.closeCustomizeModal()}
-        class="w-full sm:w-auto">
-        Cancel
-      </Button>
-
       <Button
         type="secondary"
         size="md"
@@ -621,15 +617,6 @@
 </Dialog>
 
 <style>
-  .preset-slider {
-    height: 1.25rem;
-    outline: none;
-  }
-  .preset-slider:focus,
-  .preset-slider:focus-visible {
-    outline: none;
-    box-shadow: none;
-  }
   .preset-slider::-moz-focus-outer {
     border: 0;
   }

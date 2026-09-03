@@ -1,7 +1,8 @@
 <script lang="ts">
   import type {Snippet} from 'svelte';
-  import {Copy, Check} from '@lucide/svelte';
+  import {Copy, CopyCheck} from '@lucide/svelte';
   import {cn} from '../utils/cn';
+  import Button from './Button.svelte';
 
   interface Props {
     title: string;
@@ -56,19 +57,19 @@
 
   <div class="flex shrink-0 items-center gap-2">
     {#if copyableText}
-      <button
-        type="button"
+      <Button
+        type="secondary"
+        size="sm"
         onclick={handleCopy}
-        aria-label="Copy contact information"
-        class="inline-flex h-8 items-center gap-1.5 rounded-sm border border-border-subtle bg-surface px-2.5 text-xxs font-medium text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring">
+        aria-label="Copy contact information">
         {#if copied}
-          <Check class="size-3.5 text-copilot" />
+          <CopyCheck class="size-3.5 text-copilot" />
           <span class="text-copilot">Copied</span>
         {:else}
           <Copy class="size-3.5" />
           <span>Copy</span>
         {/if}
-      </button>
+      </Button>
     {/if}
 
     {#if trailing}

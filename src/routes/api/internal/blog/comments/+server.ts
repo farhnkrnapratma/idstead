@@ -129,27 +129,48 @@ export const POST: RequestHandler = async ({
       `Received ${content.length} characters.`
     );
   }
-  if (!isAnonymous && !authorName) {
+
+  if (!authorName) {
     return apiError(
       400,
       'BLOG_COMMENT_AUTHOR_NAME_REQUIRED',
-      'authorName is required unless isAnonymous is true.'
+      'Author name is required.'
     );
   }
-  if (!isAnonymous) {
-    const authorProfile = await fetchAuthorProfile(supabase);
-    const authorTokens = extractAuthorNameTokens(authorProfile);
-    if (isNameReserved(authorName, authorTokens)) {
-      return apiError(
-        400,
-        'BLOG_COMMENT_AUTHOR_NAME_RESERVED',
-        'This name cannot be used. Please use another name.'
-      );
-    }
+  if (authorName.length < 2) {
+    return apiError(
+      400,
+      'BLOG_COMMENT_AUTHOR_NAME_TOO_SHORT',
+      'Author name must be at least 2 characters.'
+    );
+  }
+  if (authorName.length > 50) {
+    return apiError(
+      400,
+      'BLOG_COMMENT_AUTHOR_NAME_TOO_LONG',
+      'Author name must be 50 characters or fewer.'
+    );
+  }
+
+  const authorProfile = await fetchAuthorProfile(supabase);
+  const authorTokens = extractAuthorNameTokens(authorProfile);
+  if (isNameReserved(authorName, authorTokens)) {
+    return apiError(
+      400,
+      'BLOG_COMMENT_AUTHOR_NAME_RESERVED',
+      'This name cannot be used. Please use another name.'
+    );
+  }
+  if (/(https?:\/\/|www\.[a-z0-9]|ftp:\/\/)/i.test(content)) {
+    return apiError(
+      400,
+      'BLOG_COMMENT_LINKS_NOT_ALLOWED',
+      'Links and URLs are not permitted in guest comments to prevent spam and phishing.'
+    );
   }
 
   const moderation = await moderateContent(
-    content,
+    `Author: ${authorName}\nComment: ${content}`,
     (platform as unknown as {env?: {AI?: unknown}})?.env?.AI
   );
   if (!moderation) {
@@ -174,17 +195,19 @@ export const POST: RequestHandler = async ({
     .insert({
       post_id: postId,
       parent_id: parentId,
-      author_name: isAnonymous ? '' : authorName,
+      author_name: authorName,
       content,
-      is_anonymous: isAnonymous,
+      is_anonymous: false,
+      is_admin: false,
       is_approved: moderation.safe
     })
     .select(
-      'id, post_id, parent_id, author_name, content, is_anonymous, is_approved, created_at'
+      'id, post_id, parent_id, author_name, content, is_anonymous, is_admin, is_approved, created_at'
     )
     .single();
 
   if (dbErr) {
+    console.error('Failed to insert comment:', dbErr);
     return apiError(500, 'BLOG_COMMENT_SAVE_FAILED', 'Could not save comment.');
   }
 

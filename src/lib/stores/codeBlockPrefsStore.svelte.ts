@@ -1,10 +1,11 @@
 import {browser} from '$app/environment';
-import type {CodeColorScheme} from '$lib/utils/hljsTheme';
+import type {CodeColorScheme} from '$lib/utils/codeBlocks';
 
 interface CodeBlockPrefs {
   colorScheme: CodeColorScheme;
   lineNumbers: boolean;
   wrap: boolean;
+  minimal: boolean;
 }
 
 const STORAGE_KEY = 'codeblock_prefs';
@@ -12,7 +13,8 @@ const STORAGE_KEY = 'codeblock_prefs';
 const defaults: CodeBlockPrefs = {
   colorScheme: 'auto',
   lineNumbers: true,
-  wrap: false
+  wrap: false,
+  minimal: false
 };
 
 function createCodeBlockPrefsStore() {
@@ -53,6 +55,10 @@ function createCodeBlockPrefsStore() {
     apply({wrap: !prefs.wrap});
   }
 
+  function toggleMinimal() {
+    apply({minimal: !prefs.minimal});
+  }
+
   function init(onChange?: () => void) {
     if (!browser) return;
     onExternalChange = onChange || null;
@@ -82,7 +88,8 @@ function createCodeBlockPrefsStore() {
     apply,
     cycleColorScheme,
     toggleLineNumbers,
-    toggleWrap
+    toggleWrap,
+    toggleMinimal
   };
 }
 

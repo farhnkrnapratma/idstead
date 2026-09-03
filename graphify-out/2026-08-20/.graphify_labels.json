@@ -143,7 +143,7 @@
   "141": "guard-deploy-config.sh",
   "142": "sync-claude-agents-md.sh",
   "143": "eslint.config.js",
-  "144": "@commitlint/cli",
+  "144": "@commitlint/config-conventional",
   "145": "createContentFontStore",
   "146": "typescript-eslint",
   "147": "publint",

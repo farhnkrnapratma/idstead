@@ -8,7 +8,7 @@
       'primary' | 'danger' | 'outline' | 'ghost' | 'secondary' | 'tertiary';
     tone?: 'neutral' | 'critical';
     htmlType?: 'button' | 'submit' | 'reset';
-    size?: 'sm' | 'md' | 'lg';
+    size?: 'xs' | 'sm' | 'md' | 'lg';
     isLoading?: boolean;
     fullWidth?: boolean;
     leading?: Snippet;
@@ -42,7 +42,7 @@
   }: Props = $props();
 
   const baseStyles =
-    'inline-flex items-center justify-center font-semibold whitespace-nowrap transition-all cursor-pointer select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50 disabled:cursor-not-allowed';
+    'inline-flex items-center justify-center font-semibold whitespace-nowrap transition-all cursor-pointer select-none leading-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50 disabled:cursor-not-allowed [&>svg]:shrink-0 [&>i]:shrink-0 [&>span:not(.hidden)]:inline-flex [&>span:not(.hidden)]:items-center';
 
   const typeToneStyles: Record<string, string> = {
     'primary:neutral':
@@ -54,13 +54,13 @@
     'secondary:critical':
       'border border-danger/30 bg-surface-card/55 text-danger shadow-xs backdrop-blur-sm hover:bg-danger-subtle/40 hover:border-danger/50 disabled:hover:bg-surface-card/55 dark:bg-surface-card/40 dark:hover:bg-danger-subtle/30',
     'tertiary:neutral':
-      'border border-border-default/60 bg-surface-subtle text-text-secondary hover:bg-surface-hover hover:text-text-primary hover:border-border-default disabled:hover:bg-surface-subtle font-bold dark:bg-surface-subtle/40 dark:hover:bg-surface-hover',
+      'border border-border-subtle/50 bg-surface-subtle text-text-secondary shadow-2xs hover:bg-surface-hover hover:text-text-primary hover:border-border-subtle/80 disabled:hover:bg-surface-subtle font-bold dark:bg-surface-subtle/40 dark:hover:bg-surface-hover',
     'tertiary:critical':
-      'border border-danger/30 bg-danger-subtle/70 text-danger hover:bg-danger-subtle disabled:hover:bg-danger-subtle/70 dark:bg-danger-subtle/40',
+      'border border-danger/30 bg-danger-subtle/70 text-danger shadow-2xs hover:bg-danger-subtle disabled:hover:bg-danger-subtle/70 dark:bg-danger-subtle/40',
     'outline:neutral':
-      'border border-border-default bg-transparent text-text-primary hover:bg-surface-hover hover:border-border-strong disabled:hover:bg-transparent disabled:hover:border-border-default dark:hover:bg-surface-hover',
+      'border border-border-subtle/60 bg-transparent text-text-primary shadow-2xs hover:bg-surface-hover hover:border-border-default disabled:hover:bg-transparent disabled:hover:border-border-subtle/60 dark:border-white/10 dark:hover:bg-surface-hover',
     'outline:critical':
-      'border border-danger bg-transparent text-danger hover:bg-danger-subtle disabled:hover:bg-transparent',
+      'border border-danger/40 bg-transparent text-danger shadow-2xs hover:bg-danger-subtle disabled:hover:bg-transparent',
     'ghost:neutral':
       'text-text-secondary hover:text-text-primary hover:bg-surface-hover disabled:hover:text-text-secondary disabled:hover:bg-transparent',
     'ghost:critical':
@@ -74,6 +74,7 @@
   );
 
   const sizeStyles = {
+    xs: 'h-6.5 px-2 text-2xs gap-1 rounded-sm',
     sm: 'h-8 px-3 text-xs gap-1.5 rounded-sm',
     md: 'h-9 px-4 text-xs sm:text-sm gap-2 rounded-sm',
     lg: 'h-11 px-5 text-sm gap-2.5 rounded-sm'
@@ -120,13 +121,17 @@
       ></path>
     </svg>
   {:else if leading}
-    {@render leading()}
+    <span class="inline-flex shrink-0 items-center justify-center leading-none">
+      {@render leading()}
+    </span>
   {/if}
 
   {@render children?.()}
 
   {#if trailing && !isLoading}
-    {@render trailing()}
+    <span class="inline-flex shrink-0 items-center justify-center leading-none">
+      {@render trailing()}
+    </span>
   {/if}
 
   {#if showEscHint && !isLoading}

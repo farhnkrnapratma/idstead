@@ -28,7 +28,7 @@
     'flex w-full items-center gap-3',
     alignStyles[align],
     position === 'sticky' ?
-      'sticky bottom-0 z-30 glass-card border-t border-border-subtle/60 px-4 py-3'
+      'sticky bottom-0 z-30 glass-card border-t border-border-subtle/30 px-4 py-3 shadow-2xs'
     : 'py-2',
     className
   )}>

@@ -1,7 +1,7 @@
 # Graph Report - www  (2026-08-20)
 
 ## Corpus Check
-- 307 files · ~246,097 words
+- 307 files · ~246,099 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -153,7 +153,7 @@
 - guard-deploy-config.sh
 - sync-claude-agents-md.sh
 - eslint.config.js
-- @commitlint/cli
+- @commitlint/config-conventional
 - createContentFontStore
 - typescript-eslint
 - publint
@@ -255,7 +255,7 @@ Nodes (35): CodeBlockPrefs, codeBlockPrefsStore, createCodeBlockPrefsStore(), ap
 
 ### Community 5 - "devDependencies"
 Cohesion: 0.22
-Nodes (9): @commitlint/config-conventional, devDependencies, @commitlint/config-conventional, @types/node, vite, yaml, @types/node, vite (+1 more)
+Nodes (9): @commitlint/cli, devDependencies, @commitlint/cli, @types/node, vite, yaml, @types/node, vite (+1 more)
 
 ### Community 6 - "markdown.ts"
 Cohesion: 0.14
@@ -283,7 +283,7 @@ Nodes (19): chrome-devtools, cloudflare-bindings, cloudflare-observability, cont
 
 ### Community 12 - "authorApi.ts"
 Cohesion: 0.25
-Nodes (13): fetchContactInfo(), fetchCvEntries(), fetchFundingLinks(), fetchSocials(), fetchSponsorship(), generateAuthorMarkdown(), handleAuthorJsonRequest(), sanitizePublicApiData() (+5 more)
+Nodes (13): fetchContactInfo(), fetchCvEntries(), fetchGroupedSkills(), fetchSkills(), fetchSocials(), generateAuthorMarkdown(), handleAuthorJsonRequest(), sanitizePublicApiData() (+5 more)
 
 ### Community 13 - "openapi.ts"
 Cohesion: 0.11
@@ -642,7 +642,7 @@ _Questions this graph is uniquely positioned to answer:_
   _High betweenness centrality (0.065) - this node is a cross-community bridge._
 - **Why does `svelte` connect `createFilterSortStore` to `keywords`?**
   _High betweenness centrality (0.064) - this node is a cross-community bridge._
-- **Why does `devDependencies` connect `devDependencies` to `@commitlint/cli`, `globals`, `publint`, `@sveltejs/package`, `eslint-plugin-svelte`, `typescript-eslint`, `typescript`, `jiti`, `package.json`, `prettier`, `prettier-plugin-svelte`, `@prettier/plugin-xml`, `eslint-config-prettier`, `prettier-plugin-tailwindcss`, `prettier-plugin-yaml`, `@sveltejs/vite-plugin-svelte`, `tailwindcss`, `@tailwindcss/vite`, `peerDependencies`, `@eslint/js`, `svelte-check`, `@sveltejs/adapter-cloudflare`, `eslint`?**
+- **Why does `devDependencies` connect `devDependencies` to `@commitlint/config-conventional`, `globals`, `publint`, `@sveltejs/package`, `eslint-plugin-svelte`, `typescript-eslint`, `typescript`, `jiti`, `package.json`, `prettier`, `prettier-plugin-svelte`, `@prettier/plugin-xml`, `eslint-config-prettier`, `prettier-plugin-tailwindcss`, `prettier-plugin-yaml`, `@sveltejs/vite-plugin-svelte`, `tailwindcss`, `@tailwindcss/vite`, `peerDependencies`, `@eslint/js`, `svelte-check`, `@sveltejs/adapter-cloudflare`, `eslint`?**
   _High betweenness centrality (0.029) - this node is a cross-community bridge._
 - **What connects `fs`, `path`, `schemaPath` to the rest of the system?**
   _606 weakly-connected nodes found - possible documentation gaps or missing edges._

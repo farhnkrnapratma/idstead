@@ -20,11 +20,6 @@
       "command": "bunx",
       "args": ["chrome-devtools-mcp@latest"]
     },
-    "context7": {
-      "type": "http",
-      "url": "https://mcp.context7.com/mcp",
-      "serverUrl": "https://mcp.context7.com/mcp"
-    },
     "cloudflare-observability": {
       "type": "http",
       "url": "https://observability.mcp.cloudflare.com/sse",

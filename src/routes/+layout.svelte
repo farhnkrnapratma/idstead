@@ -8,6 +8,7 @@
   import {themeStore} from '$lib/stores/themeStore.svelte';
   import {a11yStore} from '$lib/stores/a11yStore.svelte';
   import {codeBlockPrefsStore} from '$lib/stores/codeBlockPrefsStore.svelte';
+  import {scrollStore} from '$lib/stores/scrollStore.svelte';
   import {refreshCodeBlockPrefs} from '$lib/utils/codeBlocks';
 
   const {data, children} = $props();
@@ -21,9 +22,6 @@
     : `${siteUrl ? siteUrl.replace(/^https?:\/\//, '') + '/blog' : 'Blog'} — RSS Feed`
   );
 
-  let showScrollTop = $state(false);
-  let scrollProgress = $state(0);
-
   const isAdminPage = $derived(page.url.pathname.startsWith('/admin'));
   const isPostEditorPage = $derived(page.url.pathname === '/admin/new');
   const isPageWithFeedback = $derived(
@@ -31,19 +29,6 @@
       && page.url.pathname !== '/feedback'
       && !page.url.pathname.startsWith('/admin')
   );
-  const showScrollIndicator = $derived(!isAdminPage && !page.error);
-
-  function handleScroll() {
-    showScrollTop = window.scrollY > 300;
-
-    const docHeight =
-      document.documentElement.scrollHeight - window.innerHeight;
-    if (docHeight > 0) {
-      scrollProgress = (window.scrollY / docHeight) * 100;
-    } else {
-      scrollProgress = 0;
-    }
-  }
 
   onMount(() => {
     const cleanupTheme = themeStore.init();
@@ -51,11 +36,12 @@
     const cleanupCodeBlockPrefs = codeBlockPrefsStore.init(
       refreshCodeBlockPrefs
     );
-    handleScroll();
+    const cleanupScroll = scrollStore.init();
     return () => {
       cleanupTheme?.();
       cleanupA11y?.();
       cleanupCodeBlockPrefs?.();
+      cleanupScroll?.();
     };
   });
 
@@ -101,18 +87,11 @@
     href="/api/v1" />
 </svelte:head>
 
-<svelte:window onscroll={handleScroll} />
-
-{#if showScrollIndicator}
-  <div
-    class="pointer-events-none fixed top-15 right-0 left-0 z-40 h-0.5 w-(--scroll-progress-w) bg-copilot transition-[width] duration-300 ease-out select-none"
-    style="--scroll-progress-w: {scrollProgress}%">
-  </div>
-{/if}
-
 {@render children()}
 
-<ScrollToTopButton show={showScrollTop && !isAdminPage} />
+<ScrollToTopButton
+  show={scrollStore.pastThreshold && (!isAdminPage || isPostEditorPage)}
+  class={isPostEditorPage ? 'hidden md:block' : ''} />
 <FeedbackButton show={isPageWithFeedback} />
 
 <ConsentBanner />

@@ -1,6 +1,8 @@
 import {supabase} from '$lib/supabase';
 import {error} from '@sveltejs/kit';
-import {renderMarkdown, injectHeadingIds} from '$lib/markdown';
+import {renderMarkdown, injectHeadingIds, extractHeadings} from '$lib/markdown';
+import {resolveTranslation} from '$lib/server/blogTranslations';
+import {buildTranslationDisclaimerMarkdown} from '$lib/server/blogTranslate';
 import type {PageServerLoad} from './$types';
 
 export interface BlogComment {
@@ -10,6 +12,7 @@ export interface BlogComment {
   author_name: string;
   content: string;
   is_anonymous?: boolean;
+  is_admin?: boolean;
   is_approved: boolean;
   created_at: string;
 }
@@ -44,8 +47,9 @@ function getRelatedWindow<T extends {id: string}>(
   return [posts[idx - 1], posts[idx + 1]];
 }
 
-export const load: PageServerLoad = async ({params, fetch}) => {
+export const load: PageServerLoad = async ({params, url, fetch, locals}) => {
   const {slug} = params;
+  const lang = url.searchParams.get('lang')?.trim() || null;
 
   let post;
   try {
@@ -68,48 +72,46 @@ export const load: PageServerLoad = async ({params, fetch}) => {
     throw error(500, 'Internal Server Error: Could not retrieve post.');
   }
 
+  const translation = await resolveTranslation(supabase, post.id, lang);
+  const effectiveStoragePath = translation.storagePath ?? post.storage_path;
+
   let html: string;
   let readTime = '1 min read';
   try {
     const {data} = supabase.storage
       .from('blog-posts')
-      .getPublicUrl(post.storage_path);
+      .getPublicUrl(effectiveStoragePath);
     const fileRes = await fetch(data.publicUrl);
     if (!fileRes.ok) {
       throw new Error(`Failed to fetch markdown file: ${fileRes.statusText}`);
     }
     const markdown = await fileRes.text();
     readTime = estimateReadTime(markdown);
-    const rawHtml = await renderMarkdown(markdown);
+    const rawHtml = await renderMarkdown(
+      markdown,
+      translation.language,
+      supabase
+    );
     html = injectHeadingIds(rawHtml);
   } catch (err) {
     console.error('Error fetching/rendering markdown file:', err);
     html = '<p class="text-red-500">Error: Could not render post content.</p>';
   }
 
-  function decodeHtmlEntities(str: string): string {
-    return str
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>');
+  const headings = extractHeadings(html);
+
+  let availableLocales: string[] = [];
+  try {
+    const {data} = await supabase
+      .from('db_post_translations')
+      .select('locale')
+      .eq('post_id', post.id);
+    availableLocales = (data ?? []).map(row => row.locale as string);
+  } catch (err) {
+    console.error('Error fetching available translation locales:', err);
   }
 
-  interface HeadingItem {
-    id: string;
-    text: string;
-    level: number;
-  }
-  const headings: HeadingItem[] = [];
-  const headingRegex = /<h([23])\s+[^>]*id="([^"]*)"[^>]*>(.*?)<\/h\1>/gi;
-  let match;
-  while ((match = headingRegex.exec(html)) !== null) {
-    const level = parseInt(match[1], 10);
-    const id = match[2];
-    const text = decodeHtmlEntities(match[3].trim());
-    headings.push({id, text, level});
-  }
+  locals.pageLanguage = translation.language;
 
   let comments: BlogComment[] = [];
   try {
@@ -127,6 +129,17 @@ export const load: PageServerLoad = async ({params, fetch}) => {
     }
   } catch (err) {
     console.error('Database error fetching comments:', err);
+  }
+
+  let initialViewsCount = 0;
+  try {
+    const {count} = await supabase
+      .from('db_views')
+      .select('*', {count: 'exact', head: true})
+      .eq('post_id', post.id);
+    initialViewsCount = count ?? 0;
+  } catch (err) {
+    console.error('Error counting post views:', err);
   }
 
   let bannerPublicUrl: string | null = null;
@@ -215,12 +228,33 @@ export const load: PageServerLoad = async ({params, fetch}) => {
     console.error('Database error fetching related posts:', err);
   }
 
+  const translationDisclaimerHtml =
+    translation.machineTranslated ?
+      await renderMarkdown(
+        buildTranslationDisclaimerMarkdown(translation.language),
+        translation.language,
+        supabase
+      )
+    : null;
+
   return {
-    post: {...post, read_time: readTime},
+    post: {
+      ...post,
+      read_time: readTime,
+      title: translation.title ?? post.title,
+      excerpt: translation.excerpt ?? post.excerpt,
+      summary: translation.summary ?? post.summary,
+      tldr: translation.tldr ?? post.tldr
+    },
     bannerPublicUrl,
     html,
     headings,
     comments,
-    relatedPosts
+    relatedPosts,
+    initialViewsCount,
+    language: translation.language,
+    machineTranslated: translation.machineTranslated,
+    translationDisclaimerHtml,
+    availableLocales
   };
 };

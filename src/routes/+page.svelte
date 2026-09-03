@@ -3,37 +3,54 @@
   import {onMount, tick, untrack} from 'svelte';
   import type {Snippet} from 'svelte';
   import {
-    Award,
-    GitFork,
-    Astroid,
-    Clock,
-    GitBranch,
-    Activity,
     Code,
     Terminal,
     Copy,
+    CopyCheck,
     FolderArchive,
     Share2,
     Link2 as LinkIcon,
+    Paperclip,
     Hash,
+    QrCode,
+    FileBracesCorner,
+    SquareText,
+    Dot,
+    Eye,
+    Save,
+    ChevronRight,
+    EllipsisVertical,
     Image as ImageIcon,
     ArrowRight,
-    Heart,
+    HandHeart,
     Rss,
-    Menu,
-    X,
-    Download
+    Download,
+    Star,
+    GitBranch,
+    GitFork,
+    RotateCcwClock,
+    Scale,
+    GitCommitHorizontal,
+    SquareArrowOutUpRight,
+    Link,
+    ScanText,
+    TextAlignStart,
+    FileText
   } from '@lucide/svelte';
+  import {cn} from '$lib/utils/cn';
   import {
     isNameReserved,
     extractAuthorNameTokens
   } from '$lib/utils/nameValidator';
   import {
     LinkListSection,
+    LinkGridSection,
     ShinyText,
     SkipLink,
     ImageWithSkeleton,
     SpotlightSearch,
+    BottomNav,
+    BrandIcon,
     FormField,
     Input,
     Textarea,
@@ -41,8 +58,12 @@
     Badge,
     Dialog,
     EmptyState,
+    Tooltip,
     CvEntryCard,
     ShareDialog,
+    QrCodeDialog,
+    ProjectCodeDialog,
+    BlogActionsDialog,
     FilterToolbar,
     FilterChipGroup,
     SortControl,
@@ -51,7 +72,6 @@
     FilterEmptyState,
     Pagination,
     RelativeTime,
-    DropdownTrigger,
     toastStore,
     createFilterSortStore,
     FooterSection,
@@ -66,6 +86,7 @@
     PageContainer,
     LogoLoop,
     ConsentNotice,
+    ArticleMeta,
     staggerChildren,
     withViewTransition
   } from '$lib';
@@ -75,7 +96,12 @@
   import {themeStore} from '$lib/stores/themeStore.svelte';
   import {a11yStore} from '$lib/stores/a11yStore.svelte';
   import AccessibilitySelect from '$lib/components/filter/AccessibilitySelect.svelte';
-  import GradientWaves from '$lib/components/GradientWaves.svelte';
+  import {
+    turnstileWidget,
+    executeTurnstile,
+    resetTurnstile,
+    turnstileSiteKey
+  } from '$lib/utils/turnstile';
   import type {Theme, Project} from '$lib/types';
   import type {BlogPost} from './+page.server';
 
@@ -94,6 +120,7 @@
     shortValue?: string;
     href: string;
     icon: string;
+    description?: string;
   }
 
   interface Experience {
@@ -126,6 +153,7 @@
   let jobTitle = $derived(author?.jobTitle || '');
   let siteUrl = $derived(author?.siteUrl || '');
   let avatar = $derived(author?.avatar || '');
+  let socials = $derived(author?.socialLinks || []);
   let skillBadges = $derived(
     (headline || '')
       .split(/[|,\n]/)
@@ -213,37 +241,42 @@
     failedBanners.add(postId);
   }
 
-  let openCopyMenuId = $state<string | null>(null);
-  function toggleCopyMenu(postId: string) {
-    openCopyMenuId = openCopyMenuId === postId ? null : postId;
-  }
-
-  function isOutsideDropdown(
-    target: EventTarget | null,
-    attr: string,
-    id: string
-  ): boolean {
-    const el = (target as HTMLElement | null)?.closest?.(`[${attr}]`);
-    return el?.getAttribute(attr) !== id;
-  }
-
-  function handleDropdownOutsideClick(event: MouseEvent) {
-    if (
-      openCopyMenuId
-      && isOutsideDropdown(event.target, 'data-copy-dropdown', openCopyMenuId)
-    ) {
-      openCopyMenuId = null;
-    }
-    if (
-      openCodeMenuId
-      && isOutsideDropdown(event.target, 'data-code-dropdown', openCodeMenuId)
-    ) {
-      openCodeMenuId = null;
-    }
-  }
-
   let shareDialogData = $state<{title: string; url: string} | null>(null);
   let showShareDialog = $state(false);
+
+  let selectedCodeProject = $state<Project | null>(null);
+  let showProjectCodeDialog = $state(false);
+
+  function openProjectCodeDialog(project: Project) {
+    selectedCodeProject = project;
+    showProjectCodeDialog = true;
+  }
+
+  let selectedBlogActionPost = $state<BlogPost | null>(null);
+  let showBlogActionsDialog = $state(false);
+  let activeProjectShareId = $state<string | null>(null);
+  let activeProjectCodeId = $state<string | null>(null);
+  let projectCodeTab = $state<'https' | 'ssh' | 'cli'>('https');
+  let activeBlogShareId = $state<string | null>(null);
+  let activeBlogQuickActionsId = $state<string | null>(null);
+  let copiedProjectShareUrlId = $state<string | null>(null);
+  let copiedProjectCloneId = $state<string | null>(null);
+  let copiedBlogShareUrlId = $state<string | null>(null);
+
+  function closeAllCardPopovers() {
+    activeProjectShareId = null;
+    activeProjectCodeId = null;
+    activeBlogShareId = null;
+    activeBlogQuickActionsId = null;
+    copiedProjectShareUrlId = null;
+    copiedProjectCloneId = null;
+    copiedBlogShareUrlId = null;
+  }
+
+  function openBlogActionsDialog(post: BlogPost) {
+    selectedBlogActionPost = post;
+    showBlogActionsDialog = true;
+  }
 
   function openShareDialog(data: {title: string; url: string}) {
     shareDialogData = data;
@@ -262,8 +295,34 @@
     openShareDialog({title: project.name, url: project.url});
   }
 
+  let qrCodeDialogData = $state<{
+    title: string;
+    url: string;
+    slug: string;
+  } | null>(null);
+  let showQrCodeDialog = $state(false);
+
+  function openBlogQrDialog(post: {title: string; slug: string}) {
+    if (typeof window === 'undefined') return;
+    qrCodeDialogData = {
+      title: post.title,
+      url: `${window.location.origin}/blog/${post.slug}`,
+      slug: post.slug
+    };
+    showQrCodeDialog = true;
+  }
+
+  function openProjectQrDialog(project: {name: string; url: string}) {
+    if (typeof window === 'undefined') return;
+    qrCodeDialogData = {
+      title: project.name,
+      url: project.url,
+      slug: project.name
+    };
+    showQrCodeDialog = true;
+  }
+
   async function copyBlogId(post: {id: string}) {
-    openCopyMenuId = null;
     try {
       await navigator.clipboard.writeText(post.id);
       toastStore.success('Copied!');
@@ -273,7 +332,6 @@
   }
 
   async function copyBlogMarkdown(post: {id: string; slug: string}) {
-    openCopyMenuId = null;
     try {
       const res = await fetch(`/api/v1/blog/${post.slug}?format=md`);
       if (res.ok) {
@@ -288,8 +346,22 @@
     }
   }
 
+  async function copyBlogText(post: {title: string; slug: string}) {
+    try {
+      const res = await fetch(`/api/v1/blog/${post.slug}?format=text`);
+      if (res.ok) {
+        const text = await res.text();
+        await navigator.clipboard.writeText(text);
+        toastStore.success('Copied!');
+      } else {
+        toastStore.error('Failed to fetch Text');
+      }
+    } catch {
+      toastStore.error('Failed to copy');
+    }
+  }
+
   async function copyBlogUrl(post: {id: string; slug: string}) {
-    openCopyMenuId = null;
     if (typeof window === 'undefined') return;
     try {
       await navigator.clipboard.writeText(
@@ -301,41 +373,46 @@
     }
   }
 
-  type CodeTab = 'https' | 'ssh' | 'cli';
-
-  let openCodeMenuId = $state<string | null>(null);
-  let codeTabByProject = $state<Record<string, CodeTab>>({});
-
-  function toggleCodeMenu(name: string) {
-    openCodeMenuId = openCodeMenuId === name ? null : name;
+  function downloadFile(filename: string, content: string, mimeType: string) {
+    if (typeof window === 'undefined') return;
+    const blob = new Blob([content], {type: mimeType});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
-  function getCodeTab(name: string): CodeTab {
-    return codeTabByProject[name] ?? 'https';
-  }
-
-  function setCodeTab(name: string, tab: CodeTab) {
-    codeTabByProject = {...codeTabByProject, [name]: tab};
-  }
-
-  function codeCommand(
-    project: {fullName: string; cloneUrl: string; sshUrl: string},
-    tab: CodeTab
-  ): string {
-    if (tab === 'ssh') return `git clone ${project.sshUrl}`;
-    if (tab === 'cli') return `gh repo clone ${project.fullName}`;
-    return `git clone ${project.cloneUrl}`;
-  }
-
-  async function copyCodeCommand(
-    project: {fullName: string; cloneUrl: string; sshUrl: string},
-    tab: CodeTab
-  ) {
+  async function downloadBlogMarkdown(post: {title: string; slug: string}) {
     try {
-      await navigator.clipboard.writeText(codeCommand(project, tab));
-      toastStore.success('Copied!');
+      const res = await fetch(`/api/v1/blog/${post.slug}?format=md`);
+      if (res.ok) {
+        const mdText = await res.text();
+        downloadFile(`${post.slug}.md`, mdText, 'text/markdown;charset=utf-8');
+        toastStore.success('Markdown file downloaded');
+      } else {
+        toastStore.error('Failed to download Markdown');
+      }
     } catch {
-      toastStore.error('Failed to copy');
+      toastStore.error('Failed to download');
+    }
+  }
+
+  async function downloadBlogText(post: {title: string; slug: string}) {
+    try {
+      const res = await fetch(`/api/v1/blog/${post.slug}?format=text`);
+      if (res.ok) {
+        const text = await res.text();
+        downloadFile(`${post.slug}.txt`, text, 'text/plain;charset=utf-8');
+        toastStore.success('Text file downloaded');
+      } else {
+        toastStore.error('Failed to download Text');
+      }
+    } catch {
+      toastStore.error('Failed to download');
     }
   }
 
@@ -384,7 +461,7 @@
   }
 
   function pluralize(count: number, singular: string, plural: string): string {
-    return count > 1 ? plural : singular;
+    return count === 1 ? singular : plural;
   }
 
   function formatPeriod(
@@ -410,7 +487,8 @@
       label: c.platform || c.displayValue,
       value: c.displayValue,
       href: c.href,
-      icon: c.icon || ''
+      icon: c.icon || '',
+      description: c.description || ''
     }))
   );
 
@@ -421,6 +499,7 @@
     href: string;
     icon: string;
     color?: string;
+    description?: string;
   }
 
   let fundingPlatforms = $derived<FundingPlatform[]>(
@@ -428,7 +507,8 @@
       label: f.platform,
       value: f.displayValue || f.platform,
       href: f.url,
-      icon: f.icon || ''
+      icon: f.icon || '',
+      description: f.description || ''
     }))
   );
 
@@ -447,11 +527,6 @@
   const recentPosts = $derived(posts.slice(0, 2));
 
   let activeSection = $state<Section>('home');
-  let menuOpen = $state(false);
-  let mobileMenuRef = $state<HTMLElement | null>(null);
-  let menuTriggerRef = $state<HTMLButtonElement | null>(null);
-  let isDesktopViewport = $state(false);
-  let menuHasBeenOpened = false;
   let formName = $state('');
   let formEmail = $state('');
   let formMessage = $state('');
@@ -459,6 +534,7 @@
   let formValid = $state({name: false, email: false, message: false});
   let showSendMessageDialog = $state(false);
   let contactFormElement = $state<HTMLFormElement | null>(null);
+  let turnstileContactEl = $state<HTMLDivElement | null>(null);
 
   function debounce<T extends unknown[]>(cb: (...args: T) => void, ms: number) {
     let timer: ReturnType<typeof setTimeout>;
@@ -516,18 +592,18 @@
       .replace(/\//g, '&#x2F;');
   }
 
-  function validateForm(e: Event) {
+  async function validateForm(e: SubmitEvent) {
     const nameErr = formName.trim() === '' ? 'Name is required.' : '';
+    const nameReservedErr =
+      !nameErr && isNameReserved(formName, authorTokens) ?
+        'This name is reserved.'
+      : '';
     const emailErr = formEmail.trim() === '' ? 'Email is required.' : '';
-    const msgErr = formMessage.trim() === '' ? 'Message is required.' : '';
     const emailFormatErr =
       !emailErr && !emailRegex.test(formEmail.trim()) ?
         'Please enter a valid email address.'
       : '';
-    const nameReservedErr =
-      !nameErr && isNameReserved(formName, authorTokens) ?
-        'This name cannot be used. Please use another name.'
-      : '';
+    const msgErr = formMessage.trim() === '' ? 'Message is required.' : '';
 
     formErrors = {
       name: nameErr || nameReservedErr,
@@ -541,6 +617,13 @@
     e.preventDefault();
 
     if (!formErrors.name && !formErrors.email && !formErrors.message) {
+      if (turnstileSiteKey) {
+        const token = await executeTurnstile(turnstileContactEl);
+        if (!token) {
+          toastStore.error('Please complete the security verification.');
+          return;
+        }
+      }
       formName = sanitizeInput(formName.trim());
       formEmail = sanitizeInput(formEmail.trim());
       formMessage = sanitizeInput(formMessage.trim());
@@ -551,41 +634,24 @@
   function executeSendMessage() {
     if (contactFormElement) {
       contactFormElement.submit();
+      resetTurnstile(turnstileContactEl);
     }
   }
 
   function navigate(section: Section) {
     withViewTransition(() => {
       activeSection = section;
-      menuOpen = false;
       if (typeof window !== 'undefined') {
         window.location.hash = section === 'home' ? '' : section;
       }
     }, 'context');
   }
 
-  function handleMenuKeydown(event: KeyboardEvent) {
-    if (event.key === 'Escape' && menuOpen) {
-      event.preventDefault();
-      menuOpen = false;
+  function handleWindowKeydown(event: KeyboardEvent) {
+    if (event.key === 'Escape') {
+      closeAllCardPopovers();
     }
   }
-
-  $effect(() => {
-    if (typeof document === 'undefined') return;
-
-    if (menuOpen) {
-      menuHasBeenOpened = true;
-      tick().then(() => {
-        const firstFocusable = mobileMenuRef?.querySelector<HTMLElement>(
-          'button, [href], [tabindex]:not([tabindex="-1"])'
-        );
-        firstFocusable?.focus();
-      });
-    } else if (menuHasBeenOpened) {
-      menuTriggerRef?.focus();
-    }
-  });
 
   const blogFilterStore = createFilterSortStore({
     defaultSortField: 'date',
@@ -764,17 +830,8 @@
     handleHashChange();
     window.addEventListener('hashchange', handleHashChange);
 
-    const desktopQuery = window.matchMedia('(min-width: 768px)');
-    isDesktopViewport = desktopQuery.matches;
-    const handleViewportChange = (e: MediaQueryListEvent) => {
-      isDesktopViewport = e.matches;
-      if (e.matches) menuOpen = false;
-    };
-    desktopQuery.addEventListener('change', handleViewportChange);
-
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
-      desktopQuery.removeEventListener('change', handleViewportChange);
     };
   });
 
@@ -860,114 +917,62 @@
     name="twitter:description"
     content={desc} />
   {@html jsonLdScript}
+  <script
+    src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+    async
+    defer></script>
 </svelte:head>
 
 <svelte:window
-  onclick={handleDropdownOutsideClick}
-  onkeydown={handleMenuKeydown} />
-
-{#if menuOpen}
-  <button
-    class="fixed inset-0 z-30 bg-overlay-backdrop backdrop-blur-md md:hidden"
-    onclick={() => (menuOpen = false)}
-    aria-label="Close menu"></button>
-{/if}
+  onclick={closeAllCardPopovers}
+  onkeydown={handleWindowKeydown} />
 
 <SkipLink />
 
 <nav
-  class="fixed top-0 z-40 flex h-15 w-full items-center justify-between glass-card border-b border-border-subtle/60 px-3 font-sans shadow-xs sm:px-5"
+  class="fixed top-0 z-40 flex h-12 w-full items-center justify-between glass-card border-b border-border-subtle/30 px-3 font-sans shadow-2xs sm:h-14 sm:px-5"
   aria-label="Main navigation">
-  <button
-    onclick={() => navigate('home')}
-    class="max-w-[calc(100vw-5rem)] min-w-0 cursor-pointer truncate text-left text-base font-bold tracking-tight text-text-primary transition-colors hover:text-copilot sm:max-w-none">
-    {name}
-  </button>
+  <div class="flex shrink-0 items-center lg:w-1/4 lg:flex-none">
+    <SpotlightSearch
+      projects={data.projects}
+      variant="responsive" />
+  </div>
 
-  <div class="flex items-center gap-2 sm:gap-3">
-    <div
-      id="mobile-menu"
-      bind:this={mobileMenuRef}
-      inert={!isDesktopViewport && !menuOpen}
-      class={[
-        'fixed top-16 right-5 z-40 flex w-56 origin-top-right flex-col items-start gap-1 rounded-sm border border-border-subtle bg-surface-card p-2 shadow-lg transition-all duration-200 md:pointer-events-auto md:static md:h-auto md:w-auto md:translate-x-0 md:scale-100 md:flex-row md:items-center md:gap-1 md:rounded-none md:border-0 md:bg-transparent md:p-0 md:opacity-100 md:shadow-none',
-        !menuOpen && 'pointer-events-none scale-95 opacity-0',
-        menuOpen && 'scale-100 opacity-100'
-      ]}>
-      <nav
-        class="w-full md:contents"
-        aria-label="Section navigation">
-        <p
-          class="px-4 pt-1 pb-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase md:hidden"
-          aria-hidden="true">
-          Menu
-        </p>
-        <ul
-          class="flex w-full flex-col items-start gap-1 md:w-auto md:flex-row md:items-center md:gap-1">
-          {#each navItems as item (item.id)}
-            <li class="w-full md:w-auto">
-              <button
-                onclick={() => {
-                  navigate(item.id);
-                  menuOpen = false;
-                }}
-                class="text-md flex h-11 w-full cursor-pointer items-center justify-start rounded-sm border-0 px-4 leading-none font-medium whitespace-nowrap transition-all md:h-9 md:justify-center md:rounded-sm md:px-3 md:text-sm {(
-                  activeSection === item.id
-                ) ?
-                  'bg-copilot-contrast-bg font-semibold text-white hover:bg-copilot-contrast-bg/90 md:bg-copilot-contrast-bg md:text-white md:shadow-xs md:hover:bg-copilot-contrast-bg/90'
-                : 'text-text-primary hover:bg-surface-hover hover:text-copilot md:text-text-secondary md:hover:bg-surface-hover md:hover:text-copilot'}">
-                {item.label}
-              </button>
-            </li>
-          {/each}
-        </ul>
-      </nav>
+  <nav
+    class="hidden md:flex md:flex-1 md:items-center md:justify-center"
+    aria-label="Section navigation">
+    <ul class="flex items-center gap-1">
+      {#each navItems as item (item.id)}
+        <li>
+          <button
+            onclick={() => navigate(item.id)}
+            class="flex h-9 cursor-pointer items-center justify-center rounded-sm border-0 px-3 text-sm leading-none font-medium whitespace-nowrap transition-all {(
+              activeSection === item.id
+            ) ?
+              'bg-copilot-contrast-bg font-semibold text-white shadow-xs hover:bg-copilot-contrast-bg/90'
+            : 'text-text-secondary hover:bg-surface-hover hover:text-copilot'}">
+            {item.label}
+          </button>
+        </li>
+      {/each}
+    </ul>
+  </nav>
 
-      <hr
-        class="my-1 w-full border-border-subtle md:hidden"
-        aria-hidden="true" />
-
-      <div class="flex w-full items-center justify-between px-2 py-1 md:hidden">
-        <ThemeSelect
-          theme={themeStore.current}
-          onThemeChange={themeStore.apply}
-          dropdownDirection="up" />
-        <AccessibilitySelect dropdownDirection="up" />
-      </div>
-    </div>
-
-    <SpotlightSearch projects={data.projects} />
-
+  <div
+    class="flex shrink-0 items-center justify-end gap-1 sm:gap-2 lg:w-1/4 lg:flex-none">
     <ThemeSelect
       theme={themeStore.current}
-      onThemeChange={themeStore.apply}
-      class="hidden md:inline-flex" />
-    <AccessibilitySelect class="hidden md:inline-flex" />
-
-    <button
-      bind:this={menuTriggerRef}
-      class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-xl transition-colors hover:bg-surface-hover md:hidden"
-      onclick={() => (menuOpen = !menuOpen)}
-      aria-label="Menu"
-      aria-expanded={menuOpen}
-      aria-controls="mobile-menu">
-      {#if menuOpen}
-        <X class="size-5 text-text-primary" />
-      {:else}
-        <Menu class="size-5 text-text-primary" />
-      {/if}
-    </button>
+      onThemeChange={themeStore.apply} />
+    <AccessibilitySelect />
   </div>
 </nav>
 
 <main
   id="main-content"
-  inert={menuOpen}
-  aria-hidden={menuOpen ? 'true' : undefined}
-  class="flex min-h-[calc(100vh-3.75rem)] flex-col pt-15 font-sans">
+  class="flex min-h-[calc(100vh-3rem)] flex-col pt-12 pb-16 font-sans sm:min-h-[calc(100vh-3.5rem)] sm:pt-14 md:pb-0">
   {#snippet staticTag(tag: string)}
     <span
-      class="rounded-md bg-border-subtle/30 px-1.5 py-0.5 font-mono text-[12px] font-medium text-text-muted transition-colors">
+      class="inline-flex items-center rounded-full bg-copilot-subtle px-2 py-0.5 font-mono text-[12px] font-medium text-copilot transition-colors">
       {decodeHtmlEntities(tag)}
     </span>
   {/snippet}
@@ -977,11 +982,11 @@
     <button
       type="button"
       onclick={() => projectFilterStore.toggleMultiFilter('tag', tag)}
-      class="cursor-pointer rounded-md bg-border-subtle/30 px-1.5 py-0.5 font-mono text-[12px] font-medium transition-colors hover:bg-surface-hover hover:text-copilot {(
+      class="inline-flex cursor-pointer items-center rounded-full px-2 py-0.5 font-mono text-[12px] font-medium transition-colors {(
         projectFilterStore.filters['tag']?.includes(tag)
       ) ?
-        'font-semibold text-copilot'
-      : 'text-text-muted'}">
+        'bg-copilot text-text-on-accent'
+      : 'bg-copilot-subtle text-copilot hover:bg-copilot/15'}">
       {cleanTag}
     </button>
   {/snippet}
@@ -991,11 +996,11 @@
     <button
       type="button"
       onclick={() => blogFilterStore.toggleMultiFilter('tag', tag)}
-      class="cursor-pointer rounded-md bg-border-subtle/30 px-1.5 py-0.5 font-mono text-[12px] font-medium transition-colors hover:bg-surface-hover hover:text-copilot {(
+      class="inline-flex cursor-pointer items-center rounded-full px-2 py-0.5 font-mono text-[12px] font-medium transition-colors {(
         blogFilterStore.filters['tag']?.includes(tag)
       ) ?
-        'font-semibold text-copilot'
-      : 'text-text-muted'}">
+        'bg-copilot text-text-on-accent'
+      : 'bg-copilot-subtle text-copilot hover:bg-copilot/15'}">
       {cleanTag}
     </button>
   {/snippet}
@@ -1006,360 +1011,903 @@
     tagItem: Snippet<[string]>
   )}
     <div
-      class="relative row-span-5 grid grid-rows-subgrid gap-3 rounded-sm glass-card p-5 text-left {(
-        openCodeMenuId === project.name
+      class="relative flex flex-col gap-2.5 rounded-sm glass-card p-4 text-left {(
+        activeProjectShareId === project.name
+        || activeProjectCodeId === project.name
       ) ?
-        'z-30'
+        'z-40'
       : ''}">
-      <div class="flex flex-col gap-2">
-        <div class="flex flex-wrap items-center gap-1">
-          <svelte:element
-            this={headingTag}
-            class="line-clamp-1 text-xl leading-snug font-bold text-text-primary"
-            title={project.name}>
-            {project.name}
-          </svelte:element>
-        </div>
+      <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
+        <svelte:element
+          this={headingTag}
+          class="font-sans-title text-lg leading-none font-bold text-text-primary"
+          title={project.name}>
+          {project.name}
+        </svelte:element>
 
-        <div
-          class="relative z-20 grid grid-cols-2 gap-x-4 gap-y-1 font-sans text-xs leading-5 font-medium text-text-muted select-none">
-          {#if project.licenseName}
-            <span class="inline-flex w-fit items-center gap-1">
-              <Award class="size-3 leading-none" />
-              {project.licenseName} License
-            </span>
-          {:else}
-            <span aria-hidden="true"></span>
-          {/if}
-          <span class="inline-flex w-fit items-center gap-1">
-            <GitFork class="size-3 leading-none" />
-            {project.forks}
-            {pluralize(project.forks, 'fork', 'forks')}
+        {#if project.lang}
+          <span
+            class="inline-flex items-center py-0.5 font-mono text-xxs leading-none font-medium text-text-secondary select-none">
+            <Dot
+              strokeWidth={10}
+              class="size-3.5 shrink-0"
+              color={project.langColor ?? '#909692'} />
+            <span class="leading-none">{project.lang}</span>
           </span>
-          <span class="inline-flex w-fit items-center gap-1">
-            <Astroid class="size-3 leading-none" />
-            {project.stars}
-            {pluralize(project.stars, 'star', 'stars')}
-          </span>
-          {#if project.pushedAt}
-            <span class="inline-flex w-fit items-center gap-1">
-              <Clock class="size-3 leading-none" />
+        {/if}
+
+        {#if project.latestCommitSha || project.pushedAt}
+          <span
+            class="inline-flex items-center gap-1.5 font-sans-title text-xs leading-none font-medium whitespace-nowrap text-text-muted">
+            <GitCommitHorizontal class="size-3.5 shrink-0 text-text-muted" />
+            {#if project.latestCommitSha}
+              <a
+                href="https://github.com/{project.fullName}/commit/{project.latestCommitSha}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="leading-none text-text-muted transition-colors hover:text-copilot hover:underline">
+                {project.latestCommitSha}
+              </a>
+            {/if}
+            {#if project.latestCommitSha && project.pushedAt}
+              <span
+                class="inline-flex items-center leading-none text-text-muted/40 select-none"
+                aria-hidden="true">·</span>
+            {/if}
+            {#if project.pushedAt}
               <RelativeTime
-                date={project.pushedAt}
-                titlePrefix="Last updated " />
-            </span>
-          {:else}
-            <span aria-hidden="true"></span>
-          {/if}
-          <span class="inline-flex w-fit items-center gap-1">
-            <GitBranch class="size-3 leading-none" />
-            {project.branches}
-            {pluralize(project.branches, 'branch', 'branches')}
+                class="leading-none"
+                date={project.pushedAt} />
+            {/if}
           </span>
-          <span class="inline-flex w-fit items-center gap-1">
-            <Activity class="size-3 leading-none" />
-            {project.commits}
-            {pluralize(project.commits, 'commit', 'commits')}
-          </span>
-        </div>
-      </div>
-
-      <div
-        class="relative z-20 flex min-h-[24px] flex-wrap content-start items-start gap-1.5">
-        {#if project.tags.length > 0}
-          {#each project.tags as tag (tag)}
-            {@render tagItem(tag)}
-          {/each}
-        {:else}
-          <div
-            class="h-5 select-none"
-            aria-hidden="true">
-          </div>
         {/if}
       </div>
 
       <div
-        class="flex flex-col justify-start border-y border-border-subtle py-3">
+        class="relative z-20 flex flex-wrap items-center gap-x-3.5 gap-y-1 font-sans-title text-xs">
+        <span
+          class="inline-flex items-center gap-1.5 font-normal whitespace-nowrap text-text-secondary">
+          <Star
+            class="size-3.5 shrink-0 -translate-y-[0.5px] text-text-muted/70 transition-colors"
+            strokeWidth={1.75}
+            absoluteStrokeWidth={true} />
+          <span
+            >{project.stars} {pluralize(project.stars, 'star', 'stars')}</span>
+        </span>
+        <span
+          class="inline-flex items-center gap-1.5 font-normal whitespace-nowrap text-text-secondary">
+          <GitFork
+            class="size-3.5 shrink-0 -translate-y-[0.5px] text-text-muted/70 transition-colors"
+            strokeWidth={1.75}
+            absoluteStrokeWidth={true} />
+          <span
+            >{project.forks} {pluralize(project.forks, 'fork', 'forks')}</span>
+        </span>
+        <span
+          class="inline-flex items-center gap-1.5 font-normal whitespace-nowrap text-text-secondary">
+          <RotateCcwClock
+            class="size-3.5 shrink-0 -translate-y-[0.5px] text-text-muted/70 transition-colors"
+            strokeWidth={1.75}
+            absoluteStrokeWidth={true} />
+          <span
+            >{project.commits}
+            {pluralize(project.commits, 'commit', 'commits')}</span>
+        </span>
+        <span
+          class="inline-flex items-center gap-1.5 font-normal whitespace-nowrap text-text-secondary">
+          <GitBranch
+            class="size-3.5 shrink-0 -translate-y-[0.5px] text-text-muted/70 transition-colors"
+            strokeWidth={1.75}
+            absoluteStrokeWidth={true} />
+          <span
+            >{project.branches}
+            {pluralize(project.branches, 'branch', 'branches')}</span>
+        </span>
+        {#if project.licenseName}
+          <span
+            class="inline-flex items-center gap-1.5 font-normal whitespace-nowrap text-text-secondary">
+            <Scale
+              class="size-3.5 shrink-0 -translate-y-[0.5px] text-text-muted/70 transition-colors"
+              strokeWidth={1.75}
+              absoluteStrokeWidth={true} />
+            {#if project.licenseUrl}
+              <a
+                href={project.licenseUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-text-secondary transition-colors hover:text-copilot hover:underline">
+                {project.licenseName} License
+              </a>
+            {:else}
+              <span>{project.licenseName} License</span>
+            {/if}
+          </span>
+        {/if}
+      </div>
+
+      {#if project.desc}
         <p
-          class="text-[0.8125rem] leading-relaxed text-text-secondary"
+          class="line-clamp-2 text-xs leading-relaxed text-text-secondary"
           title={project.desc}>
           {project.desc}
         </p>
-      </div>
+      {/if}
 
-      <div class="relative z-20 flex flex-col justify-start">
-        {#if project.languages.length > 0}
-          <div class="flex flex-col justify-start gap-2">
-            <div
-              class="flex h-1.5 w-full overflow-hidden rounded-full bg-border-subtle/30">
-              {#each project.languages as language (language.name)}
-                <div
-                  class="w-(--lang-w) bg-(--lang-color)"
-                  style="--lang-w: {language.percent}%; --lang-color: {language.color};">
-                </div>
-              {/each}
-            </div>
-            <div
-              class="flex flex-wrap items-start gap-x-3 gap-y-1 text-xs text-text-muted">
-              {#each project.languages as language (language.name)}
-                <span
-                  class="inline-flex items-center gap-1.5 whitespace-nowrap">
-                  <span
-                    class="h-2 w-2 shrink-0 rounded-full bg-(--lang-dot-color)"
-                    style="--lang-dot-color: {language.color};"></span>
-                  <span class="font-semibold text-text-primary"
-                    >{language.name}</span>
-                  {language.percent}%
-                </span>
-              {/each}
-            </div>
-          </div>
-        {:else}
-          <div
-            class="flex flex-col justify-start gap-2 opacity-0 select-none"
-            aria-hidden="true">
-            <div class="h-1.5 w-full rounded-full bg-border-subtle/30"></div>
-            <span class="text-xs">No language data</span>
-          </div>
-        {/if}
-      </div>
+      {#if project.tags && project.tags.length > 0}
+        <div class="relative z-20 flex flex-wrap items-center gap-1.5 pt-0.5">
+          {#each project.tags as tag (tag)}
+            {@render tagItem(tag)}
+          {/each}
+        </div>
+      {/if}
 
-      <div class="relative z-20 mt-auto flex flex-col gap-2 pt-1">
-        <hr class="mb-1 border-border-subtle" />
+      <div
+        class="relative mt-auto flex flex-col gap-2 pt-1 {(
+          activeProjectShareId === project.name
+          || activeProjectCodeId === project.name
+        ) ?
+          'z-50'
+        : 'z-10'}">
+        <hr class="border-border-subtle/25" />
 
-        <div class="grid grid-cols-2 gap-2">
-          <Button
-            type="secondary"
-            size="md"
-            class="w-full"
-            onclick={() => shareProjectDialog(project)}>
-            {#snippet leading()}
+        <div class="relative flex items-center gap-2">
+          <div class="shrink-0">
+            <Button
+              type="ghost"
+              size="xs"
+              aria-label="Share project"
+              aria-expanded={activeProjectShareId === project.name}
+              aria-haspopup="dialog"
+              class={cn(
+                'size-6.5! px-0! text-text-muted hover:text-copilot',
+                activeProjectShareId === project.name
+                  && 'border-copilot text-copilot'
+              )}
+              onclick={(e: MouseEvent) => {
+                e.stopPropagation();
+                activeProjectCodeId = null;
+                activeProjectShareId =
+                  activeProjectShareId === project.name ? null : project.name;
+              }}>
               <Share2 class="size-3.5" />
-            {/snippet}
-            Share
-          </Button>
+            </Button>
+          </div>
 
-          <div
-            class="relative w-full"
-            data-code-dropdown={project.name}>
-            <DropdownTrigger
-              ariaLabel="Code options"
-              fullWidth
-              isOpen={openCodeMenuId === project.name}
-              onclick={() => toggleCodeMenu(project.name)}>
-              <span class="inline-flex items-center gap-1.5">
-                <Code class="size-3.5" />
-                Code
-              </span>
-            </DropdownTrigger>
+          <div class="shrink-0">
+            <Button
+              type="ghost"
+              size="xs"
+              aria-label="Code options"
+              aria-expanded={activeProjectCodeId === project.name}
+              aria-haspopup="dialog"
+              class={cn(
+                'size-6.5! px-0! text-text-muted hover:text-copilot',
+                activeProjectCodeId === project.name
+                  && 'border-copilot text-copilot'
+              )}
+              onclick={(e: MouseEvent) => {
+                e.stopPropagation();
+                activeProjectShareId = null;
+                activeProjectCodeId =
+                  activeProjectCodeId === project.name ? null : project.name;
+              }}>
+              <Code class="size-3.5" />
+            </Button>
+          </div>
 
-            {#if openCodeMenuId === project.name}
-              <div
-                role="menu"
-                class="absolute top-[calc(100%+8px)] left-1/2 z-60 flex w-72 min-w-full -translate-x-1/2 flex-col rounded-sm glass-overlay p-0 shadow-xl">
-                <div class="relative z-10 flex flex-col p-3">
-                  <div
-                    class="flex items-center gap-1.5 text-xs font-bold text-text-primary">
-                    <Terminal class="size-3.5" />
-                    Clone
-                  </div>
+          <a
+            href={project.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex h-8 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-sm bg-copilot px-3 text-xs font-semibold text-text-on-accent shadow-xs transition-all select-none hover:bg-copilot-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring active:bg-copilot-active">
+            <span>View repo</span>
+            <SquareArrowOutUpRight class="size-3.5 text-text-on-accent" />
+          </a>
 
-                  <div
-                    class="mt-2.5 flex rounded-sm border border-border-subtle p-0.5 text-xs font-semibold">
-                    {#each [['https', 'HTTPS'], ['ssh', 'SSH'], ['cli', 'GitHub CLI']] as const as [key, label] (key)}
-                      <button
-                        type="button"
-                        onclick={() => setCodeTab(project.name, key)}
-                        class="flex-1 cursor-pointer rounded-xs py-1 transition-colors {(
-                          getCodeTab(project.name) === key
-                        ) ?
-                          'bg-copilot text-white'
-                        : 'text-text-secondary hover:text-text-primary'}">
-                        {label}
-                      </button>
-                    {/each}
-                  </div>
-
-                  <div
-                    class="mt-2.5 flex items-center gap-2 rounded-sm border border-border-subtle bg-surface-base/60 px-2.5 py-2">
-                    <span
-                      class="min-w-0 flex-1 scrollbar-none overflow-x-auto font-mono text-xxs whitespace-nowrap text-text-secondary select-all [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                      {codeCommand(project, getCodeTab(project.name))}
-                    </span>
-                    <button
-                      type="button"
-                      onclick={() =>
-                        copyCodeCommand(project, getCodeTab(project.name))}
-                      aria-label="Copy clone command"
-                      class="shrink-0 cursor-pointer text-text-secondary transition-colors hover:text-copilot">
-                      <Copy class="size-3.5" />
-                    </button>
-                  </div>
-
-                  <hr class="my-2.5 border-border-subtle" />
-
-                  <a
-                    href={project.zipUrl}
-                    class="flex items-center gap-2 rounded-sm px-2 py-1.5 text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
-                    <FolderArchive class="size-3.5" />
-                    Download ZIP
-                  </a>
+          {#if activeProjectShareId === project.name}
+            {@const projectUrl = project.url}
+            {@const encodedUrl = encodeURIComponent(projectUrl)}
+            {@const encodedTitle = encodeURIComponent(project.name)}
+            <div
+              role="dialog"
+              tabindex="-1"
+              aria-label="Share project"
+              class="absolute right-0 bottom-full left-0 z-50 mb-2 flex flex-col gap-3 popover-surface p-3 sm:right-auto sm:w-80"
+              onclick={(e: MouseEvent) => e.stopPropagation()}
+              onkeydown={(e: KeyboardEvent) => {
+                if (e.key === 'Escape') activeProjectShareId = null;
+              }}>
+              <div class="flex flex-col gap-1.5">
+                <span
+                  class="text-2xs font-semibold tracking-wider text-text-muted uppercase"
+                  >Direct link</span>
+                <div
+                  class="flex items-center gap-1.5 rounded-sm border border-border-subtle bg-surface-base/80 p-1 pr-1.5 pl-2.5 shadow-2xs">
+                  <span
+                    class="min-w-0 flex-1 truncate font-mono text-xs text-text-secondary select-all"
+                    >{projectUrl}</span>
+                  <Button
+                    type={copiedProjectShareUrlId === project.name ?
+                      'tertiary'
+                    : 'secondary'}
+                    size="xs"
+                    class="size-6.5! shrink-0 px-0!"
+                    aria-label={copiedProjectShareUrlId === project.name ?
+                      'Copied project URL'
+                    : 'Copy project URL'}
+                    onclick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(projectUrl);
+                        toastStore.success('Project URL copied');
+                        copiedProjectShareUrlId = project.name;
+                        setTimeout(() => {
+                          if (copiedProjectShareUrlId === project.name) {
+                            copiedProjectShareUrlId = null;
+                          }
+                        }, 2000);
+                      } catch {
+                        toastStore.error('Failed to copy');
+                      }
+                    }}>
+                    {#snippet leading()}
+                      {#if copiedProjectShareUrlId === project.name}
+                        <CopyCheck class="size-3.5 text-copilot" />
+                      {:else}
+                        <Copy class="size-3.5" />
+                      {/if}
+                    {/snippet}
+                  </Button>
                 </div>
               </div>
-            {/if}
-          </div>
-        </div>
 
-        <a
-          href={project.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="inline-flex h-9 w-full cursor-pointer items-center justify-center rounded-sm bg-copilot px-4 text-xs font-semibold text-text-on-accent shadow-xs transition-all select-none hover:bg-copilot-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring active:bg-copilot-active sm:text-sm">
-          View repo
-        </a>
+              <div class="flex flex-col gap-1.5">
+                <span
+                  class="text-2xs font-semibold tracking-wider text-text-muted uppercase"
+                  >Share to platform</span>
+                <div class="grid grid-cols-6 gap-1.5 sm:grid-cols-3">
+                  <Button
+                    href="https://x.com/intent/post?url={encodedUrl}&text={encodedTitle}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    type="secondary"
+                    size="xs"
+                    class="w-full justify-center px-1.5 sm:px-2"
+                    title="Share on X"
+                    aria-label="Share on X">
+                    {#snippet leading()}
+                      <i
+                        class="bi bi-twitter-x inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
+                        aria-hidden="true"></i>
+                    {/snippet}
+                    <span class="hidden truncate sm:inline">X</span>
+                  </Button>
+                  <Button
+                    href="https://linkedin.com/sharing/share-offsite/?url={encodedUrl}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    type="secondary"
+                    size="xs"
+                    class="w-full justify-center px-1.5 sm:px-2"
+                    title="Share on LinkedIn"
+                    aria-label="Share on LinkedIn">
+                    {#snippet leading()}
+                      <i
+                        class="bi bi-linkedin inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
+                        aria-hidden="true"></i>
+                    {/snippet}
+                    <span class="hidden truncate sm:inline">LinkedIn</span>
+                  </Button>
+                  <Button
+                    href="https://api.whatsapp.com/send?text={encodedTitle}%20{encodedUrl}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    type="secondary"
+                    size="xs"
+                    class="w-full justify-center px-1.5 sm:px-2"
+                    title="Share on WhatsApp"
+                    aria-label="Share on WhatsApp">
+                    {#snippet leading()}
+                      <i
+                        class="bi bi-whatsapp inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
+                        aria-hidden="true"></i>
+                    {/snippet}
+                    <span class="hidden truncate sm:inline">WhatsApp</span>
+                  </Button>
+                  <Button
+                    href="https://www.facebook.com/sharer/sharer.php?u={encodedUrl}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    type="secondary"
+                    size="xs"
+                    class="w-full justify-center px-1.5 sm:px-2"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook">
+                    {#snippet leading()}
+                      <i
+                        class="bi bi-facebook inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
+                        aria-hidden="true"></i>
+                    {/snippet}
+                    <span class="hidden truncate sm:inline">Facebook</span>
+                  </Button>
+                  <Button
+                    href="https://reddit.com/submit?url={encodedUrl}&title={encodedTitle}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    type="secondary"
+                    size="xs"
+                    class="w-full justify-center px-1.5 sm:px-2"
+                    title="Share on Reddit"
+                    aria-label="Share on Reddit">
+                    {#snippet leading()}
+                      <i
+                        class="bi bi-reddit inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
+                        aria-hidden="true"></i>
+                    {/snippet}
+                    <span class="hidden truncate sm:inline">Reddit</span>
+                  </Button>
+                  <Button
+                    href="mailto:?subject={encodedTitle}&body={encodedUrl}"
+                    type="secondary"
+                    size="xs"
+                    class="w-full justify-center px-1.5 sm:px-2"
+                    title="Share via Email"
+                    aria-label="Share via Email">
+                    {#snippet leading()}
+                      <i
+                        class="bi bi-envelope-fill inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
+                        aria-hidden="true"></i>
+                    {/snippet}
+                    <span class="hidden truncate sm:inline">Email</span>
+                  </Button>
+                </div>
+              </div>
+
+              <div class="border-t border-border-subtle/60 pt-1.5">
+                <Button
+                  type="ghost"
+                  size="xs"
+                  class="w-full justify-center text-text-secondary hover:text-text-primary"
+                  onclick={() => {
+                    activeProjectShareId = null;
+                    openProjectQrDialog(project);
+                  }}>
+                  {#snippet leading()}
+                    <QrCode class="size-3.5" />
+                  {/snippet}
+                  <span>View QR Code</span>
+                </Button>
+              </div>
+            </div>
+          {/if}
+
+          {#if activeProjectCodeId === project.name}
+            {@const cloneCmd =
+              projectCodeTab === 'https' ? `git clone ${project.cloneUrl}`
+              : projectCodeTab === 'ssh' ? `git clone ${project.sshUrl}`
+              : `gh repo clone ${project.fullName}`}
+            <div
+              role="dialog"
+              tabindex="-1"
+              aria-label="Clone repository"
+              class="absolute right-0 bottom-full left-0 z-50 mb-2 flex flex-col gap-3 popover-surface p-3 sm:right-auto sm:w-80"
+              onclick={(e: MouseEvent) => e.stopPropagation()}
+              onkeydown={(e: KeyboardEvent) => {
+                if (e.key === 'Escape') activeProjectCodeId = null;
+              }}>
+              <div>
+                <span
+                  class="text-2xs font-semibold tracking-wider text-text-muted uppercase">
+                  Clone repository
+                </span>
+              </div>
+
+              <div
+                class="flex rounded-sm border border-border-subtle bg-surface-base/50 p-0.5 text-xs font-semibold">
+                {#each [['https', 'HTTPS'], ['ssh', 'SSH'], ['cli', 'GitHub CLI']] as const as [key, label] (key)}
+                  <button
+                    type="button"
+                    onclick={() => (projectCodeTab = key)}
+                    class="rounded-2xs flex-1 cursor-pointer py-1 transition-colors {(
+                      projectCodeTab === key
+                    ) ?
+                      'bg-copilot text-white shadow-2xs'
+                    : 'text-text-secondary hover:text-text-primary'}">
+                    {label}
+                  </button>
+                {/each}
+              </div>
+
+              <div
+                class="flex items-center gap-1.5 rounded-sm border border-border-subtle bg-surface-base/80 p-1.5 pl-2.5 font-mono text-xs text-text-secondary shadow-2xs">
+                <span class="min-w-0 flex-1 truncate select-all"
+                  >{cloneCmd}</span>
+                <Button
+                  type={copiedProjectCloneId === project.name ?
+                    'tertiary'
+                  : 'secondary'}
+                  size="xs"
+                  class="size-6.5! shrink-0 px-0!"
+                  aria-label={copiedProjectCloneId === project.name ?
+                    'Copied clone command'
+                  : 'Copy clone command'}
+                  onclick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(cloneCmd);
+                      toastStore.success('Clone command copied');
+                      copiedProjectCloneId = project.name;
+                      setTimeout(() => {
+                        if (copiedProjectCloneId === project.name) {
+                          copiedProjectCloneId = null;
+                        }
+                      }, 2000);
+                    } catch {
+                      toastStore.error('Failed to copy');
+                    }
+                  }}>
+                  {#snippet leading()}
+                    {#if copiedProjectCloneId === project.name}
+                      <CopyCheck class="size-3.5 text-copilot" />
+                    {:else}
+                      <Copy class="size-3.5" />
+                    {/if}
+                  {/snippet}
+                </Button>
+              </div>
+
+              <div class="border-t border-border-subtle/60 pt-1.5">
+                <Button
+                  href={project.zipUrl}
+                  download
+                  type="ghost"
+                  size="xs"
+                  class="w-full justify-center text-text-secondary hover:text-text-primary">
+                  {#snippet leading()}
+                    <Download class="size-3.5" />
+                  {/snippet}
+                  <span>Download ZIP</span>
+                </Button>
+              </div>
+            </div>
+          {/if}
+        </div>
       </div>
     </div>
   {/snippet}
 
   {#snippet blogPostCard(post: BlogPost, tagItem: Snippet<[string]>)}
     <div
-      class="relative flex h-full w-full flex-col gap-3 rounded-sm glass-card p-5 text-left {(
-        openCopyMenuId === post.id
+      class="relative flex flex-col rounded-sm glass-card text-left {(
+        activeBlogShareId === post.id || activeBlogQuickActionsId === post.id
       ) ?
-        'z-30'
+        'z-40'
       : ''}">
-      {#if post.banner_path && !failedBanners.has(post.id)}
-        <ImageWithSkeleton
-          src={getBannerUrl(post.banner_path)}
-          alt={post.title}
-          aspectRatio="aspect-video"
-          onerror={() => markBannerFailed(post.id)}
-          class="w-full border border-border-subtle" />
-      {:else}
-        <div
-          class="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-sm border border-border-subtle bg-linear-to-br from-accent/15 to-copilot/15 select-none">
-          <ImageIcon class="size-8 text-copilot/50" />
-        </div>
-      {/if}
-
-      <div class="flex flex-1 flex-col gap-1 font-sans">
-        <div
-          class="flex min-h-5 w-full scrollbar-none flex-wrap items-center gap-x-1.5 overflow-x-auto font-sans text-xxs font-medium whitespace-nowrap text-text-muted select-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-          <RelativeTime date={post.created_at} />
-          <span aria-hidden="true">&middot;</span>
-          <span
-            >Last updated {formatAbsoluteDate(
-              post.updated_at || post.created_at
-            )}</span>
-          <span aria-hidden="true">&middot;</span>
-          <span>{formatReadTime(post.read_time)}</span>
-          <span aria-hidden="true">&middot;</span>
-          <span>{formatCommentCount(post.comment_count)}</span>
-          {#if post.views_count !== undefined}
-            <span aria-hidden="true">&middot;</span>
-            <span>{formatViewCount(post.views_count)}</span>
-          {/if}
-        </div>
-        <hr class="my-1.5 border-border-subtle" />
-        <!-- @format -->
-        <div class="mt-1">
-          <h4
-            style="view-transition-name: post-title-{post.slug}"
-            class="text-lg leading-snug font-bold text-text-primary">
-            <a
-              href="/blog/{post.slug}"
-              class="rounded-xs outline-none after:absolute after:inset-0 focus-visible:ring-2 focus-visible:ring-copilot focus-visible:ring-offset-2 focus-visible:ring-offset-surface-card">
-              {post.title}
-            </a>
-          </h4>
-        </div>
-        {#if post.tags && post.tags.length > 0}
-          <div class="flex min-h-[24px] flex-wrap items-start gap-1.5">
-            {#each post.tags as tag (tag)}
-              {@render tagItem(tag)}
-            {/each}
+      <div class="aspect-2/1 w-full shrink-0 overflow-hidden rounded-t-sm">
+        {#if post.banner_path && !failedBanners.has(post.id)}
+          <ImageWithSkeleton
+            src={getBannerUrl(post.banner_path)}
+            alt={post.title}
+            rounded=""
+            onerror={() => markBannerFailed(post.id)}
+            class="h-full w-full object-cover" />
+        {:else}
+          <div
+            class="relative flex h-full w-full items-center justify-center overflow-hidden bg-linear-to-br from-accent/15 to-copilot/15 select-none">
+            <ImageIcon class="size-10 text-copilot/50" />
           </div>
         {/if}
-        {#if post.excerpt}
-          <p class="min-h-26 text-sm leading-normal text-text-secondary">
-            {post.excerpt}
-          </p>
-        {/if}
+      </div>
 
-        <div class="relative z-20 mt-auto flex flex-col gap-2 pt-2">
-          <hr class="border-border-subtle" />
+      <div
+        class="flex min-w-0 flex-1 flex-col justify-between gap-2.5 p-4 font-sans">
+        <div class="flex flex-col gap-2">
+          <div class="relative flex items-start justify-between gap-2">
+            <h4
+              style="view-transition-name: post-title-{post.slug}"
+              class="line-clamp-2 min-w-0 flex-1 font-sans-title text-lg leading-snug font-bold text-text-primary">
+              <a
+                href="/blog/{post.slug}"
+                class="rounded-sm outline-none after:absolute after:inset-0 focus-visible:ring-2 focus-visible:ring-copilot focus-visible:ring-offset-2 focus-visible:ring-offset-surface-card">
+                {post.title}
+              </a>
+            </h4>
 
-          <div class="grid grid-cols-2 gap-2">
-            <Button
-              type="secondary"
-              size="md"
-              class="w-full"
-              onclick={() => shareBlogPostDialog(post)}>
-              {#snippet leading()}
-                <Share2 class="size-3.5" />
-              {/snippet}
-              Share
-            </Button>
+            <div class="relative z-20 flex shrink-0 items-center gap-1">
+              <div class="relative shrink-0">
+                <Button
+                  type="ghost"
+                  size="xs"
+                  aria-label="Share post"
+                  aria-expanded={activeBlogShareId === post.id}
+                  aria-haspopup="dialog"
+                  class={cn(
+                    'size-6.5! px-0! text-text-muted hover:text-copilot',
+                    activeBlogShareId === post.id
+                      && 'border-copilot text-copilot'
+                  )}
+                  onclick={(e: MouseEvent) => {
+                    e.stopPropagation();
+                    activeBlogQuickActionsId = null;
+                    activeBlogShareId =
+                      activeBlogShareId === post.id ? null : post.id;
+                  }}>
+                  <Share2 class="size-3.5" />
+                </Button>
+              </div>
 
-            <div
-              class="relative w-full"
-              data-copy-dropdown={post.id}>
-              <DropdownTrigger
-                ariaLabel="Copy options menu"
-                fullWidth
-                isOpen={openCopyMenuId === post.id}
-                onclick={() => toggleCopyMenu(post.id)}>
-                <span class="inline-flex items-center gap-1.5">
-                  <Copy class="size-3.5" />
-                  Copy
-                </span>
-              </DropdownTrigger>
+              <div class="relative shrink-0">
+                <Button
+                  type="ghost"
+                  size="xs"
+                  aria-label="Blog quick actions"
+                  aria-expanded={activeBlogQuickActionsId === post.id}
+                  aria-haspopup="menu"
+                  class={cn(
+                    'size-6.5! px-0! text-text-muted hover:text-copilot',
+                    activeBlogQuickActionsId === post.id
+                      && 'border-copilot text-copilot'
+                  )}
+                  onclick={(e: MouseEvent) => {
+                    e.stopPropagation();
+                    activeBlogShareId = null;
+                    activeBlogQuickActionsId =
+                      activeBlogQuickActionsId === post.id ? null : post.id;
+                  }}>
+                  <EllipsisVertical class="size-3.5" />
+                </Button>
+              </div>
+            </div>
 
-              {#if openCopyMenuId === post.id}
-                <div
-                  role="menu"
-                  class="absolute top-[calc(100%+8px)] left-1/2 z-60 flex w-max min-w-40 -translate-x-1/2 flex-col rounded-sm glass-overlay p-0 shadow-xl">
+            {#if activeBlogShareId === post.id}
+              {@const postUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/blog/${post.slug}`}
+              {@const encodedUrl = encodeURIComponent(postUrl)}
+              {@const encodedTitle = encodeURIComponent(post.title)}
+              <div
+                role="dialog"
+                tabindex="-1"
+                aria-label="Share post"
+                class="absolute top-full right-0 z-50 mt-1.5 flex flex-col gap-3 popover-surface p-3 sm:w-80"
+                onclick={(e: MouseEvent) => e.stopPropagation()}
+                onkeydown={(e: KeyboardEvent) => {
+                  if (e.key === 'Escape') activeBlogShareId = null;
+                }}>
+                <div class="flex flex-col gap-1.5">
+                  <span
+                    class="text-2xs font-semibold tracking-wider text-text-muted uppercase"
+                    >Direct link</span>
                   <div
-                    class="relative z-10 flex flex-col overflow-hidden rounded-sm py-0.5">
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onclick={() => copyBlogUrl(post)}
-                      class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
-                      <LinkIcon class="size-3.5" />
-                      <span>Copy URL</span>
-                    </button>
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onclick={() => copyBlogId(post)}
-                      class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
-                      <Hash class="size-3.5" />
-                      <span>Copy Blog ID</span>
-                    </button>
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onclick={() => copyBlogMarkdown(post)}
-                      class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover">
-                      <svg
-                        class="size-3.5 fill-current"
-                        viewBox="0 0 24 24"
-                        aria-hidden="true">
-                        <path
-                          d="M2.5 4A1.5 1.5 0 0 0 1 5.5v13A1.5 1.5 0 0 0 2.5 20h19a1.5 1.5 0 0 0 1.5-1.5v-13A1.5 1.5 0 0 0 21.5 4h-19zm1 3h3l2 2.5 2-2.5h3v10h-2.5v-5.5L9.5 13.5 8 11.5v5.5H3.5V7zm13 0h4l-3 4.5h2V17h-2.5v-5.5h-2L16.5 7z" />
-                      </svg>
-                      <span>Copy as Markdown</span>
-                    </button>
+                    class="flex items-center gap-1.5 rounded-sm border border-border-subtle bg-surface-base/80 p-1 pr-1.5 pl-2.5 shadow-2xs">
+                    <span
+                      class="min-w-0 flex-1 truncate font-mono text-xs text-text-secondary select-all"
+                      >{postUrl}</span>
+                    <Button
+                      type={copiedBlogShareUrlId === post.id ?
+                        'tertiary'
+                      : 'secondary'}
+                      size="xs"
+                      class="size-6.5! shrink-0 px-0!"
+                      aria-label={copiedBlogShareUrlId === post.id ?
+                        'Copied post link'
+                      : 'Copy post URL'}
+                      onclick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(postUrl);
+                          toastStore.success('Post link copied');
+                          copiedBlogShareUrlId = post.id;
+                          setTimeout(() => {
+                            if (copiedBlogShareUrlId === post.id) {
+                              copiedBlogShareUrlId = null;
+                            }
+                          }, 2000);
+                        } catch {
+                          toastStore.error('Failed to copy');
+                        }
+                      }}>
+                      {#snippet leading()}
+                        {#if copiedBlogShareUrlId === post.id}
+                          <CopyCheck class="size-3.5 text-copilot" />
+                        {:else}
+                          <Copy class="size-3.5" />
+                        {/if}
+                      {/snippet}
+                    </Button>
                   </div>
                 </div>
-              {/if}
-            </div>
+
+                <div class="flex flex-col gap-1.5">
+                  <span
+                    class="text-2xs font-semibold tracking-wider text-text-muted uppercase"
+                    >Share to platform</span>
+                  <div class="grid grid-cols-6 gap-1.5 sm:grid-cols-3">
+                    <Button
+                      href="https://x.com/intent/post?url={encodedUrl}&text={encodedTitle}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      type="secondary"
+                      size="xs"
+                      class="w-full justify-center px-1.5 sm:px-2"
+                      title="Share on X"
+                      aria-label="Share on X">
+                      {#snippet leading()}
+                        <i
+                          class="bi bi-twitter-x inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
+                          aria-hidden="true"></i>
+                      {/snippet}
+                      <span class="hidden truncate sm:inline">X</span>
+                    </Button>
+                    <Button
+                      href="https://linkedin.com/sharing/share-offsite/?url={encodedUrl}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      type="secondary"
+                      size="xs"
+                      class="w-full justify-center px-1.5 sm:px-2"
+                      title="Share on LinkedIn"
+                      aria-label="Share on LinkedIn">
+                      {#snippet leading()}
+                        <i
+                          class="bi bi-linkedin inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
+                          aria-hidden="true"></i>
+                      {/snippet}
+                      <span class="hidden truncate sm:inline">LinkedIn</span>
+                    </Button>
+                    <Button
+                      href="https://api.whatsapp.com/send?text={encodedTitle}%20{encodedUrl}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      type="secondary"
+                      size="xs"
+                      class="w-full justify-center px-1.5 sm:px-2"
+                      title="Share on WhatsApp"
+                      aria-label="Share on WhatsApp">
+                      {#snippet leading()}
+                        <i
+                          class="bi bi-whatsapp inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
+                          aria-hidden="true"></i>
+                      {/snippet}
+                      <span class="hidden truncate sm:inline">WhatsApp</span>
+                    </Button>
+                    <Button
+                      href="https://www.facebook.com/sharer/sharer.php?u={encodedUrl}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      type="secondary"
+                      size="xs"
+                      class="w-full justify-center px-1.5 sm:px-2"
+                      title="Share on Facebook"
+                      aria-label="Share on Facebook">
+                      {#snippet leading()}
+                        <i
+                          class="bi bi-facebook inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
+                          aria-hidden="true"></i>
+                      {/snippet}
+                      <span class="hidden truncate sm:inline">Facebook</span>
+                    </Button>
+                    <Button
+                      href="https://reddit.com/submit?url={encodedUrl}&title={encodedTitle}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      type="secondary"
+                      size="xs"
+                      class="w-full justify-center px-1.5 sm:px-2"
+                      title="Share on Reddit"
+                      aria-label="Share on Reddit">
+                      {#snippet leading()}
+                        <i
+                          class="bi bi-reddit inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
+                          aria-hidden="true"></i>
+                      {/snippet}
+                      <span class="hidden truncate sm:inline">Reddit</span>
+                    </Button>
+                    <Button
+                      href="mailto:?subject={encodedTitle}&body={encodedUrl}"
+                      type="secondary"
+                      size="xs"
+                      class="w-full justify-center px-1.5 sm:px-2"
+                      title="Share via Email"
+                      aria-label="Share via Email">
+                      {#snippet leading()}
+                        <i
+                          class="bi bi-envelope-fill inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
+                          aria-hidden="true"></i>
+                      {/snippet}
+                      <span class="hidden truncate sm:inline">Email</span>
+                    </Button>
+                  </div>
+                </div>
+
+                <div class="border-t border-border-subtle/60 pt-1.5">
+                  <Button
+                    type="ghost"
+                    size="xs"
+                    class="w-full justify-center text-text-secondary hover:text-text-primary"
+                    onclick={() => {
+                      activeBlogShareId = null;
+                      openBlogQrDialog(post);
+                    }}>
+                    {#snippet leading()}
+                      <QrCode class="size-3.5" />
+                    {/snippet}
+                    <span>View QR Code</span>
+                  </Button>
+                </div>
+              </div>
+            {/if}
+
+            {#if activeBlogQuickActionsId === post.id}
+              <div
+                role="menu"
+                tabindex="-1"
+                aria-label="Blog quick actions"
+                class="absolute right-0 bottom-full z-50 mb-2 flex max-w-[calc(100vw-2rem)] flex-col gap-2.5 rounded-sm border border-border-subtle bg-surface-elevated/95 p-2.5 shadow-xl backdrop-blur-md sm:flex-row sm:gap-0 sm:divide-x sm:divide-border-subtle/60"
+                onclick={(e: MouseEvent) => e.stopPropagation()}
+                onkeydown={(e: KeyboardEvent) => {
+                  if (e.key === 'Escape') activeBlogQuickActionsId = null;
+                }}>
+                <div class="flex flex-col gap-1 sm:pr-3">
+                  <span
+                    class="px-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase"
+                    >Copy</span>
+                  <Button
+                    type="ghost"
+                    size="xs"
+                    class="w-full justify-start px-1.5 whitespace-nowrap"
+                    onclick={() => {
+                      activeBlogQuickActionsId = null;
+                      copyBlogMarkdown(post);
+                    }}>
+                    {#snippet leading()}
+                      <Copy class="size-3.5" />
+                    {/snippet}
+                    <span>Copy as Markdown</span>
+                  </Button>
+
+                  <Button
+                    type="ghost"
+                    size="xs"
+                    class="w-full justify-start px-1.5 whitespace-nowrap"
+                    onclick={() => {
+                      activeBlogQuickActionsId = null;
+                      copyBlogText(post);
+                    }}>
+                    {#snippet leading()}
+                      <ScanText class="size-3.5" />
+                    {/snippet}
+                    <span>Copy as Text</span>
+                  </Button>
+
+                  <Button
+                    type="ghost"
+                    size="xs"
+                    class="w-full justify-start px-1.5 whitespace-nowrap"
+                    onclick={() => {
+                      activeBlogQuickActionsId = null;
+                      copyBlogUrl(post);
+                    }}>
+                    {#snippet leading()}
+                      <Link class="size-3.5" />
+                    {/snippet}
+                    <span>Copy URL</span>
+                  </Button>
+
+                  {#if post.id}
+                    <Button
+                      type="ghost"
+                      size="xs"
+                      class="w-full justify-start px-1.5 whitespace-nowrap"
+                      onclick={() => {
+                        activeBlogQuickActionsId = null;
+                        copyBlogId(post);
+                      }}>
+                      {#snippet leading()}
+                        <Hash class="size-3.5" />
+                      {/snippet}
+                      <span>Copy Post ID</span>
+                    </Button>
+                  {/if}
+                </div>
+
+                <div
+                  class="flex flex-col gap-1 border-t border-border-subtle/60 pt-2 sm:border-t-0 sm:px-3 sm:pt-0">
+                  <span
+                    class="px-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase"
+                    >View</span>
+                  <Button
+                    type="ghost"
+                    size="xs"
+                    href="/api/v1/blog/{post.slug}?format=md"
+                    class="w-full justify-start px-1.5 whitespace-nowrap"
+                    onclick={() => (activeBlogQuickActionsId = null)}>
+                    {#snippet leading()}
+                      <i
+                        class="bi bi-markdown inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
+                        aria-hidden="true"></i>
+                    {/snippet}
+                    <span>View as Markdown</span>
+                  </Button>
+
+                  <Button
+                    type="ghost"
+                    size="xs"
+                    href="/api/v1/blog/{post.slug}?format=text"
+                    class="w-full justify-start px-1.5 whitespace-nowrap"
+                    onclick={() => (activeBlogQuickActionsId = null)}>
+                    {#snippet leading()}
+                      <TextAlignStart class="size-3.5" />
+                    {/snippet}
+                    <span>View as Text</span>
+                  </Button>
+                </div>
+
+                <div
+                  class="flex flex-col gap-1 border-t border-border-subtle/60 pt-2 sm:border-t-0 sm:pt-0 sm:pl-3">
+                  <span
+                    class="px-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase"
+                    >Save</span>
+                  <Button
+                    type="ghost"
+                    size="xs"
+                    class="w-full justify-start px-1.5 whitespace-nowrap"
+                    onclick={() => {
+                      activeBlogQuickActionsId = null;
+                      downloadBlogMarkdown(post);
+                    }}>
+                    {#snippet leading()}
+                      <i
+                        class="bi bi-filetype-md inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
+                        aria-hidden="true"></i>
+                    {/snippet}
+                    <span>Save as Markdown</span>
+                  </Button>
+
+                  <Button
+                    type="ghost"
+                    size="xs"
+                    class="w-full justify-start px-1.5 whitespace-nowrap"
+                    onclick={() => {
+                      activeBlogQuickActionsId = null;
+                      downloadBlogText(post);
+                    }}>
+                    {#snippet leading()}
+                      <FileText class="size-3.5" />
+                    {/snippet}
+                    <span>Save as Text</span>
+                  </Button>
+                </div>
+              </div>
+            {/if}
           </div>
 
+          <ArticleMeta
+            size="xs"
+            layout="single"
+            class="min-h-4.5"
+            date={post.created_at}
+            updatedAt={post.updated_at}
+            readingTime={formatReadTime(post.read_time)}
+            commentsCount={post.comment_count}
+            views={post.views_count} />
+
+          {#if post.excerpt}
+            <p class="line-clamp-2 text-xs leading-relaxed text-text-secondary">
+              {post.excerpt}
+            </p>
+          {/if}
+
+          {#if post.tags && post.tags.length > 0}
+            <div
+              class="relative z-20 flex flex-wrap items-center gap-1.5 pt-0.5">
+              {#each post.tags as tag (tag)}
+                {@render tagItem(tag)}
+              {/each}
+            </div>
+          {/if}
+        </div>
+
+        <div class="relative z-20 mt-auto flex flex-col gap-2 pt-1">
+          <hr class="border-border-subtle/25" />
           <a
             href="/blog/{post.slug}"
-            class="inline-flex h-9 w-full cursor-pointer items-center justify-center rounded-sm bg-copilot px-4 text-xs font-semibold text-text-on-accent shadow-xs transition-all select-none hover:bg-copilot-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring active:bg-copilot-active sm:text-sm">
+            class="inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-sm bg-copilot px-3 text-xs font-semibold text-text-on-accent shadow-xs transition-all select-none hover:bg-copilot-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring active:bg-copilot-active">
             Read post
           </a>
         </div>
@@ -1368,30 +1916,6 @@
   {/snippet}
 
   {#if activeSection === 'home'}
-    <div
-      class="pointer-events-none fixed inset-0 z-0 overflow-hidden opacity-85 select-none dark:opacity-75">
-      <GradientWaves
-        horizonColor="#5227FF"
-        waveColor="#FF9FFC"
-        crestColor="#FFFFFF"
-        speed={0.45}
-        amplitude={3.0}
-        waveScale={0.65}
-        waveRatio={0.9}
-        swell={40}
-        turbulence={22}
-        tilt={1.11}
-        zoom={1.0}
-        height={5.5}
-        fogDepth={15}
-        detail="medium"
-        brightness={1.35}
-        opacity={1.0}
-        grain={true}
-        grainIntensity={0.04}
-        reduceMotion={a11yStore.current.reduceMotion} />
-    </div>
-
     <Section
       spacing="none"
       class="relative z-10 pt-10 pb-6 md:pt-14 md:pb-8">
@@ -1405,40 +1929,60 @@
         <div class="relative z-10 mx-auto w-full">
           <div
             use:staggerChildren
-            class="stagger-children relative mt-12 flex flex-col items-center justify-center rounded-sm glass-card p-6 pt-0 text-center shadow-xl sm:p-8 sm:pt-0">
+            class="stagger-children relative mt-10 flex flex-col items-center justify-center rounded-sm glass-card px-3.5 pt-0 pb-6 text-center sm:mt-12 sm:px-8 sm:pt-0 sm:pb-8">
             {#if avatar}
               <ImageWithSkeleton
                 src={avatar}
                 alt={name || author?.name || ''}
                 referrerpolicy="no-referrer"
+                variant="avatar"
                 rounded="rounded-full"
-                class="relative z-10 -mt-14 mb-2 h-28 w-28 border border-border-subtle/60 dark:border-white/10"
+                class="relative z-10 -mt-10 mb-1 h-20 w-20 border border-border-subtle/30 shadow-sm sm:-mt-14 sm:mb-2 sm:h-28 sm:w-28 dark:border-white/8"
                 imgClass="object-top" />
             {/if}
 
             <h1
-              class="relative z-10 max-w-full px-2 {avatar ? 'mt-4' : (
-                'pt-6'
-              )} line-clamp-2 text-2xl font-extrabold tracking-tight text-balance wrap-break-word text-text-primary sm:text-3xl md:text-4xl lg:text-5xl">
+              class="relative z-10 max-w-full px-2 font-sans-title {avatar ?
+                'mt-2 sm:mt-4'
+              : 'pt-6'} line-clamp-2 text-[1.75rem] leading-[1.05] font-extrabold tracking-tight text-balance wrap-break-word text-text-primary sm:text-3xl sm:leading-[1.15] md:text-4xl lg:text-5xl">
               {name}
             </h1>
 
             {#if headline}
               <p
-                class="relative z-10 mt-1.5 max-w-lg font-sans text-sm leading-relaxed text-text-secondary/85 sm:text-base">
+                class="relative z-10 mt-1 max-w-lg font-sans-title text-xs leading-relaxed text-text-muted/90 sm:mt-1.5 sm:text-sm">
                 {headline}
               </p>
             {/if}
 
             {#if desc}
               <p
-                class="text-md sm:text-md relative z-10 mt-3 max-w-lg font-sans leading-relaxed text-text-primary">
+                class="relative z-10 mt-2.5 max-w-lg font-sans text-[13px] leading-relaxed text-text-primary/85 sm:mt-3 sm:text-sm">
                 {desc}
               </p>
             {/if}
 
+            {#if socials.length > 0}
+              <div
+                class="relative z-10 mt-4 flex flex-wrap items-center justify-center gap-1 select-none sm:mt-5 sm:gap-1.5">
+                {#each socials as item (item.url + item.platform)}
+                  <a
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={item.platform}
+                    title={item.platform}
+                    class="flex size-7.5 cursor-pointer items-center justify-center rounded-sm border-0 bg-transparent text-text-muted transition-all hover:bg-surface-hover hover:text-copilot focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none sm:size-8">
+                    <BrandIcon
+                      icon={item.icon}
+                      class="text-sm leading-none sm:text-base" />
+                  </a>
+                {/each}
+              </div>
+            {/if}
+
             <div
-              class="relative z-10 mt-8 flex w-full flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-4">
+              class="relative z-10 mt-6 flex w-full flex-col items-stretch gap-3 sm:mt-8 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-4">
               {#if data.cvExists}
                 <Button
                   type="primary"
@@ -1496,10 +2040,7 @@
               title="No projects yet"
               description="Check back soon for featured repositories." />
           {:else}
-            <div
-              class="relative {openCodeMenuId ? 'z-40' : (
-                'z-0'
-              )} mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="mt-2 grid grid-cols-1 gap-4">
               {#each recentProjects as project (project.name)}
                 {@render projectCard(project, 'h4', staticTag)}
               {/each}
@@ -1527,8 +2068,7 @@
               title="No posts yet"
               description="Check back soon for new articles." />
           {:else}
-            <div
-              class="relative z-0 mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="mt-2 grid grid-cols-1 gap-4">
               {#each recentPosts as post (post.id)}
                 {@render blogPostCard(post, staticTag)}
               {/each}
@@ -1581,7 +2121,7 @@
               description="Check back soon for career history." />
           {:else}
             <div
-              class="divide-y divide-border-subtle overflow-hidden rounded-md glass-card text-left">
+              class="divide-y divide-border-subtle/40 overflow-hidden rounded-sm glass-card text-left">
               {#each experiences.slice(0, 2) as exp (exp.title || exp.company)}
                 <CvEntryCard
                   role={exp.title}
@@ -1610,30 +2150,43 @@
         </div>
 
         <div
-          class="divide-y divide-border-subtle overflow-hidden rounded-md glass-card border-copilot/30 bg-copilot/5 text-left shadow-xs">
+          class="divide-y divide-border-subtle/40 overflow-hidden rounded-sm glass-card bg-copilot/5 text-left">
           <div
             class="flex flex-col justify-between gap-4 px-5 py-4 sm:flex-row sm:items-center">
-            <div class="flex items-start gap-4">
-              <Heart class="mt-0.5 size-6 shrink-0 fill-current text-copilot" />
-              <div>
-                <h4 class="text-sm font-bold">
+            <div
+              class="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:gap-4">
+              <div class="flex items-center gap-3 sm:block">
+                <HandHeart
+                  class="size-5 shrink-0 text-copilot sm:mt-0.5 sm:size-6" />
+                <h4 class="font-sans-title text-sm font-bold sm:hidden">
                   <ShinyText
                     text="Support Open Source Work"
                     color="var(--color-copilot)"
                     shineColor="#ffffff"
                     speed={3} />
                 </h4>
-                <p class="mt-0.5 text-xs leading-relaxed text-text-secondary">
+              </div>
+              <div>
+                <h4 class="hidden font-sans-title text-sm font-bold sm:block">
+                  <ShinyText
+                    text="Support Open Source Work"
+                    color="var(--color-copilot)"
+                    shineColor="#ffffff"
+                    speed={3} />
+                </h4>
+                <p
+                  class="text-xs leading-relaxed text-text-secondary sm:mt-0.5">
                   Your support helps maintain and improve these open-source
                   projects
                 </p>
               </div>
             </div>
-            <button
-              onclick={() => navigate('funding')}
-              class="inline-flex shrink-0 cursor-pointer items-center justify-center rounded-sm bg-copilot px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-copilot-hover">
+            <Button
+              type="primary"
+              size="sm"
+              onclick={() => navigate('funding')}>
               Become a sponsor
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -1663,7 +2216,9 @@
             value={siteUrl ? `${siteUrl}/` : '/'} />
 
           <div class="mb-2 select-none">
-            <h2 class="text-sm font-bold text-text-primary">Send a Message</h2>
+            <h2 class="font-sans-title text-sm font-bold text-text-primary">
+              Send a Message
+            </h2>
             <p class="mt-0.5 text-xs text-text-muted">
               Feel free to drop me a line. I'll get back to you as soon as
               possible.
@@ -1673,16 +2228,19 @@
           <FormField
             id="form-name"
             label="Name"
+            variant="floating"
             required
+            hideAsterisk
+            maxlength={50}
+            currentLength={formName.length}
             error={formErrors.name}
             valid={formValid.name}>
             <Input
               type="text"
               id="form-name"
               name="name"
-              aria-required="true"
               autocomplete="name"
-              placeholder="Enter your name"
+              maxlength={50}
               bind:value={formName}
               error={!!formErrors.name}
               valid={formValid.name}
@@ -1696,16 +2254,19 @@
           <FormField
             id="form-email"
             label="Email"
+            variant="floating"
             required
+            hideAsterisk
+            maxlength={100}
+            currentLength={formEmail.length}
             error={formErrors.email}
             valid={formValid.email}>
             <Input
               type="text"
               id="form-email"
               name="email"
-              aria-required="true"
               autocomplete="email"
-              placeholder="Enter your email"
+              maxlength={100}
               bind:value={formEmail}
               error={!!formErrors.email}
               valid={formValid.email}
@@ -1719,16 +2280,19 @@
           <FormField
             id="form-message"
             label="Message"
+            variant="floating"
             required
+            hideAsterisk
+            maxlength={2000}
+            currentLength={formMessage.length}
+            counter={`${formMessage.length}/2000`}
             error={formErrors.message}
-            valid={formValid.message}
-            counter="{2000 - formMessage.length} left">
+            valid={formValid.message}>
             <Textarea
               id="form-message"
               name="message"
               rows={4}
               maxlength={2000}
-              placeholder="Write your message…"
               bind:value={formMessage}
               error={!!formErrors.message}
               valid={formValid.message}
@@ -1738,6 +2302,25 @@
                 validateMessage();
               }} />
           </FormField>
+
+          <div
+            bind:this={turnstileContactEl}
+            class="cf-turnstile select-none"
+            data-sitekey={turnstileSiteKey}
+            data-action="contact-message"
+            data-size="flexible"
+            data-theme="auto"
+            data-appearance="interaction-only"
+            data-execution="execute"
+            use:turnstileWidget={{
+              sitekey: turnstileSiteKey,
+              size: 'flexible',
+              action: 'contact-message',
+              theme: 'auto',
+              appearance: 'interaction-only',
+              execution: 'execute'
+            }}>
+          </div>
 
           <ConsentNotice action="sending this message" />
 
@@ -1756,7 +2339,7 @@
         <div class="flex flex-col gap-7 select-none">
           <div class="text-center">
             <h3
-              class="text-xs font-bold tracking-wider text-text-muted uppercase">
+              class="font-sans-title text-xs font-bold tracking-wider text-text-muted uppercase">
               Built With These Awesome Technologies & Tools
             </h3>
           </div>
@@ -1778,7 +2361,7 @@
   {/if}
 
   {#if activeSection === 'contact'}
-    <LinkListSection
+    <LinkGridSection
       title="Contact"
       subtitle="Feel free to reach out via any of the channels below."
       items={contactItems}
@@ -1793,12 +2376,13 @@
       <PageContainer width="standard">
         <div
           class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 class="text-3xl font-bold tracking-tight text-text-primary">
+          <div class="flex flex-col gap-1">
+            <h2
+              class="font-sans-title text-base font-bold text-text-primary sm:text-lg">
               Curriculum Vitae
-            </h1>
-            <p class="mt-2 text-sm text-text-secondary">
-              Security-focused Software Engineer.
+            </h2>
+            <p class="text-xs text-text-secondary">
+              View or download my updated resume.
             </p>
           </div>
           {#if data.cvExists}
@@ -1842,7 +2426,7 @@
             </div>
           {:else}
             <div
-              class="mt-4 divide-y divide-border-subtle overflow-hidden rounded-md glass-card">
+              class="mt-4 divide-y divide-border-subtle/40 overflow-hidden rounded-sm glass-card">
               {#each experiences as exp (exp.company + exp.startYear)}
                 <CvEntryCard
                   role={exp.title}
@@ -1873,7 +2457,7 @@
             </div>
           {:else}
             <div
-              class="mt-4 divide-y divide-border-subtle overflow-hidden rounded-md glass-card">
+              class="mt-4 divide-y divide-border-subtle/40 overflow-hidden rounded-sm glass-card">
               {#each education as edu (edu.institution + edu.startYear)}
                 <CvEntryCard
                   role={edu.degree}
@@ -1935,7 +2519,11 @@
               Thoughts on Linux, security, and open source.
             </p>
           </div>
-          <div class="group relative inline-flex">
+          <Tooltip
+            content="RSS Feed"
+            placement="bottom"
+            align="right"
+            class="sm:hidden">
             <a
               href="/atom.xml"
               target="_blank"
@@ -1945,13 +2533,7 @@
               <Rss class="size-3.5 select-none" />
               <span class="hidden items-center sm:inline">Feed</span>
             </a>
-
-            <div
-              role="tooltip"
-              class="pointer-events-none absolute top-[calc(100%+6px)] right-0 z-70 rounded-sm glass-overlay px-2 py-1 text-3xs font-medium whitespace-nowrap text-text-primary opacity-0 shadow-lg transition-opacity duration-150 group-focus-within:opacity-100 group-hover:opacity-100 sm:hidden">
-              <span class="relative z-10">RSS Feed</span>
-            </div>
-          </div>
+          </Tooltip>
         </div>
 
         {#if posts.length > 0}
@@ -1968,15 +2550,18 @@
                         (e.target as HTMLInputElement).value
                       )}
                     size="sm"
-                    aria-label="Search blog articles" />
+                    aria-label="Search articles" />
                 </div>
               {/snippet}
 
               {#snippet filterControlsSlot()}
                 {#if allBlogTags.length > 0}
                   <FilterCheckboxGroup
-                    label="Tag"
-                    options={allBlogTags.map(t => ({value: t, label: t}))}
+                    label="Tags"
+                    options={allBlogTags.map(t => ({
+                      value: t,
+                      label: decodeHtmlEntities(t)
+                    }))}
                     selectedValues={blogFilterStore.filters['tag'] || []}
                     onChange={val =>
                       blogFilterStore.toggleMultiFilter('tag', val)} />
@@ -2029,7 +2614,11 @@
         {:else}
           <div
             use:staggerChildren
-            class="stagger-children relative z-0 mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            class="stagger-children relative mt-2 grid grid-cols-1 gap-4 {(
+              activeBlogShareId || activeBlogQuickActionsId
+            ) ?
+              'z-40'
+            : 'z-0'}">
             {#each paginatedBlogPosts as post (post.id)}
               {@render blogPostCard(post, blogFilterableTag)}
             {/each}
@@ -2132,9 +2721,11 @@
         {:else}
           <div
             use:staggerChildren
-            class="stagger-children relative {openCodeMenuId ? 'z-40' : (
-              'z-0'
-            )} mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            class="stagger-children relative mt-2 grid grid-cols-1 gap-4 {(
+              activeProjectShareId || activeProjectCodeId
+            ) ?
+              'z-40'
+            : 'z-0'}">
             {#each paginatedProjectList as project (project.name)}
               {@render projectCard(project, 'h3', filterableTag)}
             {/each}
@@ -2151,7 +2742,7 @@
   {/if}
 
   {#if activeSection === 'funding'}
-    <LinkListSection
+    <LinkGridSection
       title="Supporting & Funding"
       subtitle="Support open-source development and maintenance through these platforms."
       items={fundingPlatforms}
@@ -2208,4 +2799,56 @@
   url={shareDialogData?.url ?? ''}
   articleTitle={shareDialogData?.title ?? ''}
   showEmail
+  onOpenQr={() => {
+    if (shareDialogData) {
+      qrCodeDialogData = {
+        title: shareDialogData.title,
+        url: shareDialogData.url,
+        slug: 'share'
+      };
+      showQrCodeDialog = true;
+    }
+  }}
   onClose={() => (showShareDialog = false)} />
+
+<QrCodeDialog
+  bind:isOpen={showQrCodeDialog}
+  title={qrCodeDialogData?.title ?? ''}
+  url={qrCodeDialogData?.url ?? ''}
+  slug={qrCodeDialogData?.slug ?? ''}
+  avatarUrl={author?.avatar ?? ''}
+  onClose={() => (showQrCodeDialog = false)} />
+
+<ProjectCodeDialog
+  bind:isOpen={showProjectCodeDialog}
+  project={selectedCodeProject}
+  onClose={() => (showProjectCodeDialog = false)} />
+
+<BlogActionsDialog
+  bind:isOpen={showBlogActionsDialog}
+  post={selectedBlogActionPost}
+  onClose={() => (showBlogActionsDialog = false)}
+  onCopyMarkdown={() => {
+    if (selectedBlogActionPost) {
+      copyBlogMarkdown(selectedBlogActionPost);
+    }
+  }}
+  onCopyText={() => {
+    if (selectedBlogActionPost) {
+      copyBlogText(selectedBlogActionPost);
+    }
+  }}
+  onSaveMarkdown={() => {
+    if (selectedBlogActionPost) {
+      downloadBlogMarkdown(selectedBlogActionPost);
+    }
+  }}
+  onSaveText={() => {
+    if (selectedBlogActionPost) {
+      downloadBlogText(selectedBlogActionPost);
+    }
+  }} />
+
+<BottomNav
+  {activeSection}
+  onNavigate={navigate} />

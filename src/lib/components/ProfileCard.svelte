@@ -35,10 +35,10 @@
         alt={name}
         referrerpolicy="no-referrer"
         rounded="rounded-full"
-        class="h-12 w-12 shrink-0 border border-border-default shadow-xs" />
+        class="h-12 w-12 shrink-0 border border-border-subtle/40 shadow-2xs" />
     {:else}
       <div
-        class="flex h-12 w-12 items-center justify-center rounded-full border border-border-default bg-surface-subtle text-base font-bold text-copilot">
+        class="flex h-12 w-12 items-center justify-center rounded-full border border-border-subtle/40 bg-surface-subtle text-base font-bold text-copilot shadow-2xs">
         {name.charAt(0)}
       </div>
     {/if}

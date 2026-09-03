@@ -37,6 +37,9 @@ declare global {
       code?: string;
       details?: string;
     }
+    interface Locals {
+      pageLanguage?: string;
+    }
     interface Platform {
       env: {
         GITHUB_TOKEN?: string;

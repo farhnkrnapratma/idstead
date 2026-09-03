@@ -11,16 +11,16 @@
   let {align = 'right', class: className = '', children}: Props = $props();
 
   const alignStyles = {
-    left: 'justify-start',
-    center: 'justify-center',
-    right: 'justify-end',
-    between: 'justify-between'
+    left: 'sm:justify-start',
+    center: 'sm:justify-center',
+    right: 'sm:justify-end',
+    between: 'sm:justify-between'
   };
 </script>
 
 <div
   class={cn(
-    'mt-4 flex items-center gap-3 border-t border-border-subtle/50 pt-3',
+    'mt-4 flex flex-col gap-2.5 border-t border-border-subtle/50 pt-3 sm:flex-row sm:items-center sm:gap-3 [&>a]:w-full sm:[&>a]:w-auto [&>button]:w-full sm:[&>button]:w-auto',
     alignStyles[align],
     className
   )}>

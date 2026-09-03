@@ -19,7 +19,7 @@
   const variantStyles = {
     neutral:
       'bg-surface-subtle text-text-secondary border border-border-subtle',
-    subtle: 'bg-border-subtle/40 text-text-muted border border-transparent',
+    subtle: 'rounded-full bg-border-subtle/40 text-text-muted',
     accent: 'bg-copilot-subtle text-copilot border border-copilot/20 font-bold'
   };
 

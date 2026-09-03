@@ -8,14 +8,11 @@ import {
   recordFailedLogin,
   clearLoginAttempts
 } from '$lib/server/loginRateLimit';
+import {isSameOriginRequest} from '$lib/server/sameOrigin';
 
-function getClientIp(request: Request, getClientAddress: () => string) {
+function getClientIp(getClientAddress: () => string) {
   try {
-    return (
-      request.headers.get('cf-connecting-ip')
-      || getClientAddress()
-      || '127.0.0.1'
-    );
+    return getClientAddress() || '127.0.0.1';
   } catch {
     return '127.0.0.1';
   }
@@ -24,9 +21,14 @@ function getClientIp(request: Request, getClientAddress: () => string) {
 export const POST: RequestHandler = async ({
   request,
   platform,
-  getClientAddress
+  getClientAddress,
+  url
 }) => {
-  const clientIp = getClientIp(request, getClientAddress);
+  if (!isSameOriginRequest(request, url)) {
+    return apiError(403, 'FORBIDDEN', 'Cross-origin requests are forbidden.');
+  }
+
+  const clientIp = getClientIp(getClientAddress);
 
   const lockout = checkLoginLockout(clientIp);
   if (!lockout.allowed) {
@@ -60,7 +62,7 @@ export const POST: RequestHandler = async ({
 
   const turnstileOk = await verifyTurnstileToken(
     turnstileToken,
-    getClientAddress(),
+    clientIp,
     platform
   );
   if (!turnstileOk) {

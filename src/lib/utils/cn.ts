@@ -20,14 +20,42 @@ const TEXT_SIZE_KEYWORDS = new Set([
   'text-9xl'
 ]);
 const TEXT_SIZE_ARBITRARY_RE = /^text-\[[\d.]+(?:px|rem|em)\]$/;
+const DISPLAY_KEYWORDS = new Set([
+  'block',
+  'inline-block',
+  'inline',
+  'flex',
+  'inline-flex',
+  'table',
+  'inline-table',
+  'table-caption',
+  'table-cell',
+  'table-column',
+  'table-column-group',
+  'table-footer-group',
+  'table-header-group',
+  'table-row-group',
+  'table-row',
+  'flow-root',
+  'grid',
+  'inline-grid',
+  'contents',
+  'list-item',
+  'hidden'
+]);
 
 function familyOf(token: string): string | null {
-  const radiusMatch = token.match(RADIUS_RE);
-  if (radiusMatch) return `radius${radiusMatch[1] ?? ''}`;
-  if (TEXT_SIZE_KEYWORDS.has(token) || TEXT_SIZE_ARBITRARY_RE.test(token))
-    return 'text-size';
-  const overflowMatch = token.match(OVERFLOW_RE);
-  if (overflowMatch) return `overflow${overflowMatch[1] ?? ''}`;
+  const colonIdx = token.lastIndexOf(':');
+  const prefix = colonIdx !== -1 ? token.slice(0, colonIdx + 1) : '';
+  const base = colonIdx !== -1 ? token.slice(colonIdx + 1) : token;
+
+  const radiusMatch = base.match(RADIUS_RE);
+  if (radiusMatch) return `${prefix}radius${radiusMatch[1] ?? ''}`;
+  if (TEXT_SIZE_KEYWORDS.has(base) || TEXT_SIZE_ARBITRARY_RE.test(base))
+    return `${prefix}text-size`;
+  const overflowMatch = base.match(OVERFLOW_RE);
+  if (overflowMatch) return `${prefix}overflow${overflowMatch[1] ?? ''}`;
+  if (DISPLAY_KEYWORDS.has(base)) return `${prefix}display`;
   return null;
 }
 

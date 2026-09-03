@@ -88,7 +88,8 @@ export const handle: Handle = sequence(
     const cdnBaseUrl = getCdnBaseUrl();
 
     if (
-      event.url.pathname.startsWith('/fonts/')
+      event.url.pathname.startsWith('/static/')
+      || event.url.pathname.startsWith('/fonts/')
       || event.url.pathname.startsWith('/logo/')
       || STATIC_ASSET_PATHS.has(event.url.pathname)
     ) {
@@ -100,7 +101,16 @@ export const handle: Handle = sequence(
       }
 
       try {
-        const cdnRes = await fetch(`${cdnBaseUrl}${event.url.pathname}`);
+        let cdnRes = await fetch(`${cdnBaseUrl}${event.url.pathname}`);
+        if (!cdnRes.ok && !event.url.pathname.startsWith('/static/')) {
+          const fallbackRes = await fetch(
+            `${cdnBaseUrl}/static${event.url.pathname}`
+          );
+          if (fallbackRes.ok) {
+            cdnRes = fallbackRes;
+          }
+        }
+
         if (cdnRes.ok) {
           const mime = getStaticMimeType(
             event.url.pathname,
@@ -232,10 +242,12 @@ export const handle: Handle = sequence(
     const response = await resolve(event, {
       transformPageChunk: ({html}) => {
         const cdn = getCdnBaseUrl();
-        if (cdn) {
-          return html.replaceAll(`${cdn}//`, `${cdn}/`);
+        let out = cdn ? html.replaceAll(`${cdn}//`, `${cdn}/`) : html;
+        const pageLanguage = event.locals.pageLanguage;
+        if (pageLanguage && pageLanguage !== 'en') {
+          out = out.replace('lang="en"', `lang="${pageLanguage}"`);
         }
-        return html;
+        return out;
       }
     });
     const contentType = response.headers.get('content-type') ?? '';

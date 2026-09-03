@@ -1,6 +1,7 @@
 <script lang="ts">
   import {ArrowLeft, ArrowRight} from '@lucide/svelte';
   import {cn} from '../utils/cn';
+  import Button from './Button.svelte';
 
   interface Props {
     page: number;
@@ -51,15 +52,15 @@
     'flex flex-wrap items-center justify-center gap-1.5 select-none sm:justify-between',
     className
   )}>
-  <button
-    type="button"
+  <Button
+    type="outline"
+    size="md"
     onclick={() => goTo(page - 1)}
     disabled={page <= 1}
-    aria-label="Previous page"
-    class="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-sm border border-border-subtle bg-surface px-3 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover hover:text-copilot focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-surface disabled:hover:text-text-primary">
+    aria-label="Previous page">
     <ArrowLeft class="size-3.5" />
     <span class="hidden sm:inline">Previous</span>
-  </button>
+  </Button>
 
   <div class="flex items-center gap-1">
     {#each pageNumbers as entry, i (entry === 'ellipsis' ? `ellipsis-${i}` : entry)}
@@ -87,13 +88,13 @@
     {/each}
   </div>
 
-  <button
-    type="button"
+  <Button
+    type="outline"
+    size="md"
     onclick={() => goTo(page + 1)}
     disabled={page >= totalPages}
-    aria-label="Next page"
-    class="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-sm border border-border-subtle bg-surface px-3 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover hover:text-copilot focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-surface disabled:hover:text-text-primary">
+    aria-label="Next page">
     <span class="hidden sm:inline">Next</span>
     <ArrowRight class="size-3.5" />
-  </button>
+  </Button>
 </nav>

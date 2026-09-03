@@ -29,7 +29,7 @@ Welcome to the LLM & AI Agent directory for ${authorName}'s developer portfolio.
 - [OpenAPI (YAML)](${SITE_URL}/.well-known/openapi.yaml): Same spec in YAML format.
 - [Agent Skills Discovery](${SITE_URL}/.well-known/agent-skills/index.json): Per-endpoint agent skill descriptors with content digests for automated agent integration.
 - [API Catalog (RFC 9727)](${SITE_URL}/.well-known/api-catalog): Linkset of all public API endpoints for service discovery.
-- [Atom RSS Feed](${SITE_URL}/atom.xml): Atom feed containing recent blog post summaries.
+- [Atom Feed](${SITE_URL}/atom.xml): Atom feed containing recent blog post summaries.
 - [XML Sitemap](${SITE_URL}/sitemap.xml): Complete URL index for web crawlers.
 - [CV Download PDF](${SITE_URL}/api/v1/cv): Official curriculum vitae PDF file.
 
@@ -46,7 +46,7 @@ Welcome to the LLM & AI Agent directory for ${authorName}'s developer portfolio.
     md += `*No published posts available.*\n`;
   }
 
-  md += `\n## Optional & Additional Details\n\n`;
+  md += `\n## Optional\n\n`;
   md += `- [JSON Author API](${SITE_URL}/api/v1/author): Full author dataset in JSON format.\n`;
   md += `- [JSON Blog Catalog](${SITE_URL}/api/v1/blog): Catalog of published blog posts in JSON format.\n`;
 

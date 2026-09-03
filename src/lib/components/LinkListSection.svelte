@@ -3,6 +3,7 @@
   import Card from './Card.svelte';
   import SectionHeader from './SectionHeader.svelte';
   import EmptyState from './EmptyState.svelte';
+  import BrandIcon from './BrandIcon.svelte';
   import {cn} from '../utils/cn';
 
   interface ListItem {
@@ -56,6 +57,16 @@
           href={item.href}
           target="_blank"
           rel="noopener noreferrer">
+          {#snippet leading()}
+            {#if item.icon}
+              <div
+                class="flex size-8 shrink-0 items-center justify-center rounded-sm text-text-muted transition-colors group-hover:text-copilot">
+                <BrandIcon
+                  icon={item.icon}
+                  class="text-base leading-none" />
+              </div>
+            {/if}
+          {/snippet}
           <span
             class="hidden truncate font-mono text-xs font-light text-text-secondary sm:inline">
             {item.value}

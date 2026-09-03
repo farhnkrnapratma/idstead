@@ -222,7 +222,7 @@ export async function handleAuthorJsonRequest(
   const tasks: Record<string, Promise<any>> = {};
 
   if (fetchAll || requestedFields.has('profile')) {
-    tasks.profile = fetchAuthorProfile(supabaseClient);
+    tasks.profile = fetchAuthorProfile(supabaseClient, {includeEmail: true});
   }
   if (fetchAll || requestedFields.has('cv')) {
     tasks.cv = fetchCvEntries(supabaseClient);
@@ -249,6 +249,34 @@ export async function handleAuthorJsonRequest(
   });
 
   const responseData = sanitizePublicApiData(rawData);
+  if (responseData.profile) {
+    const p = responseData.profile;
+    const email =
+      typeof rawData.profile?.email === 'string' ?
+        rawData.profile.email
+      : undefined;
+
+    const orderedProfile: Record<string, any> = {};
+    if ('name' in p) orderedProfile.name = p.name;
+    if ('username' in p) orderedProfile.username = p.username;
+    if (email) orderedProfile.email = email;
+    if ('headline' in p) orderedProfile.headline = p.headline;
+    if ('jobTitle' in p) orderedProfile.jobTitle = p.jobTitle;
+    if ('bio' in p) orderedProfile.bio = p.bio;
+    if ('avatar' in p) orderedProfile.avatar = p.avatar;
+    if ('city' in p) orderedProfile.city = p.city;
+    if ('postalCode' in p) orderedProfile.postalCode = p.postalCode;
+    if ('country' in p) orderedProfile.country = p.country;
+    if ('siteUrl' in p) orderedProfile.siteUrl = p.siteUrl;
+
+    for (const [k, v] of Object.entries(p)) {
+      if (!(k in orderedProfile)) {
+        orderedProfile[k] = v;
+      }
+    }
+
+    responseData.profile = orderedProfile;
+  }
 
   const format = searchParams.get('format')?.toLowerCase();
   const acceptHeader = request?.headers.get('accept')?.toLowerCase() || '';

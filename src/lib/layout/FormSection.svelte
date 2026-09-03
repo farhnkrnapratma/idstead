@@ -44,13 +44,14 @@
   novalidate
   class={cn(
     'flex flex-col gap-6',
-    bare ? '' : 'rounded-sm glass-card p-6',
+    bare ? '' : 'rounded-sm glass-card p-4 sm:p-6',
     className
   )}
   autocomplete="off">
   {#if title || description || headerActions}
-    <div class="flex items-center justify-between gap-4">
-      <div class="select-none">
+    <div
+      class="flex items-start justify-between gap-3 sm:items-center sm:gap-4">
+      <div class="min-w-0 flex-1 select-none">
         {#if title}
           <h2 class={titleClass}>{title}</h2>
         {/if}
@@ -59,7 +60,9 @@
         {/if}
       </div>
       {#if headerActions}
-        {@render headerActions()}
+        <div class="flex shrink-0 items-center">
+          {@render headerActions()}
+        </div>
       {/if}
     </div>
   {/if}

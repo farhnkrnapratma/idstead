@@ -2,6 +2,15 @@ import {json} from '@sveltejs/kit';
 import type {RequestHandler} from './$types';
 import {supabase} from '$lib/supabase';
 import {apiError} from '$lib/server/apiError';
+import {markdownToPlainText} from '$lib/utils/markdownToText';
+import {
+  resolveTranslation,
+  isTranslationLocale
+} from '$lib/server/blogTranslations';
+import {
+  getTranslationDisclaimer,
+  buildTranslationDisclaimerMarkdown
+} from '$lib/server/blogTranslate';
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -9,6 +18,15 @@ const UUID_REGEX =
 export const GET: RequestHandler = async ({params, url, request, fetch}) => {
   const {slug: idOrSlug} = params;
   const isUuid = UUID_REGEX.test(idOrSlug);
+
+  const lang = url.searchParams.get('lang')?.trim() || null;
+  if (lang && !isTranslationLocale(lang)) {
+    return apiError(
+      400,
+      'BLOG_INVALID_LANG',
+      "The 'lang' query parameter must be one of: id, ja, zh, ko."
+    );
+  }
 
   let query = supabase.from('db_posts').select('*').eq('published', true);
 
@@ -29,6 +47,8 @@ export const GET: RequestHandler = async ({params, url, request, fetch}) => {
     );
   }
 
+  const translation = await resolveTranslation(supabase, post.id, lang);
+
   let commentCount = 0;
   let viewsCount = 0;
   try {
@@ -48,12 +68,14 @@ export const GET: RequestHandler = async ({params, url, request, fetch}) => {
     console.error('Error fetching post counts:', err);
   }
 
+  const effectiveStoragePath = translation.storagePath ?? post.storage_path;
+
   let rawMarkdown = '';
-  if (post.storage_path) {
+  if (effectiveStoragePath) {
     try {
       const {data: urlData} = supabase.storage
         .from('blog-posts')
-        .getPublicUrl(post.storage_path);
+        .getPublicUrl(effectiveStoragePath);
       const fileRes = await fetch(urlData.publicUrl);
       if (fileRes.ok) {
         rawMarkdown = await fileRes.text();
@@ -63,26 +85,44 @@ export const GET: RequestHandler = async ({params, url, request, fetch}) => {
     }
   }
 
+  const effectiveTitle = translation.title ?? post.title;
+  const effectiveExcerpt = translation.excerpt ?? post.excerpt;
+  const effectiveSummary = translation.summary ?? post.summary;
+  const effectiveTldr = translation.tldr ?? post.tldr;
+
   const format = url.searchParams.get('format')?.toLowerCase();
   const acceptHeader = request.headers.get('accept')?.toLowerCase() || '';
   const wantsMarkdown =
     format === 'md'
     || format === 'markdown'
     || acceptHeader.includes('text/markdown');
+  const wantsText =
+    format === 'text'
+    || format === 'txt'
+    || acceptHeader.includes('text/plain');
+
+  const tldrMarkdown =
+    effectiveTldr?.length ?
+      `\n**TL;DR**\n${effectiveTldr.map((point: string) => `- ${point}`).join('\n')}\n`
+    : '';
+  const disclaimerMarkdown =
+    translation.machineTranslated ?
+      `\n${buildTranslationDisclaimerMarkdown(translation.language)}\n`
+    : '';
 
   if (wantsMarkdown) {
-    const markdownOutput = `# ${post.title}
+    const markdownOutput = `# ${effectiveTitle}
 
 - **ID**: \`${post.id}\`
 - **Slug**: \`${post.slug}\`
 - **Date**: ${new Date(post.created_at).toISOString().split('T')[0]}
 - **Views**: ${viewsCount} | **Comments**: ${commentCount}
-
-> ${post.excerpt || ''}
-
+${disclaimerMarkdown}
+> ${effectiveExcerpt || ''}
+${effectiveSummary ? `\n${effectiveSummary}\n` : ''}${tldrMarkdown}
 ---
 
-${rawMarkdown || post.excerpt || ''}
+${rawMarkdown || effectiveExcerpt || ''}
 `;
     return new Response(markdownOutput, {
       headers: {
@@ -93,18 +133,57 @@ ${rawMarkdown || post.excerpt || ''}
     });
   }
 
+  if (wantsText) {
+    const plainTextBody = markdownToPlainText(
+      rawMarkdown || effectiveExcerpt || ''
+    );
+    const tldrText =
+      effectiveTldr?.length ?
+        `TL;DR:\n${effectiveTldr.map((point: string) => `- ${point}`).join('\n')}\n\n`
+      : '';
+    const disclaimerText =
+      translation.machineTranslated ?
+        `${getTranslationDisclaimer(translation.language)}\n\n`
+      : '';
+    const textOutput = `${effectiveTitle}
+
+ID: ${post.id}
+Slug: ${post.slug}
+Date: ${new Date(post.created_at).toISOString().split('T')[0]}
+Views: ${viewsCount} | Comments: ${commentCount}
+
+${disclaimerText}${effectiveExcerpt ? `${effectiveExcerpt}\n\n` : ''}${effectiveSummary ? `${effectiveSummary}\n\n` : ''}${tldrText}${plainTextBody}`;
+
+    return new Response(textOutput, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600, s-maxage=86400',
+        'X-Robots-Tag': 'index, follow'
+      }
+    });
+  }
+
   return json(
     {
       id: post.id,
-      title: post.title,
+      title: effectiveTitle,
       slug: post.slug,
-      excerpt: post.excerpt,
+      excerpt: effectiveExcerpt,
+      summary: effectiveSummary,
+      tldr: effectiveTldr || [],
+      collaborators: post.collaborators || [],
       published: post.published,
       created_at: post.created_at,
       updated_at: post.updated_at || post.created_at,
       comment_count: commentCount,
       views_count: viewsCount,
-      content: rawMarkdown
+      content: rawMarkdown,
+      language: translation.language,
+      requested_language: translation.requestedLanguage,
+      machine_translated: translation.machineTranslated,
+      ...(translation.machineTranslated ?
+        {translation_disclaimer: getTranslationDisclaimer(translation.language)}
+      : {})
     },
     {
       headers: {

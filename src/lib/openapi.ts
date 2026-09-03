@@ -36,8 +36,33 @@ const blogPostSummarySchema = {
     title: {type: 'string'},
     slug: {type: 'string'},
     excerpt: {type: 'string', nullable: true},
+    summary: {type: 'string', nullable: true},
+    tldr: {type: 'array', items: {type: 'string'}, nullable: true},
+    collaborators: {type: 'array', items: {type: 'string'}},
     created_at: {type: 'string', format: 'date-time'},
-    updated_at: {type: 'string', format: 'date-time'}
+    updated_at: {type: 'string', format: 'date-time'},
+    language: {
+      type: 'string',
+      enum: ['en', 'id', 'ja', 'zh', 'ko'],
+      description:
+        'Language actually returned. May differ from `requested_language` if that translation is not yet available (falls back to English).'
+    },
+    requested_language: {
+      type: 'string',
+      enum: ['id', 'ja', 'zh', 'ko'],
+      nullable: true,
+      description: 'The `lang` query param that was requested, if any.'
+    },
+    machine_translated: {
+      type: 'boolean',
+      description:
+        'True when `language` is not "en" -- this content was produced by AI translation and may contain errors.'
+    },
+    translation_disclaimer: {
+      type: 'string',
+      nullable: true,
+      description: 'Present only when machine_translated is true.'
+    }
   }
 };
 
@@ -65,6 +90,7 @@ const commentSchema = {
     author_name: {type: 'string'},
     content: {type: 'string'},
     is_anonymous: {type: 'boolean'},
+    is_admin: {type: 'boolean'},
     is_approved: {
       type: 'boolean',
       description:
@@ -91,6 +117,13 @@ const authorSubResourceSchema = {
   additionalProperties: true
 };
 
+const authorProfileSchema = {
+  ...authorSubResourceSchema,
+  description:
+    'Public author profile, including the public contact email address.',
+  properties: {email: {type: 'string', format: 'email'}}
+};
+
 const pageParam = {
   name: 'page',
   in: 'query',
@@ -109,6 +142,13 @@ const formatParam = {
   schema: {type: 'string', enum: ['json', 'md', 'markdown']},
   description:
     'Overrides the Accept header. "md"/"markdown" returns text/markdown instead of JSON.'
+};
+const langParam = {
+  name: 'lang',
+  in: 'query',
+  schema: {type: 'string', enum: ['id', 'ja', 'zh', 'ko']},
+  description:
+    'Return an AI-translated version of the post (Indonesian, Japanese, Simplified Chinese, or Korean). Falls back to English (with `language: "en"` in the response) if that translation is not yet available -- never a 404. An unrecognized value returns 400 BLOG_INVALID_LANG.'
 };
 
 const errorResponses = {
@@ -156,7 +196,8 @@ export const openapiSpec = {
       BlogPostDetail: blogPostDetailSchema,
       Comment: commentSchema,
       SearchResult: searchResultSchema,
-      AuthorSubResource: authorSubResourceSchema
+      AuthorSubResource: authorSubResourceSchema,
+      AuthorProfile: authorProfileSchema
     }
   },
   paths: {
@@ -199,7 +240,8 @@ export const openapiSpec = {
           },
           pageParam,
           limitParam(20, 100),
-          formatParam
+          formatParam,
+          langParam
         ],
         responses: {
           '200': {
@@ -218,6 +260,7 @@ export const openapiSpec = {
               'text/markdown': {schema: {type: 'string'}}
             }
           },
+          '400': errorResponses['400'],
           '500': errorResponses['500']
         }
       }
@@ -233,16 +276,28 @@ export const openapiSpec = {
             schema: {type: 'string'},
             description: 'A post UUID or its slug.'
           },
-          formatParam
+          {
+            name: 'format',
+            in: 'query',
+            schema: {
+              type: 'string',
+              enum: ['json', 'md', 'markdown', 'text', 'txt']
+            },
+            description:
+              'Overrides the Accept header. "md"/"markdown" returns text/markdown; "text"/"txt" returns text/plain.'
+          },
+          langParam
         ],
         responses: {
           '200': {
             description: 'OK',
             content: {
               'application/json': {schema: blogPostDetailSchema},
-              'text/markdown': {schema: {type: 'string'}}
+              'text/markdown': {schema: {type: 'string'}},
+              'text/plain': {schema: {type: 'string'}}
             }
           },
+          '400': errorResponses['400'],
           '404': errorResponses['404']
         }
       }
@@ -270,7 +325,7 @@ export const openapiSpec = {
                 schema: {
                   type: 'object',
                   properties: {
-                    profile: authorSubResourceSchema,
+                    profile: authorProfileSchema,
                     cv: authorSubResourceSchema,
                     funding: authorSubResourceSchema,
                     contact: authorSubResourceSchema,
@@ -386,11 +441,11 @@ export const openapiSpec = {
               'text/plain': {schema: {type: 'string'}}
             }
           },
-          '302': {
-            description:
-              'Redirects to the CDN URL if the file could not be proxied.'
-          },
-          '404': {description: 'No active CV document is configured.'}
+          '404': {description: 'No active CV document is configured.'},
+          '502': {
+            description: 'Failed to fetch the CV file from storage.',
+            content: {'application/json': {schema: errorSchema}}
+          }
         }
       }
     },

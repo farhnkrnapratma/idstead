@@ -39,17 +39,16 @@
   }
 </script>
 
-<div class={cn('flex items-center gap-1.5', className)}>
-  <div class="relative inline-block">
+<div class={cn('flex w-full items-center gap-1.5 sm:w-auto', className)}>
+  <div class="relative inline-block min-w-0 flex-1 sm:flex-initial">
     <DropdownTrigger
+      fullWidth
+      labelPrefix="Sort by"
       ariaLabel="Sort by: {currentFieldOption?.label ?? 'Select'}"
       {isOpen}
       onclick={() => (isOpen = !isOpen)}
       options={fields}>
-      <span class="inline-flex min-w-0 items-center gap-1.5 truncate">
-        <span class="truncate"
-          >{currentFieldOption?.label ?? 'Sort field'}</span>
-      </span>
+      {currentFieldOption?.label ?? 'Sort field'}
     </DropdownTrigger>
 
     {#if isOpen}
@@ -62,7 +61,7 @@
       <div
         role="listbox"
         aria-label="Sort options"
-        class="absolute top-[calc(100%+8px)] left-0 z-40 flex w-max min-w-full flex-col rounded-sm glass-overlay p-0 shadow-xl">
+        class="absolute inset-x-0 top-[calc(100%+8px)] z-40 flex w-full flex-col popover-surface p-0">
         <div class="relative z-10 flex flex-col overflow-hidden rounded-sm">
           {#each fields as field (field.value)}
             <button
@@ -71,7 +70,7 @@
               aria-selected={currentField === field.value}
               onclick={() => selectField(field.value)}
               class={cn(
-                'flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-2 text-left text-xs font-medium transition-colors',
+                'flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-2 text-left font-sans-title text-xs font-medium transition-colors',
                 currentField === field.value ?
                   'bg-copilot/10 font-semibold text-copilot'
                 : 'text-text-primary hover:bg-surface-hover hover:text-copilot'
@@ -96,7 +95,7 @@
     )}
     size="sm"
     onclick={onDirectionToggle}
-    class="border-border-subtle bg-surface-card text-text-secondary shadow-2xs hover:text-text-primary">
+    class="shrink-0 text-text-secondary hover:text-copilot">
     {#if currentDirection === 'asc'}
       <ArrowUpNarrowWide class="size-4" />
     {:else}

@@ -78,7 +78,7 @@ export function formatReadTime(readTimeInput?: string | number | null): string {
       minutes = Math.max(1, parseInt(matched[0], 10));
     }
   }
-  return minutes > 1 ? `${minutes} mins read` : `${minutes} min read`;
+  return `${minutes} min read`;
 }
 
 export function formatCommentCount(count?: number | null): string {
@@ -92,16 +92,18 @@ export function formatViewCount(count?: number | null): string {
 }
 
 export function formatAbsoluteDate(
-  input: string | Date | null | undefined
+  input: string | Date | null | undefined,
+  monthFormat: 'long' | 'short' = 'short',
+  includeYear: boolean = false
 ): string {
   if (!input) return '';
   const date = typeof input === 'string' ? new Date(input) : input;
   if (isNaN(date.getTime())) return '';
   const isCurrentYear = date.getFullYear() === new Date().getFullYear();
   return date.toLocaleDateString('en-US', {
-    month: 'long',
+    month: monthFormat,
     day: 'numeric',
-    ...(isCurrentYear ? {} : {year: 'numeric'})
+    ...(includeYear || !isCurrentYear ? {year: 'numeric'} : {})
   });
 }
 

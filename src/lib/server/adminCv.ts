@@ -3,6 +3,8 @@ import {
   PutObjectCommand,
   DeleteObjectCommand
 } from '@aws-sdk/client-s3';
+import {env as privateEnv} from '$env/dynamic/private';
+import {env as publicEnv} from '$env/dynamic/public';
 import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
 import {supabase as publicSupabase} from '$lib/supabase';
 import {
@@ -18,15 +20,27 @@ function getAdminDb(platform?: unknown) {
 }
 
 function getR2Credentials(platform?: any) {
-  const accountId = platform?.env?.R2_ACCOUNT_ID ?? process.env.R2_ACCOUNT_ID;
+  const accountId =
+    platform?.env?.R2_ACCOUNT_ID
+    ?? privateEnv.R2_ACCOUNT_ID
+    ?? process.env.R2_ACCOUNT_ID;
   const accessKeyId =
-    platform?.env?.R2_ACCESS_KEY_ID ?? process.env.R2_ACCESS_KEY_ID;
+    platform?.env?.R2_ACCESS_KEY_ID
+    ?? privateEnv.R2_ACCESS_KEY_ID
+    ?? process.env.R2_ACCESS_KEY_ID;
   const secretAccessKey =
-    platform?.env?.R2_SECRET_ACCESS_KEY ?? process.env.R2_SECRET_ACCESS_KEY;
+    platform?.env?.R2_SECRET_ACCESS_KEY
+    ?? privateEnv.R2_SECRET_ACCESS_KEY
+    ?? process.env.R2_SECRET_ACCESS_KEY;
   const bucketName =
-    platform?.env?.R2_BUCKET_NAME ?? process.env.R2_BUCKET_NAME;
+    platform?.env?.R2_BUCKET_NAME
+    ?? privateEnv.R2_BUCKET_NAME
+    ?? process.env.R2_BUCKET_NAME;
   const rawCdnUrl =
-    platform?.env?.PUBLIC_CDN_BASE_URL || process.env.PUBLIC_CDN_BASE_URL || '';
+    platform?.env?.PUBLIC_CDN_BASE_URL
+    || publicEnv.PUBLIC_CDN_BASE_URL
+    || process.env.PUBLIC_CDN_BASE_URL
+    || '';
   const cdnUrl = rawCdnUrl.trim().replace(/\/+$/, '');
 
   if (
@@ -49,6 +63,10 @@ function jsonResponse(body: unknown, status = 200) {
   });
 }
 
+function fail(message: string, status = 500) {
+  return jsonResponse({success: false, message}, status);
+}
+
 function decodeHtmlEntities(str: string): string {
   if (!str) return '';
   return str
@@ -60,7 +78,7 @@ function decodeHtmlEntities(str: string): string {
     .replace(/&gt;/g, '>');
 }
 
-async function requireAdminAuth(
+export async function requireAdminAuth(
   req: Request,
   platform?: unknown
 ): Promise<Response | null> {
@@ -379,13 +397,7 @@ export async function processCvGenerate(
         });
 
       if (storageError) {
-        return jsonResponse(
-          {
-            success: false,
-            message: `Failed to upload storage file: ${storageError.message}`
-          },
-          500
-        );
+        return fail('Failed to upload CV file.');
       }
 
       await db.storage
@@ -417,13 +429,7 @@ export async function processCvGenerate(
       });
 
     if (insertError) {
-      return jsonResponse(
-        {
-          success: false,
-          message: `Failed to save database record: ${insertError.message}`
-        },
-        500
-      );
+      return fail('Failed to save CV record.');
     }
 
     return jsonResponse(
@@ -439,13 +445,7 @@ export async function processCvGenerate(
     );
   } catch (err: any) {
     console.error('Unhandled processCvGenerate error:', err);
-    return jsonResponse(
-      {
-        success: false,
-        message: err?.message || 'Failed to auto-generate CV document.'
-      },
-      500
-    );
+    return fail('Failed to auto-generate CV document.');
   }
 }
 
@@ -547,24 +547,12 @@ export async function processCvDelete(
       .eq('filename', filename);
 
     if (deleteError) {
-      return jsonResponse(
-        {
-          success: false,
-          message: `Failed to remove database record: ${deleteError.message}`
-        },
-        500
-      );
+      return fail('Failed to remove CV record.');
     }
 
     return jsonResponse({success: true, filename}, 200);
   } catch (err: any) {
     console.error('Unhandled processCvDelete error:', err);
-    return jsonResponse(
-      {
-        success: false,
-        message: err?.message || 'Failed to delete CV document.'
-      },
-      500
-    );
+    return fail('Failed to delete CV document.');
   }
 }

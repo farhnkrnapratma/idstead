@@ -146,3 +146,46 @@ function createA11yStore() {
 }
 
 export const a11yStore = createA11yStore();
+
+export const A11Y_TOGGLES: {
+  key:
+    | 'reduceMotion'
+    | 'solidSurfaces'
+    | 'highContrast'
+    | 'focusHighlight'
+    | 'dyslexicFont';
+  label: string;
+  description: string;
+  toggle: () => void;
+}[] = [
+  {
+    key: 'reduceMotion',
+    label: 'Reduce motion',
+    description: 'Stop animations and background motion',
+    toggle: a11yStore.toggleReduceMotion
+  },
+  {
+    key: 'solidSurfaces',
+    label: 'Solid surfaces',
+    description: 'Remove frosted-glass transparency',
+    toggle: a11yStore.toggleSolidSurfaces
+  },
+  {
+    key: 'highContrast',
+    label: 'High contrast text',
+    description: 'Increase text contrast ratios',
+    toggle: a11yStore.toggleHighContrast
+  },
+  {
+    key: 'focusHighlight',
+    label: 'Focus ring highlight',
+    description: 'High-visibility keyboard focus outline',
+    toggle: a11yStore.toggleFocusHighlight
+  },
+  {
+    key: 'dyslexicFont',
+    label: 'Dyslexic-friendly font',
+    description: 'Use a more legible font stack',
+    toggle: a11yStore.toggleDyslexicFont
+  }
+];

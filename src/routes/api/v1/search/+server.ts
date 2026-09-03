@@ -2,6 +2,8 @@ import {supabase} from '$lib/supabase';
 import {json} from '@sveltejs/kit';
 import type {RequestHandler} from './$types';
 
+import {escapePostgrestFilter} from '$lib/server/postgrestSanitize';
+
 export interface SearchResult {
   type: 'post' | 'project';
   title: string;
@@ -16,11 +18,14 @@ export const GET: RequestHandler = async ({url}) => {
   const limit = Math.min(Math.max(1, limitParam), 20);
 
   if (q.length < 2) {
-    return json({query: q, data: [], pagination: {limit, returned: 0}});
+    return json(
+      {query: q, data: [], pagination: {limit, returned: 0}},
+      {headers: {'Cache-Control': 'public, max-age=3600, s-maxage=86400'}}
+    );
   }
 
   const results: SearchResult[] = [];
-  const normalizedQuery = q.replace(/[,().\n\r\t]/g, ' ').trim();
+  const normalizedQuery = escapePostgrestFilter(q);
 
   const {data: posts, error: postsError} = await supabase
     .from('db_posts')
@@ -41,9 +46,8 @@ export const GET: RequestHandler = async ({url}) => {
     }
   }
 
-  return json({
-    query: q,
-    data: results,
-    pagination: {limit, returned: results.length}
-  });
+  return json(
+    {query: q, data: results, pagination: {limit, returned: results.length}},
+    {headers: {'Cache-Control': 'public, max-age=3600, s-maxage=86400'}}
+  );
 };

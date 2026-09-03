@@ -1229,16 +1229,28 @@
       "source_location": "L425"
     },
     {
-      "id": "src_lib_author_fetchfundinglinks",
-      "label": "fetchFundingLinks()",
+      "id": "src_lib_author_fetchgroupedskills",
+      "label": "fetchGroupedSkills()",
       "_callable": true,
       "_origin": "ast",
       "community": 12,
       "community_name": "authorApi.ts",
       "file_type": "code",
-      "norm_label": "fetchfundinglinks()",
+      "norm_label": "fetchgroupedskills()",
       "source_file": "src/lib/author.ts",
-      "source_location": "L461"
+      "source_location": "L346"
+    },
+    {
+      "id": "src_lib_author_fetchskills",
+      "label": "fetchSkills()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "authorApi.ts",
+      "file_type": "code",
+      "norm_label": "fetchskills()",
+      "source_file": "src/lib/author.ts",
+      "source_location": "L322"
     },
     {
       "id": "src_lib_author_fetchsocials",
@@ -1251,18 +1263,6 @@
       "norm_label": "fetchsocials()",
       "source_file": "src/lib/author.ts",
       "source_location": "L296"
-    },
-    {
-      "id": "src_lib_author_fetchsponsorship",
-      "label": "fetchSponsorship()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 12,
-      "community_name": "authorApi.ts",
-      "file_type": "code",
-      "norm_label": "fetchsponsorship()",
-      "source_file": "src/lib/author.ts",
-      "source_location": "L433"
     },
     {
       "id": "src_lib_authorapi_generateauthormarkdown",
@@ -1325,18 +1325,6 @@
       "source_location": "L7"
     },
     {
-      "id": "src_routes_api_v1_author_funding_server_get",
-      "label": "GET()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 12,
-      "community_name": "authorApi.ts",
-      "file_type": "code",
-      "norm_label": "get()",
-      "source_file": "src/routes/api/v1/author/funding/+server.ts",
-      "source_location": "L7"
-    },
-    {
       "id": "src_routes_api_v1_author_server_get",
       "label": "GET()",
       "_callable": true,
@@ -1347,6 +1335,18 @@
       "norm_label": "get()",
       "source_file": "src/routes/api/v1/author/+server.ts",
       "source_location": "L4"
+    },
+    {
+      "id": "src_routes_api_v1_author_skills_server_get",
+      "label": "GET()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "authorApi.ts",
+      "file_type": "code",
+      "norm_label": "get()",
+      "source_file": "src/routes/api/v1/author/skills/+server.ts",
+      "source_location": "L7"
     },
     {
       "id": "src_routes_api_v1_author_socials_server_get",
@@ -2834,7 +2834,7 @@
       "file_type": "code",
       "norm_label": "applyprefs()",
       "source_file": "src/lib/utils/codeBlocks.ts",
-      "source_location": "L572"
+      "source_location": "L571"
     },
     {
       "id": "src_lib_utils_codeblocks_enhancecodeblocks_closekebab",
@@ -2870,7 +2870,7 @@
       "file_type": "code",
       "norm_label": "updatecustomscrollbar()",
       "source_file": "src/lib/utils/codeBlocks.ts",
-      "source_location": "L489"
+      "source_location": "L488"
     },
     {
       "id": "src_lib_utils_codeblocks_ensuresitethemeobserver",
@@ -3761,28 +3761,28 @@
       "source_location": "L360"
     },
     {
-      "id": "src_lib_author_fetchgroupedskills",
-      "label": "fetchGroupedSkills()",
+      "id": "src_lib_author_fetchfundinglinks",
+      "label": "fetchFundingLinks()",
       "_callable": true,
       "_origin": "ast",
       "community": 9,
       "community_name": "author.ts",
       "file_type": "code",
-      "norm_label": "fetchgroupedskills()",
+      "norm_label": "fetchfundinglinks()",
       "source_file": "src/lib/author.ts",
-      "source_location": "L346"
+      "source_location": "L461"
     },
     {
-      "id": "src_lib_author_fetchskills",
-      "label": "fetchSkills()",
+      "id": "src_lib_author_fetchsponsorship",
+      "label": "fetchSponsorship()",
       "_callable": true,
       "_origin": "ast",
       "community": 9,
       "community_name": "author.ts",
       "file_type": "code",
-      "norm_label": "fetchskills()",
+      "norm_label": "fetchsponsorship()",
       "source_file": "src/lib/author.ts",
-      "source_location": "L322"
+      "source_location": "L433"
     },
     {
       "id": "src_lib_author_formatmonthabbrev",
@@ -3821,7 +3821,7 @@
       "source_location": "L229"
     },
     {
-      "id": "src_routes_api_v1_author_skills_server_get",
+      "id": "src_routes_api_v1_author_funding_server_get",
       "label": "GET()",
       "_callable": true,
       "_origin": "ast",
@@ -3829,7 +3829,7 @@
       "community_name": "author.ts",
       "file_type": "code",
       "norm_label": "get()",
-      "source_file": "src/routes/api/v1/author/skills/+server.ts",
+      "source_file": "src/routes/api/v1/author/funding/+server.ts",
       "source_location": "L7"
     },
     {
@@ -5808,17 +5808,6 @@
       "source_location": "L1"
     },
     {
-      "id": "src_routes_api_v1_author_funding_server",
-      "label": "funding/+server.ts",
-      "_origin": "ast",
-      "community": 12,
-      "community_name": "authorApi.ts",
-      "file_type": "code",
-      "norm_label": "funding/+server.ts",
-      "source_file": "src/routes/api/v1/author/funding/+server.ts",
-      "source_location": "L1"
-    },
-    {
       "id": "src_routes_api_v1_author_server",
       "label": "author/+server.ts",
       "_origin": "ast",
@@ -5827,6 +5816,17 @@
       "file_type": "code",
       "norm_label": "author/+server.ts",
       "source_file": "src/routes/api/v1/author/+server.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_routes_api_v1_author_skills_server",
+      "label": "skills/+server.ts",
+      "_origin": "ast",
+      "community": 12,
+      "community_name": "authorApi.ts",
+      "file_type": "code",
+      "norm_label": "skills/+server.ts",
+      "source_file": "src/routes/api/v1/author/skills/+server.ts",
       "source_location": "L1"
     },
     {
@@ -6853,26 +6853,26 @@
       "source_location": "L9"
     },
     {
-      "id": "package_devdependencies_commitlint_cli",
-      "label": "@commitlint/cli",
+      "id": "package_devdependencies_commitlint_config_conventional",
+      "label": "@commitlint/config-conventional",
       "_origin": "ast",
       "community": 144,
-      "community_name": "@commitlint/cli",
+      "community_name": "@commitlint/config-conventional",
       "file_type": "code",
-      "norm_label": "@commitlint/cli",
+      "norm_label": "@commitlint/config-conventional",
       "source_file": "package.json",
-      "source_location": "L17"
+      "source_location": "L18"
     },
     {
-      "id": "commitlint_cli",
-      "label": "@commitlint/cli",
+      "id": "commitlint_config_conventional",
+      "label": "@commitlint/config-conventional",
       "_origin": "ast",
       "community": 144,
-      "community_name": "@commitlint/cli",
+      "community_name": "@commitlint/config-conventional",
       "file_type": "concept",
-      "norm_label": "@commitlint/cli",
+      "norm_label": "@commitlint/config-conventional",
       "source_file": "package.json",
-      "source_location": "L17"
+      "source_location": "L18"
     },
     {
       "id": "package_devdependencies_typescript_eslint",
@@ -12265,15 +12265,15 @@
       "source_location": "L16"
     },
     {
-      "id": "package_devdependencies_commitlint_config_conventional",
-      "label": "@commitlint/config-conventional",
+      "id": "package_devdependencies_commitlint_cli",
+      "label": "@commitlint/cli",
       "_origin": "ast",
       "community": 5,
       "community_name": "devDependencies",
       "file_type": "code",
-      "norm_label": "@commitlint/config-conventional",
+      "norm_label": "@commitlint/cli",
       "source_file": "package.json",
-      "source_location": "L18"
+      "source_location": "L17"
     },
     {
       "id": "package_devdependencies_types_node",
@@ -12309,15 +12309,15 @@
       "source_location": "L42"
     },
     {
-      "id": "commitlint_config_conventional",
-      "label": "@commitlint/config-conventional",
+      "id": "commitlint_cli",
+      "label": "@commitlint/cli",
       "_origin": "ast",
       "community": 5,
       "community_name": "devDependencies",
       "file_type": "concept",
-      "norm_label": "@commitlint/config-conventional",
+      "norm_label": "@commitlint/cli",
       "source_file": "package.json",
-      "source_location": "L18"
+      "source_location": "L17"
     },
     {
       "id": "types_node",
@@ -15405,14 +15405,14 @@
       "source_location": "L1"
     },
     {
-      "id": "src_routes_api_v1_author_skills_server",
-      "label": "skills/+server.ts",
+      "id": "src_routes_api_v1_author_funding_server",
+      "label": "funding/+server.ts",
       "_origin": "ast",
       "community": 9,
       "community_name": "author.ts",
       "file_type": "code",
-      "norm_label": "skills/+server.ts",
-      "source_file": "src/routes/api/v1/author/skills/+server.ts",
+      "norm_label": "funding/+server.ts",
+      "source_file": "src/routes/api/v1/author/funding/+server.ts",
       "source_location": "L1"
     },
     {
@@ -19328,7 +19328,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/lib/utils/codeBlocks.ts",
-      "source_location": "L574",
+      "source_location": "L573",
       "weight": 1.0
     },
     {
@@ -19340,7 +19340,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/lib/utils/codeBlocks.ts",
-      "source_location": "L576",
+      "source_location": "L575",
       "weight": 1.0
     },
     {
@@ -19352,7 +19352,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/lib/utils/codeBlocks.ts",
-      "source_location": "L587",
+      "source_location": "L586",
       "weight": 1.0
     },
     {
@@ -19364,7 +19364,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/lib/utils/codeBlocks.ts",
-      "source_location": "L614",
+      "source_location": "L613",
       "weight": 1.0
     },
     {
@@ -20348,7 +20348,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/lib/utils/codeBlocks.ts",
-      "source_location": "L572",
+      "source_location": "L571",
       "weight": 1.0
     },
     {
@@ -37234,7 +37234,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "src/lib/utils/codeBlocks.ts",
-      "source_location": "L525",
+      "source_location": "L524",
       "weight": 1.0
     },
     {

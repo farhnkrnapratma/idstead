@@ -227,7 +227,7 @@
                 || item.alt
                 || item.title
                 || 'logo link'}
-              class="group inline-flex items-center rounded-xs transition-opacity duration-200 hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-copilot">
+              class="group inline-flex items-center rounded-sm transition-opacity duration-200 hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-copilot">
               <img
                 src={item.src}
                 srcset={item.srcSet}
@@ -321,7 +321,7 @@
                       || item.alt
                       || item.title
                       || 'logo link'}
-                    class="group inline-flex items-center rounded-xs transition-opacity duration-200 hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-copilot">
+                    class="group inline-flex items-center rounded-sm transition-opacity duration-200 hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-copilot">
                     <img
                       src={item.src}
                       srcset={item.srcSet}
@@ -383,7 +383,7 @@
                       || item.alt
                       || item.title
                       || 'logo link'}
-                    class="group inline-flex items-center rounded-xs transition-opacity duration-200 hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-copilot">
+                    class="group inline-flex items-center rounded-sm transition-opacity duration-200 hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-copilot">
                     <img
                       src={item.src}
                       srcset={item.srcSet}

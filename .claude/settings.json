@@ -80,5 +80,8 @@
       }
     ]
   },
-  "enabledPlugins": {"typescript-lsp@claude-plugins-official": true}
+  "enabledPlugins": {
+    "typescript-lsp@claude-plugins-official": true,
+    "ponytail@ponytail": true
+  }
 }

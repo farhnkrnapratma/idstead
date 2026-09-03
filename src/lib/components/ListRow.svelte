@@ -34,7 +34,7 @@
     {target}
     {rel}
     class={cn(
-      'group flex items-center justify-between gap-3 px-4 py-2.5 transition-colors hover:bg-surface-hover',
+      'group flex items-center justify-between gap-3 px-3 py-2 transition-colors hover:bg-surface-hover',
       className
     )}>
     <div class="flex min-w-0 shrink-0 items-center gap-3">
@@ -58,7 +58,7 @@
 {:else}
   <div
     class={cn(
-      'flex items-center justify-between gap-3 px-4 py-2.5 transition-colors hover:bg-surface-hover',
+      'flex items-center justify-between gap-3 px-3 py-2 transition-colors hover:bg-surface-hover',
       className
     )}>
     <div class="flex min-w-0 shrink-0 items-center gap-3">

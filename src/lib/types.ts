@@ -27,8 +27,11 @@ export interface Post {
   views_count?: number | null;
   comment_count?: number | null;
   banner_path?: string | null;
-  published: boolean;
+  collaborators?: string[] | null;
+  published?: boolean;
 }
+
+export type BlogPost = Post;
 
 export interface Comment {
   id: string;
@@ -37,14 +40,9 @@ export interface Comment {
   author_name: string;
   content: string;
   is_anonymous: boolean;
+  is_admin?: boolean;
   is_approved: boolean;
   created_at: string;
-}
-
-export interface ProjectLanguage {
-  name: string;
-  percent: number;
-  color: string;
 }
 
 export interface Project {
@@ -57,12 +55,24 @@ export interface Project {
   sshUrl: string;
   zipUrl: string;
   lang?: string;
+  langColor?: string;
   stars: number;
   forks: number;
   branches: number;
   commits: number;
-  languages: ProjectLanguage[];
+  latestCommitSha?: string;
   pushedAt: string | null;
   licenseName: string | null;
   licenseUrl: string | null;
+}
+
+export interface FormFieldContext {
+  id?: string;
+  label?: string;
+  required?: boolean;
+  hideAsterisk?: boolean;
+  variant?: 'standard' | 'floating';
+  error?: string;
+  valid?: boolean;
+  counter?: string;
 }

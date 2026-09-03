@@ -13,6 +13,8 @@
     options: Option[];
     value: string;
     onChange?: (val: string) => void;
+    dropdownPlacement?: 'left' | 'right';
+    popoverSpan?: 'self' | '2cols-left';
     class?: string;
   }
 
@@ -21,6 +23,8 @@
     options = [],
     value,
     onChange = () => {},
+    dropdownPlacement = 'left',
+    popoverSpan = 'self',
     class: className = ''
   }: Props = $props();
 
@@ -38,53 +42,55 @@
 
 <div
   class={cn(
-    'inline-flex items-center gap-2 select-none',
+    'relative w-full select-none sm:w-auto',
     isOpen ? 'z-50' : 'z-20',
     className
   )}>
-  <span class="text-xs font-medium whitespace-nowrap text-text-secondary"
-    >{label}</span>
+  <DropdownTrigger
+    ariaLabel="{label}: {displayLabel}"
+    labelPrefix={label}
+    {options}
+    {isOpen}
+    onclick={() => (isOpen = !isOpen)}>
+    {displayLabel}
+  </DropdownTrigger>
 
-  <div class="relative">
-    <DropdownTrigger
-      ariaLabel="{label}: {displayLabel}"
-      {options}
-      {isOpen}
-      onclick={() => (isOpen = !isOpen)}>
-      {displayLabel}
-    </DropdownTrigger>
+  {#if isOpen}
+    <button
+      type="button"
+      class="fixed inset-0 z-40 cursor-default"
+      onclick={() => (isOpen = false)}
+      aria-label="Close {label} filter"></button>
 
-    {#if isOpen}
-      <button
-        type="button"
-        class="fixed inset-0 z-40 cursor-default"
-        onclick={() => (isOpen = false)}
-        aria-label="Close {label} filter"></button>
-
-      <div
-        role="listbox"
-        aria-label="{label} options"
-        class="absolute top-[calc(100%+8px)] left-1/2 z-60 flex w-full w-max min-w-full -translate-x-1/2 flex-col rounded-sm glass-overlay p-0 shadow-xl">
-        <div class="relative z-10 flex flex-col overflow-hidden rounded-sm">
-          {#each options as option (option.value)}
-            <button
-              type="button"
-              role="option"
-              aria-selected={option.value === value}
-              onclick={() => select(option.value)}
-              class="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-xs font-medium transition-colors {(
-                option.value === value
-              ) ?
-                'bg-copilot/10 text-copilot'
-              : 'text-text-primary hover:bg-surface-hover'}">
-              <span>{option.label}</span>
-              {#if option.value === value}
-                <Check class="size-3.5 shrink-0 text-copilot" />
-              {/if}
-            </button>
-          {/each}
-        </div>
+    <div
+      role="listbox"
+      aria-label="{label} options"
+      class={cn(
+        'absolute top-[calc(100%+8px)] z-60 flex flex-col popover-surface p-0',
+        popoverSpan === '2cols-left' ?
+          'left-0 w-[calc(200%+0.625rem)] sm:inset-x-0 sm:w-full'
+        : 'inset-x-0 w-full'
+      )}>
+      <div class="relative z-10 flex flex-col overflow-hidden rounded-sm">
+        {#each options as option (option.value)}
+          <button
+            type="button"
+            role="option"
+            aria-selected={option.value === value}
+            onclick={() => select(option.value)}
+            class={cn(
+              'flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-2 text-left font-sans-title text-xs font-medium transition-colors',
+              option.value === value ?
+                'bg-copilot/10 font-semibold text-copilot'
+              : 'text-text-primary hover:bg-surface-hover hover:text-copilot'
+            )}>
+            <span class="truncate">{option.label}</span>
+            {#if option.value === value}
+              <Check class="size-3.5 shrink-0 text-copilot" />
+            {/if}
+          </button>
+        {/each}
       </div>
-    {/if}
-  </div>
+    </div>
+  {/if}
 </div>

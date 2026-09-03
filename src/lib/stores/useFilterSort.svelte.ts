@@ -1,6 +1,5 @@
 import {replaceState} from '$app/navigation';
 import {SvelteURL} from 'svelte/reactivity';
-import {withViewTransition} from '../utils/viewTransition';
 
 export interface SortState {
   field: string;
@@ -65,40 +64,19 @@ export function createFilterSortStore(options: FilterSortOptions = {}) {
   }
 
   function setSingleFilter(type: string, value: string) {
-    withViewTransition(() => {
-      if (!value || value === 'all') {
-        const next = {...filters};
-        delete next[type];
-        filters = next;
-      } else {
-        filters = {...filters, [type]: [value]};
-      }
-      syncToUrl();
-    }, 'context');
+    if (!value || value === 'all') {
+      const next = {...filters};
+      delete next[type];
+      filters = next;
+    } else {
+      filters = {...filters, [type]: [value]};
+    }
+    syncToUrl();
   }
 
   function toggleMultiFilter(type: string, value: string) {
-    withViewTransition(() => {
-      const current = filters[type] || [];
-      if (current.includes(value)) {
-        const nextArr = current.filter(v => v !== value);
-        if (nextArr.length === 0) {
-          const next = {...filters};
-          delete next[type];
-          filters = next;
-        } else {
-          filters = {...filters, [type]: nextArr};
-        }
-      } else {
-        filters = {...filters, [type]: [...current, value]};
-      }
-      syncToUrl();
-    }, 'context');
-  }
-
-  function removeFilter(type: string, value: string) {
-    withViewTransition(() => {
-      const current = filters[type] || [];
+    const current = filters[type] || [];
+    if (current.includes(value)) {
       const nextArr = current.filter(v => v !== value);
       if (nextArr.length === 0) {
         const next = {...filters};
@@ -107,40 +85,49 @@ export function createFilterSortStore(options: FilterSortOptions = {}) {
       } else {
         filters = {...filters, [type]: nextArr};
       }
-      syncToUrl();
-    }, 'context');
+    } else {
+      filters = {...filters, [type]: [...current, value]};
+    }
+    syncToUrl();
+  }
+
+  function removeFilter(type: string, value: string) {
+    const current = filters[type] || [];
+    const nextArr = current.filter(v => v !== value);
+    if (nextArr.length === 0) {
+      const next = {...filters};
+      delete next[type];
+      filters = next;
+    } else {
+      filters = {...filters, [type]: nextArr};
+    }
+    syncToUrl();
   }
 
   function clearAllFilters() {
-    withViewTransition(() => {
-      search = '';
-      filters = {};
-      sort = {...defaultSort};
-      syncToUrl();
-    }, 'context');
+    search = '';
+    filters = {};
+    sort = {...defaultSort};
+    syncToUrl();
   }
 
   function setSort(field: string, direction?: 'asc' | 'desc') {
-    withViewTransition(() => {
-      if (direction) {
-        sort = {field, direction};
-      } else {
-        const nextDir =
-          sort.field === field && sort.direction === 'desc' ? 'asc' : 'desc';
-        sort = {field, direction: nextDir};
-      }
-      syncToUrl();
-    }, 'context');
+    if (direction) {
+      sort = {field, direction};
+    } else {
+      const nextDir =
+        sort.field === field && sort.direction === 'desc' ? 'asc' : 'desc';
+      sort = {field, direction: nextDir};
+    }
+    syncToUrl();
   }
 
   function toggleSortDirection() {
-    withViewTransition(() => {
-      sort = {
-        field: sort.field,
-        direction: sort.direction === 'asc' ? 'desc' : 'asc'
-      };
-      syncToUrl();
-    }, 'context');
+    sort = {
+      field: sort.field,
+      direction: sort.direction === 'asc' ? 'desc' : 'asc'
+    };
+    syncToUrl();
   }
 
   function syncToUrl() {

@@ -1,32 +1,69 @@
 <script lang="ts">
   import {fade} from 'svelte/transition';
+  import {page} from '$app/state';
   import {ArrowUp} from '@lucide/svelte';
   import {scrollToTop} from '$lib/utils/scroll';
+  import {scrollStore} from '../stores/scrollStore.svelte';
+  import Tooltip from './Tooltip.svelte';
+
+  const RING_RADIUS = 16;
+  const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
   interface Props {
     show?: boolean;
+    hasBottomNav?: boolean;
     class?: string;
   }
 
-  let {show = true, class: className = ''}: Props = $props();
+  let {show = true, hasBottomNav, class: className = ''}: Props = $props();
+
+  const isMainPage = $derived(
+    hasBottomNav !== undefined ? hasBottomNav : page.url.pathname === '/'
+  );
 </script>
 
 {#if show}
   <div
-    class="group fixed right-4 bottom-4 z-50 sm:right-6 sm:bottom-6 {className}">
-    <button
-      transition:fade={{duration: 150}}
-      class="inline-flex h-10 w-10 cursor-pointer items-center justify-center gap-2 rounded-sm glass-button px-0 text-xs font-semibold text-text-primary shadow-lg sm:w-auto sm:px-4 sm:text-sm"
-      onclick={() => scrollToTop('smooth')}
-      aria-label="Scroll to top">
-      <ArrowUp class="size-4 shrink-0" />
-      <span class="hidden sm:inline">Scroll to top</span>
-    </button>
-
-    <div
-      role="tooltip"
-      class="pointer-events-none absolute right-0 bottom-[calc(100%+6px)] z-70 rounded-sm glass-overlay px-2 py-1 text-3xs font-medium whitespace-nowrap text-text-primary opacity-0 shadow-lg transition-opacity duration-150 group-focus-within:opacity-100 group-hover:opacity-100 sm:hidden">
-      <span class="relative z-10">Scroll to top</span>
-    </div>
+    class="fixed right-3 z-40 md:right-6 md:bottom-6 {isMainPage ?
+      'bottom-[calc(4.25rem+env(safe-area-inset-bottom))]'
+    : 'bottom-[calc(0.75rem+env(safe-area-inset-bottom))]'} {className}">
+    <Tooltip
+      content="Scroll to top"
+      placement="top"
+      align="right">
+      <div class="relative inline-flex">
+        <button
+          transition:fade={{duration: 150}}
+          class="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full glass-button px-0 text-xs font-semibold text-text-primary shadow-md md:h-10 md:w-10 md:shadow-lg"
+          onclick={() => scrollToTop('smooth')}
+          aria-label="Scroll to top">
+          <ArrowUp class="size-4.5 shrink-0 md:size-5" />
+        </button>
+        <svg
+          class="pointer-events-none absolute inset-0 h-9 w-9 -rotate-90 md:h-10 md:w-10"
+          viewBox="0 0 36 36"
+          aria-hidden="true">
+          <circle
+            cx="18"
+            cy="18"
+            r={RING_RADIUS}
+            fill="none"
+            stroke="var(--color-border-subtle)"
+            stroke-width="2" />
+          <circle
+            cx="18"
+            cy="18"
+            r={RING_RADIUS}
+            fill="none"
+            stroke="var(--color-copilot)"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-dasharray={RING_CIRCUMFERENCE}
+            stroke-dashoffset={RING_CIRCUMFERENCE
+              * (1 - scrollStore.progress / 100)}
+            class="transition-[stroke-dashoffset] duration-300 ease-out" />
+        </svg>
+      </div>
+    </Tooltip>
   </div>
 {/if}

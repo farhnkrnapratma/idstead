@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-08-20T13:19:11.833399+00:00",
+  "generated_at": "2026-09-02T10:09:43.868866+00:00",
   "nodes": {
     "package": {
-      "code_fingerprint": "7372793fec55c427423833923f2ecfdf6e14d46fc572ca4d47ac971fb593654d",
+      "code_fingerprint": "d8d1569fe7f21bb4a3ddea59c6973d9c9b9b468a1c8c430ec7f08ed91b312f14",
       "label": "package.json",
       "last": "2026-08-19T11:24:58.309289+00:00",
       "provenance": [
@@ -12,13 +12,45 @@
           "q": "Mengapa saat bun run dev yang dibaca adalah .env? Bagaimana agar bun run dev menggunakan .env.production dan bun run dev:preview menggunakan .env.preview?"
         }
       ],
-      "score": 0.975370714,
+      "score": 0.724508748,
       "source_file": "package.json",
       "status": "tentative",
       "uses": 1
     },
+    "src_lib_components_markdowneditor": {
+      "code_fingerprint": "bf7d85279c53ffe166e97da9c96baf7941d58df129d0d45e908a666ebd8f29ef",
+      "label": "MarkdownEditor.svelte",
+      "last": "2026-09-02T10:08:24.672761+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-02T10:08:24.672761+00:00",
+          "outcome": "useful",
+          "q": "Fix statusline sticky and toolbar clipping beneath the admin navbar"
+        }
+      ],
+      "score": 0.999978822,
+      "source_file": "src/lib/components/MarkdownEditor.svelte",
+      "status": "tentative",
+      "uses": 1
+    },
+    "src_lib_components_topnav": {
+      "code_fingerprint": "1c7d75649425bd429cd12bdf4fbd5bca362f168f0e5a313837ca0b1ffacc03d1",
+      "label": "TopNav.svelte",
+      "last": "2026-09-02T10:08:24.672761+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-02T10:08:24.672761+00:00",
+          "outcome": "useful",
+          "q": "Fix statusline sticky and toolbar clipping beneath the admin navbar"
+        }
+      ],
+      "score": 0.999978822,
+      "source_file": "src/lib/components/TopNav.svelte",
+      "status": "tentative",
+      "uses": 1
+    },
     "src_lib_stores_a11ystore_svelte": {
-      "code_fingerprint": "628622c44ebc1a7cb9b203c48fad57faaa434f5410fb42aea7f88855f265074f",
+      "code_fingerprint": "4f8b737f2768a1767a2a2f1c2b9e6cbcd9b13e562730424d89b333f7525ac945",
       "label": "a11yStore.svelte.ts",
       "last": "2026-08-19T10:25:08.876469+00:00",
       "provenance": [
@@ -28,13 +60,13 @@
           "q": "Why does createA11yStore() connect to Security Auditing & Hardening?"
         }
       ],
-      "score": 0.974434926,
+      "score": 0.723813642,
       "source_file": "src/lib/stores/a11yStore.svelte.ts",
       "status": "tentative",
       "uses": 1
     },
     "src_lib_stores_a11ystore_svelte_createa11ystore": {
-      "code_fingerprint": "628622c44ebc1a7cb9b203c48fad57faaa434f5410fb42aea7f88855f265074f",
+      "code_fingerprint": "4f8b737f2768a1767a2a2f1c2b9e6cbcd9b13e562730424d89b333f7525ac945",
       "label": "createA11yStore()",
       "last": "2026-08-19T10:25:08.876469+00:00",
       "provenance": [
@@ -44,8 +76,24 @@
           "q": "Why does createA11yStore() connect to Security Auditing & Hardening?"
         }
       ],
-      "score": 0.974434926,
+      "score": 0.723813642,
       "source_file": "src/lib/stores/a11yStore.svelte.ts",
+      "status": "tentative",
+      "uses": 1
+    },
+    "src_routes_admin_layout_svelte_src_routes_admin_layout": {
+      "code_fingerprint": "8eaa352304a66694e1a72fe5dc97995fd2f6aa8c29969ac76c593ecf19f74e7d",
+      "label": "admin/+layout.svelte",
+      "last": "2026-09-02T10:08:24.672761+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-02T10:08:24.672761+00:00",
+          "outcome": "useful",
+          "q": "Fix statusline sticky and toolbar clipping beneath the admin navbar"
+        }
+      ],
+      "score": 0.999978822,
+      "source_file": "src/routes/admin/+layout.svelte",
       "status": "tentative",
       "uses": 1
     },
@@ -60,7 +108,7 @@
           "q": "Mengapa saat bun run dev yang dibaca adalah .env? Bagaimana agar bun run dev menggunakan .env.production dan bun run dev:preview menggunakan .env.preview?"
         }
       ],
-      "score": 0.975370714,
+      "score": 0.724508748,
       "source_file": "vite.config.ts",
       "status": "tentative",
       "uses": 1

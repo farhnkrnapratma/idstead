@@ -1,32 +1,39 @@
 <script lang="ts">
   import {fade} from 'svelte/transition';
   import {goto} from '$app/navigation';
-  import {Bug} from '@lucide/svelte';
+  import {page} from '$app/state';
+  import {MessageSquareWarning} from '@lucide/svelte';
+  import Tooltip from './Tooltip.svelte';
 
   interface Props {
     show?: boolean;
+    hasBottomNav?: boolean;
     class?: string;
   }
 
-  let {show = true, class: className = ''}: Props = $props();
+  let {show = true, hasBottomNav, class: className = ''}: Props = $props();
+
+  const isMainPage = $derived(
+    hasBottomNav !== undefined ? hasBottomNav : page.url.pathname === '/'
+  );
 </script>
 
 {#if show}
   <div
-    class="group fixed bottom-4 left-4 z-50 sm:bottom-6 sm:left-6 {className}">
-    <button
-      transition:fade={{duration: 150}}
-      class="inline-flex h-10 w-10 cursor-pointer items-center justify-center gap-2 rounded-sm glass-button px-0 text-xs font-semibold text-text-primary shadow-lg sm:w-auto sm:px-4 sm:text-sm"
-      onclick={() => goto('/feedback')}
-      aria-label="Report an issue or give feedback">
-      <Bug class="size-4 shrink-0" />
-      <span class="hidden sm:inline">Feedback</span>
-    </button>
-
-    <div
-      role="tooltip"
-      class="pointer-events-none absolute bottom-[calc(100%+6px)] left-0 z-70 rounded-sm glass-overlay px-2 py-1 text-3xs font-medium whitespace-nowrap text-text-primary opacity-0 shadow-lg transition-opacity duration-150 group-focus-within:opacity-100 group-hover:opacity-100 sm:hidden">
-      <span class="relative z-10">Feedback</span>
-    </div>
+    class="fixed left-3 z-40 md:bottom-6 md:left-6 {isMainPage ?
+      'bottom-[calc(4.25rem+env(safe-area-inset-bottom))]'
+    : 'bottom-[calc(0.75rem+env(safe-area-inset-bottom))]'} {className}">
+    <Tooltip
+      content="Feedback"
+      placement="top"
+      align="left">
+      <button
+        transition:fade={{duration: 150}}
+        class="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full glass-button px-0 text-xs font-semibold text-text-primary shadow-md md:h-10 md:w-10 md:shadow-lg"
+        onclick={() => goto('/feedback')}
+        aria-label="Report an issue or give feedback">
+        <MessageSquareWarning class="size-4.5 shrink-0 md:size-5" />
+      </button>
+    </Tooltip>
   </div>
 {/if}

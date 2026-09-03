@@ -17,7 +17,7 @@
 <div
   aria-hidden="true"
   class={cn(
-    'animate-pulse rounded-sm border border-border-subtle bg-surface-hover opacity-100 select-none',
+    'animate-pulse rounded-sm bg-black/[0.06] opacity-100 select-none dark:bg-white/[0.08]',
     height,
     width,
     className

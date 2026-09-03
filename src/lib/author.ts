@@ -48,6 +48,7 @@ export interface SocialLink {
   platform: string;
   url: string;
   icon: string;
+  description?: string;
   sortOrder?: number;
 }
 
@@ -67,6 +68,7 @@ export interface ContactInfo {
   displayValue: string;
   href: string;
   icon: string;
+  description?: string;
   sortOrder?: number;
 }
 
@@ -226,12 +228,51 @@ export function formatMonthAbbrev(month: string | null | undefined): string {
   );
 }
 
-export function sanitizeIconClass(
-  icon: string | undefined,
-  fallback = ''
-): string {
-  if (!icon || !icon.trim()) return fallback;
-  return icon.trim().replace(/[^a-zA-Z0-9_\-\s]/g, '');
+export function normalizeIconInput(raw: string | undefined | null): string {
+  const trimmed = (raw || '').trim();
+  if (!trimmed) return '';
+  if (trimmed.startsWith('<')) return trimmed;
+  if (/^[A-Z]/.test(trimmed)) return `<${trimmed} />`;
+
+  const cleaned = trimmed.replace(/[^a-zA-Z0-9_\-\s]/g, '');
+  if (cleaned.startsWith('bi bi-')) return cleaned;
+  if (cleaned.startsWith('bi-')) return `bi ${cleaned}`;
+  return `bi bi-${cleaned}`;
+}
+
+const ALLOWED_LUCIDE_PROPS = new Set([
+  'size',
+  'strokeWidth',
+  'absoluteStrokeWidth',
+  'color'
+]);
+
+export function parseLucideTag(
+  tag: string
+): {name: string; props: Record<string, string | number | boolean>} | null {
+  const inner = tag.trim().replace(/^<\/?|\/?>$/g, '');
+  const nameMatch = inner.match(/^[A-Za-z][A-Za-z0-9]*/);
+  if (!nameMatch) return null;
+
+  const name = nameMatch[0];
+  const rest = inner.slice(name.length);
+  const props: Record<string, string | number | boolean> = {};
+  const attrRe = /([a-zA-Z][a-zA-Z0-9]*)(?:=(?:\{([^}]*)\}|"([^"]*)"))?/g;
+  let m: RegExpExecArray | null;
+  while ((m = attrRe.exec(rest))) {
+    const [, attr, braced, quoted] = m;
+    if (!attr || !ALLOWED_LUCIDE_PROPS.has(attr)) continue;
+    if (braced === undefined && quoted === undefined) {
+      props[attr] = true;
+    } else {
+      const val = braced !== undefined ? braced.trim() : (quoted as string);
+      if (/^-?\d+(\.\d+)?$/.test(val)) props[attr] = Number(val);
+      else if (val === 'true' || val === 'false') props[attr] = val === 'true';
+      else props[attr] = val;
+    }
+  }
+
+  return {name, props};
 }
 
 export async function fetchAuthorProfile(
@@ -260,12 +301,11 @@ export async function fetchAuthorProfile(
       id: data.id,
       name: rawName,
       username: decodeHtmlEntities(data.username || ''),
+      email: options?.includeEmail ? decodeHtmlEntities(data.email || '') : '',
       headline: decodeHtmlEntities(data.headline || ''),
       jobTitle: decodeHtmlEntities(data.job_title || ''),
       bio: decodeHtmlEntities(data.bio || ''),
       avatar: decodeHtmlEntities(data.avatar || ''),
-
-      email: options?.includeEmail ? decodeHtmlEntities(data.email || '') : '',
       city,
       postalCode,
       country,
@@ -312,8 +352,28 @@ export async function fetchSocials(
       platform: item.platform,
       url: item.url,
       icon: item.icon || '',
+      description: decodeHtmlEntities(item.description || ''),
       sortOrder: item.sort_order
     }));
+  } catch (e) {
+    return [];
+  }
+}
+
+export async function fetchGlossaryTerms(
+  supabaseClient?: any
+): Promise<string[]> {
+  if (!supabaseClient) return [];
+
+  try {
+    const {data, error} = await supabaseClient
+      .from('db_glossary_terms')
+      .select('term')
+      .order('sort_order', {ascending: true});
+
+    if (error || !data) return [];
+
+    return data.map((item: any) => item.term);
   } catch (e) {
     return [];
   }
@@ -414,12 +474,19 @@ export async function fetchEducation(
       endYear: item.end_year ?? null,
       currentlyIn: item.currently_in ?? false,
       grade: decodeHtmlEntities(item.grade || ''),
+      activities: decodeHtmlEntities(item.activities || ''),
       description: decodeHtmlEntities(item.description || ''),
       sortOrder: item.sort_order
     }));
   } catch (e) {
     return [];
   }
+}
+
+export async function fetchEducations(
+  supabaseClient?: any
+): Promise<EducationItem[]> {
+  return fetchEducation(supabaseClient);
 }
 
 export async function fetchCvEntries(
@@ -449,7 +516,7 @@ export async function fetchSponsorship(
       platform: decodeHtmlEntities(item.platform || ''),
       displayValue: decodeHtmlEntities(item.display_value || ''),
       url: decodeHtmlEntities(item.url || ''),
-      icon: item.icon || '',
+      icon: decodeHtmlEntities(item.icon || ''),
       description: decodeHtmlEntities(item.description || ''),
       sortOrder: item.sort_order
     }));
@@ -483,7 +550,8 @@ export async function fetchContactInfo(
       platform: decodeHtmlEntities(item.platform || item.label || ''),
       displayValue: decodeHtmlEntities(item.display_value || item.value || ''),
       href: decodeHtmlEntities(item.url || item.href || ''),
-      icon: item.icon || '',
+      icon: decodeHtmlEntities(item.icon || ''),
+      description: decodeHtmlEntities(item.description || ''),
       sortOrder: item.sort_order
     }));
   } catch (e) {

@@ -2,9 +2,9 @@ import {env as privateEnv} from '$env/dynamic/private';
 import {S3Client, ListObjectsV2Command} from '@aws-sdk/client-s3';
 import {supabase} from '$lib/supabase';
 import type {PageServerLoad} from './$types';
-import type {Project, ProjectLanguage} from '$lib/types';
-import {getLanguageColor} from '$lib/utils/githubLanguageColors';
+import type {Project} from '$lib/types';
 import {decodeHtmlEntities} from '$lib/utils/formatters';
+import {fetchProjects, extractGitHubUsername} from '$lib/server/githubProjects';
 import {
   fetchAuthorProfileWithSocials,
   fetchCvEntries,
@@ -13,31 +13,6 @@ import {
   fetchGroupedSkills,
   fetchActiveCvDocument
 } from '$lib/author';
-
-interface GitHubRepo {
-  name: string;
-  full_name: string;
-  description: string | null;
-  html_url: string;
-  clone_url: string;
-  ssh_url: string;
-  default_branch: string;
-  language: string | null;
-  stargazers_count: number;
-  forks_count: number;
-  pushed_at: string | null;
-  topics: string[];
-  fork: boolean;
-  archived: boolean;
-  license: {key: string; name: string; spdx_id: string; url: string} | null;
-}
-
-function getLastPageCount(res: Response, fallbackCount: number): number {
-  const link = res.headers.get('link');
-  if (!link) return fallbackCount;
-  const match = link.match(/[?&]page=(\d+)>;\s*rel="last"/);
-  return match ? parseInt(match[1], 10) : fallbackCount;
-}
 
 interface LogoCatalogItem {
   name: string;
@@ -129,55 +104,6 @@ async function fetchLogoCatalog(): Promise<LogoCatalogItem[]> {
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-async function fetchRepoExtras(
-  fullName: string,
-  headers: Record<string, string>,
-  fetchFn: typeof fetch
-): Promise<{branches: number; commits: number; languages: ProjectLanguage[]}> {
-  const base = `https://api.github.com/repos/${fullName}`;
-
-  const [branchesRes, commitsRes, languagesRes] = await Promise.all([
-    fetchFn(`${base}/branches?per_page=1`, {headers}),
-    fetchFn(`${base}/commits?per_page=1`, {headers}),
-    fetchFn(`${base}/languages`, {headers})
-  ]);
-
-  let branches = 0;
-  if (branchesRes.ok) {
-    const body = await branchesRes.json();
-    branches = getLastPageCount(
-      branchesRes,
-      Array.isArray(body) ? body.length : 0
-    );
-  }
-
-  let commits = 0;
-  if (commitsRes.ok) {
-    const body = await commitsRes.json();
-    commits = getLastPageCount(
-      commitsRes,
-      Array.isArray(body) ? body.length : 0
-    );
-  }
-
-  let languages: ProjectLanguage[] = [];
-  if (languagesRes.ok) {
-    const bytesByLang: Record<string, number> = await languagesRes.json();
-    const total = Object.values(bytesByLang).reduce((sum, b) => sum + b, 0);
-    if (total > 0) {
-      languages = Object.entries(bytesByLang)
-        .map(([name, bytes]) => ({
-          name,
-          percent: Math.round((bytes / total) * 1000) / 10,
-          color: getLanguageColor(name)
-        }))
-        .sort((a, b) => b.percent - a.percent);
-    }
-  }
-
-  return {branches, commits, languages};
-}
-
 export interface BlogPost {
   id: string;
   title: string;
@@ -193,22 +119,6 @@ export interface BlogPost {
   comment_count?: number;
   views_count?: number;
   tags?: string[];
-}
-
-function extractGitHubUsername(author: any): string {
-  if (author?.username && typeof author.username === 'string') {
-    return author.username.trim();
-  }
-  if (Array.isArray(author?.socialLinks)) {
-    const githubLink = author.socialLinks.find(
-      (link: any) => link?.platform?.toLowerCase() === 'github'
-    );
-    if (githubLink?.url) {
-      const match = githubLink.url.match(/github\.com\/([a-zA-Z0-9_.-]+)/i);
-      if (match) return match[1];
-    }
-  }
-  return '';
 }
 
 export const load: PageServerLoad = async ({fetch, platform, locals}) => {
@@ -229,77 +139,8 @@ export const load: PageServerLoad = async ({fetch, platform, locals}) => {
     ]);
 
   const githubUsername = extractGitHubUsername(author);
-
   if (githubUsername) {
-    try {
-      const headers: Record<string, string> = {
-        Accept: 'application/vnd.github.v3+json',
-        'User-Agent': 'portfolio-sveltekit'
-      };
-
-      const token =
-        (platform as any)?.env?.GITHUB_TOKEN
-        ?? (platform as any)?.env?.GITHUB_PAT
-        ?? privateEnv.GITHUB_PAT
-        ?? privateEnv.GITHUB_TOKEN
-        ?? process.env.GITHUB_PAT
-        ?? process.env.GITHUB_TOKEN
-        ?? '';
-
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const res = await fetch(
-        `https://api.github.com/users/${encodeURIComponent(githubUsername)}/repos?sort=pushed&direction=desc&per_page=30&type=owner`,
-        {headers}
-      );
-
-      if (res.ok) {
-        const repos: GitHubRepo[] = await res.json();
-        const activeRepos = repos.filter(repo => !repo.fork && !repo.archived);
-
-        projects = await Promise.all(
-          activeRepos.map(async repo => {
-            let extras = {
-              branches: 0,
-              commits: 0,
-              languages: [] as ProjectLanguage[]
-            };
-            try {
-              extras = await fetchRepoExtras(repo.full_name, headers, fetch);
-            } catch (e) {
-              console.error(`Failed to fetch extras for ${repo.full_name}:`, e);
-            }
-
-            return {
-              name: repo.name,
-              fullName: repo.full_name,
-              desc: repo.description ?? 'No description provided.',
-              tags: repo.topics.length > 0 ? repo.topics : [],
-              url: repo.html_url,
-              cloneUrl: repo.clone_url,
-              sshUrl: repo.ssh_url,
-              zipUrl: `${repo.html_url}/archive/refs/heads/${repo.default_branch}.zip`,
-              lang: repo.language ?? undefined,
-              stars: repo.stargazers_count,
-              forks: repo.forks_count,
-              branches: extras.branches,
-              commits: extras.commits,
-              languages: extras.languages,
-              pushedAt: repo.pushed_at ?? null,
-              licenseName: repo.license?.spdx_id ?? null,
-              licenseUrl:
-                repo.license ? `${repo.html_url}/blob/main/LICENSE` : null
-            };
-          })
-        );
-      } else {
-        console.error(`GitHub API error: ${res.status} ${res.statusText}`);
-      }
-    } catch (err) {
-      console.error('Failed to fetch GitHub repos:', err);
-    }
+    projects = await fetchProjects(githubUsername, fetch, platform);
   }
 
   try {

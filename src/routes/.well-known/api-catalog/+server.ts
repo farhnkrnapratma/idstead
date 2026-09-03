@@ -14,7 +14,7 @@ export const GET: RequestHandler = async () => {
         'service-doc': [
           {
             href: `${siteUrl}/api/v1/search`,
-            type: 'text/html',
+            type: 'application/json',
             title: 'Search API — full-text search over blog posts'
           }
         ]
@@ -24,7 +24,7 @@ export const GET: RequestHandler = async () => {
         'service-doc': [
           {
             href: `${siteUrl}/api/v1/blog/comments`,
-            type: 'text/html',
+            type: 'application/json',
             title: 'Comments API — read comments on blog entries'
           }
         ]
@@ -34,14 +34,14 @@ export const GET: RequestHandler = async () => {
         'service-doc': [
           {
             href: `${siteUrl}/api/v1/blog/views`,
-            type: 'text/html',
+            type: 'application/json',
             title: 'Views API — retrieve post view counts'
           }
         ]
       },
       {
         anchor: `${siteUrl}/.well-known/openapi.json`,
-        'service-doc': [
+        'service-desc': [
           {
             href: `${siteUrl}/.well-known/openapi.json`,
             type: 'application/json',

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {Calendar} from '@lucide/svelte';
   import Tag from '../components/Tag.svelte';
   import TagGroup from '../components/TagGroup.svelte';
   import {cn} from '../utils/cn';
@@ -29,21 +30,25 @@
 
 <div
   class={cn(
-    'flex flex-col gap-2 px-6 py-5 transition-all hover:bg-surface-hover/40',
+    'flex flex-col gap-2 px-4 py-4 transition-all hover:bg-surface-hover/40 sm:px-6 sm:py-5',
     className
   )}>
-  <div class="flex items-start justify-between gap-4">
-    <div>
-      <h3 class="text-base font-bold text-text-primary">{role}</h3>
-      <p class="text-sm font-medium text-text-secondary">
+  <div
+    class="flex flex-col items-start gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+    <div class="min-w-0 flex-1">
+      <h3 class="text-base leading-snug font-bold text-text-primary">{role}</h3>
+      <p class="mt-0.5 text-sm font-medium text-text-secondary">
         {organization}{#if location}
           &bull; {location}
         {/if}
       </p>
     </div>
     <span
-      class="shrink-0 rounded-full border border-border-subtle bg-border-subtle/30 px-2.5 py-0.5 text-xs font-semibold text-text-muted select-none">
-      {period}
+      class="inline-flex shrink-0 items-center gap-1.5 font-sans-title text-xs leading-none font-semibold text-text-muted select-none sm:mt-1 sm:self-auto">
+      <Calendar
+        class="size-3.5 shrink-0 text-text-muted"
+        strokeWidth={1.5} />
+      <span class="leading-none">{period}</span>
     </span>
   </div>
 

@@ -1,5 +1,3 @@
-/** @format */
-
 import {tick} from 'svelte';
 import {a11yStore} from '../stores/a11yStore.svelte';
 

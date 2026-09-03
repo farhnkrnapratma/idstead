@@ -1,6 +1,6 @@
 <script lang="ts">
   import type {HTMLImgAttributes} from 'svelte/elements';
-  import {Image as ImageIcon} from '@lucide/svelte';
+  import {Image as ImageIcon, User as UserIcon} from '@lucide/svelte';
   import {cn} from '../utils/cn';
 
   interface Props {
@@ -12,6 +12,7 @@
     referrerpolicy?: HTMLImgAttributes['referrerpolicy'];
     aspectRatio?: string;
     rounded?: string;
+    variant?: 'image' | 'avatar';
     onload?: () => void;
     onerror?: () => void;
   }
@@ -25,6 +26,7 @@
     referrerpolicy,
     aspectRatio,
     rounded = 'rounded-sm',
+    variant = 'image',
     onload,
     onerror
   }: Props = $props();
@@ -32,6 +34,10 @@
   let isLoaded = $state(false);
   let isError = $state(false);
   let imgElement = $state<HTMLImageElement | null>(null);
+
+  let isAvatar = $derived(
+    variant === 'avatar' || Boolean(rounded && rounded.includes('rounded-full'))
+  );
 
   $effect(() => {
     if (!src) {
@@ -62,26 +68,29 @@
 
 <div
   class={cn(
-    '@container relative overflow-hidden bg-gh-gray-1 select-none dark:bg-gh-gray-6',
+    '@container relative overflow-hidden bg-surface-card select-none',
     rounded,
     aspectRatio,
     className
   )}>
   {#if isError || !src}
     <div
-      class="absolute inset-0 flex h-full w-full items-center justify-center bg-gh-gray-2 p-1 text-text-muted select-none dark:bg-gh-gray-5">
-      <ImageIcon
-        class="size-8 text-copilot/50"
-        aria-hidden="true" />
+      class="absolute inset-0 flex h-full w-full items-center justify-center bg-black/[0.04] p-1 text-text-muted select-none dark:bg-white/[0.05]">
+      {#if isAvatar}
+        <UserIcon
+          class="size-1/2 text-copilot/50"
+          aria-hidden="true" />
+      {:else}
+        <ImageIcon
+          class="size-8 text-copilot/50"
+          aria-hidden="true" />
+      {/if}
     </div>
   {:else}
     {#if !isLoaded}
       <div
-        class="absolute inset-0 flex h-full w-full animate-pulse items-center justify-center border border-border-subtle/40 bg-gh-gray-2 dark:bg-gh-gray-5"
+        class="absolute inset-0 flex h-full w-full animate-pulse bg-black/[0.06] dark:bg-white/[0.08]"
         aria-hidden="true">
-        <ImageIcon
-          class="size-8 text-text-muted/40 dark:text-text-muted/30"
-          aria-hidden="true" />
       </div>
     {/if}
     <img

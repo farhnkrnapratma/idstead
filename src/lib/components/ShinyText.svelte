@@ -30,13 +30,24 @@
 
 <span
   class={[
-    'shiny-text',
+    'inline-block',
+    '[background-image:linear-gradient(var(--spread),var(--color)_0%,var(--color)_35%,var(--shine-color)_50%,var(--color)_65%,var(--color)_100%)]',
+    '[background-size:200%_100%]',
+    'bg-clip-text',
+    '[-webkit-background-clip:text]',
+    'text-transparent',
+    '[-webkit-text-fill-color:transparent]',
+    '[animation-duration:var(--speed)]',
+    '[animation-timing-function:linear]',
+    '[animation-iteration-count:infinite]',
+    '[animation-direction:var(--anim-direction)]',
+    '[animation-delay:var(--delay)]',
     className,
-    disabled && 'disabled',
-    pauseOnHover && 'pause-on-hover',
-    direction === 'left' && 'direction-left',
-    direction === 'right' && 'direction-right',
-    yoyo && 'yoyo'
+    disabled
+      && '[animation:none]! text-[var(--color)]! [-webkit-text-fill-color:var(--color)]! [background:none]!',
+    pauseOnHover && 'hover:[animation-play-state:paused]',
+    direction === 'left' && '[animation-name:shiny-text-left]',
+    direction === 'right' && '[animation-name:shiny-text-right]'
   ]}
   style="
 		--color: {color};
@@ -51,48 +62,7 @@
 </span>
 
 <style>
-  .shiny-text {
-    display: inline-block;
-    background-image: linear-gradient(
-      var(--spread),
-      var(--color) 0%,
-      var(--color) 35%,
-      var(--shine-color) 50%,
-      var(--color) 65%,
-      var(--color) 100%
-    );
-    background-size: 200% 100%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    -webkit-text-fill-color: transparent;
-    animation-duration: var(--speed);
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-    animation-direction: var(--anim-direction);
-    animation-delay: var(--delay);
-  }
-
-  .shiny-text.direction-left {
-    animation-name: shiny-text-left;
-  }
-
-  .shiny-text.direction-right {
-    animation-name: shiny-text-right;
-  }
-
-  .shiny-text.disabled {
-    animation: none;
-    background: none;
-    color: var(--color);
-    -webkit-text-fill-color: var(--color);
-  }
-
-  .shiny-text.pause-on-hover:hover {
-    animation-play-state: paused;
-  }
-
-  @keyframes shiny-text-left {
+  @keyframes -global-shiny-text-left {
     0% {
       background-position: 200% 0;
     }
@@ -101,7 +71,7 @@
     }
   }
 
-  @keyframes shiny-text-right {
+  @keyframes -global-shiny-text-right {
     0% {
       background-position: -200% 0;
     }

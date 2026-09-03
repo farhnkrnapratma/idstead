@@ -1,4 +1,5 @@
 import {PDFDocument, StandardFonts, rgb, PDFFont} from 'pdf-lib';
+import {env as publicEnv} from '$env/dynamic/public';
 
 export interface AuthorProfileData {
   name: string;
@@ -135,6 +136,7 @@ export async function generateCvPdfBuffer(
         avatar.startsWith('http://') || avatar.startsWith('https://');
       const resolvedCdn = (
         cdnBaseUrl
+        || publicEnv.PUBLIC_CDN_BASE_URL
         || process.env.PUBLIC_CDN_BASE_URL
         || ''
       ).replace(/\/+$/, '');

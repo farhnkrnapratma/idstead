@@ -22,7 +22,7 @@
   }: Props = $props();
 
   const variantStyles = {
-    info: 'border-border-default bg-surface/70 text-text-primary',
+    info: 'border-border-subtle/50 bg-surface/70 text-text-primary',
     success: 'border-copilot/30 bg-copilot-subtle/20 text-text-primary',
     warning: 'border-warning/30 bg-warning/10 text-text-primary',
     error: 'border-danger/30 bg-danger-subtle/20 text-text-primary'

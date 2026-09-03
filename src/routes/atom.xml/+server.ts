@@ -1,7 +1,7 @@
 import {supabase} from '$lib/supabase';
 import type {RequestHandler} from './$types';
-
 import {fetchAuthorProfile} from '$lib/author';
+import {escapeXml} from '$lib/utils/xml';
 
 export const GET: RequestHandler = async ({fetch, url}) => {
   const authorProfile = await fetchAuthorProfile(supabase, {
@@ -23,7 +23,7 @@ export const GET: RequestHandler = async ({fetch, url}) => {
 
   const {data: posts} = await supabase
     .from('db_posts')
-    .select('id, title, slug, excerpt, created_at, storage_path')
+    .select('id, title, slug, excerpt, created_at, updated_at, storage_path')
     .eq('published', true)
     .order('created_at', {ascending: false})
     .limit(20);
@@ -46,7 +46,7 @@ export const GET: RequestHandler = async ({fetch, url}) => {
             .replace(/\s+/g, ' ')
             .trim()
             .slice(0, 500);
-          if (md.length > 500) content += '…';
+          if (content.length === 500 && md.length > 500) content += '…';
         }
       } catch {
         content = post.excerpt ?? '';
@@ -57,7 +57,7 @@ export const GET: RequestHandler = async ({fetch, url}) => {
 
   const updatedDate =
     enriched.length > 0 ?
-      new Date(enriched[0].created_at).toISOString()
+      new Date(enriched[0].updated_at || enriched[0].created_at).toISOString()
     : new Date().toISOString();
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -82,8 +82,8 @@ ${enriched
     <link href="${SITE_URL}/blog/${escapeXml(post.slug)}" rel="alternate" type="text/html"/>
     <link href="${SITE_URL}/api/v1/blog/${escapeXml(post.slug)}?format=md" rel="alternate" type="text/markdown"/>
     <id>urn:uuid:${post.id}</id>
-    <published>${new Date(post.created_at).toISOString()}</published>
-    <updated>${new Date(post.created_at).toISOString()}</updated>
+      <published>${new Date(post.created_at).toISOString()}</published>
+      <updated>${post.updated_at ? new Date(post.updated_at).toISOString() : new Date(post.created_at).toISOString()}</updated>
     <author>
       <name>${escapeXml(AUTHOR_NAME)}</name>
     </author>
@@ -100,12 +100,3 @@ ${enriched
     }
   });
 };
-
-function escapeXml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-}

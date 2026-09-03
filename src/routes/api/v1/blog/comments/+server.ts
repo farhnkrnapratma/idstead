@@ -27,7 +27,7 @@ export const GET: RequestHandler = async ({url}) => {
   let query = supabase
     .from('db_comments')
     .select(
-      'id, post_id, parent_id, author_name, content, is_anonymous, is_approved, created_at'
+      'id, post_id, parent_id, author_name, content, is_anonymous, is_admin, is_approved, created_at'
     )
     .eq('is_approved', true)
     .order('created_at', {ascending: true})
@@ -47,5 +47,8 @@ export const GET: RequestHandler = async ({url}) => {
     );
   }
 
-  return json({data: data ?? []});
+  return json(
+    {data: data ?? []},
+    {headers: {'Cache-Control': 'public, max-age=3600, s-maxage=86400'}}
+  );
 };

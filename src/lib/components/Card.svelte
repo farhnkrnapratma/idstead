@@ -27,9 +27,9 @@
   const variantStyles = {
     default: 'glass-card',
     glass: 'glass-card',
-    bordered: 'bg-transparent border border-border-subtle',
+    bordered: 'bg-transparent border border-border-subtle/50',
     solid:
-      'border border-border-subtle bg-surface-card text-text-primary shadow-xs'
+      'border-0 dark:border dark:border-white/[0.05] bg-surface-card text-text-primary shadow-sm'
   };
 
   const densityStyles = {

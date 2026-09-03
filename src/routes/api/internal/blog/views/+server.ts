@@ -1,5 +1,6 @@
 import {supabase} from '$lib/supabase';
 import {json} from '@sveltejs/kit';
+import {env as privateEnv} from '$env/dynamic/private';
 import type {RequestHandler} from './$types';
 import {apiError} from '$lib/server/apiError';
 import {isSameOriginRequest} from '$lib/server/sameOrigin';
@@ -29,6 +30,7 @@ export const POST: RequestHandler = async ({
 
     const ipSalt =
       (platform as unknown as {env?: {IP_SALT?: string}})?.env?.IP_SALT
+      ?? privateEnv.IP_SALT
       ?? process.env.IP_SALT
       ?? 'fkp-views-salt';
     const ipHashBuffer = await crypto.subtle.digest(

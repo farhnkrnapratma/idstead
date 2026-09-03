@@ -8,34 +8,37 @@
     FileUser,
     Layers,
     Share2,
-    Heart,
-    Mail,
+    HandHeart,
+    Send,
     Lock,
     ShieldCheck,
     ScrollText,
     Image as ImageIcon,
     ZoomIn,
-    Trash2,
+    Trash,
     ArrowUp,
     ArrowDown,
+    Save,
     Copy,
-    ExternalLink,
-    BadgeCheck,
-    PlusCircle,
-    Rocket,
-    Cpu,
+    CopyCheck,
+    SquareArrowOutUpRight,
+    Download,
     X,
     Plus,
     Pencil,
     LogOut,
     Eye,
     EyeOff,
-    Menu
+    Menu,
+    PenLine,
+    MessageSquare,
+    CircleDotDashed,
+    CircleCheckBig,
+    AlertTriangle,
+    Languages
   } from '@lucide/svelte';
   import hljs from 'highlight.js';
   import {a11yStore} from '$lib/stores/a11yStore.svelte';
-  import {codeBlockPrefsStore} from '$lib/stores/codeBlockPrefsStore.svelte';
-  import {resolveHljsTheme} from '$lib/utils/hljsTheme';
   import {renderMarkdown} from '$lib/markdown';
   import {
     enhanceCodeBlocks,
@@ -44,11 +47,13 @@
   import {onMount, tick, untrack} from 'svelte';
   import {SvelteSet} from 'svelte/reactivity';
   import {
+    cn,
     Dialog,
     Button,
     IconButton,
     Badge,
     Card,
+    BrandIcon,
     Textarea,
     FormField,
     Input,
@@ -85,6 +90,7 @@
     decodeHtmlEntities,
     splitEscapedCommas
   } from '$lib';
+  import ArticleMeta from '$lib/article/ArticleMeta.svelte';
 
   import {themeStore} from '$lib/stores/themeStore.svelte';
   import {
@@ -94,8 +100,9 @@
     fetchContactInfo,
     fetchSocials,
     fetchSkills,
+    fetchGlossaryTerms,
     fetchActiveCvDocument,
-    sanitizeIconClass,
+    normalizeIconInput,
     type AuthorProfile,
     type ExperienceItem,
     type EducationItem,
@@ -118,6 +125,8 @@
     excerpt?: string | null;
     tags?: string[] | null;
     read_time?: string | null;
+    comment_count?: number | null;
+    views_count?: number | null;
   }
 
   function getBannerUrl(bannerPath: string | null | undefined): string | null {
@@ -159,6 +168,7 @@
     author_name: string;
     content: string;
     is_anonymous?: boolean;
+    is_admin?: boolean;
     is_approved: boolean;
     created_at: string;
     posts?: {title: string};
@@ -169,6 +179,26 @@
   let commentContent = $state('');
   let isSubmitting = $state(false);
 
+  interface CommentReport {
+    id: string;
+    comment_id: string;
+    reason: string;
+    details?: string;
+    created_at: string;
+  }
+
+  let commentReports = $state<CommentReport[]>([]);
+  let commentFilterReportedOnly = $state(false);
+
+  let commentReportsMap = $derived.by(() => {
+    const map: Record<string, CommentReport[]> = {};
+    for (const r of commentReports) {
+      if (!map[r.comment_id]) map[r.comment_id] = [];
+      map[r.comment_id].push(r);
+    }
+    return map;
+  });
+
   let initialTab = page.url.searchParams.get('tab');
 
   let activeAdminTab = $state<
@@ -176,6 +206,7 @@
     | 'profile'
     | 'resume'
     | 'skills'
+    | 'glossary'
     | 'socials'
     | 'sponsorship'
     | 'contact'
@@ -267,28 +298,6 @@
   let isSavingLegal = $state(false);
   let legalSaveSuccess = $state(false);
   let legalSaveError = $state('');
-
-  let isDark = $state(false);
-
-  const hljsTheme = $derived(
-    resolveHljsTheme(
-      a11yStore.current.highContrast,
-      isDark,
-      codeBlockPrefsStore.current.colorScheme
-    )
-  );
-
-  onMount(() => {
-    isDark = document.documentElement.classList.contains('dark');
-    const themeObserver = new MutationObserver(() => {
-      isDark = document.documentElement.classList.contains('dark');
-    });
-    themeObserver.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
-    return () => themeObserver.disconnect();
-  });
 
   async function loadLegalPagesFromSupabase() {
     try {
@@ -560,12 +569,14 @@
   }>({experience: [], education: []});
 
   let skillsState = $state<SkillItem[]>([]);
+  let glossaryState = $state<string[]>([]);
   let socialState = $state<SocialLink[]>([]);
   let sponsorshipState = $state<SponsorshipLink[]>([]);
   let contactState = $state<ContactInfo[]>([]);
 
   let cvInitial = $state<typeof cvState | null>(null);
   let skillsInitial = $state<SkillItem[] | null>(null);
+  let glossaryInitial = $state<string[] | null>(null);
   let socialInitial = $state<SocialLink[] | null>(null);
   let sponsorshipInitial = $state<SponsorshipLink[] | null>(null);
   let contactInitial = $state<ContactInfo[] | null>(null);
@@ -576,6 +587,10 @@
   const skillsIsDirty = $derived(
     skillsInitial !== null
       && JSON.stringify(skillsState) !== JSON.stringify(skillsInitial)
+  );
+  const glossaryIsDirty = $derived(
+    glossaryInitial !== null
+      && JSON.stringify(glossaryState) !== JSON.stringify(glossaryInitial)
   );
   const socialIsDirty = $derived(
     socialInitial !== null
@@ -596,6 +611,29 @@
     isActive: true
   });
   let isGeneratingPdf = $state(false);
+  let copiedHash = $state(false);
+  let isDownloadingCv = $state(false);
+
+  async function downloadCvDocument() {
+    if (!cvDocState.fileUrl) return;
+    isDownloadingCv = true;
+    try {
+      const res = await fetch(cvDocState.fileUrl);
+      if (!res.ok) throw new Error('Download failed');
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = objectUrl;
+      a.download = cvDocState.filename || 'cv.pdf';
+      a.click();
+      URL.revokeObjectURL(objectUrl);
+    } catch {
+      toastStore.error('Could not download directly, opening in a new tab');
+      window.open(cvDocState.fileUrl, '_blank');
+    } finally {
+      isDownloadingCv = false;
+    }
+  }
 
   function debounceAdmin<T extends unknown[]>(
     cb: (...args: T) => void,
@@ -950,6 +988,8 @@
   let cvSaveSuccess = $state(false);
   let isSavingSkills = $state(false);
   let skillsSaveSuccess = $state(false);
+  let isSavingGlossary = $state(false);
+  let glossarySaveSuccess = $state(false);
   let isSavingSocials = $state(false);
   let socialsSaveSuccess = $state(false);
   let isSavingSponsorship = $state(false);
@@ -1045,7 +1085,11 @@
   });
 
   function getPostComments(postId: string): AdminComment[] {
-    return comments.filter(c => c.post_id === postId);
+    let postComments = comments.filter(c => c.post_id === postId);
+    if (commentFilterReportedOnly) {
+      postComments = postComments.filter(c => commentReportsMap[c.id]?.length);
+    }
+    return postComments;
   }
 
   let filteredPosts = $derived.by(() => {
@@ -1159,25 +1203,41 @@
 
     isSubmitting = true;
     try {
-      const {data, error} = await supabase
-        .from('db_comments')
-        .insert({
-          post_id: postId,
-          parent_id: parentId,
-          author_name: authorState.name,
-          content: sanitizeInput(trimmed),
-          is_anonymous: false,
-          is_approved: true
+      const {data: sessionData} = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token) {
+        toastStore.error('Admin session expired. Please log in again.');
+        return;
+      }
+
+      const res = await fetch('/api/internal/admin/comments/reply', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          postId,
+          parentId,
+          authorName: 'Administrator',
+          content: trimmed
         })
-        .select('*')
-        .single();
+      });
 
-      if (error) throw error;
+      const resData = await res.json().catch(() => null);
+      if (!res.ok) {
+        const msg =
+          typeof resData?.error?.message === 'string' ? resData.error.message
+          : typeof resData?.message === 'string' ? resData.message
+          : 'Failed to post reply.';
+        throw new Error(msg);
+      }
 
-      if (data) {
+      if (resData?.comment) {
         const postObj = posts.find(p => p.id === postId);
         const newComment: AdminComment = {
-          ...data,
+          ...resData.comment,
+          author_name: 'Administrator',
           posts: {title: postObj?.title || ''}
         };
         comments = [...comments, newComment];
@@ -1187,7 +1247,9 @@
       }
     } catch (err) {
       console.error('Error posting admin reply:', err);
-      toastStore.error('Failed to post reply.');
+      toastStore.error(
+        err instanceof Error ? err.message : 'Failed to post reply.'
+      );
     } finally {
       isSubmitting = false;
     }
@@ -1248,7 +1310,8 @@
     (async () => {
       const {data: sessionData} = await supabase.auth.getSession();
       if (!sessionData.session) {
-        window.location.href = '/admin/login';
+        const target = window.location.pathname + window.location.search;
+        window.location.href = `/admin/login?redirectTo=${encodeURIComponent(target)}`;
         return;
       }
 
@@ -1301,13 +1364,14 @@
 
   async function loadAdminData() {
     try {
-      const [p, cv, sp, ct, soc, sk, doc] = await Promise.all([
+      const [p, cv, sp, ct, soc, sk, gl, doc] = await Promise.all([
         fetchAuthorProfile(supabase, {includeEmail: true}),
         fetchCvEntries(supabase),
         fetchSponsorship(supabase),
         fetchContactInfo(supabase),
         fetchSocials(supabase),
         fetchSkills(supabase),
+        fetchGlossaryTerms(supabase),
         fetchActiveCvDocument(supabase)
       ]);
       if (p) authorState = p;
@@ -1322,6 +1386,8 @@
       socialInitial = $state.snapshot(socialState);
       if (sk) skillsState = sk;
       skillsInitial = $state.snapshot(skillsState);
+      if (gl) glossaryState = gl;
+      glossaryInitial = $state.snapshot(glossaryState);
       cvDocState = doc || {
         filename: '',
         fileUrl: '',
@@ -1382,13 +1448,20 @@
 
   async function fetchComments() {
     try {
-      const {data, error} = await supabase
-        .from('db_comments')
-        .select('*, posts:post_id(title)')
-        .order('created_at', {ascending: false});
+      const [{data, error}, {data: reportsData}] = await Promise.all([
+        supabase
+          .from('db_comments')
+          .select('*, posts:post_id(title)')
+          .order('created_at', {ascending: false}),
+        supabase
+          .from('db_comment_reports')
+          .select('*')
+          .order('created_at', {ascending: false})
+      ]);
 
       if (error) throw error;
       comments = (data as any) || [];
+      commentReports = (reportsData as any) || [];
     } catch (err) {
       console.error('Error fetching admin comments:', err);
     }
@@ -1504,24 +1577,23 @@
     }
   }
 
-  async function toggleCommentApproval(comment: AdminComment) {
+  async function dismissCommentReports(commentId: string) {
     try {
-      const nextApproved = !comment.is_approved;
-      const {error} = await supabase
-        .from('db_comments')
-        .update({is_approved: nextApproved})
-        .eq('id', comment.id);
-
-      if (error) throw error;
-      comments = comments.map(c =>
-        c.id === comment.id ? {...c, is_approved: nextApproved} : c
-      );
-      toastStore.success(
-        nextApproved ? 'Comment approved.' : 'Comment held for review.'
-      );
+      const session = (await supabase.auth.getSession()).data.session;
+      const res = await fetch('/api/internal/admin/comments/dismiss-reports', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token || ''}`
+        },
+        body: JSON.stringify({commentId})
+      });
+      if (!res.ok) throw new Error('Failed to dismiss reports');
+      commentReports = commentReports.filter(r => r.comment_id !== commentId);
+      toastStore.success('Reports dismissed.');
     } catch (err) {
-      console.error('Error toggling comment approval:', err);
-      toastStore.error('Failed to update comment.');
+      console.error('Error dismissing comment reports:', err);
+      toastStore.error('Failed to dismiss reports.');
     }
   }
 
@@ -1631,6 +1703,7 @@
       authorInitial = {...authorState};
       setTimeout(() => (authorSaveSuccess = false), 2500);
       toastStore.success('Author profile saved.');
+      executeGenerateCvPdf('patch');
     } catch (err: any) {
       console.error('Error saving author profile:', err);
       authorSaveError = err.message || 'Failed to save author profile.';
@@ -1834,12 +1907,45 @@
       skillsSaveSuccess = true;
       setTimeout(() => (skillsSaveSuccess = false), 2500);
       toastStore.success('Skills saved.');
+      executeGenerateCvPdf('patch');
     } catch (err: any) {
       console.error('Error saving skills:', err);
       const msg = err?.message || err?.error || 'Failed to save skills.';
       toastStore.error(msg);
     } finally {
       isSavingSkills = false;
+    }
+  }
+
+  async function handleSaveGlossary(e: SubmitEvent) {
+    e.preventDefault();
+    if (isSavingGlossary) return;
+    isSavingGlossary = true;
+    glossarySaveSuccess = false;
+    try {
+      const authorId = await getAuthorId();
+      if (!authorId) throw new Error('Could not resolve author ID.');
+
+      const terms = glossaryState
+        .map(term => sanitizeInput(term.trim()))
+        .filter(Boolean);
+
+      const {error} = await supabase.rpc('db_save_glossary_terms', {
+        p_author_id: authorId,
+        p_terms: terms
+      });
+      if (error) throw error;
+
+      glossaryInitial = $state.snapshot(glossaryState);
+      glossarySaveSuccess = true;
+      setTimeout(() => (glossarySaveSuccess = false), 2500);
+      toastStore.success('Glossary saved.');
+    } catch (err: any) {
+      console.error('Error saving glossary:', err);
+      const msg = err?.message || err?.error || 'Failed to save glossary.';
+      toastStore.error(msg);
+    } finally {
+      isSavingGlossary = false;
     }
   }
 
@@ -1860,7 +1966,8 @@
         platform: sanitizeInput(item.platform.trim()),
         display_value: null,
         url: item.url.trim(),
-        icon: '',
+        icon: normalizeIconInput(item.icon),
+        description: sanitizeInput((item.description || '').trim()),
         sort_order: idx + 1
       }));
 
@@ -1901,7 +2008,8 @@
         platform: sanitizeInput(item.platform.trim()),
         display_value: sanitizeInput(item.displayValue.trim()),
         url: item.url.trim(),
-        icon: '',
+        icon: normalizeIconInput(item.icon),
+        description: sanitizeInput((item.description || '').trim()),
         sort_order: idx + 1
       }));
 
@@ -1943,7 +2051,8 @@
         platform: sanitizeInput(item.platform.trim()),
         display_value: sanitizeInput(item.displayValue.trim()),
         url: item.href.trim(),
-        icon: '',
+        icon: normalizeIconInput(item.icon),
+        description: sanitizeInput((item.description || '').trim()),
         sort_order: idx + 1
       }));
 
@@ -2138,6 +2247,14 @@
     sponsorship: 'this sponsorship link',
     contact: 'this contact'
   };
+  const removeEntryTitles: Record<RemovableEntry, string> = {
+    'cv-experience': 'Delete Experience',
+    'cv-education': 'Delete Education',
+    skill: 'Delete Skill Category',
+    social: 'Delete Social Link',
+    sponsorship: 'Delete Sponsorship',
+    contact: 'Delete Contact'
+  };
   const removeEntryMessage = $derived(
     pendingRemove ?
       `Are you sure you want to remove ${removeEntryLabels[pendingRemove.type]}? This won't be saved until you click Save.`
@@ -2197,7 +2314,10 @@
   }
 
   function handleAddSocial() {
-    socialState = [...socialState, {platform: '', url: '', icon: ''}];
+    socialState = [
+      ...socialState,
+      {platform: '', url: '', icon: '', description: ''}
+    ];
   }
 
   function handleAddSponsorship() {
@@ -2210,7 +2330,7 @@
   function handleAddContact() {
     contactState = [
       ...contactState,
-      {platform: '', displayValue: '', href: '', icon: ''}
+      {platform: '', displayValue: '', href: '', icon: '', description: ''}
     ];
   }
 
@@ -2224,9 +2344,15 @@
     {id: 'profile', label: 'Profile', icon: User, section: 'profile'},
     {id: 'resume', label: 'Resume', icon: FileUser, section: 'profile'},
     {id: 'skills', label: 'Skills', icon: Layers, section: 'profile'},
+    {id: 'glossary', label: 'Glossary', icon: Languages, section: 'profile'},
     {id: 'socials', label: 'Social Links', icon: Share2, section: 'profile'},
-    {id: 'sponsorship', label: 'Sponsorship', icon: Heart, section: 'profile'},
-    {id: 'contact', label: 'Contact', icon: Mail, section: 'profile'},
+    {
+      id: 'sponsorship',
+      label: 'Sponsorship',
+      icon: HandHeart,
+      section: 'profile'
+    },
+    {id: 'contact', label: 'Contact', icon: Send, section: 'profile'},
     {id: 'privacy', label: 'Privacy Policy', icon: Lock, section: 'legal'},
     {
       id: 'security',
@@ -2240,9 +2366,6 @@
 
 <svelte:head>
   <title>Admin Console</title>
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/{hljsTheme}.min.css" />
 </svelte:head>
 
 <SkipLink />
@@ -2258,7 +2381,8 @@
       extend your session or log out?
     </p>
 
-    <div class="flex items-center justify-between gap-4">
+    <div
+      class="flex flex-col items-center gap-5 sm:flex-row sm:justify-between sm:gap-4">
       <div class="relative flex h-16 w-16 shrink-0 items-center justify-center">
         <svg
           class="h-16 w-16 -rotate-90 transform"
@@ -2287,12 +2411,14 @@
         </span>
       </div>
 
-      <div class="flex items-center gap-3">
+      <div
+        class="flex w-full flex-col-reverse gap-2.5 sm:w-auto sm:flex-row sm:items-center sm:gap-3">
         <Button
           htmlType="button"
           type="danger"
           tone="critical"
           size="md"
+          class="w-full sm:w-auto"
           onclick={handleLogout}
           disabled={isLoggingOut}>
           Sign out
@@ -2301,6 +2427,7 @@
           htmlType="button"
           type="primary"
           size="md"
+          class="w-full sm:w-auto"
           onclick={handleExtendSession}>
           Extend session
         </Button>
@@ -2343,14 +2470,15 @@
       </h1>
       <ThemeSelect
         theme={themeStore.current}
-        onThemeChange={themeStore.apply} />
+        onThemeChange={themeStore.apply}
+        class="hidden md:inline-flex" />
     </div>
 
     <nav
       class="flex flex-1 flex-col px-2.5 py-2 font-sans"
       aria-label="Admin Navigation">
       <div
-        class="px-2 py-1 text-[10px] font-bold tracking-wider text-text-muted uppercase select-none">
+        class="px-2 py-1 text-2xs font-bold tracking-wider text-text-muted uppercase select-none">
         Content Management
       </div>
       <div class="flex flex-col gap-0.5">
@@ -2370,7 +2498,7 @@
       </div>
 
       <div
-        class="mt-3 border-t border-border-subtle/30 px-2 pt-2.5 pb-1 text-[10px] font-bold tracking-wider text-text-muted uppercase select-none">
+        class="mt-3 border-t border-border-subtle/30 px-2 pt-2.5 pb-1 text-2xs font-bold tracking-wider text-text-muted uppercase select-none">
         Profile & Resume
       </div>
       <div class="flex flex-col gap-0.5">
@@ -2390,7 +2518,7 @@
       </div>
 
       <div
-        class="mt-3 border-t border-border-subtle/30 px-2 pt-2.5 pb-1 text-[10px] font-bold tracking-wider text-text-muted uppercase select-none">
+        class="mt-3 border-t border-border-subtle/30 px-2 pt-2.5 pb-1 text-2xs font-bold tracking-wider text-text-muted uppercase select-none">
         Legal & Policy
       </div>
       <div class="flex flex-col gap-0.5">
@@ -2411,51 +2539,38 @@
     </nav>
 
     <div
-      class="sticky bottom-0 z-10 mt-auto border-t border-border-subtle bg-surface-card px-3 py-2.5">
+      class="sticky bottom-0 z-10 mt-auto border-t border-border-subtle bg-surface-card px-2 py-2.5">
       <div class="flex items-center justify-between gap-2">
-        <div class="flex min-w-0 items-center gap-2">
-          {#if authorState.avatar}
-            <ImageWithSkeleton
-              src={authorState.avatar}
-              alt={authorState.name || 'Admin'}
-              referrerpolicy="no-referrer"
-              rounded="rounded-full"
-              class="h-7 w-7 shrink-0 border border-border-subtle"
-              imgClass="object-top" />
+        <div class="flex min-w-0 flex-col truncate px-1">
+          {#if isLoading || (!authorState.name && !adminUserEmail)}
+            <div
+              class="h-3 w-20 animate-pulse rounded bg-surface-hover"
+              aria-hidden="true">
+            </div>
+            <div
+              class="mt-1 h-2 w-24 animate-pulse rounded bg-border-subtle/60"
+              aria-hidden="true">
+            </div>
           {:else}
-            <User class="size-5 shrink-0 text-text-muted" />
+            <span
+              class="font-sans-title text-xs leading-tight font-bold text-text-primary"
+              >{authorState.name || ''}</span>
+            <span
+              class="truncate font-sans-title text-xxs leading-tight font-normal text-text-muted"
+              title={adminUserEmail || authorState.email}>
+              {adminUserEmail || authorState.email || ''}
+            </span>
           {/if}
-          <div class="flex flex-col truncate">
-            {#if isLoading || (!authorState.name && !adminUserEmail)}
-              <div
-                class="h-3 w-20 animate-pulse rounded bg-surface-hover"
-                aria-hidden="true">
-              </div>
-              <div
-                class="mt-1 h-2 w-24 animate-pulse rounded bg-border-default"
-                aria-hidden="true">
-              </div>
-            {:else}
-              <span class="text-xs leading-tight font-bold text-text-primary"
-                >{authorState.name || ''}</span>
-              <span
-                class="truncate font-mono text-[10.5px] leading-tight font-normal text-text-muted"
-                title={adminUserEmail || authorState.email}>
-                {adminUserEmail || authorState.email || ''}
-              </span>
-            {/if}
-          </div>
         </div>
 
         <Button
-          type="secondary"
-          size="sm"
+          type="ghost"
+          size="xs"
+          aria-label="Sign out"
           onclick={handleLogout}
           disabled={isLoggingOut}
           isLoading={isLoggingOut}
-          title="Sign out">
-          Sign out
-        </Button>
+          title="Sign out"><LogOut class="size-3.5" /></Button>
       </div>
     </div>
   </aside>
@@ -2477,9 +2592,9 @@
     : ''}">
     {#if isLoading}
       <LoadingState
+        variant="post-card"
         label="Loading dashboard..."
-        size="lg"
-        class="py-20" />
+        count={3} />
     {:else if activeAdminTab === 'posts'}
       <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -2522,22 +2637,27 @@
             itemLabel="posts" />
         {/snippet}
         {#snippet filterControlsSlot()}
-          <FilterSelect
-            label="Status"
-            value={statusFilter}
-            options={[
-              {value: 'all', label: 'All Status'},
-              {value: 'published', label: 'Published'},
-              {value: 'draft', label: 'Draft'}
-            ]}
-            onChange={val => filterStore.setSingleFilter('status', val)} />
-          {#if allPostTags.length > 0}
-            <FilterCheckboxGroup
-              label="Tag"
-              options={allPostTags.map(t => ({value: t, label: t}))}
-              selectedValues={filterStore.filters['tag'] || []}
-              onChange={val => filterStore.toggleMultiFilter('tag', val)} />
-          {/if}
+          <div
+            class="grid grid-cols-2 gap-2.5 sm:flex sm:items-center sm:gap-3 [&>*:only-child]:col-span-2">
+            <FilterSelect
+              label="Status"
+              value={statusFilter}
+              options={[
+                {value: 'all', label: 'All'},
+                {value: 'published', label: 'Published'},
+                {value: 'draft', label: 'Draft'}
+              ]}
+              onChange={val => filterStore.setSingleFilter('status', val)} />
+            {#if allPostTags.length > 0}
+              <FilterCheckboxGroup
+                label="Tag"
+                dropdownPlacement="right"
+                popoverSpan="2cols-right"
+                options={allPostTags.map(t => ({value: t, label: t}))}
+                selectedValues={filterStore.filters['tag'] || []}
+                onChange={val => filterStore.toggleMultiFilter('tag', val)} />
+            {/if}
+          </div>
         {/snippet}
         {#snippet sortSlot()}
           <SortControl
@@ -2575,228 +2695,306 @@
             description="Try adjusting your filter or search query." />
         {/if}
       {:else}
-        <div class="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
+        <div class="grid grid-cols-1 items-start gap-4">
           {#each paginatedPosts as post (post.id)}
-            <Card class="relative flex h-full w-full flex-col gap-3">
-              {#if post.banner_path && !failedBanners.has(post.id)}
-                <ImageWithSkeleton
-                  src={getBannerUrl(post.banner_path)}
-                  alt={post.title}
-                  aspectRatio="aspect-video"
-                  onerror={() => markBannerFailed(post.id)}
-                  class="w-full border border-border-subtle" />
-              {:else}
-                <div
-                  class="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-sm border border-border-subtle bg-linear-to-br from-accent/15 to-copilot/15 select-none">
-                  <ImageIcon class="size-8 text-copilot/50" />
-                </div>
-              {/if}
-
+            <Card
+              density="none"
+              class="relative flex flex-col text-left">
               <div
-                class="flex w-full scrollbar-none flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold text-text-secondary select-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                <Badge variant={post.published ? 'success' : 'warning'}>
-                  {post.published ? 'Published' : 'Draft'}
-                </Badge>
-                <span aria-hidden="true">&middot;</span>
-                <RelativeTime date={post.created_at} />
-                <span aria-hidden="true">&middot;</span>
-                <span
-                  >Last updated {formatAbsoluteDate(
-                    post.updated_at || post.created_at
-                  )}</span>
-                <span aria-hidden="true">&middot;</span>
-                <span>{formatReadTime(post.read_time)}</span>
-                <span aria-hidden="true">&middot;</span>
-                <span>{formatViewCount(postViewsMap.get(post.id) ?? 0)}</span>
+                class="relative aspect-2/1 w-full shrink-0 overflow-hidden border-b border-border-subtle">
+                {#if post.banner_path && !failedBanners.has(post.id)}
+                  <ImageWithSkeleton
+                    src={getBannerUrl(post.banner_path)}
+                    alt={post.title}
+                    rounded=""
+                    onerror={() => markBannerFailed(post.id)}
+                    class="h-full w-full object-cover" />
+                {:else}
+                  <div
+                    class="relative flex h-full w-full items-center justify-center overflow-hidden bg-linear-to-br from-accent/15 to-copilot/15 select-none">
+                    <ImageIcon class="size-10 text-copilot/50" />
+                  </div>
+                {/if}
               </div>
 
-              <div>
-                <h3
-                  class="text-base leading-snug font-bold text-text-primary transition-colors hover:text-copilot">
-                  <a
-                    href={`/blog/${post.slug}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="rounded-xs outline-none hover:underline focus-visible:ring-2 focus-visible:ring-copilot">
-                    {post.title}
-                  </a>
-                </h3>
-              </div>
-
-              {#if post.tags && post.tags.length > 0}
-                <div class="flex min-h-[24px] flex-wrap items-start gap-1.5">
-                  {#each post.tags as tag (tag)}
-                    {@const cleanTag = decodeHtmlEntities(tag)}
-                    <button
-                      type="button"
-                      onclick={() => filterStore.toggleMultiFilter('tag', tag)}
-                      class="cursor-pointer rounded-md bg-border-subtle/30 px-1.5 py-0.5 font-mono text-[12px] font-medium transition-colors hover:bg-surface-hover hover:text-copilot {(
-                        filterStore.filters['tag']?.includes(tag)
-                      ) ?
-                        'font-semibold text-copilot'
-                      : 'text-text-muted'}">
-                      {cleanTag}
-                    </button>
-                  {/each}
-                </div>
-              {/if}
-
-              {#if post.excerpt}
-                <p
-                  class="min-h-16 text-xs leading-relaxed font-normal text-text-primary">
-                  {post.excerpt}
-                </p>
-              {/if}
-
               <div
-                class="mt-auto flex w-full scrollbar-none flex-wrap items-center justify-between gap-2 overflow-x-auto border-t border-border-subtle/40 pt-3.5 whitespace-nowrap [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                <div
-                  class="flex w-full flex-wrap items-center justify-between gap-2 sm:w-auto sm:justify-start">
-                  <Button
-                    htmlType="button"
-                    type="primary"
-                    size="sm"
-                    onclick={() =>
-                      (window.location.href = `/admin/new?id=${post.id}`)}>
-                    Edit
-                  </Button>
+                class="flex min-w-0 flex-1 flex-col justify-between gap-2.5 p-4 font-sans">
+                <div class="flex flex-col gap-1">
+                  <div>
+                    <h3
+                      class="font-sans-title text-lg leading-snug font-bold text-text-primary transition-colors hover:text-copilot">
+                      <a
+                        href={`/blog/${post.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="rounded-sm outline-none hover:underline focus-visible:ring-2 focus-visible:ring-copilot">
+                        {post.title}
+                      </a>
+                    </h3>
+                  </div>
 
-                  <Button
-                    htmlType="button"
-                    type="secondary"
-                    size="sm"
-                    aria-expanded={expandedPostIds.has(post.id)}
-                    aria-controls="comments-{post.id}"
-                    onclick={() => toggleComments(post.id)}>
-                    {expandedPostIds.has(post.id) ? 'Hide' : 'Show'} comments ({getPostComments(
-                      post.id
-                    ).length})
-                  </Button>
+                  <ArticleMeta
+                    status={post.published ? 'published' : 'draft'}
+                    size="xs"
+                    layout="single"
+                    class="min-h-4.5"
+                    date={post.created_at}
+                    updatedAt={post.updated_at || post.created_at}
+                    readingTime={formatReadTime(post.read_time)}
+                    commentsCount={post.comment_count ?? 0}
+                    views={postViewsMap.get(post.id)
+                      ?? post.views_count
+                      ?? 0} />
 
-                  <Button
-                    htmlType="button"
-                    type="secondary"
-                    size="sm"
-                    onclick={() => handleTogglePublished(post)}>
-                    {post.published ? 'Unpublish' : 'Publish'}
-                  </Button>
+                  {#if post.excerpt}
+                    <p
+                      class="line-clamp-2 text-xs leading-relaxed font-normal text-text-secondary">
+                      {post.excerpt}
+                    </p>
+                  {/if}
+
+                  {#if post.tags && post.tags.length > 0}
+                    <div class="flex flex-wrap items-center gap-1.5 pt-1">
+                      {#each post.tags as tag (tag)}
+                        {@const cleanTag = decodeHtmlEntities(tag)}
+                        <button
+                          type="button"
+                          onclick={() =>
+                            filterStore.toggleMultiFilter('tag', tag)}
+                          class="inline-flex cursor-pointer items-center rounded-full px-2 py-0.5 font-mono text-[12px] font-medium transition-colors {(
+                            filterStore.filters['tag']?.includes(tag)
+                          ) ?
+                            'bg-copilot text-text-on-accent'
+                          : 'bg-copilot-subtle text-copilot hover:bg-copilot/15'}">
+                          {cleanTag}
+                        </button>
+                      {/each}
+                    </div>
+                  {/if}
                 </div>
 
-                <div class="flex w-full items-center gap-2 sm:w-auto">
+                <div
+                  class="mt-auto flex w-full items-center justify-between gap-2 border-t border-border-subtle/40 pt-3">
+                  <div class="flex items-center gap-1.5 sm:gap-2">
+                    <Button
+                      href="/admin/new?id={post.id}"
+                      type="primary"
+                      size="sm"
+                      aria-label="Edit post"
+                      title="Edit post"
+                      class="px-2.5 sm:px-3">
+                      {#snippet leading()}
+                        <PenLine class="size-3.5" />
+                      {/snippet}
+                      <span class="hidden sm:inline">Edit</span>
+                    </Button>
+
+                    <Button
+                      htmlType="button"
+                      type="secondary"
+                      size="sm"
+                      aria-label="{expandedPostIds.has(post.id) ? 'Hide' : (
+                        'Show'
+                      )} comments ({getPostComments(post.id).length})"
+                      title="{expandedPostIds.has(post.id) ? 'Hide' : (
+                        'Show'
+                      )} comments ({getPostComments(post.id).length})"
+                      aria-expanded={expandedPostIds.has(post.id)}
+                      aria-controls="comments-{post.id}"
+                      class="px-2.5 sm:px-3"
+                      onclick={() => toggleComments(post.id)}>
+                      {#snippet leading()}
+                        <MessageSquare class="size-3.5" />
+                      {/snippet}
+                      <span class="hidden sm:inline">
+                        {expandedPostIds.has(post.id) ? 'Hide' : 'Show'} comments
+                      </span>
+                      <span>({getPostComments(post.id).length})</span>
+                    </Button>
+
+                    <Button
+                      htmlType="button"
+                      type="secondary"
+                      size="sm"
+                      aria-label={post.published ? 'Unpublish post' : (
+                        'Publish post'
+                      )}
+                      title={post.published ? 'Unpublish post' : 'Publish post'}
+                      class="px-2.5 sm:px-3"
+                      onclick={() => handleTogglePublished(post)}>
+                      {#snippet leading()}
+                        {#if post.published}
+                          <EyeOff class="size-3.5" />
+                        {:else}
+                          <Send class="size-3.5" />
+                        {/if}
+                      {/snippet}
+                      <span class="hidden sm:inline">
+                        {post.published ? 'Unpublish' : 'Publish'}
+                      </span>
+                    </Button>
+                  </div>
+
                   <Button
                     htmlType="button"
                     type="danger"
-                    tone="critical"
                     size="sm"
-                    class="w-full sm:w-auto"
+                    aria-label="Delete post"
+                    title="Delete post"
+                    class="px-2.5 sm:px-3"
                     onclick={() => confirmDeletePost(post)}>
-                    Delete
+                    {#snippet leading()}
+                      <Trash class="size-3.5" />
+                    {/snippet}
+                    <span class="hidden sm:inline">Delete</span>
                   </Button>
                 </div>
-              </div>
 
-              {#if expandedPostIds.has(post.id)}
-                <div
-                  id="comments-{post.id}"
-                  class="mt-4 border-t border-border-subtle pt-4">
-                  <h4 class="mb-3 text-xs font-bold text-text-secondary">
-                    Comments ({getPostComments(post.id).length})
-                  </h4>
-                  {#if getPostComments(post.id).length === 0}
-                    <p class="text-xs text-text-muted">No comments yet.</p>
-                  {:else}
-                    <CommentThread
-                      comments={getPostComments(post.id)}
-                      {replyTo}>
-                      {#snippet statusBadge(comment)}
-                        <Badge
-                          variant={comment.is_approved ? 'success' : 'warning'}>
-                          {comment.is_approved ? 'Approved' : 'Pending'}
-                        </Badge>
-                      {/snippet}
-
-                      {#snippet actions(comment)}
-                        <RelativeTime
-                          date={comment.created_at}
-                          tag="time" />
-                        <span aria-hidden="true">&middot;</span>
+                {#if expandedPostIds.has(post.id)}
+                  <div
+                    id="comments-{post.id}"
+                    class="mt-4 border-t border-border-subtle pt-4">
+                    <div class="mb-3 flex items-center justify-between gap-2">
+                      <h4 class="text-xs font-bold text-text-secondary">
+                        Comments ({getPostComments(post.id).length})
+                      </h4>
+                      {#if comments.some(c => c.post_id === post.id && commentReportsMap[c.id]?.length)}
                         <button
                           type="button"
-                          onclick={() => toggleCommentApproval(comment)}
-                          class="cursor-pointer font-bold text-text-muted transition-colors hover:text-copilot focus-visible:outline-none">
-                          {comment.is_approved ? 'Unapprove' : 'Approve'}
+                          class={cn(
+                            'cursor-pointer rounded-sm border px-2 py-0.5 text-2xs font-semibold transition-colors',
+                            commentFilterReportedOnly ?
+                              'border-danger/30 bg-danger/15 text-danger'
+                            : 'border-border-subtle text-text-muted hover:text-text-primary'
+                          )}
+                          onclick={() =>
+                            (commentFilterReportedOnly =
+                              !commentFilterReportedOnly)}>
+                          <AlertTriangle class="mr-1 inline size-2.5" />
+                          {commentFilterReportedOnly ? 'Showing Reported' : (
+                            'Filter Reported'
+                          )}
                         </button>
-                        <span aria-hidden="true">&middot;</span>
-                        <button
-                          type="button"
-                          onclick={() => {
-                            replyTo = comment;
-                            commentContent = '';
-                          }}
-                          class="cursor-pointer font-bold text-text-muted transition-colors hover:text-copilot focus-visible:outline-none">
-                          Reply
-                        </button>
-                        <span aria-hidden="true">&middot;</span>
-                        <button
-                          type="button"
-                          onclick={() => confirmDeleteComment(comment.id)}
-                          class="cursor-pointer font-bold text-danger transition-colors hover:underline focus-visible:outline-none">
-                          Delete
-                        </button>
-                      {/snippet}
+                      {/if}
+                    </div>
+                    {#if getPostComments(post.id).length === 0}
+                      <p class="text-xs text-text-muted">No comments yet.</p>
+                    {:else}
+                      <CommentThread
+                        comments={getPostComments(post.id)}
+                        isAdmin={true}
+                        onDelete={c => confirmDeleteComment(c.id)}
+                        {replyTo}>
+                        {#snippet statusBadge(comment)}
+                          {#if commentReportsMap[comment.id]?.length}
+                            <Badge
+                              variant="danger"
+                              class="flex items-center gap-1 py-0.5 text-2xs">
+                              <AlertTriangle class="size-2.5 text-danger" />
+                              Reported ({commentReportsMap[comment.id].length})
+                            </Badge>
+                          {/if}
+                        {/snippet}
 
-                      {#snippet replyForm(comment)}
-                        <form
-                          novalidate
-                          onsubmit={e =>
-                            handleAdminSubmit(e, comment.id, comment.post_id)}
-                          class="rounded-sm border border-border-subtle bg-surface-card p-4">
-                          <div
-                            class="mb-3 flex items-center justify-between gap-3">
-                            <p
-                              class="text-xs font-semibold text-text-secondary">
-                              Replying to {(
-                                comment.is_anonymous || !comment.author_name
-                              ) ?
-                                'Anonymous'
-                              : comment.author_name}
-                            </p>
-                            <Button
-                              type="ghost"
-                              size="sm"
-                              onclick={() => (replyTo = null)}>Cancel</Button>
-                          </div>
+                        {#snippet actions(comment)}
+                          <RelativeTime
+                            date={comment.created_at}
+                            tag="time" />
+                          <span aria-hidden="true">&middot;</span>
+                          <button
+                            type="button"
+                            onclick={() => {
+                              replyTo = comment;
+                              commentContent = '';
+                            }}
+                            class="cursor-pointer font-bold text-text-muted transition-colors hover:text-copilot focus-visible:outline-none">
+                            Reply
+                          </button>
+                          <span aria-hidden="true">&middot;</span>
+                          <button
+                            type="button"
+                            onclick={() => confirmDeleteComment(comment.id)}
+                            class="cursor-pointer font-bold text-danger transition-colors hover:underline focus-visible:outline-none">
+                            Delete
+                          </button>
+                          {#if commentReportsMap[comment.id]?.length}
+                            <span aria-hidden="true">&middot;</span>
+                            <button
+                              type="button"
+                              onclick={() => dismissCommentReports(comment.id)}
+                              class="cursor-pointer font-bold text-copilot transition-colors hover:underline focus-visible:outline-none">
+                              Dismiss Reports
+                            </button>
+                          {/if}
+                        {/snippet}
 
-                          <FormField
-                            id="admin-reply-msg-{comment.id}"
-                            label="Admin Reply"
-                            required>
+                        {#snippet replyForm(comment)}
+                          <form
+                            novalidate
+                            onsubmit={e =>
+                              handleAdminSubmit(e, comment.id, comment.post_id)}
+                            class="max-w-xl rounded-sm border border-border-subtle bg-surface-card p-3 shadow-2xs">
+                            <div
+                              class="mb-2 flex items-center justify-between gap-2">
+                              <p
+                                class="font-sans-title text-xs text-text-secondary">
+                                Replying to <span
+                                  class="font-semibold text-copilot"
+                                  >{(
+                                    comment.is_anonymous || !comment.author_name
+                                  ) ?
+                                    'Anonymous'
+                                  : comment.author_name}</span>
+                              </p>
+                              <button
+                                type="button"
+                                onclick={() => (replyTo = null)}
+                                class="inline-flex size-5 cursor-pointer items-center justify-center rounded-sm text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-copilot"
+                                aria-label="Cancel reply">
+                                <X class="size-3.5" />
+                              </button>
+                            </div>
+
                             <Textarea
                               id="admin-reply-msg-{comment.id}"
-                              rows={3}
+                              rows={2}
                               maxlength={1000}
-                              placeholder="Write admin reply..."
                               bind:value={commentContent}
+                              placeholder="Write an admin reply..."
+                              class="min-h-15 py-2 text-xs sm:text-sm"
                               required />
-                          </FormField>
 
-                          <div class="mt-3 flex justify-end">
-                            <Button
-                              htmlType="submit"
-                              type="primary"
-                              size="sm"
-                              disabled={isSubmitting}
-                              isLoading={isSubmitting}>
-                              {isSubmitting ? 'Posting...' : 'Post Admin Reply'}
-                            </Button>
-                          </div>
-                        </form>
-                      {/snippet}
-                    </CommentThread>
-                  {/if}
-                </div>
-              {/if}
-            </Card>
+                            <div
+                              class="mt-2 flex items-center justify-between gap-2">
+                              <span
+                                class="text-2xs text-text-muted tabular-nums">
+                                {1000 - commentContent.length} left
+                              </span>
+                              <div class="flex items-center gap-1.5">
+                                <Button
+                                  type="ghost"
+                                  size="xs"
+                                  onclick={() => (replyTo = null)}>
+                                  Cancel
+                                </Button>
+                                <Button
+                                  htmlType="submit"
+                                  type="primary"
+                                  size="xs"
+                                  disabled={isSubmitting
+                                    || !commentContent.trim()}
+                                  isLoading={isSubmitting}>
+                                  {isSubmitting ? 'Replying...' : 'Reply'}
+                                </Button>
+                              </div>
+                            </div>
+                          </form>
+                        {/snippet}
+                      </CommentThread>
+                    {/if}
+                  </div>
+                {/if}
+              </div></Card>
           {/each}
         </div>
         <div class="mt-6">
@@ -2831,14 +3029,14 @@
               <FormField
                 id="author-name"
                 label="Name"
+                variant="floating"
                 required
-                counter={`${(authorState.name || '').length}/50`}
+                hideAsterisk
                 error={authorErrors.name}
                 valid={authorValid.name}>
                 <Input
                   id="author-name"
                   bind:value={authorState.name}
-                  placeholder="Ex: Linus Torvalds"
                   maxlength={50}
                   aria-required="true"
                   error={!!authorErrors.name}
@@ -2849,14 +3047,14 @@
               <FormField
                 id="author-username"
                 label="Username"
+                variant="floating"
                 required
-                counter={`${(authorState.username || '').length}/50`}
+                hideAsterisk
                 error={authorErrors.username}
                 valid={authorValid.username}>
                 <Input
                   id="author-username"
                   bind:value={authorState.username}
-                  placeholder="Ex: @torvalds"
                   maxlength={50}
                   aria-required="true"
                   error={!!authorErrors.username}
@@ -2867,14 +3065,14 @@
               <FormField
                 id="author-job"
                 label="Job Title"
+                variant="floating"
                 required
-                counter={`${(authorState.jobTitle || '').length}/50`}
+                hideAsterisk
                 error={authorErrors.jobTitle}
                 valid={authorValid.jobTitle}>
                 <Input
                   id="author-job"
                   bind:value={authorState.jobTitle}
-                  placeholder="Ex: Kernel Developer"
                   maxlength={50}
                   aria-required="true"
                   error={!!authorErrors.jobTitle}
@@ -2885,14 +3083,14 @@
               <FormField
                 id="author-headline"
                 label="Headline"
+                variant="floating"
                 required
-                counter={`${(authorState.headline || '').length}/100`}
+                hideAsterisk
                 error={authorErrors.headline}
                 valid={authorValid.headline}>
                 <Input
                   id="author-headline"
                   bind:value={authorState.headline}
-                  placeholder="Ex: Linux Kernel Core Developer/Maintainer"
                   maxlength={100}
                   aria-required="true"
                   error={!!authorErrors.headline}
@@ -2913,7 +3111,7 @@
                 id="author-avatar"
                 label="Avatar Image URL"
                 required
-                counter={`${(authorState.avatar || '').length}/100`}
+                hideAsterisk
                 error={authorErrors.avatar}
                 valid={authorValid.avatar}>
                 <div class="flex items-center gap-3">
@@ -2969,15 +3167,15 @@
               <FormField
                 id="author-email"
                 label="Email"
+                variant="floating"
                 required
-                counter={`${(authorState.email || '').length}/50`}
+                hideAsterisk
                 error={authorErrors.email}
                 valid={authorValid.email}>
                 <Input
                   id="author-email"
                   type="text"
                   bind:value={authorState.email}
-                  placeholder="Ex: torvalds@linux-foundation.org"
                   maxlength={50}
                   aria-required="true"
                   error={!!authorErrors.email}
@@ -2997,14 +3195,14 @@
               <FormField
                 id="author-city"
                 label="City"
+                variant="floating"
                 required
-                counter={`${(authorState.city || '').length}/50`}
+                hideAsterisk
                 error={authorErrors.city}
                 valid={authorValid.city}>
                 <Input
                   id="author-city"
                   bind:value={authorState.city}
-                  placeholder="Ex: Helsinki"
                   maxlength={50}
                   aria-required="true"
                   error={!!authorErrors.city}
@@ -3015,14 +3213,14 @@
               <FormField
                 id="author-postal"
                 label="Postal Code"
+                variant="floating"
                 required
-                counter={`${(authorState.postalCode || '').length}/10`}
+                hideAsterisk
                 error={authorErrors.postalCode}
                 valid={authorValid.postalCode}>
                 <Input
                   id="author-postal"
                   bind:value={authorState.postalCode}
-                  placeholder="Ex: 00100"
                   maxlength={10}
                   aria-required="true"
                   error={!!authorErrors.postalCode}
@@ -3033,14 +3231,14 @@
               <FormField
                 id="author-country"
                 label="Country"
+                variant="floating"
                 required
-                counter={`${(authorState.country || '').length}/50`}
+                hideAsterisk
                 error={authorErrors.country}
                 valid={authorValid.country}>
                 <Input
                   id="author-country"
                   bind:value={authorState.country}
-                  placeholder="Ex: Finland"
                   maxlength={50}
                   aria-required="true"
                   error={!!authorErrors.country}
@@ -3060,14 +3258,14 @@
               <FormField
                 id="author-site"
                 label="Site URL"
+                variant="floating"
                 required
-                counter={`${(authorState.siteUrl || '').length}/100`}
+                hideAsterisk
                 error={authorErrors.siteUrl}
                 valid={authorValid.siteUrl}>
                 <Input
                   id="author-site"
                   bind:value={authorState.siteUrl}
-                  placeholder="Ex: https://linux.org/"
                   maxlength={100}
                   aria-required="true"
                   error={!!authorErrors.siteUrl}
@@ -3078,14 +3276,15 @@
               <FormField
                 id="author-bio"
                 label="Description"
+                variant="floating"
                 required
+                hideAsterisk
                 counter={`${(authorState.bio || '').length}/1000`}
                 error={authorErrors.bio}
                 valid={authorValid.bio}>
                 <Textarea
                   id="author-bio"
                   bind:value={authorState.bio}
-                  placeholder="Describe anything about you..."
                   rows={4}
                   maxlength={1000}
                   aria-required="true"
@@ -3100,31 +3299,36 @@
         {#snippet actions()}
           <FormActions>
             {#if authorIsDirty}
-              <p class="text-xs text-text-secondary select-none">
+              <p class="text-xs text-text-secondary select-none sm:mr-auto">
                 You have unsaved changes.
               </p>
             {/if}
-            <Button
-              htmlType="button"
-              type="danger"
-              tone="critical"
-              size="md"
-              disabled={!authorState.id}
-              onclick={confirmClearAuthor}
-              isLoading={isClearingAuthor}>
-              {#snippet leading()}
-                <Trash2 class="size-3.5" />
-              {/snippet}
-              <span>Delete Profile</span>
-            </Button>
-            <Button
-              htmlType="submit"
-              type="primary"
-              size="md"
-              disabled={!authorIsDirty}
-              isLoading={isSavingAuthor}>
-              Save Profile
-            </Button>
+            <div
+              class="flex w-full flex-col-reverse gap-2.5 sm:w-auto sm:flex-row sm:items-center sm:gap-3">
+              <Button
+                htmlType="button"
+                type="danger"
+                tone="critical"
+                size="md"
+                class="w-full sm:w-auto"
+                disabled={!authorState.id}
+                onclick={confirmClearAuthor}
+                isLoading={isClearingAuthor}>
+                {#snippet leading()}
+                  <Trash class="size-3.5" />
+                {/snippet}
+                <span>Delete Profile</span>
+              </Button>
+              <Button
+                htmlType="submit"
+                type="primary"
+                size="md"
+                class="w-full sm:w-auto"
+                disabled={!authorIsDirty}
+                isLoading={isSavingAuthor}>
+                Save Profile
+              </Button>
+            </div>
           </FormActions>
         {/snippet}
       </FormSection>
@@ -3149,22 +3353,27 @@
         {/if}
 
         <Card>
-          <div class="mb-6 flex items-center justify-between gap-4">
-            <div>
+          <div
+            class="mb-6 flex items-start justify-between gap-3 sm:items-center sm:gap-4">
+            <div class="min-w-0 flex-1 select-none">
               <h2 class="text-xl font-bold text-text-primary">Experiences</h2>
               <p class="mt-1 text-xs text-text-secondary">
-                List your work history in reverse chronological order.
+                List your work history in reverse chronological order. All
+                fields are required unless marked (optional).
               </p>
             </div>
             <Button
               htmlType="button"
               type="primary"
               size="sm"
+              aria-label="Add Experience"
+              title="Add Experience"
+              class="shrink-0 px-2.5 sm:px-3"
               onclick={() => handleAddCvEntry('experience')}>
               {#snippet leading()}
                 <Plus class="size-3.5" />
               {/snippet}
-              Add Experience
+              <span class="hidden sm:inline">Add Experience</span>
             </Button>
           </div>
           <div class="flex flex-col gap-6">
@@ -3177,8 +3386,9 @@
               <div
                 class="flex flex-col gap-4 rounded-sm border border-border-subtle bg-surface-card p-4">
                 <div
-                  class="flex items-center justify-between border-b border-border-subtle/40 pb-2">
-                  <span class="font-mono text-xs font-light text-text-muted"
+                  class="flex items-center justify-between gap-2 border-b border-border-subtle/40 pb-2">
+                  <span
+                    class="min-w-0 truncate font-mono text-xs font-light text-text-muted"
                     >Experience Entry #{idx + 1}</span>
                   <div class="flex items-center gap-1">
                     <Button
@@ -3207,13 +3417,6 @@
                           idx,
                           'down'
                         ))}><ArrowDown class="size-3.5" /></Button>
-                    <Button
-                      htmlType="button"
-                      type="danger"
-                      tone="critical"
-                      size="sm"
-                      onclick={() => confirmRemoveCvEntry('experience', idx)}
-                      >Delete</Button>
                   </div>
                 </div>
 
@@ -3221,14 +3424,14 @@
                   <FormField
                     id={'exp-title-' + idx}
                     label="Title"
+                    variant="floating"
                     required
+                    hideAsterisk
                     error={experienceErrors[idx]?.title}
-                    valid={experienceValid[idx]?.title}
-                    counter={`${(exp.title || '').length}/50`}>
+                    valid={experienceValid[idx]?.title}>
                     <Input
                       id={'exp-title-' + idx}
                       bind:value={exp.title}
-                      placeholder="Ex: Software Engineer"
                       maxlength={50}
                       error={!!experienceErrors[idx]?.title}
                       valid={experienceValid[idx]?.title}
@@ -3246,9 +3449,11 @@
                   <FormField
                     id={'exp-type-' + idx}
                     label="Employment type"
-                    required>
+                    variant="floating"
+                    required
+                    hideAsterisk>
                     <DropdownSelect
-                      placeholder="Please select"
+                      placeholder="Employment type"
                       options={EMPLOYMENT_TYPES.map(t => ({
                         value: t,
                         label: t
@@ -3261,14 +3466,14 @@
                 <FormField
                   id={'exp-company-' + idx}
                   label="Company or organization"
+                  variant="floating"
                   required
+                  hideAsterisk
                   error={experienceErrors[idx]?.company}
-                  valid={experienceValid[idx]?.company}
-                  counter={`${(exp.company || '').length}/100`}>
+                  valid={experienceValid[idx]?.company}>
                   <Input
                     id={'exp-company-' + idx}
                     bind:value={exp.company}
-                    placeholder="Ex: Berkshire Hathaway"
                     maxlength={100}
                     error={!!experienceErrors[idx]?.company}
                     valid={experienceValid[idx]?.company}
@@ -3287,14 +3492,14 @@
                   <FormField
                     id={'exp-location-' + idx}
                     label="Location"
+                    variant="floating"
                     required
+                    hideAsterisk
                     error={experienceErrors[idx]?.location}
-                    valid={experienceValid[idx]?.location}
-                    counter={`${(exp.location || '').length}/100`}>
+                    valid={experienceValid[idx]?.location}>
                     <Input
                       id={'exp-location-' + idx}
                       bind:value={exp.location}
-                      placeholder="Ex: London, United Kingdom"
                       maxlength={100}
                       error={!!experienceErrors[idx]?.location}
                       valid={experienceValid[idx]?.location}
@@ -3312,9 +3517,11 @@
                   <FormField
                     id={'exp-loctype-' + idx}
                     label="Location type"
-                    required>
+                    variant="floating"
+                    required
+                    hideAsterisk>
                     <DropdownSelect
-                      placeholder="Please select"
+                      placeholder="Location type"
                       options={LOCATION_TYPES.map(lt => ({
                         value: lt,
                         label: lt
@@ -3325,16 +3532,25 @@
                 </div>
 
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <FormField
-                    id={'exp-start-month-' + idx}
-                    label="Start date"
-                    required>
-                    <div class="grid grid-cols-2 gap-2">
+                  <div class="grid grid-cols-2 gap-2">
+                    <FormField
+                      id={'exp-start-month-' + idx}
+                      label="Start month"
+                      variant="floating"
+                      required
+                      hideAsterisk>
                       <DropdownSelect
                         placeholder="Month"
                         options={MONTHS.map(m => ({value: m, label: m}))}
                         bind:value={exp.startMonth}
                         class="w-full" />
+                    </FormField>
+                    <FormField
+                      id={'exp-start-year-' + idx}
+                      label="Start year"
+                      variant="floating"
+                      required
+                      hideAsterisk>
                       <DropdownSelect
                         placeholder="Year"
                         options={[
@@ -3346,34 +3562,42 @@
                         ]}
                         bind:value={exp.startYear}
                         class="w-full" />
-                    </div>
-                  </FormField>
+                    </FormField>
+                  </div>
 
-                  <FormField
-                    id={'exp-end-month-' + idx}
-                    label="End date (or expected)">
+                  <div>
                     <div class="grid grid-cols-2 gap-2">
-                      <DropdownSelect
-                        placeholder="Month"
-                        disabled={exp.currentlyIn}
-                        options={[
-                          {value: null, label: 'Month'},
-                          ...MONTHS.map(m => ({value: m, label: m}))
-                        ]}
-                        bind:value={exp.endMonth}
-                        class="w-full" />
-                      <DropdownSelect
-                        placeholder="Year"
-                        disabled={exp.currentlyIn}
-                        options={[
-                          {value: null, label: 'Year'},
-                          ...getEndYearOptions(exp.startYear).map(y => ({
-                            value: y,
-                            label: String(y)
-                          }))
-                        ]}
-                        bind:value={exp.endYear}
-                        class="w-full" />
+                      <FormField
+                        id={'exp-end-month-' + idx}
+                        label="End month (optional)"
+                        variant="floating">
+                        <DropdownSelect
+                          placeholder="Month"
+                          disabled={exp.currentlyIn}
+                          options={[
+                            {value: null, label: 'Month'},
+                            ...MONTHS.map(m => ({value: m, label: m}))
+                          ]}
+                          bind:value={exp.endMonth}
+                          class="w-full" />
+                      </FormField>
+                      <FormField
+                        id={'exp-end-year-' + idx}
+                        label="End year (optional)"
+                        variant="floating">
+                        <DropdownSelect
+                          placeholder="Year"
+                          disabled={exp.currentlyIn}
+                          options={[
+                            {value: null, label: 'Year'},
+                            ...getEndYearOptions(exp.startYear).map(y => ({
+                              value: y,
+                              label: String(y)
+                            }))
+                          ]}
+                          bind:value={exp.endYear}
+                          class="w-full" />
+                      </FormField>
                     </div>
                     <div class="mt-2">
                       <Checkbox
@@ -3386,20 +3610,21 @@
                           }
                         }} />
                     </div>
-                  </FormField>
+                  </div>
                 </div>
 
                 <FormField
                   id={'exp-desc-' + idx}
                   label="Description"
+                  variant="floating"
                   required
+                  hideAsterisk
                   error={experienceErrors[idx]?.description}
                   valid={experienceValid[idx]?.description}
                   counter={`${(exp.description || '').length}/1000`}>
                   <Textarea
                     id={'exp-desc-' + idx}
                     bind:value={exp.description}
-                    placeholder="Describe your experience..."
                     rows={3}
                     maxlength={1000}
                     error={!!experienceErrors[idx]?.description}
@@ -3418,6 +3643,24 @@
                       );
                     }} />
                 </FormField>
+
+                <div
+                  class="mt-1 flex items-center justify-end border-t border-border-subtle/40 pt-3">
+                  <Button
+                    htmlType="button"
+                    type="danger"
+                    tone="critical"
+                    size="sm"
+                    class="w-full sm:w-auto"
+                    aria-label="Delete Experience"
+                    title="Delete Experience"
+                    onclick={() => confirmRemoveCvEntry('experience', idx)}>
+                    {#snippet leading()}
+                      <Trash class="size-3.5" />
+                    {/snippet}
+                    Delete Experience
+                  </Button>
+                </div>
               </div>
             {/each}
           </div>
@@ -3438,22 +3681,27 @@
         </Card>
 
         <Card>
-          <div class="mb-6 flex items-center justify-between gap-4">
-            <div>
+          <div
+            class="mb-6 flex items-start justify-between gap-3 sm:items-center sm:gap-4">
+            <div class="min-w-0 flex-1 select-none">
               <h2 class="text-xl font-bold text-text-primary">Education</h2>
               <p class="mt-1 text-xs text-text-secondary">
-                List your degrees, certifications, and academic background.
+                List your degrees, certifications, and academic background. All
+                fields are required unless marked (optional).
               </p>
             </div>
             <Button
               htmlType="button"
               type="primary"
               size="sm"
+              aria-label="Add Education"
+              title="Add Education"
+              class="shrink-0 px-2.5 sm:px-3"
               onclick={() => handleAddCvEntry('education')}>
               {#snippet leading()}
                 <Plus class="size-3.5" />
               {/snippet}
-              Add Education
+              <span class="hidden sm:inline">Add Education</span>
             </Button>
           </div>
           <div class="flex flex-col gap-6">
@@ -3466,8 +3714,9 @@
               <div
                 class="flex flex-col gap-4 rounded-sm border border-border-subtle bg-surface-card p-4">
                 <div
-                  class="flex items-center justify-between border-b border-border-subtle/40 pb-2">
-                  <span class="font-mono text-xs font-light text-text-muted"
+                  class="flex items-center justify-between gap-2 border-b border-border-subtle/40 pb-2">
+                  <span
+                    class="min-w-0 truncate font-mono text-xs font-light text-text-muted"
                     >Education Entry #{idx + 1}</span>
                   <div class="flex items-center gap-1">
                     <Button
@@ -3496,13 +3745,6 @@
                           idx,
                           'down'
                         ))}><ArrowDown class="size-3.5" /></Button>
-                    <Button
-                      htmlType="button"
-                      type="danger"
-                      tone="critical"
-                      size="sm"
-                      onclick={() => confirmRemoveCvEntry('education', idx)}
-                      >Delete</Button>
                   </div>
                 </div>
 
@@ -3510,14 +3752,14 @@
                   <FormField
                     id={'edu-inst-' + idx}
                     label="Institution"
+                    variant="floating"
                     required
+                    hideAsterisk
                     error={educationErrors[idx]?.institution}
-                    valid={educationValid[idx]?.institution}
-                    counter={`${(edu.institution || '').length}/100`}>
+                    valid={educationValid[idx]?.institution}>
                     <Input
                       id={'edu-inst-' + idx}
                       bind:value={edu.institution}
-                      placeholder="Ex: Massachusetts Institute of Technology"
                       maxlength={100}
                       error={!!educationErrors[idx]?.institution}
                       valid={educationValid[idx]?.institution}
@@ -3539,14 +3781,14 @@
                   <FormField
                     id={'edu-degree-' + idx}
                     label="Degree"
+                    variant="floating"
                     required
+                    hideAsterisk
                     error={educationErrors[idx]?.degree}
-                    valid={educationValid[idx]?.degree}
-                    counter={`${(edu.degree || '').length}/100`}>
+                    valid={educationValid[idx]?.degree}>
                     <Input
                       id={'edu-degree-' + idx}
                       bind:value={edu.degree}
-                      placeholder="Ex: Bachelor of Computer Science"
                       maxlength={100}
                       error={!!educationErrors[idx]?.degree}
                       valid={educationValid[idx]?.degree}
@@ -3564,14 +3806,14 @@
                   <FormField
                     id={'edu-field-' + idx}
                     label="Field of Study"
+                    variant="floating"
                     required
+                    hideAsterisk
                     error={educationErrors[idx]?.field}
-                    valid={educationValid[idx]?.field}
-                    counter={`${(edu.field || '').length}/100`}>
+                    valid={educationValid[idx]?.field}>
                     <Input
                       id={'edu-field-' + idx}
                       bind:value={edu.field}
-                      placeholder="Ex: Computer Science"
                       maxlength={100}
                       error={!!educationErrors[idx]?.field}
                       valid={educationValid[idx]?.field}
@@ -3588,15 +3830,13 @@
 
                   <FormField
                     id={'edu-grade-' + idx}
-                    label="Grade"
-                    required
+                    label="Grade (optional)"
+                    variant="floating"
                     error={educationErrors[idx]?.grade}
-                    valid={educationValid[idx]?.grade}
-                    counter={`${(edu.grade || '').length}/50`}>
+                    valid={educationValid[idx]?.grade}>
                     <Input
                       id={'edu-grade-' + idx}
                       bind:value={edu.grade}
-                      placeholder="Ex: 3.99/4.00"
                       maxlength={50}
                       error={!!educationErrors[idx]?.grade}
                       valid={educationValid[idx]?.grade}
@@ -3613,16 +3853,25 @@
                 </div>
 
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <FormField
-                    id={'edu-start-month-' + idx}
-                    label="Start date"
-                    required>
-                    <div class="grid grid-cols-2 gap-2">
+                  <div class="grid grid-cols-2 gap-2">
+                    <FormField
+                      id={'edu-start-month-' + idx}
+                      label="Start month"
+                      variant="floating"
+                      required
+                      hideAsterisk>
                       <DropdownSelect
                         placeholder="Month"
                         options={MONTHS.map(m => ({value: m, label: m}))}
                         bind:value={edu.startMonth}
                         class="w-full" />
+                    </FormField>
+                    <FormField
+                      id={'edu-start-year-' + idx}
+                      label="Start year"
+                      variant="floating"
+                      required
+                      hideAsterisk>
                       <DropdownSelect
                         placeholder="Year"
                         options={[
@@ -3634,34 +3883,42 @@
                         ]}
                         bind:value={edu.startYear}
                         class="w-full" />
-                    </div>
-                  </FormField>
+                    </FormField>
+                  </div>
 
-                  <FormField
-                    id={'edu-end-month-' + idx}
-                    label="End date (or expected)">
+                  <div>
                     <div class="grid grid-cols-2 gap-2">
-                      <DropdownSelect
-                        placeholder="Month"
-                        disabled={edu.currentlyIn}
-                        options={[
-                          {value: null, label: 'Month'},
-                          ...MONTHS.map(m => ({value: m, label: m}))
-                        ]}
-                        bind:value={edu.endMonth}
-                        class="w-full" />
-                      <DropdownSelect
-                        placeholder="Year"
-                        disabled={edu.currentlyIn}
-                        options={[
-                          {value: null, label: 'Year'},
-                          ...getEndYearOptions(edu.startYear).map(y => ({
-                            value: y,
-                            label: String(y)
-                          }))
-                        ]}
-                        bind:value={edu.endYear}
-                        class="w-full" />
+                      <FormField
+                        id={'edu-end-month-' + idx}
+                        label="End month (optional)"
+                        variant="floating">
+                        <DropdownSelect
+                          placeholder="Month"
+                          disabled={edu.currentlyIn}
+                          options={[
+                            {value: null, label: 'Month'},
+                            ...MONTHS.map(m => ({value: m, label: m}))
+                          ]}
+                          bind:value={edu.endMonth}
+                          class="w-full" />
+                      </FormField>
+                      <FormField
+                        id={'edu-end-year-' + idx}
+                        label="End year (optional)"
+                        variant="floating">
+                        <DropdownSelect
+                          placeholder="Year"
+                          disabled={edu.currentlyIn}
+                          options={[
+                            {value: null, label: 'Year'},
+                            ...getEndYearOptions(edu.startYear).map(y => ({
+                              value: y,
+                              label: String(y)
+                            }))
+                          ]}
+                          bind:value={edu.endYear}
+                          class="w-full" />
+                      </FormField>
                     </div>
                     <div class="mt-2">
                       <Checkbox
@@ -3674,20 +3931,21 @@
                           }
                         }} />
                     </div>
-                  </FormField>
+                  </div>
                 </div>
 
                 <FormField
                   id={'edu-desc-' + idx}
                   label="Description"
+                  variant="floating"
                   required
+                  hideAsterisk
                   error={educationErrors[idx]?.description}
                   valid={educationValid[idx]?.description}
                   counter={`${(edu.description || '').length}/1000`}>
                   <Textarea
                     id={'edu-desc-' + idx}
                     bind:value={edu.description}
-                    placeholder="Describe your education..."
                     rows={3}
                     maxlength={1000}
                     error={!!educationErrors[idx]?.description}
@@ -3702,6 +3960,24 @@
                       validateEducationField(idx, 'description', 'Description');
                     }} />
                 </FormField>
+
+                <div
+                  class="mt-1 flex items-center justify-end border-t border-border-subtle/40 pt-3">
+                  <Button
+                    htmlType="button"
+                    type="danger"
+                    tone="critical"
+                    size="sm"
+                    class="w-full sm:w-auto"
+                    aria-label="Delete Education"
+                    title="Delete Education"
+                    onclick={() => confirmRemoveCvEntry('education', idx)}>
+                    {#snippet leading()}
+                      <Trash class="size-3.5" />
+                    {/snippet}
+                    Delete Education
+                  </Button>
+                </div>
               </div>
             {/each}
           </div>
@@ -3724,7 +4000,7 @@
 
       <Card
         variant="glass"
-        class="mt-10 flex flex-col gap-5">
+        class="mt-10 flex flex-col gap-3">
         {#snippet header()}
           <h2 class="text-lg font-bold tracking-tight text-text-primary">
             CV Document
@@ -3783,115 +4059,78 @@
                       onclick={() => {
                         navigator.clipboard
                           .writeText(cvDocState.hash || '')
-                          .then(() => toastStore.success('Copied!'))
+                          .then(() => {
+                            copiedHash = true;
+                            toastStore.success('Copied!');
+                            setTimeout(() => {
+                              copiedHash = false;
+                            }, 2000);
+                          })
                           .catch(() => toastStore.error('Failed to copy'));
                       }}
-                      ariaLabel="Copy SHA-256 checksum">
-                      <Copy class="size-3.5" />
+                      ariaLabel={copiedHash ? 'Checksum copied' : (
+                        'Copy SHA-256 checksum'
+                      )}>
+                      {#if copiedHash}
+                        <CopyCheck class="size-3.5 text-copilot" />
+                      {:else}
+                        <Copy class="size-3.5" />
+                      {/if}
                     </IconButton>
                   </div>
                 </div>
               {/if}
 
-              <div class="flex items-center gap-2 pt-1">
-                <Button
-                  htmlType="button"
-                  type="secondary"
-                  size="sm"
-                  onclick={() =>
-                    window.open(cvDocState.fileUrl || '/cv.pdf', '_blank')}>
-                  {#snippet leading()}
-                    <ExternalLink class="size-3.5" />
-                  {/snippet}
-                  <span>Open CDN PDF</span>
-                </Button>
+              <div
+                class="flex flex-col gap-2 pt-1 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex flex-col gap-2 sm:flex-row">
+                  <Button
+                    htmlType="button"
+                    type="secondary"
+                    size="sm"
+                    class="w-full sm:w-auto"
+                    onclick={() =>
+                      window.open(cvDocState.fileUrl || '/cv.pdf', '_blank')}>
+                    {#snippet leading()}
+                      <SquareArrowOutUpRight class="size-3.5" />
+                    {/snippet}
+                    <span>View PDF</span>
+                  </Button>
+                  <Button
+                    htmlType="button"
+                    type="secondary"
+                    size="sm"
+                    class="w-full sm:w-auto"
+                    disabled={isDownloadingCv}
+                    isLoading={isDownloadingCv}
+                    onclick={downloadCvDocument}>
+                    {#snippet leading()}
+                      <Download class="size-3.5" />
+                    {/snippet}
+                    <span>Download</span>
+                  </Button>
+                </div>
                 <Button
                   htmlType="button"
                   type="danger"
                   tone="critical"
                   size="sm"
-                  class="ml-auto"
+                  class="w-full sm:w-auto"
+                  aria-label="Delete CV Document"
+                  title="Delete CV Document"
                   onclick={confirmDeleteCvDoc}>
                   {#snippet leading()}
-                    <Trash2 class="size-3.5" />
+                    <Trash class="size-3.5" />
                   {/snippet}
-                  <span>Delete</span>
+                  <span>Delete CV Document</span>
                 </Button>
               </div>
             </div>
           {:else}
             <EmptyState
               title="No CV PDF generated yet"
-              description="Click regenerate below to build your CV PDF from Supabase data." />
+              description="Save your profile, CV entries, or skills to automatically build your CV PDF." />
           {/if}
-
-          <div
-            class="flex flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-4">
-            <div class="flex flex-col gap-1">
-              <span class="text-xs font-semibold text-text-primary"
-                >Server-Side PDF Auto-Generator</span>
-              <span class="text-xxs text-text-muted"
-                >Generates a standard multi-section PDF document directly from
-                your profile, experiences, education, and skills data in
-                Supabase.</span>
-            </div>
-
-            <div class="flex flex-col gap-2 pt-1">
-              <span
-                class="text-xxs font-semibold tracking-wide text-text-muted uppercase"
-                >Select Version Increment (SemVer)</span>
-              <div class="grid grid-cols-3 gap-2">
-                <Button
-                  htmlType="button"
-                  type="secondary"
-                  size="sm"
-                  disabled={isGeneratingPdf}
-                  onclick={() => executeGenerateCvPdf('patch')}>
-                  {#snippet leading()}
-                    <BadgeCheck class="size-3.5" />
-                  {/snippet}
-                  <span>Patch (+0.0.1)</span>
-                </Button>
-                <Button
-                  htmlType="button"
-                  type="secondary"
-                  size="sm"
-                  disabled={isGeneratingPdf}
-                  onclick={() => executeGenerateCvPdf('minor')}>
-                  {#snippet leading()}
-                    <PlusCircle class="size-3.5" />
-                  {/snippet}
-                  <span>Minor (+0.1.0)</span>
-                </Button>
-                <Button
-                  htmlType="button"
-                  type="secondary"
-                  size="sm"
-                  disabled={isGeneratingPdf}
-                  onclick={() => executeGenerateCvPdf('major')}>
-                  {#snippet leading()}
-                    <Rocket class="size-3.5" />
-                  {/snippet}
-                  <span>Major (+1.0.0)</span>
-                </Button>
-              </div>
-            </div>
-
-            <Button
-              htmlType="button"
-              type="primary"
-              size="md"
-              fullWidth
-              class="mt-1"
-              disabled={isGeneratingPdf}
-              isLoading={isGeneratingPdf}
-              onclick={() => executeGenerateCvPdf('patch')}>
-              {#snippet leading()}
-                <Cpu class="mr-1 size-4" />
-              {/snippet}
-              Regenerate CV PDF Now
-            </Button>
-          </div>
         </div>
       </Card>
     {:else if activeAdminTab === 'skills'}
@@ -3904,11 +4143,14 @@
             htmlType="button"
             type="primary"
             size="md"
+            aria-label="Add Skill"
+            title="Add Skill"
+            class="px-2.5 sm:px-4"
             onclick={handleAddSkill}>
             {#snippet leading()}
               <Plus class="size-3.5" />
             {/snippet}
-            Add Skill
+            <span class="hidden sm:inline">Add Skill</span>
           </Button>
         {/snippet}
 
@@ -3926,8 +4168,9 @@
             <div
               class="flex flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-4">
               <div
-                class="flex items-center justify-between border-b border-border-subtle/40 pb-2">
-                <span class="font-mono text-xs font-light text-text-muted"
+                class="flex items-center justify-between gap-2 border-b border-border-subtle/40 pb-2">
+                <span
+                  class="min-w-0 truncate font-mono text-xs font-light text-text-muted"
                   >Category #{idx + 1}</span>
                 <div class="flex items-center gap-1">
                   <Button
@@ -3950,26 +4193,20 @@
                     onclick={() =>
                       (skillsState = moveArrayItem(skillsState, idx, 'down'))}
                     ><ArrowDown class="size-3.5" /></Button>
-                  <Button
-                    htmlType="button"
-                    type="danger"
-                    tone="critical"
-                    size="sm"
-                    onclick={() => confirmRemoveSkill(idx)}>Delete</Button>
                 </div>
               </div>
 
               <FormField
                 id={'sk-cat-' + idx}
                 label="Area of Expertise"
+                variant="floating"
                 required
+                hideAsterisk
                 error={skillsErrors[idx]?.category}
-                valid={skillsValid[idx]?.category}
-                counter={`${(item.category || '').length}/100`}>
+                valid={skillsValid[idx]?.category}>
                 <Input
                   id={'sk-cat-' + idx}
                   bind:value={item.category}
-                  placeholder="Ex: Software Engineering"
                   maxlength={100}
                   error={!!skillsErrors[idx]?.category}
                   valid={skillsValid[idx]?.category}
@@ -3983,12 +4220,8 @@
               <FormField
                 id={'sk-list-' + idx}
                 label="Skills Set"
+                variant="floating"
                 counter={`${item.skills.length}/20`}>
-                {#snippet hintSnippet()}
-                  Up to 20 skills, 30 characters each. Separate multiple skills
-                  with commas. To include a comma within a skill name, use a
-                  backslash (e.g., UI\,UX Design).
-                {/snippet}
                 <PillInput
                   id={'sk-list-' + idx}
                   bind:value={item.skills}
@@ -3996,9 +4229,27 @@
                   placeholderEmpty="Type skill and press comma..."
                   placeholderFilled="Add skill..."
                   maxItems={20}
-                  maxItemLength={30}
+                  maxItemLength={50}
                   onPaste={e => handleSkillsSetPaste(idx, e)} />
               </FormField>
+
+              <div
+                class="mt-1 flex items-center justify-end border-t border-border-subtle/40 pt-3">
+                <Button
+                  htmlType="button"
+                  type="danger"
+                  tone="critical"
+                  size="sm"
+                  class="w-full sm:w-auto"
+                  aria-label="Delete Category"
+                  title="Delete Category"
+                  onclick={() => confirmRemoveSkill(idx)}>
+                  {#snippet leading()}
+                    <Trash class="size-3.5" />
+                  {/snippet}
+                  Delete Category
+                </Button>
+              </div>
             </div>
           {/each}
         </div>
@@ -4019,6 +4270,46 @@
           </FormActions>
         {/snippet}
       </FormSection>
+    {:else if activeAdminTab === 'glossary'}
+      <FormSection
+        onsubmit={handleSaveGlossary}
+        title="Glossary"
+        description="Terms (names, projects, brands) that are always kept as-is when a post is translated by AI — no per-post markup needed.">
+        {#if glossarySaveSuccess}<StatusBanner
+            variant="success"
+            message="Glossary saved successfully!" />{/if}
+
+        <FormField
+          id="glossary-terms"
+          label="Protected Terms"
+          variant="floating"
+          counter={`${glossaryState.length}/50`}>
+          <PillInput
+            id="glossary-terms"
+            bind:value={glossaryState}
+            itemLabel="Term"
+            placeholderEmpty="Type a term and press comma..."
+            placeholderFilled="Add term..."
+            maxItems={50}
+            maxItemLength={80} />
+        </FormField>
+
+        {#snippet actions()}
+          <FormActions>
+            {#if glossaryIsDirty}
+              <p class="text-xs text-text-secondary select-none">
+                You have unsaved changes.
+              </p>
+            {/if}
+            <Button
+              htmlType="submit"
+              type="primary"
+              size="md"
+              disabled={!glossaryIsDirty}
+              isLoading={isSavingGlossary}>Save Glossary</Button>
+          </FormActions>
+        {/snippet}
+      </FormSection>
     {:else if activeAdminTab === 'socials'}
       <FormSection
         onsubmit={handleSaveSocials}
@@ -4029,11 +4320,14 @@
             htmlType="button"
             type="primary"
             size="md"
+            aria-label="Add Social Link"
+            title="Add Social Link"
+            class="px-2.5 sm:px-4"
             onclick={handleAddSocial}>
             {#snippet leading()}
               <Plus class="size-3.5" />
             {/snippet}
-            Add Social Link
+            <span class="hidden sm:inline">Add Social Link</span>
           </Button>
         {/snippet}
 
@@ -4051,8 +4345,9 @@
             <div
               class="flex flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-4">
               <div
-                class="flex items-center justify-between border-b border-border-subtle/40 pb-2">
-                <span class="font-mono text-xs font-light text-text-muted"
+                class="flex items-center justify-between gap-2 border-b border-border-subtle/40 pb-2">
+                <span
+                  class="min-w-0 truncate font-mono text-xs font-light text-text-muted"
                   >Social #{idx + 1}</span>
                 <div class="flex items-center gap-1">
                   <Button
@@ -4075,27 +4370,47 @@
                     onclick={() =>
                       (socialState = moveArrayItem(socialState, idx, 'down'))}
                     ><ArrowDown class="size-3.5" /></Button>
-                  <Button
-                    htmlType="button"
-                    type="danger"
-                    tone="critical"
-                    size="sm"
-                    onclick={() => confirmRemoveSocial(idx)}>Delete</Button>
                 </div>
               </div>
 
               <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FormField
+                  id={'soc-icon-' + idx}
+                  label="Icon"
+                  variant="floating"
+                  required
+                  hideAsterisk>
+                  <Input
+                    id={'soc-icon-' + idx}
+                    bind:value={item.icon}
+                    placeholder="Ex: bi-github or <Github />"
+                    maxlength={100}>
+                    {#snippet leadingSlot()}
+                      <div
+                        class="flex size-8 shrink-0 items-center justify-center rounded-sm border border-border-subtle bg-surface-card text-copilot shadow-2xs">
+                        <BrandIcon
+                          icon={item.icon}
+                          class="size-4 shrink-0 text-base leading-none {(
+                            item.icon?.trim()
+                          ) ?
+                            'text-copilot'
+                          : 'text-text-muted opacity-50'}" />
+                      </div>
+                    {/snippet}
+                  </Input>
+                </FormField>
+
+                <FormField
                   id={'soc-plat-' + idx}
                   label="Platform"
+                  variant="floating"
                   required
+                  hideAsterisk
                   error={socialErrors[idx]?.platform}
-                  valid={socialValid[idx]?.platform}
-                  counter={`${(item.platform || '').length}/50`}>
+                  valid={socialValid[idx]?.platform}>
                   <Input
                     id={'soc-plat-' + idx}
                     bind:value={item.platform}
-                    placeholder="Ex: GitHub"
                     maxlength={50}
                     error={!!socialErrors[idx]?.platform}
                     valid={socialValid[idx]?.platform}
@@ -4109,26 +4424,58 @@
                       validateSocialField(idx, 'platform');
                     }} />
                 </FormField>
+              </div>
 
-                <FormField
+              <FormField
+                id={'soc-url-' + idx}
+                label="URL"
+                variant="floating"
+                required
+                hideAsterisk
+                error={socialErrors[idx]?.url}
+                valid={socialValid[idx]?.url}>
+                <Input
                   id={'soc-url-' + idx}
-                  label="URL"
-                  required
-                  error={socialErrors[idx]?.url}
+                  bind:value={item.url}
+                  maxlength={100}
+                  error={!!socialErrors[idx]?.url}
                   valid={socialValid[idx]?.url}
-                  counter={`${(item.url || '').length}/100`}>
-                  <Input
-                    id={'soc-url-' + idx}
-                    bind:value={item.url}
-                    placeholder="Ex: https://github.com/torvalds"
-                    maxlength={100}
-                    error={!!socialErrors[idx]?.url}
-                    valid={socialValid[idx]?.url}
-                    oninput={() => {
-                      clearFieldError(socialErrors, socialValid, idx, 'url');
-                      validateSocialField(idx, 'url');
-                    }} />
-                </FormField>
+                  oninput={() => {
+                    clearFieldError(socialErrors, socialValid, idx, 'url');
+                    validateSocialField(idx, 'url');
+                  }} />
+              </FormField>
+
+              <FormField
+                id={'soc-desc-' + idx}
+                label="Description"
+                variant="floating"
+                hideAsterisk
+                counter={`${(item.description || '').length}/1000`}>
+                <Textarea
+                  id={'soc-desc-' + idx}
+                  bind:value={item.description}
+                  placeholder="Describe this social link..."
+                  rows={2}
+                  maxlength={1000} />
+              </FormField>
+
+              <div
+                class="mt-1 flex items-center justify-end border-t border-border-subtle/40 pt-3">
+                <Button
+                  htmlType="button"
+                  type="danger"
+                  tone="critical"
+                  size="sm"
+                  class="w-full sm:w-auto"
+                  aria-label="Delete Social Link"
+                  title="Delete Social Link"
+                  onclick={() => confirmRemoveSocial(idx)}>
+                  {#snippet leading()}
+                    <Trash class="size-3.5" />
+                  {/snippet}
+                  Delete Social Link
+                </Button>
               </div>
             </div>
           {/each}
@@ -4160,11 +4507,14 @@
             htmlType="button"
             type="primary"
             size="md"
+            aria-label="Add Sponsorship"
+            title="Add Sponsorship"
+            class="px-2.5 sm:px-4"
             onclick={handleAddSponsorship}>
             {#snippet leading()}
               <Plus class="size-3.5" />
             {/snippet}
-            Add Sponsorship
+            <span class="hidden sm:inline">Add Sponsorship</span>
           </Button>
         {/snippet}
 
@@ -4182,8 +4532,9 @@
             <div
               class="flex flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-4">
               <div
-                class="flex items-center justify-between border-b border-border-subtle/40 pb-2">
-                <span class="font-mono text-xs font-light text-text-muted"
+                class="flex items-center justify-between gap-2 border-b border-border-subtle/40 pb-2">
+                <span
+                  class="min-w-0 truncate font-mono text-xs font-light text-text-muted"
                   >Sponsorship #{idx + 1}</span>
                 <div class="flex items-center gap-1">
                   <Button
@@ -4212,28 +4563,47 @@
                         idx,
                         'down'
                       ))}><ArrowDown class="size-3.5" /></Button>
-                  <Button
-                    htmlType="button"
-                    type="danger"
-                    tone="critical"
-                    size="sm"
-                    onclick={() => confirmRemoveSponsorship(idx)}
-                    >Delete</Button>
                 </div>
               </div>
 
-              <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <FormField
+                  id={'sp-icon-' + idx}
+                  label="Icon"
+                  variant="floating"
+                  required
+                  hideAsterisk>
+                  <Input
+                    id={'sp-icon-' + idx}
+                    bind:value={item.icon}
+                    placeholder="Ex: bi-currency-dollar or <Heart />"
+                    maxlength={100}>
+                    {#snippet leadingSlot()}
+                      <div
+                        class="flex size-8 shrink-0 items-center justify-center rounded-sm border border-border-subtle bg-surface-card text-copilot shadow-2xs">
+                        <BrandIcon
+                          icon={item.icon}
+                          class="size-4 shrink-0 text-base leading-none {(
+                            item.icon?.trim()
+                          ) ?
+                            'text-copilot'
+                          : 'text-text-muted opacity-50'}" />
+                      </div>
+                    {/snippet}
+                  </Input>
+                </FormField>
+
                 <FormField
                   id={'sp-plat-' + idx}
                   label="Platform"
+                  variant="floating"
                   required
+                  hideAsterisk
                   error={sponsorshipErrors[idx]?.platform}
-                  valid={sponsorshipValid[idx]?.platform}
-                  counter={`${(item.platform || '').length}/50`}>
+                  valid={sponsorshipValid[idx]?.platform}>
                   <Input
                     id={'sp-plat-' + idx}
                     bind:value={item.platform}
-                    placeholder="Ex: Ko-fi"
                     maxlength={50}
                     error={!!sponsorshipErrors[idx]?.platform}
                     valid={sponsorshipValid[idx]?.platform}
@@ -4251,14 +4621,14 @@
                 <FormField
                   id={'sp-val-' + idx}
                   label="Display Text"
+                  variant="floating"
                   required
+                  hideAsterisk
                   error={sponsorshipErrors[idx]?.displayValue}
-                  valid={sponsorshipValid[idx]?.displayValue}
-                  counter={`${(item.displayValue || '').length}/50`}>
+                  valid={sponsorshipValid[idx]?.displayValue}>
                   <Input
                     id={'sp-val-' + idx}
                     bind:value={item.displayValue}
-                    placeholder="Ex: @farhnkrnapratma"
                     maxlength={50}
                     error={!!sponsorshipErrors[idx]?.displayValue}
                     valid={sponsorshipValid[idx]?.displayValue}
@@ -4276,14 +4646,14 @@
                 <FormField
                   id={'sp-url-' + idx}
                   label="URL"
+                  variant="floating"
                   required
+                  hideAsterisk
                   error={sponsorshipErrors[idx]?.url}
-                  valid={sponsorshipValid[idx]?.url}
-                  counter={`${(item.url || '').length}/100`}>
+                  valid={sponsorshipValid[idx]?.url}>
                   <Input
                     id={'sp-url-' + idx}
                     bind:value={item.url}
-                    placeholder="Ex: https://ko-fi.com/farhnkrnapratma"
                     maxlength={100}
                     error={!!sponsorshipErrors[idx]?.url}
                     valid={sponsorshipValid[idx]?.url}
@@ -4302,6 +4672,8 @@
               <FormField
                 id={'sp-desc-' + idx}
                 label="Description"
+                variant="floating"
+                hideAsterisk
                 counter={`${(item.description || '').length}/1000`}>
                 <Textarea
                   id={'sp-desc-' + idx}
@@ -4310,6 +4682,24 @@
                   rows={2}
                   maxlength={1000} />
               </FormField>
+
+              <div
+                class="mt-1 flex items-center justify-end border-t border-border-subtle/40 pt-3">
+                <Button
+                  htmlType="button"
+                  type="danger"
+                  tone="critical"
+                  size="sm"
+                  class="w-full sm:w-auto"
+                  aria-label="Delete Sponsorship"
+                  title="Delete Sponsorship"
+                  onclick={() => confirmRemoveSponsorship(idx)}>
+                  {#snippet leading()}
+                    <Trash class="size-3.5" />
+                  {/snippet}
+                  Delete Sponsorship
+                </Button>
+              </div>
             </div>
           {/each}
         </div>
@@ -4340,11 +4730,14 @@
             htmlType="button"
             type="primary"
             size="md"
+            aria-label="Add Contact"
+            title="Add Contact"
+            class="px-2.5 sm:px-4"
             onclick={handleAddContact}>
             {#snippet leading()}
               <Plus class="size-3.5" />
             {/snippet}
-            Add Contact
+            <span class="hidden sm:inline">Add Contact</span>
           </Button>
         {/snippet}
 
@@ -4362,8 +4755,9 @@
             <div
               class="flex flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-4">
               <div
-                class="flex items-center justify-between border-b border-border-subtle/40 pb-2">
-                <span class="font-mono text-xs font-light text-text-muted"
+                class="flex items-center justify-between gap-2 border-b border-border-subtle/40 pb-2">
+                <span
+                  class="min-w-0 truncate font-mono text-xs font-light text-text-muted"
                   >Contact #{idx + 1}</span>
                 <div class="flex items-center gap-1">
                   <Button
@@ -4386,27 +4780,47 @@
                     onclick={() =>
                       (contactState = moveArrayItem(contactState, idx, 'down'))}
                     ><ArrowDown class="size-3.5" /></Button>
-                  <Button
-                    htmlType="button"
-                    type="danger"
-                    tone="critical"
-                    size="sm"
-                    onclick={() => confirmRemoveContact(idx)}>Delete</Button>
                 </div>
               </div>
 
-              <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <FormField
+                  id={'ct-icon-' + idx}
+                  label="Icon"
+                  variant="floating"
+                  required
+                  hideAsterisk>
+                  <Input
+                    id={'ct-icon-' + idx}
+                    bind:value={item.icon}
+                    placeholder="Ex: bi-envelope or <Mail />"
+                    maxlength={100}>
+                    {#snippet leadingSlot()}
+                      <div
+                        class="flex size-8 shrink-0 items-center justify-center rounded-sm border border-border-subtle bg-surface-card text-copilot shadow-2xs">
+                        <BrandIcon
+                          icon={item.icon}
+                          class="size-4 shrink-0 text-base leading-none {(
+                            item.icon?.trim()
+                          ) ?
+                            'text-copilot'
+                          : 'text-text-muted opacity-50'}" />
+                      </div>
+                    {/snippet}
+                  </Input>
+                </FormField>
+
                 <FormField
                   id={'ct-plat-' + idx}
                   label="Platform"
+                  variant="floating"
                   required
+                  hideAsterisk
                   error={contactErrors[idx]?.platform}
-                  valid={contactValid[idx]?.platform}
-                  counter={`${(item.platform || '').length}/50`}>
+                  valid={contactValid[idx]?.platform}>
                   <Input
                     id={'ct-plat-' + idx}
                     bind:value={item.platform}
-                    placeholder="Ex: Email"
                     maxlength={50}
                     error={!!contactErrors[idx]?.platform}
                     valid={contactValid[idx]?.platform}
@@ -4424,14 +4838,14 @@
                 <FormField
                   id={'ct-val-' + idx}
                   label="Display Text"
+                  variant="floating"
                   required
+                  hideAsterisk
                   error={contactErrors[idx]?.displayValue}
-                  valid={contactValid[idx]?.displayValue}
-                  counter={`${(item.displayValue || '').length}/50`}>
+                  valid={contactValid[idx]?.displayValue}>
                   <Input
                     id={'ct-val-' + idx}
                     bind:value={item.displayValue}
-                    placeholder="Ex: contact@example.com"
                     maxlength={50}
                     error={!!contactErrors[idx]?.displayValue}
                     valid={contactValid[idx]?.displayValue}
@@ -4449,14 +4863,14 @@
                 <FormField
                   id={'ct-url-' + idx}
                   label="URL"
+                  variant="floating"
                   required
+                  hideAsterisk
                   error={contactErrors[idx]?.href}
-                  valid={contactValid[idx]?.href}
-                  counter={`${(item.href || '').length}/100`}>
+                  valid={contactValid[idx]?.href}>
                   <Input
                     id={'ct-url-' + idx}
                     bind:value={item.href}
-                    placeholder="Ex: mailto:contact@example.com"
                     maxlength={100}
                     error={!!contactErrors[idx]?.href}
                     valid={contactValid[idx]?.href}
@@ -4465,6 +4879,38 @@
                       validateContactField(idx, 'href');
                     }} />
                 </FormField>
+              </div>
+
+              <FormField
+                id={'ct-desc-' + idx}
+                label="Description"
+                variant="floating"
+                hideAsterisk
+                counter={`${(item.description || '').length}/1000`}>
+                <Textarea
+                  id={'ct-desc-' + idx}
+                  bind:value={item.description}
+                  placeholder="Describe this contact channel..."
+                  rows={2}
+                  maxlength={1000} />
+              </FormField>
+
+              <div
+                class="mt-1 flex items-center justify-end border-t border-border-subtle/40 pt-3">
+                <Button
+                  htmlType="button"
+                  type="danger"
+                  tone="critical"
+                  size="sm"
+                  class="w-full sm:w-auto"
+                  aria-label="Delete Contact"
+                  title="Delete Contact"
+                  onclick={() => confirmRemoveContact(idx)}>
+                  {#snippet leading()}
+                    <Trash class="size-3.5" />
+                  {/snippet}
+                  Delete Contact
+                </Button>
               </div>
             </div>
           {/each}
@@ -4498,16 +4944,23 @@
             htmlType="submit"
             type="primary"
             size="md"
+            aria-label="Save Privacy Policy"
+            title="Save Privacy Policy"
+            class="px-2.5 sm:px-4"
             isLoading={isSavingLegal}
             disabled={isSavingLegal}>
-            Save Privacy Policy
+            {#snippet leading()}
+              <Save class="size-3.5" />
+            {/snippet}
+            <span class="hidden sm:inline">Save Privacy Policy</span>
           </Button>
         {/snippet}
         <MarkdownEditor
           bind:value={legalPagesData.privacy.content}
           autosaveKey="autosave_legal_privacy"
           placeholder="Write your Privacy Policy content in markdown..."
-          minHeight="500px" />
+          minHeight="500px"
+          stickyTopClass="top-14 md:top-0" />
       </FormSection>
     {:else if activeAdminTab === 'security'}
       <FormSection
@@ -4521,16 +4974,23 @@
             htmlType="submit"
             type="primary"
             size="md"
+            aria-label="Save Security Policy"
+            title="Save Security Policy"
+            class="px-2.5 sm:px-4"
             isLoading={isSavingLegal}
             disabled={isSavingLegal}>
-            Save Security Policy
+            {#snippet leading()}
+              <Save class="size-3.5" />
+            {/snippet}
+            <span class="hidden sm:inline">Save Security Policy</span>
           </Button>
         {/snippet}
         <MarkdownEditor
           bind:value={legalPagesData.security.content}
           autosaveKey="autosave_legal_security"
           placeholder="Write your Security Policy content in markdown..."
-          minHeight="500px" />
+          minHeight="500px"
+          stickyTopClass="top-14 md:top-0" />
       </FormSection>
     {:else if activeAdminTab === 'terms'}
       <FormSection
@@ -4544,16 +5004,23 @@
             htmlType="submit"
             type="primary"
             size="md"
+            aria-label="Save Terms of Service"
+            title="Save Terms of Service"
+            class="px-2.5 sm:px-4"
             isLoading={isSavingLegal}
             disabled={isSavingLegal}>
-            Save Terms of Service
+            {#snippet leading()}
+              <Save class="size-3.5" />
+            {/snippet}
+            <span class="hidden sm:inline">Save Terms of Service</span>
           </Button>
         {/snippet}
         <MarkdownEditor
           bind:value={legalPagesData.terms.content}
           autosaveKey="autosave_legal_terms"
           placeholder="Write your Terms of Service content in markdown..."
-          minHeight="500px" />
+          minHeight="500px"
+          stickyTopClass="top-14 md:top-0" />
       </FormSection>
     {/if}
   </main>
@@ -4563,7 +5030,7 @@
   bind:isOpen={showDeletePostDialog}
   title="Delete Post"
   message={`Are you sure you want to delete post "${postToDelete?.title}"?`}
-  confirmLabel="Delete"
+  confirmLabel="Delete Post"
   isDestructive
   onConfirm={executeDeletePost} />
 
@@ -4571,7 +5038,7 @@
   bind:isOpen={showDeleteCommentDialog}
   title="Delete Comment"
   message="Are you sure you want to delete this comment?"
-  confirmLabel="Delete"
+  confirmLabel="Delete Comment"
   isDestructive
   onConfirm={executeDeleteComment} />
 
@@ -4579,7 +5046,7 @@
   bind:isOpen={showClearAuthorDialog}
   title="Delete Profile"
   message="Are you sure you want to delete/clear all author profile data from the database?"
-  confirmLabel="Delete"
+  confirmLabel="Delete Profile"
   isDestructive
   isLoading={isClearingAuthor}
   onConfirm={executeClearAuthor} />
@@ -4588,15 +5055,17 @@
   bind:isOpen={showDeleteCvDocDialog}
   title="Delete CV Document"
   message={`Delete CV document "${cvDocState.filename}" from CDN & database?`}
-  confirmLabel="Delete"
+  confirmLabel="Delete CV Document"
   isDestructive
   onConfirm={executeDeleteCvDoc} />
 
 <ConfirmationDialog
   bind:isOpen={showRemoveEntryDialog}
-  title="Remove entry"
+  title={pendingRemove ? removeEntryTitles[pendingRemove.type] : 'Delete Entry'}
   message={removeEntryMessage}
-  confirmLabel="Remove"
+  confirmLabel={pendingRemove ?
+    removeEntryTitles[pendingRemove.type]
+  : 'Delete Entry'}
   isDestructive
   onConfirm={executeRemoveEntry}
   onCancel={() => (pendingRemove = null)} />
@@ -4670,8 +5139,7 @@
   .editor-textarea,
   .editor-pre,
   .editor-pre code,
-  .editor-pre :global(span),
-  .line-num-item {
+  .editor-pre :global(span) {
     @apply font-mono text-[14.5px]! leading-6! tracking-normal! normal-case!;
     font-feature-settings: var(--font-feature-settings-mono) !important;
   }
@@ -4696,10 +5164,6 @@
     @apply block! min-h-6! leading-6!;
   }
 
-  .line-num-item {
-    @apply box-border! flex! h-6 items-start! justify-end!;
-  }
-
   .prose-custom :global(h1),
   .prose-custom :global(h2),
   .prose-custom :global(h3) {
@@ -4711,14 +5175,14 @@
     --color-heading: var(--color-gh-gray-6);
     --color-body: var(--color-gh-gray-5);
     --color-link: var(--color-copilot);
-    --color-link-hover: var(--color-copilot);
+    --color-link-hover: var(--color-copilot-hover);
   }
 
   :global(:root.dark) .prose-custom {
     --color-heading: var(--color-gh-gray-1);
     --color-body: var(--color-gh-gray-3);
     --color-link: var(--color-copilot);
-    --color-link-hover: var(--color-copilot);
+    --color-link-hover: var(--color-copilot-hover);
   }
 
   .prose-custom :global(p) {
@@ -4758,12 +5222,24 @@
     @apply mt-1 mb-1;
   }
 
+  .prose-custom :global(li > p) {
+    @apply my-0!;
+  }
+
+  .prose-custom :global(blockquote:not(.markdown-alert)) {
+    @apply my-6 rounded-sm border border-border-default/40 bg-surface-hover/30 p-4 text-sm leading-relaxed text-text-secondary;
+  }
+
+  .prose-custom :global(blockquote:not(.markdown-alert) p) {
+    @apply my-1 text-text-secondary;
+  }
+
   .prose-custom :global(pre) {
-    @apply mt-6 mb-6 scrollbar-none! overflow-x-auto rounded-sm border border-border-subtle bg-surface-hover px-3! py-2! font-mono text-[0.8rem] leading-relaxed break-normal! whitespace-pre! [-ms-overflow-style:none]!;
+    @apply mt-6 mb-6 scrollbar-none! overflow-x-auto rounded-sm border border-border-subtle bg-surface-hover px-3! py-1.5! font-mono text-[0.8rem] leading-snug break-normal! whitespace-pre! [-ms-overflow-style:none]!;
   }
 
   .prose-custom :global(pre[data-enhanced='true']) {
-    @apply pr-3.5! pl-0!;
+    @apply pt-0! pr-0! pl-0!;
   }
 
   .prose-custom :global(pre)::-webkit-scrollbar {
@@ -4771,31 +5247,34 @@
   }
 
   .prose-custom :global(code:not(pre code)) {
-    @apply rounded bg-surface-hover px-1 py-px font-mono text-xs font-normal text-inherit;
-    overflow-wrap: break-word;
-    word-break: break-word;
+    @apply rounded bg-code-inline-bg px-0.5 py-px font-mono text-[0.925em] font-normal wrap-break-word [word-break:break-word] text-inherit;
   }
 
   .prose-custom :global(pre code) {
-    @apply block! w-max! min-w-full! overflow-visible! border-0 bg-transparent py-0! pr-3.5! pl-0! font-mono text-[0.8rem] leading-relaxed break-normal! whitespace-pre! text-inherit;
+    @apply block! w-max! min-w-full! overflow-visible! border-0 bg-transparent py-0! pr-0! pl-0! font-mono text-[0.8rem] leading-snug break-normal! whitespace-pre!;
   }
 
   .prose-custom :global(.code-line) {
     @apply block! w-full! pr-3.5! pl-2!;
   }
 
+  .prose-custom :global(pre.code-wrap),
+  .prose-custom :global(pre[data-wrap='true']) {
+    @apply overflow-x-hidden! wrap-anywhere! [word-break:break-word]! whitespace-pre-wrap!;
+  }
+
+  .prose-custom :global(pre.code-wrap code),
+  .prose-custom :global(pre[data-wrap='true'] code) {
+    @apply box-border! block! w-full! max-w-full! overflow-x-hidden! wrap-anywhere! [word-break:break-word]! whitespace-pre-wrap!;
+  }
+
   .prose-custom :global(pre.code-wrap .code-line),
   .prose-custom :global(pre[data-wrap='true'] .code-line) {
-    padding-left: calc(0.5rem + 4ch) !important;
-    text-indent: -4ch;
+    @apply box-border! w-full! max-w-full! pl-[calc(0.5rem+4ch)]! indent-[-4ch] wrap-anywhere! [word-break:break-word]! whitespace-pre-wrap!;
   }
 
   .prose-custom :global(a) {
-    @apply text-(--color-link) underline;
-  }
-
-  .prose-custom :global(a):hover {
-    @apply text-(--color-link-hover);
+    @apply text-security no-underline hover:underline;
   }
 
   .prose-custom :global(.heading-text) {
@@ -4811,7 +5290,7 @@
   }
 
   .prose-custom :global(a.anchor-link svg) {
-    @apply inline-block! align-middle! text-[0.85em]! leading-none! text-inherit! no-underline!;
+    @apply inline-block! size-[0.85em]! align-middle! leading-none! text-inherit! no-underline!;
   }
 
   .prose-custom :global(h1:hover .heading-text),
@@ -4863,10 +5342,7 @@
   }
 
   .prose-custom :global(table) {
-    @apply my-6 w-full max-w-full overflow-hidden rounded-sm border border-border-subtle text-left text-xs shadow-2xs;
-    border-collapse: separate;
-    border-spacing: 0;
-    table-layout: fixed;
+    @apply my-6 w-full max-w-full table-fixed border-separate border-spacing-0 overflow-hidden rounded-sm border border-border-subtle text-left text-xs shadow-2xs;
   }
 
   .prose-custom :global(thead) {
@@ -4874,9 +5350,7 @@
   }
 
   .prose-custom :global(th) {
-    @apply px-2.5 py-2 text-center font-semibold text-text-primary;
-    overflow-wrap: break-word;
-    word-break: break-word;
+    @apply px-2.5 py-2 text-center font-semibold wrap-break-word [word-break:break-word] text-text-primary;
   }
 
   .prose-custom :global(tbody tr) {
@@ -4884,16 +5358,12 @@
   }
 
   .prose-custom :global(td) {
-    @apply border-r border-border-subtle/40 px-2.5 py-1.5 text-left leading-relaxed text-text-secondary last:border-r-0;
-    overflow-wrap: break-word;
-    word-break: break-word;
+    @apply border-r border-border-subtle/40 px-2.5 py-1.5 text-left leading-relaxed wrap-break-word [word-break:break-word] text-text-secondary last:border-r-0;
   }
 
   .prose-custom :global(td code),
   .prose-custom :global(th code) {
-    overflow-wrap: anywhere;
-    word-break: break-word;
-    white-space: normal;
+    @apply wrap-anywhere [word-break:break-word] whitespace-normal;
   }
 
   .prose-custom :global(td[align='right']) {
@@ -4909,11 +5379,15 @@
   }
 
   .prose-custom :global(.markdown-alert) {
-    @apply my-6 rounded-r-xl border-l-4 p-4 text-xs shadow-2xs transition-colors duration-200 sm:text-sm;
+    @apply my-6 rounded-sm border p-4 text-xs transition-colors duration-200 sm:text-sm;
   }
 
   .prose-custom :global(.markdown-alert-title) {
-    @apply mb-1.5 flex items-center gap-2 text-xs font-bold select-none sm:text-sm;
+    @apply mb-1.5 flex items-center gap-2 font-sans-title text-xs leading-none font-semibold select-none sm:text-sm;
+  }
+
+  .prose-custom :global(.markdown-alert-title svg) {
+    @apply size-4 shrink-0 translate-y-[-6%];
   }
 
   .prose-custom :global(.markdown-alert-content) {
@@ -4933,38 +5407,38 @@
   }
 
   .prose-custom :global(.markdown-alert-note) {
-    @apply border-(--color-security) bg-security-subtle text-(--color-body);
+    @apply border-security/40 bg-security-subtle text-text-secondary;
   }
   .prose-custom :global(.markdown-alert-note .markdown-alert-title) {
-    @apply text-(--color-security);
+    @apply text-security;
   }
 
   .prose-custom :global(.markdown-alert-tip) {
-    @apply border-(--color-success) bg-(--color-success-subtle) text-(--color-body);
+    @apply border-success/40 bg-success-subtle text-text-secondary;
   }
   .prose-custom :global(.markdown-alert-tip .markdown-alert-title) {
-    @apply text-(--color-success);
+    @apply text-success;
   }
 
   .prose-custom :global(.markdown-alert-important) {
-    @apply border-(--color-copilot) bg-copilot-subtle text-(--color-body);
+    @apply border-copilot/40 bg-copilot-subtle text-text-secondary;
   }
   .prose-custom :global(.markdown-alert-important .markdown-alert-title) {
-    @apply text-(--color-copilot);
+    @apply text-copilot;
   }
 
   .prose-custom :global(.markdown-alert-warning) {
-    @apply border-(--color-warning) bg-warning-subtle text-(--color-body);
+    @apply border-warning/40 bg-warning-subtle text-text-secondary;
   }
   .prose-custom :global(.markdown-alert-warning .markdown-alert-title) {
-    @apply text-(--color-warning-strong);
+    @apply text-warning-strong;
   }
 
   .prose-custom :global(.markdown-alert-caution) {
-    @apply border-(--color-danger) bg-danger-subtle text-(--color-body);
+    @apply border-danger/40 bg-danger-subtle text-text-secondary;
   }
   .prose-custom :global(.markdown-alert-caution .markdown-alert-title) {
-    @apply text-(--color-danger);
+    @apply text-danger;
   }
   .prose-custom > :global(*:first-child) {
     @apply mt-0!;

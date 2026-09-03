@@ -20,7 +20,7 @@
 
 <div
   class={cn(
-    'flex flex-col gap-2.5 rounded-sm border border-border-subtle bg-surface/50 p-4 shadow-xs transition-colors select-none sm:p-5',
+    'flex flex-col gap-2.5 rounded-sm glass-card p-4 transition-colors select-none sm:p-5',
     className
   )}>
   <div

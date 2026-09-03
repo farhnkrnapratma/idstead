@@ -99,8 +99,8 @@ Most references should focus on pure SQL patterns. This keeps examples portable.
 
 ```typescript
 for (const user of users) {
-  const posts = await db.query('SELECT * FROM posts WHERE user_id = $1', [
-    user.id
+  const posts = await db.query("SELECT * FROM posts WHERE user_id = $1", [
+    user.id,
   ]);
 }
 ```
@@ -109,8 +109,8 @@ for (const user of users) {
 **Correct (batch query):**
 
 ```typescript
-const posts = await db.query('SELECT * FROM posts WHERE user_id = ANY($1)', [
-  userIds
+const posts = await db.query("SELECT * FROM posts WHERE user_id = ANY($1)", [
+  userIds,
 ]);
 ```
 

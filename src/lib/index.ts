@@ -1,7 +1,8 @@
-export {autoResize, staggerChildren} from './utils/actions';
+export {autoResize, portal, staggerChildren} from './utils/actions';
 export {cn} from './utils/cn';
 export {withViewTransition} from './utils/viewTransition';
 export {sanitizeInput} from './utils/sanitizeInput';
+export {getSafeRedirectUrl} from './utils/safeRedirect';
 export {decodeHtmlEntities} from './utils/formatters';
 export {tryEscapeComma, splitEscapedCommas} from './utils/pillParsing';
 export type {
@@ -17,6 +18,7 @@ export type {
 export {default as ConsentBanner} from './components/ConsentBanner.svelte';
 export {default as Button} from './components/Button.svelte';
 export {default as IconButton} from './components/IconButton.svelte';
+export {default as Tooltip} from './components/Tooltip.svelte';
 export {default as Badge} from './components/Badge.svelte';
 export {default as Chip} from './components/Chip.svelte';
 export {default as Tag} from './components/Tag.svelte';
@@ -27,7 +29,8 @@ export {default as Toast} from './components/Toast.svelte';
 export {toastStore} from './stores/toastStore.svelte';
 export {default as RelativeTime} from './components/RelativeTime.svelte';
 export {default as TopNav} from './components/TopNav.svelte';
-export {default as Breadcrumb} from './components/Breadcrumb.svelte';
+export {default as BottomNav} from './components/BottomNav.svelte';
+export {default as BrandIcon} from './components/BrandIcon.svelte';
 export {default as LogoLoop} from './components/LogoLoop.svelte';
 
 export {default as EmptyState} from './components/EmptyState.svelte';
@@ -64,7 +67,9 @@ export {default as TagGroup} from './components/TagGroup.svelte';
 
 export {default as ArticleHeader} from './article/ArticleHeader.svelte';
 export {default as ArticleMeta} from './article/ArticleMeta.svelte';
+export {default as ContentActions} from './components/ContentActions.svelte';
 export {default as HelpfulBlock} from './article/HelpfulBlock.svelte';
+export {default as PostInsights} from './article/PostInsights.svelte';
 
 export {default as Input} from './components/Input.svelte';
 export {default as Textarea} from './components/Textarea.svelte';
@@ -85,7 +90,11 @@ export {default as DialogFooter} from './components/DialogFooter.svelte';
 export {default as DialogCloseButton} from './components/DialogCloseButton.svelte';
 export {default as AlertDialog} from './components/AlertDialog.svelte';
 export {default as ShareDialog} from './components/ShareDialog.svelte';
+export {default as QrCodeDialog} from './components/QrCodeDialog.svelte';
 export {default as ConfirmationDialog} from './components/ConfirmationDialog.svelte';
+export {default as ProjectCodeDialog} from './components/ProjectCodeDialog.svelte';
+export {default as BlogActionsDialog} from './components/BlogActionsDialog.svelte';
+export {default as ReportCommentDialog} from './components/ReportCommentDialog.svelte';
 
 export {default as ListRow} from './components/ListRow.svelte';
 export {default as SectionHeader} from './components/SectionHeader.svelte';
@@ -116,6 +125,7 @@ export {default as SearchResultCount} from './components/filter/SearchResultCoun
 export {default as FilterEmptyState} from './components/filter/FilterEmptyState.svelte';
 export {default as ThemeSelect} from './components/filter/ThemeSelect.svelte';
 export {default as ContentFontSelect} from './components/filter/ContentFontSelect.svelte';
+export {default as ReadingOptionsMenu} from './components/filter/ReadingOptionsMenu.svelte';
 export {default as AccessibilitySelect} from './components/filter/AccessibilitySelect.svelte';
 export * from './stores/useFilterSort.svelte';
 export * from './stores/a11yStore.svelte';
@@ -123,6 +133,7 @@ export * from './stores/contentFontStore.svelte';
 
 export {default as ShinyText} from './components/ShinyText.svelte';
 export {default as LinkListSection} from './components/LinkListSection.svelte';
+export {default as LinkGridSection} from './components/LinkGridSection.svelte';
 export {default as SpotlightSearch} from './components/SpotlightSearch.svelte';
 export {default as TableOfContents} from './components/TableOfContents.svelte';
 

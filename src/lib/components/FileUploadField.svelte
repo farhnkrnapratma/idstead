@@ -1,6 +1,7 @@
 <script lang="ts">
   import {FileCheck2, UploadCloud, AlertCircle} from '@lucide/svelte';
   import {cn} from '../utils/cn';
+  import Button from './Button.svelte';
 
   interface Props {
     id: string;
@@ -134,19 +135,21 @@
       {#if fileSize}
         <p class="font-mono text-xs text-text-muted">{fileSize}</p>
       {/if}
-      <button
-        type="button"
+      <Button
+        type="ghost"
+        tone="critical"
+        size="xs"
         onclick={e => {
           e.stopPropagation();
           clearFile();
-        }}
-        class="text-xs font-semibold text-text-muted transition-colors hover:text-danger">
+        }}>
         Remove
-      </button>
+      </Button>
     {:else}
       <UploadCloud
         class="size-8 text-text-secondary transition-colors group-hover:text-copilot" />
-      <span class="text-sm font-medium text-text-primary">{label}</span>
+      <span class="font-sans-title text-sm font-medium text-text-primary"
+        >{label}</span>
       {#if hint}
         <span class="text-xs text-text-muted">{hint}</span>
       {/if}

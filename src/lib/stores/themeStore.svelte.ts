@@ -3,15 +3,20 @@ import {browser} from '$app/environment';
 
 function createThemeStore() {
   let theme = $state<Theme>('auto');
+  let isDark = $state(false);
+
+  function checkIsDark(currentTheme: Theme): boolean {
+    if (!browser) return false;
+    if (currentTheme === 'dark') return true;
+    if (currentTheme === 'light') return false;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
 
   function apply(newTheme: Theme) {
     theme = newTheme;
     if (!browser) return;
     localStorage.setItem('theme', newTheme);
-    const isDark =
-      newTheme === 'dark'
-      || (newTheme === 'auto'
-        && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    isDark = checkIsDark(newTheme);
     document.documentElement.classList.toggle('dark', isDark);
   }
 
@@ -22,7 +27,10 @@ function createThemeStore() {
 
     const media = window.matchMedia('(prefers-color-scheme: dark)');
     const onMedia = () => {
-      if (theme === 'auto') apply('auto');
+      if (theme === 'auto') {
+        isDark = media.matches;
+        document.documentElement.classList.toggle('dark', isDark);
+      }
     };
     const onStorage = (e: StorageEvent) => {
       if (e.key === 'theme') apply((e.newValue as Theme) || 'auto');
@@ -51,6 +59,9 @@ function createThemeStore() {
   return {
     get current() {
       return theme;
+    },
+    get isDark() {
+      return isDark;
     },
     apply,
     cycle,

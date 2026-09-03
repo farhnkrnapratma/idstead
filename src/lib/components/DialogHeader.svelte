@@ -27,7 +27,7 @@
   )}>
   <h2
     id="dialog-title"
-    class="text-base font-bold text-text-primary">
+    class="font-sans-title text-base font-bold text-text-primary">
     {title}
   </h2>
   {#if description}

@@ -1,11 +1,11 @@
 <p align="center">
   <a href="https://fkp.my.id/">
-    <img src="https://cdn.fkp.my.id/android-chrome-512x512.png" alt="Farhan Kurnia Pratama" width="200" height="200">
+    <img src="https://fkp.my.id/android-chrome-512x512.png" alt="Farhan Kurnia Pratama" width="200" height="200">
   </a>
 </p>
-<h1 align="center">👋 Welcome to my personal website project!</h1><br/>
-<h3 align="center">Linux/Unix, AI, Open-Source Software, and Cybersecurity.</h3>
-<p align="center">Security-focused Software Engineer with expertise in Linux/Unix, AI, and Open-Source Software, dedicated to building reliable, maintainable, and privacy-centric systems.</p>
+<h1 align="center">Farhan Kurnia Pratama</h1>
+<h3 align="center">AI Engineering | Cybersecurity | Software Engineering | Linux/Unix</h3>
+<p align="center">Security-focused Software Engineer specializing in AI Engineering, Cybersecurity, and Linux/Unix systems, focused on building secure, reliable, maintainable, and privacy-conscious software.</p>
 <p align="center">
   <a href="https://fkp.my.id/">Home</a>
   ·
@@ -20,7 +20,7 @@
   <a href="https://fkp.my.id/#contact">Contact</a>
 </p>
 
-Built with [SvelteKit](https://svelte.dev/), [Tailwind CSS](https://tailwindcss.com/), and [Supabase](https://supabase.com/), deployed on [Cloudflare Pages](https://pages.cloudflare.com/).
+---
 
 ## Get Started
 

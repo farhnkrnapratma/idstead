@@ -1,7 +1,15 @@
 <script lang="ts">
   import {page} from '$app/state';
   import {onMount} from 'svelte';
-  import {CheckCircle2} from '@lucide/svelte';
+  import {
+    PenLine,
+    Code2,
+    ClockFading,
+    Link2Off,
+    Bug,
+    HelpCircle,
+    MessageSquareWarning
+  } from '@lucide/svelte';
   import {
     isNameReserved,
     extractAuthorNameTokens
@@ -12,21 +20,31 @@
     Input,
     Textarea,
     Button,
-    Dialog,
     TopNav,
     FooterSection,
     Section,
     PageContainer,
-    ConsentNotice
+    ConsentNotice,
+    Badge,
+    toastStore
   } from '$lib';
+  import {
+    turnstileWidget,
+    executeTurnstile,
+    resetTurnstile,
+    turnstileSiteKey
+  } from '$lib/utils/turnstile';
 
   let pageAuthor = $derived((page?.data as any)?.author);
+  let pageProjects = $derived((page?.data as any)?.projects ?? []);
   let authorName = $derived(pageAuthor?.name || '');
   let authorTokens = $derived(extractAuthorNameTokens(pageAuthor));
   let siteUrl = $derived(
     ((page?.data as any)?.author?.siteUrl || '').replace(/\/$/, '')
   );
-  let contactEmail = $derived(pageAuthor?.email || '');
+  let contactEmail = $derived(
+    (page?.data as any)?.contactEmail || pageAuthor?.email || ''
+  );
 
   let formName = $state('');
   let formEmail = $state('');
@@ -41,8 +59,8 @@
     message: false
   });
 
-  let showSubmitDialog = $state(false);
-  let feedbackFormElement = $state<HTMLFormElement | null>(null);
+  let isSubmitting = $state(false);
+  let turnstileFeedbackEl = $state<HTMLDivElement | null>(null);
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -104,6 +122,24 @@
     }
   }, 500);
 
+  function selectCategory(categoryTitle: string) {
+    const prefix = `[${categoryTitle}] `;
+    if (!formMessage.startsWith('[')) {
+      formMessage = prefix + formMessage;
+    } else {
+      formMessage = formMessage.replace(/^\[[^\]]*\]\s*/, prefix);
+    }
+    formErrors.message = '';
+    validateMessage();
+    const textarea = document.getElementById(
+      'form-message'
+    ) as HTMLTextAreaElement | null;
+    if (textarea) {
+      textarea.focus();
+      textarea.scrollIntoView({behavior: 'smooth', block: 'center'});
+    }
+  }
+
   function sanitizeInput(text: string): string {
     return text
       .replace(/&/g, '&amp;')
@@ -114,7 +150,9 @@
       .replace(/\//g, '&#x2F;');
   }
 
-  function validateForm(e: Event) {
+  async function handleSubmit(e: SubmitEvent) {
+    e.preventDefault();
+
     const nameErr = formName.trim() === '' ? 'Name is required.' : '';
     const emailErr = formEmail.trim() === '' ? 'Email is required.' : '';
     const urlErr = formUrl.trim() === '' ? 'URL/Page is required.' : '';
@@ -141,31 +179,80 @@
     if (formErrors.url) formValid.url = false;
     if (formErrors.message) formValid.message = false;
 
-    e.preventDefault();
-
     if (
-      !formErrors.name
-      && !formErrors.email
-      && !formErrors.url
-      && !formErrors.message
+      formErrors.name
+      || formErrors.email
+      || formErrors.url
+      || formErrors.message
     ) {
-      formName = sanitizeInput(formName.trim());
-      formEmail = sanitizeInput(formEmail.trim());
-      formUrl = sanitizeInput(formUrl.trim());
-      formMessage = sanitizeInput(formMessage.trim());
-      showSubmitDialog = true;
+      return;
     }
-  }
 
-  function executeSubmit() {
-    if (feedbackFormElement) {
-      feedbackFormElement.submit();
+    if (!contactEmail) {
+      toastStore.error('Feedback submission is currently unavailable.');
+      return;
+    }
+
+    isSubmitting = true;
+
+    try {
+      if (turnstileSiteKey) {
+        const token = await executeTurnstile(turnstileFeedbackEl);
+        if (!token) {
+          toastStore.error('Please complete the security verification.');
+          return;
+        }
+      }
+
+      const sanitizedName = sanitizeInput(formName.trim());
+      const sanitizedEmail = sanitizeInput(formEmail.trim());
+      const sanitizedUrl = sanitizeInput(formUrl.trim());
+      const sanitizedMessage = sanitizeInput(formMessage.trim());
+
+      const res = await fetch(
+        `https://formsubmit.co/ajax/${encodeURIComponent(contactEmail)}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json'
+          },
+          body: JSON.stringify({
+            name: sanitizedName,
+            email: sanitizedEmail,
+            url: sanitizedUrl,
+            message: sanitizedMessage,
+            _subject: 'New feedback report from website!'
+          })
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error('Failed to send feedback.');
+      }
+
+      toastStore.success('Feedback submitted successfully. Thank you!');
+      formName = '';
+      formEmail = '';
+      formUrl = '';
+      formMessage = '';
+      formErrors = {name: '', email: '', url: '', message: ''};
+      formValid = {name: false, email: false, url: false, message: false};
+    } catch {
+      toastStore.error('Failed to submit feedback. Please try again later.');
+    } finally {
+      isSubmitting = false;
+      resetTurnstile(turnstileFeedbackEl);
     }
   }
 </script>
 
 <svelte:head>
   <title>Feedback{authorName ? ` — ${authorName}` : ''}</title>
+  <script
+    src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+    async
+    defer></script>
   <meta
     name="description"
     content="Send feedback, suggestions, or comments{authorName ?
@@ -210,11 +297,12 @@
 <TopNav
   ariaLabel="Feedback page navigation"
   backHref="/"
-  backLabel="Back to Home" />
+  backLabel="Back to Home"
+  projects={pageProjects} />
 
 <main
   id="main-content"
-  class="flex min-h-[calc(100vh-3.75rem)] flex-col pt-15 font-sans">
+  class="flex min-h-[calc(100vh-3rem)] flex-col pt-12 font-sans sm:min-h-[calc(100vh-3.5rem)] sm:pt-14">
   <Section
     spacing="none"
     class="relative z-10 py-12">
@@ -225,15 +313,22 @@
         class="pointer-events-none absolute top-12.5 left-[50%] z-0 h-80 w-[320px] translate-x-[-50%] rounded-full bg-copilot/10 blur-[80px]">
       </div>
 
-      <div class="relative z-10 text-center select-none">
+      <div
+        class="relative z-10 flex flex-col items-start text-left select-none">
+        <Badge
+          variant="accent"
+          size="sm"
+          class="mb-3">
+          <MessageSquareWarning class="size-3" />
+          Feedback & Reports
+        </Badge>
         <h1
-          class="text-3xl font-bold tracking-tight text-text-primary md:text-4xl lg:text-5xl">
+          class="font-sans-title text-3xl font-bold tracking-tight text-text-primary md:text-4xl lg:text-5xl">
           Your feedback matters
         </h1>
-        <p
-          class="mx-auto mt-4 max-w-xl text-base leading-relaxed text-text-secondary">
+        <p class="mt-4 max-w-2xl text-base leading-relaxed text-text-secondary">
           Your valuable feedback helps improve the quality of articles and
-          ensures the website's technical systems run reliably. Please let us
+          ensures the website's technical systems run reliably. Please let me
           know if you spot any issues.
         </p>
       </div>
@@ -241,135 +336,216 @@
       <Card
         variant="glass"
         class="relative z-10 p-5 select-none">
-        <div class="flex flex-col gap-3">
-          <h2 class="text-sm font-bold text-text-primary">
-            Feedback categories
-          </h2>
-          <ul class="flex flex-col gap-2.5 text-xs text-text-secondary">
-            <li class="flex items-start gap-2">
-              <CheckCircle2 class="mt-0.5 size-3.5 shrink-0 text-copilot" />
-              <span
-                ><strong>Writing errors:</strong> Grammatical mistakes, typos, spelling,
-                or poor phrasing.</span>
-            </li>
-            <li class="flex items-start gap-2">
-              <CheckCircle2 class="mt-0.5 size-3.5 shrink-0 text-copilot" />
-              <span
-                ><strong>Technical inaccuracies:</strong> Code snippets that don't
-                compile, wrong command usages, or faulty explanation logic.</span>
-            </li>
-            <li class="flex items-start gap-2">
-              <CheckCircle2 class="mt-0.5 size-3.5 shrink-0 text-copilot" />
-              <span
-                ><strong>Outdated information:</strong> Deprecated package API calls,
-                tools that are no longer active, or outdated tutorial steps.</span>
-            </li>
-            <li class="flex items-start gap-2">
-              <CheckCircle2 class="mt-0.5 size-3.5 shrink-0 text-copilot" />
-              <span
-                ><strong>Broken links:</strong> 404 links, invalid references, or
-                missing static download files.</span>
-            </li>
-            <li class="flex items-start gap-2">
-              <CheckCircle2 class="mt-0.5 size-3.5 shrink-0 text-copilot" />
-              <span
-                ><strong>Website issues:</strong> UI layout bugs, visual display mistakes,
-                broken styling, accessibility complaints, or slow loading times.</span>
-            </li>
-          </ul>
+        <div class="flex flex-col gap-3.5">
+          <div class="flex flex-col">
+            <h2 class="font-sans-title text-sm font-bold text-text-primary">
+              Feedback categories
+            </h2>
+            <p class="mt-0.5 text-xs text-text-muted">
+              Click any category to quickly populate your message below.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+            <button
+              type="button"
+              onclick={() => selectCategory('Writing error')}
+              class="group flex cursor-pointer flex-col gap-1.5 rounded-sm border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-copilot/40 hover:bg-surface-card/80 focus-visible:border-copilot focus-visible:outline-none"
+              aria-label="Select category: Writing errors">
+              <div class="flex items-center gap-2">
+                <PenLine
+                  class="size-4 shrink-0 text-copilot transition-transform group-hover:scale-105" />
+                <span
+                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-copilot">
+                  Writing errors
+                </span>
+              </div>
+              <p class="text-xs leading-relaxed text-text-secondary">
+                Grammatical mistakes, typos, spelling, poor phrasing, or error
+                translating.
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onclick={() => selectCategory('Technical inaccuracy')}
+              class="group flex cursor-pointer flex-col gap-1.5 rounded-sm border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-copilot/40 hover:bg-surface-card/80 focus-visible:border-copilot focus-visible:outline-none"
+              aria-label="Select category: Technical inaccuracies">
+              <div class="flex items-center gap-2">
+                <Code2
+                  class="size-4 shrink-0 text-copilot transition-transform group-hover:scale-105" />
+                <span
+                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-copilot">
+                  Technical inaccuracies
+                </span>
+              </div>
+              <p class="text-xs leading-relaxed text-text-secondary">
+                Code snippets that don't compile, wrong command usages, or
+                faulty explanation logic.
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onclick={() => selectCategory('Outdated information')}
+              class="group flex cursor-pointer flex-col gap-1.5 rounded-sm border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-copilot/40 hover:bg-surface-card/80 focus-visible:border-copilot focus-visible:outline-none"
+              aria-label="Select category: Outdated information">
+              <div class="flex items-center gap-2">
+                <ClockFading
+                  class="size-4 shrink-0 text-copilot transition-transform group-hover:scale-105" />
+                <span
+                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-copilot">
+                  Outdated information
+                </span>
+              </div>
+              <p class="text-xs leading-relaxed text-text-secondary">
+                Deprecated package API calls, tools that are no longer active,
+                or outdated tutorial steps.
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onclick={() => selectCategory('Broken link')}
+              class="group flex cursor-pointer flex-col gap-1.5 rounded-sm border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-copilot/40 hover:bg-surface-card/80 focus-visible:border-copilot focus-visible:outline-none"
+              aria-label="Select category: Broken links">
+              <div class="flex items-center gap-2">
+                <Link2Off
+                  class="size-4 shrink-0 text-copilot transition-transform group-hover:scale-105" />
+                <span
+                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-copilot">
+                  Broken links
+                </span>
+              </div>
+              <p class="text-xs leading-relaxed text-text-secondary">
+                404 links, invalid references, or missing static download files.
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onclick={() => selectCategory('Website issue')}
+              class="group flex cursor-pointer flex-col gap-1.5 rounded-sm border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-copilot/40 hover:bg-surface-card/80 focus-visible:border-copilot focus-visible:outline-none"
+              aria-label="Select category: Website issues">
+              <div class="flex items-center gap-2">
+                <Bug
+                  class="size-4 shrink-0 text-copilot transition-transform group-hover:scale-105" />
+                <span
+                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-copilot">
+                  Website issues
+                </span>
+              </div>
+              <p class="text-xs leading-relaxed text-text-secondary">
+                UI layout bugs, visual display mistakes, broken styling, or slow
+                loading times.
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onclick={() => selectCategory('Other issue')}
+              class="group flex cursor-pointer flex-col gap-1.5 rounded-sm border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-copilot/40 hover:bg-surface-card/80 focus-visible:border-copilot focus-visible:outline-none"
+              aria-label="Select category: Other issues">
+              <div class="flex items-center gap-2">
+                <HelpCircle
+                  class="size-4 shrink-0 text-copilot transition-transform group-hover:scale-105" />
+                <span
+                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-copilot">
+                  Other issues
+                </span>
+              </div>
+              <p class="text-xs leading-relaxed text-text-secondary">
+                General inquiries, suggestions, content ideas, or feedback
+                outside listed categories.
+              </p>
+            </button>
+          </div>
         </div>
       </Card>
 
       <form
-        bind:this={feedbackFormElement}
         novalidate
-        action={contactEmail ? `https://formsubmit.co/${contactEmail}` : '#'}
-        method="POST"
-        onsubmit={validateForm}
+        onsubmit={handleSubmit}
         class="relative z-10 flex w-full flex-col gap-3 rounded-sm glass-card p-6 text-left"
         autocomplete="off">
-        <input
-          type="hidden"
-          name="_subject"
-          value="New feedback report from website!" />
-        <input
-          type="hidden"
-          name="_template"
-          value="table" />
-        <input
-          type="hidden"
-          name="_captcha"
-          value="true" />
-        <input
-          type="hidden"
-          name="_url"
-          value="{siteUrl}/feedback" />
-
         <div class="mb-2 select-none">
-          <h2 class="text-sm font-bold text-text-primary">Report an issue</h2>
+          <h2 class="font-sans-title text-sm font-bold text-text-primary">
+            Report an issue
+          </h2>
           <p class="mt-0.5 text-xs text-text-muted">
             Complete the fields below to submit your feedback directly.
           </p>
         </div>
 
-        <FormField
-          id="form-name"
-          label="Name"
-          required
-          error={formErrors.name}
-          valid={formValid.name}>
-          <Input
-            type="text"
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <FormField
             id="form-name"
-            name="name"
-            aria-required="true"
-            autocomplete="name"
-            placeholder="Enter your name"
-            bind:value={formName}
-            error={!!formErrors.name}
-            valid={formValid.name}
-            oninput={() => {
-              formErrors.name = '';
-              formValid.name = false;
-              validateName();
-            }} />
-        </FormField>
+            label="Name"
+            variant="floating"
+            required
+            hideAsterisk
+            maxlength={50}
+            currentLength={formName.length}
+            error={formErrors.name}
+            valid={formValid.name}>
+            <Input
+              type="text"
+              id="form-name"
+              name="name"
+              autocomplete="name"
+              maxlength={50}
+              bind:value={formName}
+              error={!!formErrors.name}
+              valid={formValid.name}
+              oninput={() => {
+                formErrors.name = '';
+                formValid.name = false;
+                validateName();
+              }} />
+          </FormField>
 
-        <FormField
-          id="form-email"
-          label="Email"
-          required
-          error={formErrors.email}
-          valid={formValid.email}>
-          <Input
-            type="text"
+          <FormField
             id="form-email"
-            name="email"
-            aria-required="true"
-            autocomplete="email"
-            placeholder="Enter your email"
-            bind:value={formEmail}
-            error={!!formErrors.email}
-            valid={formValid.email}
-            oninput={() => {
-              formErrors.email = '';
-              formValid.email = false;
-              validateEmail();
-            }} />
-        </FormField>
+            label="Email"
+            variant="floating"
+            required
+            hideAsterisk
+            maxlength={100}
+            currentLength={formEmail.length}
+            error={formErrors.email}
+            valid={formValid.email}>
+            <Input
+              type="text"
+              id="form-email"
+              name="email"
+              autocomplete="email"
+              maxlength={100}
+              bind:value={formEmail}
+              error={!!formErrors.email}
+              valid={formValid.email}
+              oninput={() => {
+                formErrors.email = '';
+                formValid.email = false;
+                validateEmail();
+              }} />
+          </FormField>
+        </div>
 
         <FormField
           id="form-url"
           label="Which URL/page contains the issue?"
+          variant="floating"
           required
+          hideAsterisk
+          maxlength={200}
+          currentLength={formUrl.length}
           error={formErrors.url}
           valid={formValid.url}>
           <Input
             type="text"
             id="form-url"
             name="url"
-            aria-required="true"
-            placeholder="Enter page path or full URL (e.g. Home, Blog, or link)"
+            maxlength={200}
             bind:value={formUrl}
             error={!!formErrors.url}
             valid={formValid.url}
@@ -383,16 +559,19 @@
         <FormField
           id="form-message"
           label="Message"
+          variant="floating"
           required
+          hideAsterisk
+          maxlength={2000}
+          currentLength={formMessage.length}
+          counter={`${formMessage.length}/2000`}
           error={formErrors.message}
-          valid={formValid.message}
-          counter="{2000 - formMessage.length} left">
+          valid={formValid.message}>
           <Textarea
             id="form-message"
             name="message"
             rows={4}
             maxlength={2000}
-            placeholder="Describe the issue in detail…"
             bind:value={formMessage}
             error={!!formErrors.message}
             valid={formValid.message}
@@ -403,14 +582,37 @@
             }} />
         </FormField>
 
+        {#if turnstileSiteKey}
+          <div
+            bind:this={turnstileFeedbackEl}
+            class="cf-turnstile select-none"
+            data-sitekey={turnstileSiteKey}
+            data-action="feedback"
+            data-size="flexible"
+            data-theme="auto"
+            data-appearance="interaction-only"
+            data-execution="execute"
+            use:turnstileWidget={{
+              sitekey: turnstileSiteKey,
+              action: 'feedback',
+              size: 'flexible',
+              theme: 'auto',
+              appearance: 'interaction-only',
+              execution: 'execute'
+            }}>
+          </div>
+        {/if}
+
         <ConsentNotice action="submitting this feedback report" />
 
         <div class="mt-2 flex justify-end select-none">
           <Button
             htmlType="submit"
             type="primary"
-            size="md">
-            Submit feedback
+            size="md"
+            disabled={isSubmitting}
+            isLoading={isSubmitting}>
+            {isSubmitting ? 'Submitting…' : 'Submit feedback'}
           </Button>
         </div>
       </form>
@@ -419,25 +621,3 @@
 
   <FooterSection />
 </main>
-
-<Dialog
-  bind:isOpen={showSubmitDialog}
-  title="Submit feedback?"
-  description="Are you sure you want to submit this feedback report?"
-  onClose={() => (showSubmitDialog = false)}>
-  {#snippet footer()}
-    <Button
-      type="secondary"
-      size="md"
-      showEscHint
-      onclick={() => (showSubmitDialog = false)}>
-      Cancel
-    </Button>
-    <Button
-      type="primary"
-      size="md"
-      onclick={executeSubmit}>
-      Submit feedback
-    </Button>
-  {/snippet}
-</Dialog>

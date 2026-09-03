@@ -25,10 +25,12 @@
 
 <div
   class={cn('flex flex-col gap-2 px-0 py-2 text-left select-none', className)}>
-  <span class="text-xs font-semibold text-text-muted">{title}</span>
+  <span class="font-sans-title text-xs font-semibold text-text-secondary"
+    >{title}</span>
 
   {#if voted !== null}
-    <span class="flex items-center gap-1.5 text-xs font-semibold text-copilot">
+    <span
+      class="flex items-center gap-1.5 font-sans-title text-xs font-semibold text-copilot">
       <CheckCircle2 class="size-3.5 shrink-0" />
       Thanks for your feedback!
     </span>
@@ -36,23 +38,29 @@
     <div class="flex items-center gap-1.5">
       <Button
         type="secondary"
-        size="sm"
-        class="h-6.5! gap-1.5! px-2.5! text-xs! text-text-muted!"
+        size="xs"
+        class="text-text-secondary hover:border-copilot hover:text-text-primary"
         onclick={() => handleVote(true)}>
         {#snippet leading()}
-          <ThumbsUp class="size-3 text-text-muted select-none" />
+          <ThumbsUp
+            class="size-3.5 select-none"
+            strokeWidth={1.75}
+            absoluteStrokeWidth={true} />
         {/snippet}
-        <span class="text-text-muted">Yes</span>
+        <span>Yes</span>
       </Button>
       <Button
         type="secondary"
-        size="sm"
-        class="h-6.5! gap-1.5! px-2.5! text-xs! text-text-muted!"
+        size="xs"
+        class="text-text-secondary hover:border-copilot hover:text-text-primary"
         onclick={() => handleVote(false)}>
         {#snippet leading()}
-          <ThumbsDown class="size-3 text-text-muted select-none" />
+          <ThumbsDown
+            class="size-3.5 select-none"
+            strokeWidth={1.75}
+            absoluteStrokeWidth={true} />
         {/snippet}
-        <span class="text-text-muted">No</span>
+        <span>No</span>
       </Button>
     </div>
   {/if}

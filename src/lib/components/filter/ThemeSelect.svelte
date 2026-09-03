@@ -48,19 +48,20 @@
   function handleToggle() {
     if (iconState !== 'idle') return;
 
+    const next = themeInfo.nextTheme;
+    if (onThemeChange) {
+      onThemeChange(next);
+    } else {
+      themeStore.apply(next);
+    }
+    const toastLabel =
+      next === 'auto' ? 'system'
+      : next === 'light' ? 'light'
+      : 'dark';
+    toastStore.show(`Switched to ${toastLabel} theme`);
+
     iconState = 'out';
     setTimeout(() => {
-      const next = themeInfo.nextTheme;
-      if (onThemeChange) {
-        onThemeChange(next);
-      } else {
-        themeStore.apply(next);
-      }
-      const toastLabel =
-        next === 'auto' ? 'Auto (System)'
-        : next === 'light' ? 'Light'
-        : 'Dark';
-      toastStore.show(`Switched to ${toastLabel} theme`);
       iconState = 'in';
       setTimeout(() => {
         iconState = 'idle';
@@ -86,7 +87,7 @@
     tooltipPlacement={dropdownDirection === 'up' ? 'top' : 'bottom'}
     size="sm"
     onclick={handleToggle}
-    class="border-border-subtle bg-surface backdrop-blur-none hover:border-copilot hover:bg-surface-hover hover:text-copilot">
+    class="border-border-subtle bg-surface backdrop-blur-none hover:border-copilot hover:bg-surface-hover hover:text-copilot sm:h-9 sm:w-9">
     <span
       class={cn(
         'inline-flex items-center justify-center',

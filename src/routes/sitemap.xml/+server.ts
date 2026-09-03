@@ -1,13 +1,14 @@
 import {supabase} from '$lib/supabase';
 import type {RequestHandler} from './$types';
 import {fetchAuthorProfile} from '$lib/author';
+import {escapeXml} from '$lib/utils/xml';
 
 export const GET: RequestHandler = async () => {
   const [authorProfile, {data: posts}] = await Promise.all([
     fetchAuthorProfile(supabase),
     supabase
       .from('db_posts')
-      .select('slug, created_at, title')
+      .select('slug, created_at, updated_at, title')
       .eq('published', true)
       .order('created_at', {ascending: false})
   ]);
@@ -17,31 +18,31 @@ export const GET: RequestHandler = async () => {
   const staticRoutes = [
     {
       url: `${SITE_URL}/`,
-      lastmod: new Date().toISOString().split('T')[0],
+      lastmod: '2026-08-30',
       priority: '1.0',
       changefreq: 'weekly'
     },
     {
       url: `${SITE_URL}/feedback`,
-      lastmod: new Date().toISOString().split('T')[0],
+      lastmod: '2026-08-30',
       priority: '0.5',
       changefreq: 'monthly'
     },
     {
       url: `${SITE_URL}/privacy`,
-      lastmod: new Date().toISOString().split('T')[0],
+      lastmod: '2026-08-30',
       priority: '0.5',
       changefreq: 'monthly'
     },
     {
       url: `${SITE_URL}/terms`,
-      lastmod: new Date().toISOString().split('T')[0],
+      lastmod: '2026-08-30',
       priority: '0.5',
       changefreq: 'monthly'
     },
     {
       url: `${SITE_URL}/security`,
-      lastmod: new Date().toISOString().split('T')[0],
+      lastmod: '2026-08-30',
       priority: '0.5',
       changefreq: 'monthly'
     }
@@ -49,7 +50,10 @@ export const GET: RequestHandler = async () => {
 
   const postRoutes = (posts ?? []).map(post => ({
     url: `${SITE_URL}/blog/${post.slug}`,
-    lastmod: new Date(post.created_at).toISOString().split('T')[0],
+    lastmod:
+      post.updated_at ?
+        new Date(post.updated_at).toISOString().split('T')[0]
+      : new Date(post.created_at).toISOString().split('T')[0],
     priority: '0.8',
     changefreq: 'monthly'
   }));
@@ -81,12 +85,3 @@ ${allRoutes
     }
   });
 };
-
-function escapeXml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-}

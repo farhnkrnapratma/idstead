@@ -5,6 +5,7 @@
   import AccessibilitySelect from '../components/filter/AccessibilitySelect.svelte';
   import {themeStore} from '../stores/themeStore.svelte';
   import {type SocialLink} from '../author';
+  import BrandIcon from '../components/BrandIcon.svelte';
   import FooterLegalRow from './FooterLegalRow.svelte';
 
   import {page} from '$app/state';
@@ -129,20 +130,18 @@
       <div
         class="flex flex-wrap items-center justify-between gap-3 pt-4 md:col-span-12">
         {#if resolvedSocials.length > 0}
-          <div
-            class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-text-muted">
-            {#each resolvedSocials as item, idx (item.url + item.platform)}
-              {#if idx > 0}
-                <span
-                  class="text-text-muted/60 select-none"
-                  aria-hidden="true">·</span>
-              {/if}
+          <div class="flex flex-wrap items-center gap-1 sm:gap-1.5">
+            {#each resolvedSocials as item (item.url + item.platform)}
               <a
                 href={item.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                class="font-medium text-text-secondary transition-colors hover:text-copilot focus-visible:text-copilot focus-visible:outline-none">
-                {item.platform}
+                aria-label={item.platform}
+                title={item.platform}
+                class="flex size-8 cursor-pointer items-center justify-center rounded-sm border-0 bg-transparent text-text-muted transition-all hover:bg-surface-hover hover:text-copilot focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none sm:size-9">
+                <BrandIcon
+                  icon={item.icon}
+                  class="size-4 text-base leading-none sm:size-4.5 sm:text-lg" />
               </a>
             {/each}
           </div>

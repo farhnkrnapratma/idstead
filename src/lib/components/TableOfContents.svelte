@@ -28,6 +28,7 @@
   let indicatorHeight = $state(0);
   let isIndicatorVisible = $state(false);
   let tocListEl = $state<HTMLUListElement | null>(null);
+  let scrollContainerEl = $state<HTMLDivElement | null>(null);
 
   let isPinnedByClick = false;
   let unpinTimeout: ReturnType<typeof setTimeout> | undefined;
@@ -72,6 +73,17 @@
       indicatorTop = top;
       indicatorHeight = height;
       isIndicatorVisible = true;
+
+      if (scrollContainerEl && !isPinnedByClick) {
+        const cTop = scrollContainerEl.scrollTop;
+        const cHeight = scrollContainerEl.clientHeight;
+        if (top < cTop + 16 || top + height > cTop + cHeight - 16) {
+          scrollContainerEl.scrollTo({
+            top: Math.max(0, top - cHeight / 2 + height / 2),
+            behavior: 'smooth'
+          });
+        }
+      }
     }
   }
 
@@ -174,88 +186,156 @@
   });
   function formatHeadingText(text: string): string {
     if (!text) return '';
-    if (/<[a-z][\s\S]*>/i.test(text)) {
-      return text;
-    }
-    return text
-      .replace(
-        /`([^`]+)`/g,
-        '<code class="font-mono text-inherit px-1 py-0.5 rounded-sm bg-surface-hover font-normal">$1</code>'
-      )
-      .replace(
-        /\[([^\]]+)\]/g,
-        '<code class="font-mono text-inherit px-1 py-0.5 rounded-sm bg-surface-hover font-normal">[$1]</code>'
-      )
-      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    let result = text;
+    result = result.replace(
+      /`([^`]+)`/g,
+      '<code class="rounded bg-surface-hover/80 px-1 py-0.5 font-mono text-[0.85em] font-normal text-text-primary">$1</code>'
+    );
+    result = result.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    result = result.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    return result;
   }
 </script>
 
-{#if headings.length > 0}
-  <nav
-    aria-label="Table of contents"
-    class={cn(
-      'flex flex-col rounded-sm glass-card p-4 select-none',
-      className
-    )}>
-    <h3
-      class="mb-3 shrink-0 text-xs font-bold tracking-wider text-text-secondary uppercase select-none">
-      In this article
-    </h3>
-
-    <div class="relative min-h-0 overflow-y-auto pl-3">
+{#snippet tocList()}
+  <div
+    bind:this={scrollContainerEl}
+    class="relative min-h-0 overflow-y-auto pr-1">
+    <ul
+      id="toc-list"
+      bind:this={tocListEl}
+      class="relative flex min-h-full flex-col pl-3 font-sans-title"
+      role="list">
       <div
-        class="pointer-events-none absolute top-0 bottom-0 left-0 w-0.5 bg-border-subtle/40">
+        class="pointer-events-none absolute top-0 bottom-1 left-0 w-px bg-border-subtle">
       </div>
 
       {#if isIndicatorVisible}
         <div
-          class="pointer-events-none absolute top-(--indicator-top) left-0 h-(--indicator-height) w-0.5 bg-copilot shadow-xs"
+          class="pointer-events-none absolute top-(--indicator-top) left-0 h-(--indicator-height) w-px bg-copilot shadow-xs"
           style="--indicator-top: {indicatorTop}px; --indicator-height: {indicatorHeight}px;"
           aria-hidden="true">
         </div>
       {/if}
 
-      <ul
-        id="toc-list"
-        bind:this={tocListEl}
-        class="relative flex flex-col"
-        role="list">
-        {#each headings as heading, index (heading.id + '-' + index)}
-          {@const isActive = activeHeadingId === heading.id}
-          {@const isSub = heading.level > 2}
-          {@const hasTopGap = index !== 0 && heading.level <= 2}
-          <li class="text-xs {hasTopGap ? 'mt-1' : ''}">
-            <a
-              href="#{heading.id}"
-              onclick={e => {
-                e.preventDefault();
-                navigateToHeading(heading.id);
-              }}
-              aria-current={isActive ? 'true' : undefined}
-              class="-ml-3 flex items-start rounded-r-xs py-0.5 pr-2 leading-snug transition-colors duration-150 ease-in-out hover:text-copilot {(
-                isActive
-              ) ?
-                'bg-copilot/10 font-semibold text-copilot'
-              : 'font-normal text-text-secondary hover:bg-surface-hover/30'}"
-              style="padding-left: {isSub ?
-                `${6 + (heading.level - 3) * 10}px`
-              : '0.75rem'};">
-              {#if isSub}
-                <span
-                  class="mt-[0.55em] mr-1.5 inline-block h-0.5 w-3 shrink-0 rounded-full select-none {(
-                    isActive
-                  ) ?
-                    'bg-copilot/60'
-                  : 'bg-border-subtle/80'}"
-                  aria-hidden="true"></span>
-              {/if}
-              <span class="min-w-0 grow"
-                >{@html formatHeadingText(heading.text)}</span>
-            </a>
-          </li>
-        {/each}
-      </ul>
-    </div>
-  </nav>
+      {#each headings as heading, index (heading.id + '-' + index)}
+        {@const isActive = activeHeadingId === heading.id}
+        {@const isSub = heading.level > 2}
+        {@const branchWidth = isSub ? 18 + (heading.level - 3) * 10 : 0}
+        {@const hasTopGap = index !== 0 && heading.level <= 2}
+        <li
+          class="text-xs {index === 0 ? 'mt-0'
+          : hasTopGap ? 'mt-1.5'
+          : isSub ? 'mt-0.5'
+          : 'mt-1'}">
+          <a
+            href="#{heading.id}"
+            onclick={e => {
+              e.preventDefault();
+              navigateToHeading(heading.id);
+            }}
+            aria-current={isActive ? 'true' : undefined}
+            class="relative -ml-3 flex items-center rounded-r-xs py-0.5 pr-2 font-sans-title leading-snug transition-colors duration-150 ease-in-out hover:text-copilot {(
+              isActive
+            ) ?
+              isSub ? 'bg-copilot/10 font-medium text-copilot'
+              : 'bg-copilot/10 font-semibold text-copilot'
+            : isSub ?
+              'font-normal text-text-secondary hover:bg-surface-hover/30'
+            : 'font-medium text-text-primary hover:bg-surface-hover/30'}"
+            style="padding-left: {isSub ? `${branchWidth + 8}px` : '10px'};">
+            {#if isSub}
+              <span
+                class="pointer-events-none absolute top-1/2 left-0 h-px -translate-y-1/2 transition-colors duration-150 select-none {(
+                  isActive
+                ) ?
+                  'bg-copilot'
+                : 'bg-border-subtle'}"
+                style="width: {branchWidth}px;"
+                aria-hidden="true"></span>
+            {/if}
+            <span class="min-w-0 grow"
+              >{@html formatHeadingText(heading.text)}</span>
+          </a>
+        </li>
+      {/each}
+    </ul>
+  </div>
+{/snippet}
+
+{#if headings.length > 0}
+  {#if collapsible}
+    <details
+      class={cn(
+        'group markdown-details my-1 overflow-hidden rounded-sm glass-card border border-border-subtle/60 text-text-primary shadow-md backdrop-blur-md select-none sm:my-2',
+        className
+      )}
+      open={!defaultCollapsed}>
+      <summary
+        class="markdown-details-summary flex min-h-[2.25rem] cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 font-sans-title text-xs font-medium text-text-primary transition-colors select-none hover:bg-surface-hover/50 sm:text-sm [&::-webkit-details-marker]:hidden">
+        <span
+          class="markdown-details-title inline-flex translate-y-[1px] items-center font-sans-title text-xs leading-none font-medium tracking-wide text-text-primary uppercase sm:text-sm">
+          IN THIS ARTICLE
+        </span>
+        <span
+          class="markdown-details-icon inline-flex shrink-0 items-center justify-center text-text-primary"
+          aria-hidden="true">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.75"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-chevrons-up-down group-open:hidden"
+            ><path d="m7 15 5 5 5-5" /><path d="m7 9 5-5 5 5" /></svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.75"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-chevrons-down-up hidden group-open:block"
+            ><path d="m7 20 5-5 5 5" /><path d="m7 4 5 5 5-5" /></svg>
+        </span>
+      </summary>
+      <div
+        class="markdown-details-body px-3.5 py-3 font-sans-title text-sm leading-relaxed font-normal text-text-secondary">
+        {@render tocList()}
+      </div>
+    </details>
+  {:else}
+    <nav
+      aria-label="Table of contents"
+      class={cn(
+        'flex flex-col rounded-sm glass-card p-4 select-none',
+        className
+      )}>
+      <h3
+        class="mb-3 shrink-0 font-sans-title text-xs font-bold tracking-wider text-text-secondary uppercase select-none">
+        In this article
+      </h3>
+      {@render tocList()}
+    </nav>
+  {/if}
 {/if}
+
+<style>
+  @reference "../../routes/global.css";
+
+  :global(nav[aria-label='Table of contents'] code),
+  :global(details.markdown-details code) {
+    @apply rounded-sm bg-code-inline-bg px-1.5 py-0.5 font-mono text-[0.85em] font-normal text-inherit;
+  }
+  :global(nav[aria-label='Table of contents'] kbd),
+  :global(details.markdown-details kbd) {
+    @apply rounded-sm border border-border-subtle bg-surface-card px-1 py-0.5 font-mono text-[0.75em];
+  }
+</style>

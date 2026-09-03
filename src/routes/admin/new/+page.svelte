@@ -1,7 +1,13 @@
 <script lang="ts">
   import {supabase} from '$lib/supabase';
   import {onMount, tick} from 'svelte';
-  import {X, Image as ImageIcon, AlertCircle} from '@lucide/svelte';
+  import {
+    X,
+    Image as ImageIcon,
+    AlertCircle,
+    ArrowLeft,
+    ImageUp
+  } from '@lucide/svelte';
   import {renderMarkdown} from '$lib/markdown';
   import {
     enhanceCodeBlocks,
@@ -9,8 +15,7 @@
   } from '$lib/utils/codeBlocks';
   import hljs from 'highlight.js';
   import {a11yStore} from '$lib/stores/a11yStore.svelte';
-  import {codeBlockPrefsStore} from '$lib/stores/codeBlockPrefsStore.svelte';
-  import {resolveHljsTheme} from '$lib/utils/hljsTheme';
+  import {cn} from '$lib/utils/cn';
   import {
     SkipLink,
     LoadingState,
@@ -37,18 +42,9 @@
   let slug = $derived(generateSlug(title));
   let excerpt = $state('');
   let tags = $state<string[]>([]);
+  let collaborators = $state<string[]>([]);
   let markdownContent = $state(
     '# New Post\n\nWrite your markdown content here...'
-  );
-
-  let isDark = $state(false);
-
-  const hljsTheme = $derived(
-    resolveHljsTheme(
-      a11yStore.current.highContrast,
-      isDark,
-      codeBlockPrefsStore.current.colorScheme
-    )
   );
 
   let isSubmitting = $state(false);
@@ -59,19 +55,35 @@
   let originalSlug = '';
 
   let bannerFile = $state<File | null>(null);
+  let bannerFileName = $state('');
   let bannerPreview = $state<string | null>(null);
   let bannerPath = $state<string | null>(null);
   let bannerError = $state<string | null>(null);
+  let isCompressingBanner = $state(false);
+  let isDraggingOverBanner = $state(false);
+  let bannerFileInput = $state<HTMLInputElement | null>(null);
+
+  const displayBannerName = $derived.by(() => {
+    if (bannerFileName) return bannerFileName;
+    if (bannerFile?.name) return bannerFile.name;
+    if (bannerPath) {
+      const parts = bannerPath.split('/');
+      return parts[parts.length - 1];
+    }
+    return '';
+  });
 
   let initialTitle = $state('');
   let initialExcerpt = $state('');
   let initialTags = $state<string[]>([]);
+  let initialCollaborators = $state<string[]>([]);
   let initialMarkdownContent = $state('');
 
   const isDirty = $derived(
     title.trim() !== initialTitle.trim()
       || excerpt.trim() !== initialExcerpt.trim()
       || JSON.stringify(tags) !== JSON.stringify(initialTags)
+      || JSON.stringify(collaborators) !== JSON.stringify(initialCollaborators)
       || markdownContent.trim() !== initialMarkdownContent.trim()
   );
 
@@ -85,20 +97,7 @@
   let tagsValid = $state(false);
 
   let showCancelDialog = $state(false);
-  let showPublishDialog = $state(false);
-  let showSaveDraftDialog = $state(false);
-
-  $effect(() => {
-    isDark = document.documentElement.classList.contains('dark');
-    const observer = new MutationObserver(() => {
-      isDark = document.documentElement.classList.contains('dark');
-    });
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
-    return () => observer.disconnect();
-  });
+  let submittingAction = $state<'publish' | 'draft' | null>(null);
 
   const IDLE_TIMEOUT_MS = 30 * 60 * 1000;
   let idleTimer: ReturnType<typeof setTimeout>;
@@ -124,7 +123,8 @@
       try {
         const {data: sessionData} = await supabase.auth.getSession();
         if (!sessionData.session) {
-          window.location.href = '/admin/login';
+          const target = window.location.pathname + window.location.search;
+          window.location.href = `/admin/login?redirectTo=${encodeURIComponent(target)}`;
           return;
         }
 
@@ -156,6 +156,12 @@
                 Array.isArray(parsed.tags) ?
                   parsed.tags.map((t: any) => decodeHtmlEntities(String(t)))
                 : tags;
+              collaborators =
+                Array.isArray(parsed.collaborators) ?
+                  parsed.collaborators.map((c: any) =>
+                    decodeHtmlEntities(String(c))
+                  )
+                : collaborators;
               if (
                 parsed.markdownContent
                 && parsed.markdownContent !== defaultTemplate
@@ -174,6 +180,12 @@
                   Array.isArray(parsed.tags) ?
                     parsed.tags.map((t: any) => decodeHtmlEntities(String(t)))
                   : tags;
+                collaborators =
+                  Array.isArray(parsed.collaborators) ?
+                    parsed.collaborators.map((c: any) =>
+                      decodeHtmlEntities(String(c))
+                    )
+                  : collaborators;
                 markdownContent = parsed.markdownContent;
               }
             }
@@ -221,6 +233,12 @@
         Array.isArray(post.tags) ?
           post.tags.map((t: string) => decodeHtmlEntities(t))
         : [];
+      collaborators =
+        Array.isArray(post.collaborators) ?
+          post.collaborators
+            .map((c: string) => decodeHtmlEntities(c.trim().replace(/^@/, '')))
+            .filter(Boolean)
+        : [];
 
       let fileText = '';
       if (post.storage_path) {
@@ -249,6 +267,7 @@
       initialTitle = title;
       initialExcerpt = excerpt;
       initialTags = [...tags];
+      initialCollaborators = [...collaborators];
       initialMarkdownContent = markdownContent;
 
       bannerPath = post.banner_path || null;
@@ -315,6 +334,7 @@
           title,
           excerpt,
           tags,
+          collaborators,
           markdownContent,
           timestamp: Date.now()
         };
@@ -372,46 +392,85 @@
     }
   }, 300);
 
-  function validateImageDimensions(file: File): Promise<boolean> {
-    return new Promise(resolve => {
-      const img = new Image();
-      img.onload = () => {
-        const ratio = img.width / img.height;
-        const valid =
-          (img.width === 1280 && img.height === 640)
-          || Math.abs(ratio - 2.0) < 0.05;
-        resolve(valid);
-      };
-      img.onerror = () => {
-        resolve(false);
-      };
-      img.src = URL.createObjectURL(file);
-    });
+  async function processBannerFile(file: File) {
+    bannerError = null;
+    const allowedMimeTypes = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/webp',
+      'image/avif',
+      'image/tiff',
+      'image/tif'
+    ];
+    const ext = file.name.split('.').pop()?.toLowerCase() || '';
+    const allowedExts = ['jpg', 'jpeg', 'png', 'webp', 'avif', 'tif', 'tiff'];
+
+    if (
+      !allowedMimeTypes.includes(file.type.toLowerCase())
+      && !allowedExts.includes(ext)
+    ) {
+      bannerError =
+        'Supported image formats are JPEG, PNG, WebP, AVIF, and TIFF.';
+      return;
+    }
+
+    if (file.size > 25 * 1024 * 1024) {
+      bannerError = 'Image size must be 25MB or less.';
+      return;
+    }
+
+    isCompressingBanner = true;
+    try {
+      const {data: sessionData} = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/internal/blog/compress-banner', {
+        method: 'POST',
+        headers: {
+          ...(accessToken ? {Authorization: `Bearer ${accessToken}`} : {})
+        },
+        body: formData
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        throw new Error(
+          err?.error?.message
+            || err?.message
+            || 'Failed to compress banner image.'
+        );
+      }
+
+      const blob = await res.blob();
+      const baseName = file.name.replace(/\.[^/.]+$/, '');
+      const compressedFile = new File([blob], `${baseName}.webp`, {
+        type: 'image/webp'
+      });
+
+      bannerFile = compressedFile;
+      bannerFileName = file.name;
+      if (bannerPreview && bannerPreview.startsWith('blob:')) {
+        URL.revokeObjectURL(bannerPreview);
+      }
+      bannerPreview = URL.createObjectURL(compressedFile);
+    } catch (err: unknown) {
+      const error = err as Error;
+      bannerError = error.message || 'Image compression failed.';
+    } finally {
+      isCompressingBanner = false;
+      if (bannerFileInput) bannerFileInput.value = '';
+    }
   }
 
-  async function handleBannerChange(e: Event) {
-    bannerError = null;
+  function handleBannerChange(e: Event) {
     const input = e.target as HTMLInputElement;
     const file = input.files?.[0];
-    if (!file) return;
-
-    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
-    if (!validTypes.includes(file.type)) {
-      bannerError = 'Banner must be a PNG, JPG, or WebP image.';
-      input.value = '';
-      return;
+    if (file) {
+      void processBannerFile(file);
     }
-
-    const isValidDimensions = await validateImageDimensions(file);
-    if (!isValidDimensions) {
-      bannerError =
-        'Banner dimensions must have a 2:1 ratio (e.g. 1280x640 pixels).';
-      input.value = '';
-      return;
-    }
-
-    bannerFile = file;
-    bannerPreview = URL.createObjectURL(file);
   }
 
   function validate() {
@@ -428,10 +487,6 @@
     }
 
     const excerptVal = excerpt.trim();
-    if (excerptVal === '') {
-      errorMessage = 'Excerpt is required.';
-      return false;
-    }
     if (excerptVal.length > 250) {
       errorMessage = 'Excerpt must be 250 characters or less.';
       return false;
@@ -458,6 +513,7 @@
   }
 
   function handleCancelClick() {
+    if (isSubmitting) return;
     if (isDirty) {
       showCancelDialog = true;
     } else {
@@ -465,25 +521,22 @@
     }
   }
 
-  function handleSaveClick(toBePublished: boolean) {
+  async function handleSaveClick(toBePublished: boolean) {
+    if (isSubmitting) return;
     if (!validate()) return;
     if (!markdownContent.trim()) {
       errorMessage = 'Markdown content is required.';
       return;
     }
 
-    if (toBePublished) {
-      showPublishDialog = true;
-    } else {
-      showSaveDraftDialog = true;
-    }
+    await executeSave(toBePublished);
   }
 
   async function executeSave(toBePublished: boolean) {
-    showPublishDialog = false;
-    showSaveDraftDialog = false;
     isSubmitting = true;
+    submittingAction = toBePublished ? 'publish' : 'draft';
     errorMessage = null;
+    let newPostId: string | null = null;
 
     try {
       const {data: userData, error: userError} = await supabase.auth.getUser();
@@ -517,13 +570,12 @@
       let finalBannerPath = bannerPath;
 
       if (bannerFile) {
-        if (bannerFile.type !== 'image/png') {
-          throw new Error('Backend Validation: Banner must be a PNG image.');
-        }
-        const bannerFileName = `banners/${slug}.png`;
+        const ext = bannerFile.type === 'image/webp' ? 'webp' : 'png';
+        const bannerFileName = `banners/${slug}.${ext}`;
         const {error: bannerUploadError} = await supabase.storage
           .from('blog-posts')
           .upload(bannerFileName, bannerFile, {
+            contentType: bannerFile.type || 'image/webp',
             cacheControl: '3600',
             upsert: true
           });
@@ -534,7 +586,73 @@
         finalBannerPath = bannerFileName;
       }
 
-      const payload = {
+      let aiSummary: string | null = null;
+      let aiTldr: string[] | null = null;
+      const missingTranslationLocales: string[] = [];
+      const addMissingLocale = (locale: string) => {
+        if (!missingTranslationLocales.includes(locale)) {
+          missingTranslationLocales.push(locale);
+        }
+      };
+      const needsExcerpt = excerpt.trim() === '';
+      const shouldGenerateAiFields =
+        toBePublished
+        && (!isEditMode
+          || markdownContent.trim() !== initialMarkdownContent.trim());
+
+      const {data: sessionData} = await supabase.auth.getSession();
+      const accessToken: string | undefined = sessionData.session?.access_token;
+
+      if (accessToken) {
+        const validateRes = await fetch('/api/internal/blog/validate-define', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({markdown: markdownContent})
+        });
+        if (!validateRes.ok) {
+          const errBody = await validateRes.json().catch(() => null);
+          throw new Error(
+            errBody?.error?.message
+              ?? errBody?.message
+              ?? 'The :::define block contains errors.'
+          );
+        }
+      }
+
+      if (shouldGenerateAiFields) {
+        try {
+          if (accessToken) {
+            const aiRes = await fetch('/api/internal/blog/generate', {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                markdown: markdownContent,
+                needsExcerpt,
+                title: title.trim(),
+                excerpt: excerpt.trim() || null
+              })
+            });
+            if (aiRes.ok) {
+              const aiResult = await aiRes.json();
+              if (needsExcerpt && aiResult.excerpt) {
+                excerpt = aiResult.excerpt;
+              }
+              aiSummary = aiResult.summary ?? null;
+              aiTldr = aiResult.tldr ?? null;
+            }
+          }
+        } catch (err) {
+          console.error('AI content generation failed:', err);
+        }
+      }
+
+      const payload: Record<string, any> = {
         title: title.trim(),
         slug: slug.trim(),
         excerpt: excerpt.trim() || null,
@@ -542,9 +660,17 @@
           tags.length > 0 ?
             tags.map(t => decodeHtmlEntities(t.trim())).filter(Boolean)
           : null,
+        collaborators:
+          collaborators.length > 0 ?
+            collaborators
+              .map(c => decodeHtmlEntities(c.trim().replace(/^@/, '')))
+              .filter(Boolean)
+          : [],
         published: toBePublished,
         storage_path: storagePath,
-        banner_path: finalBannerPath
+        banner_path: finalBannerPath,
+        ...(!isEditMode || aiSummary !== null ? {summary: aiSummary} : {}),
+        ...(!isEditMode || aiTldr !== null ? {tldr: aiTldr} : {})
       };
 
       if (isEditMode && editId) {
@@ -585,7 +711,11 @@
         if (originalSlug && originalSlug !== slug) {
           await supabase.storage
             .from('blog-posts')
-            .remove([`${originalSlug}.md`, `banners/${originalSlug}.png`]);
+            .remove([
+              `${originalSlug}.md`,
+              `banners/${originalSlug}.png`,
+              `banners/${originalSlug}.webp`
+            ]);
         }
       } else {
         const {error: uploadError} = await supabase.storage
@@ -596,28 +726,75 @@
           throw new Error(`Storage upload failed: ${uploadError.message}`);
         }
 
-        const {error: dbError} = await supabase
+        const {data: insertedPost, error: dbError} = await supabase
           .from('db_posts')
-          .insert(payload);
+          .insert(payload)
+          .select('id')
+          .single();
 
         if (dbError) {
           await supabase.storage.from('blog-posts').remove([storagePath]);
           throw dbError;
+        }
+
+        newPostId = insertedPost?.id ?? null;
+      }
+
+      const finalPostId = editId ?? newPostId;
+      if (toBePublished && finalPostId && accessToken) {
+        const targetLocales = ['id', 'ja', 'zh', 'ko'] as const;
+        for (const locale of targetLocales) {
+          try {
+            const transRes = await fetch('/api/internal/blog/translate', {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                postId: finalPostId,
+                slug: slug.trim(),
+                locale,
+                title: title.trim(),
+                excerpt: excerpt.trim() || null,
+                summary: aiSummary,
+                tldr: aiTldr,
+                markdown: markdownContent
+              })
+            });
+            if (transRes.ok) {
+              const transResult = await transRes.json();
+              if (!transResult.stored && !transResult.skipped) {
+                addMissingLocale(locale);
+              }
+            } else {
+              addMissingLocale(locale);
+            }
+          } catch (err) {
+            console.error(`Translation failed for locale ${locale}:`, err);
+            addMissingLocale(locale);
+          }
         }
       }
 
       const key = editId ? `autosave_edit_${editId}` : 'autosave_new';
       localStorage.removeItem(key);
 
-      const successMessage =
+      let successMessage =
         isEditMode ?
           toBePublished ? 'Post updated and published.'
           : 'Post updated and saved as draft.'
         : toBePublished ? 'Post published.'
         : 'Post saved as draft.';
+      if (missingTranslationLocales.length > 0) {
+        successMessage += ` Translations unavailable for: ${missingTranslationLocales.join(', ')}.`;
+      }
       sessionStorage.setItem(
         'admin_toast',
-        JSON.stringify({message: successMessage, type: 'success'})
+        JSON.stringify({
+          message: successMessage,
+          type: missingTranslationLocales.length > 0 ? 'error' : 'success'
+        })
       );
       window.location.href = '/admin';
     } catch (err) {
@@ -627,47 +804,46 @@
       toastStore.error(errorMessage);
     } finally {
       isSubmitting = false;
+      submittingAction = null;
     }
   }
 </script>
 
 <svelte:head>
   <title>{isEditMode ? 'Edit post' : 'New post'} — Console</title>
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/{hljsTheme}.min.css" />
 </svelte:head>
 
 <SkipLink />
 
 <nav
-  class="fixed top-0 z-40 flex h-15 w-full items-center justify-between border-b border-border-subtle bg-surface-card px-5 font-sans shadow-xs"
+  class="fixed top-0 z-40 flex h-12 w-full items-center justify-between border-b border-border-subtle bg-surface-card px-3 font-sans shadow-xs sm:h-14 sm:px-5"
   aria-label="Editor navigation">
-  <button
-    type="button"
-    onclick={handleCancelClick}
-    class="inline-flex h-9 cursor-pointer items-center justify-center rounded-sm border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
+  <Button
+    type="outline"
+    size="sm"
+    onclick={handleCancelClick}>
+    <ArrowLeft class="size-3.5 shrink-0" />
     Back to Admin
-  </button>
+  </Button>
 
   <div class="flex items-center gap-2">
     <ThemeSelect
       theme={themeStore.current}
-      onThemeChange={themeStore.apply}
-      class="hidden md:inline-flex" />
+      onThemeChange={themeStore.apply} />
   </div>
 </nav>
 
 <main
   id="main-content"
-  class="flex min-h-[calc(100vh-3.75rem)] flex-col pt-15 font-sans">
+  class="flex min-h-[calc(100vh-3rem)] flex-col bg-surface-base pt-12 font-sans sm:min-h-[calc(100vh-3.5rem)] sm:pt-14">
   {#if isCheckingAuth}
-    <LoadingState
-      label="Loading post..."
-      size="lg"
-      class="flex-1 py-20" />
+    <section class="mx-auto w-full max-w-4xl flex-1 px-4 py-10 sm:px-6">
+      <LoadingState
+        variant="post-editor"
+        label="Loading post..." />
+    </section>
   {:else}
-    <section class="mx-auto w-full max-w-4xl flex-1 px-6 py-10">
+    <section class="mx-auto w-full max-w-4xl flex-1 px-4 py-10 sm:px-6">
       {#if errorMessage}
         <StatusBanner
           variant="error"
@@ -680,22 +856,54 @@
         novalidate
         class="flex flex-col gap-4">
         <div
-          class="rounded-sm border border-border-subtle bg-surface-card p-6 text-left">
-          <h2 class="mb-4 text-base font-bold text-text-primary select-none">
+          class="rounded-sm border border-border-subtle bg-surface-card p-4 text-left sm:p-5">
+          <h2 class="mb-3 text-base font-bold text-text-primary select-none">
             {isEditMode ? 'Edit post details' : 'Post details'}
           </h2>
 
-          <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
-            <div class="flex flex-col gap-2 lg:col-span-5">
+          <div class="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:items-stretch">
+            <div class="flex flex-col gap-1.5 lg:col-span-4">
               <label
                 for="post-banner"
-                class="text-xs font-bold text-text-secondary select-none">
-                Banner image
+                class="flex h-5 items-center gap-1.5 truncate font-sans-title text-xs font-bold text-text-secondary select-none">
+                <span>Banner image</span>
+                {#if displayBannerName}
+                  <span class="truncate font-normal text-text-muted">
+                    · {displayBannerName}
+                  </span>
+                {/if}
               </label>
 
               <div
-                class="group relative flex aspect-2/1 w-full items-center justify-center overflow-hidden rounded-sm border border-border-subtle bg-surface-base select-none">
-                {#if bannerPreview}
+                role="region"
+                aria-label="Banner image upload dropzone"
+                class={cn(
+                  'group relative flex aspect-video w-full flex-1 items-center justify-center overflow-hidden rounded-sm border border-border-subtle/50 bg-surface-card/85 shadow-2xs backdrop-blur-xs transition-colors select-none dark:border-white/10 dark:bg-surface-card/70',
+                  isDraggingOverBanner ?
+                    'border-copilot! bg-copilot/10! ring-2 ring-copilot/30!'
+                  : ''
+                )}
+                ondragover={e => {
+                  e.preventDefault();
+                  isDraggingOverBanner = true;
+                }}
+                ondragleave={() => {
+                  isDraggingOverBanner = false;
+                }}
+                ondrop={e => {
+                  e.preventDefault();
+                  isDraggingOverBanner = false;
+                  const file = e.dataTransfer?.files?.[0];
+                  if (file) void processBannerFile(file);
+                }}>
+                {#if isCompressingBanner}
+                  <div class="flex flex-col items-center gap-2">
+                    <LoadingState
+                      variant="spinner"
+                      size="sm"
+                      label="Compressing..." />
+                  </div>
+                {:else if bannerPreview}
                   <ImageWithSkeleton
                     src={bannerPreview}
                     alt="Banner preview"
@@ -705,6 +913,10 @@
                     type="button"
                     onclick={() => {
                       bannerFile = null;
+                      bannerFileName = '';
+                      if (bannerPreview && bannerPreview.startsWith('blob:')) {
+                        URL.revokeObjectURL(bannerPreview);
+                      }
                       bannerPreview = null;
                       bannerPath = null;
                     }}
@@ -713,26 +925,32 @@
                     <X class="size-4 leading-none" />
                   </button>
                 {:else}
-                  <div
-                    class="flex flex-col items-center gap-2 text-text-muted/65">
-                    <ImageIcon class="size-8" />
-                    <span class="text-2xs">No banner uploaded</span>
+                  <div class="flex flex-col items-center gap-2">
+                    <Button
+                      type="ghost"
+                      size="sm"
+                      class="cursor-pointer gap-1.5 text-text-secondary hover:text-text-primary"
+                      onclick={() => bannerFileInput?.click()}>
+                      <ImageUp class="size-4 shrink-0" />
+                      Choose File
+                    </Button>
                   </div>
                 {/if}
               </div>
 
               <input
+                bind:this={bannerFileInput}
                 type="file"
                 id="post-banner"
-                accept="image/png,image/jpeg,image/webp"
+                accept="image/png,image/webp,image/jpeg,image/jpg,image/avif,image/tiff,image/tif"
                 onchange={handleBannerChange}
-                class="mt-2 block w-full text-xs text-text-secondary file:mr-4 file:cursor-pointer file:rounded-sm file:border file:border-border-subtle file:bg-surface-card file:px-4 file:py-2 file:text-xs file:font-semibold file:text-text-primary hover:file:bg-surface-hover focus:outline-2 focus:outline-copilot" />
+                class="hidden" />
 
               {#if bannerError}
                 <div
                   id="post-banner-fb"
                   aria-live="polite"
-                  class="mt-1 text-xs font-medium">
+                  class="text-xs font-medium">
                   <span
                     role="alert"
                     class="flex items-start gap-1.5 text-danger">
@@ -745,70 +963,102 @@
               {/if}
             </div>
 
-            <div class="flex flex-col gap-2.5 lg:col-span-7">
-              <FormField
-                id="post-title"
-                label="Title"
-                required
-                error={titleError}
-                valid={titleValid}
-                counter="{60 - title.length} left">
-                <Input
-                  type="text"
+            <div class="flex flex-col gap-1.5 lg:col-span-8">
+              <div
+                class="hidden h-5 lg:block"
+                aria-hidden="true">
+              </div>
+
+              <div class="flex flex-1 flex-col justify-between gap-2.5">
+                <FormField
                   id="post-title"
+                  label="Title"
+                  variant="floating"
+                  required
+                  hideAsterisk
                   maxlength={60}
-                  placeholder="Getting Started with Rust"
-                  bind:value={title}
-                  error={!!titleError}
+                  currentLength={title.length}
+                  error={titleError}
                   valid={titleValid}
-                  oninput={() => {
-                    titleError = '';
-                    titleValid = false;
-                    validateTitleField();
-                  }} />
-              </FormField>
+                  counter={`${title.length}/60`}
+                  hideFeedbackSlot
+                  class="shrink-0">
+                  <Input
+                    type="text"
+                    id="post-title"
+                    maxlength={60}
+                    bind:value={title}
+                    error={!!titleError}
+                    valid={titleValid}
+                    oninput={() => {
+                      titleError = '';
+                      titleValid = false;
+                      validateTitleField();
+                    }} />
+                </FormField>
 
-              <FormField
-                id="post-excerpt"
-                label="Excerpt"
-                required
-                error={excerptError}
-                valid={excerptValid}
-                counter="{250 - excerpt.length} left">
-                <Textarea
+                <FormField
                   id="post-excerpt"
-                  rows={3}
+                  label="Excerpt"
+                  variant="floating"
                   maxlength={250}
-                  placeholder="Brief summary of the post (max 250 characters)…"
-                  bind:value={excerpt}
-                  error={!!excerptError}
+                  currentLength={excerpt.length}
+                  error={excerptError}
                   valid={excerptValid}
-                  oninput={() => {
-                    excerptError = '';
-                    excerptValid = false;
-                    validateExcerptField();
-                  }} />
-              </FormField>
-
-              <FormField
-                id="post-tags"
-                label="Tags"
-                counter={`${tags.length}/5`}>
-                {#snippet hintSnippet()}
-                  Up to 5 tags, 30 characters each. Separate multiple tags with
-                  commas. To include a comma within a tag name, use a backslash
-                  (e.g., UI\,UX Design).
-                {/snippet}
-                <PillInput
-                  id="post-tags"
-                  bind:value={tags}
-                  itemLabel="Tag"
-                  placeholderEmpty="Type tag and press comma..."
-                  placeholderFilled="Add tag..."
-                  maxItems={5}
-                  maxItemLength={30} />
-              </FormField>
+                  counter={`${excerpt.length}/250`}
+                  hideFeedbackSlot
+                  class="flex flex-1 flex-col">
+                  <Textarea
+                    id="post-excerpt"
+                    rows={2}
+                    maxlength={250}
+                    bind:value={excerpt}
+                    error={!!excerptError}
+                    valid={excerptValid}
+                    useAutoResize={false}
+                    wrapperClass="flex flex-1 flex-col h-full"
+                    class="h-full min-h-[68px] flex-1"
+                    oninput={() => {
+                      excerptError = '';
+                      excerptValid = false;
+                      validateExcerptField();
+                    }} />
+                </FormField>
+              </div>
             </div>
+          </div>
+
+          <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <FormField
+              id="post-tags"
+              label="Tags"
+              variant="floating"
+              counter={`${tags.length}/5`}>
+              <PillInput
+                id="post-tags"
+                bind:value={tags}
+                itemLabel="Tag"
+                placeholderEmpty="Type tag and press comma..."
+                placeholderFilled="Add tag..."
+                maxItems={5}
+                maxItemLength={30} />
+            </FormField>
+
+            <FormField
+              id="post-collaborators"
+              label="Collaborators"
+              variant="floating"
+              counter={`${collaborators.length}/4`}>
+              <PillInput
+                id="post-collaborators"
+                bind:value={collaborators}
+                itemLabel="Collaborator"
+                placeholderEmpty="Type GitHub username and press comma..."
+                placeholderFilled="Add collaborator..."
+                maxItems={4}
+                maxItemLength={39}
+                transformItem={item => item.replace(/^@+/, '')} />
+            </FormField>
           </div>
         </div>
 
@@ -817,30 +1067,36 @@
           autosaveKey={editId ? `autosave_edit_${editId}` : 'autosave_new'}
           placeholder="Write your markdown content here..."
           minHeight="500px"
-          stickyTopClass="top-15"
+          stickyTopClass="top-12 sm:top-14"
           onImageUpload={handleImageUploadFile} />
 
-        <div class="mt-4 mb-10 flex flex-wrap justify-end gap-3 select-none">
+        <div
+          class="mt-4 mb-10 flex flex-col-reverse gap-2.5 select-none sm:flex-row sm:justify-end sm:gap-3">
           <Button
             type="ghost"
             size="md"
-            onclick={handleCancelClick}>
+            class="w-full sm:w-auto"
+            onclick={handleCancelClick}
+            disabled={isSubmitting}>
             Cancel
           </Button>
           <Button
             type="secondary"
             size="md"
+            class="w-full sm:w-auto"
             onclick={() => handleSaveClick(false)}
-            disabled={isSubmitting}>
-            Save draft
+            disabled={isSubmitting}
+            isLoading={submittingAction === 'draft'}>
+            {submittingAction === 'draft' ? 'Saving draft…' : 'Save draft'}
           </Button>
           <Button
             type="primary"
             size="md"
+            class="w-full sm:w-auto"
             onclick={() => handleSaveClick(true)}
             disabled={isSubmitting}
-            isLoading={isSubmitting}>
-            {isSubmitting ? 'Publishing…' : 'Publish post'}
+            isLoading={submittingAction === 'publish'}>
+            {submittingAction === 'publish' ? 'Publishing…' : 'Publish post'}
           </Button>
         </div>
       </form>
@@ -867,49 +1123,12 @@
   {/snippet}
 </Dialog>
 
-<Dialog
-  bind:isOpen={showPublishDialog}
-  title="Publish post?"
-  description="This will make the post immediately visible to all readers."
-  onClose={() => (showPublishDialog = false)}>
-  {#snippet footer()}
-    <Button
-      type="secondary"
-      size="md"
-      showEscHint
-      onclick={() => (showPublishDialog = false)}>Cancel</Button>
-    <Button
-      type="primary"
-      size="md"
-      onclick={() => executeSave(true)}>Publish post</Button>
-  {/snippet}
-</Dialog>
-
-<Dialog
-  bind:isOpen={showSaveDraftDialog}
-  title="Save as draft?"
-  description="The post will be saved privately and won't be visible to readers."
-  onClose={() => (showSaveDraftDialog = false)}>
-  {#snippet footer()}
-    <Button
-      type="secondary"
-      size="md"
-      showEscHint
-      onclick={() => (showSaveDraftDialog = false)}>Cancel</Button>
-    <Button
-      type="primary"
-      size="md"
-      onclick={() => executeSave(false)}>Save draft</Button>
-  {/snippet}
-</Dialog>
-
 <style>
   @reference "../../global.css";
   .editor-textarea,
   .editor-pre,
   .editor-pre code,
-  .editor-pre :global(span),
-  .line-num-item {
+  .editor-pre :global(span) {
     @apply font-mono text-[14.5px]! leading-6! tracking-normal! normal-case!;
     font-feature-settings: var(--font-feature-settings-mono) !important;
   }
@@ -934,10 +1153,6 @@
     @apply block! min-h-6! leading-6!;
   }
 
-  .line-num-item {
-    @apply box-border! flex! h-6 items-start! justify-end!;
-  }
-
   .prose-custom :global(h1),
   .prose-custom :global(h2),
   .prose-custom :global(h3) {
@@ -949,14 +1164,14 @@
     --color-heading: var(--color-gh-gray-6);
     --color-body: var(--color-gh-gray-5);
     --color-link: var(--color-copilot);
-    --color-link-hover: var(--color-copilot);
+    --color-link-hover: var(--color-copilot-hover);
   }
 
   :global(:root.dark) .prose-custom {
     --color-heading: var(--color-gh-gray-1);
     --color-body: var(--color-gh-gray-3);
     --color-link: var(--color-copilot);
-    --color-link-hover: var(--color-copilot);
+    --color-link-hover: var(--color-copilot-hover);
   }
 
   .prose-custom :global(p) {
@@ -996,12 +1211,24 @@
     @apply mt-1 mb-1;
   }
 
+  .prose-custom :global(li > p) {
+    @apply my-0!;
+  }
+
+  .prose-custom :global(blockquote:not(.markdown-alert)) {
+    @apply my-6 rounded-sm border border-border-default/40 bg-surface-hover/30 p-4 text-sm leading-relaxed text-text-secondary;
+  }
+
+  .prose-custom :global(blockquote:not(.markdown-alert) p) {
+    @apply my-1 text-text-secondary;
+  }
+
   .prose-custom :global(pre) {
-    @apply mt-6 mb-6 scrollbar-none! overflow-x-auto rounded-sm border border-border-subtle bg-surface-hover px-3! py-2! font-mono text-[0.8rem] leading-relaxed break-normal! whitespace-pre! [-ms-overflow-style:none]!;
+    @apply mt-6 mb-6 scrollbar-none! overflow-x-auto rounded-sm border border-border-subtle bg-surface-hover px-3! py-1.5! font-mono text-[0.8rem] leading-snug break-normal! whitespace-pre! [-ms-overflow-style:none]!;
   }
 
   .prose-custom :global(pre[data-enhanced='true']) {
-    @apply pr-3.5! pl-0!;
+    @apply pt-0! pr-0! pl-0!;
   }
 
   .prose-custom :global(pre)::-webkit-scrollbar {
@@ -1009,31 +1236,34 @@
   }
 
   .prose-custom :global(code:not(pre code)) {
-    @apply rounded bg-surface-hover px-1 py-px font-mono text-xs font-normal text-inherit;
-    overflow-wrap: break-word;
-    word-break: break-word;
+    @apply rounded bg-code-inline-bg px-0.5 py-px font-mono text-[0.925em] font-normal wrap-break-word [word-break:break-word] text-inherit;
   }
 
   .prose-custom :global(pre code) {
-    @apply block! w-max! min-w-full! overflow-visible! border-0 bg-transparent py-0! pr-3.5! pl-0! font-mono text-[0.8rem] leading-relaxed break-normal! whitespace-pre! text-inherit;
+    @apply block! w-max! min-w-full! overflow-visible! border-0 bg-transparent py-0! pr-0! pl-0! font-mono text-[0.8rem] leading-snug break-normal! whitespace-pre!;
   }
 
   .prose-custom :global(.code-line) {
     @apply block! w-full! pr-3.5! pl-2!;
   }
 
+  .prose-custom :global(pre.code-wrap),
+  .prose-custom :global(pre[data-wrap='true']) {
+    @apply overflow-x-hidden! [overflow-wrap:anywhere]! [word-break:break-word]! whitespace-pre-wrap!;
+  }
+
+  .prose-custom :global(pre.code-wrap code),
+  .prose-custom :global(pre[data-wrap='true'] code) {
+    @apply box-border! block! w-full! max-w-full! overflow-x-hidden! [overflow-wrap:anywhere]! [word-break:break-word]! whitespace-pre-wrap!;
+  }
+
   .prose-custom :global(pre.code-wrap .code-line),
   .prose-custom :global(pre[data-wrap='true'] .code-line) {
-    padding-left: calc(0.5rem + 4ch) !important;
-    text-indent: -4ch;
+    @apply box-border! w-full! max-w-full! pl-[calc(0.5rem+4ch)]! -indent-[4ch] [overflow-wrap:anywhere]! [word-break:break-word]! whitespace-pre-wrap!;
   }
 
   .prose-custom :global(a) {
-    @apply text-(--color-link) underline;
-  }
-
-  .prose-custom :global(a):hover {
-    @apply text-(--color-link-hover);
+    @apply text-security no-underline hover:underline;
   }
 
   .prose-custom :global(.heading-text) {
@@ -1049,7 +1279,7 @@
   }
 
   .prose-custom :global(a.anchor-link svg) {
-    @apply inline-block! align-middle! text-[0.85em]! leading-none! text-inherit! no-underline!;
+    @apply inline-block! size-[0.85em]! align-middle! leading-none! text-inherit! no-underline!;
   }
 
   .prose-custom :global(h1:hover .heading-text),
@@ -1101,10 +1331,7 @@
   }
 
   .prose-custom :global(table) {
-    @apply my-6 w-full max-w-full overflow-hidden rounded-sm border border-border-subtle text-left text-xs shadow-2xs;
-    border-collapse: separate;
-    border-spacing: 0;
-    table-layout: fixed;
+    @apply my-6 w-full max-w-full table-fixed border-separate border-spacing-0 overflow-hidden rounded-sm border border-border-subtle text-left text-xs shadow-2xs;
   }
 
   .prose-custom :global(thead) {
@@ -1112,9 +1339,7 @@
   }
 
   .prose-custom :global(th) {
-    @apply px-2.5 py-2 text-center font-semibold text-text-primary;
-    overflow-wrap: break-word;
-    word-break: break-word;
+    @apply px-2.5 py-2 text-center font-semibold [overflow-wrap:break-word] [word-break:break-word] text-text-primary;
   }
 
   .prose-custom :global(tbody tr) {
@@ -1122,16 +1347,12 @@
   }
 
   .prose-custom :global(td) {
-    @apply border-r border-border-subtle/40 px-2.5 py-1.5 text-left leading-relaxed text-text-secondary last:border-r-0;
-    overflow-wrap: break-word;
-    word-break: break-word;
+    @apply border-r border-border-subtle/40 px-2.5 py-1.5 text-left leading-relaxed [overflow-wrap:break-word] [word-break:break-word] text-text-secondary last:border-r-0;
   }
 
   .prose-custom :global(td code),
   .prose-custom :global(th code) {
-    overflow-wrap: anywhere;
-    word-break: break-word;
-    white-space: normal;
+    @apply [overflow-wrap:anywhere] [word-break:break-word] whitespace-normal;
   }
 
   .prose-custom :global(td[align='right']) {
@@ -1147,11 +1368,15 @@
   }
 
   .prose-custom :global(.markdown-alert) {
-    @apply my-6 rounded-r-xl border-l-4 p-4 text-xs shadow-2xs transition-colors duration-200 sm:text-sm;
+    @apply my-6 rounded-sm border p-4 text-xs transition-colors duration-200 sm:text-sm;
   }
 
   .prose-custom :global(.markdown-alert-title) {
-    @apply mb-1.5 flex items-center gap-2 text-xs font-bold select-none sm:text-sm;
+    @apply mb-1.5 flex items-center gap-2 font-sans-title text-xs leading-none font-semibold select-none sm:text-sm;
+  }
+
+  .prose-custom :global(.markdown-alert-title svg) {
+    @apply size-4 shrink-0 -translate-y-[6%];
   }
 
   .prose-custom :global(.markdown-alert-content) {
@@ -1171,38 +1396,38 @@
   }
 
   .prose-custom :global(.markdown-alert-note) {
-    @apply border-(--color-security) bg-security-subtle text-(--color-body);
+    @apply border-security/40 bg-security-subtle text-text-secondary;
   }
   .prose-custom :global(.markdown-alert-note .markdown-alert-title) {
-    @apply text-(--color-security);
+    @apply text-security;
   }
 
   .prose-custom :global(.markdown-alert-tip) {
-    @apply border-(--color-success) bg-(--color-success-subtle) text-(--color-body);
+    @apply border-success/40 bg-success-subtle text-text-secondary;
   }
   .prose-custom :global(.markdown-alert-tip .markdown-alert-title) {
-    @apply text-(--color-success);
+    @apply text-success;
   }
 
   .prose-custom :global(.markdown-alert-important) {
-    @apply border-(--color-copilot) bg-copilot-subtle text-(--color-body);
+    @apply border-copilot/40 bg-copilot-subtle text-text-secondary;
   }
   .prose-custom :global(.markdown-alert-important .markdown-alert-title) {
-    @apply text-(--color-copilot);
+    @apply text-copilot;
   }
 
   .prose-custom :global(.markdown-alert-warning) {
-    @apply border-(--color-warning) bg-warning-subtle text-(--color-body);
+    @apply border-warning/40 bg-warning-subtle text-text-secondary;
   }
   .prose-custom :global(.markdown-alert-warning .markdown-alert-title) {
-    @apply text-(--color-warning-strong);
+    @apply text-warning-strong;
   }
 
   .prose-custom :global(.markdown-alert-caution) {
-    @apply border-(--color-danger) bg-danger-subtle text-(--color-body);
+    @apply border-danger/40 bg-danger-subtle text-text-secondary;
   }
   .prose-custom :global(.markdown-alert-caution .markdown-alert-title) {
-    @apply text-(--color-danger);
+    @apply text-danger;
   }
   .prose-custom > :global(*:first-child) {
     @apply mt-0!;

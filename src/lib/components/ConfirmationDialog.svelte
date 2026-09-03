@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {Trash} from '@lucide/svelte';
   import Dialog from './Dialog.svelte';
   import Button from './Button.svelte';
 
@@ -44,30 +45,36 @@
   bind:isOpen
   {title}
   description={message}
+  size="sm"
+  compact
   class={className}
   onClose={close}>
   {#if children}
     {@render children()}
   {/if}
   {#snippet footer()}
-    <Button
-      type="secondary"
-      size="md"
-      onclick={close}>
-      <span class="inline-flex items-center gap-1.5">
-        <span>{cancelLabel}</span>
-        <kbd
-          class="hidden items-center rounded-sm border border-border-subtle/80 bg-surface-elevated/80 px-1 py-0.5 font-mono text-3xs leading-none text-text-muted select-none sm:inline-flex">
-          Esc
-        </kbd>
-      </span>
-    </Button>
-    <Button
-      type={isDestructive ? 'danger' : 'primary'}
-      size="md"
-      {isLoading}
-      onclick={confirm}>
-      {confirmLabel || (isDestructive ? 'Delete' : 'Confirm')}
-    </Button>
+    <div class="grid w-full grid-cols-2 gap-2.5">
+      <Button
+        type="secondary"
+        size="sm"
+        fullWidth
+        disabled={isLoading}
+        onclick={close}>
+        {cancelLabel}
+      </Button>
+      <Button
+        type={isDestructive ? 'danger' : 'primary'}
+        size="sm"
+        fullWidth
+        {isLoading}
+        onclick={confirm}>
+        {#snippet leading()}
+          {#if isDestructive}
+            <Trash class="size-3.5" />
+          {/if}
+        {/snippet}
+        {confirmLabel || (isDestructive ? 'Delete' : 'Confirm')}
+      </Button>
+    </div>
   {/snippet}
 </Dialog>

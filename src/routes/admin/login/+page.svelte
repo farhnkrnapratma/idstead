@@ -2,12 +2,22 @@
   import {page} from '$app/state';
   import {supabase} from '$lib/supabase';
   import {onMount} from 'svelte';
-  import {Terminal, Eye, EyeOff} from '@lucide/svelte';
-  import {Card, FormField, Input, Button, IconButton, SkipLink} from '$lib';
+  import {ShieldUser, ArrowLeft, Eye, EyeOff} from '@lucide/svelte';
+  import {
+    Card,
+    FormField,
+    Input,
+    Button,
+    IconButton,
+    SkipLink,
+    ThemeSelect,
+    getSafeRedirectUrl
+  } from '$lib';
+  import {themeStore} from '$lib/stores/themeStore.svelte';
   import {toastStore} from '$lib/stores/toastStore.svelte';
   import {
     turnstileWidget,
-    getTurnstileResponse,
+    executeTurnstile,
     resetTurnstile,
     turnstileSiteKey
   } from '$lib/utils/turnstile';
@@ -25,7 +35,10 @@
   onMount(async () => {
     const {data} = await supabase.auth.getSession();
     if (data.session) {
-      window.location.href = '/admin';
+      const redirectTo = getSafeRedirectUrl(
+        page.url.searchParams.get('redirectTo')
+      );
+      window.location.href = redirectTo;
     }
   });
 
@@ -91,7 +104,7 @@
     e.preventDefault();
     if (!validate()) return;
 
-    const turnstileToken = getTurnstileResponse(turnstileEl);
+    const turnstileToken = await executeTurnstile(turnstileEl);
     if (!turnstileToken) {
       toastStore.error(
         'Please complete the verification challenge before submitting.'
@@ -124,7 +137,10 @@
       });
       if (error) throw error;
 
-      window.location.href = '/admin';
+      const redirectTo = getSafeRedirectUrl(
+        page.url.searchParams.get('redirectTo')
+      );
+      window.location.href = redirectTo;
     } catch (err: unknown) {
       console.error('Login failed:', err);
       const message =
@@ -142,6 +158,7 @@
 </script>
 
 <svelte:head>
+  <title>Admin Portal</title>
   <script
     src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
     async
@@ -150,20 +167,37 @@
 
 <SkipLink />
 
+<header
+  class="fixed inset-x-0 top-0 z-40 flex h-14 w-full items-center justify-between px-4 sm:px-6">
+  <Button
+    href="/"
+    type="secondary"
+    size="sm">
+    {#snippet leading()}
+      <ArrowLeft class="size-4" />
+    {/snippet}
+    Back to website
+  </Button>
+  <ThemeSelect
+    theme={themeStore.current}
+    onThemeChange={themeStore.apply} />
+</header>
+
 <main
   id="main-content"
   class="relative flex min-h-dvh flex-col items-center justify-center font-sans">
-  <div class="flex w-full max-w-md items-center justify-center px-4 sm:px-6">
+  <div class="flex w-full max-w-sm items-center justify-center px-4">
     <Card
       variant="solid"
       class="w-full overflow-visible p-5 sm:p-6">
-      <div class="mb-4 flex flex-col items-center text-center select-none">
-        <div class="flex items-center gap-2">
-          <Terminal class="size-6 text-copilot select-none" />
-          <h1 class="text-xl font-bold text-text-primary">Console</h1>
+      <div class="mb-5 flex flex-col items-center text-center select-none">
+        <div
+          class="mb-3 flex size-10 items-center justify-center rounded-full bg-copilot-subtle text-copilot">
+          <ShieldUser class="size-5" />
         </div>
+        <h1 class="text-xl font-bold text-text-primary">Admin Portal</h1>
         <p class="mt-1 text-xs text-text-secondary">
-          Sign in to manage your blog posts
+          Sign in to access the administration dashboard
         </p>
       </div>
 
@@ -174,6 +208,7 @@
         <FormField
           id="login-email"
           label="Email"
+          variant="floating"
           required
           hideAsterisk
           error={errors.email}
@@ -181,8 +216,8 @@
           <Input
             type="text"
             id="login-email"
-            placeholder="Enter your email"
             autocomplete="username"
+            autofocus
             bind:value={email}
             error={!!errors.email}
             valid={valid.email}
@@ -198,6 +233,7 @@
         <FormField
           id="login-pass"
           label="Password"
+          variant="floating"
           required
           hideAsterisk
           error={errors.password}
@@ -205,7 +241,6 @@
           <Input
             type={showPassword ? 'text' : 'password'}
             id="login-pass"
-            placeholder="••••••••"
             autocomplete="current-password"
             bind:value={password}
             error={!!errors.password}
@@ -233,14 +268,23 @@
           </Input>
         </FormField>
 
-        <div class="flex w-full items-center justify-center py-0.5">
-          <div
-            bind:this={turnstileEl}
-            class="min-h-16.25 w-full [&_iframe]:border-0!"
-            data-sitekey={turnstileSiteKey}
-            data-action="turnstile-spin-v2"
-            use:turnstileWidget={{sitekey: turnstileSiteKey, size: 'flexible'}}>
-          </div>
+        <div
+          bind:this={turnstileEl}
+          class="cf-turnstile select-none"
+          data-sitekey={turnstileSiteKey}
+          data-action="admin-login"
+          data-size="flexible"
+          data-theme="auto"
+          data-appearance="interaction-only"
+          data-execution="execute"
+          use:turnstileWidget={{
+            sitekey: turnstileSiteKey,
+            size: 'flexible',
+            action: 'admin-login',
+            theme: 'auto',
+            appearance: 'interaction-only',
+            execution: 'execute'
+          }}>
         </div>
 
         <Button
