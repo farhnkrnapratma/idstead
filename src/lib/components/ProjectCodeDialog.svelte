@@ -1,7 +1,5 @@
 <script lang="ts">
-  import {SquareArrowOutUpRight, FolderArchive} from '@lucide/svelte';
   import Dialog from './Dialog.svelte';
-  import Button from './Button.svelte';
   import {createCodeActionControls} from '$lib/utils/codeBlocks';
   import {codeBlockPrefsStore} from '$lib/stores/codeBlockPrefsStore.svelte';
   import {toastStore} from '$lib/stores/toastStore.svelte';
@@ -42,6 +40,17 @@
     codeControls = createCodeActionControls({
       getCodeText: () => currentCommand,
       getDownloadFilename: () => `clone-${project?.name ?? 'repo'}.sh`,
+      downloadLabel: 'Download ZIP',
+      onDownload: () => {
+        if (project?.zipUrl) {
+          const a = document.createElement('a');
+          a.href = project.zipUrl;
+          a.download = '';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        }
+      },
       shouldHideLineNumbers: () => true,
       triggerToast: toastStore.success
     });
@@ -56,6 +65,12 @@
   }
 
   $effect(() => {
+    if (isOpen) {
+      activeTab = 'https';
+    }
+  });
+
+  $effect(() => {
     void codeBlockPrefsStore.current;
     codeControls?.applyPrefs();
   });
@@ -63,60 +78,59 @@
 
 <Dialog
   bind:isOpen
-  title="Clone {project?.name ?? 'Repository'}"
-  description="Use the command below to clone this repository to your local machine."
+  title="CLONE REPOSITORY"
   size="md"
   class={className}
   {onClose}>
   {#if project}
-    <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-3">
       <div
-        class="flex rounded-sm border border-border-subtle bg-surface-base/50 p-0.5 text-xs font-semibold">
-        {#each [['https', 'HTTPS'], ['ssh', 'SSH'], ['cli', 'GitHub CLI']] as const as [key, label] (key)}
-          <button
-            type="button"
-            onclick={() => (activeTab = key)}
-            class="flex-1 cursor-pointer rounded-sm py-1.5 transition-colors {(
-              activeTab === key
-            ) ?
-              'bg-copilot text-white shadow-xs'
-            : 'text-text-secondary hover:text-text-primary'}">
-            {label}
-          </button>
-        {/each}
-      </div>
-
-      <div
-        class="code-block-container flex flex-col overflow-hidden rounded-sm border border-border-subtle shadow-2xs">
+        class="markdown-tabs-container group/codemin relative m-0 flex flex-col overflow-hidden rounded-sm border border-border-subtle shadow-2xs"
+        data-code-theme={codeBlockPrefsStore.current.colorScheme !== 'auto' ?
+          codeBlockPrefsStore.current.colorScheme
+        : undefined}>
         <div
-          class="code-header-bar hljs flex min-h-[1.75rem] items-center gap-2 border-b border-border-subtle bg-surface-base/80 px-3 py-0.5 text-xs font-semibold text-text-secondary select-none {(
-            codeBlockPrefsStore.current.minimal
-          ) ?
-            'justify-end'
-          : 'justify-between'}">
-          {#if !codeBlockPrefsStore.current.minimal}
-            <span
-              class="font-sans-title text-[11px] font-bold tracking-wider text-text-secondary uppercase">
-              Shell
-            </span>
-          {/if}
+          class="markdown-tabs-header hljs relative flex min-h-8 items-end justify-between rounded-t-sm border-b border-border-subtle px-3 pt-0 pb-0 select-none"
+          role="tablist">
+          <div
+            class="markdown-tabs-nav m-0 flex min-w-0 flex-1 scrollbar-none items-end gap-1.5 overflow-x-auto p-0 [-ms-overflow-style:none]">
+            {#each [['https', 'HTTPS'], ['ssh', 'SSH'], ['cli', 'GitHub CLI']] as const as [key, label] (key)}
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === key}
+                onclick={() => (activeTab = key)}
+                class="markdown-tab-button relative -mb-px inline-flex shrink-0 cursor-pointer items-center justify-center border-b-[2.5px] px-3 py-1.5 font-sans-title text-xs font-medium whitespace-nowrap transition-all select-none {(
+                  activeTab === key
+                ) ?
+                  'active-tab border-b-copilot font-bold text-copilot'
+                : 'border-b-transparent text-text-muted hover:text-text-primary'}">
+                {label}
+              </button>
+            {/each}
+          </div>
+
           <div
             use:mountCodeControls
-            class="flex items-center gap-1">
+            class="markdown-tabs-actions ml-2 flex shrink-0 items-center gap-1 self-center pb-0.5">
           </div>
         </div>
+
         <div
-          class="code-body hljs flex w-full flex-row items-stretch overflow-hidden bg-surface-base/50">
-          {#if !codeBlockPrefsStore.current.minimal}
+          class="code-body hljs relative flex w-full flex-row items-center overflow-hidden rounded-b-sm bg-surface-base/50">
+          <span
+            class="pointer-events-none absolute top-1/2 right-3.5 z-10 -translate-y-1/2 font-mono text-[11px] text-text-muted/70 lowercase select-none">
+            bash
+          </span>
+          <div
+            class="code-line-numbers shrink-0 bg-transparent py-1.5 font-mono text-[0.8rem] leading-snug select-none">
             <div
-              class="code-line-numbers shrink-0 border-r border-border-subtle/30 bg-transparent py-1.5 font-mono text-[0.8rem] leading-snug select-none">
-              <div class="pr-1.5 pl-3 font-mono font-normal text-copilot">
-                $
-              </div>
+              class="flex flex-col justify-start pr-0.5 pl-3 text-right font-mono font-normal text-copilot select-none">
+              $
             </div>
-          {/if}
+          </div>
           <pre
-            class="m-0 min-w-0 flex-1 overflow-x-auto py-1.5 pr-3.5 pl-2 {(
+            class="m-0 min-w-0 flex-1 overflow-x-auto py-1.5 pr-14 pl-1.5 {(
               codeBlockPrefsStore.current.wrap
             ) ?
               'break-all whitespace-pre-wrap'
@@ -124,35 +138,6 @@
               class="font-mono text-xs text-text-secondary select-all"
               >{currentCommand}</code></pre>
         </div>
-      </div>
-
-      <div
-        class="flex flex-col gap-2 border-t border-border-subtle/60 pt-3 sm:flex-row">
-        {#if project.zipUrl}
-          <Button
-            href={project.zipUrl}
-            type="secondary"
-            size="sm"
-            class="flex-1 justify-center">
-            {#snippet leading()}
-              <FolderArchive class="size-3.5 text-text-muted" />
-            {/snippet}
-            <span>Download ZIP</span>
-          </Button>
-        {/if}
-
-        <Button
-          href={project.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          type="secondary"
-          size="sm"
-          class="flex-1 justify-center">
-          <span>Open on GitHub</span>
-          {#snippet trailing()}
-            <SquareArrowOutUpRight class="size-3 text-text-muted" />
-          {/snippet}
-        </Button>
       </div>
     </div>
   {/if}

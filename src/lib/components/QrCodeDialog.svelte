@@ -5,6 +5,8 @@
   import Button from './Button.svelte';
   import {toastStore} from '../stores/toastStore.svelte';
 
+  import {page} from '$app/state';
+
   interface Props {
     isOpen: boolean;
     title?: string;
@@ -26,8 +28,69 @@
   let svgString = $state<string>('');
   let isGenerating = $state<boolean>(false);
 
+  const resolvedAvatarUrl = $derived(
+    avatarUrl || (page?.data as any)?.author?.avatar || ''
+  );
+
+  async function prepareLogoBuffer(
+    imageUrl: string
+  ): Promise<ArrayBuffer | undefined> {
+    if (typeof window === 'undefined' || !imageUrl) return undefined;
+    return new Promise(resolve => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = async () => {
+        try {
+          const size = 256;
+          const padding = 16;
+          const radius = 40;
+          const canvas = document.createElement('canvas');
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return resolve(undefined);
+
+          ctx.fillStyle = '#ffffff';
+          if (typeof ctx.roundRect === 'function') {
+            ctx.beginPath();
+            ctx.roundRect(0, 0, size, size, radius);
+            ctx.fill();
+          } else {
+            ctx.fillRect(0, 0, size, size);
+          }
+
+          const innerSize = size - padding * 2;
+          const innerRadius = Math.max(0, radius - padding / 2);
+          ctx.save();
+          if (typeof ctx.roundRect === 'function') {
+            ctx.beginPath();
+            ctx.roundRect(padding, padding, innerSize, innerSize, innerRadius);
+            ctx.clip();
+          }
+          ctx.drawImage(img, padding, padding, innerSize, innerSize);
+          ctx.restore();
+
+          const blob = await new Promise<Blob | null>(res =>
+            canvas.toBlob(res, 'image/png')
+          );
+          if (blob) {
+            const buffer = await blob.arrayBuffer();
+            resolve(buffer);
+          } else {
+            resolve(undefined);
+          }
+        } catch {
+          resolve(undefined);
+        }
+      };
+      img.onerror = () => resolve(undefined);
+      img.src = imageUrl;
+    });
+  }
+
   async function generateQrCode() {
-    if (!url && typeof window !== 'undefined') {
+    if (typeof window === 'undefined') return;
+    if (!url) {
       url = window.location.href;
     }
     if (!url) return;
@@ -35,13 +98,18 @@
     isGenerating = true;
 
     let logoBuffer: ArrayBuffer | undefined = undefined;
-    if (avatarUrl) {
-      try {
-        const res = await fetch(avatarUrl);
-        if (res.ok) {
-          logoBuffer = await res.arrayBuffer();
-        }
-      } catch {}
+    const targetAvatar = resolvedAvatarUrl;
+
+    if (targetAvatar) {
+      logoBuffer = await prepareLogoBuffer(targetAvatar);
+      if (!logoBuffer) {
+        try {
+          const res = await fetch(targetAvatar);
+          if (res.ok) {
+            logoBuffer = await res.arrayBuffer();
+          }
+        } catch {}
+      }
     }
 
     try {
@@ -53,14 +121,14 @@
         bgColor: '#ffffff',
         borderRadius: 2,
         cornerMode: 'merge',
-        finderOuterShape: 'rounded',
+        finderOuterShape: 'circle',
         finderInnerShape: 'circle'
       };
 
       if (logoBuffer) {
         options.logo = logoBuffer;
-        options.logoWidth = 22;
-        options.logoHeight = 22;
+        options.logoWidth = 24;
+        options.logoHeight = 24;
       }
 
       const svgBytes = getSVG(url, options);
@@ -99,13 +167,15 @@
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      canvas.width = img.width || 400;
-      canvas.height = img.height || 400;
+      canvas.width = 1024;
+      canvas.height = 1024;
       const ctx = canvas.getContext('2d');
       if (ctx) {
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         const pngUrl = canvas.toDataURL('image/png');
         const a = document.createElement('a');
         a.href = pngUrl;

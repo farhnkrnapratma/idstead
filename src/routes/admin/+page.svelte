@@ -222,6 +222,9 @@
     const url = new URL(page.url);
     url.searchParams.set('tab', id);
     replaceState(url, page.state);
+    if (id === 'privacy' || id === 'security' || id === 'terms') {
+      checkLegalDrafts();
+    }
   }
 
   type Theme = 'auto' | 'dark' | 'light';
@@ -295,9 +298,77 @@
       terms: {title: 'Terms of Service', content: ''}
     }
   );
+  let initialLegalPagesContent = $state<Record<string, string>>({
+    privacy: '',
+    security: '',
+    terms: ''
+  });
+  let legalDrafts = $state<
+    Record<string, {content: string; timestamp?: number} | null>
+  >({privacy: null, security: null, terms: null});
   let isSavingLegal = $state(false);
   let legalSaveSuccess = $state(false);
   let legalSaveError = $state('');
+
+  const isLegalDirty = $derived.by(() => {
+    const slugs = ['privacy', 'security', 'terms'] as const;
+    return slugs.some(
+      slug =>
+        (legalPagesData[slug]?.content || '')
+        !== (initialLegalPagesContent[slug] || '')
+    );
+  });
+
+  function checkLegalDrafts() {
+    if (typeof window === 'undefined') return;
+    const slugs = ['privacy', 'security', 'terms'] as const;
+    for (const slug of slugs) {
+      const key = `autosave_legal_${slug}`;
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed.content === 'string') {
+            const currentContent = legalPagesData[slug]?.content || '';
+            const initialContent = initialLegalPagesContent[slug] || '';
+            if (
+              parsed.content.trim()
+              && parsed.content !== currentContent
+              && parsed.content !== initialContent
+            ) {
+              legalDrafts[slug] = {
+                content: parsed.content,
+                timestamp: parsed.timestamp
+              };
+            } else {
+              legalDrafts[slug] = null;
+            }
+          }
+        } catch {
+          legalDrafts[slug] = null;
+        }
+      } else {
+        legalDrafts[slug] = null;
+      }
+    }
+  }
+
+  function restoreLegalDraft(slug: 'privacy' | 'security' | 'terms') {
+    const draft = legalDrafts[slug];
+    if (draft && legalPagesData[slug]) {
+      legalPagesData[slug].content = draft.content;
+      legalDrafts[slug] = null;
+      toastStore.success(`Restored draft for ${legalPagesData[slug].title}`);
+    }
+  }
+
+  function discardLegalDraft(slug: 'privacy' | 'security' | 'terms') {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(`autosave_legal_${slug}`);
+    }
+    legalDrafts[slug] = null;
+    toastStore.show(`Discarded draft for ${legalPagesData[slug].title}`);
+  }
 
   async function loadLegalPagesFromSupabase() {
     try {
@@ -307,13 +378,16 @@
       if (!error && data && data.length > 0) {
         for (const item of data) {
           if (item.slug && legalPagesData[item.slug]) {
+            const fetchedContent = item.content ?? '';
             legalPagesData[item.slug] = {
               title: item.title || legalPagesData[item.slug].title || '',
-              content: item.content ?? legalPagesData[item.slug].content ?? ''
+              content: fetchedContent
             };
+            initialLegalPagesContent[item.slug] = fetchedContent;
           }
         }
       }
+      checkLegalDrafts();
     } catch {}
   }
 
@@ -356,6 +430,12 @@
           throw upsertErr;
         }
       }
+
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(`autosave_legal_${slugToSave}`);
+      }
+      legalDrafts[slugToSave] = null;
+      initialLegalPagesContent[slugToSave] = pageToSave.content;
 
       legalSaveSuccess = true;
       toastStore.success(`${pageToSave.title} saved successfully`);
@@ -1066,6 +1146,7 @@
   const postViewsMap = $state(new Map<string, number>());
 
   async function fetchPostViews(postId: string) {
+    if (typeof window === 'undefined') return;
     if (postViewsMap.has(postId)) return;
     try {
       const res = await fetch(`/api/v1/blog/views?postId=${postId}`);
@@ -1077,12 +1158,6 @@
       console.error('Failed to fetch views for post:', postId, err);
     }
   }
-
-  $effect(() => {
-    if (posts.length > 0) {
-      posts.forEach(post => fetchPostViews(post.id));
-    }
-  });
 
   function getPostComments(postId: string): AdminComment[] {
     let postComments = comments.filter(c => c.post_id === postId);
@@ -1307,6 +1382,15 @@
   }
 
   onMount(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isLegalDirty) {
+        e.preventDefault();
+      }
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+    }
+
     (async () => {
       const {data: sessionData} = await supabase.auth.getSession();
       if (!sessionData.session) {
@@ -1318,8 +1402,6 @@
       if (sessionData.session.user?.email) {
         adminUserEmail = sessionData.session.user.email;
       }
-
-      void loadLegalPagesFromSupabase();
 
       const pendingToast = sessionStorage.getItem('admin_toast');
       if (pendingToast) {
@@ -1355,6 +1437,7 @@
       clearTimeout(idleWarnTimer);
       clearInterval(countdownInterval);
       if (typeof window !== 'undefined') {
+        window.removeEventListener('beforeunload', handleBeforeUnload);
         ACTIVITY_EVENTS.forEach(evt =>
           window.removeEventListener(evt, handleUserActivity)
         );
@@ -1412,6 +1495,7 @@
 
       const rawPosts = data || [];
       posts = rawPosts.map(post => ({...post, read_time: '1 min read'}));
+      rawPosts.forEach(post => fetchPostViews(post.id));
 
       void (async () => {
         const postsWithReadTime = await Promise.all(
@@ -4955,6 +5039,32 @@
             <span class="hidden sm:inline">Save Privacy Policy</span>
           </Button>
         {/snippet}
+        {#if legalDrafts.privacy}
+          <div
+            class="mb-4 flex flex-col gap-3 rounded-lg border border-copilot/30 bg-copilot/10 p-3 sm:flex-row sm:items-center sm:justify-between">
+            <div
+              class="flex items-center gap-2 text-xs text-copilot sm:text-sm">
+              <AlertTriangle class="size-4 shrink-0 text-copilot" />
+              <span
+                >Autosaved local draft found (different from saved database
+                version).</span>
+            </div>
+            <div class="flex shrink-0 items-center gap-2">
+              <Button
+                type="secondary"
+                size="sm"
+                onclick={() => restoreLegalDraft('privacy')}>
+                Restore draft
+              </Button>
+              <Button
+                type="ghost"
+                size="sm"
+                onclick={() => discardLegalDraft('privacy')}>
+                Discard
+              </Button>
+            </div>
+          </div>
+        {/if}
         <MarkdownEditor
           bind:value={legalPagesData.privacy.content}
           autosaveKey="autosave_legal_privacy"
@@ -4985,6 +5095,32 @@
             <span class="hidden sm:inline">Save Security Policy</span>
           </Button>
         {/snippet}
+        {#if legalDrafts.security}
+          <div
+            class="mb-4 flex flex-col gap-3 rounded-lg border border-copilot/30 bg-copilot/10 p-3 sm:flex-row sm:items-center sm:justify-between">
+            <div
+              class="flex items-center gap-2 text-xs text-copilot sm:text-sm">
+              <AlertTriangle class="size-4 shrink-0 text-copilot" />
+              <span
+                >Autosaved local draft found (different from saved database
+                version).</span>
+            </div>
+            <div class="flex shrink-0 items-center gap-2">
+              <Button
+                type="secondary"
+                size="sm"
+                onclick={() => restoreLegalDraft('security')}>
+                Restore draft
+              </Button>
+              <Button
+                type="ghost"
+                size="sm"
+                onclick={() => discardLegalDraft('security')}>
+                Discard
+              </Button>
+            </div>
+          </div>
+        {/if}
         <MarkdownEditor
           bind:value={legalPagesData.security.content}
           autosaveKey="autosave_legal_security"
@@ -5015,6 +5151,32 @@
             <span class="hidden sm:inline">Save Terms of Service</span>
           </Button>
         {/snippet}
+        {#if legalDrafts.terms}
+          <div
+            class="mb-4 flex flex-col gap-3 rounded-lg border border-copilot/30 bg-copilot/10 p-3 sm:flex-row sm:items-center sm:justify-between">
+            <div
+              class="flex items-center gap-2 text-xs text-copilot sm:text-sm">
+              <AlertTriangle class="size-4 shrink-0 text-copilot" />
+              <span
+                >Autosaved local draft found (different from saved database
+                version).</span>
+            </div>
+            <div class="flex shrink-0 items-center gap-2">
+              <Button
+                type="secondary"
+                size="sm"
+                onclick={() => restoreLegalDraft('terms')}>
+                Restore draft
+              </Button>
+              <Button
+                type="ghost"
+                size="sm"
+                onclick={() => discardLegalDraft('terms')}>
+                Discard
+              </Button>
+            </div>
+          </div>
+        {/if}
         <MarkdownEditor
           bind:value={legalPagesData.terms.content}
           autosaveKey="autosave_legal_terms"

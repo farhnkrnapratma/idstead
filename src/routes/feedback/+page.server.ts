@@ -1,17 +1,20 @@
 import type {Actions, PageServerLoad} from './$types';
 import {supabase} from '$lib/supabase';
-import {fetchContactInfo} from '$lib/author';
+import {fetchAuthorProfile, fetchContactInfo} from '$lib/author';
 import {fail} from '@sveltejs/kit';
 
 export const load: PageServerLoad = async () => {
-  const contactInfo = await fetchContactInfo(supabase);
+  const [contactInfo, authorProfile] = await Promise.all([
+    fetchContactInfo(supabase),
+    fetchAuthorProfile(supabase, {includeEmail: true})
+  ]);
   const emailItem = contactInfo.find(
     c => c.platform.toLowerCase() === 'email' || c.href.startsWith('mailto:')
   );
   const contactEmail =
     emailItem ?
       (emailItem.displayValue || emailItem.href.replace(/^mailto:/i, '')).trim()
-    : '';
+    : (authorProfile?.email || '').trim();
 
   return {contactEmail};
 };
@@ -28,7 +31,10 @@ export const actions: Actions = {
       return fail(400, {missing: true});
     }
 
-    const contactInfo = await fetchContactInfo(supabase);
+    const [contactInfo, authorProfile] = await Promise.all([
+      fetchContactInfo(supabase),
+      fetchAuthorProfile(supabase, {includeEmail: true})
+    ]);
     const emailItem = contactInfo.find(
       c => c.platform.toLowerCase() === 'email' || c.href.startsWith('mailto:')
     );
@@ -37,7 +43,7 @@ export const actions: Actions = {
         (
           emailItem.displayValue || emailItem.href.replace(/^mailto:/i, '')
         ).trim()
-      : '';
+      : (authorProfile?.email || '').trim();
 
     if (!contactEmail) {
       return fail(500, {unavailable: true});

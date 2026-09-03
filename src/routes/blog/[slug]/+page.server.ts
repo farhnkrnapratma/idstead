@@ -81,7 +81,9 @@ export const load: PageServerLoad = async ({params, url, fetch, locals}) => {
     const {data} = supabase.storage
       .from('blog-posts')
       .getPublicUrl(effectiveStoragePath);
-    const fileRes = await fetch(data.publicUrl);
+    const fileRes = await fetch(data.publicUrl, {
+      signal: AbortSignal.timeout(5000)
+    });
     if (!fileRes.ok) {
       throw new Error(`Failed to fetch markdown file: ${fileRes.statusText}`);
     }
@@ -178,8 +180,10 @@ export const load: PageServerLoad = async ({params, url, fetch, locals}) => {
             const {data: urlData} = supabase.storage
               .from('blog-posts')
               .getPublicUrl(p.storage_path);
-            const fileRes = await fetch(urlData.publicUrl);
-            if (fileRes.ok) {
+            const fileRes = await fetch(urlData.publicUrl, {
+              signal: AbortSignal.timeout(3000)
+            }).catch(() => null);
+            if (fileRes?.ok) {
               readTime = estimateReadTime(await fileRes.text());
             }
           } catch (err) {

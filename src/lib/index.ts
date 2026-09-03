@@ -1,4 +1,9 @@
-export {autoResize, portal, staggerChildren} from './utils/actions';
+export {
+  autoResize,
+  portal,
+  scrollReveal,
+  staggerChildren
+} from './utils/actions';
 export {cn} from './utils/cn';
 export {withViewTransition} from './utils/viewTransition';
 export {sanitizeInput} from './utils/sanitizeInput';

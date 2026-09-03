@@ -866,15 +866,21 @@
         {/snippet}
       </ArticleHeader>
 
-      {#if machineTranslated && translationDisclaimerHtml}
-        <div class="translation-disclaimer prose-custom mt-3">
-          {@html translationDisclaimerHtml}
+      {#if (machineTranslated && translationDisclaimerHtml) || (post.tldr && post.tldr.length > 0) || post.summary}
+        <div class="mt-3 flex flex-col gap-3">
+          {#if machineTranslated && translationDisclaimerHtml}
+            <div
+              class="translation-disclaimer prose-custom my-0 [&>.markdown-alert]:my-0!">
+              {@html translationDisclaimerHtml}
+            </div>
+          {/if}
+
+          <PostInsights
+            tldr={post.tldr}
+            summary={post.summary}
+            class="mt-0!" />
         </div>
       {/if}
-
-      <PostInsights
-        tldr={post.tldr}
-        summary={post.summary} />
 
       <div class="mt-3 flex flex-col xl:hidden">
         <TableOfContents
@@ -886,7 +892,7 @@
       <div
         class="prose-custom font-content-{contentFontStore.current} {CONTENT_FONT_CLASS[
           language
-        ] ?? ''} {machineTranslated ? 'mt-0' : 'mt-4'} w-full">
+        ] ?? ''} mt-3 w-full">
         {@html html}
       </div>
 
@@ -1038,11 +1044,7 @@
                     <div>
                       <h4
                         class="line-clamp-2 font-sans-title text-lg leading-snug font-bold text-text-primary">
-                        <a
-                          href="/blog/{related.slug}"
-                          class="rounded-sm outline-none after:absolute after:inset-0 focus-visible:ring-2 focus-visible:ring-copilot focus-visible:ring-offset-2 focus-visible:ring-offset-surface-card">
-                          {related.title}
-                        </a>
+                        {related.title}
                       </h4>
                     </div>
                     <ArticleMeta

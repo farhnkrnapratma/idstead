@@ -130,7 +130,7 @@ export const load: PageServerLoad = async ({fetch, platform, locals}) => {
 
   const [author, cv, funding, contact, skillsGrouped, cvDocument] =
     await Promise.all([
-      fetchAuthorProfileWithSocials(supabaseClient),
+      fetchAuthorProfileWithSocials(supabaseClient, {includeEmail: true}),
       fetchCvEntries(supabaseClient),
       fetchFundingLinks(supabaseClient),
       fetchContactInfo(supabaseClient),
@@ -158,8 +158,10 @@ export const load: PageServerLoad = async ({fetch, platform, locals}) => {
             const {data: urlData} = supabase.storage
               .from('blog-posts')
               .getPublicUrl(post.storage_path);
-            const fileRes = await fetch(urlData.publicUrl);
-            if (fileRes.ok) {
+            const fileRes = await fetch(urlData.publicUrl, {
+              signal: AbortSignal.timeout(3000)
+            }).catch(() => null);
+            if (fileRes?.ok) {
               const text = await fileRes.text();
               const words = text.trim().split(/\s+/).length;
               const minutes = Math.max(1, Math.ceil(words / 200));

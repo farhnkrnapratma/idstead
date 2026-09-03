@@ -6,7 +6,7 @@ import {
   evaluateDefineBlock,
   protectInterpolationTokens,
   resolveProtectedInterpolationTokens,
-  createDbRegistry
+  createApiRegistry
 } from '$lib/define';
 
 const HIGHLIGHT_META_RE = /\{([\d,\s-]+)\}/;
@@ -552,7 +552,7 @@ export function parseContainers(markdown: string): string {
       const groupAttr = groupKey ? ` data-tab-group-key="${groupKey}"` : '';
 
       return `<div class="markdown-tabs-container group/codemin my-6 rounded-sm border border-border-subtle shadow-2xs"${groupAttr}>
-  <div class="markdown-tabs-header hljs relative flex min-h-[1.75rem] items-center justify-between rounded-t-sm border-b border-border-subtle px-3 py-0.5 select-none" role="tablist">
+  <div class="markdown-tabs-header hljs relative flex min-h-8 items-end justify-between rounded-t-sm border-b border-border-subtle px-3 pt-0 pb-0 select-none" role="tablist">
     <div class="markdown-tabs-nav flex min-w-0 flex-1 items-end gap-1.5 m-0 p-0 overflow-x-auto scrollbar-none [-ms-overflow-style:none]">
       ${headerButtons}
     </div>
@@ -861,8 +861,8 @@ export async function renderMarkdown(
 ): Promise<string> {
   const {body} = extractPostConfig(markdown);
   const {raw: defineRaw, body: bodyAfterDefine} = extractDefineBlock(body);
-  const dbRegistry = createDbRegistry(supabaseClient);
-  const {scope} = await evaluateDefineBlock(defineRaw, dbRegistry);
+  const apiRegistry = createApiRegistry(supabaseClient);
+  const {scope} = await evaluateDefineBlock(defineRaw, apiRegistry);
   const ignoreRenderPlaceholders = new Map<string, string>();
   const withRawBlocksExtracted = extractIgnoreRenderBlocks(
     bodyAfterDefine,
@@ -883,7 +883,7 @@ export async function renderMarkdown(
     withMathExtracted,
     interpolationPlaceholders,
     scope,
-    dbRegistry
+    apiRegistry
   );
   const withContainers = parseContainers(withInterpolated);
   const rawHtml = await marked.parse(withContainers);

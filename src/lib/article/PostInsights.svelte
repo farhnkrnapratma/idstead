@@ -21,12 +21,38 @@
   const REVEAL_DURATION_MS = 2800;
   const DOTS_DWELL_MS = 1100;
 
+  let detailsElement = $state<HTMLDetailsElement | null>(null);
   let hasStartedReveal = false;
   let loadingDots = $state(false);
   let typing = $state(false);
   let displayedSummary = $state('');
   let frame: number | null = null;
   let dotsTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  function cleanupAnimation() {
+    if (frame !== null) {
+      cancelAnimationFrame(frame);
+      frame = null;
+    }
+    if (dotsTimeout !== null) {
+      clearTimeout(dotsTimeout);
+      dotsTimeout = null;
+    }
+    loadingDots = false;
+    typing = false;
+  }
+
+  $effect(() => {
+    const text = summary;
+    cleanupAnimation();
+    if (detailsElement?.open && text) {
+      hasStartedReveal = true;
+      displayedSummary = text;
+    } else {
+      hasStartedReveal = false;
+      displayedSummary = '';
+    }
+  });
 
   function startTyping(text: string) {
     typing = true;
@@ -61,8 +87,7 @@
   }
 
   onDestroy(() => {
-    if (frame !== null) cancelAnimationFrame(frame);
-    if (dotsTimeout !== null) clearTimeout(dotsTimeout);
+    cleanupAnimation();
   });
 </script>
 
@@ -107,6 +132,7 @@
 
     {#if summary}
       <details
+        bind:this={detailsElement}
         class="group markdown-details my-0 overflow-hidden rounded-sm glass-card border border-border-subtle text-text-primary shadow-md backdrop-blur-md"
         ontoggle={handleSummaryToggle}>
         <summary

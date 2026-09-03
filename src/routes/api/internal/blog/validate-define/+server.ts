@@ -5,7 +5,7 @@ import {isSameOriginRequest} from '$lib/server/sameOrigin';
 import {requireAdminAuth} from '$lib/server/adminCv';
 import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
 import {extractPostConfig} from '$lib/markdown';
-import {validateDefineForSave, createDbRegistry} from '$lib/define';
+import {validateDefineForSave, createApiRegistry} from '$lib/define';
 
 export const POST: RequestHandler = async ({request, url, platform}) => {
   if (!isSameOriginRequest(request, url)) {
@@ -40,8 +40,11 @@ export const POST: RequestHandler = async ({request, url, platform}) => {
   }
 
   const {body: bodyAfterConfig} = extractPostConfig(markdown);
-  const dbRegistry = createDbRegistry(getSupabaseAdminClient(platform));
-  const {ok, errors} = await validateDefineForSave(bodyAfterConfig, dbRegistry);
+  const apiRegistry = createApiRegistry(getSupabaseAdminClient(platform));
+  const {ok, errors} = await validateDefineForSave(
+    bodyAfterConfig,
+    apiRegistry
+  );
 
   if (!ok) {
     return apiError(

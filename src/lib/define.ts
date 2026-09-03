@@ -609,16 +609,18 @@ export function walkPath(base: DefineValue, path: PathSegment[]): DefineValue {
   return current;
 }
 
-export type DbResolver = (path: PathSegment[]) => Promise<DefineValue>;
-export interface DbRegistry {
-  author: DbResolver;
-  blog: DbResolver;
+export type ApiResolver = (path: PathSegment[]) => Promise<DefineValue>;
+export type DbResolver = ApiResolver;
+export interface ApiRegistry {
+  author: ApiResolver;
+  blog: ApiResolver;
 }
+export type DbRegistry = ApiRegistry;
 
 export interface EvalContext {
   scope: Map<string, DefineValue>;
   allowThis: boolean;
-  dbRegistry: DbRegistry;
+  apiRegistry: ApiRegistry;
 }
 
 async function evaluateReference(
@@ -646,19 +648,34 @@ async function evaluateReference(
   }
 
   if (node.root === 'db') {
+    throw new DefineError(
+      "'db.*' is no longer supported — use 'api.v1.*' instead (e.g. api.v1.author)"
+    );
+  }
+
+  if (node.root === 'api') {
     if (node.path.length === 0 || node.path[0].kind !== 'prop') {
       throw new DefineError(
-        'db must be followed by a resource name, e.g. db.author'
+        'api must be followed by a version, e.g. api.v1.author'
       );
     }
-    const resource = node.path[0].name as string;
-    const resolver = ctx.dbRegistry[resource as keyof DbRegistry];
+    const version = node.path[0].name as string;
+    if (version !== 'v1') {
+      throw new DefineError(`Unknown API version '${version}' (supported: v1)`);
+    }
+    if (node.path.length < 2 || node.path[1].kind !== 'prop') {
+      throw new DefineError(
+        'api.v1 must be followed by a resource name, e.g. api.v1.author'
+      );
+    }
+    const resource = node.path[1].name as string;
+    const resolver = ctx.apiRegistry[resource as keyof ApiRegistry];
     if (!resolver) {
       throw new DefineError(
-        `Unknown db resource '${resource}' (supported: author, blog)`
+        `Unknown api.v1 resource '${resource}' (supported: author, blog)`
       );
     }
-    return resolver(node.path.slice(1));
+    return resolver(node.path.slice(2));
   }
 
   if (ctx.allowThis) {
@@ -850,7 +867,7 @@ const JS_RESERVED = new Set([
   'set',
   'of'
 ]);
-const LANGUAGE_RESERVED = new Set(['this', 'db']);
+const LANGUAGE_RESERVED = new Set(['this', 'api', 'db']);
 const EXTRA_RESERVED = new Set(['null', 'undefined', 'NaN', 'Infinity']);
 export const RESERVED_WORDS = new Set([
   ...JS_RESERVED,
@@ -889,7 +906,7 @@ export function restoreAllPlaceholders(
 
 export async function evaluateDefineBlock(
   raw: string | null,
-  dbRegistry: DbRegistry
+  apiRegistry: ApiRegistry
 ): Promise<{scope: Map<string, DefineValue>; errors: DefineErrorInfo[]}> {
   const scope = new Map<string, DefineValue>();
   const errors: DefineErrorInfo[] = [];
@@ -921,7 +938,7 @@ export async function evaluateDefineBlock(
       const result = await evaluateExpr(value, {
         scope,
         allowThis: true,
-        dbRegistry
+        apiRegistry
       });
       scope.set(key, result);
       seenKeys.add(key);
@@ -1109,14 +1126,14 @@ function renderDefineErrorMarker(message: string): string {
 async function evaluateInterpolationToken(
   token: InterpolationToken,
   scope: Map<string, DefineValue>,
-  dbRegistry: DbRegistry
+  apiRegistry: ApiRegistry
 ): Promise<{replacement: string; error?: DefineErrorInfo}> {
   try {
     const expr = new Parser(tokenize(token.exprSource)).parseExpression();
     const value = await evaluateExpr(expr, {
       scope,
       allowThis: false,
-      dbRegistry
+      apiRegistry
     });
     if (token.kind === 'conditional') {
       if (value.type !== 'boolean') {
@@ -1136,7 +1153,7 @@ async function evaluateInterpolationToken(
 export async function interpolateBody(
   bodyMarkdown: string,
   scope: Map<string, DefineValue>,
-  dbRegistry: DbRegistry
+  apiRegistry: ApiRegistry
 ): Promise<{output: string; errors: DefineErrorInfo[]}> {
   if (!bodyMarkdown) return {output: '', errors: []};
 
@@ -1163,7 +1180,7 @@ export async function interpolateBody(
     const {replacement, error} = await evaluateInterpolationToken(
       token,
       scope,
-      dbRegistry
+      apiRegistry
     );
     if (error) errors.push(error);
     result =
@@ -1208,7 +1225,7 @@ export async function resolveProtectedInterpolationTokens(
   text: string,
   store: Map<string, string>,
   scope: Map<string, DefineValue>,
-  dbRegistry: DbRegistry
+  apiRegistry: ApiRegistry
 ): Promise<{output: string; errors: DefineErrorInfo[]}> {
   let result = text;
   const errors: DefineErrorInfo[] = [];
@@ -1220,7 +1237,7 @@ export async function resolveProtectedInterpolationTokens(
       const {replacement: r, error} = await evaluateInterpolationToken(
         tokens[0],
         scope,
-        dbRegistry
+        apiRegistry
       );
       replacement = r;
       if (error) errors.push(error);
@@ -1231,9 +1248,9 @@ export async function resolveProtectedInterpolationTokens(
   return {output: result, errors};
 }
 
-export function createDbRegistry(supabaseClient: any): DbRegistry {
+export function createApiRegistry(supabaseClient: any): ApiRegistry {
   if (!supabaseClient) {
-    const unavailable: DbResolver = async () => {
+    const unavailable: ApiResolver = async () => {
       throw new DefineError('Database access is unavailable in this context.');
     };
     return {author: unavailable, blog: unavailable};
@@ -1244,12 +1261,14 @@ export function createDbRegistry(supabaseClient: any): DbRegistry {
   };
 }
 
+export const createDbRegistry = createApiRegistry;
+
 async function resolveAuthorPath(
   path: PathSegment[],
   supabaseClient: any
 ): Promise<DefineValue> {
   const [profile, cv, funding, contact, skills, socials] = await Promise.all([
-    fetchAuthorProfile(supabaseClient),
+    fetchAuthorProfile(supabaseClient, {includeEmail: true}),
     fetchCvEntries(supabaseClient),
     fetchFundingLinks(supabaseClient),
     fetchContactInfo(supabaseClient),
@@ -1264,6 +1283,9 @@ async function resolveAuthorPath(
     skills,
     socials
   });
+  if (profile?.email && combined.profile) {
+    combined.profile.email = profile.email;
+  }
   return walkPath(jsToDefineValue(combined), path);
 }
 
@@ -1284,7 +1306,7 @@ async function resolveBlogPath(
 
     if (error || !post) {
       throw new DefineError(
-        `db.blog['${slug}'] does not resolve to a published post`
+        `api.v1.blog['${slug}'] does not resolve to a published post`
       );
     }
 
@@ -1320,7 +1342,7 @@ async function resolveBlogPath(
 
 export async function validateDefineForSave(
   bodyAfterConfig: string,
-  dbRegistry: DbRegistry
+  apiRegistry: ApiRegistry
 ): Promise<{ok: boolean; errors: DefineErrorInfo[]}> {
   const {
     raw: defineRaw,
@@ -1329,12 +1351,12 @@ export async function validateDefineForSave(
   } = extractDefineBlock(bodyAfterConfig);
   const {scope, errors: defineErrors} = await evaluateDefineBlock(
     defineRaw,
-    dbRegistry
+    apiRegistry
   );
   const {errors: interpolationErrors} = await interpolateBody(
     bodyAfterDefine,
     scope,
-    dbRegistry
+    apiRegistry
   );
 
   const errors = [...placementErrors, ...defineErrors, ...interpolationErrors];

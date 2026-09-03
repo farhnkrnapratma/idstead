@@ -1087,7 +1087,6 @@
     <Button
       type="secondary"
       size="md"
-      showEscHint
       onclick={() => (showCancelDialog = false)}>Keep editing</Button>
     <Button
       type="danger"

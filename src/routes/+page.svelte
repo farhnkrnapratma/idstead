@@ -56,7 +56,6 @@
     Textarea,
     Button,
     Badge,
-    Dialog,
     EmptyState,
     Tooltip,
     CvEntryCard,
@@ -88,13 +87,21 @@
     ConsentNotice,
     ArticleMeta,
     staggerChildren,
+    scrollReveal,
     withViewTransition
   } from '$lib';
   import {supabase} from '$lib/supabase';
   import {SvelteSet} from 'svelte/reactivity';
   import {formatMonthAbbrev} from '$lib/author';
   import {themeStore} from '$lib/stores/themeStore.svelte';
+  import {codeBlockPrefsStore} from '$lib/stores/codeBlockPrefsStore.svelte';
   import {a11yStore} from '$lib/stores/a11yStore.svelte';
+  import {
+    applyCodeThemeVariables,
+    createCodeActionControls,
+    ensureHljsThemeStylesheet,
+    resolveHljsTheme
+  } from '$lib/utils/codeBlocks';
   import AccessibilitySelect from '$lib/components/filter/AccessibilitySelect.svelte';
   import {
     turnstileWidget,
@@ -241,6 +248,12 @@
     failedBanners.add(postId);
   }
 
+  const failedRepoBanners = new SvelteSet<string>();
+
+  function markRepoBannerFailed(projectName: string) {
+    failedRepoBanners.add(projectName);
+  }
+
   let shareDialogData = $state<{title: string; url: string} | null>(null);
   let showShareDialog = $state(false);
 
@@ -256,7 +269,17 @@
   let showBlogActionsDialog = $state(false);
   let activeProjectShareId = $state<string | null>(null);
   let activeProjectCodeId = $state<string | null>(null);
-  let projectCodeTab = $state<'https' | 'ssh' | 'cli'>('https');
+  let activeProjectCodeMenuId = $state<string | null>(null);
+  const projectCodeTabs = [
+    ['https', 'HTTPS'],
+    ['ssh', 'SSH'],
+    ['cli', 'GitHub CLI']
+  ] as const;
+  type ProjectCodeTab = (typeof projectCodeTabs)[number][0];
+  let projectCodeTab = $state<ProjectCodeTab>('https');
+  let projectCodeTheme = $derived(
+    resolveHljsTheme(themeStore.isDark, codeBlockPrefsStore.current.colorScheme)
+  );
   let activeBlogShareId = $state<string | null>(null);
   let activeBlogQuickActionsId = $state<string | null>(null);
   let copiedProjectShareUrlId = $state<string | null>(null);
@@ -266,12 +289,107 @@
   function closeAllCardPopovers() {
     activeProjectShareId = null;
     activeProjectCodeId = null;
+    activeProjectCodeMenuId = null;
     activeBlogShareId = null;
     activeBlogQuickActionsId = null;
     copiedProjectShareUrlId = null;
     copiedProjectCloneId = null;
     copiedBlogShareUrlId = null;
   }
+
+  function handleProjectCodeTabKeydown(event: KeyboardEvent, index: number) {
+    let targetIndex: number;
+
+    if (event.key === 'ArrowRight') {
+      targetIndex = (index + 1) % projectCodeTabs.length;
+    } else if (event.key === 'ArrowLeft') {
+      targetIndex =
+        (index - 1 + projectCodeTabs.length) % projectCodeTabs.length;
+    } else if (event.key === 'Home') {
+      targetIndex = 0;
+    } else if (event.key === 'End') {
+      targetIndex = projectCodeTabs.length - 1;
+    } else {
+      return;
+    }
+
+    event.preventDefault();
+    projectCodeTab = projectCodeTabs[targetIndex][0];
+    const currentButton = event.currentTarget as HTMLButtonElement;
+    currentButton.parentElement
+      ?.querySelectorAll<HTMLButtonElement>('[role="tab"]')
+      [targetIndex]?.focus();
+  }
+
+  function syncProjectCodeTheme(node: HTMLElement) {
+    const theme = projectCodeTheme;
+    const header =
+      node.querySelector<HTMLElement>('.markdown-tabs-header')
+      || node.querySelector<HTMLElement>('.code-header-bar');
+    const body = node.querySelector<HTMLElement>('.code-body');
+    if (!header || !body) return;
+
+    node.dataset.codeTheme = theme;
+    header.dataset.codeTheme = theme;
+    body.dataset.codeTheme = theme;
+    applyCodeThemeVariables(node, body);
+    void ensureHljsThemeStylesheet(theme).then(() => {
+      if (theme === projectCodeTheme && node.isConnected) {
+        applyCodeThemeVariables(node, body);
+      }
+    });
+  }
+
+  let activeProjectCodeControls: ReturnType<
+    typeof createCodeActionControls
+  > | null = null;
+
+  function mountProjectCodeControls(node: HTMLElement, project: Project) {
+    const controls = createCodeActionControls({
+      getCodeText: () => {
+        return (
+          projectCodeTab === 'https' ? `git clone ${project.cloneUrl}`
+          : projectCodeTab === 'ssh' ? `git clone ${project.sshUrl}`
+          : `gh repo clone ${project.fullName}`
+        );
+      },
+      getDownloadFilename: () => `clone-${project.name}.sh`,
+      downloadLabel: 'Download ZIP',
+      onDownload: () => {
+        if (project.zipUrl) {
+          const a = document.createElement('a');
+          a.href = project.zipUrl;
+          a.download = '';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        }
+      },
+      shouldHideLineNumbers: () => true,
+      triggerToast: toastStore.success
+    });
+    node.appendChild(controls.controls);
+    controls.syncKebabTheme(projectCodeTheme);
+    activeProjectCodeControls = controls;
+
+    return {
+      update() {
+        controls.syncKebabTheme(projectCodeTheme);
+        controls.applyPrefs();
+      },
+      destroy() {
+        if (activeProjectCodeControls === controls) {
+          activeProjectCodeControls = null;
+        }
+        controls.controls.remove();
+      }
+    };
+  }
+
+  $effect(() => {
+    void codeBlockPrefsStore.current;
+    activeProjectCodeControls?.applyPrefs();
+  });
 
   function openBlogActionsDialog(post: BlogPost) {
     selectedBlogActionPost = post;
@@ -299,6 +417,7 @@
     title: string;
     url: string;
     slug: string;
+    avatarUrl?: string;
   } | null>(null);
   let showQrCodeDialog = $state(false);
 
@@ -307,7 +426,8 @@
     qrCodeDialogData = {
       title: post.title,
       url: `${window.location.origin}/blog/${post.slug}`,
-      slug: post.slug
+      slug: post.slug,
+      avatarUrl: author?.avatar || ''
     };
     showQrCodeDialog = true;
   }
@@ -317,7 +437,8 @@
     qrCodeDialogData = {
       title: project.name,
       url: project.url,
-      slug: project.name
+      slug: project.name,
+      avatarUrl: author?.avatar || ''
     };
     showQrCodeDialog = true;
   }
@@ -532,9 +653,21 @@
   let formMessage = $state('');
   let formErrors = $state({name: '', email: '', message: ''});
   let formValid = $state({name: false, email: false, message: false});
-  let showSendMessageDialog = $state(false);
+  let isSubmittingMessage = $state(false);
   let contactFormElement = $state<HTMLFormElement | null>(null);
   let turnstileContactEl = $state<HTMLDivElement | null>(null);
+
+  let contactEmail = $derived.by(() => {
+    const emailItem = contactData.find(
+      c => c.platform.toLowerCase() === 'email' || c.href.startsWith('mailto:')
+    );
+    if (emailItem) {
+      return (
+        emailItem.displayValue || emailItem.href.replace(/^mailto:/i, '')
+      ).trim();
+    }
+    return author?.email?.trim() || '';
+  });
 
   function debounce<T extends unknown[]>(cb: (...args: T) => void, ms: number) {
     let timer: ReturnType<typeof setTimeout>;
@@ -593,6 +726,8 @@
   }
 
   async function validateForm(e: SubmitEvent) {
+    e.preventDefault();
+
     const nameErr = formName.trim() === '' ? 'Name is required.' : '';
     const nameReservedErr =
       !nameErr && isNameReserved(formName, authorTokens) ?
@@ -614,9 +749,18 @@
     if (formErrors.email) formValid.email = false;
     if (formErrors.message) formValid.message = false;
 
-    e.preventDefault();
+    if (formErrors.name || formErrors.email || formErrors.message) {
+      return;
+    }
 
-    if (!formErrors.name && !formErrors.email && !formErrors.message) {
+    if (!contactEmail) {
+      toastStore.error('Message submission is currently unavailable.');
+      return;
+    }
+
+    isSubmittingMessage = true;
+
+    try {
       if (turnstileSiteKey) {
         const token = await executeTurnstile(turnstileContactEl);
         if (!token) {
@@ -624,16 +768,42 @@
           return;
         }
       }
-      formName = sanitizeInput(formName.trim());
-      formEmail = sanitizeInput(formEmail.trim());
-      formMessage = sanitizeInput(formMessage.trim());
-      showSendMessageDialog = true;
-    }
-  }
 
-  function executeSendMessage() {
-    if (contactFormElement) {
-      contactFormElement.submit();
+      const sanitizedName = sanitizeInput(formName.trim());
+      const sanitizedEmail = sanitizeInput(formEmail.trim());
+      const sanitizedMessage = sanitizeInput(formMessage.trim());
+
+      const res = await fetch(
+        `https://formsubmit.co/ajax/${encodeURIComponent(contactEmail)}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json'
+          },
+          body: JSON.stringify({
+            name: sanitizedName,
+            email: sanitizedEmail,
+            message: sanitizedMessage,
+            _subject: 'New message from portfolio website!'
+          })
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error('Failed to send message.');
+      }
+
+      toastStore.success('Message sent successfully. Thank you!');
+      formName = '';
+      formEmail = '';
+      formMessage = '';
+      formErrors = {name: '', email: '', message: ''};
+      formValid = {name: false, email: false, message: false};
+    } catch {
+      toastStore.error('Failed to send message. Please try again later.');
+    } finally {
+      isSubmittingMessage = false;
       resetTurnstile(turnstileContactEl);
     }
   }
@@ -1010,465 +1180,454 @@
     headingTag: 'h3' | 'h4',
     tagItem: Snippet<[string]>
   )}
+    {@const repoBannerUrl = `https://opengraph.githubassets.com/1/${project.fullName}`}
     <div
-      class="relative flex flex-col gap-2.5 rounded-sm glass-card p-4 text-left {(
+      class="relative flex flex-col rounded-sm glass-card text-left {(
         activeProjectShareId === project.name
         || activeProjectCodeId === project.name
       ) ?
         'z-40'
       : ''}">
-      <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
-        <svelte:element
-          this={headingTag}
-          class="font-sans-title text-lg leading-none font-bold text-text-primary"
-          title={project.name}>
-          {project.name}
-        </svelte:element>
-
-        {#if project.lang}
-          <span
-            class="inline-flex items-center py-0.5 font-mono text-xxs leading-none font-medium text-text-secondary select-none">
-            <Dot
-              strokeWidth={10}
-              class="size-3.5 shrink-0"
-              color={project.langColor ?? '#909692'} />
-            <span class="leading-none">{project.lang}</span>
-          </span>
+      <div class="aspect-2/1 w-full shrink-0 overflow-hidden rounded-t-sm">
+        {#if !failedRepoBanners.has(project.name)}
+          <ImageWithSkeleton
+            src={repoBannerUrl}
+            alt={project.name}
+            rounded=""
+            onerror={() => markRepoBannerFailed(project.name)}
+            class="h-full w-full object-cover" />
+        {:else}
+          <div
+            class="relative flex h-full w-full items-center justify-center overflow-hidden bg-linear-to-br from-accent/15 to-copilot/15 select-none">
+            <FolderArchive class="size-10 text-copilot/50" />
+          </div>
         {/if}
+      </div>
 
-        {#if project.latestCommitSha || project.pushedAt}
-          <span
-            class="inline-flex items-center gap-1.5 font-sans-title text-xs leading-none font-medium whitespace-nowrap text-text-muted">
-            <GitCommitHorizontal class="size-3.5 shrink-0 text-text-muted" />
-            {#if project.latestCommitSha}
-              <a
-                href="https://github.com/{project.fullName}/commit/{project.latestCommitSha}"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="leading-none text-text-muted transition-colors hover:text-copilot hover:underline">
-                {project.latestCommitSha}
-              </a>
+      <div
+        class="flex min-w-0 flex-1 flex-col justify-between gap-2.5 p-4 font-sans">
+        <div class="flex flex-col gap-2">
+          <div class="relative flex items-start justify-between gap-2">
+            <svelte:element
+              this={headingTag}
+              class="line-clamp-2 min-w-0 flex-1 font-sans-title text-lg leading-snug font-bold text-text-primary">
+              {project.name}
+            </svelte:element>
+
+            <div class="relative z-20 flex shrink-0 items-center gap-1">
+              <div class="relative shrink-0">
+                <Button
+                  type="ghost"
+                  size="xs"
+                  aria-label="Share project"
+                  aria-expanded={activeProjectShareId === project.name}
+                  aria-haspopup="dialog"
+                  class={cn(
+                    'size-6.5! px-0! text-text-muted hover:text-copilot',
+                    activeProjectShareId === project.name
+                      && 'border-copilot text-copilot'
+                  )}
+                  onclick={(e: MouseEvent) => {
+                    e.stopPropagation();
+                    activeProjectCodeId = null;
+                    activeProjectShareId =
+                      activeProjectShareId === project.name ?
+                        null
+                      : project.name;
+                  }}>
+                  <Share2 class="size-3.5" />
+                </Button>
+              </div>
+
+              <div class="relative shrink-0">
+                <Button
+                  type="ghost"
+                  size="xs"
+                  aria-label="Clone options"
+                  aria-expanded={activeProjectCodeId === project.name}
+                  aria-haspopup="dialog"
+                  class={cn(
+                    'size-6.5! px-0! text-text-muted hover:text-copilot',
+                    activeProjectCodeId === project.name
+                      && 'border-copilot text-copilot'
+                  )}
+                  onclick={(e: MouseEvent) => {
+                    e.stopPropagation();
+                    activeProjectShareId = null;
+                    activeProjectCodeMenuId = null;
+                    projectCodeTab = 'https';
+                    activeProjectCodeId =
+                      activeProjectCodeId === project.name ?
+                        null
+                      : project.name;
+                  }}>
+                  <Code class="size-3.5" />
+                </Button>
+              </div>
+            </div>
+
+            {#if activeProjectShareId === project.name}
+              {@const projectUrl = project.url}
+              {@const encodedUrl = encodeURIComponent(projectUrl)}
+              {@const encodedTitle = encodeURIComponent(project.name)}
+              <div
+                role="dialog"
+                tabindex="-1"
+                aria-label="Share project"
+                class="absolute top-full right-0 z-50 mt-1.5 flex flex-col gap-3 popover-surface p-3 sm:w-80"
+                onclick={(e: MouseEvent) => e.stopPropagation()}
+                onkeydown={(e: KeyboardEvent) => {
+                  if (e.key === 'Escape') activeProjectShareId = null;
+                }}>
+                <div class="flex flex-col gap-1.5">
+                  <span
+                    class="text-2xs font-semibold tracking-wider text-text-muted uppercase"
+                    >Direct link</span>
+                  <div
+                    class="flex items-center gap-1.5 rounded-sm border border-border-subtle bg-surface-base/80 p-1 pr-1.5 pl-2.5 shadow-2xs">
+                    <span
+                      class="min-w-0 flex-1 truncate font-mono text-xs text-text-secondary select-all"
+                      >{projectUrl}</span>
+                    <Button
+                      type={copiedProjectShareUrlId === project.name ?
+                        'tertiary'
+                      : 'secondary'}
+                      size="xs"
+                      class="size-6.5! shrink-0 px-0!"
+                      aria-label={copiedProjectShareUrlId === project.name ?
+                        'Copied project URL'
+                      : 'Copy project URL'}
+                      onclick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(projectUrl);
+                          toastStore.success('Project URL copied');
+                          copiedProjectShareUrlId = project.name;
+                          setTimeout(() => {
+                            if (copiedProjectShareUrlId === project.name) {
+                              copiedProjectShareUrlId = null;
+                            }
+                          }, 2000);
+                        } catch {
+                          toastStore.error('Failed to copy');
+                        }
+                      }}>
+                      {#snippet leading()}
+                        {#if copiedProjectShareUrlId === project.name}
+                          <CopyCheck class="size-3.5 text-copilot" />
+                        {:else}
+                          <Copy class="size-3.5" />
+                        {/if}
+                      {/snippet}
+                    </Button>
+                  </div>
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                  <span
+                    class="text-2xs font-semibold tracking-wider text-text-muted uppercase"
+                    >Share to platform</span>
+                  <div class="grid grid-cols-6 gap-1.5 sm:grid-cols-3">
+                    <Button
+                      href="https://x.com/intent/post?url={encodedUrl}&text={encodedTitle}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      type="secondary"
+                      size="xs"
+                      class="w-full justify-center px-1.5 sm:px-2"
+                      title="Share on X"
+                      aria-label="Share on X">
+                      {#snippet leading()}
+                        <i
+                          class="bi bi-twitter-x inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
+                          aria-hidden="true"></i>
+                      {/snippet}
+                      <span class="hidden truncate sm:inline">X</span>
+                    </Button>
+                    <Button
+                      href="https://linkedin.com/sharing/share-offsite/?url={encodedUrl}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      type="secondary"
+                      size="xs"
+                      class="w-full justify-center px-1.5 sm:px-2"
+                      title="Share on LinkedIn"
+                      aria-label="Share on LinkedIn">
+                      {#snippet leading()}
+                        <i
+                          class="bi bi-linkedin inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
+                          aria-hidden="true"></i>
+                      {/snippet}
+                      <span class="hidden truncate sm:inline">LinkedIn</span>
+                    </Button>
+                    <Button
+                      href="https://api.whatsapp.com/send?text={encodedTitle}%20{encodedUrl}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      type="secondary"
+                      size="xs"
+                      class="w-full justify-center px-1.5 sm:px-2"
+                      title="Share on WhatsApp"
+                      aria-label="Share on WhatsApp">
+                      {#snippet leading()}
+                        <i
+                          class="bi bi-whatsapp inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
+                          aria-hidden="true"></i>
+                      {/snippet}
+                      <span class="hidden truncate sm:inline">WhatsApp</span>
+                    </Button>
+                    <Button
+                      href="https://www.facebook.com/sharer/sharer.php?u={encodedUrl}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      type="secondary"
+                      size="xs"
+                      class="w-full justify-center px-1.5 sm:px-2"
+                      title="Share on Facebook"
+                      aria-label="Share on Facebook">
+                      {#snippet leading()}
+                        <i
+                          class="bi bi-facebook inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
+                          aria-hidden="true"></i>
+                      {/snippet}
+                      <span class="hidden truncate sm:inline">Facebook</span>
+                    </Button>
+                    <Button
+                      href="https://reddit.com/submit?url={encodedUrl}&title={encodedTitle}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      type="secondary"
+                      size="xs"
+                      class="w-full justify-center px-1.5 sm:px-2"
+                      title="Share on Reddit"
+                      aria-label="Share on Reddit">
+                      {#snippet leading()}
+                        <i
+                          class="bi bi-reddit inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
+                          aria-hidden="true"></i>
+                      {/snippet}
+                      <span class="hidden truncate sm:inline">Reddit</span>
+                    </Button>
+                    <Button
+                      href="mailto:?subject={encodedTitle}&body={encodedUrl}"
+                      type="secondary"
+                      size="xs"
+                      class="w-full justify-center px-1.5 sm:px-2"
+                      title="Share via Email"
+                      aria-label="Share via Email">
+                      {#snippet leading()}
+                        <i
+                          class="bi bi-envelope-fill inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
+                          aria-hidden="true"></i>
+                      {/snippet}
+                      <span class="hidden truncate sm:inline">Email</span>
+                    </Button>
+                  </div>
+                </div>
+
+                <div class="border-t border-border-subtle/60 pt-1.5">
+                  <Button
+                    type="ghost"
+                    size="xs"
+                    class="w-full justify-center text-text-secondary hover:text-text-primary"
+                    onclick={() => {
+                      activeProjectShareId = null;
+                      openProjectQrDialog(project);
+                    }}>
+                    {#snippet leading()}
+                      <QrCode class="size-3.5" />
+                    {/snippet}
+                    <span>View QR Code</span>
+                  </Button>
+                </div>
+              </div>
             {/if}
-            {#if project.latestCommitSha && project.pushedAt}
+
+            {#if activeProjectCodeId === project.name}
+              {@const cloneCmd =
+                projectCodeTab === 'https' ? `git clone ${project.cloneUrl}`
+                : projectCodeTab === 'ssh' ? `git clone ${project.sshUrl}`
+                : `gh repo clone ${project.fullName}`}
+              <div
+                role="dialog"
+                tabindex="-1"
+                aria-label="Clone repository"
+                class="absolute top-full right-0 z-50 mt-1.5 flex w-84 flex-col gap-3 popover-surface p-3 sm:w-96"
+                onclick={(e: MouseEvent) => e.stopPropagation()}
+                onkeydown={(e: KeyboardEvent) => {
+                  if (e.key === 'Escape') {
+                    activeProjectCodeId = null;
+                    activeProjectCodeMenuId = null;
+                  }
+                }}>
+                <div class="flex items-center justify-between">
+                  <span
+                    class="text-2xs font-semibold tracking-wider text-text-muted uppercase">
+                    Clone repository
+                  </span>
+                </div>
+
+                <div
+                  {@attach syncProjectCodeTheme}
+                  data-code-theme={projectCodeTheme}
+                  class="markdown-tabs-container group/codemin relative m-0 flex flex-col overflow-visible rounded-sm border border-border-subtle shadow-2xs">
+                  <div
+                    data-code-theme={projectCodeTheme}
+                    class="markdown-tabs-header hljs relative flex min-h-8 items-end justify-between rounded-t-sm border-b border-border-subtle px-3 pt-0 pb-0 select-none"
+                    role="tablist">
+                    <div
+                      aria-label="Clone method"
+                      class="markdown-tabs-nav m-0 flex min-w-0 flex-1 scrollbar-none items-end gap-1.5 overflow-x-auto p-0 [-ms-overflow-style:none]">
+                      {#each projectCodeTabs as [key, label], index (key)}
+                        <button
+                          id="project-clone-tab-{key}"
+                          type="button"
+                          role="tab"
+                          aria-selected={projectCodeTab === key}
+                          aria-controls="project-clone-panel"
+                          tabindex={projectCodeTab === key ? 0 : -1}
+                          onclick={() => (projectCodeTab = key)}
+                          onkeydown={event =>
+                            handleProjectCodeTabKeydown(event, index)}
+                          class={[
+                            'markdown-tab-button relative -mb-px inline-flex shrink-0 cursor-pointer items-center justify-center border-b-[2.5px] px-3 py-1.5 font-sans-title text-xs font-medium whitespace-nowrap transition-all select-none',
+                            projectCodeTab === key ?
+                              'active-tab border-b-copilot font-bold text-copilot'
+                            : 'border-b-transparent text-text-muted hover:text-text-primary'
+                          ]}>
+                          {label}
+                        </button>
+                      {/each}
+                    </div>
+
+                    <div
+                      use:mountProjectCodeControls={project}
+                      class="markdown-tabs-actions ml-2 flex shrink-0 items-center gap-1 self-center pb-0.5">
+                    </div>
+                  </div>
+
+                  <div
+                    id="project-clone-panel"
+                    role="tabpanel"
+                    aria-labelledby="project-clone-tab-{projectCodeTab}"
+                    data-code-theme={projectCodeTheme}
+                    class="code-body hljs relative flex min-w-0 items-center overflow-hidden rounded-b-sm font-mono text-xs">
+                    <span
+                      class="pointer-events-none absolute top-1/2 right-3.5 z-10 -translate-y-1/2 font-mono text-[11px] text-text-muted/70 lowercase select-none">
+                      bash
+                    </span>
+                    <span
+                      class="shrink-0 py-2.5 pr-1 pl-3 font-normal text-copilot select-none">
+                      $
+                    </span>
+                    <span
+                      class={[
+                        'min-w-0 flex-1 scrollbar-none py-2.5 pr-14 pl-1 select-all [-ms-overflow-style:none]',
+                        codeBlockPrefsStore.current.wrap ?
+                          'break-all whitespace-pre-wrap'
+                        : 'overflow-x-auto whitespace-pre'
+                      ]}>{cloneCmd}</span>
+                  </div>
+                </div>
+              </div>
+            {/if}
+          </div>
+
+          <div
+            class="flex flex-wrap items-center gap-x-3.5 gap-y-1 font-sans-title text-xs">
+            {#if project.lang}
               <span
-                class="inline-flex items-center leading-none text-text-muted/40 select-none"
-                aria-hidden="true">·</span>
+                class="inline-flex items-center gap-1 py-0.5 font-mono text-xxs leading-none font-medium text-text-secondary select-none">
+                <Dot
+                  strokeWidth={10}
+                  class="size-3.5 shrink-0"
+                  color={project.langColor ?? '#909692'} />
+                <span class="leading-none">{project.lang}</span>
+              </span>
             {/if}
-            {#if project.pushedAt}
-              <RelativeTime
-                class="leading-none"
-                date={project.pushedAt} />
+            <span
+              class="inline-flex items-center gap-1.5 font-normal whitespace-nowrap text-text-secondary">
+              <Star
+                class="size-3.5 shrink-0 -translate-y-[0.5px] text-text-muted/70 transition-colors"
+                strokeWidth={1.75}
+                absoluteStrokeWidth={true} />
+              <span
+                >{project.stars}
+                {pluralize(project.stars, 'star', 'stars')}</span>
+            </span>
+            <span
+              class="hidden items-center gap-1.5 font-normal whitespace-nowrap text-text-secondary sm:inline-flex">
+              <GitFork
+                class="size-3.5 shrink-0 -translate-y-[0.5px] text-text-muted/70 transition-colors"
+                strokeWidth={1.75}
+                absoluteStrokeWidth={true} />
+              <span
+                >{project.forks}
+                {pluralize(project.forks, 'fork', 'forks')}</span>
+            </span>
+            <span
+              class="hidden items-center gap-1.5 font-normal whitespace-nowrap text-text-secondary sm:inline-flex">
+              <RotateCcwClock
+                class="size-3.5 shrink-0 -translate-y-[0.5px] text-text-muted/70 transition-colors"
+                strokeWidth={1.75}
+                absoluteStrokeWidth={true} />
+              <span
+                >{project.commits}
+                {pluralize(project.commits, 'commit', 'commits')}</span>
+            </span>
+            {#if project.licenseName}
+              <span
+                class="hidden items-center gap-1.5 font-normal whitespace-nowrap text-text-secondary sm:inline-flex">
+                <Scale
+                  class="size-3.5 shrink-0 -translate-y-[0.5px] text-text-muted/70 transition-colors"
+                  strokeWidth={1.75}
+                  absoluteStrokeWidth={true} />
+                {#if project.licenseUrl}
+                  <a
+                    href={project.licenseUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-text-secondary transition-colors hover:text-copilot hover:underline">
+                    {project.licenseName} License
+                  </a>
+                {:else}
+                  <span>{project.licenseName} License</span>
+                {/if}
+              </span>
             {/if}
-          </span>
-        {/if}
-      </div>
+          </div>
 
-      <div
-        class="relative z-20 flex flex-wrap items-center gap-x-3.5 gap-y-1 font-sans-title text-xs">
-        <span
-          class="inline-flex items-center gap-1.5 font-normal whitespace-nowrap text-text-secondary">
-          <Star
-            class="size-3.5 shrink-0 -translate-y-[0.5px] text-text-muted/70 transition-colors"
-            strokeWidth={1.75}
-            absoluteStrokeWidth={true} />
-          <span
-            >{project.stars} {pluralize(project.stars, 'star', 'stars')}</span>
-        </span>
-        <span
-          class="inline-flex items-center gap-1.5 font-normal whitespace-nowrap text-text-secondary">
-          <GitFork
-            class="size-3.5 shrink-0 -translate-y-[0.5px] text-text-muted/70 transition-colors"
-            strokeWidth={1.75}
-            absoluteStrokeWidth={true} />
-          <span
-            >{project.forks} {pluralize(project.forks, 'fork', 'forks')}</span>
-        </span>
-        <span
-          class="inline-flex items-center gap-1.5 font-normal whitespace-nowrap text-text-secondary">
-          <RotateCcwClock
-            class="size-3.5 shrink-0 -translate-y-[0.5px] text-text-muted/70 transition-colors"
-            strokeWidth={1.75}
-            absoluteStrokeWidth={true} />
-          <span
-            >{project.commits}
-            {pluralize(project.commits, 'commit', 'commits')}</span>
-        </span>
-        <span
-          class="inline-flex items-center gap-1.5 font-normal whitespace-nowrap text-text-secondary">
-          <GitBranch
-            class="size-3.5 shrink-0 -translate-y-[0.5px] text-text-muted/70 transition-colors"
-            strokeWidth={1.75}
-            absoluteStrokeWidth={true} />
-          <span
-            >{project.branches}
-            {pluralize(project.branches, 'branch', 'branches')}</span>
-        </span>
-        {#if project.licenseName}
-          <span
-            class="inline-flex items-center gap-1.5 font-normal whitespace-nowrap text-text-secondary">
-            <Scale
-              class="size-3.5 shrink-0 -translate-y-[0.5px] text-text-muted/70 transition-colors"
-              strokeWidth={1.75}
-              absoluteStrokeWidth={true} />
-            {#if project.licenseUrl}
-              <a
-                href={project.licenseUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="text-text-secondary transition-colors hover:text-copilot hover:underline">
-                {project.licenseName} License
-              </a>
-            {:else}
-              <span>{project.licenseName} License</span>
-            {/if}
-          </span>
-        {/if}
-      </div>
+          {#if project.desc}
+            <p
+              class="line-clamp-2 text-xs leading-relaxed text-text-secondary"
+              title={project.desc}>
+              {project.desc}
+            </p>
+          {/if}
 
-      {#if project.desc}
-        <p
-          class="line-clamp-2 text-xs leading-relaxed text-text-secondary"
-          title={project.desc}>
-          {project.desc}
-        </p>
-      {/if}
-
-      {#if project.tags && project.tags.length > 0}
-        <div class="relative z-20 flex flex-wrap items-center gap-1.5 pt-0.5">
-          {#each project.tags as tag (tag)}
-            {@render tagItem(tag)}
-          {/each}
+          {#if project.tags && project.tags.length > 0}
+            <div
+              class="relative z-20 flex flex-wrap items-center gap-1.5 pt-0.5">
+              {#each project.tags as tag (tag)}
+                {@render tagItem(tag)}
+              {/each}
+            </div>
+          {/if}
         </div>
-      {/if}
 
-      <div
-        class="relative mt-auto flex flex-col gap-2 pt-1 {(
-          activeProjectShareId === project.name
-          || activeProjectCodeId === project.name
-        ) ?
-          'z-50'
-        : 'z-10'}">
-        <hr class="border-border-subtle/25" />
-
-        <div class="relative flex items-center gap-2">
-          <div class="shrink-0">
-            <Button
-              type="ghost"
-              size="xs"
-              aria-label="Share project"
-              aria-expanded={activeProjectShareId === project.name}
-              aria-haspopup="dialog"
-              class={cn(
-                'size-6.5! px-0! text-text-muted hover:text-copilot',
-                activeProjectShareId === project.name
-                  && 'border-copilot text-copilot'
-              )}
-              onclick={(e: MouseEvent) => {
-                e.stopPropagation();
-                activeProjectCodeId = null;
-                activeProjectShareId =
-                  activeProjectShareId === project.name ? null : project.name;
-              }}>
-              <Share2 class="size-3.5" />
-            </Button>
-          </div>
-
-          <div class="shrink-0">
-            <Button
-              type="ghost"
-              size="xs"
-              aria-label="Code options"
-              aria-expanded={activeProjectCodeId === project.name}
-              aria-haspopup="dialog"
-              class={cn(
-                'size-6.5! px-0! text-text-muted hover:text-copilot',
-                activeProjectCodeId === project.name
-                  && 'border-copilot text-copilot'
-              )}
-              onclick={(e: MouseEvent) => {
-                e.stopPropagation();
-                activeProjectShareId = null;
-                activeProjectCodeId =
-                  activeProjectCodeId === project.name ? null : project.name;
-              }}>
-              <Code class="size-3.5" />
-            </Button>
-          </div>
-
-          <a
+        <div class="relative z-20 mt-auto flex flex-col gap-2 pt-1">
+          <hr class="border-border-subtle/25" />
+          <Button
             href={project.url}
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-flex h-8 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-sm bg-copilot px-3 text-xs font-semibold text-text-on-accent shadow-xs transition-all select-none hover:bg-copilot-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring active:bg-copilot-active">
-            <span>View repo</span>
-            <SquareArrowOutUpRight class="size-3.5 text-text-on-accent" />
-          </a>
-
-          {#if activeProjectShareId === project.name}
-            {@const projectUrl = project.url}
-            {@const encodedUrl = encodeURIComponent(projectUrl)}
-            {@const encodedTitle = encodeURIComponent(project.name)}
-            <div
-              role="dialog"
-              tabindex="-1"
-              aria-label="Share project"
-              class="absolute right-0 bottom-full left-0 z-50 mb-2 flex flex-col gap-3 popover-surface p-3 sm:right-auto sm:w-80"
-              onclick={(e: MouseEvent) => e.stopPropagation()}
-              onkeydown={(e: KeyboardEvent) => {
-                if (e.key === 'Escape') activeProjectShareId = null;
-              }}>
-              <div class="flex flex-col gap-1.5">
-                <span
-                  class="text-2xs font-semibold tracking-wider text-text-muted uppercase"
-                  >Direct link</span>
-                <div
-                  class="flex items-center gap-1.5 rounded-sm border border-border-subtle bg-surface-base/80 p-1 pr-1.5 pl-2.5 shadow-2xs">
-                  <span
-                    class="min-w-0 flex-1 truncate font-mono text-xs text-text-secondary select-all"
-                    >{projectUrl}</span>
-                  <Button
-                    type={copiedProjectShareUrlId === project.name ?
-                      'tertiary'
-                    : 'secondary'}
-                    size="xs"
-                    class="size-6.5! shrink-0 px-0!"
-                    aria-label={copiedProjectShareUrlId === project.name ?
-                      'Copied project URL'
-                    : 'Copy project URL'}
-                    onclick={async () => {
-                      try {
-                        await navigator.clipboard.writeText(projectUrl);
-                        toastStore.success('Project URL copied');
-                        copiedProjectShareUrlId = project.name;
-                        setTimeout(() => {
-                          if (copiedProjectShareUrlId === project.name) {
-                            copiedProjectShareUrlId = null;
-                          }
-                        }, 2000);
-                      } catch {
-                        toastStore.error('Failed to copy');
-                      }
-                    }}>
-                    {#snippet leading()}
-                      {#if copiedProjectShareUrlId === project.name}
-                        <CopyCheck class="size-3.5 text-copilot" />
-                      {:else}
-                        <Copy class="size-3.5" />
-                      {/if}
-                    {/snippet}
-                  </Button>
-                </div>
-              </div>
-
-              <div class="flex flex-col gap-1.5">
-                <span
-                  class="text-2xs font-semibold tracking-wider text-text-muted uppercase"
-                  >Share to platform</span>
-                <div class="grid grid-cols-6 gap-1.5 sm:grid-cols-3">
-                  <Button
-                    href="https://x.com/intent/post?url={encodedUrl}&text={encodedTitle}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    type="secondary"
-                    size="xs"
-                    class="w-full justify-center px-1.5 sm:px-2"
-                    title="Share on X"
-                    aria-label="Share on X">
-                    {#snippet leading()}
-                      <i
-                        class="bi bi-twitter-x inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
-                        aria-hidden="true"></i>
-                    {/snippet}
-                    <span class="hidden truncate sm:inline">X</span>
-                  </Button>
-                  <Button
-                    href="https://linkedin.com/sharing/share-offsite/?url={encodedUrl}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    type="secondary"
-                    size="xs"
-                    class="w-full justify-center px-1.5 sm:px-2"
-                    title="Share on LinkedIn"
-                    aria-label="Share on LinkedIn">
-                    {#snippet leading()}
-                      <i
-                        class="bi bi-linkedin inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
-                        aria-hidden="true"></i>
-                    {/snippet}
-                    <span class="hidden truncate sm:inline">LinkedIn</span>
-                  </Button>
-                  <Button
-                    href="https://api.whatsapp.com/send?text={encodedTitle}%20{encodedUrl}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    type="secondary"
-                    size="xs"
-                    class="w-full justify-center px-1.5 sm:px-2"
-                    title="Share on WhatsApp"
-                    aria-label="Share on WhatsApp">
-                    {#snippet leading()}
-                      <i
-                        class="bi bi-whatsapp inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
-                        aria-hidden="true"></i>
-                    {/snippet}
-                    <span class="hidden truncate sm:inline">WhatsApp</span>
-                  </Button>
-                  <Button
-                    href="https://www.facebook.com/sharer/sharer.php?u={encodedUrl}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    type="secondary"
-                    size="xs"
-                    class="w-full justify-center px-1.5 sm:px-2"
-                    title="Share on Facebook"
-                    aria-label="Share on Facebook">
-                    {#snippet leading()}
-                      <i
-                        class="bi bi-facebook inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
-                        aria-hidden="true"></i>
-                    {/snippet}
-                    <span class="hidden truncate sm:inline">Facebook</span>
-                  </Button>
-                  <Button
-                    href="https://reddit.com/submit?url={encodedUrl}&title={encodedTitle}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    type="secondary"
-                    size="xs"
-                    class="w-full justify-center px-1.5 sm:px-2"
-                    title="Share on Reddit"
-                    aria-label="Share on Reddit">
-                    {#snippet leading()}
-                      <i
-                        class="bi bi-reddit inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
-                        aria-hidden="true"></i>
-                    {/snippet}
-                    <span class="hidden truncate sm:inline">Reddit</span>
-                  </Button>
-                  <Button
-                    href="mailto:?subject={encodedTitle}&body={encodedUrl}"
-                    type="secondary"
-                    size="xs"
-                    class="w-full justify-center px-1.5 sm:px-2"
-                    title="Share via Email"
-                    aria-label="Share via Email">
-                    {#snippet leading()}
-                      <i
-                        class="bi bi-envelope-fill inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
-                        aria-hidden="true"></i>
-                    {/snippet}
-                    <span class="hidden truncate sm:inline">Email</span>
-                  </Button>
-                </div>
-              </div>
-
-              <div class="border-t border-border-subtle/60 pt-1.5">
-                <Button
-                  type="ghost"
-                  size="xs"
-                  class="w-full justify-center text-text-secondary hover:text-text-primary"
-                  onclick={() => {
-                    activeProjectShareId = null;
-                    openProjectQrDialog(project);
-                  }}>
-                  {#snippet leading()}
-                    <QrCode class="size-3.5" />
-                  {/snippet}
-                  <span>View QR Code</span>
-                </Button>
-              </div>
-            </div>
-          {/if}
-
-          {#if activeProjectCodeId === project.name}
-            {@const cloneCmd =
-              projectCodeTab === 'https' ? `git clone ${project.cloneUrl}`
-              : projectCodeTab === 'ssh' ? `git clone ${project.sshUrl}`
-              : `gh repo clone ${project.fullName}`}
-            <div
-              role="dialog"
-              tabindex="-1"
-              aria-label="Clone repository"
-              class="absolute right-0 bottom-full left-0 z-50 mb-2 flex flex-col gap-3 popover-surface p-3 sm:right-auto sm:w-80"
-              onclick={(e: MouseEvent) => e.stopPropagation()}
-              onkeydown={(e: KeyboardEvent) => {
-                if (e.key === 'Escape') activeProjectCodeId = null;
-              }}>
-              <div>
-                <span
-                  class="text-2xs font-semibold tracking-wider text-text-muted uppercase">
-                  Clone repository
-                </span>
-              </div>
-
-              <div
-                class="flex rounded-sm border border-border-subtle bg-surface-base/50 p-0.5 text-xs font-semibold">
-                {#each [['https', 'HTTPS'], ['ssh', 'SSH'], ['cli', 'GitHub CLI']] as const as [key, label] (key)}
-                  <button
-                    type="button"
-                    onclick={() => (projectCodeTab = key)}
-                    class="rounded-2xs flex-1 cursor-pointer py-1 transition-colors {(
-                      projectCodeTab === key
-                    ) ?
-                      'bg-copilot text-white shadow-2xs'
-                    : 'text-text-secondary hover:text-text-primary'}">
-                    {label}
-                  </button>
-                {/each}
-              </div>
-
-              <div
-                class="flex items-center gap-1.5 rounded-sm border border-border-subtle bg-surface-base/80 p-1.5 pl-2.5 font-mono text-xs text-text-secondary shadow-2xs">
-                <span class="min-w-0 flex-1 truncate select-all"
-                  >{cloneCmd}</span>
-                <Button
-                  type={copiedProjectCloneId === project.name ?
-                    'tertiary'
-                  : 'secondary'}
-                  size="xs"
-                  class="size-6.5! shrink-0 px-0!"
-                  aria-label={copiedProjectCloneId === project.name ?
-                    'Copied clone command'
-                  : 'Copy clone command'}
-                  onclick={async () => {
-                    try {
-                      await navigator.clipboard.writeText(cloneCmd);
-                      toastStore.success('Clone command copied');
-                      copiedProjectCloneId = project.name;
-                      setTimeout(() => {
-                        if (copiedProjectCloneId === project.name) {
-                          copiedProjectCloneId = null;
-                        }
-                      }, 2000);
-                    } catch {
-                      toastStore.error('Failed to copy');
-                    }
-                  }}>
-                  {#snippet leading()}
-                    {#if copiedProjectCloneId === project.name}
-                      <CopyCheck class="size-3.5 text-copilot" />
-                    {:else}
-                      <Copy class="size-3.5" />
-                    {/if}
-                  {/snippet}
-                </Button>
-              </div>
-
-              <div class="border-t border-border-subtle/60 pt-1.5">
-                <Button
-                  href={project.zipUrl}
-                  download
-                  type="ghost"
-                  size="xs"
-                  class="w-full justify-center text-text-secondary hover:text-text-primary">
-                  {#snippet leading()}
-                    <Download class="size-3.5" />
-                  {/snippet}
-                  <span>Download ZIP</span>
-                </Button>
-              </div>
-            </div>
-          {/if}
+            type="primary"
+            size="sm"
+            fullWidth>
+            View repo
+            {#snippet trailing()}
+              <SquareArrowOutUpRight class="size-3.5" />
+            {/snippet}
+          </Button>
         </div>
       </div>
     </div>
@@ -1504,11 +1663,7 @@
             <h4
               style="view-transition-name: post-title-{post.slug}"
               class="line-clamp-2 min-w-0 flex-1 font-sans-title text-lg leading-snug font-bold text-text-primary">
-              <a
-                href="/blog/{post.slug}"
-                class="rounded-sm outline-none after:absolute after:inset-0 focus-visible:ring-2 focus-visible:ring-copilot focus-visible:ring-offset-2 focus-visible:ring-offset-surface-card">
-                {post.title}
-              </a>
+              {post.title}
             </h4>
 
             <div class="relative z-20 flex shrink-0 items-center gap-1">
@@ -1905,11 +2060,13 @@
 
         <div class="relative z-20 mt-auto flex flex-col gap-2 pt-1">
           <hr class="border-border-subtle/25" />
-          <a
+          <Button
             href="/blog/{post.slug}"
-            class="inline-flex h-8 w-full cursor-pointer items-center justify-center rounded-sm bg-copilot px-3 text-xs font-semibold text-text-on-accent shadow-xs transition-all select-none hover:bg-copilot-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring active:bg-copilot-active">
+            type="primary"
+            size="sm"
+            fullWidth>
             Read post
-          </a>
+          </Button>
         </div>
       </div>
     </div>
@@ -1987,13 +2144,13 @@
                 <Button
                   type="primary"
                   tone="neutral"
-                  size="lg"
+                  size="sm"
                   href="/api/v1/cv?download=1"
                   download
                   onclick={handleCvDownload}
-                  class="w-full px-5 sm:w-auto sm:px-6">
+                  class="w-full sm:h-11 sm:w-auto sm:gap-2.5 sm:px-6 sm:text-sm">
                   {#snippet leading()}
-                    <Download class="size-4" />
+                    <Download class="size-3.5 sm:size-4" />
                   {/snippet}
                   Download CV
                 </Button>
@@ -2001,12 +2158,12 @@
                 <Button
                   type="primary"
                   tone="neutral"
-                  size="lg"
+                  size="sm"
                   disabled
                   title="No CV document is available yet."
-                  class="w-full px-5 sm:w-auto sm:px-6">
+                  class="w-full sm:h-11 sm:w-auto sm:gap-2.5 sm:px-6 sm:text-sm">
                   {#snippet leading()}
-                    <Download class="size-4" />
+                    <Download class="size-3.5 sm:size-4" />
                   {/snippet}
                   Download CV
                 </Button>
@@ -2014,24 +2171,24 @@
 
               <Button
                 type="secondary"
-                size="lg"
+                size="sm"
                 onclick={() => navigate('projects')}
-                class="w-full px-5 sm:w-auto sm:px-6">
+                class="w-full sm:h-11 sm:w-auto sm:gap-2.5 sm:px-6 sm:text-sm">
                 Browse projects
               </Button>
 
               <Button
                 type="ghost"
-                size="lg"
+                size="sm"
                 onclick={() => navigate('contact')}
-                class="w-full px-5 sm:w-auto sm:px-6">
+                class="w-full sm:h-11 sm:w-auto sm:gap-2.5 sm:px-6 sm:text-sm">
                 Get in touch
               </Button>
             </div>
           </div>
         </div>
 
-        <div>
+        <div use:scrollReveal>
           <h3 class="mb-4 text-lg font-bold tracking-tight text-text-primary">
             Top projects
           </h3>
@@ -2059,7 +2216,7 @@
           {/if}
         </div>
 
-        <div>
+        <div use:scrollReveal>
           <h3 class="mb-4 text-lg font-bold tracking-tight text-text-primary">
             Recent posts
           </h3>
@@ -2087,7 +2244,7 @@
           {/if}
         </div>
 
-        <div>
+        <div use:scrollReveal>
           <h3 class="mb-4 text-lg font-bold tracking-tight text-text-primary">
             Skills
           </h3>
@@ -2111,7 +2268,7 @@
           {/if}
         </div>
 
-        <div>
+        <div use:scrollReveal>
           <h3 class="mb-4 text-lg font-bold tracking-tight text-text-primary">
             Experience
           </h3>
@@ -2150,6 +2307,7 @@
         </div>
 
         <div
+          use:scrollReveal
           class="divide-y divide-border-subtle/40 overflow-hidden rounded-sm glass-card bg-copilot/5 text-left">
           <div
             class="flex flex-col justify-between gap-4 px-5 py-4 sm:flex-row sm:items-center">
@@ -2191,9 +2349,10 @@
         </div>
 
         <form
+          use:scrollReveal
           bind:this={contactFormElement}
           novalidate
-          action="https://buttondown.email/api/v1/subscribers"
+          action={contactEmail ? `https://formsubmit.co/${contactEmail}` : '#'}
           method="POST"
           onsubmit={validateForm}
           class="flex w-full flex-col gap-3 rounded-sm glass-card p-6 text-left"
@@ -2328,15 +2487,18 @@
             <Button
               htmlType="submit"
               type="primary"
-              size="md">
-              Send message
+              size="md"
+              disabled={isSubmittingMessage}
+              isLoading={isSubmittingMessage}>
+              {isSubmittingMessage ? 'Sending…' : 'Send message'}
             </Button>
           </div>
         </form>
 
-        <hr class="mt-10 mb-8 border-border-subtle" />
-
-        <div class="flex flex-col gap-7 select-none">
+        <div
+          use:scrollReveal
+          class="flex flex-col gap-7 select-none">
+          <hr class="border-border-subtle" />
           <div class="text-center">
             <h3
               class="font-sans-title text-xs font-bold tracking-wider text-text-muted uppercase">
@@ -2775,24 +2937,6 @@
     }} />
 </main>
 
-<Dialog
-  bind:isOpen={showSendMessageDialog}
-  title="Send message?"
-  description="Are you sure you want to send this message?"
-  onClose={() => (showSendMessageDialog = false)}>
-  {#snippet footer()}
-    <Button
-      type="secondary"
-      size="md"
-      showEscHint
-      onclick={() => (showSendMessageDialog = false)}>Cancel</Button>
-    <Button
-      type="primary"
-      size="md"
-      onclick={executeSendMessage}>Send message</Button>
-  {/snippet}
-</Dialog>
-
 <ShareDialog
   bind:isOpen={showShareDialog}
   title="Share this?"
@@ -2804,7 +2948,8 @@
       qrCodeDialogData = {
         title: shareDialogData.title,
         url: shareDialogData.url,
-        slug: 'share'
+        slug: 'share',
+        avatarUrl: author?.avatar || ''
       };
       showQrCodeDialog = true;
     }
@@ -2816,7 +2961,7 @@
   title={qrCodeDialogData?.title ?? ''}
   url={qrCodeDialogData?.url ?? ''}
   slug={qrCodeDialogData?.slug ?? ''}
-  avatarUrl={author?.avatar ?? ''}
+  avatarUrl={qrCodeDialogData?.avatarUrl || author?.avatar || ''}
   onClose={() => (showQrCodeDialog = false)} />
 
 <ProjectCodeDialog

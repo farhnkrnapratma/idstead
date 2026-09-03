@@ -28,20 +28,24 @@
 }
 
 .code-block-container[data-code-theme] .code-header-bar,
-.code-block-container[data-code-theme] .code-scrollbar-wrapper {
+.code-block-container[data-code-theme] .code-scrollbar-wrapper,
+.markdown-tabs-container[data-code-theme] .markdown-tabs-header {
   background-color: var(--code-theme-bg) !important;
   border-color: var(--code-theme-border) !important;
 }
 
-.code-block-container[data-code-theme] .code-body {
+.code-block-container[data-code-theme] .code-body,
+.markdown-tabs-container[data-code-theme] .code-body {
   border-color: var(--code-theme-border) !important;
 }
 
-.code-block-container[data-code-theme] .code-header-bar {
+.code-block-container[data-code-theme] .code-header-bar,
+.markdown-tabs-container[data-code-theme] .markdown-tabs-header {
   color: var(--code-theme-fg) !important;
 }
 
-.code-block-container[data-code-theme] .code-line-numbers {
+.code-block-container[data-code-theme] .code-line-numbers,
+.markdown-tabs-container[data-code-theme] .code-line-numbers {
   border-color: color-mix(
     in srgb,
     var(--code-theme-border) 60%,
@@ -52,6 +56,10 @@
 .code-block-container[data-code-theme]
   .code-header-bar
   .code-action-controls
+  button,
+.markdown-tabs-container[data-code-theme]
+  .markdown-tabs-header
+  .markdown-tabs-actions
   button {
   color: var(--code-theme-fg) !important;
 }
@@ -61,6 +69,11 @@
   .code-header-bar
   .code-action-controls
   button
+  > span,
+.markdown-tabs-container[data-code-theme]
+  .markdown-tabs-header
+  .markdown-tabs-actions
+  button
   > span {
   color: var(--code-theme-fg) !important;
 }
@@ -68,6 +81,10 @@
 .code-block-container[data-code-theme]
   .code-header-bar
   .code-action-controls
+  button:hover,
+.markdown-tabs-container[data-code-theme]
+  .markdown-tabs-header
+  .markdown-tabs-actions
   button:hover {
   background-color: color-mix(
     in srgb,
@@ -79,6 +96,10 @@
 .code-block-container[data-code-theme]
   .code-header-bar
   .code-action-controls
+  button:focus-visible,
+.markdown-tabs-container[data-code-theme]
+  .markdown-tabs-header
+  .markdown-tabs-actions
   button:focus-visible {
   outline-color: var(--code-theme-fg) !important;
 }
@@ -1145,20 +1166,12 @@ select {
   }
 
   .markdown-tabs-header {
-    @apply relative flex min-h-[1.75rem] items-center justify-between rounded-t-sm border-b border-border-subtle px-3 py-0.5 select-none;
+    @apply relative flex min-h-8 items-end justify-between rounded-t-sm border-b border-border-subtle px-3 pt-0 pb-0 select-none;
   }
 
   .markdown-tabs-header[data-code-theme] {
     border-color: var(--code-theme-border) !important;
     background-color: var(--code-theme-bg) !important;
-  }
-
-  .markdown-tabs-header[data-code-theme='light'] {
-    @apply bg-[#fafafa]!;
-  }
-
-  .markdown-tabs-header[data-code-theme='dark'] {
-    @apply bg-[#282c34]!;
   }
 
   .markdown-tabs-nav {

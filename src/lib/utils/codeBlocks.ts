@@ -321,6 +321,8 @@ function buildMenuCheckboxRow(
 export interface CodeActionControlsOptions {
   getCodeText: () => string;
   getDownloadFilename?: () => string;
+  downloadLabel?: string;
+  onDownload?: () => void;
   shouldHideLineNumbers?: () => boolean;
   triggerToast: (message: string) => void;
 }
@@ -335,7 +337,14 @@ export interface CodeActionControlsResult {
 export function createCodeActionControls(
   options: CodeActionControlsOptions
 ): CodeActionControlsResult {
-  const {getCodeText, getDownloadFilename: getFilename, triggerToast} = options;
+  const {
+    getCodeText,
+    getDownloadFilename: getFilename,
+    downloadLabel = 'Download',
+    onDownload,
+    shouldHideLineNumbers,
+    triggerToast
+  } = options;
   const controls = document.createElement('div');
   controls.className = 'code-action-controls flex items-center gap-1';
 
@@ -472,9 +481,14 @@ export function createCodeActionControls(
   downloadRow.setAttribute('role', 'menuitem');
   downloadRow.className =
     'flex w-full cursor-pointer items-center justify-between px-2.5 py-1.5 text-xs text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary rounded-sm';
-  downloadRow.innerHTML = `<span>Download</span><span class="text-text-muted">${ICONS.download}</span>`;
+  downloadRow.innerHTML = `<span>${downloadLabel}</span><span class="text-text-muted">${ICONS.download}</span>`;
 
   downloadRow.addEventListener('click', () => {
+    if (onDownload) {
+      onDownload();
+      closeKebab();
+      return;
+    }
     const code = getCodeText();
     if (!code) return;
     const filename = getFilename ? getFilename() : 'snippet.txt';
@@ -491,7 +505,9 @@ export function createCodeActionControls(
     triggerToast(`Downloaded ${filename}`);
   });
 
-  kebabPanel.appendChild(lineNumbersRow.row);
+  if (!shouldHideLineNumbers || !shouldHideLineNumbers()) {
+    kebabPanel.appendChild(lineNumbersRow.row);
+  }
   kebabPanel.appendChild(wrapRow.row);
   kebabPanel.appendChild(minimalRow.row);
   kebabPanel.appendChild(divider);
@@ -560,6 +576,9 @@ export function createCodeActionControls(
       downloadRow.style.display = 'flex';
     }
   }
+
+  applyPrefs();
+  registerPrefsListener(applyPrefs);
 
   return {controls, applyPrefs, setMinimalMode, syncKebabTheme};
 }

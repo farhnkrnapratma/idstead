@@ -190,22 +190,14 @@
     persistEditorPreferences();
   }
 
-  function updateEditorHeight() {
-    if (!markdownTextareaElement) return;
-    markdownTextareaElement.style.height = 'auto';
-    markdownTextareaElement.style.height = `${markdownTextareaElement.scrollHeight}px`;
-  }
-
   function setLineWrapMode(mode: 'soft' | 'none') {
     lineWrapMode = mode;
     persistEditorPreferences();
-    tick().then(updateEditorHeight);
   }
 
   function setLineNumbers(show: boolean) {
     showLineNumbers = show;
     persistEditorPreferences();
-    tick().then(updateEditorHeight);
   }
 
   function setAutosaveEnabled(enabled: boolean) {
@@ -237,18 +229,6 @@
   const editorTheme = $derived<'light' | 'dark'>(
     themeStore.isDark ? 'dark' : 'light'
   );
-
-  $effect(() => {
-    if (
-      value !== undefined
-      && lineWrapMode !== undefined
-      && showLineNumbers !== undefined
-      && activeTab === 'editor'
-      && markdownTextareaElement
-    ) {
-      tick().then(updateEditorHeight);
-    }
-  });
 
   const highlightedMarkdown = $derived.by(() => {
     try {
@@ -305,13 +285,6 @@
     }, 500);
 
     return () => clearTimeout(autoSaveTimer);
-  });
-
-  $effect(() => {
-    if (value !== undefined && markdownTextareaElement) {
-      markdownTextareaElement.style.height = 'auto';
-      markdownTextareaElement.style.height = `${markdownTextareaElement.scrollHeight}px`;
-    }
   });
 
   function syncScroll() {
@@ -910,11 +883,12 @@
               {/each}
             </div>
           {/if}
-          <div class="relative min-w-0 flex-1 overflow-hidden">
+          <div
+            class="relative grid min-h-full min-w-0 flex-1 overflow-hidden [grid-template-areas:'editor']">
             <pre
               bind:this={preElement}
               data-code-theme={editorTheme}
-              class="editor-pre pointer-events-none absolute inset-0 m-0! box-border! w-full! scrollbar-none overflow-x-auto! overflow-y-hidden! border-0! bg-transparent pt-0! pr-5! pb-5! pl-2! break-normal! [overflow-wrap:normal]! [word-break:normal]! whitespace-pre! select-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"><code
+              class="editor-pre pointer-events-none m-0! box-border! min-h-full! w-full! scrollbar-none overflow-x-auto! overflow-y-hidden! border-0! bg-transparent pt-0! pr-5! pb-5! pl-2! break-normal! [overflow-wrap:normal]! [word-break:normal]! whitespace-pre! select-none [-ms-overflow-style:none] [grid-area:editor] [&::-webkit-scrollbar]:hidden"><code
                 class="hljs language-markdown m-0! block! w-max! min-w-full! overflow-x-visible! p-0! [overflow-wrap:normal]! [word-break:normal]! [white-space:pre]!"
                 data-code-theme={editorTheme}
                 >{#each splitHighlightedHtmlLines(highlightedMarkdown) as lineHtml, i (i)}<div
@@ -939,7 +913,7 @@
               onkeyup={updateCursorPosition}
               onfocus={updateCursorPosition}
               onkeydown={handleTextareaKeyDown}
-              class="editor-textarea relative m-0! box-border! w-full! resize-none! overflow-x-auto! overflow-y-hidden! border-0! bg-transparent! pt-0! pr-5! pb-5! pl-2! break-normal! [overflow-wrap:normal]! [word-break:normal]! whitespace-pre! text-transparent outline-hidden! placeholder:text-text-muted/60 focus:border-transparent! focus:shadow-none! focus:ring-0 focus:outline-none focus-visible:border-transparent! focus-visible:shadow-none! focus-visible:ring-0! focus-visible:outline-hidden!"
+              class="editor-textarea m-0! box-border! h-full! min-h-full! w-full! resize-none! overflow-x-auto! overflow-y-hidden! border-0! bg-transparent! pt-0! pr-5! pb-5! pl-2! break-normal! [overflow-wrap:normal]! [word-break:normal]! whitespace-pre! text-transparent caret-text-primary outline-hidden! [grid-area:editor] placeholder:text-text-muted/60 focus:border-transparent! focus:shadow-none! focus:ring-0 focus:outline-none focus-visible:border-transparent! focus-visible:shadow-none! focus-visible:ring-0! focus-visible:outline-hidden!"
             ></textarea>
           </div>
         </div>
@@ -956,11 +930,12 @@
               aria-hidden="true">
             </div>
           {/if}
-          <div class="relative min-h-full w-full">
+          <div
+            class="relative grid min-h-full w-full [grid-template-areas:'editor']">
             <pre
               bind:this={preElement}
               data-code-theme={editorTheme}
-              class="editor-pre pointer-events-none absolute inset-0 m-0! box-border! w-full! scrollbar-none overflow-x-hidden! overflow-y-hidden! border-0! bg-transparent pt-0! pr-0! pb-5! pl-0! break-normal! wrap-break-word! whitespace-pre-wrap! select-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"><code
+              class="editor-pre pointer-events-none m-0! box-border! min-h-full! w-full! scrollbar-none overflow-hidden! border-0! bg-transparent pt-0! pr-0! pb-5! pl-0! break-normal! wrap-break-word! whitespace-pre-wrap! select-none [-ms-overflow-style:none] [grid-area:editor] [&::-webkit-scrollbar]:hidden"><code
                 class="hljs language-markdown m-0! block! w-full! min-w-full! overflow-x-visible! p-0! [overflow-wrap:inherit]! [word-break:inherit]! [white-space:inherit]!"
                 data-code-theme={editorTheme}
                 >{#each splitHighlightedHtmlLines(highlightedMarkdown) as lineHtml, i (i)}<div
@@ -980,7 +955,8 @@
                         >{i + 1}</span
                       >{/if}<span
                       class="editor-line-content m-0! block! min-w-0! flex-1! pt-0! pr-5! pb-0! pl-2! leading-6! [overflow-wrap:inherit]! [word-break:inherit]! [white-space:inherit]!"
-                      >{@html lineHtml}</span></div>{/each}</code></pre>
+                      >{@html lineHtml
+                        || '&nbsp;'}</span></div>{/each}</code></pre>
 
             <textarea
               bind:this={markdownTextareaElement}
@@ -998,7 +974,7 @@
               onkeyup={updateCursorPosition}
               onfocus={updateCursorPosition}
               onkeydown={handleTextareaKeyDown}
-              class="editor-textarea relative m-0! box-border! w-full! resize-none! overflow-x-hidden! overflow-y-hidden! border-0! bg-transparent! pt-0! pr-5! pb-5! break-normal! wrap-break-word! whitespace-pre-wrap! text-transparent outline-hidden! placeholder:text-text-muted/60 focus:border-transparent! focus:shadow-none! focus:ring-0 focus:outline-none focus-visible:border-transparent! focus-visible:shadow-none! focus-visible:ring-0! focus-visible:outline-hidden!"
+              class="editor-textarea m-0! box-border! h-full! min-h-full! w-full! resize-none! overflow-hidden! border-0! bg-transparent! pt-0! pr-5! pb-5! break-normal! wrap-break-word! whitespace-pre-wrap! text-transparent caret-text-primary outline-hidden! [grid-area:editor] placeholder:text-text-muted/60 focus:border-transparent! focus:shadow-none! focus:ring-0 focus:outline-none focus-visible:border-transparent! focus-visible:shadow-none! focus-visible:ring-0! focus-visible:outline-hidden!"
               style:padding-left={showLineNumbers ?
                 'calc(var(--editor-gutter-width) + 0.5rem)'
               : '0.5rem'}></textarea>
