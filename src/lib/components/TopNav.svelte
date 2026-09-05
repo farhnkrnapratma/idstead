@@ -6,8 +6,9 @@
   import AccessibilitySelect from './filter/AccessibilitySelect.svelte';
   import LanguageSelect from './filter/LanguageSelect.svelte';
   import ReadingOptionsMenu from './filter/ReadingOptionsMenu.svelte';
+  import IconButton from './IconButton.svelte';
   import {themeStore} from '../stores/themeStore.svelte';
-  import {ArrowLeft} from '@lucide/svelte';
+  import {ArrowLeft, BookOpenText} from '@lucide/svelte';
   import type {Project} from '../types';
 
   interface Props {
@@ -21,6 +22,8 @@
       currentLanguage: string;
       availableLocales: string[];
     };
+    readingMode?: boolean;
+    onToggleReadingMode?: () => void;
   }
 
   let {
@@ -29,7 +32,9 @@
     backLabel,
     showFontSelect = false,
     projects = [],
-    languageSwitcher
+    languageSwitcher,
+    readingMode = false,
+    onToggleReadingMode
   }: Props = $props();
 </script>
 
@@ -40,19 +45,37 @@
   aria-label={ariaLabel}>
   <a
     href={backHref}
-    class="inline-flex h-8 items-center justify-center gap-1.5 rounded-sm border border-border-subtle/50 bg-surface-card px-2.5 text-xs font-semibold whitespace-nowrap text-text-primary shadow-2xs transition-colors hover:bg-surface-hover hover:text-copilot focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none sm:h-9 sm:px-4">
+    class="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-border-subtle/50 bg-surface-card px-2.5 text-xs font-semibold whitespace-nowrap text-text-primary shadow-2xs transition-colors hover:bg-surface-hover hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:h-9 sm:px-4">
     <ArrowLeft class="size-3.5 shrink-0" />
     {backLabel}
   </a>
 
   <div class="flex items-center gap-1 sm:gap-1.5">
-    <SpotlightSearch
-      {projects}
-      {languageSwitcher} />
+    {#if !readingMode}
+      <SpotlightSearch
+        {projects}
+        {languageSwitcher} />
+    {/if}
+    {#if onToggleReadingMode}
+      <IconButton
+        ariaLabel={readingMode ? 'Exit reading mode' : 'Enter reading mode'}
+        tooltip={readingMode ? 'Exit reading mode' : 'Reading mode'}
+        tooltipPlacement="bottom"
+        tooltipAlign="right"
+        size="sm"
+        onclick={onToggleReadingMode}
+        class="border-border-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9 {(
+          readingMode
+        ) ?
+          'border-accent text-accent'
+        : ''}">
+        <BookOpenText class="size-4" />
+      </IconButton>
+    {/if}
     <ThemeSelect
       theme={themeStore.current}
       onThemeChange={themeStore.apply} />
-    {#if showFontSelect || languageSwitcher}
+    {#if !readingMode && (showFontSelect || languageSwitcher)}
       <div class="sm:hidden">
         <ReadingOptionsMenu
           {showFontSelect}
@@ -74,7 +97,7 @@
       <div class="hidden sm:inline-flex">
         <AccessibilitySelect />
       </div>
-    {:else}
+    {:else if !readingMode}
       <AccessibilitySelect />
     {/if}
   </div>

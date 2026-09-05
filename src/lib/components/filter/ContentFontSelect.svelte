@@ -1,6 +1,7 @@
 <script lang="ts">
   import {CaseSensitive, Circle, CircleDot} from '@lucide/svelte';
   import {cn} from '../../utils/cn';
+  import {popoverPosition} from '../../utils/popoverPosition';
   import IconButton from '../IconButton.svelte';
   import {
     contentFontStore,
@@ -76,8 +77,8 @@
       aria-expanded={isOpen}
       onclick={() => (isOpen = !isOpen)}
       class={cn(
-        'border-border-subtle bg-surface backdrop-blur-none hover:border-copilot hover:bg-surface-hover sm:h-9 sm:w-9',
-        isOpen && 'border-copilot text-copilot'
+        'border-border-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9',
+        isOpen && 'border-accent text-accent'
       )}>
       <CaseSensitive class="size-4" />
     </IconButton>
@@ -90,11 +91,13 @@
         aria-label="Close reading font settings"></button>
 
       <div
+        use:popoverPosition={{
+          placement: dropdownDirection === 'up' ? 'top-end' : 'bottom-end',
+          offset: 8,
+          padding: 8
+        }}
         class={cn(
-          'absolute z-70 flex w-72 max-w-[calc(100vw-1.5rem)] flex-col gap-2.5 popover-surface p-3',
-          dropdownDirection === 'up' ?
-            'bottom-[calc(100%+8px)] left-0 sm:right-0 sm:left-auto'
-          : 'top-[calc(100%+8px)] right-0'
+          'absolute z-70 flex w-72 max-w-[calc(100vw-1.5rem)] flex-col gap-2.5 popover-surface p-3'
         )}>
         <div class="relative z-10 flex flex-col gap-2.5">
           <div class="flex items-center justify-between gap-2">
@@ -106,7 +109,7 @@
             <button
               type="button"
               onclick={contentFontStore.reset}
-              class="cursor-pointer text-2xs font-semibold text-text-muted underline-offset-2 hover:text-copilot hover:underline">
+              class="cursor-pointer text-2xs font-semibold text-text-muted underline-offset-2 hover:text-accent hover:underline">
               Reset to default
             </button>
           </div>
@@ -125,10 +128,10 @@
                 onmouseenter={() => (hoveredFont = option.value)}
                 onmouseleave={() => (hoveredFont = null)}
                 class={cn(
-                  'group flex cursor-pointer items-center justify-between gap-2.5 rounded-sm border px-2.5 py-2 text-left transition-colors',
+                  'group flex cursor-pointer items-center justify-between gap-2.5 rounded-md border px-2.5 py-2 text-left transition-colors',
                   selected ?
-                    'border-copilot bg-copilot/10 text-copilot'
-                  : 'border-border-subtle bg-surface text-text-secondary hover:border-copilot/50 hover:text-text-primary'
+                    'border-accent bg-accent/10 text-accent'
+                  : 'border-border-subtle bg-surface text-text-secondary hover:border-accent/50 hover:text-text-primary'
                 )}>
                 <span class={cn('text-xs font-medium', option.fontClass)}>
                   {option.label}
@@ -146,7 +149,7 @@
                     class={cn(
                       'absolute size-4 transition-all duration-200',
                       selected ?
-                        'scale-100 text-copilot opacity-100'
+                        'scale-100 text-accent opacity-100'
                       : 'scale-0 opacity-0'
                     )} />
                 </span>
@@ -160,7 +163,7 @@
               Preview
             </p>
             <div
-              class="rounded-sm border border-border-subtle bg-surface px-2.5 py-2">
+              class="rounded-md border border-border-subtle bg-surface px-2.5 py-2">
               <span
                 class={cn(
                   'text-xs wrap-break-word whitespace-normal',

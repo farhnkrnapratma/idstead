@@ -62,6 +62,24 @@
   let isSubmitting = $state(false);
   let turnstileFeedbackEl = $state<HTMLDivElement | null>(null);
 
+  const canClearFeedback = $derived(
+    Boolean(
+      formName.trim()
+      || formEmail.trim()
+      || formUrl.trim()
+      || formMessage.trim()
+    )
+  );
+
+  function clearFeedbackForm() {
+    formName = '';
+    formEmail = '';
+    formUrl = '';
+    formMessage = '';
+    formErrors = {name: '', email: '', url: '', message: ''};
+    formValid = {name: false, email: false, url: false, message: false};
+  }
+
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   function debounce<T extends unknown[]>(cb: (...args: T) => void, ms: number) {
@@ -297,7 +315,7 @@
 <TopNav
   ariaLabel="Feedback page navigation"
   backHref="/"
-  backLabel="Back to Home"
+  backLabel="Home"
   projects={pageProjects} />
 
 <main
@@ -305,12 +323,12 @@
   class="flex min-h-[calc(100vh-3rem)] flex-col pt-12 font-sans sm:min-h-[calc(100vh-3.5rem)] sm:pt-14">
   <Section
     spacing="none"
-    class="relative z-10 py-12">
+    class="relative z-10 pt-5 pb-6 md:pt-8 md:pb-8">
     <PageContainer
       width="standard"
       class="flex flex-col gap-8">
       <div
-        class="pointer-events-none absolute top-12.5 left-[50%] z-0 h-80 w-[320px] translate-x-[-50%] rounded-full bg-copilot/10 blur-[80px]">
+        class="pointer-events-none absolute top-12.5 left-[50%] z-0 h-80 w-[320px] translate-x-[-50%] rounded-full bg-accent/10 blur-[80px]">
       </div>
 
       <div
@@ -350,13 +368,13 @@
             <button
               type="button"
               onclick={() => selectCategory('Writing error')}
-              class="group flex cursor-pointer flex-col gap-1.5 rounded-sm border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-copilot/40 hover:bg-surface-card/80 focus-visible:border-copilot focus-visible:outline-none"
+              class="group flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
               aria-label="Select category: Writing errors">
               <div class="flex items-center gap-2">
                 <PenLine
-                  class="size-4 shrink-0 text-copilot transition-transform group-hover:scale-105" />
+                  class="size-4 shrink-0 text-accent transition-transform group-hover:scale-105" />
                 <span
-                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-copilot">
+                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
                   Writing errors
                 </span>
               </div>
@@ -369,13 +387,13 @@
             <button
               type="button"
               onclick={() => selectCategory('Technical inaccuracy')}
-              class="group flex cursor-pointer flex-col gap-1.5 rounded-sm border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-copilot/40 hover:bg-surface-card/80 focus-visible:border-copilot focus-visible:outline-none"
+              class="group flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
               aria-label="Select category: Technical inaccuracies">
               <div class="flex items-center gap-2">
                 <Code2
-                  class="size-4 shrink-0 text-copilot transition-transform group-hover:scale-105" />
+                  class="size-4 shrink-0 text-accent transition-transform group-hover:scale-105" />
                 <span
-                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-copilot">
+                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
                   Technical inaccuracies
                 </span>
               </div>
@@ -388,13 +406,13 @@
             <button
               type="button"
               onclick={() => selectCategory('Outdated information')}
-              class="group flex cursor-pointer flex-col gap-1.5 rounded-sm border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-copilot/40 hover:bg-surface-card/80 focus-visible:border-copilot focus-visible:outline-none"
+              class="group flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
               aria-label="Select category: Outdated information">
               <div class="flex items-center gap-2">
                 <ClockFading
-                  class="size-4 shrink-0 text-copilot transition-transform group-hover:scale-105" />
+                  class="size-4 shrink-0 text-accent transition-transform group-hover:scale-105" />
                 <span
-                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-copilot">
+                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
                   Outdated information
                 </span>
               </div>
@@ -407,13 +425,13 @@
             <button
               type="button"
               onclick={() => selectCategory('Broken link')}
-              class="group flex cursor-pointer flex-col gap-1.5 rounded-sm border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-copilot/40 hover:bg-surface-card/80 focus-visible:border-copilot focus-visible:outline-none"
+              class="group flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
               aria-label="Select category: Broken links">
               <div class="flex items-center gap-2">
                 <Link2Off
-                  class="size-4 shrink-0 text-copilot transition-transform group-hover:scale-105" />
+                  class="size-4 shrink-0 text-accent transition-transform group-hover:scale-105" />
                 <span
-                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-copilot">
+                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
                   Broken links
                 </span>
               </div>
@@ -425,13 +443,13 @@
             <button
               type="button"
               onclick={() => selectCategory('Website issue')}
-              class="group flex cursor-pointer flex-col gap-1.5 rounded-sm border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-copilot/40 hover:bg-surface-card/80 focus-visible:border-copilot focus-visible:outline-none"
+              class="group flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
               aria-label="Select category: Website issues">
               <div class="flex items-center gap-2">
                 <Bug
-                  class="size-4 shrink-0 text-copilot transition-transform group-hover:scale-105" />
+                  class="size-4 shrink-0 text-accent transition-transform group-hover:scale-105" />
                 <span
-                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-copilot">
+                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
                   Website issues
                 </span>
               </div>
@@ -444,13 +462,13 @@
             <button
               type="button"
               onclick={() => selectCategory('Other issue')}
-              class="group flex cursor-pointer flex-col gap-1.5 rounded-sm border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-copilot/40 hover:bg-surface-card/80 focus-visible:border-copilot focus-visible:outline-none"
+              class="group flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
               aria-label="Select category: Other issues">
               <div class="flex items-center gap-2">
                 <HelpCircle
-                  class="size-4 shrink-0 text-copilot transition-transform group-hover:scale-105" />
+                  class="size-4 shrink-0 text-accent transition-transform group-hover:scale-105" />
                 <span
-                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-copilot">
+                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
                   Other issues
                 </span>
               </div>
@@ -466,7 +484,7 @@
       <form
         novalidate
         onsubmit={handleSubmit}
-        class="relative z-10 flex w-full flex-col gap-3 rounded-sm glass-card p-6 text-left"
+        class="relative z-10 flex w-full flex-col gap-3 rounded-md glass-card p-6 text-left"
         autocomplete="off">
         <div class="mb-2 select-none">
           <h2 class="font-sans-title text-sm font-bold text-text-primary">
@@ -605,11 +623,23 @@
 
         <ConsentNotice action="submitting this feedback report" />
 
-        <div class="mt-2 flex justify-end select-none">
+        <div class="mt-2 flex items-center justify-between gap-2 select-none">
+          <Button
+            htmlType="button"
+            type="outline"
+            tone="critical"
+            size="md"
+            class="flex-1 sm:flex-initial"
+            disabled={!canClearFeedback || isSubmitting}
+            onclick={clearFeedbackForm}>
+            <span
+              >Clear<span class="hidden sm:inline">&nbsp;feedback</span></span>
+          </Button>
           <Button
             htmlType="submit"
             type="primary"
             size="md"
+            class="flex-1 sm:flex-initial"
             disabled={isSubmitting}
             isLoading={isSubmitting}>
             {isSubmitting ? 'Submitting…' : 'Submit feedback'}

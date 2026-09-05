@@ -22,14 +22,14 @@
 
   const variantStyles = {
     default: 'bg-surface/50 border border-border-subtle',
-    highlight: 'bg-copilot-subtle/20 border border-copilot/30',
+    highlight: 'bg-accent-subtle/20 border border-accent/30',
     glass: 'glass-card'
   };
 </script>
 
 <div
   class={cn(
-    'flex flex-col gap-3 rounded-sm p-5 shadow-xs transition-colors duration-300 sm:p-6',
+    'flex flex-col gap-3 rounded-md p-5 shadow-xs transition-colors duration-300 sm:p-6',
     variantStyles[variant],
     className
   )}>

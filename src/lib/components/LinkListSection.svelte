@@ -34,7 +34,7 @@
 
 <section
   class={cn(
-    'relative z-10 mx-auto w-full px-6 pt-10 pb-6 md:w-[80%] md:max-w-none md:pt-14 md:pb-8 lg:w-[65%] xl:w-[55%]',
+    'relative z-10 mx-auto w-full px-6 pt-5 pb-6 md:w-[80%] md:max-w-none md:pt-8 md:pb-8 lg:w-[65%] xl:w-[50%] 2xl:w-[45%]',
     className
   )}>
   <SectionHeader
@@ -60,7 +60,7 @@
           {#snippet leading()}
             {#if item.icon}
               <div
-                class="flex size-8 shrink-0 items-center justify-center rounded-sm text-text-muted transition-colors group-hover:text-copilot">
+                class="flex size-8 shrink-0 items-center justify-center rounded-md text-text-muted transition-colors group-hover:text-accent">
                 <BrandIcon
                   icon={item.icon}
                   class="text-base leading-none" />

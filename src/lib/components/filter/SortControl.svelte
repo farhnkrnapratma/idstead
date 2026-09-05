@@ -1,6 +1,7 @@
 <script lang="ts">
   import {Check, ArrowUpNarrowWide, ArrowDownWideNarrow} from '@lucide/svelte';
   import {cn} from '../../utils/cn';
+  import {popoverPosition} from '../../utils/popoverPosition';
   import DropdownTrigger from './DropdownTrigger.svelte';
   import IconButton from '../IconButton.svelte';
 
@@ -61,8 +62,9 @@
       <div
         role="listbox"
         aria-label="Sort options"
-        class="absolute inset-x-0 top-[calc(100%+8px)] z-40 flex w-full flex-col popover-surface p-0">
-        <div class="relative z-10 flex flex-col overflow-hidden rounded-sm">
+        use:popoverPosition={{placement: 'bottom-start', offset: 8, padding: 8}}
+        class="absolute z-40 flex w-full flex-col popover-surface p-0">
+        <div class="relative z-10 flex flex-col overflow-hidden rounded-md">
           {#each fields as field (field.value)}
             <button
               type="button"
@@ -72,12 +74,12 @@
               class={cn(
                 'flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-2 text-left font-sans-title text-xs font-medium transition-colors',
                 currentField === field.value ?
-                  'bg-copilot/10 font-semibold text-copilot'
-                : 'text-text-primary hover:bg-surface-hover hover:text-copilot'
+                  'bg-accent/10 font-semibold text-accent'
+                : 'text-text-primary hover:bg-surface-hover hover:text-accent'
               )}>
               <span class="truncate">{field.label}</span>
               {#if currentField === field.value}
-                <Check class="size-3.5 shrink-0 text-copilot" />
+                <Check class="size-3.5 shrink-0 text-accent" />
               {/if}
             </button>
           {/each}
@@ -95,7 +97,7 @@
     )}
     size="sm"
     onclick={onDirectionToggle}
-    class="shrink-0 text-text-secondary hover:text-copilot">
+    class="shrink-0 text-text-secondary hover:text-accent">
     {#if currentDirection === 'asc'}
       <ArrowUpNarrowWide class="size-4" />
     {:else}

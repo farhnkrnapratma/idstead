@@ -33,8 +33,8 @@
   };
 
   const densityStyles = {
-    padded: 'p-5 sm:p-6',
-    compact: 'p-3 sm:p-4',
+    padded: 'p-3.5 sm:p-6',
+    compact: 'p-2.5 sm:p-4',
     none: 'p-0'
   };
 
@@ -50,7 +50,7 @@
     role="button"
     tabindex={0}
     class={cn(
-      'overflow-hidden rounded-sm text-left transition-colors duration-300',
+      'overflow-hidden rounded-md text-left transition-colors duration-300',
       variantStyles[variant],
       densityStyles[density],
       interactiveStyles,
@@ -74,7 +74,7 @@
 {:else}
   <div
     class={cn(
-      'overflow-hidden rounded-sm transition-colors duration-300',
+      'overflow-hidden rounded-md transition-colors duration-300',
       variantStyles[variant],
       densityStyles[density],
       className

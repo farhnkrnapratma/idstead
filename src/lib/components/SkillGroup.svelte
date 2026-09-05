@@ -20,14 +20,14 @@
 
 <div
   class={cn(
-    'flex flex-col gap-2.5 rounded-sm glass-card p-4 transition-colors select-none sm:p-5',
+    'flex flex-col gap-1.5 rounded-md glass-card p-3 transition-colors select-none sm:gap-2 sm:p-4',
     className
   )}>
   <div
-    class="flex items-center gap-2 text-xs font-bold tracking-wider text-text-secondary uppercase">
+    class="flex items-center gap-2 text-2xs font-bold tracking-wider text-text-secondary uppercase sm:text-xs">
     {#if icon}
       <i
-        class="bi {icon} text-copilot"
+        class="bi {icon} text-accent"
         aria-hidden="true"></i>
     {/if}
     <span>{category}</span>
@@ -37,7 +37,7 @@
     {#each skills as skill (skill)}
       <Tag
         variant="subtle"
-        size="md">{decodeHtmlEntities(skill)}</Tag>
+        size="sm">{decodeHtmlEntities(skill)}</Tag>
     {/each}
   </div>
 </div>

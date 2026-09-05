@@ -1,7 +1,7 @@
 export {
   autoResize,
+  popoverPosition,
   portal,
-  scrollReveal,
   staggerChildren
 } from './utils/actions';
 export {cn} from './utils/cn';
@@ -36,7 +36,6 @@ export {default as RelativeTime} from './components/RelativeTime.svelte';
 export {default as TopNav} from './components/TopNav.svelte';
 export {default as BottomNav} from './components/BottomNav.svelte';
 export {default as BrandIcon} from './components/BrandIcon.svelte';
-export {default as LogoLoop} from './components/LogoLoop.svelte';
 
 export {default as EmptyState} from './components/EmptyState.svelte';
 export {default as ErrorState} from './components/ErrorState.svelte';
@@ -146,6 +145,7 @@ export {default as ScrollToTopButton} from './components/ScrollToTopButton.svelt
 export {default as FeedbackButton} from './components/FeedbackButton.svelte';
 export {default as ConsentNotice} from './components/ConsentNotice.svelte';
 export {scrollToTop} from './utils/scroll';
+export {readingModeStore} from './stores/readingModeStore.svelte';
 
 export * from './stores/consentStore.svelte';
 export * from './utils/formatters';

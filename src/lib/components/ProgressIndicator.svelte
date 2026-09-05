@@ -27,9 +27,9 @@
     aria-valuemin={0}
     aria-valuemax={100}
     aria-label={label || 'Progress bar'}
-    class="h-2 w-full overflow-hidden rounded-sm border border-border-subtle bg-surface-subtle">
+    class="h-2 w-full overflow-hidden rounded-md border border-border-subtle bg-surface-subtle">
     <div
-      class="h-full w-(--progress-w) rounded-sm bg-copilot transition-all duration-300"
+      class="h-full w-(--progress-w) rounded-md bg-accent transition-all duration-300"
       style="--progress-w: {clampedValue}%">
     </div>
   </div>

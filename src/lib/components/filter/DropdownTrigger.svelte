@@ -12,8 +12,9 @@
     size?: 'sm' | 'md';
     variant?: 'secondary' | 'primary';
     class?: string;
-    options?: Array<{label: string}>;
+    options?: Array<{label: string; shortLabel?: string}>;
     children: Snippet;
+    hideChevron?: boolean;
     onclick?: () => void;
   }
 
@@ -28,6 +29,7 @@
     class: className = '',
     options = [],
     children,
+    hideChevron = false,
     onclick
   }: Props = $props();
 </script>
@@ -40,24 +42,24 @@
   aria-expanded={isOpen}
   aria-haspopup="listbox"
   class={cn(
-    'inline-flex cursor-pointer items-center justify-between gap-1 rounded-sm font-sans-title font-medium disabled:cursor-not-allowed disabled:opacity-50',
+    'inline-flex cursor-pointer items-center justify-between gap-1 rounded-md font-sans-title font-medium disabled:cursor-not-allowed disabled:opacity-50',
     fullWidth ? 'w-full'
     : size === 'sm' ? 'w-full min-w-0 sm:w-auto'
     : 'w-full min-w-22 sm:w-auto',
     variant === 'primary' ?
       cn(
         size === 'sm' ?
-          'h-8 border border-copilot/50 bg-copilot px-2.5 text-xs text-white shadow-xs'
-        : 'h-10 border border-copilot/50 bg-copilot px-3 text-xs text-white shadow-lg sm:px-4 sm:text-sm',
+          'h-8 border border-accent/50 bg-accent px-2.5 text-xs text-white shadow-xs'
+        : 'h-10 border border-accent/50 bg-accent px-3 text-xs text-white shadow-lg sm:px-4 sm:text-sm',
         !disabled && 'transition-all hover:brightness-110'
       )
     : cn(
         'glass-button',
         size === 'sm' ? 'h-8 px-2.5 text-xs' : 'h-9 px-3 text-xs',
-        !disabled && 'hover:text-copilot',
-        isOpen && 'border-copilot/60 bg-surface-card text-copilot'
+        !disabled && 'hover:text-accent',
+        isOpen && 'border-accent/60 bg-surface-card text-accent'
       ),
-    'focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none',
+    'focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none',
     className
   )}>
   {#if options && options.length > 0}
@@ -70,7 +72,12 @@
           {#if labelPrefix}
             <span class="font-normal text-text-muted">{labelPrefix}:</span>
           {/if}
-          <span>{opt.label}</span>
+          {#if opt.shortLabel}
+            <span class="sm:hidden">{opt.shortLabel}</span>
+            <span class="hidden sm:inline">{opt.label}</span>
+          {:else}
+            <span>{opt.label}</span>
+          {/if}
         </span>
       {/each}
       <span
@@ -90,15 +97,17 @@
       <span class="truncate">{@render children()}</span>
     </span>
   {/if}
-  <span
-    class={cn(
-      'shrink-0 origin-center items-center justify-center transition-transform duration-200 ease-out',
-      size === 'sm' ? 'size-3.5' : 'size-4',
-      variant === 'primary' ? 'hidden text-white/80 sm:inline-flex'
-      : isOpen ? 'inline-flex text-copilot'
-      : 'inline-flex text-text-muted',
-      isOpen && 'rotate-180'
-    )}>
-    <ChevronDown class="{size === 'sm' ? 'size-3' : 'size-3'} leading-none" />
-  </span>
+  {#if !hideChevron}
+    <span
+      class={cn(
+        'shrink-0 origin-center items-center justify-center transition-transform duration-200 ease-out',
+        size === 'sm' ? 'size-3.5' : 'size-4',
+        variant === 'primary' ? 'hidden text-white/80 sm:inline-flex'
+        : isOpen ? 'inline-flex text-accent'
+        : 'inline-flex text-text-muted',
+        isOpen && 'rotate-180'
+      )}>
+      <ChevronDown class="{size === 'sm' ? 'size-3' : 'size-3'} leading-none" />
+    </span>
+  {/if}
 </button>

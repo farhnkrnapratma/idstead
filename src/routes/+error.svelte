@@ -1,6 +1,6 @@
 <script lang="ts">
   import {page} from '$app/state';
-  import {ArrowLeft, Bug} from '@lucide/svelte';
+  import {ArrowLeft, MessageSquarePlus} from '@lucide/svelte';
   import {Button, SkipLink, ErrorState, FooterLegalRow} from '$lib';
 
   let pageAuthor = $derived((page?.data as any)?.author);
@@ -96,7 +96,7 @@
             type="secondary"
             size="md">
             {#snippet leading()}
-              <Bug class="size-3.5" />
+              <MessageSquarePlus class="size-3.5" />
             {/snippet}
             Feedback
           </Button>

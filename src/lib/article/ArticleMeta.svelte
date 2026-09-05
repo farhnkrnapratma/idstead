@@ -60,8 +60,34 @@
     Boolean(
       safeUpdatedAt
       && safeDate
-      && new Date(safeUpdatedAt).getTime() > new Date(safeDate).getTime()
+      && new Date(safeUpdatedAt).getTime() - new Date(safeDate).getTime()
+        > 60000
     )
+  );
+
+  function formatFullDateTime(input: string | Date | null | undefined): string {
+    if (!input) return '';
+    const d = typeof input === 'string' ? new Date(input) : input;
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+  }
+
+  const publishedTooltip = $derived(
+    safeDate ? `Published: ${formatFullDateTime(safeDate)}` : undefined
+  );
+
+  const updatedTooltip = $derived(
+    safeUpdatedAt ?
+      safeDate ?
+        `Updated: ${formatFullDateTime(safeUpdatedAt)} (Published: ${formatFullDateTime(safeDate)})`
+      : `Updated: ${formatFullDateTime(safeUpdatedAt)}`
+    : undefined
   );
 
   const primaryParts = $derived(
@@ -69,8 +95,10 @@
       [
         status ? 'status' : null,
         safeAuthor ? 'author' : null,
-        safeDate ? 'date' : null,
-        isUpdatedDifferent ? 'updatedAt' : null
+        isUpdatedDifferent ? 'updatedAt'
+        : safeDate ? 'date'
+        : safeUpdatedAt ? 'updatedAt'
+        : null
       ] as const
     ).filter((p): p is NonNullable<typeof p> => p !== null)
   );
@@ -92,8 +120,8 @@
   const textClass = $derived(size === 'xxs' ? 'text-2xs' : 'text-xs');
   const iconClass = $derived(
     size === 'xxs' ?
-      'size-3 shrink-0 text-text-muted/70 transition-colors -translate-y-[0.5px]'
-    : 'size-3.5 shrink-0 text-text-muted/70 transition-colors -translate-y-[0.5px]'
+      'size-3 shrink-0 text-text-muted transition-colors -translate-y-[0.5px]'
+    : 'size-3.5 shrink-0 text-text-muted transition-colors -translate-y-[0.5px]'
   );
 </script>
 
@@ -142,13 +170,15 @@
     </span>
   {:else if part === 'date'}
     <span
+      title={publishedTooltip}
       class="inline-flex items-center gap-1 font-normal whitespace-nowrap text-text-secondary">
       <CalendarCheck2
         class={iconClass}
         strokeWidth={1.75}
         absoluteStrokeWidth={true} />
-      <span class="sm:hidden"
-        >{formatAbsoluteDate(safeDate, 'short', true)}</span>
+      <time
+        datetime={safeDate}
+        class="sm:hidden">{formatAbsoluteDate(safeDate, 'short', true)}</time>
       <RelativeTime
         date={safeDate}
         tag="time"
@@ -156,12 +186,17 @@
     </span>
   {:else if part === 'updatedAt'}
     <span
-      class="hidden items-center gap-1 font-normal whitespace-nowrap text-text-secondary sm:inline-flex">
+      title={updatedTooltip}
+      class="inline-flex items-center gap-1 font-normal whitespace-nowrap text-text-secondary">
       <RotateCcwClock
         class={iconClass}
         strokeWidth={1.75}
         absoluteStrokeWidth={true} />
-      <span
+      <time
+        datetime={safeUpdatedAt}
+        class="sm:hidden"
+        >{formatAbsoluteDate(safeUpdatedAt, 'short', true)}</time>
+      <span class="hidden sm:inline"
         >Updated <RelativeTime
           date={safeUpdatedAt}
           tag="time" /></span>

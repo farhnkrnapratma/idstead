@@ -36,7 +36,7 @@ This shape is enforced by one shared handler for the whole API, so it's the same
 | --- | --- | --- |
 | `BLOG_LIST_FETCH_FAILED` | 500 | `/api/v1/blog` couldn't query the database. |
 | `BLOG_POST_NOT_FOUND` | 404 | No published post matches the given ID/slug. |
-| `BLOG_INVALID_LANG` | 400 | `lang` was given but isn't one of `id`, `ja`, `zh`, `ko`. |
+| `BLOG_INVALID_LANG` | 400 | `lang` was given but isn't `id`. |
 | `BLOG_COMMENT_INVALID_POST_ID` | 400 | `postId` was given but isn't a valid UUID. |
 | `BLOG_COMMENTS_FETCH_FAILED` | 500 | `/api/v1/blog/comments` couldn't query the database. |
 | `BLOG_VIEW_POST_ID_REQUIRED` | 400 | `postId` query parameter is missing. |
@@ -75,16 +75,16 @@ Both also include `excerpt` (short teaser, nullable string), `summary` (longer A
 
 #### Translations (`lang`)
 
-Add `?lang=id`, `?lang=ja`, `?lang=zh`, or `?lang=ko` to get an AI-translated version (Indonesian, Japanese, Simplified Chinese, or Korean) of `title`, `excerpt`, `summary`, `tldr`, and (on the detail endpoint) `content`. Translations are generated automatically when a post is published, for all four languages — there is no on-demand translation endpoint.
+Add `?lang=id` to get an AI-translated version (Indonesian) of `title`, `excerpt`, `summary`, `tldr`, and (on the detail endpoint) `content`. Translations are generated automatically when a post is published — there is no on-demand translation endpoint.
 
 Every response (list items and the detail endpoint) includes:
 
-- `language` — the language actually returned (`en`, `id`, `ja`, `zh`, or `ko`). May differ from the requested `lang`.
+- `language` — the language actually returned (`en` or `id`). May differ from the requested `lang`.
 - `requested_language` — the `lang` value that was requested, or `null` if none was given.
 - `machine_translated` — `true` when `language` isn't `en`.
 - `translation_disclaimer` — present only when `machine_translated` is `true`: a warning that the content was translated by AI and may contain errors, in the same language as `language`.
 
-If a translation hasn't been generated yet for the requested language, the response falls back to English (`language: "en"`, `machine_translated: false`) — **this is a `200`, never a `404`**. An unrecognized `lang` value (not `id`/`ja`/`zh`/`ko`) returns `400 BLOG_INVALID_LANG`. The disclaimer is also prepended to `?format=md`/`?format=text` output when the response is a translation — on `?format=md` it's a real `[!WARNING]` GitHub-style alert block, matching how alerts render elsewhere in the article.
+If a translation hasn't been generated yet for the requested language, the response falls back to English (`language: "en"`, `machine_translated: false`) — **this is a `200`, never a `404`**. An unrecognized `lang` value (not `id`) returns `400 BLOG_INVALID_LANG`. The disclaimer is also prepended to `?format=md`/`?format=text` output when the response is a translation — on `?format=md` it's a real `[!NOTE]` GitHub-style alert block, matching how alerts render elsewhere in the article.
 
 #### Comments
 

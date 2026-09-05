@@ -66,7 +66,7 @@
         class="text-2xs font-semibold tracking-wider text-text-muted uppercase"
         >Direct link</span>
       <div
-        class="flex items-center gap-2 rounded-sm border border-border-subtle bg-surface-base/80 p-1.5 pr-2 pl-3 shadow-2xs">
+        class="flex items-center gap-2 rounded-md border border-border-subtle bg-surface-base/80 p-1.5 pr-2 pl-3 shadow-2xs">
         <span
           class="min-w-0 flex-1 truncate font-mono text-xs text-text-secondary select-all">
           {effectiveUrl}
@@ -79,7 +79,7 @@
           onclick={copyUrl}>
           {#snippet leading()}
             {#if copied}
-              <CopyCheck class="size-3.5 text-copilot" />
+              <CopyCheck class="size-3.5 text-accent" />
             {:else}
               <Copy class="size-3.5" />
             {/if}

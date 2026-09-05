@@ -1,7 +1,8 @@
 <script lang="ts">
-  import {onMount, tick, untrack} from 'svelte';
+  import {onMount, onDestroy, tick, untrack} from 'svelte';
+  import {fade} from 'svelte/transition';
   import {SvelteSet} from 'svelte/reactivity';
-  import {Mail, Image as ImageIcon, User} from '@lucide/svelte';
+  import {Mail, Image as ImageIcon, User, BookOpenText} from '@lucide/svelte';
   import type {PageProps} from './$types';
   import type {BlogComment} from './+page.server';
   import hljs from 'highlight.js';
@@ -10,6 +11,7 @@
     extractAuthorNameTokens
   } from '$lib/utils/nameValidator';
   import {enhanceMarkdownContent} from '$lib/utils/markdownEnhancer';
+  import {refreshCodeBlockPrefs} from '$lib/utils/codeBlocks';
   import {cn} from '$lib/utils/cn';
   import 'katex/dist/katex.min.css';
   import {
@@ -47,7 +49,9 @@
     HelpfulBlock,
     PostInsights,
     formatAbsoluteDate,
-    ConsentNotice
+    ConsentNotice,
+    readingModeStore,
+    Tooltip
   } from '$lib';
   import {pushState} from '$app/navigation';
   import {page, navigating} from '$app/state';
@@ -65,11 +69,6 @@
   const author = $derived(data.author);
   const authorTokens = $derived(extractAuthorNameTokens(author));
 
-  const CONTENT_FONT_CLASS: Record<string, string> = {
-    ja: 'font-sans-ja',
-    zh: 'font-sans-zh',
-    ko: 'font-sans-ko'
-  };
   const language = $derived(data.language);
   const machineTranslated = $derived(data.machineTranslated);
   const translationDisclaimerHtml = $derived(data.translationDisclaimerHtml);
@@ -105,6 +104,7 @@
       currentPostId = postId;
       untrack(() => {
         addedComments = [];
+        readingModeStore.disable();
       });
     }
   });
@@ -114,6 +114,35 @@
   function markRelatedBannerFailed(postId: string) {
     failedRelatedBanners.add(postId);
   }
+
+  const expandedExcerptIds = new SvelteSet<string>();
+  const overflowingExcerptIds = new SvelteSet<string>();
+
+  function observeExcerptOverflow(postId: string) {
+    return (element: HTMLElement) => {
+      const updateOverflow = () => {
+        if (element.scrollHeight > element.clientHeight + 1) {
+          overflowingExcerptIds.add(postId);
+        } else {
+          overflowingExcerptIds.delete(postId);
+        }
+      };
+
+      const resizeObserver = new ResizeObserver(updateOverflow);
+      resizeObserver.observe(element);
+
+      return () => resizeObserver.disconnect();
+    };
+  }
+
+  function toggleExcerpt(postId: string) {
+    if (expandedExcerptIds.has(postId)) {
+      expandedExcerptIds.delete(postId);
+    } else {
+      expandedExcerptIds.add(postId);
+    }
+  }
+
   let isDark = $state(false);
 
   const bannerPublicUrl = $derived(
@@ -145,7 +174,10 @@
   const failedAvatars = new SvelteSet<string>();
   const loadedAvatars = new SvelteSet<string>();
 
+  let hasVotedHelpful = $state(false);
+
   async function handleHelpfulness(value: 'yes' | 'no') {
+    hasVotedHelpful = true;
     if (value === 'yes') {
       showYesFeedbackDialog = true;
     } else {
@@ -163,12 +195,14 @@
     }
   }
 
+  let articleBodyEl: HTMLDivElement | undefined = $state();
+
   $effect(() => {
     void html;
     void isDark;
 
     tick().then(() => {
-      const container = document.querySelector('.prose-custom');
+      const container = articleBodyEl;
       if (container) {
         const blocks = container.querySelectorAll('pre code');
         blocks.forEach(block => {
@@ -277,6 +311,15 @@
     });
   });
 
+  $effect(() => {
+    void readingModeStore.active;
+    refreshCodeBlockPrefs();
+  });
+
+  onDestroy(() => {
+    readingModeStore.disable();
+  });
+
   onMount(() => {
     isDark = document.documentElement.classList.contains('dark');
 
@@ -335,6 +378,19 @@
     commentContent = '';
     feedbackMessage = null;
     errors = {authorName: '', commentContent: ''};
+    valid = {authorName: false, commentContent: false};
+  }
+
+  const canClearComment = $derived(
+    Boolean(authorName.trim() || commentContent.trim())
+  );
+
+  function clearCommentForm() {
+    authorName = '';
+    commentContent = '';
+    feedbackMessage = null;
+    errors = {authorName: '', commentContent: ''};
+    valid = {authorName: false, commentContent: false};
   }
 
   let errors = $state({authorName: '', commentContent: ''});
@@ -566,17 +622,11 @@
     content="article" />
   <meta
     property="og:locale"
-    content={language === 'en' ? 'en_US'
-    : language === 'id' ? 'id_ID'
-    : language === 'ja' ? 'ja_JP'
-    : 'zh_CN'} />
+    content={language === 'en' ? 'en_US' : 'id_ID'} />
   {#each langSwitcherOptions.filter(loc => loc !== language) as loc (loc)}
     <meta
       property="og:locale:alternate"
-      content={loc === 'en' ? 'en_US'
-      : loc === 'id' ? 'id_ID'
-      : loc === 'ja' ? 'ja_JP'
-      : 'zh_CN'} />
+      content={loc === 'en' ? 'en_US' : 'id_ID'} />
   {/each}
   <meta
     property="og:url"
@@ -628,34 +678,49 @@
   {/if}
 </svelte:head>
 
-<TopNav
-  ariaLabel="Article navigation"
-  backHref="/#blog"
-  backLabel="Back to Blog"
-  showFontSelect={true}
-  projects={data.projects}
-  languageSwitcher={{
-    slug: post.slug,
-    currentLanguage: language,
-    availableLocales
-  }} />
+{#if !readingModeStore.active}
+  <TopNav
+    ariaLabel="Article navigation"
+    backHref="/#blog"
+    backLabel="Blog"
+    showFontSelect={true}
+    projects={data.projects}
+    languageSwitcher={{
+      slug: post.slug,
+      currentLanguage: language,
+      availableLocales
+    }}
+    readingMode={readingModeStore.active}
+    onToggleReadingMode={readingModeStore.toggle} />
+{/if}
 
 <main
   id="main-content"
-  class="flex min-h-[calc(100vh-3rem)] flex-col pt-12 font-sans sm:min-h-[calc(100vh-3.5rem)] sm:pt-14">
+  class="flex flex-col font-sans {readingModeStore.active ?
+    'min-h-screen pt-4 sm:pt-6'
+  : 'min-h-[calc(100vh-3rem)] pt-12 sm:min-h-[calc(100vh-3.5rem)] sm:pt-14 xl:h-[calc(100dvh-3.5rem)] xl:min-h-0 xl:overflow-hidden'}">
   <div
-    class="relative mx-auto w-full px-6 pt-3 pb-16 sm:pt-4 md:w-[80%] lg:w-[65%] xl:w-[55%]">
-    <aside
-      class="hidden select-none xl:fixed xl:top-18 xl:right-[calc(50%+27.5%+1.5rem)] xl:z-20 xl:flex xl:max-h-[calc(100dvh-9.5rem)] xl:w-56 xl:flex-col xl:gap-3"
-      aria-label="Table of contents">
-      <TableOfContents
-        {headings}
-        class="max-h-[calc(100dvh-15.5rem)] min-h-0 flex-1" />
-      <HelpfulBlock
-        onVote={helpful => handleHelpfulness(helpful ? 'yes' : 'no')} />
-    </aside>
+    class={readingModeStore.active ?
+      'relative mx-auto w-full px-3 pt-3 pb-16 sm:px-6 sm:pt-4 md:w-[80%] lg:w-[65%] xl:w-[50%] 2xl:w-[45%]'
+    : 'relative mx-auto w-full px-3 pt-3 pb-16 sm:px-6 sm:pt-4 md:w-[80%] lg:w-[65%] xl:mx-auto xl:grid xl:h-full xl:w-full xl:max-w-[1600px] xl:grid-cols-[23.5%_minmax(0,1fr)_23.5%] xl:items-start xl:gap-8 xl:px-8 xl:pb-0 2xl:max-w-[1720px] 2xl:grid-cols-[24.5%_minmax(0,1fr)_24.5%]'}>
+    {#if !readingModeStore.active}
+      <aside
+        transition:fade={{duration: 150}}
+        class="hidden [scrollbar-width:none] select-none [-ms-overflow-style:none] xl:sticky xl:top-0 xl:z-20 xl:flex xl:max-h-[calc(100dvh-5.5rem)] xl:w-full xl:flex-col xl:gap-3 [&::-webkit-scrollbar]:hidden"
+        aria-label="Table of contents">
+        <TableOfContents
+          {headings}
+          class="max-h-[calc(100dvh-18rem)] min-h-0 flex-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden" />
+        <HelpfulBlock
+          variant="compact"
+          voted={hasVotedHelpful ? true : null}
+          onVote={helpful => handleHelpfulness(helpful ? 'yes' : 'no')}
+          onFeedbackClick={() => (showNoFeedbackDialog = true)} />
+      </aside>
+    {/if}
 
-    <article class="flex w-full flex-col">
+    <article
+      class="article-scroll-container flex w-full min-w-0 flex-col xl:h-full xl:max-h-[calc(100dvh-5.5rem)] xl:overflow-y-auto xl:pr-3">
       <ArticleHeader
         title={post.title}
         titleClass="text-text-primary"
@@ -703,7 +768,7 @@
                   href="https://github.com/{allAuthors[0]}"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-copilot hover:underline">
+                  class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline">
                   {allAuthors[0]}
                 </a>
               {:else if allAuthors.length === 2}
@@ -711,7 +776,7 @@
                   href="https://github.com/{allAuthors[0]}"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-copilot hover:underline">
+                  class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline">
                   {allAuthors[0]}
                 </a>
                 <span>and</span>
@@ -719,7 +784,7 @@
                   href="https://github.com/{allAuthors[1]}"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-copilot hover:underline">
+                  class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline">
                   {allAuthors[1]}
                 </a>
               {:else if allAuthors.length === 3}
@@ -728,7 +793,7 @@
                     href="https://github.com/{allAuthors[0]}"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-copilot hover:underline"
+                    class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline"
                     >{allAuthors[0]}</a
                   >,
                 </span>
@@ -737,7 +802,7 @@
                     href="https://github.com/{allAuthors[1]}"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-copilot hover:underline"
+                    class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline"
                     >{allAuthors[1]}</a
                   >,
                 </span>
@@ -746,7 +811,7 @@
                   href="https://github.com/{allAuthors[2]}"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-copilot hover:underline">
+                  class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline">
                   {allAuthors[2]}
                 </a>
               {:else}
@@ -755,7 +820,7 @@
                     href="https://github.com/{allAuthors[0]}"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-copilot hover:underline"
+                    class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline"
                     >{allAuthors[0]}</a
                   >,
                 </span>
@@ -764,7 +829,7 @@
                     href="https://github.com/{allAuthors[1]}"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-copilot hover:underline"
+                    class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline"
                     >{allAuthors[1]}</a
                   >,
                 </span>
@@ -773,7 +838,7 @@
                     href="https://github.com/{allAuthors[2]}"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-copilot hover:underline"
+                    class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline"
                     >{allAuthors[2]}</a
                   >,
                 </span>
@@ -785,7 +850,7 @@
                     type="button"
                     aria-expanded={isCollaboratorsPopoverOpen}
                     aria-haspopup="dialog"
-                    class="cursor-pointer font-semibold text-text-primary underline-offset-4 transition-colors hover:text-copilot hover:underline"
+                    class="cursor-pointer font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline"
                     onclick={() => {
                       isCollaboratorsPopoverOpen = !isCollaboratorsPopoverOpen;
                     }}>
@@ -800,7 +865,7 @@
                     <div
                       role="dialog"
                       aria-label="Other Collaborators"
-                      class="absolute top-full right-0 z-50 mt-2 flex w-max max-w-[calc(100vw-2.5rem)] min-w-36 flex-col gap-0.5 rounded-sm border border-border-subtle bg-surface-elevated p-1.5 shadow-lg sm:right-auto sm:left-0">
+                      class="absolute top-full right-0 z-50 mt-2 flex w-max max-w-[calc(100vw-2.5rem)] min-w-36 flex-col gap-0.5 rounded-md border border-border-subtle bg-surface-elevated p-1.5 shadow-lg sm:right-auto sm:left-0">
                       <span
                         class="px-1.5 py-0.5 text-2xs font-semibold tracking-wider text-text-muted uppercase">
                         {hiddenCollaborators.length > 1 ?
@@ -813,7 +878,7 @@
                           target="_blank"
                           rel="noopener noreferrer"
                           onclick={() => (isCollaboratorsPopoverOpen = false)}
-                          class="flex items-center gap-2 rounded-sm px-1.5 py-1 font-sans-title text-xs transition-colors hover:bg-surface-hover hover:text-copilot">
+                          class="flex items-center gap-2 rounded-md px-1.5 py-1 font-sans-title text-xs transition-colors hover:bg-surface-hover hover:text-accent">
                           <div
                             class="relative flex size-5 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border-subtle bg-surface-card">
                             {#if !loadedAvatars.has(collab)}
@@ -855,26 +920,38 @@
             views={viewCount !== null ? viewCount : undefined}
             class="mt-2.5 w-full" />
 
-          <ContentActions
-            class="mt-3 w-full"
-            slug={post.slug}
-            pageId={post.id}
-            title={post.title}
-            avatarUrl={author?.avatar}
-            viewMarkdownUrl="/api/v1/blog/{post.slug}?format=md"
-            viewTextUrl="/api/v1/blog/{post.slug}?format=text" />
+          {#if !readingModeStore.active}
+            <div
+              transition:fade={{duration: 150}}
+              class="w-full xl:hidden">
+              <ContentActions
+                class="mt-3 w-full"
+                slug={post.slug}
+                pageId={post.id}
+                title={post.title}
+                avatarUrl={author?.avatar}
+                viewMarkdownUrl="/api/v1/blog/{post.slug}?format=md"
+                viewTextUrl="/api/v1/blog/{post.slug}?format=text" />
+            </div>
+          {/if}
         {/snippet}
       </ArticleHeader>
 
-      {#if (machineTranslated && translationDisclaimerHtml) || (post.tldr && post.tldr.length > 0) || post.summary}
-        <div class="mt-3 flex flex-col gap-3">
-          {#if machineTranslated && translationDisclaimerHtml}
-            <div
-              class="translation-disclaimer prose-custom my-0 [&>.markdown-alert]:my-0!">
-              {@html translationDisclaimerHtml}
-            </div>
-          {/if}
+      {#if machineTranslated && translationDisclaimerHtml}
+        <div
+          transition:fade={{duration: 150}}
+          class="mt-3">
+          <div
+            class="translation-disclaimer prose-custom font-content-{contentFontStore.current} my-0 [&>.markdown-alert]:my-0!">
+            {@html translationDisclaimerHtml}
+          </div>
+        </div>
+      {/if}
 
+      {#if !readingModeStore.active && ((post.tldr && post.tldr.length > 0) || post.summary)}
+        <div
+          transition:fade={{duration: 150}}
+          class="mt-3 xl:hidden">
           <PostInsights
             tldr={post.tldr}
             summary={post.summary}
@@ -882,458 +959,565 @@
         </div>
       {/if}
 
-      <div class="mt-3 flex flex-col xl:hidden">
-        <TableOfContents
-          {headings}
-          collapsible={true}
-          defaultCollapsed={true} />
-      </div>
+      {#if !readingModeStore.active}
+        <div
+          transition:fade={{duration: 150}}
+          class="mt-3 flex flex-col xl:hidden">
+          <TableOfContents
+            {headings}
+            collapsible={true}
+            defaultCollapsed={true} />
+        </div>
+      {/if}
 
       <div
-        class="prose-custom font-content-{contentFontStore.current} {CONTENT_FONT_CLASS[
-          language
-        ] ?? ''} mt-3 w-full">
+        bind:this={articleBodyEl}
+        class="prose-custom font-content-{contentFontStore.current} mt-3 w-full">
         {@html html}
       </div>
 
-      <div class="mt-8 flex flex-col gap-6 select-none sm:mt-12">
-        <div class="xl:hidden">
-          <HelpfulBlock
-            onVote={helpful => handleHelpfulness(helpful ? 'yes' : 'no')} />
-        </div>
+      {#if !readingModeStore.active}
+        <div
+          transition:fade={{duration: 150}}
+          class="mt-6 flex flex-col gap-4 select-none sm:mt-8 sm:gap-5">
+          <div class="xl:hidden">
+            <HelpfulBlock
+              voted={hasVotedHelpful ? true : null}
+              onVote={helpful => handleHelpfulness(helpful ? 'yes' : 'no')}
+              onFeedbackClick={() => (showNoFeedbackDialog = true)} />
+          </div>
 
-        <div class="border-t border-border-subtle pt-6">
-          <h3 class="mb-3 text-sm font-bold tracking-tight text-text-primary">
-            Share this article
-          </h3>
-          <div class="grid grid-cols-6 gap-1.5 sm:grid-cols-3 sm:gap-2">
-            <Button
-              href={`https://x.com/intent/post?url=${encodeURIComponent(page.url.href)}&text=${encodeURIComponent(post.title)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              type="secondary"
-              size="sm"
-              class="w-full justify-center px-2 py-2 sm:px-3"
-              title="Share on X"
-              aria-label="Share on X (opens in a new tab)">
-              {#snippet leading()}
-                <i
-                  class="bi bi-twitter-x inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
-                  aria-hidden="true"></i>
-              {/snippet}
-              <span class="hidden truncate sm:inline">X</span>
-            </Button>
+          <div class="border-t border-border-subtle pt-4 sm:pt-5">
+            <h3
+              class="mb-2.5 text-sm font-bold tracking-tight text-text-primary">
+              Share this article
+            </h3>
+            <div class="grid grid-cols-6 gap-1.5 sm:grid-cols-3 sm:gap-2">
+              <Button
+                href={`https://x.com/intent/post?url=${encodeURIComponent(page.url.href)}&text=${encodeURIComponent(post.title)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                type="secondary"
+                size="sm"
+                class="w-full justify-center px-2 py-2 sm:px-3"
+                title="Share on X"
+                aria-label="Share on X (opens in a new tab)">
+                {#snippet leading()}
+                  <i
+                    class="bi bi-twitter-x inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
+                    aria-hidden="true"></i>
+                {/snippet}
+                <span class="hidden truncate sm:inline">X</span>
+              </Button>
 
-            <Button
-              href={`https://linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(page.url.href)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              type="secondary"
-              size="sm"
-              class="w-full justify-center px-2 py-2 sm:px-3"
-              title="Share on LinkedIn"
-              aria-label="Share on LinkedIn (opens in a new tab)">
-              {#snippet leading()}
-                <i
-                  class="bi bi-linkedin inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
-                  aria-hidden="true"></i>
-              {/snippet}
-              <span class="hidden truncate sm:inline">LinkedIn</span>
-            </Button>
+              <Button
+                href={`https://linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(page.url.href)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                type="secondary"
+                size="sm"
+                class="w-full justify-center px-2 py-2 sm:px-3"
+                title="Share on LinkedIn"
+                aria-label="Share on LinkedIn (opens in a new tab)">
+                {#snippet leading()}
+                  <i
+                    class="bi bi-linkedin inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
+                    aria-hidden="true"></i>
+                {/snippet}
+                <span class="hidden truncate sm:inline">LinkedIn</span>
+              </Button>
 
-            <Button
-              href={`https://api.whatsapp.com/send?text=${encodeURIComponent(post.title)}%20${encodeURIComponent(page.url.href)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              type="secondary"
-              size="sm"
-              class="w-full justify-center px-2 py-2 sm:px-3"
-              title="Share on WhatsApp"
-              aria-label="Share on WhatsApp (opens in a new tab)">
-              {#snippet leading()}
-                <i
-                  class="bi bi-whatsapp inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
-                  aria-hidden="true"></i>
-              {/snippet}
-              <span class="hidden truncate sm:inline">WhatsApp</span>
-            </Button>
+              <Button
+                href={`https://api.whatsapp.com/send?text=${encodeURIComponent(post.title)}%20${encodeURIComponent(page.url.href)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                type="secondary"
+                size="sm"
+                class="w-full justify-center px-2 py-2 sm:px-3"
+                title="Share on WhatsApp"
+                aria-label="Share on WhatsApp (opens in a new tab)">
+                {#snippet leading()}
+                  <i
+                    class="bi bi-whatsapp inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
+                    aria-hidden="true"></i>
+                {/snippet}
+                <span class="hidden truncate sm:inline">WhatsApp</span>
+              </Button>
 
-            <Button
-              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(page.url.href)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              type="secondary"
-              size="sm"
-              class="w-full justify-center px-2 py-2 sm:px-3"
-              title="Share on Facebook"
-              aria-label="Share on Facebook (opens in a new tab)">
-              {#snippet leading()}
-                <i
-                  class="bi bi-facebook inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
-                  aria-hidden="true"></i>
-              {/snippet}
-              <span class="hidden truncate sm:inline">Facebook</span>
-            </Button>
+              <Button
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(page.url.href)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                type="secondary"
+                size="sm"
+                class="w-full justify-center px-2 py-2 sm:px-3"
+                title="Share on Facebook"
+                aria-label="Share on Facebook (opens in a new tab)">
+                {#snippet leading()}
+                  <i
+                    class="bi bi-facebook inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
+                    aria-hidden="true"></i>
+                {/snippet}
+                <span class="hidden truncate sm:inline">Facebook</span>
+              </Button>
 
-            <Button
-              href={`https://reddit.com/submit?url=${encodeURIComponent(page.url.href)}&title=${encodeURIComponent(post.title)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              type="secondary"
-              size="sm"
-              class="w-full justify-center px-2 py-2 sm:px-3"
-              title="Share on Reddit"
-              aria-label="Share on Reddit (opens in a new tab)">
-              {#snippet leading()}
-                <i
-                  class="bi bi-reddit inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
-                  aria-hidden="true"></i>
-              {/snippet}
-              <span class="hidden truncate sm:inline">Reddit</span>
-            </Button>
+              <Button
+                href={`https://reddit.com/submit?url=${encodeURIComponent(page.url.href)}&title=${encodeURIComponent(post.title)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                type="secondary"
+                size="sm"
+                class="w-full justify-center px-2 py-2 sm:px-3"
+                title="Share on Reddit"
+                aria-label="Share on Reddit (opens in a new tab)">
+                {#snippet leading()}
+                  <i
+                    class="bi bi-reddit inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
+                    aria-hidden="true"></i>
+                {/snippet}
+                <span class="hidden truncate sm:inline">Reddit</span>
+              </Button>
 
-            <Button
-              href={`mailto:?subject=${encodeURIComponent(post.title)}&body=${encodeURIComponent(page.url.href)}`}
-              type="secondary"
-              size="sm"
-              class="w-full justify-center px-2 py-2 sm:px-3"
-              title="Share via Email"
-              aria-label="Share via email">
-              {#snippet leading()}
-                <i
-                  class="bi bi-envelope-fill inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
-                  aria-hidden="true"></i>
-              {/snippet}
-              <span class="hidden truncate sm:inline">Email</span>
-            </Button>
+              <Button
+                href={`mailto:?subject=${encodeURIComponent(post.title)}&body=${encodeURIComponent(page.url.href)}`}
+                type="secondary"
+                size="sm"
+                class="w-full justify-center px-2 py-2 sm:px-3"
+                title="Share via Email"
+                aria-label="Share via email">
+                {#snippet leading()}
+                  <i
+                    class="bi bi-envelope-fill inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
+                    aria-hidden="true"></i>
+                {/snippet}
+                <span class="hidden truncate sm:inline">Email</span>
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {#if relatedPosts.length > 0}
-        <section
-          class="mt-12 border-t border-border-subtle pt-8"
-          aria-label="Related posts">
-          <h3 class="mb-4 text-sm font-bold tracking-tight text-text-primary">
-            Continue reading
-          </h3>
-          <div class="relative z-0 grid grid-cols-1 gap-4">
-            {#each relatedPosts as related (related.id)}
-              <Card
-                class="relative flex flex-col gap-3.5 p-4 text-left sm:flex-row sm:gap-4">
-                <div
-                  class="aspect-video w-full shrink-0 overflow-hidden rounded-sm border border-border-subtle sm:w-48 md:w-56">
-                  {#if related.bannerPublicUrl && !failedRelatedBanners.has(related.id)}
-                    <ImageWithSkeleton
-                      src={related.bannerPublicUrl}
-                      alt={related.title}
-                      aspectRatio="aspect-video"
-                      onerror={() => markRelatedBannerFailed(related.id)}
-                      class="h-full w-full object-cover" />
-                  {:else}
-                    <div
-                      class="relative flex h-full w-full items-center justify-center overflow-hidden bg-linear-to-br from-accent/15 to-copilot/15 select-none">
-                      <ImageIcon class="size-8 text-copilot/50" />
-                    </div>
-                  {/if}
-                </div>
-
-                <div
-                  class="flex min-w-0 flex-1 flex-col justify-between gap-2.5 font-sans">
-                  <div class="flex flex-col gap-1">
-                    <div>
-                      <h4
-                        class="line-clamp-2 font-sans-title text-lg leading-snug font-bold text-text-primary">
-                        {related.title}
-                      </h4>
-                    </div>
-                    <ArticleMeta
-                      size="xs"
-                      layout="single"
-                      class="min-h-4.5"
-                      date={related.created_at || ''}
-                      updatedAt={related.updated_at || ''}
-                      readingTime={formatReadTime(related.read_time)}
-                      commentsCount={related.comment_count}
-                      views={related.views_count} />
-                    {#if related.excerpt}
-                      <p
-                        class="line-clamp-2 text-xs leading-relaxed text-text-secondary">
-                        {related.excerpt}
-                      </p>
+        {#if relatedPosts.length > 0}
+          <section
+            class="mt-6 border-t border-border-subtle pt-4 sm:mt-8 sm:pt-6"
+            aria-label="Related posts">
+            <h3 class="mb-3 text-sm font-bold tracking-tight text-text-primary">
+              Continue reading
+            </h3>
+            <div class="relative z-0 grid grid-cols-1 gap-3 sm:gap-4">
+              {#each relatedPosts as related (related.id)}
+                <Card
+                  class="relative flex flex-col gap-3.5 p-4 text-left sm:flex-row sm:gap-4">
+                  <div
+                    class="aspect-video w-full shrink-0 overflow-hidden rounded-md border border-border-subtle sm:w-48 md:w-56">
+                    {#if related.bannerPublicUrl && !failedRelatedBanners.has(related.id)}
+                      <ImageWithSkeleton
+                        src={related.bannerPublicUrl}
+                        alt={related.title}
+                        aspectRatio="aspect-video"
+                        onerror={() => markRelatedBannerFailed(related.id)}
+                        class="h-full w-full object-cover" />
+                    {:else}
+                      <div
+                        class="relative flex h-full w-full items-center justify-center overflow-hidden bg-linear-to-br from-accent/15 to-accent/5 select-none">
+                        <ImageIcon class="size-8 text-text-muted" />
+                      </div>
                     {/if}
                   </div>
 
-                  <div class="relative z-20 mt-auto flex flex-col gap-2 pt-1">
-                    <hr class="border-border-subtle/50" />
-                    <Button
-                      href="/blog/{related.slug}"
-                      type="primary"
-                      size="sm"
-                      fullWidth>
-                      Read post
-                    </Button>
+                  <div
+                    class="flex min-w-0 flex-1 flex-col justify-between gap-2.5 font-sans">
+                    <div class="flex flex-col gap-1">
+                      <div>
+                        <h4
+                          class="line-clamp-2 font-sans-title text-lg leading-snug font-bold text-text-primary">
+                          {related.title}
+                        </h4>
+                      </div>
+                      <ArticleMeta
+                        size="xs"
+                        layout="single"
+                        class="min-h-4.5"
+                        date={related.created_at || ''}
+                        updatedAt={related.updated_at || ''}
+                        readingTime={formatReadTime(related.read_time)}
+                        commentsCount={related.comment_count}
+                        views={related.views_count} />
+                      {#if related.excerpt}
+                        {@const isExpanded = expandedExcerptIds.has(related.id)}
+                        {@const isOverflowing = overflowingExcerptIds.has(
+                          related.id
+                        )}
+                        <div class="flex flex-col items-start gap-1">
+                          <p
+                            {@attach !isExpanded
+                              && observeExcerptOverflow(related.id)}
+                            class="text-xs leading-relaxed text-text-secondary {(
+                              isExpanded
+                            ) ?
+                              ''
+                            : 'line-clamp-2'}">
+                            {related.excerpt}
+                            {#if isOverflowing && isExpanded}
+                              <button
+                                type="button"
+                                onclick={() => toggleExcerpt(related.id)}
+                                class="ml-1 inline cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
+                                Show less
+                              </button>
+                            {/if}
+                          </p>
+                          {#if isOverflowing && !isExpanded}
+                            <button
+                              type="button"
+                              onclick={() => toggleExcerpt(related.id)}
+                              class="inline-flex cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
+                              Show more
+                            </button>
+                          {/if}
+                        </div>
+                      {/if}
+                    </div>
+
+                    <div class="relative z-20 mt-auto flex flex-col gap-2 pt-1">
+                      <hr class="border-border-subtle/50" />
+                      <Button
+                        href="/blog/{related.slug}"
+                        type="primary"
+                        size="sm"
+                        fullWidth>
+                        Read post
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </Card>
-            {/each}
-          </div>
-        </section>
-      {/if}
-
-      <section
-        class="mt-16 border-t border-border-subtle pt-10"
-        aria-label="Comments">
-        <h2
-          class="mb-8 font-sans-title text-xl font-bold tracking-tight text-text-primary">
-          Comments ({comments.length})
-        </h2>
-
-        {#if feedbackMessage}
-          <StatusBanner
-            variant={feedbackMessage.type === 'success' ? 'success' : 'error'}
-            message={feedbackMessage.text}
-            class="mb-6" />
+                </Card>
+              {/each}
+            </div>
+          </section>
         {/if}
 
-        {#if !replyTo}
-          <div
-            class="mb-6 rounded-sm border border-border-subtle bg-surface-card/75 p-3.5 text-left shadow-2xs sm:p-4">
-            <form
-              novalidate
-              onsubmit={e => handleSubmit(e)}
-              class="flex flex-col gap-3">
-              <FormField
-                id="comment-author"
-                label="Name"
-                variant="floating"
-                required
-                hideAsterisk
-                maxlength={50}
-                currentLength={authorName.length}
-                error={errors.authorName}
-                valid={valid.authorName}>
-                <Input
-                  type="text"
-                  id="comment-author"
-                  autocomplete="name"
-                  aria-invalid={!!errors.authorName}
-                  maxlength={50}
-                  bind:value={authorName}
-                  error={!!errors.authorName}
-                  valid={valid.authorName}
-                  oninput={() => {
-                    errors.authorName = '';
-                    valid.authorName = false;
-                    validateAuthorName();
-                  }} />
-              </FormField>
+        <section
+          class="mt-8 border-t border-border-subtle pt-6 sm:mt-10 sm:pt-8"
+          aria-label="Comments">
+          <h2
+            class="mb-5 font-sans-title text-lg font-bold tracking-tight text-text-primary sm:mb-6 sm:text-xl">
+            Comments ({comments.length})
+          </h2>
 
-              <FormField
-                id="comment-msg"
-                label="Message"
-                variant="floating"
-                required
-                hideAsterisk
-                maxlength={2000}
-                currentLength={commentContent.length}
-                counter={`${commentContent.length}/2000`}
-                error={errors.commentContent}
-                valid={valid.commentContent}>
-                <Textarea
-                  id="comment-msg"
-                  rows={4}
-                  maxlength={2000}
-                  bind:value={commentContent}
-                  error={!!errors.commentContent}
-                  valid={valid.commentContent}
-                  oninput={() => {
-                    errors.commentContent = '';
-                    valid.commentContent = false;
-                    validateCommentContent();
-                  }}
-                  aria-required="true" />
-              </FormField>
+          {#if feedbackMessage}
+            <StatusBanner
+              variant={feedbackMessage.type === 'success' ? 'success' : 'error'}
+              message={feedbackMessage.text}
+              class="mb-6" />
+          {/if}
 
-              <div
-                bind:this={turnstileEl}
-                class="cf-turnstile select-none"
-                data-sitekey={turnstileSiteKey}
-                data-action="blog-comment"
-                data-size="flexible"
-                data-theme="auto"
-                data-appearance="interaction-only"
-                data-execution="execute"
-                use:turnstileWidget={{
-                  sitekey: turnstileSiteKey,
-                  size: 'flexible',
-                  action: 'blog-comment',
-                  theme: 'auto',
-                  appearance: 'interaction-only',
-                  execution: 'execute'
-                }}>
-              </div>
-
-              <ConsentNotice action="posting a comment" />
-
-              <div class="mt-1 flex justify-end">
-                <Button
-                  htmlType="submit"
-                  type="primary"
-                  size="md"
-                  disabled={isSubmitting}
-                  isLoading={isSubmitting}>
-                  {isSubmitting ? 'Posting…' : 'Post comment'}
-                </Button>
-              </div>
-            </form>
-          </div>
-        {/if}
-
-        {#if comments.length === 0}
-          <EmptyState
-            title="No comments yet"
-            description="Be the first to share your thoughts on this article." />
-        {:else}
-          <CommentThread
-            {comments}
-            {replyTo}
-            useContentFont={true}
-            authorName={author?.name || ''}
-            onReport={comment => {
-              reportingComment = comment;
-              showReportDialog = true;
-            }}>
-            {#snippet actions(comment)}
-              <RelativeTime
-                date={comment.created_at}
-                tag="time" />
-              <span aria-hidden="true">&middot;</span>
-              <button
-                type="button"
-                onclick={() => {
-                  replyTo = comment;
-                  feedbackMessage = null;
-                  commentContent = '';
-                }}
-                class="cursor-pointer font-bold text-text-muted transition-colors hover:text-copilot focus-visible:outline-none">
-                Reply
-              </button>
-            {/snippet}
-
-            {#snippet replyForm(comment)}
+          {#if !replyTo}
+            <div
+              class="mb-6 rounded-md border border-border-subtle bg-surface-card/75 p-3.5 text-left shadow-2xs sm:p-4">
               <form
                 novalidate
-                onsubmit={e => handleSubmit(e, comment.id)}
-                class="mb-3 rounded-sm border border-border-subtle bg-surface-base/80 p-3.5 text-left shadow-2xs sm:p-4">
+                onsubmit={e => handleSubmit(e)}
+                class="flex flex-col gap-3">
+                <FormField
+                  id="comment-author"
+                  label="Name"
+                  variant="floating"
+                  required
+                  hideAsterisk
+                  maxlength={50}
+                  currentLength={authorName.length}
+                  error={errors.authorName}
+                  valid={valid.authorName}>
+                  <Input
+                    type="text"
+                    id="comment-author"
+                    autocomplete="name"
+                    aria-invalid={!!errors.authorName}
+                    maxlength={50}
+                    bind:value={authorName}
+                    error={!!errors.authorName}
+                    valid={valid.authorName}
+                    oninput={() => {
+                      errors.authorName = '';
+                      valid.authorName = false;
+                      validateAuthorName();
+                    }} />
+                </FormField>
+
+                <FormField
+                  id="comment-msg"
+                  label="Message"
+                  variant="floating"
+                  required
+                  hideAsterisk
+                  maxlength={2000}
+                  currentLength={commentContent.length}
+                  counter={`${commentContent.length}/2000`}
+                  error={errors.commentContent}
+                  valid={valid.commentContent}>
+                  <Textarea
+                    id="comment-msg"
+                    rows={4}
+                    maxlength={2000}
+                    bind:value={commentContent}
+                    error={!!errors.commentContent}
+                    valid={valid.commentContent}
+                    oninput={() => {
+                      errors.commentContent = '';
+                      valid.commentContent = false;
+                      validateCommentContent();
+                    }}
+                    aria-required="true" />
+                </FormField>
+
                 <div
-                  class="mb-3 flex items-center justify-between gap-3 border-b border-border-subtle/50 pb-2.5">
-                  <p
-                    class="font-sans-title text-xs font-semibold text-text-secondary">
-                    Replying to {getCommentAuthor(comment)}
-                  </p>
-                  <Button
-                    type="ghost"
-                    size="sm"
-                    showEscHint
-                    onclick={cancelReply}>Cancel</Button>
+                  bind:this={turnstileEl}
+                  class="cf-turnstile select-none"
+                  data-sitekey={turnstileSiteKey}
+                  data-action="blog-comment"
+                  data-size="flexible"
+                  data-theme="auto"
+                  data-appearance="interaction-only"
+                  data-execution="execute"
+                  use:turnstileWidget={{
+                    sitekey: turnstileSiteKey,
+                    size: 'flexible',
+                    action: 'blog-comment',
+                    theme: 'auto',
+                    appearance: 'interaction-only',
+                    execution: 'execute'
+                  }}>
                 </div>
 
-                <div class="flex flex-col gap-3">
-                  <FormField
-                    id="reply-author-{comment.id}"
-                    label="Name"
-                    variant="floating"
-                    required
-                    hideAsterisk
-                    maxlength={50}
-                    currentLength={authorName.length}
-                    error={errors.authorName}
-                    valid={valid.authorName}>
-                    <Input
-                      type="text"
-                      id="reply-author-{comment.id}"
-                      autocomplete="name"
-                      aria-invalid={!!errors.authorName}
-                      maxlength={50}
-                      bind:value={authorName}
-                      error={!!errors.authorName}
-                      valid={valid.authorName}
-                      oninput={() => {
-                        errors.authorName = '';
-                        valid.authorName = false;
-                        validateAuthorName();
-                      }} />
-                  </FormField>
+                <ConsentNotice action="posting a comment" />
 
-                  <FormField
-                    id="reply-msg-{comment.id}"
-                    label="Message"
-                    variant="floating"
-                    required
-                    hideAsterisk
-                    maxlength={2000}
-                    currentLength={commentContent.length}
-                    counter={`${commentContent.length}/2000`}
-                    error={errors.commentContent}
-                    valid={valid.commentContent}>
-                    <Textarea
-                      id="reply-msg-{comment.id}"
-                      rows={3}
-                      maxlength={2000}
-                      bind:value={commentContent}
-                      error={!!errors.commentContent}
-                      valid={valid.commentContent}
-                      oninput={() => {
-                        errors.commentContent = '';
-                        valid.commentContent = false;
-                        validateCommentContent();
-                      }}
-                      aria-required="true" />
-                  </FormField>
-
-                  <div
-                    bind:this={turnstileEl}
-                    class="cf-turnstile select-none"
-                    data-sitekey={turnstileSiteKey}
-                    data-action="blog-comment-reply"
-                    data-size="flexible"
-                    data-theme="auto"
-                    data-appearance="interaction-only"
-                    data-execution="execute"
-                    use:turnstileWidget={{
-                      sitekey: turnstileSiteKey,
-                      size: 'flexible',
-                      action: 'blog-comment-reply',
-                      theme: 'auto',
-                      appearance: 'interaction-only',
-                      execution: 'execute'
-                    }}>
-                  </div>
-
-                  <ConsentNotice action="posting a reply" />
-
-                  <div class="mt-1 flex justify-end">
-                    <Button
-                      htmlType="submit"
-                      type="primary"
-                      size="sm"
-                      disabled={isSubmitting}
-                      isLoading={isSubmitting}>
-                      {isSubmitting ? 'Posting…' : 'Post reply'}
-                    </Button>
-                  </div>
+                <div
+                  class="mt-1 flex items-center justify-between gap-2 select-none">
+                  <Button
+                    htmlType="button"
+                    type="outline"
+                    tone="critical"
+                    size="md"
+                    class="flex-1 sm:flex-initial"
+                    disabled={!canClearComment || isSubmitting}
+                    onclick={clearCommentForm}>
+                    <span
+                      >Clear<span class="hidden sm:inline">&nbsp;comment</span
+                      ></span>
+                  </Button>
+                  <Button
+                    htmlType="submit"
+                    type="primary"
+                    size="md"
+                    class="flex-1 sm:flex-initial"
+                    disabled={isSubmitting}
+                    isLoading={isSubmitting}>
+                    {isSubmitting ? 'Posting…' : 'Post comment'}
+                  </Button>
                 </div>
               </form>
-            {/snippet}
-          </CommentThread>
-        {/if}
-      </section>
-    </article>
-  </div>
+            </div>
+          {/if}
 
-  <FooterSection showFontSelect={true} />
+          {#if comments.length === 0}
+            <EmptyState
+              title="No comments yet"
+              description="Be the first to share your thoughts on this article." />
+          {:else}
+            <CommentThread
+              {comments}
+              {replyTo}
+              useContentFont={true}
+              authorName={author?.name || ''}
+              onReport={comment => {
+                reportingComment = comment;
+                showReportDialog = true;
+              }}>
+              {#snippet actions(comment)}
+                <RelativeTime
+                  date={comment.created_at}
+                  tag="time" />
+                <span aria-hidden="true">&middot;</span>
+                <button
+                  type="button"
+                  onclick={() => {
+                    replyTo = comment;
+                    feedbackMessage = null;
+                    commentContent = '';
+                  }}
+                  class="cursor-pointer font-bold text-text-muted transition-colors hover:text-accent focus-visible:outline-none">
+                  Reply
+                </button>
+              {/snippet}
+
+              {#snippet replyForm(comment)}
+                <form
+                  novalidate
+                  onsubmit={e => handleSubmit(e, comment.id)}
+                  class="mb-3 rounded-md border border-border-subtle bg-surface-base/80 p-3.5 text-left shadow-2xs sm:p-4">
+                  <div
+                    class="mb-3 flex items-center justify-between gap-3 border-b border-border-subtle/50 pb-2.5">
+                    <p
+                      class="font-sans-title text-xs font-semibold text-text-secondary">
+                      Replying to {getCommentAuthor(comment)}
+                    </p>
+                    <Button
+                      type="ghost"
+                      size="sm"
+                      showEscHint
+                      onclick={cancelReply}>Cancel</Button>
+                  </div>
+
+                  <div class="flex flex-col gap-3">
+                    <FormField
+                      id="reply-author-{comment.id}"
+                      label="Name"
+                      variant="floating"
+                      required
+                      hideAsterisk
+                      maxlength={50}
+                      currentLength={authorName.length}
+                      error={errors.authorName}
+                      valid={valid.authorName}>
+                      <Input
+                        type="text"
+                        id="reply-author-{comment.id}"
+                        autocomplete="name"
+                        aria-invalid={!!errors.authorName}
+                        maxlength={50}
+                        bind:value={authorName}
+                        error={!!errors.authorName}
+                        valid={valid.authorName}
+                        oninput={() => {
+                          errors.authorName = '';
+                          valid.authorName = false;
+                          validateAuthorName();
+                        }} />
+                    </FormField>
+
+                    <FormField
+                      id="reply-msg-{comment.id}"
+                      label="Message"
+                      variant="floating"
+                      required
+                      hideAsterisk
+                      maxlength={2000}
+                      currentLength={commentContent.length}
+                      counter={`${commentContent.length}/2000`}
+                      error={errors.commentContent}
+                      valid={valid.commentContent}>
+                      <Textarea
+                        id="reply-msg-{comment.id}"
+                        rows={3}
+                        maxlength={2000}
+                        bind:value={commentContent}
+                        error={!!errors.commentContent}
+                        valid={valid.commentContent}
+                        oninput={() => {
+                          errors.commentContent = '';
+                          valid.commentContent = false;
+                          validateCommentContent();
+                        }}
+                        aria-required="true" />
+                    </FormField>
+
+                    <div
+                      bind:this={turnstileEl}
+                      class="cf-turnstile select-none"
+                      data-sitekey={turnstileSiteKey}
+                      data-action="blog-comment-reply"
+                      data-size="flexible"
+                      data-theme="auto"
+                      data-appearance="interaction-only"
+                      data-execution="execute"
+                      use:turnstileWidget={{
+                        sitekey: turnstileSiteKey,
+                        size: 'flexible',
+                        action: 'blog-comment-reply',
+                        theme: 'auto',
+                        appearance: 'interaction-only',
+                        execution: 'execute'
+                      }}>
+                    </div>
+
+                    <ConsentNotice action="posting a reply" />
+
+                    <div class="mt-1 flex justify-end">
+                      <Button
+                        htmlType="submit"
+                        type="primary"
+                        size="sm"
+                        disabled={isSubmitting}
+                        isLoading={isSubmitting}>
+                        {isSubmitting ? 'Posting…' : 'Post reply'}
+                      </Button>
+                    </div>
+                  </div>
+                </form>
+              {/snippet}
+            </CommentThread>
+          {/if}
+        </section>
+
+        {#if !readingModeStore.active}
+          <FooterSection
+            showFontSelect={true}
+            languageSwitcher={{
+              slug: post.slug,
+              currentLanguage: language,
+              availableLocales
+            }}
+            readingMode={readingModeStore.active}
+            onToggleReadingMode={readingModeStore.toggle}
+            class="mt-12 w-full max-w-full px-0 sm:px-0 md:w-full lg:w-full xl:w-full 2xl:w-full" />
+        {/if}
+      {/if}
+    </article>
+
+    {#if !readingModeStore.active}
+      <aside
+        transition:fade={{duration: 150}}
+        class="hidden [scrollbar-width:none] select-none [-ms-overflow-style:none] xl:sticky xl:top-0 xl:z-20 xl:flex xl:max-h-[calc(100dvh-5.5rem)] xl:w-full xl:flex-col xl:gap-3 xl:overflow-hidden [&::-webkit-scrollbar]:hidden"
+        aria-label="Article actions and insights">
+        <div class="flex w-full items-center justify-start">
+          <ContentActions
+            class="w-full"
+            slug={post.slug}
+            pageId={post.id}
+            title={post.title}
+            avatarUrl={author?.avatar}
+            viewMarkdownUrl="/api/v1/blog/{post.slug}?format=md"
+            viewTextUrl="/api/v1/blog/{post.slug}?format=text" />
+        </div>
+
+        {#if (post.tldr && post.tldr.length > 0) || post.summary}
+          <PostInsights
+            tldr={post.tldr}
+            summary={post.summary}
+            class="mt-0! w-full" />
+        {/if}
+      </aside>
+    {/if}
+  </div>
 </main>
+
+{#if readingModeStore.active}
+  <div
+    transition:fade={{duration: 150}}
+    class="fixed right-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 md:right-6 md:bottom-6">
+    <Tooltip
+      content="Exit reading mode"
+      placement="top"
+      align="right">
+      <button
+        type="button"
+        class="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full glass-button border border-accent/40 bg-surface-card/90 px-0 text-xs font-semibold text-accent shadow-md transition-all hover:scale-105 hover:border-accent hover:bg-surface-hover active:scale-95 md:h-10 md:w-10 md:shadow-lg"
+        onclick={readingModeStore.toggle}
+        aria-label="Exit reading mode">
+        <BookOpenText class="size-4.5 shrink-0 md:size-5" />
+      </button>
+    </Tooltip>
+  </div>
+{/if}
 
 <ReportCommentDialog
   bind:isOpen={showReportDialog}
@@ -1344,7 +1528,7 @@
 
 <ShareDialog
   bind:isOpen={showYesFeedbackDialog}
-  title="Thanks for your feedback! Share this article?"
+  title="Thanks for your feedback!"
   description="We're glad you found this article helpful! Feel free to share it with your network or colleagues."
   url={page.url.href}
   articleTitle={post.title}
@@ -1393,11 +1577,11 @@
   @reference "../../global.css";
 
   .prose-custom {
-    @apply text-[0.975rem] leading-[1.75] text-(--color-body);
+    @apply text-sm leading-relaxed text-(--color-body);
     --color-heading: var(--color-text-primary);
     --color-body: var(--color-text-secondary);
-    --color-link: var(--color-copilot);
-    --color-link-hover: var(--color-copilot-hover);
+    --color-link: var(--color-accent);
+    --color-link-hover: var(--color-accent-hover);
   }
 
   .prose-custom :global(p) {
@@ -1442,7 +1626,7 @@
   }
 
   .prose-custom :global(pre) {
-    @apply mt-6 mb-6 scrollbar-none! overflow-x-auto rounded-sm border border-border-subtle bg-surface-hover px-3! py-1.5! font-mono text-[0.8rem] leading-snug break-normal! whitespace-pre! [-ms-overflow-style:none]!;
+    @apply mt-6 mb-6 scrollbar-none! overflow-x-auto rounded-md border border-border-subtle bg-surface-hover px-3! py-1.5! font-mono text-[0.8rem] leading-snug break-normal! whitespace-pre! [-ms-overflow-style:none]!;
   }
 
   .prose-custom :global(pre[data-enhanced='true']) {
@@ -1514,7 +1698,7 @@
   :global(:root.dark) .prose-custom :global(h5:hover .heading-text),
   :global(:root.dark) .prose-custom :global(h6:hover .heading-text),
   :global(:root.dark) .prose-custom :global(.heading-text):hover {
-    @apply text-copilot underline underline-offset-4;
+    @apply text-accent underline underline-offset-4;
   }
 
   .prose-custom :global(h1:hover a.anchor-link),
@@ -1545,11 +1729,11 @@
   :global(:root.dark) .prose-custom :global(h5:hover a.anchor-link svg),
   :global(:root.dark) .prose-custom :global(h6:hover a.anchor-link svg),
   :global(:root.dark) .prose-custom :global(a.anchor-link):hover :global(svg) {
-    @apply text-copilot! no-underline! opacity-100;
+    @apply text-accent! no-underline! opacity-100;
   }
 
   .prose-custom :global(table) {
-    @apply my-6 w-full max-w-full table-fixed border-separate border-spacing-0 overflow-hidden rounded-sm border border-border-subtle text-left text-xs shadow-2xs;
+    @apply my-6 w-full max-w-full table-fixed border-separate border-spacing-0 overflow-hidden rounded-md border border-border-subtle text-left text-xs shadow-2xs;
   }
 
   .prose-custom :global(thead) {
@@ -1586,7 +1770,7 @@
   }
 
   .prose-custom :global(blockquote:not(.markdown-alert)) {
-    @apply my-6 rounded-sm border border-border-default/40 bg-surface-hover/30 p-4 text-sm leading-relaxed text-text-secondary;
+    @apply my-6 rounded-md border border-border-default/40 bg-surface-hover/30 p-4 text-sm leading-relaxed text-text-secondary;
   }
 
   .prose-custom :global(blockquote:not(.markdown-alert) p) {
@@ -1631,7 +1815,7 @@
   }
 
   .prose-custom :global(.markdown-alert) {
-    @apply my-6 rounded-sm border p-4 text-xs transition-colors duration-200 sm:text-sm;
+    @apply my-6 rounded-md border p-4 text-xs transition-colors duration-200 sm:text-sm;
   }
 
   .prose-custom :global(.markdown-alert-title) {
@@ -1698,7 +1882,7 @@
   }
 
   .prose-custom :global(mark) {
-    @apply rounded-sm bg-security-subtle px-1 py-0.5 font-normal text-security;
+    @apply rounded-md bg-security-subtle px-1 py-0.5 font-normal text-security;
   }
 
   .prose-custom :global(kbd) {
@@ -1813,11 +1997,11 @@
   }
 
   .prose-custom :global(.markdown-tabs-container) {
-    @apply my-6 rounded-sm border border-border-subtle shadow-2xs;
+    @apply my-6 rounded-md border border-border-subtle shadow-2xs;
   }
 
   .prose-custom :global(.markdown-tabs-header) {
-    @apply relative flex min-h-8 items-end justify-between rounded-t-sm border-b border-border-subtle px-3 pt-0 pb-0 select-none;
+    @apply relative flex min-h-8 items-end justify-between rounded-t-md border-b border-border-subtle px-3 pt-0 pb-0 select-none;
   }
 
   .prose-custom :global(.markdown-tabs-nav) {
@@ -1833,7 +2017,7 @@
   }
 
   .prose-custom :global(.markdown-tab-button.active-tab) {
-    @apply border-b-copilot font-bold text-copilot;
+    @apply border-b-accent font-bold text-accent;
   }
 
   .prose-custom :global(.markdown-tab-button:not(.active-tab)) {
@@ -1841,11 +2025,11 @@
   }
 
   .prose-custom :global(.markdown-tabs-body) {
-    @apply rounded-b-sm;
+    @apply rounded-b-md;
   }
 
   .prose-custom :global(.markdown-tabs-container .markdown-tab-panel) {
-    @apply rounded-b-sm p-4;
+    @apply rounded-b-md p-4;
   }
 
   .prose-custom
@@ -1860,11 +2044,11 @@
     :global(
       .markdown-tabs-container .markdown-tab-panel:has(.code-block-container)
     ) {
-    @apply rounded-b-sm p-0!;
+    @apply rounded-b-md p-0!;
   }
 
   .prose-custom :global(.markdown-tabs-container .code-block-container) {
-    @apply my-0! rounded-b-sm! border-0!;
+    @apply my-0! rounded-b-md! border-0!;
   }
 
   .prose-custom :global(.markdown-tabs-container .code-header-bar) {
@@ -1872,20 +2056,20 @@
   }
 
   .prose-custom :global(.markdown-tabs-container .code-body) {
-    @apply rounded-b-sm! border-0!;
+    @apply rounded-b-md! border-0!;
   }
 
   .prose-custom :global(.markdown-tabs-container .code-scrollbar-wrapper) {
-    @apply rounded-b-sm! border-0!;
+    @apply rounded-b-md! border-0!;
   }
 
   .prose-custom :global(.markdown-tabs-container pre) {
-    @apply my-0! rounded-b-sm! border-0!;
+    @apply my-0! rounded-b-md! border-0!;
   }
 
   .prose-custom :global(details.markdown-details),
   .prose-custom :global(details) {
-    @apply my-4 overflow-hidden rounded-sm glass-card border border-border-subtle text-text-primary shadow-md backdrop-blur-md;
+    @apply my-4 overflow-hidden rounded-md glass-card border border-border-subtle text-text-primary shadow-md backdrop-blur-md;
     border: 1px solid var(--color-border-subtle);
   }
 
@@ -1954,11 +2138,20 @@
   }
 
   .prose-custom :global(.footnotes) {
-    @apply mt-10 border-t border-border-subtle pt-4 text-xs leading-relaxed text-text-secondary sm:text-sm;
+    @apply mt-10 border-t border-border-subtle pt-4 text-[calc(0.84375rem*var(--a11y-scale))] leading-relaxed text-text-secondary;
   }
 
   .prose-custom :global(.footnotes ol) {
-    @apply my-2 list-decimal space-y-1.5 pl-6;
+    @apply my-2 list-none! space-y-1.5 pl-0! [counter-reset:footnotes];
+  }
+
+  .prose-custom :global(.footnotes li) {
+    @apply relative pl-5! [counter-increment:footnotes];
+  }
+
+  .prose-custom :global(.footnotes li::before) {
+    content: counter(footnotes) '.';
+    @apply absolute top-0 left-0 font-mono text-text-secondary tabular-nums select-none;
   }
 
   .prose-custom :global(.footnotes li p) {
@@ -1966,51 +2159,27 @@
   }
 
   .prose-custom :global([data-footnote-ref]) {
-    @apply text-[0.9em] font-normal text-security no-underline hover:underline;
+    @apply font-mono text-[0.8em] font-medium text-security no-underline hover:underline;
   }
 
-  .prose-custom :global(.footnotes li) {
-    display: list-item;
-  }
-
-  .prose-custom :global(.footnotes li::marker) {
-    color: var(--color-text-secondary);
-  }
-
-  .prose-custom :global([data-footnote-backref]) {
-    @apply inline-flex items-center text-security no-underline hover:underline;
-    font-size: 0;
-    margin-left: 0.25rem;
+  .prose-custom :global(.footnote-backref) {
+    @apply inline-flex items-center font-mono text-security no-underline hover:underline;
     vertical-align: baseline;
+    line-height: 1;
   }
 
-  .prose-custom :global([data-footnote-backref] + [data-footnote-backref]) {
-    margin-left: 0.15rem;
+  .prose-custom :global(.footnote-backref-static) {
+    @apply inline-flex items-center font-mono text-text-muted;
+    vertical-align: baseline;
+    line-height: 1;
   }
 
-  .prose-custom :global([data-footnote-backref]::before) {
-    content: '';
-    display: inline-block;
-    width: 0.75em;
-    height: 0.75em;
-    vertical-align: middle;
-    background-color: currentColor;
-    -webkit-mask: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>')
-      center / contain no-repeat;
-    mask: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>')
-      center / contain no-repeat;
-    font-size: 0.75rem;
-  }
-
-  .prose-custom :global([data-footnote-backref] sup) {
-    @apply font-mono;
-    font-size: 0.55rem !important;
+  .prose-custom :global(.footnote-sub-backref) {
+    @apply inline-flex items-center font-mono text-security italic no-underline hover:underline;
+    font-size: 0.75rem !important;
     line-height: 1 !important;
-    font-weight: 500;
-    vertical-align: super;
-    margin-left: 0.05rem;
-    color: currentColor;
-    display: inline-block;
+    vertical-align: 0.32em;
+    text-underline-offset: 2px;
   }
 
   .prose-custom :global(.footnotes li:target a) {

@@ -1,6 +1,7 @@
 <script lang="ts">
   import {tick, onMount} from 'svelte';
-  import {RotateCcwClock} from '@lucide/svelte';
+  import {fade} from 'svelte/transition';
+  import {RotateCcwClock, BookOpenText} from '@lucide/svelte';
   import {
     TopNav,
     TableOfContents,
@@ -8,11 +9,13 @@
     Toast,
     ContentActions,
     FooterSection,
-    SkipLink
+    SkipLink,
+    Tooltip
   } from '$lib';
   import ArticleHeader from '$lib/article/ArticleHeader.svelte';
   import AlertDialog from './AlertDialog.svelte';
   import {toastStore} from '$lib/stores/toastStore.svelte';
+  import {readingModeStore} from '$lib/stores/readingModeStore.svelte';
   import type {HeadingItem} from '$lib/markdown';
   import {formatAbsoluteDate} from '$lib/utils/formatters';
   import {enhanceMarkdownContent} from '$lib/utils/markdownEnhancer';
@@ -52,6 +55,7 @@
 
   let showYesFeedbackDialog = $state(false);
   let showNoFeedbackDialog = $state(false);
+  let hasVotedHelpful = $state(false);
   let isDark = $state(false);
 
   function triggerToast(message: string, isError = false) {
@@ -63,6 +67,7 @@
   }
 
   function handleHelpfulness(value: 'yes' | 'no') {
+    hasVotedHelpful = true;
     if (value === 'yes') {
       showYesFeedbackDialog = true;
     } else {
@@ -196,6 +201,7 @@
 
     return () => {
       observer.disconnect();
+      readingModeStore.disable();
     };
   });
 </script>
@@ -216,27 +222,41 @@
 
 <SkipLink />
 
-<TopNav
-  ariaLabel="{title} navigation"
-  backHref="/"
-  backLabel="Back to Home"
-  showFontSelect={true}
-  projects={pageProjects} />
+{#if !readingModeStore.active}
+  <TopNav
+    ariaLabel="{title} navigation"
+    backHref="/"
+    backLabel="Home"
+    showFontSelect={true}
+    projects={pageProjects}
+    readingMode={readingModeStore.active}
+    onToggleReadingMode={readingModeStore.toggle} />
+{/if}
 
 <main
   id="main-content"
-  class="flex min-h-[calc(100vh-3rem)] flex-col pt-12 font-sans sm:min-h-[calc(100vh-3.5rem)] sm:pt-14">
+  class="flex flex-col font-sans {readingModeStore.active ?
+    'min-h-screen pt-4 sm:pt-6'
+  : 'min-h-[calc(100vh-3rem)] pt-12 sm:min-h-[calc(100vh-3.5rem)] sm:pt-14'}">
   <div
-    class="relative mx-auto w-full px-6 pt-3 pb-16 sm:pt-4 md:w-[80%] lg:w-[65%] xl:w-[55%]">
-    <aside
-      class="sticky top-18 hidden max-h-[calc(100dvh-9.5rem)] flex-col gap-3 self-start select-none xl:float-left xl:-ml-64 xl:flex xl:w-56"
-      aria-label="Table of contents">
-      <TableOfContents
-        {headings}
-        class="max-h-[calc(100dvh-15.5rem)] min-h-0 flex-1" />
-      <HelpfulBlock
-        onVote={helpful => handleHelpfulness(helpful ? 'yes' : 'no')} />
-    </aside>
+    class="relative mx-auto w-full px-3 pt-5 pb-6 sm:px-6 md:w-[80%] md:pt-8 md:pb-8 lg:w-[65%] xl:w-[50%] 2xl:w-[45%]">
+    {#if !readingModeStore.active}
+      <aside
+        transition:fade={{duration: 150}}
+        class="sticky top-18 hidden max-h-[calc(100dvh-9.5rem)] flex-col gap-3 self-start select-none xl:float-left xl:-ml-64 xl:flex xl:w-56"
+        aria-label="Table of contents">
+        <TableOfContents
+          {headings}
+          class="max-h-[calc(100dvh-20rem)] min-h-0 flex-1" />
+        <HelpfulBlock
+          title="Help improve this page"
+          subtitle="Was this page helpful to you?"
+          variant="compact"
+          voted={hasVotedHelpful ? true : null}
+          onVote={helpful => handleHelpfulness(helpful ? 'yes' : 'no')}
+          onFeedbackClick={() => (showNoFeedbackDialog = true)} />
+      </aside>
+    {/if}
 
     <article class="flex w-full flex-col">
       <ArticleHeader {title}>
@@ -252,40 +272,74 @@
               {/if}
             </span>
 
-            <ContentActions
-              class="w-full"
-              {slug}
-              {title}
-              {avatarUrl}
-              markdownContent={content}
-              viewMarkdownUrl="/api/internal/raw?type=legal&slug={slug}&format=md"
-              viewTextUrl="/api/internal/raw?type=legal&slug={slug}&format=text"
-              pageUrl={siteUrl ? `${siteUrl}/${slug}` : undefined} />
+            {#if !readingModeStore.active}
+              <ContentActions
+                class="w-full"
+                {slug}
+                {title}
+                {avatarUrl}
+                markdownContent={content}
+                viewMarkdownUrl="/api/internal/raw?type=legal&slug={slug}&format=md"
+                viewTextUrl="/api/internal/raw?type=legal&slug={slug}&format=text"
+                pageUrl={siteUrl ? `${siteUrl}/${slug}` : undefined} />
+            {/if}
           </div>
         {/snippet}
       </ArticleHeader>
 
-      <div class="mt-3 flex flex-col xl:hidden">
-        <TableOfContents
-          {headings}
-          collapsible={true}
-          defaultCollapsed={true} />
-      </div>
+      {#if !readingModeStore.active}
+        <div class="mt-3 flex flex-col xl:hidden">
+          <TableOfContents
+            {headings}
+            collapsible={true}
+            defaultCollapsed={true} />
+        </div>
+      {/if}
 
       <div
         class="prose-custom font-content-{contentFontStore.current} mt-4 w-full">
         {@html html}
       </div>
 
-      <div class="mt-8 border-t border-border-subtle pt-6 xl:hidden">
-        <HelpfulBlock
-          onVote={helpful => handleHelpfulness(helpful ? 'yes' : 'no')} />
-      </div>
+      {#if !readingModeStore.active}
+        <div class="mt-8 border-t border-border-subtle pt-6 xl:hidden">
+          <HelpfulBlock
+            title="Help improve this page"
+            subtitle="Was this page helpful to you?"
+            voted={hasVotedHelpful ? true : null}
+            onVote={helpful => handleHelpfulness(helpful ? 'yes' : 'no')}
+            onFeedbackClick={() => (showNoFeedbackDialog = true)} />
+        </div>
+      {/if}
     </article>
   </div>
 
-  <FooterSection showFontSelect={true} />
+  {#if !readingModeStore.active}
+    <FooterSection
+      showFontSelect={true}
+      readingMode={readingModeStore.active}
+      onToggleReadingMode={readingModeStore.toggle} />
+  {/if}
 </main>
+
+{#if readingModeStore.active}
+  <div
+    transition:fade={{duration: 150}}
+    class="fixed right-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 md:right-6 md:bottom-6">
+    <Tooltip
+      content="Exit reading mode"
+      placement="top"
+      align="right">
+      <button
+        type="button"
+        class="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full glass-button border border-accent/40 bg-surface-card/90 px-0 text-xs font-semibold text-accent shadow-md transition-all hover:scale-105 hover:border-accent hover:bg-surface-hover active:scale-95 md:h-10 md:w-10 md:shadow-lg"
+        onclick={readingModeStore.toggle}
+        aria-label="Exit reading mode">
+        <BookOpenText class="size-4.5 shrink-0 md:size-5" />
+      </button>
+    </Tooltip>
+  </div>
+{/if}
 
 <Toast />
 

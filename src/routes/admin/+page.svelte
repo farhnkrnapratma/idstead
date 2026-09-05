@@ -31,11 +31,15 @@
     EyeOff,
     Menu,
     PenLine,
-    MessageSquare,
+    MessageCircle,
     CircleDotDashed,
     CircleCheckBig,
     AlertTriangle,
-    Languages
+    Languages,
+    Pin,
+    PinOff,
+    FolderGit2,
+    Sparkles
   } from '@lucide/svelte';
   import hljs from 'highlight.js';
   import {a11yStore} from '$lib/stores/a11yStore.svelte';
@@ -102,6 +106,7 @@
     fetchSkills,
     fetchGlossaryTerms,
     fetchActiveCvDocument,
+    fetchProjectRepoRules,
     normalizeIconInput,
     type AuthorProfile,
     type ExperienceItem,
@@ -118,6 +123,7 @@
     title: string;
     slug: string;
     published: boolean;
+    pinned: boolean;
     storage_path: string;
     created_at: string;
     updated_at?: string | null;
@@ -141,6 +147,15 @@
 
   function markBannerFailed(postId: string) {
     failedBanners.add(postId);
+  }
+
+  const NEW_ITEM_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+  function isPostNew(post: AdminPost) {
+    if (!post.created_at) return false;
+    return (
+      Date.now() - new Date(post.created_at).getTime() < NEW_ITEM_WINDOW_MS
+    );
   }
 
   let isLoading = $state(true);
@@ -203,6 +218,7 @@
 
   let activeAdminTab = $state<
     | 'posts'
+    | 'projects'
     | 'profile'
     | 'resume'
     | 'skills'
@@ -653,6 +669,8 @@
   let socialState = $state<SocialLink[]>([]);
   let sponsorshipState = $state<SponsorshipLink[]>([]);
   let contactState = $state<ContactInfo[]>([]);
+  let pinnedReposState = $state<string[]>([]);
+  let excludedReposState = $state<string[]>([]);
 
   let cvInitial = $state<typeof cvState | null>(null);
   let skillsInitial = $state<SkillItem[] | null>(null);
@@ -660,6 +678,8 @@
   let socialInitial = $state<SocialLink[] | null>(null);
   let sponsorshipInitial = $state<SponsorshipLink[] | null>(null);
   let contactInitial = $state<ContactInfo[] | null>(null);
+  let pinnedReposInitial = $state<string[] | null>(null);
+  let excludedReposInitial = $state<string[] | null>(null);
 
   const cvIsDirty = $derived(
     cvInitial !== null && JSON.stringify(cvState) !== JSON.stringify(cvInitial)
@@ -684,6 +704,14 @@
     contactInitial !== null
       && JSON.stringify(contactState) !== JSON.stringify(contactInitial)
   );
+  const projectsIsDirty = $derived(
+    pinnedReposInitial !== null
+      && (JSON.stringify(pinnedReposState)
+        !== JSON.stringify(pinnedReposInitial)
+        || JSON.stringify(excludedReposState)
+          !== JSON.stringify(excludedReposInitial))
+  );
+  let isSavingProjects = $state(false);
   let cvDocState = $state<CvDocument>({
     filename: '',
     fileUrl: '',
@@ -1256,6 +1284,33 @@
   });
 
   const expandedPostIds = new SvelteSet<string>();
+  const expandedExcerptIds = new SvelteSet<string>();
+  const overflowingExcerptIds = new SvelteSet<string>();
+
+  function observeExcerptOverflow(postId: string) {
+    return (element: HTMLElement) => {
+      const updateOverflow = () => {
+        if (element.scrollHeight > element.clientHeight + 1) {
+          overflowingExcerptIds.add(postId);
+        } else {
+          overflowingExcerptIds.delete(postId);
+        }
+      };
+
+      const resizeObserver = new ResizeObserver(updateOverflow);
+      resizeObserver.observe(element);
+
+      return () => resizeObserver.disconnect();
+    };
+  }
+
+  function toggleExcerpt(postId: string) {
+    if (expandedExcerptIds.has(postId)) {
+      expandedExcerptIds.delete(postId);
+    } else {
+      expandedExcerptIds.add(postId);
+    }
+  }
 
   function toggleComments(postId: string) {
     if (expandedPostIds.has(postId)) {
@@ -1447,7 +1502,7 @@
 
   async function loadAdminData() {
     try {
-      const [p, cv, sp, ct, soc, sk, gl, doc] = await Promise.all([
+      const [p, cv, sp, ct, soc, sk, gl, doc, rules] = await Promise.all([
         fetchAuthorProfile(supabase, {includeEmail: true}),
         fetchCvEntries(supabase),
         fetchSponsorship(supabase),
@@ -1455,7 +1510,8 @@
         fetchSocials(supabase),
         fetchSkills(supabase),
         fetchGlossaryTerms(supabase),
-        fetchActiveCvDocument(supabase)
+        fetchActiveCvDocument(supabase),
+        fetchProjectRepoRules(supabase)
       ]);
       if (p) authorState = p;
       authorInitial = {...authorState};
@@ -1471,6 +1527,12 @@
       skillsInitial = $state.snapshot(skillsState);
       if (gl) glossaryState = gl;
       glossaryInitial = $state.snapshot(glossaryState);
+      if (rules) {
+        pinnedReposState = [...rules.pinned];
+        excludedReposState = [...rules.excluded];
+        pinnedReposInitial = $state.snapshot(pinnedReposState);
+        excludedReposInitial = $state.snapshot(excludedReposState);
+      }
       cvDocState = doc || {
         filename: '',
         fileUrl: '',
@@ -1487,46 +1549,48 @@
       const {data, error} = await supabase
         .from('db_posts')
         .select(
-          'id, title, slug, published, storage_path, created_at, updated_at, banner_path, excerpt, tags'
+          'id, title, slug, published, pinned, storage_path, created_at, updated_at, banner_path, excerpt, tags'
         )
         .order('created_at', {ascending: false});
 
       if (error) throw error;
 
       const rawPosts = data || [];
-      posts = rawPosts.map(post => ({...post, read_time: '1 min read'}));
+      posts = rawPosts.map(post => ({
+        ...post,
+        pinned: Boolean(post.pinned),
+        read_time: '1 min read'
+      }));
       rawPosts.forEach(post => fetchPostViews(post.id));
 
       void (async () => {
         const postsWithReadTime = await Promise.all(
           rawPosts.map(async post => {
             let readTime = '1 min read';
-            if (post.storage_path) {
-              try {
-                const {data: urlData} = supabase.storage
-                  .from('blog-posts')
-                  .getPublicUrl(post.storage_path);
-                const controller = new AbortController();
-                const timer = setTimeout(() => controller.abort(), 2000);
-                const fileRes = await fetch(urlData.publicUrl, {
-                  signal: controller.signal
-                });
-                clearTimeout(timer);
-                if (fileRes.ok) {
-                  const text = await fileRes.text();
-                  const words = text.trim().split(/\s+/).filter(Boolean).length;
-                  const minutes = Math.max(1, Math.ceil(words / 200));
-                  readTime = `${minutes} min${minutes > 1 ? 's' : ''} read`;
-                }
-              } catch {}
+            try {
+              const {data: urlData} = supabase.storage
+                .from('blog-posts')
+                .getPublicUrl(post.storage_path);
+              const fileRes = await fetch(urlData.publicUrl, {
+                signal: AbortSignal.timeout(3000)
+              }).catch(() => null);
+              if (fileRes?.ok) {
+                const text = await fileRes.text();
+                const words = text.trim().split(/\s+/).length;
+                const minutes = Math.max(1, Math.ceil(words / 200));
+                readTime = `${minutes} min${minutes > 1 ? 's' : ''} read`;
+              }
+            } catch (err) {
+              console.error(err);
             }
-            return {...post, read_time: readTime};
+            return {...post, pinned: Boolean(post.pinned), read_time: readTime};
           })
         );
         posts = postsWithReadTime;
       })();
     } catch (err) {
       console.error('Error fetching admin posts:', err);
+      toastStore.error('Failed to load posts.');
     }
   }
 
@@ -1580,6 +1644,32 @@
     } catch (err) {
       console.error('Error updating post published status:', err);
       toastStore.error('Failed to update post status.');
+    }
+  }
+
+  async function handleTogglePinned(post: AdminPost) {
+    try {
+      const nextPinned = !post.pinned;
+      if (nextPinned) {
+        const pinnedCount = posts.filter(p => p.pinned).length;
+        if (pinnedCount >= 3) {
+          toastStore.error('Maximum of 3 pinned posts allowed.');
+          return;
+        }
+      }
+      const {error} = await supabase
+        .from('db_posts')
+        .update({pinned: nextPinned})
+        .eq('id', post.id);
+
+      if (error) throw error;
+      posts = posts.map(p =>
+        p.id === post.id ? {...p, pinned: nextPinned} : p
+      );
+      toastStore.success(nextPinned ? 'Post pinned.' : 'Post unpinned.');
+    } catch (err: any) {
+      console.error('Error updating post pinned status:', err);
+      toastStore.error(err?.message || 'Failed to update pin status.');
     }
   }
 
@@ -1998,6 +2088,49 @@
       toastStore.error(msg);
     } finally {
       isSavingSkills = false;
+    }
+  }
+
+  async function handleSaveProjects(e: SubmitEvent) {
+    e.preventDefault();
+    if (isSavingProjects) return;
+    isSavingProjects = true;
+    try {
+      const authorId = await getAuthorId();
+      if (!authorId) throw new Error('Could not resolve author ID.');
+
+      const cleanPinned = pinnedReposState
+        .map(r => sanitizeInput(r.trim()))
+        .filter(Boolean);
+      if (cleanPinned.length > 3) {
+        toastStore.error('Maximum of 3 pinned repositories allowed.');
+        return;
+      }
+
+      const {error: pinError} = await supabase.rpc(
+        'db_save_project_repo_rules',
+        {p_author_id: authorId, p_rule_type: 'pin', p_names: cleanPinned}
+      );
+      if (pinError) throw pinError;
+
+      const cleanExcluded = excludedReposState
+        .map(r => sanitizeInput(r.trim()))
+        .filter(Boolean);
+      const {error: excludeError} = await supabase.rpc(
+        'db_save_project_repo_rules',
+        {p_author_id: authorId, p_rule_type: 'exclude', p_names: cleanExcluded}
+      );
+      if (excludeError) throw excludeError;
+
+      pinnedReposInitial = $state.snapshot(pinnedReposState);
+      excludedReposInitial = $state.snapshot(excludedReposState);
+      toastStore.success('Projects rules saved.');
+    } catch (err: any) {
+      console.error('Error saving project rules:', err);
+      const msg = err?.message || err?.error || 'Failed to save project rules.';
+      toastStore.error(msg);
+    } finally {
+      isSavingProjects = false;
     }
   }
 
@@ -2425,10 +2558,11 @@
     section: 'content' | 'profile' | 'legal';
   }[] = [
     {id: 'posts', label: 'Posts', icon: FileText, section: 'content'},
+    {id: 'glossary', label: 'Glossary', icon: Languages, section: 'content'},
+    {id: 'projects', label: 'Projects', icon: FolderGit2, section: 'content'},
     {id: 'profile', label: 'Profile', icon: User, section: 'profile'},
     {id: 'resume', label: 'Resume', icon: FileUser, section: 'profile'},
     {id: 'skills', label: 'Skills', icon: Layers, section: 'profile'},
-    {id: 'glossary', label: 'Glossary', icon: Languages, section: 'profile'},
     {id: 'socials', label: 'Social Links', icon: Share2, section: 'profile'},
     {
       id: 'sponsorship',
@@ -2476,7 +2610,7 @@
             cy="24"
             r="20"
             fill="none"
-            class="stroke-copilot-subtle"
+            class="stroke-accent-subtle"
             stroke-width="4" />
 
           <circle
@@ -2484,13 +2618,13 @@
             cy="24"
             r="20"
             fill="none"
-            class="stroke-copilot transition-all duration-1000 ease-linear"
+            class="stroke-accent transition-all duration-1000 ease-linear"
             stroke-width="4"
             stroke-linecap="round"
             stroke-dasharray="125.66"
             stroke-dashoffset={125.66 * (1 - countdownSeconds / 30)} />
         </svg>
-        <span class="absolute font-mono text-sm font-bold text-copilot">
+        <span class="absolute font-mono text-sm font-bold text-accent">
           {countdownSeconds}s
         </span>
       </div>
@@ -2523,17 +2657,22 @@
 <div
   class="fixed top-0 z-40 flex h-14 w-full items-center justify-between border-b border-border-subtle bg-surface-card px-4 md:hidden">
   <div class="flex items-center gap-2">
-    <IconButton
+    <Button
+      type="secondary"
+      size="sm"
+      class="size-8 shrink-0 p-0 sm:size-9"
       onclick={() => (sidebarMobileOpen = !sidebarMobileOpen)}
       aria-expanded={sidebarMobileOpen}
-      ariaLabel={sidebarMobileOpen ? 'Close sidebar' : 'Open sidebar'}>
+      aria-label={sidebarMobileOpen ? 'Close sidebar' : 'Open sidebar'}
+      title={sidebarMobileOpen ? 'Close sidebar' : 'Open sidebar'}>
       {#if sidebarMobileOpen}
-        <X class="size-5" />
+        <X class="size-4 sm:size-5" />
       {:else}
-        <Menu class="size-5" />
+        <Menu class="size-4 sm:size-5" />
       {/if}
-    </IconButton>
-    <span class="text-base font-bold text-text-primary">Admin Console</span>
+    </Button>
+    <span class="font-sans-title text-base font-bold text-text-primary"
+      >Admin Console</span>
   </div>
   <ThemeSelect
     theme={themeStore.current}
@@ -2548,14 +2687,26 @@
       'translate-x-0 shadow-2xl'
     : '-translate-x-full'}">
     <div
-      class="flex items-center justify-between border-b border-border-subtle px-3.5 py-2.5">
-      <h1 class="text-xs font-bold tracking-tight text-text-primary">
-        Admin Console
-      </h1>
+      class="sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between border-b border-border-subtle bg-surface-card px-4">
+      <div class="flex items-center gap-2">
+        <Button
+          type="secondary"
+          size="sm"
+          class="size-8 shrink-0 p-0 sm:size-9 md:hidden"
+          onclick={() => (sidebarMobileOpen = false)}
+          aria-label="Close sidebar"
+          title="Close sidebar">
+          <X class="size-4 sm:size-5" />
+        </Button>
+        <h1
+          class="font-sans-title text-base font-bold tracking-tight text-text-primary md:text-sm">
+          Admin Console
+        </h1>
+      </div>
       <ThemeSelect
         theme={themeStore.current}
         onThemeChange={themeStore.apply}
-        class="hidden md:inline-flex" />
+        class="inline-flex" />
     </div>
 
     <nav
@@ -2573,8 +2724,8 @@
             class="group flex h-8 w-full items-center gap-2.5 rounded-sm px-2.5 text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
               activeAdminTab === link.id
             ) ?
-              'border-l-2 border-copilot bg-copilot-subtle font-bold text-copilot shadow-2xs'
-            : 'border-l-2 border-transparent text-text-primary hover:bg-surface-hover hover:text-copilot'}">
+              'bg-accent-subtle font-bold text-accent shadow-2xs'
+            : 'text-text-primary hover:bg-surface-hover hover:text-accent'}">
             <link.icon class="size-4 shrink-0 transition-colors" />
             <span class="truncate">{link.label}</span>
           </button>
@@ -2593,8 +2744,8 @@
             class="group flex h-8 w-full items-center gap-2.5 rounded-sm px-2.5 text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
               activeAdminTab === link.id
             ) ?
-              'border-l-2 border-copilot bg-copilot-subtle font-bold text-copilot shadow-2xs'
-            : 'border-l-2 border-transparent text-text-primary hover:bg-surface-hover hover:text-copilot'}">
+              'bg-accent-subtle font-bold text-accent shadow-2xs'
+            : 'text-text-primary hover:bg-surface-hover hover:text-accent'}">
             <link.icon class="size-4 shrink-0 transition-colors" />
             <span class="truncate">{link.label}</span>
           </button>
@@ -2613,8 +2764,8 @@
             class="group flex h-8 w-full items-center gap-2.5 rounded-sm px-2.5 text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
               activeAdminTab === link.id
             ) ?
-              'border-l-2 border-copilot bg-copilot-subtle font-bold text-copilot shadow-2xs'
-            : 'border-l-2 border-transparent text-text-primary hover:bg-surface-hover hover:text-copilot'}">
+              'bg-accent-subtle font-bold text-accent shadow-2xs'
+            : 'text-text-primary hover:bg-surface-hover hover:text-accent'}">
             <link.icon class="size-4 shrink-0 transition-colors" />
             <span class="truncate">{link.label}</span>
           </button>
@@ -2623,7 +2774,7 @@
     </nav>
 
     <div
-      class="sticky bottom-0 z-10 mt-auto border-t border-border-subtle bg-surface-card px-2 py-2.5">
+      class="sticky bottom-0 z-10 mt-auto shrink-0 border-t border-border-subtle bg-surface-card px-2 py-2.5">
       <div class="flex items-center justify-between gap-2">
         <div class="flex min-w-0 flex-col truncate px-1">
           {#if isLoading || (!authorState.name && !adminUserEmail)}
@@ -2680,7 +2831,7 @@
         label="Loading dashboard..."
         count={3} />
     {:else if activeAdminTab === 'posts'}
-      <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+      <div class="mb-6 flex items-center justify-between gap-3">
         <div>
           <h1 class="text-2xl font-bold tracking-tight text-text-primary">
             Posts
@@ -2693,7 +2844,10 @@
         <Button
           href="/admin/new"
           type="primary"
-          size="md">
+          size="md"
+          responsiveIconOnly
+          aria-label="New Post"
+          title="New Post">
           {#snippet leading()}
             <Plus class="size-3.5" />
           {/snippet}
@@ -2795,8 +2949,8 @@
                     class="h-full w-full object-cover" />
                 {:else}
                   <div
-                    class="relative flex h-full w-full items-center justify-center overflow-hidden bg-linear-to-br from-accent/15 to-copilot/15 select-none">
-                    <ImageIcon class="size-10 text-copilot/50" />
+                    class="relative flex h-full w-full items-center justify-center overflow-hidden bg-linear-to-br from-accent/15 to-accent/5 select-none">
+                    <ImageIcon class="size-10 text-accent/50" />
                   </div>
                 {/if}
               </div>
@@ -2806,24 +2960,58 @@
                 <div class="flex flex-col gap-1">
                   <div>
                     <h3
-                      class="font-sans-title text-lg leading-snug font-bold text-text-primary transition-colors hover:text-copilot">
+                      class="font-sans-title text-lg leading-snug font-bold text-text-primary transition-colors hover:text-accent">
                       <a
                         href={`/blog/${post.slug}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="rounded-sm outline-none hover:underline focus-visible:ring-2 focus-visible:ring-copilot">
+                        class="rounded-sm outline-none hover:underline focus-visible:ring-2 focus-visible:ring-accent">
                         {post.title}
                       </a>
+                      <span
+                        class="ml-1.5 inline-flex items-center gap-1 align-middle select-none">
+                        {#if post.published}
+                          <span
+                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-copilot-subtle text-copilot"
+                            title="Published"
+                            aria-label="Published">
+                            <CircleCheckBig class="size-3 shrink-0" />
+                          </span>
+                        {:else}
+                          <span
+                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-warning-subtle text-warning"
+                            title="Draft"
+                            aria-label="Draft">
+                            <CircleDotDashed class="size-3 shrink-0" />
+                          </span>
+                        {/if}
+                        {#if post.pinned}
+                          <span
+                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-success-subtle text-success"
+                            title="Pinned post"
+                            aria-label="Pinned post">
+                            <Pin class="size-3 shrink-0" />
+                          </span>
+                        {/if}
+                        {#if isPostNew(post)}
+                          <span
+                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-security-subtle text-security"
+                            title="New post"
+                            aria-label="New post">
+                            <Sparkles class="size-3 shrink-0" />
+                          </span>
+                        {/if}
+                      </span>
                     </h3>
                   </div>
 
                   <ArticleMeta
-                    status={post.published ? 'published' : 'draft'}
+                    status={null}
                     size="xs"
                     layout="single"
                     class="min-h-4.5"
                     date={post.created_at}
-                    updatedAt={post.updated_at || post.created_at}
+                    updatedAt={post.updated_at}
                     readingTime={formatReadTime(post.read_time)}
                     commentsCount={post.comment_count ?? 0}
                     views={postViewsMap.get(post.id)
@@ -2831,10 +3019,35 @@
                       ?? 0} />
 
                   {#if post.excerpt}
-                    <p
-                      class="line-clamp-2 text-xs leading-relaxed font-normal text-text-secondary">
-                      {post.excerpt}
-                    </p>
+                    {@const isExpanded = expandedExcerptIds.has(post.id)}
+                    {@const isOverflowing = overflowingExcerptIds.has(post.id)}
+                    <div class="flex flex-col items-start gap-1">
+                      <p
+                        {@attach !isExpanded && observeExcerptOverflow(post.id)}
+                        class="text-xs leading-relaxed text-text-secondary {(
+                          isExpanded
+                        ) ?
+                          ''
+                        : 'line-clamp-2'}">
+                        {post.excerpt}
+                        {#if isOverflowing && isExpanded}
+                          <button
+                            type="button"
+                            onclick={() => toggleExcerpt(post.id)}
+                            class="ml-1 inline cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
+                            Show less
+                          </button>
+                        {/if}
+                      </p>
+                      {#if isOverflowing && !isExpanded}
+                        <button
+                          type="button"
+                          onclick={() => toggleExcerpt(post.id)}
+                          class="inline-flex cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
+                          Show more
+                        </button>
+                      {/if}
+                    </div>
                   {/if}
 
                   {#if post.tags && post.tags.length > 0}
@@ -2848,8 +3061,8 @@
                           class="inline-flex cursor-pointer items-center rounded-full px-2 py-0.5 font-mono text-[12px] font-medium transition-colors {(
                             filterStore.filters['tag']?.includes(tag)
                           ) ?
-                            'bg-copilot text-text-on-accent'
-                          : 'bg-copilot-subtle text-copilot hover:bg-copilot/15'}">
+                            'bg-accent text-text-on-accent'
+                          : 'bg-accent-subtle text-accent hover:bg-accent/15'}">
                           {cleanTag}
                         </button>
                       {/each}
@@ -2858,53 +3071,30 @@
                 </div>
 
                 <div
-                  class="mt-auto flex w-full items-center justify-between gap-2 border-t border-border-subtle/40 pt-3">
-                  <div class="flex items-center gap-1.5 sm:gap-2">
-                    <Button
-                      href="/admin/new?id={post.id}"
-                      type="primary"
-                      size="sm"
-                      aria-label="Edit post"
-                      title="Edit post"
-                      class="px-2.5 sm:px-3">
-                      {#snippet leading()}
-                        <PenLine class="size-3.5" />
-                      {/snippet}
-                      <span class="hidden sm:inline">Edit</span>
-                    </Button>
+                  class="mt-auto flex w-full flex-wrap items-center justify-between gap-1.5 border-t border-border-subtle/40 pt-3 sm:gap-2">
+                  <Button
+                    href="/admin/new?id={post.id}"
+                    type="primary"
+                    size="sm"
+                    class="order-1 w-full px-2.5 sm:px-3 md:w-auto"
+                    aria-label="Edit Post"
+                    title="Edit Post">
+                    {#snippet leading()}
+                      <PenLine class="size-3.5" />
+                    {/snippet}
+                    Edit Post
+                  </Button>
 
+                  <div class="order-2 flex items-center gap-1.5 sm:gap-2">
                     <Button
                       htmlType="button"
                       type="secondary"
                       size="sm"
-                      aria-label="{expandedPostIds.has(post.id) ? 'Hide' : (
-                        'Show'
-                      )} comments ({getPostComments(post.id).length})"
-                      title="{expandedPostIds.has(post.id) ? 'Hide' : (
-                        'Show'
-                      )} comments ({getPostComments(post.id).length})"
-                      aria-expanded={expandedPostIds.has(post.id)}
-                      aria-controls="comments-{post.id}"
-                      class="px-2.5 sm:px-3"
-                      onclick={() => toggleComments(post.id)}>
-                      {#snippet leading()}
-                        <MessageSquare class="size-3.5" />
-                      {/snippet}
-                      <span class="hidden sm:inline">
-                        {expandedPostIds.has(post.id) ? 'Hide' : 'Show'} comments
-                      </span>
-                      <span>({getPostComments(post.id).length})</span>
-                    </Button>
-
-                    <Button
-                      htmlType="button"
-                      type="secondary"
-                      size="sm"
+                      responsiveIconOnly
                       aria-label={post.published ? 'Unpublish post' : (
                         'Publish post'
                       )}
                       title={post.published ? 'Unpublish post' : 'Publish post'}
-                      class="px-2.5 sm:px-3"
                       onclick={() => handleTogglePublished(post)}>
                       {#snippet leading()}
                         {#if post.published}
@@ -2913,9 +3103,47 @@
                           <Send class="size-3.5" />
                         {/if}
                       {/snippet}
-                      <span class="hidden sm:inline">
-                        {post.published ? 'Unpublish' : 'Publish'}
-                      </span>
+                      {post.published ? 'Unpublish' : 'Publish'}
+                    </Button>
+
+                    <Button
+                      htmlType="button"
+                      type="secondary"
+                      size="sm"
+                      responsiveIconOnly
+                      aria-label={post.pinned ? 'Unpin post' : 'Pin post'}
+                      title={post.pinned ? 'Unpin post' : 'Pin post'}
+                      onclick={() => handleTogglePinned(post)}>
+                      {#snippet leading()}
+                        {#if post.pinned}
+                          <PinOff class="size-3.5" />
+                        {:else}
+                          <Pin class="size-3.5" />
+                        {/if}
+                      {/snippet}
+                      {post.pinned ? 'Unpin' : 'Pin'}
+                    </Button>
+
+                    <Button
+                      htmlType="button"
+                      type="secondary"
+                      size="sm"
+                      responsiveIconOnly
+                      aria-label="{expandedPostIds.has(post.id) ? 'Hide' : (
+                        'Show'
+                      )} comments ({getPostComments(post.id).length})"
+                      title="{expandedPostIds.has(post.id) ? 'Hide' : (
+                        'Show'
+                      )} comments ({getPostComments(post.id).length})"
+                      aria-expanded={expandedPostIds.has(post.id)}
+                      aria-controls="comments-{post.id}"
+                      onclick={() => toggleComments(post.id)}>
+                      {#snippet leading()}
+                        <MessageCircle class="size-3.5" />
+                      {/snippet}
+                      {expandedPostIds.has(post.id) ? 'Hide' : 'Show'} comments ({getPostComments(
+                        post.id
+                      ).length})
                     </Button>
                   </div>
 
@@ -2923,14 +3151,15 @@
                     htmlType="button"
                     type="danger"
                     size="sm"
+                    responsiveIconOnly
                     aria-label="Delete post"
                     title="Delete post"
-                    class="px-2.5 sm:px-3"
+                    class="order-3 md:ml-auto"
                     onclick={() => confirmDeletePost(post)}>
                     {#snippet leading()}
                       <Trash class="size-3.5" />
                     {/snippet}
-                    <span class="hidden sm:inline">Delete</span>
+                    Delete
                   </Button>
                 </div>
 
@@ -2991,7 +3220,7 @@
                               replyTo = comment;
                               commentContent = '';
                             }}
-                            class="cursor-pointer font-bold text-text-muted transition-colors hover:text-copilot focus-visible:outline-none">
+                            class="cursor-pointer font-bold text-text-muted transition-colors hover:text-accent focus-visible:outline-none">
                             Reply
                           </button>
                           <span aria-hidden="true">&middot;</span>
@@ -3006,7 +3235,7 @@
                             <button
                               type="button"
                               onclick={() => dismissCommentReports(comment.id)}
-                              class="cursor-pointer font-bold text-copilot transition-colors hover:underline focus-visible:outline-none">
+                              class="cursor-pointer font-bold text-accent transition-colors hover:underline focus-visible:outline-none">
                               Dismiss Reports
                             </button>
                           {/if}
@@ -3023,7 +3252,7 @@
                               <p
                                 class="font-sans-title text-xs text-text-secondary">
                                 Replying to <span
-                                  class="font-semibold text-copilot"
+                                  class="font-semibold text-accent"
                                   >{(
                                     comment.is_anonymous || !comment.author_name
                                   ) ?
@@ -3033,7 +3262,7 @@
                               <button
                                 type="button"
                                 onclick={() => (replyTo = null)}
-                                class="inline-flex size-5 cursor-pointer items-center justify-center rounded-sm text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-copilot"
+                                class="inline-flex size-5 cursor-pointer items-center justify-center rounded-sm text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring"
                                 aria-label="Cancel reply">
                                 <X class="size-3.5" />
                               </button>
@@ -3088,6 +3317,62 @@
             onPageChange={p => (postsPage = p)} />
         </div>
       {/if}
+    {:else if activeAdminTab === 'projects'}
+      <FormSection
+        onsubmit={handleSaveProjects}
+        title="Projects"
+        description="Manage pinned and excluded GitHub repositories displayed in your portfolio projects section."
+        class="gap-4! p-4! sm:p-5!">
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <FormField
+            id="proj-pinned"
+            label="Pinned"
+            variant="floating"
+            counter={`${pinnedReposState.length}/3`}
+            hideFeedbackSlot>
+            <PillInput
+              id="proj-pinned"
+              bind:value={pinnedReposState}
+              itemLabel="Repository"
+              placeholderEmpty="Type repository and press comma..."
+              placeholderFilled="Add repository..."
+              maxItems={3}
+              maxItemLength={100} />
+          </FormField>
+
+          <FormField
+            id="proj-excluded"
+            label="Excluded"
+            variant="floating"
+            counter={`${excludedReposState.length}`}
+            hideFeedbackSlot>
+            <PillInput
+              id="proj-excluded"
+              bind:value={excludedReposState}
+              itemLabel="Repository"
+              placeholderEmpty="Type repository and press comma..."
+              placeholderFilled="Add repository..."
+              maxItems={50}
+              maxItemLength={100} />
+          </FormField>
+        </div>
+
+        {#snippet actions()}
+          <FormActions class="mt-0!">
+            {#if projectsIsDirty}
+              <p class="text-xs text-text-secondary select-none">
+                You have unsaved changes.
+              </p>
+            {/if}
+            <Button
+              htmlType="submit"
+              type="primary"
+              size="md"
+              disabled={!projectsIsDirty}
+              isLoading={isSavingProjects}>Save Projects</Button>
+          </FormActions>
+        {/snippet}
+      </FormSection>
     {:else if activeAdminTab === 'profile'}
       <FormSection
         onsubmit={handleSaveAuthor}
@@ -3102,14 +3387,14 @@
             variant="success"
             message="Profile saved successfully!" />{/if}
 
-        <div class="flex flex-col gap-10">
+        <div class="flex flex-col gap-6">
           <section aria-labelledby="section-identity">
             <h3
               id="section-identity"
-              class="mb-4 text-xxs font-bold tracking-widest text-text-secondary uppercase select-none">
+              class="mb-2.5 text-xxs font-bold tracking-widest text-text-secondary uppercase select-none">
               Identity
             </h3>
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
               <FormField
                 id="author-name"
                 label="Name"
@@ -3172,9 +3457,10 @@
                 hideAsterisk
                 error={authorErrors.headline}
                 valid={authorValid.headline}>
-                <Input
+                <Textarea
                   id="author-headline"
                   bind:value={authorState.headline}
+                  rows={2}
                   maxlength={100}
                   aria-required="true"
                   error={!!authorErrors.headline}
@@ -3187,10 +3473,10 @@
           <section aria-labelledby="section-contact">
             <h3
               id="section-contact"
-              class="mb-4 text-xxs font-bold tracking-widest text-text-muted uppercase select-none">
+              class="mb-2.5 text-xxs font-bold tracking-widest text-text-muted uppercase select-none">
               Contact
             </h3>
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
               <FormField
                 id="author-avatar"
                 label="Avatar Image URL"
@@ -3272,10 +3558,10 @@
           <section aria-labelledby="section-location">
             <h3
               id="section-location"
-              class="mb-4 text-xxs font-bold tracking-widest text-text-secondary uppercase select-none">
+              class="mb-2.5 text-xxs font-bold tracking-widest text-text-secondary uppercase select-none">
               Location
             </h3>
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div class="grid grid-cols-1 gap-3.5 sm:grid-cols-3">
               <FormField
                 id="author-city"
                 label="City"
@@ -3335,10 +3621,10 @@
           <section aria-labelledby="section-about">
             <h3
               id="section-about"
-              class="mb-4 text-xxs font-bold tracking-widest text-text-secondary uppercase select-none">
+              class="mb-2.5 text-xxs font-bold tracking-widest text-text-secondary uppercase select-none">
               About
             </h3>
-            <div class="flex flex-col gap-4">
+            <div class="flex flex-col gap-3.5">
               <FormField
                 id="author-site"
                 label="Site URL"
@@ -3450,14 +3736,14 @@
               htmlType="button"
               type="primary"
               size="sm"
+              responsiveIconOnly
               aria-label="Add Experience"
               title="Add Experience"
-              class="shrink-0 px-2.5 sm:px-3"
               onclick={() => handleAddCvEntry('experience')}>
               {#snippet leading()}
                 <Plus class="size-3.5" />
               {/snippet}
-              <span class="hidden sm:inline">Add Experience</span>
+              Add Experience
             </Button>
           </div>
           <div class="flex flex-col gap-6">
@@ -3653,7 +3939,7 @@
                     <div class="grid grid-cols-2 gap-2">
                       <FormField
                         id={'exp-end-month-' + idx}
-                        label="End month (optional)"
+                        label="End month"
                         variant="floating">
                         <DropdownSelect
                           placeholder="Month"
@@ -3667,7 +3953,7 @@
                       </FormField>
                       <FormField
                         id={'exp-end-year-' + idx}
-                        label="End year (optional)"
+                        label="End year"
                         variant="floating">
                         <DropdownSelect
                           placeholder="Year"
@@ -3686,7 +3972,7 @@
                     <div class="mt-2">
                       <Checkbox
                         bind:checked={exp.currentlyIn}
-                        label="I am currently working here"
+                        label="I'm currently here"
                         onchange={e => {
                           if ((e.currentTarget as HTMLInputElement).checked) {
                             exp.endMonth = null;
@@ -3729,7 +4015,7 @@
                 </FormField>
 
                 <div
-                  class="mt-1 flex items-center justify-end border-t border-border-subtle/40 pt-3">
+                  class="mt-0.5 flex items-center justify-end border-t border-border-subtle/40 pt-2.5">
                   <Button
                     htmlType="button"
                     type="danger"
@@ -3778,14 +4064,14 @@
               htmlType="button"
               type="primary"
               size="sm"
+              responsiveIconOnly
               aria-label="Add Education"
               title="Add Education"
-              class="shrink-0 px-2.5 sm:px-3"
               onclick={() => handleAddCvEntry('education')}>
               {#snippet leading()}
                 <Plus class="size-3.5" />
               {/snippet}
-              <span class="hidden sm:inline">Add Education</span>
+              Add Education
             </Button>
           </div>
           <div class="flex flex-col gap-6">
@@ -3974,7 +4260,7 @@
                     <div class="grid grid-cols-2 gap-2">
                       <FormField
                         id={'edu-end-month-' + idx}
-                        label="End month (optional)"
+                        label="End month"
                         variant="floating">
                         <DropdownSelect
                           placeholder="Month"
@@ -3988,7 +4274,7 @@
                       </FormField>
                       <FormField
                         id={'edu-end-year-' + idx}
-                        label="End year (optional)"
+                        label="End year"
                         variant="floating">
                         <DropdownSelect
                           placeholder="Year"
@@ -4007,7 +4293,7 @@
                     <div class="mt-2">
                       <Checkbox
                         bind:checked={edu.currentlyIn}
-                        label="I am currently studying here"
+                        label="I'm currently here"
                         onchange={e => {
                           if ((e.currentTarget as HTMLInputElement).checked) {
                             edu.endMonth = null;
@@ -4046,7 +4332,7 @@
                 </FormField>
 
                 <div
-                  class="mt-1 flex items-center justify-end border-t border-border-subtle/40 pt-3">
+                  class="mt-0.5 flex items-center justify-end border-t border-border-subtle/40 pt-2.5">
                   <Button
                     htmlType="button"
                     type="danger"
@@ -4111,7 +4397,7 @@
             <div
               class="flex flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-4">
               <div class="flex items-center gap-3">
-                <FileText class="size-6 shrink-0 text-copilot" />
+                <FileText class="size-6 shrink-0 text-accent" />
                 <div class="min-w-0 flex-1">
                   <p
                     class="mb-1 text-xxs font-semibold tracking-wide text-text-muted uppercase">
@@ -4156,7 +4442,7 @@
                         'Copy SHA-256 checksum'
                       )}>
                       {#if copiedHash}
-                        <CopyCheck class="size-3.5 text-copilot" />
+                        <CopyCheck class="size-3.5 text-accent" />
                       {:else}
                         <Copy class="size-3.5" />
                       {/if}
@@ -4167,7 +4453,7 @@
 
               <div
                 class="flex flex-col gap-2 pt-1 sm:flex-row sm:items-center sm:justify-between">
-                <div class="flex flex-col gap-2 sm:flex-row">
+                <div class="grid grid-cols-2 gap-2 sm:flex sm:items-center">
                   <Button
                     htmlType="button"
                     type="secondary"
@@ -4178,7 +4464,7 @@
                     {#snippet leading()}
                       <SquareArrowOutUpRight class="size-3.5" />
                     {/snippet}
-                    <span>View PDF</span>
+                    <span>View</span>
                   </Button>
                   <Button
                     htmlType="button"
@@ -4206,7 +4492,7 @@
                   {#snippet leading()}
                     <Trash class="size-3.5" />
                   {/snippet}
-                  <span>Delete CV Document</span>
+                  <span>Delete</span>
                 </Button>
               </div>
             </div>
@@ -4227,14 +4513,14 @@
             htmlType="button"
             type="primary"
             size="md"
+            responsiveIconOnly
             aria-label="Add Skill"
             title="Add Skill"
-            class="px-2.5 sm:px-4"
             onclick={handleAddSkill}>
             {#snippet leading()}
               <Plus class="size-3.5" />
             {/snippet}
-            <span class="hidden sm:inline">Add Skill</span>
+            Add Skill
           </Button>
         {/snippet}
 
@@ -4318,7 +4604,7 @@
               </FormField>
 
               <div
-                class="mt-1 flex items-center justify-end border-t border-border-subtle/40 pt-3">
+                class="mt-0.5 flex items-center justify-end border-t border-border-subtle/40 pt-2.5">
                 <Button
                   htmlType="button"
                   type="danger"
@@ -4358,7 +4644,8 @@
       <FormSection
         onsubmit={handleSaveGlossary}
         title="Glossary"
-        description="Terms (names, projects, brands) that are always kept as-is when a post is translated by AI — no per-post markup needed.">
+        description="Protect names, project titles, and brand terms from being translated by AI in blog posts."
+        class="gap-4! p-4! sm:p-5!">
         {#if glossarySaveSuccess}<StatusBanner
             variant="success"
             message="Glossary saved successfully!" />{/if}
@@ -4367,7 +4654,8 @@
           id="glossary-terms"
           label="Protected Terms"
           variant="floating"
-          counter={`${glossaryState.length}/50`}>
+          counter={`${glossaryState.length}/50`}
+          hideFeedbackSlot>
           <PillInput
             id="glossary-terms"
             bind:value={glossaryState}
@@ -4379,7 +4667,7 @@
         </FormField>
 
         {#snippet actions()}
-          <FormActions>
+          <FormActions class="mt-0!">
             {#if glossaryIsDirty}
               <p class="text-xs text-text-secondary select-none">
                 You have unsaved changes.
@@ -4404,14 +4692,14 @@
             htmlType="button"
             type="primary"
             size="md"
+            responsiveIconOnly
             aria-label="Add Social Link"
             title="Add Social Link"
-            class="px-2.5 sm:px-4"
             onclick={handleAddSocial}>
             {#snippet leading()}
               <Plus class="size-3.5" />
             {/snippet}
-            <span class="hidden sm:inline">Add Social Link</span>
+            Add Social Link
           </Button>
         {/snippet}
 
@@ -4471,13 +4759,13 @@
                     maxlength={100}>
                     {#snippet leadingSlot()}
                       <div
-                        class="flex size-8 shrink-0 items-center justify-center rounded-sm border border-border-subtle bg-surface-card text-copilot shadow-2xs">
+                        class="flex size-8 shrink-0 items-center justify-center rounded-sm border border-border-subtle bg-surface-card text-accent shadow-2xs">
                         <BrandIcon
                           icon={item.icon}
                           class="size-4 shrink-0 text-base leading-none {(
                             item.icon?.trim()
                           ) ?
-                            'text-copilot'
+                            'text-accent'
                           : 'text-text-muted opacity-50'}" />
                       </div>
                     {/snippet}
@@ -4545,7 +4833,7 @@
               </FormField>
 
               <div
-                class="mt-1 flex items-center justify-end border-t border-border-subtle/40 pt-3">
+                class="mt-0.5 flex items-center justify-end border-t border-border-subtle/40 pt-2.5">
                 <Button
                   htmlType="button"
                   type="danger"
@@ -4591,14 +4879,14 @@
             htmlType="button"
             type="primary"
             size="md"
+            responsiveIconOnly
             aria-label="Add Sponsorship"
             title="Add Sponsorship"
-            class="px-2.5 sm:px-4"
             onclick={handleAddSponsorship}>
             {#snippet leading()}
               <Plus class="size-3.5" />
             {/snippet}
-            <span class="hidden sm:inline">Add Sponsorship</span>
+            Add Sponsorship
           </Button>
         {/snippet}
 
@@ -4664,13 +4952,13 @@
                     maxlength={100}>
                     {#snippet leadingSlot()}
                       <div
-                        class="flex size-8 shrink-0 items-center justify-center rounded-sm border border-border-subtle bg-surface-card text-copilot shadow-2xs">
+                        class="flex size-8 shrink-0 items-center justify-center rounded-sm border border-border-subtle bg-surface-card text-accent shadow-2xs">
                         <BrandIcon
                           icon={item.icon}
                           class="size-4 shrink-0 text-base leading-none {(
                             item.icon?.trim()
                           ) ?
-                            'text-copilot'
+                            'text-accent'
                           : 'text-text-muted opacity-50'}" />
                       </div>
                     {/snippet}
@@ -4768,7 +5056,7 @@
               </FormField>
 
               <div
-                class="mt-1 flex items-center justify-end border-t border-border-subtle/40 pt-3">
+                class="mt-0.5 flex items-center justify-end border-t border-border-subtle/40 pt-2.5">
                 <Button
                   htmlType="button"
                   type="danger"
@@ -4814,14 +5102,14 @@
             htmlType="button"
             type="primary"
             size="md"
+            responsiveIconOnly
             aria-label="Add Contact"
             title="Add Contact"
-            class="px-2.5 sm:px-4"
             onclick={handleAddContact}>
             {#snippet leading()}
               <Plus class="size-3.5" />
             {/snippet}
-            <span class="hidden sm:inline">Add Contact</span>
+            Add Contact
           </Button>
         {/snippet}
 
@@ -4881,13 +5169,13 @@
                     maxlength={100}>
                     {#snippet leadingSlot()}
                       <div
-                        class="flex size-8 shrink-0 items-center justify-center rounded-sm border border-border-subtle bg-surface-card text-copilot shadow-2xs">
+                        class="flex size-8 shrink-0 items-center justify-center rounded-sm border border-border-subtle bg-surface-card text-accent shadow-2xs">
                         <BrandIcon
                           icon={item.icon}
                           class="size-4 shrink-0 text-base leading-none {(
                             item.icon?.trim()
                           ) ?
-                            'text-copilot'
+                            'text-accent'
                           : 'text-text-muted opacity-50'}" />
                       </div>
                     {/snippet}
@@ -4980,7 +5268,7 @@
               </FormField>
 
               <div
-                class="mt-1 flex items-center justify-end border-t border-border-subtle/40 pt-3">
+                class="mt-0.5 flex items-center justify-end border-t border-border-subtle/40 pt-2.5">
                 <Button
                   htmlType="button"
                   type="danger"
@@ -5028,23 +5316,22 @@
             htmlType="submit"
             type="primary"
             size="md"
+            responsiveIconOnly
             aria-label="Save Privacy Policy"
             title="Save Privacy Policy"
-            class="px-2.5 sm:px-4"
             isLoading={isSavingLegal}
             disabled={isSavingLegal}>
             {#snippet leading()}
               <Save class="size-3.5" />
             {/snippet}
-            <span class="hidden sm:inline">Save Privacy Policy</span>
+            Save Privacy Policy
           </Button>
         {/snippet}
         {#if legalDrafts.privacy}
           <div
-            class="mb-4 flex flex-col gap-3 rounded-lg border border-copilot/30 bg-copilot/10 p-3 sm:flex-row sm:items-center sm:justify-between">
-            <div
-              class="flex items-center gap-2 text-xs text-copilot sm:text-sm">
-              <AlertTriangle class="size-4 shrink-0 text-copilot" />
+            class="mb-4 flex flex-col gap-3 rounded-lg border border-accent/30 bg-accent/10 p-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex items-center gap-2 text-xs text-accent sm:text-sm">
+              <AlertTriangle class="size-4 shrink-0 text-accent" />
               <span
                 >Autosaved local draft found (different from saved database
                 version).</span>
@@ -5084,23 +5371,22 @@
             htmlType="submit"
             type="primary"
             size="md"
+            responsiveIconOnly
             aria-label="Save Security Policy"
             title="Save Security Policy"
-            class="px-2.5 sm:px-4"
             isLoading={isSavingLegal}
             disabled={isSavingLegal}>
             {#snippet leading()}
               <Save class="size-3.5" />
             {/snippet}
-            <span class="hidden sm:inline">Save Security Policy</span>
+            Save Security Policy
           </Button>
         {/snippet}
         {#if legalDrafts.security}
           <div
-            class="mb-4 flex flex-col gap-3 rounded-lg border border-copilot/30 bg-copilot/10 p-3 sm:flex-row sm:items-center sm:justify-between">
-            <div
-              class="flex items-center gap-2 text-xs text-copilot sm:text-sm">
-              <AlertTriangle class="size-4 shrink-0 text-copilot" />
+            class="mb-4 flex flex-col gap-3 rounded-lg border border-accent/30 bg-accent/10 p-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex items-center gap-2 text-xs text-accent sm:text-sm">
+              <AlertTriangle class="size-4 shrink-0 text-accent" />
               <span
                 >Autosaved local draft found (different from saved database
                 version).</span>
@@ -5140,23 +5426,22 @@
             htmlType="submit"
             type="primary"
             size="md"
+            responsiveIconOnly
             aria-label="Save Terms of Service"
             title="Save Terms of Service"
-            class="px-2.5 sm:px-4"
             isLoading={isSavingLegal}
             disabled={isSavingLegal}>
             {#snippet leading()}
               <Save class="size-3.5" />
             {/snippet}
-            <span class="hidden sm:inline">Save Terms of Service</span>
+            Save Terms of Service
           </Button>
         {/snippet}
         {#if legalDrafts.terms}
           <div
-            class="mb-4 flex flex-col gap-3 rounded-lg border border-copilot/30 bg-copilot/10 p-3 sm:flex-row sm:items-center sm:justify-between">
-            <div
-              class="flex items-center gap-2 text-xs text-copilot sm:text-sm">
-              <AlertTriangle class="size-4 shrink-0 text-copilot" />
+            class="mb-4 flex flex-col gap-3 rounded-lg border border-accent/30 bg-accent/10 p-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex items-center gap-2 text-xs text-accent sm:text-sm">
+              <AlertTriangle class="size-4 shrink-0 text-accent" />
               <span
                 >Autosaved local draft found (different from saved database
                 version).</span>
@@ -5336,15 +5621,15 @@
     @apply font-sans text-[0.9rem] leading-[1.7] text-(--color-body);
     --color-heading: var(--color-gh-gray-6);
     --color-body: var(--color-gh-gray-5);
-    --color-link: var(--color-copilot);
-    --color-link-hover: var(--color-copilot-hover);
+    --color-link: var(--color-accent);
+    --color-link-hover: var(--color-accent-hover);
   }
 
   :global(:root.dark) .prose-custom {
     --color-heading: var(--color-gh-gray-1);
     --color-body: var(--color-gh-gray-3);
-    --color-link: var(--color-copilot);
-    --color-link-hover: var(--color-copilot-hover);
+    --color-link: var(--color-accent);
+    --color-link-hover: var(--color-accent-hover);
   }
 
   .prose-custom :global(p) {
@@ -5469,7 +5754,7 @@
   :global(:root.dark) .prose-custom :global(h5:hover .heading-text),
   :global(:root.dark) .prose-custom :global(h6:hover .heading-text),
   :global(:root.dark) .prose-custom :global(.heading-text):hover {
-    @apply text-copilot underline underline-offset-4;
+    @apply text-accent underline underline-offset-4;
   }
 
   .prose-custom :global(h1:hover a.anchor-link),
@@ -5500,7 +5785,7 @@
   :global(:root.dark) .prose-custom :global(h5:hover a.anchor-link svg),
   :global(:root.dark) .prose-custom :global(h6:hover a.anchor-link svg),
   :global(:root.dark) .prose-custom :global(a.anchor-link):hover :global(svg) {
-    @apply text-copilot! no-underline! opacity-100;
+    @apply text-accent! no-underline! opacity-100;
   }
 
   .prose-custom :global(table) {

@@ -24,7 +24,6 @@
     ArrowRight,
     HandHeart,
     Rss,
-    Download,
     Star,
     GitBranch,
     GitFork,
@@ -35,7 +34,9 @@
     Link,
     ScanText,
     TextAlignStart,
-    FileText
+    FileText,
+    Pin,
+    Sparkles
   } from '@lucide/svelte';
   import {cn} from '$lib/utils/cn';
   import {
@@ -83,11 +84,10 @@
     decodeHtmlEntities,
     Section,
     PageContainer,
-    LogoLoop,
     ConsentNotice,
     ArticleMeta,
     staggerChildren,
-    scrollReveal,
+    popoverPosition,
     withViewTransition
   } from '$lib';
   import {supabase} from '$lib/supabase';
@@ -177,32 +177,6 @@
     return true;
   });
 
-  const logoBaseUrl = (() => {
-    const base = (publicEnv.PUBLIC_CDN_BASE_URL ?? '')
-      .trim()
-      .replace(/\/+$/, '');
-    return base ? `${base}/logo/` : '/logo/';
-  })();
-
-  let logoCatalog = $derived(
-    Array.isArray(data.logoCatalog) ? data.logoCatalog : []
-  );
-
-  let techLogos = $derived(
-    logoCatalog.map(({name, extension, isThemeAware}) => {
-      const filename =
-        isThemeAware ?
-          `${name}-${isDarkTheme ? 'dark' : 'light'}.${extension}`
-        : `${name}.${extension}`;
-
-      return {
-        src: `${logoBaseUrl}${filename}`,
-        alt: `${name} [icon] icon`,
-        title: name
-      };
-    })
-  );
-
   const navItems: NavItem[] = [
     {id: 'home', label: 'Home'},
     {id: 'projects', label: 'Projects'},
@@ -246,6 +220,34 @@
 
   function markBannerFailed(postId: string) {
     failedBanners.add(postId);
+  }
+
+  const expandedExcerptIds = new SvelteSet<string>();
+  const overflowingExcerptIds = new SvelteSet<string>();
+
+  function observeExcerptOverflow(postId: string) {
+    return (element: HTMLElement) => {
+      const updateOverflow = () => {
+        if (element.scrollHeight > element.clientHeight + 1) {
+          overflowingExcerptIds.add(postId);
+        } else {
+          overflowingExcerptIds.delete(postId);
+        }
+      };
+
+      const resizeObserver = new ResizeObserver(updateOverflow);
+      resizeObserver.observe(element);
+
+      return () => resizeObserver.disconnect();
+    };
+  }
+
+  function toggleExcerpt(postId: string) {
+    if (expandedExcerptIds.has(postId)) {
+      expandedExcerptIds.delete(postId);
+    } else {
+      expandedExcerptIds.add(postId);
+    }
   }
 
   const failedRepoBanners = new SvelteSet<string>();
@@ -634,6 +636,28 @@
   );
 
   const projects = $derived(data.projects || []);
+  const pinnedRepoNames = $derived(
+    (data.pinnedRepoNames || []).map((n: string) => n.toLowerCase())
+  );
+  const NEW_ITEM_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+  function isRepoPinned(project: Project) {
+    return pinnedRepoNames.includes(project.name.toLowerCase());
+  }
+
+  function isRepoNew(project: Project) {
+    if (!project.createdAt) return false;
+    return (
+      Date.now() - new Date(project.createdAt).getTime() < NEW_ITEM_WINDOW_MS
+    );
+  }
+
+  function isPostNew(post: BlogPost) {
+    if (!post.created_at) return false;
+    return (
+      Date.now() - new Date(post.created_at).getTime() < NEW_ITEM_WINDOW_MS
+    );
+  }
 
   const recentProjects = $derived(
     [...projects]
@@ -656,6 +680,18 @@
   let isSubmittingMessage = $state(false);
   let contactFormElement = $state<HTMLFormElement | null>(null);
   let turnstileContactEl = $state<HTMLDivElement | null>(null);
+
+  const canClearContactForm = $derived(
+    Boolean(formName.trim() || formEmail.trim() || formMessage.trim())
+  );
+
+  function clearContactForm() {
+    formName = '';
+    formEmail = '';
+    formMessage = '';
+    formErrors = {name: '', email: '', message: ''};
+    formValid = {name: false, email: false, message: false};
+  }
 
   let contactEmail = $derived.by(() => {
     const emailItem = contactData.find(
@@ -866,6 +902,8 @@
     const sortDir = blogFilterStore.sort.direction === 'asc' ? 1 : -1;
 
     return [...list].sort((a, b) => {
+      if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+
       if (sortField === 'title') {
         return a.title.localeCompare(b.title) * sortDir;
       } else if (sortField === 'readingTime') {
@@ -922,6 +960,10 @@
     const sortDir = projectFilterStore.sort.direction === 'asc' ? 1 : -1;
 
     return [...list].sort((a, b) => {
+      if (isRepoPinned(a) !== isRepoPinned(b)) {
+        return isRepoPinned(a) ? -1 : 1;
+      }
+
       if (sortField === 'name') {
         return a.name.localeCompare(b.name) * sortDir;
       } else if (sortField === 'stars') {
@@ -1097,15 +1139,16 @@
   onclick={closeAllCardPopovers}
   onkeydown={handleWindowKeydown} />
 
-<SkipLink />
-
 <nav
   class="fixed top-0 z-40 flex h-12 w-full items-center justify-between glass-card border-b border-border-subtle/30 px-3 font-sans shadow-2xs sm:h-14 sm:px-5"
   aria-label="Main navigation">
   <div class="flex shrink-0 items-center lg:w-1/4 lg:flex-none">
-    <SpotlightSearch
-      projects={data.projects}
-      variant="responsive" />
+    <div class="relative inline-flex">
+      <SkipLink variant="search-overlay" />
+      <SpotlightSearch
+        projects={data.projects}
+        variant="responsive" />
+    </div>
   </div>
 
   <nav
@@ -1116,11 +1159,11 @@
         <li>
           <button
             onclick={() => navigate(item.id)}
-            class="flex h-9 cursor-pointer items-center justify-center rounded-sm border-0 px-3 text-sm leading-none font-medium whitespace-nowrap transition-all {(
+            class="flex h-9 cursor-pointer items-center justify-center rounded-md border-0 px-3 text-sm leading-none font-medium whitespace-nowrap transition-all {(
               activeSection === item.id
             ) ?
-              'bg-copilot-contrast-bg font-semibold text-white shadow-xs hover:bg-copilot-contrast-bg/90'
-            : 'text-text-secondary hover:bg-surface-hover hover:text-copilot'}">
+              'bg-accent-contrast-bg font-semibold text-white shadow-xs hover:bg-accent-contrast-bg/90'
+            : 'text-text-secondary hover:bg-surface-hover hover:text-accent'}">
             {item.label}
           </button>
         </li>
@@ -1142,7 +1185,7 @@
   class="flex min-h-[calc(100vh-3rem)] flex-col pt-12 pb-16 font-sans sm:min-h-[calc(100vh-3.5rem)] sm:pt-14 md:pb-0">
   {#snippet staticTag(tag: string)}
     <span
-      class="inline-flex items-center rounded-full bg-copilot-subtle px-2 py-0.5 font-mono text-[12px] font-medium text-copilot transition-colors">
+      class="inline-flex items-center rounded-full bg-accent-subtle px-2 py-0.5 font-mono text-[12px] font-medium text-accent transition-colors">
       {decodeHtmlEntities(tag)}
     </span>
   {/snippet}
@@ -1155,8 +1198,8 @@
       class="inline-flex cursor-pointer items-center rounded-full px-2 py-0.5 font-mono text-[12px] font-medium transition-colors {(
         projectFilterStore.filters['tag']?.includes(tag)
       ) ?
-        'bg-copilot text-text-on-accent'
-      : 'bg-copilot-subtle text-copilot hover:bg-copilot/15'}">
+        'bg-accent text-text-on-accent'
+      : 'bg-accent-subtle text-accent hover:bg-accent/15'}">
       {cleanTag}
     </button>
   {/snippet}
@@ -1169,8 +1212,8 @@
       class="inline-flex cursor-pointer items-center rounded-full px-2 py-0.5 font-mono text-[12px] font-medium transition-colors {(
         blogFilterStore.filters['tag']?.includes(tag)
       ) ?
-        'bg-copilot text-text-on-accent'
-      : 'bg-copilot-subtle text-copilot hover:bg-copilot/15'}">
+        'bg-accent text-text-on-accent'
+      : 'bg-accent-subtle text-accent hover:bg-accent/15'}">
       {cleanTag}
     </button>
   {/snippet}
@@ -1180,15 +1223,18 @@
     headingTag: 'h3' | 'h4',
     tagItem: Snippet<[string]>
   )}
-    {@const repoBannerUrl = `https://opengraph.githubassets.com/1/${project.fullName}`}
+    {@const repoBannerUrl =
+      project.openGraphImageUrl
+      || `https://opengraph.githubassets.com/1/${project.fullName}`}
     <div
-      class="relative flex flex-col rounded-sm glass-card text-left {(
+      class="relative flex flex-col rounded-md glass-card border-0! text-left dark:border-0! {(
         activeProjectShareId === project.name
         || activeProjectCodeId === project.name
       ) ?
         'z-40'
       : ''}">
-      <div class="aspect-2/1 w-full shrink-0 overflow-hidden rounded-t-sm">
+      <div
+        class="relative aspect-2/1 w-full shrink-0 overflow-hidden rounded-t-md">
         {#if !failedRepoBanners.has(project.name)}
           <ImageWithSkeleton
             src={repoBannerUrl}
@@ -1198,20 +1244,41 @@
             class="h-full w-full object-cover" />
         {:else}
           <div
-            class="relative flex h-full w-full items-center justify-center overflow-hidden bg-linear-to-br from-accent/15 to-copilot/15 select-none">
-            <FolderArchive class="size-10 text-copilot/50" />
+            class="relative flex h-full w-full items-center justify-center overflow-hidden bg-linear-to-br from-accent/15 to-accent/5 select-none">
+            <FolderArchive class="size-10 text-accent/50" />
           </div>
         {/if}
       </div>
 
       <div
-        class="flex min-w-0 flex-1 flex-col justify-between gap-2.5 p-4 font-sans">
-        <div class="flex flex-col gap-2">
+        class="flex min-w-0 flex-1 flex-col justify-between gap-2 p-3 font-sans sm:gap-2.5 sm:p-4">
+        <div class="flex flex-col gap-1.5 sm:gap-2">
           <div class="relative flex items-start justify-between gap-2">
             <svelte:element
               this={headingTag}
               class="line-clamp-2 min-w-0 flex-1 font-sans-title text-lg leading-snug font-bold text-text-primary">
               {project.name}
+              {#if isRepoPinned(project) || isRepoNew(project)}
+                <span
+                  class="ml-1.5 inline-flex items-center gap-1 align-middle select-none">
+                  {#if isRepoPinned(project)}
+                    <span
+                      class="inline-flex size-4.5 items-center justify-center rounded-full bg-success-subtle text-success"
+                      title="Pinned repository"
+                      aria-label="Pinned repository">
+                      <Pin class="size-3 shrink-0" />
+                    </span>
+                  {/if}
+                  {#if isRepoNew(project)}
+                    <span
+                      class="inline-flex size-4.5 items-center justify-center rounded-full bg-security-subtle text-security"
+                      title="New repository"
+                      aria-label="New repository">
+                      <Sparkles class="size-3 shrink-0" />
+                    </span>
+                  {/if}
+                </span>
+              {/if}
             </svelte:element>
 
             <div class="relative z-20 flex shrink-0 items-center gap-1">
@@ -1223,9 +1290,9 @@
                   aria-expanded={activeProjectShareId === project.name}
                   aria-haspopup="dialog"
                   class={cn(
-                    'size-6.5! px-0! text-text-muted hover:text-copilot',
+                    'size-6.5! px-0! text-text-muted hover:text-accent',
                     activeProjectShareId === project.name
-                      && 'border-copilot text-copilot'
+                      && 'border-accent text-accent'
                   )}
                   onclick={(e: MouseEvent) => {
                     e.stopPropagation();
@@ -1247,9 +1314,9 @@
                   aria-expanded={activeProjectCodeId === project.name}
                   aria-haspopup="dialog"
                   class={cn(
-                    'size-6.5! px-0! text-text-muted hover:text-copilot',
+                    'size-6.5! px-0! text-text-muted hover:text-accent',
                     activeProjectCodeId === project.name
-                      && 'border-copilot text-copilot'
+                      && 'border-accent text-accent'
                   )}
                   onclick={(e: MouseEvent) => {
                     e.stopPropagation();
@@ -1274,7 +1341,12 @@
                 role="dialog"
                 tabindex="-1"
                 aria-label="Share project"
-                class="absolute top-full right-0 z-50 mt-1.5 flex flex-col gap-3 popover-surface p-3 sm:w-80"
+                use:popoverPosition={{
+                  placement: 'bottom-end',
+                  offset: 6,
+                  padding: 8
+                }}
+                class="absolute z-50 flex flex-col gap-3 popover-surface p-3 sm:w-80"
                 onclick={(e: MouseEvent) => e.stopPropagation()}
                 onkeydown={(e: KeyboardEvent) => {
                   if (e.key === 'Escape') activeProjectShareId = null;
@@ -1284,7 +1356,7 @@
                     class="text-2xs font-semibold tracking-wider text-text-muted uppercase"
                     >Direct link</span>
                   <div
-                    class="flex items-center gap-1.5 rounded-sm border border-border-subtle bg-surface-base/80 p-1 pr-1.5 pl-2.5 shadow-2xs">
+                    class="flex items-center gap-1.5 rounded-md border border-border-subtle bg-surface-base/80 p-1 pr-1.5 pl-2.5 shadow-2xs">
                     <span
                       class="min-w-0 flex-1 truncate font-mono text-xs text-text-secondary select-all"
                       >{projectUrl}</span>
@@ -1313,7 +1385,7 @@
                       }}>
                       {#snippet leading()}
                         {#if copiedProjectShareUrlId === project.name}
-                          <CopyCheck class="size-3.5 text-copilot" />
+                          <CopyCheck class="size-3.5 text-accent" />
                         {:else}
                           <Copy class="size-3.5" />
                         {/if}
@@ -1451,7 +1523,12 @@
                 role="dialog"
                 tabindex="-1"
                 aria-label="Clone repository"
-                class="absolute top-full right-0 z-50 mt-1.5 flex w-84 flex-col gap-3 popover-surface p-3 sm:w-96"
+                use:popoverPosition={{
+                  placement: 'bottom-end',
+                  offset: 6,
+                  padding: 8
+                }}
+                class="absolute z-50 flex w-84 flex-col gap-3 popover-surface p-3 sm:w-96"
                 onclick={(e: MouseEvent) => e.stopPropagation()}
                 onkeydown={(e: KeyboardEvent) => {
                   if (e.key === 'Escape') {
@@ -1469,10 +1546,10 @@
                 <div
                   {@attach syncProjectCodeTheme}
                   data-code-theme={projectCodeTheme}
-                  class="markdown-tabs-container group/codemin relative m-0 flex flex-col overflow-visible rounded-sm border border-border-subtle shadow-2xs">
+                  class="markdown-tabs-container group/codemin relative m-0 flex flex-col overflow-visible rounded-md border border-border-subtle shadow-2xs">
                   <div
                     data-code-theme={projectCodeTheme}
-                    class="markdown-tabs-header hljs relative flex min-h-8 items-end justify-between rounded-t-sm border-b border-border-subtle px-3 pt-0 pb-0 select-none"
+                    class="markdown-tabs-header hljs relative flex min-h-8 items-end justify-between rounded-t-md border-b border-border-subtle px-3 pt-0 pb-0 select-none"
                     role="tablist">
                     <div
                       aria-label="Clone method"
@@ -1491,7 +1568,7 @@
                           class={[
                             'markdown-tab-button relative -mb-px inline-flex shrink-0 cursor-pointer items-center justify-center border-b-[2.5px] px-3 py-1.5 font-sans-title text-xs font-medium whitespace-nowrap transition-all select-none',
                             projectCodeTab === key ?
-                              'active-tab border-b-copilot font-bold text-copilot'
+                              'active-tab border-b-accent font-bold text-accent'
                             : 'border-b-transparent text-text-muted hover:text-text-primary'
                           ]}>
                           {label}
@@ -1510,13 +1587,13 @@
                     role="tabpanel"
                     aria-labelledby="project-clone-tab-{projectCodeTab}"
                     data-code-theme={projectCodeTheme}
-                    class="code-body hljs relative flex min-w-0 items-center overflow-hidden rounded-b-sm font-mono text-xs">
+                    class="code-body hljs relative flex min-w-0 items-center overflow-hidden rounded-b-md font-mono text-xs">
                     <span
                       class="pointer-events-none absolute top-1/2 right-3.5 z-10 -translate-y-1/2 font-mono text-[11px] text-text-muted/70 lowercase select-none">
                       bash
                     </span>
                     <span
-                      class="shrink-0 py-2.5 pr-1 pl-3 font-normal text-copilot select-none">
+                      class="shrink-0 py-2.5 pr-1 pl-3 font-normal text-accent select-none">
                       $
                     </span>
                     <span
@@ -1586,7 +1663,7 @@
                     href={project.licenseUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="text-text-secondary transition-colors hover:text-copilot hover:underline">
+                    class="text-text-secondary transition-colors hover:text-accent hover:underline">
                     {project.licenseName} License
                   </a>
                 {:else}
@@ -1635,12 +1712,13 @@
 
   {#snippet blogPostCard(post: BlogPost, tagItem: Snippet<[string]>)}
     <div
-      class="relative flex flex-col rounded-sm glass-card text-left {(
+      class="relative flex flex-col rounded-md glass-card border-0! text-left dark:border-0! {(
         activeBlogShareId === post.id || activeBlogQuickActionsId === post.id
       ) ?
         'z-40'
       : ''}">
-      <div class="aspect-2/1 w-full shrink-0 overflow-hidden rounded-t-sm">
+      <div
+        class="relative aspect-2/1 w-full shrink-0 overflow-hidden rounded-t-md">
         {#if post.banner_path && !failedBanners.has(post.id)}
           <ImageWithSkeleton
             src={getBannerUrl(post.banner_path)}
@@ -1650,20 +1728,41 @@
             class="h-full w-full object-cover" />
         {:else}
           <div
-            class="relative flex h-full w-full items-center justify-center overflow-hidden bg-linear-to-br from-accent/15 to-copilot/15 select-none">
-            <ImageIcon class="size-10 text-copilot/50" />
+            class="relative flex h-full w-full items-center justify-center overflow-hidden bg-linear-to-br from-accent/15 to-accent/5 select-none">
+            <ImageIcon class="size-10 text-text-muted" />
           </div>
         {/if}
       </div>
 
       <div
-        class="flex min-w-0 flex-1 flex-col justify-between gap-2.5 p-4 font-sans">
-        <div class="flex flex-col gap-2">
+        class="flex min-w-0 flex-1 flex-col justify-between gap-2 p-3 font-sans sm:gap-2.5 sm:p-4">
+        <div class="flex flex-col gap-1.5 sm:gap-2">
           <div class="relative flex items-start justify-between gap-2">
             <h4
               style="view-transition-name: post-title-{post.slug}"
               class="line-clamp-2 min-w-0 flex-1 font-sans-title text-lg leading-snug font-bold text-text-primary">
               {post.title}
+              {#if post.pinned || isPostNew(post)}
+                <span
+                  class="ml-1.5 inline-flex items-center gap-1 align-middle select-none">
+                  {#if post.pinned}
+                    <span
+                      class="inline-flex size-4.5 items-center justify-center rounded-full bg-success-subtle text-success"
+                      title="Pinned post"
+                      aria-label="Pinned post">
+                      <Pin class="size-3 shrink-0" />
+                    </span>
+                  {/if}
+                  {#if isPostNew(post)}
+                    <span
+                      class="inline-flex size-4.5 items-center justify-center rounded-full bg-security-subtle text-security"
+                      title="New post"
+                      aria-label="New post">
+                      <Sparkles class="size-3 shrink-0" />
+                    </span>
+                  {/if}
+                </span>
+              {/if}
             </h4>
 
             <div class="relative z-20 flex shrink-0 items-center gap-1">
@@ -1675,9 +1774,8 @@
                   aria-expanded={activeBlogShareId === post.id}
                   aria-haspopup="dialog"
                   class={cn(
-                    'size-6.5! px-0! text-text-muted hover:text-copilot',
-                    activeBlogShareId === post.id
-                      && 'border-copilot text-copilot'
+                    'size-6.5! px-0! text-text-muted hover:text-accent',
+                    activeBlogShareId === post.id && 'border-accent text-accent'
                   )}
                   onclick={(e: MouseEvent) => {
                     e.stopPropagation();
@@ -1697,9 +1795,9 @@
                   aria-expanded={activeBlogQuickActionsId === post.id}
                   aria-haspopup="menu"
                   class={cn(
-                    'size-6.5! px-0! text-text-muted hover:text-copilot',
+                    'size-6.5! px-0! text-text-muted hover:text-accent',
                     activeBlogQuickActionsId === post.id
-                      && 'border-copilot text-copilot'
+                      && 'border-accent text-accent'
                   )}
                   onclick={(e: MouseEvent) => {
                     e.stopPropagation();
@@ -1720,7 +1818,12 @@
                 role="dialog"
                 tabindex="-1"
                 aria-label="Share post"
-                class="absolute top-full right-0 z-50 mt-1.5 flex flex-col gap-3 popover-surface p-3 sm:w-80"
+                use:popoverPosition={{
+                  placement: 'bottom-end',
+                  offset: 6,
+                  padding: 8
+                }}
+                class="absolute z-50 flex flex-col gap-3 popover-surface p-3 sm:w-80"
                 onclick={(e: MouseEvent) => e.stopPropagation()}
                 onkeydown={(e: KeyboardEvent) => {
                   if (e.key === 'Escape') activeBlogShareId = null;
@@ -1730,7 +1833,7 @@
                     class="text-2xs font-semibold tracking-wider text-text-muted uppercase"
                     >Direct link</span>
                   <div
-                    class="flex items-center gap-1.5 rounded-sm border border-border-subtle bg-surface-base/80 p-1 pr-1.5 pl-2.5 shadow-2xs">
+                    class="flex items-center gap-1.5 rounded-md border border-border-subtle bg-surface-base/80 p-1 pr-1.5 pl-2.5 shadow-2xs">
                     <span
                       class="min-w-0 flex-1 truncate font-mono text-xs text-text-secondary select-all"
                       >{postUrl}</span>
@@ -1759,7 +1862,7 @@
                       }}>
                       {#snippet leading()}
                         {#if copiedBlogShareUrlId === post.id}
-                          <CopyCheck class="size-3.5 text-copilot" />
+                          <CopyCheck class="size-3.5 text-accent" />
                         {:else}
                           <Copy class="size-3.5" />
                         {/if}
@@ -1893,7 +1996,12 @@
                 role="menu"
                 tabindex="-1"
                 aria-label="Blog quick actions"
-                class="absolute right-0 bottom-full z-50 mb-2 flex max-w-[calc(100vw-2rem)] flex-col gap-2.5 rounded-sm border border-border-subtle bg-surface-elevated/95 p-2.5 shadow-xl backdrop-blur-md sm:flex-row sm:gap-0 sm:divide-x sm:divide-border-subtle/60"
+                use:popoverPosition={{
+                  placement: 'top-end',
+                  offset: 6,
+                  padding: 8
+                }}
+                class="absolute z-50 flex max-w-[calc(100vw-2rem)] flex-col gap-2.5 rounded-md border border-border-subtle bg-surface-elevated/95 p-2.5 shadow-xl backdrop-blur-md sm:flex-row sm:gap-0 sm:divide-x sm:divide-border-subtle/60"
                 onclick={(e: MouseEvent) => e.stopPropagation()}
                 onkeydown={(e: KeyboardEvent) => {
                   if (e.key === 'Escape') activeBlogQuickActionsId = null;
@@ -2043,9 +2151,33 @@
             views={post.views_count} />
 
           {#if post.excerpt}
-            <p class="line-clamp-2 text-xs leading-relaxed text-text-secondary">
-              {post.excerpt}
-            </p>
+            {@const isExpanded = expandedExcerptIds.has(post.id)}
+            {@const isOverflowing = overflowingExcerptIds.has(post.id)}
+            <div class="flex flex-col items-start gap-1">
+              <p
+                {@attach !isExpanded && observeExcerptOverflow(post.id)}
+                class="text-xs leading-relaxed text-text-secondary {isExpanded ?
+                  ''
+                : 'line-clamp-2'}">
+                {post.excerpt}
+                {#if isOverflowing && isExpanded}
+                  <button
+                    type="button"
+                    onclick={() => toggleExcerpt(post.id)}
+                    class="ml-1 inline cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
+                    Show less
+                  </button>
+                {/if}
+              </p>
+              {#if isOverflowing && !isExpanded}
+                <button
+                  type="button"
+                  onclick={() => toggleExcerpt(post.id)}
+                  class="inline-flex cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
+                  Show more
+                </button>
+              {/if}
+            </div>
           {/if}
 
           {#if post.tags && post.tags.length > 0}
@@ -2075,18 +2207,18 @@
   {#if activeSection === 'home'}
     <Section
       spacing="none"
-      class="relative z-10 pt-10 pb-6 md:pt-14 md:pb-8">
+      class="relative z-10 pt-4 pb-6 sm:pt-5 md:pt-6 md:pb-8">
       <PageContainer
         width="standard"
-        class="flex flex-col gap-8">
+        class="flex flex-col gap-4 sm:gap-5">
         <div
-          class="pointer-events-none absolute top-12.5 left-[50%] z-0 h-80 w-[320px] translate-x-[-50%] rounded-full bg-copilot/10 blur-[80px]">
+          class="pointer-events-none absolute top-7.5 left-[50%] z-0 h-80 w-[320px] translate-x-[-50%] rounded-full bg-accent/10 blur-[80px] sm:top-9 md:top-10">
         </div>
 
         <div class="relative z-10 mx-auto w-full">
           <div
             use:staggerChildren
-            class="stagger-children relative mt-10 flex flex-col items-center justify-center rounded-sm glass-card px-3.5 pt-0 pb-6 text-center sm:mt-12 sm:px-8 sm:pt-0 sm:pb-8">
+            class="stagger-children relative mt-8 flex w-full flex-col items-center justify-center rounded-md glass-card px-3 pt-0 pb-4 text-center sm:mt-10 sm:px-8 sm:pt-0 sm:pb-6">
             {#if avatar}
               <ImageWithSkeleton
                 src={avatar}
@@ -2094,34 +2226,36 @@
                 referrerpolicy="no-referrer"
                 variant="avatar"
                 rounded="rounded-full"
-                class="relative z-10 -mt-10 mb-1 h-20 w-20 border border-border-subtle/30 shadow-sm sm:-mt-14 sm:mb-2 sm:h-28 sm:w-28 dark:border-white/8"
+                class="relative z-10 -mt-8 mb-1 h-20 w-20 border border-border-subtle/30 shadow-sm sm:-mt-12 sm:mb-2 sm:h-28 sm:w-28 dark:border-white/8"
                 imgClass="object-top" />
             {/if}
 
             <h1
-              class="relative z-10 max-w-full px-2 font-sans-title {avatar ?
-                'mt-2 sm:mt-4'
-              : 'pt-6'} line-clamp-2 text-[1.75rem] leading-[1.05] font-extrabold tracking-tight text-balance wrap-break-word text-text-primary sm:text-3xl sm:leading-[1.15] md:text-4xl lg:text-5xl">
+              class="relative z-10 max-w-full px-0 font-sans-title sm:px-2 {(
+                avatar
+              ) ?
+                'mt-1.5 sm:mt-4'
+              : 'pt-5'} text-xl font-extrabold tracking-tight text-text-primary sm:text-2xl md:text-3xl">
               {name}
             </h1>
 
             {#if headline}
               <p
-                class="relative z-10 mt-1 max-w-lg font-sans-title text-xs leading-relaxed text-text-muted/90 sm:mt-1.5 sm:text-sm">
+                class="relative z-10 mt-1 max-w-lg font-sans-title text-xs leading-relaxed text-text-secondary sm:mt-1.5 sm:text-sm">
                 {headline}
               </p>
             {/if}
 
             {#if desc}
               <p
-                class="relative z-10 mt-2.5 max-w-lg font-sans text-[13px] leading-relaxed text-text-primary/85 sm:mt-3 sm:text-sm">
+                class="relative z-10 mt-2 max-w-lg font-sans text-xs leading-relaxed text-text-secondary sm:mt-3 sm:text-sm">
                 {desc}
               </p>
             {/if}
 
             {#if socials.length > 0}
               <div
-                class="relative z-10 mt-4 flex flex-wrap items-center justify-center gap-1 select-none sm:mt-5 sm:gap-1.5">
+                class="relative z-10 mt-3 flex flex-wrap items-center justify-center gap-1 select-none sm:mt-5 sm:gap-1.5">
                 {#each socials as item (item.url + item.platform)}
                   <a
                     href={item.url}
@@ -2129,7 +2263,7 @@
                     rel="noopener noreferrer"
                     aria-label={item.platform}
                     title={item.platform}
-                    class="flex size-7.5 cursor-pointer items-center justify-center rounded-sm border-0 bg-transparent text-text-muted transition-all hover:bg-surface-hover hover:text-copilot focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none sm:size-8">
+                    class="flex size-7.5 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-text-muted transition-all hover:bg-surface-hover hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:size-8">
                     <BrandIcon
                       icon={item.icon}
                       class="text-sm leading-none sm:text-base" />
@@ -2139,57 +2273,55 @@
             {/if}
 
             <div
-              class="relative z-10 mt-6 flex w-full flex-col items-stretch gap-3 sm:mt-8 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-4">
-              {#if data.cvExists}
-                <Button
-                  type="primary"
-                  tone="neutral"
-                  size="sm"
-                  href="/api/v1/cv?download=1"
-                  download
-                  onclick={handleCvDownload}
-                  class="w-full sm:h-11 sm:w-auto sm:gap-2.5 sm:px-6 sm:text-sm">
-                  {#snippet leading()}
-                    <Download class="size-3.5 sm:size-4" />
-                  {/snippet}
-                  Download CV
-                </Button>
-              {:else}
-                <Button
-                  type="primary"
-                  tone="neutral"
-                  size="sm"
-                  disabled
-                  title="No CV document is available yet."
-                  class="w-full sm:h-11 sm:w-auto sm:gap-2.5 sm:px-6 sm:text-sm">
-                  {#snippet leading()}
-                    <Download class="size-3.5 sm:size-4" />
-                  {/snippet}
-                  Download CV
-                </Button>
-              {/if}
+              class="relative z-10 mt-3.5 flex w-full flex-col items-center gap-3 sm:mt-6 sm:flex-row sm:flex-wrap sm:justify-center">
+              <div
+                class="grid w-full grid-cols-2 gap-3 sm:flex sm:w-auto sm:items-center">
+                {#if data.cvExists}
+                  <Button
+                    type="primary"
+                    tone="neutral"
+                    size="xs"
+                    href="/api/v1/cv?download=1"
+                    download
+                    onclick={handleCvDownload}
+                    class="w-full sm:h-9 sm:w-auto sm:gap-2 sm:px-4 sm:text-sm">
+                    Download CV
+                  </Button>
+                {:else}
+                  <Button
+                    type="primary"
+                    tone="neutral"
+                    size="xs"
+                    disabled
+                    title="No CV document is available yet."
+                    class="w-full sm:h-9 sm:w-auto sm:gap-2 sm:px-4 sm:text-sm">
+                    Download CV
+                  </Button>
+                {/if}
 
-              <Button
-                type="secondary"
-                size="sm"
-                onclick={() => navigate('projects')}
-                class="w-full sm:h-11 sm:w-auto sm:gap-2.5 sm:px-6 sm:text-sm">
-                Browse projects
-              </Button>
+                <Button
+                  type="secondary"
+                  size="xs"
+                  onclick={() => navigate('projects')}
+                  class="w-full sm:h-9 sm:w-auto sm:gap-2 sm:px-4 sm:text-sm">
+                  Browse projects
+                </Button>
+              </div>
 
               <Button
                 type="ghost"
-                size="sm"
+                size="xs"
                 onclick={() => navigate('contact')}
-                class="w-full sm:h-11 sm:w-auto sm:gap-2.5 sm:px-6 sm:text-sm">
+                class="w-auto sm:h-9 sm:gap-2 sm:px-4 sm:text-sm">
                 Get in touch
               </Button>
             </div>
           </div>
         </div>
 
-        <div use:scrollReveal>
-          <h3 class="mb-4 text-lg font-bold tracking-tight text-text-primary">
+        <div>
+          <h3
+            class="mb-3 text-lg font-bold tracking-tight text-text-primary sm:mb-4">
             Top projects
           </h3>
           {#if recentProjects.length === 0}
@@ -2197,17 +2329,17 @@
               title="No projects yet"
               description="Check back soon for featured repositories." />
           {:else}
-            <div class="mt-2 grid grid-cols-1 gap-4">
+            <div class="mt-2 grid grid-cols-1 gap-3 sm:gap-4">
               {#each recentProjects as project (project.name)}
                 {@render projectCard(project, 'h4', staticTag)}
               {/each}
             </div>
           {/if}
           {#if projects.length > 0}
-            <div class="mt-4 flex justify-end">
+            <div class="mt-3 flex justify-end sm:mt-4">
               <button
                 onclick={() => navigate('projects')}
-                class="group inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-copilot hover:underline">
+                class="group inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-accent hover:underline">
                 <span class="leading-none">View all projects</span>
                 <ArrowRight
                   class="size-4 transition-transform select-none group-hover:translate-x-0.5" />
@@ -2216,8 +2348,9 @@
           {/if}
         </div>
 
-        <div use:scrollReveal>
-          <h3 class="mb-4 text-lg font-bold tracking-tight text-text-primary">
+        <div>
+          <h3
+            class="mb-3 text-lg font-bold tracking-tight text-text-primary sm:mb-4">
             Recent posts
           </h3>
           {#if posts.length === 0}
@@ -2225,7 +2358,7 @@
               title="No posts yet"
               description="Check back soon for new articles." />
           {:else}
-            <div class="mt-2 grid grid-cols-1 gap-4">
+            <div class="mt-2 grid grid-cols-1 gap-3 sm:gap-4">
               {#each recentPosts as post (post.id)}
                 {@render blogPostCard(post, staticTag)}
               {/each}
@@ -2235,7 +2368,7 @@
             <div class="mt-4 flex justify-end">
               <button
                 onclick={() => navigate('blog')}
-                class="group inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-copilot hover:underline">
+                class="group inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-accent hover:underline">
                 <span class="leading-none">View all posts</span>
                 <ArrowRight
                   class="size-4 transition-transform select-none group-hover:translate-x-0.5" />
@@ -2244,7 +2377,7 @@
           {/if}
         </div>
 
-        <div use:scrollReveal>
+        <div>
           <h3 class="mb-4 text-lg font-bold tracking-tight text-text-primary">
             Skills
           </h3>
@@ -2268,7 +2401,7 @@
           {/if}
         </div>
 
-        <div use:scrollReveal>
+        <div>
           <h3 class="mb-4 text-lg font-bold tracking-tight text-text-primary">
             Experience
           </h3>
@@ -2278,7 +2411,7 @@
               description="Check back soon for career history." />
           {:else}
             <div
-              class="divide-y divide-border-subtle/40 overflow-hidden rounded-sm glass-card text-left">
+              class="divide-y divide-border-subtle/40 overflow-hidden rounded-md glass-card text-left">
               {#each experiences.slice(0, 2) as exp (exp.title || exp.company)}
                 <CvEntryCard
                   role={exp.title}
@@ -2297,7 +2430,7 @@
           <div class="mt-4 flex justify-end">
             <button
               onclick={() => navigate('cv')}
-              class="group inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-copilot hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-copilot"
+              class="group inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
               aria-label="View full CV including education and experience">
               <span class="leading-none">View full CV</span>
               <ArrowRight
@@ -2307,19 +2440,18 @@
         </div>
 
         <div
-          use:scrollReveal
-          class="divide-y divide-border-subtle/40 overflow-hidden rounded-sm glass-card bg-copilot/5 text-left">
+          class="divide-y divide-border-subtle/40 overflow-hidden rounded-md glass-card bg-accent/5 text-left">
           <div
-            class="flex flex-col justify-between gap-4 px-5 py-4 sm:flex-row sm:items-center">
+            class="flex flex-col justify-between gap-3 px-4 py-3 sm:flex-row sm:items-center sm:gap-4 sm:px-5 sm:py-4">
             <div
               class="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:gap-4">
               <div class="flex items-center gap-3 sm:block">
                 <HandHeart
-                  class="size-5 shrink-0 text-copilot sm:mt-0.5 sm:size-6" />
+                  class="size-5 shrink-0 text-accent sm:mt-0.5 sm:size-6" />
                 <h4 class="font-sans-title text-sm font-bold sm:hidden">
                   <ShinyText
                     text="Support Open Source Work"
-                    color="var(--color-copilot)"
+                    color="var(--color-accent)"
                     shineColor="#ffffff"
                     speed={3} />
                 </h4>
@@ -2328,7 +2460,7 @@
                 <h4 class="hidden font-sans-title text-sm font-bold sm:block">
                   <ShinyText
                     text="Support Open Source Work"
-                    color="var(--color-copilot)"
+                    color="var(--color-accent)"
                     shineColor="#ffffff"
                     speed={3} />
                 </h4>
@@ -2349,13 +2481,12 @@
         </div>
 
         <form
-          use:scrollReveal
           bind:this={contactFormElement}
           novalidate
           action={contactEmail ? `https://formsubmit.co/${contactEmail}` : '#'}
           method="POST"
           onsubmit={validateForm}
-          class="flex w-full flex-col gap-3 rounded-sm glass-card p-6 text-left"
+          class="flex w-full flex-col gap-2.5 rounded-md glass-card p-4 text-left sm:gap-3 sm:p-6"
           autocomplete="off">
           <input
             type="hidden"
@@ -2483,41 +2614,29 @@
 
           <ConsentNotice action="sending this message" />
 
-          <div class="mt-2 flex justify-end">
+          <div class="mt-2 flex items-center justify-between gap-2 select-none">
+            <Button
+              htmlType="button"
+              type="outline"
+              tone="critical"
+              size="md"
+              class="flex-1 sm:flex-initial"
+              disabled={!canClearContactForm || isSubmittingMessage}
+              onclick={clearContactForm}>
+              <span
+                >Clear<span class="hidden sm:inline">&nbsp;message</span></span>
+            </Button>
             <Button
               htmlType="submit"
               type="primary"
               size="md"
+              class="flex-1 sm:flex-initial"
               disabled={isSubmittingMessage}
               isLoading={isSubmittingMessage}>
               {isSubmittingMessage ? 'Sending…' : 'Send message'}
             </Button>
           </div>
         </form>
-
-        <div
-          use:scrollReveal
-          class="flex flex-col gap-7 select-none">
-          <hr class="border-border-subtle" />
-          <div class="text-center">
-            <h3
-              class="font-sans-title text-xs font-bold tracking-wider text-text-muted uppercase">
-              Built With These Awesome Technologies & Tools
-            </h3>
-          </div>
-          <LogoLoop
-            logos={techLogos}
-            speed={40}
-            direction="left"
-            logoHeight={75}
-            gap={36}
-            pauseOnHover={false}
-            hoverSpeed={40}
-            scaleOnHover={false}
-            fadeOut={false}
-            ariaLabel="Technologies and tools used to build this website"
-            class="py-2" />
-        </div>
       </PageContainer>
     </Section>
   {/if}
@@ -2534,16 +2653,15 @@
   {#if activeSection === 'cv'}
     <Section
       spacing="none"
-      class="relative z-10 pt-10 pb-6 md:pt-14 md:pb-8">
+      class="relative z-10 pt-5 pb-6 md:pt-8 md:pb-8">
       <PageContainer width="standard">
         <div
-          class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div class="flex flex-col gap-1">
-            <h2
-              class="font-sans-title text-base font-bold text-text-primary sm:text-lg">
+          class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 class="text-3xl font-bold tracking-tight text-text-primary">
               Curriculum Vitae
-            </h2>
-            <p class="text-xs text-text-secondary">
+            </h1>
+            <p class="mt-2 text-sm text-text-secondary">
               View or download my updated resume.
             </p>
           </div>
@@ -2555,9 +2673,6 @@
               href="/api/v1/cv?download=1"
               download
               onclick={handleCvDownload}>
-              {#snippet leading()}
-                <Download class="size-4" />
-              {/snippet}
               Download CV
             </Button>
           {:else}
@@ -2567,17 +2682,13 @@
               size="md"
               disabled
               title="No CV document is available yet.">
-              {#snippet leading()}
-                <Download class="size-4" />
-              {/snippet}
               Download CV
             </Button>
           {/if}
         </div>
 
-        <div class="mt-10">
-          <h2
-            class="text-sm font-bold tracking-wider text-text-secondary uppercase">
+        <div class="mt-8">
+          <h2 class="mb-4 text-lg font-bold tracking-tight text-text-primary">
             Experience
           </h2>
           {#if experiences.length === 0}
@@ -2588,7 +2699,7 @@
             </div>
           {:else}
             <div
-              class="mt-4 divide-y divide-border-subtle/40 overflow-hidden rounded-sm glass-card">
+              class="divide-y divide-border-subtle/40 overflow-hidden rounded-md glass-card">
               {#each experiences as exp (exp.company + exp.startYear)}
                 <CvEntryCard
                   role={exp.title}
@@ -2606,9 +2717,8 @@
           {/if}
         </div>
 
-        <div class="mt-10">
-          <h2
-            class="text-sm font-bold tracking-wider text-text-secondary uppercase">
+        <div class="mt-8">
+          <h2 class="mb-4 text-lg font-bold tracking-tight text-text-primary">
             Education
           </h2>
           {#if education.length === 0}
@@ -2619,7 +2729,7 @@
             </div>
           {:else}
             <div
-              class="mt-4 divide-y divide-border-subtle/40 overflow-hidden rounded-sm glass-card">
+              class="divide-y divide-border-subtle/40 overflow-hidden rounded-md glass-card">
               {#each education as edu (edu.institution + edu.startYear)}
                 <CvEntryCard
                   role={edu.degree}
@@ -2637,9 +2747,8 @@
           {/if}
         </div>
 
-        <div class="mt-10">
-          <h2
-            class="text-sm font-bold tracking-wider text-text-secondary uppercase">
+        <div class="mt-8">
+          <h2 class="mb-4 text-lg font-bold tracking-tight text-text-primary">
             Skills
           </h2>
           {#if skills.length === 0}
@@ -2670,7 +2779,7 @@
   {#if activeSection === 'blog'}
     <Section
       spacing="none"
-      class="relative z-10 pt-10 pb-6 md:pt-14 md:pb-8">
+      class="relative z-10 pt-5 pb-6 md:pt-8 md:pb-8">
       <PageContainer width="standard">
         <div class="mb-6 flex items-end justify-between gap-4">
           <div>
@@ -2691,7 +2800,7 @@
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Subscribe via Atom/RSS feed"
-              class="mb-0.5 inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-sm border border-border-subtle bg-surface-card px-3 text-xs font-semibold text-text-muted transition-colors select-none hover:bg-surface-hover hover:text-brand-rss">
+              class="mb-0.5 inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-md border border-border-subtle bg-surface-card px-3 text-xs font-semibold text-text-muted transition-colors select-none hover:bg-surface-hover hover:text-brand-rss">
               <Rss class="size-3.5 select-none" />
               <span class="hidden items-center sm:inline">Feed</span>
             </a>
@@ -2799,7 +2908,7 @@
   {#if activeSection === 'projects'}
     <Section
       spacing="none"
-      class="relative z-10 pt-10 pb-6 md:pt-14 md:pb-8">
+      class="relative z-10 pt-5 pb-6 md:pt-8 md:pb-8">
       <PageContainer width="standard">
         <div class="mb-6">
           <h1 class="text-3xl font-bold tracking-tight text-text-primary">
@@ -2913,7 +3022,7 @@
   {/if}
 
   <div
-    class="mx-auto w-full max-w-full px-6 md:w-[80%] lg:w-[65%] xl:w-[55%] {(
+    class="mx-auto w-full max-w-full px-3 sm:px-6 md:w-[80%] lg:w-[65%] xl:w-[50%] 2xl:w-[45%] {(
       activeSection === 'home'
     ) ?
       'my-6'

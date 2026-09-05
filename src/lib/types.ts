@@ -61,9 +61,11 @@ export interface Project {
   branches: number;
   commits: number;
   latestCommitSha?: string;
+  createdAt: string | null;
   pushedAt: string | null;
   licenseName: string | null;
   licenseUrl: string | null;
+  openGraphImageUrl?: string;
 }
 
 export interface FormFieldContext {

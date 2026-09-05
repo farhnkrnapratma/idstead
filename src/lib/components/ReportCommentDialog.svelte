@@ -205,7 +205,7 @@
   {#if comment}
     <div class="flex flex-col gap-4">
       <div
-        class="rounded-sm border border-border-subtle bg-surface-card/60 p-2.5 text-xs text-text-secondary">
+        class="rounded-md border border-border-subtle bg-surface-card/60 p-2.5 text-xs text-text-secondary">
         <span class="font-semibold text-text-primary"
           >{comment.author_name || 'Author'}:</span>
         <p class="mt-0.5 line-clamp-2 text-text-muted italic">
@@ -221,13 +221,13 @@
           {#each REASONS as r, idx (r.id)}
             <label
               class={cn(
-                'group flex cursor-pointer items-center gap-2 rounded-sm border px-2.5 py-1.5 text-left transition-all select-none',
+                'group flex cursor-pointer items-center gap-2 rounded-md border px-2.5 py-1.5 text-left transition-all select-none',
                 idx === REASONS.length - 1 && REASONS.length % 2 !== 0 ?
                   'sm:col-span-2'
                 : '',
                 selectedReason === r.id ?
-                  'border-copilot bg-copilot/10'
-                : 'border-border-subtle/70 bg-surface-card/60 hover:border-copilot/40 hover:bg-surface-card'
+                  'border-accent bg-accent/10'
+                : 'border-border-subtle/70 bg-surface-card/60 hover:border-accent/40 hover:bg-surface-card'
               )}>
               <input
                 type="radio"
@@ -244,7 +244,7 @@
                 <r.icon class="size-3.5" />
               </div>
               <span
-                class="min-w-0 flex-1 truncate text-2xs font-semibold text-text-primary transition-colors group-hover:text-copilot">
+                class="min-w-0 flex-1 truncate text-2xs font-semibold text-text-primary transition-colors group-hover:text-accent">
                 {r.label}
               </span>
               <span
@@ -260,7 +260,7 @@
                   class={cn(
                     'absolute size-3.5 transition-all duration-200',
                     selectedReason === r.id ?
-                      'scale-100 text-copilot opacity-100'
+                      'scale-100 text-accent opacity-100'
                     : 'scale-0 opacity-0'
                   )} />
               </span>

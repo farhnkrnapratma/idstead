@@ -3,12 +3,6 @@
 @import '@fontsource-variable/google-sans-code';
 @import '@fontsource-variable/space-grotesk';
 @import '@fontsource-variable/noto-serif';
-@import '@fontsource-variable/noto-serif-jp';
-@import '@fontsource-variable/noto-serif-kr';
-@import '@fontsource-variable/noto-serif-sc';
-@import '@fontsource-variable/noto-sans-jp';
-@import '@fontsource-variable/noto-sans-kr';
-@import '@fontsource-variable/noto-sans-sc';
 @import '@fontsource-variable/lexend';
 @import '../lib/tokens.css';
 @import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -24,7 +18,7 @@
 }
 
 @utility popover-surface {
-  @apply rounded-sm border border-border-subtle/50 bg-surface-card text-text-primary shadow-xl backdrop-blur-none!;
+  @apply rounded-md border border-border-subtle/50 bg-surface-card text-text-primary shadow-xl backdrop-blur-none!;
 }
 
 .code-block-container[data-code-theme] .code-header-bar,
@@ -117,7 +111,7 @@
 }
 
 @utility glass-button {
-  @apply border border-border-subtle/50 bg-surface-card/85 text-text-primary shadow-2xs backdrop-blur-md transition-all hover:border-copilot hover:bg-surface-card dark:border-white/8 dark:bg-surface-card/60 dark:hover:bg-surface-card/85;
+  @apply border border-border-subtle/50 bg-surface-card/85 text-text-primary shadow-2xs backdrop-blur-md transition-all hover:border-accent hover:bg-surface-card dark:border-white/8 dark:bg-surface-card/60 dark:hover:bg-surface-card/85;
 }
 
 @layer base {
@@ -158,11 +152,120 @@
     @apply hidden! h-0! w-0!;
   }
 
-  *:not(pre):not(pre *) {
+  html {
+    scrollbar-color: var(--color-accent) transparent;
+    scrollbar-width: thin;
+  }
+
+  html::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  html::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  html::-webkit-scrollbar-thumb {
+    background-color: var(--color-accent);
+    border-radius: 9999px;
+  }
+
+  html::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-accent-hover);
+  }
+
+  :root[data-reading-mode='true'],
+  :root[data-reading-mode='true'] body,
+  html.reading-mode,
+  html.reading-mode body {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  :root[data-reading-mode='true']::-webkit-scrollbar,
+  :root[data-reading-mode='true'] body::-webkit-scrollbar,
+  html.reading-mode::-webkit-scrollbar,
+  html.reading-mode body::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  aside,
+  aside *,
+  nav[aria-label='Table of contents'],
+  nav[aria-label='Table of contents'] *,
+  .markdown-details,
+  .markdown-details * {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  aside::-webkit-scrollbar,
+  aside *::-webkit-scrollbar,
+  nav[aria-label='Table of contents']::-webkit-scrollbar,
+  nav[aria-label='Table of contents'] *::-webkit-scrollbar,
+  .markdown-details::-webkit-scrollbar,
+  .markdown-details *::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  .article-scroll-container {
+    scrollbar-color: var(--color-accent) transparent;
+    scrollbar-width: thin;
+    overflow-x: hidden !important;
+  }
+
+  .article-scroll-container::-webkit-scrollbar {
+    display: block !important;
+    width: 5px;
+    height: 5px;
+  }
+
+  .article-scroll-container::-webkit-scrollbar-button {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  .article-scroll-container::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .article-scroll-container::-webkit-scrollbar-thumb {
+    background-color: var(--color-accent);
+    border-radius: 9999px;
+  }
+
+  .article-scroll-container::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-accent-hover);
+  }
+
+  :root[data-reading-mode='true'] .article-scroll-container,
+  html.reading-mode .article-scroll-container {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  :root[data-reading-mode='true'] .article-scroll-container::-webkit-scrollbar,
+  html.reading-mode .article-scroll-container::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  *:not(html):not(body):not(pre):not(pre *):not(.article-scroll-container):not(
+      .article-scroll-container *
+    ) {
     @apply scrollbar-none [-ms-overflow-style:none];
   }
 
-  *:not(pre):not(pre *)::-webkit-scrollbar {
+  *:not(html):not(body):not(pre):not(pre *):not(.article-scroll-container):not(
+      .article-scroll-container *
+    )::-webkit-scrollbar {
     @apply hidden;
   }
 
@@ -297,7 +400,7 @@ select:focus-visible,
 details:focus-visible,
 summary:focus-visible,
 [tabindex='0']:focus-visible {
-  @apply rounded-sm outline-2! outline-offset-2! outline-copilot!;
+  @apply rounded-md outline-2! outline-offset-2! outline-focus-ring!;
 }
 
 :root[data-focus-highlight='true']
@@ -317,7 +420,7 @@ summary:focus-visible,
     summary,
     [tabindex='0']
   ):focus-visible {
-  @apply rounded-sm outline-4! outline-offset-4! outline-a11y-focus!;
+  @apply rounded-md outline-4! outline-offset-4! outline-a11y-focus!;
 }
 
 input:focus-visible,
@@ -328,12 +431,12 @@ textarea:focus-visible {
 input:not([type='range']):not(.search-input):focus,
 textarea:focus,
 select:focus {
-  @apply border-copilot! ring-2! ring-[color-mix(in_srgb,var(--color-copilot)_20%,transparent)]!;
+  @apply border-accent! ring-2! ring-[color-mix(in_srgb,var(--color-accent)_20%,transparent)]!;
 }
 
 input.input-valid,
 textarea.input-valid {
-  @apply border-copilot!;
+  @apply border-accent!;
 }
 
 input[type='text'],
@@ -404,9 +507,22 @@ select {
   --font-sans: 'Lexend Variable', ui-sans-serif, system-ui, sans-serif;
 }
 
-:root[data-dyslexic-font='true'] body {
+:root[data-dyslexic-font='true'] article,
+:root[data-dyslexic-font='true'] .prose-custom,
+:root[data-dyslexic-font='true'] main {
   letter-spacing: 0.02em;
   line-height: 1.8;
+}
+
+:root[data-dyslexic-font='true'] .popover-surface,
+:root[data-dyslexic-font='true'] dialog,
+:root[data-dyslexic-font='true'] nav,
+:root[data-dyslexic-font='true'] button,
+:root[data-dyslexic-font='true'] input,
+:root[data-dyslexic-font='true'] select,
+:root[data-dyslexic-font='true'] textarea {
+  letter-spacing: normal;
+  line-height: normal;
 }
 
 :root {
@@ -450,18 +566,18 @@ select {
 
 @layer base {
   .prose-custom {
-    @apply text-[0.975rem] leading-[1.75] text-(--color-body);
+    @apply text-sm leading-relaxed text-(--color-body);
     --color-heading: var(--color-text-primary);
     --color-body: var(--color-text-secondary);
-    --color-link: var(--color-copilot);
-    --color-link-hover: var(--color-copilot-hover);
+    --color-link: var(--color-accent);
+    --color-link-hover: var(--color-accent-hover);
   }
 
   :root.dark .prose-custom {
     --color-heading: var(--color-text-primary);
     --color-body: var(--color-text-secondary);
-    --color-link: var(--color-copilot);
-    --color-link-hover: var(--color-copilot-hover);
+    --color-link: var(--color-accent);
+    --color-link-hover: var(--color-accent-hover);
   }
 
   .prose-custom > *:first-child {
@@ -551,7 +667,7 @@ select {
   }
 
   .prose-custom blockquote:not(.markdown-alert) {
-    @apply my-6 rounded-sm border border-border-default/40 bg-surface-hover/30 p-4 text-sm leading-relaxed text-text-secondary;
+    @apply my-6 rounded-md border border-border-default/40 bg-surface-hover/30 p-4 text-sm leading-relaxed text-text-secondary;
   }
 
   .prose-custom blockquote:not(.markdown-alert) p {
@@ -559,7 +675,7 @@ select {
   }
 
   .prose-custom pre {
-    @apply mt-6 mb-6 scrollbar-none overflow-x-auto rounded-sm border border-border-subtle bg-surface-hover px-3 py-1.5 font-mono text-[0.8rem] leading-snug break-normal whitespace-pre [-ms-overflow-style:none];
+    @apply mt-6 mb-6 scrollbar-none overflow-x-auto rounded-md border border-border-subtle bg-surface-hover px-3 py-1.5 font-mono text-[0.8rem] leading-snug break-normal whitespace-pre [-ms-overflow-style:none];
   }
 
   .prose-custom pre[data-enhanced='true'] {
@@ -661,7 +777,7 @@ select {
   :root.dark .prose-custom h5:hover .heading-text,
   :root.dark .prose-custom h6:hover .heading-text,
   :root.dark .prose-custom .heading-text:hover {
-    @apply text-copilot underline underline-offset-4;
+    @apply text-accent underline underline-offset-4;
   }
 
   .prose-custom h1:hover a.anchor-link,
@@ -692,11 +808,11 @@ select {
   :root.dark .prose-custom h5:hover a.anchor-link svg,
   :root.dark .prose-custom h6:hover a.anchor-link svg,
   :root.dark .prose-custom a.anchor-link:hover svg {
-    @apply text-copilot! no-underline! opacity-100!;
+    @apply text-accent! no-underline! opacity-100!;
   }
 
   .prose-custom table {
-    @apply my-6 table w-full max-w-full table-fixed border-separate border-spacing-0 overflow-hidden rounded-sm border border-border-subtle text-left text-xs shadow-2xs;
+    @apply my-6 table w-full max-w-full table-fixed border-separate border-spacing-0 overflow-hidden rounded-md border border-border-subtle text-left text-xs shadow-2xs;
   }
 
   .prose-custom thead {
@@ -735,7 +851,7 @@ select {
   }
 
   .prose-custom .markdown-alert {
-    @apply my-6 rounded-sm border p-4 text-xs transition-colors duration-200 sm:text-sm;
+    @apply my-6 rounded-md border p-4 text-xs transition-colors duration-200 sm:text-sm;
   }
 
   .prose-custom .markdown-alert-title {
@@ -798,7 +914,7 @@ select {
   }
 
   .prose-custom .markdown-callout {
-    @apply my-6 rounded-sm border border-border-default/40 bg-surface-hover/30 p-4 text-xs text-text-secondary transition-colors duration-200 sm:text-sm;
+    @apply my-6 rounded-md border border-border-default/40 bg-surface-hover/30 p-4 text-xs text-text-secondary transition-colors duration-200 sm:text-sm;
   }
 
   .prose-custom .markdown-callout-title {
@@ -832,11 +948,20 @@ select {
   }
 
   .prose-custom .footnotes {
-    @apply mt-10 border-t border-border-subtle pt-4 text-xs leading-relaxed text-text-secondary sm:text-sm;
+    @apply mt-10 border-t border-border-subtle pt-4 text-[calc(0.84375rem*var(--a11y-scale))] leading-relaxed text-text-secondary;
   }
 
   .prose-custom .footnotes ol {
-    @apply my-2 list-decimal space-y-1.5 pl-6;
+    @apply my-2 list-none! space-y-1.5 pl-0! [counter-reset:footnotes];
+  }
+
+  .prose-custom .footnotes li {
+    @apply relative pl-5! [counter-increment:footnotes];
+  }
+
+  .prose-custom .footnotes li::before {
+    content: counter(footnotes) '.';
+    @apply absolute top-0 left-0 font-mono text-text-secondary tabular-nums select-none;
   }
 
   .prose-custom .footnotes li p {
@@ -844,51 +969,27 @@ select {
   }
 
   .prose-custom [data-footnote-ref] {
-    @apply text-[0.9em] font-normal text-security no-underline hover:underline;
+    @apply font-mono text-[0.8em] font-medium text-security no-underline hover:underline;
   }
 
-  .prose-custom .footnotes li {
-    display: list-item;
-  }
-
-  .prose-custom .footnotes li::marker {
-    color: var(--color-text-secondary);
-  }
-
-  .prose-custom [data-footnote-backref] {
-    @apply inline-flex items-center text-security no-underline hover:underline;
-    font-size: 0;
-    margin-left: 0.25rem;
+  .prose-custom .footnote-backref {
+    @apply inline-flex items-center font-mono text-security no-underline hover:underline;
     vertical-align: baseline;
+    line-height: 1;
   }
 
-  .prose-custom [data-footnote-backref] + [data-footnote-backref] {
-    margin-left: 0.15rem;
+  .prose-custom .footnote-backref-static {
+    @apply inline-flex items-center font-mono text-text-muted;
+    vertical-align: baseline;
+    line-height: 1;
   }
 
-  .prose-custom [data-footnote-backref]::before {
-    content: '';
-    display: inline-block;
-    width: 0.75em;
-    height: 0.75em;
-    vertical-align: middle;
-    background-color: currentColor;
-    -webkit-mask: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>')
-      center / contain no-repeat;
-    mask: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>')
-      center / contain no-repeat;
-    font-size: 0.75rem;
-  }
-
-  .prose-custom [data-footnote-backref] sup {
-    @apply font-mono;
-    font-size: 0.55rem !important;
+  .prose-custom .footnote-sub-backref {
+    @apply inline-flex items-center font-mono text-security italic no-underline hover:underline;
+    font-size: 0.75rem !important;
     line-height: 1 !important;
-    font-weight: 500;
-    vertical-align: super;
-    margin-left: 0.05rem;
-    color: currentColor;
-    display: inline-block;
+    vertical-align: 0.32em;
+    text-underline-offset: 2px;
   }
 
   .prose-custom .footnotes li:target a {
@@ -1045,7 +1146,7 @@ select {
 
   .prose-custom mark,
   mark {
-    @apply rounded-sm bg-security-subtle px-1 py-0.5 font-normal text-security;
+    @apply rounded-md bg-security-subtle px-1 py-0.5 font-normal text-security;
   }
 
   .prose-custom kbd,
@@ -1158,7 +1259,7 @@ select {
   }
 
   .markdown-tabs-container {
-    @apply my-6 rounded-sm border border-border-subtle shadow-2xs;
+    @apply my-6 rounded-md border border-border-subtle shadow-2xs;
   }
 
   .markdown-tabs-container[data-code-theme] {
@@ -1166,7 +1267,7 @@ select {
   }
 
   .markdown-tabs-header {
-    @apply relative flex min-h-8 items-end justify-between rounded-t-sm border-b border-border-subtle px-3 pt-0 pb-0 select-none;
+    @apply relative flex min-h-8 items-end justify-between rounded-t-md border-b border-border-subtle px-3 pt-0 pb-0 select-none;
   }
 
   .markdown-tabs-header[data-code-theme] {
@@ -1187,7 +1288,7 @@ select {
   }
 
   .markdown-tab-button.active-tab {
-    @apply border-b-copilot font-bold text-copilot;
+    @apply border-b-accent font-bold text-accent;
   }
 
   .markdown-tab-button:not(.active-tab) {
@@ -1195,22 +1296,22 @@ select {
   }
 
   .markdown-tabs-body {
-    @apply rounded-b-sm;
+    @apply rounded-b-md;
   }
 
   .markdown-tabs-container .markdown-tab-panel {
-    @apply rounded-b-sm p-4;
+    @apply rounded-b-md p-4;
   }
 
   .markdown-tabs-container .markdown-tab-panel:has(> .code-block-container),
   .markdown-tabs-container .markdown-tab-panel:has(> .code-body),
   .markdown-tabs-container .markdown-tab-panel:has(> pre),
   .markdown-tabs-container .markdown-tab-panel:has(.code-block-container) {
-    @apply rounded-b-sm p-0!;
+    @apply rounded-b-md p-0!;
   }
 
   .markdown-tabs-container .code-block-container {
-    @apply my-0! rounded-b-sm! border-0!;
+    @apply my-0! rounded-b-md! border-0!;
   }
 
   .markdown-tabs-container .code-header-bar {
@@ -1218,15 +1319,15 @@ select {
   }
 
   .markdown-tabs-container .code-body {
-    @apply rounded-b-sm! border-0!;
+    @apply rounded-b-md! border-0!;
   }
 
   .markdown-tabs-container .code-scrollbar-wrapper {
-    @apply rounded-b-sm! border-0!;
+    @apply rounded-b-md! border-0!;
   }
 
   .markdown-tabs-container pre {
-    @apply my-0! rounded-b-sm! border-0!;
+    @apply my-0! rounded-b-md! border-0!;
   }
 
   .cf-turnstile {
@@ -1241,7 +1342,7 @@ select {
 
   .prose-custom details.markdown-details,
   .prose-custom details {
-    @apply my-4 overflow-hidden rounded-sm glass-card border border-border-subtle text-text-primary shadow-md backdrop-blur-md;
+    @apply my-4 overflow-hidden rounded-md glass-card border border-border-subtle text-text-primary shadow-md backdrop-blur-md;
     border: 1px solid var(--color-border-subtle);
   }
 

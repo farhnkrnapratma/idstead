@@ -1,6 +1,7 @@
 <script lang="ts">
   import {Accessibility, ToggleLeft, ToggleRight} from '@lucide/svelte';
   import {cn} from '../../utils/cn';
+  import {popoverPosition} from '../../utils/popoverPosition';
   import IconButton from '../IconButton.svelte';
   import {
     a11yStore,
@@ -76,8 +77,8 @@
       aria-expanded={isOpen}
       onclick={() => (isOpen = !isOpen)}
       class={cn(
-        'border-border-subtle bg-surface backdrop-blur-none hover:border-copilot hover:bg-surface-hover sm:h-9 sm:w-9',
-        isOpen && 'border-copilot text-copilot'
+        'border-border-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9',
+        isOpen && 'border-accent text-accent'
       )}>
       <Accessibility class="size-4" />
     </IconButton>
@@ -92,11 +93,13 @@
       <div
         role="dialog"
         aria-labelledby="a11y-settings-heading"
+        use:popoverPosition={{
+          placement: dropdownDirection === 'up' ? 'top-end' : 'bottom-end',
+          offset: 8,
+          padding: 8
+        }}
         class={cn(
-          'absolute z-70 flex w-72 max-w-[calc(100vw-1.5rem)] flex-col popover-surface p-4',
-          dropdownDirection === 'up' ?
-            'bottom-[calc(100%+8px)] left-0 sm:right-0 sm:left-auto'
-          : 'top-[calc(100%+8px)] right-0'
+          'absolute z-70 flex w-72 max-w-[calc(100vw-1.5rem)] flex-col popover-surface p-4 leading-normal'
         )}>
         <div class="relative z-10 flex flex-col gap-3">
           <div class="flex items-center justify-between">
@@ -108,7 +111,7 @@
             <button
               type="button"
               onclick={a11yStore.reset}
-              class="cursor-pointer text-2xs font-medium text-text-secondary transition-colors hover:text-copilot">
+              class="cursor-pointer text-2xs font-medium text-text-secondary transition-colors hover:text-accent">
               Reset to default
             </button>
           </div>
@@ -120,14 +123,14 @@
           <div
             role="group"
             aria-label="Text size"
-            class="flex items-center justify-between rounded-sm border border-border-subtle bg-surface-hover/50 px-2.5 py-1.5">
+            class="flex items-center justify-between rounded-md border border-border-subtle bg-surface-hover/50 px-2.5 py-1.5">
             <span class="text-xs text-text-secondary">Text size</span>
             <div class="flex items-center gap-2">
               <button
                 type="button"
                 onclick={decreaseFontScale}
                 disabled={a11yStore.current.fontScale <= 100}
-                class="flex size-6 cursor-pointer items-center justify-center rounded-sm border border-border-subtle bg-surface text-xs font-bold text-text-primary hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-40"
+                class="flex size-6 cursor-pointer items-center justify-center rounded-md border border-border-subtle bg-surface text-xs font-bold text-text-primary hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-40"
                 aria-label="Decrease text size">
                 -
               </button>
@@ -139,7 +142,7 @@
                 type="button"
                 onclick={increaseFontScale}
                 disabled={a11yStore.current.fontScale >= 150}
-                class="flex size-6 cursor-pointer items-center justify-center rounded-sm border border-border-subtle bg-surface text-xs font-bold text-text-primary hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-40"
+                class="flex size-6 cursor-pointer items-center justify-center rounded-md border border-border-subtle bg-surface text-xs font-bold text-text-primary hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-40"
                 aria-label="Increase text size">
                 +
               </button>
@@ -147,13 +150,15 @@
           </div>
 
           <div
-            class="flex flex-col gap-2"
+            class="flex flex-col gap-1"
             role="group"
             aria-labelledby="a11y-settings-heading">
             {#each A11Y_TOGGLES as item (item.key)}
               {@const checked = a11yStore.current[item.key]}
-              <div class="flex items-center justify-between gap-2">
-                <span class="truncate text-xs font-semibold text-text-primary">
+              <div
+                class="group/item flex items-center justify-between gap-2 py-0.5">
+                <span
+                  class="truncate text-xs font-normal text-text-secondary transition-colors group-hover/item:text-text-primary">
                   {item.label}
                 </span>
                 <button
@@ -162,19 +167,19 @@
                   aria-checked={checked}
                   aria-label="{item.label}: {item.description}"
                   onclick={item.toggle}
-                  class="relative flex size-8 shrink-0 cursor-pointer items-center justify-center">
+                  class="relative flex h-6.5 w-7 shrink-0 cursor-pointer items-center justify-center">
                   <ToggleLeft
                     class={cn(
-                      'absolute size-8 transition-all duration-200',
+                      'absolute size-6.5 transition-[transform,opacity] duration-150',
                       checked ? 'scale-75 opacity-0' : (
-                        'scale-100 text-text-muted opacity-100 hover:text-text-secondary'
+                        'scale-100 text-text-muted opacity-100 group-hover/item:text-text-secondary'
                       )
                     )} />
                   <ToggleRight
                     class={cn(
-                      'absolute size-8 transition-all duration-200',
+                      'absolute size-6.5 transition-[transform,opacity] duration-150',
                       checked ?
-                        'scale-100 text-copilot opacity-100'
+                        'scale-100 text-accent opacity-100'
                       : 'scale-75 opacity-0'
                     )} />
                 </button>

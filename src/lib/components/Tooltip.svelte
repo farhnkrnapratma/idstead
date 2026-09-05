@@ -233,7 +233,7 @@
     role="tooltip"
     style="top: {coords.top}px; left: {coords.left}px;"
     class={cn(
-      'pointer-events-none fixed z-70 rounded-sm glass-overlay px-2 py-1 text-3xs font-medium whitespace-nowrap text-text-primary shadow-lg',
+      'pointer-events-none fixed z-70 rounded-md glass-overlay px-2 py-1 text-3xs font-medium whitespace-nowrap text-text-primary shadow-lg',
       className
     )}
     transition:fade={{duration: 100}}>

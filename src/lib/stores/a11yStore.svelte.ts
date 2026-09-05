@@ -96,6 +96,17 @@ function createA11yStore() {
     reduceMotionQuery.addEventListener('change', onMotionChange);
     window.addEventListener('storage', onStorage);
 
+    if (typeof document !== 'undefined' && 'fonts' in document) {
+      const preloadLexend = () => {
+        document.fonts.load('400 1rem "Lexend Variable"').catch(() => {});
+      };
+      if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(preloadLexend, {timeout: 2000});
+      } else {
+        setTimeout(preloadLexend, 500);
+      }
+    }
+
     return () => {
       reduceMotionQuery.removeEventListener('change', onMotionChange);
       window.removeEventListener('storage', onStorage);

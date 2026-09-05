@@ -4,7 +4,7 @@
     disabled = false,
     speed = 2,
     class: className = '',
-    color = 'var(--color-copilot)',
+    color = 'var(--color-accent)',
     shineColor = '#ffffff',
     spread = 120,
     yoyo = false,

@@ -161,68 +161,6 @@
     value = merged;
     inputValue = '';
   }
-
-  function fitPill(node: HTMLElement) {
-    function update() {
-      const textEl = node.querySelector<HTMLElement>('[data-pill-text]');
-      if (!textEl) return;
-      node.style.maxWidth = '';
-
-      const range = document.createRange();
-      range.selectNodeContents(textEl);
-      const rects = range.getClientRects();
-
-      if (rects.length > 1) {
-        let maxLineWidth = 0;
-        for (let i = 0; i < rects.length; i++) {
-          const w = rects[i].width;
-          if (w > maxLineWidth) maxLineWidth = w;
-        }
-
-        const gripEl = node.querySelector<HTMLElement>('[data-pill-grip]');
-        const removeEl = node.querySelector<HTMLElement>('[data-pill-remove]');
-        const gripWidth = gripEl ? gripEl.offsetWidth : 12;
-        const removeWidth = removeEl ? removeEl.offsetWidth : 14;
-
-        const style = window.getComputedStyle(node);
-        const paddingLeft = parseFloat(style.paddingLeft) || 8;
-        const paddingRight = parseFloat(style.paddingRight) || 8;
-        const borderLeft = parseFloat(style.borderLeftWidth) || 1;
-        const borderRight = parseFloat(style.borderRightWidth) || 1;
-
-        const totalWidth = Math.ceil(
-          maxLineWidth
-            + gripWidth
-            + removeWidth
-            + paddingLeft
-            + paddingRight
-            + borderLeft
-            + borderRight
-            + 12
-        );
-
-        node.style.maxWidth = `${totalWidth}px`;
-      }
-    }
-
-    requestAnimationFrame(update);
-
-    const ro = new ResizeObserver(() => {
-      requestAnimationFrame(update);
-    });
-    if (node.parentElement) {
-      ro.observe(node.parentElement);
-    }
-
-    return {
-      update() {
-        requestAnimationFrame(update);
-      },
-      destroy() {
-        ro.disconnect();
-      }
-    };
-  }
 </script>
 
 <div
@@ -236,7 +174,7 @@
     inputElement?.focus();
   }}
   class={cn(
-    'relative flex min-h-12 w-full flex-wrap gap-2 rounded-sm border border-border-subtle/50 bg-surface-card/85 px-3 shadow-2xs backdrop-blur-xs transition-colors focus-within:border-copilot focus-within:bg-surface-card focus-within:ring-2 focus-within:ring-copilot/20 focus-within:outline-none dark:border-white/10 dark:bg-surface-card/70 dark:focus-within:bg-surface-card/90',
+    'relative flex min-h-12 w-full flex-wrap gap-2 rounded-md border border-border-subtle/50 bg-surface-card/85 px-3 shadow-2xs backdrop-blur-xs transition-colors focus-within:border-accent focus-within:bg-surface-card focus-within:ring-2 focus-within:ring-accent/20 focus-within:outline-none dark:border-white/10 dark:bg-surface-card/70 dark:focus-within:bg-surface-card/90',
     isFloating ? 'items-start pt-5! pb-1.5!' : 'items-center py-2',
     className
   )}>
@@ -247,7 +185,7 @@
         'pointer-events-none absolute left-3 z-10 font-sans-title font-medium transition-all duration-200 select-none',
         isFloatingActive ?
           'top-1.5 text-2xs leading-none font-semibold '
-            + (isFocused ? 'text-copilot' : 'text-text-muted')
+            + (isFocused ? 'text-accent' : 'text-text-muted')
         : 'top-3 text-sm text-text-secondary/70',
         formCtx?.error ? 'text-danger!' : ''
       )}>
@@ -270,14 +208,13 @@
       role="group"
       aria-label={`${itemLabel}: ${item}`}
       draggable="true"
-      use:fitPill
       ondragstart={e => handleDragStart(idx, e)}
       ondragover={e => e.preventDefault()}
       ondrop={e => handleDrop(idx, e)}
-      class="box-border inline-flex h-5 max-h-5 w-fit max-w-full items-center gap-1 rounded-full border border-copilot/30 bg-copilot/10 px-1.5 font-sans text-xs leading-none font-medium text-copilot transition-all hover:border-copilot/50">
+      class="box-border inline-flex h-auto min-h-5 w-fit max-w-full items-center gap-1 rounded-full border border-accent/30 bg-accent/10 px-1.5 py-0.5 font-sans text-xs leading-tight font-medium text-accent transition-all hover:border-accent/50">
       <span
         data-pill-grip
-        class="inline-flex shrink-0 cursor-grab items-center justify-center text-copilot/60 transition-colors hover:text-copilot active:cursor-grabbing">
+        class="inline-flex shrink-0 cursor-grab items-center justify-center text-accent/60 transition-colors hover:text-accent active:cursor-grabbing">
         <GripVertical class="size-2.5 -translate-y-[0.5px]" />
       </span>
       {#if editingIdx === idx}
@@ -287,7 +224,7 @@
           bind:value={editingText}
           maxlength={maxItemLength}
           style="--sk-w: {Math.max(editingText.length, 3)}ch"
-          class="m-0 h-3.5 w-(--sk-w) appearance-none border-none bg-transparent p-0 font-sans text-xs leading-none font-medium text-copilot shadow-none ring-0 ring-offset-0 outline-none focus:border-none! focus:ring-0! focus:outline-none! focus-visible:border-none! focus-visible:ring-0! focus-visible:outline-none!"
+          class="m-0 h-3.5 w-(--sk-w) appearance-none border-none bg-transparent p-0 font-sans text-xs leading-none font-medium text-accent shadow-none ring-0 ring-offset-0 outline-none focus:border-none! focus:ring-0! focus:outline-none! focus-visible:border-none! focus-visible:ring-0! focus-visible:outline-none!"
           onkeydown={e => {
             const target = e.currentTarget as HTMLInputElement;
             if (e.key === ',') {
@@ -314,7 +251,7 @@
           data-pill-text
           role="button"
           tabindex="0"
-          class="inline-flex cursor-pointer items-center leading-none wrap-break-word hover:underline"
+          class="inline-flex cursor-pointer items-center leading-tight break-words whitespace-normal hover:underline"
           onclick={() => startEdit(idx, item)}
           onkeydown={e => {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -328,7 +265,7 @@
       <button
         data-pill-remove
         type="button"
-        class="inline-flex size-3.5 shrink-0 cursor-pointer items-center justify-center rounded-full p-0 text-copilot/60 transition-colors hover:bg-copilot/20 hover:text-copilot focus:outline-none active:text-copilot"
+        class="inline-flex size-3.5 shrink-0 cursor-pointer items-center justify-center rounded-full p-0 text-accent/60 transition-colors hover:bg-accent/20 hover:text-accent focus:outline-none active:text-accent"
         aria-label="Remove {item}"
         onclick={() => removeValue(idx)}>
         <X class="size-2.5 -translate-y-[0.5px]" />
@@ -343,7 +280,7 @@
       bind:value={inputValue}
       maxlength={maxItemLength}
       onfocus={() => (isFocused = true)}
-      class="h-5 min-w-16 flex-1 appearance-none border-none bg-transparent p-0 font-sans text-sm leading-5 text-text-primary shadow-none ring-0 ring-offset-0 outline-none placeholder:text-text-muted/60 focus:border-none! focus:ring-0! focus:outline-none! focus-visible:border-none! focus-visible:ring-0! focus-visible:outline-none!"
+      class="h-5 min-w-10 flex-1 shrink appearance-none border-none bg-transparent p-0 font-sans text-sm leading-5 text-text-primary shadow-none ring-0 ring-offset-0 outline-none placeholder:text-text-muted/60 focus:border-none! focus:ring-0! focus:outline-none! focus-visible:border-none! focus-visible:ring-0! focus-visible:outline-none!"
       placeholder={isFloating ? ''
       : value.length === 0 ? placeholderEmpty
       : placeholderFilled}

@@ -27,7 +27,7 @@
   role="region"
   aria-label={title || 'Filter and sort options'}
   class={cn(
-    'relative z-20 flex flex-col gap-3 rounded-sm glass-card p-4 select-none',
+    'relative z-20 flex flex-col gap-2.5 rounded-md glass-card p-3 select-none sm:gap-3 sm:p-4',
     className
   )}>
   <div

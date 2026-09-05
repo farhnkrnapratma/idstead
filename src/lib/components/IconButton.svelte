@@ -33,11 +33,11 @@
 
   const variantStyles = {
     default:
-      'glass-button hover:text-copilot hover:border-copilot disabled:hover:text-text-primary',
+      'glass-button hover:text-accent hover:border-accent disabled:hover:text-text-primary',
     ghost:
       'text-text-secondary hover:text-text-primary disabled:hover:bg-transparent disabled:hover:text-text-secondary',
     borderless:
-      'bg-transparent text-text-secondary hover:text-copilot disabled:hover:text-text-secondary'
+      'bg-transparent text-text-secondary hover:text-accent disabled:hover:text-text-secondary'
   };
 
   const sizeStyles = {
@@ -53,7 +53,7 @@
     {type}
     aria-label={ariaLabel}
     class={cn(
-      'inline-flex shrink-0 cursor-pointer items-center justify-center rounded-sm leading-none transition-colors select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-50 [&>i]:inline-flex [&>i]:items-center [&>i]:justify-center [&>i]:leading-none [&>svg]:block [&>svg]:shrink-0',
+      'inline-flex shrink-0 cursor-pointer items-center justify-center rounded-md leading-none transition-colors select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-50 [&>i]:inline-flex [&>i]:items-center [&>i]:justify-center [&>i]:leading-none [&>svg]:block [&>svg]:shrink-0',
       variantStyles[variant],
       sizeStyles[size],
       className

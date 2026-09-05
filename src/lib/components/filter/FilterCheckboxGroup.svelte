@@ -2,6 +2,7 @@
   import Checkbox from '../Checkbox.svelte';
   import Input from '../Input.svelte';
   import {cn} from '../../utils/cn';
+  import {popoverPosition} from '../../utils/popoverPosition';
   import DropdownTrigger from './DropdownTrigger.svelte';
 
   interface Option {
@@ -89,11 +90,17 @@
       <div
         role="group"
         aria-label="{label} filters"
+        use:popoverPosition={{
+          placement:
+            dropdownPlacement === 'right' ? 'bottom-end' : 'bottom-start',
+          offset: 8,
+          padding: 8
+        }}
         class={cn(
-          'absolute top-[calc(100%+8px)] z-60 flex flex-col popover-surface p-0',
+          'absolute z-60 flex flex-col popover-surface p-0',
           popoverSpan === '2cols-right' ?
-            'right-0 w-[calc(200%+0.625rem)] sm:inset-x-0 sm:w-full'
-          : 'inset-x-0 w-full'
+            'w-[calc(200%+0.625rem)] sm:w-full'
+          : 'w-full'
         )}>
         <div class="relative z-10 p-1.5 pb-1">
           <Input
@@ -107,7 +114,7 @@
           class="relative z-10 flex max-h-52 [scrollbar-width:none] flex-col overflow-y-auto p-1.5 pt-0.5 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {#each filteredOptions as opt (opt.value)}
             <label
-              class="flex cursor-pointer items-center gap-2.5 rounded-sm px-2 py-1.5 font-sans-title text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover hover:text-copilot">
+              class="flex cursor-pointer items-center gap-2.5 rounded-md px-2 py-1.5 font-sans-title text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover hover:text-accent">
               <Checkbox
                 checked={selectedValues.includes(opt.value)}
                 onchange={() => onChange(opt.value)} />
@@ -129,7 +136,7 @@
       <div class="flex flex-wrap gap-2">
         {#each options as opt (opt.value)}
           <label
-            class="flex cursor-pointer items-center gap-2 rounded-sm border border-border-subtle bg-surface-card px-2.5 py-1 font-sans-title text-xs font-medium text-text-primary hover:bg-surface-hover">
+            class="flex cursor-pointer items-center gap-2 rounded-md border border-border-subtle bg-surface-card px-2.5 py-1 font-sans-title text-xs font-medium text-text-primary hover:bg-surface-hover">
             <Checkbox
               checked={selectedValues.includes(opt.value)}
               onchange={() => onChange(opt.value)} />

@@ -23,7 +23,7 @@
   )}
   aria-live="polite"
   aria-atomic="true">
-  Showing <span class="font-bold text-copilot">{count}</span> of
-  <span class="font-bold text-copilot">{total}</span>
+  Showing <span class="font-bold text-accent">{count}</span> of
+  <span class="font-bold text-accent">{total}</span>
   {itemLabel}
 </div>

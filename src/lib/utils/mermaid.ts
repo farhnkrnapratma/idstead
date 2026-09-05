@@ -202,25 +202,25 @@ function attachDiagramToolbar(
   const menuButton = document.createElement('button');
   menuButton.type = 'button';
   menuButton.className =
-    'flex size-7 cursor-pointer items-center justify-center rounded-sm text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-copilot';
+    'flex size-7 cursor-pointer items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring';
   menuButton.setAttribute('aria-label', 'Diagram options');
   menuButton.innerHTML = `<svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>`;
 
   const dropdown = document.createElement('div');
   dropdown.className =
-    'absolute top-full right-0 z-20 mt-1.5 hidden min-w-[9rem] flex-col rounded-sm border border-border-subtle bg-surface-card p-1 shadow-lg backdrop-blur-md';
+    'absolute top-full right-0 z-20 mt-1.5 hidden min-w-[9rem] flex-col rounded-md border border-border-subtle bg-surface-card p-1 shadow-lg backdrop-blur-md';
 
   const copySvgItem = document.createElement('button');
   copySvgItem.type = 'button';
   copySvgItem.className =
-    'flex w-full cursor-pointer items-center gap-2 rounded-sm px-2.5 py-1.5 text-left text-xs font-medium text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary';
+    'flex w-full cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs font-medium text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary';
   copySvgItem.innerHTML = `<svg class="size-3.5 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg><span>Copy SVG</span>`;
 
   copySvgItem.onclick = async e => {
     e.stopPropagation();
     try {
       await navigator.clipboard.writeText(svgString);
-      copySvgItem.innerHTML = `<svg class="size-3.5 text-copilot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span class="font-semibold text-copilot">Copied SVG!</span>`;
+      copySvgItem.innerHTML = `<svg class="size-3.5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span class="font-semibold text-accent">Copied SVG!</span>`;
       setTimeout(() => {
         dropdown.classList.add('hidden');
         copySvgItem.innerHTML = `<svg class="size-3.5 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg><span>Copy SVG</span>`;
@@ -231,14 +231,14 @@ function attachDiagramToolbar(
   const copyCodeItem = document.createElement('button');
   copyCodeItem.type = 'button';
   copyCodeItem.className =
-    'flex w-full cursor-pointer items-center gap-2 rounded-sm px-2.5 py-1.5 text-left text-xs font-medium text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary';
+    'flex w-full cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs font-medium text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary';
   copyCodeItem.innerHTML = `<svg class="size-3.5 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg><span>Copy Code</span>`;
 
   copyCodeItem.onclick = async e => {
     e.stopPropagation();
     try {
       await navigator.clipboard.writeText(rawCode);
-      copyCodeItem.innerHTML = `<svg class="size-3.5 text-copilot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span class="font-semibold text-copilot">Copied Code!</span>`;
+      copyCodeItem.innerHTML = `<svg class="size-3.5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span class="font-semibold text-accent">Copied Code!</span>`;
       setTimeout(() => {
         dropdown.classList.add('hidden');
         copyCodeItem.innerHTML = `<svg class="size-3.5 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg><span>Copy Code</span>`;

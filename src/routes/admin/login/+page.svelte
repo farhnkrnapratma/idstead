@@ -176,7 +176,7 @@
     {#snippet leading()}
       <ArrowLeft class="size-4" />
     {/snippet}
-    Back to website
+    Home
   </Button>
   <ThemeSelect
     theme={themeStore.current}
@@ -192,7 +192,7 @@
       class="w-full overflow-visible p-5 sm:p-6">
       <div class="mb-5 flex flex-col items-center text-center select-none">
         <div
-          class="mb-3 flex size-10 items-center justify-center rounded-full bg-copilot-subtle text-copilot">
+          class="mb-3 flex size-10 items-center justify-center rounded-full bg-accent-subtle text-accent">
           <ShieldUser class="size-5" />
         </div>
         <h1 class="text-xl font-bold text-text-primary">Admin Portal</h1>

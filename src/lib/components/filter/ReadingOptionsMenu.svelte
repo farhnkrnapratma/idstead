@@ -1,6 +1,6 @@
 <script lang="ts">
   import {
-    BookOpen,
+    View,
     Circle,
     CircleDot,
     ToggleLeft,
@@ -204,10 +204,10 @@
       aria-expanded={isOpen}
       onclick={toggle}
       class={cn(
-        'border-border-subtle bg-surface backdrop-blur-none hover:border-copilot hover:bg-surface-hover sm:h-9 sm:w-9',
-        isOpen && 'border-copilot text-copilot'
+        'border-border-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9',
+        isOpen && 'border-accent text-accent'
       )}>
-      <BookOpen class="size-4" />
+      <View class="size-4" />
     </IconButton>
 
     {#if isOpen}
@@ -234,7 +234,7 @@
           <button
             type="button"
             onclick={close}
-            class="inline-flex size-6 cursor-pointer items-center justify-center rounded-sm text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-copilot"
+            class="inline-flex size-6 cursor-pointer items-center justify-center rounded-md text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring"
             aria-label="Close reading options">
             <X class="size-3.5" />
           </button>
@@ -244,7 +244,7 @@
           <div
             role="tablist"
             aria-label="Reading options categories"
-            class="grid grid-flow-col gap-1 rounded-sm border border-border-subtle/40 bg-surface-hover/40 p-1 select-none">
+            class="grid grid-flow-col gap-1 rounded-md border border-border-subtle/40 bg-surface-hover/40 p-1 select-none">
             {#each availableTabs as tab (tab.id)}
               {@const active = activeTab === tab.id}
               <button
@@ -255,9 +255,9 @@
                 aria-controls="panel-{tab.id}"
                 onclick={() => (activeTab = tab.id)}
                 class={cn(
-                  'flex items-center justify-center gap-1.5 rounded-sm px-2 py-1 text-xs font-medium transition-all',
+                  'flex items-center justify-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-all',
                   active ?
-                    'bg-surface-card font-semibold text-copilot shadow-2xs'
+                    'bg-surface-card font-semibold text-accent shadow-2xs'
                   : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
                 )}>
                 <tab.icon class="size-3.5 shrink-0" />
@@ -267,148 +267,166 @@
           </div>
         {/if}
 
-        {#if activeTab === 'font' && showFontSelect}
-          <div
-            id="panel-font"
-            role="tabpanel"
-            aria-labelledby="tab-font"
-            class="flex flex-col gap-2.5">
-            <div class="flex items-center justify-between gap-2">
-              <span
-                class="text-2xs font-semibold tracking-wider text-text-muted uppercase">
-                Font
-              </span>
-              <button
-                type="button"
-                onclick={contentFontStore.reset}
-                class="cursor-pointer text-2xs font-semibold text-text-muted underline-offset-2 hover:text-copilot hover:underline">
-                Reset to default
-              </button>
-            </div>
-
-            <div class="flex flex-col gap-1">
-              {#each fontOptions as opt (opt.value)}
-                {@const selected = contentFontStore.current === opt.value}
+        <div class="grid grid-cols-1 grid-rows-1 items-start">
+          {#if showFontSelect}
+            <div
+              id="panel-font"
+              role="tabpanel"
+              aria-labelledby="tab-font"
+              aria-hidden={activeTab !== 'font'}
+              class={cn(
+                'col-start-1 row-start-1 flex flex-col gap-2.5 transition-opacity duration-150',
+                activeTab === 'font' ? 'z-10 opacity-100' : (
+                  'pointer-events-none invisible z-0 opacity-0'
+                )
+              )}>
+              <div class="flex items-center justify-between gap-2">
+                <span
+                  class="text-2xs font-semibold tracking-wider text-text-muted uppercase">
+                  Font
+                </span>
                 <button
                   type="button"
-                  role="radio"
-                  aria-checked={selected}
-                  onclick={() => contentFontStore.setFont(opt.value)}
-                  onmouseenter={() => (hoveredFont = opt.value)}
-                  onmouseleave={() => (hoveredFont = null)}
-                  class={cn(
-                    'group flex items-center justify-between rounded-sm border px-2.5 py-1.5 text-xs transition-colors',
-                    selected ?
-                      'border-copilot bg-copilot/10 text-copilot'
-                    : 'border-border-subtle bg-surface text-text-secondary hover:border-copilot/50 hover:text-text-primary'
-                  )}>
-                  <span class={cn('font-medium', opt.fontClass)}>
-                    {opt.label}
-                  </span>
-                  <span
-                    class="relative flex size-3.5 shrink-0 items-center justify-center">
-                    <Circle
-                      class={cn(
-                        'absolute size-3.5 transition-all duration-200',
-                        selected ? 'scale-0 opacity-0' : (
-                          'scale-100 text-text-muted opacity-100 group-hover:text-text-secondary'
-                        )
-                      )} />
-                    <CircleDot
-                      class={cn(
-                        'absolute size-3.5 transition-all duration-200',
-                        selected ?
-                          'scale-100 text-copilot opacity-100'
-                        : 'scale-0 opacity-0'
-                      )} />
-                  </span>
+                  onclick={contentFontStore.reset}
+                  class="cursor-pointer text-2xs font-semibold text-text-muted underline-offset-2 hover:text-accent hover:underline">
+                  Reset to default
                 </button>
-              {/each}
-            </div>
+              </div>
 
-            <div class="flex flex-col gap-1">
-              <span
-                class="text-2xs font-semibold tracking-wider text-text-muted uppercase">
-                Preview
-              </span>
-              <div
-                class="rounded-sm border border-border-subtle bg-surface px-2.5 py-2">
+              <div class="flex flex-col gap-1">
+                {#each fontOptions as opt (opt.value)}
+                  {@const selected = contentFontStore.current === opt.value}
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    onclick={() => contentFontStore.setFont(opt.value)}
+                    onmouseenter={() => (hoveredFont = opt.value)}
+                    onmouseleave={() => (hoveredFont = null)}
+                    class={cn(
+                      'group flex items-center justify-between rounded-md border px-2.5 py-1.5 text-xs transition-colors',
+                      selected ?
+                        'border-accent bg-accent/10 text-accent'
+                      : 'border-border-subtle bg-surface text-text-secondary hover:border-accent/50 hover:text-text-primary'
+                    )}>
+                    <span class={cn('font-medium', opt.fontClass)}>
+                      {opt.label}
+                    </span>
+                    <span
+                      class="relative flex size-3.5 shrink-0 items-center justify-center">
+                      <Circle
+                        class={cn(
+                          'absolute size-3.5 transition-all duration-200',
+                          selected ? 'scale-0 opacity-0' : (
+                            'scale-100 text-text-muted opacity-100 group-hover:text-text-secondary'
+                          )
+                        )} />
+                      <CircleDot
+                        class={cn(
+                          'absolute size-3.5 transition-all duration-200',
+                          selected ?
+                            'scale-100 text-accent opacity-100'
+                          : 'scale-0 opacity-0'
+                        )} />
+                    </span>
+                  </button>
+                {/each}
+              </div>
+
+              <div class="flex flex-col gap-1">
                 <span
-                  class={cn(
-                    'text-xs wrap-break-word whitespace-normal text-text-secondary',
-                    previewFontClass
-                  )}>
-                  Everyone has the right to freedom of thought, conscience and
-                  religion.
+                  class="text-2xs font-semibold tracking-wider text-text-muted uppercase">
+                  Preview
                 </span>
+                <div
+                  class="rounded-md border border-border-subtle bg-surface px-2.5 py-2">
+                  <span
+                    class={cn(
+                      'text-xs wrap-break-word whitespace-normal text-text-secondary',
+                      previewFontClass
+                    )}>
+                    Everyone has the right to freedom of thought, conscience and
+                    religion.
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        {/if}
+          {/if}
 
-        {#if activeTab === 'language' && languageSwitcher && languageOptions.length > 1}
-          <div
-            id="panel-language"
-            role="tabpanel"
-            aria-labelledby="tab-language"
-            class="flex flex-col gap-2.5">
-            <div class="flex items-center justify-between gap-2">
-              <span
-                class="text-2xs font-semibold tracking-wider text-text-muted uppercase">
-                Language
-              </span>
-              <a
-                href={hrefForLang('en')}
-                onclick={close}
-                class="cursor-pointer text-2xs font-semibold text-text-muted underline-offset-2 hover:text-copilot hover:underline">
-                Reset to default
-              </a>
-            </div>
-
-            <div class="flex flex-col gap-1">
-              {#each languageOptions as loc (loc)}
-                {@const selected = loc === languageSwitcher.currentLanguage}
+          {#if languageSwitcher && languageOptions.length > 1}
+            <div
+              id="panel-language"
+              role="tabpanel"
+              aria-labelledby="tab-language"
+              aria-hidden={activeTab !== 'language'}
+              class={cn(
+                'col-start-1 row-start-1 flex flex-col gap-2.5 transition-opacity duration-150',
+                activeTab === 'language' ? 'z-10 opacity-100' : (
+                  'pointer-events-none invisible z-0 opacity-0'
+                )
+              )}>
+              <div class="flex items-center justify-between gap-2">
+                <span
+                  class="text-2xs font-semibold tracking-wider text-text-muted uppercase">
+                  Language
+                </span>
                 <a
-                  href={hrefForLang(loc)}
+                  href={hrefForLang('en')}
                   onclick={close}
-                  role="radio"
-                  aria-checked={selected}
-                  class={cn(
-                    'group flex items-center justify-between rounded-sm border px-2.5 py-1.5 text-xs transition-colors',
-                    selected ?
-                      'border-copilot bg-copilot/10 text-copilot'
-                    : 'border-border-subtle bg-surface text-text-secondary hover:border-copilot/50 hover:text-text-primary'
-                  )}>
-                  <span>{LANGUAGE_LABELS[loc] ?? loc}</span>
-                  <span
-                    class="relative flex size-3.5 shrink-0 items-center justify-center">
-                    <Circle
-                      class={cn(
-                        'absolute size-3.5 transition-all duration-200',
-                        selected ? 'scale-0 opacity-0' : (
-                          'scale-100 text-text-muted opacity-100 group-hover:text-text-secondary'
-                        )
-                      )} />
-                    <CircleDot
-                      class={cn(
-                        'absolute size-3.5 transition-all duration-200',
-                        selected ?
-                          'scale-100 text-copilot opacity-100'
-                        : 'scale-0 opacity-0'
-                      )} />
-                  </span>
+                  class="cursor-pointer text-2xs font-semibold text-text-muted underline-offset-2 hover:text-accent hover:underline">
+                  Reset to default
                 </a>
-              {/each}
-            </div>
-          </div>
-        {/if}
+              </div>
 
-        {#if activeTab === 'accessibility'}
+              <div class="flex flex-col gap-1">
+                {#each languageOptions as loc (loc)}
+                  {@const selected = loc === languageSwitcher.currentLanguage}
+                  <a
+                    href={hrefForLang(loc)}
+                    onclick={close}
+                    role="radio"
+                    aria-checked={selected}
+                    class={cn(
+                      'group flex items-center justify-between rounded-md border px-2.5 py-1.5 text-xs transition-colors',
+                      selected ?
+                        'border-accent bg-accent/10 text-accent'
+                      : 'border-border-subtle bg-surface text-text-secondary hover:border-accent/50 hover:text-text-primary'
+                    )}>
+                    <span>{LANGUAGE_LABELS[loc] ?? loc}</span>
+                    <span
+                      class="relative flex size-3.5 shrink-0 items-center justify-center">
+                      <Circle
+                        class={cn(
+                          'absolute size-3.5 transition-all duration-200',
+                          selected ? 'scale-0 opacity-0' : (
+                            'scale-100 text-text-muted opacity-100 group-hover:text-text-secondary'
+                          )
+                        )} />
+                      <CircleDot
+                        class={cn(
+                          'absolute size-3.5 transition-all duration-200',
+                          selected ?
+                            'scale-100 text-accent opacity-100'
+                          : 'scale-0 opacity-0'
+                        )} />
+                    </span>
+                  </a>
+                {/each}
+              </div>
+            </div>
+          {/if}
+
           <div
             id="panel-accessibility"
             role="tabpanel"
             aria-labelledby="tab-accessibility"
-            class="flex flex-col gap-2.5">
+            aria-hidden={activeTab !== 'accessibility'}
+            class={cn(
+              'col-start-1 row-start-1 flex flex-col gap-2.5 transition-opacity duration-150',
+              activeTab === 'accessibility' ? 'z-10 opacity-100' : (
+                'pointer-events-none invisible z-0 opacity-0'
+              )
+            )}>
             <div class="flex items-center justify-between gap-2">
               <span
                 class="text-2xs font-semibold tracking-wider text-text-muted uppercase">
@@ -417,20 +435,20 @@
               <button
                 type="button"
                 onclick={a11yStore.reset}
-                class="cursor-pointer text-2xs font-semibold text-text-muted underline-offset-2 hover:text-copilot hover:underline">
+                class="cursor-pointer text-2xs font-semibold text-text-muted underline-offset-2 hover:text-accent hover:underline">
                 Reset to default
               </button>
             </div>
 
             <div
-              class="flex items-center justify-between rounded-sm border border-border-subtle bg-surface-hover/50 px-2.5 py-1.5">
+              class="flex items-center justify-between rounded-md border border-border-subtle bg-surface-hover/50 px-2.5 py-1.5">
               <span class="text-xs text-text-secondary">Text size</span>
               <div class="flex items-center gap-2">
                 <button
                   type="button"
                   onclick={decreaseFontScale}
                   disabled={a11yStore.current.fontScale <= fontScales[0]}
-                  class="flex size-6 cursor-pointer items-center justify-center rounded-sm border border-border-subtle bg-surface text-xs font-bold text-text-primary hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-40"
+                  class="flex size-6 cursor-pointer items-center justify-center rounded-md border border-border-subtle bg-surface text-xs font-bold text-text-primary hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-40"
                   aria-label="Decrease text size">
                   -
                 </button>
@@ -443,37 +461,41 @@
                   onclick={increaseFontScale}
                   disabled={a11yStore.current.fontScale
                     >= fontScales[fontScales.length - 1]}
-                  class="flex size-6 cursor-pointer items-center justify-center rounded-sm border border-border-subtle bg-surface text-xs font-bold text-text-primary hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-40"
+                  class="flex size-6 cursor-pointer items-center justify-center rounded-md border border-border-subtle bg-surface text-xs font-bold text-text-primary hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-40"
                   aria-label="Increase text size">
                   +
                 </button>
               </div>
             </div>
 
-            <div class="flex flex-col gap-1.5 pt-0.5">
+            <div class="flex flex-col gap-1 pt-0.5">
               {#each A11Y_TOGGLES as item (item.key)}
                 {@const checked = a11yStore.current[item.key]}
-                <div class="flex items-center justify-between gap-2">
-                  <span class="text-xs text-text-primary">{item.label}</span>
+                <div
+                  class="group/item flex items-center justify-between gap-2 py-0.5">
+                  <span
+                    class="text-xs font-normal text-text-secondary transition-colors group-hover/item:text-text-primary">
+                    {item.label}
+                  </span>
                   <button
                     type="button"
                     role="switch"
                     aria-checked={checked}
                     aria-label={item.label}
                     onclick={item.toggle}
-                    class="relative flex size-8 shrink-0 cursor-pointer items-center justify-center">
+                    class="relative flex h-6.5 w-7 shrink-0 cursor-pointer items-center justify-center">
                     <ToggleLeft
                       class={cn(
-                        'absolute size-8 transition-all duration-200',
+                        'absolute size-6.5 transition-[transform,opacity] duration-150',
                         checked ? 'scale-75 opacity-0' : (
-                          'scale-100 text-text-muted opacity-100 hover:text-text-secondary'
+                          'scale-100 text-text-muted opacity-100 group-hover/item:text-text-secondary'
                         )
                       )} />
                     <ToggleRight
                       class={cn(
-                        'absolute size-8 transition-all duration-200',
+                        'absolute size-6.5 transition-[transform,opacity] duration-150',
                         checked ?
-                          'scale-100 text-copilot opacity-100'
+                          'scale-100 text-accent opacity-100'
                         : 'scale-75 opacity-0'
                       )} />
                   </button>
@@ -481,7 +503,7 @@
               {/each}
             </div>
           </div>
-        {/if}
+        </div>
       </div>
     {/if}
   </div>

@@ -30,21 +30,23 @@
 
 <div
   class={cn(
-    'flex flex-col gap-2 px-4 py-4 transition-all hover:bg-surface-hover/40 sm:px-6 sm:py-5',
+    'flex flex-col gap-1.5 px-3.5 py-3 transition-all hover:bg-surface-hover/40 sm:gap-2 sm:px-6 sm:py-5',
     className
   )}>
   <div
-    class="flex flex-col items-start gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+    class="flex flex-col items-start gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
     <div class="min-w-0 flex-1">
-      <h3 class="text-base leading-snug font-bold text-text-primary">{role}</h3>
-      <p class="mt-0.5 text-sm font-medium text-text-secondary">
+      <h3 class="text-sm leading-snug font-bold text-text-primary sm:text-base">
+        {role}
+      </h3>
+      <p class="mt-0.5 text-xs font-medium text-text-secondary">
         {organization}{#if location}
           &bull; {location}
         {/if}
       </p>
     </div>
     <span
-      class="inline-flex shrink-0 items-center gap-1.5 font-sans-title text-xs leading-none font-semibold text-text-muted select-none sm:mt-1 sm:self-auto">
+      class="inline-flex shrink-0 items-center gap-1.5 font-sans-title text-xs leading-none font-medium text-text-muted select-none sm:mt-1 sm:self-auto">
       <Calendar
         class="size-3.5 shrink-0 text-text-muted"
         strokeWidth={1.5} />
@@ -53,7 +55,7 @@
   </div>
 
   {#if description}
-    <p class="mt-1.5 text-sm leading-relaxed text-text-secondary">
+    <p class="mt-1 text-xs leading-relaxed text-text-secondary">
       {description}
     </p>
   {/if}

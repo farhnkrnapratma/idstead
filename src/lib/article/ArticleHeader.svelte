@@ -71,7 +71,7 @@
         onclick={handleTitleClick}
         onkeydown={e =>
           (e.key === 'Enter' || e.key === ' ') && handleTitleClick(e)}
-        class="heading-text inline transition-none group-hover:text-copilot group-hover:underline group-hover:underline-offset-4"
+        class="heading-text inline transition-none group-hover:text-accent group-hover:underline group-hover:underline-offset-4"
         >{titleParts.leading}&nbsp;<span class="whitespace-nowrap"
           >{titleParts.last}<a
             href="#title"
@@ -86,7 +86,7 @@
               stroke-width="2"
               stroke-linecap="round"
               stroke-linejoin="round"
-              class="lucide lucide-link-2 inline-block size-[0.75em] align-middle leading-none text-inherit no-underline opacity-0 select-none group-hover:text-copilot group-hover:opacity-100 dark:group-hover:text-copilot"
+              class="lucide lucide-link-2 inline-block size-[0.75em] align-middle leading-none text-inherit no-underline opacity-0 select-none group-hover:text-accent group-hover:opacity-100 dark:group-hover:text-accent"
               aria-hidden="true"
               ><path d="M9 17H7A5 5 0 0 1 7 7h2" /><path
                 d="M15 7h2a5 5 0 1 1 0 10h-2" /><line
@@ -103,7 +103,7 @@
         onclick={handleTitleClick}
         onkeydown={e =>
           (e.key === 'Enter' || e.key === ' ') && handleTitleClick(e)}
-        class="heading-text inline whitespace-nowrap transition-none group-hover:text-copilot group-hover:underline group-hover:underline-offset-4"
+        class="heading-text inline whitespace-nowrap transition-none group-hover:text-accent group-hover:underline group-hover:underline-offset-4"
         >{titleParts.last}<a
           href="#title"
           aria-label="Copy link to heading"
@@ -117,7 +117,7 @@
             stroke-width="2"
             stroke-linecap="round"
             stroke-linejoin="round"
-            class="lucide lucide-link-2 inline-block size-[0.75em] align-middle leading-none text-inherit no-underline opacity-0 select-none group-hover:text-copilot group-hover:opacity-100 dark:group-hover:text-copilot"
+            class="lucide lucide-link-2 inline-block size-[0.75em] align-middle leading-none text-inherit no-underline opacity-0 select-none group-hover:text-accent group-hover:opacity-100 dark:group-hover:text-accent"
             aria-hidden="true"
             ><path d="M9 17H7A5 5 0 0 1 7 7h2" /><path
               d="M15 7h2a5 5 0 1 1 0 10h-2" /><line

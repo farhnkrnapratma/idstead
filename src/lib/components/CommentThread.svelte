@@ -38,6 +38,7 @@
   import RelativeTime from './RelativeTime.svelte';
   import IconButton from './IconButton.svelte';
   import {cn} from '../utils/cn';
+  import {popoverPosition} from '../utils/popoverPosition';
   import {contentFontStore} from '../stores/contentFontStore.svelte';
   import {decodeHtmlEntities} from '../utils/formatters';
   import {toastStore} from '../stores/toastStore.svelte';
@@ -251,7 +252,7 @@
 
     <div class="min-w-0 flex-1">
       <div
-        class="relative inline-block max-w-full rounded-sm border border-border-subtle bg-surface-card px-2.5 py-1.5 text-left sm:px-3 sm:py-2">
+        class="relative inline-block max-w-full rounded-md border border-border-subtle bg-surface-card px-2.5 py-1.5 text-left sm:px-3 sm:py-2">
         <div class="flex items-center justify-between gap-3">
           <div class="flex min-w-0 items-center gap-1">
             <span
@@ -294,16 +295,21 @@
                   aria-label="Close menu"></button>
 
                 <div
-                  class="absolute top-[calc(100%+6px)] right-0 z-50 flex min-w-[130px] flex-col popover-surface p-0 text-xs shadow-xl select-none"
+                  use:popoverPosition={{
+                    placement: 'bottom-end',
+                    offset: 6,
+                    padding: 8
+                  }}
+                  class="absolute z-50 flex min-w-[130px] flex-col popover-surface p-0 text-xs shadow-xl select-none"
                   role="menu"
                   tabindex="-1"
                   onkeydown={e => handleMenuKeydown(e, comment.id)}>
                   <div
-                    class="relative z-10 flex flex-col overflow-hidden rounded-sm">
+                    class="relative z-10 flex flex-col overflow-hidden rounded-md">
                     <button
                       type="button"
                       role="menuitem"
-                      class="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left font-sans-title text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover hover:text-copilot"
+                      class="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left font-sans-title text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover hover:text-accent"
                       onclick={() => handleCopyId(comment.id)}>
                       <Copy class="size-3.5" />
                       <span>Copy ID</span>
@@ -312,7 +318,7 @@
                       <button
                         type="button"
                         role="menuitem"
-                        class="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left font-sans-title text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover hover:text-copilot"
+                        class="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left font-sans-title text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover hover:text-accent"
                         onclick={() => handleReport(comment)}>
                         <Flag class="size-3.5" />
                         <span>Report</span>
@@ -344,7 +350,7 @@
               && 'text-[0.78125rem]! sm:text-[0.84375rem]!'
           )}>
           {#if node.reply_to_author}
-            <span class="mr-1 font-normal text-copilot select-none">
+            <span class="mr-1 font-normal text-accent select-none">
               @{node.reply_to_author}
             </span>
           {/if}
@@ -366,7 +372,7 @@
           <span aria-hidden="true">·</span>
           <button
             type="button"
-            class="inline-flex cursor-pointer items-center gap-0.5 text-2xs leading-none font-semibold text-text-muted transition-colors hover:text-copilot hover:underline focus-visible:text-copilot focus-visible:underline"
+            class="inline-flex cursor-pointer items-center gap-0.5 text-2xs leading-none font-semibold text-text-muted transition-colors hover:text-accent hover:underline focus-visible:text-accent focus-visible:underline"
             aria-expanded={isExpanded}
             aria-controls={replyContainerId}
             onclick={() => toggleReplies(comment.id)}>

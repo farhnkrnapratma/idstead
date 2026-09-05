@@ -41,7 +41,7 @@
         class="font-mono text-5xl font-extrabold tracking-widest sm:text-7xl md:text-8xl">
         <ShinyText
           text={String(code)}
-          color="var(--color-copilot)"
+          color="var(--color-accent)"
           shineColor="#ffffff"
           speed={3} />
       </p>
@@ -80,11 +80,11 @@
     role="alert"
     aria-live="assertive"
     class={cn(
-      'flex flex-col items-center justify-center rounded-sm border border-danger/30 bg-danger-subtle/10 p-8 text-center select-none',
+      'flex flex-col items-center justify-center rounded-md border border-danger/30 bg-danger-subtle/10 p-8 text-center select-none',
       className
     )}>
     <div
-      class="mb-3 flex h-12 w-12 items-center justify-center rounded-sm bg-danger-subtle/30 text-danger">
+      class="mb-3 flex h-12 w-12 items-center justify-center rounded-md bg-danger-subtle/30 text-danger">
       <AlertTriangle class="size-6" />
     </div>
     <h3 class="font-sans-title text-sm font-bold text-text-primary">{title}</h3>

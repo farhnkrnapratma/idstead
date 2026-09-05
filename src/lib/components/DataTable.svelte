@@ -29,7 +29,7 @@
 </script>
 
 <div
-  class="w-full overflow-x-auto rounded-sm border border-border-subtle shadow-xs select-none">
+  class="w-full overflow-x-auto rounded-md border border-border-subtle shadow-xs select-none">
   <table
     class={cn('w-full border-collapse text-xs text-text-primary', className)}>
     {#if caption}

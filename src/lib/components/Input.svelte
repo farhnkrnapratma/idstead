@@ -42,9 +42,9 @@
   }: Props = $props();
 
   const sizeStyles = {
-    sm: 'h-8 text-xs rounded-sm px-2.5',
-    md: 'h-9 text-sm rounded-sm px-3',
-    lg: 'h-11 text-base rounded-sm px-4'
+    sm: 'h-8 text-xs rounded-md px-2.5',
+    md: 'h-9 text-sm rounded-md px-3',
+    lg: 'h-11 text-base rounded-md px-4'
   };
 
   const formCtx = getContext<FormFieldContext>('formField');
@@ -88,10 +88,10 @@
     {disabled}
     placeholder={isFloating ? ' ' : placeholder}
     class={cn(
-      'border border-border-subtle/50 bg-surface-card/85 text-text-primary shadow-2xs backdrop-blur-xs transition-colors focus:border-copilot focus:bg-surface-card focus:ring-2 focus:ring-copilot/20 focus:outline-none disabled:cursor-not-allowed disabled:border-border-subtle/30 disabled:bg-surface-card/20 disabled:opacity-50 disabled:backdrop-blur-none dark:border-white/10 dark:bg-surface-card/70 dark:focus:bg-surface-card/90',
+      'border border-border-subtle/50 bg-surface-card/85 text-text-primary shadow-2xs backdrop-blur-xs transition-colors focus:border-accent focus:bg-surface-card focus:ring-2 focus:ring-accent/20 focus:outline-none disabled:cursor-not-allowed disabled:border-border-subtle/30 disabled:bg-surface-card/20 disabled:opacity-50 disabled:backdrop-blur-none dark:border-white/10 dark:bg-surface-card/70 dark:focus:bg-surface-card/90',
       fullWidth ? 'w-full' : '',
       isFloating ?
-        'peer block h-12 rounded-sm px-3 pt-5! pb-1.5! text-sm leading-5 placeholder-transparent'
+        'peer block h-12 rounded-md px-3 pt-5! pb-1.5! text-sm leading-5 placeholder-transparent'
       : sizeStyles[size],
       isFloating ? '' : 'placeholder:text-text-secondary/70',
       leadingSlot ? 'pl-12'
@@ -99,7 +99,7 @@
       : '',
       trailingIcon || trailingSlot ? 'pr-9' : '',
       error ? 'border-danger! ring-danger/20!' : '',
-      valid && !error ? 'border-copilot! ring-copilot/20!' : '',
+      valid && !error ? 'border-accent! ring-accent/20!' : '',
       className
     )}
     {...restProps} />
@@ -110,7 +110,7 @@
       class={cn(
         'pointer-events-none absolute z-10 font-sans-title font-medium transition-all duration-200 select-none',
         'top-1/2 -translate-y-1/2 text-sm text-text-secondary/70 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-text-secondary/70',
-        'peer-focus:top-1.5 peer-focus:translate-y-0 peer-focus:text-2xs peer-focus:leading-none peer-focus:font-semibold peer-focus:text-copilot',
+        'peer-focus:top-1.5 peer-focus:translate-y-0 peer-focus:text-2xs peer-focus:leading-none peer-focus:font-semibold peer-focus:text-accent',
         'peer-[:not(:placeholder-shown)]:top-1.5 peer-[:not(:placeholder-shown)]:translate-y-0 peer-[:not(:placeholder-shown)]:text-2xs peer-[:not(:placeholder-shown)]:leading-none peer-[:not(:placeholder-shown)]:font-semibold peer-[:not(:placeholder-shown)]:text-text-muted',
         hasValue ?
           'top-1.5 translate-y-0 text-2xs leading-none font-semibold text-text-muted'

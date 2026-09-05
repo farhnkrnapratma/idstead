@@ -35,7 +35,7 @@
 
 <div
   class={cn(
-    'group flex items-center justify-between gap-3 rounded-sm border border-border-subtle bg-surface/40 px-3.5 py-2.5 transition-all duration-300 hover:border-border-strong hover:bg-surface-hover',
+    'group flex items-center justify-between gap-3 rounded-md border border-border-subtle bg-surface/40 px-3.5 py-2.5 transition-all duration-300 hover:border-border-strong hover:bg-surface-hover',
     className
   )}>
   <div class="flex min-w-0 flex-col">
@@ -44,7 +44,7 @@
         {href}
         target={href.startsWith('http') ? '_blank' : undefined}
         rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
-        class="truncate text-xs font-bold text-text-primary transition-colors hover:text-copilot focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+        class="truncate text-xs font-bold text-text-primary transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
         {title}
       </a>
     {:else}
@@ -63,8 +63,8 @@
         onclick={handleCopy}
         aria-label="Copy contact information">
         {#if copied}
-          <CopyCheck class="size-3.5 text-copilot" />
-          <span class="text-copilot">Copied</span>
+          <CopyCheck class="size-3.5 text-accent" />
+          <span class="text-accent">Copied</span>
         {:else}
           <Copy class="size-3.5" />
           <span>Copy</span>

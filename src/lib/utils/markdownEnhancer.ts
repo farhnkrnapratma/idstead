@@ -20,7 +20,7 @@ export async function enhanceMarkdownContent(
     : true);
   const onCopy = options.onCodeCopy || (() => {});
 
-  enhanceCodeBlocks(onCopy);
+  enhanceCodeBlocks(onCopy, container);
   enhanceMarkdownTabs(container, onCopy);
   enhanceMarkdownCharts(container);
   await enhanceMermaidBlocks(container, isDark);

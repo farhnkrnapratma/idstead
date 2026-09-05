@@ -125,7 +125,7 @@
             <span class="min-w-0 flex-1 wrap-break-word">{error}</span>
           </span>
         {:else if valid}
-          <span class="flex items-start gap-1.5 text-copilot">
+          <span class="flex items-start gap-1.5 text-accent">
             <CheckCircle2 class="mt-px size-3 shrink-0 self-start" />
             <span class="min-w-0 flex-1">Looks good</span>
           </span>

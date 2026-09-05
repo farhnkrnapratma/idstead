@@ -32,12 +32,12 @@ export function enhanceMarkdownCharts(container: HTMLElement = document.body) {
         spec = yamlLoad(rawContent) as ChartSpec;
       }
     } catch (err) {
-      chartEl.innerHTML = `<div class="rounded-sm border border-danger/30 bg-danger-subtle/20 p-3 text-xs text-danger font-mono">Invalid chart specification: ${(err as Error).message}</div>`;
+      chartEl.innerHTML = `<div class="rounded-md border border-danger/30 bg-danger-subtle/20 p-3 text-xs text-danger font-mono">Invalid chart specification: ${(err as Error).message}</div>`;
       return;
     }
 
     if (!spec || typeof spec !== 'object') {
-      chartEl.innerHTML = `<div class="rounded-sm border border-danger/30 bg-danger-subtle/20 p-3 text-xs text-danger font-mono">Chart data is empty or malformed.</div>`;
+      chartEl.innerHTML = `<div class="rounded-md border border-danger/30 bg-danger-subtle/20 p-3 text-xs text-danger font-mono">Chart data is empty or malformed.</div>`;
       return;
     }
 

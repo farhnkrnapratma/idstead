@@ -87,7 +87,7 @@
     tooltipPlacement={dropdownDirection === 'up' ? 'top' : 'bottom'}
     size="sm"
     onclick={handleToggle}
-    class="border-border-subtle bg-surface backdrop-blur-none hover:border-copilot hover:bg-surface-hover hover:text-copilot sm:h-9 sm:w-9">
+    class="border-border-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover hover:text-accent sm:h-9 sm:w-9">
     <span
       class={cn(
         'inline-flex items-center justify-center',

@@ -13,6 +13,7 @@ interface GitHubRepo {
   language: string | null;
   stargazers_count: number;
   forks_count: number;
+  created_at: string | null;
   pushed_at: string | null;
   topics: string[];
   fork: boolean;
@@ -82,6 +83,57 @@ async function fetchRepoExtras(
   return {branches, commits, latestCommitSha};
 }
 
+async function fetchRepoOpenGraphImages(
+  username: string,
+  token: string,
+  fetchFn: typeof fetch
+): Promise<Map<string, string>> {
+  const map = new Map<string, string>();
+  if (!token || !username) return map;
+
+  const query = `
+    query($login: String!) {
+      user(login: $login) {
+        repositories(first: 30, orderBy: {field: PUSHED_AT, direction: DESC}, privacy: PUBLIC, isFork: false) {
+          nodes {
+            name
+            openGraphImageUrl
+          }
+        }
+      }
+    }
+  `;
+
+  try {
+    const res = await fetchFn('https://api.github.com/graphql', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'User-Agent': 'portfolio-sveltekit'
+      },
+      body: JSON.stringify({query, variables: {login: username}}),
+      signal: AbortSignal.timeout(4000)
+    });
+
+    if (res.ok) {
+      const json = await res.json();
+      const nodes = json?.data?.user?.repositories?.nodes;
+      if (Array.isArray(nodes)) {
+        for (const node of nodes) {
+          if (node?.name && node?.openGraphImageUrl) {
+            map.set(node.name.toLowerCase(), node.openGraphImageUrl);
+          }
+        }
+      }
+    }
+  } catch {
+    return map;
+  }
+
+  return map;
+}
+
 export function extractGitHubUsername(author: any): string {
   if (author?.username && typeof author.username === 'string') {
     return author.username.trim();
@@ -101,16 +153,23 @@ export function extractGitHubUsername(author: any): string {
 export async function fetchProjects(
   githubUsername: string,
   fetchFn: typeof fetch,
-  platform: unknown
+  platform: unknown,
+  excludedNames: string[] = []
 ): Promise<Project[]> {
   if (!githubUsername) return [];
 
+  const excludedLower = new Set(excludedNames.map(n => n.toLowerCase()));
+  const filterExcluded = (list: Project[]) =>
+    list.filter(p => !excludedLower.has(p.name.toLowerCase()));
+
   if (
     cachedProjects.length > 0
-    && cachedProjects.every(p => p.latestCommitSha !== undefined)
+    && cachedProjects.every(
+      p => p.latestCommitSha !== undefined && p.openGraphImageUrl !== undefined
+    )
     && Date.now() - cacheTimestamp < CACHE_TTL_MS
   ) {
-    return cachedProjects;
+    return filterExcluded(cachedProjects);
   }
 
   let projects: Project[] = [];
@@ -134,10 +193,15 @@ export async function fetchProjects(
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const res = await fetchFn(
-      `https://api.github.com/users/${encodeURIComponent(githubUsername)}/repos?sort=pushed&direction=desc&per_page=30&type=owner`,
-      {headers, signal: AbortSignal.timeout(4000)}
-    );
+    const [res, ogImages] = await Promise.all([
+      fetchFn(
+        `https://api.github.com/users/${encodeURIComponent(githubUsername)}/repos?sort=pushed&direction=desc&per_page=30&type=owner`,
+        {headers, signal: AbortSignal.timeout(4000)}
+      ),
+      token ?
+        fetchRepoOpenGraphImages(githubUsername, token, fetchFn)
+      : Promise.resolve(new Map<string, string>())
+    ]);
 
     if (res.ok) {
       const repos: GitHubRepo[] = await res.json();
@@ -176,10 +240,14 @@ export async function fetchProjects(
             branches: extras.branches,
             commits: extras.commits,
             latestCommitSha: extras.latestCommitSha,
+            createdAt: repo.created_at ?? null,
             pushedAt: repo.pushed_at ?? null,
             licenseName: repo.license?.spdx_id ?? null,
             licenseUrl:
-              repo.license ? `${repo.html_url}/blob/main/LICENSE` : null
+              repo.license ? `${repo.html_url}/blob/main/LICENSE` : null,
+            openGraphImageUrl:
+              ogImages.get(repo.name.toLowerCase())
+              ?? `https://opengraph.githubassets.com/1/${repo.full_name}`
           };
         })
       );
@@ -204,5 +272,5 @@ export async function fetchProjects(
     }
   }
 
-  return projects;
+  return filterExcluded(projects);
 }

@@ -12,7 +12,7 @@
 
 <div
   class={cn(
-    'divide-y divide-border-subtle/40 overflow-hidden rounded-sm glass-card',
+    'divide-y divide-border-subtle/40 overflow-hidden rounded-md glass-card',
     className
   )}>
   {@render children?.()}

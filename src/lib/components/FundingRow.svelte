@@ -24,18 +24,18 @@
   target="_blank"
   rel="noopener noreferrer"
   class={cn(
-    'group flex items-center justify-between gap-3 rounded-sm border border-border-subtle bg-surface/40 px-3.5 py-2.5 transition-all duration-300 select-none hover:border-border-strong hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring',
+    'group flex items-center justify-between gap-3 rounded-md border border-border-subtle bg-surface/40 px-3.5 py-2.5 transition-all duration-300 select-none hover:border-border-strong hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring',
     className
   )}>
   <div class="flex min-w-0 flex-col">
     <div class="flex items-center gap-2">
       <span
-        class="truncate text-xs font-bold text-text-primary transition-colors group-hover:text-copilot">
+        class="truncate text-xs font-bold text-text-primary transition-colors group-hover:text-accent">
         {platform}
       </span>
       {#if badge}
         <span
-          class="rounded-sm bg-copilot-subtle/40 px-1.5 py-px text-2xs font-bold text-copilot">
+          class="rounded-md bg-accent-subtle/40 px-1.5 py-px text-2xs font-bold text-accent">
           {badge}
         </span>
       {/if}
@@ -46,7 +46,7 @@
   </div>
 
   <div
-    class="flex shrink-0 items-center gap-1.5 text-xs font-medium text-text-muted transition-colors group-hover:text-copilot">
+    class="flex shrink-0 items-center gap-1.5 text-xs font-medium text-text-muted transition-colors group-hover:text-accent">
     <span>Sponsor</span>
     <ExternalLink class="size-3.5" />
   </div>

@@ -19,6 +19,7 @@
     rel?: string;
     download?: boolean | string;
     children?: Snippet;
+    responsiveIconOnly?: boolean;
   }
 
   let {
@@ -36,21 +37,22 @@
     target,
     rel,
     download,
+    responsiveIconOnly = false,
     class: className = '',
     children,
     ...restProps
   }: Props = $props();
 
   const baseStyles =
-    'inline-flex items-center justify-center font-semibold whitespace-nowrap transition-all cursor-pointer select-none leading-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50 disabled:cursor-not-allowed [&>svg]:shrink-0 [&>i]:shrink-0 [&>span:not(.hidden)]:inline-flex [&>span:not(.hidden)]:items-center';
+    'inline-flex items-center justify-center font-semibold whitespace-nowrap transition-all cursor-pointer select-none leading-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50 disabled:cursor-not-allowed [&>svg]:shrink-0 [&>i]:shrink-0';
 
   const typeToneStyles: Record<string, string> = {
     'primary:neutral':
-      'bg-copilot text-text-on-accent hover:bg-copilot-hover active:bg-copilot-active disabled:hover:bg-copilot disabled:active:bg-copilot shadow-xs',
+      'bg-accent text-text-on-accent hover:bg-accent-hover active:bg-accent-active disabled:hover:bg-accent disabled:active:bg-accent shadow-xs',
     'primary:critical':
       'bg-danger text-text-on-accent hover:bg-danger-hover active:bg-danger-hover disabled:hover:bg-danger shadow-xs',
     'secondary:neutral':
-      'glass-button hover:border-copilot disabled:hover:border-border-subtle/70',
+      'glass-button hover:border-accent disabled:hover:border-border-subtle/70',
     'secondary:critical':
       'border border-danger/30 bg-surface-card/55 text-danger shadow-xs backdrop-blur-sm hover:bg-danger-subtle/40 hover:border-danger/50 disabled:hover:bg-surface-card/55 dark:bg-surface-card/40 dark:hover:bg-danger-subtle/30',
     'tertiary:neutral':
@@ -74,10 +76,17 @@
   );
 
   const sizeStyles = {
-    xs: 'h-6.5 px-2 text-2xs gap-1 rounded-sm',
-    sm: 'h-8 px-3 text-xs gap-1.5 rounded-sm',
-    md: 'h-9 px-4 text-xs sm:text-sm gap-2 rounded-sm',
-    lg: 'h-11 px-5 text-sm gap-2.5 rounded-sm'
+    xs: 'h-7.5 px-2.5 py-1.5 text-2xs gap-1 rounded-md',
+    sm: 'h-8 px-3 text-xs gap-1.5 rounded-md',
+    md: 'h-9 px-4 text-xs sm:text-sm gap-2 rounded-md',
+    lg: 'h-11 px-5 text-sm gap-2.5 rounded-md'
+  };
+
+  const responsiveSizeStyles = {
+    xs: 'size-8 shrink-0 p-0 text-2xs gap-1 rounded-md sm:h-7.5 sm:w-auto sm:px-2.5 sm:py-1.5 sm:text-2xs sm:gap-1',
+    sm: 'size-8 shrink-0 p-0 text-xs gap-1.5 rounded-md sm:h-8 sm:w-auto sm:px-3 sm:text-xs sm:gap-1.5',
+    md: 'size-8 shrink-0 p-0 text-xs gap-1.5 rounded-md sm:h-9 sm:w-auto sm:px-4 sm:text-xs sm:sm:text-sm sm:gap-2',
+    lg: 'size-8 shrink-0 p-0 text-xs gap-1.5 rounded-md sm:h-11 sm:w-auto sm:px-5 sm:text-sm sm:gap-2.5'
   };
 </script>
 
@@ -98,7 +107,7 @@
   class={cn(
     baseStyles,
     typeToneStyles[styleKey],
-    sizeStyles[size],
+    responsiveIconOnly ? responsiveSizeStyles[size] : sizeStyles[size],
     fullWidth ? 'w-full' : '',
     className
   )}
@@ -126,7 +135,13 @@
     </span>
   {/if}
 
-  {@render children?.()}
+  {#if responsiveIconOnly}
+    <span class="hidden sm:inline-flex sm:items-center">
+      {@render children?.()}
+    </span>
+  {:else}
+    {@render children?.()}
+  {/if}
 
   {#if trailing && !isLoading}
     <span class="inline-flex shrink-0 items-center justify-center leading-none">
@@ -136,7 +151,7 @@
 
   {#if showEscHint && !isLoading}
     <kbd
-      class="hidden items-center rounded-sm border border-border-subtle/80 bg-surface-elevated/80 px-1 py-0.5 font-mono text-3xs leading-none text-text-muted select-none sm:inline-flex">
+      class="hidden items-center rounded-md border border-border-subtle/80 bg-surface-elevated/80 px-1 py-0.5 font-mono text-3xs leading-none text-text-muted select-none sm:inline-flex">
       Esc
     </kbd>
   {/if}

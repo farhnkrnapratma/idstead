@@ -3,11 +3,13 @@
   import {Check} from '@lucide/svelte';
   import type {FormFieldContext} from '../../types';
   import {cn} from '../../utils/cn';
+  import {popoverPosition} from '../../utils/popoverPosition';
   import DropdownTrigger from './DropdownTrigger.svelte';
 
   interface Option {
     value: string | number | boolean | null;
     label: string;
+    shortLabel?: string;
   }
 
   interface Props {
@@ -78,11 +80,12 @@
     );
   }
 
+  const selectedOption = $derived(options.find(o => isSelected(o.value)));
+
   let displayLabel = $derived.by(() => {
     if (value === null || value === undefined || value === '')
       return placeholder;
-    const found = options.find(o => isSelected(o.value));
-    return found?.label ?? String(value);
+    return selectedOption?.label ?? String(value);
   });
 
   function select(val: any) {
@@ -125,6 +128,7 @@
       {size}
       {fullWidth}
       class={isFloating ? 'h-12 pt-5! pb-1.5! text-sm leading-5' : ''}
+      hideChevron={isFloating && !hasValue && !isOpen}
       onclick={() => {
         if (!disabled) isOpen = !isOpen;
       }}>
@@ -132,7 +136,12 @@
         class={cn(
           isFloating && !hasValue && !isOpen ? 'text-transparent' : ''
         )}>
-        {displayLabel}
+        {#if selectedOption?.shortLabel}
+          <span class="sm:hidden">{selectedOption.shortLabel}</span>
+          <span class="hidden sm:inline">{selectedOption.label}</span>
+        {:else}
+          {displayLabel}
+        {/if}
       </span>
     </DropdownTrigger>
 
@@ -144,7 +153,7 @@
           hasValue || isOpen ?
             'top-1.5 text-2xs leading-none font-semibold'
           : 'top-1/2 -translate-y-1/2 text-sm text-text-secondary/70',
-          isOpen ? 'text-copilot!'
+          isOpen ? 'text-accent!'
           : hasValue ? 'text-text-muted'
           : 'text-text-secondary/70'
         )}>
@@ -166,15 +175,19 @@
 
       <div
         role="listbox"
+        use:popoverPosition={{
+          placement:
+            dropdownPlacement === 'right' ? 'bottom-end' : 'bottom-start',
+          offset: 8,
+          padding: 8
+        }}
         class={cn(
-          'absolute top-[calc(100%+8px)] z-60 flex max-h-56 flex-col popover-surface p-0',
-          fullWidth ? 'inset-x-0 w-full'
-          : dropdownPlacement === 'right' ? 'right-0 min-w-full'
-          : 'left-0 min-w-full',
+          'absolute z-60 flex max-h-56 flex-col popover-surface p-0',
+          fullWidth ? 'inset-x-0 w-full' : 'min-w-full',
           menuWidth
         )}>
         <div
-          class="relative z-10 flex max-h-56 flex-col overflow-y-auto rounded-sm">
+          class="relative z-10 flex max-h-56 flex-col overflow-y-auto rounded-md">
           {#each options as option (option.value)}
             <button
               type="button"
@@ -184,12 +197,12 @@
               class={cn(
                 'flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-2 text-left font-sans-title text-xs font-medium transition-colors',
                 isSelected(option.value) ?
-                  'bg-copilot/10 font-semibold text-copilot'
-                : 'text-text-primary hover:bg-surface-hover hover:text-copilot'
+                  'bg-accent/10 font-semibold text-accent'
+                : 'text-text-primary hover:bg-surface-hover hover:text-accent'
               )}>
               <span class="truncate">{option.label}</span>
               {#if isSelected(option.value)}
-                <Check class="size-3.5 shrink-0 text-copilot" />
+                <Check class="size-3.5 shrink-0 text-accent" />
               {/if}
             </button>
           {/each}

@@ -18,11 +18,11 @@
   }: Props = $props();
 
   const widthStyles = {
-    reading: 'w-full md:w-[80%] lg:w-[65%] xl:w-[55%]',
+    reading: 'w-full md:w-[80%] lg:w-[65%] xl:w-[50%] 2xl:w-[45%]',
     form: 'max-w-xl',
     editor: 'max-w-4xl',
-    standard: 'w-full md:w-[80%] lg:w-[65%] xl:w-[55%]',
-    listing: 'w-full md:w-[80%] lg:w-[65%] xl:w-[55%]',
+    standard: 'w-full md:w-[80%] lg:w-[65%] xl:w-[50%] 2xl:w-[45%]',
+    listing: 'w-full md:w-[80%] lg:w-[65%] xl:w-[50%] 2xl:w-[45%]',
     admin: 'w-full max-w-7xl',
     full: 'max-w-7xl'
   };
@@ -30,6 +30,6 @@
 
 <svelte:element
   this={as}
-  class={cn('mx-auto w-full px-6', widthStyles[width], className)}>
+  class={cn('mx-auto w-full px-3 sm:px-6', widthStyles[width], className)}>
   {@render children?.()}
 </svelte:element>

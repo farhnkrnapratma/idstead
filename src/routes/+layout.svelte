@@ -9,6 +9,7 @@
   import {a11yStore} from '$lib/stores/a11yStore.svelte';
   import {codeBlockPrefsStore} from '$lib/stores/codeBlockPrefsStore.svelte';
   import {scrollStore} from '$lib/stores/scrollStore.svelte';
+  import {readingModeStore} from '$lib/stores/readingModeStore.svelte';
   import {refreshCodeBlockPrefs} from '$lib/utils/codeBlocks';
 
   const {data, children} = $props();
@@ -24,6 +25,7 @@
 
   const isAdminPage = $derived(page.url.pathname.startsWith('/admin'));
   const isPostEditorPage = $derived(page.url.pathname === '/admin/new');
+  const isBlogPost = $derived(page.route.id === '/blog/[slug]');
   const isPageWithFeedback = $derived(
     !page.error
       && page.url.pathname !== '/feedback'
@@ -43,6 +45,18 @@
       cleanupCodeBlockPrefs?.();
       cleanupScroll?.();
     };
+  });
+
+  $effect(() => {
+    if (typeof document !== 'undefined') {
+      if (readingModeStore.active) {
+        document.documentElement.dataset.readingMode = 'true';
+        document.documentElement.classList.add('reading-mode');
+      } else {
+        delete document.documentElement.dataset.readingMode;
+        document.documentElement.classList.remove('reading-mode');
+      }
+    }
   });
 
   const BLOG_POST_ROUTE_ID = '/blog/[slug]';
@@ -90,9 +104,11 @@
 {@render children()}
 
 <ScrollToTopButton
-  show={scrollStore.pastThreshold && (!isAdminPage || isPostEditorPage)}
+  show={scrollStore.pastThreshold
+    && (!isAdminPage || isPostEditorPage)
+    && !readingModeStore.active}
   class={isPostEditorPage ? 'hidden md:block' : ''} />
-<FeedbackButton show={isPageWithFeedback} />
+<FeedbackButton show={isPageWithFeedback && !readingModeStore.active} />
 
 <ConsentBanner />
 <Toast />

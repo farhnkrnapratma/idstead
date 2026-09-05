@@ -29,7 +29,7 @@
   )}>
   {#if eyebrow}
     <span
-      class="text-xs font-bold tracking-wider text-copilot uppercase select-none">
+      class="text-xs font-bold tracking-wider text-accent uppercase select-none">
       {eyebrow}
     </span>
   {/if}

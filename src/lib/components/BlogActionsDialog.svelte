@@ -80,7 +80,7 @@
             onclick={copyPostUrl}>
             {#snippet leading()}
               {#if copiedUrl}
-                <CopyCheck class="size-3.5 text-copilot" />
+                <CopyCheck class="size-3.5 text-accent" />
               {:else}
                 <Link class="size-3.5" />
               {/if}
@@ -123,7 +123,7 @@
             onclick={copyPostId}>
             {#snippet leading()}
               {#if copiedId}
-                <CopyCheck class="size-3.5 text-copilot" />
+                <CopyCheck class="size-3.5 text-accent" />
               {:else}
                 <Hash class="size-3.5" />
               {/if}

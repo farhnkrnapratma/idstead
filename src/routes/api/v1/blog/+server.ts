@@ -28,7 +28,7 @@ export const GET: RequestHandler = async ({url, request}) => {
     return apiError(
       400,
       'BLOG_INVALID_LANG',
-      "The 'lang' query parameter must be one of: id, ja, zh, ko."
+      "The 'lang' query parameter must be one of: id."
     );
   }
 

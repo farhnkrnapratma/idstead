@@ -22,7 +22,7 @@
 
 <div
   class={cn(
-    'flex flex-col items-center justify-center rounded-sm border border-dashed border-border-default bg-surface/30 p-8 text-center select-none',
+    'flex flex-col items-center justify-center rounded-md border border-dashed border-border-default bg-surface/30 p-8 text-center select-none',
     className
   )}>
   <div class="mb-3 flex items-center justify-center text-text-muted">

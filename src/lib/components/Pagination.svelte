@@ -49,12 +49,13 @@
 <nav
   aria-label="Pagination"
   class={cn(
-    'flex flex-wrap items-center justify-center gap-1.5 select-none sm:justify-between',
+    'flex w-full items-center justify-between gap-1.5 select-none',
     className
   )}>
   <Button
     type="outline"
     size="md"
+    class="size-9 shrink-0 p-0 sm:h-9 sm:w-auto sm:px-4"
     onclick={() => goTo(page - 1)}
     disabled={page <= 1}
     aria-label="Previous page">
@@ -62,11 +63,12 @@
     <span class="hidden sm:inline">Previous</span>
   </Button>
 
-  <div class="flex items-center gap-1">
+  <div
+    class="flex scrollbar-none items-center justify-center gap-1 overflow-x-auto">
     {#each pageNumbers as entry, i (entry === 'ellipsis' ? `ellipsis-${i}` : entry)}
       {#if entry === 'ellipsis'}
         <span
-          class="inline-flex h-9 w-9 items-center justify-center text-xs font-semibold text-text-muted"
+          class="inline-flex h-9 w-9 shrink-0 items-center justify-center text-xs font-semibold text-text-muted"
           aria-hidden="true">
           &hellip;
         </span>
@@ -77,10 +79,10 @@
           aria-label="Go to page {entry}"
           aria-current={entry === page ? 'page' : undefined}
           class={cn(
-            'inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring',
+            'inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-md text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring',
             entry === page ?
-              'bg-copilot text-white shadow-xs'
-            : 'border border-border-subtle bg-surface text-text-primary hover:bg-surface-hover hover:text-copilot'
+              'bg-accent text-white shadow-xs'
+            : 'border border-border-subtle bg-surface text-text-primary hover:bg-surface-hover hover:text-accent'
           )}>
           {entry}
         </button>
@@ -91,6 +93,7 @@
   <Button
     type="outline"
     size="md"
+    class="size-9 shrink-0 p-0 sm:h-9 sm:w-auto sm:px-4"
     onclick={() => goTo(page + 1)}
     disabled={page >= totalPages}
     aria-label="Next page">

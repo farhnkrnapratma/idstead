@@ -197,7 +197,7 @@
 {#snippet popoverMenu()}
   <div
     role="menu"
-    class="absolute top-full right-0 left-auto z-50 mt-1.5 flex max-w-[calc(100vw-2rem)] flex-col gap-2.5 rounded-sm border border-border-subtle bg-surface-elevated/95 p-2.5 shadow-xl backdrop-blur-md sm:flex-row sm:gap-0 sm:divide-x sm:divide-border-subtle/60">
+    class="absolute top-full right-0 left-auto z-50 mt-1.5 flex max-w-[calc(100vw-2rem)] flex-col gap-2.5 rounded-md border border-border-subtle bg-surface-elevated/95 p-2.5 shadow-xl backdrop-blur-md sm:flex-row sm:gap-0 sm:divide-x sm:divide-border-subtle/60">
     <div class="flex flex-col gap-1 sm:pr-3">
       <span
         class="px-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase"
@@ -205,14 +205,14 @@
       <Button
         type="ghost"
         size="xs"
-        class="w-full justify-start px-1.5 whitespace-nowrap sm:hidden"
+        class="w-full justify-start px-1.5 whitespace-nowrap"
         onclick={() => {
           isMoreOpen = false;
           handleCopyPageUrl();
         }}>
         {#snippet leading()}
           {#if copiedUrl}
-            <CopyCheck class="size-3.5 text-copilot" />
+            <CopyCheck class="size-3.5 text-accent" />
           {:else}
             <Link class="size-3.5" />
           {/if}
@@ -229,7 +229,7 @@
         }}>
         {#snippet leading()}
           {#if copiedText}
-            <CopyCheck class="size-3.5 text-copilot" />
+            <CopyCheck class="size-3.5 text-accent" />
           {:else}
             <ScanText class="size-3.5" />
           {/if}
@@ -247,7 +247,7 @@
           }}>
           {#snippet leading()}
             {#if copiedId}
-              <CopyCheck class="size-3.5 text-copilot" />
+              <CopyCheck class="size-3.5 text-accent" />
             {:else}
               <Hash class="size-3.5" />
             {/if}
@@ -329,7 +329,7 @@
   <nav
     aria-label="Content actions"
     class={cn(
-      'flex flex-col gap-3 rounded-sm glass-card p-4 select-none',
+      'flex flex-col gap-3 rounded-md glass-card p-4 select-none',
       className
     )}>
     <h3
@@ -344,7 +344,7 @@
         onclick={handleCopyPageUrl}>
         {#snippet leading()}
           {#if copiedUrl}
-            <CopyCheck class="size-3.5 text-copilot" />
+            <CopyCheck class="size-3.5 text-accent" />
           {:else}
             <Link class="size-3.5" />
           {/if}
@@ -360,7 +360,7 @@
           onclick={handleCopyPageId}>
           {#snippet leading()}
             {#if copiedId}
-              <CopyCheck class="size-3.5 text-copilot" />
+              <CopyCheck class="size-3.5 text-accent" />
             {:else}
               <Hash class="size-3.5" />
             {/if}
@@ -382,7 +382,7 @@
           onclick={handleCopyMarkdown}>
           {#snippet leading()}
             {#if copiedMarkdown}
-              <CopyCheck class="size-3.5 text-copilot" />
+              <CopyCheck class="size-3.5 text-accent" />
             {:else}
               <Copy class="size-3.5" />
             {/if}
@@ -465,55 +465,41 @@
 {:else}
   <div
     class={cn(
-      'flex flex-nowrap items-center gap-1.5 text-2xs select-none',
+      'flex flex-nowrap items-center gap-1 text-2xs select-none',
       className
     )}>
     <Button
       type="secondary"
       size="xs"
       onclick={handleCopyMarkdown}
-      class="shrink-0 text-text-secondary hover:text-copilot">
+      class="h-7! min-w-0 flex-1 justify-center gap-1! px-1.5! py-0.5! text-3xs! font-medium text-text-secondary hover:text-accent sm:text-2xs!">
       {#snippet leading()}
         {#if copiedMarkdown}
-          <CopyCheck class="size-3.5 text-copilot" />
+          <CopyCheck class="size-3! shrink-0 text-accent" />
         {:else}
-          <Copy class="size-3.5" />
+          <Copy class="size-3! shrink-0" />
         {/if}
       {/snippet}
-      <span>{copiedMarkdown ? 'Copied Markdown!' : 'Copy as Markdown'}</span>
+      <span class="leading-none whitespace-nowrap"
+        >{copiedMarkdown ? 'Copied!' : 'Copy as Markdown'}</span>
     </Button>
 
     <Button
       type="secondary"
       size="xs"
       href={viewMarkdownUrl}
-      class="hidden shrink-0 text-text-secondary hover:text-copilot sm:inline-flex">
+      class="hidden h-7! min-w-0 flex-1 justify-center gap-1! px-1.5! py-0.5! text-3xs! font-medium text-text-secondary hover:text-accent sm:inline-flex sm:text-2xs!">
       {#snippet leading()}
         <i
-          class="bi bi-markdown inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
+          class="bi bi-markdown inline-flex size-3! shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
           aria-hidden="true"></i>
       {/snippet}
-      <span>View as Markdown</span>
-    </Button>
-
-    <Button
-      type="secondary"
-      size="xs"
-      onclick={handleCopyPageUrl}
-      class="hidden text-text-secondary hover:text-copilot sm:inline-flex">
-      {#snippet leading()}
-        {#if copiedUrl}
-          <CopyCheck class="size-3.5 text-copilot" />
-        {:else}
-          <Link class="size-3.5" />
-        {/if}
-      {/snippet}
-      <span>{copiedUrl ? 'Copied URL!' : 'Copy URL'}</span>
+      <span class="leading-none whitespace-nowrap">View as Markdown</span>
     </Button>
 
     <div
       bind:this={moreContainerRef}
-      class="relative inline-block text-left">
+      class="relative inline-block shrink-0 text-left">
       <Button
         type="ghost"
         size="xs"
@@ -522,8 +508,8 @@
         aria-expanded={isMoreOpen}
         aria-haspopup="menu"
         class={cn(
-          'size-6.5! px-0! text-text-muted hover:text-copilot',
-          isMoreOpen && 'border border-copilot text-copilot'
+          'size-7! px-0! text-text-muted hover:text-accent',
+          isMoreOpen && 'border border-accent text-accent'
         )}>
         <EllipsisVertical class="size-3.5" />
       </Button>

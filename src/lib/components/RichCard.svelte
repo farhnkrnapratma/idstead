@@ -30,17 +30,17 @@
 
 <div
   class={cn(
-    'group relative flex flex-col justify-between rounded-sm glass-card p-5 sm:p-6',
+    'group relative flex flex-col justify-between rounded-md glass-card p-3.5 sm:p-6',
     className
   )}>
   <div class="flex flex-col gap-2">
     <div class="flex items-start justify-between gap-3">
       <h3
-        class="font-sans-title text-base font-bold tracking-tight text-text-primary transition-colors group-hover:text-copilot">
+        class="font-sans-title text-base font-bold tracking-tight text-text-primary transition-colors group-hover:text-accent">
         {#if href}
           <a
             {href}
-            class="rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+            class="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
             {title}
           </a>
         {:else}
@@ -49,7 +49,7 @@
       </h3>
       {#if href && interactive}
         <ArrowUpRight
-          class="mt-1 size-3.5 shrink-0 text-text-muted transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-copilot" />
+          class="mt-1 size-3.5 shrink-0 text-text-muted transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent" />
       {/if}
     </div>
 

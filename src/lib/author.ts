@@ -379,6 +379,36 @@ export async function fetchGlossaryTerms(
   }
 }
 
+export interface ProjectRepoRules {
+  excluded: string[];
+  pinned: string[];
+}
+
+export async function fetchProjectRepoRules(
+  supabaseClient?: any
+): Promise<ProjectRepoRules> {
+  if (!supabaseClient) return {excluded: [], pinned: []};
+
+  try {
+    const {data, error} = await supabaseClient
+      .from('db_project_repo_rules')
+      .select('rule_type, repo_name')
+      .order('sort_order', {ascending: true});
+
+    if (error || !data) return {excluded: [], pinned: []};
+
+    const excluded: string[] = [];
+    const pinned: string[] = [];
+    for (const item of data as {rule_type: string; repo_name: string}[]) {
+      if (item.rule_type === 'exclude') excluded.push(item.repo_name);
+      else if (item.rule_type === 'pin') pinned.push(item.repo_name);
+    }
+    return {excluded, pinned};
+  } catch (e) {
+    return {excluded: [], pinned: []};
+  }
+}
+
 export async function fetchSkills(supabaseClient?: any): Promise<SkillItem[]> {
   if (!supabaseClient) return [];
 

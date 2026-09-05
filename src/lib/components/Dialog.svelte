@@ -142,7 +142,7 @@
       aria-labelledby="dialog-title"
       aria-describedby={description ? 'dialog-desc' : undefined}
       class={cn(
-        'relative z-10 max-h-[calc(100dvh-2rem)] w-full transform overflow-y-auto overscroll-contain rounded-sm glass-overlay shadow-xl transition-all outline-none select-none focus:outline-none',
+        'relative z-10 max-h-[calc(100dvh-2rem)] w-full transform overflow-y-auto overscroll-contain rounded-md glass-overlay shadow-xl transition-all outline-none select-none focus:outline-none',
         compact ? 'p-5' : 'p-6',
         sizeStyles[size],
         isDestructive ? 'border-danger/30' : '',
@@ -154,7 +154,7 @@
           onclick={onClose}
           aria-label="Close dialog"
           class={cn(
-            'absolute inline-flex size-6.5 cursor-pointer items-center justify-center rounded-sm text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring',
+            'absolute inline-flex size-6.5 cursor-pointer items-center justify-center rounded-md text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring',
             compact ? 'top-3.5 right-3.5' : 'top-4 right-4'
           )}>
           <X class="size-4" />

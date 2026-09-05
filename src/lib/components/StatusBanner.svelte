@@ -23,7 +23,7 @@
 
   const variantStyles = {
     info: 'border-border-subtle/50 bg-surface/70 text-text-primary',
-    success: 'border-copilot/30 bg-copilot-subtle/20 text-text-primary',
+    success: 'border-success/30 bg-success-subtle/20 text-text-primary',
     warning: 'border-warning/30 bg-warning/10 text-text-primary',
     error: 'border-danger/30 bg-danger-subtle/20 text-text-primary'
   };
@@ -33,12 +33,12 @@
   role={variant === 'error' ? 'alert' : 'status'}
   aria-live={variant === 'error' ? 'assertive' : 'polite'}
   class={cn(
-    'flex items-start gap-3 rounded-sm glass-card p-4 text-xs select-none',
+    'flex items-start gap-3 rounded-md glass-card p-4 text-xs select-none',
     variantStyles[variant],
     className
   )}>
   {#if variant === 'success'}
-    <CheckCircle2 class="mt-0.5 size-4 shrink-0 self-start text-copilot" />
+    <CheckCircle2 class="mt-0.5 size-4 shrink-0 self-start text-success" />
   {:else if variant === 'warning'}
     <AlertTriangle class="mt-0.5 size-4 shrink-0 self-start text-warning" />
   {:else if variant === 'error'}

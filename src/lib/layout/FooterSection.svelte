@@ -2,11 +2,14 @@
   import {cn} from '../utils/cn';
   import ThemeSelect from '../components/filter/ThemeSelect.svelte';
   import ContentFontSelect from '../components/filter/ContentFontSelect.svelte';
+  import LanguageSelect from '../components/filter/LanguageSelect.svelte';
   import AccessibilitySelect from '../components/filter/AccessibilitySelect.svelte';
+  import IconButton from '../components/IconButton.svelte';
   import {themeStore} from '../stores/themeStore.svelte';
   import {type SocialLink} from '../author';
   import BrandIcon from '../components/BrandIcon.svelte';
   import FooterLegalRow from './FooterLegalRow.svelte';
+  import {BookOpenText} from '@lucide/svelte';
 
   import {page} from '$app/state';
 
@@ -23,6 +26,13 @@
     socials?: SocialLink[];
     onNavClick?: (url: string) => void;
     showFontSelect?: boolean;
+    languageSwitcher?: {
+      slug: string;
+      currentLanguage: string;
+      availableLocales: string[];
+    };
+    readingMode?: boolean;
+    onToggleReadingMode?: () => void;
     class?: string;
   }
 
@@ -43,6 +53,9 @@
     socials = [],
     onNavClick,
     showFontSelect = false,
+    languageSwitcher,
+    readingMode = false,
+    onToggleReadingMode,
     class: className = ''
   }: Props = $props();
 
@@ -68,10 +81,10 @@
 
 <footer
   class={cn(
-    'relative z-10 mx-auto mt-auto w-full max-w-full px-6 pt-0 pb-20 font-sans text-xs text-text-muted md:w-[80%] md:pb-20 lg:w-[65%] lg:pb-6 xl:w-[55%]',
+    'relative z-10 mx-auto mt-auto w-full max-w-full px-3 pt-0 pb-20 font-sans text-xs text-text-muted sm:px-6 md:w-[80%] md:pb-20 lg:w-[65%] lg:pb-6 xl:w-[50%] 2xl:w-[45%]',
     className
   )}>
-  <div class="rounded-sm glass-card p-4 sm:p-6">
+  <div class="rounded-md glass-card p-3.5 sm:p-6">
     <div class="grid grid-cols-1 gap-x-0 gap-y-1 md:grid-cols-12">
       <div class="md:col-span-12">
         <div class="flex min-w-0 flex-col gap-0.5">
@@ -88,7 +101,7 @@
       </div>
 
       {#if resolvedDescription}
-        <div class="pt-1 md:col-span-7 md:pr-6">
+        <div class="min-w-0 pt-1 md:col-span-7 md:pr-6">
           <p class="max-w-md text-xs leading-relaxed text-text-secondary">
             {resolvedDescription}
           </p>
@@ -97,7 +110,7 @@
 
       {#if resolvedNavItems.length > 0}
         <div
-          class="border-t border-border-subtle/40 md:col-span-5 md:mt-0 md:border-t-0 md:border-l md:border-border-subtle/40 md:pl-6">
+          class="min-w-0 border-t border-border-subtle/40 md:col-span-5 md:mt-0 md:border-t-0 md:border-l md:border-border-subtle/40 md:pl-6">
           <nav aria-label="Footer navigation">
             <ul
               class="grid grid-cols-2 gap-x-6 text-xs font-normal text-text-secondary">
@@ -110,13 +123,13 @@
                     <button
                       type="button"
                       onclick={() => onNavClick(item.url)}
-                      class="cursor-pointer text-left text-xs leading-7.25 font-normal text-text-secondary transition-colors hover:text-copilot focus-visible:text-copilot focus-visible:outline-none">
+                      class="cursor-pointer text-left text-xs leading-7.25 font-normal text-text-secondary transition-colors hover:text-accent focus-visible:text-accent focus-visible:outline-none">
                       {item.label}
                     </button>
                   {:else}
                     <a
                       href={item.url}
-                      class="cursor-pointer text-left text-xs leading-7.25 font-normal text-text-secondary transition-colors hover:text-copilot focus-visible:text-copilot focus-visible:outline-none">
+                      class="cursor-pointer text-left text-xs leading-7.25 font-normal text-text-secondary transition-colors hover:text-accent focus-visible:text-accent focus-visible:outline-none">
                       {item.label}
                     </a>
                   {/if}
@@ -128,7 +141,7 @@
       {/if}
 
       <div
-        class="flex flex-wrap items-center justify-between gap-3 pt-4 md:col-span-12">
+        class="flex w-full min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-3 pt-4 md:col-span-12">
         {#if resolvedSocials.length > 0}
           <div class="flex flex-wrap items-center gap-1 sm:gap-1.5">
             {#each resolvedSocials as item (item.url + item.platform)}
@@ -138,7 +151,7 @@
                 rel="noopener noreferrer"
                 aria-label={item.platform}
                 title={item.platform}
-                class="flex size-8 cursor-pointer items-center justify-center rounded-sm border-0 bg-transparent text-text-muted transition-all hover:bg-surface-hover hover:text-copilot focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none sm:size-9">
+                class="flex size-8 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-text-muted transition-all hover:bg-surface-hover hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:size-9">
                 <BrandIcon
                   icon={item.icon}
                   class="size-4 text-base leading-none sm:size-4.5 sm:text-lg" />
@@ -148,15 +161,42 @@
         {/if}
 
         <div
-          class="flex items-center gap-2 {resolvedSocials.length === 0 ?
+          class="flex flex-wrap items-center gap-1.5 sm:gap-2 {(
+            resolvedSocials.length === 0
+          ) ?
             'ml-auto'
           : ''}">
+          {#if onToggleReadingMode}
+            <IconButton
+              ariaLabel={readingMode ? 'Exit reading mode' : (
+                'Enter reading mode'
+              )}
+              tooltip={readingMode ? 'Exit reading mode' : 'Reading mode'}
+              tooltipPlacement="top"
+              tooltipAlign="right"
+              size="sm"
+              onclick={onToggleReadingMode}
+              class="border-border-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9 {(
+                readingMode
+              ) ?
+                'border-accent text-accent'
+              : ''}">
+              <BookOpenText class="size-4" />
+            </IconButton>
+          {/if}
           <ThemeSelect
             theme={themeStore.current}
             onThemeChange={themeStore.apply}
             dropdownDirection="up" />
           {#if showFontSelect}
             <ContentFontSelect dropdownDirection="up" />
+          {/if}
+          {#if languageSwitcher}
+            <LanguageSelect
+              slug={languageSwitcher.slug}
+              currentLanguage={languageSwitcher.currentLanguage}
+              availableLocales={languageSwitcher.availableLocales}
+              dropdownDirection="up" />
           {/if}
           <AccessibilitySelect dropdownDirection="up" />
         </div>

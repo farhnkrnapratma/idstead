@@ -36,9 +36,11 @@
     Code,
     RotateCcwClock,
     Trash,
+    LogOut,
     CaseSensitive,
     WholeWord,
-    Regex
+    Regex,
+    BookOpenText
   } from '@lucide/svelte';
   import type {Project} from '$lib/types';
   import {portal} from '../utils/actions';
@@ -61,6 +63,7 @@
     type SearchHistoryEntry
   } from '../stores/searchHistoryStore.svelte';
   import {sanitizeInput} from '../utils/sanitizeInput';
+  import {readingModeStore} from '../stores/readingModeStore.svelte';
 
   export type ItemCategory =
     'pages' | 'posts' | 'projects' | 'actions' | 'commands' | 'skills';
@@ -175,7 +178,9 @@
     Rss,
     Code,
     RotateCcwClock,
-    Trash
+    Trash,
+    LogOut,
+    BookOpenText
   };
 
   const ICON_NAME_BY_COMPONENT = new Map<unknown, string>(
@@ -317,12 +322,26 @@
       actionQuery: '/a11y '
     },
     {
-      command: '/translate',
+      command: '/lang',
       argHint: '[lang]',
       description:
         'Switch this blog post to another language (post pages only).',
-      validArgs: ['en', 'id', 'ja', 'zh', 'ko'],
-      actionQuery: '/translate '
+      validArgs: ['default', 'en', 'id'],
+      actionQuery: '/lang '
+    },
+    {
+      command: '/translate',
+      argHint: '[lang]',
+      description: 'Alias for /lang (post pages only).',
+      validArgs: ['default', 'en', 'id'],
+      actionQuery: '/lang '
+    },
+    {
+      command: '/exit',
+      argHint: '',
+      description: 'Exit webpage (return to browser start or search engine).',
+      validArgs: [],
+      actionQuery: '/exit'
     },
     {
       command: '/share',
@@ -351,6 +370,13 @@
       description: 'Show reference.',
       validArgs: [],
       actionQuery: '/help'
+    },
+    {
+      command: '/read',
+      argHint: '',
+      description: 'Toggle reading mode (blog posts only).',
+      validArgs: [],
+      actionQuery: '/read'
     }
   ];
 
@@ -541,6 +567,29 @@
       badge: 'Share'
     },
     {
+      id: 'cmd-lang',
+      category: 'actions',
+      title: '/lang',
+      subtitle: 'Switch reading translation language (blog articles)',
+      requiresArgs: true,
+      autocompleteQuery: '/lang ',
+      icon: Languages,
+      badge: 'Language'
+    },
+    {
+      id: 'cmd-exit',
+      category: 'actions',
+      title: '/exit',
+      subtitle: 'Exit webpage (return to search engine or home)',
+      action: () => {
+        if (typeof window !== 'undefined') {
+          window.location.href = 'https://www.google.com';
+        }
+      },
+      icon: LogOut,
+      badge: 'System'
+    },
+    {
       id: 'cmd-help',
       category: 'actions',
       title: '/help',
@@ -550,6 +599,23 @@
       },
       icon: Command,
       badge: 'Help'
+    },
+    {
+      id: 'cmd-read',
+      category: 'actions',
+      title: '/read',
+      subtitle: 'Toggle reading mode — hide all distractions (blog posts only)',
+      action: () => {
+        if (page.url.pathname.startsWith('/blog/')) {
+          readingModeStore.toggle();
+          close();
+        } else {
+          toastStore.show('Reading mode is only available on blog posts');
+          close();
+        }
+      },
+      icon: BookOpenText,
+      badge: 'Reading'
     }
   ];
 
@@ -1040,18 +1106,27 @@
       }
 
       if (
-        isBlogPage
-        && (!arg
-          || 'pid'.startsWith(arg)
-          || 'page-id'.startsWith(arg)
-          || 'id'.startsWith(arg))
+        !arg
+        || 'pid'.startsWith(arg)
+        || 'page-id'.startsWith(arg)
+        || 'id'.startsWith(arg)
       ) {
         items.push({
           id: 'dyn-copy-pid',
           category: 'actions',
           title: '/copy pid',
-          subtitle: `Copy blog post slug / ID ("${currentSlug}") to clipboard`,
+          subtitle:
+            isBlogPage ?
+              `Copy blog post slug / ID ("${currentSlug}") to clipboard`
+            : 'Copy blog post slug / ID (blog posts only)',
           action: async () => {
+            if (!isBlogPage || !currentSlug) {
+              toastStore.show(
+                "Command '/copy pid' is only available on blog post pages.",
+                'warning'
+              );
+              return;
+            }
             if (typeof window !== 'undefined') {
               await navigator.clipboard.writeText(currentSlug);
               toastStore.show(`Post ID copied: ${currentSlug}`, 'success');
@@ -1062,16 +1137,23 @@
         });
       }
 
-      if (
-        (isBlogPage || isLegalPage)
-        && (!arg || 'md'.startsWith(arg) || 'markdown'.startsWith(arg))
-      ) {
+      if (!arg || 'md'.startsWith(arg) || 'markdown'.startsWith(arg)) {
         items.push({
           id: 'dyn-copy-md',
           category: 'actions',
           title: '/copy md',
-          subtitle: `Copy ${isBlogPage ? 'article' : 'page'} Markdown source to clipboard`,
+          subtitle:
+            isBlogPage || isLegalPage ?
+              `Copy ${isBlogPage ? 'article' : 'page'} Markdown source to clipboard`
+            : 'Copy article Markdown source (article pages only)',
           action: async () => {
+            if (!isBlogPage && !isLegalPage) {
+              toastStore.show(
+                "Command '/copy md' is only available on blog post or legal pages.",
+                'warning'
+              );
+              return;
+            }
             try {
               const type = isBlogPage ? 'blog' : 'legal';
               const res = await fetch(
@@ -1090,16 +1172,23 @@
         });
       }
 
-      if (
-        (isBlogPage || isLegalPage)
-        && (!arg || 'txt'.startsWith(arg) || 'text'.startsWith(arg))
-      ) {
+      if (!arg || 'txt'.startsWith(arg) || 'text'.startsWith(arg)) {
         items.push({
           id: 'dyn-copy-txt',
           category: 'actions',
           title: '/copy txt',
-          subtitle: `Copy ${isBlogPage ? 'article' : 'page'} Plaintext content to clipboard`,
+          subtitle:
+            isBlogPage || isLegalPage ?
+              `Copy ${isBlogPage ? 'article' : 'page'} Plaintext content to clipboard`
+            : 'Copy article Plaintext content (article pages only)',
           action: async () => {
+            if (!isBlogPage && !isLegalPage) {
+              toastStore.show(
+                "Command '/copy txt' is only available on blog post or legal pages.",
+                'warning'
+              );
+              return;
+            }
             try {
               const type = isBlogPage ? 'blog' : 'legal';
               const res = await fetch(
@@ -1142,16 +1231,23 @@
         });
       }
 
-      if (
-        isBlogPage
-        && (!arg || 'md'.startsWith(arg) || 'markdown'.startsWith(arg))
-      ) {
+      if (!arg || 'md'.startsWith(arg) || 'markdown'.startsWith(arg)) {
         items.push({
           id: 'dyn-save-md',
           category: 'actions',
           title: '/save md',
-          subtitle: 'Download article as Markdown (.md) file',
+          subtitle:
+            isBlogPage ?
+              'Download article as Markdown (.md) file'
+            : 'Download article as Markdown (blog posts only)',
           action: async () => {
+            if (!isBlogPage || !currentSlug) {
+              toastStore.show(
+                "Command '/save md' is only available on blog post pages.",
+                'warning'
+              );
+              return;
+            }
             try {
               const res = await fetch(
                 `/api/internal/raw?type=blog&slug=${currentSlug}&format=md`
@@ -1178,16 +1274,23 @@
         });
       }
 
-      if (
-        isBlogPage
-        && (!arg || 'txt'.startsWith(arg) || 'text'.startsWith(arg))
-      ) {
+      if (!arg || 'txt'.startsWith(arg) || 'text'.startsWith(arg)) {
         items.push({
           id: 'dyn-save-txt',
           category: 'actions',
           title: '/save txt',
-          subtitle: 'Download article as Plaintext (.txt) file',
+          subtitle:
+            isBlogPage ?
+              'Download article as Plaintext (.txt) file'
+            : 'Download article as Plaintext (blog posts only)',
           action: async () => {
+            if (!isBlogPage || !currentSlug) {
+              toastStore.show(
+                "Command '/save txt' is only available on blog post pages.",
+                'warning'
+              );
+              return;
+            }
             try {
               const res = await fetch(
                 `/api/internal/raw?type=blog&slug=${currentSlug}&format=text`
@@ -1214,34 +1317,78 @@
     }
 
     if (
-      q.startsWith('/translate')
-      || (root.length > 2 && '/translate'.startsWith(root))
+      q.startsWith('/lang')
+      || q.startsWith('/translate')
+      || (root.length > 2
+        && ('/lang'.startsWith(root) || '/translate'.startsWith(root)))
     ) {
+      const parts = q.split(/\s+/);
+      const cmdPrefix =
+        parts[0].startsWith('/translate') ? '/translate' : '/lang';
+      const arg = (parts[1] || '').toLowerCase();
       const pathname = page?.url?.pathname || '';
       const isBlogPage = pathname.startsWith('/blog/') && pathname.length > 6;
+      const currentSlug =
+        isBlogPage ?
+          pathname.replace('/blog/', '').split('/')[0]
+        : languageSwitcher?.slug || '';
 
-      if (isBlogPage && languageSwitcher) {
-        const parts = q.split(/\s+/);
-        const arg = parts[1] || '';
-        const options = ['en', ...languageSwitcher.availableLocales];
+      const langOptions: {key: string; label: string; urlParam: string}[] = [
+        {key: 'default', label: 'English (Default)', urlParam: ''},
+        {key: 'en', label: 'English (Default)', urlParam: ''},
+        {key: 'id', label: 'Indonesian (Bahasa Indonesia)', urlParam: 'id'}
+      ];
 
-        for (const lang of options) {
-          if (!arg || lang.startsWith(arg)) {
-            items.push({
-              id: `dyn-translate-${lang}`,
-              category: 'actions',
-              title: `/translate ${lang}`,
-              subtitle: `Switch this post to ${LANGUAGE_LABELS[lang] ?? lang}`,
-              url:
-                lang === 'en' ?
-                  `/blog/${languageSwitcher.slug}`
-                : `/blog/${languageSwitcher.slug}?lang=${lang}`,
-              icon: Languages,
-              badge: 'Language'
-            });
-          }
+      for (const opt of langOptions) {
+        if (!arg || opt.key.startsWith(arg)) {
+          items.push({
+            id: `dyn-lang-${opt.key}`,
+            category: 'actions',
+            title: `${cmdPrefix} ${opt.key}`,
+            subtitle:
+              isBlogPage ?
+                `Switch this post to ${opt.label}`
+              : `Switch post language to ${opt.label} (blog posts only)`,
+            action: () => {
+              if (!isBlogPage || !currentSlug) {
+                toastStore.show(
+                  "Command '/lang' is only available on blog post pages.",
+                  'warning'
+                );
+                return;
+              }
+              const targetUrl =
+                opt.urlParam ?
+                  `/blog/${currentSlug}?lang=${opt.urlParam}`
+                : `/blog/${currentSlug}`;
+              goto(targetUrl);
+              toastStore.show(`Language switched to ${opt.label}`, 'success');
+            },
+            icon: Languages,
+            badge: 'Language'
+          });
         }
       }
+    }
+
+    if (
+      q.startsWith('/exit')
+      || q.startsWith('/quit')
+      || (root.length > 2 && '/exit'.startsWith(root))
+    ) {
+      items.push({
+        id: 'dyn-exit',
+        category: 'actions',
+        title: '/exit',
+        subtitle: 'Exit webpage (return to browser start or search engine)',
+        action: () => {
+          if (typeof window !== 'undefined') {
+            window.location.href = 'https://www.google.com';
+          }
+        },
+        icon: LogOut,
+        badge: 'System'
+      });
     }
 
     return items;
@@ -1787,7 +1934,7 @@
     const escaped = safeQ.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     return safeText.replace(
       new RegExp(`(${escaped})`, 'gi'),
-      '<mark class="bg-copilot/20 text-copilot rounded-[2px] px-[1px] not-italic font-semibold">$1</mark>'
+      '<mark class="bg-accent/20 text-accent rounded-[2px] px-[1px] not-italic font-semibold">$1</mark>'
     );
   }
 
@@ -1849,8 +1996,8 @@
       onclick={() => open()}
       class={cn(
         variant === 'expanded' ?
-          'flex h-8 w-full cursor-pointer items-center justify-between gap-2 rounded-sm glass-button px-2.5 text-xs font-medium text-text-secondary hover:border-copilot/50 hover:text-copilot sm:h-9 sm:px-3'
-        : 'flex h-8 w-8 cursor-pointer items-center justify-center rounded-sm border border-border-subtle bg-surface p-0 text-xs font-semibold text-text-secondary backdrop-blur-none transition-colors hover:border-copilot hover:bg-surface-hover hover:text-copilot sm:h-9 sm:w-9 lg:h-9 lg:w-auto lg:justify-between lg:gap-2 lg:px-3',
+          'flex h-8 w-full cursor-pointer items-center justify-between gap-2 rounded-md glass-button px-2.5 text-xs font-medium text-text-secondary hover:border-accent/50 hover:text-accent sm:h-9 sm:px-3'
+        : 'flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-border-subtle bg-surface p-0 text-xs font-semibold text-text-secondary backdrop-blur-none transition-colors hover:border-accent hover:bg-surface-hover hover:text-accent sm:h-9 sm:w-9 lg:h-9 lg:w-auto lg:justify-between lg:gap-2 lg:px-3',
         className
       )}
       aria-label="Open spotlight search (Ctrl+K or /)">
@@ -1861,7 +2008,7 @@
             >Search...</span>
         </div>
         <kbd
-          class="inline-flex h-5 items-center justify-center rounded-sm border border-border-subtle/50 bg-surface-base/80 px-1.5 align-middle font-mono text-xxs leading-none font-semibold text-text-secondary shadow-2xs">
+          class="inline-flex h-5 items-center justify-center rounded-md border border-border-subtle/50 bg-surface-base/80 px-1.5 align-middle font-mono text-xxs leading-none font-semibold text-text-secondary shadow-2xs">
           /
         </kbd>
       {:else}
@@ -1873,12 +2020,12 @@
         </div>
         <div class="ml-1.5 hidden items-center gap-1 lg:flex">
           <kbd
-            class="inline-flex h-5 items-center justify-center rounded-sm border border-border-subtle/50 bg-surface-base/80 px-1.5 align-middle font-mono text-xxs leading-none font-semibold text-text-secondary shadow-2xs">
+            class="inline-flex h-5 items-center justify-center rounded-md border border-border-subtle/50 bg-surface-base/80 px-1.5 align-middle font-mono text-xxs leading-none font-semibold text-text-secondary shadow-2xs">
             Ctrl+K
           </kbd>
           <span class="text-xxs text-text-muted">or</span>
           <kbd
-            class="inline-flex h-5 items-center justify-center rounded-sm border border-border-subtle/50 bg-surface-base/80 px-1.5 align-middle font-mono text-xxs leading-none font-semibold text-text-secondary shadow-2xs">
+            class="inline-flex h-5 items-center justify-center rounded-md border border-border-subtle/50 bg-surface-base/80 px-1.5 align-middle font-mono text-xxs leading-none font-semibold text-text-secondary shadow-2xs">
             /
           </kbd>
         </div>
@@ -1912,7 +2059,7 @@
       onclick={close}></button>
 
     <div
-      class="relative z-10 flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-sm border-0 bg-surface-card text-text-primary shadow-xl backdrop-blur-md outline-none focus:outline-none md:w-[40vw] md:max-w-none dark:border dark:border-white/8"
+      class="relative z-10 flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-md border-0 bg-surface-card text-text-primary shadow-xl backdrop-blur-md outline-none focus:outline-none md:w-[40vw] md:max-w-none dark:border dark:border-white/8"
       role="dialog"
       tabindex="-1"
       aria-modal="true"
@@ -1942,7 +2089,7 @@
           <Button
             type="ghost"
             size="xs"
-            class="flex size-6 cursor-pointer items-center justify-center rounded-sm p-0 transition-colors hover:bg-surface-hover"
+            class="flex size-6 cursor-pointer items-center justify-center rounded-md p-0 transition-colors hover:bg-surface-hover"
             title="Match Case ({isCaseSensitive ? 'ON' : 'OFF'})"
             aria-label="Toggle Case Sensitivity"
             aria-pressed={isCaseSensitive}
@@ -1953,7 +2100,7 @@
             <CaseSensitive
               class={cn(
                 'size-3.5 transition-colors',
-                isCaseSensitive ? 'text-copilot' : (
+                isCaseSensitive ? 'text-accent' : (
                   'text-text-muted hover:text-text-primary'
                 )
               )} />
@@ -1962,7 +2109,7 @@
           <Button
             type="ghost"
             size="xs"
-            class="flex size-6 cursor-pointer items-center justify-center rounded-sm p-0 transition-colors hover:bg-surface-hover"
+            class="flex size-6 cursor-pointer items-center justify-center rounded-md p-0 transition-colors hover:bg-surface-hover"
             title="Match Whole Word ({isWholeWord ? 'ON' : 'OFF'})"
             aria-label="Toggle Whole Word Search"
             aria-pressed={isWholeWord}
@@ -1973,7 +2120,7 @@
             <WholeWord
               class={cn(
                 'size-3.5 transition-colors',
-                isWholeWord ? 'text-copilot' : (
+                isWholeWord ? 'text-accent' : (
                   'text-text-muted hover:text-text-primary'
                 )
               )} />
@@ -1982,7 +2129,7 @@
           <Button
             type="ghost"
             size="xs"
-            class="flex size-6 cursor-pointer items-center justify-center rounded-sm p-0 transition-colors hover:bg-surface-hover"
+            class="flex size-6 cursor-pointer items-center justify-center rounded-md p-0 transition-colors hover:bg-surface-hover"
             title="Use Regular Expression ({isRegex ? 'ON' : 'OFF'})"
             aria-label="Toggle Regular Expression Search"
             aria-pressed={isRegex}
@@ -1993,7 +2140,7 @@
             <Regex
               class={cn(
                 'size-3.5 transition-colors',
-                isRegex ? 'text-copilot' : (
+                isRegex ? 'text-accent' : (
                   'text-text-muted hover:text-text-primary'
                 )
               )} />
@@ -2017,9 +2164,10 @@
                   type="ghost"
                   size="xs"
                   aria-label="Clear recently used"
-                  class="flex size-6 cursor-pointer items-center justify-center rounded-sm p-0 text-text-muted transition-colors hover:bg-surface-hover hover:text-danger"
+                  title="Clear recently used"
+                  class="flex size-6 cursor-pointer items-center justify-center rounded-md p-0 text-text-muted transition-colors hover:bg-danger-subtle hover:text-danger"
                   onclick={() => searchHistoryStore.clear()}>
-                  <X class="size-3.5" />
+                  <Trash class="size-3.5" />
                 </Button>
               </div>
               {#each searchHistoryStore.current as entry, idx (entry.id)}
@@ -2038,9 +2186,9 @@
                     activeIndex = idx;
                   }}
                   class={cn(
-                    'group flex w-full cursor-pointer snap-start items-center justify-between gap-3 rounded-sm px-1 py-1 transition-colors',
+                    'group flex w-full cursor-pointer snap-start items-center justify-between gap-3 rounded-md px-1 py-1 transition-colors',
                     activeIndex === idx ?
-                      'bg-copilot/10 dark:bg-copilot/20'
+                      'bg-accent/10 dark:bg-accent/20'
                     : 'hover:bg-surface-hover'
                   )}>
                   <div class="min-w-0 flex-1">
@@ -2067,9 +2215,9 @@
                     {#if isSlashCmd}
                       <span
                         class={cn(
-                          'inline-flex h-[18px] shrink-0 items-center justify-center rounded-sm border px-1 font-mono text-3xs font-medium select-none',
+                          'inline-flex h-[18px] shrink-0 items-center justify-center rounded-md border px-1 font-mono text-3xs font-medium select-none',
                           activeIndex === idx ?
-                            'border-copilot/30 bg-copilot/25 text-copilot'
+                            'border-accent/30 bg-accent/25 text-accent'
                           : 'border-border-subtle/60 bg-surface-elevated text-text-secondary'
                         )}>
                         <Command class="size-2.5" />
@@ -2078,9 +2226,9 @@
                     {#if entry.badge}
                       <span
                         class={cn(
-                          'inline-flex h-[18px] shrink-0 items-center rounded-sm border px-1.5 font-mono text-3xs font-medium select-none',
+                          'inline-flex h-[18px] shrink-0 items-center rounded-md border px-1.5 font-mono text-3xs font-medium select-none',
                           activeIndex === idx ?
-                            'border-copilot/30 bg-copilot/25 text-copilot'
+                            'border-accent/30 bg-accent/25 text-accent'
                           : 'border-border-subtle/60 bg-surface-elevated text-text-secondary'
                         )}>
                         {entry.badge}
@@ -2090,12 +2238,13 @@
                       type="ghost"
                       size="xs"
                       aria-label="Remove {entry.title} from recently used"
-                      class="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm p-0 transition-colors hover:bg-[#FE4C25]/15"
+                      title="Remove from history"
+                      class="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-md p-0 text-text-muted transition-colors hover:bg-danger-subtle hover:text-danger"
                       onclick={e => {
                         e.stopPropagation();
                         searchHistoryStore.remove(entry.id);
                       }}>
-                      <Trash class="size-3.5 text-[#FE4C25]" />
+                      <X class="size-3.5" />
                     </Button>
                   </div>
                 </div>
@@ -2103,14 +2252,14 @@
             </div>
           {:else}
             <div
-              class="flex h-full flex-col items-center justify-center gap-1 px-4 text-center select-none">
+              class="flex h-full flex-col items-center justify-center gap-1 px-4 py-8 text-center select-none">
               <p class="font-sans-title text-xs font-medium text-text-muted">
                 Search or run any commands
               </p>
               <p class="font-sans-title text-2xs text-text-muted">
-                Type <span class="font-mono text-copilot">/</span> for commands,
+                Type <span class="font-mono text-accent">/</span> for commands,
                 or
-                <span class="font-mono text-copilot">/help</span> for the guide
+                <span class="font-mono text-accent">/help</span> for the guide
               </p>
             </div>
           {/if}
@@ -2118,8 +2267,8 @@
           <div class="space-y-2 p-3">
             {#each [1, 2, 3] as placeholderId (placeholderId)}
               <div
-                class="flex animate-pulse items-center gap-3 rounded-sm border border-border-subtle bg-surface-hover p-2.5 select-none">
-                <div class="size-4 shrink-0 rounded-sm bg-border-default"></div>
+                class="flex animate-pulse items-center gap-3 rounded-md border border-border-subtle bg-surface-hover p-2.5 select-none">
+                <div class="size-4 shrink-0 rounded-md bg-border-default"></div>
                 <div class="flex-1 space-y-1.5">
                   <div class="h-3 w-2/5 rounded bg-border-default"></div>
                   <div class="h-2.5 w-3/5 rounded bg-border-subtle"></div>
@@ -2129,7 +2278,7 @@
           </div>
         {:else if results.length === 0}
           <div
-            class="flex h-full flex-col items-center justify-center px-4 text-center select-none">
+            class="flex h-full flex-col items-center justify-center px-4 py-10 text-center select-none">
             <p class="font-sans-title text-xs font-medium text-text-muted">
               No results found
             </p>
@@ -2164,10 +2313,10 @@
                   onmouseenter={() => {
                     activeIndex = globalIdx;
                   }}
-                  class="group mx-2.5 flex cursor-pointer snap-start items-center justify-between gap-3 rounded-sm px-1.5 py-1 transition-colors {(
+                  class="group mx-2.5 flex cursor-pointer snap-start items-center justify-between gap-3 rounded-md px-1.5 py-1 transition-colors {(
                     activeIndex === globalIdx
                   ) ?
-                    'bg-copilot/10 text-text-primary dark:bg-copilot/20'
+                    'bg-accent/10 text-text-primary dark:bg-accent/20'
                   : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'}">
                   <div class="min-w-0 flex-1 flex-col">
                     {#if item.title.startsWith('/')}
@@ -2180,13 +2329,13 @@
                             <span class="font-normal text-text-muted/60">/</span
                             ><span
                               class={chunk.match ?
-                                'font-semibold text-copilot'
+                                'font-semibold text-accent'
                               : 'text-text-primary'}
                               >{chunk.text.slice(1)}</span>
                           {:else}
                             <span
                               class={chunk.match ?
-                                'font-semibold text-copilot'
+                                'font-semibold text-accent'
                               : 'text-text-primary'}>{chunk.text}</span>
                           {/if}
                         {/each}
@@ -2197,7 +2346,7 @@
                         {#each getHighlightChunks(item.title, rawQuery) as chunk, cIdx (cIdx)}
                           <span
                             class={chunk.match ?
-                              'font-semibold text-copilot'
+                              'font-semibold text-accent'
                             : ''}>{chunk.text}</span>
                         {/each}
                       </span>
@@ -2208,7 +2357,7 @@
                         class="mt-0.5 line-clamp-1 font-sans text-2xs leading-snug wrap-break-word text-text-secondary">
                         {#each getHighlightChunks(item.subtitle, rawQuery) as chunk, cIdx (cIdx)}
                           {#if chunk.match}
-                            <span class="font-semibold text-copilot"
+                            <span class="font-semibold text-accent"
                               >{chunk.text}</span>
                           {:else}
                             <span>{chunk.text}</span>
@@ -2221,20 +2370,20 @@
                   <div class="flex shrink-0 items-center gap-1">
                     {#if isSlashCmd}
                       <span
-                        class="inline-flex h-[18px] shrink-0 items-center justify-center rounded-sm border px-1 font-mono text-3xs font-medium select-none {(
+                        class="inline-flex h-[18px] shrink-0 items-center justify-center rounded-md border px-1 font-mono text-3xs font-medium select-none {(
                           activeIndex === globalIdx
                         ) ?
-                          'border-copilot/30 bg-copilot/25 text-copilot'
+                          'border-accent/30 bg-accent/25 text-accent'
                         : 'border-border-subtle/60 bg-surface-elevated text-text-secondary'}">
                         <Command class="size-2.5" />
                       </span>
                     {/if}
                     {#if item.badge}
                       <span
-                        class="inline-flex h-[18px] shrink-0 items-center rounded-sm border px-1.5 font-mono text-3xs font-medium select-none {(
+                        class="inline-flex h-[18px] shrink-0 items-center rounded-md border px-1.5 font-mono text-3xs font-medium select-none {(
                           activeIndex === globalIdx
                         ) ?
-                          'border-copilot/30 bg-copilot/25 text-copilot'
+                          'border-accent/30 bg-accent/25 text-accent'
                         : 'border-border-subtle/60 bg-surface-elevated text-text-secondary'}">
                         {item.badge}
                       </span>
@@ -2262,7 +2411,7 @@
           class="flex shrink-0 items-center gap-2.5 font-sans-title text-2xs font-medium text-text-muted">
           <span class="flex items-center gap-1 font-sans-title">
             <kbd
-              class="inline-flex size-5 items-center justify-center rounded-sm border border-border-subtle/60 bg-transparent text-text-muted dark:border-white/8">
+              class="inline-flex size-5 items-center justify-center rounded-md border border-border-subtle/60 bg-transparent text-text-muted dark:border-white/8">
               <ArrowDownUp
                 class="size-9"
                 strokeWidth={3} />
@@ -2271,7 +2420,7 @@
           </span>
           <span class="flex items-center gap-1 font-sans-title">
             <kbd
-              class="inline-flex size-5 items-center justify-center rounded-sm border border-border-subtle/60 bg-transparent text-text-muted dark:border-white/8">
+              class="inline-flex size-5 items-center justify-center rounded-md border border-border-subtle/60 bg-transparent text-text-muted dark:border-white/8">
               <CornerDownLeft
                 class="size-9"
                 strokeWidth={3} />
@@ -2280,7 +2429,7 @@
           </span>
           <span class="flex items-center gap-1 font-sans-title">
             <kbd
-              class="inline-flex h-5 min-w-6 items-center justify-center rounded-sm border border-border-subtle/60 bg-transparent px-1.5 font-sans-title text-2xs font-medium text-text-muted dark:border-white/8">
+              class="inline-flex h-5 min-w-6 items-center justify-center rounded-md border border-border-subtle/60 bg-transparent px-1.5 font-sans-title text-2xs font-medium text-text-muted dark:border-white/8">
               esc
             </kbd>
             <span class="hidden sm:inline">Close</span>
@@ -2306,7 +2455,7 @@
 
     <div
       bind:this={helpDialogEl}
-      class="relative z-10 flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-sm border-0 bg-surface-card text-text-primary shadow-xl backdrop-blur-md outline-none focus:outline-none md:w-[40vw] md:max-w-none dark:border dark:border-white/8"
+      class="relative z-10 flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-md border-0 bg-surface-card text-text-primary shadow-xl backdrop-blur-md outline-none focus:outline-none md:w-[40vw] md:max-w-none dark:border dark:border-white/8"
       role="dialog"
       tabindex="-1"
       aria-modal="true"
@@ -2314,7 +2463,7 @@
       <div
         class="flex items-center justify-between border-b border-border-subtle/40 px-4 py-2.5">
         <div class="flex items-center gap-2">
-          <Compass class="size-4 text-copilot" />
+          <Compass class="size-4 text-accent" />
           <span
             class="font-sans-title text-xs font-bold tracking-wide text-text-primary uppercase select-none">
             Command & Search Reference
@@ -2326,7 +2475,7 @@
             showHelp = false;
             tick().then(() => inputEl?.focus());
           }}
-          class="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none"
+          class="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-md text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
           aria-label="Close guide">
           <X class="size-3.5" />
         </button>
@@ -2347,10 +2496,10 @@
                   tick().then(() => inputEl?.focus());
                 }
               }}
-              class="flex w-full cursor-pointer flex-col gap-1 rounded-sm px-2 py-1.5 text-left transition-colors hover:bg-surface-hover/70 focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
+              class="flex w-full cursor-pointer flex-col gap-1 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-surface-hover/70 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
               <div class="min-w-0 flex-1 space-y-0.5">
                 <div class="flex items-center gap-2 font-mono text-2xs">
-                  <span class="font-bold text-copilot">{cmd.command}</span>
+                  <span class="font-bold text-accent">{cmd.command}</span>
                   {#if cmd.argHint}
                     <span class="text-text-muted">{cmd.argHint}</span>
                   {/if}
@@ -2365,7 +2514,7 @@
                   {#each cmd.validArgs as arg (arg)}
                     <span
                       class={arg.includes('[slug]') || arg.includes('[scale]') ?
-                        'font-medium text-copilot'
+                        'font-medium text-accent'
                       : 'text-text-muted'}>
                       {arg}
                     </span>
@@ -2385,34 +2534,34 @@
           </div>
           <div class="space-y-0.5 text-2xs">
             <div
-              class="flex items-center justify-between gap-3 rounded-sm px-2 py-1.5 transition-colors hover:bg-surface-hover/70">
+              class="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 transition-colors hover:bg-surface-hover/70">
               <div class="flex min-w-0 items-center gap-2">
-                <CaseSensitive class="size-3.5 shrink-0 text-copilot" />
+                <CaseSensitive class="size-3.5 shrink-0 text-accent" />
                 <span class="font-medium text-text-primary">Match Case</span>
                 <span class="hidden font-sans text-text-muted sm:inline"
                   >— Case-sensitive search toggle</span>
               </div>
-              <span class="font-mono text-3xs text-copilot">Aa button</span>
+              <span class="font-mono text-3xs text-accent">Aa button</span>
             </div>
             <div
-              class="flex items-center justify-between gap-3 rounded-sm px-2 py-1.5 transition-colors hover:bg-surface-hover/70">
+              class="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 transition-colors hover:bg-surface-hover/70">
               <div class="flex min-w-0 items-center gap-2">
-                <WholeWord class="size-3.5 shrink-0 text-copilot" />
+                <WholeWord class="size-3.5 shrink-0 text-accent" />
                 <span class="font-medium text-text-primary">Whole Word</span>
                 <span class="hidden font-sans text-text-muted sm:inline"
                   >— Match exact whole words</span>
               </div>
-              <span class="font-mono text-3xs text-copilot">ab button</span>
+              <span class="font-mono text-3xs text-accent">ab button</span>
             </div>
             <div
-              class="flex items-center justify-between gap-3 rounded-sm px-2 py-1.5 transition-colors hover:bg-surface-hover/70">
+              class="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 transition-colors hover:bg-surface-hover/70">
               <div class="flex min-w-0 items-center gap-2">
-                <Regex class="size-3.5 shrink-0 text-copilot" />
+                <Regex class="size-3.5 shrink-0 text-accent" />
                 <span class="font-medium text-text-primary">Regex Mode</span>
                 <span class="hidden font-sans text-text-muted sm:inline"
                   >— Regular expression pattern matching</span>
               </div>
-              <span class="font-mono text-3xs text-copilot">svelte|react</span>
+              <span class="font-mono text-3xs text-accent">svelte|react</span>
             </div>
           </div>
         </div>
@@ -2426,39 +2575,39 @@
           </div>
           <div class="grid grid-cols-2 grid-rows-2 gap-1.5 font-mono text-3xs">
             <div
-              class="flex items-center justify-between rounded-sm px-2 py-1 transition-colors hover:bg-surface-hover/70">
+              class="flex items-center justify-between rounded-md px-2 py-1 transition-colors hover:bg-surface-hover/70">
               <span class="font-sans text-text-secondary">Toggle</span>
               <div class="flex items-center justify-between gap-1">
                 <kbd
-                  class="inline-flex h-5 min-w-6 items-center justify-center rounded-sm border border-border-subtle/60 bg-transparent px-1.5 font-sans-title text-2xs font-medium text-text-secondary dark:border-white/8"
+                  class="inline-flex h-5 min-w-6 items-center justify-center rounded-md border border-border-subtle/60 bg-transparent px-1.5 font-sans-title text-2xs font-medium text-text-secondary dark:border-white/8"
                   >Ctrl+K</kbd>
                 or
                 <kbd
-                  class="inline-flex h-5 min-w-6 items-center justify-center rounded-sm border border-border-subtle/60 bg-transparent px-1.5 font-sans-title text-2xs font-medium text-text-secondary dark:border-white/8"
+                  class="inline-flex h-5 min-w-6 items-center justify-center rounded-md border border-border-subtle/60 bg-transparent px-1.5 font-sans-title text-2xs font-medium text-text-secondary dark:border-white/8"
                   >/</kbd>
               </div>
             </div>
             <div
-              class="flex items-center justify-between rounded-sm px-2 py-1 transition-colors hover:bg-surface-hover/70">
+              class="flex items-center justify-between rounded-md px-2 py-1 transition-colors hover:bg-surface-hover/70">
               <span class="font-sans text-text-secondary">Navigate</span>
               <kbd
-                class="inline-flex size-5 items-center justify-center rounded-sm border border-border-subtle/60 bg-transparent text-text-secondary dark:border-white/8"
+                class="inline-flex size-5 items-center justify-center rounded-md border border-border-subtle/60 bg-transparent text-text-secondary dark:border-white/8"
                 ><ArrowDownUp
                   class="size-9"
                   strokeWidth={3} /></kbd>
             </div>
             <div
-              class="flex items-center justify-between rounded-sm px-2 py-1 transition-colors hover:bg-surface-hover/70">
+              class="flex items-center justify-between rounded-md px-2 py-1 transition-colors hover:bg-surface-hover/70">
               <span class="font-sans text-text-secondary">Complete</span>
               <kbd
-                class="inline-flex h-5 min-w-6 items-center justify-center rounded-sm border border-border-subtle/60 bg-transparent px-1.5 font-sans-title text-2xs font-medium text-text-secondary dark:border-white/8"
+                class="inline-flex h-5 min-w-6 items-center justify-center rounded-md border border-border-subtle/60 bg-transparent px-1.5 font-sans-title text-2xs font-medium text-text-secondary dark:border-white/8"
                 >Tab</kbd>
             </div>
             <div
-              class="flex items-center justify-between rounded-sm px-2 py-1 transition-colors hover:bg-surface-hover/70">
+              class="flex items-center justify-between rounded-md px-2 py-1 transition-colors hover:bg-surface-hover/70">
               <span class="font-sans text-text-secondary">Execute</span>
               <kbd
-                class="inline-flex size-5 items-center justify-center rounded-sm border border-border-subtle/60 bg-transparent text-text-secondary dark:border-white/8"
+                class="inline-flex size-5 items-center justify-center rounded-md border border-border-subtle/60 bg-transparent text-text-secondary dark:border-white/8"
                 ><CornerDownLeft
                   class="size-9"
                   strokeWidth={3} /></kbd>

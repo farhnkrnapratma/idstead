@@ -23,10 +23,10 @@
   )}>
   {#each stats as item (item.label)}
     <div
-      class="flex flex-col items-center justify-center rounded-sm border border-border-subtle bg-surface/50 p-4 text-center shadow-xs">
+      class="flex flex-col items-center justify-center rounded-md border border-border-subtle bg-surface/50 p-4 text-center shadow-xs">
       {#if item.icon}
         <i
-          class="bi {item.icon} mb-1 text-lg text-copilot"
+          class="bi {item.icon} mb-1 text-lg text-accent"
           aria-hidden="true"></i>
       {/if}
       <span

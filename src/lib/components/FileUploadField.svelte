@@ -93,9 +93,9 @@
     ondragover={handleDragOver}
     ondragleave={handleDragLeave}
     class={cn(
-      'group relative flex min-h-40 cursor-pointer flex-col items-center justify-center gap-2 rounded-sm border-2 border-dashed p-6 text-center transition-all select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring',
+      'group relative flex min-h-40 cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed p-6 text-center transition-all select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring',
       isDragging ?
-        'border-copilot bg-copilot-subtle/40'
+        'border-accent bg-accent-subtle/40'
       : cn(
           'border-border-default bg-surface/50',
           !isDisabled && 'hover:border-border-strong hover:bg-surface-hover'
@@ -105,7 +105,7 @@
     )}>
     {#if isUploading}
       <svg
-        class="h-7 w-7 animate-spin text-copilot"
+        class="h-7 w-7 animate-spin text-accent"
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
@@ -123,11 +123,11 @@
           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
         ></path>
       </svg>
-      <p class="animate-pulse text-xs font-semibold text-copilot">
+      <p class="animate-pulse text-xs font-semibold text-accent">
         {uploadingLabel}
       </p>
     {:else if selectedFileName}
-      <FileCheck2 class="size-8 text-copilot" />
+      <FileCheck2 class="size-8 text-accent" />
       <p
         class="max-w-full truncate font-mono text-sm font-semibold text-text-primary">
         {selectedFileName}
@@ -147,7 +147,7 @@
       </Button>
     {:else}
       <UploadCloud
-        class="size-8 text-text-secondary transition-colors group-hover:text-copilot" />
+        class="size-8 text-text-secondary transition-colors group-hover:text-accent" />
       <span class="font-sans-title text-sm font-medium text-text-primary"
         >{label}</span>
       {#if hint}

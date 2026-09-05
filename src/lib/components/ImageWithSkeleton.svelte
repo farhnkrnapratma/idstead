@@ -25,7 +25,7 @@
     loading = 'lazy',
     referrerpolicy,
     aspectRatio,
-    rounded = 'rounded-sm',
+    rounded = 'rounded-md',
     variant = 'image',
     onload,
     onerror
@@ -78,11 +78,11 @@
       class="absolute inset-0 flex h-full w-full items-center justify-center bg-black/[0.04] p-1 text-text-muted select-none dark:bg-white/[0.05]">
       {#if isAvatar}
         <UserIcon
-          class="size-1/2 text-copilot/50"
+          class="size-1/2 text-text-muted"
           aria-hidden="true" />
       {:else}
         <ImageIcon
-          class="size-8 text-copilot/50"
+          class="size-8 text-text-muted"
           aria-hidden="true" />
       {/if}
     </div>

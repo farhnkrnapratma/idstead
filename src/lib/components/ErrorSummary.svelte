@@ -20,7 +20,7 @@
     role="alert"
     aria-live="assertive"
     class={cn(
-      'mb-4 rounded-sm border border-danger/30 bg-danger-subtle/20 p-4 text-xs select-none',
+      'mb-4 rounded-md border border-danger/30 bg-danger-subtle/20 p-4 text-xs select-none',
       className
     )}>
     <div class="flex items-center gap-2 font-bold text-danger">

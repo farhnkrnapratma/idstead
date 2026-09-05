@@ -13,7 +13,7 @@
 
   const variantStyles = {
     error: 'text-danger',
-    success: 'text-copilot',
+    success: 'text-success',
     warning: 'text-warning',
     info: 'text-text-muted'
   };

@@ -10,10 +10,10 @@
   By {action}, you agree to our
   <a
     href="/terms"
-    class="text-copilot underline hover:text-copilot-hover">Terms of Service</a>
+    class="text-accent underline hover:text-accent-hover">Terms of Service</a>
   and
   <a
     href="/privacy"
-    class="text-copilot underline hover:text-copilot-hover">Privacy Policy</a
+    class="text-accent underline hover:text-accent-hover">Privacy Policy</a
   >.
 </p>

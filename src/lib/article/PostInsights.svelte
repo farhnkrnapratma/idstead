@@ -7,16 +7,10 @@
   interface Props {
     tldr?: string[] | null;
     summary?: string | null;
-    summaryHint?: string;
     class?: string;
   }
 
-  let {
-    tldr = null,
-    summary = null,
-    summaryHint = 'Click to read summary',
-    class: className = ''
-  }: Props = $props();
+  let {tldr = null, summary = null, class: className = ''}: Props = $props();
 
   const REVEAL_DURATION_MS = 2800;
   const DOTS_DWELL_MS = 1100;
@@ -96,7 +90,7 @@
     {#if tldr && tldr.length > 0}
       <details
         open
-        class="group markdown-details my-0 overflow-hidden rounded-sm glass-card border border-border-subtle text-text-primary shadow-md backdrop-blur-md">
+        class="group markdown-details my-0 overflow-hidden rounded-md glass-card border border-border-subtle text-text-primary shadow-md backdrop-blur-md">
         <summary
           class="markdown-details-summary flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 font-sans-title text-sm font-medium text-text-primary transition-colors select-none group-open:border-border-subtle hover:bg-surface-hover/50 dark:group-open:border-white/10 [&::-webkit-details-marker]:hidden">
           <span class="inline-flex items-center gap-2">
@@ -133,7 +127,7 @@
     {#if summary}
       <details
         bind:this={detailsElement}
-        class="group markdown-details my-0 overflow-hidden rounded-sm glass-card border border-border-subtle text-text-primary shadow-md backdrop-blur-md"
+        class="group markdown-details my-0 overflow-hidden rounded-md glass-card border border-border-subtle text-text-primary shadow-md backdrop-blur-md"
         ontoggle={handleSummaryToggle}>
         <summary
           class="markdown-details-summary flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 font-sans-title text-sm font-medium text-text-primary transition-colors select-none group-open:border-border-subtle hover:bg-surface-hover/50 dark:group-open:border-white/10 [&::-webkit-details-marker]:hidden">
@@ -142,11 +136,6 @@
             <span
               class="translate-y-px font-sans-title text-sm leading-none font-medium text-text-primary"
               >Summary</span>
-            {#if summaryHint}
-              <span
-                class="translate-y-px text-xs font-normal text-text-muted transition-opacity group-open:hidden"
-                >{summaryHint}</span>
-            {/if}
           </span>
           <span
             class="markdown-details-icon inline-flex shrink-0 items-center justify-center text-text-muted"

@@ -1,7 +1,7 @@
 # Graph Report - www  (2026-09-03)
 
 ## Corpus Check
-- 408 files · ~374,814 words
+- 408 files · ~374,768 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `135fef43`
+- Built from commit: `4527ee0f`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -220,6 +220,7 @@
 - @fontsource-variable/noto-serif
 - @fontsource-variable/noto-serif-jp
 - @fontsource-variable/noto-serif-kr
+- Tabel Perbandingan Lengkap
 - @fontsource-variable/space-grotesk
 - js-yaml
 - katex
@@ -233,7 +234,7 @@
 - @sentry/sveltekit
 - @supabase/supabase-js
 - Code Blocks & Line Highlighting
-- Tabel Perbandingan Lengkap
+- Change Type Anti-Patterns Guide
 - marked-footnote
 - createA11yStore
 - graphify reference: extra exports and benchmark
@@ -258,7 +259,6 @@
 - Translation Control (`:::ignore-translate` & `:::translate-override`)
 - Multi-Variant Code Tabs (`:::tabs`)
 - graphify reference: add a URL and watch a folder
-- Change Type Anti-Patterns Guide
 - graphify reference: commit hook and native CLAUDE.md integration
 - graphify reference: incremental update and cluster-only
 - graphify reference: add a URL and watch a folder
@@ -808,6 +808,10 @@ Nodes (10): Anti-Pattern Guide untuk Change Type Framework, AP-01: Scope Creep (
 Cohesion: 0.25
 Nodes (8): Change Brief Contract, Scope Alert Escalation, Cara Menggunakan, Change Brief Format (Wajib Ditampilkan Sebelum Eksekusi), Change Type Framework, Eskalasi dan Interupsi, Referensi Lengkap, Tabel Risk Level
 
+### Community 224 - "Tabel Perbandingan Lengkap"
+Cohesion: 0.40
+Nodes (5): Kelompok Adaptive, Kelompok Corrective, Kelompok Perfective, Kelompok Preventive, Tabel Perbandingan Lengkap
+
 ### Community 229 - "keywords"
 Cohesion: 0.29
 Nodes (7): keywords, farhan, farhan kurnia pratama, kurnia, pratama, sveltekit, tailwindcss
@@ -820,9 +824,9 @@ Nodes (4): Bulleted (Unordered) List, Lists & Interactive Task Lists, Numbered (
 Cohesion: 0.50
 Nodes (4): Code Blocks & Line Highlighting, Diff Highlighting, Python Data Science Snippet, TypeScript Code Block with Line Highlighting (`{2,5-7}`)
 
-### Community 238 - "Tabel Perbandingan Lengkap"
-Cohesion: 0.40
-Nodes (5): Kelompok Adaptive, Kelompok Corrective, Kelompok Perfective, Kelompok Preventive, Tabel Perbandingan Lengkap
+### Community 238 - "Change Type Anti-Patterns Guide"
+Cohesion: 0.50
+Nodes (4): Change Type Anti-Patterns Guide, Rollback Plan Omission Anti-Pattern (AP-07), Scope Creep Anti-Pattern (AP-01), Test Assumption Error Anti-Pattern (AP-06)
 
 ### Community 240 - "createA11yStore"
 Cohesion: 0.31
@@ -896,10 +900,6 @@ Nodes (3): Multi-Variant Code Tabs (`:::tabs`), Package Manager Installation (`k
 Cohesion: 0.50
 Nodes (3): For /graphify add, For --watch, graphify reference: add a URL and watch a folder
 
-### Community 265 - "Change Type Anti-Patterns Guide"
-Cohesion: 0.50
-Nodes (4): Change Type Anti-Patterns Guide, Rollback Plan Omission Anti-Pattern (AP-07), Scope Creep Anti-Pattern (AP-01), Test Assumption Error Anti-Pattern (AP-06)
-
 ### Community 266 - "graphify reference: commit hook and native CLAUDE.md integration"
 Cohesion: 0.50
 Nodes (3): For git commit hook, For native CLAUDE.md integration, graphify reference: commit hook and native CLAUDE.md integration
@@ -964,7 +964,7 @@ Nodes (6): createThemeStore(), apply(), checkIsDark(), cycle(), init(), toggle()
 ## Work-memory lessons
 
 **Preferred sources** — corroborated by past sessions; start here.
-- `MarkdownEditor.svelte` (2× useful, score=1.959694019) _(code changed — re-verify)_
+- `MarkdownEditor.svelte` (2× useful, score=1.955044791)
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_

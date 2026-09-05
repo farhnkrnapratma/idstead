@@ -575,7 +575,7 @@
             type="button"
             onclick={toggleAutosave}
             aria-pressed={autosaveEnabled}
-            class="inline-flex cursor-pointer items-center gap-1.5 rounded-sm text-inherit focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+            class="inline-flex cursor-pointer items-center gap-1.5 rounded-md text-inherit focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
             <span>Autosave</span>
           </button>
         </Tooltip>
@@ -589,7 +589,7 @@
           onclick={toggleAutosave}
           aria-pressed={autosaveEnabled}
           aria-label="Autosave: {autosaveState}"
-          class="inline-flex cursor-pointer items-center gap-1.5 rounded-sm text-inherit focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:hidden">
+          class="inline-flex cursor-pointer items-center gap-1.5 rounded-md text-inherit focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:hidden">
           {#if autosaveEnabled}
             <RefreshCw class="size-3" />
           {:else}
@@ -601,7 +601,7 @@
         <button
           type="button"
           onclick={() => markdownTextareaElement?.focus()}
-          class="inline-flex cursor-pointer items-center gap-1.5 rounded-sm text-inherit focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+          class="inline-flex cursor-pointer items-center gap-1.5 rounded-md text-inherit focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
           <i
             class="bi bi-markdown-fill inline-flex size-3 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
             aria-hidden="true"></i>
@@ -617,7 +617,7 @@
   data-code-theme={editorTheme}
   style:--editor-min-height={minHeight}
   class={cn(
-    'editor-shell relative flex min-h-0 flex-col rounded-sm border text-left shadow-xl',
+    'editor-shell relative flex min-h-0 flex-col rounded-md border text-left shadow-xl',
     className
   )}>
   <span
@@ -625,12 +625,12 @@
     class="editor-theme-probe hljs"
     aria-hidden="true"></span>
   <div
-    class="editor-header sticky {stickyTopClass} z-30 flex flex-col rounded-t-sm shadow-md">
+    class="editor-header sticky {stickyTopClass} z-30 flex flex-col rounded-t-md shadow-md">
     <div
-      class="editor-chrome flex min-h-10 items-center rounded-t-sm border-b px-2 py-1 shadow-2xs select-none sm:px-3">
+      class="editor-chrome flex min-h-10 items-center rounded-t-md border-b px-2 py-1 shadow-2xs select-none sm:px-3">
       <div class="flex w-full min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
         <div
-          class="editor-tab-list flex h-8 min-w-0 items-center rounded-sm border p-0.5"
+          class="editor-tab-list flex h-8 min-w-0 items-center rounded-md border p-0.5"
           role="tablist"
           aria-label="Markdown editor views">
           <button
@@ -753,7 +753,7 @@
               type="button"
               onclick={item.action}
               aria-label={item.label}
-              class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-sm transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
+              class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
               <item.icon class="size-4" />
             </button>
           {/each}
@@ -765,7 +765,7 @@
             aria-label="More headings (H4-H6)"
             aria-haspopup="true"
             aria-expanded={headingDropdownOpen}
-            class="flex h-7 shrink-0 cursor-pointer items-center justify-center gap-0.5 rounded-sm px-1 transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
+            class="flex h-7 shrink-0 cursor-pointer items-center justify-center gap-0.5 rounded-md px-1 transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
             <Heading class="size-4" />
             <ChevronDown
               class="size-3 transition-transform duration-200 {(
@@ -785,7 +785,7 @@
               type="button"
               onclick={item.action}
               aria-label={item.label}
-              class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-sm transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
+              class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
               <item.icon class="size-4" />
             </button>
           {/each}
@@ -799,7 +799,7 @@
             type="button"
             onclick={handleImageClick}
             aria-label="Insert image"
-            class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-sm transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
+            class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
             <ImageIcon class="size-4" />
           </button>
           <input
@@ -814,7 +814,7 @@
               type="button"
               onclick={item.action}
               aria-label={item.label}
-              class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-sm transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
+              class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
               <item.icon class="size-4" />
             </button>
           {/each}
@@ -828,7 +828,7 @@
             type="button"
             onclick={() => insertMarkdown('```\n', '\n```')}
             aria-label="Code block"
-            class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-sm transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
+            class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
             <SquareCode class="size-4" />
           </button>
 
@@ -844,7 +844,7 @@
             aria-label="More formatting options"
             aria-haspopup="true"
             aria-expanded={overflowPopoverOpen}
-            class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-sm transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
+            class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
             <span class="text-sm leading-none font-bold tracking-widest"
               >···</span>
           </button>
@@ -996,7 +996,7 @@
 
   {#if activeTab === 'editor'}
     <div
-      class="editor-chrome editor-status-bar sticky bottom-0 z-20 flex min-h-8 items-center justify-between gap-3 rounded-b-sm border-t px-3 font-mono text-xxs select-none sm:px-4">
+      class="editor-chrome editor-status-bar sticky bottom-0 z-20 flex min-h-8 items-center justify-between gap-3 rounded-b-md border-t px-3 font-mono text-xxs select-none sm:px-4">
       {@render statusContent()}
     </div>
   {/if}
@@ -1009,7 +1009,7 @@
       aria-label="Close indent size menu"></button>
     <div
       role="listbox"
-      class="editor-control-menu fixed z-50 flex flex-col overflow-hidden rounded-sm border p-0 text-xs shadow-xl"
+      class="editor-control-menu fixed z-50 flex flex-col overflow-hidden rounded-md border p-0 text-xs shadow-xl"
       aria-label="Indent size"
       style="top:{indentSizePopoverPos.top}px; left:{indentSizePopoverPos.left}px; width:{indentSizePopoverWidth}px">
       {#each INDENT_SIZES as size (size)}
@@ -1038,7 +1038,7 @@
       tabindex="-1"
       aria-label="Close editor settings menu"></button>
     <div
-      class="editor-control-menu fixed z-50 flex max-w-[calc(100vw-1rem)] min-w-56 flex-col overflow-hidden rounded-sm border p-1 text-xs shadow-xl"
+      class="editor-control-menu fixed z-50 flex max-w-[calc(100vw-1rem)] min-w-56 flex-col overflow-hidden rounded-md border p-1 text-xs shadow-xl"
       aria-label="Editor settings"
       style="top:{editorSettingsPopoverPos.top}px; right:{editorSettingsPopoverPos.right}px">
       <div class="flex items-center justify-between gap-3 px-2 py-1.5">
@@ -1065,7 +1065,7 @@
               aria-pressed={indentSize === size}
               onclick={() => setIndentSize(size)}
               class={cn(
-                'editor-control-option inline-flex items-center justify-center rounded-sm px-2.5 py-1',
+                'editor-control-option inline-flex items-center justify-center rounded-md px-2.5 py-1',
                 indentSize === size && 'editor-control-option-active'
               )}>
               {size}
@@ -1115,7 +1115,7 @@
     aria-label="Close heading menu"></button>
   <div
     role="menu"
-    class="editor-control-menu fixed z-50 flex min-w-32 flex-col overflow-hidden rounded-sm border p-0 text-xs shadow-xl"
+    class="editor-control-menu fixed z-50 flex min-w-32 flex-col overflow-hidden rounded-md border p-0 text-xs shadow-xl"
     style="top:{headingPopoverPos.top}px; left:{headingPopoverPos.left}px">
     <button
       type="button"
@@ -1160,7 +1160,7 @@
     aria-label="Close more options menu"></button>
   <div
     role="menu"
-    class="editor-control-menu fixed z-50 flex max-w-[calc(100vw-1rem)] min-w-44 flex-col overflow-hidden rounded-sm border p-0 text-xs shadow-xl"
+    class="editor-control-menu fixed z-50 flex max-w-[calc(100vw-1rem)] min-w-44 flex-col overflow-hidden rounded-md border p-0 text-xs shadow-xl"
     style="top:{overflowPopoverPos.top}px; left:{overflowPopoverPos.left}px">
     {#each [{action: () => insertMarkdown('<kbd>', '</kbd>'), icon: Keyboard, label: 'Keyboard key'}, {action: () => insertMarkdown('<mark>', '</mark>'), icon: Highlighter, label: 'Highlight'}, {action: () => insertMarkdown('<sub>', '</sub>'), icon: Subscript, label: 'Subscript'}, {action: () => insertMarkdown('<sup>', '</sup>'), icon: Superscript, label: 'Superscript'}, {action: () => insertMarkdown('| Header 1 | Header 2 |\n|----------|-----------|\n|  Cell 1  |  Cell 2  |\n'), icon: TableIcon, label: 'Add table'}, {action: () => insertMarkdown('<details>\n<summary>Details</summary>\n\n', '\n</details>\n'), icon: ChevronsUpDown, label: 'Collapsible details'}, {action: () => insertMarkdown('\n---\n'), icon: Minus, label: 'Horizontal rule'}] as const as item (item.label)}
       <button
@@ -1411,7 +1411,7 @@
   }
 
   .prose-custom {
-    @apply font-sans text-[0.9rem] leading-[1.7] text-text-secondary;
+    @apply font-sans text-sm leading-relaxed text-text-secondary;
   }
 
   .prose-custom :global(p) {
@@ -1452,7 +1452,7 @@
   }
 
   .prose-custom :global(pre) {
-    @apply mt-6 mb-6 scrollbar-none! overflow-x-auto rounded-sm border border-border-subtle bg-surface-hover px-3! py-1.5! font-mono text-[0.8rem] leading-snug break-normal! whitespace-pre! [-ms-overflow-style:none]!;
+    @apply mt-6 mb-6 scrollbar-none! overflow-x-auto rounded-md border border-border-subtle bg-surface-hover px-3! py-1.5! font-mono text-[0.8rem] leading-snug break-normal! whitespace-pre! [-ms-overflow-style:none]!;
   }
 
   .prose-custom :global(pre[data-enhanced='true']) {
@@ -1557,7 +1557,7 @@
   :global(:root.dark) .prose-custom :global(h5:hover .heading-text),
   :global(:root.dark) .prose-custom :global(h6:hover .heading-text),
   :global(:root.dark) .prose-custom :global(.heading-text):hover {
-    @apply text-copilot underline underline-offset-4;
+    @apply text-accent underline underline-offset-4;
   }
 
   .prose-custom :global(h1:hover a.anchor-link),
@@ -1588,11 +1588,11 @@
   :global(:root.dark) .prose-custom :global(h5:hover a.anchor-link svg),
   :global(:root.dark) .prose-custom :global(h6:hover a.anchor-link svg),
   :global(:root.dark) .prose-custom :global(a.anchor-link):hover :global(svg) {
-    @apply text-copilot! no-underline! opacity-100;
+    @apply text-accent! no-underline! opacity-100;
   }
 
   .prose-custom :global(table) {
-    @apply my-6 w-full max-w-full table-fixed border-separate border-spacing-0 overflow-hidden rounded-sm border border-border-subtle text-left text-xs shadow-2xs;
+    @apply my-6 w-full max-w-full table-fixed border-separate border-spacing-0 overflow-hidden rounded-md border border-border-subtle text-left text-xs shadow-2xs;
   }
 
   .prose-custom :global(thead) {
@@ -1629,7 +1629,7 @@
   }
 
   .prose-custom :global(blockquote:not(.markdown-alert)) {
-    @apply my-6 rounded-sm border border-border-default/40 bg-surface-hover/30 p-4 text-sm leading-relaxed text-text-secondary;
+    @apply my-6 rounded-md border border-border-default/40 bg-surface-hover/30 p-4 text-sm leading-relaxed text-text-secondary;
   }
 
   .prose-custom :global(blockquote:not(.markdown-alert) p) {
@@ -1678,7 +1678,7 @@
   }
 
   .prose-custom :global(input[type='checkbox']:checked) {
-    @apply border-copilot! bg-copilot!;
+    @apply border-accent! bg-accent!;
   }
 
   .prose-custom :global(input[type='checkbox']:checked::before) {
@@ -1687,7 +1687,7 @@
   }
 
   .prose-custom :global(.markdown-alert) {
-    @apply my-6 rounded-sm border p-4 text-xs transition-colors duration-200 sm:text-sm;
+    @apply my-6 rounded-md border p-4 text-xs transition-colors duration-200 sm:text-sm;
   }
 
   .prose-custom :global(.markdown-alert-title) {
@@ -1750,7 +1750,7 @@
   }
 
   .prose-custom :global(mark) {
-    @apply rounded-sm bg-security-subtle px-1 py-0.5 font-normal text-security;
+    @apply rounded-md bg-security-subtle px-1 py-0.5 font-normal text-security;
   }
 
   .prose-custom :global(kbd) {
@@ -1865,11 +1865,11 @@
   }
 
   .prose-custom :global(.markdown-tabs-container) {
-    @apply my-6 rounded-sm border border-border-subtle bg-code-chrome shadow-2xs;
+    @apply my-6 rounded-md border border-border-subtle bg-code-chrome shadow-2xs;
   }
 
   .prose-custom :global(.markdown-tabs-header) {
-    @apply relative flex min-h-8 items-end justify-between rounded-t-sm border-b border-border-subtle bg-code-chrome px-3 pt-0 pb-0 select-none;
+    @apply relative flex min-h-8 items-end justify-between rounded-t-md border-b border-border-subtle bg-code-chrome px-3 pt-0 pb-0 select-none;
   }
 
   .prose-custom :global(.markdown-tabs-nav) {
@@ -1885,7 +1885,7 @@
   }
 
   .prose-custom :global(.markdown-tab-button.active-tab) {
-    @apply border-b-copilot font-bold text-copilot;
+    @apply border-b-accent font-bold text-accent;
   }
 
   .prose-custom :global(.markdown-tab-button:not(.active-tab)) {
@@ -1893,11 +1893,11 @@
   }
 
   .prose-custom :global(.markdown-tabs-body) {
-    @apply rounded-b-sm;
+    @apply rounded-b-md;
   }
 
   .prose-custom :global(.markdown-tabs-container .markdown-tab-panel) {
-    @apply rounded-b-sm p-4;
+    @apply rounded-b-md p-4;
   }
 
   .prose-custom
@@ -1912,11 +1912,11 @@
     :global(
       .markdown-tabs-container .markdown-tab-panel:has(.code-block-container)
     ) {
-    @apply rounded-b-sm p-0!;
+    @apply rounded-b-md p-0!;
   }
 
   .prose-custom :global(.markdown-tabs-container .code-block-container) {
-    @apply my-0! rounded-b-sm! border-0!;
+    @apply my-0! rounded-b-md! border-0!;
   }
 
   .prose-custom :global(.markdown-tabs-container .code-header-bar) {
@@ -1924,20 +1924,20 @@
   }
 
   .prose-custom :global(.markdown-tabs-container .code-body) {
-    @apply rounded-b-sm! border-0!;
+    @apply rounded-b-md! border-0!;
   }
 
   .prose-custom :global(.markdown-tabs-container .code-scrollbar-wrapper) {
-    @apply rounded-b-sm! border-0!;
+    @apply rounded-b-md! border-0!;
   }
 
   .prose-custom :global(.markdown-tabs-container pre) {
-    @apply my-0! rounded-b-sm! border-0!;
+    @apply my-0! rounded-b-md! border-0!;
   }
 
   .prose-custom :global(details.markdown-details),
   .prose-custom :global(details) {
-    @apply my-4 overflow-hidden rounded-sm glass-card border border-border-subtle text-text-primary shadow-md backdrop-blur-md;
+    @apply my-4 overflow-hidden rounded-md glass-card border border-border-subtle text-text-primary shadow-md backdrop-blur-md;
     border: 1px solid var(--color-border-subtle);
   }
 
@@ -2006,11 +2006,20 @@
   }
 
   .prose-custom :global(.footnotes) {
-    @apply mt-10 border-t border-border-subtle pt-4 text-xs leading-relaxed text-text-secondary sm:text-sm;
+    @apply mt-10 border-t border-border-subtle pt-4 text-[calc(0.84375rem*var(--a11y-scale))] leading-relaxed text-text-secondary;
   }
 
   .prose-custom :global(.footnotes ol) {
-    @apply my-2 list-decimal space-y-1.5 pl-6;
+    @apply my-2 list-none! space-y-1.5 pl-0! [counter-reset:footnotes];
+  }
+
+  .prose-custom :global(.footnotes li) {
+    @apply relative pl-5! [counter-increment:footnotes];
+  }
+
+  .prose-custom :global(.footnotes li::before) {
+    content: counter(footnotes) '.';
+    @apply absolute top-0 left-0 font-mono text-text-secondary tabular-nums select-none;
   }
 
   .prose-custom :global(.footnotes li p) {
@@ -2018,51 +2027,27 @@
   }
 
   .prose-custom :global([data-footnote-ref]) {
-    @apply text-[0.9em] font-normal text-security no-underline hover:underline;
+    @apply font-mono text-[0.8em] font-medium text-security no-underline hover:underline;
   }
 
-  .prose-custom :global(.footnotes li) {
-    display: list-item;
-  }
-
-  .prose-custom :global(.footnotes li::marker) {
-    color: var(--color-text-secondary);
-  }
-
-  .prose-custom :global([data-footnote-backref]) {
-    @apply inline-flex items-center text-security no-underline hover:underline;
-    font-size: 0;
-    margin-left: 0.25rem;
+  .prose-custom :global(.footnote-backref) {
+    @apply inline-flex items-center font-mono text-security no-underline hover:underline;
     vertical-align: baseline;
+    line-height: 1;
   }
 
-  .prose-custom :global([data-footnote-backref] + [data-footnote-backref]) {
-    margin-left: 0.15rem;
+  .prose-custom :global(.footnote-backref-static) {
+    @apply inline-flex items-center font-mono text-text-muted;
+    vertical-align: baseline;
+    line-height: 1;
   }
 
-  .prose-custom :global([data-footnote-backref]::before) {
-    content: '';
-    display: inline-block;
-    width: 0.75em;
-    height: 0.75em;
-    vertical-align: middle;
-    background-color: currentColor;
-    -webkit-mask: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>')
-      center / contain no-repeat;
-    mask: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>')
-      center / contain no-repeat;
-    font-size: 0.75rem;
-  }
-
-  .prose-custom :global([data-footnote-backref] sup) {
-    @apply font-mono;
-    font-size: 0.55rem !important;
+  .prose-custom :global(.footnote-sub-backref) {
+    @apply inline-flex items-center font-mono text-security italic no-underline hover:underline;
+    font-size: 0.75rem !important;
     line-height: 1 !important;
-    font-weight: 500;
-    vertical-align: super;
-    margin-left: 0.05rem;
-    color: currentColor;
-    display: inline-block;
+    vertical-align: 0.32em;
+    text-underline-offset: 2px;
   }
 
   .prose-custom :global(.footnotes li:target a) {

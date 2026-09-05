@@ -1,6 +1,7 @@
 <script lang="ts">
   import {Check} from '@lucide/svelte';
   import {cn} from '../../utils/cn';
+  import {popoverPosition} from '../../utils/popoverPosition';
   import DropdownTrigger from './DropdownTrigger.svelte';
 
   interface Option {
@@ -65,13 +66,19 @@
     <div
       role="listbox"
       aria-label="{label} options"
+      use:popoverPosition={{
+        placement:
+          dropdownPlacement === 'right' ? 'bottom-end' : 'bottom-start',
+        offset: 8,
+        padding: 8
+      }}
       class={cn(
-        'absolute top-[calc(100%+8px)] z-60 flex flex-col popover-surface p-0',
+        'absolute z-60 flex flex-col popover-surface p-0',
         popoverSpan === '2cols-left' ?
-          'left-0 w-[calc(200%+0.625rem)] sm:inset-x-0 sm:w-full'
-        : 'inset-x-0 w-full'
+          'w-[calc(200%+0.625rem)] sm:w-full'
+        : 'w-full'
       )}>
-      <div class="relative z-10 flex flex-col overflow-hidden rounded-sm">
+      <div class="relative z-10 flex flex-col overflow-hidden rounded-md">
         {#each options as option (option.value)}
           <button
             type="button"
@@ -81,12 +88,12 @@
             class={cn(
               'flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-2 text-left font-sans-title text-xs font-medium transition-colors',
               option.value === value ?
-                'bg-copilot/10 font-semibold text-copilot'
-              : 'text-text-primary hover:bg-surface-hover hover:text-copilot'
+                'bg-accent/10 font-semibold text-accent'
+              : 'text-text-primary hover:bg-surface-hover hover:text-accent'
             )}>
             <span class="truncate">{option.label}</span>
             {#if option.value === value}
-              <Check class="size-3.5 shrink-0 text-copilot" />
+              <Check class="size-3.5 shrink-0 text-accent" />
             {/if}
           </button>
         {/each}

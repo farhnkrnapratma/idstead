@@ -25,7 +25,7 @@
 
 <div
   class={cn(
-    'flex flex-col gap-4 rounded-sm glass-card p-5 select-none sm:p-6',
+    'flex flex-col gap-4 rounded-md glass-card p-5 select-none sm:p-6',
     className
   )}>
   <div class="flex items-center gap-4">
@@ -38,7 +38,7 @@
         class="h-12 w-12 shrink-0 border border-border-subtle/40 shadow-2xs" />
     {:else}
       <div
-        class="flex h-12 w-12 items-center justify-center rounded-full border border-border-subtle/40 bg-surface-subtle text-base font-bold text-copilot shadow-2xs">
+        class="flex h-12 w-12 items-center justify-center rounded-full border border-border-subtle/40 bg-surface-subtle text-base font-bold text-accent shadow-2xs">
         {name.charAt(0)}
       </div>
     {/if}

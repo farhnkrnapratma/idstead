@@ -19,28 +19,15 @@ const RETRY_BASE_DELAY_MS = 250;
 const RETRY_JITTER_MS = 100;
 const ACCESS_REDIRECT_COOLDOWN_MS = 60_000;
 
-export type TranslationLocale = 'id' | 'ja' | 'zh' | 'ko';
+export type TranslationLocale = 'id';
 
-export const TRANSLATION_LOCALES: TranslationLocale[] = [
-  'id',
-  'ja',
-  'zh',
-  'ko'
-];
+export const TRANSLATION_LOCALES: TranslationLocale[] = ['id'];
 
-const LOCALE_NAMES: Record<TranslationLocale, string> = {
-  id: 'Indonesian',
-  ja: 'Japanese',
-  zh: 'Simplified Chinese',
-  ko: 'Korean'
-};
+const LOCALE_NAMES: Record<TranslationLocale, string> = {id: 'Indonesian'};
 
 const TRANSLATION_DISCLAIMER_TEXT: Record<'en' | TranslationLocale, string> = {
   en: 'This content was translated automatically by AI and may contain errors. See the original English version for the authoritative text.',
-  id: 'Konten ini diterjemahkan secara otomatis oleh AI dan mungkin mengandung kesalahan. Lihat versi bahasa Inggris asli untuk teks yang otoritatif.',
-  ja: 'このコンテンツはAIによって自動的に翻訳されており、誤りが含まれる場合があります。正式な内容については元の英語版をご覧ください。',
-  zh: '此内容由AI自动翻译，可能包含错误。请查看原始英文版本以获取权威文本。',
-  ko: '이 콘텐츠는 AI가 자동으로 번역했으며 오류가 포함될 수 있습니다. 정확한 내용은 원본 영어 버전을 참고하세요.'
+  id: 'Konten ini diterjemahkan secara otomatis oleh AI dan mungkin mengandung kesalahan. Lihat versi bahasa Inggris asli untuk teks yang otoritatif.'
 };
 
 export function getTranslationDisclaimer(
@@ -52,7 +39,7 @@ export function getTranslationDisclaimer(
 export function buildTranslationDisclaimerMarkdown(
   locale: TranslationLocale | 'en'
 ): string {
-  return `> [!WARNING]\n> ${getTranslationDisclaimer(locale)}`;
+  return `> [!NOTE]\n> ${getTranslationDisclaimer(locale)}`;
 }
 
 interface AiRunner {

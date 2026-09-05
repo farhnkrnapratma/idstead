@@ -716,7 +716,7 @@
 
       const finalPostId = editId ?? newPostId;
       if (toBePublished && finalPostId && accessToken) {
-        const targetLocales = ['id', 'ja', 'zh', 'ko'] as const;
+        const targetLocales = ['id'] as const;
         for (const locale of targetLocales) {
           try {
             const transRes = await fetch('/api/internal/blog/translate', {
@@ -797,7 +797,7 @@
     size="sm"
     onclick={handleCancelClick}>
     <ArrowLeft class="size-3.5 shrink-0" />
-    Back to Admin
+    Admin
   </Button>
 
   <div class="flex items-center gap-2">
@@ -830,209 +830,213 @@
         novalidate
         class="flex flex-col gap-4">
         <div
-          class="rounded-sm border border-border-subtle bg-surface-card p-4 text-left sm:p-5">
+          class="rounded-md border border-border-subtle bg-surface-card p-4 text-left sm:p-5">
           <h2 class="mb-3 text-base font-bold text-text-primary select-none">
             {isEditMode ? 'Edit post details' : 'Post details'}
           </h2>
 
-          <div class="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:items-stretch">
-            <div class="flex flex-col gap-1.5 lg:col-span-4">
-              <label
-                for="post-banner"
-                class="flex h-5 items-center gap-1.5 truncate font-sans-title text-xs font-bold text-text-secondary select-none">
-                <span>Banner image</span>
-                {#if displayBannerName}
-                  <span class="truncate font-normal text-text-muted">
-                    · {displayBannerName}
-                  </span>
-                {/if}
-              </label>
+          <div class="flex flex-col gap-4">
+            <div
+              class="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:items-stretch">
+              <div class="flex flex-col gap-1.5 lg:col-span-4">
+                <label
+                  for="post-banner"
+                  class="flex h-5 items-center gap-1.5 truncate font-sans-title text-xs font-bold text-text-secondary select-none">
+                  <span>Banner image</span>
+                  {#if displayBannerName}
+                    <span class="truncate font-normal text-text-muted">
+                      · {displayBannerName}
+                    </span>
+                  {/if}
+                </label>
 
-              <div
-                role="region"
-                aria-label="Banner image upload dropzone"
-                class={cn(
-                  'group relative flex aspect-video w-full flex-1 items-center justify-center overflow-hidden rounded-sm border border-border-subtle/50 bg-surface-card/85 shadow-2xs backdrop-blur-xs transition-colors select-none dark:border-white/10 dark:bg-surface-card/70',
-                  isDraggingOverBanner ?
-                    'border-copilot! bg-copilot/10! ring-2 ring-copilot/30!'
-                  : ''
-                )}
-                ondragover={e => {
-                  e.preventDefault();
-                  isDraggingOverBanner = true;
-                }}
-                ondragleave={() => {
-                  isDraggingOverBanner = false;
-                }}
-                ondrop={e => {
-                  e.preventDefault();
-                  isDraggingOverBanner = false;
-                  const file = e.dataTransfer?.files?.[0];
-                  if (file) void processBannerFile(file);
-                }}>
-                {#if isCompressingBanner}
-                  <div class="flex flex-col items-center gap-2">
-                    <LoadingState
-                      variant="spinner"
-                      size="sm"
-                      label="Compressing..." />
-                  </div>
-                {:else if bannerPreview}
-                  <ImageWithSkeleton
-                    src={bannerPreview}
-                    alt="Banner preview"
-                    class="h-full w-full bg-surface-base"
-                    imgClass="object-contain" />
-                  <button
-                    type="button"
-                    onclick={() => {
-                      bannerFile = null;
-                      bannerFileName = '';
-                      if (bannerPreview && bannerPreview.startsWith('blob:')) {
-                        URL.revokeObjectURL(bannerPreview);
-                      }
-                      bannerPreview = null;
-                      bannerPath = null;
-                    }}
-                    class="absolute top-2 right-2 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-white/20 bg-black/70 text-white transition-colors hover:bg-black/90"
-                    aria-label="Remove banner">
-                    <X class="size-4 leading-none" />
-                  </button>
-                {:else}
-                  <div class="flex flex-col items-center gap-2">
-                    <Button
-                      type="ghost"
-                      size="sm"
-                      class="cursor-pointer gap-1.5 text-text-secondary hover:text-text-primary"
-                      onclick={() => bannerFileInput?.click()}>
-                      <ImageUp class="size-4 shrink-0" />
-                      Choose File
-                    </Button>
-                  </div>
-                {/if}
-              </div>
-
-              <input
-                bind:this={bannerFileInput}
-                type="file"
-                id="post-banner"
-                accept="image/png,image/webp,image/jpeg,image/jpg,image/avif,image/tiff,image/tif"
-                onchange={handleBannerChange}
-                class="hidden" />
-
-              {#if bannerError}
                 <div
-                  id="post-banner-fb"
-                  aria-live="polite"
-                  class="text-xs font-medium">
-                  <span
-                    role="alert"
-                    class="flex items-start gap-1.5 text-danger">
-                    <AlertCircle
-                      class="mt-px size-3.5 shrink-0 self-start leading-none" />
-                    <span class="min-w-0 flex-1 wrap-break-word"
-                      >{bannerError}</span>
-                  </span>
+                  role="region"
+                  aria-label="Banner image upload dropzone"
+                  class={cn(
+                    'group relative flex aspect-video w-full flex-1 items-center justify-center overflow-hidden rounded-md border border-border-subtle/50 bg-surface-card/85 shadow-2xs backdrop-blur-xs transition-colors select-none dark:border-white/10 dark:bg-surface-card/70',
+                    isDraggingOverBanner ?
+                      'border-accent! bg-accent/10! ring-2 ring-accent/30!'
+                    : ''
+                  )}
+                  ondragover={e => {
+                    e.preventDefault();
+                    isDraggingOverBanner = true;
+                  }}
+                  ondragleave={() => {
+                    isDraggingOverBanner = false;
+                  }}
+                  ondrop={e => {
+                    e.preventDefault();
+                    isDraggingOverBanner = false;
+                    const file = e.dataTransfer?.files?.[0];
+                    if (file) void processBannerFile(file);
+                  }}>
+                  {#if isCompressingBanner}
+                    <div class="flex flex-col items-center gap-2">
+                      <LoadingState
+                        variant="spinner"
+                        size="sm"
+                        label="Compressing..." />
+                    </div>
+                  {:else if bannerPreview}
+                    <ImageWithSkeleton
+                      src={bannerPreview}
+                      alt="Banner preview"
+                      class="h-full w-full bg-surface-base"
+                      imgClass="object-contain" />
+                    <button
+                      type="button"
+                      onclick={() => {
+                        bannerFile = null;
+                        bannerFileName = '';
+                        if (
+                          bannerPreview
+                          && bannerPreview.startsWith('blob:')
+                        ) {
+                          URL.revokeObjectURL(bannerPreview);
+                        }
+                        bannerPreview = null;
+                        bannerPath = null;
+                      }}
+                      class="absolute top-2 right-2 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-white/20 bg-black/70 text-white transition-colors hover:bg-black/90"
+                      aria-label="Remove banner">
+                      <X class="size-4 leading-none" />
+                    </button>
+                  {:else}
+                    <div class="flex flex-col items-center gap-2">
+                      <Button
+                        type="ghost"
+                        size="sm"
+                        class="cursor-pointer gap-1.5 text-text-secondary hover:text-text-primary"
+                        onclick={() => bannerFileInput?.click()}>
+                        <ImageUp class="size-4 shrink-0" />
+                        Choose File
+                      </Button>
+                    </div>
+                  {/if}
                 </div>
-              {/if}
-            </div>
 
-            <div class="flex flex-col gap-1.5 lg:col-span-8">
-              <div
-                class="hidden h-5 lg:block"
-                aria-hidden="true">
+                <input
+                  bind:this={bannerFileInput}
+                  type="file"
+                  id="post-banner"
+                  accept="image/png,image/webp,image/jpeg,image/jpg,image/avif,image/tiff,image/tif"
+                  onchange={handleBannerChange}
+                  class="hidden" />
+
+                {#if bannerError}
+                  <div
+                    id="post-banner-fb"
+                    aria-live="polite"
+                    class="text-xs font-medium">
+                    <span
+                      role="alert"
+                      class="flex items-start gap-1.5 text-danger">
+                      <AlertCircle
+                        class="mt-px size-3.5 shrink-0 self-start leading-none" />
+                      <span class="min-w-0 flex-1 wrap-break-word"
+                        >{bannerError}</span>
+                    </span>
+                  </div>
+                {/if}
               </div>
 
-              <div class="flex flex-1 flex-col justify-between gap-2.5">
-                <FormField
-                  id="post-title"
-                  label="Title"
-                  variant="floating"
-                  required
-                  hideAsterisk
-                  maxlength={60}
-                  currentLength={title.length}
-                  error={titleError}
-                  valid={titleValid}
-                  counter={`${title.length}/60`}
-                  hideFeedbackSlot
-                  class="shrink-0">
-                  <Input
-                    type="text"
+              <div class="flex flex-col gap-1.5 lg:col-span-8">
+                <div
+                  class="hidden h-5 lg:block"
+                  aria-hidden="true">
+                </div>
+
+                <div class="flex flex-1 flex-col gap-4">
+                  <FormField
                     id="post-title"
+                    label="Title"
+                    variant="floating"
+                    required
+                    hideAsterisk
                     maxlength={60}
-                    bind:value={title}
-                    error={!!titleError}
+                    currentLength={title.length}
+                    error={titleError}
                     valid={titleValid}
-                    oninput={() => {
-                      titleError = '';
-                      titleValid = false;
-                      validateTitleField();
-                    }} />
-                </FormField>
+                    counter={`${title.length}/60`}
+                    hideFeedbackSlot
+                    class="shrink-0">
+                    <Input
+                      type="text"
+                      id="post-title"
+                      maxlength={60}
+                      bind:value={title}
+                      error={!!titleError}
+                      valid={titleValid}
+                      oninput={() => {
+                        titleError = '';
+                        titleValid = false;
+                        validateTitleField();
+                      }} />
+                  </FormField>
 
-                <FormField
-                  id="post-excerpt"
-                  label="Excerpt"
-                  variant="floating"
-                  maxlength={250}
-                  currentLength={excerpt.length}
-                  error={excerptError}
-                  valid={excerptValid}
-                  counter={`${excerpt.length}/250`}
-                  hideFeedbackSlot
-                  class="flex flex-1 flex-col">
-                  <Textarea
+                  <FormField
                     id="post-excerpt"
-                    rows={2}
+                    label="Excerpt"
+                    variant="floating"
                     maxlength={250}
-                    bind:value={excerpt}
-                    error={!!excerptError}
+                    currentLength={excerpt.length}
+                    error={excerptError}
                     valid={excerptValid}
-                    useAutoResize={false}
-                    wrapperClass="flex flex-1 flex-col h-full"
-                    class="h-full min-h-[68px] flex-1"
-                    oninput={() => {
-                      excerptError = '';
-                      excerptValid = false;
-                      validateExcerptField();
-                    }} />
-                </FormField>
+                    counter={`${excerpt.length}/250`}
+                    hideFeedbackSlot>
+                    <Textarea
+                      id="post-excerpt"
+                      rows={2}
+                      maxlength={250}
+                      bind:value={excerpt}
+                      error={!!excerptError}
+                      valid={excerptValid}
+                      oninput={() => {
+                        excerptError = '';
+                        excerptValid = false;
+                        validateExcerptField();
+                      }} />
+                  </FormField>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <FormField
-              id="post-tags"
-              label="Tags"
-              variant="floating"
-              counter={`${tags.length}/5`}>
-              <PillInput
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <FormField
                 id="post-tags"
-                bind:value={tags}
-                itemLabel="Tag"
-                placeholderEmpty="Type tag and press comma..."
-                placeholderFilled="Add tag..."
-                maxItems={5}
-                maxItemLength={30} />
-            </FormField>
+                label="Tags"
+                variant="floating"
+                counter={`${tags.length}/5`}
+                hideFeedbackSlot>
+                <PillInput
+                  id="post-tags"
+                  bind:value={tags}
+                  itemLabel="Tag"
+                  placeholderEmpty="Type tag and press comma..."
+                  placeholderFilled="Add tag..."
+                  maxItems={5}
+                  maxItemLength={30} />
+              </FormField>
 
-            <FormField
-              id="post-collaborators"
-              label="Collaborators"
-              variant="floating"
-              counter={`${collaborators.length}/4`}>
-              <PillInput
+              <FormField
                 id="post-collaborators"
-                bind:value={collaborators}
-                itemLabel="Collaborator"
-                placeholderEmpty="Type GitHub username and press comma..."
-                placeholderFilled="Add collaborator..."
-                maxItems={4}
-                maxItemLength={39}
-                transformItem={item => item.replace(/^@+/, '')} />
-            </FormField>
+                label="Collaborators"
+                variant="floating"
+                counter={`${collaborators.length}/4`}
+                hideFeedbackSlot>
+                <PillInput
+                  id="post-collaborators"
+                  bind:value={collaborators}
+                  itemLabel="Collaborator"
+                  placeholderEmpty="Type GitHub username and press comma..."
+                  placeholderFilled="Add collaborator..."
+                  maxItems={4}
+                  maxItemLength={39}
+                  transformItem={item => item.replace(/^@+/, '')} />
+              </FormField>
+            </div>
           </div>
         </div>
 
@@ -1045,33 +1049,37 @@
           onImageUpload={handleImageUploadFile} />
 
         <div
-          class="mt-4 mb-10 flex flex-col-reverse gap-2.5 select-none sm:flex-row sm:justify-end sm:gap-3">
+          class="mt-4 mb-10 flex flex-col gap-2.5 select-none sm:flex-row sm:items-center sm:justify-between sm:gap-3">
           <Button
-            type="ghost"
+            type="danger"
             size="md"
-            class="w-full sm:w-auto"
+            class="order-2 w-full sm:order-1 sm:w-auto"
             onclick={handleCancelClick}
             disabled={isSubmitting}>
-            Cancel
+            {isEditMode ? 'Discard changes' : 'Discard draft'}
           </Button>
-          <Button
-            type="secondary"
-            size="md"
-            class="w-full sm:w-auto"
-            onclick={() => handleSaveClick(false)}
-            disabled={isSubmitting}
-            isLoading={submittingAction === 'draft'}>
-            {submittingAction === 'draft' ? 'Saving draft…' : 'Save draft'}
-          </Button>
-          <Button
-            type="primary"
-            size="md"
-            class="w-full sm:w-auto"
-            onclick={() => handleSaveClick(true)}
-            disabled={isSubmitting}
-            isLoading={submittingAction === 'publish'}>
-            {submittingAction === 'publish' ? 'Publishing…' : 'Publish post'}
-          </Button>
+
+          <div
+            class="order-1 grid grid-cols-2 gap-2.5 sm:order-2 sm:flex sm:items-center sm:gap-3">
+            <Button
+              type="secondary"
+              size="md"
+              class="w-full sm:w-auto"
+              onclick={() => handleSaveClick(false)}
+              disabled={isSubmitting}
+              isLoading={submittingAction === 'draft'}>
+              {submittingAction === 'draft' ? 'Saving draft…' : 'Save draft'}
+            </Button>
+            <Button
+              type="primary"
+              size="md"
+              class="w-full sm:w-auto"
+              onclick={() => handleSaveClick(true)}
+              disabled={isSubmitting}
+              isLoading={submittingAction === 'publish'}>
+              {submittingAction === 'publish' ? 'Publishing…' : 'Publish post'}
+            </Button>
+          </div>
         </div>
       </form>
     </section>
@@ -1080,8 +1088,10 @@
 
 <Dialog
   bind:isOpen={showCancelDialog}
-  title="Discard unsaved changes?"
-  description="You have unsaved edits. All changes will be lost."
+  title={isEditMode ? 'Discard unsaved changes?' : 'Discard draft?'}
+  description={isEditMode ?
+    'You have unsaved edits. All changes will be lost.'
+  : 'You have an unsaved draft. All changes will be lost.'}
   onClose={() => (showCancelDialog = false)}>
   {#snippet footer()}
     <Button
@@ -1092,7 +1102,8 @@
       type="danger"
       tone="critical"
       size="md"
-      onclick={() => (window.location.href = '/admin')}>Discard changes</Button>
+      onclick={() => (window.location.href = '/admin')}
+      >{isEditMode ? 'Discard changes' : 'Discard draft'}</Button>
   {/snippet}
 </Dialog>
 
@@ -1136,15 +1147,15 @@
     @apply font-sans text-[0.9rem] leading-[1.7] text-(--color-body);
     --color-heading: var(--color-gh-gray-6);
     --color-body: var(--color-gh-gray-5);
-    --color-link: var(--color-copilot);
-    --color-link-hover: var(--color-copilot-hover);
+    --color-link: var(--color-accent);
+    --color-link-hover: var(--color-accent-hover);
   }
 
   :global(:root.dark) .prose-custom {
     --color-heading: var(--color-gh-gray-1);
     --color-body: var(--color-gh-gray-3);
-    --color-link: var(--color-copilot);
-    --color-link-hover: var(--color-copilot-hover);
+    --color-link: var(--color-accent);
+    --color-link-hover: var(--color-accent-hover);
   }
 
   .prose-custom :global(p) {
@@ -1189,7 +1200,7 @@
   }
 
   .prose-custom :global(blockquote:not(.markdown-alert)) {
-    @apply my-6 rounded-sm border border-border-default/40 bg-surface-hover/30 p-4 text-sm leading-relaxed text-text-secondary;
+    @apply my-6 rounded-md border border-border-default/40 bg-surface-hover/30 p-4 text-sm leading-relaxed text-text-secondary;
   }
 
   .prose-custom :global(blockquote:not(.markdown-alert) p) {
@@ -1197,7 +1208,7 @@
   }
 
   .prose-custom :global(pre) {
-    @apply mt-6 mb-6 scrollbar-none! overflow-x-auto rounded-sm border border-border-subtle bg-surface-hover px-3! py-1.5! font-mono text-[0.8rem] leading-snug break-normal! whitespace-pre! [-ms-overflow-style:none]!;
+    @apply mt-6 mb-6 scrollbar-none! overflow-x-auto rounded-md border border-border-subtle bg-surface-hover px-3! py-1.5! font-mono text-[0.8rem] leading-snug break-normal! whitespace-pre! [-ms-overflow-style:none]!;
   }
 
   .prose-custom :global(pre[data-enhanced='true']) {
@@ -1269,7 +1280,7 @@
   :global(:root.dark) .prose-custom :global(h5:hover .heading-text),
   :global(:root.dark) .prose-custom :global(h6:hover .heading-text),
   :global(:root.dark) .prose-custom :global(.heading-text):hover {
-    @apply text-copilot underline underline-offset-4;
+    @apply text-accent underline underline-offset-4;
   }
 
   .prose-custom :global(h1:hover a.anchor-link),
@@ -1300,11 +1311,11 @@
   :global(:root.dark) .prose-custom :global(h5:hover a.anchor-link svg),
   :global(:root.dark) .prose-custom :global(h6:hover a.anchor-link svg),
   :global(:root.dark) .prose-custom :global(a.anchor-link):hover :global(svg) {
-    @apply text-copilot! no-underline! opacity-100;
+    @apply text-accent! no-underline! opacity-100;
   }
 
   .prose-custom :global(table) {
-    @apply my-6 w-full max-w-full table-fixed border-separate border-spacing-0 overflow-hidden rounded-sm border border-border-subtle text-left text-xs shadow-2xs;
+    @apply my-6 w-full max-w-full table-fixed border-separate border-spacing-0 overflow-hidden rounded-md border border-border-subtle text-left text-xs shadow-2xs;
   }
 
   .prose-custom :global(thead) {
@@ -1341,7 +1352,7 @@
   }
 
   .prose-custom :global(.markdown-alert) {
-    @apply my-6 rounded-sm border p-4 text-xs transition-colors duration-200 sm:text-sm;
+    @apply my-6 rounded-md border p-4 text-xs transition-colors duration-200 sm:text-sm;
   }
 
   .prose-custom :global(.markdown-alert-title) {

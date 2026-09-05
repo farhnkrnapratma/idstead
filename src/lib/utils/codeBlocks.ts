@@ -1,5 +1,6 @@
 import hljs from 'highlight.js';
 import {codeBlockPrefsStore} from '../stores/codeBlockPrefsStore.svelte';
+import {readingModeStore} from '../stores/readingModeStore.svelte';
 import {getDownloadFilename} from './codeBlockExtensions';
 import {cn} from './cn';
 
@@ -189,12 +190,12 @@ export function splitHighlightedHtmlLines(html: string): string[] {
 }
 
 const ICON_BUTTON_CLASS =
-  'flex h-5 w-5 items-center justify-center rounded-sm border-0 bg-transparent text-text-secondary transition-colors cursor-pointer hover:bg-surface-hover hover:text-text-primary leading-none';
+  'flex h-5 w-5 items-center justify-center rounded-md border-0 bg-transparent text-text-secondary transition-colors cursor-pointer hover:bg-surface-hover hover:text-text-primary leading-none';
 
 const ICON_BUTTON_GHOST_CLASS = ICON_BUTTON_CLASS;
 
 const HEADER_BAR_CLASS =
-  'code-header-bar hljs m-0 flex min-h-[1.75rem] items-center justify-between rounded-t-sm border border-border-subtle px-3 py-0.5 text-xs font-semibold text-text-secondary select-none';
+  'code-header-bar hljs m-0 flex min-h-[1.75rem] items-center justify-between rounded-t-md border border-border-subtle px-3 py-0.5 text-xs font-semibold text-text-secondary select-none';
 
 const HEADER_BAR_MINIMAL_CLASS =
   'code-header-bar hljs absolute right-1 top-1 z-20 m-0 flex items-center justify-end gap-1 border-0 bg-transparent p-0 text-xs font-semibold text-text-secondary select-none';
@@ -210,7 +211,7 @@ const KEBAB_WRAPPER_MINIMAL_CLASS =
 const ICONS = {
   copy: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>',
   copyCheck:
-    '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy-check text-copilot"><path d="m12 15 2 2 4-4"/><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy-check text-accent"><path d="m12 15 2 2 4-4"/><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>',
   sun: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>',
   moon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg>',
   sunMoon:
@@ -288,7 +289,7 @@ function buildMenuCheckboxRow(
   row.type = 'button';
   row.setAttribute('role', 'menuitemcheckbox');
   row.className =
-    'group flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover';
+    'group flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover';
 
   const box = document.createElement('span');
   const labelEl = document.createElement('span');
@@ -303,7 +304,7 @@ function buildMenuCheckboxRow(
     box.innerHTML = checked ? ICONS.squareCheck : ICONS.squareOutline;
     box.className = cn(
       'flex size-4 shrink-0 items-center justify-center transition-colors',
-      checked ? 'text-copilot' : (
+      checked ? 'text-accent' : (
         'text-text-muted group-hover:text-text-secondary'
       )
     );
@@ -480,7 +481,7 @@ export function createCodeActionControls(
   downloadRow.type = 'button';
   downloadRow.setAttribute('role', 'menuitem');
   downloadRow.className =
-    'flex w-full cursor-pointer items-center justify-between px-2.5 py-1.5 text-xs text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary rounded-sm';
+    'flex w-full cursor-pointer items-center justify-between px-2.5 py-1.5 text-xs text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary rounded-md';
   downloadRow.innerHTML = `<span>${downloadLabel}</span><span class="text-text-muted">${ICONS.download}</span>`;
 
   downloadRow.addEventListener('click', () => {
@@ -546,6 +547,7 @@ export function createCodeActionControls(
 
   function applyPrefs() {
     const prefs = codeBlockPrefsStore.current;
+    const isMinimal = readingModeStore.active || prefs.minimal;
     const effectiveColorScheme = prefs.colorScheme;
     themeIconStage.innerHTML = THEME_ICONS[effectiveColorScheme];
     themeToggleBtn.setAttribute(
@@ -554,10 +556,16 @@ export function createCodeActionControls(
     );
     themeToggleBtn.title = `Code color scheme: ${THEME_LABELS[effectiveColorScheme]} (click to change)`;
 
-    setMinimalMode(prefs.minimal);
+    setMinimalMode(isMinimal);
     minimalRow.sync();
 
-    if (prefs.minimal) {
+    if (readingModeStore.active) {
+      kebabWrapper.style.display = 'none';
+    } else {
+      kebabWrapper.style.display = '';
+    }
+
+    if (isMinimal) {
       lineNumbersRow.row.style.display = 'none';
       wrapRow.row.style.display = 'none';
       divider.style.display = 'none';
@@ -583,10 +591,10 @@ export function createCodeActionControls(
   return {controls, applyPrefs, setMinimalMode, syncKebabTheme};
 }
 
-export function enhanceCodeBlocks(triggerToast: (message: string) => void) {
-  const container = document.querySelector('.prose-custom');
-  if (!container) return;
-
+export function enhanceCodeBlocks(
+  triggerToast: (message: string) => void,
+  container: ParentNode = document
+) {
   ensureSiteThemeObserver();
 
   container.querySelectorAll('pre').forEach(el => {
@@ -653,8 +661,8 @@ export function enhanceCodeBlocks(triggerToast: (message: string) => void) {
     const codeBody = document.createElement('div');
     codeBody.className =
       isInsideTabs ?
-        'code-body hljs m-0 flex w-full flex-row items-stretch overflow-hidden rounded-b-sm border-0'
-      : 'code-body hljs m-0 flex w-full flex-row items-stretch overflow-hidden rounded-b-sm border border-border-subtle';
+        'code-body hljs m-0 flex w-full flex-row items-stretch overflow-hidden rounded-b-md border-0'
+      : 'code-body hljs m-0 flex w-full flex-row items-stretch overflow-hidden rounded-b-md border border-border-subtle';
     codeBody.style.marginTop = '0px';
     if (!isInsideTabs) {
       codeBody.style.borderTopWidth = '0px';
@@ -694,7 +702,7 @@ export function enhanceCodeBlocks(triggerToast: (message: string) => void) {
         const num = document.createElement('div');
         if (isCommandBlock) {
           num.className = cn(
-            'flex flex-col justify-start pl-3 pr-0.5 text-right font-mono text-copilot font-normal select-none',
+            'flex flex-col justify-start pl-3 pr-0.5 text-right font-mono text-accent font-normal select-none',
             i === 0 && 'pt-1.5'
           );
           num.textContent = '$';
@@ -745,8 +753,8 @@ export function enhanceCodeBlocks(triggerToast: (message: string) => void) {
     const wrapperBar = document.createElement('div');
     wrapperBar.className =
       isInsideTabs ?
-        'code-scrollbar-wrapper hljs m-0 flex w-full flex-row items-stretch overflow-hidden rounded-b-sm border-0 transition-all select-none'
-      : 'code-scrollbar-wrapper hljs m-0 flex w-full flex-row items-stretch overflow-hidden rounded-b-sm border-x border-b border-border-subtle transition-all select-none';
+        'code-scrollbar-wrapper hljs m-0 flex w-full flex-row items-stretch overflow-hidden rounded-b-md border-0 transition-all select-none'
+      : 'code-scrollbar-wrapper hljs m-0 flex w-full flex-row items-stretch overflow-hidden rounded-b-md border-x border-b border-border-subtle transition-all select-none';
 
     const trackBar = document.createElement('div');
     trackBar.className =
@@ -768,10 +776,11 @@ export function enhanceCodeBlocks(triggerToast: (message: string) => void) {
         scrollWidth <= clientWidth + 2
         || codeBlockPrefsStore.current.wrap
         || codeBlockPrefsStore.current.minimal
+        || readingModeStore.active
       ) {
         wrapperBar.style.display = 'none';
-        codeBody.style.borderBottomLeftRadius = '0.125rem';
-        codeBody.style.borderBottomRightRadius = '0.125rem';
+        codeBody.style.borderBottomLeftRadius = '0.375rem';
+        codeBody.style.borderBottomRightRadius = '0.375rem';
         codeBody.style.borderBottomWidth = isInsideTabs ? '0px' : '';
       } else {
         wrapperBar.style.display = 'flex';
@@ -894,17 +903,19 @@ export function enhanceCodeBlocks(triggerToast: (message: string) => void) {
         headerControlsResult.syncKebabTheme(effectiveTheme);
       }
 
+      const isMinimal = readingModeStore.active || prefs.minimal;
+
       if (!isInsideTabs && headerBar && leftSpan) {
         headerBar.setAttribute('data-code-theme', effectiveTheme);
-        if (prefs.minimal) {
+        if (isMinimal) {
           headerBar.className =
             lineCount === 1 ?
               HEADER_BAR_MINIMAL_CENTERED_CLASS
             : HEADER_BAR_MINIMAL_CLASS;
           leftSpan.style.display = 'none';
           codeBody.style.borderTopWidth = '1px';
-          codeBody.style.borderTopLeftRadius = '0.125rem';
-          codeBody.style.borderTopRightRadius = '0.125rem';
+          codeBody.style.borderTopLeftRadius = '0.375rem';
+          codeBody.style.borderTopRightRadius = '0.375rem';
         } else {
           headerBar.className = HEADER_BAR_CLASS;
           leftSpan.style.display = '';
@@ -915,7 +926,7 @@ export function enhanceCodeBlocks(triggerToast: (message: string) => void) {
       }
 
       if (gutter) {
-        if (prefs.minimal) {
+        if (isMinimal) {
           if (isCommandBlock) {
             gutter.style.display = '';
           } else {

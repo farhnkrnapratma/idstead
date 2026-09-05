@@ -47,22 +47,19 @@
       aria-label={item.label}
       aria-current={isActive ? 'page' : undefined}
       class={cn(
-        'group flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-sm px-0.5 py-1 transition-all select-none focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none',
+        'group flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-md px-0.5 py-1 transition-all select-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none',
         isActive ?
-          'font-bold text-copilot'
+          'font-bold text-accent'
         : 'text-text-muted hover:text-text-primary'
       )}>
       <span
-        class={cn(
-          'flex size-6 items-center justify-center transition-transform duration-150 group-active:scale-90',
-          isActive && 'text-copilot'
-        )}>
+        class="flex size-6 items-center justify-center transition-transform duration-150 group-active:scale-90">
         <IconComponent class="size-4.5" />
       </span>
       <span
         class={cn(
           'max-w-full truncate font-sans-title text-2xs leading-none tracking-tight transition-colors',
-          isActive ? 'font-bold text-copilot' : 'font-medium'
+          isActive ? 'font-bold text-accent' : 'font-medium'
         )}>
         {item.label}
       </span>

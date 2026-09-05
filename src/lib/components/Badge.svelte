@@ -19,7 +19,7 @@
   const variantStyles = {
     default:
       'bg-border-subtle/50 text-text-secondary border border-border-subtle',
-    accent: 'bg-copilot-subtle text-copilot border border-copilot/30 font-bold',
+    accent: 'bg-accent-subtle text-accent border border-accent/30 font-bold',
     success:
       'bg-success-subtle text-success-strong border border-success/30 font-bold',
     warning:
@@ -32,7 +32,7 @@
 
 <span
   class={cn(
-    'inline-flex items-center gap-1 rounded-sm font-semibold tracking-wide select-none',
+    'inline-flex items-center gap-1 rounded-md font-semibold tracking-wide select-none',
     variantStyles[variant],
     sizeStyles[size],
     className

@@ -1,4 +1,4 @@
-export type ToastType = 'success' | 'error';
+export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
 let message = $state('');
 let type = $state<ToastType>('success');
@@ -52,6 +52,14 @@ function error(text: unknown, duration?: number) {
   show(text, 'error', duration);
 }
 
+function warning(text: unknown, duration?: number) {
+  show(text, 'warning', duration);
+}
+
+function info(text: unknown, duration?: number) {
+  show(text, 'info', duration);
+}
+
 export const toastStore = {
   get message() {
     return message;
@@ -64,5 +72,7 @@ export const toastStore = {
   },
   show,
   success,
-  error
+  error,
+  warning,
+  info
 };

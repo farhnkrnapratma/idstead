@@ -43,13 +43,13 @@ const blogPostSummarySchema = {
     updated_at: {type: 'string', format: 'date-time'},
     language: {
       type: 'string',
-      enum: ['en', 'id', 'ja', 'zh', 'ko'],
+      enum: ['en', 'id'],
       description:
         'Language actually returned. May differ from `requested_language` if that translation is not yet available (falls back to English).'
     },
     requested_language: {
       type: 'string',
-      enum: ['id', 'ja', 'zh', 'ko'],
+      enum: ['id'],
       nullable: true,
       description: 'The `lang` query param that was requested, if any.'
     },
@@ -146,9 +146,9 @@ const formatParam = {
 const langParam = {
   name: 'lang',
   in: 'query',
-  schema: {type: 'string', enum: ['id', 'ja', 'zh', 'ko']},
+  schema: {type: 'string', enum: ['id']},
   description:
-    'Return an AI-translated version of the post (Indonesian, Japanese, Simplified Chinese, or Korean). Falls back to English (with `language: "en"` in the response) if that translation is not yet available -- never a 404. An unrecognized value returns 400 BLOG_INVALID_LANG.'
+    'Return an AI-translated version of the post (Indonesian). Falls back to English (with `language: "en"` in the response) if that translation is not yet available -- never a 404. An unrecognized value returns 400 BLOG_INVALID_LANG.'
 };
 
 const errorResponses = {

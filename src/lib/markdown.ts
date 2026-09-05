@@ -69,10 +69,10 @@ marked.use({
 
       if (lang === 'mermaid') {
         const encoded = encodeURIComponent(token.text);
-        return `<div class="mermaid-block relative my-6 overflow-hidden rounded-sm glass-card border border-border-subtle/60 text-text-primary shadow-md backdrop-blur-md transition-all duration-200">
+        return `<div class="mermaid-block relative my-6 overflow-hidden rounded-md glass-card border border-border-subtle/60 text-text-primary shadow-md backdrop-blur-md transition-all duration-200">
   <div class="mermaid-display flex items-center justify-center p-6 overflow-x-auto">
     <div class="mermaid-loading flex items-center gap-2 text-xs text-text-muted">
-      <span class="size-3.5 animate-spin rounded-full border-2 border-copilot border-t-transparent"></span>
+      <span class="size-3.5 animate-spin rounded-full border-2 border-accent border-t-transparent"></span>
       <span>Rendering diagram…</span>
     </div>
   </div>
@@ -83,8 +83,8 @@ marked.use({
       if (lang === 'chart' || lang === 'layerchart') {
         const encoded = encodeURIComponent(token.text);
         return `<div class="markdown-chart-container my-6" data-chart-content="${encoded}">
-  <div class="flex h-40 items-center justify-center rounded-sm glass-card border border-border-subtle/60 text-xs text-text-muted">
-    <span class="size-3.5 animate-spin rounded-full border-2 border-copilot border-t-transparent mr-2"></span>
+  <div class="flex h-40 items-center justify-center rounded-md glass-card border border-border-subtle/60 text-xs text-text-muted">
+    <span class="size-3.5 animate-spin rounded-full border-2 border-accent border-t-transparent mr-2"></span>
     Loading chart visualization…
   </div>
 </div>\n`;
@@ -130,20 +130,20 @@ marked.use({
             let textDecorationClass = '';
 
             if (statusChar === 'x') {
-              checkboxSvg = `<span class="task-checkbox status-done flex h-5 w-4 shrink-0 items-center justify-center text-success" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-check size-4 shrink-0 text-success"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/></svg></span>`;
+              checkboxSvg = `<span class="task-checkbox status-done flex h-6 w-4 shrink-0 items-center justify-center text-success" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-check size-4 shrink-0 text-success"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/></svg></span>`;
             } else if (statusChar === '*') {
-              checkboxSvg = `<span class="task-checkbox status-wip flex h-5 w-4 shrink-0 items-center justify-center text-warning-strong" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-asterisk size-4 shrink-0 text-warning-strong"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 8v8"/><path d="m8.5 14 7-4"/><path d="m8.5 10 7 4"/></svg></span>`;
+              checkboxSvg = `<span class="task-checkbox status-wip flex h-6 w-4 shrink-0 items-center justify-center text-warning-strong" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-asterisk size-4 shrink-0 text-warning-strong"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 8v8"/><path d="m8.5 14 7-4"/><path d="m8.5 10 7 4"/></svg></span>`;
             } else if (statusChar === '/') {
-              checkboxSvg = `<span class="task-checkbox status-failed flex h-5 w-4 shrink-0 items-center justify-center text-danger" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-x size-4 shrink-0 text-danger"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg></span>`;
+              checkboxSvg = `<span class="task-checkbox status-failed flex h-6 w-4 shrink-0 items-center justify-center text-danger" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-x size-4 shrink-0 text-danger"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg></span>`;
             } else if (statusChar === '-') {
-              checkboxSvg = `<span class="task-checkbox status-skipped flex h-5 w-4 shrink-0 items-center justify-center text-text-muted" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-minus size-4 shrink-0 text-text-muted"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="8" x2="16" y1="12" y2="12"/></svg></span>`;
+              checkboxSvg = `<span class="task-checkbox status-skipped flex h-6 w-4 shrink-0 items-center justify-center text-text-muted" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-minus size-4 shrink-0 text-text-muted"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="8" x2="16" y1="12" y2="12"/></svg></span>`;
               textDecorationClass = ' line-through opacity-75';
             } else if (statusChar === '!') {
-              checkboxSvg = `<span class="task-checkbox status-important flex h-5 w-4 shrink-0 items-center justify-center text-copilot" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-alert size-4 shrink-0 text-copilot"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg></span>`;
+              checkboxSvg = `<span class="task-checkbox status-important flex h-6 w-4 shrink-0 items-center justify-center text-copilot" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-alert size-4 shrink-0 text-copilot"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg></span>`;
             } else if (statusChar === '?') {
-              checkboxSvg = `<span class="task-checkbox status-question flex h-5 w-4 shrink-0 items-center justify-center text-a11y-focus" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-square size-4 shrink-0 text-a11y-focus"><rect width="18" height="18" x="3" y="3" rx="2"/><rect width="8" height="8" x="8" y="8" rx="1"/></svg></span>`;
+              checkboxSvg = `<span class="task-checkbox status-question flex h-6 w-4 shrink-0 items-center justify-center text-a11y-focus" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-square size-4 shrink-0 text-a11y-focus"><rect width="18" height="18" x="3" y="3" rx="2"/><rect width="8" height="8" x="8" y="8" rx="1"/></svg></span>`;
             } else {
-              checkboxSvg = `<span class="task-checkbox status-pending flex h-5 w-4 shrink-0 items-center justify-center text-text-muted" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square size-4 shrink-0 text-text-muted"><rect width="18" height="18" x="3" y="3" rx="2"/></svg></span>`;
+              checkboxSvg = `<span class="task-checkbox status-pending flex h-6 w-4 shrink-0 items-center justify-center text-text-muted" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square size-4 shrink-0 text-text-muted"><rect width="18" height="18" x="3" y="3" rx="2"/></svg></span>`;
             }
 
             const rawText = this.parser
@@ -156,7 +156,7 @@ marked.use({
           } else {
             const rawText = this.parser.parse(item.tokens).trim();
             const text = cleanListItemHtml(rawText);
-            const dotSvg = `<span class="ul-dot flex h-5 w-2.5 shrink-0 items-center justify-center text-text-secondary" aria-hidden="true"><span class="size-1.5 rounded-full bg-text-secondary"></span></span>`;
+            const dotSvg = `<span class="ul-dot flex h-6 w-2.5 shrink-0 items-center justify-center text-text-secondary" aria-hidden="true"><span class="size-1.5 rounded-full bg-text-secondary"></span></span>`;
             body += `<li class="ul-list-item my-1 flex items-start gap-1.5 leading-normal">${dotSvg}<span class="ul-content min-w-0 flex-1 leading-normal">${text}</span></li>\n`;
           }
         }
@@ -177,7 +177,7 @@ marked.use({
       if (!isExternal) {
         return `<a href="${href}"${title}>${text}</a>`;
       }
-      return `<a href="${href}"${title} target="_blank" rel="noopener noreferrer" class="markdown-external-link inline-flex items-center gap-0.5">${text}${LUCIDE_ICON_SVGS['external-link']}</a>`;
+      return `<a href="${href}"${title} target="_blank" rel="noopener noreferrer" class="markdown-external-link inline">${text}${LUCIDE_ICON_SVGS['external-link']}</a>`;
     }
   }
 });
@@ -469,7 +469,7 @@ const LUCIDE_ICON_SVGS: Record<string, string> = {
   'square-arrow-out-up-right':
     '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-arrow-out-up-right size-3.5 shrink-0"><path d="M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"/><path d="m21 3-9 9"/><path d="M15 3h6v6"/></svg>',
   'external-link':
-    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link size-2.5 shrink-0"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>'
+    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link inline-block ml-0.5 size-2.5 align-baseline shrink-0"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>'
 };
 
 function resolveDirectiveIcon(name: string): string {
@@ -536,7 +536,7 @@ export function parseContainers(markdown: string): string {
           const iconMarkup = tab.icon ? resolveDirectiveIcon(tab.icon) : '';
           return `<button type="button" role="tab" class="markdown-tab-button relative -mb-px inline-flex shrink-0 items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-sans-title font-medium border-b-[2.5px] transition-all cursor-pointer select-none ${
             isSelected ?
-              'active-tab text-copilot border-b-copilot font-bold'
+              'active-tab text-accent border-b-accent font-bold'
             : 'text-text-muted border-b-transparent hover:text-text-primary'
           }" data-tab-label="${tab.label}" aria-selected="${isSelected ? 'true' : 'false'}">${iconMarkup}${tab.label}</button>`;
         })
@@ -551,14 +551,14 @@ export function parseContainers(markdown: string): string {
 
       const groupAttr = groupKey ? ` data-tab-group-key="${groupKey}"` : '';
 
-      return `<div class="markdown-tabs-container group/codemin my-6 rounded-sm border border-border-subtle shadow-2xs"${groupAttr}>
-  <div class="markdown-tabs-header hljs relative flex min-h-8 items-end justify-between rounded-t-sm border-b border-border-subtle px-3 pt-0 pb-0 select-none" role="tablist">
+      return `<div class="markdown-tabs-container group/codemin my-6 rounded-md border border-border-subtle shadow-2xs"${groupAttr}>
+  <div class="markdown-tabs-header hljs relative flex min-h-8 items-end justify-between rounded-t-md border-b border-border-subtle px-3 pt-0 pb-0 select-none" role="tablist">
     <div class="markdown-tabs-nav flex min-w-0 flex-1 items-end gap-1.5 m-0 p-0 overflow-x-auto scrollbar-none [-ms-overflow-style:none]">
       ${headerButtons}
     </div>
     <div class="markdown-tabs-actions flex shrink-0 items-center gap-1 ml-2 self-center"></div>
   </div>
-  <div class="markdown-tabs-body rounded-b-sm">
+  <div class="markdown-tabs-body rounded-b-md">
     ${panels}
   </div>
 </div>`;
@@ -598,7 +598,7 @@ export function parseContainers(markdown: string): string {
           const iconMarkup = tab.icon ? resolveDirectiveIcon(tab.icon) : '';
           return `<button type="button" role="tab" class="markdown-tab-button relative -mb-px inline-flex shrink-0 items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-sans-title font-medium border-b-[2.5px] transition-all cursor-pointer select-none ${
             isSelected ?
-              'active-tab text-copilot border-b-copilot font-bold'
+              'active-tab text-accent border-b-accent font-bold'
             : 'text-text-muted border-b-transparent hover:text-text-primary'
           }" data-tab-label="${tab.label}" aria-selected="${isSelected ? 'true' : 'false'}">${iconMarkup}${tab.label}</button>`;
         })
@@ -649,7 +649,7 @@ export function parseContainers(markdown: string): string {
         return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
       }
 
-      return `<div class="markdown-embed-container my-6 aspect-video w-full overflow-hidden rounded-sm glass-card border border-border-subtle/60 shadow-md backdrop-blur-md"><iframe src="${embedUrl}" loading="lazy" allowfullscreen class="h-full w-full" title="Embedded content"></iframe></div>`;
+      return `<div class="markdown-embed-container my-6 aspect-video w-full overflow-hidden rounded-md glass-card border border-border-subtle/60 shadow-md backdrop-blur-md"><iframe src="${embedUrl}" loading="lazy" allowfullscreen class="h-full w-full" title="Embedded content"></iframe></div>`;
     }
   );
 
@@ -732,7 +732,7 @@ export function parseDetailsBlocks(html: string): string {
     /<details([^>]*)>\s*<summary([^>]*)>([\s\S]*?)<\/summary>([\s\S]*?)<\/details>/gi,
     (_, detailsAttrs, summaryAttrs, summaryContent, innerBody) => {
       const trimmedBody = innerBody.trim();
-      return `<details${detailsAttrs} class="group markdown-details my-4 overflow-hidden rounded-sm glass-card border border-border-subtle text-text-primary shadow-md backdrop-blur-md">
+      return `<details${detailsAttrs} class="group markdown-details my-4 overflow-hidden rounded-md glass-card border border-border-subtle text-text-primary shadow-md backdrop-blur-md">
   <summary${summaryAttrs} class="markdown-details-summary flex min-h-[2.25rem] cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent group-open:border-border-subtle dark:group-open:border-white/10 px-3.5 py-1.5 font-sans-title font-medium text-sm text-text-primary hover:bg-surface-hover/50 transition-colors select-none [&::-webkit-details-marker]:hidden">
     <span class="inline-flex items-center gap-2">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-collapse size-4 shrink-0 text-text-primary"><path d="M10 5h11"/><path d="M10 12h11"/><path d="M10 19h11"/><path d="m3 10 3-3-3-3"/><path d="m3 20 3-3-3-3"/></svg>
@@ -854,6 +854,70 @@ export function parseSteps(html: string): string {
   return result;
 }
 
+function indexToLetter(idx: number): string {
+  let result = '';
+  let n = idx;
+  while (n >= 0) {
+    result = String.fromCharCode(97 + (n % 26)) + result;
+    n = Math.floor(n / 26) - 1;
+  }
+  return result;
+}
+
+export function formatFootnoteReferences(html: string): string {
+  const footnoteSectionRe =
+    /<section\b([^>]*class="[^"]*footnotes[^"]*"[^>]*)>([\s\S]*?)<\/section>/gi;
+
+  return html.replace(
+    footnoteSectionRe,
+    (_sectionMatch: string, sectionAttrs: string, sectionBody: string) => {
+      const updatedSectionBody = sectionBody.replace(
+        /<li\b([^>]*id="([^"]*)"[^>]*)>([\s\S]*?)<\/li>/gi,
+        (_liMatch: string, liAttrs: string, _liId: string, liInner: string) => {
+          const backrefRe = /<a\b[^>]*data-[^>]*backref[^>]*>([\s\S]*?)<\/a>/gi;
+          const matches = [...liInner.matchAll(backrefRe)];
+          if (matches.length === 0) return _liMatch;
+
+          const hrefs: string[] = [];
+          for (const m of matches) {
+            const hrefAttr = m[0].match(/href="([^"]*)"/i);
+            if (hrefAttr) hrefs.push(hrefAttr[1]);
+          }
+
+          let cleaned = liInner.replace(
+            /\s*<a\b[^>]*data-[^>]*backref[^>]*>[\s\S]*?<\/a>/gi,
+            ''
+          );
+
+          let prefix: string;
+          if (hrefs.length === 1) {
+            prefix = `<a href="${hrefs[0]}" class="footnote-backref mr-1.5 inline-flex items-center font-mono text-security no-underline hover:underline select-none" aria-label="Back to reference">^</a>`;
+          } else {
+            const subLinks = hrefs
+              .map(
+                (href, i) =>
+                  `<a href="${href}" class="footnote-sub-backref text-security font-mono italic no-underline hover:underline select-none" aria-label="Back to reference ${indexToLetter(i)}">${indexToLetter(i)}</a>`
+              )
+              .join('');
+            prefix = `<span class="footnote-backref-static mr-1 inline-flex items-center font-mono text-text-muted select-none" aria-hidden="true">^</span><span class="footnote-sub-backrefs mr-1.5 inline-flex items-center gap-1 font-mono">${subLinks}</span>`;
+          }
+
+          if (/<p\b[^>]*>/i.test(cleaned)) {
+            cleaned = cleaned.replace(/^(<p\b[^>]*>)\s+/i, '$1');
+            cleaned = cleaned.replace(/(<p\b[^>]*>)/i, `$1${prefix}`);
+          } else {
+            cleaned = `${prefix}${cleaned.trimStart()}`;
+          }
+
+          return `<li${liAttrs}>${cleaned}</li>`;
+        }
+      );
+
+      return `<section${sectionAttrs}>${updatedSectionBody}</section>`;
+    }
+  );
+}
+
 export async function renderMarkdown(
   markdown: string,
   locale?: string,
@@ -890,7 +954,11 @@ export async function renderMarkdown(
   const withAlerts = parseMarkdownAlerts(rawHtml);
   const withDetails = parseDetailsBlocks(withAlerts);
   const withSteps = parseSteps(withDetails);
-  const withMathRestored = restoreAllPlaceholders(withSteps, mathPlaceholders);
+  const withFootnotes = formatFootnoteReferences(withSteps);
+  const withMathRestored = restoreAllPlaceholders(
+    withFootnotes,
+    mathPlaceholders
+  );
   const output = parseMathFormulas(withMathRestored);
   const withUnwrappedBlocks = output
     .replace(/<p>\s*(<div class="katex-block[\s\S]*?<\/div>)\s*<\/p>/gi, '$1')

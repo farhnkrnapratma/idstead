@@ -43,8 +43,8 @@
   onsubmit={handleSubmit}
   novalidate
   class={cn(
-    'flex flex-col gap-6',
-    bare ? '' : 'rounded-sm glass-card p-4 sm:p-6',
+    'flex flex-col gap-4 sm:gap-6',
+    bare ? '' : 'rounded-md glass-card p-3.5 sm:p-6',
     className
   )}
   autocomplete="off">

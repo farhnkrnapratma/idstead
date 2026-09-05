@@ -85,12 +85,12 @@
   {#if project}
     <div class="flex flex-col gap-3">
       <div
-        class="markdown-tabs-container group/codemin relative m-0 flex flex-col overflow-hidden rounded-sm border border-border-subtle shadow-2xs"
+        class="markdown-tabs-container group/codemin relative m-0 flex flex-col overflow-hidden rounded-md border border-border-subtle shadow-2xs"
         data-code-theme={codeBlockPrefsStore.current.colorScheme !== 'auto' ?
           codeBlockPrefsStore.current.colorScheme
         : undefined}>
         <div
-          class="markdown-tabs-header hljs relative flex min-h-8 items-end justify-between rounded-t-sm border-b border-border-subtle px-3 pt-0 pb-0 select-none"
+          class="markdown-tabs-header hljs relative flex min-h-8 items-end justify-between rounded-t-md border-b border-border-subtle px-3 pt-0 pb-0 select-none"
           role="tablist">
           <div
             class="markdown-tabs-nav m-0 flex min-w-0 flex-1 scrollbar-none items-end gap-1.5 overflow-x-auto p-0 [-ms-overflow-style:none]">
@@ -103,7 +103,7 @@
                 class="markdown-tab-button relative -mb-px inline-flex shrink-0 cursor-pointer items-center justify-center border-b-[2.5px] px-3 py-1.5 font-sans-title text-xs font-medium whitespace-nowrap transition-all select-none {(
                   activeTab === key
                 ) ?
-                  'active-tab border-b-copilot font-bold text-copilot'
+                  'active-tab border-b-accent font-bold text-accent'
                 : 'border-b-transparent text-text-muted hover:text-text-primary'}">
                 {label}
               </button>
@@ -117,7 +117,7 @@
         </div>
 
         <div
-          class="code-body hljs relative flex w-full flex-row items-center overflow-hidden rounded-b-sm bg-surface-base/50">
+          class="code-body hljs relative flex w-full flex-row items-center overflow-hidden rounded-b-md bg-surface-base/50">
           <span
             class="pointer-events-none absolute top-1/2 right-3.5 z-10 -translate-y-1/2 font-mono text-[11px] text-text-muted/70 lowercase select-none">
             bash
@@ -125,7 +125,7 @@
           <div
             class="code-line-numbers shrink-0 bg-transparent py-1.5 font-mono text-[0.8rem] leading-snug select-none">
             <div
-              class="flex flex-col justify-start pr-0.5 pl-3 text-right font-mono font-normal text-copilot select-none">
+              class="flex flex-col justify-start pr-0.5 pl-3 text-right font-mono font-normal text-accent select-none">
               $
             </div>
           </div>
