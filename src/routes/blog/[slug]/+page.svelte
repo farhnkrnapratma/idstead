@@ -33,6 +33,10 @@
 
   let showCopySuccess = $state(false)
 
+  function removeAnimatePulse(e: Event) {
+    (e.currentTarget as HTMLElement)?.closest('.animate-pulse')?.classList.remove('animate-pulse')
+  }
+
   function copyToClipboard() {
     if (typeof window === 'undefined') return
     navigator.clipboard
@@ -914,10 +918,7 @@
             src="/android-chrome-512x512.png"
             alt="Farhan Kurnia Pratama"
             loading="lazy"
-            onload={e =>
-              (
-                e.currentTarget.closest('.animate-pulse') as HTMLElement | null
-              )?.classList.remove('animate-pulse')}
+            onload={removeAnimatePulse}
             class="h-full w-full object-cover object-top" />
         </div>
         <div class="w-full min-w-0 flex-1 text-center sm:text-left">
