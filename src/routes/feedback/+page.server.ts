@@ -63,13 +63,23 @@ export const actions: Actions = {
             email,
             url,
             message,
-            _subject: 'New feedback report from website!'
+            _subject: 'New feedback report from website!',
+            _captcha: 'false'
           })
         }
       );
 
-      if (!res.ok) {
-        return fail(500, {failed: true});
+      const resData = await res.json().catch(() => null);
+      if (
+        !res.ok
+        || resData?.success === 'false'
+        || resData?.success === false
+      ) {
+        return fail(500, {
+          failed: true,
+          message:
+            typeof resData?.message === 'string' ? resData.message : undefined
+        });
       }
 
       return {success: true};

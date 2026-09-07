@@ -7025,7 +7025,7 @@
       "file_type": "code",
       "norm_label": "async()",
       "source_file": "src/routes/+page.svelte",
-      "source_location": "L1850"
+      "source_location": "L1860"
     },
     {
       "id": "src_routes_page_each",
@@ -7037,7 +7037,7 @@
       "file_type": "code",
       "norm_label": "#each()",
       "source_file": "src/routes/+page.svelte",
-      "source_location": "L1688"
+      "source_location": "L1698"
     },
     {
       "id": "src_routes_page_formatperiod",
@@ -7049,7 +7049,7 @@
       "file_type": "code",
       "norm_label": "formatperiod()",
       "source_file": "src/routes/+page.svelte",
-      "source_location": "L2425"
+      "source_location": "L2435"
     },
     {
       "id": "src_routes_page_snippet",
@@ -7061,7 +7061,7 @@
       "file_type": "code",
       "norm_label": "#snippet()",
       "source_file": "src/routes/+page.svelte",
-      "source_location": "L1864"
+      "source_location": "L1874"
     },
     {
       "id": "agents_skills_task_observer_github_workflows_release_bundle_release_bundle_workflow",
@@ -55783,7 +55783,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/routes/+page.svelte",
-      "source_location": "L1850",
+      "source_location": "L1860",
       "weight": 1.0
     },
     {
@@ -55794,7 +55794,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/routes/+page.svelte",
-      "source_location": "L1864",
+      "source_location": "L1874",
       "weight": 1.0
     },
     {
@@ -55805,7 +55805,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/routes/+page.svelte",
-      "source_location": "L2713",
+      "source_location": "L2723",
       "weight": 1.0
     },
     {
@@ -55816,7 +55816,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/routes/+page.svelte",
-      "source_location": "L2739",
+      "source_location": "L2749",
       "weight": 1.0
     },
     {
@@ -61635,7 +61635,7 @@
       "confidence_score": 0.85,
       "context": "collection",
       "source_file": "src/routes/feedback/+page.svelte",
-      "source_location": "L486",
+      "source_location": "L496",
       "weight": 1.0
     },
     {
@@ -63698,5 +63698,5 @@
       "source_file": ".agents/skills/security-audit/WEB-PROTOCOL-AND-AUTH.md"
     }
   ],
-  "built_at_commit": "ab962e51af9aa3599cf4871ef84d56b61af02917"
+  "built_at_commit": "47dd692d09f8db564ce1079989683dabe8b0db77"
 }
