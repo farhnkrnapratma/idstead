@@ -54,9 +54,9 @@
     "semantic_hash": "70ef0c19f6492d9a57422edece187d24"
   },
   "package.json": {
-    "mtime": 1788736886.8116744,
-    "seen": 1788738982.8608625,
-    "ast_hash": "52865982e96115c1406f9eb497a3090f",
+    "mtime": 1788787271.6303298,
+    "seen": 1788787670.8004103,
+    "ast_hash": "2fdad031bb0d52ab55c98ad62fd1524b",
     "semantic_hash": ""
   },
   "prettier.config.ts": {
@@ -2511,6 +2511,18 @@
     "mtime": 1788769828.5143194,
     "seen": 1788770007.8184457,
     "ast_hash": "be14b158de07fc21f7efa44e5acb360f",
+    "semantic_hash": ""
+  },
+  "scripts/git-hooks/install.sh": {
+    "mtime": 1788787276.479395,
+    "seen": 1788787670.8004198,
+    "ast_hash": "d90ca156635e878dcffd74293ed5e5a1",
+    "semantic_hash": ""
+  },
+  "scripts/git-hooks/pre-commit": {
+    "mtime": 1788787266.136256,
+    "seen": 1788787670.8004234,
+    "ast_hash": "1911ffeef8a5279d79eb4b1f42ff8276",
     "semantic_hash": ""
   }
 }

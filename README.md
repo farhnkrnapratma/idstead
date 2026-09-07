@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://fkp.my.id/">
-    <img src="https://fkp.my.id/android-chrome-512x512.png" alt="Farhan Kurnia Pratama" width="200" height="200">
+    <img src="https://cdn.fkp.my.id/android-chrome-512x512.png" alt="Farhan Kurnia Pratama" width="200" height="200">
   </a>
 </p>
 <h1 align="center">Farhan Kurnia Pratama</h1>
