@@ -240,13 +240,19 @@
             email: sanitizedEmail,
             url: sanitizedUrl,
             message: sanitizedMessage,
-            _subject: 'New feedback report from website!'
+            _subject: 'New feedback report from website!',
+            _captcha: 'false'
           })
         }
       );
 
-      if (!res.ok) {
-        throw new Error('Failed to send feedback.');
+      const data = await res.json().catch(() => null);
+      if (!res.ok || data?.success === 'false' || data?.success === false) {
+        throw new Error(
+          typeof data?.message === 'string' ?
+            data.message
+          : 'Failed to submit feedback.'
+        );
       }
 
       toastStore.success('Feedback submitted successfully. Thank you!');
@@ -256,8 +262,12 @@
       formMessage = '';
       formErrors = {name: '', email: '', url: '', message: ''};
       formValid = {name: false, email: false, url: false, message: false};
-    } catch {
-      toastStore.error('Failed to submit feedback. Please try again later.');
+    } catch (err) {
+      const msg =
+        err instanceof Error && err.message ?
+          err.message
+        : 'Failed to submit feedback. Please try again later.';
+      toastStore.error(msg);
     } finally {
       isSubmitting = false;
       resetTurnstile(turnstileFeedbackEl);

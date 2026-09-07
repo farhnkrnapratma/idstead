@@ -821,13 +821,19 @@
             name: sanitizedName,
             email: sanitizedEmail,
             message: sanitizedMessage,
-            _subject: 'New message from portfolio website!'
+            _subject: 'New message from portfolio website!',
+            _captcha: 'false'
           })
         }
       );
 
-      if (!res.ok) {
-        throw new Error('Failed to send message.');
+      const data = await res.json().catch(() => null);
+      if (!res.ok || data?.success === 'false' || data?.success === false) {
+        throw new Error(
+          typeof data?.message === 'string' ?
+            data.message
+          : 'Failed to send message.'
+        );
       }
 
       toastStore.success('Message sent successfully. Thank you!');
@@ -836,8 +842,12 @@
       formMessage = '';
       formErrors = {name: '', email: '', message: ''};
       formValid = {name: false, email: false, message: false};
-    } catch {
-      toastStore.error('Failed to send message. Please try again later.');
+    } catch (err) {
+      const msg =
+        err instanceof Error && err.message ?
+          err.message
+        : 'Failed to send message. Please try again later.';
+      toastStore.error(msg);
     } finally {
       isSubmittingMessage = false;
       resetTurnstile(turnstileContactEl);
