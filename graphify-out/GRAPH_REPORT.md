@@ -1,7 +1,7 @@
-# Graph Report - www  (2026-09-07)
+# Graph Report - www  (2026-09-08)
 
 ## Corpus Check
-- 412 files · ~344,841 words
+- 412 files · ~344,857 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `47dd692d`
+- Built from commit: `86d49eca`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -884,7 +884,7 @@ Nodes (6): A11Y_TOGGLES, A11ySettings, a11yStore, defaults, FontScale, withViewT
 ## Work-memory lessons
 
 **Preferred sources** — corroborated by past sessions; start here.
-- `MarkdownEditor.svelte` (2× useful, score=1.772930771)
+- `MarkdownEditor.svelte` (2× useful, score=1.770159927)
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
