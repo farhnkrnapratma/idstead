@@ -1,42 +1,107 @@
-<!-- @format -->
+<p align="center">
+  <a href="https://fkp.my.id/">
+    <img src="https://cdn.fkp.my.id/android-chrome-512x512.png" alt="Farhan Kurnia Pratama" width="200" height="200">
+  </a>
+</p>
+<h1 align="center">Farhan Kurnia Pratama</h1>
+<h3 align="center">AI Engineering | Cybersecurity | Software Engineering | Linux/Unix</h3>
+<p align="center">Security-focused Software Engineer specializing in AI Engineering, Cybersecurity, and Linux/Unix systems, focused on building secure, reliable, maintainable, and privacy-conscious software.</p>
+<p align="center">
+  <a href="https://fkp.my.id/">Home</a>
+  ·
+  <a href="https://fkp.my.id/#projects">Projects</a>
+  ·
+  <a href="https://fkp.my.id/#blog">Blog</a>
+  ·
+  <a href="https://fkp.my.id/#cv">CV</a>
+  ·
+  <a href="https://fkp.my.id/#funding">Funding</a>
+  ·
+  <a href="https://fkp.my.id/#contact">Contact</a>
+</p>
 
-# www
-
-Source code for my official website.
+---
 
 ## Get Started
 
 ### Prerequisites
 
-- Bun 1.0+
+Most of this project's tooling (formatting, linting, type-checking, building, etc.) and package management is handled with Bun. Install Bun and you're ready to start hacking. You can install Bun by running this command:
+
+- Linux & macOS
+
+```sh
+curl -fsSL https://bun.sh/install | sh
+```
+
+- Windows
+
+```powershell
+powershell -c "irm bun.sh/install.ps1 | iex"
+```
+
+For more information about Bun, visit the official [Bun website](https://bun.com/).
 
 ### Install Dependencies
 
-Run:
+Before that, you need to clone or fork this repository (make sure you have [Git](https://git-scm.com/install/linux) installed). Simply run:
+
+```
+git clone https://github.com/farhnkrnapratma/www.git
+cd <path_to_www>
+```
+
+Then install all dependencies before you start hacking by running this command:
 
 ```sh
 bun install
 ```
 
-### Start Development Server
+### Configure Environment Variables
 
-Run:
+Copy the tier template that matches how you want to run locally, then fill in real values:
 
 ```sh
-bun run dev
+# Development-tier (default for local work) — dummy Turnstile, Sentry=development
+cp .env.development.example .env.development
+cp .env.development.example .env
+
+# Or production-tier locally
+cp .env.production.example .env.production
+cp .env.production.example .env
 ```
+
+`bun run dev` (Vite mode `development`) automatically loads `.env.development`, and `bun run build` loads `.env.production`.
+
+The dev server will not start correctly without a valid `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY` at minimum.
+
+> **Dev server won't start / crashes immediately?** This is almost always a missing or invalid `PUBLIC_SUPABASE_URL` / `PUBLIC_SUPABASE_PUBLISHABLE_KEY` in `.env`. Double-check those two values first before looking anywhere else.
+
+And that's it, you're ready to start hacking!
+
+### Start Development Server
+
+I use [Vite](https://vite.dev/) as the build tool and development server. You can start the development server by running this command:
+
+```sh
+bun run dev [--host]
+```
+
+You can omit `--host` if you don't need to preview the website on another device on the same network (e.g., a smartphone or tablet).
 
 ### Build for Production
 
-Run:
+You can build this project with [Vite](https://vite.dev/) by running this command:
 
 ```sh
 bun run build
 ```
 
+This command will generate a `.svelte-kit` folder in the project root.
+
 ### Preview Production Build
 
-Run:
+If you want to preview your website before deploying it, run this command:
 
 ```sh
 bun run preview
@@ -44,12 +109,36 @@ bun run preview
 
 ### Code Quality Checks
 
-Run:
+If you want to make sure your code is clean and that no line is unused or violates the linting rules, run these three commands:
 
 ```sh
-bun run check
+bun run format
 bun run lint
+bun run check
 ```
+
+There's no test runner configured in this repo — `bun run check` (types) and `bun run lint` are the correctness gates instead.
+
+## Public API
+
+This site also publishes a public, read-only REST API under `/api/v1` (blog posts, author profile, search, comments, and more) — no authentication required. Full reference, error codes, and examples: [`src/routes/api/v1/README.md`](src/routes/api/v1/README.md), also served live at [`GET /api/v1`](https://fkp.my.id/api/v1). Machine-readable OpenAPI spec: [`/.well-known/openapi.json`](https://fkp.my.id/.well-known/openapi.json) / [`/.well-known/openapi.yaml`](https://fkp.my.id/.well-known/openapi.yaml).
+
+## Deployment
+
+The site deploys to [Cloudflare Pages](https://pages.cloudflare.com/) via [`@sveltejs/adapter-cloudflare`](https://kit.svelte.dev/docs/adapter-cloudflare), building to `.svelte-kit/cloudflare`. Cloudflare Pages is connected directly to this repository — there's no separate manual deploy step or GitHub Actions deploy job, and both tiers below build with the same `bun run build` command (Cloudflare Pages doesn't support a per-environment build command). Two tiers are configured in the Cloudflare Pages dashboard, each with its own environment variable set:
+
+- **Production** — pushes to `main` deploy to `fkp.my.id`. Needs the variables in `.env.production.example`, including real `PUBLIC_TURNSTILE_SITE_KEY`/`TURNSTILE_SECRET` and `PUBLIC_SENTRY_ENVIRONMENT=production`.
+- **Preview** — pushes to `develop` (and PRs) deploy to a `*.pages.dev` preview URL. Uses Cloudflare's [dummy Turnstile testing keys](https://developers.cloudflare.com/turnstile/troubleshooting/testing/) instead of real ones and `PUBLIC_SENTRY_ENVIRONMENT=preview`, so preview builds don't need a verified domain and don't pollute production error tracking.
+
+Both tiers share the same Supabase project. Bindings (rate limiter, Workers AI) are declared in `wrangler.jsonc` and are shared across tiers too.
+
+For local development against a given tier's config, copy the matching template on top of `.env` or use `.env.development` / `.env.production` — Vite layers `.env` → `.env.[mode]` automatically. This is a local-only convenience; it has no effect on what Cloudflare Pages deploys.
+
+## Contributing
+
+This repo uses [git-flow-next](https://git-flow.sh/) (classic preset: `main` for production, `develop` for integration, `feature/*`/`bugfix/*`/`release/*`/`hotfix/*` topic branches). See [`CLAUDE.md`](CLAUDE.md) for the full workflow, code style conventions, and architecture notes before opening a PR.
+
+Found a security issue? Please don't open a public issue — see [`SECURITY.md`](SECURITY.md) for how to report it privately.
 
 ## License
 

@@ -1,119 +1,124 @@
-<!-- @format -->
 <script lang="ts">
-  import 'bootstrap-icons/font/bootstrap-icons.css'
-  import './layout.css'
-  import {onMount} from 'svelte'
-  import {fade} from 'svelte/transition'
-  import ConsentBanner from '$lib/components/ConsentBanner.svelte'
-  import {page} from '$app/state'
+  import './global.css';
+  import {onMount} from 'svelte';
+  import {onNavigate} from '$app/navigation';
+  import {page} from '$app/state';
+  import {ConsentBanner, Toast, ScrollToTopButton, FeedbackButton} from '$lib';
 
-  const {children} = $props()
+  import {themeStore} from '$lib/stores/themeStore.svelte';
+  import {a11yStore} from '$lib/stores/a11yStore.svelte';
+  import {codeBlockPrefsStore} from '$lib/stores/codeBlockPrefsStore.svelte';
+  import {scrollStore} from '$lib/stores/scrollStore.svelte';
+  import {readingModeStore} from '$lib/stores/readingModeStore.svelte';
+  import {refreshCodeBlockPrefs} from '$lib/utils/codeBlocks';
 
-  type Theme = 'auto' | 'dark' | 'light'
+  const {data, children} = $props();
 
-  let showScrollTop = $state(false)
-  let scrollProgress = $state(0)
+  let name = $derived(data?.author?.name || '');
+  let siteUrl = $derived((data?.author?.siteUrl || '').replace(/\/$/, ''));
 
+  let feedTitle = $derived(
+    name ?
+      `${name}${siteUrl ? ` (${siteUrl}/blog)` : ''} — RSS Feed`
+    : `${siteUrl ? siteUrl.replace(/^https?:\/\//, '') + '/blog' : 'Blog'} — RSS Feed`
+  );
+
+  const isAdminPage = $derived(page.url.pathname.startsWith('/admin'));
+  const isPostEditorPage = $derived(page.url.pathname === '/admin/new');
+  const isBlogPost = $derived(page.route.id === '/blog/[slug]');
+  const isLegalPage = $derived(
+    page.route.id === '/terms'
+      || page.route.id === '/privacy'
+      || page.route.id === '/security'
+  );
+  const isArticleLikePage = $derived(isBlogPost || isLegalPage);
   const isPageWithFeedback = $derived(
-    page.url.pathname !== '/feedback'
-      && (page.url.pathname === '/admin/login'
-        || !page.url.pathname.startsWith('/admin'))
-  )
-
-  function applyTheme(newTheme: Theme) {
-    if (typeof window !== 'undefined') {
-      const isDark =
-        newTheme === 'dark'
-        || (newTheme === 'auto'
-          && window.matchMedia('(prefers-color-scheme: dark)').matches)
-      if (isDark) {
-        document.documentElement.classList.add('dark')
-      } else {
-        document.documentElement.classList.remove('dark')
-      }
-    }
-  }
-
-  function handleScroll() {
-    showScrollTop = window.scrollY > 300
-
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight
-    if (docHeight > 0) {
-      scrollProgress = (window.scrollY / docHeight) * 100
-    } else {
-      scrollProgress = 0
-    }
-  }
-
-  function scrollToTop() {
-    window.scrollTo({top: 0, behavior: 'smooth'})
-  }
+    !page.error
+      && page.url.pathname !== '/feedback'
+      && !page.url.pathname.startsWith('/admin')
+  );
 
   onMount(() => {
-    const saved = (localStorage.getItem('theme') as Theme) || 'auto'
-    applyTheme(saved)
-
-    const media = window.matchMedia('(prefers-color-scheme: dark)')
-    const listener = () => {
-      const current = (localStorage.getItem('theme') as Theme) || 'auto'
-      if (current === 'auto') {
-        applyTheme('auto')
-      }
-    }
-
-    const storageListener = (e: StorageEvent) => {
-      if (e.key === 'theme') {
-        applyTheme((e.newValue as Theme) || 'auto')
-      }
-    }
-
-    media.addEventListener('change', listener)
-    window.addEventListener('storage', storageListener)
-    window.addEventListener('scroll', handleScroll)
-
-    handleScroll()
-
+    const cleanupTheme = themeStore.init();
+    const cleanupA11y = a11yStore.init();
+    const cleanupCodeBlockPrefs = codeBlockPrefsStore.init(
+      refreshCodeBlockPrefs
+    );
+    const cleanupScroll = scrollStore.init();
     return () => {
-      media.removeEventListener('change', listener)
-      window.removeEventListener('storage', storageListener)
-      window.removeEventListener('scroll', handleScroll)
+      cleanupTheme?.();
+      cleanupA11y?.();
+      cleanupCodeBlockPrefs?.();
+      cleanupScroll?.();
+    };
+  });
+
+  $effect(() => {
+    if (typeof document !== 'undefined') {
+      if (readingModeStore.active) {
+        document.documentElement.dataset.readingMode = 'true';
+        document.documentElement.classList.add('reading-mode');
+      } else {
+        delete document.documentElement.dataset.readingMode;
+        document.documentElement.classList.remove('reading-mode');
+      }
     }
-  })
+  });
+
+  const BLOG_POST_ROUTE_ID = '/blog/[slug]';
+
+  onNavigate(navigation => {
+    if (!document.startViewTransition || a11yStore.current.reduceMotion) return;
+
+    const isBlogPostTransition =
+      navigation.to?.route.id === BLOG_POST_ROUTE_ID
+      || navigation.from?.route.id === BLOG_POST_ROUTE_ID;
+    if (!isBlogPostTransition) return;
+
+    return new Promise(resolve => {
+      const root = document.documentElement;
+      root.dataset.transitionType = 'drill';
+      const transition = document.startViewTransition(async () => {
+        resolve();
+        await navigation.complete;
+      });
+      void transition.finished.finally(() => {
+        delete root.dataset.transitionType;
+      });
+    });
+  });
 </script>
 
-<div
-  class="pointer-events-none fixed top-15 left-0 z-40 h-0.5 bg-copilot transition-all duration-75 ease-out select-none"
-  style="width: {scrollProgress}%">
-</div>
+<svelte:head>
+  <link
+    rel="alternate"
+    type="application/atom+xml"
+    title={feedTitle}
+    href="/atom.xml" />
+  <link
+    rel="describedby"
+    type="text/markdown"
+    title="LLM & AI Agent Directory"
+    href="/llms.txt" />
+  <link
+    rel="describedby"
+    type="text/markdown"
+    title="Public API Documentation"
+    href="/api/v1" />
+</svelte:head>
 
 {@render children()}
 
-{#if showScrollTop}
-  <button
-    transition:fade={{duration: 150}}
-    class="fixed right-4 bottom-4 z-50 inline-flex h-10 w-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border-subtle bg-surface-card px-0 text-xs font-semibold text-text-primary shadow-lg transition-all select-none hover:bg-surface-hover hover:text-copilot sm:right-6 sm:bottom-6 sm:w-auto sm:px-4 sm:text-sm"
-    onclick={scrollToTop}
-    title="Scroll to top"
-    aria-label="Scroll to top">
-    <span
-      class="material-symbols-rounded text-sm"
-      style="font-variation-settings: 'wght' 300, 'opsz' 20;"
-      aria-hidden="true">vertical_align_top</span>
-    <span class="hidden sm:inline">Scroll to top</span>
-  </button>
-{/if}
-
-{#if isPageWithFeedback}
-  <a
-    href="/feedback"
-    class="fixed bottom-4 left-4 z-50 inline-flex h-10 w-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border-subtle bg-surface-card px-0 text-xs font-semibold text-text-primary shadow-lg transition-all select-none hover:bg-surface-hover hover:text-copilot sm:bottom-6 sm:left-6 sm:w-auto sm:px-4 sm:text-sm"
-    title="Report an issue or give feedback">
-    <span
-      class="material-symbols-rounded text-sm"
-      style="font-variation-settings: 'wght' 300, 'opsz' 20;"
-      aria-hidden="true">chat</span>
-    <span class="hidden sm:inline">Feedback</span>
-  </a>
-{/if}
+<ScrollToTopButton
+  show={scrollStore.pastThreshold
+    && (!isAdminPage || isPostEditorPage)
+    && !readingModeStore.active}
+  class="{isPostEditorPage ? 'hidden md:block' : ''} {isArticleLikePage ?
+    'lg:hidden'
+  : ''}" />
+<FeedbackButton
+  show={isPageWithFeedback && !readingModeStore.active}
+  class={isArticleLikePage ? 'lg:hidden' : ''} />
 
 <ConsentBanner />
+<Toast />

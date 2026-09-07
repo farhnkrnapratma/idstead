@@ -1,46 +1,64 @@
-/** @format */
-
-import {supabase} from '$lib/supabase'
-import type {RequestHandler} from './$types'
-
-const SITE_URL = 'https://fkp.my.id'
+import {supabase} from '$lib/supabase';
+import type {RequestHandler} from './$types';
+import {fetchAuthorProfile} from '$lib/author';
+import {escapeXml} from '$lib/utils/xml';
 
 export const GET: RequestHandler = async () => {
-  const {data: posts} = await supabase
-    .from('posts')
-    .select('slug, created_at, title')
-    .eq('published', true)
-    .order('created_at', {ascending: false})
+  const [authorProfile, {data: posts}] = await Promise.all([
+    fetchAuthorProfile(supabase),
+    supabase
+      .from('db_posts')
+      .select('slug, created_at, updated_at, title')
+      .eq('published', true)
+      .order('created_at', {ascending: false})
+  ]);
+
+  const SITE_URL = (authorProfile?.siteUrl || '').replace(/\/$/, '');
 
   const staticRoutes = [
     {
       url: `${SITE_URL}/`,
-      lastmod: new Date().toISOString().split('T')[0],
+      lastmod: '2026-08-30',
       priority: '1.0',
       changefreq: 'weekly'
     },
     {
       url: `${SITE_URL}/feedback`,
-      lastmod: new Date().toISOString().split('T')[0],
+      lastmod: '2026-08-30',
       priority: '0.5',
       changefreq: 'monthly'
     },
     {
       url: `${SITE_URL}/privacy`,
-      lastmod: new Date().toISOString().split('T')[0],
+      lastmod: '2026-08-30',
+      priority: '0.5',
+      changefreq: 'monthly'
+    },
+    {
+      url: `${SITE_URL}/terms`,
+      lastmod: '2026-08-30',
+      priority: '0.5',
+      changefreq: 'monthly'
+    },
+    {
+      url: `${SITE_URL}/security`,
+      lastmod: '2026-08-30',
       priority: '0.5',
       changefreq: 'monthly'
     }
-  ]
+  ];
 
   const postRoutes = (posts ?? []).map(post => ({
     url: `${SITE_URL}/blog/${post.slug}`,
-    lastmod: new Date(post.created_at).toISOString().split('T')[0],
+    lastmod:
+      post.updated_at ?
+        new Date(post.updated_at).toISOString().split('T')[0]
+      : new Date(post.created_at).toISOString().split('T')[0],
     priority: '0.8',
     changefreq: 'monthly'
-  }))
+  }));
 
-  const allRoutes = [...staticRoutes, ...postRoutes]
+  const allRoutes = [...staticRoutes, ...postRoutes];
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset
@@ -58,21 +76,12 @@ ${allRoutes
   </url>`
   )
   .join('\n')}
-</urlset>`
+</urlset>`;
 
   return new Response(xml, {
     headers: {
       'Content-Type': 'application/xml; charset=utf-8',
       'Cache-Control': 'public, max-age=3600, s-maxage=3600'
     }
-  })
-}
-
-function escapeXml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;')
-}
+  });
+};

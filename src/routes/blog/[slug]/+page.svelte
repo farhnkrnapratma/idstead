@@ -1,173 +1,151 @@
-<!-- @format -->
 <script lang="ts">
-  import {onMount, tick} from 'svelte'
-  import type {PageProps} from './$types'
-  import type {BlogComment} from './+page.server'
-  import hljs from 'highlight.js'
-  import {isNameReserved} from '$lib/nameValidator'
+  import {onMount, onDestroy, tick, untrack} from 'svelte';
+  import {fade} from 'svelte/transition';
+  import {SvelteSet} from 'svelte/reactivity';
+  import {Mail, Image as ImageIcon, User, BookOpenText} from '@lucide/svelte';
+  import type {PageProps} from './$types';
+  import type {BlogComment} from './+page.server';
+  import hljs from 'highlight.js';
   import {
-    SkipLink,
-    SpotlightSearch,
+    isNameReserved,
+    extractAuthorNameTokens
+  } from '$lib/utils/nameValidator';
+  import {enhanceMarkdownContent} from '$lib/utils/markdownEnhancer';
+  import {refreshCodeBlockPrefs} from '$lib/utils/codeBlocks';
+  import {cn} from '$lib/utils/cn';
+  import 'katex/dist/katex.min.css';
+  import {
+    turnstileWidget,
+    executeTurnstile,
+    resetTurnstile,
+    turnstileSiteKey
+  } from '$lib/utils/turnstile';
+  import {
+    TopNav,
     Button,
+    Card,
     Checkbox,
+    ImageWithSkeleton,
     CommentThread,
     EmptyState,
     StatusBanner,
     FormField,
+    Input,
     Textarea,
     FooterSection,
-    ThemeSelect,
-    formatBlogDate,
+    TableOfContents,
+    RelativeTime,
+    ContentActions,
+    toastStore,
     formatReadTime,
     formatCommentCount,
-    formatViewCount
-  } from '$lib'
-  import Dialog from '$lib/design-system/components/Dialog.svelte'
-  import {pushState} from '$app/navigation'
-  import {page} from '$app/state'
-  import {supabase} from '$lib/supabase'
+    formatViewCount,
+    Dialog,
+    ReportCommentDialog,
+    ArticleHeader,
+    ShareDialog,
+    QrCodeDialog,
+    ArticleMeta,
+    HelpfulBlock,
+    PostInsights,
+    formatAbsoluteDate,
+    ConsentNotice,
+    readingModeStore,
+    Tooltip,
+    ScrollToTopButton,
+    FeedbackButton
+  } from '$lib';
+  import {pushState} from '$app/navigation';
+  import {page, navigating} from '$app/state';
+  import {supabase} from '$lib/supabase';
+  import {themeStore} from '$lib/stores/themeStore.svelte';
+  import {a11yStore} from '$lib/stores/a11yStore.svelte';
+  import {contentFontStore} from '$lib/stores/contentFontStore.svelte';
 
-  let {data}: PageProps = $props()
-  const post = $derived(data.post)
-  const html = $derived(data.html)
+  let {data}: PageProps = $props();
+  const post = $derived(data.post);
+  const isNavigatingToBlogPost = $derived(
+    navigating.to?.route.id === '/blog/[slug]'
+  );
+  const html = $derived(data.html);
+  const author = $derived(data.author);
+  const authorTokens = $derived(extractAuthorNameTokens(author));
 
-  let showCopySuccess = $state(false)
+  const language = $derived(data.language);
+  const machineTranslated = $derived(data.machineTranslated);
+  const translationDisclaimerHtml = $derived(data.translationDisclaimerHtml);
+  const availableLocales = $derived(data.availableLocales);
+  const langSwitcherOptions = $derived(['en', ...availableLocales]);
+  function hrefForLang(lang: string): string {
+    return lang === 'en' ?
+        `/blog/${post.slug}`
+      : `/blog/${post.slug}?lang=${lang}`;
+  }
 
   function copyToClipboard() {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined') return;
     navigator.clipboard
       .writeText(window.location.href)
       .then(() => {
-        showCopySuccess = true
-        setTimeout(() => {
-          showCopySuccess = false
-        }, 2000)
+        toastStore.success('Copied!');
       })
       .catch(err => {
-        console.error(err)
-      })
+        console.error(err);
+      });
   }
-
-  let toastMessage = $state('')
-  let showToast = $state(false)
 
   function triggerToast(message: string) {
-    toastMessage = message
-    showToast = true
-    setTimeout(() => {
-      showToast = false
-    }, 2000)
+    toastStore.show(message);
   }
 
-  function getPrettyLanguage(className: string): string {
-    if (!className) return 'Code'
-    const match = className.match(/language-(\S+)/)
-    if (!match) return 'Code'
-    const lang = match[1].toLowerCase()
-    const map: Record<string, string> = {
-      js: 'JavaScript',
-      javascript: 'JavaScript',
-      ts: 'TypeScript',
-      typescript: 'TypeScript',
-      html: 'HTML',
-      css: 'CSS',
-      rust: 'Rust',
-      rs: 'Rust',
-      python: 'Python',
-      py: 'Python',
-      bash: 'Bash',
-      sh: 'Shell',
-      shell: 'Shell',
-      json: 'JSON',
-      yaml: 'YAML',
-      yml: 'YAML',
-      xml: 'XML',
-      md: 'Markdown',
-      markdown: 'Markdown',
-      go: 'Go',
-      golang: 'Go',
-      cpp: 'C++',
-      c: 'C',
-      csharp: 'C#',
-      cs: 'C#',
-      sql: 'SQL',
-      dockerfile: 'Docker',
-      docker: 'Docker'
-    }
-    return map[lang] || lang.charAt(0).toUpperCase() + lang.slice(1)
-  }
-
-  function setupCodeHeaderBars() {
-    const container = document.querySelector('.prose-custom')
-    if (!container) return
-    const preBlocks = container.querySelectorAll('pre')
-    preBlocks.forEach(el => {
-      const pre = el as HTMLElement
-      if (pre.previousElementSibling?.classList.contains('code-header-bar'))
-        return
-
-      const codeElement = pre.querySelector('code')
-      const langClass = codeElement?.className || ''
-      const prettyLang = getPrettyLanguage(langClass)
-
-      const headerBar = document.createElement('div')
-      headerBar.className =
-        'code-header-bar flex items-center justify-between bg-surface-base/95 border border-border-subtle rounded-t-lg px-4 py-1 text-xs text-text-secondary font-semibold select-none mt-6'
-
-      const leftSpan = document.createElement('span')
-      leftSpan.className =
-        'text-[12.5px] font-sans font-bold uppercase tracking-wider text-text-secondary leading-none'
-      leftSpan.innerText = prettyLang
-      headerBar.appendChild(leftSpan)
-
-      const copyBtn = document.createElement('button')
-      copyBtn.type = 'button'
-      copyBtn.className =
-        'flex h-5 w-5 items-center justify-center rounded-md border border-border-subtle/30 hover:bg-surface-hover/30 hover:text-text-primary transition-colors cursor-pointer text-text-secondary leading-none'
-      copyBtn.innerHTML =
-        '<span class="material-symbols-rounded text-[10.5px] font-bold leading-none" style="font-variation-settings: \'wght\' 800;">content_copy</span>'
-
-      copyBtn.addEventListener('click', () => {
-        if (!codeElement) return
-        const codeText = codeElement.innerText || codeElement.textContent || ''
-        navigator.clipboard
-          .writeText(codeText)
-          .then(() => {
-            copyBtn.innerHTML =
-              '<span class="material-symbols-rounded text-[10.5px] font-bold leading-none text-palette-green" style="font-variation-settings: \'wght\' 800;">check_small</span>'
-            triggerToast('Code copied to clipboard!')
-            setTimeout(() => {
-              copyBtn.innerHTML =
-                '<span class="material-symbols-rounded text-[10.5px] font-bold leading-none" style="font-variation-settings: \'wght\' 800;">content_copy</span>'
-            }, 2000)
-          })
-          .catch(err => {
-            console.error('Failed to copy code: ', err)
-          })
-      })
-
-      headerBar.appendChild(copyBtn)
-
-      pre.style.marginTop = '0px'
-      pre.style.borderTopLeftRadius = '0px'
-      pre.style.borderTopRightRadius = '0px'
-      pre.style.borderTopWidth = '0px'
-      pre.style.paddingTop = '10px'
-
-      pre.parentNode?.insertBefore(headerBar, pre)
-    })
-  }
-
-  let currentPostId = $state<string | null>(null)
-  let addedComments = $state<BlogComment[]>([])
+  let currentPostId: string | null = null;
+  let addedComments = $state<BlogComment[]>([]);
   $effect(() => {
-    if (currentPostId !== data.post.id) {
-      currentPostId = data.post.id
-      addedComments = []
+    const postId = data.post.id;
+    if (currentPostId !== postId) {
+      currentPostId = postId;
+      untrack(() => {
+        addedComments = [];
+        readingModeStore.disable();
+      });
     }
-  })
-  const comments = $derived([...data.comments, ...addedComments])
-  let isDark = $state(false)
+  });
+  const comments = $derived([...data.comments, ...addedComments]);
+  const relatedPosts = $derived(data.relatedPosts);
+  const failedRelatedBanners = new SvelteSet<string>();
+  function markRelatedBannerFailed(postId: string) {
+    failedRelatedBanners.add(postId);
+  }
+
+  const expandedExcerptIds = new SvelteSet<string>();
+  const overflowingExcerptIds = new SvelteSet<string>();
+
+  function observeExcerptOverflow(postId: string) {
+    return (element: HTMLElement) => {
+      const updateOverflow = () => {
+        if (element.scrollHeight > element.clientHeight + 1) {
+          overflowingExcerptIds.add(postId);
+        } else {
+          overflowingExcerptIds.delete(postId);
+        }
+      };
+
+      const resizeObserver = new ResizeObserver(updateOverflow);
+      resizeObserver.observe(element);
+
+      return () => resizeObserver.disconnect();
+    };
+  }
+
+  function toggleExcerpt(postId: string) {
+    if (expandedExcerptIds.has(postId)) {
+      expandedExcerptIds.delete(postId);
+    } else {
+      expandedExcerptIds.add(postId);
+    }
+  }
+
+  let isDark = $state(false);
 
   const bannerPublicUrl = $derived(
     data.bannerPublicUrl
@@ -175,420 +153,324 @@
         supabase.storage.from('blog-posts').getPublicUrl(data.post.banner_path)
           .data.publicUrl
       : '')
-  )
+  );
 
-  type Theme = 'auto' | 'dark' | 'light'
-  let theme = $state<Theme>('auto')
+  const headings = $derived(data.headings || []);
 
-  function applyTheme(newTheme: Theme) {
-    theme = newTheme
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('theme', newTheme)
-      const isDarkVal =
-        newTheme === 'dark'
-        || (newTheme === 'auto'
-          && window.matchMedia('(prefers-color-scheme: dark)').matches)
-      isDark = isDarkVal
-      if (isDarkVal) {
-        document.documentElement.classList.add('dark')
-      } else {
-        document.documentElement.classList.remove('dark')
+  let showYesFeedbackDialog = $state(false);
+  let showNoFeedbackDialog = $state(false);
+  let showQrDialog = $state(false);
+  let viewCount = $state<number | null>(
+    untrack(() => data.initialViewsCount ?? null)
+  );
+
+  const mainAuthorUsername = $derived(author?.username || 'farhnkrnapratma');
+  const collaboratorsList = $derived(
+    Array.isArray(post.collaborators) ? post.collaborators.filter(Boolean) : []
+  );
+  const allAuthors = $derived([mainAuthorUsername, ...collaboratorsList]);
+  const visibleAvatarAuthors = $derived(allAuthors.slice(0, 3));
+  const hiddenCollaborators = $derived(allAuthors.slice(3));
+  let isCollaboratorsPopoverOpen = $state(false);
+  let collaboratorsContainerRef: HTMLDivElement | undefined = $state();
+  const failedAvatars = new SvelteSet<string>();
+  const loadedAvatars = new SvelteSet<string>();
+
+  let hasVotedHelpful = $state(false);
+
+  async function handleHelpfulness(value: 'yes' | 'no') {
+    hasVotedHelpful = true;
+    if (value === 'yes') {
+      showYesFeedbackDialog = true;
+    } else {
+      showNoFeedbackDialog = true;
+    }
+
+    try {
+      await fetch('/api/internal/blog/feedback', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({postId: post.id, vote: value})
+      });
+    } catch (err) {
+      console.error('Failed to submit blog feedback:', err);
+    }
+  }
+
+  let articleScrollTop = $state(0);
+  let articleScrollHeight = $state(0);
+  let articleClientHeight = $state(0);
+
+  const articleScrollProgress = $derived(
+    articleScrollHeight - articleClientHeight > 0 ?
+      (articleScrollTop / (articleScrollHeight - articleClientHeight)) * 100
+    : 0
+  );
+  const isArticleScrolledPast = $derived(articleScrollTop > 300);
+
+  function handleArticleScroll(e: Event) {
+    const target = e.currentTarget as HTMLElement;
+    articleScrollTop = target.scrollTop;
+    articleScrollHeight = target.scrollHeight;
+    articleClientHeight = target.clientHeight;
+  }
+
+  function scrollArticleToTop() {
+    if (articleBodyEl) {
+      const container = articleBodyEl.closest(
+        '.article-scroll-container'
+      ) as HTMLElement | null;
+      if (container) {
+        container.scrollTo({top: 0, behavior: 'smooth'});
+        return;
       }
     }
+    window.scrollTo({top: 0, behavior: 'smooth'});
   }
 
-  const headings = $derived(data.headings || [])
-  let activeHeadingId = $state('')
-  let isStretching = $state(false)
-  let indicatorTop = $state(0)
-  let indicatorHeight = $state(0)
-  let isIndicatorVisible = $state(false)
-  let tocListEl = $state<HTMLElement | null>(null)
-
-  function updateIndicatorPos(
-    headingId: string,
-    stretch = false,
-    topOverride?: number,
-    heightOverride?: number
-  ) {
-    if (!tocListEl) return
-    const targetLink = tocListEl.querySelector<HTMLElement>(
-      `a[href="#${headingId}"]`
-    )
-    if (!targetLink) {
-      isIndicatorVisible = false
-      return
-    }
-    isIndicatorVisible = true
-    isStretching = stretch
-
-    const baseHeight =
-      targetLink.getBoundingClientRect().height || targetLink.offsetHeight
-
-    if (topOverride !== undefined && heightOverride !== undefined) {
-      indicatorTop = topOverride
-      indicatorHeight = heightOverride
-    } else {
-      indicatorTop = targetLink.offsetTop
-      indicatorHeight = baseHeight
-    }
-  }
-
-  let helpfulnessFeedback = $state<'yes' | 'no' | null>(null)
-  let showYesFeedbackDialog = $state(false)
-  let showNoFeedbackDialog = $state(false)
-  let viewCount = $state<number | null>(null)
-
-  function handleHelpfulness(value: 'yes' | 'no') {
-    helpfulnessFeedback = value
-    if (value === 'yes') {
-      showYesFeedbackDialog = true
-    } else {
-      showNoFeedbackDialog = true
-    }
-  }
+  let articleBodyEl: HTMLDivElement | undefined = $state();
 
   $effect(() => {
-    void html
-    let headingObserver: IntersectionObserver | null = null
-    let scrollTimeout: ReturnType<typeof setTimeout> | null = null
-    let rafId: number | null = null
-    let lastScrollY = 0
+    void html;
+    void isDark;
 
     tick().then(() => {
-      const container = document.querySelector('.prose-custom')
+      const container = articleBodyEl;
       if (container) {
-        setupCodeHeaderBars()
+        const blocks = container.querySelectorAll('pre code');
+        blocks.forEach(block => {
+          hljs.highlightElement(block as HTMLElement);
+        });
+        enhanceMarkdownContent({container, isDark, onCodeCopy: triggerToast});
         const elements = Array.from(
-          container.querySelectorAll('h2, h3')
-        ) as HTMLElement[]
-        if (elements.length === 0) return
+          container.querySelectorAll('h1, h2, h3, h4, h5, h6')
+        ).filter(
+          el =>
+            !el.closest('.markdown-chart-container')
+            && !el.closest('.mermaid-block')
+        ) as HTMLElement[];
+        if (elements.length === 0) return;
 
         elements.forEach(el => {
-          el.classList.add('group', 'scroll-mt-20', 'cursor-pointer')
+          el.classList.add('group', 'scroll-mt-20', 'cursor-pointer');
 
-          const existingAnchor = el.querySelector('.anchor-link')
+          const existingAnchor = el.querySelector('.anchor-link');
           if (existingAnchor) {
-            existingAnchor.remove()
+            existingAnchor.remove();
           }
 
-          const headingText = el.querySelector('.heading-text')
+          let headingText = el.querySelector(
+            '.heading-text'
+          ) as HTMLElement | null;
           if (!headingText) {
-            const span = document.createElement('span')
-            span.className = 'heading-text'
+            headingText = document.createElement('span');
+            headingText.className = 'heading-text';
             while (el.firstChild) {
-              span.appendChild(el.firstChild)
+              headingText.appendChild(el.firstChild);
             }
-            el.appendChild(span)
+            el.appendChild(headingText);
           }
 
-          const anchor = document.createElement('a')
-          anchor.href = `#${el.id}`
-          anchor.className = 'anchor-link select-none'
+          const anchor = document.createElement('a');
+          anchor.href = `#${el.id}`;
+          anchor.className = 'anchor-link select-none';
+          anchor.tabIndex = -1;
           anchor.innerHTML =
-            '<span class="material-symbols-rounded text-[0.85em] leading-none inline-block align-middle select-none opacity-0" style="font-variation-settings: \'wght\' 400, \'opsz\' 20;" aria-hidden="true">link_2</span>'
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link-2 size-[0.75em] leading-none inline-block align-middle select-none opacity-0" aria-hidden="true"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" x2="16" y1="12" y2="12"/></svg>';
 
-          el.onclick = async e => {
-            e.preventDefault()
-            const url = `${window.location.origin}${window.location.pathname}#${el.id}`
-            try {
-              await navigator.clipboard.writeText(url)
-              triggerToast('Subheading link copied to clipboard')
-            } catch (err) {
-              void err
-            }
-            const target = document.getElementById(el.id)
-            if (target) {
-              target.scrollIntoView({behavior: 'smooth', block: 'start'})
-              pushState(`#${el.id}`, {})
-              activeHeadingId = el.id
-              updateIndicatorPos(el.id, false)
-            }
-          }
-          el.appendChild(anchor)
-        })
-
-        if (activeHeadingId) {
-          updateIndicatorPos(activeHeadingId, false)
-        }
-
-        const updateScrollspyPosition = () => {
-          if (!tocListEl || elements.length === 0) return
-          const scrollY = window.scrollY
-          const viewportOffset = 120
-          const isScrollingDown = scrollY >= lastScrollY
-          lastScrollY = scrollY
-
-          const headingPositions = elements.map(el => {
-            const rect = el.getBoundingClientRect()
-            return {
-              id: el.id,
-              top: rect.top + window.scrollY,
-              height: rect.height
-            }
-          })
-
-          const tocLinks = headingPositions.map(h => {
-            const link = tocListEl?.querySelector<HTMLElement>(
-              `a[href="#${h.id}"]`
-            )
-            return {
-              id: h.id,
-              top: link?.offsetTop ?? 0,
-              height:
-                link ?
-                  link.getBoundingClientRect().height || link.offsetHeight
-                : 0
-            }
-          })
-
-          if (
-            headingPositions.length > 0
-            && scrollY < headingPositions[0].top - viewportOffset
-          ) {
-            activeHeadingId = ''
-            isIndicatorVisible = false
-            return
-          }
-
-          let segmentIndex = 0
-          for (let i = 0; i < headingPositions.length; i++) {
-            if (scrollY >= headingPositions[i].top - viewportOffset) {
-              segmentIndex = i
+          const walker = document.createTreeWalker(
+            headingText,
+            NodeFilter.SHOW_TEXT
+          );
+          let lastTextNode: Text | null = null;
+          let node: Node | null;
+          while ((node = walker.nextNode())) {
+            if (node.nodeValue && node.nodeValue.trim().length > 0) {
+              lastTextNode = node as Text;
             }
           }
 
-          const hCurrent = headingPositions[segmentIndex]
-          const hNext = headingPositions[segmentIndex + 1]
+          if (lastTextNode && lastTextNode.nodeValue) {
+            const val = lastTextNode.nodeValue;
+            const match = val.match(/^(.*?)(\s+)?(\S+)(\s*)$/);
+            if (match) {
+              const [, before, space, lastWord, trailingSpace] = match;
+              const wrapSpan = document.createElement('span');
+              wrapSpan.className = 'whitespace-nowrap';
+              wrapSpan.textContent = lastWord;
+              wrapSpan.appendChild(anchor);
 
-          const lCurrent = tocLinks[segmentIndex]
-          const lNext = tocLinks[segmentIndex + 1]
-
-          if (!hCurrent || !lCurrent) return
-
-          if (!hNext || !lNext) {
-            activeHeadingId = hCurrent.id
-            updateIndicatorPos(
-              hCurrent.id,
-              false,
-              lCurrent.top,
-              lCurrent.height
-            )
-            return
-          }
-
-          const segDistance = hNext.top - hCurrent.top
-          if (segDistance <= 0) {
-            activeHeadingId = hCurrent.id
-            updateIndicatorPos(
-              hCurrent.id,
-              false,
-              lCurrent.top,
-              lCurrent.height
-            )
-            return
-          }
-
-          const rawProgress =
-            (scrollY - (hCurrent.top - viewportOffset)) / segDistance
-          const progress = Math.max(0, Math.min(1, rawProgress))
-
-          activeHeadingId = progress >= 0.5 ? hNext.id : hCurrent.id
-
-          if (progress > 0.08 && progress < 0.92) {
-            const stretchRatio = (progress - 0.08) / 0.84
-
-            if (isScrollingDown) {
-              const calcTop = lCurrent.top
-              const currentBottom = lCurrent.top + lCurrent.height
-              const targetBottom = lNext.top + lNext.height
-              const calcBottom =
-                currentBottom + (targetBottom - currentBottom) * stretchRatio
-              const calcHeight = calcBottom - calcTop
-              updateIndicatorPos(activeHeadingId, true, calcTop, calcHeight)
+              const parent = lastTextNode.parentNode;
+              if (parent) {
+                if (before) {
+                  parent.insertBefore(
+                    document.createTextNode(before + (space || '')),
+                    lastTextNode
+                  );
+                }
+                parent.insertBefore(wrapSpan, lastTextNode);
+                if (trailingSpace) {
+                  parent.insertBefore(
+                    document.createTextNode(trailingSpace),
+                    lastTextNode
+                  );
+                }
+                parent.removeChild(lastTextNode);
+              }
             } else {
-              const calcBottom = lNext.top + lNext.height
-              const currentTop = lNext.top
-              const targetTop = lCurrent.top
-              const calcTop =
-                currentTop - (currentTop - targetTop) * (1 - stretchRatio)
-              const calcHeight = calcBottom - calcTop
-              updateIndicatorPos(activeHeadingId, true, calcTop, calcHeight)
+              headingText.appendChild(anchor);
             }
           } else {
-            const targetLink = progress >= 0.5 ? lNext : lCurrent
-            updateIndicatorPos(
-              activeHeadingId,
-              false,
-              targetLink.top,
-              targetLink.height
-            )
+            headingText.appendChild(anchor);
           }
 
-          if (scrollTimeout) clearTimeout(scrollTimeout)
-          scrollTimeout = setTimeout(() => {
-            if (activeHeadingId) {
-              const activeLink = tocLinks.find(l => l.id === activeHeadingId)
-              if (activeLink) {
-                updateIndicatorPos(
-                  activeHeadingId,
-                  false,
-                  activeLink.top,
-                  activeLink.height
-                )
-              }
+          el.onclick = async e => {
+            e.preventDefault();
+            const url = `${window.location.origin}${window.location.pathname}#${el.id}`;
+            try {
+              await navigator.clipboard.writeText(url);
+              triggerToast('Link copied to clipboard');
+            } catch (err) {
+              void err;
             }
-          }, 150)
-        }
-
-        const handleScroll = () => {
-          if (rafId !== null) return
-          rafId = requestAnimationFrame(() => {
-            rafId = null
-            updateScrollspyPosition()
-          })
-        }
-
-        window.addEventListener('scroll', handleScroll, {passive: true})
-
-        headingObserver = new IntersectionObserver(
-          entries => {
-            entries.forEach(entry => {
-              if (entry.isIntersecting) {
-                activeHeadingId = entry.target.id
-                updateIndicatorPos(entry.target.id, false)
-              }
-            })
-          },
-          {root: null, rootMargin: '0px 0px -70% 0px', threshold: 0.1}
-        )
-
-        elements.forEach(el => headingObserver?.observe(el))
-
-        return () => {
-          window.removeEventListener('scroll', handleScroll)
-          if (rafId !== null) cancelAnimationFrame(rafId)
-          if (scrollTimeout) clearTimeout(scrollTimeout)
-          if (headingObserver) headingObserver.disconnect()
-        }
+            const target = document.getElementById(el.id);
+            if (target) {
+              target.scrollIntoView({behavior: 'smooth', block: 'start'});
+              pushState(`#${el.id}`, {});
+            }
+          };
+        });
       }
-    })
+    });
+  });
 
-    return () => {
-      if (headingObserver) {
-        headingObserver.disconnect()
-      }
-    }
-  })
+  $effect(() => {
+    void readingModeStore.active;
+    refreshCodeBlockPrefs();
+  });
+
+  onDestroy(() => {
+    readingModeStore.disable();
+  });
 
   onMount(() => {
-    const saved = localStorage.getItem('theme') as Theme
-    theme = saved || 'auto'
-    isDark = document.documentElement.classList.contains('dark')
+    isDark = document.documentElement.classList.contains('dark');
 
     const observer = new MutationObserver(() => {
-      isDark = document.documentElement.classList.contains('dark')
-      const currentSaved = localStorage.getItem('theme') as Theme
-      if (currentSaved) {
-        theme = currentSaved
-      }
-      setTimeout(() => {
-        hljs.highlightAll()
-      }, 50)
-    })
+      isDark = document.documentElement.classList.contains('dark');
+    });
 
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ['class']
-    })
+    });
 
-    hljs.highlightAll()
-
-    ;(async () => {
+    (async () => {
       try {
-        await fetch('/api/views', {
+        await fetch('/api/internal/blog/views', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({post_id: post.id})
-        })
+          body: JSON.stringify({postId: post.id})
+        });
         const res = await fetch(
-          `/api/views?post_id=${encodeURIComponent(post.id)}`
-        )
-        const data = await res.json()
-        viewCount = data.views ?? null
+          `/api/v1/blog/views?postId=${encodeURIComponent(post.id)}`
+        );
+        const data = await res.json();
+        viewCount = data.views ?? null;
       } catch {
-        viewCount = null
+        viewCount = null;
       }
-    })()
+    })();
 
     return () => {
-      observer.disconnect()
-    }
-  })
+      observer.disconnect();
+    };
+  });
 
-  let authorName = $state('')
-  let isAnonymous = $state(false)
-  let commentContent = $state('')
-  let replyTo = $state<BlogComment | null>(null)
-  let isSubmitting = $state(false)
+  let authorName = $state('');
+  let commentContent = $state('');
+  let replyTo = $state<BlogComment | null>(null);
+  let isSubmitting = $state(false);
+  let turnstileEl = $state<HTMLDivElement | null>(null);
   let feedbackMessage = $state<{
-    type: 'success' | 'error'
-    text: string
-  } | null>(null)
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
+
+  let showReportDialog = $state(false);
+  let reportingComment = $state<BlogComment | null>(null);
 
   function getCommentAuthor(comment: BlogComment) {
-    return comment.is_anonymous ? 'Anonymous' : comment.author_name
-  }
-
-  function getCommentIcon(comment: BlogComment) {
-    if (comment.author_name === 'Admin') return 'person_shield'
-    return comment.is_anonymous ? 'domino_mask' : 'person'
+    if (comment.is_anonymous) return 'Anonymous';
+    if (comment.is_admin) return 'Administrator';
+    return comment.author_name || 'Anonymous';
   }
 
   function cancelReply() {
-    replyTo = null
-    commentContent = ''
-    feedbackMessage = null
-    errors = {authorName: '', commentContent: ''}
+    replyTo = null;
+    commentContent = '';
+    feedbackMessage = null;
+    errors = {authorName: '', commentContent: ''};
+    valid = {authorName: false, commentContent: false};
   }
 
-  let errors = $state({authorName: '', commentContent: ''})
-  let valid = $state({authorName: false, commentContent: false})
+  const canClearComment = $derived(
+    Boolean(authorName.trim() || commentContent.trim())
+  );
+
+  function clearCommentForm() {
+    authorName = '';
+    commentContent = '';
+    feedbackMessage = null;
+    errors = {authorName: '', commentContent: ''};
+    valid = {authorName: false, commentContent: false};
+  }
+
+  let errors = $state({authorName: '', commentContent: ''});
+  let valid = $state({authorName: false, commentContent: false});
 
   function debounce<T extends unknown[]>(cb: (...args: T) => void, ms: number) {
-    let timer: ReturnType<typeof setTimeout>
+    let timer: ReturnType<typeof setTimeout>;
     return (...args: T) => {
-      clearTimeout(timer)
-      timer = setTimeout(() => cb(...args), ms)
-    }
+      clearTimeout(timer);
+      timer = setTimeout(() => cb(...args), ms);
+    };
   }
 
   const validateAuthorName = debounce(() => {
-    if (isAnonymous) {
-      valid.authorName = false
-      return
-    }
-    if (authorName.trim() === '') {
-      errors.authorName = ''
-      valid.authorName = false
-    } else if (isNameReserved(authorName)) {
-      errors.authorName = 'This name cannot be used. Please use another name.'
-      valid.authorName = false
+    const trimmed = authorName.trim();
+    if (trimmed === '') {
+      errors.authorName = '';
+      valid.authorName = false;
+    } else if (trimmed.length < 2) {
+      errors.authorName = 'Name must be at least 2 characters.';
+      valid.authorName = false;
+    } else if (trimmed.length > 50) {
+      errors.authorName = 'Name must be 50 characters or fewer.';
+      valid.authorName = false;
+    } else if (isNameReserved(trimmed, authorTokens)) {
+      errors.authorName = 'This name cannot be used. Please use another name.';
+      valid.authorName = false;
     } else {
-      errors.authorName = ''
-      valid.authorName = true
+      errors.authorName = '';
+      valid.authorName = true;
     }
-  }, 500)
+  }, 500);
 
   const validateCommentContent = debounce(() => {
-    if (commentContent.trim() === '') {
-      errors.commentContent = ''
-      valid.commentContent = false
+    const trimmed = commentContent.trim();
+    if (trimmed === '') {
+      errors.commentContent = '';
+      valid.commentContent = false;
+    } else if (/(https?:\/\/|www\.[a-z0-9]|ftp:\/\/)/i.test(trimmed)) {
+      errors.commentContent =
+        'Links and URLs are not permitted in guest comments.';
+      valid.commentContent = false;
     } else {
-      errors.commentContent = ''
-      valid.commentContent = true
+      errors.commentContent = '';
+      valid.commentContent = true;
     }
-  }, 500)
+  }, 500);
 
   function sanitizeInput(text: string): string {
     return text
@@ -597,841 +479,1767 @@
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#x27;')
-      .replace(/\//g, '&#x2F;')
+      .replace(/\//g, '&#x2F;');
   }
 
   function validate() {
-    const nameErr =
-      !isAnonymous && authorName.trim() === '' ? 'Name is required.' : ''
-    const msgErr = commentContent.trim() === '' ? 'Message is required.' : ''
-    const nameReservedErr =
-      !isAnonymous && !nameErr && isNameReserved(authorName) ?
-        'This name cannot be used. Please use another name.'
-      : ''
+    const nameTrimmed = authorName.trim();
+    let nameErr = '';
+    if (!nameTrimmed) {
+      nameErr = 'Name is required.';
+    } else if (nameTrimmed.length < 2) {
+      nameErr = 'Name must be at least 2 characters.';
+    } else if (nameTrimmed.length > 50) {
+      nameErr = 'Name must be 50 characters or fewer.';
+    } else if (isNameReserved(nameTrimmed, authorTokens)) {
+      nameErr = 'This name cannot be used. Please use another name.';
+    }
 
-    errors = {authorName: nameErr || nameReservedErr, commentContent: msgErr}
-    if (errors.authorName) valid.authorName = false
-    if (errors.commentContent) valid.commentContent = false
+    let msgErr = '';
+    const msgTrimmed = commentContent.trim();
+    if (!msgTrimmed) {
+      msgErr = 'Message is required.';
+    } else if (msgTrimmed.length > 2000) {
+      msgErr = 'Message must be 2000 characters or fewer.';
+    } else if (/(https?:\/\/|www\.[a-z0-9]|ftp:\/\/)/i.test(msgTrimmed)) {
+      msgErr = 'Links and URLs are not permitted in guest comments.';
+    }
 
-    return !errors.authorName && !errors.commentContent
+    errors = {authorName: nameErr, commentContent: msgErr};
+    valid = {authorName: !nameErr, commentContent: !msgErr};
+
+    return !nameErr && !msgErr;
   }
 
   async function handleSubmit(e: SubmitEvent, parentId: string | null = null) {
-    e.preventDefault()
-    errors = {authorName: '', commentContent: ''}
-    if (!validate()) return
+    e.preventDefault();
+    errors = {authorName: '', commentContent: ''};
+    if (!validate()) return;
 
-    isSubmitting = true
-    feedbackMessage = null
+    const turnstileToken = await executeTurnstile(turnstileEl);
+    if (!turnstileToken) {
+      feedbackMessage = {
+        type: 'error',
+        text: 'Please complete the verification challenge before submitting.'
+      };
+      return;
+    }
+
+    isSubmitting = true;
+    feedbackMessage = null;
 
     try {
-      const res = await fetch('/api/comments', {
+      const res = await fetch('/api/internal/blog/comments', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           postId: post.id,
           parentId,
-          authorName: isAnonymous ? '' : sanitizeInput(authorName.trim()),
-          isAnonymous,
-          content: sanitizeInput(commentContent.trim())
+          authorName: sanitizeInput(authorName.trim()),
+          content: sanitizeInput(commentContent.trim()),
+          turnstileToken
         })
-      })
+      });
 
-      const result = await res.json()
+      const result = await res.json();
 
       if (!res.ok) {
-        throw new Error(result.message || 'Failed to submit comment')
+        const apiMessage =
+          typeof result?.error?.message === 'string' ? result.error.message
+          : typeof result?.message === 'string' ? result.message
+          : 'Failed to submit comment';
+        throw new Error(apiMessage);
       }
 
       if (result.is_approved) {
-        addedComments = [...addedComments, result.comment]
+        addedComments = [...addedComments, result.comment];
         feedbackMessage = {
           type: 'success',
           text:
             parentId ?
               'Your reply has been posted.'
             : 'Your comment has been posted.'
-        }
-        commentContent = ''
-        replyTo = null
+        };
+        commentContent = '';
+        authorName = '';
+        valid = {authorName: false, commentContent: false};
+        errors = {authorName: '', commentContent: ''};
+        replyTo = null;
       } else {
         feedbackMessage = {
           type: 'error',
           text: 'Your comment was blocked by AI content moderation (flagged as inappropriate).'
-        }
+        };
       }
     } catch (err) {
-      const error = err as Error
+      const error = err as Error;
       feedbackMessage = {
         type: 'error',
         text: error.message || 'An error occurred while posting your comment.'
-      }
+      };
     } finally {
-      isSubmitting = false
+      isSubmitting = false;
+      resetTurnstile(turnstileEl);
+    }
+  }
+
+  let siteUrl = $derived(
+    (author?.siteUrl || page.url.origin).replace(/\/$/, '')
+  );
+
+  let jsonLdScript = $derived(
+    '<script type="application/ld+json">'
+      + JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: post.title,
+        description: post.excerpt || post.title,
+        url: siteUrl + '/blog/' + post.slug,
+        datePublished: post.created_at,
+        author: {'@type': 'Person', name: author?.name || '', url: siteUrl}
+      }).replace(/</g, '\\u003c')
+      + '</'
+      + 'script>'
+  );
+
+  function handleCollaboratorsWindowPointerDown(event: PointerEvent) {
+    if (
+      isCollaboratorsPopoverOpen
+      && collaboratorsContainerRef
+      && !collaboratorsContainerRef.contains(event.target as Node)
+    ) {
+      isCollaboratorsPopoverOpen = false;
+    }
+  }
+
+  function handleCollaboratorsKeydown(event: KeyboardEvent) {
+    if (event.key === 'Escape' && isCollaboratorsPopoverOpen) {
+      event.preventDefault();
+      isCollaboratorsPopoverOpen = false;
     }
   }
 </script>
 
+<svelte:window
+  onpointerdown={handleCollaboratorsWindowPointerDown}
+  onkeydown={handleCollaboratorsKeydown} />
+
 <svelte:head>
-  <title>{post.title} | Farhan Kurnia Pratama</title>
-  <meta
-    name="description"
-    content={post.excerpt || 'Read this article on my blog.'} />
-  <link rel="canonical" href={'https://fkp.my.id/blog/' + post.slug} />
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "BlogPosting",
-      "headline": "{post.title}",
-      "description": "{post.excerpt || ''}",
-      "url": "https://fkp.my.id/blog/{post.slug}",
-      "datePublished": "{post.created_at}",
-      "author": {
-        "@type": "Person",
-        "name": "Farhan Kurnia Pratama",
-        "url": "https://fkp.my.id"
-      }
-    }
-  </script>
+  <title>{post.title}{author?.name ? ` | ${author.name}` : ''}</title>
+  <script
+    src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+    async
+    defer></script>
+  {#if post.excerpt}
+    <meta
+      name="description"
+      content={post.excerpt} />
+  {/if}
+  <link
+    rel="canonical"
+    href={siteUrl + hrefForLang(language)} />
+  <link
+    rel="alternate"
+    hreflang="x-default"
+    href={siteUrl + hrefForLang('en')} />
+  {#each langSwitcherOptions as loc (loc)}
+    <link
+      rel="alternate"
+      hreflang={loc}
+      href={siteUrl + hrefForLang(loc)} />
+  {/each}
+  {@html jsonLdScript}
 
-  <meta property="og:type" content="article" />
-  <meta property="og:url" content={'https://fkp.my.id/blog/' + post.slug} />
-  <meta property="og:title" content={post.title} />
   <meta
-    property="og:description"
-    content={post.excerpt || 'Read this article on my blog.'} />
+    property="og:type"
+    content="article" />
   <meta
-    property="og:image"
-    content={bannerPublicUrl || 'https://fkp.my.id/hero.png'} />
+    property="og:locale"
+    content={language === 'en' ? 'en_US' : 'id_ID'} />
+  {#each langSwitcherOptions.filter(loc => loc !== language) as loc (loc)}
+    <meta
+      property="og:locale:alternate"
+      content={loc === 'en' ? 'en_US' : 'id_ID'} />
+  {/each}
   <meta
-    property="og:image:secure_url"
-    content={bannerPublicUrl || 'https://fkp.my.id/hero.png'} />
-  <meta property="og:image:alt" content={post.title} />
+    property="og:url"
+    content={siteUrl + hrefForLang(language)} />
+  <meta
+    property="og:title"
+    content={post.title} />
+  {#if post.excerpt}
+    <meta
+      property="og:description"
+      content={post.excerpt} />
+  {/if}
+  {#if bannerPublicUrl}
+    <meta
+      property="og:image"
+      content={bannerPublicUrl} />
+    <meta
+      property="og:image:secure_url"
+      content={bannerPublicUrl} />
+  {/if}
+  <meta
+    property="og:image:alt"
+    content={post.title} />
 
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta property="twitter:card" content="summary_large_image" />
+  <meta
+    name="twitter:card"
+    content="summary_large_image" />
+  <meta
+    property="twitter:card"
+    content="summary_large_image" />
   <meta
     property="twitter:url"
-    content={'https://fkp.my.id/blog/' + post.slug} />
-  <meta property="twitter:title" content={post.title} />
+    content={siteUrl + '/blog/' + post.slug} />
   <meta
-    property="twitter:description"
-    content={post.excerpt || 'Read this article on my blog.'} />
-  <meta
-    name="twitter:image"
-    content={bannerPublicUrl || 'https://fkp.my.id/hero.png'} />
-  <meta
-    property="twitter:image"
-    content={bannerPublicUrl || 'https://fkp.my.id/hero.png'} />
-
-  {#if isDark}
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
-  {:else}
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
+    property="twitter:title"
+    content={post.title} />
+  {#if post.excerpt}
+    <meta
+      property="twitter:description"
+      content={post.excerpt} />
+  {/if}
+  {#if bannerPublicUrl}
+    <meta
+      name="twitter:image"
+      content={bannerPublicUrl} />
+    <meta
+      property="twitter:image"
+      content={bannerPublicUrl} />
   {/if}
 </svelte:head>
 
-<SkipLink />
-
-<nav
-  class="fixed top-0 z-40 flex h-15 w-full items-center justify-between border-b border-border-subtle bg-surface-card/60 px-3 font-sans shadow-xs backdrop-blur-lg transition-colors duration-300 sm:px-5"
-  aria-label="Article navigation">
-  <a
-    href="/#blog"
-    class="inline-flex h-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
-    Back to Blog
-  </a>
-  <div class="flex items-center gap-2">
-    <SpotlightSearch />
-    <ThemeSelect {theme} onThemeChange={applyTheme} />
-  </div>
-</nav>
+{#if !readingModeStore.active}
+  <TopNav
+    ariaLabel="Article navigation"
+    backHref="/#blog"
+    backLabel="Blog"
+    showFontSelect={true}
+    projects={data.projects}
+    languageSwitcher={{
+      slug: post.slug,
+      currentLanguage: language,
+      availableLocales
+    }}
+    readingMode={readingModeStore.active}
+    onToggleReadingMode={readingModeStore.toggle} />
+{/if}
 
 <main
   id="main-content"
-  class="flex min-h-[calc(100vh-3.75rem)] flex-col pt-15 font-sans">
+  class="flex flex-col font-sans {readingModeStore.active ?
+    'min-h-screen pt-4 sm:pt-6'
+  : 'min-h-[calc(100vh-3rem)] pt-12 sm:min-h-[calc(100vh-3.5rem)] sm:pt-14 lg:h-dvh lg:min-h-0 lg:overflow-hidden'}">
   <div
-    class="relative mx-auto w-full max-w-7xl px-6 pt-9 pb-16 xl:grid xl:grid-cols-12 xl:gap-8">
-    <article
-      class="mx-auto flex w-full flex-col pt-4 md:w-[80%] lg:w-[50%] xl:col-span-6 xl:col-start-4 xl:mx-0 xl:w-auto">
-      <header class="mb-8 border-b border-border-subtle pb-6">
-        <h1
-          class="text-4xl leading-tight font-extrabold tracking-tight text-text-primary md:text-5xl">
-          {post.title}
-        </h1>
-        {#if post.excerpt}
-          <p class="mt-3 text-base leading-relaxed text-text-secondary">
-            {post.excerpt}
-          </p>
-        {/if}
-        <div
-          class="no-scrollbar mt-4 flex w-full flex-wrap items-center gap-x-1.5 overflow-x-auto font-sans text-[11px] font-semibold whitespace-nowrap text-text-muted select-none">
-          <time datetime={post.created_at}
-            >{formatBlogDate(post.created_at)}</time>
-          <span aria-hidden="true">&middot;</span>
-          <span>{formatReadTime(post.read_time)}</span>
-          <span aria-hidden="true">&middot;</span>
-          <span>{formatCommentCount(comments.length)}</span>
-          {#if viewCount !== null}
-            <span aria-hidden="true">&middot;</span>
-            <span>{formatViewCount(viewCount)}</span>
-          {/if}
-        </div>
-      </header>
+    class={readingModeStore.active ?
+      'relative mx-auto w-full px-3 pt-3 pb-16 sm:px-6 sm:pt-4 md:w-[80%] lg:w-[50%]'
+    : 'relative mx-auto w-full px-3 pt-5 pb-16 sm:px-6 sm:pt-6 md:w-[80%] md:pt-8 lg:mx-0 lg:grid lg:h-full lg:w-full lg:max-w-none lg:grid-cols-[25%_50%_25%] lg:grid-rows-[minmax(0,1fr)] lg:items-start lg:gap-0 lg:px-0 lg:pt-0 lg:pb-0'}>
+    {#if !readingModeStore.active}
+      <aside
+        transition:fade={{duration: 150}}
+        class="hidden select-none lg:sticky lg:top-0 lg:z-20 lg:flex lg:max-h-full lg:w-full lg:flex-col lg:overflow-hidden lg:px-[5%] lg:pt-[5%] lg:pb-[5%] [&>*+*]:lg:mt-[5%]"
+        aria-label="Table of contents">
+        <TableOfContents
+          {headings}
+          class="min-h-0 w-full flex-1 [scrollbar-width:none] overflow-hidden [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden" />
+        <HelpfulBlock
+          variant="compact"
+          voted={hasVotedHelpful ? true : null}
+          onVote={helpful => handleHelpfulness(helpful ? 'yes' : 'no')}
+          onFeedbackClick={() => (showNoFeedbackDialog = true)}
+          class="w-full shrink-0" />
+      </aside>
+    {/if}
 
-      {#if headings.length > 0}
-        <div
-          class="mb-6 rounded-2xl border border-border-subtle bg-surface-card/45 p-5 shadow-xs backdrop-blur-lg select-none xl:hidden">
-          <h3
-            class="titlecase mb-3 text-xs font-bold tracking-wider text-text-secondary select-none">
-            In this article
-          </h3>
-          <ul
-            class="flex flex-col gap-1.5 border-l border-border-subtle/50 pl-3"
-            role="list">
-            {#each headings as heading, index (heading.id + '-' + index)}
-              <li
-                class="text-xs"
-                style="padding-left: {(heading.level - 2) * 12}px;">
+    <article
+      onscroll={handleArticleScroll}
+      class="article-scroll-container flex w-full min-w-0 flex-col lg:h-full lg:max-h-full lg:overflow-y-auto lg:px-[5%] lg:pt-8 lg:pb-0">
+      <ArticleHeader
+        title={post.title}
+        titleClass="text-text-primary"
+        titleViewTransitionName="post-title-{post.slug}">
+        {#snippet meta()}
+          <div class="relative flex items-center gap-2.5 select-none">
+            <div
+              class="flex shrink-0 flex-row items-center -space-x-3 overflow-visible">
+              {#each visibleAvatarAuthors as user, idx (user)}
                 <a
-                  href="#{heading.id}"
-                  onclick={e => {
-                    e.preventDefault()
-                    const target = document.getElementById(heading.id)
-                    if (target) {
-                      target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                      })
-                      pushState(`#${heading.id}`, {})
-                      activeHeadingId = heading.id
-                    }
-                  }}
-                  class="block py-0.5 text-text-secondary transition-colors hover:text-copilot">
-                  {heading.text}
+                  href="https://github.com/{user}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="relative inline-block transition-transform hover:z-40 hover:scale-110 focus-visible:outline-none"
+                  style="z-index: {30 - idx * 10};"
+                  aria-label="{user}'s GitHub profile">
+                  <div
+                    class="relative flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-surface-base bg-surface-elevated">
+                    {#if !loadedAvatars.has(user)}
+                      <User class="size-3 text-text-muted" />
+                    {/if}
+                    {#if !failedAvatars.has(user)}
+                      <img
+                        src="https://github.com/{user}.png?size=64"
+                        alt={user}
+                        class="absolute inset-0 size-full object-cover transition-opacity duration-200 {(
+                          loadedAvatars.has(user)
+                        ) ?
+                          'opacity-100'
+                        : 'opacity-0'}"
+                        loading="lazy"
+                        onload={() => loadedAvatars.add(user)}
+                        onerror={() => failedAvatars.add(user)} />
+                    {/if}
+                  </div>
                 </a>
-              </li>
-            {/each}
-          </ul>
+              {/each}
+            </div>
+
+            <div
+              class="flex min-w-0 flex-1 flex-wrap items-center gap-x-1 gap-y-0.5 font-sans-title text-xs text-text-secondary">
+              <span>Authored by</span>
+              {#if allAuthors.length === 1}
+                <a
+                  href="https://github.com/{allAuthors[0]}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline">
+                  {allAuthors[0]}
+                </a>
+              {:else if allAuthors.length === 2}
+                <a
+                  href="https://github.com/{allAuthors[0]}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline">
+                  {allAuthors[0]}
+                </a>
+                <span>and</span>
+                <a
+                  href="https://github.com/{allAuthors[1]}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline">
+                  {allAuthors[1]}
+                </a>
+              {:else if allAuthors.length === 3}
+                <span class="inline-flex items-center">
+                  <a
+                    href="https://github.com/{allAuthors[0]}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline"
+                    >{allAuthors[0]}</a
+                  >,
+                </span>
+                <span class="inline-flex items-center">
+                  <a
+                    href="https://github.com/{allAuthors[1]}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline"
+                    >{allAuthors[1]}</a
+                  >,
+                </span>
+                <span>and</span>
+                <a
+                  href="https://github.com/{allAuthors[2]}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline">
+                  {allAuthors[2]}
+                </a>
+              {:else}
+                <span class="inline-flex items-center">
+                  <a
+                    href="https://github.com/{allAuthors[0]}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline"
+                    >{allAuthors[0]}</a
+                  >,
+                </span>
+                <span class="inline-flex items-center">
+                  <a
+                    href="https://github.com/{allAuthors[1]}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline"
+                    >{allAuthors[1]}</a
+                  >,
+                </span>
+                <span class="inline-flex items-center">
+                  <a
+                    href="https://github.com/{allAuthors[2]}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline"
+                    >{allAuthors[2]}</a
+                  >,
+                </span>
+                <span>and</span>
+                <div
+                  bind:this={collaboratorsContainerRef}
+                  class="relative inline-block">
+                  <button
+                    type="button"
+                    aria-expanded={isCollaboratorsPopoverOpen}
+                    aria-haspopup="dialog"
+                    class="cursor-pointer font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline"
+                    onclick={() => {
+                      isCollaboratorsPopoverOpen = !isCollaboratorsPopoverOpen;
+                    }}>
+                    {hiddenCollaborators.length} other{(
+                      hiddenCollaborators.length > 1
+                    ) ?
+                      's'
+                    : ''}
+                  </button>
+
+                  {#if isCollaboratorsPopoverOpen}
+                    <div
+                      role="dialog"
+                      aria-label="Other Collaborators"
+                      class="absolute top-full right-0 z-50 mt-2 flex w-max max-w-[calc(100vw-2.5rem)] min-w-36 flex-col gap-0.5 rounded-md border border-border-subtle bg-surface-elevated p-1.5 shadow-lg sm:right-auto sm:left-0">
+                      <span
+                        class="px-1.5 py-0.5 text-2xs font-semibold tracking-wider text-text-muted uppercase">
+                        {hiddenCollaborators.length > 1 ?
+                          'Other Collaborators'
+                        : 'Other Collaborator'}
+                      </span>
+                      {#each hiddenCollaborators as collab (collab)}
+                        <a
+                          href="https://github.com/{collab}"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onclick={() => (isCollaboratorsPopoverOpen = false)}
+                          class="flex items-center gap-2 rounded-md px-1.5 py-1 font-sans-title text-xs transition-colors hover:bg-surface-hover hover:text-accent">
+                          <div
+                            class="relative flex size-5 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border-subtle bg-surface-card">
+                            {#if !loadedAvatars.has(collab)}
+                              <User class="size-3 text-text-muted" />
+                            {/if}
+                            {#if !failedAvatars.has(collab)}
+                              <img
+                                src="https://github.com/{collab}.png?size=64"
+                                alt={collab}
+                                class="absolute inset-0 size-full object-cover transition-opacity duration-200 {(
+                                  loadedAvatars.has(collab)
+                                ) ?
+                                  'opacity-100'
+                                : 'opacity-0'}"
+                                loading="lazy"
+                                onload={() => loadedAvatars.add(collab)}
+                                onerror={() => failedAvatars.add(collab)} />
+                            {/if}
+                          </div>
+                          <span
+                            class="font-semibold text-text-primary hover:underline"
+                            >{collab}</span>
+                        </a>
+                      {/each}
+                    </div>
+                  {/if}
+                </div>
+              {/if}
+            </div>
+          </div>
+
+          <ArticleMeta
+            loading={isNavigatingToBlogPost}
+            layout="single"
+            date={post.created_at}
+            updatedAt={post.updated_at}
+            readingTime={formatReadTime(post.read_time)}
+            commentsCount={comments.length}
+            views={viewCount !== null ? viewCount : undefined}
+            class="mt-2.5 w-full" />
+
+          {#if !readingModeStore.active}
+            <div
+              transition:fade={{duration: 150}}
+              class="w-full lg:hidden">
+              <ContentActions
+                class="mt-3 w-full"
+                slug={post.slug}
+                pageId={post.id}
+                title={post.title}
+                avatarUrl={author?.avatar}
+                viewMarkdownUrl="/api/v1/blog/{post.slug}?format=md"
+                viewTextUrl="/api/v1/blog/{post.slug}?format=text" />
+            </div>
+          {/if}
+        {/snippet}
+      </ArticleHeader>
+
+      {#if machineTranslated && translationDisclaimerHtml}
+        <div
+          transition:fade={{duration: 150}}
+          class="mt-3">
+          <div
+            class="translation-disclaimer prose-custom font-content-{contentFontStore.current} my-0 [&>.markdown-alert]:my-0!">
+            {@html translationDisclaimerHtml}
+          </div>
         </div>
       {/if}
 
-      <div class="prose-custom w-full">
+      {#if !readingModeStore.active && ((post.tldr && post.tldr.length > 0) || post.summary)}
+        <div
+          transition:fade={{duration: 150}}
+          class="mt-3 lg:hidden">
+          <PostInsights
+            tldr={post.tldr}
+            summary={post.summary}
+            class="mt-0!" />
+        </div>
+      {/if}
+
+      {#if !readingModeStore.active}
+        <div
+          transition:fade={{duration: 150}}
+          class="mt-3 flex flex-col lg:hidden">
+          <TableOfContents
+            {headings}
+            collapsible={true}
+            defaultCollapsed={true} />
+        </div>
+      {/if}
+
+      <div
+        bind:this={articleBodyEl}
+        class="prose-custom font-content-{contentFontStore.current} mt-3 w-full">
         {@html html}
       </div>
 
-      <div
-        class="mt-10 flex flex-col items-center justify-between gap-4 border-t border-border-subtle pt-8 select-none sm:flex-row">
-        <div>
-          <h3 class="text-sm font-bold text-text-primary">
-            Was this article helpful?
-          </h3>
-          <p class="mt-0.5 text-xs text-text-secondary">
-            Help us improve by letting us know your thoughts.
-          </p>
-        </div>
-        <div class="flex items-center gap-3">
-          {#if helpfulnessFeedback === null}
-            <Button
-              variant="secondary"
-              size="sm"
-              onclick={() => handleHelpfulness('yes')}>
-              <span
-                class="material-symbols-rounded text-sm leading-none select-none"
-                style="font-size: 16px; font-variation-settings: 'wght' 400, 'opsz' 20;"
-                aria-hidden="true">thumb_up</span>
-              <span>Yes</span>
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onclick={() => handleHelpfulness('no')}>
-              <span
-                class="material-symbols-rounded text-sm leading-none select-none"
-                style="font-size: 16px; font-variation-settings: 'wght' 400, 'opsz' 20;"
-                aria-hidden="true">thumb_down</span>
-              <span>No</span>
-            </Button>
-          {:else if helpfulnessFeedback === 'yes'}
-            <span
-              class="flex animate-pulse items-center gap-1.5 text-xs font-bold text-copilot">
-              <i class="bi bi-heart-fill" aria-hidden="true"></i> Thank you for your
-              feedback!
-            </span>
-          {:else}
-            <span
-              class="flex items-center gap-1.5 text-xs font-bold text-text-muted">
-              <i class="bi bi-emoji-neutral" aria-hidden="true"></i> Redirecting to
-              feedback…
-            </span>
-          {/if}
-        </div>
-      </div>
-
-      <div class="mt-12 border-t border-border-subtle pt-8 select-none">
-        <h3 class="mb-4 text-sm font-bold tracking-tight text-text-primary">
-          Share this article
-        </h3>
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <button
-            onclick={copyToClipboard}
-            class="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors select-none hover:bg-surface-hover hover:text-copilot"
-            aria-label="Copy link to clipboard">
-            {#if showCopySuccess}
-              <i class="bi bi-check2 text-success" aria-hidden="true"></i>
-            {:else}
-              <span
-                class="material-symbols-rounded text-base leading-none select-none"
-                style="font-size: 16px; font-variation-settings: 'wght' 400, 'opsz' 20;"
-                aria-hidden="true">link_2</span>
-            {/if}
-            <span class="hidden sm:inline"
-              >{showCopySuccess ? 'Copied!' : 'Copy link'}</span>
-          </button>
-          {#each [{href: `https://twitter.com/intent/tweet?url=${encodeURIComponent(page.url.href)}&text=${encodeURIComponent(post.title)}`, icon: 'bi-twitter-x', label: 'Share on X (opens in a new tab)', text: 'X'}, {href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(page.url.href)}`, icon: 'bi-facebook', label: 'Share on Facebook (opens in a new tab)', text: 'Facebook'}, {href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(page.url.href)}`, icon: 'bi-linkedin', label: 'Share on LinkedIn (opens in a new tab)', text: 'LinkedIn'}, {href: `mailto:?subject=${encodeURIComponent(post.title)}&body=${encodeURIComponent(page.url.href)}`, icon: 'bi-envelope-at', label: 'Share via email', text: 'Email'}] as item (item.text)}
-            <a
-              href={item.href}
-              target={item.href.startsWith('mailto') ? undefined : '_blank'}
-              rel="noopener noreferrer"
-              class="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors select-none hover:bg-surface-hover hover:text-copilot"
-              aria-label={item.label}>
-              <i class="bi {item.icon}" aria-hidden="true"></i>
-              <span class="hidden sm:inline">{item.text}</span>
-            </a>
-          {/each}
-        </div>
-      </div>
-
-      <div
-        class="mt-8 flex w-full max-w-full flex-col items-center gap-5 overflow-hidden rounded-2xl border border-border-subtle bg-surface-card/45 p-5 shadow-xs backdrop-blur-lg select-none sm:flex-row sm:items-start sm:p-6">
+      {#if !readingModeStore.active}
         <div
-          class="relative h-20 w-20 shrink-0 animate-pulse overflow-hidden rounded-full border border-border-subtle bg-surface-card/60">
-          <img
-            src="/android-chrome-512x512.png"
-            alt="Farhan Kurnia Pratama"
-            loading="lazy"
-            onload={e =>
-              (
-                e.currentTarget.closest('.animate-pulse') as HTMLElement | null
-              )?.classList.remove('animate-pulse')}
-            class="h-full w-full object-cover object-top" />
-        </div>
-        <div class="w-full min-w-0 flex-1 text-center sm:text-left">
-          <h4
-            class="px-1 text-base leading-snug font-bold text-text-primary sm:px-0">
-            Farhan Kurnia Pratama
-          </h4>
-          <p
-            class="mt-0.5 px-1 text-xs font-semibold text-text-secondary sm:px-0">
-            Linux/Unix, AI, Open-Source Software, and Cybersecurity.
-          </p>
-          <p
-            class="mt-3 px-1 text-sm leading-relaxed text-text-secondary/90 sm:px-0">
-            Security-focused Software Engineer with expertise in Linux/Unix, AI,
-            and Open-Source Software, dedicated to building reliable,
-            maintainable, and privacy-centric systems.
-          </p>
+          transition:fade={{duration: 150}}
+          class="mt-6 flex flex-col gap-4 select-none sm:mt-8 sm:gap-5">
+          <div class="lg:hidden">
+            <HelpfulBlock
+              voted={hasVotedHelpful ? true : null}
+              onVote={helpful => handleHelpfulness(helpful ? 'yes' : 'no')}
+              onFeedbackClick={() => (showNoFeedbackDialog = true)} />
+          </div>
 
-          <div
-            class="mt-4 flex flex-wrap items-center justify-center gap-2.5 px-1 sm:justify-start sm:gap-4 sm:px-0">
-            <a
-              href="https://github.com/farhnkrnapratma"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot"
-              aria-label="GitHub (opens in a new tab)">
-              <i
-                class="bi bi-github flex items-center justify-center text-base leading-none"
-                aria-hidden="true"></i>
-            </a>
-            <a
-              href="https://linkedin.com/in/farhnkrnapratma"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot"
-              aria-label="LinkedIn (opens in a new tab)">
-              <i
-                class="bi bi-linkedin flex items-center justify-center text-base leading-none"
-                aria-hidden="true"></i>
-            </a>
-            <a
-              href="https://x.com/farhnkrnapratma"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot"
-              aria-label="X (opens in a new tab)">
-              <i
-                class="bi bi-twitter-x flex items-center justify-center text-base leading-none"
-                aria-hidden="true"></i>
-            </a>
-            <a
-              href="https://facebook.com/farhnkrnapratma"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot"
-              aria-label="Facebook (opens in a new tab)">
-              <i
-                class="bi bi-facebook flex items-center justify-center text-base leading-none"
-                aria-hidden="true"></i>
-            </a>
-            <a
-              href="https://instagram.com/farhnkrnapratma"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot"
-              aria-label="Instagram (opens in a new tab)">
-              <i
-                class="bi bi-instagram flex items-center justify-center text-base leading-none"
-                aria-hidden="true"></i>
-            </a>
-            <a
-              href="https://threads.net/@farhnkrnapratma"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card text-text-secondary transition-colors hover:bg-surface-hover hover:text-copilot"
-              aria-label="Threads (opens in a new tab)">
-              <i
-                class="bi bi-threads flex items-center justify-center text-base leading-none"
-                aria-hidden="true"></i>
-            </a>
+          <div class="border-t border-border-subtle pt-4 sm:pt-5">
+            <h3
+              class="mb-2.5 text-sm font-bold tracking-tight text-text-primary">
+              Share this article
+            </h3>
+            <div class="grid grid-cols-6 gap-1.5 sm:grid-cols-3 sm:gap-2">
+              <Button
+                href={`https://x.com/intent/post?url=${encodeURIComponent(page.url.href)}&text=${encodeURIComponent(post.title)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                type="secondary"
+                size="sm"
+                class="w-full justify-center px-2 py-2 sm:px-3"
+                title="Share on X"
+                aria-label="Share on X (opens in a new tab)">
+                {#snippet leading()}
+                  <i
+                    class="bi bi-twitter-x inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
+                    aria-hidden="true"></i>
+                {/snippet}
+                <span class="hidden truncate sm:inline">X</span>
+              </Button>
+
+              <Button
+                href={`https://linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(page.url.href)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                type="secondary"
+                size="sm"
+                class="w-full justify-center px-2 py-2 sm:px-3"
+                title="Share on LinkedIn"
+                aria-label="Share on LinkedIn (opens in a new tab)">
+                {#snippet leading()}
+                  <i
+                    class="bi bi-linkedin inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
+                    aria-hidden="true"></i>
+                {/snippet}
+                <span class="hidden truncate sm:inline">LinkedIn</span>
+              </Button>
+
+              <Button
+                href={`https://api.whatsapp.com/send?text=${encodeURIComponent(post.title)}%20${encodeURIComponent(page.url.href)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                type="secondary"
+                size="sm"
+                class="w-full justify-center px-2 py-2 sm:px-3"
+                title="Share on WhatsApp"
+                aria-label="Share on WhatsApp (opens in a new tab)">
+                {#snippet leading()}
+                  <i
+                    class="bi bi-whatsapp inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
+                    aria-hidden="true"></i>
+                {/snippet}
+                <span class="hidden truncate sm:inline">WhatsApp</span>
+              </Button>
+
+              <Button
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(page.url.href)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                type="secondary"
+                size="sm"
+                class="w-full justify-center px-2 py-2 sm:px-3"
+                title="Share on Facebook"
+                aria-label="Share on Facebook (opens in a new tab)">
+                {#snippet leading()}
+                  <i
+                    class="bi bi-facebook inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
+                    aria-hidden="true"></i>
+                {/snippet}
+                <span class="hidden truncate sm:inline">Facebook</span>
+              </Button>
+
+              <Button
+                href={`https://reddit.com/submit?url=${encodeURIComponent(page.url.href)}&title=${encodeURIComponent(post.title)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                type="secondary"
+                size="sm"
+                class="w-full justify-center px-2 py-2 sm:px-3"
+                title="Share on Reddit"
+                aria-label="Share on Reddit (opens in a new tab)">
+                {#snippet leading()}
+                  <i
+                    class="bi bi-reddit inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
+                    aria-hidden="true"></i>
+                {/snippet}
+                <span class="hidden truncate sm:inline">Reddit</span>
+              </Button>
+
+              <Button
+                href={`mailto:?subject=${encodeURIComponent(post.title)}&body=${encodeURIComponent(page.url.href)}`}
+                type="secondary"
+                size="sm"
+                class="w-full justify-center px-2 py-2 sm:px-3"
+                title="Share via Email"
+                aria-label="Share via email">
+                {#snippet leading()}
+                  <i
+                    class="bi bi-envelope-fill inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
+                    aria-hidden="true"></i>
+                {/snippet}
+                <span class="hidden truncate sm:inline">Email</span>
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <section
-        class="mt-16 border-t border-border-subtle pt-10"
-        aria-label="Comments">
-        <h2 class="mb-8 text-xl font-bold tracking-tight text-text-primary">
-          Comments ({comments.length})
-        </h2>
-
-        {#if feedbackMessage}
-          <StatusBanner
-            type={feedbackMessage.type === 'success' ? 'success' : 'error'}
-            message={feedbackMessage.text}
-            class="mb-6" />
-        {/if}
-
-        {#if !replyTo}
-          <div
-            class="mb-8 rounded-2xl border border-border-subtle bg-surface-card/45 p-5 text-left shadow-xs backdrop-blur-lg transition-colors duration-300">
-            <div class="mb-4 select-none">
-              <h3 class="text-sm font-bold text-text-primary">
-                Leave a comment
-              </h3>
-            </div>
-
-            <form
-              novalidate
-              onsubmit={e => handleSubmit(e)}
-              class="flex flex-col gap-2.5">
-              <Checkbox
-                id="comment-anon"
-                label="Comment anonymously"
-                bind:checked={isAnonymous}
-                aria-describedby="anon-help-main" />
-              <span id="anon-help-main" class="sr-only">
-                If checked, your name is hidden and your comment is posted as
-                Anonymous.
-              </span>
-              <div class="flex flex-col gap-1">
-                <label
-                  for="comment-author"
-                  class="text-xs font-bold text-text-primary select-none">
-                  Name {#if !isAnonymous}<span
-                      aria-hidden="true"
-                      class="text-danger">*</span
-                    ><span class="sr-only">(required)</span>{/if}
-                </label>
-                <div class="w-full">
-                  <input
-                    type="text"
-                    id="comment-author"
-                    disabled={isAnonymous}
-                    aria-required={!isAnonymous}
-                    autocomplete="name"
-                    aria-invalid={!!errors.authorName}
-                    aria-describedby="comment-author-fb"
-                    placeholder={isAnonymous ? 'Anonymous' : 'Enter your name'}
-                    bind:value={authorName}
-                    oninput={() => {
-                      errors.authorName = ''
-                      valid.authorName = false
-                      validateAuthorName()
-                    }}
-                    class="w-full rounded-lg border border-border-subtle bg-surface px-3 py-1.5 text-sm text-text-primary transition-colors placeholder:text-text-muted/70 disabled:opacity-60"
-                    class:border-danger={errors.authorName}
-                    class:input-valid={valid.authorName && !isAnonymous} />
+        {#if relatedPosts.length > 0}
+          <section
+            class="mt-6 border-t border-border-subtle pt-4 sm:mt-8 sm:pt-6"
+            aria-label="Related posts">
+            <h3 class="mb-3 text-sm font-bold tracking-tight text-text-primary">
+              Continue reading
+            </h3>
+            <div class="relative z-0 grid grid-cols-1 gap-3 sm:gap-4">
+              {#each relatedPosts as related (related.id)}
+                <Card
+                  class="relative flex flex-col gap-3.5 p-4 text-left sm:flex-row sm:gap-4">
                   <div
-                    id="comment-author-fb"
-                    aria-live="polite"
-                    class="mt-1 h-4 text-xs leading-none font-medium">
-                    {#if errors.authorName}
-                      <span
-                        role="alert"
-                        class="flex items-center gap-1 text-danger">
-                        <i
-                          class="bi bi-exclamation-circle-fill"
-                          aria-hidden="true"></i
-                        >{errors.authorName}
-                      </span>
-                    {:else if valid.authorName && !isAnonymous}
-                      <span class="flex items-center gap-1 text-copilot">
-                        <i class="bi bi-check-circle-fill" aria-hidden="true"
-                        ></i
-                        >Looks good
-                      </span>
+                    class="aspect-video w-full shrink-0 overflow-hidden rounded-md border border-border-subtle sm:w-48 md:w-56">
+                    {#if related.bannerPublicUrl && !failedRelatedBanners.has(related.id)}
+                      <ImageWithSkeleton
+                        src={related.bannerPublicUrl}
+                        alt={related.title}
+                        aspectRatio="aspect-video"
+                        onerror={() => markRelatedBannerFailed(related.id)}
+                        class="h-full w-full object-cover" />
+                    {:else}
+                      <div
+                        class="relative flex h-full w-full items-center justify-center overflow-hidden bg-linear-to-br from-accent/15 to-accent/5 select-none">
+                        <ImageIcon class="size-8 text-text-muted" />
+                      </div>
                     {/if}
                   </div>
-                </div>
-              </div>
 
-              <FormField
-                id="comment-msg"
-                label="Message"
-                required
-                error={errors.commentContent}
-                valid={valid.commentContent}
-                counter="{2000 - commentContent.length} left">
-                <Textarea
-                  id="comment-msg"
-                  rows={3}
-                  maxlength={2000}
-                  placeholder="Write your message…"
-                  bind:value={commentContent}
-                  error={!!errors.commentContent}
-                  valid={valid.commentContent}
-                  oninput={() => {
-                    errors.commentContent = ''
-                    valid.commentContent = false
-                    validateCommentContent()
-                  }}
-                  aria-required="true" />
-              </FormField>
-
-              <div class="mt-2 flex justify-end">
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="md"
-                  disabled={isSubmitting}
-                  isLoading={isSubmitting}>
-                  {isSubmitting ? 'Posting…' : 'Post comment'}
-                </Button>
-              </div>
-            </form>
-          </div>
-        {/if}
-
-        {#if comments.length === 0}
-          <EmptyState
-            icon="bi-chat-square"
-            title="No comments yet"
-            description="Be the first to share your thoughts on this article." />
-        {:else}
-          <CommentThread {comments} {replyTo} getIcon={getCommentIcon}>
-            {#snippet actions(comment)}
-              <time datetime={comment.created_at}
-                >{formatBlogDate(comment.created_at)}</time>
-              <span aria-hidden="true">&middot;</span>
-              <button
-                type="button"
-                onclick={() => {
-                  replyTo = comment
-                  feedbackMessage = null
-                  commentContent = ''
-                }}
-                class="cursor-pointer font-bold text-text-muted transition-colors hover:text-copilot focus-visible:outline-none">
-                Reply
-              </button>
-            {/snippet}
-
-            {#snippet replyForm(comment)}
-              <form
-                novalidate
-                onsubmit={e => handleSubmit(e, comment.id)}
-                class="rounded-xl border border-border-subtle bg-surface-base/60 p-4">
-                <div class="mb-3 flex items-center justify-between gap-3">
-                  <p class="text-xs font-semibold text-text-secondary">
-                    Replying to {getCommentAuthor(comment)}
-                  </p>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    showEscHint
-                    onclick={cancelReply}>Cancel</Button>
-                </div>
-
-                <div class="flex flex-col gap-4">
-                  <Checkbox
-                    id="reply-anon-{comment.id}"
-                    label="Comment anonymously"
-                    bind:checked={isAnonymous}
-                    aria-describedby="anon-help-reply-{comment.id}" />
-                  <span id="anon-help-reply-{comment.id}" class="sr-only">
-                    If checked, your name is hidden and your comment is posted
-                    as Anonymous.
-                  </span>
-
-                  <div class="flex flex-col gap-1">
-                    <label
-                      for="reply-author-{comment.id}"
-                      class="text-xs font-bold text-text-primary select-none">
-                      Name {#if !isAnonymous}<span
-                          aria-hidden="true"
-                          class="text-danger">*</span
-                        ><span class="sr-only">(required)</span>{/if}
-                    </label>
-                    <div class="w-full">
-                      <input
-                        type="text"
-                        id="reply-author-{comment.id}"
-                        disabled={isAnonymous}
-                        aria-required={!isAnonymous}
-                        autocomplete="name"
-                        aria-invalid={!!errors.authorName}
-                        aria-describedby="reply-author-fb-{comment.id}"
-                        placeholder={isAnonymous ? 'Anonymous' : (
-                          'Enter your name'
-                        )}
-                        bind:value={authorName}
-                        oninput={() => {
-                          errors.authorName = ''
-                          valid.authorName = false
-                          validateAuthorName()
-                        }}
-                        class="w-full rounded-lg border border-border-subtle bg-surface-base px-3 py-1.5 text-sm text-text-primary transition-colors placeholder:text-text-muted/70 disabled:opacity-60"
-                        class:border-danger={errors.authorName}
-                        class:input-valid={valid.authorName && !isAnonymous} />
-                      <div
-                        id="reply-author-fb-{comment.id}"
-                        aria-live="polite"
-                        class="mt-1 h-4 text-xs leading-none font-medium">
-                        {#if errors.authorName}
-                          <span
-                            role="alert"
-                            class="flex items-center gap-1 text-danger">
-                            <i
-                              class="bi bi-exclamation-circle-fill"
-                              aria-hidden="true"></i
-                            >{errors.authorName}
-                          </span>
-                        {:else if valid.authorName && !isAnonymous}
-                          <span class="flex items-center gap-1 text-copilot">
-                            <i
-                              class="bi bi-check-circle-fill"
-                              aria-hidden="true"></i
-                            >Looks good
-                          </span>
-                        {/if}
+                  <div
+                    class="flex min-w-0 flex-1 flex-col justify-between gap-2.5 font-sans">
+                    <div class="flex flex-col gap-1">
+                      <div>
+                        <h4
+                          class="line-clamp-2 font-sans-title text-lg leading-snug font-bold text-text-primary">
+                          {related.title}
+                        </h4>
                       </div>
+                      <ArticleMeta
+                        size="xs"
+                        layout="single"
+                        class="min-h-4.5"
+                        date={related.created_at || ''}
+                        updatedAt={related.updated_at || ''}
+                        readingTime={formatReadTime(related.read_time)}
+                        commentsCount={related.comment_count}
+                        views={related.views_count} />
+                      {#if related.excerpt}
+                        {@const isExpanded = expandedExcerptIds.has(related.id)}
+                        {@const isOverflowing = overflowingExcerptIds.has(
+                          related.id
+                        )}
+                        <div class="flex flex-col items-start gap-1">
+                          <p
+                            {@attach !isExpanded
+                              && observeExcerptOverflow(related.id)}
+                            class="text-xs leading-relaxed text-text-secondary {(
+                              isExpanded
+                            ) ?
+                              ''
+                            : 'line-clamp-2'}">
+                            {related.excerpt}
+                            {#if isOverflowing && isExpanded}
+                              <button
+                                type="button"
+                                onclick={() => toggleExcerpt(related.id)}
+                                class="ml-1 inline cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
+                                Show less
+                              </button>
+                            {/if}
+                          </p>
+                          {#if isOverflowing && !isExpanded}
+                            <button
+                              type="button"
+                              onclick={() => toggleExcerpt(related.id)}
+                              class="inline-flex cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
+                              Show more
+                            </button>
+                          {/if}
+                        </div>
+                      {/if}
+                    </div>
+
+                    <div class="relative z-20 mt-auto flex flex-col gap-2 pt-1">
+                      <hr class="border-border-subtle/50" />
+                      <Button
+                        href="/blog/{related.slug}"
+                        type="primary"
+                        size="sm"
+                        fullWidth>
+                        Read post
+                      </Button>
                     </div>
                   </div>
+                </Card>
+              {/each}
+            </div>
+          </section>
+        {/if}
 
-                  <FormField
-                    id="reply-msg-{comment.id}"
-                    label="Message"
-                    required
-                    error={errors.commentContent}
+        <section
+          class="mt-8 border-t border-border-subtle pt-6 sm:mt-10 sm:pt-8"
+          aria-label="Comments">
+          <h2
+            class="mb-5 font-sans-title text-lg font-bold tracking-tight text-text-primary sm:mb-6 sm:text-xl">
+            Comments ({comments.length})
+          </h2>
+
+          {#if feedbackMessage}
+            <StatusBanner
+              variant={feedbackMessage.type === 'success' ? 'success' : 'error'}
+              message={feedbackMessage.text}
+              class="mb-6" />
+          {/if}
+
+          {#if !replyTo}
+            <div
+              class="mb-6 rounded-md border border-border-subtle bg-surface-card/75 p-3.5 text-left shadow-2xs sm:p-4">
+              <form
+                novalidate
+                onsubmit={e => handleSubmit(e)}
+                class="flex flex-col gap-3">
+                <FormField
+                  id="comment-author"
+                  label="Name"
+                  variant="floating"
+                  required
+                  hideAsterisk
+                  maxlength={50}
+                  currentLength={authorName.length}
+                  error={errors.authorName}
+                  valid={valid.authorName}>
+                  <Input
+                    type="text"
+                    id="comment-author"
+                    autocomplete="name"
+                    aria-invalid={!!errors.authorName}
+                    maxlength={50}
+                    bind:value={authorName}
+                    error={!!errors.authorName}
+                    valid={valid.authorName}
+                    oninput={() => {
+                      errors.authorName = '';
+                      valid.authorName = false;
+                      validateAuthorName();
+                    }} />
+                </FormField>
+
+                <FormField
+                  id="comment-msg"
+                  label="Message"
+                  variant="floating"
+                  required
+                  hideAsterisk
+                  maxlength={2000}
+                  currentLength={commentContent.length}
+                  counter={`${commentContent.length}/2000`}
+                  error={errors.commentContent}
+                  valid={valid.commentContent}>
+                  <Textarea
+                    id="comment-msg"
+                    rows={4}
+                    maxlength={2000}
+                    bind:value={commentContent}
+                    error={!!errors.commentContent}
                     valid={valid.commentContent}
-                    counter="{2000 - commentContent.length} left">
-                    <Textarea
-                      id="reply-msg-{comment.id}"
-                      rows={3}
-                      maxlength={2000}
-                      placeholder="Write your reply…"
-                      bind:value={commentContent}
-                      error={!!errors.commentContent}
-                      valid={valid.commentContent}
-                      oninput={() => {
-                        errors.commentContent = ''
-                        valid.commentContent = false
-                        validateCommentContent()
-                      }}
-                      aria-required="true" />
-                  </FormField>
+                    oninput={() => {
+                      errors.commentContent = '';
+                      valid.commentContent = false;
+                      validateCommentContent();
+                    }}
+                    aria-required="true" />
+                </FormField>
 
-                  <div class="flex justify-end">
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      size="sm"
-                      disabled={isSubmitting}
-                      isLoading={isSubmitting}>
-                      {isSubmitting ? 'Posting…' : 'Post reply'}
-                    </Button>
-                  </div>
+                <div
+                  bind:this={turnstileEl}
+                  class="cf-turnstile select-none"
+                  data-sitekey={turnstileSiteKey}
+                  data-action="blog-comment"
+                  data-size="flexible"
+                  data-theme="auto"
+                  data-appearance="interaction-only"
+                  data-execution="execute"
+                  use:turnstileWidget={{
+                    sitekey: turnstileSiteKey,
+                    size: 'flexible',
+                    action: 'blog-comment',
+                    theme: 'auto',
+                    appearance: 'interaction-only',
+                    execution: 'execute'
+                  }}>
+                </div>
+
+                <ConsentNotice action="posting a comment" />
+
+                <div
+                  class="mt-1 flex items-center justify-between gap-2 select-none">
+                  <Button
+                    htmlType="button"
+                    type="outline"
+                    tone="critical"
+                    size="md"
+                    class="flex-1 sm:flex-initial"
+                    disabled={!canClearComment || isSubmitting}
+                    onclick={clearCommentForm}>
+                    <span
+                      >Clear<span class="hidden sm:inline">&nbsp;comment</span
+                      ></span>
+                  </Button>
+                  <Button
+                    htmlType="submit"
+                    type="primary"
+                    size="md"
+                    class="flex-1 sm:flex-initial"
+                    disabled={isSubmitting}
+                    isLoading={isSubmitting}>
+                    {isSubmitting ? 'Posting…' : 'Post comment'}
+                  </Button>
                 </div>
               </form>
-            {/snippet}
-          </CommentThread>
+            </div>
+          {/if}
+
+          {#if comments.length === 0}
+            <EmptyState
+              title="No comments yet"
+              description="Be the first to share your thoughts on this article." />
+          {:else}
+            <CommentThread
+              {comments}
+              {replyTo}
+              useContentFont={true}
+              authorName={author?.name || ''}
+              onReport={comment => {
+                reportingComment = comment;
+                showReportDialog = true;
+              }}>
+              {#snippet actions(comment)}
+                <RelativeTime
+                  date={comment.created_at}
+                  tag="time" />
+                <span aria-hidden="true">&middot;</span>
+                <button
+                  type="button"
+                  onclick={() => {
+                    replyTo = comment;
+                    feedbackMessage = null;
+                    commentContent = '';
+                  }}
+                  class="cursor-pointer font-bold text-text-muted transition-colors hover:text-accent focus-visible:outline-none">
+                  Reply
+                </button>
+              {/snippet}
+
+              {#snippet replyForm(comment)}
+                <form
+                  novalidate
+                  onsubmit={e => handleSubmit(e, comment.id)}
+                  class="mb-3 rounded-md border border-border-subtle bg-surface-base/80 p-3.5 text-left shadow-2xs sm:p-4">
+                  <div
+                    class="mb-3 flex items-center justify-between gap-3 border-b border-border-subtle/50 pb-2.5">
+                    <p
+                      class="font-sans-title text-xs font-semibold text-text-secondary">
+                      Replying to {getCommentAuthor(comment)}
+                    </p>
+                    <Button
+                      type="ghost"
+                      size="sm"
+                      showEscHint
+                      onclick={cancelReply}>Cancel</Button>
+                  </div>
+
+                  <div class="flex flex-col gap-3">
+                    <FormField
+                      id="reply-author-{comment.id}"
+                      label="Name"
+                      variant="floating"
+                      required
+                      hideAsterisk
+                      maxlength={50}
+                      currentLength={authorName.length}
+                      error={errors.authorName}
+                      valid={valid.authorName}>
+                      <Input
+                        type="text"
+                        id="reply-author-{comment.id}"
+                        autocomplete="name"
+                        aria-invalid={!!errors.authorName}
+                        maxlength={50}
+                        bind:value={authorName}
+                        error={!!errors.authorName}
+                        valid={valid.authorName}
+                        oninput={() => {
+                          errors.authorName = '';
+                          valid.authorName = false;
+                          validateAuthorName();
+                        }} />
+                    </FormField>
+
+                    <FormField
+                      id="reply-msg-{comment.id}"
+                      label="Message"
+                      variant="floating"
+                      required
+                      hideAsterisk
+                      maxlength={2000}
+                      currentLength={commentContent.length}
+                      counter={`${commentContent.length}/2000`}
+                      error={errors.commentContent}
+                      valid={valid.commentContent}>
+                      <Textarea
+                        id="reply-msg-{comment.id}"
+                        rows={3}
+                        maxlength={2000}
+                        bind:value={commentContent}
+                        error={!!errors.commentContent}
+                        valid={valid.commentContent}
+                        oninput={() => {
+                          errors.commentContent = '';
+                          valid.commentContent = false;
+                          validateCommentContent();
+                        }}
+                        aria-required="true" />
+                    </FormField>
+
+                    <div
+                      bind:this={turnstileEl}
+                      class="cf-turnstile select-none"
+                      data-sitekey={turnstileSiteKey}
+                      data-action="blog-comment-reply"
+                      data-size="flexible"
+                      data-theme="auto"
+                      data-appearance="interaction-only"
+                      data-execution="execute"
+                      use:turnstileWidget={{
+                        sitekey: turnstileSiteKey,
+                        size: 'flexible',
+                        action: 'blog-comment-reply',
+                        theme: 'auto',
+                        appearance: 'interaction-only',
+                        execution: 'execute'
+                      }}>
+                    </div>
+
+                    <ConsentNotice action="posting a reply" />
+
+                    <div class="mt-1 flex justify-end">
+                      <Button
+                        htmlType="submit"
+                        type="primary"
+                        size="sm"
+                        disabled={isSubmitting}
+                        isLoading={isSubmitting}>
+                        {isSubmitting ? 'Posting…' : 'Post reply'}
+                      </Button>
+                    </div>
+                  </div>
+                </form>
+              {/snippet}
+            </CommentThread>
+          {/if}
+        </section>
+
+        {#if !readingModeStore.active}
+          <div
+            class="mt-8 mb-6 w-full border-t border-border-subtle/60"
+            aria-hidden="true">
+          </div>
+
+          <FooterSection
+            width="full"
+            showFontSelect={true}
+            languageSwitcher={{
+              slug: post.slug,
+              currentLanguage: language,
+              availableLocales
+            }}
+            readingMode={readingModeStore.active}
+            onToggleReadingMode={readingModeStore.toggle}
+            class="mt-0 w-full pb-0 md:pb-0 lg:pb-20" />
         {/if}
-      </section>
+      {/if}
     </article>
 
-    <aside
-      class="sticky top-24 hidden h-fit self-start select-none xl:col-span-3 xl:col-start-10 xl:block"
-      aria-label="Table of contents">
-      <div
-        class="overflow-hidden rounded-2xl border border-border-subtle bg-surface-card/45 p-5 shadow-xs backdrop-blur-lg">
-        <h3
-          class="titlecase mb-3 text-xs font-bold tracking-wider text-text-secondary select-none">
-          In this article
-        </h3>
-
-        {#if headings.length === 0}
-          <p class="text-xs text-text-muted italic">No subheadings found.</p>
-        {:else}
-          <div class="relative pl-3">
-            <div
-              class="absolute top-0 bottom-0 left-0 w-1 rounded-full bg-border-subtle/40"
-              aria-hidden="true">
-            </div>
-
-            {#if isIndicatorVisible}
-              <div
-                class="absolute left-0 w-1 rounded-full bg-copilot shadow-xs"
-                style="top: {indicatorTop}px; height: {indicatorHeight}px; transition: {(
-                  isStretching
-                ) ?
-                  'top 0.12s ease-out, height 0.12s ease-out'
-                : 'top 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)'};"
-                aria-hidden="true">
-              </div>
-            {/if}
-
-            <ul
-              bind:this={tocListEl}
-              class="relative flex flex-col gap-1"
-              role="list">
-              {#each headings as heading, index (heading.id + '-' + index)}
-                {@const isActive = activeHeadingId === heading.id}
-                <li
-                  class="text-xs"
-                  style="padding-left: {(heading.level - 2) * 12}px;">
-                  <a
-                    href="#{heading.id}"
-                    onclick={e => {
-                      e.preventDefault()
-                      const target = document.getElementById(heading.id)
-                      if (target) {
-                        target.scrollIntoView({
-                          behavior: 'smooth',
-                          block: 'start'
-                        })
-                        pushState(`#${heading.id}`, {})
-                        activeHeadingId = heading.id
-                        updateIndicatorPos(heading.id, false)
-                      }
-                    }}
-                    aria-current={isActive ? 'true' : undefined}
-                    class="group relative block rounded-md py-1 pr-2 leading-relaxed transition-colors duration-300 ease-in-out hover:text-copilot {(
-                      isActive
-                    ) ?
-                      'font-medium text-copilot'
-                    : 'font-normal text-text-secondary'}">
-                    <span class="transition-colors duration-300 ease-in-out"
-                      >{heading.text}</span>
-                  </a>
-                </li>
-              {/each}
-            </ul>
-          </div>
+    {#if !readingModeStore.active}
+      <aside
+        transition:fade={{duration: 150}}
+        class="article-scroll-container hidden select-none lg:sticky lg:top-0 lg:z-20 lg:flex lg:max-h-full lg:w-full lg:flex-col lg:overflow-y-auto lg:px-[5%] lg:pt-[5%] lg:pb-[5%] [&>*+*]:lg:mt-[5%]"
+        aria-label="Article actions and insights">
+        {#if post.tldr && post.tldr.length > 0}
+          <PostInsights
+            mode="tldr-only"
+            tldr={post.tldr}
+            class="w-full shrink-0" />
         {/if}
-      </div>
-    </aside>
-  </div>
 
-  <FooterSection />
+        {#if post.summary}
+          <PostInsights
+            mode="summary-only"
+            summary={post.summary}
+            class="w-full shrink-0" />
+        {/if}
+
+        <ContentActions
+          variant="sidebar"
+          class="w-full shrink-0"
+          slug={post.slug}
+          pageId={post.id}
+          title={post.title}
+          avatarUrl={author?.avatar}
+          viewMarkdownUrl="/api/v1/blog/{post.slug}?format=md"
+          viewTextUrl="/api/v1/blog/{post.slug}?format=text" />
+      </aside>
+    {/if}
+  </div>
 </main>
 
-{#if showToast}
+<FeedbackButton
+  show={!readingModeStore.active}
+  class="hidden lg:fixed lg:bottom-6 lg:left-[calc(25%+1.5rem)] lg:z-40 lg:block" />
+
+<ScrollToTopButton
+  show={isArticleScrolledPast && !readingModeStore.active}
+  onClick={scrollArticleToTop}
+  progress={articleScrollProgress}
+  class="hidden lg:fixed lg:right-[calc(25%+1.5rem)] lg:bottom-6 lg:z-40 lg:block" />
+
+{#if readingModeStore.active}
   <div
-    role="status"
-    aria-live="polite"
-    class="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full border border-border-subtle bg-surface-card/90 px-4 py-2 text-xs font-semibold text-text-primary shadow-lg backdrop-blur-md transition-all duration-300">
-    <i class="bi bi-check-circle-fill text-sm text-copilot" aria-hidden="true"
-    ></i>
-    {toastMessage}
+    transition:fade={{duration: 150}}
+    class="fixed right-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 md:right-6 md:bottom-6 lg:right-[calc(25%+1.5rem)]">
+    <Tooltip
+      content="Exit reading mode"
+      placement="top"
+      align="right">
+      <button
+        type="button"
+        class="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full glass-button border border-accent/40 bg-surface-card/90 px-0 text-xs font-semibold text-accent shadow-md transition-all hover:scale-105 hover:border-accent hover:bg-surface-hover active:scale-95 md:h-10 md:w-10 md:shadow-lg"
+        onclick={readingModeStore.toggle}
+        aria-label="Exit reading mode">
+        <BookOpenText class="size-4.5 shrink-0 md:size-5" />
+      </button>
+    </Tooltip>
   </div>
 {/if}
 
-<Dialog
-  bind:isOpen={showYesFeedbackDialog}
-  title="Share this article?"
-  description="Great to hear it helped! Share it with your peers:"
+<ReportCommentDialog
+  bind:isOpen={showReportDialog}
+  comment={reportingComment}
   onClose={() => {
-    showYesFeedbackDialog = false
-    helpfulnessFeedback = null
-  }}>
-  <div class="grid grid-cols-2 gap-2 text-left">
-    <button
-      onclick={() => {
-        copyToClipboard()
-        showYesFeedbackDialog = false
-      }}
-      class="col-span-2 flex h-9.5 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border-subtle bg-surface-card px-3 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover hover:text-copilot">
-      {#if showCopySuccess}
-        <i class="bi bi-check2 text-sm text-success" aria-hidden="true"></i>
-      {:else}
-        <span
-          class="material-symbols-rounded text-base leading-none select-none"
-          style="font-size: 16px; font-variation-settings: 'wght' 400, 'opsz' 20;"
-          aria-hidden="true">link_2</span>
-      {/if}
-      <span>{showCopySuccess ? 'Copied!' : 'Copy link'}</span>
-    </button>
-    {#each [{href: `https://twitter.com/intent/tweet?url=${encodeURIComponent(page.url.href)}&text=${encodeURIComponent(post.title)}`, icon: 'bi-twitter-x', text: 'X'}, {href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(page.url.href)}`, icon: 'bi-linkedin', text: 'LinkedIn'}, {href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(page.url.href)}`, icon: 'bi-facebook', text: 'Facebook'}, {href: `mailto:?subject=${encodeURIComponent(post.title)}&body=${encodeURIComponent(page.url.href)}`, icon: 'bi-envelope-at', text: 'Email'}] as item (item.text)}
-      <a
-        href={item.href}
-        target={item.href.startsWith('mailto') ? undefined : '_blank'}
-        rel="noopener noreferrer"
-        onclick={() => (showYesFeedbackDialog = false)}
-        class="flex h-9.5 items-center justify-center gap-2 rounded-lg border border-border-subtle bg-surface-card px-3 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover hover:text-copilot">
-        <i class="bi {item.icon} text-sm" aria-hidden="true"></i>
-        <span>{item.text}</span>
-      </a>
-    {/each}
-  </div>
-  {#snippet footer()}
-    <Button
-      variant="secondary"
-      size="md"
-      showEscHint
-      onclick={() => {
-        showYesFeedbackDialog = false
-        helpfulnessFeedback = null
-      }}>Cancel</Button>
-  {/snippet}
-</Dialog>
+    reportingComment = null;
+  }} />
+
+<ShareDialog
+  bind:isOpen={showYesFeedbackDialog}
+  title="Thanks for your feedback!"
+  description="We're glad you found this article helpful! Feel free to share it with your network or colleagues."
+  url={page.url.href}
+  articleTitle={post.title}
+  showEmail
+  onOpenQr={() => {
+    showQrDialog = true;
+  }}
+  onClose={() => {
+    showYesFeedbackDialog = false;
+  }} />
+
+<QrCodeDialog
+  bind:isOpen={showQrDialog}
+  title={post.title}
+  url={page.url.href}
+  slug={post.slug}
+  avatarUrl={author?.avatar ?? ''}
+  onClose={() => (showQrDialog = false)} />
 
 <Dialog
   bind:isOpen={showNoFeedbackDialog}
   title="Share your feedback?"
   description="Tell us what we can improve. Your report helps make this article better for everyone."
   onClose={() => {
-    showNoFeedbackDialog = false
-    helpfulnessFeedback = null
+    showNoFeedbackDialog = false;
   }}>
   {#snippet footer()}
     <Button
-      variant="secondary"
+      type="secondary"
       size="md"
       showEscHint
       onclick={() => {
-        showNoFeedbackDialog = false
-        helpfulnessFeedback = null
+        showNoFeedbackDialog = false;
       }}>Cancel</Button>
     <Button
-      variant="primary"
+      type="primary"
       size="md"
       onclick={() => {
-        showNoFeedbackDialog = false
-        window.location.href = '/feedback'
+        showNoFeedbackDialog = false;
+        window.location.href = '/feedback';
       }}>Send feedback</Button>
   {/snippet}
 </Dialog>
+
+<style>
+  @reference "../../global.css";
+
+  .prose-custom {
+    @apply text-sm leading-relaxed text-(--color-body);
+    --color-heading: var(--color-text-primary);
+    --color-body: var(--color-text-secondary);
+    --color-link: var(--color-accent);
+    --color-link-hover: var(--color-accent-hover);
+  }
+
+  .prose-custom :global(p) {
+    @apply mt-5 mb-5 text-(--color-body);
+  }
+
+  .prose-custom :global(h1),
+  .prose-custom :global(h2),
+  .prose-custom :global(h3),
+  .prose-custom :global(h4),
+  .prose-custom :global(h5),
+  .prose-custom :global(h6) {
+    @apply text-(--color-heading);
+  }
+
+  .prose-custom :global(h1) {
+    @apply mt-8 mb-4 text-2xl font-extrabold sm:text-3xl;
+  }
+
+  .prose-custom :global(h2) {
+    @apply mt-7 mb-3 text-xl font-bold sm:text-2xl;
+  }
+
+  .prose-custom :global(h3) {
+    @apply mt-6 mb-2 text-lg font-semibold sm:text-xl;
+  }
+
+  .prose-custom :global(h4) {
+    @apply mt-5 mb-2 text-base font-semibold sm:text-lg;
+  }
+
+  .prose-custom :global(h5) {
+    @apply mt-4 mb-2 text-sm font-semibold sm:text-base;
+  }
+
+  .prose-custom :global(h6) {
+    @apply mt-4 mb-2 text-xs font-semibold sm:text-sm;
+  }
+
+  .prose-custom :global(li > p) {
+    @apply my-0!;
+  }
+
+  .prose-custom :global(pre) {
+    @apply mt-6 mb-6 scrollbar-none! overflow-x-auto rounded-md border border-border-subtle bg-surface-hover px-3! py-1.5! font-mono text-[0.8rem] leading-snug break-normal! whitespace-pre! [-ms-overflow-style:none]!;
+  }
+
+  .prose-custom :global(pre[data-enhanced='true']) {
+    @apply pt-0! pr-0! pl-0!;
+  }
+
+  .prose-custom :global(pre)::-webkit-scrollbar {
+    @apply hidden! h-0! w-0!;
+  }
+
+  .prose-custom :global(code:not(pre code)) {
+    @apply rounded bg-code-inline-bg px-0.5 py-px font-mono text-[0.925em] font-normal wrap-break-word [word-break:break-word] text-inherit;
+  }
+
+  .prose-custom :global(pre code) {
+    @apply block! w-max! min-w-full! overflow-visible! border-0 bg-transparent py-0! pr-0! pl-0! font-mono text-[0.8rem] leading-snug break-normal! whitespace-pre!;
+  }
+
+  .prose-custom :global(.code-line) {
+    @apply block! w-full! pr-3.5! pl-2!;
+  }
+
+  .prose-custom :global(pre.code-wrap),
+  .prose-custom :global(pre[data-wrap='true']) {
+    @apply overflow-x-hidden! wrap-anywhere! [word-break:break-word]! whitespace-pre-wrap!;
+  }
+
+  .prose-custom :global(pre.code-wrap code),
+  .prose-custom :global(pre[data-wrap='true'] code) {
+    @apply box-border! block! w-full! max-w-full! overflow-x-hidden! wrap-anywhere! [word-break:break-word]! whitespace-pre-wrap!;
+  }
+
+  .prose-custom :global(pre.code-wrap .code-line),
+  .prose-custom :global(pre[data-wrap='true'] .code-line) {
+    @apply box-border! w-full! max-w-full! pl-[calc(0.5rem+4ch)]! indent-[-4ch] wrap-anywhere! [word-break:break-word]! whitespace-pre-wrap!;
+  }
+
+  .prose-custom :global(a:not(.anchor-link)) {
+    @apply text-security no-underline hover:underline;
+  }
+
+  .prose-custom :global(.heading-text) {
+    @apply inline! transition-none!;
+  }
+
+  .prose-custom :global(a.anchor-link) {
+    @apply ml-[0.35rem]! inline-flex! items-center! justify-center! align-middle! leading-none! whitespace-nowrap! text-text-primary! no-underline! transition-none!;
+  }
+
+  :global(:root.dark) .prose-custom :global(a.anchor-link) {
+    @apply text-gh-gray-4!;
+  }
+
+  .prose-custom :global(a.anchor-link svg) {
+    @apply inline-block! size-[0.85em]! align-middle! leading-none! text-inherit! no-underline!;
+  }
+
+  .prose-custom :global(h1:hover .heading-text),
+  .prose-custom :global(h2:hover .heading-text),
+  .prose-custom :global(h3:hover .heading-text),
+  .prose-custom :global(h4:hover .heading-text),
+  .prose-custom :global(h5:hover .heading-text),
+  .prose-custom :global(h6:hover .heading-text),
+  .prose-custom :global(.heading-text):hover,
+  :global(:root.dark) .prose-custom :global(h1:hover .heading-text),
+  :global(:root.dark) .prose-custom :global(h2:hover .heading-text),
+  :global(:root.dark) .prose-custom :global(h3:hover .heading-text),
+  :global(:root.dark) .prose-custom :global(h4:hover .heading-text),
+  :global(:root.dark) .prose-custom :global(h5:hover .heading-text),
+  :global(:root.dark) .prose-custom :global(h6:hover .heading-text),
+  :global(:root.dark) .prose-custom :global(.heading-text):hover {
+    @apply text-accent underline underline-offset-4;
+  }
+
+  .prose-custom :global(h1:hover a.anchor-link),
+  .prose-custom :global(h2:hover a.anchor-link),
+  .prose-custom :global(h3:hover a.anchor-link),
+  .prose-custom :global(h4:hover a.anchor-link),
+  .prose-custom :global(h5:hover a.anchor-link),
+  .prose-custom :global(h6:hover a.anchor-link),
+  .prose-custom :global(a.anchor-link):hover,
+  :global(:root.dark) .prose-custom :global(h1:hover a.anchor-link),
+  :global(:root.dark) .prose-custom :global(h2:hover a.anchor-link),
+  :global(:root.dark) .prose-custom :global(h3:hover a.anchor-link),
+  :global(:root.dark) .prose-custom :global(h4:hover a.anchor-link),
+  :global(:root.dark) .prose-custom :global(h5:hover a.anchor-link),
+  :global(:root.dark) .prose-custom :global(h6:hover a.anchor-link),
+  :global(:root.dark) .prose-custom :global(a.anchor-link):hover,
+  .prose-custom :global(h1:hover a.anchor-link svg),
+  .prose-custom :global(h2:hover a.anchor-link svg),
+  .prose-custom :global(h3:hover a.anchor-link svg),
+  .prose-custom :global(h4:hover a.anchor-link svg),
+  .prose-custom :global(h5:hover a.anchor-link svg),
+  .prose-custom :global(h6:hover a.anchor-link svg),
+  .prose-custom :global(a.anchor-link):hover :global(svg),
+  :global(:root.dark) .prose-custom :global(h1:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(h2:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(h3:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(h4:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(h5:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(h6:hover a.anchor-link svg),
+  :global(:root.dark) .prose-custom :global(a.anchor-link):hover :global(svg) {
+    @apply text-accent! no-underline! opacity-100;
+  }
+
+  .prose-custom :global(table) {
+    @apply my-6 w-full max-w-full table-fixed border-separate border-spacing-0 overflow-hidden rounded-md border border-border-subtle text-left text-xs shadow-2xs;
+  }
+
+  .prose-custom :global(thead) {
+    @apply border-b border-border-subtle bg-surface-hover/80 font-semibold tracking-wider text-text-primary uppercase;
+  }
+
+  .prose-custom :global(th) {
+    @apply w-[1%] px-2.5 py-2 text-center font-semibold wrap-break-word [word-break:break-word] text-text-primary;
+  }
+
+  .prose-custom :global(tbody tr) {
+    @apply transition-colors hover:bg-surface-hover/30;
+  }
+
+  .prose-custom :global(td) {
+    @apply w-[1%] border-r border-border-subtle/40 px-2.5 py-1.5 text-left leading-relaxed wrap-break-word [word-break:break-word] text-text-secondary last:border-r-0;
+  }
+
+  .prose-custom :global(td code),
+  .prose-custom :global(th code) {
+    @apply wrap-anywhere [word-break:break-word] whitespace-normal;
+  }
+
+  .prose-custom :global(td[align='right']) {
+    @apply text-right;
+  }
+
+  .prose-custom :global(td[align='center']) {
+    @apply text-center;
+  }
+
+  .prose-custom :global(hr) {
+    @apply my-8 h-px border-0 bg-border-subtle;
+  }
+
+  .prose-custom :global(blockquote:not(.markdown-alert)) {
+    @apply my-6 rounded-md border border-border-default/40 bg-surface-hover/30 p-4 text-sm leading-relaxed text-text-secondary;
+  }
+
+  .prose-custom :global(blockquote:not(.markdown-alert) p) {
+    @apply my-1 text-text-secondary;
+  }
+
+  .prose-custom :global(ul) {
+    @apply my-2 flex list-none flex-col gap-1 pl-0!;
+  }
+
+  .prose-custom :global(ol) {
+    @apply my-2 list-decimal space-y-1 pl-6!;
+  }
+
+  .prose-custom :global(ul ul),
+  .prose-custom :global(ol ul),
+  .prose-custom :global(.ul-content > ul),
+  .prose-custom :global(.task-content > ul) {
+    @apply my-1 pl-0!;
+  }
+
+  .prose-custom :global(ul ol),
+  .prose-custom :global(ol ol),
+  .prose-custom :global(.ul-content > ol),
+  .prose-custom :global(.task-content > ol) {
+    @apply my-1 pl-6!;
+  }
+
+  .prose-custom :global(li.ul-list-item),
+  .prose-custom :global(li.task-list-item) {
+    @apply my-0.5 flex list-none items-start gap-2 pl-0!;
+  }
+
+  .prose-custom :global(li.ol-list-item) {
+    @apply my-0.5 pl-0.5!;
+  }
+
+  .prose-custom :global(li p),
+  .prose-custom :global(li > p) {
+    margin: 0 !important;
+    display: inline !important;
+  }
+
+  .prose-custom :global(.markdown-alert) {
+    @apply my-6 rounded-md border p-4 text-xs transition-colors duration-200 sm:text-sm;
+  }
+
+  .prose-custom :global(.markdown-alert-title) {
+    @apply mb-1.5 flex items-center gap-2 font-sans-title text-xs leading-none font-semibold select-none sm:text-sm;
+  }
+
+  .prose-custom :global(.markdown-alert-title svg) {
+    @apply size-4 shrink-0 translate-y-[-6%];
+  }
+
+  .prose-custom :global(.markdown-alert-content) {
+    @apply leading-relaxed text-text-secondary;
+  }
+
+  .prose-custom :global(.markdown-alert-content > p) {
+    @apply my-1 text-text-secondary;
+  }
+
+  .prose-custom :global(.markdown-alert-content > *:first-child) {
+    @apply mt-0!;
+  }
+
+  .prose-custom :global(.markdown-alert-content > *:last-child) {
+    @apply mb-0!;
+  }
+
+  .prose-custom :global(.markdown-alert-note) {
+    @apply border-security/40 bg-security-subtle text-text-secondary;
+  }
+  .prose-custom :global(.markdown-alert-note .markdown-alert-title) {
+    @apply text-security;
+  }
+
+  .prose-custom :global(.markdown-alert-tip) {
+    @apply border-success/40 bg-success-subtle text-text-secondary;
+  }
+  .prose-custom :global(.markdown-alert-tip .markdown-alert-title) {
+    @apply text-success;
+  }
+
+  .prose-custom :global(.markdown-alert-important) {
+    @apply border-copilot/40 bg-copilot-subtle text-text-secondary;
+  }
+  .prose-custom :global(.markdown-alert-important .markdown-alert-title) {
+    @apply text-copilot;
+  }
+
+  .prose-custom :global(.markdown-alert-warning) {
+    @apply border-warning/40 bg-warning-subtle text-text-secondary;
+  }
+  .prose-custom :global(.markdown-alert-warning .markdown-alert-title) {
+    @apply text-warning-strong;
+  }
+
+  .prose-custom :global(.markdown-alert-caution) {
+    @apply border-danger/40 bg-danger-subtle text-text-secondary;
+  }
+  .prose-custom :global(.markdown-alert-caution .markdown-alert-title) {
+    @apply text-danger;
+  }
+
+  .translation-disclaimer :global(.markdown-alert) {
+    @apply mb-2;
+  }
+
+  .prose-custom :global(mark) {
+    @apply rounded-md bg-security-subtle px-1 py-0.5 font-normal text-security;
+  }
+
+  .prose-custom :global(kbd) {
+    @apply inline-block rounded bg-code-inline-bg px-1.5 py-0.5 font-mono text-[0.875em] leading-normal font-normal text-inherit;
+  }
+
+  .prose-custom :global(sub) {
+    @apply align-sub text-[0.75em] leading-none;
+  }
+
+  .prose-custom :global(sup) {
+    @apply align-super text-[0.75em] leading-none;
+  }
+
+  .prose-custom :global(.markdown-steps-container) {
+    --step-line-w: 1px;
+    --step-badge-size: 1.5rem;
+    @apply relative my-6 ml-0 space-y-0 select-text;
+    counter-reset: step-counter;
+  }
+
+  .prose-custom
+    :global(
+      .markdown-steps-container > :not(.markdown-steps-list):not(.markdown-step)
+    ) {
+    @apply pl-9;
+  }
+
+  .prose-custom :global(.markdown-step) {
+    counter-increment: step-counter;
+    @apply relative pb-6 pl-9 text-text-secondary;
+  }
+
+  .prose-custom :global(.markdown-step:last-child) {
+    @apply pb-0;
+  }
+
+  .prose-custom :global(.markdown-step::before) {
+    content: counter(step-counter);
+    position: absolute;
+    top: 0.125rem;
+    left: 0;
+    width: var(--step-badge-size);
+    height: var(--step-badge-size);
+    line-height: var(--step-badge-size);
+    background-color: color-mix(
+      in srgb,
+      var(--color-text-primary) 8%,
+      var(--color-surface-base)
+    );
+    @apply z-10 flex items-center justify-center rounded border border-border-subtle/70 text-center font-mono text-xs font-medium text-text-primary tabular-nums select-none;
+  }
+
+  .prose-custom :global(.markdown-step::after) {
+    content: '';
+    position: absolute;
+    top: calc(var(--step-badge-size) / 2 + 0.125rem);
+    left: calc(var(--step-badge-size) / 2 - 0.5px);
+    width: var(--step-line-w);
+    bottom: calc(-1 * var(--step-badge-size) / 2 - 0.125rem);
+    @apply pointer-events-none bg-border-subtle;
+  }
+
+  .prose-custom :global(.markdown-step:last-child::after) {
+    display: none;
+  }
+
+  .prose-custom :global(.markdown-step > :is(h2, h3, h4)) {
+    @apply relative mt-0! mb-2 flex items-center font-bold text-text-primary;
+  }
+
+  .prose-custom :global(.markdown-steps-list) {
+    @apply my-0! list-none! space-y-0! pl-0!;
+  }
+
+  .prose-custom :global(.markdown-steps-list > li.markdown-step) {
+    @apply relative my-0! list-none! pb-6 pl-9 text-text-secondary;
+  }
+
+  .prose-custom :global(.markdown-steps-list > li.markdown-step:last-child) {
+    @apply pb-0!;
+  }
+
+  .prose-custom
+    :global(.markdown-steps-list > li.markdown-step:last-child::after) {
+    display: none;
+  }
+
+  .prose-custom :global(.markdown-tab-group) {
+    @apply my-6;
+  }
+
+  .prose-custom :global(.markdown-tab-group-header) {
+    @apply relative flex min-h-8 items-end border-b border-border-subtle select-none;
+  }
+
+  .prose-custom :global(.markdown-tab-group-nav) {
+    @apply m-0 flex min-w-0 flex-1 scrollbar-none items-end gap-1.5 overflow-x-auto p-0 [-ms-overflow-style:none];
+  }
+
+  .prose-custom :global(.markdown-tab-group-body) {
+    @apply pt-2;
+  }
+
+  .prose-custom
+    :global(.markdown-tab-group-body > .markdown-tab-panel > :first-child) {
+    @apply mt-2!;
+  }
+
+  .prose-custom :global(.markdown-tab-group .markdown-tab-panel) {
+    @apply p-0;
+  }
+
+  .prose-custom :global(.markdown-tabs-container) {
+    @apply my-6 rounded-md border border-border-subtle shadow-2xs;
+  }
+
+  .prose-custom :global(.markdown-tabs-header) {
+    @apply relative flex min-h-8 items-end justify-between rounded-t-md border-b border-border-subtle px-3 pt-0 pb-0 select-none;
+  }
+
+  .prose-custom :global(.markdown-tabs-nav) {
+    @apply m-0 flex min-w-0 flex-1 scrollbar-none items-end gap-1.5 overflow-x-auto p-0 [-ms-overflow-style:none];
+  }
+
+  .prose-custom :global(.markdown-tabs-actions) {
+    @apply ml-2 flex shrink-0 items-center gap-1 self-center pb-0.5;
+  }
+
+  .prose-custom :global(.markdown-tab-button) {
+    @apply relative -mb-px inline-flex shrink-0 cursor-pointer items-center justify-center border-b-[2.5px] px-3 py-1.5 text-xs font-medium transition-all select-none;
+  }
+
+  .prose-custom :global(.markdown-tab-button.active-tab) {
+    @apply border-b-accent font-bold text-accent;
+  }
+
+  .prose-custom :global(.markdown-tab-button:not(.active-tab)) {
+    @apply border-b-transparent text-text-muted hover:text-text-primary;
+  }
+
+  .prose-custom :global(.markdown-tabs-body) {
+    @apply rounded-b-md;
+  }
+
+  .prose-custom :global(.markdown-tabs-container .markdown-tab-panel) {
+    @apply rounded-b-md p-4;
+  }
+
+  .prose-custom
+    :global(
+      .markdown-tabs-container .markdown-tab-panel:has(> .code-block-container)
+    ),
+  .prose-custom
+    :global(.markdown-tabs-container .markdown-tab-panel:has(> .code-body)),
+  .prose-custom
+    :global(.markdown-tabs-container .markdown-tab-panel:has(> pre)),
+  .prose-custom
+    :global(
+      .markdown-tabs-container .markdown-tab-panel:has(.code-block-container)
+    ) {
+    @apply rounded-b-md p-0!;
+  }
+
+  .prose-custom :global(.markdown-tabs-container .code-block-container) {
+    @apply my-0! rounded-b-md! border-0!;
+  }
+
+  .prose-custom :global(.markdown-tabs-container .code-header-bar) {
+    @apply hidden!;
+  }
+
+  .prose-custom :global(.markdown-tabs-container .code-body) {
+    @apply rounded-b-md! border-0!;
+  }
+
+  .prose-custom :global(.markdown-tabs-container .code-scrollbar-wrapper) {
+    @apply rounded-b-md! border-0!;
+  }
+
+  .prose-custom :global(.markdown-tabs-container pre) {
+    @apply my-0! rounded-b-md! border-0!;
+  }
+
+  .prose-custom :global(details.markdown-details),
+  .prose-custom :global(details) {
+    @apply my-4 overflow-hidden rounded-md glass-card border border-border-subtle text-text-primary shadow-md backdrop-blur-md;
+    border: 1px solid var(--color-border-subtle);
+  }
+
+  :global(.dark) .prose-custom :global(details.markdown-details),
+  :global(.dark) .prose-custom :global(details) {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .prose-custom :global(details > summary),
+  .prose-custom :global(.markdown-details-summary) {
+    @apply flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 font-sans-title text-sm font-medium text-text-primary transition-colors select-none hover:bg-surface-hover/50 [&::-webkit-details-marker]:hidden;
+  }
+
+  .prose-custom :global(details[open] > summary),
+  .prose-custom :global(details[open] .markdown-details-summary) {
+    border-bottom: 1px solid var(--color-border-subtle) !important;
+    @apply bg-surface-hover/30;
+  }
+
+  :global(.dark) .prose-custom :global(details[open] > summary),
+  :global(.dark)
+    .prose-custom
+    :global(details[open] .markdown-details-summary) {
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .prose-custom :global(.markdown-details-title) {
+    @apply inline-flex translate-y-px items-center text-sm leading-none font-medium text-text-primary;
+  }
+
+  .prose-custom :global(.markdown-details-icon) {
+    @apply inline-flex shrink-0 items-center justify-center text-text-muted;
+  }
+
+  .prose-custom :global(.markdown-details-body) {
+    @apply px-3.5 py-3 text-sm leading-relaxed font-normal text-text-secondary;
+  }
+
+  .prose-custom :global(details[open] .markdown-details-body) {
+    animation: details-expand 300ms cubic-bezier(0.25, 1, 0.5, 1) both;
+  }
+
+  .prose-custom :global(.markdown-details-body > :first-child) {
+    @apply mt-0!;
+  }
+
+  .prose-custom :global(.markdown-details-body > :last-child) {
+    @apply mb-0!;
+  }
+
+  .prose-custom :global(.markdown-details-body p),
+  .prose-custom :global(details p) {
+    @apply my-2 text-sm leading-relaxed text-text-secondary;
+  }
+
+  .prose-custom :global(.markdown-details-body ul),
+  .prose-custom :global(.markdown-details-body ol),
+  .prose-custom :global(details ul),
+  .prose-custom :global(details ol) {
+    @apply my-2 pl-4 text-sm leading-relaxed;
+  }
+
+  .prose-custom :global(.markdown-details-body li),
+  .prose-custom :global(details li) {
+    @apply text-sm leading-relaxed;
+  }
+
+  .prose-custom :global(.footnotes) {
+    @apply mt-10 border-t border-border-subtle pt-4 text-[calc(0.84375rem*var(--a11y-scale))] leading-relaxed text-text-secondary;
+  }
+
+  .prose-custom :global(.footnotes ol) {
+    @apply my-2 list-none! space-y-1.5 pl-0! [counter-reset:footnotes];
+  }
+
+  .prose-custom :global(.footnotes li) {
+    @apply relative pl-5! [counter-increment:footnotes];
+  }
+
+  .prose-custom :global(.footnotes li::before) {
+    content: counter(footnotes) '.';
+    @apply absolute top-0 left-0 font-mono text-text-secondary tabular-nums select-none;
+  }
+
+  .prose-custom :global(.footnotes li p) {
+    @apply my-0 inline;
+  }
+
+  .prose-custom :global([data-footnote-ref]) {
+    @apply font-mono text-[0.8em] font-medium text-security no-underline hover:underline;
+  }
+
+  .prose-custom :global(.footnote-backref) {
+    @apply inline-flex items-center font-mono text-security no-underline hover:underline;
+    vertical-align: baseline;
+    line-height: 1;
+  }
+
+  .prose-custom :global(.footnote-backref-static) {
+    @apply inline-flex items-center font-mono text-text-muted;
+    vertical-align: baseline;
+    line-height: 1;
+  }
+
+  .prose-custom :global(.footnote-sub-backref) {
+    @apply inline-flex items-center font-mono text-security italic no-underline hover:underline;
+    font-size: 0.75rem !important;
+    line-height: 1 !important;
+    vertical-align: 0.32em;
+    text-underline-offset: 2px;
+  }
+
+  .prose-custom :global(.footnotes li:target a) {
+    @apply underline;
+  }
+</style>

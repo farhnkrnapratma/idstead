@@ -1,1 +1,48 @@
-{"mcpServers": {"svelte": {"command": "bunx", "args": ["@sveltejs/mcp"]}}}
+{
+  "mcpServers": {
+    "supabase": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=vbjerskcgtasmjodabsy&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching%2Cstorage",
+      "serverUrl": "https://mcp.supabase.com/mcp?project_ref=vbjerskcgtasmjodabsy&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching%2Cstorage"
+    },
+    "svelte": {
+      "type": "stdio",
+      "command": "bunx",
+      "args": ["-y", "@sveltejs/mcp"]
+    },
+    "sentry": {
+      "type": "http",
+      "url": "https://mcp.sentry.dev/mcp/farhnkrnapratma/www",
+      "serverUrl": "https://mcp.sentry.dev/mcp/farhnkrnapratma/www"
+    },
+    "chrome-devtools": {
+      "type": "stdio",
+      "command": "bunx",
+      "args": ["chrome-devtools-mcp@latest"]
+    },
+    "cloudflare-observability": {
+      "type": "http",
+      "url": "https://observability.mcp.cloudflare.com/sse",
+      "serverUrl": "https://observability.mcp.cloudflare.com/sse"
+    },
+    "cloudflare-bindings": {
+      "type": "http",
+      "url": "https://bindings.mcp.cloudflare.com/mcp",
+      "serverUrl": "https://bindings.mcp.cloudflare.com/mcp"
+    },
+    "graphify": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "run",
+        "--with",
+        "graphifyy",
+        "--with",
+        "mcp",
+        "-m",
+        "graphify.serve",
+        "/home/hanz/Projects/www/graphify-out/graph.json"
+      ]
+    }
+  }
+}

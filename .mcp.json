@@ -1,10 +1,1 @@
-{
-  "mcpServers": {
-    "svelte": {
-      "type": "stdio",
-      "command": "bunx",
-      "env": {},
-      "args": ["@sveltejs/mcp"]
-    }
-  }
-}
+.agents/mcp_config.json

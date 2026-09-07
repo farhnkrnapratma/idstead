@@ -1,0 +1,123 @@
+{
+  "generated_at": "2026-09-07T13:27:51.052188+00:00",
+  "nodes": {
+    "package": {
+      "code_fingerprint": "61f0ddc31633d7f81fe920297eb7481704a73d5319c1a4eda171ae5ff342371f",
+      "label": "package.json",
+      "last": "2026-08-19T11:24:58.309289+00:00",
+      "provenance": [
+        {
+          "date": "2026-08-19T11:24:58.309289+00:00",
+          "outcome": "useful",
+          "q": "Mengapa saat bun run dev yang dibaca adalah .env? Bagaimana agar bun run dev menggunakan .env.production dan bun run dev:preview menggunakan .env.preview?"
+        }
+      ],
+      "score": 0.643415343,
+      "source_file": "package.json",
+      "status": "tentative",
+      "uses": 1
+    },
+    "src_lib_components_markdowneditor": {
+      "code_fingerprint": "c46314bce63b5fd159af3a2de56c32758f490ab8a00e8de81566ddd6d0573960",
+      "label": "MarkdownEditor.svelte",
+      "last": "2026-09-02T10:11:28.419247+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-02T10:11:28.419247+00:00",
+          "outcome": "useful",
+          "q": "Align Markdown editor active-line highlight with gutter and extend gutter background to the editor bottom"
+        },
+        {
+          "date": "2026-09-02T10:08:24.672761+00:00",
+          "outcome": "useful",
+          "q": "Fix statusline sticky and toolbar clipping beneath the admin navbar"
+        }
+      ],
+      "score": 1.776148392,
+      "source_file": "src/lib/components/MarkdownEditor.svelte",
+      "status": "preferred",
+      "uses": 2
+    },
+    "src_lib_components_topnav": {
+      "code_fingerprint": "03fb1977b80feed94b37bc78f3ccd16828da0c70ce09b2aa32fc5d57dbff86db",
+      "label": "TopNav.svelte",
+      "last": "2026-09-02T10:08:24.672761+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-02T10:08:24.672761+00:00",
+          "outcome": "useful",
+          "q": "Fix statusline sticky and toolbar clipping beneath the admin navbar"
+        }
+      ],
+      "score": 0.888052377,
+      "source_file": "src/lib/components/TopNav.svelte",
+      "status": "tentative",
+      "uses": 1
+    },
+    "src_lib_stores_a11ystore_svelte": {
+      "code_fingerprint": "80497a4b1277207d17f25b87caf3ff1eafc9662e2efb6a35a38bffbb05b3a7a1",
+      "label": "a11yStore.svelte.ts",
+      "last": "2026-08-19T10:25:08.876469+00:00",
+      "provenance": [
+        {
+          "date": "2026-08-19T10:25:08.876469+00:00",
+          "outcome": "useful",
+          "q": "Why does createA11yStore() connect to Security Auditing & Hardening?"
+        }
+      ],
+      "score": 0.642798039,
+      "source_file": "src/lib/stores/a11yStore.svelte.ts",
+      "status": "tentative",
+      "uses": 1
+    },
+    "src_lib_stores_a11ystore_svelte_createa11ystore": {
+      "code_fingerprint": "80497a4b1277207d17f25b87caf3ff1eafc9662e2efb6a35a38bffbb05b3a7a1",
+      "label": "createA11yStore()",
+      "last": "2026-08-19T10:25:08.876469+00:00",
+      "provenance": [
+        {
+          "date": "2026-08-19T10:25:08.876469+00:00",
+          "outcome": "useful",
+          "q": "Why does createA11yStore() connect to Security Auditing & Hardening?"
+        }
+      ],
+      "score": 0.642798039,
+      "source_file": "src/lib/stores/a11yStore.svelte.ts",
+      "status": "tentative",
+      "uses": 1
+    },
+    "src_routes_admin_layout_svelte_src_routes_admin_layout": {
+      "code_fingerprint": "8eaa352304a66694e1a72fe5dc97995fd2f6aa8c29969ac76c593ecf19f74e7d",
+      "label": "admin/+layout.svelte",
+      "last": "2026-09-02T10:08:24.672761+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-02T10:08:24.672761+00:00",
+          "outcome": "useful",
+          "q": "Fix statusline sticky and toolbar clipping beneath the admin navbar"
+        }
+      ],
+      "score": 0.888052377,
+      "source_file": "src/routes/admin/+layout.svelte",
+      "status": "tentative",
+      "uses": 1
+    },
+    "vite_config": {
+      "code_fingerprint": "00ad55fb4465d411af9563d88906751de48bb0050234b24c977f7d2769f38d9c",
+      "label": "vite.config.ts",
+      "last": "2026-08-19T11:24:58.309289+00:00",
+      "provenance": [
+        {
+          "date": "2026-08-19T11:24:58.309289+00:00",
+          "outcome": "useful",
+          "q": "Mengapa saat bun run dev yang dibaca adalah .env? Bagaimana agar bun run dev menggunakan .env.production dan bun run dev:preview menggunakan .env.preview?"
+        }
+      ],
+      "score": 0.643415343,
+      "source_file": "vite.config.ts",
+      "status": "tentative",
+      "uses": 1
+    }
+  },
+  "version": 1
+}

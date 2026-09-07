@@ -1,119 +1,162 @@
-<!-- @format -->
 <script lang="ts">
-  import {onMount} from 'svelte'
-  import {isNameReserved} from '$lib/nameValidator'
+  import {page} from '$app/state';
+  import {onMount} from 'svelte';
+  import {
+    PenLine,
+    Code2,
+    ClockFading,
+    Link2Off,
+    Bug,
+    HelpCircle,
+    MessageSquareWarning
+  } from '@lucide/svelte';
+  import {
+    isNameReserved,
+    extractAuthorNameTokens
+  } from '$lib/utils/nameValidator';
   import {
     Card,
     FormField,
     Input,
     Textarea,
     Button,
-    Dialog,
-    SkipLink,
+    TopNav,
     FooterSection,
-    SpotlightSearch,
-    ThemeSelect
-  } from '$lib'
+    Section,
+    PageContainer,
+    ConsentNotice,
+    Badge,
+    toastStore
+  } from '$lib';
+  import {
+    turnstileWidget,
+    executeTurnstile,
+    resetTurnstile,
+    turnstileSiteKey
+  } from '$lib/utils/turnstile';
 
-  type Theme = 'auto' | 'dark' | 'light'
-  let theme = $state<Theme>('auto')
+  let pageAuthor = $derived((page?.data as any)?.author);
+  let pageProjects = $derived((page?.data as any)?.projects ?? []);
+  let authorName = $derived(pageAuthor?.name || '');
+  let authorTokens = $derived(extractAuthorNameTokens(pageAuthor));
+  let siteUrl = $derived(
+    ((page?.data as any)?.author?.siteUrl || '').replace(/\/$/, '')
+  );
+  let contactEmail = $derived(
+    (page?.data as any)?.contactEmail || pageAuthor?.email || ''
+  );
 
-  let formName = $state('')
-  let formEmail = $state('')
-  let formUrl = $state('')
-  let formMessage = $state('')
+  let formName = $state('');
+  let formEmail = $state('');
+  let formUrl = $state('');
+  let formMessage = $state('');
 
-  let formErrors = $state({name: '', email: '', url: '', message: ''})
+  let formErrors = $state({name: '', email: '', url: '', message: ''});
   let formValid = $state({
     name: false,
     email: false,
     url: false,
     message: false
-  })
+  });
 
-  let showSubmitDialog = $state(false)
-  let feedbackFormElement = $state<HTMLFormElement | null>(null)
+  let isSubmitting = $state(false);
+  let turnstileFeedbackEl = $state<HTMLDivElement | null>(null);
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const canClearFeedback = $derived(
+    Boolean(
+      formName.trim()
+      || formEmail.trim()
+      || formUrl.trim()
+      || formMessage.trim()
+    )
+  );
 
-  function applyTheme(newTheme: Theme) {
-    theme = newTheme
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('theme', newTheme)
-      const isDark =
-        newTheme === 'dark'
-        || (newTheme === 'auto'
-          && window.matchMedia('(prefers-color-scheme: dark)').matches)
-      if (isDark) {
-        document.documentElement.classList.add('dark')
-      } else {
-        document.documentElement.classList.remove('dark')
-      }
-    }
+  function clearFeedbackForm() {
+    formName = '';
+    formEmail = '';
+    formUrl = '';
+    formMessage = '';
+    formErrors = {name: '', email: '', url: '', message: ''};
+    formValid = {name: false, email: false, url: false, message: false};
   }
 
-  onMount(() => {
-    const saved = localStorage.getItem('theme') as Theme
-    theme = saved || 'auto'
-  })
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   function debounce<T extends unknown[]>(cb: (...args: T) => void, ms: number) {
-    let timer: ReturnType<typeof setTimeout>
+    let timer: ReturnType<typeof setTimeout>;
     return (...args: T) => {
-      clearTimeout(timer)
-      timer = setTimeout(() => cb(...args), ms)
-    }
+      clearTimeout(timer);
+      timer = setTimeout(() => cb(...args), ms);
+    };
   }
 
   const validateName = debounce(() => {
-    const val = formName.trim()
+    const val = formName.trim();
     if (val === '') {
-      formErrors.name = ''
-      formValid.name = false
-    } else if (isNameReserved(val)) {
-      formErrors.name = 'This name cannot be used. Please use another name.'
-      formValid.name = false
+      formErrors.name = '';
+      formValid.name = false;
+    } else if (isNameReserved(val, authorTokens)) {
+      formErrors.name = 'This name cannot be used. Please use another name.';
+      formValid.name = false;
     } else {
-      formErrors.name = ''
-      formValid.name = true
+      formErrors.name = '';
+      formValid.name = true;
     }
-  }, 500)
+  }, 500);
 
   const validateEmail = debounce(() => {
-    const val = formEmail.trim()
+    const val = formEmail.trim();
     if (val === '') {
-      formErrors.email = ''
-      formValid.email = false
+      formErrors.email = '';
+      formValid.email = false;
     } else if (!emailRegex.test(val)) {
-      formErrors.email = 'Please enter a valid email address.'
-      formValid.email = false
+      formErrors.email = 'Please enter a valid email address.';
+      formValid.email = false;
     } else {
-      formErrors.email = ''
-      formValid.email = true
+      formErrors.email = '';
+      formValid.email = true;
     }
-  }, 500)
+  }, 500);
 
   const validateUrl = debounce(() => {
-    const val = formUrl.trim()
+    const val = formUrl.trim();
     if (val === '') {
-      formErrors.url = ''
-      formValid.url = false
+      formErrors.url = '';
+      formValid.url = false;
     } else {
-      formErrors.url = ''
-      formValid.url = true
+      formErrors.url = '';
+      formValid.url = true;
     }
-  }, 500)
+  }, 500);
 
   const validateMessage = debounce(() => {
-    const val = formMessage.trim()
+    const val = formMessage.trim();
     if (val === '') {
-      formErrors.message = ''
-      formValid.message = false
+      formErrors.message = '';
+      formValid.message = false;
     } else {
-      formErrors.message = ''
-      formValid.message = true
+      formErrors.message = '';
+      formValid.message = true;
     }
-  }, 500)
+  }, 500);
+
+  function selectCategory(categoryTitle: string) {
+    const prefix = `[${categoryTitle}] `;
+    if (!formMessage.startsWith('[')) {
+      formMessage = prefix + formMessage;
+    } else {
+      formMessage = formMessage.replace(/^\[[^\]]*\]\s*/, prefix);
+    }
+    formErrors.message = '';
+    validateMessage();
+    const textarea = document.getElementById(
+      'form-message'
+    ) as HTMLTextAreaElement | null;
+    if (textarea) {
+      textarea.focus();
+      textarea.scrollIntoView({behavior: 'smooth', block: 'center'});
+    }
+  }
 
   function sanitizeInput(text: string): string {
     return text
@@ -122,307 +165,489 @@
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#x27;')
-      .replace(/\//g, '&#x2F;')
+      .replace(/\//g, '&#x2F;');
   }
 
-  function validateForm(e: Event) {
-    const nameErr = formName.trim() === '' ? 'Name is required.' : ''
-    const emailErr = formEmail.trim() === '' ? 'Email is required.' : ''
-    const urlErr = formUrl.trim() === '' ? 'URL/Page is required.' : ''
-    const msgErr = formMessage.trim() === '' ? 'Message is required.' : ''
+  async function handleSubmit(e: SubmitEvent) {
+    e.preventDefault();
+
+    const nameErr = formName.trim() === '' ? 'Name is required.' : '';
+    const emailErr = formEmail.trim() === '' ? 'Email is required.' : '';
+    const urlErr = formUrl.trim() === '' ? 'URL/Page is required.' : '';
+    const msgErr = formMessage.trim() === '' ? 'Message is required.' : '';
 
     const emailFormatErr =
       !emailErr && !emailRegex.test(formEmail.trim()) ?
         'Please enter a valid email address.'
-      : ''
+      : '';
     const nameReservedErr =
-      !nameErr && isNameReserved(formName) ?
+      !nameErr && isNameReserved(formName, authorTokens) ?
         'This name cannot be used. Please use another name.'
-      : ''
+      : '';
 
     formErrors = {
       name: nameErr || nameReservedErr,
       email: emailErr || emailFormatErr,
       url: urlErr,
       message: msgErr
-    }
+    };
 
-    if (formErrors.name) formValid.name = false
-    if (formErrors.email) formValid.email = false
-    if (formErrors.url) formValid.url = false
-    if (formErrors.message) formValid.message = false
-
-    e.preventDefault()
+    if (formErrors.name) formValid.name = false;
+    if (formErrors.email) formValid.email = false;
+    if (formErrors.url) formValid.url = false;
+    if (formErrors.message) formValid.message = false;
 
     if (
-      !formErrors.name
-      && !formErrors.email
-      && !formErrors.url
-      && !formErrors.message
+      formErrors.name
+      || formErrors.email
+      || formErrors.url
+      || formErrors.message
     ) {
-      formName = sanitizeInput(formName.trim())
-      formEmail = sanitizeInput(formEmail.trim())
-      formUrl = sanitizeInput(formUrl.trim())
-      formMessage = sanitizeInput(formMessage.trim())
-      showSubmitDialog = true
+      return;
     }
-  }
 
-  function executeSubmit() {
-    if (feedbackFormElement) {
-      feedbackFormElement.submit()
+    if (!contactEmail) {
+      toastStore.error('Feedback submission is currently unavailable.');
+      return;
+    }
+
+    isSubmitting = true;
+
+    try {
+      if (turnstileSiteKey) {
+        const token = await executeTurnstile(turnstileFeedbackEl);
+        if (!token) {
+          toastStore.error('Please complete the security verification.');
+          return;
+        }
+      }
+
+      const sanitizedName = sanitizeInput(formName.trim());
+      const sanitizedEmail = sanitizeInput(formEmail.trim());
+      const sanitizedUrl = sanitizeInput(formUrl.trim());
+      const sanitizedMessage = sanitizeInput(formMessage.trim());
+
+      const res = await fetch(
+        `https://formsubmit.co/ajax/${encodeURIComponent(contactEmail)}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json'
+          },
+          body: JSON.stringify({
+            name: sanitizedName,
+            email: sanitizedEmail,
+            url: sanitizedUrl,
+            message: sanitizedMessage,
+            _subject: 'New feedback report from website!'
+          })
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error('Failed to send feedback.');
+      }
+
+      toastStore.success('Feedback submitted successfully. Thank you!');
+      formName = '';
+      formEmail = '';
+      formUrl = '';
+      formMessage = '';
+      formErrors = {name: '', email: '', url: '', message: ''};
+      formValid = {name: false, email: false, url: false, message: false};
+    } catch {
+      toastStore.error('Failed to submit feedback. Please try again later.');
+    } finally {
+      isSubmitting = false;
+      resetTurnstile(turnstileFeedbackEl);
     }
   }
 </script>
 
 <svelte:head>
-  <title>Feedback — Farhan Kurnia Pratama</title>
+  <title>Feedback{authorName ? ` — ${authorName}` : ''}</title>
+  <script
+    src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+    async
+    defer></script>
   <meta
     name="description"
-    content="Send feedback, suggestions, or comments directly to Farhan Kurnia Pratama." />
-  <link rel="canonical" href="https://fkp.my.id/feedback" />
-  <meta property="og:title" content="Feedback — Farhan Kurnia Pratama" />
+    content="Send feedback, suggestions, or comments{authorName ?
+      ` directly to ${authorName}.`
+    : '.'}" />
+  <link
+    rel="canonical"
+    href="{siteUrl}/feedback" />
+  <meta
+    property="og:title"
+    content="Feedback{authorName ? ` — ${authorName}` : ''}" />
   <meta
     property="og:description"
-    content="Send feedback, suggestions, or comments directly to Farhan Kurnia Pratama." />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://fkp.my.id/feedback" />
-  <meta property="og:image" content="https://fkp.my.id/hero.png" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Feedback — Farhan Kurnia Pratama" />
+    content="Send feedback, suggestions, or comments{authorName ?
+      ` directly to ${authorName}.`
+    : '.'}" />
+  <meta
+    property="og:type"
+    content="website" />
+  <meta
+    property="og:url"
+    content="{siteUrl}/feedback" />
+  <meta
+    property="og:image"
+    content="{siteUrl}/hero.png" />
+  <meta
+    name="twitter:card"
+    content="summary_large_image" />
+  <meta
+    name="twitter:title"
+    content="Feedback{authorName ? ` — ${authorName}` : ''}" />
   <meta
     name="twitter:description"
-    content="Send feedback, suggestions, or comments directly to Farhan Kurnia Pratama." />
-  <meta name="twitter:image" content="https://fkp.my.id/hero.png" />
+    content="Send feedback, suggestions, or comments{authorName ?
+      ` directly to ${authorName}.`
+    : '.'}" />
+  <meta
+    name="twitter:image"
+    content="{siteUrl}/hero.png" />
 </svelte:head>
 
-<SkipLink />
-
-<nav
-  class="fixed top-0 z-40 flex h-15 w-full items-center justify-between border-b border-border-subtle bg-surface-card/60 px-3 font-sans shadow-xs backdrop-blur-lg transition-colors duration-300 sm:px-5"
-  aria-label="Feedback page navigation">
-  <a
-    href="/"
-    class="inline-flex h-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-card px-4 text-xs font-semibold text-text-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-copilot focus-visible:outline-none">
-    Back to Home
-  </a>
-
-  <div class="flex items-center gap-2">
-    <SpotlightSearch />
-    <ThemeSelect {theme} onThemeChange={applyTheme} />
-  </div>
-</nav>
+<TopNav
+  ariaLabel="Feedback page navigation"
+  backHref="/"
+  backLabel="Home"
+  projects={pageProjects} />
 
 <main
   id="main-content"
-  class="flex min-h-[calc(100vh-3.75rem)] flex-col pt-15 font-sans">
-  <section
-    class="relative z-10 mx-auto flex w-full flex-col gap-8 px-6 py-12 md:w-[80%] lg:w-[50%]">
-    <div
-      class="pointer-events-none absolute top-12.5 left-[50%] z-0 h-80 w-[320px] translate-x-[-50%] rounded-full bg-copilot/10 blur-[80px]">
-    </div>
-
-    <div class="relative z-10 text-center select-none">
-      <h1
-        class="text-3xl font-bold tracking-tight text-text-primary md:text-4xl lg:text-5xl">
-        Your feedback matters
-      </h1>
-      <p
-        class="mx-auto mt-4 max-w-xl text-base leading-relaxed text-text-secondary">
-        Your valuable feedback helps improve the quality of articles and ensures
-        the website's technical systems run reliably. Please let us know if you
-        spot any issues.
-      </p>
-    </div>
-
-    <Card variant="glass" class="relative z-10 p-5 select-none">
-      <div class="flex flex-col gap-3">
-        <h2 class="text-sm font-bold text-text-primary">Feedback categories</h2>
-        <ul class="flex flex-col gap-2.5 text-xs text-text-secondary">
-          <li class="flex items-start gap-2">
-            <i
-              class="bi bi-check-circle-fill mt-0.5 text-copilot"
-              aria-hidden="true"></i>
-            <span
-              ><strong>Writing errors:</strong> Grammatical mistakes, typos, spelling,
-              or poor phrasing.</span>
-          </li>
-          <li class="flex items-start gap-2">
-            <i
-              class="bi bi-check-circle-fill mt-0.5 text-copilot"
-              aria-hidden="true"></i>
-            <span
-              ><strong>Technical inaccuracies:</strong> Code snippets that don't compile,
-              wrong command usages, or faulty explanation logic.</span>
-          </li>
-          <li class="flex items-start gap-2">
-            <i
-              class="bi bi-check-circle-fill mt-0.5 text-copilot"
-              aria-hidden="true"></i>
-            <span
-              ><strong>Outdated information:</strong> Deprecated package API calls,
-              tools that are no longer active, or outdated tutorial steps.</span>
-          </li>
-          <li class="flex items-start gap-2">
-            <i
-              class="bi bi-check-circle-fill mt-0.5 text-copilot"
-              aria-hidden="true"></i>
-            <span
-              ><strong>Broken links:</strong> 404 links, invalid references, or missing
-              static download files.</span>
-          </li>
-          <li class="flex items-start gap-2">
-            <i
-              class="bi bi-check-circle-fill mt-0.5 text-copilot"
-              aria-hidden="true"></i>
-            <span
-              ><strong>Website issues:</strong> UI layout bugs, visual display mistakes,
-              broken styling, accessibility complaints, or slow loading times.</span>
-          </li>
-        </ul>
+  class="flex min-h-[calc(100vh-3rem)] flex-col pt-12 font-sans sm:min-h-[calc(100vh-3.5rem)] sm:pt-14">
+  <Section
+    spacing="none"
+    class="relative z-10 pt-5 pb-6 md:pt-8 md:pb-8">
+    <PageContainer
+      width="standard"
+      class="flex flex-col gap-8">
+      <div
+        class="pointer-events-none absolute top-12.5 left-[50%] z-0 h-80 w-[320px] translate-x-[-50%] rounded-full bg-accent/10 blur-[80px]">
       </div>
-    </Card>
 
-    <form
-      bind:this={feedbackFormElement}
-      novalidate
-      action="https://formsubmit.co/contact@fkp.my.id"
-      method="POST"
-      onsubmit={validateForm}
-      class="relative z-10 flex w-full flex-col gap-3 rounded-2xl border border-border-subtle bg-surface-card/60 p-6 text-left shadow-xs backdrop-blur-lg transition-colors duration-300"
-      autocomplete="off">
-      <input
-        type="hidden"
-        name="_subject"
-        value="New feedback report from website!" />
-      <input type="hidden" name="_template" value="table" />
-      <input type="hidden" name="_captcha" value="true" />
-      <input type="hidden" name="_url" value="https://fkp.my.id/feedback" />
-
-      <div class="mb-2 select-none">
-        <h2 class="text-sm font-bold text-text-primary">Report an issue</h2>
-        <p class="mt-0.5 text-xs text-text-muted">
-          Complete the fields below to submit your feedback directly.
+      <div
+        class="relative z-10 flex flex-col items-start text-left select-none">
+        <Badge
+          variant="accent"
+          size="sm"
+          class="mb-3">
+          <MessageSquareWarning class="size-3" />
+          Feedback & Reports
+        </Badge>
+        <h1
+          class="font-sans-title text-3xl font-bold tracking-tight text-text-primary md:text-4xl lg:text-5xl">
+          Your feedback matters
+        </h1>
+        <p class="mt-4 max-w-2xl text-base leading-relaxed text-text-secondary">
+          Your valuable feedback helps improve the quality of articles and
+          ensures the website's technical systems run reliably. Please let me
+          know if you spot any issues.
         </p>
       </div>
 
-      <FormField
-        id="form-name"
-        label="Name"
-        required
-        error={formErrors.name}
-        valid={formValid.name}>
-        <Input
-          type="text"
-          id="form-name"
-          name="name"
-          aria-required="true"
-          autocomplete="name"
-          placeholder="Enter your name"
-          bind:value={formName}
-          error={!!formErrors.name}
-          valid={formValid.name}
-          oninput={() => {
-            formErrors.name = ''
-            formValid.name = false
-            validateName()
-          }} />
-      </FormField>
+      <Card
+        variant="glass"
+        class="relative z-10 p-5 select-none">
+        <div class="flex flex-col gap-3.5">
+          <div class="flex flex-col">
+            <h2 class="font-sans-title text-sm font-bold text-text-primary">
+              Feedback categories
+            </h2>
+            <p class="mt-0.5 text-xs text-text-muted">
+              Click any category to quickly populate your message below.
+            </p>
+          </div>
 
-      <FormField
-        id="form-email"
-        label="Email"
-        required
-        error={formErrors.email}
-        valid={formValid.email}>
-        <Input
-          type="email"
-          id="form-email"
-          name="email"
-          aria-required="true"
-          autocomplete="email"
-          placeholder="Enter your email"
-          bind:value={formEmail}
-          error={!!formErrors.email}
-          valid={formValid.email}
-          oninput={() => {
-            formErrors.email = ''
-            formValid.email = false
-            validateEmail()
-          }} />
-      </FormField>
+          <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+            <button
+              type="button"
+              onclick={() => selectCategory('Writing error')}
+              class="group flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
+              aria-label="Select category: Writing errors">
+              <div class="flex items-center gap-2">
+                <PenLine
+                  class="size-4 shrink-0 text-accent transition-transform group-hover:scale-105" />
+                <span
+                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
+                  Writing errors
+                </span>
+              </div>
+              <p class="text-xs leading-relaxed text-text-secondary">
+                Grammatical mistakes, typos, spelling, poor phrasing, or error
+                translating.
+              </p>
+            </button>
 
-      <FormField
-        id="form-url"
-        label="Which URL/page contains the issue?"
-        required
-        error={formErrors.url}
-        valid={formValid.url}>
-        <Input
-          type="text"
+            <button
+              type="button"
+              onclick={() => selectCategory('Technical inaccuracy')}
+              class="group flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
+              aria-label="Select category: Technical inaccuracies">
+              <div class="flex items-center gap-2">
+                <Code2
+                  class="size-4 shrink-0 text-accent transition-transform group-hover:scale-105" />
+                <span
+                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
+                  Technical inaccuracies
+                </span>
+              </div>
+              <p class="text-xs leading-relaxed text-text-secondary">
+                Code snippets that don't compile, wrong command usages, or
+                faulty explanation logic.
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onclick={() => selectCategory('Outdated information')}
+              class="group flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
+              aria-label="Select category: Outdated information">
+              <div class="flex items-center gap-2">
+                <ClockFading
+                  class="size-4 shrink-0 text-accent transition-transform group-hover:scale-105" />
+                <span
+                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
+                  Outdated information
+                </span>
+              </div>
+              <p class="text-xs leading-relaxed text-text-secondary">
+                Deprecated package API calls, tools that are no longer active,
+                or outdated tutorial steps.
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onclick={() => selectCategory('Broken link')}
+              class="group flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
+              aria-label="Select category: Broken links">
+              <div class="flex items-center gap-2">
+                <Link2Off
+                  class="size-4 shrink-0 text-accent transition-transform group-hover:scale-105" />
+                <span
+                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
+                  Broken links
+                </span>
+              </div>
+              <p class="text-xs leading-relaxed text-text-secondary">
+                404 links, invalid references, or missing static download files.
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onclick={() => selectCategory('Website issue')}
+              class="group flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
+              aria-label="Select category: Website issues">
+              <div class="flex items-center gap-2">
+                <Bug
+                  class="size-4 shrink-0 text-accent transition-transform group-hover:scale-105" />
+                <span
+                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
+                  Website issues
+                </span>
+              </div>
+              <p class="text-xs leading-relaxed text-text-secondary">
+                UI layout bugs, visual display mistakes, broken styling, or slow
+                loading times.
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onclick={() => selectCategory('Other issue')}
+              class="group flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
+              aria-label="Select category: Other issues">
+              <div class="flex items-center gap-2">
+                <HelpCircle
+                  class="size-4 shrink-0 text-accent transition-transform group-hover:scale-105" />
+                <span
+                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
+                  Other issues
+                </span>
+              </div>
+              <p class="text-xs leading-relaxed text-text-secondary">
+                General inquiries, suggestions, content ideas, or feedback
+                outside listed categories.
+              </p>
+            </button>
+          </div>
+        </div>
+      </Card>
+
+      <form
+        novalidate
+        onsubmit={handleSubmit}
+        class="relative z-10 flex w-full flex-col gap-3 rounded-md glass-card p-6 text-left"
+        autocomplete="off">
+        <div class="mb-2 select-none">
+          <h2 class="font-sans-title text-sm font-bold text-text-primary">
+            Report an issue
+          </h2>
+          <p class="mt-0.5 text-xs text-text-muted">
+            Complete the fields below to submit your feedback directly.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <FormField
+            id="form-name"
+            label="Name"
+            variant="floating"
+            required
+            hideAsterisk
+            maxlength={50}
+            currentLength={formName.length}
+            error={formErrors.name}
+            valid={formValid.name}>
+            <Input
+              type="text"
+              id="form-name"
+              name="name"
+              autocomplete="name"
+              maxlength={50}
+              bind:value={formName}
+              error={!!formErrors.name}
+              valid={formValid.name}
+              oninput={() => {
+                formErrors.name = '';
+                formValid.name = false;
+                validateName();
+              }} />
+          </FormField>
+
+          <FormField
+            id="form-email"
+            label="Email"
+            variant="floating"
+            required
+            hideAsterisk
+            maxlength={100}
+            currentLength={formEmail.length}
+            error={formErrors.email}
+            valid={formValid.email}>
+            <Input
+              type="text"
+              id="form-email"
+              name="email"
+              autocomplete="email"
+              maxlength={100}
+              bind:value={formEmail}
+              error={!!formErrors.email}
+              valid={formValid.email}
+              oninput={() => {
+                formErrors.email = '';
+                formValid.email = false;
+                validateEmail();
+              }} />
+          </FormField>
+        </div>
+
+        <FormField
           id="form-url"
-          name="url"
-          aria-required="true"
-          placeholder="Enter page path or full URL (e.g. Home, Blog, or link)"
-          bind:value={formUrl}
-          error={!!formErrors.url}
-          valid={formValid.url}
-          oninput={() => {
-            formErrors.url = ''
-            formValid.url = false
-            validateUrl()
-          }} />
-      </FormField>
+          label="Which URL/page contains the issue?"
+          variant="floating"
+          required
+          hideAsterisk
+          maxlength={200}
+          currentLength={formUrl.length}
+          error={formErrors.url}
+          valid={formValid.url}>
+          <Input
+            type="text"
+            id="form-url"
+            name="url"
+            maxlength={200}
+            bind:value={formUrl}
+            error={!!formErrors.url}
+            valid={formValid.url}
+            oninput={() => {
+              formErrors.url = '';
+              formValid.url = false;
+              validateUrl();
+            }} />
+        </FormField>
 
-      <FormField
-        id="form-message"
-        label="Message"
-        required
-        error={formErrors.message}
-        valid={formValid.message}
-        counter="{2000 - formMessage.length} left">
-        <Textarea
+        <FormField
           id="form-message"
-          name="message"
-          rows={4}
+          label="Message"
+          variant="floating"
+          required
+          hideAsterisk
           maxlength={2000}
-          placeholder="Describe the issue in detail…"
-          bind:value={formMessage}
-          error={!!formErrors.message}
-          valid={formValid.message}
-          oninput={() => {
-            formErrors.message = ''
-            formValid.message = false
-            validateMessage()
-          }} />
-      </FormField>
+          currentLength={formMessage.length}
+          counter={`${formMessage.length}/2000`}
+          error={formErrors.message}
+          valid={formValid.message}>
+          <Textarea
+            id="form-message"
+            name="message"
+            rows={4}
+            maxlength={2000}
+            bind:value={formMessage}
+            error={!!formErrors.message}
+            valid={formValid.message}
+            oninput={() => {
+              formErrors.message = '';
+              formValid.message = false;
+              validateMessage();
+            }} />
+        </FormField>
 
-      <div class="mt-2 flex justify-end select-none">
-        <Button type="submit" variant="primary" size="md">
-          Submit feedback
-        </Button>
-      </div>
-    </form>
-  </section>
+        {#if turnstileSiteKey}
+          <div
+            bind:this={turnstileFeedbackEl}
+            class="cf-turnstile select-none"
+            data-sitekey={turnstileSiteKey}
+            data-action="feedback"
+            data-size="flexible"
+            data-theme="auto"
+            data-appearance="interaction-only"
+            data-execution="execute"
+            use:turnstileWidget={{
+              sitekey: turnstileSiteKey,
+              action: 'feedback',
+              size: 'flexible',
+              theme: 'auto',
+              appearance: 'interaction-only',
+              execution: 'execute'
+            }}>
+          </div>
+        {/if}
+
+        <ConsentNotice action="submitting this feedback report" />
+
+        <div class="mt-2 flex items-center justify-between gap-2 select-none">
+          <Button
+            htmlType="button"
+            type="outline"
+            tone="critical"
+            size="md"
+            class="flex-1 sm:flex-initial"
+            disabled={!canClearFeedback || isSubmitting}
+            onclick={clearFeedbackForm}>
+            <span
+              >Clear<span class="hidden sm:inline">&nbsp;feedback</span></span>
+          </Button>
+          <Button
+            htmlType="submit"
+            type="primary"
+            size="md"
+            class="flex-1 sm:flex-initial"
+            disabled={isSubmitting}
+            isLoading={isSubmitting}>
+            {isSubmitting ? 'Submitting…' : 'Submit feedback'}
+          </Button>
+        </div>
+      </form>
+    </PageContainer>
+  </Section>
 
   <FooterSection />
 </main>
-
-<Dialog
-  bind:isOpen={showSubmitDialog}
-  title="Submit feedback?"
-  description="Are you sure you want to submit this feedback report?"
-  onClose={() => (showSubmitDialog = false)}>
-  {#snippet footer()}
-    <Button
-      variant="secondary"
-      size="md"
-      showEscHint
-      onclick={() => (showSubmitDialog = false)}>
-      Cancel
-    </Button>
-    <Button variant="primary" size="md" onclick={executeSubmit}>
-      Submit feedback
-    </Button>
-  {/snippet}
-</Dialog>

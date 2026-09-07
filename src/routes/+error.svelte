@@ -1,29 +1,111 @@
-<!-- @format -->
 <script lang="ts">
-  import {page} from '$app/state'
-  import {Button, SkipLink} from '$lib'
+  import {page} from '$app/state';
+  import {ArrowLeft, MessageSquarePlus} from '@lucide/svelte';
+  import {Button, SkipLink, ErrorState, FooterLegalRow} from '$lib';
+
+  let pageAuthor = $derived((page?.data as any)?.author);
+  let name = $derived(pageAuthor?.name || '');
+
+  let errorTitle = $derived.by(() => {
+    switch (page.status) {
+      case 400:
+        return 'Bad request';
+      case 401:
+        return 'Authentication required';
+      case 403:
+        return 'Access denied';
+      case 404:
+        return 'Page not found';
+      case 408:
+        return 'Request timed out';
+      case 429:
+        return 'Too many requests';
+      case 500:
+        return 'Something went wrong';
+      case 502:
+        return 'Bad gateway';
+      case 503:
+        return 'Service unavailable';
+      case 504:
+        return 'Gateway timeout';
+      default:
+        return 'An error occurred';
+    }
+  });
+
+  let errorDescription = $derived.by(() => {
+    switch (page.status) {
+      case 400:
+        return 'The request could not be processed. Please check the link or try again.';
+      case 401:
+        return 'You need to sign in before continuing.';
+      case 403:
+        return 'You do not have permission to view this page.';
+      case 404:
+        return 'The page you’re looking for doesn’t exist or may have been moved.';
+      case 408:
+        return 'The request took too long to complete. Please try again.';
+      case 429:
+        return 'You’ve made too many requests. Please wait a moment and try again.';
+      case 500:
+        return 'Something went wrong on our side. Please try again in a moment.';
+      case 502:
+        return 'The server received an invalid response from an upstream service.';
+      case 503:
+        return 'The service is temporarily unavailable. Please try again shortly.';
+      case 504:
+        return 'The server did not respond in time. Please try again shortly.';
+      default:
+        return (
+          page.error?.message
+          || 'Something went wrong on our end. Please try again.'
+        );
+    }
+  });
 </script>
 
 <SkipLink />
 
-<main
-  id="main-content"
-  class="grid min-h-[80vh] place-items-center px-6 py-24 font-sans sm:py-32 lg:px-8">
-  <div class="text-center">
-    <p class="text-base font-semibold text-copilot">{page.status}</p>
-    <h1
-      class="mt-4 text-5xl font-semibold tracking-tight text-balance text-text-primary sm:text-7xl">
-      {page.status === 404 ? 'Page not found' : 'An error occurred'}
-    </h1>
-    <p
-      class="mt-6 text-lg font-medium text-pretty text-text-secondary sm:text-xl/8">
-      {page.error?.message
-        || 'Sorry, we couldn’t find the page you’re looking for.'}
-    </p>
-    <div class="mt-10 flex items-center justify-center gap-x-6">
-      <a href="/">
-        <Button variant="primary" size="md">Go back home</Button>
-      </a>
-    </div>
-  </div>
-</main>
+<div class="flex min-h-screen flex-col">
+  <main
+    id="main-content"
+    class="my-auto grid place-items-center px-6 py-16 font-sans sm:py-24 lg:px-8">
+    <ErrorState
+      size="page"
+      code={page.status}
+      title={errorTitle}
+      description={errorDescription}>
+      {#snippet actions()}
+        <Button
+          type="primary"
+          size="md"
+          onclick={() => {
+            if (typeof window !== 'undefined' && window.history.length > 1) {
+              window.history.back();
+            } else {
+              window.location.href = '/';
+            }
+          }}>
+          {#snippet leading()}
+            <ArrowLeft class="size-3.5" />
+          {/snippet}
+          Go back
+        </Button>
+        <a href="/feedback">
+          <Button
+            type="secondary"
+            size="md">
+            {#snippet leading()}
+              <MessageSquarePlus class="size-3.5" />
+            {/snippet}
+            Feedback
+          </Button>
+        </a>
+      {/snippet}
+    </ErrorState>
+  </main>
+
+  <footer class="py-6 text-center select-none">
+    <FooterLegalRow {name} />
+  </footer>
+</div>

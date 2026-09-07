@@ -1,33 +1,43 @@
-/** @format */
+import {supabase} from '$lib/supabase';
+import type {RequestHandler} from './$types';
+import {fetchAuthorProfile} from '$lib/author';
+import {escapeXml} from '$lib/utils/xml';
 
-import {supabase} from '$lib/supabase'
-import type {RequestHandler} from './$types'
+export const GET: RequestHandler = async ({fetch, url}) => {
+  const authorProfile = await fetchAuthorProfile(supabase, {
+    includeEmail: true
+  });
+  const AUTHOR_NAME = authorProfile?.name || '';
+  const AUTHOR_EMAIL = authorProfile?.email || '';
+  const FEED_SUBTITLE = authorProfile?.bio || '';
 
-const SITE_URL = 'https://fkp.my.id'
-const AUTHOR_NAME = 'Farhan Kurnia Pratama'
-const AUTHOR_EMAIL = 'contact@fkp.my.id'
-const FEED_TITLE = 'fkp.my.id — Blog'
-const FEED_SUBTITLE =
-  'Security-focused Software Engineer writing about Linux/Unix, AI, Open-Source Software, and Cybersecurity.'
+  const rawSiteUrl = authorProfile?.siteUrl || url.origin;
+  const SITE_URL = rawSiteUrl.replace(/\/$/, '');
+  let domain: string;
+  try {
+    domain = new URL(SITE_URL).hostname;
+  } catch {
+    domain = url.hostname;
+  }
+  const FEED_TITLE = `${domain} — Blog`;
 
-export const GET: RequestHandler = async ({fetch}) => {
   const {data: posts} = await supabase
-    .from('posts')
-    .select('id, title, slug, excerpt, created_at, storage_path')
+    .from('db_posts')
+    .select('id, title, slug, excerpt, created_at, updated_at, storage_path')
     .eq('published', true)
     .order('created_at', {ascending: false})
-    .limit(20)
+    .limit(20);
 
   const enriched = await Promise.all(
     (posts ?? []).map(async post => {
-      let content = post.excerpt ?? ''
+      let content = post.excerpt ?? '';
       try {
         const {data: urlData} = supabase.storage
           .from('blog-posts')
-          .getPublicUrl(post.storage_path)
-        const fileRes = await fetch(urlData.publicUrl)
+          .getPublicUrl(post.storage_path);
+        const fileRes = await fetch(urlData.publicUrl);
         if (fileRes.ok) {
-          const md = await fileRes.text()
+          const md = await fileRes.text();
           content = md
             .replace(/^#{1,6}\s+.*/gm, '')
             .replace(/!\[.*?\]\(.*?\)/g, '')
@@ -35,20 +45,20 @@ export const GET: RequestHandler = async ({fetch}) => {
             .replace(/[*_`~>#|-]/g, '')
             .replace(/\s+/g, ' ')
             .trim()
-            .slice(0, 500)
-          if (md.length > 500) content += '…'
+            .slice(0, 500);
+          if (content.length === 500 && md.length > 500) content += '…';
         }
       } catch {
-        content = post.excerpt ?? ''
+        content = post.excerpt ?? '';
       }
-      return {...post, summary: content}
+      return {...post, summary: content};
     })
-  )
+  );
 
   const updatedDate =
     enriched.length > 0 ?
-      new Date(enriched[0].created_at).toISOString()
-    : new Date().toISOString()
+      new Date(enriched[0].updated_at || enriched[0].created_at).toISOString()
+    : new Date().toISOString();
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
@@ -70,9 +80,10 @@ ${enriched
     post => `  <entry>
     <title>${escapeXml(post.title)}</title>
     <link href="${SITE_URL}/blog/${escapeXml(post.slug)}" rel="alternate" type="text/html"/>
-    <id>${SITE_URL}/blog/${escapeXml(post.slug)}</id>
-    <published>${new Date(post.created_at).toISOString()}</published>
-    <updated>${new Date(post.created_at).toISOString()}</updated>
+    <link href="${SITE_URL}/api/v1/blog/${escapeXml(post.slug)}?format=md" rel="alternate" type="text/markdown"/>
+    <id>urn:uuid:${post.id}</id>
+      <published>${new Date(post.created_at).toISOString()}</published>
+      <updated>${post.updated_at ? new Date(post.updated_at).toISOString() : new Date(post.created_at).toISOString()}</updated>
     <author>
       <name>${escapeXml(AUTHOR_NAME)}</name>
     </author>
@@ -80,21 +91,12 @@ ${enriched
   </entry>`
   )
   .join('\n')}
-</feed>`
+</feed>`;
 
   return new Response(xml, {
     headers: {
       'Content-Type': 'application/atom+xml; charset=utf-8',
       'Cache-Control': 'public, max-age=1800, s-maxage=1800'
     }
-  })
-}
-
-function escapeXml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;')
-}
+  });
+};
