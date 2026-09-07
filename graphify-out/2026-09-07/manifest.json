@@ -486,9 +486,9 @@
     "semantic_hash": ""
   },
   "src/lib/components/TableOfContents.svelte": {
-    "mtime": 1788748644.5749214,
-    "seen": 1788748796.7595959,
-    "ast_hash": "8cde741cca4bfdf5c0396825716cc571",
+    "mtime": 1788783003.2888587,
+    "seen": 1788783159.9092987,
+    "ast_hash": "420bb0f8bdc440005f37adf0de49ba1e",
     "semantic_hash": ""
   },
   "src/lib/components/Tag.svelte": {
@@ -636,9 +636,9 @@
     "semantic_hash": ""
   },
   "src/lib/layout/FooterSection.svelte": {
-    "mtime": 1788773799.4830894,
-    "seen": 1788773978.102721,
-    "ast_hash": "400d7ba67e85f37d5c539dc993157f94",
+    "mtime": 1788781375.6540039,
+    "seen": 1788781524.3898435,
+    "ast_hash": "51ab35b7cc6a97d0b6e63320d335a31f",
     "semantic_hash": ""
   },
   "src/lib/layout/FormSection.svelte": {
@@ -900,9 +900,9 @@
     "semantic_hash": ""
   },
   "src/routes/+page.svelte": {
-    "mtime": 1788778530.2316575,
-    "seen": 1788778704.2957816,
-    "ast_hash": "3c728df67a34075f59fc0d1b47c933cf",
+    "mtime": 1788781366.651895,
+    "seen": 1788781524.390056,
+    "ast_hash": "ca9714265705f6fa8c438c0c9a50e1cd",
     "semantic_hash": ""
   },
   "src/routes/.well-known/agent-skills/index.json/+server.ts": {

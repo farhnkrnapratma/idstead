@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-09-05T16:56:34.471633+00:00",
+  "generated_at": "2026-09-07T13:15:06.590437+00:00",
   "nodes": {
     "package": {
-      "code_fingerprint": "22c7926dd0964f10c986d9c4ad48ceda7f81ffdb8f1a7a56e01860dd888eb0b9",
+      "code_fingerprint": "7822fe70235a1fe423c1a30b22ee2a79962a7633a07651d782aae465af45d82e",
       "label": "package.json",
       "last": "2026-08-19T11:24:58.309289+00:00",
       "provenance": [
@@ -12,7 +12,7 @@
           "q": "Mengapa saat bun run dev yang dibaca adalah .env? Bagaimana agar bun run dev menggunakan .env.production dan bun run dev:preview menggunakan .env.preview?"
         }
       ],
-      "score": 0.671592184,
+      "score": 0.64354689,
       "source_file": "package.json",
       "status": "tentative",
       "uses": 1
@@ -33,7 +33,7 @@
           "q": "Fix statusline sticky and toolbar clipping beneath the admin navbar"
         }
       ],
-      "score": 1.853930576,
+      "score": 1.776511529,
       "source_file": "src/lib/components/MarkdownEditor.svelte",
       "status": "preferred",
       "uses": 2
@@ -49,7 +49,7 @@
           "q": "Fix statusline sticky and toolbar clipping beneath the admin navbar"
         }
       ],
-      "score": 0.926942514,
+      "score": 0.888233941,
       "source_file": "src/lib/components/TopNav.svelte",
       "status": "tentative",
       "uses": 1
@@ -65,7 +65,7 @@
           "q": "Why does createA11yStore() connect to Security Auditing & Hardening?"
         }
       ],
-      "score": 0.670947846,
+      "score": 0.64292946,
       "source_file": "src/lib/stores/a11yStore.svelte.ts",
       "status": "tentative",
       "uses": 1
@@ -81,7 +81,7 @@
           "q": "Why does createA11yStore() connect to Security Auditing & Hardening?"
         }
       ],
-      "score": 0.670947846,
+      "score": 0.64292946,
       "source_file": "src/lib/stores/a11yStore.svelte.ts",
       "status": "tentative",
       "uses": 1
@@ -97,7 +97,7 @@
           "q": "Fix statusline sticky and toolbar clipping beneath the admin navbar"
         }
       ],
-      "score": 0.926942514,
+      "score": 0.888233941,
       "source_file": "src/routes/admin/+layout.svelte",
       "status": "tentative",
       "uses": 1
@@ -113,7 +113,7 @@
           "q": "Mengapa saat bun run dev yang dibaca adalah .env? Bagaimana agar bun run dev menggunakan .env.production dan bun run dev:preview menggunakan .env.preview?"
         }
       ],
-      "score": 0.671592184,
+      "score": 0.64354689,
       "source_file": "vite.config.ts",
       "status": "tentative",
       "uses": 1

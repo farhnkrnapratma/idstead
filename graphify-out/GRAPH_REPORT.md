@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `3564cadd`
+- Built from commit: `00598a29`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -58,7 +58,7 @@
 - Security, Idempotency, Observability, and Reliability
 - Skill Authoring — taxonomy, licensing, confidentiality, editing rules
 - public.db_comment_reports
-- keywords
+- toastStore.svelte.ts
 - app.d.ts
 - markdown.ts
 - Security Policy
@@ -95,8 +95,8 @@
 - What You Must Do When Invoked
 - Supabase Postgres Best Practices
 - Comprehensive Review (scheduled or fallback)
+- keywords
 - @commitlint/config-conventional
-- publint
 - createCodeBlockPrefsStore
 - Supabase Postgres Best Practices Skill
 - Skill Authoring Reference
@@ -153,10 +153,10 @@
 - guard-deploy-config.sh
 - sync-claude-agents-md.sh
 - eslint.config.js
-- @tailwindcss/vite
+- publint
 - graphify reference: query, path, explain
 - public.db_post_translations
-- toastStore.svelte.ts
+- @tailwindcss/vite
 - supabase.ts
 - @types/d3-array
 - typescript
@@ -514,9 +514,9 @@ Nodes (10): Authentication, Content types, CORS, Documentation as contract, Idem
 Cohesion: 0.18
 Nodes (10): Author Attribution Template, Editing skills — always start from the live file, Lean Content, Licensing, New skills, Principle Propagation, Skill Authoring — taxonomy, licensing, confidentiality, editing rules, Taxonomy in full (+2 more)
 
-### Community 43 - "keywords"
-Cohesion: 0.29
-Nodes (7): keywords, farhan, farhan kurnia pratama, kurnia, pratama, sveltekit, tailwindcss
+### Community 43 - "toastStore.svelte.ts"
+Cohesion: 0.15
+Nodes (11): error(), formatToastMessage(), info(), message, show(), success(), toastStore, ToastType (+3 more)
 
 ### Community 44 - "app.d.ts"
 Cohesion: 0.17
@@ -658,6 +658,10 @@ Nodes (5): How to Use, References, Rule Categories by Priority, Supabase Postgre
 Cohesion: 0.33
 Nodes (5): Approval policy, Comprehensive Review (scheduled or fallback), Constraints, Delivering updated skills, Steps
 
+### Community 81 - "keywords"
+Cohesion: 0.29
+Nodes (7): keywords, farhan, farhan kurnia pratama, kurnia, pratama, sveltekit, tailwindcss
+
 ### Community 83 - "createCodeBlockPrefsStore"
 Cohesion: 0.39
 Nodes (9): createCodeBlockPrefsStore(), apply(), cycleColorScheme(), init(), parseStored(), persist(), toggleLineNumbers(), toggleMinimal() (+1 more)
@@ -729,10 +733,6 @@ Nodes (5): For /graphify explain, For /graphify path, graphify reference: query,
 ### Community 146 - "public.db_post_translations"
 Cohesion: 0.50
 Nodes (3): public.db_post_translations, public, public.db_posts
-
-### Community 147 - "toastStore.svelte.ts"
-Cohesion: 0.15
-Nodes (11): error(), formatToastMessage(), info(), message, show(), success(), toastStore, ToastType (+3 more)
 
 ### Community 149 - "supabase.ts"
 Cohesion: 0.21
@@ -894,7 +894,7 @@ Nodes (17): svelte, A11Y_TOGGLES, A11ySettings, a11yStore, defaults, FontScale, 
 ## Work-memory lessons
 
 **Preferred sources** — corroborated by past sessions; start here.
-- `MarkdownEditor.svelte` (2× useful, score=1.853930576)
+- `MarkdownEditor.svelte` (2× useful, score=1.776511529)
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
@@ -903,7 +903,7 @@ _Questions this graph is uniquely positioned to answer:_
   _High betweenness centrality (0.065) - this node is a cross-community bridge._
 - **Why does `svelte` connect `types.ts` to `keywords`, `codeBlocks.ts`?**
   _High betweenness centrality (0.064) - this node is a cross-community bridge._
-- **Why does `devDependencies` connect `devDependencies` to `@tailwindcss/vite`, `@typescript/native`, `@types/d3-array`, `typescript`, `prettier`, `package.json`, `@sveltejs/package`, `vite`, `@types/d3-shape`, `globals`, `peerDependencies`, `@sveltejs/vite-plugin-svelte`, `prettier-plugin-svelte`, `@types/d3-time-format`, `@types/js-yaml`, `@commitlint/config-conventional`, `publint`, `@types/katex`, `jiti`, `svelte-check`, `@sveltejs/adapter-cloudflare`, `@types/node`?**
+- **Why does `devDependencies` connect `devDependencies` to `publint`, `@tailwindcss/vite`, `@typescript/native`, `@types/d3-array`, `typescript`, `prettier`, `package.json`, `@sveltejs/package`, `vite`, `@types/d3-shape`, `globals`, `peerDependencies`, `@sveltejs/vite-plugin-svelte`, `prettier-plugin-svelte`, `@types/d3-time-format`, `@types/js-yaml`, `@commitlint/config-conventional`, `@types/katex`, `jiti`, `svelte-check`, `@sveltejs/adapter-cloudflare`, `@types/node`?**
   _High betweenness centrality (0.031) - this node is a cross-community bridge._
 - **What connects `fs`, `path`, `schemaPath` to the rest of the system?**
   _898 weakly-connected nodes found - possible documentation gaps or missing edges._
