@@ -486,9 +486,9 @@
     "semantic_hash": ""
   },
   "src/lib/components/TableOfContents.svelte": {
-    "mtime": 1788624845.6292398,
-    "seen": 1788624990.027857,
-    "ast_hash": "2db7acffc3c8893d2b93188bc73bdbe6",
+    "mtime": 1788626821.2747176,
+    "seen": 1788626913.9688416,
+    "ast_hash": "9dffa8d7de0f0d82fe26ecf5567d5e84",
     "semantic_hash": ""
   },
   "src/lib/components/Tag.svelte": {
@@ -1092,9 +1092,9 @@
     "semantic_hash": ""
   },
   "src/routes/blog/[slug]/+page.svelte": {
-    "mtime": 1788624853.8713481,
-    "seen": 1788624990.0284402,
-    "ast_hash": "cf75c949f84dc629a26a6544edf2d69b",
+    "mtime": 1788626760.9959514,
+    "seen": 1788626913.9692233,
+    "ast_hash": "0e6187d1070b9319111ffe3b2f13039d",
     "semantic_hash": ""
   },
   "src/routes/feedback/+page.svelte": {
@@ -1872,9 +1872,9 @@
     "semantic_hash": ""
   },
   "src/lib/components/ContentActions.svelte": {
-    "mtime": 1788624786.855468,
-    "seen": 1788624990.0276506,
-    "ast_hash": "bd6bc70eb2d9470d316c0d4813ad9240",
+    "mtime": 1788626816.713899,
+    "seen": 1788626913.968699,
+    "ast_hash": "e0318d436e657de977b2e511c8157e4f",
     "semantic_hash": ""
   },
   "src/lib/utils/markdownToText.ts": {

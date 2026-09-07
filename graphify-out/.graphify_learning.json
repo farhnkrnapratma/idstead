@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-09-03T09:46:49.841682+00:00",
+  "generated_at": "2026-09-05T16:56:34.471633+00:00",
   "nodes": {
     "package": {
-      "code_fingerprint": "5e02c8be4a65a0acd41dbec9688185f1e08dcde3ca9c6e40b734206f89f3fa9f",
+      "code_fingerprint": "22c7926dd0964f10c986d9c4ad48ceda7f81ffdb8f1a7a56e01860dd888eb0b9",
       "label": "package.json",
       "last": "2026-08-19T11:24:58.309289+00:00",
       "provenance": [
@@ -12,13 +12,13 @@
           "q": "Mengapa saat bun run dev yang dibaca adalah .env? Bagaimana agar bun run dev menggunakan .env.production dan bun run dev:preview menggunakan .env.preview?"
         }
       ],
-      "score": 0.708221126,
+      "score": 0.671592184,
       "source_file": "package.json",
       "status": "tentative",
       "uses": 1
     },
     "src_lib_components_markdowneditor": {
-      "code_fingerprint": "12a053cbdcab5fe0f1272244a41678871db93702f2e1339de272eed000920d38",
+      "code_fingerprint": "c46314bce63b5fd159af3a2de56c32758f490ab8a00e8de81566ddd6d0573960",
       "label": "MarkdownEditor.svelte",
       "last": "2026-09-02T10:11:28.419247+00:00",
       "provenance": [
@@ -33,13 +33,13 @@
           "q": "Fix statusline sticky and toolbar clipping beneath the admin navbar"
         }
       ],
-      "score": 1.955044791,
+      "score": 1.853930576,
       "source_file": "src/lib/components/MarkdownEditor.svelte",
       "status": "preferred",
       "uses": 2
     },
     "src_lib_components_topnav": {
-      "code_fingerprint": "1c7d75649425bd429cd12bdf4fbd5bca362f168f0e5a313837ca0b1ffacc03d1",
+      "code_fingerprint": "03fb1977b80feed94b37bc78f3ccd16828da0c70ce09b2aa32fc5d57dbff86db",
       "label": "TopNav.svelte",
       "last": "2026-09-02T10:08:24.672761+00:00",
       "provenance": [
@@ -49,13 +49,13 @@
           "q": "Fix statusline sticky and toolbar clipping beneath the admin navbar"
         }
       ],
-      "score": 0.977498379,
+      "score": 0.926942514,
       "source_file": "src/lib/components/TopNav.svelte",
       "status": "tentative",
       "uses": 1
     },
     "src_lib_stores_a11ystore_svelte": {
-      "code_fingerprint": "4f8b737f2768a1767a2a2f1c2b9e6cbcd9b13e562730424d89b333f7525ac945",
+      "code_fingerprint": "80497a4b1277207d17f25b87caf3ff1eafc9662e2efb6a35a38bffbb05b3a7a1",
       "label": "a11yStore.svelte.ts",
       "last": "2026-08-19T10:25:08.876469+00:00",
       "provenance": [
@@ -65,13 +65,13 @@
           "q": "Why does createA11yStore() connect to Security Auditing & Hardening?"
         }
       ],
-      "score": 0.707541646,
+      "score": 0.670947846,
       "source_file": "src/lib/stores/a11yStore.svelte.ts",
       "status": "tentative",
       "uses": 1
     },
     "src_lib_stores_a11ystore_svelte_createa11ystore": {
-      "code_fingerprint": "4f8b737f2768a1767a2a2f1c2b9e6cbcd9b13e562730424d89b333f7525ac945",
+      "code_fingerprint": "80497a4b1277207d17f25b87caf3ff1eafc9662e2efb6a35a38bffbb05b3a7a1",
       "label": "createA11yStore()",
       "last": "2026-08-19T10:25:08.876469+00:00",
       "provenance": [
@@ -81,7 +81,7 @@
           "q": "Why does createA11yStore() connect to Security Auditing & Hardening?"
         }
       ],
-      "score": 0.707541646,
+      "score": 0.670947846,
       "source_file": "src/lib/stores/a11yStore.svelte.ts",
       "status": "tentative",
       "uses": 1
@@ -97,7 +97,7 @@
           "q": "Fix statusline sticky and toolbar clipping beneath the admin navbar"
         }
       ],
-      "score": 0.977498379,
+      "score": 0.926942514,
       "source_file": "src/routes/admin/+layout.svelte",
       "status": "tentative",
       "uses": 1
@@ -113,7 +113,7 @@
           "q": "Mengapa saat bun run dev yang dibaca adalah .env? Bagaimana agar bun run dev menggunakan .env.production dan bun run dev:preview menggunakan .env.preview?"
         }
       ],
-      "score": 0.708221126,
+      "score": 0.671592184,
       "source_file": "vite.config.ts",
       "status": "tentative",
       "uses": 1

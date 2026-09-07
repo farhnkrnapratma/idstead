@@ -2465,7 +2465,7 @@
       "file_type": "code",
       "norm_label": "toclist()",
       "source_file": "src/lib/components/TableOfContents.svelte",
-      "source_location": "L311"
+      "source_location": "L314"
     },
     {
       "id": "src_lib_components_tooltip_destroy",
@@ -50557,7 +50557,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/components/TableOfContents.svelte",
-      "source_location": "L311",
+      "source_location": "L314",
       "weight": 1.0
     },
     {
@@ -60266,7 +60266,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "src/lib/components/TableOfContents.svelte",
-      "source_location": "L187",
+      "source_location": "L190",
       "weight": 1.0
     },
     {
@@ -61250,7 +61250,7 @@
       "confidence_score": 0.85,
       "context": "collection",
       "source_file": "src/routes/blog/[slug]/+page.svelte",
-      "source_location": "L1366",
+      "source_location": "L1367",
       "weight": 1.0
     },
     {
@@ -61262,7 +61262,7 @@
       "confidence_score": 0.85,
       "context": "collection",
       "source_file": "src/routes/blog/[slug]/+page.svelte",
-      "source_location": "L1497",
+      "source_location": "L1514",
       "weight": 1.0
     },
     {
