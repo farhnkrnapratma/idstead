@@ -1137,6 +1137,7 @@
 
 <svelte:window
   onclick={closeAllCardPopovers}
+  onscroll={closeAllCardPopovers}
   onkeydown={handleWindowKeydown} />
 
 <nav
@@ -2001,19 +2002,17 @@
                   offset: 6,
                   padding: 8
                 }}
-                class="absolute z-50 flex max-w-[calc(100vw-2rem)] flex-col gap-2.5 rounded-md border border-border-subtle bg-surface-elevated/95 p-2.5 shadow-xl backdrop-blur-md sm:flex-row sm:gap-0 sm:divide-x sm:divide-border-subtle/60"
-                onclick={(e: MouseEvent) => e.stopPropagation()}
-                onkeydown={(e: KeyboardEvent) => {
-                  if (e.key === 'Escape') activeBlogQuickActionsId = null;
-                }}>
-                <div class="flex flex-col gap-1 sm:pr-3">
+                class="absolute z-50 flex max-h-[85vh] max-w-[calc(100vw-2rem)] flex-row divide-x divide-border-subtle/60 overflow-y-auto rounded-md border border-border-subtle bg-surface-elevated/95 p-2.5 shadow-xl backdrop-blur-md">
+                <div class="flex flex-col gap-1 pr-3">
                   <span
                     class="px-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase"
                     >Copy</span>
                   <Button
                     type="ghost"
                     size="xs"
-                    class="w-full justify-start px-1.5 whitespace-nowrap"
+                    label="Copy as MD"
+                    truncateMiddle
+                    class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
                     onclick={() => {
                       activeBlogQuickActionsId = null;
                       copyBlogMarkdown(post);
@@ -2021,13 +2020,14 @@
                     {#snippet leading()}
                       <Copy class="size-3.5" />
                     {/snippet}
-                    <span>Copy as Markdown</span>
                   </Button>
 
                   <Button
                     type="ghost"
                     size="xs"
-                    class="w-full justify-start px-1.5 whitespace-nowrap"
+                    label="Copy as TXT"
+                    truncateMiddle
+                    class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
                     onclick={() => {
                       activeBlogQuickActionsId = null;
                       copyBlogText(post);
@@ -2035,13 +2035,14 @@
                     {#snippet leading()}
                       <ScanText class="size-3.5" />
                     {/snippet}
-                    <span>Copy as Text</span>
                   </Button>
 
                   <Button
                     type="ghost"
                     size="xs"
-                    class="w-full justify-start px-1.5 whitespace-nowrap"
+                    label="Post URL"
+                    truncateMiddle
+                    class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
                     onclick={() => {
                       activeBlogQuickActionsId = null;
                       copyBlogUrl(post);
@@ -2049,14 +2050,15 @@
                     {#snippet leading()}
                       <Link class="size-3.5" />
                     {/snippet}
-                    <span>Copy URL</span>
                   </Button>
 
                   {#if post.id}
                     <Button
                       type="ghost"
                       size="xs"
-                      class="w-full justify-start px-1.5 whitespace-nowrap"
+                      label="Post ID"
+                      truncateMiddle
+                      class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
                       onclick={() => {
                         activeBlogQuickActionsId = null;
                         copyBlogId(post);
@@ -2064,77 +2066,81 @@
                       {#snippet leading()}
                         <Hash class="size-3.5" />
                       {/snippet}
-                      <span>Copy Post ID</span>
                     </Button>
                   {/if}
                 </div>
 
-                <div
-                  class="flex flex-col gap-1 border-t border-border-subtle/60 pt-2 sm:border-t-0 sm:px-3 sm:pt-0">
-                  <span
-                    class="px-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase"
-                    >View</span>
-                  <Button
-                    type="ghost"
-                    size="xs"
-                    href="/api/v1/blog/{post.slug}?format=md"
-                    class="w-full justify-start px-1.5 whitespace-nowrap"
-                    onclick={() => (activeBlogQuickActionsId = null)}>
-                    {#snippet leading()}
-                      <i
-                        class="bi bi-markdown inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
-                        aria-hidden="true"></i>
-                    {/snippet}
-                    <span>View as Markdown</span>
-                  </Button>
+                <div class="flex flex-col gap-2 pl-3 sm:contents">
+                  <div class="flex flex-col gap-1 sm:px-3">
+                    <span
+                      class="px-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase"
+                      >View</span>
+                    <Button
+                      type="ghost"
+                      size="xs"
+                      href="/api/v1/blog/{post.slug}?format=md"
+                      label="View as MD"
+                      truncateMiddle
+                      class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
+                      onclick={() => (activeBlogQuickActionsId = null)}>
+                      {#snippet leading()}
+                        <i
+                          class="bi bi-markdown inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
+                          aria-hidden="true"></i>
+                      {/snippet}
+                    </Button>
 
-                  <Button
-                    type="ghost"
-                    size="xs"
-                    href="/api/v1/blog/{post.slug}?format=text"
-                    class="w-full justify-start px-1.5 whitespace-nowrap"
-                    onclick={() => (activeBlogQuickActionsId = null)}>
-                    {#snippet leading()}
-                      <TextAlignStart class="size-3.5" />
-                    {/snippet}
-                    <span>View as Text</span>
-                  </Button>
-                </div>
+                    <Button
+                      type="ghost"
+                      size="xs"
+                      href="/api/v1/blog/{post.slug}?format=text"
+                      label="View as TXT"
+                      truncateMiddle
+                      class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
+                      onclick={() => (activeBlogQuickActionsId = null)}>
+                      {#snippet leading()}
+                        <TextAlignStart class="size-3.5" />
+                      {/snippet}
+                    </Button>
+                  </div>
 
-                <div
-                  class="flex flex-col gap-1 border-t border-border-subtle/60 pt-2 sm:border-t-0 sm:pt-0 sm:pl-3">
-                  <span
-                    class="px-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase"
-                    >Save</span>
-                  <Button
-                    type="ghost"
-                    size="xs"
-                    class="w-full justify-start px-1.5 whitespace-nowrap"
-                    onclick={() => {
-                      activeBlogQuickActionsId = null;
-                      downloadBlogMarkdown(post);
-                    }}>
-                    {#snippet leading()}
-                      <i
-                        class="bi bi-filetype-md inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
-                        aria-hidden="true"></i>
-                    {/snippet}
-                    <span>Save as Markdown</span>
-                  </Button>
+                  <div
+                    class="flex flex-col gap-1 border-t border-border-subtle/60 pt-2 sm:border-t-0 sm:pt-0 sm:pl-3">
+                    <span
+                      class="px-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase"
+                      >Save</span>
+                    <Button
+                      type="ghost"
+                      size="xs"
+                      label="Save as MD"
+                      truncateMiddle
+                      class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
+                      onclick={() => {
+                        activeBlogQuickActionsId = null;
+                        downloadBlogMarkdown(post);
+                      }}>
+                      {#snippet leading()}
+                        <i
+                          class="bi bi-filetype-md inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
+                          aria-hidden="true"></i>
+                      {/snippet}
+                    </Button>
 
-                  <Button
-                    type="ghost"
-                    size="xs"
-                    class="w-full justify-start px-1.5 whitespace-nowrap"
-                    onclick={() => {
-                      activeBlogQuickActionsId = null;
-                      downloadBlogText(post);
-                    }}>
-                    {#snippet leading()}
-                      <FileText class="size-3.5" />
-                    {/snippet}
-                    <span>Save as Text</span>
-                  </Button>
+                    <Button
+                      type="ghost"
+                      size="xs"
+                      label="Save as TXT"
+                      truncateMiddle
+                      class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
+                      onclick={() => {
+                        activeBlogQuickActionsId = null;
+                        downloadBlogText(post);
+                      }}>
+                      {#snippet leading()}
+                        <FileText class="size-3.5" />
+                      {/snippet}
+                    </Button>
+                  </div>
                 </div>
               </div>
             {/if}
@@ -2241,7 +2247,7 @@
 
             {#if headline}
               <p
-                class="relative z-10 mt-1 max-w-lg font-sans-title text-xs leading-relaxed text-text-secondary sm:mt-1.5 sm:text-sm">
+                class="relative z-10 mt-1 max-w-lg font-sans-title text-xs leading-relaxed text-text-muted sm:mt-1.5 sm:text-sm">
                 {headline}
               </p>
             {/if}
@@ -3022,7 +3028,7 @@
   {/if}
 
   <div
-    class="mx-auto w-full max-w-full px-3 sm:px-6 md:w-[80%] lg:w-[65%] xl:w-[50%] 2xl:w-[45%] {(
+    class="mx-auto w-full max-w-full px-3 sm:px-6 md:w-[80%] lg:w-[50%] {(
       activeSection === 'home'
     ) ?
       'my-6'

@@ -13,12 +13,23 @@
     show?: boolean;
     hasBottomNav?: boolean;
     class?: string;
+    onClick?: () => void;
+    progress?: number;
   }
 
-  let {show = true, hasBottomNav, class: className = ''}: Props = $props();
+  let {
+    show = true,
+    hasBottomNav,
+    class: className = '',
+    onClick,
+    progress
+  }: Props = $props();
 
   const isMainPage = $derived(
     hasBottomNav !== undefined ? hasBottomNav : page.url.pathname === '/'
+  );
+  const currentProgress = $derived(
+    progress !== undefined ? progress : scrollStore.progress
   );
 </script>
 
@@ -35,7 +46,7 @@
         <button
           transition:fade={{duration: 150}}
           class="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full glass-button px-0 text-xs font-semibold text-text-primary shadow-md transition-colors hover:text-accent md:h-10 md:w-10 md:shadow-lg"
-          onclick={() => scrollToTop('smooth')}
+          onclick={onClick || (() => scrollToTop('smooth'))}
           aria-label="Scroll to top">
           <ArrowUp class="size-4.5 shrink-0 md:size-5" />
         </button>
@@ -59,8 +70,7 @@
             stroke-width="2"
             stroke-linecap="round"
             stroke-dasharray={RING_CIRCUMFERENCE}
-            stroke-dashoffset={RING_CIRCUMFERENCE
-              * (1 - scrollStore.progress / 100)}
+            stroke-dashoffset={RING_CIRCUMFERENCE * (1 - currentProgress / 100)}
             class="transition-[stroke-dashoffset] duration-300 ease-out" />
         </svg>
       </div>

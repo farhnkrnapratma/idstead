@@ -12,7 +12,7 @@
 
 <article
   class={cn(
-    'mx-auto flex w-full flex-col font-sans leading-relaxed md:w-[80%] lg:w-[65%] xl:w-[50%] 2xl:w-[45%]',
+    'mx-auto flex w-full flex-col font-sans leading-relaxed md:w-[80%] lg:w-[50%]',
     className
   )}>
   {@render children?.()}

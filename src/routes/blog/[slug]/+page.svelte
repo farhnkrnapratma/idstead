@@ -51,7 +51,9 @@
     formatAbsoluteDate,
     ConsentNotice,
     readingModeStore,
-    Tooltip
+    Tooltip,
+    ScrollToTopButton,
+    FeedbackButton
   } from '$lib';
   import {pushState} from '$app/navigation';
   import {page, navigating} from '$app/state';
@@ -193,6 +195,37 @@
     } catch (err) {
       console.error('Failed to submit blog feedback:', err);
     }
+  }
+
+  let articleScrollTop = $state(0);
+  let articleScrollHeight = $state(0);
+  let articleClientHeight = $state(0);
+
+  const articleScrollProgress = $derived(
+    articleScrollHeight - articleClientHeight > 0 ?
+      (articleScrollTop / (articleScrollHeight - articleClientHeight)) * 100
+    : 0
+  );
+  const isArticleScrolledPast = $derived(articleScrollTop > 300);
+
+  function handleArticleScroll(e: Event) {
+    const target = e.currentTarget as HTMLElement;
+    articleScrollTop = target.scrollTop;
+    articleScrollHeight = target.scrollHeight;
+    articleClientHeight = target.clientHeight;
+  }
+
+  function scrollArticleToTop() {
+    if (articleBodyEl) {
+      const container = articleBodyEl.closest(
+        '.article-scroll-container'
+      ) as HTMLElement | null;
+      if (container) {
+        container.scrollTo({top: 0, behavior: 'smooth'});
+        return;
+      }
+    }
+    window.scrollTo({top: 0, behavior: 'smooth'});
   }
 
   let articleBodyEl: HTMLDivElement | undefined = $state();
@@ -698,29 +731,31 @@
   id="main-content"
   class="flex flex-col font-sans {readingModeStore.active ?
     'min-h-screen pt-4 sm:pt-6'
-  : 'min-h-[calc(100vh-3rem)] pt-12 sm:min-h-[calc(100vh-3.5rem)] sm:pt-14 xl:h-[calc(100dvh-3.5rem)] xl:min-h-0 xl:overflow-hidden'}">
+  : 'min-h-[calc(100vh-3rem)] pt-12 sm:min-h-[calc(100vh-3.5rem)] sm:pt-14 lg:h-dvh lg:min-h-0 lg:overflow-hidden'}">
   <div
     class={readingModeStore.active ?
-      'relative mx-auto w-full px-3 pt-3 pb-16 sm:px-6 sm:pt-4 md:w-[80%] lg:w-[65%] xl:w-[50%] 2xl:w-[45%]'
-    : 'relative mx-auto w-full px-3 pt-3 pb-16 sm:px-6 sm:pt-4 md:w-[80%] lg:w-[65%] xl:mx-auto xl:grid xl:h-full xl:w-full xl:max-w-[1600px] xl:grid-cols-[23.5%_minmax(0,1fr)_23.5%] xl:items-start xl:gap-8 xl:px-8 xl:pb-0 2xl:max-w-[1720px] 2xl:grid-cols-[24.5%_minmax(0,1fr)_24.5%]'}>
+      'relative mx-auto w-full px-3 pt-3 pb-16 sm:px-6 sm:pt-4 md:w-[80%] lg:w-[50%]'
+    : 'relative mx-auto w-full px-3 pt-5 pb-16 sm:px-6 sm:pt-6 md:w-[80%] md:pt-8 lg:mx-0 lg:grid lg:h-full lg:w-full lg:max-w-none lg:grid-cols-[25%_50%_25%] lg:grid-rows-[minmax(0,1fr)] lg:items-start lg:gap-0 lg:px-0 lg:pt-0 lg:pb-0'}>
     {#if !readingModeStore.active}
       <aside
         transition:fade={{duration: 150}}
-        class="hidden [scrollbar-width:none] select-none [-ms-overflow-style:none] xl:sticky xl:top-0 xl:z-20 xl:flex xl:max-h-[calc(100dvh-5.5rem)] xl:w-full xl:flex-col xl:gap-3 [&::-webkit-scrollbar]:hidden"
+        class="hidden select-none lg:sticky lg:top-0 lg:z-20 lg:flex lg:max-h-full lg:w-full lg:flex-col lg:overflow-hidden lg:px-[5%] lg:pt-[5%] lg:pb-[5%] [&>*+*]:lg:mt-[5%]"
         aria-label="Table of contents">
         <TableOfContents
           {headings}
-          class="max-h-[calc(100dvh-18rem)] min-h-0 flex-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden" />
+          class="min-h-0 w-full flex-1 [scrollbar-width:none] overflow-hidden [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden" />
         <HelpfulBlock
           variant="compact"
           voted={hasVotedHelpful ? true : null}
           onVote={helpful => handleHelpfulness(helpful ? 'yes' : 'no')}
-          onFeedbackClick={() => (showNoFeedbackDialog = true)} />
+          onFeedbackClick={() => (showNoFeedbackDialog = true)}
+          class="w-full shrink-0" />
       </aside>
     {/if}
 
     <article
-      class="article-scroll-container flex w-full min-w-0 flex-col xl:h-full xl:max-h-[calc(100dvh-5.5rem)] xl:overflow-y-auto xl:pr-3">
+      onscroll={handleArticleScroll}
+      class="article-scroll-container flex w-full min-w-0 flex-col lg:h-full lg:max-h-full lg:overflow-y-auto lg:px-[5%] lg:pt-8 lg:pb-0">
       <ArticleHeader
         title={post.title}
         titleClass="text-text-primary"
@@ -923,7 +958,7 @@
           {#if !readingModeStore.active}
             <div
               transition:fade={{duration: 150}}
-              class="w-full xl:hidden">
+              class="w-full lg:hidden">
               <ContentActions
                 class="mt-3 w-full"
                 slug={post.slug}
@@ -951,7 +986,7 @@
       {#if !readingModeStore.active && ((post.tldr && post.tldr.length > 0) || post.summary)}
         <div
           transition:fade={{duration: 150}}
-          class="mt-3 xl:hidden">
+          class="mt-3 lg:hidden">
           <PostInsights
             tldr={post.tldr}
             summary={post.summary}
@@ -962,7 +997,7 @@
       {#if !readingModeStore.active}
         <div
           transition:fade={{duration: 150}}
-          class="mt-3 flex flex-col xl:hidden">
+          class="mt-3 flex flex-col lg:hidden">
           <TableOfContents
             {headings}
             collapsible={true}
@@ -980,7 +1015,7 @@
         <div
           transition:fade={{duration: 150}}
           class="mt-6 flex flex-col gap-4 select-none sm:mt-8 sm:gap-5">
-          <div class="xl:hidden">
+          <div class="lg:hidden">
             <HelpfulBlock
               voted={hasVotedHelpful ? true : null}
               onVote={helpful => handleHelpfulness(helpful ? 'yes' : 'no')}
@@ -1459,7 +1494,13 @@
         </section>
 
         {#if !readingModeStore.active}
+          <div
+            class="mt-8 mb-6 w-full border-t border-border-subtle/60"
+            aria-hidden="true">
+          </div>
+
           <FooterSection
+            width="full"
             showFontSelect={true}
             languageSwitcher={{
               slug: post.slug,
@@ -1468,7 +1509,7 @@
             }}
             readingMode={readingModeStore.active}
             onToggleReadingMode={readingModeStore.toggle}
-            class="mt-12 w-full max-w-full px-0 sm:px-0 md:w-full lg:w-full xl:w-full 2xl:w-full" />
+            class="mt-0 w-full pb-0 md:pb-0 lg:pb-20" />
         {/if}
       {/if}
     </article>
@@ -1476,34 +1517,50 @@
     {#if !readingModeStore.active}
       <aside
         transition:fade={{duration: 150}}
-        class="hidden [scrollbar-width:none] select-none [-ms-overflow-style:none] xl:sticky xl:top-0 xl:z-20 xl:flex xl:max-h-[calc(100dvh-5.5rem)] xl:w-full xl:flex-col xl:gap-3 xl:overflow-hidden [&::-webkit-scrollbar]:hidden"
+        class="article-scroll-container hidden select-none lg:sticky lg:top-0 lg:z-20 lg:flex lg:max-h-full lg:w-full lg:flex-col lg:overflow-y-auto lg:px-[5%] lg:pt-[5%] lg:pb-[5%] [&>*+*]:lg:mt-[5%]"
         aria-label="Article actions and insights">
-        <div class="flex w-full items-center justify-start">
-          <ContentActions
-            class="w-full"
-            slug={post.slug}
-            pageId={post.id}
-            title={post.title}
-            avatarUrl={author?.avatar}
-            viewMarkdownUrl="/api/v1/blog/{post.slug}?format=md"
-            viewTextUrl="/api/v1/blog/{post.slug}?format=text" />
-        </div>
-
-        {#if (post.tldr && post.tldr.length > 0) || post.summary}
+        {#if post.tldr && post.tldr.length > 0}
           <PostInsights
+            mode="tldr-only"
             tldr={post.tldr}
-            summary={post.summary}
-            class="mt-0! w-full" />
+            class="w-full shrink-0" />
         {/if}
+
+        {#if post.summary}
+          <PostInsights
+            mode="summary-only"
+            summary={post.summary}
+            class="w-full shrink-0" />
+        {/if}
+
+        <ContentActions
+          variant="sidebar"
+          class="w-full shrink-0"
+          slug={post.slug}
+          pageId={post.id}
+          title={post.title}
+          avatarUrl={author?.avatar}
+          viewMarkdownUrl="/api/v1/blog/{post.slug}?format=md"
+          viewTextUrl="/api/v1/blog/{post.slug}?format=text" />
       </aside>
     {/if}
   </div>
 </main>
 
+<FeedbackButton
+  show={!readingModeStore.active}
+  class="hidden lg:fixed lg:bottom-6 lg:left-[calc(25%+1.5rem)] lg:z-40 lg:block" />
+
+<ScrollToTopButton
+  show={isArticleScrolledPast && !readingModeStore.active}
+  onClick={scrollArticleToTop}
+  progress={articleScrollProgress}
+  class="hidden lg:fixed lg:right-[calc(25%+1.5rem)] lg:bottom-6 lg:z-40 lg:block" />
+
 {#if readingModeStore.active}
   <div
     transition:fade={{duration: 150}}
-    class="fixed right-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 md:right-6 md:bottom-6">
+    class="fixed right-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 md:right-6 md:bottom-6 lg:right-[calc(25%+1.5rem)]">
     <Tooltip
       content="Exit reading mode"
       placement="top"

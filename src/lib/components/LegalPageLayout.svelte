@@ -1,7 +1,7 @@
 <script lang="ts">
   import {tick, onMount} from 'svelte';
   import {fade} from 'svelte/transition';
-  import {RotateCcwClock, BookOpenText} from '@lucide/svelte';
+  import {BookOpenText} from '@lucide/svelte';
   import {
     TopNav,
     TableOfContents,
@@ -10,21 +10,21 @@
     ContentActions,
     FooterSection,
     SkipLink,
-    Tooltip
+    Tooltip,
+    FeedbackButton,
+    ScrollToTopButton
   } from '$lib';
   import ArticleHeader from '$lib/article/ArticleHeader.svelte';
-  import AlertDialog from './AlertDialog.svelte';
+  import ArticleMeta from '$lib/article/ArticleMeta.svelte';
   import {toastStore} from '$lib/stores/toastStore.svelte';
   import {readingModeStore} from '$lib/stores/readingModeStore.svelte';
   import type {HeadingItem} from '$lib/markdown';
-  import {formatAbsoluteDate} from '$lib/utils/formatters';
+  import {formatReadTime} from '$lib/utils/formatters';
   import {enhanceMarkdownContent} from '$lib/utils/markdownEnhancer';
   import hljs from 'highlight.js';
   import 'katex/dist/katex.min.css';
-  import {themeStore} from '$lib/stores/themeStore.svelte';
-  import {a11yStore} from '$lib/stores/a11yStore.svelte';
   import {contentFontStore} from '$lib/stores/contentFontStore.svelte';
-  import {pushState} from '$app/navigation';
+  import {pushState, goto} from '$app/navigation';
   import {page} from '$app/state';
 
   interface Props {
@@ -33,6 +33,7 @@
     content: string;
     html: string;
     headings: HeadingItem[];
+    date?: string;
     updatedAt?: string;
     authorName?: string;
     avatarUrl?: string;
@@ -45,6 +46,7 @@
     content,
     html,
     headings = [],
+    date,
     updatedAt,
     authorName = '',
     avatarUrl = '',
@@ -53,10 +55,47 @@
 
   let pageProjects = $derived((page?.data as any)?.projects ?? []);
 
-  let showYesFeedbackDialog = $state(false);
-  let showNoFeedbackDialog = $state(false);
   let hasVotedHelpful = $state(false);
   let isDark = $state(false);
+
+  const wordsCount = $derived(
+    content ? content.trim().split(/\s+/).filter(Boolean).length : 0
+  );
+  const estimatedMinutes = $derived(Math.max(1, Math.ceil(wordsCount / 200)));
+  const readingTime = $derived(formatReadTime(estimatedMinutes));
+
+  let articleScrollTop = $state(0);
+  let articleScrollHeight = $state(0);
+  let articleClientHeight = $state(0);
+
+  const articleScrollProgress = $derived(
+    articleScrollHeight - articleClientHeight > 0 ?
+      (articleScrollTop / (articleScrollHeight - articleClientHeight)) * 100
+    : 0
+  );
+  const isArticleScrolledPast = $derived(articleScrollTop > 300);
+
+  function handleArticleScroll(e: Event) {
+    const target = e.currentTarget as HTMLElement;
+    articleScrollTop = target.scrollTop;
+    articleScrollHeight = target.scrollHeight;
+    articleClientHeight = target.clientHeight;
+  }
+
+  let articleBodyEl: HTMLElement | undefined = $state();
+
+  function scrollArticleToTop() {
+    if (articleBodyEl) {
+      const container = articleBodyEl.closest(
+        '.article-scroll-container'
+      ) as HTMLElement | null;
+      if (container) {
+        container.scrollTo({top: 0, behavior: 'smooth'});
+        return;
+      }
+    }
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
 
   function triggerToast(message: string, isError = false) {
     if (isError) {
@@ -67,12 +106,8 @@
   }
 
   function handleHelpfulness(value: 'yes' | 'no') {
+    void value;
     hasVotedHelpful = true;
-    if (value === 'yes') {
-      showYesFeedbackDialog = true;
-    } else {
-      showNoFeedbackDialog = true;
-    }
   }
 
   $effect(() => {
@@ -237,58 +272,66 @@
   id="main-content"
   class="flex flex-col font-sans {readingModeStore.active ?
     'min-h-screen pt-4 sm:pt-6'
-  : 'min-h-[calc(100vh-3rem)] pt-12 sm:min-h-[calc(100vh-3.5rem)] sm:pt-14'}">
+  : 'min-h-[calc(100vh-3rem)] pt-12 sm:min-h-[calc(100vh-3.5rem)] sm:pt-14 lg:h-dvh lg:min-h-0 lg:overflow-hidden'}">
   <div
-    class="relative mx-auto w-full px-3 pt-5 pb-6 sm:px-6 md:w-[80%] md:pt-8 md:pb-8 lg:w-[65%] xl:w-[50%] 2xl:w-[45%]">
+    class={readingModeStore.active ?
+      'relative mx-auto w-full px-3 pt-3 pb-16 sm:px-6 sm:pt-4 md:w-[80%] lg:w-[50%]'
+    : 'relative mx-auto w-full px-3 pt-5 pb-16 sm:px-6 sm:pt-6 md:w-[80%] md:pt-8 lg:mx-0 lg:grid lg:h-full lg:w-full lg:max-w-none lg:grid-cols-[25%_50%_25%] lg:grid-rows-[minmax(0,1fr)] lg:items-start lg:gap-0 lg:px-0 lg:pt-0 lg:pb-0'}>
     {#if !readingModeStore.active}
       <aside
         transition:fade={{duration: 150}}
-        class="sticky top-18 hidden max-h-[calc(100dvh-9.5rem)] flex-col gap-3 self-start select-none xl:float-left xl:-ml-64 xl:flex xl:w-56"
+        class="hidden select-none lg:sticky lg:top-0 lg:z-20 lg:flex lg:max-h-full lg:w-full lg:flex-col lg:overflow-hidden lg:px-[5%] lg:pt-[5%] lg:pb-[5%] [&>*+*]:lg:mt-[5%]"
         aria-label="Table of contents">
         <TableOfContents
           {headings}
-          class="max-h-[calc(100dvh-20rem)] min-h-0 flex-1" />
+          class="min-h-0 w-full flex-1 [scrollbar-width:none] overflow-hidden [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden" />
         <HelpfulBlock
           title="Help improve this page"
           subtitle="Was this page helpful to you?"
           variant="compact"
           voted={hasVotedHelpful ? true : null}
           onVote={helpful => handleHelpfulness(helpful ? 'yes' : 'no')}
-          onFeedbackClick={() => (showNoFeedbackDialog = true)} />
+          onFeedbackClick={() => goto('/feedback')}
+          class="w-full shrink-0" />
       </aside>
     {/if}
 
-    <article class="flex w-full flex-col">
-      <ArticleHeader {title}>
+    <article
+      bind:this={articleBodyEl}
+      onscroll={handleArticleScroll}
+      class="article-scroll-container flex w-full min-w-0 flex-col lg:h-full lg:max-h-full lg:overflow-y-auto lg:px-[5%] lg:pt-8 lg:pb-0">
+      <ArticleHeader
+        {title}
+        titleClass="text-text-primary">
         {#snippet meta()}
-          <div class="flex flex-col gap-2.5">
-            <span
-              class="inline-flex items-center gap-1 text-xs font-semibold whitespace-nowrap text-text-secondary">
-              <RotateCcwClock class="size-3.5 shrink-0 text-text-muted" />
-              {#if updatedAt}
-                <span>Updated {formatAbsoluteDate(updatedAt)}</span>
-              {:else}
-                <span>Official Policy</span>
-              {/if}
-            </span>
+          <ArticleMeta
+            layout="single"
+            {date}
+            {updatedAt}
+            {readingTime}
+            class="mt-2.5 w-full" />
 
-            {#if !readingModeStore.active}
+          {#if !readingModeStore.active}
+            <div
+              transition:fade={{duration: 150}}
+              class="w-full lg:hidden">
               <ContentActions
-                class="w-full"
+                class="mt-3 w-full"
                 {slug}
                 {title}
                 {avatarUrl}
                 markdownContent={content}
+                showCopyUrl={false}
                 viewMarkdownUrl="/api/internal/raw?type=legal&slug={slug}&format=md"
                 viewTextUrl="/api/internal/raw?type=legal&slug={slug}&format=text"
                 pageUrl={siteUrl ? `${siteUrl}/${slug}` : undefined} />
-            {/if}
-          </div>
+            </div>
+          {/if}
         {/snippet}
       </ArticleHeader>
 
       {#if !readingModeStore.active}
-        <div class="mt-3 flex flex-col xl:hidden">
+        <div class="mt-3 flex flex-col lg:hidden">
           <TableOfContents
             {headings}
             collapsible={true}
@@ -302,30 +345,66 @@
       </div>
 
       {#if !readingModeStore.active}
-        <div class="mt-8 border-t border-border-subtle pt-6 xl:hidden">
+        <div class="mt-8 border-t border-border-subtle pt-6 lg:hidden">
           <HelpfulBlock
             title="Help improve this page"
             subtitle="Was this page helpful to you?"
             voted={hasVotedHelpful ? true : null}
             onVote={helpful => handleHelpfulness(helpful ? 'yes' : 'no')}
-            onFeedbackClick={() => (showNoFeedbackDialog = true)} />
+            onFeedbackClick={() => goto('/feedback')} />
         </div>
       {/if}
-    </article>
-  </div>
 
-  {#if !readingModeStore.active}
-    <FooterSection
-      showFontSelect={true}
-      readingMode={readingModeStore.active}
-      onToggleReadingMode={readingModeStore.toggle} />
-  {/if}
+      {#if !readingModeStore.active}
+        <div
+          class="mt-8 mb-6 w-full border-t border-border-subtle/60"
+          aria-hidden="true">
+        </div>
+
+        <FooterSection
+          width="full"
+          showFontSelect={true}
+          readingMode={readingModeStore.active}
+          onToggleReadingMode={readingModeStore.toggle}
+          class="mt-0 w-full pb-0 md:pb-0 lg:pb-20" />
+      {/if}
+    </article>
+
+    {#if !readingModeStore.active}
+      <aside
+        transition:fade={{duration: 150}}
+        class="article-scroll-container hidden select-none lg:sticky lg:top-0 lg:z-20 lg:flex lg:max-h-full lg:w-full lg:flex-col lg:overflow-y-auto lg:px-[5%] lg:pt-[5%] lg:pb-[5%] [&>*+*]:lg:mt-[5%]"
+        aria-label="Article actions">
+        <ContentActions
+          variant="sidebar"
+          class="w-full shrink-0"
+          {slug}
+          {title}
+          {avatarUrl}
+          markdownContent={content}
+          showCopyUrl={false}
+          viewMarkdownUrl="/api/internal/raw?type=legal&slug={slug}&format=md"
+          viewTextUrl="/api/internal/raw?type=legal&slug={slug}&format=text"
+          pageUrl={siteUrl ? `${siteUrl}/${slug}` : undefined} />
+      </aside>
+    {/if}
+  </div>
 </main>
+
+<FeedbackButton
+  show={!readingModeStore.active}
+  class="hidden lg:fixed lg:bottom-6 lg:left-[calc(25%+1.5rem)] lg:z-40 lg:block" />
+
+<ScrollToTopButton
+  show={isArticleScrolledPast && !readingModeStore.active}
+  onClick={scrollArticleToTop}
+  progress={articleScrollProgress}
+  class="hidden lg:fixed lg:right-[calc(25%+1.5rem)] lg:bottom-6 lg:z-40 lg:block" />
 
 {#if readingModeStore.active}
   <div
     transition:fade={{duration: 150}}
-    class="fixed right-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 md:right-6 md:bottom-6">
+    class="fixed right-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 md:right-6 md:bottom-6 lg:right-[calc(25%+1.5rem)]">
     <Tooltip
       content="Exit reading mode"
       placement="top"
@@ -342,15 +421,3 @@
 {/if}
 
 <Toast />
-
-<AlertDialog
-  isOpen={showYesFeedbackDialog}
-  title="Thank You!"
-  description="Your feedback has been recorded. We appreciate your input!"
-  onClose={() => (showYesFeedbackDialog = false)} />
-
-<AlertDialog
-  isOpen={showNoFeedbackDialog}
-  title="Thank You for Your Feedback"
-  description="We appreciate your input. We will work to improve this page."
-  onClose={() => (showNoFeedbackDialog = false)} />

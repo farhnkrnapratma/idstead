@@ -14,6 +14,7 @@
   import {portal} from '../../utils/actions';
   import {lockScroll} from '../../utils/scroll';
   import IconButton from '../IconButton.svelte';
+  import FlagIcon from '../FlagIcon.svelte';
   import {
     contentFontStore,
     type ContentFont
@@ -392,7 +393,12 @@
                         'border-accent bg-accent/10 text-accent'
                       : 'border-border-subtle bg-surface text-text-secondary hover:border-accent/50 hover:text-text-primary'
                     )}>
-                    <span>{LANGUAGE_LABELS[loc] ?? loc}</span>
+                    <div class="flex min-w-0 items-center gap-2">
+                      <FlagIcon
+                        lang={loc}
+                        class="size-3.5" />
+                      <span>{LANGUAGE_LABELS[loc] ?? loc}</span>
+                    </div>
                     <span
                       class="relative flex size-3.5 shrink-0 items-center justify-center">
                       <Circle

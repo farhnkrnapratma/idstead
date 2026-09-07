@@ -34,7 +34,7 @@
 
 <section
   class={cn(
-    'relative z-10 mx-auto w-full px-6 pt-5 pb-6 md:w-[80%] md:max-w-none md:pt-8 md:pb-8 lg:w-[65%] xl:w-[50%] 2xl:w-[45%]',
+    'relative z-10 mx-auto w-full px-6 pt-5 pb-6 md:w-[80%] md:max-w-none md:pt-8 md:pb-8 lg:w-[50%]',
     className
   )}>
   <SectionHeader

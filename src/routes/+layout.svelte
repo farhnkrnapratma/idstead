@@ -26,6 +26,12 @@
   const isAdminPage = $derived(page.url.pathname.startsWith('/admin'));
   const isPostEditorPage = $derived(page.url.pathname === '/admin/new');
   const isBlogPost = $derived(page.route.id === '/blog/[slug]');
+  const isLegalPage = $derived(
+    page.route.id === '/terms'
+      || page.route.id === '/privacy'
+      || page.route.id === '/security'
+  );
+  const isArticleLikePage = $derived(isBlogPost || isLegalPage);
   const isPageWithFeedback = $derived(
     !page.error
       && page.url.pathname !== '/feedback'
@@ -107,8 +113,12 @@
   show={scrollStore.pastThreshold
     && (!isAdminPage || isPostEditorPage)
     && !readingModeStore.active}
-  class={isPostEditorPage ? 'hidden md:block' : ''} />
-<FeedbackButton show={isPageWithFeedback && !readingModeStore.active} />
+  class="{isPostEditorPage ? 'hidden md:block' : ''} {isArticleLikePage ?
+    'lg:hidden'
+  : ''}" />
+<FeedbackButton
+  show={isPageWithFeedback && !readingModeStore.active}
+  class={isArticleLikePage ? 'lg:hidden' : ''} />
 
 <ConsentBanner />
 <Toast />

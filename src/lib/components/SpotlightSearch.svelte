@@ -40,7 +40,13 @@
     CaseSensitive,
     WholeWord,
     Regex,
-    BookOpenText
+    BookOpenText,
+    ArrowUp,
+    ArrowDown,
+    ArrowLeft,
+    ArrowRight,
+    Printer,
+    Cookie
   } from '@lucide/svelte';
   import type {Project} from '$lib/types';
   import {portal} from '../utils/actions';
@@ -62,6 +68,8 @@
     searchHistoryStore,
     type SearchHistoryEntry
   } from '../stores/searchHistoryStore.svelte';
+  import {codeBlockPrefsStore} from '../stores/codeBlockPrefsStore.svelte';
+  import {consentStore} from '../stores/consentStore.svelte';
   import {sanitizeInput} from '../utils/sanitizeInput';
   import {readingModeStore} from '../stores/readingModeStore.svelte';
 
@@ -126,6 +134,8 @@
   let inputEl = $state<HTMLInputElement | null>(null);
   let listEl = $state<HTMLElement | null>(null);
   let helpDialogEl = $state<HTMLDivElement | null>(null);
+  let visualViewportHeight = $state<number | null>(null);
+  let visualViewportTop = $state<number | null>(null);
 
   const SECTION_LABELS: Record<string, string> = {
     home: 'Home',
@@ -180,7 +190,13 @@
     RotateCcwClock,
     Trash,
     LogOut,
-    BookOpenText
+    BookOpenText,
+    ArrowUp,
+    ArrowDown,
+    ArrowLeft,
+    ArrowRight,
+    Printer,
+    Cookie
   };
 
   const ICON_NAME_BY_COMPONENT = new Map<unknown, string>(
@@ -260,7 +276,7 @@
     {
       command: '/open',
       argHint: '[target]',
-      description: 'Navigate to routes or search blog posts.',
+      description: 'Navigate to pages or blog articles.',
       validArgs: [
         'home',
         'blog',
@@ -281,35 +297,42 @@
     {
       command: '/theme',
       argHint: '[mode]',
-      description: 'Switch color mode.',
+      description: 'Change appearance and color theme.',
       validArgs: ['dark', 'light', 'auto'],
       actionQuery: '/theme '
     },
     {
       command: '/font',
       argHint: '[style]',
-      description: 'Change article reading typeface.',
+      description: 'Change reading font for articles.',
       validArgs: ['sans', 'serif', 'mono'],
       actionQuery: '/font '
     },
     {
+      command: '/code',
+      argHint: '[option]',
+      description: 'Customize code snippet display options.',
+      validArgs: ['wrap', 'lines', 'minimal', 'theme'],
+      actionQuery: '/code '
+    },
+    {
       command: '/copy',
       argHint: '[target]',
-      description: 'Copy page URL, post ID, or markdown text.',
+      description: 'Copy page link or content.',
       validArgs: ['url', 'link', 'pid', 'md', 'txt'],
       actionQuery: '/copy '
     },
     {
       command: '/save',
       argHint: '[target]',
-      description: 'Download CV PDF or export article file.',
+      description: 'Download files or export content.',
       validArgs: ['cv', 'md', 'txt'],
       actionQuery: '/save '
     },
     {
       command: '/a11y',
       argHint: '[feature]',
-      description: 'Configure contrast, motion, text scaling, or reset.',
+      description: 'Adjust accessibility and display preferences.',
       validArgs: [
         'high-contrast',
         'reduce-motion',
@@ -324,57 +347,133 @@
     {
       command: '/lang',
       argHint: '[lang]',
-      description:
-        'Switch this blog post to another language (post pages only).',
+      description: 'Translate article to another language.',
       validArgs: ['default', 'en', 'id'],
       actionQuery: '/lang '
     },
     {
       command: '/translate',
       argHint: '[lang]',
-      description: 'Alias for /lang (post pages only).',
+      description: 'Translate article to another language.',
       validArgs: ['default', 'en', 'id'],
       actionQuery: '/lang '
     },
     {
+      command: '/back',
+      argHint: '',
+      description: 'Go back to previous page.',
+      validArgs: [],
+      actionQuery: '/back'
+    },
+    {
+      command: '/forward',
+      argHint: '',
+      description: 'Go forward to next page.',
+      validArgs: [],
+      actionQuery: '/forward'
+    },
+    {
+      command: '/top',
+      argHint: '',
+      description: 'Scroll to top of page.',
+      validArgs: [],
+      actionQuery: '/top'
+    },
+    {
+      command: '/bottom',
+      argHint: '',
+      description: 'Scroll to bottom of page.',
+      validArgs: [],
+      actionQuery: '/bottom'
+    },
+    {
+      command: '/print',
+      argHint: '',
+      description: 'Print or save as PDF.',
+      validArgs: [],
+      actionQuery: '/print'
+    },
+    {
+      command: '/cookies',
+      argHint: '',
+      description: 'Manage cookie and privacy preferences.',
+      validArgs: [],
+      actionQuery: '/cookies'
+    },
+    {
+      command: '/history',
+      argHint: '[action]',
+      description: 'Manage local search history records.',
+      validArgs: ['clear'],
+      actionQuery: '/history '
+    },
+    {
+      command: '/rss',
+      argHint: '',
+      description: 'Open RSS and Atom feed.',
+      validArgs: [],
+      actionQuery: '/rss'
+    },
+    {
+      command: '/llms',
+      argHint: '',
+      description: 'Open context guide for assistants.',
+      validArgs: [],
+      actionQuery: '/llms'
+    },
+    {
+      command: '/sitemap',
+      argHint: '',
+      description: 'Open website sitemap directory file.',
+      validArgs: [],
+      actionQuery: '/sitemap'
+    },
+    {
+      command: '/api',
+      argHint: '',
+      description: 'Open developer API documentation.',
+      validArgs: [],
+      actionQuery: '/api'
+    },
+    {
       command: '/exit',
       argHint: '',
-      description: 'Exit webpage (return to browser start or search engine).',
+      description: 'Close tab or leave page.',
       validArgs: [],
       actionQuery: '/exit'
     },
     {
       command: '/share',
       argHint: '',
-      description: 'Share the current page.',
+      description: 'Share current page with others.',
       validArgs: [],
       actionQuery: '/share'
     },
     {
       command: '/qr',
       argHint: '',
-      description: 'Show a QR code for the current page.',
+      description: 'Show QR code for page.',
       validArgs: [],
       actionQuery: '/qr'
     },
     {
       command: '/refresh',
       argHint: '',
-      description: 'Reload page.',
+      description: 'Reload the current web page.',
       validArgs: [],
       actionQuery: '/refresh'
     },
     {
       command: '/help',
       argHint: '',
-      description: 'Show reference.',
+      description: 'Show available commands and tips.',
       validArgs: [],
       actionQuery: '/help'
     },
     {
       command: '/read',
       argHint: '',
-      description: 'Toggle reading mode (blog posts only).',
+      description: 'Toggle distraction free reading mode.',
       validArgs: [],
       actionQuery: '/read'
     }
@@ -385,7 +484,7 @@
       id: 'cmd-home',
       category: 'pages',
       title: '/home',
-      subtitle: 'Navigate to Home page',
+      subtitle: 'Navigate to the main home page.',
       url: '/',
       icon: Command,
       badge: 'Page'
@@ -394,7 +493,7 @@
       id: 'cmd-projects',
       category: 'pages',
       title: '/projects',
-      subtitle: 'Browse showcase projects',
+      subtitle: 'Explore featured projects and creations.',
       url: '/#projects',
       icon: Command,
       badge: 'Section'
@@ -403,7 +502,7 @@
       id: 'cmd-blog',
       category: 'pages',
       title: '/blog',
-      subtitle: 'Browse articles & write-ups',
+      subtitle: 'Read latest articles and posts.',
       url: '/#blog',
       icon: Command,
       badge: 'Section'
@@ -412,7 +511,7 @@
       id: 'cmd-cv',
       category: 'pages',
       title: '/cv',
-      subtitle: 'View Curriculum Vitae',
+      subtitle: 'View resume and work experience.',
       url: '/#cv',
       icon: Command,
       badge: 'Section'
@@ -421,7 +520,7 @@
       id: 'cmd-funding',
       category: 'pages',
       title: '/funding',
-      subtitle: 'Support open-source development',
+      subtitle: 'Support projects and open development.',
       url: '/#funding',
       icon: Command,
       badge: 'Section'
@@ -430,7 +529,7 @@
       id: 'cmd-contact',
       category: 'pages',
       title: '/contact',
-      subtitle: 'Send a message or get in touch',
+      subtitle: 'Send a message or connect.',
       url: '/#contact',
       icon: Command,
       badge: 'Section'
@@ -439,7 +538,7 @@
       id: 'cmd-privacy',
       category: 'pages',
       title: '/privacy',
-      subtitle: 'Privacy Policy & data practices',
+      subtitle: 'Read privacy policy and practices.',
       url: '/privacy',
       icon: Command,
       badge: 'Legal'
@@ -448,7 +547,7 @@
       id: 'cmd-terms',
       category: 'pages',
       title: '/terms',
-      subtitle: 'Terms of Service',
+      subtitle: 'Read terms and conditions agreement.',
       url: '/terms',
       icon: Command,
       badge: 'Legal'
@@ -457,7 +556,7 @@
       id: 'cmd-security',
       category: 'pages',
       title: '/security',
-      subtitle: 'Security Policy & disclosures',
+      subtitle: 'View security policy and guidelines.',
       url: '/security',
       icon: Command,
       badge: 'Security'
@@ -466,7 +565,7 @@
       id: 'cmd-feedback',
       category: 'pages',
       title: '/feedback',
-      subtitle: 'Report an issue or suggestion',
+      subtitle: 'Send feedback and report issues.',
       url: '/feedback',
       icon: Command,
       badge: 'Help'
@@ -475,7 +574,7 @@
       id: 'cmd-open',
       category: 'actions',
       title: '/open',
-      subtitle: 'Navigate to pages or blog articles',
+      subtitle: 'Navigate to pages or articles.',
       requiresArgs: true,
       autocompleteQuery: '/open ',
       icon: Command,
@@ -485,7 +584,7 @@
       id: 'cmd-refresh',
       category: 'actions',
       title: '/refresh',
-      subtitle: 'Reload the current page',
+      subtitle: 'Reload the current web page.',
       action: () => {
         if (typeof window !== 'undefined') {
           window.location.reload();
@@ -498,7 +597,7 @@
       id: 'cmd-theme',
       category: 'actions',
       title: '/theme',
-      subtitle: 'Switch appearance theme',
+      subtitle: 'Change appearance and color theme.',
       requiresArgs: true,
       autocompleteQuery: '/theme ',
       icon: Command,
@@ -508,17 +607,27 @@
       id: 'cmd-font',
       category: 'actions',
       title: '/font',
-      subtitle: 'Switch reading content font',
+      subtitle: 'Change reading font for articles.',
       requiresArgs: true,
       autocompleteQuery: '/font ',
       icon: Command,
       badge: 'Appearance'
     },
     {
+      id: 'cmd-code',
+      category: 'actions',
+      title: '/code',
+      subtitle: 'Customize code snippet display options.',
+      requiresArgs: true,
+      autocompleteQuery: '/code ',
+      icon: FileCode,
+      badge: 'Code'
+    },
+    {
       id: 'cmd-a11y',
       category: 'actions',
       title: '/a11y',
-      subtitle: 'Configure accessibility preferences',
+      subtitle: 'Adjust accessibility and display preferences.',
       requiresArgs: true,
       autocompleteQuery: '/a11y ',
       icon: Command,
@@ -528,7 +637,7 @@
       id: 'cmd-copy',
       category: 'actions',
       title: '/copy',
-      subtitle: 'Copy page content or link to clipboard',
+      subtitle: 'Copy page link or content.',
       requiresArgs: true,
       autocompleteQuery: '/copy ',
       icon: Command,
@@ -538,17 +647,154 @@
       id: 'cmd-save',
       category: 'actions',
       title: '/save',
-      subtitle: 'Download files or export content',
+      subtitle: 'Download files or export content.',
       requiresArgs: true,
       autocompleteQuery: '/save ',
       icon: Command,
       badge: 'File'
     },
     {
+      id: 'cmd-back',
+      category: 'actions',
+      title: '/back',
+      subtitle: 'Go back to previous page.',
+      action: () => {
+        close();
+        if (typeof window !== 'undefined') {
+          if (window.history.length > 1) {
+            window.history.back();
+          } else {
+            toastStore.show('No previous page in history', 'info');
+          }
+        }
+      },
+      icon: ArrowLeft,
+      badge: 'Navigation'
+    },
+    {
+      id: 'cmd-forward',
+      category: 'actions',
+      title: '/forward',
+      subtitle: 'Go forward to next page.',
+      action: () => {
+        close();
+        if (typeof window !== 'undefined') {
+          window.history.forward();
+        }
+      },
+      icon: ArrowRight,
+      badge: 'Navigation'
+    },
+    {
+      id: 'cmd-top',
+      category: 'actions',
+      title: '/top',
+      subtitle: 'Scroll to top of page.',
+      action: () => {
+        close();
+        if (typeof window !== 'undefined') {
+          window.scrollTo({top: 0, behavior: 'smooth'});
+          toastStore.show('Scrolled to top of page', 'info');
+        }
+      },
+      icon: ArrowUp,
+      badge: 'Navigation'
+    },
+    {
+      id: 'cmd-bottom',
+      category: 'actions',
+      title: '/bottom',
+      subtitle: 'Scroll to bottom of page.',
+      action: () => {
+        close();
+        if (typeof window !== 'undefined') {
+          window.scrollTo({
+            top: document.documentElement.scrollHeight,
+            behavior: 'smooth'
+          });
+          toastStore.show('Scrolled to bottom of page', 'info');
+        }
+      },
+      icon: ArrowDown,
+      badge: 'Navigation'
+    },
+    {
+      id: 'cmd-print',
+      category: 'actions',
+      title: '/print',
+      subtitle: 'Print or save as PDF.',
+      action: () => {
+        close();
+        if (typeof window !== 'undefined') {
+          setTimeout(() => window.print(), 150);
+        }
+      },
+      icon: Printer,
+      badge: 'System'
+    },
+    {
+      id: 'cmd-cookies',
+      category: 'actions',
+      title: '/cookies',
+      subtitle: 'Manage cookie and privacy preferences.',
+      action: () => {
+        close();
+        consentStore.openCustomizeModal();
+      },
+      icon: Cookie,
+      badge: 'Privacy'
+    },
+    {
+      id: 'cmd-history',
+      category: 'actions',
+      title: '/history',
+      subtitle: 'Manage local search history records.',
+      requiresArgs: true,
+      autocompleteQuery: '/history ',
+      icon: RotateCcwClock,
+      badge: 'Search'
+    },
+    {
+      id: 'cmd-rss',
+      category: 'pages',
+      title: '/rss',
+      subtitle: 'Open RSS and Atom feed.',
+      url: '/atom.xml',
+      icon: Rss,
+      badge: 'Feed'
+    },
+    {
+      id: 'cmd-llms',
+      category: 'pages',
+      title: '/llms',
+      subtitle: 'Open context guide for assistants.',
+      url: '/llms.txt',
+      icon: Sparkles,
+      badge: 'AI'
+    },
+    {
+      id: 'cmd-sitemap',
+      category: 'pages',
+      title: '/sitemap',
+      subtitle: 'Open website sitemap directory file.',
+      url: '/sitemap.xml',
+      icon: Compass,
+      badge: 'System'
+    },
+    {
+      id: 'cmd-api',
+      category: 'pages',
+      title: '/api',
+      subtitle: 'Open developer API documentation.',
+      url: '/api/v1',
+      icon: Code,
+      badge: 'API'
+    },
+    {
       id: 'cmd-share',
       category: 'actions',
       title: '/share',
-      subtitle: 'Share the current page',
+      subtitle: 'Share current page with others.',
       action: () => {
         isShareOpen = true;
       },
@@ -559,7 +805,7 @@
       id: 'cmd-qr',
       category: 'actions',
       title: '/qr',
-      subtitle: 'Show a QR code for the current page',
+      subtitle: 'Show QR code for page.',
       action: () => {
         isQrOpen = true;
       },
@@ -570,7 +816,7 @@
       id: 'cmd-lang',
       category: 'actions',
       title: '/lang',
-      subtitle: 'Switch reading translation language (blog articles)',
+      subtitle: 'Translate article to another language.',
       requiresArgs: true,
       autocompleteQuery: '/lang ',
       icon: Languages,
@@ -580,10 +826,11 @@
       id: 'cmd-exit',
       category: 'actions',
       title: '/exit',
-      subtitle: 'Exit webpage (return to search engine or home)',
+      subtitle: 'Close tab or leave page.',
       action: () => {
         if (typeof window !== 'undefined') {
-          window.location.href = 'https://www.google.com';
+          window.close();
+          window.location.href = 'about:blank';
         }
       },
       icon: LogOut,
@@ -593,7 +840,7 @@
       id: 'cmd-help',
       category: 'actions',
       title: '/help',
-      subtitle: 'Show slash commands & search guide',
+      subtitle: 'Show available commands and tips.',
       action: () => {
         showHelp = true;
       },
@@ -604,7 +851,7 @@
       id: 'cmd-read',
       category: 'actions',
       title: '/read',
-      subtitle: 'Toggle reading mode — hide all distractions (blog posts only)',
+      subtitle: 'Toggle distraction free reading mode.',
       action: () => {
         if (page.url.pathname.startsWith('/blog/')) {
           readingModeStore.toggle();
@@ -716,7 +963,7 @@
           id: 'dyn-theme-auto',
           category: 'actions',
           title: '/theme auto',
-          subtitle: 'Switch appearance to System match',
+          subtitle: 'Match theme to system settings.',
           action: () => {
             themeStore.apply('auto');
             toastStore.show('Switched to system theme', 'success');
@@ -730,7 +977,7 @@
           id: 'dyn-theme-dark',
           category: 'actions',
           title: '/theme dark',
-          subtitle: 'Switch appearance to Dark mode',
+          subtitle: 'Switch to dark color theme.',
           action: () => {
             themeStore.apply('dark');
             toastStore.show('Switched to dark theme', 'success');
@@ -744,7 +991,7 @@
           id: 'dyn-theme-light',
           category: 'actions',
           title: '/theme light',
-          subtitle: 'Switch appearance to Light mode',
+          subtitle: 'Switch to light color theme.',
           action: () => {
             themeStore.apply('light');
             toastStore.show('Switched to light theme', 'success');
@@ -766,7 +1013,7 @@
           id: 'dyn-font-sans',
           category: 'actions',
           title: '/font sans',
-          subtitle: 'Set reading font to Sans-serif (Google Sans)',
+          subtitle: 'Use clean sans serif font.',
           action: () => {
             contentFontStore.setFont('sans');
             toastStore.show('Content font set to Sans-serif', 'success');
@@ -780,7 +1027,7 @@
           id: 'dyn-font-serif',
           category: 'actions',
           title: '/font serif',
-          subtitle: 'Set reading font to Serif (Source Serif 4)',
+          subtitle: 'Use classic serif reading font.',
           action: () => {
             contentFontStore.setFont('serif');
             toastStore.show('Content font set to Serif', 'success');
@@ -794,7 +1041,7 @@
           id: 'dyn-font-mono',
           category: 'actions',
           title: '/font mono',
-          subtitle: 'Set reading font to Monospace (Google Sans Code)',
+          subtitle: 'Use modern monospace coding font.',
           action: () => {
             contentFontStore.setFont('mono');
             toastStore.show('Content font set to Monospace', 'success');
@@ -813,30 +1060,35 @@
         {
           key: 'reduce-motion',
           name: 'Reduce motion animations',
+          subtitle: 'Toggle reduced animations and motion.',
           toggle: () => a11yStore.toggleReduceMotion(),
           state: () => a11yStore.current.reduceMotion
         },
         {
           key: 'solid-surface',
           name: 'Solid card surfaces',
+          subtitle: 'Toggle solid background surfaces mode.',
           toggle: () => a11yStore.toggleSolidSurfaces(),
           state: () => a11yStore.current.solidSurfaces
         },
         {
           key: 'high-contrast',
           name: 'High contrast mode',
+          subtitle: 'Toggle high contrast visual mode.',
           toggle: () => a11yStore.toggleHighContrast(),
           state: () => a11yStore.current.highContrast
         },
         {
           key: 'focus-ring',
           name: 'Enhanced focus indicator',
+          subtitle: 'Toggle visible keyboard focus outline.',
           toggle: () => a11yStore.toggleFocusHighlight(),
           state: () => a11yStore.current.focusHighlight
         },
         {
           key: 'dyslexic-text',
           name: 'OpenDyslexic reading typeface',
+          subtitle: 'Toggle friendly font for reading.',
           toggle: () => a11yStore.toggleDyslexicFont(),
           state: () => a11yStore.current.dyslexicFont
         }
@@ -854,27 +1106,24 @@
         ) {
           const isCurrentlyOn = feat.state();
           let targetAction = feat.toggle;
-          let actionLabel = `Toggle ${feat.name} (currently ${isCurrentlyOn ? 'ON' : 'OFF'})`;
 
           if (val === 'on') {
             targetAction = () => {
               if (!feat.state()) feat.toggle();
               toastStore.show(`${feat.name}: ON`, 'success');
             };
-            actionLabel = `Turn ON ${feat.name}`;
           } else if (val === 'off') {
             targetAction = () => {
               if (feat.state()) feat.toggle();
               toastStore.show(`${feat.name}: OFF`, 'success');
             };
-            actionLabel = `Turn OFF ${feat.name}`;
           }
 
           items.push({
             id: `dyn-a11y-${feat.key}`,
             category: 'actions',
             title: `/a11y ${feat.key}${val ? ` ${val}` : ''}`,
-            subtitle: actionLabel,
+            subtitle: feat.subtitle,
             action: () => {
               targetAction();
               if (!val) {
@@ -904,7 +1153,7 @@
             id: `dyn-a11y-scale-${parsedScale}`,
             category: 'actions',
             title: `/a11y text-size ${parsedScale}%`,
-            subtitle: `Set text sizing scale to ${parsedScale}%`,
+            subtitle: 'Adjust text size scaling level.',
             action: () => {
               a11yStore.setFontScale(parsedScale as FontScale);
               toastStore.show(`Text scale set to ${parsedScale}%`, 'success');
@@ -919,7 +1168,7 @@
                 id: `dyn-a11y-scale-${s}`,
                 category: 'actions',
                 title: `/a11y text-size ${s}%`,
-                subtitle: `Set text scale to ${s}% (current: ${a11yStore.current.fontScale}%)`,
+                subtitle: 'Adjust text size scaling level.',
                 action: () => {
                   a11yStore.setFontScale(s);
                   toastStore.show(`Text scale set to ${s}%`, 'success');
@@ -937,7 +1186,7 @@
           id: 'dyn-a11y-reset',
           category: 'actions',
           title: '/a11y reset',
-          subtitle: 'Reset all accessibility settings to defaults',
+          subtitle: 'Reset all accessibility preferences.',
           action: () => {
             a11yStore.reset();
             toastStore.show(
@@ -962,7 +1211,7 @@
         {
           name: 'home',
           title: '/open home',
-          subtitle: 'Navigate to Home page',
+          subtitle: 'Navigate to the main home page.',
           url: '/',
           icon: House,
           badge: 'Page'
@@ -970,7 +1219,7 @@
         {
           name: 'blog',
           title: '/open blog',
-          subtitle: 'Browse articles & write-ups section',
+          subtitle: 'Read latest articles and posts.',
           url: '/#blog',
           icon: Newspaper,
           badge: 'Section'
@@ -978,7 +1227,7 @@
         {
           name: 'projects',
           title: '/open projects',
-          subtitle: 'Navigate to Projects showcase',
+          subtitle: 'Explore featured projects and creations.',
           url: '/#projects',
           icon: FolderOpen,
           badge: 'Section'
@@ -986,7 +1235,7 @@
         {
           name: 'cv',
           title: '/open cv',
-          subtitle: 'View Curriculum Vitae and experience',
+          subtitle: 'View resume and work experience.',
           url: '/#cv',
           icon: FileUser,
           badge: 'Section'
@@ -994,7 +1243,7 @@
         {
           name: 'funding',
           title: '/open funding',
-          subtitle: 'Support open-source development',
+          subtitle: 'Support projects and open development.',
           url: '/#funding',
           icon: HeartHandshake,
           badge: 'Section'
@@ -1002,7 +1251,7 @@
         {
           name: 'contact',
           title: '/open contact',
-          subtitle: 'Send a message or get in touch',
+          subtitle: 'Send a message or connect.',
           url: '/#contact',
           icon: Send,
           badge: 'Section'
@@ -1010,7 +1259,7 @@
         {
           name: 'terms',
           title: '/open terms',
-          subtitle: 'Terms of Service',
+          subtitle: 'Read terms and conditions agreement.',
           url: '/terms',
           icon: Scale,
           badge: 'Legal'
@@ -1018,7 +1267,7 @@
         {
           name: 'privacy',
           title: '/open privacy',
-          subtitle: 'Privacy Policy and data practices',
+          subtitle: 'Read privacy policy and practices.',
           url: '/privacy',
           icon: FileLock,
           badge: 'Legal'
@@ -1026,7 +1275,7 @@
         {
           name: 'security',
           title: '/open security',
-          subtitle: 'Security Policy and vulnerability reporting',
+          subtitle: 'View security policy and guidelines.',
           url: '/security',
           icon: ShieldCheck,
           badge: 'Security'
@@ -1034,7 +1283,7 @@
         {
           name: 'feedback',
           title: '/open feedback',
-          subtitle: 'Report an issue or suggest an improvement',
+          subtitle: 'Send feedback and report issues.',
           url: '/feedback',
           icon: MessageSquare,
           badge: 'Help'
@@ -1042,7 +1291,7 @@
         {
           name: 'feed',
           title: '/open feed',
-          subtitle: 'Subscribe via RSS/Atom feed',
+          subtitle: 'Open RSS and Atom feed.',
           url: '/atom.xml',
           icon: Rss,
           badge: 'Feed'
@@ -1050,7 +1299,7 @@
         {
           name: 'api',
           title: '/open api',
-          subtitle: 'Browse the public REST API docs',
+          subtitle: 'Open developer API documentation.',
           url: '/api/v1',
           icon: Code,
           badge: 'Developer'
@@ -1093,7 +1342,7 @@
           id: 'dyn-copy-url',
           category: 'actions',
           title: '/copy url',
-          subtitle: 'Copy current page URL to clipboard',
+          subtitle: 'Copy web page address link.',
           action: async () => {
             if (typeof window !== 'undefined') {
               await navigator.clipboard.writeText(window.location.href);
@@ -1115,10 +1364,7 @@
           id: 'dyn-copy-pid',
           category: 'actions',
           title: '/copy pid',
-          subtitle:
-            isBlogPage ?
-              `Copy blog post slug / ID ("${currentSlug}") to clipboard`
-            : 'Copy blog post slug / ID (blog posts only)',
+          subtitle: 'Copy current blog post identifier.',
           action: async () => {
             if (!isBlogPage || !currentSlug) {
               toastStore.show(
@@ -1142,10 +1388,7 @@
           id: 'dyn-copy-md',
           category: 'actions',
           title: '/copy md',
-          subtitle:
-            isBlogPage || isLegalPage ?
-              `Copy ${isBlogPage ? 'article' : 'page'} Markdown source to clipboard`
-            : 'Copy article Markdown source (article pages only)',
+          subtitle: 'Copy article as markdown text.',
           action: async () => {
             if (!isBlogPage && !isLegalPage) {
               toastStore.show(
@@ -1177,10 +1420,7 @@
           id: 'dyn-copy-txt',
           category: 'actions',
           title: '/copy txt',
-          subtitle:
-            isBlogPage || isLegalPage ?
-              `Copy ${isBlogPage ? 'article' : 'page'} Plaintext content to clipboard`
-            : 'Copy article Plaintext content (article pages only)',
+          subtitle: 'Copy article as plain text.',
           action: async () => {
             if (!isBlogPage && !isLegalPage) {
               toastStore.show(
@@ -1224,7 +1464,7 @@
           id: 'dyn-save-cv',
           category: 'actions',
           title: '/save cv',
-          subtitle: 'Download official Curriculum Vitae (PDF)',
+          subtitle: 'Download resume document as PDF.',
           url: '/api/v1/cv',
           icon: Download,
           badge: 'File'
@@ -1236,10 +1476,7 @@
           id: 'dyn-save-md',
           category: 'actions',
           title: '/save md',
-          subtitle:
-            isBlogPage ?
-              'Download article as Markdown (.md) file'
-            : 'Download article as Markdown (blog posts only)',
+          subtitle: 'Download article as markdown file.',
           action: async () => {
             if (!isBlogPage || !currentSlug) {
               toastStore.show(
@@ -1279,10 +1516,7 @@
           id: 'dyn-save-txt',
           category: 'actions',
           title: '/save txt',
-          subtitle:
-            isBlogPage ?
-              'Download article as Plaintext (.txt) file'
-            : 'Download article as Plaintext (blog posts only)',
+          subtitle: 'Download article as text file.',
           action: async () => {
             if (!isBlogPage || !currentSlug) {
               toastStore.show(
@@ -1345,10 +1579,7 @@
             id: `dyn-lang-${opt.key}`,
             category: 'actions',
             title: `${cmdPrefix} ${opt.key}`,
-            subtitle:
-              isBlogPage ?
-                `Switch this post to ${opt.label}`
-              : `Switch post language to ${opt.label} (blog posts only)`,
+            subtitle: 'Translate article to another language.',
             action: () => {
               if (!isBlogPage || !currentSlug) {
                 toastStore.show(
@@ -1372,6 +1603,288 @@
     }
 
     if (
+      q.startsWith('/code')
+      || (root.length > 2 && '/code'.startsWith(root))
+    ) {
+      const parts = q.split(/\s+/);
+      const arg = (parts[1] || '').toLowerCase();
+      const codeOptions = [
+        {
+          key: 'wrap',
+          title: '/code wrap',
+          subtitle: 'Toggle line wrapping for code.',
+          action: () => {
+            codeBlockPrefsStore.toggleWrap();
+            toastStore.show(
+              `Code wrap ${codeBlockPrefsStore.current.wrap ? 'enabled' : 'disabled'}`,
+              'info'
+            );
+          }
+        },
+        {
+          key: 'lines',
+          title: '/code lines',
+          subtitle: 'Toggle line numbers in code.',
+          action: () => {
+            codeBlockPrefsStore.toggleLineNumbers();
+            toastStore.show(
+              `Code line numbers ${codeBlockPrefsStore.current.lineNumbers ? 'enabled' : 'disabled'}`,
+              'info'
+            );
+          }
+        },
+        {
+          key: 'minimal',
+          title: '/code minimal',
+          subtitle: 'Toggle minimal code block header.',
+          action: () => {
+            codeBlockPrefsStore.toggleMinimal();
+            toastStore.show(
+              `Code minimal mode ${codeBlockPrefsStore.current.minimal ? 'enabled' : 'disabled'}`,
+              'info'
+            );
+          }
+        },
+        {
+          key: 'theme',
+          title: '/code theme',
+          subtitle: 'Change color scheme for code.',
+          action: () => {
+            codeBlockPrefsStore.cycleColorScheme();
+            toastStore.show(
+              `Code theme set to ${codeBlockPrefsStore.current.colorScheme}`,
+              'info'
+            );
+          }
+        }
+      ];
+
+      for (const opt of codeOptions) {
+        if (!arg || opt.key.startsWith(arg)) {
+          items.push({
+            id: `dyn-code-${opt.key}`,
+            category: 'actions',
+            title: opt.title,
+            subtitle: opt.subtitle,
+            action: opt.action,
+            icon: FileCode,
+            badge: 'Code'
+          });
+        }
+      }
+    }
+
+    if (
+      q.startsWith('/history')
+      || (root.length > 2 && '/history'.startsWith(root))
+    ) {
+      const parts = q.split(/\s+/);
+      const arg = (parts[1] || '').toLowerCase();
+      if (!arg || 'clear'.startsWith(arg)) {
+        items.push({
+          id: 'dyn-history-clear',
+          category: 'actions',
+          title: '/history clear',
+          subtitle: 'Clear all recent search history.',
+          action: () => {
+            searchHistoryStore.clear();
+            toastStore.show('Search history cleared', 'success');
+          },
+          icon: Trash,
+          badge: 'Search'
+        });
+      }
+    }
+
+    if (
+      q.startsWith('/back')
+      || (root.length > 2 && '/back'.startsWith(root))
+    ) {
+      items.push({
+        id: 'dyn-back',
+        category: 'actions',
+        title: '/back',
+        subtitle: 'Go back to previous page.',
+        action: () => {
+          close();
+          if (typeof window !== 'undefined') {
+            if (window.history.length > 1) {
+              window.history.back();
+            } else {
+              toastStore.show('No previous page in history', 'info');
+            }
+          }
+        },
+        icon: ArrowLeft,
+        badge: 'Navigation'
+      });
+    }
+
+    if (
+      q.startsWith('/forward')
+      || (root.length > 2 && '/forward'.startsWith(root))
+    ) {
+      items.push({
+        id: 'dyn-forward',
+        category: 'actions',
+        title: '/forward',
+        subtitle: 'Go forward to next page.',
+        action: () => {
+          close();
+          if (typeof window !== 'undefined') {
+            window.history.forward();
+          }
+        },
+        icon: ArrowRight,
+        badge: 'Navigation'
+      });
+    }
+
+    if (q.startsWith('/top') || (root.length > 2 && '/top'.startsWith(root))) {
+      items.push({
+        id: 'dyn-top',
+        category: 'actions',
+        title: '/top',
+        subtitle: 'Scroll to top of page.',
+        action: () => {
+          close();
+          if (typeof window !== 'undefined') {
+            window.scrollTo({top: 0, behavior: 'smooth'});
+            toastStore.show('Scrolled to top of page', 'info');
+          }
+        },
+        icon: ArrowUp,
+        badge: 'Navigation'
+      });
+    }
+
+    if (
+      q.startsWith('/bottom')
+      || (root.length > 2 && '/bottom'.startsWith(root))
+    ) {
+      items.push({
+        id: 'dyn-bottom',
+        category: 'actions',
+        title: '/bottom',
+        subtitle: 'Scroll to bottom of page.',
+        action: () => {
+          close();
+          if (typeof window !== 'undefined') {
+            window.scrollTo({
+              top: document.documentElement.scrollHeight,
+              behavior: 'smooth'
+            });
+            toastStore.show('Scrolled to bottom of page', 'info');
+          }
+        },
+        icon: ArrowDown,
+        badge: 'Navigation'
+      });
+    }
+
+    if (
+      q.startsWith('/print')
+      || (root.length > 2 && '/print'.startsWith(root))
+    ) {
+      items.push({
+        id: 'dyn-print',
+        category: 'actions',
+        title: '/print',
+        subtitle: 'Print or save as PDF.',
+        action: () => {
+          close();
+          if (typeof window !== 'undefined') {
+            setTimeout(() => window.print(), 150);
+          }
+        },
+        icon: Printer,
+        badge: 'System'
+      });
+    }
+
+    if (
+      q.startsWith('/cookies')
+      || q.startsWith('/consent')
+      || (root.length > 2
+        && ('/cookies'.startsWith(root) || '/consent'.startsWith(root)))
+    ) {
+      items.push({
+        id: 'dyn-cookies',
+        category: 'actions',
+        title: '/cookies',
+        subtitle: 'Manage cookie and privacy preferences.',
+        action: () => {
+          close();
+          consentStore.openCustomizeModal();
+        },
+        icon: Cookie,
+        badge: 'Privacy'
+      });
+    }
+
+    if (
+      q.startsWith('/rss')
+      || q.startsWith('/feed')
+      || q.startsWith('/atom')
+      || (root.length > 2
+        && ('/rss'.startsWith(root)
+          || '/feed'.startsWith(root)
+          || '/atom'.startsWith(root)))
+    ) {
+      items.push({
+        id: 'dyn-rss',
+        category: 'pages',
+        title: '/rss',
+        subtitle: 'Open RSS and Atom feed.',
+        url: '/atom.xml',
+        icon: Rss,
+        badge: 'Feed'
+      });
+    }
+
+    if (
+      q.startsWith('/llms')
+      || (root.length > 2 && '/llms'.startsWith(root))
+    ) {
+      items.push({
+        id: 'dyn-llms',
+        category: 'pages',
+        title: '/llms',
+        subtitle: 'Open context guide for assistants.',
+        url: '/llms.txt',
+        icon: Sparkles,
+        badge: 'AI'
+      });
+    }
+
+    if (
+      q.startsWith('/sitemap')
+      || (root.length > 2 && '/sitemap'.startsWith(root))
+    ) {
+      items.push({
+        id: 'dyn-sitemap',
+        category: 'pages',
+        title: '/sitemap',
+        subtitle: 'Open website sitemap directory file.',
+        url: '/sitemap.xml',
+        icon: Compass,
+        badge: 'System'
+      });
+    }
+
+    if (q.startsWith('/api') || (root.length > 2 && '/api'.startsWith(root))) {
+      items.push({
+        id: 'dyn-api',
+        category: 'pages',
+        title: '/api',
+        subtitle: 'Open developer API documentation.',
+        url: '/api/v1',
+        icon: Code,
+        badge: 'API'
+      });
+    }
+
+    if (
       q.startsWith('/exit')
       || q.startsWith('/quit')
       || (root.length > 2 && '/exit'.startsWith(root))
@@ -1380,10 +1893,11 @@
         id: 'dyn-exit',
         category: 'actions',
         title: '/exit',
-        subtitle: 'Exit webpage (return to browser start or search engine)',
+        subtitle: 'Close tab or leave page.',
         action: () => {
           if (typeof window !== 'undefined') {
-            window.location.href = 'https://www.google.com';
+            window.close();
+            window.location.href = 'about:blank';
           }
         },
         icon: LogOut,
@@ -1905,8 +2419,31 @@
   $effect(() => {
     if (isOpen) {
       const unlock = lockScroll();
+      const handleViewportChange = () => {
+        if (typeof window !== 'undefined' && window.visualViewport) {
+          visualViewportHeight = window.visualViewport.height;
+          visualViewportTop = window.visualViewport.offsetTop;
+        }
+      };
+      handleViewportChange();
+      if (typeof window !== 'undefined' && window.visualViewport) {
+        window.visualViewport.addEventListener('resize', handleViewportChange);
+        window.visualViewport.addEventListener('scroll', handleViewportChange);
+      }
       return () => {
         unlock();
+        if (typeof window !== 'undefined' && window.visualViewport) {
+          window.visualViewport.removeEventListener(
+            'resize',
+            handleViewportChange
+          );
+          window.visualViewport.removeEventListener(
+            'scroll',
+            handleViewportChange
+          );
+        }
+        visualViewportHeight = null;
+        visualViewportTop = null;
       };
     }
   });
@@ -2049,7 +2586,11 @@
 {#if isOpen}
   <div
     use:portal
-    class="fixed inset-0 z-99999 flex items-center justify-center overscroll-contain p-4">
+    style:top={visualViewportTop !== null ? `${visualViewportTop}px` : '0px'}
+    style:height={visualViewportHeight !== null ?
+      `${visualViewportHeight}px`
+    : '100%'}
+    class="fixed inset-x-0 z-99999 flex items-center justify-center overscroll-contain p-4 transition-[top,height] duration-300 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)]">
     <button
       type="button"
       class="fixed inset-0 cursor-default touch-none bg-overlay/80 backdrop-blur-xs transition-opacity duration-200"
@@ -2059,13 +2600,16 @@
       onclick={close}></button>
 
     <div
-      class="relative z-10 flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-md border-0 bg-surface-card text-text-primary shadow-xl backdrop-blur-md outline-none focus:outline-none md:w-[40vw] md:max-w-none dark:border dark:border-white/8"
+      style:max-height={visualViewportHeight !== null ?
+        `${Math.min(visualViewportHeight * 0.85, (typeof window !== 'undefined' ? window.innerHeight : 800) * 0.8)}px`
+      : undefined}
+      class="relative z-10 flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-md border-0 bg-surface-card text-text-primary shadow-xl backdrop-blur-md transition-[max-height] duration-300 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)] outline-none focus:outline-none md:w-[40vw] md:max-w-none dark:border dark:border-white/8"
       role="dialog"
       tabindex="-1"
       aria-modal="true"
       aria-label="Command Palette & Search">
       <div
-        class="flex items-center justify-between border-b border-border-subtle/40 px-4 py-2">
+        class="flex items-center justify-between border-b border-border-subtle/40 px-3 py-1.5 sm:px-4 sm:py-2">
         <input
           bind:this={inputEl}
           bind:value={rawQuery}
@@ -2077,7 +2621,7 @@
           spellcheck="false"
           autocomplete="off"
           placeholder="Search or type / for commands..."
-          class="search-input min-w-0 flex-1 border-none! border-transparent! bg-transparent py-0! pt-0! pb-0! font-sans-title text-sm font-medium text-text-primary shadow-none! ring-0! ring-transparent! ring-offset-0! outline-none! [-webkit-box-shadow:none]! [-webkit-tap-highlight-color:transparent] placeholder:font-sans-title placeholder:font-normal placeholder:text-text-muted focus:border-none! focus:border-transparent! focus:shadow-none! focus:ring-0! focus:ring-transparent! focus:outline-none! focus-visible:border-none! focus-visible:border-transparent! focus-visible:shadow-none! focus-visible:ring-0! focus-visible:ring-transparent! focus-visible:outline-none! active:border-none! active:border-transparent! active:shadow-none! active:ring-0! active:ring-transparent! active:outline-none!"
+          class="search-input min-w-0 flex-1 border-none! border-transparent! bg-transparent py-0! pt-0! pb-0! font-sans-title text-xs font-medium text-text-primary shadow-none! ring-0! ring-transparent! ring-offset-0! outline-none! [-webkit-box-shadow:none]! [-webkit-tap-highlight-color:transparent] placeholder:font-sans-title placeholder:text-xs placeholder:font-normal placeholder:text-text-muted focus:border-none! focus:border-transparent! focus:shadow-none! focus:ring-0! focus:ring-transparent! focus:outline-none! focus-visible:border-none! focus-visible:border-transparent! focus-visible:shadow-none! focus-visible:ring-0! focus-visible:ring-transparent! focus-visible:outline-none! active:border-none! active:border-transparent! active:shadow-none! active:ring-0! active:ring-transparent! active:outline-none! sm:text-sm sm:placeholder:text-sm"
           aria-label="Search query"
           aria-autocomplete="list"
           aria-controls="search-results"
@@ -2085,11 +2629,12 @@
             `result-${activeIndex}`
           : undefined} />
 
-        <div class="flex shrink-0 items-center gap-1 pl-2 select-none">
+        <div
+          class="flex shrink-0 items-center gap-0.5 pl-1.5 select-none sm:gap-1 sm:pl-2">
           <Button
             type="ghost"
             size="xs"
-            class="flex size-6 cursor-pointer items-center justify-center rounded-md p-0 transition-colors hover:bg-surface-hover"
+            class="flex size-5 cursor-pointer items-center justify-center rounded p-0 transition-colors hover:bg-surface-hover sm:size-6 sm:rounded-md"
             title="Match Case ({isCaseSensitive ? 'ON' : 'OFF'})"
             aria-label="Toggle Case Sensitivity"
             aria-pressed={isCaseSensitive}
@@ -2099,7 +2644,7 @@
             }}>
             <CaseSensitive
               class={cn(
-                'size-3.5 transition-colors',
+                'size-3 transition-colors sm:size-3.5',
                 isCaseSensitive ? 'text-accent' : (
                   'text-text-muted hover:text-text-primary'
                 )
@@ -2109,7 +2654,7 @@
           <Button
             type="ghost"
             size="xs"
-            class="flex size-6 cursor-pointer items-center justify-center rounded-md p-0 transition-colors hover:bg-surface-hover"
+            class="flex size-5 cursor-pointer items-center justify-center rounded p-0 transition-colors hover:bg-surface-hover sm:size-6 sm:rounded-md"
             title="Match Whole Word ({isWholeWord ? 'ON' : 'OFF'})"
             aria-label="Toggle Whole Word Search"
             aria-pressed={isWholeWord}
@@ -2119,7 +2664,7 @@
             }}>
             <WholeWord
               class={cn(
-                'size-3.5 transition-colors',
+                'size-3 transition-colors sm:size-3.5',
                 isWholeWord ? 'text-accent' : (
                   'text-text-muted hover:text-text-primary'
                 )
@@ -2129,7 +2674,7 @@
           <Button
             type="ghost"
             size="xs"
-            class="flex size-6 cursor-pointer items-center justify-center rounded-md p-0 transition-colors hover:bg-surface-hover"
+            class="flex size-5 cursor-pointer items-center justify-center rounded p-0 transition-colors hover:bg-surface-hover sm:size-6 sm:rounded-md"
             title="Use Regular Expression ({isRegex ? 'ON' : 'OFF'})"
             aria-label="Toggle Regular Expression Search"
             aria-pressed={isRegex}
@@ -2139,7 +2684,7 @@
             }}>
             <Regex
               class={cn(
-                'size-3.5 transition-colors',
+                'size-3 transition-colors sm:size-3.5',
                 isRegex ? 'text-accent' : (
                   'text-text-muted hover:text-text-primary'
                 )

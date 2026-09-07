@@ -33,6 +33,7 @@
     };
     readingMode?: boolean;
     onToggleReadingMode?: () => void;
+    width?: 'standard' | 'full' | 'reading';
     class?: string;
   }
 
@@ -56,8 +57,15 @@
     languageSwitcher,
     readingMode = false,
     onToggleReadingMode,
+    width = 'standard',
     class: className = ''
   }: Props = $props();
+
+  const widthStyles = {
+    standard: 'px-3 sm:px-6 md:w-[80%] lg:w-[50%]',
+    reading: 'px-3 sm:px-6 md:w-[80%] lg:w-[50%]',
+    full: 'w-full max-w-full px-0'
+  };
 
   let pageAuthor = $derived((page?.data as any)?.author);
 
@@ -81,7 +89,9 @@
 
 <footer
   class={cn(
-    'relative z-10 mx-auto mt-auto w-full max-w-full px-3 pt-0 pb-20 font-sans text-xs text-text-muted sm:px-6 md:w-[80%] md:pb-20 lg:w-[65%] lg:pb-6 xl:w-[50%] 2xl:w-[45%]',
+    'relative z-10 mx-auto mt-auto w-full max-w-full pt-0 font-sans text-xs text-text-muted',
+    width === 'standard' ? 'pb-20 md:pb-20 lg:pb-8' : 'pb-0',
+    widthStyles[width],
     className
   )}>
   <div class="rounded-md glass-card p-3.5 sm:p-6">
@@ -93,7 +103,7 @@
             {resolvedName}
           </h3>
           {#if resolvedHeadline}
-            <p class="text-xs font-medium text-text-secondary sm:text-sm">
+            <p class="text-xs font-medium text-text-muted sm:text-sm">
               {resolvedHeadline}
             </p>
           {/if}

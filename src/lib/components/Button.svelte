@@ -20,6 +20,8 @@
     download?: boolean | string;
     children?: Snippet;
     responsiveIconOnly?: boolean;
+    label?: string;
+    truncateMiddle?: boolean;
   }
 
   let {
@@ -38,13 +40,17 @@
     rel,
     download,
     responsiveIconOnly = false,
+    label,
+    truncateMiddle = false,
     class: className = '',
+    title,
+    'aria-label': ariaLabel,
     children,
     ...restProps
   }: Props = $props();
 
   const baseStyles =
-    'inline-flex items-center justify-center font-semibold whitespace-nowrap transition-all cursor-pointer select-none leading-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50 disabled:cursor-not-allowed [&>svg]:shrink-0 [&>i]:shrink-0';
+    'inline-flex min-w-0 items-center justify-center font-semibold whitespace-nowrap transition-all cursor-pointer select-none leading-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50 disabled:cursor-not-allowed [&>svg]:shrink-0 [&>i]:shrink-0';
 
   const typeToneStyles: Record<string, string> = {
     'primary:neutral':
@@ -85,9 +91,42 @@
   const responsiveSizeStyles = {
     xs: 'size-8 shrink-0 p-0 text-2xs gap-1 rounded-md sm:h-7.5 sm:w-auto sm:px-2.5 sm:py-1.5 sm:text-2xs sm:gap-1',
     sm: 'size-8 shrink-0 p-0 text-xs gap-1.5 rounded-md sm:h-8 sm:w-auto sm:px-3 sm:text-xs sm:gap-1.5',
-    md: 'size-8 shrink-0 p-0 text-xs gap-1.5 rounded-md sm:h-9 sm:w-auto sm:px-4 sm:text-xs sm:sm:text-sm sm:gap-2',
+    md: 'size-8 shrink-0 p-0 text-xs gap-1.5 rounded-md sm:h-9 sm:w-auto sm:px-4 sm:text-xs sm:text-sm sm:gap-2',
     lg: 'size-8 shrink-0 p-0 text-xs gap-1.5 rounded-md sm:h-11 sm:w-auto sm:px-5 sm:text-sm sm:gap-2.5'
   };
+
+  const splitLabel = $derived.by(() => {
+    if (!label) return {prefix: '', suffix: '', hasSpace: false};
+    const trimmed = label.trim();
+    const lastSpaceIndex = trimmed.lastIndexOf(' ');
+    if (lastSpaceIndex > 0) {
+      return {
+        prefix: trimmed.slice(0, lastSpaceIndex),
+        suffix: trimmed.slice(lastSpaceIndex + 1),
+        hasSpace: true
+      };
+    }
+    const lastDotIndex = trimmed.lastIndexOf('.');
+    if (lastDotIndex > 0 && trimmed.length - lastDotIndex <= 6) {
+      return {
+        prefix: trimmed.slice(0, lastDotIndex),
+        suffix: trimmed.slice(lastDotIndex),
+        hasSpace: false
+      };
+    }
+    if (trimmed.length > 8) {
+      const splitAt = Math.ceil(trimmed.length * 0.6);
+      return {
+        prefix: trimmed.slice(0, splitAt),
+        suffix: trimmed.slice(splitAt),
+        hasSpace: false
+      };
+    }
+    return {prefix: trimmed, suffix: '', hasSpace: false};
+  });
+
+  const resolvedTitle = $derived(title || label || undefined);
+  const resolvedAriaLabel = $derived(ariaLabel || label || undefined);
 </script>
 
 <svelte:element
@@ -104,6 +143,8 @@
   disabled={href ? undefined : disabled || isLoading}
   aria-disabled={href && (disabled || isLoading) ? 'true' : undefined}
   tabindex={href && (disabled || isLoading) ? -1 : undefined}
+  title={resolvedTitle}
+  aria-label={resolvedAriaLabel}
   class={cn(
     baseStyles,
     typeToneStyles[styleKey],
@@ -135,7 +176,35 @@
     </span>
   {/if}
 
-  {#if responsiveIconOnly}
+  {#if label}
+    {#if responsiveIconOnly}
+      <span
+        class="hidden sm:inline-flex sm:max-w-full sm:min-w-0 sm:items-center">
+        {#if truncateMiddle}
+          <span
+            class="inline-flex max-w-full min-w-0 items-center overflow-hidden">
+            <span class="min-w-0 shrink truncate">{splitLabel.prefix}</span>
+            {#if splitLabel.suffix}
+              <span class="shrink-0"
+                >{#if splitLabel.hasSpace}&nbsp;{/if}{splitLabel.suffix}</span>
+            {/if}
+          </span>
+        {:else}
+          <span class="truncate">{label}</span>
+        {/if}
+      </span>
+    {:else if truncateMiddle}
+      <span class="inline-flex max-w-full min-w-0 items-center overflow-hidden">
+        <span class="min-w-0 shrink truncate">{splitLabel.prefix}</span>
+        {#if splitLabel.suffix}
+          <span class="shrink-0"
+            >{#if splitLabel.hasSpace}&nbsp;{/if}{splitLabel.suffix}</span>
+        {/if}
+      </span>
+    {:else}
+      <span class="truncate">{label}</span>
+    {/if}
+  {:else if responsiveIconOnly}
     <span class="hidden sm:inline-flex sm:items-center">
       {@render children?.()}
     </span>

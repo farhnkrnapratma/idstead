@@ -74,9 +74,37 @@
           >Copy</span>
         <div class="grid grid-cols-2 gap-2">
           <Button
+            type="secondary"
+            size="xs"
+            class="w-full justify-start px-2.5 text-xs font-normal! text-text-secondary!"
+            onclick={() => {
+              onClose();
+              onCopyMarkdown?.();
+            }}>
+            {#snippet leading()}
+              <Copy class="size-3.5" />
+            {/snippet}
+            <span>Copy as MD</span>
+          </Button>
+
+          <Button
+            type="secondary"
+            size="xs"
+            class="w-full justify-start px-2.5 text-xs font-normal! text-text-secondary!"
+            onclick={() => {
+              onClose();
+              onCopyText?.();
+            }}>
+            {#snippet leading()}
+              <ScanText class="size-3.5" />
+            {/snippet}
+            <span>Copy as TXT</span>
+          </Button>
+
+          <Button
             type={copiedUrl ? 'tertiary' : 'secondary'}
             size="xs"
-            class="w-full justify-start px-2.5"
+            class="w-full justify-start px-2.5 text-xs font-normal! text-text-secondary!"
             onclick={copyPostUrl}>
             {#snippet leading()}
               {#if copiedUrl}
@@ -85,41 +113,13 @@
                 <Link class="size-3.5" />
               {/if}
             {/snippet}
-            <span>{copiedUrl ? 'Copied URL!' : 'Copy URL'}</span>
-          </Button>
-
-          <Button
-            type="secondary"
-            size="xs"
-            class="w-full justify-start px-2.5"
-            onclick={() => {
-              onClose();
-              onCopyMarkdown?.();
-            }}>
-            {#snippet leading()}
-              <Copy class="size-3.5" />
-            {/snippet}
-            <span>Copy as Markdown</span>
-          </Button>
-
-          <Button
-            type="secondary"
-            size="xs"
-            class="w-full justify-start px-2.5"
-            onclick={() => {
-              onClose();
-              onCopyText?.();
-            }}>
-            {#snippet leading()}
-              <ScanText class="size-3.5" />
-            {/snippet}
-            <span>Copy as Text</span>
+            <span>{copiedUrl ? 'Copied URL!' : 'Post URL'}</span>
           </Button>
 
           <Button
             type={copiedId ? 'tertiary' : 'secondary'}
             size="xs"
-            class="w-full justify-start px-2.5"
+            class="w-full justify-start px-2.5 text-xs font-normal! text-text-secondary!"
             onclick={copyPostId}>
             {#snippet leading()}
               {#if copiedId}
@@ -128,7 +128,7 @@
                 <Hash class="size-3.5" />
               {/if}
             {/snippet}
-            <span>{copiedId ? 'Copied ID!' : 'Copy Post ID'}</span>
+            <span>{copiedId ? 'Copied ID!' : 'Post ID'}</span>
           </Button>
         </div>
       </div>
@@ -142,26 +142,26 @@
             href="/api/v1/blog/{post.slug}?format=md"
             type="secondary"
             size="xs"
-            class="w-full justify-start px-2.5"
+            class="w-full justify-start px-2.5 text-xs font-normal! text-text-secondary!"
             onclick={() => onClose()}>
             {#snippet leading()}
               <i
                 class="bi bi-markdown inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
                 aria-hidden="true"></i>
             {/snippet}
-            <span>View as Markdown</span>
+            <span>View as MD</span>
           </Button>
 
           <Button
             href="/api/v1/blog/{post.slug}?format=text"
             type="secondary"
             size="xs"
-            class="w-full justify-start px-2.5"
+            class="w-full justify-start px-2.5 text-xs font-normal! text-text-secondary!"
             onclick={() => onClose()}>
             {#snippet leading()}
               <TextAlignStart class="size-3.5" />
             {/snippet}
-            <span>View as Text</span>
+            <span>View as TXT</span>
           </Button>
         </div>
       </div>
@@ -176,7 +176,7 @@
               <Button
                 type="secondary"
                 size="xs"
-                class="w-full justify-start px-2.5"
+                class="w-full justify-start px-2.5 text-xs font-normal! text-text-secondary!"
                 onclick={() => {
                   onClose();
                   onSaveMarkdown();
@@ -186,7 +186,7 @@
                     class="bi bi-filetype-md inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
                     aria-hidden="true"></i>
                 {/snippet}
-                <span>Save as Markdown</span>
+                <span>Save as MD</span>
               </Button>
             {/if}
 
@@ -194,7 +194,7 @@
               <Button
                 type="secondary"
                 size="xs"
-                class="w-full justify-start px-2.5"
+                class="w-full justify-start px-2.5 text-xs font-normal! text-text-secondary!"
                 onclick={() => {
                   onClose();
                   onSaveText();
@@ -202,7 +202,7 @@
                 {#snippet leading()}
                   <FileText class="size-3.5" />
                 {/snippet}
-                <span>Save as Text</span>
+                <span>Save as TXT</span>
               </Button>
             {/if}
           </div>

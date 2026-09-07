@@ -12,7 +12,7 @@
 
 <div
   class={cn(
-    'flex w-full max-w-full flex-wrap items-center justify-center gap-x-4 gap-y-2 font-sans text-xs font-medium text-text-muted md:flex-nowrap',
+    'flex w-full max-w-full flex-wrap items-center justify-center gap-x-4 gap-y-2 font-sans text-xs font-medium text-text-muted',
     className
   )}>
   <span class="inline-flex shrink-0 items-center text-text-muted">

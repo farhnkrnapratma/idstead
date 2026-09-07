@@ -3,6 +3,7 @@
   import {cn} from '../../utils/cn';
   import {popoverPosition} from '../../utils/popoverPosition';
   import IconButton from '../IconButton.svelte';
+  import FlagIcon from '../FlagIcon.svelte';
 
   interface Props {
     slug: string;
@@ -133,9 +134,14 @@
                     'border-accent bg-accent/10 text-accent'
                   : 'border-border-subtle bg-surface text-text-secondary hover:border-accent/50 hover:text-text-primary'
                 )}>
-                <span class="text-xs font-medium">
-                  {LANGUAGE_LABELS[loc] ?? loc}
-                </span>
+                <div class="flex min-w-0 items-center gap-2">
+                  <FlagIcon
+                    lang={loc}
+                    class="size-4" />
+                  <span class="text-xs font-medium">
+                    {LANGUAGE_LABELS[loc] ?? loc}
+                  </span>
+                </div>
                 <span
                   class="relative flex size-4 shrink-0 items-center justify-center">
                   <Circle

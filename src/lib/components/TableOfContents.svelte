@@ -35,6 +35,10 @@
   let tocListEl = $state<HTMLUListElement | null>(null);
   let scrollContainerEl = $state<HTMLDivElement | null>(null);
 
+  const minLevel = $derived(
+    headings.length > 0 ? Math.min(...headings.map(h => h.level)) : 2
+  );
+
   let isPinnedByClick = false;
   let unpinTimeout: ReturnType<typeof setTimeout> | undefined;
 
@@ -208,19 +212,19 @@
 {#snippet tocList()}
   <div
     bind:this={scrollContainerEl}
-    class="relative min-h-0 [scrollbar-width:none] overflow-y-auto pr-1 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+    class="relative min-h-0 flex-1 [scrollbar-width:none] overflow-y-auto pr-1 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
     <ul
       id="toc-list"
       bind:this={tocListEl}
       class="relative flex min-h-full flex-col pl-3 font-sans-title"
       role="list">
       <div
-        class="pointer-events-none absolute top-0 bottom-1 left-0 w-px bg-border-subtle">
+        class="pointer-events-none absolute top-0 bottom-1 left-0 w-px bg-[#d5ded7] dark:bg-[#232925]">
       </div>
 
       {#if isIndicatorVisible}
         <div
-          class="pointer-events-none absolute top-(--indicator-top) left-0 h-(--indicator-height) w-px bg-accent shadow-xs"
+          class="pointer-events-none absolute top-(--indicator-top) left-0 h-(--indicator-height) w-px bg-accent"
           style="--indicator-top: {indicatorTop}px; --indicator-height: {indicatorHeight}px;"
           aria-hidden="true">
         </div>
@@ -228,9 +232,10 @@
 
       {#each headings as heading, index (heading.id + '-' + index)}
         {@const isActive = activeHeadingId === heading.id}
-        {@const isSub = heading.level > 2}
-        {@const branchWidth = isSub ? 18 + (heading.level - 3) * 10 : 0}
-        {@const hasTopGap = index !== 0 && heading.level <= 2}
+        {@const depth = Math.max(0, heading.level - minLevel)}
+        {@const isSub = depth > 0}
+        {@const branchWidth = isSub ? 16 + (depth - 1) * 12 : 0}
+        {@const hasTopGap = index !== 0 && depth === 0}
         <li
           class="text-xs {index === 0 ? 'mt-0'
           : hasTopGap ? 'mt-1.5'
@@ -243,7 +248,7 @@
               navigateToHeading(heading.id);
             }}
             aria-current={isActive ? 'true' : undefined}
-            class="relative -ml-3 flex items-center rounded-r-xs py-0.5 pr-2 font-sans-title leading-snug transition-colors duration-150 ease-in-out hover:text-accent {(
+            class="relative -ml-3 flex min-h-6 items-center rounded-r-xs py-0.5 pr-2 font-sans-title leading-snug transition-colors duration-150 ease-in-out hover:text-accent {(
               isActive
             ) ?
               isSub ? 'bg-accent/10 font-medium text-accent'
@@ -254,11 +259,11 @@
             style="padding-left: {isSub ? `${branchWidth + 8}px` : '10px'};">
             {#if isSub}
               <span
-                class="pointer-events-none absolute top-1/2 left-0 h-px -translate-y-1/2 transition-colors duration-150 select-none {(
+                class="pointer-events-none absolute top-1/2 left-0 h-0 border-t transition-colors duration-150 select-none {(
                   isActive
                 ) ?
-                  'bg-accent'
-                : 'bg-border-subtle'}"
+                  'border-accent'
+                : 'border-[#d5ded7] dark:border-[#232925]'}"
                 style="width: {branchWidth}px;"
                 aria-hidden="true"></span>
             {/if}
@@ -275,7 +280,7 @@
   {#if collapsible}
     <details
       class={cn(
-        'group markdown-details my-1 overflow-hidden rounded-md glass-card border border-border-subtle/60 text-text-primary shadow-md backdrop-blur-md select-none sm:my-2',
+        'group markdown-details my-0 overflow-hidden rounded-md glass-card border border-border-subtle/60 text-text-primary shadow-md backdrop-blur-md select-none',
         className
       )}
       open={!defaultCollapsed}>

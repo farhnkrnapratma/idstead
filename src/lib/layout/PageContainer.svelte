@@ -18,11 +18,11 @@
   }: Props = $props();
 
   const widthStyles = {
-    reading: 'w-full md:w-[80%] lg:w-[65%] xl:w-[50%] 2xl:w-[45%]',
+    reading: 'w-full md:w-[80%] lg:w-[50%]',
     form: 'max-w-xl',
     editor: 'max-w-4xl',
-    standard: 'w-full md:w-[80%] lg:w-[65%] xl:w-[50%] 2xl:w-[45%]',
-    listing: 'w-full md:w-[80%] lg:w-[65%] xl:w-[50%] 2xl:w-[45%]',
+    standard: 'w-full md:w-[80%] lg:w-[50%]',
+    listing: 'w-full md:w-[80%] lg:w-[50%]',
     admin: 'w-full max-w-7xl',
     full: 'max-w-7xl'
   };

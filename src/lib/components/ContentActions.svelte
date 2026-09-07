@@ -7,7 +7,8 @@
     Hash,
     ScanText,
     TextAlignStart,
-    FileText
+    FileText,
+    ChevronDown
   } from '@lucide/svelte';
   import {toastStore} from '../stores/toastStore.svelte';
   import {markdownToPlainText} from '../utils/markdownToText';
@@ -25,6 +26,7 @@
     pageUrl?: string;
     avatarUrl?: string;
     showToolbar?: boolean;
+    showCopyUrl?: boolean;
     class?: string;
   }
 
@@ -39,6 +41,7 @@
     pageUrl,
     avatarUrl = '',
     showToolbar = true,
+    showCopyUrl = true,
     class: className = ''
   }: Props = $props();
 
@@ -197,130 +200,131 @@
 {#snippet popoverMenu()}
   <div
     role="menu"
-    class="absolute top-full right-0 left-auto z-50 mt-1.5 flex max-w-[calc(100vw-2rem)] flex-col gap-2.5 rounded-md border border-border-subtle bg-surface-elevated/95 p-2.5 shadow-xl backdrop-blur-md sm:flex-row sm:gap-0 sm:divide-x sm:divide-border-subtle/60">
-    <div class="flex flex-col gap-1 sm:pr-3">
-      <span
-        class="px-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase"
-        >Copy</span>
-      <Button
-        type="ghost"
-        size="xs"
-        class="w-full justify-start px-1.5 whitespace-nowrap"
-        onclick={() => {
-          isMoreOpen = false;
-          handleCopyPageUrl();
-        }}>
-        {#snippet leading()}
-          {#if copiedUrl}
-            <CopyCheck class="size-3.5 text-accent" />
-          {:else}
-            <Link class="size-3.5" />
-          {/if}
-        {/snippet}
-        <span>{copiedUrl ? 'Copied URL!' : 'Copy URL'}</span>
-      </Button>
-      <Button
-        type="ghost"
-        size="xs"
-        class="w-full justify-start px-1.5 whitespace-nowrap"
-        onclick={() => {
-          isMoreOpen = false;
-          handleCopyPlainText();
-        }}>
-        {#snippet leading()}
-          {#if copiedText}
-            <CopyCheck class="size-3.5 text-accent" />
-          {:else}
-            <ScanText class="size-3.5" />
-          {/if}
-        {/snippet}
-        <span>{copiedText ? 'Copied Text!' : 'Copy as Text'}</span>
-      </Button>
-      {#if pageId}
+    class="absolute top-full right-0 left-auto z-50 mt-1.5 flex max-h-[85vh] max-w-[calc(100vw-2rem)] flex-row divide-x divide-border-subtle/60 overflow-y-auto rounded-md border border-border-subtle bg-surface-elevated/95 p-2.5 shadow-xl backdrop-blur-md">
+    {#if showCopyUrl || pageId}
+      <div class="flex flex-col gap-1 pr-3">
+        <span
+          class="px-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase"
+          >Copy</span>
+        {#if showCopyUrl}
+          <Button
+            type="ghost"
+            size="xs"
+            label={copiedUrl ? 'Copied!' : 'Post URL'}
+            truncateMiddle
+            class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
+            onclick={() => {
+              isMoreOpen = false;
+              handleCopyPageUrl();
+            }}>
+            {#snippet leading()}
+              {#if copiedUrl}
+                <CopyCheck class="size-3.5 text-accent" />
+              {:else}
+                <Link class="size-3.5" />
+              {/if}
+            {/snippet}
+          </Button>
+        {/if}
+        {#if pageId}
+          <Button
+            type="ghost"
+            size="xs"
+            label={copiedId ? 'Copied!' : 'Post ID'}
+            truncateMiddle
+            class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
+            onclick={() => {
+              isMoreOpen = false;
+              handleCopyPageId();
+            }}>
+            {#snippet leading()}
+              {#if copiedId}
+                <CopyCheck class="size-3.5 text-accent" />
+              {:else}
+                <Hash class="size-3.5" />
+              {/if}
+            {/snippet}
+          </Button>
+        {/if}
+      </div>
+    {/if}
+
+    <div class="flex flex-col gap-2 pl-3 sm:contents">
+      <div
+        class="flex flex-col gap-1 sm:px-3 {showCopyUrl || pageId ? '' : (
+          'sm:pr-3'
+        )}">
+        <span
+          class="px-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase"
+          >Text</span>
         <Button
           type="ghost"
           size="xs"
-          class="w-full justify-start px-1.5 whitespace-nowrap"
+          label={copiedText ? 'Copied!' : 'Copy as TXT'}
+          truncateMiddle
+          class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
           onclick={() => {
             isMoreOpen = false;
-            handleCopyPageId();
+            handleCopyPlainText();
           }}>
           {#snippet leading()}
-            {#if copiedId}
+            {#if copiedText}
               <CopyCheck class="size-3.5 text-accent" />
             {:else}
-              <Hash class="size-3.5" />
+              <ScanText class="size-3.5" />
             {/if}
           {/snippet}
-          <span>{copiedId ? 'Copied ID!' : 'Copy Post ID'}</span>
         </Button>
-      {/if}
-    </div>
+        <Button
+          type="ghost"
+          size="xs"
+          href={viewTextUrl}
+          label="View as TXT"
+          truncateMiddle
+          class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
+          onclick={() => (isMoreOpen = false)}>
+          {#snippet leading()}
+            <TextAlignStart class="size-3.5" />
+          {/snippet}
+        </Button>
+      </div>
 
-    <div
-      class="flex flex-col gap-1 border-t border-border-subtle/60 pt-2 sm:border-t-0 sm:px-3 sm:pt-0">
-      <span
-        class="px-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase"
-        >View</span>
-      <Button
-        type="ghost"
-        size="xs"
-        href={viewMarkdownUrl}
-        class="w-full justify-start px-1.5 whitespace-nowrap sm:hidden"
-        onclick={() => (isMoreOpen = false)}>
-        {#snippet leading()}
-          <i
-            class="bi bi-markdown inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
-            aria-hidden="true"></i>
-        {/snippet}
-        <span>View as Markdown</span>
-      </Button>
-      <Button
-        type="ghost"
-        size="xs"
-        href={viewTextUrl}
-        class="w-full justify-start px-1.5 whitespace-nowrap"
-        onclick={() => (isMoreOpen = false)}>
-        {#snippet leading()}
-          <TextAlignStart class="size-3.5" />
-        {/snippet}
-        <span>View as Text</span>
-      </Button>
-    </div>
-
-    <div
-      class="flex flex-col gap-1 border-t border-border-subtle/60 pt-2 sm:border-t-0 sm:pt-0 sm:pl-3">
-      <span
-        class="px-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase"
-        >Save</span>
-      <Button
-        type="ghost"
-        size="xs"
-        class="w-full justify-start px-1.5 whitespace-nowrap"
-        onclick={() => {
-          isMoreOpen = false;
-          handleSaveMarkdown();
-        }}>
-        {#snippet leading()}
-          <i
-            class="bi bi-filetype-md inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
-            aria-hidden="true"></i>
-        {/snippet}
-        <span>Save as Markdown</span>
-      </Button>
-      <Button
-        type="ghost"
-        size="xs"
-        class="w-full justify-start px-1.5 whitespace-nowrap"
-        onclick={() => {
-          isMoreOpen = false;
-          handleSaveText();
-        }}>
-        {#snippet leading()}
-          <FileText class="size-3.5" />
-        {/snippet}
-        <span>Save as Text</span>
-      </Button>
+      <div
+        class="flex flex-col gap-1 border-t border-border-subtle/60 pt-2 sm:border-t-0 sm:pt-0 sm:pl-3">
+        <span
+          class="px-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase"
+          >Save</span>
+        <Button
+          type="ghost"
+          size="xs"
+          label="Save as MD"
+          truncateMiddle
+          class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
+          onclick={() => {
+            isMoreOpen = false;
+            handleSaveMarkdown();
+          }}>
+          {#snippet leading()}
+            <i
+              class="bi bi-filetype-md inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
+              aria-hidden="true"></i>
+          {/snippet}
+        </Button>
+        <Button
+          type="ghost"
+          size="xs"
+          label="Save as TXT"
+          truncateMiddle
+          class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
+          onclick={() => {
+            isMoreOpen = false;
+            handleSaveText();
+          }}>
+          {#snippet leading()}
+            <FileText class="size-3.5" />
+          {/snippet}
+        </Button>
+      </div>
     </div>
   </div>
 {/snippet}
@@ -329,172 +333,206 @@
   <nav
     aria-label="Content actions"
     class={cn(
-      'flex flex-col gap-3 rounded-md glass-card p-4 select-none',
+      'flex shrink-0 flex-col gap-2.5 rounded-md glass-card p-3.5 text-left select-none sm:p-4',
       className
     )}>
     <h3
-      class="shrink-0 text-xs font-bold tracking-wider text-text-secondary uppercase select-none">
+      class="font-sans-title text-xs font-bold tracking-wider text-text-secondary uppercase select-none">
       Actions
     </h3>
+
     <div class="grid grid-cols-2 gap-1.5">
       <Button
         type="secondary"
         size="xs"
-        class="w-full justify-start px-2"
-        onclick={handleCopyPageUrl}>
+        class="w-full justify-start gap-1.5 px-2 py-1.5 text-xs font-normal! text-text-secondary!"
+        onclick={handleCopyMarkdown}
+        label={copiedMarkdown ? 'Copied!' : 'Copy as MD'}
+        truncateMiddle>
         {#snippet leading()}
-          {#if copiedUrl}
+          {#if copiedMarkdown}
             <CopyCheck class="size-3.5 text-accent" />
           {:else}
-            <Link class="size-3.5" />
+            <Copy class="size-3.5 text-text-secondary" />
           {/if}
         {/snippet}
-        <span>{copiedUrl ? 'Copied!' : 'Copy URL'}</span>
       </Button>
 
-      {#if pageId}
-        <Button
-          type="secondary"
-          size="xs"
-          class="w-full justify-start px-2"
-          onclick={handleCopyPageId}>
-          {#snippet leading()}
-            {#if copiedId}
-              <CopyCheck class="size-3.5 text-accent" />
-            {:else}
-              <Hash class="size-3.5" />
-            {/if}
-          {/snippet}
-          <span>{copiedId ? 'Copied ID!' : 'Copy Post ID'}</span>
-        </Button>
-      {/if}
+      <Button
+        href={viewMarkdownUrl}
+        type="secondary"
+        size="xs"
+        class="w-full justify-start gap-1.5 px-2 py-1.5 text-xs font-normal! text-text-secondary!"
+        label="View as MD"
+        truncateMiddle>
+        {#snippet leading()}
+          <i
+            class="bi bi-markdown inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none text-text-secondary [&::before]:align-[0] [&::before]:leading-none"
+            aria-hidden="true"></i>
+        {/snippet}
+      </Button>
     </div>
 
-    <div class="flex flex-col gap-1.5 border-t border-border-subtle/60 pt-2">
-      <span
-        class="text-2xs font-semibold tracking-wider text-text-muted uppercase"
-        >Copy</span>
-      <div class="grid grid-cols-2 gap-1.5">
-        <Button
-          type="secondary"
-          size="xs"
-          class="w-full justify-start px-2"
-          onclick={handleCopyMarkdown}>
-          {#snippet leading()}
-            {#if copiedMarkdown}
-              <CopyCheck class="size-3.5 text-accent" />
-            {:else}
-              <Copy class="size-3.5" />
-            {/if}
-          {/snippet}
-          <span>{copiedMarkdown ? 'Copied!' : 'Markdown'}</span>
-        </Button>
-        <Button
-          type="secondary"
-          size="xs"
-          class="w-full justify-start px-2"
-          onclick={handleCopyPlainText}>
-          {#snippet leading()}
-            <ScanText class="size-3.5" />
-          {/snippet}
-          <span>{copiedText ? 'Copied!' : 'Text'}</span>
-        </Button>
-      </div>
-    </div>
+    <details class="group my-0 overflow-hidden pt-0.5">
+      <summary
+        class="group/summary flex min-h-0 cursor-pointer list-none items-center justify-between gap-1 border-0! bg-transparent! px-0 py-0.5 font-sans-title text-xs font-bold tracking-wider text-text-secondary uppercase no-underline! transition-colors select-none group-open:border-b-0! group-open:bg-transparent! hover:bg-transparent! hover:text-security [&::-webkit-details-marker]:hidden">
+        <span>More options</span>
+        <ChevronDown
+          class="size-3.5 text-text-secondary transition-transform duration-200 group-open:rotate-180 group-hover/summary:text-security" />
+      </summary>
 
-    <div class="flex flex-col gap-1.5 border-t border-border-subtle/60 pt-2">
-      <span
-        class="text-2xs font-semibold tracking-wider text-text-muted uppercase"
-        >View</span>
-      <div class="grid grid-cols-2 gap-1.5">
-        <Button
-          href={viewMarkdownUrl}
-          type="secondary"
-          size="xs"
-          class="w-full justify-start px-2">
-          {#snippet leading()}
-            <i
-              class="bi bi-markdown inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
-              aria-hidden="true"></i>
-          {/snippet}
-          <span>Markdown</span>
-        </Button>
-        <Button
-          href={viewTextUrl}
-          type="secondary"
-          size="xs"
-          class="w-full justify-start px-2">
-          {#snippet leading()}
-            <TextAlignStart class="size-3.5" />
-          {/snippet}
-          <span>Text</span>
-        </Button>
-      </div>
-    </div>
+      <div class="flex flex-col gap-2.5 pt-1.5">
+        {#if showCopyUrl || pageId}
+          <div class="flex flex-col gap-1.5">
+            <span
+              class="text-2xs font-semibold tracking-wider text-text-muted uppercase select-none"
+              >Copy</span>
+            <div
+              class="grid {showCopyUrl && pageId ? 'grid-cols-2' : (
+                'grid-cols-1'
+              )} gap-1.5">
+              {#if showCopyUrl}
+                <Button
+                  type="secondary"
+                  size="xs"
+                  class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
+                  onclick={handleCopyPageUrl}
+                  label={copiedUrl ? 'Copied!' : 'Post URL'}
+                  truncateMiddle>
+                  {#snippet leading()}
+                    {#if copiedUrl}
+                      <CopyCheck class="size-3.5 text-accent" />
+                    {:else}
+                      <Link class="size-3.5 text-text-secondary" />
+                    {/if}
+                  {/snippet}
+                </Button>
+              {/if}
 
-    <div class="flex flex-col gap-1.5 border-t border-border-subtle/60 pt-2">
-      <span
-        class="text-2xs font-semibold tracking-wider text-text-muted uppercase"
-        >Save</span>
-      <div class="grid grid-cols-2 gap-1.5">
-        <Button
-          type="secondary"
-          size="xs"
-          class="w-full justify-start px-2"
-          onclick={handleSaveMarkdown}>
-          {#snippet leading()}
-            <i
-              class="bi bi-filetype-md inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
-              aria-hidden="true"></i>
-          {/snippet}
-          <span>Markdown</span>
-        </Button>
-        <Button
-          type="secondary"
-          size="xs"
-          class="w-full justify-start px-2"
-          onclick={handleSaveText}>
-          {#snippet leading()}
-            <FileText class="size-3.5" />
-          {/snippet}
-          <span>Text</span>
-        </Button>
+              {#if pageId}
+                <Button
+                  type="secondary"
+                  size="xs"
+                  class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
+                  onclick={handleCopyPageId}
+                  label={copiedId ? 'Copied!' : 'Post ID'}
+                  truncateMiddle>
+                  {#snippet leading()}
+                    {#if copiedId}
+                      <CopyCheck class="size-3.5 text-accent" />
+                    {:else}
+                      <Hash class="size-3.5 text-text-secondary" />
+                    {/if}
+                  {/snippet}
+                </Button>
+              {/if}
+            </div>
+          </div>
+        {/if}
+
+        <div class="flex flex-col gap-1.5">
+          <span
+            class="text-2xs font-semibold tracking-wider text-text-muted uppercase select-none"
+            >Text</span>
+          <div class="grid grid-cols-2 gap-1.5">
+            <Button
+              type="secondary"
+              size="xs"
+              class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
+              onclick={handleCopyPlainText}
+              label={copiedText ? 'Copied!' : 'Copy as TXT'}
+              truncateMiddle>
+              {#snippet leading()}
+                {#if copiedText}
+                  <CopyCheck class="size-3.5 text-accent" />
+                {:else}
+                  <ScanText class="size-3.5 text-text-secondary" />
+                {/if}
+              {/snippet}
+            </Button>
+
+            <Button
+              href={viewTextUrl}
+              type="secondary"
+              size="xs"
+              class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
+              label="View as TXT"
+              truncateMiddle>
+              {#snippet leading()}
+                <TextAlignStart class="size-3.5 text-text-secondary" />
+              {/snippet}
+            </Button>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <span
+            class="text-2xs font-semibold tracking-wider text-text-muted uppercase select-none"
+            >Save</span>
+          <div class="grid grid-cols-2 gap-1.5">
+            <Button
+              type="secondary"
+              size="xs"
+              class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
+              onclick={handleSaveMarkdown}
+              label="Save as MD"
+              truncateMiddle>
+              {#snippet leading()}
+                <i
+                  class="bi bi-filetype-md inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none text-text-secondary [&::before]:align-[0] [&::before]:leading-none"
+                  aria-hidden="true"></i>
+              {/snippet}
+            </Button>
+            <Button
+              type="secondary"
+              size="xs"
+              class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
+              onclick={handleSaveText}
+              label="Save as TXT"
+              truncateMiddle>
+              {#snippet leading()}
+                <FileText class="size-3.5 text-text-secondary" />
+              {/snippet}
+            </Button>
+          </div>
+        </div>
       </div>
-    </div>
+    </details>
   </nav>
 {:else}
   <div
     class={cn(
-      'flex flex-nowrap items-center gap-1 text-2xs select-none',
+      'flex flex-nowrap items-center gap-1.5 text-2xs select-none',
       className
     )}>
     <Button
       type="secondary"
       size="xs"
       onclick={handleCopyMarkdown}
-      class="h-7! min-w-0 flex-1 justify-center gap-1! px-1.5! py-0.5! text-3xs! font-medium text-text-secondary hover:text-accent sm:text-2xs!">
+      label={copiedMarkdown ? 'Copied!' : 'Copy as MD'}
+      truncateMiddle
+      class="h-7 min-w-0 flex-1 justify-center gap-1.5 px-2 py-0.5 text-2xs font-normal! text-text-secondary! hover:text-accent">
       {#snippet leading()}
         {#if copiedMarkdown}
-          <CopyCheck class="size-3! shrink-0 text-accent" />
+          <CopyCheck class="size-3.5 shrink-0 text-accent" />
         {:else}
-          <Copy class="size-3! shrink-0" />
+          <Copy class="size-3.5 shrink-0" />
         {/if}
       {/snippet}
-      <span class="leading-none whitespace-nowrap"
-        >{copiedMarkdown ? 'Copied!' : 'Copy as Markdown'}</span>
     </Button>
 
     <Button
       type="secondary"
       size="xs"
       href={viewMarkdownUrl}
-      class="hidden h-7! min-w-0 flex-1 justify-center gap-1! px-1.5! py-0.5! text-3xs! font-medium text-text-secondary hover:text-accent sm:inline-flex sm:text-2xs!">
+      label="View as MD"
+      truncateMiddle
+      class="h-7 min-w-0 flex-1 justify-center gap-1.5 px-2 py-0.5 text-2xs font-normal! text-text-secondary! hover:text-accent">
       {#snippet leading()}
         <i
-          class="bi bi-markdown inline-flex size-3! shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
+          class="bi bi-markdown inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
           aria-hidden="true"></i>
       {/snippet}
-      <span class="leading-none whitespace-nowrap">View as Markdown</span>
     </Button>
 
     <div
@@ -508,7 +546,7 @@
         aria-expanded={isMoreOpen}
         aria-haspopup="menu"
         class={cn(
-          'size-7! px-0! text-text-muted hover:text-accent',
+          'size-7 px-0 text-text-muted hover:text-accent',
           isMoreOpen && 'border border-accent text-accent'
         )}>
         <EllipsisVertical class="size-3.5" />
