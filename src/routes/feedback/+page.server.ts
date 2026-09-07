@@ -20,7 +20,7 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-  default: async ({request}) => {
+  default: async ({request, url: requestUrl}) => {
     const data = await request.formData();
     const name = data.get('name')?.toString().trim() || '';
     const email = data.get('email')?.toString().trim() || '';
@@ -49,6 +49,11 @@ export const actions: Actions = {
       return fail(500, {unavailable: true});
     }
 
+    const referer =
+      request.headers.get('referer')
+      || request.headers.get('origin')
+      || requestUrl.origin;
+
     try {
       const res = await fetch(
         `https://formsubmit.co/ajax/${encodeURIComponent(contactEmail)}`,
@@ -56,7 +61,8 @@ export const actions: Actions = {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Accept: 'application/json'
+            Accept: 'application/json',
+            Referer: referer
           },
           body: JSON.stringify({
             name,

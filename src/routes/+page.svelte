@@ -817,6 +817,7 @@
             'Content-Type': 'application/json',
             Accept: 'application/json'
           },
+          referrerPolicy: 'no-referrer-when-downgrade',
           body: JSON.stringify({
             name: sanitizedName,
             email: sanitizedEmail,

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-07T15:20:51.507799+00:00",
+  "generated_at": "2026-09-07T16:58:20.343847+00:00",
   "nodes": {
     "package": {
       "code_fingerprint": "61f0ddc31633d7f81fe920297eb7481704a73d5319c1a4eda171ae5ff342371f",
@@ -12,7 +12,7 @@
           "q": "Mengapa saat bun run dev yang dibaca adalah .env? Bagaimana agar bun run dev menggunakan .env.production dan bun run dev:preview menggunakan .env.preview?"
         }
       ],
-      "score": 0.64224975,
+      "score": 0.641246003,
       "source_file": "package.json",
       "status": "tentative",
       "uses": 1
@@ -33,7 +33,7 @@
           "q": "Fix statusline sticky and toolbar clipping beneath the admin navbar"
         }
       ],
-      "score": 1.772930771,
+      "score": 1.770159927,
       "source_file": "src/lib/components/MarkdownEditor.svelte",
       "status": "preferred",
       "uses": 2
@@ -49,7 +49,7 @@
           "q": "Fix statusline sticky and toolbar clipping beneath the admin navbar"
         }
       ],
-      "score": 0.886443606,
+      "score": 0.885058218,
       "source_file": "src/lib/components/TopNav.svelte",
       "status": "tentative",
       "uses": 1
@@ -65,7 +65,7 @@
           "q": "Why does createA11yStore() connect to Security Auditing & Hardening?"
         }
       ],
-      "score": 0.641633564,
+      "score": 0.64063078,
       "source_file": "src/lib/stores/a11yStore.svelte.ts",
       "status": "tentative",
       "uses": 1
@@ -81,7 +81,7 @@
           "q": "Why does createA11yStore() connect to Security Auditing & Hardening?"
         }
       ],
-      "score": 0.641633564,
+      "score": 0.64063078,
       "source_file": "src/lib/stores/a11yStore.svelte.ts",
       "status": "tentative",
       "uses": 1
@@ -97,7 +97,7 @@
           "q": "Fix statusline sticky and toolbar clipping beneath the admin navbar"
         }
       ],
-      "score": 0.886443606,
+      "score": 0.885058218,
       "source_file": "src/routes/admin/+layout.svelte",
       "status": "tentative",
       "uses": 1
@@ -113,7 +113,7 @@
           "q": "Mengapa saat bun run dev yang dibaca adalah .env? Bagaimana agar bun run dev menggunakan .env.production dan bun run dev:preview menggunakan .env.preview?"
         }
       ],
-      "score": 0.64224975,
+      "score": 0.641246003,
       "source_file": "vite.config.ts",
       "status": "tentative",
       "uses": 1
