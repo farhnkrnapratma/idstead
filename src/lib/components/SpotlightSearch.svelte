@@ -2393,10 +2393,10 @@
       close();
       return;
     }
-    const target = e.target as HTMLElement | null;
-    const inInput =
-      ['INPUT', 'TEXTAREA', 'SELECT'].includes(target?.tagName || '')
-      || Boolean(target?.isContentEditable);
+    const target = e.target;
+    const inInput = target instanceof Element
+      && (['INPUT', 'TEXTAREA', 'SELECT'].includes((target as HTMLElement).tagName)
+        || Boolean((target as HTMLElement).isContentEditable));
     if (e.ctrlKey && e.key === 'k') {
       e.preventDefault();
       if (isOpen) {
