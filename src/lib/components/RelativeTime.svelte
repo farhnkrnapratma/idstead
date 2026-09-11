@@ -2,7 +2,8 @@
   import {untrack} from 'svelte';
   import {
     formatRelativeTime,
-    getRelativeTimeNextUpdateMs
+    getRelativeTimeNextUpdateMs,
+    formatExactDateTime
   } from '$lib/utils/formatters';
 
   interface Props {
@@ -26,8 +27,13 @@
   let text = $derived(
     (prefix ? `${prefix} ` : '') + formatRelativeTime(date, now)
   );
+  let exact = $derived(formatExactDateTime(date));
   let titleAttr = $derived(
-    titlePrefix !== undefined ? `${titlePrefix}${text}` : undefined
+    exact ?
+      titlePrefix !== undefined ?
+        `${titlePrefix}${exact}`
+      : exact
+    : undefined
   );
 
   $effect(() => {

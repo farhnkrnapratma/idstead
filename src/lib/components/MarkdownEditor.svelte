@@ -61,6 +61,7 @@
     minHeight?: string;
     stickyTopClass?: string;
     class?: string;
+    onblur?: () => void;
     onImageUpload?: (file: File) => Promise<string | null>;
   }
 
@@ -71,11 +72,13 @@
     minHeight = '400px',
     stickyTopClass = 'top-0',
     class: className = '',
-    onImageUpload
+    onImageUpload,
+    onblur
   }: Props = $props();
 
   let activeTab = $state<'editor' | 'preview'>('editor');
   let previewHtml = $state('');
+  let previewContainerEl: HTMLDivElement | undefined = $state();
   let lineWrapMode = $state<'soft' | 'none'>('soft');
   let indentMode = $state<'spaces' | 'tabs'>('spaces');
   let indentSize = $state(4);
@@ -316,13 +319,18 @@
   });
 
   $effect(() => {
-    if (activeTab === 'preview' && previewHtml) {
+    if (activeTab === 'preview' && previewHtml && previewContainerEl) {
       tick().then(() => {
-        const blocks = document.querySelectorAll('.prose-custom pre code');
+        if (!previewContainerEl) return;
+        const blocks = previewContainerEl.querySelectorAll('pre code');
         blocks.forEach(block => {
           hljs.highlightElement(block as HTMLElement);
         });
-        enhanceMarkdownContent({onCodeCopy: () => {}});
+        enhanceMarkdownContent({
+          container: previewContainerEl,
+          isDark: editorTheme === 'dark',
+          onCodeCopy: () => {}
+        });
       });
     }
   });
@@ -912,6 +920,7 @@
               onclick={updateCursorPosition}
               onkeyup={updateCursorPosition}
               onfocus={updateCursorPosition}
+              {onblur}
               onkeydown={handleTextareaKeyDown}
               class="editor-textarea m-0! box-border! h-full! min-h-full! w-full! resize-none! overflow-x-auto! overflow-y-hidden! border-0! bg-transparent! pt-0! pr-5! pb-5! pl-2! break-normal! [overflow-wrap:normal]! [word-break:normal]! whitespace-pre! text-transparent caret-text-primary outline-hidden! [grid-area:editor] placeholder:text-text-muted/60 focus:border-transparent! focus:shadow-none! focus:ring-0 focus:outline-none focus-visible:border-transparent! focus-visible:shadow-none! focus-visible:ring-0! focus-visible:outline-hidden!"
             ></textarea>
@@ -973,6 +982,7 @@
               onclick={updateCursorPosition}
               onkeyup={updateCursorPosition}
               onfocus={updateCursorPosition}
+              {onblur}
               onkeydown={handleTextareaKeyDown}
               class="editor-textarea m-0! box-border! h-full! min-h-full! w-full! resize-none! overflow-hidden! border-0! bg-transparent! pt-0! pr-5! pb-5! break-normal! wrap-break-word! whitespace-pre-wrap! text-transparent caret-text-primary outline-hidden! [grid-area:editor] placeholder:text-text-muted/60 focus:border-transparent! focus:shadow-none! focus:ring-0 focus:outline-none focus-visible:border-transparent! focus-visible:shadow-none! focus-visible:ring-0! focus-visible:outline-hidden!"
               style:padding-left={showLineNumbers ?
@@ -983,6 +993,7 @@
       {/if}
     {:else}
       <div
+        bind:this={previewContainerEl}
         class="prose-custom editor-surface w-full p-6"
         style:min-height={minHeight || undefined}>
         {#if previewHtml}
@@ -1124,7 +1135,7 @@
         insertMarkdown('#### ');
         headingDropdownOpen = false;
       }}
-      class="editor-control-option flex w-full cursor-pointer items-center gap-2 text-left font-sans-title text-xs font-medium">
+      class="editor-control-option flex w-full cursor-pointer items-center gap-2 text-left text-xs font-medium">
       <Heading4 class="size-4" />
       <span>Heading 4</span>
     </button>
@@ -1135,7 +1146,7 @@
         insertMarkdown('##### ');
         headingDropdownOpen = false;
       }}
-      class="editor-control-option flex w-full cursor-pointer items-center gap-2 text-left font-sans-title text-xs font-medium">
+      class="editor-control-option flex w-full cursor-pointer items-center gap-2 text-left text-xs font-medium">
       <Heading5 class="size-4" />
       <span>Heading 5</span>
     </button>
@@ -1146,7 +1157,7 @@
         insertMarkdown('###### ');
         headingDropdownOpen = false;
       }}
-      class="editor-control-option flex w-full cursor-pointer items-center gap-2 text-left font-sans-title text-xs font-medium">
+      class="editor-control-option flex w-full cursor-pointer items-center gap-2 text-left text-xs font-medium">
       <Heading6 class="size-4" />
       <span>Heading 6</span>
     </button>
@@ -1170,7 +1181,7 @@
           item.action();
           overflowPopoverOpen = false;
         }}
-        class="editor-control-option flex w-full cursor-pointer items-center gap-2 text-left font-sans-title text-xs font-medium">
+        class="editor-control-option flex w-full cursor-pointer items-center gap-2 text-left text-xs font-medium">
         <item.icon class="size-4 shrink-0" />
         <span>{item.label}</span>
       </button>
@@ -1691,7 +1702,7 @@
   }
 
   .prose-custom :global(.markdown-alert-title) {
-    @apply mb-1.5 flex items-center gap-2 font-sans-title text-xs leading-none font-semibold select-none sm:text-sm;
+    @apply mb-1.5 flex items-center gap-2 text-xs leading-none font-semibold select-none sm:text-sm;
   }
 
   .prose-custom :global(.markdown-alert-title svg) {
@@ -1767,7 +1778,7 @@
 
   .prose-custom :global(.markdown-steps-container) {
     --step-line-w: 1px;
-    --step-badge-size: 1.5rem;
+    --step-badge-size: 1.375rem;
     @apply relative my-6 ml-0 space-y-0 select-text;
     counter-reset: step-counter;
   }
@@ -1776,12 +1787,12 @@
     :global(
       .markdown-steps-container > :not(.markdown-steps-list):not(.markdown-step)
     ) {
-    @apply pl-9;
+    @apply pl-8;
   }
 
   .prose-custom :global(.markdown-step) {
     counter-increment: step-counter;
-    @apply relative pb-6 pl-9 text-text-secondary;
+    @apply relative pb-6 pl-8 text-text-secondary;
   }
 
   .prose-custom :global(.markdown-step:last-child) {
@@ -1791,7 +1802,7 @@
   .prose-custom :global(.markdown-step::before) {
     content: counter(step-counter);
     position: absolute;
-    top: 0.125rem;
+    top: 0;
     left: 0;
     width: var(--step-badge-size);
     height: var(--step-badge-size);
@@ -1807,10 +1818,10 @@
   .prose-custom :global(.markdown-step::after) {
     content: '';
     position: absolute;
-    top: calc(var(--step-badge-size) / 2 + 0.125rem);
+    top: var(--step-badge-size);
     left: calc(var(--step-badge-size) / 2 - 0.5px);
     width: var(--step-line-w);
-    bottom: calc(-1 * var(--step-badge-size) / 2 - 0.125rem);
+    bottom: 0;
     @apply pointer-events-none bg-border-subtle;
   }
 
@@ -1827,7 +1838,7 @@
   }
 
   .prose-custom :global(.markdown-steps-list > li.markdown-step) {
-    @apply relative my-0! list-none! pb-6 pl-9 text-text-secondary;
+    @apply relative my-0! list-none! pb-6 pl-8 text-text-secondary;
   }
 
   .prose-custom :global(.markdown-steps-list > li.markdown-step:last-child) {
@@ -1948,7 +1959,7 @@
 
   .prose-custom :global(details > summary),
   .prose-custom :global(.markdown-details-summary) {
-    @apply flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 font-sans-title text-sm font-medium text-text-primary transition-colors select-none hover:bg-surface-hover/50 [&::-webkit-details-marker]:hidden;
+    @apply flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 text-sm font-medium text-text-primary transition-colors select-none hover:bg-surface-hover/50 [&::-webkit-details-marker]:hidden;
   }
 
   .prose-custom :global(details[open] > summary),

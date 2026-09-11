@@ -1,7 +1,12 @@
 <script lang="ts">
+  import {
+    FieldValidation,
+    requiredText,
+    emailError
+  } from '$lib/fieldValidation';
   import {page} from '$app/state';
   import {supabase} from '$lib/supabase';
-  import {onMount} from 'svelte';
+  import {onDestroy, onMount} from 'svelte';
   import {ShieldUser, ArrowLeft, Eye, EyeOff} from '@lucide/svelte';
   import {
     Card,
@@ -52,57 +57,32 @@
       .replace(/\//g, '&#x2F;');
   }
 
-  function debounce<T extends unknown[]>(cb: (...args: T) => void, ms: number) {
-    let timer: ReturnType<typeof setTimeout>;
-    return (...args: T) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => cb(...args), ms);
-    };
-  }
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  const validateEmailField = debounce(() => {
-    if (email.trim() === '') {
-      errors.email = '';
-      valid.email = false;
-    } else if (!emailRegex.test(email.trim())) {
-      errors.email = 'Please enter a valid email address.';
-      valid.email = false;
-    } else {
-      errors.email = '';
-      valid.email = true;
+  const validation = new FieldValidation();
+  onDestroy(() => validation.destroy());
+  validation.register('email', {
+    value: () => email,
+    baseline: () => '',
+    validate: emailError,
+    report: result => {
+      errors.email = result.error;
+      valid.email = result.valid;
     }
-  }, 500);
-
-  const validatePasswordField = debounce(() => {
-    if (password.trim() === '') {
-      errors.password = '';
-      valid.password = false;
-    } else {
-      errors.password = '';
-      valid.password = true;
+  });
+  validation.register('password', {
+    value: () => password,
+    baseline: () => '',
+    validate: requiredText('Password'),
+    report: result => {
+      errors.password = result.error;
+      valid.password = result.valid;
     }
-  }, 500);
-
+  });
   function validate() {
-    const emailErr = email.trim() === '' ? 'Email is required.' : '';
-    const emailFormatErr =
-      !emailErr && !emailRegex.test(email.trim()) ?
-        'Please enter a valid email address.'
-      : '';
-    const passwordErr = password.trim() === '' ? 'Password is required.' : '';
-
-    errors = {email: emailErr || emailFormatErr, password: passwordErr};
-    if (errors.email) valid.email = false;
-    if (errors.password) valid.password = false;
-
-    return !errors.email && !errors.password;
+    return validation.submit(undefined, true);
   }
-
   async function handleLogin(e: SubmitEvent) {
     e.preventDefault();
-    if (!validate()) return;
+    if (!(await validate())) return;
 
     const turnstileToken = await executeTurnstile(turnstileEl);
     if (!turnstileToken) {
@@ -224,10 +204,13 @@
             oninput={() => {
               errors.email = '';
               valid.email = false;
-              validateEmailField();
+              queueMicrotask(() => validation.input('email'));
             }}
             aria-required="true"
-            aria-invalid={!!errors.email} />
+            aria-invalid={!!errors.email}
+            onblur={() => {
+              void validation.check('email');
+            }} />
         </FormField>
 
         <FormField
@@ -248,7 +231,7 @@
             oninput={() => {
               errors.password = '';
               valid.password = false;
-              validatePasswordField();
+              queueMicrotask(() => validation.input('password'));
             }}
             aria-required="true"
             aria-invalid={!!errors.password}>
@@ -259,7 +242,11 @@
                 size="md"
                 onclick={() => (showPassword = !showPassword)}>
                 {#if showPassword}
-                  <EyeOff class="size-4" />
+                  <EyeOff
+                    class="size-4"
+                    onblur={() => {
+                      void validation.check('password');
+                    }} />
                 {:else}
                   <Eye class="size-4" />
                 {/if}

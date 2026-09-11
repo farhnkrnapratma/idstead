@@ -86,7 +86,7 @@
             aria-selected={option.value === value}
             onclick={() => select(option.value)}
             class={cn(
-              'flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-2 text-left font-sans-title text-xs font-medium transition-colors',
+              'flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-2 text-left text-xs font-medium transition-colors',
               option.value === value ?
                 'bg-accent/10 font-semibold text-accent'
               : 'text-text-primary hover:bg-surface-hover hover:text-accent'

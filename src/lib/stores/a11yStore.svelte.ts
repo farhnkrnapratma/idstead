@@ -196,7 +196,7 @@ export const A11Y_TOGGLES: {
   {
     key: 'dyslexicFont',
     label: 'Dyslexic-friendly font',
-    description: 'Use a more legible font stack',
+    description: 'Switch the whole site to Lexend, except code',
     toggle: a11yStore.toggleDyslexicFont
   }
 ];

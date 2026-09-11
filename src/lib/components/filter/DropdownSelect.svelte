@@ -149,7 +149,7 @@
       <label
         for={id}
         class={cn(
-          'pointer-events-none absolute left-3 z-10 font-sans-title font-medium transition-all duration-200 select-none',
+          'pointer-events-none absolute left-3 z-10 font-medium transition-all duration-200 select-none',
           hasValue || isOpen ?
             'top-1.5 text-2xs leading-none font-semibold'
           : 'top-1/2 -translate-y-1/2 text-sm text-text-secondary/70',
@@ -195,7 +195,7 @@
               aria-selected={isSelected(option.value)}
               onclick={() => select(option.value)}
               class={cn(
-                'flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-2 text-left font-sans-title text-xs font-medium transition-colors',
+                'flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-2 text-left text-xs font-medium transition-colors',
                 isSelected(option.value) ?
                   'bg-accent/10 font-semibold text-accent'
                 : 'text-text-primary hover:bg-surface-hover hover:text-accent'

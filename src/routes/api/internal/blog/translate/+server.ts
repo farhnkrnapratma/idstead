@@ -51,16 +51,13 @@ export const POST: RequestHandler = async ({request, url, platform}) => {
   }
 
   const postId = body.postId?.trim();
-  const slug = body.slug?.trim();
   const locale = body.locale?.trim() as TranslationLocale | undefined;
-  const title = body.title?.trim();
-  const rawMarkdown = body.markdown?.trim();
 
-  if (!postId || !slug || !locale || !title || !rawMarkdown) {
+  if (!postId || !locale) {
     return apiError(
       400,
       'BLOG_TRANSLATE_PARAMS_REQUIRED',
-      'postId, slug, locale, title, and markdown are required.'
+      'postId and locale are required.'
     );
   }
 
@@ -69,6 +66,56 @@ export const POST: RequestHandler = async ({request, url, platform}) => {
       400,
       'BLOG_TRANSLATE_INVALID_LOCALE',
       `Locale must be one of: ${TRANSLATION_LOCALES.join(', ')}`
+    );
+  }
+
+  const db = getSupabaseAdminClient(platform) ?? publicSupabase;
+
+  const {data: post} = await db
+    .from('db_posts')
+    .select('slug, title, excerpt, summary, tldr, storage_path')
+    .eq('id', postId)
+    .maybeSingle();
+
+  if (!post) {
+    return apiError(
+      404,
+      'BLOG_TRANSLATE_POST_NOT_FOUND',
+      'No post exists with that id.'
+    );
+  }
+
+  const slug = body.slug?.trim() || post.slug;
+  const title = body.title?.trim() || post.title?.trim();
+  let rawMarkdown = body.markdown?.trim();
+
+  if (!rawMarkdown) {
+    if (!post.storage_path) {
+      return apiError(
+        422,
+        'BLOG_TRANSLATE_SOURCE_UNAVAILABLE',
+        'The post has no stored Markdown body to translate.'
+      );
+    }
+    const {data: file, error: downloadError} = await db.storage
+      .from('blog-posts')
+      .download(post.storage_path);
+    if (downloadError || !file) {
+      console.error('Translation source download failed:', downloadError);
+      return apiError(
+        422,
+        'BLOG_TRANSLATE_SOURCE_UNAVAILABLE',
+        'The post Markdown body could not be read from storage.'
+      );
+    }
+    rawMarkdown = (await file.text()).trim();
+  }
+
+  if (!slug || !title || !rawMarkdown) {
+    return apiError(
+      422,
+      'BLOG_TRANSLATE_SOURCE_UNAVAILABLE',
+      'The post is missing a slug, title, or Markdown body.'
     );
   }
 
@@ -86,16 +133,15 @@ export const POST: RequestHandler = async ({request, url, platform}) => {
     );
   }
 
-  const db = getSupabaseAdminClient(platform) ?? publicSupabase;
   const glossaryTerms = await fetchGlossaryTerms(db);
 
   const translation = await translatePost(
     locale,
     {
       title,
-      excerpt: body.excerpt ?? null,
-      summary: body.summary ?? null,
-      tldr: body.tldr ?? null,
+      excerpt: body.excerpt ?? post.excerpt ?? null,
+      summary: body.summary ?? post.summary ?? null,
+      tldr: body.tldr ?? post.tldr ?? null,
       markdown
     },
     ai,
@@ -145,5 +191,11 @@ export const POST: RequestHandler = async ({request, url, platform}) => {
     return json({locale, stored: false, error: 'DB_UPSERT_FAILED'});
   }
 
-  return json({locale, stored: true});
+  return json({
+    locale,
+    stored: true,
+    bodyTranslated: Boolean(translation.markdown),
+    chunksTotal: translation.markdownChunks,
+    chunksFallenBack: translation.markdownFallbackChunks
+  });
 };

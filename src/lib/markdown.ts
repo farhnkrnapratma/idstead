@@ -1,4 +1,4 @@
-import {marked, Renderer} from 'marked';
+import {Marked, Renderer} from 'marked';
 import markedFootnote from 'marked-footnote';
 import katex from 'katex';
 import {
@@ -44,8 +44,6 @@ function parseHighlightedLines(
   return [...lines].sort((a, b) => a - b);
 }
 
-const defaultCodeRenderer = new Renderer();
-
 function cleanListItemHtml(html: string): string {
   let cleaned = html.trim();
   if (
@@ -58,7 +56,9 @@ function cleanListItemHtml(html: string): string {
   return cleaned;
 }
 
-marked.use({
+export const markdownParser = new Marked();
+
+markdownParser.use({
   renderer: {
     code(token) {
       const infostring = token.lang || '';
@@ -90,7 +90,10 @@ marked.use({
 </div>\n`;
       }
 
-      const html = defaultCodeRenderer.code({...token, lang});
+      const html = (Renderer.prototype.code as any).call(this, {
+        ...token,
+        lang
+      });
 
       const totalLines = token.text.replace(/\n$/, '').split('\n').length;
       const highlightedLines = parseHighlightedLines(infostring, totalLines);
@@ -100,6 +103,10 @@ marked.use({
         /^<pre>/,
         `<pre data-highlight-lines="${highlightedLines.join(',')}">`
       );
+    },
+    table(token) {
+      const tableHtml = (Renderer.prototype.table as any).call(this, token);
+      return `<div class="table-wrapper my-6 overflow-x-auto rounded-md border border-border-subtle shadow-2xs">\n${tableHtml}</div>\n`;
     },
     list(token) {
       const ordered = token.ordered;
@@ -130,34 +137,41 @@ marked.use({
             let textDecorationClass = '';
 
             if (statusChar === 'x') {
-              checkboxSvg = `<span class="task-checkbox status-done flex h-6 w-4 shrink-0 items-center justify-center text-success" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-check size-4 shrink-0 text-success"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/></svg></span>`;
+              checkboxSvg = `<span class="task-checkbox status-done flex h-[1.375rem] w-4 shrink-0 items-center justify-center text-success translate-y-[0.5px]" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-check size-4 shrink-0 text-success"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/></svg></span>`;
             } else if (statusChar === '*') {
-              checkboxSvg = `<span class="task-checkbox status-wip flex h-6 w-4 shrink-0 items-center justify-center text-warning-strong" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-asterisk size-4 shrink-0 text-warning-strong"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 8v8"/><path d="m8.5 14 7-4"/><path d="m8.5 10 7 4"/></svg></span>`;
+              checkboxSvg = `<span class="task-checkbox status-wip flex h-[1.375rem] w-4 shrink-0 items-center justify-center text-warning-strong translate-y-[0.5px]" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-asterisk size-4 shrink-0 text-warning-strong"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 8v8"/><path d="m8.5 14 7-4"/><path d="m8.5 10 7 4"/></svg></span>`;
             } else if (statusChar === '/') {
-              checkboxSvg = `<span class="task-checkbox status-failed flex h-6 w-4 shrink-0 items-center justify-center text-danger" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-x size-4 shrink-0 text-danger"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg></span>`;
+              checkboxSvg = `<span class="task-checkbox status-failed flex h-[1.375rem] w-4 shrink-0 items-center justify-center text-danger translate-y-[0.5px]" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-x size-4 shrink-0 text-danger"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg></span>`;
             } else if (statusChar === '-') {
-              checkboxSvg = `<span class="task-checkbox status-skipped flex h-6 w-4 shrink-0 items-center justify-center text-text-muted" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-minus size-4 shrink-0 text-text-muted"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="8" x2="16" y1="12" y2="12"/></svg></span>`;
+              checkboxSvg = `<span class="task-checkbox status-skipped flex h-[1.375rem] w-4 shrink-0 items-center justify-center text-text-muted translate-y-[0.5px]" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-minus size-4 shrink-0 text-text-muted"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="8" x2="16" y1="12" y2="12"/></svg></span>`;
               textDecorationClass = ' line-through opacity-75';
             } else if (statusChar === '!') {
-              checkboxSvg = `<span class="task-checkbox status-important flex h-6 w-4 shrink-0 items-center justify-center text-copilot" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-alert size-4 shrink-0 text-copilot"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg></span>`;
+              checkboxSvg = `<span class="task-checkbox status-important flex h-[1.375rem] w-4 shrink-0 items-center justify-center text-copilot translate-y-[0.5px]" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-alert size-4 shrink-0 text-copilot"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg></span>`;
             } else if (statusChar === '?') {
-              checkboxSvg = `<span class="task-checkbox status-question flex h-6 w-4 shrink-0 items-center justify-center text-a11y-focus" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-square size-4 shrink-0 text-a11y-focus"><rect width="18" height="18" x="3" y="3" rx="2"/><rect width="8" height="8" x="8" y="8" rx="1"/></svg></span>`;
+              checkboxSvg = `<span class="task-checkbox status-question flex h-[1.375rem] w-4 shrink-0 items-center justify-center text-a11y-focus translate-y-[0.5px]" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-square size-4 shrink-0 text-a11y-focus"><rect width="18" height="18" x="3" y="3" rx="2"/><rect width="8" height="8" x="8" y="8" rx="1"/></svg></span>`;
             } else {
-              checkboxSvg = `<span class="task-checkbox status-pending flex h-6 w-4 shrink-0 items-center justify-center text-text-muted" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square size-4 shrink-0 text-text-muted"><rect width="18" height="18" x="3" y="3" rx="2"/></svg></span>`;
+              checkboxSvg = `<span class="task-checkbox status-pending flex h-[1.375rem] w-4 shrink-0 items-center justify-center text-text-muted translate-y-[0.5px]" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square size-4 shrink-0 text-text-muted"><rect width="18" height="18" x="3" y="3" rx="2"/></svg></span>`;
             }
 
             const rawText = this.parser
               .parse(item.tokens)
               .replace(/<input\s+[^>]*type="checkbox"[^>]*>/gi, '')
-              .replace(/^\s*\[[ xX*/!\-?]]\s*/i, '')
+              .replace(
+                /^(?:<p\b[^>]*>)?\s*\[[ xX*/!\-?]]\s*(?:<\/p>)?/i,
+                match => {
+                  return match.startsWith('<p') && !match.endsWith('</p>') ?
+                      '<p>'
+                    : '';
+                }
+              )
               .trim();
             const text = cleanListItemHtml(rawText);
-            body += `<li class="task-list-item my-1 flex items-start gap-2 leading-normal">${checkboxSvg}<span class="task-content min-w-0 flex-1 leading-normal${textDecorationClass}">${text}</span></li>\n`;
+            body += `<li class="task-list-item my-1 flex items-start gap-2 leading-normal">${checkboxSvg}<div class="task-content min-w-0 flex-1 leading-normal${textDecorationClass}">${text}</div></li>\n`;
           } else {
             const rawText = this.parser.parse(item.tokens).trim();
             const text = cleanListItemHtml(rawText);
-            const dotSvg = `<span class="ul-dot flex h-6 w-2.5 shrink-0 items-center justify-center text-text-secondary" aria-hidden="true"><span class="size-1.5 rounded-full bg-text-secondary"></span></span>`;
-            body += `<li class="ul-list-item my-1 flex items-start gap-1.5 leading-normal">${dotSvg}<span class="ul-content min-w-0 flex-1 leading-normal">${text}</span></li>\n`;
+            const dotSvg = `<span class="ul-dot flex h-[1.375rem] w-2.5 shrink-0 items-center justify-center text-text-secondary translate-y-[0.5px]" aria-hidden="true"><span class="size-1.5 rounded-full bg-text-secondary"></span></span>`;
+            body += `<li class="ul-list-item my-1 flex items-start gap-1.5 leading-normal">${dotSvg}<div class="ul-content min-w-0 flex-1 leading-normal">${text}</div></li>\n`;
           }
         }
       }
@@ -170,19 +184,24 @@ marked.use({
       return `<${type}${startAttr} class="${listClass}">\n${body}</${type}>\n`;
     },
     link(token) {
-      const href = token.href;
+      const href = (token.href || '').trim();
       const title = token.title ? ` title="${token.title}"` : '';
       const text = this.parser.parseInline(token.tokens);
-      const isExternal = /^https?:\/\//i.test(href);
+      const isSafe = !/^(?:javascript|data|vbscript):/i.test(href);
+      const safeHref = isSafe ? href : '#';
+      const isOwnDomain = /^https?:\/\/(?:www\.)?fkp\.my\.id(?:\/|$)/i.test(
+        safeHref
+      );
+      const isExternal = /^https?:\/\//i.test(safeHref) && !isOwnDomain;
       if (!isExternal) {
-        return `<a href="${href}"${title}>${text}</a>`;
+        return `<a href="${safeHref}"${title}>${text}</a>`;
       }
-      return `<a href="${href}"${title} target="_blank" rel="noopener noreferrer" class="markdown-external-link inline">${text}${LUCIDE_ICON_SVGS['external-link']}</a>`;
+      return `<a href="${safeHref}"${title} target="_blank" rel="noopener noreferrer" class="markdown-external-link inline">${text}${LUCIDE_ICON_SVGS['external-link']}</a>`;
     }
   }
 });
 
-marked.use(markedFootnote({refMarkers: true}));
+markdownParser.use(markedFootnote({refMarkers: true}));
 
 export function protectWithPlaceholders(
   text: string,
@@ -198,13 +217,40 @@ export function protectWithPlaceholders(
   });
 }
 
+export const FENCED_CODE_RE =
+  /^[ \t]*(`{3,}|~{3,})[^\n]*\r?\n[\s\S]*?\r?\n[ \t]*\1[ \t]*$/gm;
+
+export const INLINE_CODE_RE = /(`+)(?:[^\n`]|`(?!\1))+\1/g;
+
+export const MATH_BLOCK_RE = /(?:\\\[([\s\S]+?)\\\]|\$\$([\s\S]+?)\$\$)/g;
+
+export const MATH_INLINE_RE =
+  /(?:\\\(([\s\S]+?)\\\)|(?<!\\)\$((?!\s)[^$\n]+?(?!\s))\$)/g;
+
+export const DIRECTIVE_OPEN_RE =
+  /^[ \t]*:{2,}[a-zA-Z][a-zA-Z-]*(?:\{[^}\n]*\})?[ \t]*$/gm;
+
+export const DIRECTIVE_CLOSE_RE = /^[ \t]*:{2,}[ \t]*$/gm;
+
+export const ALERT_MARKER_RE = /\[!(?:NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/gi;
+
+export const PLACEHOLDER_RE = /@@[A-Z_]+_\d+@@/g;
+
+const MAX_RESTORE_PASSES = 10;
+
 export function restoreAllPlaceholders(
   text: string,
   store: Map<string, string>
 ): string {
   let result = text;
-  for (const [key, value] of store.entries()) {
-    result = result.replaceAll(key, value);
+  for (let pass = 0; pass < MAX_RESTORE_PASSES; pass++) {
+    let changed = false;
+    for (const [key, value] of store.entries()) {
+      if (!result.includes(key)) continue;
+      result = result.replaceAll(key, () => value);
+      changed = true;
+    }
+    if (!changed) break;
   }
   return result;
 }
@@ -261,13 +307,13 @@ export function filterLocaleBlocks(markdown: string, locale?: string): string {
   const placeholders = new Map<string, string>();
   let text = protectWithPlaceholders(
     markdown,
-    /^[ \t]*(`{3,}|~{3,})[^\n]*\r?\n[\s\S]*?\r?\n[ \t]*\1[ \t]*$/gm,
+    FENCED_CODE_RE,
     'FENCED_CODE',
     placeholders
   );
   text = protectWithPlaceholders(
     text,
-    /(`+)(?:[^\n`]|`(?!\1))+\1/g,
+    INLINE_CODE_RE,
     'INLINE_CODE',
     placeholders
   );
@@ -324,57 +370,51 @@ export function extractAndRenderMath(
   const codePlaceholders = new Map<string, string>();
   let text = protectWithPlaceholders(
     markdown,
-    /^[ \t]*(`{3,}|~{3,})[^\n]*\r?\n[\s\S]*?\r?\n[ \t]*\1[ \t]*$/gm,
+    FENCED_CODE_RE,
     'FENCED_CODE',
     codePlaceholders
   );
   text = protectWithPlaceholders(
     text,
-    /(`+)(?:[^\n`]|`(?!\1))+\1/g,
+    INLINE_CODE_RE,
     'INLINE_CODE',
     codePlaceholders
   );
 
   let mathIndex = 0;
 
-  text = text.replace(
-    /(?:\\\[([\s\S]+?)\\\]|\$\$([\s\S]+?)\$\$)/g,
-    (_, p1, p2) => {
-      const math = decodeMathEntities((p1 || p2 || '').trim());
-      let rendered: string;
-      try {
-        const html = katex.renderToString(math, {
-          displayMode: true,
-          throwOnError: false
-        });
-        rendered = `<div class="katex-block my-4 flex items-center justify-center overflow-x-auto py-2">${html}</div>`;
-      } catch {
-        rendered = `<div class="katex-error text-danger font-mono text-xs">${math}</div>`;
-      }
-      const key = `@@@MATH_BLOCK_${mathIndex++}@@@`;
-      mathStore.set(key, rendered);
-      return `\n\n${key}\n\n`;
+  text = text.replace(MATH_BLOCK_RE, (_, p1, p2) => {
+    const math = decodeMathEntities((p1 || p2 || '').trim());
+    let rendered: string;
+    try {
+      const html = katex.renderToString(math, {
+        displayMode: true,
+        throwOnError: false
+      });
+      rendered = `<div class="katex-block my-4 flex items-center justify-center overflow-x-auto py-2">${html}</div>`;
+    } catch {
+      rendered = `<div class="katex-error text-danger font-mono text-xs">${math}</div>`;
     }
-  );
+    const key = `@@@MATH_BLOCK_${mathIndex++}@@@`;
+    mathStore.set(key, rendered);
+    return `\n\n${key}\n\n`;
+  });
 
-  text = text.replace(
-    /(?:\\\(([\s\S]+?)\\\)|(?<!\\)\$((?!\s)[^$\n]+?(?!\s))\$)/g,
-    (_, p1, p2) => {
-      const math = decodeMathEntities((p1 || p2 || '').trim());
-      let rendered: string;
-      try {
-        rendered = katex.renderToString(math, {
-          displayMode: false,
-          throwOnError: false
-        });
-      } catch {
-        rendered = `$${math}$`;
-      }
-      const key = `@@@MATH_INLINE_${mathIndex++}@@@`;
-      mathStore.set(key, rendered);
-      return key;
+  text = text.replace(MATH_INLINE_RE, (_, p1, p2) => {
+    const math = decodeMathEntities((p1 || p2 || '').trim());
+    let rendered: string;
+    try {
+      rendered = katex.renderToString(math, {
+        displayMode: false,
+        throwOnError: false
+      });
+    } catch {
+      rendered = `$${math}$`;
     }
-  );
+    const key = `@@@MATH_INLINE_${mathIndex++}@@@`;
+    mathStore.set(key, rendered);
+    return key;
+  });
 
   text = restoreAllPlaceholders(text, codePlaceholders);
   return text;
@@ -409,36 +449,30 @@ export function parseMathFormulas(text: string): string {
     placeholders
   );
 
-  output = output.replace(
-    /(?:\\\[([\s\S]+?)\\\]|\$\$([\s\S]+?)\$\$)/g,
-    (_, p1, p2) => {
-      const math = decodeMathEntities((p1 || p2 || '').trim());
-      try {
-        const rendered = katex.renderToString(math, {
-          displayMode: true,
-          throwOnError: false
-        });
-        return `<div class="katex-block my-4 flex items-center justify-center overflow-x-auto py-2">${rendered}</div>`;
-      } catch {
-        return `<div class="katex-error text-danger font-mono text-xs">${math}</div>`;
-      }
+  output = output.replace(MATH_BLOCK_RE, (_, p1, p2) => {
+    const math = decodeMathEntities((p1 || p2 || '').trim());
+    try {
+      const rendered = katex.renderToString(math, {
+        displayMode: true,
+        throwOnError: false
+      });
+      return `<div class="katex-block my-4 flex items-center justify-center overflow-x-auto py-2">${rendered}</div>`;
+    } catch {
+      return `<div class="katex-error text-danger font-mono text-xs">${math}</div>`;
     }
-  );
+  });
 
-  output = output.replace(
-    /(?:\\\(([\s\S]+?)\\\)|(?<!\\)\$((?!\s)[^$\n]+?(?!\s))\$)/g,
-    (_, p1, p2) => {
-      const math = decodeMathEntities((p1 || p2 || '').trim());
-      try {
-        return katex.renderToString(math, {
-          displayMode: false,
-          throwOnError: false
-        });
-      } catch {
-        return `$${math}$`;
-      }
+  output = output.replace(MATH_INLINE_RE, (_, p1, p2) => {
+    const math = decodeMathEntities((p1 || p2 || '').trim());
+    try {
+      return katex.renderToString(math, {
+        displayMode: false,
+        throwOnError: false
+      });
+    } catch {
+      return `$${math}$`;
     }
-  );
+  });
 
   return restoreAllPlaceholders(output, placeholders);
 }
@@ -485,13 +519,13 @@ export function parseContainers(markdown: string): string {
   const placeholders = new Map<string, string>();
   let text = protectWithPlaceholders(
     markdown,
-    /^[ \t]*(`{3,}|~{3,})[^\n]*\r?\n[\s\S]*?\r?\n[ \t]*\1[ \t]*$/gm,
+    FENCED_CODE_RE,
     'FENCED_CODE',
     placeholders
   );
   text = protectWithPlaceholders(
     text,
-    /(`+)(?:[^\n`]|`(?!\1))+\1/g,
+    INLINE_CODE_RE,
     'INLINE_CODE',
     placeholders
   );
@@ -534,7 +568,7 @@ export function parseContainers(markdown: string): string {
         .map((tab, idx) => {
           const isSelected = idx === 0;
           const iconMarkup = tab.icon ? resolveDirectiveIcon(tab.icon) : '';
-          return `<button type="button" role="tab" class="markdown-tab-button relative -mb-px inline-flex shrink-0 items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-sans-title font-medium border-b-[2.5px] transition-all cursor-pointer select-none ${
+          return `<button type="button" role="tab" class="markdown-tab-button relative -mb-px inline-flex shrink-0 items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium border-b-[2.5px] transition-all cursor-pointer select-none ${
             isSelected ?
               'active-tab text-accent border-b-accent font-bold'
             : 'text-text-muted border-b-transparent hover:text-text-primary'
@@ -596,7 +630,7 @@ export function parseContainers(markdown: string): string {
         .map((tab, idx) => {
           const isSelected = idx === 0;
           const iconMarkup = tab.icon ? resolveDirectiveIcon(tab.icon) : '';
-          return `<button type="button" role="tab" class="markdown-tab-button relative -mb-px inline-flex shrink-0 items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-sans-title font-medium border-b-[2.5px] transition-all cursor-pointer select-none ${
+          return `<button type="button" role="tab" class="markdown-tab-button relative -mb-px inline-flex shrink-0 items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium border-b-[2.5px] transition-all cursor-pointer select-none ${
             isSelected ?
               'active-tab text-accent border-b-accent font-bold'
             : 'text-text-muted border-b-transparent hover:text-text-primary'
@@ -659,7 +693,7 @@ export function parseContainers(markdown: string): string {
       const iconMarkup = icon ? resolveDirectiveIcon(icon) : '';
       const titleSpan = `<span>${title}</span>`;
       return `<div class="markdown-callout">
-  <div class="markdown-callout-title font-sans-title leading-none">
+  <div class="markdown-callout-title leading-none">
     ${iconMarkup}${titleSpan}
   </div>
   <div class="markdown-callout-content">\n\n${content.trim()}\n\n</div>
@@ -676,9 +710,14 @@ export function parseMarkdownAlerts(html: string): string {
   if (!html) return '';
 
   return html.replace(
-    /<blockquote[^>]*>\s*(?:<p>)?\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\](?:\s*<\/p>|\s*<br\s*\/?>)?([\s\S]*?)<\/blockquote>/gi,
-    (match, typeUpper, innerContent) => {
-      const type = typeUpper.toLowerCase() as
+    /<blockquote[^>]*>([\s\S]*?)<\/blockquote>/gi,
+    (match, innerContent: string) => {
+      const alertMatch = innerContent.match(
+        /^\s*(?:<p\b[^>]*>)?\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\](?:\s*<\/p>|\s*<br\s*\/?>)?/i
+      );
+      if (!alertMatch) return match;
+
+      const type = alertMatch[1].toLowerCase() as
         'note' | 'tip' | 'important' | 'warning' | 'caution';
 
       const config: Record<string, {title: string; svg: string}> = {
@@ -705,15 +744,22 @@ export function parseMarkdownAlerts(html: string): string {
       };
 
       const alertConfig = config[type];
-      let content = innerContent.trim();
+      let content = innerContent.slice(alertMatch[0].length).trim();
       content = content.replace(/^(?:<br\s*\/?>|&gt;|>|\s)+/gi, '').trim();
 
-      if (content && !content.startsWith('<')) {
+      const matchedText = alertMatch[0];
+      const hadOpenP = /<p\b/i.test(matchedText);
+      const hadCloseP = /<\/p>/i.test(matchedText);
+      if (hadOpenP && !hadCloseP) {
+        content = `<p>${content}`;
+      }
+
+      if (content && !/^<[a-z0-9]+/i.test(content)) {
         content = `<p>${content}</p>`;
       }
 
       return `<div class="markdown-alert markdown-alert-${type}">
-  <div class="markdown-alert-title font-sans-title leading-none">
+  <div class="markdown-alert-title leading-none">
     ${alertConfig.svg}
     <span>${alertConfig.title}</span>
   </div>
@@ -728,27 +774,89 @@ export function parseMarkdownAlerts(html: string): string {
 export function parseDetailsBlocks(html: string): string {
   if (!html) return '';
 
-  return html.replace(
-    /<details([^>]*)>\s*<summary([^>]*)>([\s\S]*?)<\/summary>([\s\S]*?)<\/details>/gi,
-    (_, detailsAttrs, summaryAttrs, summaryContent, innerBody) => {
-      const trimmedBody = innerBody.trim();
-      return `<details${detailsAttrs} class="group markdown-details my-4 overflow-hidden rounded-md glass-card border border-border-subtle text-text-primary shadow-md backdrop-blur-md">
-  <summary${summaryAttrs} class="markdown-details-summary flex min-h-[2.25rem] cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent group-open:border-border-subtle dark:group-open:border-white/10 px-3.5 py-1.5 font-sans-title font-medium text-sm text-text-primary hover:bg-surface-hover/50 transition-colors select-none [&::-webkit-details-marker]:hidden">
-    <span class="inline-flex items-center gap-2">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-collapse size-4 shrink-0 text-text-primary"><path d="M10 5h11"/><path d="M10 12h11"/><path d="M10 19h11"/><path d="m3 10 3-3-3-3"/><path d="m3 20 3-3-3-3"/></svg>
-      <span class="markdown-details-title translate-y-[1px] font-sans-title font-medium text-sm text-text-primary leading-none">${summaryContent.trim()}</span>
-    </span>
-    <span class="markdown-details-icon shrink-0 inline-flex items-center justify-center text-text-muted" aria-hidden="true">
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevrons-up-down size-3.5 group-open:hidden"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevrons-down-up hidden size-3.5 group-open:block"><path d="m7 20 5-5 5 5"/><path d="m7 4 5 5 5-5"/></svg>
-    </span>
-  </summary>
-  <div class="markdown-details-body px-3.5 py-3 font-sans font-normal text-sm leading-relaxed text-text-secondary">
-    ${trimmedBody}
-  </div>
-</details>`;
+  const marker = '<details';
+  let startIndex = html.indexOf(marker);
+  if (startIndex === -1) return html;
+
+  let result = '';
+  let cursor = 0;
+
+  while (startIndex !== -1) {
+    result += html.slice(cursor, startIndex);
+    const openTagEnd = html.indexOf('>', startIndex);
+    if (openTagEnd === -1) {
+      result += html.slice(startIndex);
+      return result;
     }
-  );
+
+    const openTag = html.slice(startIndex, openTagEnd + 1);
+    const detailsAttrsMatch = openTag.match(/^<details([^>]*)>/i);
+    const detailsAttrs = detailsAttrsMatch ? detailsAttrsMatch[1] : '';
+
+    let depth = 1;
+    let pos = openTagEnd + 1;
+
+    while (depth > 0 && pos < html.length) {
+      const nextOpen = html.indexOf('<details', pos);
+      const nextClose = html.indexOf('</details>', pos);
+
+      if (nextClose === -1) break;
+
+      if (nextOpen !== -1 && nextOpen < nextClose) {
+        depth++;
+        pos = nextOpen + 8;
+      } else {
+        depth--;
+        if (depth === 0) {
+          const inner = html.slice(openTagEnd + 1, nextClose).trim();
+          const summaryMatch = inner.match(
+            /^\s*<summary([^>]*)>([\s\S]*?)<\/summary>/i
+          );
+          let summaryAttrs = '';
+          let summaryTitle = 'Details';
+          let innerBody = inner;
+
+          if (summaryMatch) {
+            summaryAttrs = summaryMatch[1];
+            summaryTitle = summaryMatch[2].trim();
+            innerBody = inner.slice(summaryMatch[0].length).trim();
+          }
+
+          const processedBody = parseDetailsBlocks(innerBody);
+
+          result += `<details${detailsAttrs} class="group markdown-details my-4 overflow-hidden rounded-md glass-card border border-border-subtle text-text-primary shadow-md backdrop-blur-md">
+ <summary${summaryAttrs} class="markdown-details-summary flex min-h-[2.25rem] cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent group-open:border-border-subtle dark:group-open:border-white/10 px-3.5 py-1.5 font-medium text-sm text-text-primary hover:bg-surface-hover/50 transition-colors select-none [&::-webkit-details-marker]:hidden">
+ <span class="inline-flex items-center gap-2">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-collapse size-4 shrink-0 text-text-primary"><path d="M10 5h11"/><path d="M10 12h11"/><path d="M10 19h11"/><path d="m3 10 3-3-3-3"/><path d="m3 20 3-3-3-3"/></svg>
+ <span class="markdown-details-title translate-y-[1px] font-medium text-sm text-text-primary leading-none">${summaryTitle}</span>
+ </span>
+ <span class="markdown-details-icon shrink-0 inline-flex items-center justify-center text-text-muted" aria-hidden="true">
+ <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevrons-up-down size-3.5 group-open:hidden"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+ <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevrons-down-up hidden size-3.5 group-open:block"><path d="m7 20 5-5 5 5"/><path d="m7 4 5 5 5-5"/></svg>
+ </span>
+ </summary>
+ <div class="markdown-details-body px-3.5 py-3 font-sans font-normal text-sm leading-relaxed text-text-secondary">
+ ${processedBody}
+ </div>
+</details>`;
+          cursor = nextClose + 10;
+          break;
+        } else {
+          pos = nextClose + 10;
+        }
+      }
+    }
+
+    if (depth > 0) {
+      result += html.slice(startIndex);
+      return result;
+    }
+
+    startIndex = html.indexOf(marker, cursor);
+  }
+
+  result += html.slice(cursor);
+  return result;
 }
 
 export function parseSteps(html: string): string {
@@ -950,7 +1058,7 @@ export async function renderMarkdown(
     apiRegistry
   );
   const withContainers = parseContainers(withInterpolated);
-  const rawHtml = await marked.parse(withContainers);
+  const rawHtml = await markdownParser.parse(withContainers);
   const withAlerts = parseMarkdownAlerts(rawHtml);
   const withDetails = parseDetailsBlocks(withAlerts);
   const withSteps = parseSteps(withDetails);
@@ -959,12 +1067,13 @@ export async function renderMarkdown(
     withFootnotes,
     mathPlaceholders
   );
-  const output = parseMathFormulas(withMathRestored);
-  const withUnwrappedBlocks = output
+  const withUnwrappedBlocks = withMathRestored
     .replace(/<p>\s*(<div class="katex-block[\s\S]*?<\/div>)\s*<\/p>/gi, '$1')
     .replace(/<p>\s*(@@IGNORE_RENDER_\d+@@)\s*<\/p>/gi, '$1');
   return restoreAllPlaceholders(withUnwrappedBlocks, ignoreRenderPlaceholders);
 }
+
+export const marked = markdownParser;
 
 export function injectHeadingIds(html: string): string {
   let index = 0;

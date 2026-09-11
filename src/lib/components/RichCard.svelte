@@ -36,7 +36,7 @@
   <div class="flex flex-col gap-2">
     <div class="flex items-start justify-between gap-3">
       <h3
-        class="font-sans-title text-base font-bold tracking-tight text-text-primary transition-colors group-hover:text-accent">
+        class="text-base font-bold tracking-tight text-text-primary transition-colors group-hover:text-accent">
         {#if href}
           <a
             {href}

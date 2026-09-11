@@ -26,7 +26,7 @@ export interface Post {
   read_time?: string | null;
   views_count?: number | null;
   comment_count?: number | null;
-  banner_path?: string | null;
+  banner_version?: string | null;
   collaborators?: string[] | null;
   published?: boolean;
 }

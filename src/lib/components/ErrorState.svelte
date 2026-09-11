@@ -47,7 +47,7 @@
       </p>
     {/if}
     <h1
-      class="mt-4 font-sans-title text-2xl font-semibold tracking-tight text-balance text-text-primary sm:text-4xl">
+      class="mt-4 text-2xl font-semibold tracking-tight text-balance text-text-primary sm:text-4xl">
       {title}
     </h1>
     {#if description}
@@ -87,7 +87,7 @@
       class="mb-3 flex h-12 w-12 items-center justify-center rounded-md bg-danger-subtle/30 text-danger">
       <AlertTriangle class="size-6" />
     </div>
-    <h3 class="font-sans-title text-sm font-bold text-text-primary">{title}</h3>
+    <h3 class="text-sm font-bold text-text-primary">{title}</h3>
     {#if description}
       <p class="mt-1 max-w-xs text-xs text-text-secondary">{description}</p>
     {/if}

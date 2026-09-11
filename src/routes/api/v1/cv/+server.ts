@@ -5,7 +5,16 @@ import {apiError} from '$lib/server/apiError';
 
 export const GET: RequestHandler = async ({fetch, locals, url}) => {
   const supabaseClient = (locals as any)?.supabase || supabase;
-  const cvDoc = await fetchActiveCvDocument(supabaseClient, fetch);
+  let cvDoc;
+  try {
+    cvDoc = await fetchActiveCvDocument(supabaseClient, fetch, {strict: true});
+  } catch {
+    return apiError(
+      500,
+      'CV_METADATA_FETCH_FAILED',
+      'Could not fetch CV metadata.'
+    );
+  }
   if (!cvDoc || !cvDoc.fileUrl) {
     return apiError(404, 'CV_DOCUMENT_NOT_FOUND', 'CV document not found.');
   }
@@ -26,7 +35,7 @@ export const GET: RequestHandler = async ({fetch, locals, url}) => {
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
         'Content-Disposition': `attachment; filename="${filename}.sha256"`,
-        'Cache-Control': 'public, max-age=3600, s-maxage=86400',
+        'Cache-Control': 'public, max-age=0, s-maxage=60, must-revalidate',
         'X-Checksum-SHA256': checksum
       }
     });
@@ -46,7 +55,7 @@ export const GET: RequestHandler = async ({fetch, locals, url}) => {
         headers: {
           'Content-Type': 'application/pdf',
           'Content-Disposition': `${dispositionType}; filename="${filename}"`,
-          'Cache-Control': 'public, max-age=3600, s-maxage=86400',
+          'Cache-Control': 'public, max-age=0, s-maxage=60, must-revalidate',
           'X-Checksum-SHA256': checksum
         }
       });

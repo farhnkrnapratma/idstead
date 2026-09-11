@@ -1,4 +1,6 @@
 <script lang="ts">
+  import {shortcut} from '../utils/shortcut.svelte';
+  import {buttonKey} from '$lib/shortcuts';
   import {fade} from 'svelte/transition';
   import {goto} from '$app/navigation';
   import {page} from '$app/state';
@@ -29,7 +31,8 @@
       align="left">
       <button
         transition:fade={{duration: 150}}
-        class="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full glass-button px-0 text-xs font-semibold text-text-primary shadow-md transition-colors hover:text-accent md:h-10 md:w-10 md:shadow-lg"
+        use:shortcut={{combo: buttonKey('feedback'), label: 'Send feedback'}}
+        class="relative inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full glass-button px-0 text-xs font-semibold text-text-primary shadow-md transition-colors hover:text-accent md:h-10 md:w-10 md:shadow-lg"
         onclick={() => goto('/feedback')}
         aria-label="Report an issue or give feedback">
         <MessageSquarePlus class="size-4.5 shrink-0 md:size-5" />

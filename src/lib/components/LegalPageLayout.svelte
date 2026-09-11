@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {createFeedbackClient} from '$lib/feedbackClient.svelte';
   import {tick, onMount} from 'svelte';
   import {fade} from 'svelte/transition';
   import {BookOpenText} from '@lucide/svelte';
@@ -20,6 +21,7 @@
   import {readingModeStore} from '$lib/stores/readingModeStore.svelte';
   import type {HeadingItem} from '$lib/markdown';
   import {formatReadTime} from '$lib/utils/formatters';
+  import {countReadingMinutes} from '$lib/readTime';
   import {enhanceMarkdownContent} from '$lib/utils/markdownEnhancer';
   import hljs from 'highlight.js';
   import 'katex/dist/katex.min.css';
@@ -55,13 +57,10 @@
 
   let pageProjects = $derived((page?.data as any)?.projects ?? []);
 
-  let hasVotedHelpful = $state(false);
+  const feedback = createFeedbackClient(() => ({type: 'legal', id: slug}));
   let isDark = $state(false);
 
-  const wordsCount = $derived(
-    content ? content.trim().split(/\s+/).filter(Boolean).length : 0
-  );
-  const estimatedMinutes = $derived(Math.max(1, Math.ceil(wordsCount / 200)));
+  const estimatedMinutes = $derived(content ? countReadingMinutes(content) : 1);
   const readingTime = $derived(formatReadTime(estimatedMinutes));
 
   let articleScrollTop = $state(0);
@@ -103,11 +102,6 @@
     } else {
       toastStore.success(message);
     }
-  }
-
-  function handleHelpfulness(value: 'yes' | 'no') {
-    void value;
-    hasVotedHelpful = true;
   }
 
   $effect(() => {
@@ -272,7 +266,7 @@
   id="main-content"
   class="flex flex-col font-sans {readingModeStore.active ?
     'min-h-screen pt-4 sm:pt-6'
-  : 'min-h-[calc(100vh-3rem)] pt-12 sm:min-h-[calc(100vh-3.5rem)] sm:pt-14 lg:h-dvh lg:min-h-0 lg:overflow-hidden'}">
+  : 'min-h-[calc(100vh-3rem)] overscroll-none pt-12 sm:min-h-[calc(100vh-3.5rem)] sm:pt-14 lg:h-dvh lg:min-h-0 lg:overflow-clip'}">
   <div
     class={readingModeStore.active ?
       'relative mx-auto w-full px-3 pt-3 pb-16 sm:px-6 sm:pt-4 md:w-[80%] lg:w-[50%]'
@@ -289,8 +283,10 @@
           title="Help improve this page"
           subtitle="Was this page helpful to you?"
           variant="compact"
-          voted={hasVotedHelpful ? true : null}
-          onVote={helpful => handleHelpfulness(helpful ? 'yes' : 'no')}
+          voted={feedback.voted}
+          pending={feedback.pending}
+          error={feedback.error}
+          onVote={helpful => feedback.vote(helpful ? 'yes' : 'no')}
           onFeedbackClick={() => goto('/feedback')}
           class="w-full shrink-0" />
       </aside>
@@ -349,8 +345,10 @@
           <HelpfulBlock
             title="Help improve this page"
             subtitle="Was this page helpful to you?"
-            voted={hasVotedHelpful ? true : null}
-            onVote={helpful => handleHelpfulness(helpful ? 'yes' : 'no')}
+            voted={feedback.voted}
+            pending={feedback.pending}
+            error={feedback.error}
+            onVote={helpful => feedback.vote(helpful ? 'yes' : 'no')}
             onFeedbackClick={() => goto('/feedback')} />
         </div>
       {/if}

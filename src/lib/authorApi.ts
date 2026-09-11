@@ -1,14 +1,3 @@
-import {json} from '@sveltejs/kit';
-import {supabase} from '$lib/supabase';
-import {
-  fetchAuthorProfile,
-  fetchCvEntries,
-  fetchFundingLinks,
-  fetchContactInfo,
-  fetchGroupedSkills,
-  fetchSocials
-} from '$lib/author';
-
 export function sanitizePublicApiData(obj: any): any {
   if (Array.isArray(obj)) {
     const cleanedArr = obj
@@ -28,7 +17,11 @@ export function sanitizePublicApiData(obj: any): any {
 
     for (const [key, value] of Object.entries(obj)) {
       if (
-        key === 'id'
+        key === 'updatedAt'
+        || key === 'revision'
+        || key === 'avatarVersion'
+        || key === 'manifestSettings'
+        || key === 'id'
         || key === 'authorId'
         || key === 'author_id'
         || key === 'icon'
@@ -183,126 +176,4 @@ export function generateAuthorMarkdown(data: Record<string, any>): string {
   }
 
   return lines.join('\n');
-}
-
-export async function handleAuthorJsonRequest(
-  url: URL,
-  locals: any,
-  request?: Request
-) {
-  const supabaseClient = locals?.supabase || supabase;
-  const searchParams = url.searchParams;
-
-  const fieldsParam = searchParams.get('fields');
-  const requestedFields = new Set<string>();
-
-  if (fieldsParam) {
-    fieldsParam
-      .split(',')
-      .forEach(f => requestedFields.add(f.trim().toLowerCase()));
-  }
-
-  const validKeys = [
-    'profile',
-    'cv',
-    'funding',
-    'contact',
-    'skills',
-    'socials',
-    'sponsorship'
-  ];
-  validKeys.forEach(key => {
-    if (searchParams.has(key)) {
-      requestedFields.add(key === 'sponsorship' ? 'funding' : key);
-    }
-  });
-
-  const fetchAll = requestedFields.size === 0;
-
-  const tasks: Record<string, Promise<any>> = {};
-
-  if (fetchAll || requestedFields.has('profile')) {
-    tasks.profile = fetchAuthorProfile(supabaseClient, {includeEmail: true});
-  }
-  if (fetchAll || requestedFields.has('cv')) {
-    tasks.cv = fetchCvEntries(supabaseClient);
-  }
-  if (fetchAll || requestedFields.has('funding')) {
-    tasks.funding = fetchFundingLinks(supabaseClient);
-  }
-  if (fetchAll || requestedFields.has('contact')) {
-    tasks.contact = fetchContactInfo(supabaseClient);
-  }
-  if (fetchAll || requestedFields.has('skills')) {
-    tasks.skills = fetchGroupedSkills(supabaseClient);
-  }
-  if (fetchAll || requestedFields.has('socials')) {
-    tasks.socials = fetchSocials(supabaseClient);
-  }
-
-  const keys = Object.keys(tasks);
-  const results = await Promise.all(Object.values(tasks));
-
-  const rawData: Record<string, any> = {};
-  keys.forEach((key, index) => {
-    rawData[key] = results[index];
-  });
-
-  const responseData = sanitizePublicApiData(rawData);
-  if (responseData.profile) {
-    const p = responseData.profile;
-    const email =
-      typeof rawData.profile?.email === 'string' ?
-        rawData.profile.email
-      : undefined;
-
-    const orderedProfile: Record<string, any> = {};
-    if ('name' in p) orderedProfile.name = p.name;
-    if ('username' in p) orderedProfile.username = p.username;
-    if (email) orderedProfile.email = email;
-    if ('headline' in p) orderedProfile.headline = p.headline;
-    if ('jobTitle' in p) orderedProfile.jobTitle = p.jobTitle;
-    if ('bio' in p) orderedProfile.bio = p.bio;
-    if ('avatar' in p) orderedProfile.avatar = p.avatar;
-    if ('city' in p) orderedProfile.city = p.city;
-    if ('postalCode' in p) orderedProfile.postalCode = p.postalCode;
-    if ('country' in p) orderedProfile.country = p.country;
-    if ('siteUrl' in p) orderedProfile.siteUrl = p.siteUrl;
-
-    for (const [k, v] of Object.entries(p)) {
-      if (!(k in orderedProfile)) {
-        orderedProfile[k] = v;
-      }
-    }
-
-    responseData.profile = orderedProfile;
-  }
-
-  const format = searchParams.get('format')?.toLowerCase();
-  const acceptHeader = request?.headers.get('accept')?.toLowerCase() || '';
-
-  const wantsMarkdown =
-    format === 'md'
-    || format === 'markdown'
-    || format === 'text'
-    || acceptHeader.includes('text/markdown')
-    || acceptHeader.includes('text/x-markdown');
-
-  if (wantsMarkdown) {
-    const markdownText = generateAuthorMarkdown(responseData);
-    return new Response(markdownText, {
-      headers: {
-        'Content-Type': 'text/markdown; charset=utf-8',
-        'Cache-Control': 'public, max-age=3600, s-maxage=86400',
-        'X-Robots-Tag': 'index, follow'
-      }
-    });
-  }
-
-  return json(responseData, {
-    headers: {
-      'Cache-Control': 'public, max-age=3600, s-maxage=86400',
-      'X-Robots-Tag': 'index, follow'
-    }
-  });
 }

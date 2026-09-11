@@ -1,7 +1,6 @@
 @import 'tailwindcss';
-@import '@fontsource-variable/google-sans-flex';
-@import '@fontsource-variable/google-sans-code';
-@import '@fontsource-variable/space-grotesk';
+@import '@fontsource-variable/atkinson-hyperlegible-next';
+@import '@fontsource-variable/atkinson-hyperlegible-mono';
 @import '@fontsource-variable/noto-serif';
 @import '@fontsource-variable/lexend';
 @import '../lib/tokens.css';
@@ -115,17 +114,6 @@
 }
 
 @layer base {
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6,
-  .font-sans-title,
-  .font-heading {
-    @apply font-sans-title;
-  }
-
   .font-sans {
     @apply font-sans;
   }
@@ -415,14 +403,18 @@ select {
 }
 
 :root[data-dyslexic-font='true'] {
-  --font-sans: 'Lexend Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-sans:
+    'Lexend Variable', 'Noto Sans JP Variable', 'Noto Sans SC Variable',
+    'Noto Sans KR Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-serif:
+    'Lexend Variable', 'Noto Serif JP Variable', 'Noto Serif SC Variable',
+    'Noto Serif KR Variable', ui-sans-serif, system-ui, sans-serif;
 }
 
 :root[data-dyslexic-font='true'] article,
 :root[data-dyslexic-font='true'] .prose-custom,
 :root[data-dyslexic-font='true'] main {
   letter-spacing: 0.02em;
-  line-height: 1.8;
 }
 
 :root[data-dyslexic-font='true'] .popover-surface,
@@ -433,7 +425,6 @@ select {
 :root[data-dyslexic-font='true'] select,
 :root[data-dyslexic-font='true'] textarea {
   letter-spacing: normal;
-  line-height: normal;
 }
 
 :root {
@@ -477,7 +468,7 @@ select {
 
 @layer base {
   .prose-custom {
-    @apply text-sm leading-relaxed text-(--color-body);
+    @apply text-left text-base leading-normal text-(--color-body);
     --color-heading: var(--color-text-primary);
     --color-body: var(--color-text-secondary);
     --color-link: var(--color-accent);
@@ -766,7 +757,7 @@ select {
   }
 
   .prose-custom .markdown-alert-title {
-    @apply mb-1.5 flex items-center gap-2 font-sans-title text-xs leading-none font-semibold select-none sm:text-sm;
+    @apply mb-1.5 flex items-center gap-2 text-xs leading-none font-semibold select-none sm:text-sm;
   }
 
   .prose-custom .markdown-alert-title svg {
@@ -829,7 +820,7 @@ select {
   }
 
   .prose-custom .markdown-callout-title {
-    @apply mb-1.5 flex items-center gap-2 font-sans-title text-xs leading-none font-semibold text-text-primary select-none sm:text-sm;
+    @apply mb-1.5 flex items-center gap-2 text-xs leading-none font-semibold text-text-primary select-none sm:text-sm;
     margin-bottom: 0.375rem !important;
   }
 
@@ -931,89 +922,56 @@ select {
 
   .font-content-sans,
   .font-content-sans
-    *:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(h1 *):not(h2 *):not(
-      h3 *
-    ):not(h4 *):not(h5 *):not(h6 *):not(.font-sans-title):not(
-      .font-sans-title *
-    ):not(.font-heading):not(.font-heading *):not(code):not(pre):not(kbd):not(
-      .hljs
-    ):not(pre *):not(.code-line *):not(.code-block-container):not(
-      .code-block-container *
-    ):not(.code-line-numbers):not(.code-line-numbers *):not(.code-body):not(
-      .code-body *
-    ):not(.markdown-tabs-container):not(.markdown-tabs-container *):not(
-      .code-header-bar
-    ):not(.code-header-bar *):not(.markdown-tabs-actions):not(
-      .markdown-tabs-actions *
-    ):not(.markdown-tab-button):not(.mermaid-block *):not(.katex):not(
-      .katex *
-    ):not(.katex-block):not(.katex-block *) {
+    *:not(code):not(pre):not(kbd):not(.hljs):not(pre *):not(.code-line *):not(
+      .code-block-container
+    ):not(.code-block-container *):not(.code-line-numbers):not(
+      .code-line-numbers *
+    ):not(.code-body):not(.code-body *):not(.markdown-tabs-container):not(
+      .markdown-tabs-container *
+    ):not(.code-header-bar):not(.code-header-bar *):not(
+      .markdown-tabs-actions
+    ):not(.markdown-tabs-actions *):not(.markdown-tab-button):not(
+      .mermaid-block *
+    ):not(.katex):not(.katex *):not(.katex-block):not(.katex-block *) {
     @apply font-sans!;
   }
 
   .font-content-serif,
   .font-content-serif
-    *:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(h1 *):not(h2 *):not(
-      h3 *
-    ):not(h4 *):not(h5 *):not(h6 *):not(.font-sans-title):not(
-      .font-sans-title *
-    ):not(.font-heading):not(.font-heading *):not(code):not(pre):not(kbd):not(
-      .hljs
-    ):not(pre *):not(.code-line *):not(.code-block-container):not(
-      .code-block-container *
-    ):not(.code-line-numbers):not(.code-line-numbers *):not(.code-body):not(
-      .code-body *
-    ):not(.markdown-tabs-container):not(.markdown-tabs-container *):not(
-      .code-header-bar
-    ):not(.code-header-bar *):not(.markdown-tabs-actions):not(
-      .markdown-tabs-actions *
-    ):not(.markdown-tab-button):not(.mermaid-block *):not(.katex):not(
-      .katex *
-    ):not(.katex-block):not(.katex-block *) {
+    *:not(code):not(pre):not(kbd):not(.hljs):not(pre *):not(.code-line *):not(
+      .code-block-container
+    ):not(.code-block-container *):not(.code-line-numbers):not(
+      .code-line-numbers *
+    ):not(.code-body):not(.code-body *):not(.markdown-tabs-container):not(
+      .markdown-tabs-container *
+    ):not(.code-header-bar):not(.code-header-bar *):not(
+      .markdown-tabs-actions
+    ):not(.markdown-tabs-actions *):not(.markdown-tab-button):not(
+      .mermaid-block *
+    ):not(.katex):not(.katex *):not(.katex-block):not(.katex-block *) {
     @apply font-serif!;
   }
 
   .font-content-mono,
   .font-content-mono
-    *:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(h1 *):not(h2 *):not(
-      h3 *
-    ):not(h4 *):not(h5 *):not(h6 *):not(.font-sans-title):not(
-      .font-sans-title *
-    ):not(.font-heading):not(.font-heading *):not(code):not(pre):not(kbd):not(
-      .hljs
-    ):not(pre *):not(.code-line *):not(.code-block-container):not(
-      .code-block-container *
-    ):not(.code-line-numbers):not(.code-line-numbers *):not(.code-body):not(
-      .code-body *
-    ):not(.markdown-tabs-container):not(.markdown-tabs-container *):not(
-      .code-header-bar
-    ):not(.code-header-bar *):not(.markdown-tabs-actions):not(
-      .markdown-tabs-actions *
-    ):not(.markdown-tab-button):not(.mermaid-block *):not(.katex):not(
-      .katex *
-    ):not(.katex-block):not(.katex-block *) {
+    *:not(code):not(pre):not(kbd):not(.hljs):not(pre *):not(.code-line *):not(
+      .code-block-container
+    ):not(.code-block-container *):not(.code-line-numbers):not(
+      .code-line-numbers *
+    ):not(.code-body):not(.code-body *):not(.markdown-tabs-container):not(
+      .markdown-tabs-container *
+    ):not(.code-header-bar):not(.code-header-bar *):not(
+      .markdown-tabs-actions
+    ):not(.markdown-tabs-actions *):not(.markdown-tab-button):not(
+      .mermaid-block *
+    ):not(.katex):not(.katex *):not(.katex-block):not(.katex-block *) {
     @apply font-mono!;
   }
 
   .font-content-mono.prose-custom,
   .font-content-mono .prose-custom,
   .prose-custom.font-content-mono {
-    font-size: 0.8125rem;
-    line-height: 1.65;
     letter-spacing: -0.015em;
-  }
-
-  @media (min-width: 640px) {
-    .font-content-mono.prose-custom,
-    .font-content-mono .prose-custom,
-    .prose-custom.font-content-mono {
-      font-size: 0.85rem;
-    }
-  }
-
-  .prose-custom :is(h1, h2, h3, h4, h5, h6),
-  .prose-custom :is(h1, h2, h3, h4, h5, h6) *:not(code):not(kbd):not(pre *) {
-    @apply font-sans-title!;
   }
 
   .prose-custom :is(h1, h2, h3, h4, h5, h6) :is(code, kbd) {
@@ -1077,18 +1035,18 @@ select {
 
   .markdown-steps-container {
     --step-line-w: 1px;
-    --step-badge-size: 1.5rem;
+    --step-badge-size: 1.375rem;
     @apply relative my-6 ml-0 space-y-0 select-text;
     counter-reset: step-counter;
   }
 
   .markdown-steps-container > :not(.markdown-steps-list):not(.markdown-step) {
-    @apply pl-9;
+    @apply pl-8;
   }
 
   .markdown-step {
     counter-increment: step-counter;
-    @apply relative pb-6 pl-9 text-text-secondary;
+    @apply relative pb-6 pl-8 text-text-secondary;
   }
 
   .markdown-step:last-child {
@@ -1098,7 +1056,7 @@ select {
   .markdown-step::before {
     content: counter(step-counter);
     position: absolute;
-    top: 0.125rem;
+    top: 0;
     left: 0;
     width: var(--step-badge-size);
     height: var(--step-badge-size);
@@ -1114,10 +1072,10 @@ select {
   .markdown-step::after {
     content: '';
     position: absolute;
-    top: calc(var(--step-badge-size) / 2 + 0.125rem);
+    top: var(--step-badge-size);
     left: calc(var(--step-badge-size) / 2 - 0.5px);
     width: var(--step-line-w);
-    bottom: calc(-1 * var(--step-badge-size) / 2 - 0.125rem);
+    bottom: 0;
     @apply pointer-events-none bg-border-subtle;
   }
 
@@ -1134,7 +1092,7 @@ select {
   }
 
   .markdown-steps-list > li.markdown-step {
-    @apply relative my-0! list-none! pb-6 pl-9 text-text-secondary;
+    @apply relative my-0! list-none! pb-6 pl-8 text-text-secondary;
   }
 
   .markdown-steps-list > li.markdown-step:last-child {
@@ -1265,7 +1223,7 @@ select {
   .markdown-details-summary,
   .prose-custom details > summary,
   .prose-custom .markdown-details-summary {
-    @apply flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 font-sans-title text-sm font-medium text-text-primary transition-colors select-none hover:bg-surface-hover/50 [&::-webkit-details-marker]:hidden;
+    @apply flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 text-sm font-medium text-text-primary transition-colors select-none hover:bg-surface-hover/50 [&::-webkit-details-marker]:hidden;
   }
 
   details.markdown-details[open] > summary,
@@ -1338,4 +1296,16 @@ select {
   .prose-custom details li {
     @apply text-sm leading-relaxed;
   }
+}
+
+:root:lang(ja) article,
+:root:lang(ja) .prose-custom,
+:root:lang(ja) main,
+:root:lang(zh) article,
+:root:lang(zh) .prose-custom,
+:root:lang(zh) main,
+:root:lang(ko) article,
+:root:lang(ko) .prose-custom,
+:root:lang(ko) main {
+  letter-spacing: normal;
 }

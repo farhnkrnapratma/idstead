@@ -7,6 +7,7 @@ import {
   resolveTranslation,
   isTranslationLocale
 } from '$lib/server/blogTranslations';
+import {TRANSLATION_LOCALES} from '$lib/translationLocales';
 import {
   getTranslationDisclaimer,
   buildTranslationDisclaimerMarkdown
@@ -24,7 +25,7 @@ export const GET: RequestHandler = async ({params, url, request, fetch}) => {
     return apiError(
       400,
       'BLOG_INVALID_LANG',
-      "The 'lang' query parameter must be one of: id."
+      `The 'lang' query parameter must be one of: ${TRANSLATION_LOCALES.join(', ')}.`
     );
   }
 
@@ -38,7 +39,14 @@ export const GET: RequestHandler = async ({params, url, request, fetch}) => {
 
   const {data: post, error: dbErr} = await query.maybeSingle();
 
-  if (dbErr || !post) {
+  if (dbErr)
+    return apiError(
+      500,
+      'BLOG_POST_FETCH_FAILED',
+      'Could not fetch blog post.'
+    );
+
+  if (!post) {
     return apiError(
       404,
       'BLOG_POST_NOT_FOUND',
@@ -49,27 +57,39 @@ export const GET: RequestHandler = async ({params, url, request, fetch}) => {
 
   const translation = await resolveTranslation(supabase, post.id, lang);
 
-  let commentCount = 0;
-  let viewsCount = 0;
+  let commentCount: number;
+  let viewsCount: number;
   try {
-    const {count: cCount} = await supabase
+    const {count: cCount, error: commentError} = await supabase
       .from('db_comments')
       .select('*', {count: 'exact', head: true})
       .eq('post_id', post.id)
       .eq('is_approved', true);
+    if (commentError) throw commentError;
     commentCount = cCount ?? 0;
 
-    const {count: vCount} = await supabase
+    const {count: vCount, error: viewError} = await supabase
       .from('db_views')
       .select('*', {count: 'exact', head: true})
       .eq('post_id', post.id);
+    if (viewError) throw viewError;
     viewsCount = vCount ?? 0;
   } catch (err) {
-    console.error('Error fetching post counts:', err);
+    return apiError(
+      500,
+      'BLOG_POST_COUNTS_FETCH_FAILED',
+      'Could not fetch post counts.'
+    );
   }
 
   const effectiveStoragePath = translation.storagePath ?? post.storage_path;
 
+  if (!effectiveStoragePath)
+    return apiError(
+      502,
+      'BLOG_CONTENT_FETCH_FAILED',
+      'Could not fetch blog content.'
+    );
   let rawMarkdown = '';
   if (effectiveStoragePath) {
     try {
@@ -77,11 +97,21 @@ export const GET: RequestHandler = async ({params, url, request, fetch}) => {
         .from('blog-posts')
         .getPublicUrl(effectiveStoragePath);
       const fileRes = await fetch(urlData.publicUrl);
+      if (!fileRes.ok)
+        return apiError(
+          502,
+          'BLOG_CONTENT_FETCH_FAILED',
+          'Could not fetch blog content.'
+        );
       if (fileRes.ok) {
         rawMarkdown = await fileRes.text();
       }
     } catch (err) {
-      console.error('Error fetching post markdown file:', err);
+      return apiError(
+        502,
+        'BLOG_CONTENT_FETCH_FAILED',
+        'Could not fetch blog content.'
+      );
     }
   }
 
@@ -127,7 +157,7 @@ ${rawMarkdown || effectiveExcerpt || ''}
     return new Response(markdownOutput, {
       headers: {
         'Content-Type': 'text/markdown; charset=utf-8',
-        'Cache-Control': 'public, max-age=3600, s-maxage=86400',
+        'Cache-Control': 'public, max-age=0, s-maxage=60, must-revalidate',
         'X-Robots-Tag': 'index, follow'
       }
     });
@@ -157,7 +187,7 @@ ${disclaimerText}${effectiveExcerpt ? `${effectiveExcerpt}\n\n` : ''}${effective
     return new Response(textOutput, {
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
-        'Cache-Control': 'public, max-age=3600, s-maxage=86400',
+        'Cache-Control': 'public, max-age=0, s-maxage=60, must-revalidate',
         'X-Robots-Tag': 'index, follow'
       }
     });
@@ -187,7 +217,7 @@ ${disclaimerText}${effectiveExcerpt ? `${effectiveExcerpt}\n\n` : ''}${effective
     },
     {
       headers: {
-        'Cache-Control': 'public, max-age=3600, s-maxage=86400',
+        'Cache-Control': 'public, max-age=0, s-maxage=60, must-revalidate',
         'X-Robots-Tag': 'index, follow'
       }
     }

@@ -47,7 +47,7 @@
     <div class="flex flex-col">
       {#if label}
         <span
-          class="flex min-h-5 items-center font-sans-title text-xs leading-none font-semibold text-text-primary sm:text-sm">
+          class="flex min-h-5 items-center text-xs leading-none font-semibold text-text-primary sm:text-sm">
           {label}
         </span>
       {/if}

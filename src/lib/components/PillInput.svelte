@@ -14,6 +14,7 @@
     maxItems?: number;
     maxItemLength?: number;
     transformItem?: (item: string) => string;
+    onblur?: () => void;
     onPaste?: (e: ClipboardEvent) => void;
     variant?: 'standard' | 'floating';
     label?: string;
@@ -32,6 +33,7 @@
     maxItemLength,
     transformItem,
     onPaste,
+    onblur,
     variant,
     label = '',
     required,
@@ -164,6 +166,7 @@
 </script>
 
 <div
+  role="presentation"
   onclick={e => {
     if (
       (e.target as HTMLElement).closest(
@@ -182,7 +185,7 @@
     <label
       for={id}
       class={cn(
-        'pointer-events-none absolute left-3 z-10 font-sans-title font-medium transition-all duration-200 select-none',
+        'pointer-events-none absolute left-3 z-10 font-medium transition-all duration-200 select-none',
         isFloatingActive ?
           'top-1.5 text-2xs leading-none font-semibold '
             + (isFocused ? 'text-accent' : 'text-text-muted')
@@ -214,6 +217,7 @@
       class="box-border inline-flex h-auto min-h-5 w-fit max-w-full items-center gap-1 rounded-full border border-accent/30 bg-accent/10 px-1.5 py-0.5 font-sans text-xs leading-tight font-medium text-accent transition-all hover:border-accent/50">
       <span
         data-pill-grip
+        aria-hidden="true"
         class="inline-flex shrink-0 cursor-grab items-center justify-center text-accent/60 transition-colors hover:text-accent active:cursor-grabbing">
         <GripVertical class="size-2.5 -translate-y-[0.5px]" />
       </span>
@@ -221,6 +225,7 @@
         <input
           type="text"
           id={`${id}-edit-${idx}`}
+          aria-label="Edit {itemLabel}: {item}"
           bind:value={editingText}
           maxlength={maxItemLength}
           style="--sk-w: {Math.max(editingText.length, 3)}ch"
@@ -244,7 +249,10 @@
               saveEdit(idx);
             }
           }}
-          onblur={() => saveEdit(idx)}
+          onblur={() => {
+            saveEdit(idx);
+            onblur?.();
+          }}
           use:focusOnMount />
       {:else}
         <span
@@ -277,6 +285,7 @@
       bind:this={inputElement}
       {id}
       type="text"
+      aria-invalid={formCtx?.error ? 'true' : undefined}
       bind:value={inputValue}
       maxlength={maxItemLength}
       onfocus={() => (isFocused = true)}
@@ -309,6 +318,7 @@
         isFocused = false;
         addValue(inputValue);
         inputValue = '';
+        onblur?.();
       }}
       onpaste={handlePaste} />
   {/if}

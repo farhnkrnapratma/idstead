@@ -2,6 +2,7 @@
   import type {Snippet} from 'svelte';
   import type {HTMLButtonAttributes} from 'svelte/elements';
   import {cn} from '../utils/cn';
+  import {shortcut} from '../utils/shortcut.svelte';
 
   interface Props extends Omit<HTMLButtonAttributes, 'type'> {
     type?:
@@ -13,7 +14,6 @@
     fullWidth?: boolean;
     leading?: Snippet;
     trailing?: Snippet;
-    showEscHint?: boolean;
     href?: string;
     target?: string;
     rel?: string;
@@ -22,6 +22,10 @@
     responsiveIconOnly?: boolean;
     label?: string;
     truncateMiddle?: boolean;
+    keyboardShortcut?: string;
+    shortcutGroup?: string;
+    shortcutScope?: string;
+    shortcutLabel?: string;
   }
 
   let {
@@ -34,7 +38,6 @@
     fullWidth = false,
     leading,
     trailing,
-    showEscHint = false,
     href = '',
     target,
     rel,
@@ -42,6 +45,10 @@
     responsiveIconOnly = false,
     label,
     truncateMiddle = false,
+    keyboardShortcut,
+    shortcutGroup,
+    shortcutScope,
+    shortcutLabel,
     class: className = '',
     title,
     'aria-label': ariaLabel,
@@ -145,8 +152,16 @@
   tabindex={href && (disabled || isLoading) ? -1 : undefined}
   title={resolvedTitle}
   aria-label={resolvedAriaLabel}
+  use:shortcut={{
+    combo: keyboardShortcut,
+    group: shortcutGroup,
+    scope: shortcutScope,
+    label: shortcutLabel ?? resolvedAriaLabel ?? label,
+    disabled: disabled || isLoading
+  }}
   class={cn(
     baseStyles,
+    'relative',
     typeToneStyles[styleKey],
     responsiveIconOnly ? responsiveSizeStyles[size] : sizeStyles[size],
     fullWidth ? 'w-full' : '',
@@ -216,12 +231,5 @@
     <span class="inline-flex shrink-0 items-center justify-center leading-none">
       {@render trailing()}
     </span>
-  {/if}
-
-  {#if showEscHint && !isLoading}
-    <kbd
-      class="hidden items-center rounded-md border border-border-subtle/80 bg-surface-elevated/80 px-1 py-0.5 font-mono text-3xs leading-none text-text-muted select-none sm:inline-flex">
-      Esc
-    </kbd>
   {/if}
 </svelte:element>

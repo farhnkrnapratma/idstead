@@ -1,4 +1,6 @@
 <script lang="ts">
+  import {shortcut} from '../utils/shortcut.svelte';
+  import {buttonKey} from '$lib/shortcuts';
   import type {Snippet} from 'svelte';
   import {AlertTriangle, X} from '@lucide/svelte';
   import {cn} from '../utils/cn';
@@ -9,8 +11,9 @@
     isOpen: boolean;
     title: string;
     description?: string;
-    size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+    size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl';
     compact?: boolean;
+    scrollBody?: boolean;
     isDestructive?: boolean;
     showCloseButton?: boolean;
     closeOnBackdrop?: boolean;
@@ -28,6 +31,7 @@
     description = '',
     size = 'md',
     compact = false,
+    scrollBody = false,
     isDestructive = false,
     showCloseButton = true,
     closeOnBackdrop = true,
@@ -47,7 +51,8 @@
     md: 'max-w-md',
     lg: 'max-w-lg',
     xl: 'max-w-xl',
-    '2xl': 'max-w-2xl'
+    '2xl': 'max-w-2xl',
+    '4xl': 'max-w-4xl'
   };
 
   function handleKeydown(e: KeyboardEvent) {
@@ -142,8 +147,9 @@
       aria-labelledby="dialog-title"
       aria-describedby={description ? 'dialog-desc' : undefined}
       class={cn(
-        'relative z-10 max-h-[calc(100dvh-2rem)] w-full transform overflow-y-auto overscroll-contain rounded-md glass-overlay shadow-xl transition-all outline-none select-none focus:outline-none',
+        'relative z-10 max-h-[calc(100dvh-2rem)] w-full transform overflow-y-auto overscroll-contain rounded-md glass-overlay shadow-xl transition-[opacity,transform] outline-none select-none focus:outline-none',
         compact ? 'p-5' : 'p-6',
+        scrollBody && 'flex flex-col overflow-hidden',
         sizeStyles[size],
         isDestructive ? 'border-danger/30' : '',
         className
@@ -153,6 +159,10 @@
           type="button"
           onclick={onClose}
           aria-label="Close dialog"
+          use:shortcut={{
+            combo: buttonKey('dialogClose'),
+            label: 'Close dialog'
+          }}
           class={cn(
             'absolute inline-flex size-6.5 cursor-pointer items-center justify-center rounded-md text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring',
             compact ? 'top-3.5 right-3.5' : 'top-4 right-4'
@@ -161,11 +171,11 @@
         </button>
       {/if}
 
-      <div class="flex flex-col gap-1 pr-7 text-left">
+      <div class="flex shrink-0 flex-col gap-1 pr-7 text-left">
         <h2
           id="dialog-title"
           class={cn(
-            'flex items-center gap-2 font-sans-title text-base font-bold text-text-primary',
+            'flex items-center gap-2 text-base font-bold text-text-primary',
             isDestructive ? 'text-danger' : ''
           )}>
           {#if isDestructive}
@@ -183,7 +193,11 @@
       </div>
 
       {#if children}
-        <div class="mt-4">
+        <div
+          class={cn(
+            'mt-4',
+            scrollBody && 'min-h-0 overflow-y-auto overscroll-contain'
+          )}>
           {@render children()}
         </div>
       {/if}
@@ -191,7 +205,7 @@
       {#if footer}
         <div
           class={cn(
-            'flex items-center',
+            'flex shrink-0 items-center',
             compact ? 'mt-4 w-full gap-2.5' : 'mt-6 justify-end gap-3'
           )}>
           {@render footer()}

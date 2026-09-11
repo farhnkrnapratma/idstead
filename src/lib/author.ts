@@ -83,6 +83,10 @@ export interface CvDocument {
 }
 
 export interface AuthorProfile {
+  revision?: number;
+  updatedAt?: string;
+  avatarVersion?: string | null;
+  manifestSettings?: import('./siteIdentity').ManifestSettings;
   id?: string;
   name: string;
   username: string;
@@ -277,7 +281,7 @@ export function parseLucideTag(
 
 export async function fetchAuthorProfile(
   supabaseClient?: any,
-  options?: {includeEmail?: boolean}
+  options?: {includeEmail?: boolean; strict?: boolean}
 ): Promise<AuthorProfile | null> {
   if (!supabaseClient) return null;
 
@@ -288,6 +292,7 @@ export async function fetchAuthorProfile(
       .limit(1)
       .maybeSingle();
 
+    if (error && options?.strict) throw error;
     if (error || !data) {
       return null;
     }
@@ -299,6 +304,10 @@ export async function fetchAuthorProfile(
 
     return {
       id: data.id,
+      revision: data.profile_revision ?? 0,
+      updatedAt: data.updated_at,
+      avatarVersion: data.avatar_version,
+      manifestSettings: data.manifest_settings,
       name: rawName,
       username: decodeHtmlEntities(data.username || ''),
       email: options?.includeEmail ? decodeHtmlEntities(data.email || '') : '',
@@ -317,13 +326,14 @@ export async function fetchAuthorProfile(
       education: []
     };
   } catch (e) {
+    if (options?.strict) throw e;
     return null;
   }
 }
 
 export async function fetchAuthorProfileWithSocials(
   supabaseClient?: any,
-  options?: {includeEmail?: boolean}
+  options?: {includeEmail?: boolean; strict?: boolean}
 ): Promise<AuthorProfile | null> {
   const [profile, socialLinks] = await Promise.all([
     fetchAuthorProfile(supabaseClient, options),
@@ -334,7 +344,8 @@ export async function fetchAuthorProfileWithSocials(
 }
 
 export async function fetchSocials(
-  supabaseClient?: any
+  supabaseClient?: any,
+  options?: {strict?: boolean}
 ): Promise<SocialLink[]> {
   if (!supabaseClient) return [];
 
@@ -345,6 +356,7 @@ export async function fetchSocials(
       .eq('category', 'social')
       .order('sort_order', {ascending: true});
 
+    if (error && options?.strict) throw error;
     if (error || !data) return [];
 
     return data.map((item: any) => ({
@@ -356,6 +368,7 @@ export async function fetchSocials(
       sortOrder: item.sort_order
     }));
   } catch (e) {
+    if (options?.strict) throw e;
     return [];
   }
 }
@@ -409,7 +422,10 @@ export async function fetchProjectRepoRules(
   }
 }
 
-export async function fetchSkills(supabaseClient?: any): Promise<SkillItem[]> {
+export async function fetchSkills(
+  supabaseClient?: any,
+  options?: {strict?: boolean}
+): Promise<SkillItem[]> {
   if (!supabaseClient) return [];
 
   try {
@@ -418,6 +434,7 @@ export async function fetchSkills(supabaseClient?: any): Promise<SkillItem[]> {
       .select('id, category, sort_order, db_items(id, name, sort_order)')
       .order('sort_order', {ascending: true});
 
+    if (error && options?.strict) throw error;
     if (error || !data) return [];
 
     return data.map((cat: any) => ({
@@ -429,14 +446,16 @@ export async function fetchSkills(supabaseClient?: any): Promise<SkillItem[]> {
       sortOrder: cat.sort_order
     }));
   } catch (e) {
+    if (options?.strict) throw e;
     return [];
   }
 }
 
 export async function fetchGroupedSkills(
-  supabaseClient?: any
+  supabaseClient?: any,
+  options?: {strict?: boolean}
 ): Promise<SkillCategoryGroup[]> {
-  const items = await fetchSkills(supabaseClient);
+  const items = await fetchSkills(supabaseClient, options);
   if (!items || items.length === 0) return [];
 
   return items.map(item => ({
@@ -448,7 +467,8 @@ export async function fetchGroupedSkills(
 }
 
 export async function fetchExperiences(
-  supabaseClient?: any
+  supabaseClient?: any,
+  options?: {strict?: boolean}
 ): Promise<ExperienceItem[]> {
   if (!supabaseClient) return [];
 
@@ -458,6 +478,7 @@ export async function fetchExperiences(
       .select('*')
       .order('sort_order', {ascending: true});
 
+    if (error && options?.strict) throw error;
     if (error || !data) return [];
 
     return data.map((item: any) => ({
@@ -476,12 +497,14 @@ export async function fetchExperiences(
       sortOrder: item.sort_order
     }));
   } catch (e) {
+    if (options?.strict) throw e;
     return [];
   }
 }
 
 export async function fetchEducation(
-  supabaseClient?: any
+  supabaseClient?: any,
+  options?: {strict?: boolean}
 ): Promise<EducationItem[]> {
   if (!supabaseClient) return [];
 
@@ -491,6 +514,7 @@ export async function fetchEducation(
       .select('*')
       .order('sort_order', {ascending: true});
 
+    if (error && options?.strict) throw error;
     if (error || !data) return [];
 
     return data.map((item: any) => ({
@@ -509,26 +533,30 @@ export async function fetchEducation(
       sortOrder: item.sort_order
     }));
   } catch (e) {
+    if (options?.strict) throw e;
     return [];
   }
 }
 
 export async function fetchEducations(
-  supabaseClient?: any
+  supabaseClient?: any,
+  options?: {strict?: boolean}
 ): Promise<EducationItem[]> {
-  return fetchEducation(supabaseClient);
+  return fetchEducation(supabaseClient, options);
 }
 
 export async function fetchCvEntries(
-  supabaseClient?: any
+  supabaseClient?: any,
+  options?: {strict?: boolean}
 ): Promise<{experience: ExperienceItem[]; education: EducationItem[]}> {
-  const experience = await fetchExperiences(supabaseClient);
-  const education = await fetchEducation(supabaseClient);
+  const experience = await fetchExperiences(supabaseClient, options);
+  const education = await fetchEducation(supabaseClient, options);
   return {experience, education};
 }
 
 export async function fetchSponsorship(
-  supabaseClient?: any
+  supabaseClient?: any,
+  options?: {strict?: boolean}
 ): Promise<SponsorshipLink[]> {
   if (!supabaseClient) return [];
 
@@ -539,6 +567,7 @@ export async function fetchSponsorship(
       .eq('category', 'funding')
       .order('sort_order', {ascending: true});
 
+    if (error && options?.strict) throw error;
     if (error || !data) return [];
 
     return data.map((item: any) => ({
@@ -551,18 +580,21 @@ export async function fetchSponsorship(
       sortOrder: item.sort_order
     }));
   } catch (e) {
+    if (options?.strict) throw e;
     return [];
   }
 }
 
 export async function fetchFundingLinks(
-  supabaseClient?: any
+  supabaseClient?: any,
+  options?: {strict?: boolean}
 ): Promise<SponsorshipLink[]> {
-  return fetchSponsorship(supabaseClient);
+  return fetchSponsorship(supabaseClient, options);
 }
 
 export async function fetchContactInfo(
-  supabaseClient?: any
+  supabaseClient?: any,
+  options?: {strict?: boolean}
 ): Promise<ContactInfo[]> {
   if (!supabaseClient) return [];
 
@@ -573,6 +605,7 @@ export async function fetchContactInfo(
       .eq('category', 'contact')
       .order('sort_order', {ascending: true});
 
+    if (error && options?.strict) throw error;
     if (error || !data) return [];
 
     return data.map((item: any) => ({
@@ -585,13 +618,15 @@ export async function fetchContactInfo(
       sortOrder: item.sort_order
     }));
   } catch (e) {
+    if (options?.strict) throw e;
     return [];
   }
 }
 
 export async function fetchActiveCvDocument(
   supabaseClient?: any,
-  fetchFn: typeof fetch = fetch
+  fetchFn: typeof fetch = fetch,
+  options?: {strict?: boolean}
 ): Promise<CvDocument | null> {
   if (!supabaseClient) return null;
 
@@ -604,6 +639,7 @@ export async function fetchActiveCvDocument(
       .limit(1)
       .maybeSingle();
 
+    if (error && options?.strict) throw error;
     if (error || !data) {
       return null;
     }
@@ -638,6 +674,7 @@ export async function fetchActiveCvDocument(
       updatedAt: data.updated_at
     };
   } catch (e) {
+    if (options?.strict) throw e;
     return null;
   }
 }

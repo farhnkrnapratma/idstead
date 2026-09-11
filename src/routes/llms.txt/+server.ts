@@ -1,19 +1,21 @@
 import type {RequestHandler} from './$types';
-import {supabase} from '$lib/supabase';
-import {fetchAuthorProfile} from '$lib/author';
+import {
+  readSiteProfile,
+  readPublishedPosts,
+  markdownText,
+  validDate,
+  publicResponse
+} from '$lib/server/publicMetadata';
 
-export const GET: RequestHandler = async () => {
-  const author = await fetchAuthorProfile(supabase);
-  const authorName = author?.name || 'Author';
-  const authorHeadline = author?.headline || 'Developer Portfolio';
-  const authorBio = author?.bio || '';
-  const SITE_URL = (author?.siteUrl || '').replace(/\/$/, '');
-
-  const {data: posts} = await supabase
-    .from('db_posts')
-    .select('id, title, slug, excerpt, created_at')
-    .eq('published', true)
-    .order('created_at', {ascending: false});
+export const GET: RequestHandler = async ({request}) => {
+  const [author, posts] = await Promise.all([
+    readSiteProfile(),
+    readPublishedPosts()
+  ]);
+  const authorName = markdownText(author.name);
+  const authorHeadline = markdownText(author.headline);
+  const authorBio = markdownText(author.bio);
+  const SITE_URL = author.siteUrl;
 
   let md = `# ${authorName} — ${authorHeadline}
 
@@ -39,8 +41,8 @@ Welcome to the LLM & AI Agent directory for ${authorName}'s developer portfolio.
 
   if (posts && posts.length > 0) {
     posts.forEach(post => {
-      const dateStr = new Date(post.created_at).toISOString().split('T')[0];
-      md += `- [${post.title}](${SITE_URL}/api/v1/blog/${post.slug}?format=md): Published on ${dateStr}. ID: \`${post.id}\`. ${post.excerpt ? `— ${post.excerpt}` : ''}\n`;
+      const dateStr = validDate(post.created_at)?.split('T')[0] ?? 'unknown';
+      md += `- [${markdownText(post.title)}](${SITE_URL}/api/v1/blog/${encodeURIComponent(post.slug)}?format=md): Published on ${dateStr}. ID: \`${post.id}\`. ${post.excerpt ? `— ${markdownText(post.excerpt)}` : ''}\n`;
     });
   } else {
     md += `*No published posts available.*\n`;
@@ -50,11 +52,5 @@ Welcome to the LLM & AI Agent directory for ${authorName}'s developer portfolio.
   md += `- [JSON Author API](${SITE_URL}/api/v1/author): Full author dataset in JSON format.\n`;
   md += `- [JSON Blog Catalog](${SITE_URL}/api/v1/blog): Catalog of published blog posts in JSON format.\n`;
 
-  return new Response(md, {
-    headers: {
-      'Content-Type': 'text/markdown; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600, s-maxage=86400',
-      'X-Robots-Tag': 'index, follow'
-    }
-  });
+  return publicResponse(request, md, 'text/markdown; charset=utf-8', 300);
 };

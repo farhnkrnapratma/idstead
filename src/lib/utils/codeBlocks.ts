@@ -250,8 +250,11 @@ interface EnhancedBlock {
 const enhancedBlocks: EnhancedBlock[] = [];
 let siteThemeObserverAttached = false;
 
-export function registerPrefsListener(applyPrefs: () => void) {
-  enhancedBlocks.push({applyPrefs});
+export function registerPrefsListener(
+  applyPrefs: () => void,
+  targetElement?: HTMLElement
+) {
+  enhancedBlocks.push({applyPrefs, pre: targetElement});
 }
 
 export function refreshCodeBlockPrefs() {
@@ -586,7 +589,7 @@ export function createCodeActionControls(
   }
 
   applyPrefs();
-  registerPrefsListener(applyPrefs);
+  registerPrefsListener(applyPrefs, controls);
 
   return {controls, applyPrefs, setMinimalMode, syncKebabTheme};
 }
@@ -596,6 +599,13 @@ export function enhanceCodeBlocks(
   container: ParentNode = document
 ) {
   ensureSiteThemeObserver();
+
+  for (let i = enhancedBlocks.length - 1; i >= 0; i--) {
+    const block = enhancedBlocks[i];
+    if (block.pre && !document.contains(block.pre)) {
+      enhancedBlocks.splice(i, 1);
+    }
+  }
 
   container.querySelectorAll('pre').forEach(el => {
     const pre = el as HTMLElement;
@@ -629,7 +639,7 @@ export function enhanceCodeBlocks(
 
       leftSpan = document.createElement('span');
       leftSpan.className =
-        'text-[11px] font-sans-title font-bold uppercase tracking-wider text-text-secondary leading-none';
+        'text-[11px] font-bold uppercase tracking-wider text-text-secondary leading-none';
       leftSpan.innerText = prettyLang;
       headerBar.appendChild(leftSpan);
 
@@ -801,16 +811,26 @@ export function enhanceCodeBlocks(
     }
 
     pre.addEventListener('scroll', updateCustomScrollbar, {passive: true});
-    window.addEventListener('resize', () => {
-      updateCustomScrollbar();
-      syncGutterRowHeights();
-    });
     if (typeof ResizeObserver !== 'undefined') {
       const resizeObserver = new ResizeObserver(() => {
+        if (!pre.isConnected) {
+          resizeObserver.disconnect();
+          return;
+        }
         syncGutterRowHeights();
         updateCustomScrollbar();
       });
       resizeObserver.observe(pre);
+    } else {
+      const handleResize = () => {
+        if (!pre.isConnected) {
+          window.removeEventListener('resize', handleResize);
+          return;
+        }
+        updateCustomScrollbar();
+        syncGutterRowHeights();
+      };
+      window.addEventListener('resize', handleResize);
     }
 
     trackBar.addEventListener('pointerdown', e => {

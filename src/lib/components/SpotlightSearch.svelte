@@ -1,7 +1,13 @@
 <script lang="ts">
-  import {tick} from 'svelte';
+  import {SvelteMap, SvelteSet} from 'svelte/reactivity';
+  import {tick, untrack} from 'svelte';
   import {goto} from '$app/navigation';
   import {page} from '$app/state';
+  import {
+    LANGUAGE_LABELS,
+    TRANSLATION_LOCALE_NAMES,
+    TRANSLATION_LOCALES
+  } from '$lib/translationLocales';
   import {
     Search,
     ArrowDownUp,
@@ -19,7 +25,9 @@
     Scale,
     FileLock,
     MessageSquare,
+    MessageSquarePlus,
     FolderGit2,
+    FolderGit,
     Compass,
     Sparkles,
     HeartHandshake,
@@ -34,9 +42,11 @@
     Languages,
     Rss,
     Code,
+    CodeXml,
     RotateCcwClock,
     Trash,
     LogOut,
+    Power,
     CaseSensitive,
     WholeWord,
     Regex,
@@ -45,14 +55,38 @@
     ArrowDown,
     ArrowLeft,
     ArrowRight,
+    ChevronUp,
+    ChevronDown,
+    ChevronLeft,
+    ChevronRight,
+    Save,
+    FingerprintPattern,
+    SquareArrowRightExit,
     Printer,
-    Cookie
+    Cookie,
+    SquareCode,
+    MoveUp,
+    MoveDown,
+    MoveLeft,
+    MoveRight,
+    Braces,
+    Share2,
+    QrCode,
+    HelpCircle
   } from '@lucide/svelte';
   import type {Project} from '$lib/types';
   import {portal} from '../utils/actions';
   import {cn} from '../utils/cn';
+  import ShortcutBadge from './ShortcutBadge.svelte';
+  import {shortcutStore} from '../stores/shortcutStore.svelte';
+  import {
+    LEADER_COMBO,
+    CATALOG_KEY,
+    COMMAND_SHORTCUTS,
+    displayKey
+  } from '$lib/shortcuts';
   import {decodeHtmlEntities} from '../utils/formatters';
-  import {lockScroll} from '../utils/scroll';
+  import {lockScroll, scrollToTop, scrollToBottom} from '../utils/scroll';
   import Tooltip from './Tooltip.svelte';
   import ShareDialog from './ShareDialog.svelte';
   import Button from '../components/Button.svelte';
@@ -69,6 +103,10 @@
     type SearchHistoryEntry
   } from '../stores/searchHistoryStore.svelte';
   import {codeBlockPrefsStore} from '../stores/codeBlockPrefsStore.svelte';
+  import {
+    refreshCodeBlockPrefs,
+    type CodeColorScheme
+  } from '../utils/codeBlocks';
   import {consentStore} from '../stores/consentStore.svelte';
   import {sanitizeInput} from '../utils/sanitizeInput';
   import {readingModeStore} from '../stores/readingModeStore.svelte';
@@ -96,14 +134,6 @@
     availableLocales: string[];
   }
 
-  const LANGUAGE_LABELS: Record<string, string> = {
-    en: 'English',
-    id: 'Bahasa Indonesia',
-    ja: '日本語',
-    zh: '简体中文',
-    ko: '한국어'
-  };
-
   interface Props {
     projects?: Project[];
     languageSwitcher?: LanguageSwitcher;
@@ -129,6 +159,7 @@
   let activeIndex = $state(-1);
   let isLoading = $state(false);
   let showHelp = $state(false);
+  let helpActiveIndex = $state(-1);
   let isShareOpen = $state(false);
   let isQrOpen = $state(false);
   let inputEl = $state<HTMLInputElement | null>(null);
@@ -148,11 +179,11 @@
 
   const CATEGORY_ICONS: Record<ItemCategory, typeof Search> = {
     commands: Command,
-    posts: FileText,
-    projects: FolderGit2,
+    posts: Newspaper,
+    projects: FolderOpen,
     pages: Compass,
     actions: Sparkles,
-    skills: Code
+    skills: CodeXml
   };
 
   const ALL_ICON_COMPONENTS: Record<string, typeof Search> = {
@@ -172,7 +203,9 @@
     Scale,
     FileLock,
     MessageSquare,
+    MessageSquarePlus,
     FolderGit2,
+    FolderGit,
     Compass,
     Sparkles,
     HeartHandshake,
@@ -187,16 +220,35 @@
     Languages,
     Rss,
     Code,
+    CodeXml,
     RotateCcwClock,
     Trash,
     LogOut,
+    Power,
+    CaseSensitive,
     BookOpenText,
     ArrowUp,
     ArrowDown,
     ArrowLeft,
     ArrowRight,
+    ChevronUp,
+    ChevronDown,
+    ChevronLeft,
+    ChevronRight,
+    Save,
+    FingerprintPattern,
+    SquareArrowRightExit,
     Printer,
-    Cookie
+    Cookie,
+    SquareCode,
+    MoveUp,
+    MoveDown,
+    MoveLeft,
+    MoveRight,
+    Braces,
+    Share2,
+    QrCode,
+    HelpCircle
   };
 
   const ICON_NAME_BY_COMPONENT = new Map<unknown, string>(
@@ -261,6 +313,8 @@
     };
   });
 
+  const MAX_RENDERED_RESULTS = 50;
+
   let debounceTimer: ReturnType<typeof setTimeout>;
   let searchAbortController: AbortController | null = null;
 
@@ -270,214 +324,343 @@
     description: string;
     validArgs: string[];
     actionQuery?: string;
+    icon: typeof Search;
   }
 
-  const helpCommands: HelpCommandSpec[] = [
+  interface HelpCategory {
+    id: string;
+    label: string;
+    icon: typeof Search;
+    commands: HelpCommandSpec[];
+  }
+
+  const helpCategories: HelpCategory[] = [
     {
-      command: '/open',
-      argHint: '[target]',
-      description: 'Navigate to pages or blog articles.',
-      validArgs: [
-        'home',
-        'blog',
-        'projects',
-        'cv',
-        'funding',
-        'contact',
-        'terms',
-        'privacy',
-        'security',
-        'feedback',
-        'feed',
-        'api',
-        'blog [slug]'
-      ],
-      actionQuery: '/open '
+      id: 'pages',
+      label: 'Pages & Sections',
+      icon: Compass,
+      commands: [
+        {
+          command: '/open',
+          argHint: '[target]',
+          description: 'Navigate directly to pages, sections, or articles.',
+          validArgs: [
+            'home',
+            'blog',
+            'projects',
+            'cv',
+            'funding',
+            'contact',
+            'terms',
+            'privacy',
+            'security',
+            'feedback',
+            'feed',
+            'api',
+            'blog [slug]'
+          ],
+          actionQuery: '/open ',
+          icon: SquareArrowRightExit
+        },
+        {
+          command: '/home',
+          argHint: '',
+          description: 'Navigate to the main home page.',
+          validArgs: [],
+          actionQuery: '/home',
+          icon: House
+        },
+        {
+          command: '/blog',
+          argHint: '',
+          description: 'Read latest articles and posts.',
+          validArgs: [],
+          actionQuery: '/blog',
+          icon: Newspaper
+        },
+        {
+          command: '/projects',
+          argHint: '',
+          description:
+            'Explore featured open-source repositories and projects.',
+          validArgs: [],
+          actionQuery: '/projects',
+          icon: FolderOpen
+        },
+        {
+          command: '/cv',
+          argHint: '',
+          description: 'View resume and work experience.',
+          validArgs: [],
+          actionQuery: '/cv',
+          icon: FileUser
+        },
+        {
+          command: '/funding',
+          argHint: '',
+          description: 'Support projects and open development.',
+          validArgs: [],
+          actionQuery: '/funding',
+          icon: HeartHandshake
+        },
+        {
+          command: '/contact',
+          argHint: '',
+          description: 'Send a message or connect.',
+          validArgs: [],
+          actionQuery: '/contact',
+          icon: Send
+        },
+        {
+          command: '/back',
+          argHint: '',
+          description: 'Go back to previous page in history.',
+          validArgs: [],
+          actionQuery: '/back',
+          icon: ChevronLeft
+        },
+        {
+          command: '/forward',
+          argHint: '',
+          description: 'Go forward to next page in history.',
+          validArgs: [],
+          actionQuery: '/forward',
+          icon: ChevronRight
+        },
+        {
+          command: '/top',
+          argHint: '',
+          description: 'Scroll smoothly to top of page.',
+          validArgs: [],
+          actionQuery: '/top',
+          icon: ChevronUp
+        },
+        {
+          command: '/bottom',
+          argHint: '',
+          description: 'Scroll smoothly to bottom of page.',
+          validArgs: [],
+          actionQuery: '/bottom',
+          icon: ChevronDown
+        }
+      ]
     },
     {
-      command: '/theme',
-      argHint: '[mode]',
-      description: 'Change appearance and color theme.',
-      validArgs: ['dark', 'light', 'auto'],
-      actionQuery: '/theme '
-    },
-    {
-      command: '/font',
-      argHint: '[style]',
-      description: 'Change reading font for articles.',
-      validArgs: ['sans', 'serif', 'mono'],
-      actionQuery: '/font '
-    },
-    {
-      command: '/code',
-      argHint: '[option]',
-      description: 'Customize code snippet display options.',
-      validArgs: ['wrap', 'lines', 'minimal', 'theme'],
-      actionQuery: '/code '
-    },
-    {
-      command: '/copy',
-      argHint: '[target]',
-      description: 'Copy page link or content.',
-      validArgs: ['url', 'link', 'pid', 'md', 'txt'],
-      actionQuery: '/copy '
-    },
-    {
-      command: '/save',
-      argHint: '[target]',
-      description: 'Download files or export content.',
-      validArgs: ['cv', 'md', 'txt'],
-      actionQuery: '/save '
-    },
-    {
-      command: '/a11y',
-      argHint: '[feature]',
-      description: 'Adjust accessibility and display preferences.',
-      validArgs: [
-        'high-contrast',
-        'reduce-motion',
-        'solid-surface',
-        'focus-ring',
-        'dyslexic-text',
-        'text-size [scale]',
-        'reset'
-      ],
-      actionQuery: '/a11y '
-    },
-    {
-      command: '/lang',
-      argHint: '[lang]',
-      description: 'Translate article to another language.',
-      validArgs: ['default', 'en', 'id'],
-      actionQuery: '/lang '
-    },
-    {
-      command: '/translate',
-      argHint: '[lang]',
-      description: 'Translate article to another language.',
-      validArgs: ['default', 'en', 'id'],
-      actionQuery: '/lang '
-    },
-    {
-      command: '/back',
-      argHint: '',
-      description: 'Go back to previous page.',
-      validArgs: [],
-      actionQuery: '/back'
-    },
-    {
-      command: '/forward',
-      argHint: '',
-      description: 'Go forward to next page.',
-      validArgs: [],
-      actionQuery: '/forward'
-    },
-    {
-      command: '/top',
-      argHint: '',
-      description: 'Scroll to top of page.',
-      validArgs: [],
-      actionQuery: '/top'
-    },
-    {
-      command: '/bottom',
-      argHint: '',
-      description: 'Scroll to bottom of page.',
-      validArgs: [],
-      actionQuery: '/bottom'
-    },
-    {
-      command: '/print',
-      argHint: '',
-      description: 'Print or save as PDF.',
-      validArgs: [],
-      actionQuery: '/print'
-    },
-    {
-      command: '/cookies',
-      argHint: '',
-      description: 'Manage cookie and privacy preferences.',
-      validArgs: [],
-      actionQuery: '/cookies'
-    },
-    {
-      command: '/history',
-      argHint: '[action]',
-      description: 'Manage local search history records.',
-      validArgs: ['clear'],
-      actionQuery: '/history '
-    },
-    {
-      command: '/rss',
-      argHint: '',
-      description: 'Open RSS and Atom feed.',
-      validArgs: [],
-      actionQuery: '/rss'
-    },
-    {
-      command: '/llms',
-      argHint: '',
-      description: 'Open context guide for assistants.',
-      validArgs: [],
-      actionQuery: '/llms'
-    },
-    {
-      command: '/sitemap',
-      argHint: '',
-      description: 'Open website sitemap directory file.',
-      validArgs: [],
-      actionQuery: '/sitemap'
-    },
-    {
-      command: '/api',
-      argHint: '',
-      description: 'Open developer API documentation.',
-      validArgs: [],
-      actionQuery: '/api'
-    },
-    {
-      command: '/exit',
-      argHint: '',
-      description: 'Close tab or leave page.',
-      validArgs: [],
-      actionQuery: '/exit'
-    },
-    {
-      command: '/share',
-      argHint: '',
-      description: 'Share current page with others.',
-      validArgs: [],
-      actionQuery: '/share'
-    },
-    {
-      command: '/qr',
-      argHint: '',
-      description: 'Show QR code for page.',
-      validArgs: [],
-      actionQuery: '/qr'
-    },
-    {
-      command: '/refresh',
-      argHint: '',
-      description: 'Reload the current web page.',
-      validArgs: [],
-      actionQuery: '/refresh'
-    },
-    {
-      command: '/help',
-      argHint: '',
-      description: 'Show available commands and tips.',
-      validArgs: [],
-      actionQuery: '/help'
-    },
-    {
-      command: '/read',
-      argHint: '',
-      description: 'Toggle distraction free reading mode.',
-      validArgs: [],
-      actionQuery: '/read'
+      id: 'actions',
+      label: 'System Actions',
+      icon: Sparkles,
+      commands: [
+        {
+          command: '/theme',
+          argHint: '[mode]',
+          description: 'Change appearance and color theme.',
+          validArgs: ['dark', 'light', 'auto'],
+          actionQuery: '/theme ',
+          icon: SunMoon
+        },
+        {
+          command: '/font',
+          argHint: '[style]',
+          description: 'Change reading font for articles.',
+          validArgs: ['sans', 'serif', 'mono'],
+          actionQuery: '/font ',
+          icon: CaseSensitive
+        },
+        {
+          command: '/read',
+          argHint: '',
+          description: 'Toggle distraction-free reading mode on blog posts.',
+          validArgs: [],
+          actionQuery: '/read',
+          icon: BookOpenText
+        },
+        {
+          command: '/code',
+          argHint: '[option]',
+          description: 'Customize code snippet display options.',
+          validArgs: ['wrap', 'lines', 'clean', 'theme'],
+          actionQuery: '/code ',
+          icon: CodeXml
+        },
+        {
+          command: '/a11y',
+          argHint: '[feature]',
+          description: 'Adjust accessibility and display preferences.',
+          validArgs: [
+            'high-contrast',
+            'reduce-motion',
+            'solid-surface',
+            'focus-ring',
+            'dyslexic-text',
+            'text-size [scale]',
+            'reset'
+          ],
+          actionQuery: '/a11y ',
+          icon: Accessibility
+        },
+        {
+          command: '/lang',
+          argHint: '[lang]',
+          description: 'Translate article to another language.',
+          validArgs: ['default', 'en', 'id'],
+          actionQuery: '/lang ',
+          icon: Languages
+        },
+        {
+          command: '/copy',
+          argHint: '[target]',
+          description: 'Copy page link, post ID, or markdown/text content.',
+          validArgs: ['url', 'link', 'pid', 'md', 'txt'],
+          actionQuery: '/copy ',
+          icon: Copy
+        },
+        {
+          command: '/save',
+          argHint: '[target]',
+          description: 'Download resume or export article markdown/text file.',
+          validArgs: ['cv', 'md', 'txt'],
+          actionQuery: '/save ',
+          icon: Save
+        },
+        {
+          command: '/share',
+          argHint: '',
+          description: 'Open quick share modal for current page.',
+          validArgs: [],
+          actionQuery: '/share',
+          icon: Share2
+        },
+        {
+          command: '/qr',
+          argHint: '',
+          description: 'Show QR code for easy mobile sharing.',
+          validArgs: [],
+          actionQuery: '/qr',
+          icon: QrCode
+        },
+        {
+          command: '/print',
+          argHint: '',
+          description: 'Print current page or save as PDF.',
+          validArgs: [],
+          actionQuery: '/print',
+          icon: Printer
+        },
+        {
+          command: '/cookies',
+          argHint: '',
+          description: 'Manage cookie preferences and privacy settings.',
+          validArgs: [],
+          actionQuery: '/cookies',
+          icon: Cookie
+        },
+        {
+          command: '/history',
+          argHint: '[action]',
+          description: 'Manage search history records.',
+          validArgs: ['clear'],
+          actionQuery: '/history ',
+          icon: RotateCcwClock
+        },
+        {
+          command: '/api',
+          argHint: '',
+          description: 'Open developer REST API documentation.',
+          validArgs: [],
+          actionQuery: '/api',
+          icon: Braces
+        },
+        {
+          command: '/rss',
+          argHint: '',
+          description: 'Open RSS and Atom feed subscription.',
+          validArgs: [],
+          actionQuery: '/rss',
+          icon: Rss
+        },
+        {
+          command: '/sitemap',
+          argHint: '',
+          description: 'Open website sitemap directory file.',
+          validArgs: [],
+          actionQuery: '/sitemap',
+          icon: Compass
+        },
+        {
+          command: '/llms',
+          argHint: '',
+          description: 'Open structured context guide for AI assistants.',
+          validArgs: [],
+          actionQuery: '/llms',
+          icon: Sparkles
+        },
+        {
+          command: '/security',
+          argHint: '',
+          description: 'View security policy and reporting guidelines.',
+          validArgs: [],
+          actionQuery: '/security',
+          icon: FingerprintPattern
+        },
+        {
+          command: '/privacy',
+          argHint: '',
+          description: 'Read privacy policy and practices.',
+          validArgs: [],
+          actionQuery: '/privacy',
+          icon: ShieldCheck
+        },
+        {
+          command: '/terms',
+          argHint: '',
+          description: 'Read terms and conditions agreement.',
+          validArgs: [],
+          actionQuery: '/terms',
+          icon: Scale
+        },
+        {
+          command: '/feedback',
+          argHint: '',
+          description: 'Send feedback or report an issue.',
+          validArgs: [],
+          actionQuery: '/feedback',
+          icon: MessageSquarePlus
+        },
+        {
+          command: '/refresh',
+          argHint: '',
+          description: 'Reload the current web page.',
+          validArgs: [],
+          actionQuery: '/refresh',
+          icon: RotateCw
+        },
+        {
+          command: '/help',
+          argHint: '',
+          description: 'Show this reference guide.',
+          validArgs: [],
+          actionQuery: '/help',
+          icon: HelpCircle
+        },
+        {
+          command: '/exit',
+          argHint: '',
+          description: 'Close palette or current browser tab.',
+          validArgs: [],
+          actionQuery: '/exit',
+          icon: Power
+        }
+      ]
     }
   ];
+
+  const helpCmdIndexMap = new SvelteMap<string, number>();
+  let helpCmdIdxCounter = 0;
+  for (const cat of helpCategories) {
+    for (const cmd of cat.commands) {
+      helpCmdIndexMap.set(cmd.command, helpCmdIdxCounter++);
+    }
+  }
 
   const defaultCommands: SpotlightItem[] = [
     {
@@ -486,7 +669,7 @@
       title: '/home',
       subtitle: 'Navigate to the main home page.',
       url: '/',
-      icon: Command,
+      icon: House,
       badge: 'Page'
     },
     {
@@ -495,7 +678,7 @@
       title: '/projects',
       subtitle: 'Explore featured projects and creations.',
       url: '/#projects',
-      icon: Command,
+      icon: FolderOpen,
       badge: 'Section'
     },
     {
@@ -504,7 +687,7 @@
       title: '/blog',
       subtitle: 'Read latest articles and posts.',
       url: '/#blog',
-      icon: Command,
+      icon: Newspaper,
       badge: 'Section'
     },
     {
@@ -513,7 +696,7 @@
       title: '/cv',
       subtitle: 'View resume and work experience.',
       url: '/#cv',
-      icon: Command,
+      icon: FileUser,
       badge: 'Section'
     },
     {
@@ -522,7 +705,7 @@
       title: '/funding',
       subtitle: 'Support projects and open development.',
       url: '/#funding',
-      icon: Command,
+      icon: HeartHandshake,
       badge: 'Section'
     },
     {
@@ -531,7 +714,7 @@
       title: '/contact',
       subtitle: 'Send a message or connect.',
       url: '/#contact',
-      icon: Command,
+      icon: Send,
       badge: 'Section'
     },
     {
@@ -540,7 +723,7 @@
       title: '/privacy',
       subtitle: 'Read privacy policy and practices.',
       url: '/privacy',
-      icon: Command,
+      icon: ShieldCheck,
       badge: 'Legal'
     },
     {
@@ -549,7 +732,7 @@
       title: '/terms',
       subtitle: 'Read terms and conditions agreement.',
       url: '/terms',
-      icon: Command,
+      icon: Scale,
       badge: 'Legal'
     },
     {
@@ -558,7 +741,7 @@
       title: '/security',
       subtitle: 'View security policy and guidelines.',
       url: '/security',
-      icon: Command,
+      icon: FingerprintPattern,
       badge: 'Security'
     },
     {
@@ -567,7 +750,7 @@
       title: '/feedback',
       subtitle: 'Send feedback and report issues.',
       url: '/feedback',
-      icon: Command,
+      icon: MessageSquarePlus,
       badge: 'Help'
     },
     {
@@ -577,8 +760,8 @@
       subtitle: 'Navigate to pages or articles.',
       requiresArgs: true,
       autocompleteQuery: '/open ',
-      icon: Command,
-      badge: 'Navigate'
+      icon: SquareArrowRightExit,
+      badge: 'Navigation'
     },
     {
       id: 'cmd-refresh',
@@ -590,7 +773,7 @@
           window.location.reload();
         }
       },
-      icon: Command,
+      icon: RotateCw,
       badge: 'System'
     },
     {
@@ -600,7 +783,7 @@
       subtitle: 'Change appearance and color theme.',
       requiresArgs: true,
       autocompleteQuery: '/theme ',
-      icon: Command,
+      icon: SunMoon,
       badge: 'Theme'
     },
     {
@@ -610,7 +793,7 @@
       subtitle: 'Change reading font for articles.',
       requiresArgs: true,
       autocompleteQuery: '/font ',
-      icon: Command,
+      icon: CaseSensitive,
       badge: 'Appearance'
     },
     {
@@ -620,7 +803,7 @@
       subtitle: 'Customize code snippet display options.',
       requiresArgs: true,
       autocompleteQuery: '/code ',
-      icon: FileCode,
+      icon: CodeXml,
       badge: 'Code'
     },
     {
@@ -630,7 +813,7 @@
       subtitle: 'Adjust accessibility and display preferences.',
       requiresArgs: true,
       autocompleteQuery: '/a11y ',
-      icon: Command,
+      icon: Accessibility,
       badge: 'Accessibility'
     },
     {
@@ -640,7 +823,7 @@
       subtitle: 'Copy page link or content.',
       requiresArgs: true,
       autocompleteQuery: '/copy ',
-      icon: Command,
+      icon: Copy,
       badge: 'Action'
     },
     {
@@ -650,7 +833,7 @@
       subtitle: 'Download files or export content.',
       requiresArgs: true,
       autocompleteQuery: '/save ',
-      icon: Command,
+      icon: Save,
       badge: 'File'
     },
     {
@@ -668,7 +851,7 @@
           }
         }
       },
-      icon: ArrowLeft,
+      icon: ChevronLeft,
       badge: 'Navigation'
     },
     {
@@ -682,40 +865,41 @@
           window.history.forward();
         }
       },
-      icon: ArrowRight,
+      icon: ChevronRight,
       badge: 'Navigation'
     },
     {
       id: 'cmd-top',
       category: 'actions',
       title: '/top',
-      subtitle: 'Scroll to top of page.',
+      subtitle: 'Scroll smoothly to top of page.',
       action: () => {
         close();
         if (typeof window !== 'undefined') {
-          window.scrollTo({top: 0, behavior: 'smooth'});
-          toastStore.show('Scrolled to top of page', 'info');
+          setTimeout(() => {
+            scrollToTop('smooth');
+            toastStore.show('Scrolled to top of page', 'info');
+          }, 50);
         }
       },
-      icon: ArrowUp,
+      icon: ChevronUp,
       badge: 'Navigation'
     },
     {
       id: 'cmd-bottom',
       category: 'actions',
       title: '/bottom',
-      subtitle: 'Scroll to bottom of page.',
+      subtitle: 'Scroll smoothly to bottom of page.',
       action: () => {
         close();
         if (typeof window !== 'undefined') {
-          window.scrollTo({
-            top: document.documentElement.scrollHeight,
-            behavior: 'smooth'
-          });
-          toastStore.show('Scrolled to bottom of page', 'info');
+          setTimeout(() => {
+            scrollToBottom('smooth');
+            toastStore.show('Scrolled to bottom of page', 'info');
+          }, 50);
         }
       },
-      icon: ArrowDown,
+      icon: ChevronDown,
       badge: 'Navigation'
     },
     {
@@ -787,7 +971,7 @@
       title: '/api',
       subtitle: 'Open developer API documentation.',
       url: '/api/v1',
-      icon: Code,
+      icon: Braces,
       badge: 'API'
     },
     {
@@ -798,7 +982,7 @@
       action: () => {
         isShareOpen = true;
       },
-      icon: Command,
+      icon: Share2,
       badge: 'Share'
     },
     {
@@ -809,7 +993,7 @@
       action: () => {
         isQrOpen = true;
       },
-      icon: Command,
+      icon: QrCode,
       badge: 'Share'
     },
     {
@@ -833,7 +1017,7 @@
           window.location.href = 'about:blank';
         }
       },
-      icon: LogOut,
+      icon: Power,
       badge: 'System'
     },
     {
@@ -844,7 +1028,7 @@
       action: () => {
         showHelp = true;
       },
-      icon: Command,
+      icon: HelpCircle,
       badge: 'Help'
     },
     {
@@ -865,6 +1049,18 @@
       badge: 'Reading'
     }
   ];
+
+  function applyContentFont(font: ContentFont, label: string) {
+    if (contentFontStore.locked) {
+      toastStore.show(
+        'Reading font is locked while the dyslexic-friendly font is on',
+        'info'
+      );
+      return;
+    }
+    contentFontStore.setFont(font);
+    toastStore.show(`Content font set to ${label}`, 'success');
+  }
 
   function fuzzyMatch(
     target: string,
@@ -1014,11 +1210,8 @@
           category: 'actions',
           title: '/font sans',
           subtitle: 'Use clean sans serif font.',
-          action: () => {
-            contentFontStore.setFont('sans');
-            toastStore.show('Content font set to Sans-serif', 'success');
-          },
-          icon: Type,
+          action: () => applyContentFont('sans', 'Sans-serif'),
+          icon: CaseSensitive,
           badge: 'Font'
         });
       }
@@ -1028,11 +1221,8 @@
           category: 'actions',
           title: '/font serif',
           subtitle: 'Use classic serif reading font.',
-          action: () => {
-            contentFontStore.setFont('serif');
-            toastStore.show('Content font set to Serif', 'success');
-          },
-          icon: Type,
+          action: () => applyContentFont('serif', 'Serif'),
+          icon: CaseSensitive,
           badge: 'Font'
         });
       }
@@ -1042,11 +1232,8 @@
           category: 'actions',
           title: '/font mono',
           subtitle: 'Use modern monospace coding font.',
-          action: () => {
-            contentFontStore.setFont('mono');
-            toastStore.show('Content font set to Monospace', 'success');
-          },
-          icon: Type,
+          action: () => applyContentFont('mono', 'Monospace'),
+          icon: CaseSensitive,
           badge: 'Font'
         });
       }
@@ -1087,8 +1274,8 @@
         },
         {
           key: 'dyslexic-text',
-          name: 'OpenDyslexic reading typeface',
-          subtitle: 'Toggle friendly font for reading.',
+          name: 'Dyslexic-friendly font',
+          subtitle: 'Switch the whole site to Lexend.',
           toggle: () => a11yStore.toggleDyslexicFont(),
           state: () => a11yStore.current.dyslexicFont
         }
@@ -1122,7 +1309,7 @@
           items.push({
             id: `dyn-a11y-${feat.key}`,
             category: 'actions',
-            title: `/a11y ${feat.key}${val ? ` ${val}` : ''}`,
+            title: `/a11y ${feat.key}${val ? `${val}` : ''}`,
             subtitle: feat.subtitle,
             action: () => {
               targetAction();
@@ -1277,7 +1464,7 @@
           title: '/open security',
           subtitle: 'View security policy and guidelines.',
           url: '/security',
-          icon: ShieldCheck,
+          icon: FingerprintPattern,
           badge: 'Security'
         },
         {
@@ -1285,7 +1472,7 @@
           title: '/open feedback',
           subtitle: 'Send feedback and report issues.',
           url: '/feedback',
-          icon: MessageSquare,
+          icon: MessageSquarePlus,
           badge: 'Help'
         },
         {
@@ -1301,7 +1488,7 @@
           title: '/open api',
           subtitle: 'Open developer API documentation.',
           url: '/api/v1',
-          icon: Code,
+          icon: Braces,
           badge: 'Developer'
         }
       ];
@@ -1466,7 +1653,7 @@
           title: '/save cv',
           subtitle: 'Download resume document as PDF.',
           url: '/api/v1/cv',
-          icon: Download,
+          icon: Save,
           badge: 'File'
         });
       }
@@ -1506,7 +1693,7 @@
               toastStore.show('Failed to download markdown', 'error');
             }
           },
-          icon: Download,
+          icon: Save,
           badge: 'File'
         });
       }
@@ -1544,7 +1731,7 @@
               toastStore.show('Failed to download plaintext', 'error');
             }
           },
-          icon: Download,
+          icon: Save,
           badge: 'File'
         });
       }
@@ -1570,7 +1757,11 @@
       const langOptions: {key: string; label: string; urlParam: string}[] = [
         {key: 'default', label: 'English (Default)', urlParam: ''},
         {key: 'en', label: 'English (Default)', urlParam: ''},
-        {key: 'id', label: 'Indonesian (Bahasa Indonesia)', urlParam: 'id'}
+        ...TRANSLATION_LOCALES.map(locale => ({
+          key: locale,
+          label: `${TRANSLATION_LOCALE_NAMES[locale]} (${LANGUAGE_LABELS[locale]})`,
+          urlParam: locale
+        }))
       ];
 
       for (const opt of langOptions) {
@@ -1606,70 +1797,137 @@
       q.startsWith('/code')
       || (root.length > 2 && '/code'.startsWith(root))
     ) {
-      const parts = q.split(/\s+/);
+      const parts = q.trim().split(/\s+/);
       const arg = (parts[1] || '').toLowerCase();
-      const codeOptions = [
+      const subArg = (parts[2] || '').toLowerCase();
+
+      const booleanOptions = [
         {
           key: 'wrap',
-          title: '/code wrap',
-          subtitle: 'Toggle line wrapping for code.',
-          action: () => {
-            codeBlockPrefsStore.toggleWrap();
-            toastStore.show(
-              `Code wrap ${codeBlockPrefsStore.current.wrap ? 'enabled' : 'disabled'}`,
-              'info'
-            );
-          }
+          name: 'wrap',
+          label: 'Code wrap',
+          current: () => codeBlockPrefsStore.current.wrap,
+          toggle: () => codeBlockPrefsStore.toggleWrap(),
+          set: (val: boolean) => codeBlockPrefsStore.setWrap(val)
         },
         {
           key: 'lines',
-          title: '/code lines',
-          subtitle: 'Toggle line numbers in code.',
-          action: () => {
-            codeBlockPrefsStore.toggleLineNumbers();
-            toastStore.show(
-              `Code line numbers ${codeBlockPrefsStore.current.lineNumbers ? 'enabled' : 'disabled'}`,
-              'info'
-            );
-          }
+          name: 'lines',
+          label: 'Code line numbers',
+          current: () => codeBlockPrefsStore.current.lineNumbers,
+          toggle: () => codeBlockPrefsStore.toggleLineNumbers(),
+          set: (val: boolean) => codeBlockPrefsStore.setLineNumbers(val)
         },
         {
-          key: 'minimal',
-          title: '/code minimal',
-          subtitle: 'Toggle minimal code block header.',
-          action: () => {
-            codeBlockPrefsStore.toggleMinimal();
-            toastStore.show(
-              `Code minimal mode ${codeBlockPrefsStore.current.minimal ? 'enabled' : 'disabled'}`,
-              'info'
-            );
-          }
-        },
-        {
-          key: 'theme',
-          title: '/code theme',
-          subtitle: 'Change color scheme for code.',
-          action: () => {
-            codeBlockPrefsStore.cycleColorScheme();
-            toastStore.show(
-              `Code theme set to ${codeBlockPrefsStore.current.colorScheme}`,
-              'info'
-            );
-          }
+          key: 'clean',
+          name: 'clean',
+          label: 'Code clean mode',
+          current: () => codeBlockPrefsStore.current.minimal,
+          toggle: () => codeBlockPrefsStore.toggleClean(),
+          set: (val: boolean) => codeBlockPrefsStore.setClean(val)
         }
       ];
 
-      for (const opt of codeOptions) {
-        if (!arg || opt.key.startsWith(arg)) {
+      for (const boolOpt of booleanOptions) {
+        if (!arg || boolOpt.key.startsWith(arg)) {
+          if (!subArg) {
+            items.push({
+              id: `dyn-code-${boolOpt.key}`,
+              category: 'actions',
+              title: `/code ${boolOpt.key}`,
+              subtitle: `Toggle ${boolOpt.name} for code blocks.`,
+              action: () => {
+                boolOpt.toggle();
+                refreshCodeBlockPrefs();
+                toastStore.show(
+                  `${boolOpt.label} ${boolOpt.current() ? 'enabled' : 'disabled'}`,
+                  'info'
+                );
+              },
+              icon: CodeXml,
+              badge: 'Code'
+            });
+          }
+
+          if (arg === boolOpt.key) {
+            if (!subArg || 'on'.startsWith(subArg)) {
+              items.push({
+                id: `dyn-code-${boolOpt.key}-on`,
+                category: 'actions',
+                title: `/code ${boolOpt.key} on`,
+                subtitle: `Enable ${boolOpt.name} for code blocks.`,
+                action: () => {
+                  boolOpt.set(true);
+                  refreshCodeBlockPrefs();
+                  toastStore.show(`${boolOpt.label} enabled`, 'info');
+                },
+                icon: CodeXml,
+                badge: 'Code'
+              });
+            }
+            if (!subArg || 'off'.startsWith(subArg)) {
+              items.push({
+                id: `dyn-code-${boolOpt.key}-off`,
+                category: 'actions',
+                title: `/code ${boolOpt.key} off`,
+                subtitle: `Disable ${boolOpt.name} for code blocks.`,
+                action: () => {
+                  boolOpt.set(false);
+                  refreshCodeBlockPrefs();
+                  toastStore.show(`${boolOpt.label} disabled`, 'info');
+                },
+                icon: CodeXml,
+                badge: 'Code'
+              });
+            }
+          }
+        }
+      }
+
+      if (!arg || 'theme'.startsWith(arg)) {
+        if (!subArg) {
           items.push({
-            id: `dyn-code-${opt.key}`,
+            id: 'dyn-code-theme',
             category: 'actions',
-            title: opt.title,
-            subtitle: opt.subtitle,
-            action: opt.action,
-            icon: FileCode,
+            title: '/code theme',
+            subtitle: 'Cycle color scheme for code.',
+            action: () => {
+              codeBlockPrefsStore.cycleColorScheme();
+              refreshCodeBlockPrefs();
+              toastStore.show(
+                `Code theme set to ${codeBlockPrefsStore.current.colorScheme}`,
+                'info'
+              );
+            },
+            icon: CodeXml,
             badge: 'Code'
           });
+        }
+
+        if (arg === 'theme') {
+          const themes: Array<{key: CodeColorScheme; label: string}> = [
+            {key: 'auto', label: 'Match site theme'},
+            {key: 'dark', label: 'Dark theme'},
+            {key: 'light', label: 'Light theme'}
+          ];
+
+          for (const t of themes) {
+            if (!subArg || t.key.startsWith(subArg)) {
+              items.push({
+                id: `dyn-code-theme-${t.key}`,
+                category: 'actions',
+                title: `/code theme ${t.key}`,
+                subtitle: `Set code color scheme to ${t.label.toLowerCase()}.`,
+                action: () => {
+                  codeBlockPrefsStore.setColorScheme(t.key);
+                  refreshCodeBlockPrefs();
+                  toastStore.show(`Code theme set to ${t.key}`, 'info');
+                },
+                icon: CodeXml,
+                badge: 'Code'
+              });
+            }
+          }
         }
       }
     }
@@ -1696,221 +1954,14 @@
       }
     }
 
-    if (
-      q.startsWith('/back')
-      || (root.length > 2 && '/back'.startsWith(root))
-    ) {
-      items.push({
-        id: 'dyn-back',
-        category: 'actions',
-        title: '/back',
-        subtitle: 'Go back to previous page.',
-        action: () => {
-          close();
-          if (typeof window !== 'undefined') {
-            if (window.history.length > 1) {
-              window.history.back();
-            } else {
-              toastStore.show('No previous page in history', 'info');
-            }
-          }
-        },
-        icon: ArrowLeft,
-        badge: 'Navigation'
-      });
-    }
-
-    if (
-      q.startsWith('/forward')
-      || (root.length > 2 && '/forward'.startsWith(root))
-    ) {
-      items.push({
-        id: 'dyn-forward',
-        category: 'actions',
-        title: '/forward',
-        subtitle: 'Go forward to next page.',
-        action: () => {
-          close();
-          if (typeof window !== 'undefined') {
-            window.history.forward();
-          }
-        },
-        icon: ArrowRight,
-        badge: 'Navigation'
-      });
-    }
-
-    if (q.startsWith('/top') || (root.length > 2 && '/top'.startsWith(root))) {
-      items.push({
-        id: 'dyn-top',
-        category: 'actions',
-        title: '/top',
-        subtitle: 'Scroll to top of page.',
-        action: () => {
-          close();
-          if (typeof window !== 'undefined') {
-            window.scrollTo({top: 0, behavior: 'smooth'});
-            toastStore.show('Scrolled to top of page', 'info');
-          }
-        },
-        icon: ArrowUp,
-        badge: 'Navigation'
-      });
-    }
-
-    if (
-      q.startsWith('/bottom')
-      || (root.length > 2 && '/bottom'.startsWith(root))
-    ) {
-      items.push({
-        id: 'dyn-bottom',
-        category: 'actions',
-        title: '/bottom',
-        subtitle: 'Scroll to bottom of page.',
-        action: () => {
-          close();
-          if (typeof window !== 'undefined') {
-            window.scrollTo({
-              top: document.documentElement.scrollHeight,
-              behavior: 'smooth'
-            });
-            toastStore.show('Scrolled to bottom of page', 'info');
-          }
-        },
-        icon: ArrowDown,
-        badge: 'Navigation'
-      });
-    }
-
-    if (
-      q.startsWith('/print')
-      || (root.length > 2 && '/print'.startsWith(root))
-    ) {
-      items.push({
-        id: 'dyn-print',
-        category: 'actions',
-        title: '/print',
-        subtitle: 'Print or save as PDF.',
-        action: () => {
-          close();
-          if (typeof window !== 'undefined') {
-            setTimeout(() => window.print(), 150);
-          }
-        },
-        icon: Printer,
-        badge: 'System'
-      });
-    }
-
-    if (
-      q.startsWith('/cookies')
-      || q.startsWith('/consent')
-      || (root.length > 2
-        && ('/cookies'.startsWith(root) || '/consent'.startsWith(root)))
-    ) {
-      items.push({
-        id: 'dyn-cookies',
-        category: 'actions',
-        title: '/cookies',
-        subtitle: 'Manage cookie and privacy preferences.',
-        action: () => {
-          close();
-          consentStore.openCustomizeModal();
-        },
-        icon: Cookie,
-        badge: 'Privacy'
-      });
-    }
-
-    if (
-      q.startsWith('/rss')
-      || q.startsWith('/feed')
-      || q.startsWith('/atom')
-      || (root.length > 2
-        && ('/rss'.startsWith(root)
-          || '/feed'.startsWith(root)
-          || '/atom'.startsWith(root)))
-    ) {
-      items.push({
-        id: 'dyn-rss',
-        category: 'pages',
-        title: '/rss',
-        subtitle: 'Open RSS and Atom feed.',
-        url: '/atom.xml',
-        icon: Rss,
-        badge: 'Feed'
-      });
-    }
-
-    if (
-      q.startsWith('/llms')
-      || (root.length > 2 && '/llms'.startsWith(root))
-    ) {
-      items.push({
-        id: 'dyn-llms',
-        category: 'pages',
-        title: '/llms',
-        subtitle: 'Open context guide for assistants.',
-        url: '/llms.txt',
-        icon: Sparkles,
-        badge: 'AI'
-      });
-    }
-
-    if (
-      q.startsWith('/sitemap')
-      || (root.length > 2 && '/sitemap'.startsWith(root))
-    ) {
-      items.push({
-        id: 'dyn-sitemap',
-        category: 'pages',
-        title: '/sitemap',
-        subtitle: 'Open website sitemap directory file.',
-        url: '/sitemap.xml',
-        icon: Compass,
-        badge: 'System'
-      });
-    }
-
-    if (q.startsWith('/api') || (root.length > 2 && '/api'.startsWith(root))) {
-      items.push({
-        id: 'dyn-api',
-        category: 'pages',
-        title: '/api',
-        subtitle: 'Open developer API documentation.',
-        url: '/api/v1',
-        icon: Code,
-        badge: 'API'
-      });
-    }
-
-    if (
-      q.startsWith('/exit')
-      || q.startsWith('/quit')
-      || (root.length > 2 && '/exit'.startsWith(root))
-    ) {
-      items.push({
-        id: 'dyn-exit',
-        category: 'actions',
-        title: '/exit',
-        subtitle: 'Close tab or leave page.',
-        action: () => {
-          if (typeof window !== 'undefined') {
-            window.close();
-            window.location.href = 'about:blank';
-          }
-        },
-        icon: LogOut,
-        badge: 'System'
-      });
-    }
-
     return items;
   }
 
   function searchLocalItems(q: string): SpotlightItem[] {
     const cleanQ = q.trim();
-    if (!cleanQ) return [];
+    if (!cleanQ) {
+      return [];
+    }
 
     const isCommandQuery = cleanQ.startsWith('/');
     const isRegexQuery = isRegex;
@@ -1967,9 +2018,10 @@
     }
 
     for (const p of projects) {
+      const projectTags = p.tags ?? [];
       const matchName = fuzzyMatch(p.name, cleanQ);
       const matchDesc = fuzzyMatch(p.desc, cleanQ);
-      const tagMatch = p.tags.some(t => fuzzyMatch(t, cleanQ).matched);
+      const tagMatch = projectTags.some(t => fuzzyMatch(t, cleanQ).matched);
 
       let isMatch = matchName.matched || matchDesc.matched || tagMatch;
       let score = Math.max(
@@ -1981,8 +2033,8 @@
         if (
           compiledRegex
           && (compiledRegex.test(p.name)
-            || compiledRegex.test(p.desc)
-            || p.tags.some(t => compiledRegex.test(t)))
+            || (p.desc && compiledRegex.test(p.desc))
+            || projectTags.some(t => compiledRegex.test(t)))
         ) {
           isMatch = true;
           score = 70;
@@ -1995,10 +2047,10 @@
             id: `proj-${p.name}`,
             category: 'projects',
             title: p.name,
-            subtitle: p.desc,
+            subtitle: p.desc || '',
             url: p.url,
-            tags: p.tags.slice(0, 3),
-            icon: FolderGit2,
+            tags: (p.tags ?? []).slice(0, 3),
+            icon: FolderOpen,
             badge: 'Project'
           },
           score
@@ -2006,14 +2058,34 @@
       }
     }
 
-    return matchedItems
-      .sort((a, b) => {
-        if (b.score !== a.score) return b.score - a.score;
-        const lenDiff = a.item.title.length - b.item.title.length;
-        if (lenDiff !== 0) return lenDiff;
-        return a.item.title.localeCompare(b.item.title);
-      })
-      .map(m => m.item);
+    const sorted =
+      cleanQ === '/' ?
+        matchedItems.sort((a, b) => a.item.title.localeCompare(b.item.title))
+      : matchedItems.sort((a, b) => {
+          if (b.score !== a.score) return b.score - a.score;
+          if (isCommandQuery) {
+            return a.item.title.localeCompare(b.item.title);
+          }
+          const lenDiff = a.item.title.length - b.item.title.length;
+          if (lenDiff !== 0) return lenDiff;
+          return a.item.title.localeCompare(b.item.title);
+        });
+
+    const seenIds = new SvelteSet<string>();
+    const seenTitles = new SvelteSet<string>();
+    const uniqueMatches: SpotlightItem[] = [];
+
+    for (const m of sorted) {
+      const lowerTitle = m.item.title.toLowerCase();
+      if (seenIds.has(m.item.id) || seenTitles.has(lowerTitle)) {
+        continue;
+      }
+      seenIds.add(m.item.id);
+      seenTitles.add(lowerTitle);
+      uniqueMatches.push(m.item);
+    }
+
+    return uniqueMatches;
   }
 
   async function runSearch(inputString: string) {
@@ -2034,6 +2106,8 @@
 
     const localMatches = searchLocalItems(trimmed);
 
+    let candidates: SpotlightItem[];
+
     if (trimmed.length >= 2 && !trimmed.startsWith('/')) {
       try {
         const res = await fetch(
@@ -2049,21 +2123,14 @@
             title: post.title,
             subtitle: post.subtitle ?? 'Blog post',
             url: post.url,
-            icon: FileText,
+            icon: Newspaper,
             badge: 'Post'
           })
         );
-
-        const existingUrls = new Set(
-          localMatches.map(m => m.url).filter(Boolean)
-        );
-        const uniquePostResults = postResults.filter(
-          p => !existingUrls.has(p.url)
-        );
-        results = [...localMatches, ...uniquePostResults];
+        candidates = [...localMatches, ...postResults];
       } catch (err) {
         if ((err as Error)?.name === 'AbortError') return;
-        results = localMatches;
+        candidates = localMatches;
       }
     } else if (trimmed.startsWith('/open blog')) {
       const blogSubQuery = trimmed.replace('/open blog', '').trim();
@@ -2081,31 +2148,65 @@
             title: `/open blog ${post.url.replace('/blog/', '')}`,
             subtitle: post.title,
             url: post.url,
-            icon: FileText,
+            icon: Newspaper,
             badge: 'Post'
           })
         );
-        results = [...localMatches, ...postResults];
+        candidates = [...localMatches, ...postResults];
       } catch (err) {
         if ((err as Error)?.name === 'AbortError') return;
-        results = localMatches;
+        candidates = localMatches;
       }
     } else {
-      results = localMatches;
+      candidates = localMatches;
     }
 
     if (controller.signal.aborted) return;
-    activeIndex = results.length > 0 ? 0 : -1;
+
+    const seenIds = new SvelteSet<string>();
+    const seenUrls = new SvelteSet<string>();
+    const seenTitles = new SvelteSet<string>();
+    const uniqueCombined: SpotlightItem[] = [];
+
+    for (const item of candidates) {
+      const lowerTitle = item.title.toLowerCase();
+      if (
+        seenIds.has(item.id)
+        || seenTitles.has(lowerTitle)
+        || (item.url && seenUrls.has(item.url))
+      ) {
+        continue;
+      }
+      seenIds.add(item.id);
+      seenTitles.add(lowerTitle);
+      if (item.url) seenUrls.add(item.url);
+      uniqueCombined.push(item);
+    }
+    results = uniqueCombined;
+
+    if (controller.signal.aborted) return;
+    activeIndex = -1;
     isLoading = false;
   }
 
   function handleInput() {
     if (showHelp) showHelp = false;
     clearTimeout(debounceTimer);
+    const trimmed = rawQuery.trim();
+    if (trimmed.startsWith('/') && !trimmed.startsWith('/open blog')) {
+      runSearch(rawQuery);
+      return;
+    }
     debounceTimer = setTimeout(() => {
       runSearch(rawQuery);
     }, 150);
   }
+
+  const highlightCache = new SvelteMap<
+    string,
+    {text: string; match: boolean}[]
+  >();
+  const MAX_HIGHLIGHT_CACHE = 500;
 
   function getHighlightChunks(
     text: string,
@@ -2114,6 +2215,10 @@
     if (!text) return [];
     const trimmed = query.trim();
     if (!trimmed) return [{text, match: false}];
+
+    const cacheKey = `${isCaseSensitive ? '1' : '0'}:${isWholeWord ? '1' : '0'}:${isRegex ? '1' : '0'}:${trimmed}:${text}`;
+    const cached = highlightCache.get(cacheKey);
+    if (cached) return cached;
 
     if (isRegex) {
       try {
@@ -2125,17 +2230,19 @@
           const customFlags = trimmed.substring(lastSlash + 1);
           flags = customFlags.includes('g') ? customFlags : customFlags + 'g';
         }
+        if (!pattern) return [{text, match: false}];
         const regex = new RegExp(`(${pattern})`, flags);
         const parts = text.split(regex);
-        return parts
+        const testRegex = new RegExp(
+          `^(${pattern})$`,
+          isCaseSensitive ? '' : 'i'
+        );
+        const result = parts
           .filter(part => part.length > 0)
-          .map(part => {
-            const isMatch = new RegExp(
-              `^(${pattern})$`,
-              isCaseSensitive ? '' : 'i'
-            ).test(part);
-            return {text: part, match: isMatch};
-          });
+          .map(part => ({text: part, match: testRegex.test(part)}));
+        if (highlightCache.size >= MAX_HIGHLIGHT_CACHE) highlightCache.clear();
+        highlightCache.set(cacheKey, result);
+        return result;
       } catch {
         return [{text, match: false}];
       }
@@ -2172,18 +2279,25 @@
       const flags = isCaseSensitive ? 'g' : 'gi';
       const regex = new RegExp(`(${escapedTerms.join('|')})`, flags);
       const parts = text.split(regex);
-      return parts
+      const wordRegexes =
+        isWholeWord ?
+          escapedTerms.map(
+            et => new RegExp(`^${et}$`, isCaseSensitive ? '' : 'i')
+          )
+        : null;
+      const result = parts
         .filter(part => part.length > 0)
         .map(part => {
           const comp = isCaseSensitive ? part : part.toLowerCase();
           const isMatch =
-            isWholeWord ?
-              escapedTerms.some(et =>
-                new RegExp(`^${et}$`, isCaseSensitive ? '' : 'i').test(part)
-              )
+            wordRegexes ?
+              wordRegexes.some(re => re.test(part))
             : searchTerms.includes(comp);
           return {text: part, match: isMatch};
         });
+      if (highlightCache.size >= MAX_HIGHLIGHT_CACHE) highlightCache.clear();
+      highlightCache.set(cacheKey, result);
+      return result;
     } catch {
       return [{text, match: false}];
     }
@@ -2195,19 +2309,24 @@
     if (typeof document !== 'undefined') {
       previouslyFocusedElement = document.activeElement as HTMLElement;
     }
+    if (!isOpen) shortcutStore.pushScope('spotlight');
     isOpen = true;
     showHelp = false;
     rawQuery = initialQuery;
-    if (initialQuery) {
-      runSearch(initialQuery);
-    } else {
-      results = [];
-      activeIndex = -1;
-    }
-    tick().then(() => inputEl?.focus());
+    activeIndex = -1;
+    runSearch(initialQuery);
+    tick().then(() => {
+      if (listEl) listEl.scrollTop = 0;
+      inputEl?.focus();
+    });
   }
 
   function close() {
+    clearTimeout(debounceTimer);
+    searchAbortController?.abort();
+    searchAbortController = null;
+    highlightCache.clear();
+    if (isOpen) shortcutStore.popScope('spotlight');
     isOpen = false;
     showHelp = false;
     rawQuery = '';
@@ -2215,11 +2334,93 @@
     activeIndex = -1;
     if (previouslyFocusedElement) {
       tick().then(() => {
-        previouslyFocusedElement?.focus();
+        previouslyFocusedElement?.focus({preventScroll: true});
         previouslyFocusedElement = null;
       });
     }
   }
+
+  /**
+   * Defaults for the argument-taking commands that have an unambiguous,
+   * non-destructive one. /open, /save, /a11y, /lang and /history have none, so
+   * they fall through to the pre-filled palette instead.
+   */
+  const COMMAND_DEFAULTS: Record<string, () => void> = {
+    '/theme': () => {
+      const next = themeStore.cycle();
+      toastStore.show(`Switched to ${next} theme`, 'success');
+    },
+    '/font': () => {
+      const order: ContentFont[] = ['sans', 'serif', 'mono'];
+      const next =
+        order[(order.indexOf(contentFontStore.preference) + 1) % order.length];
+      applyContentFont(next, next);
+    },
+    '/code': () => {
+      codeBlockPrefsStore.cycleColorScheme();
+      refreshCodeBlockPrefs();
+      toastStore.show(
+        `Code theme set to ${codeBlockPrefsStore.current.colorScheme}`,
+        'success'
+      );
+    },
+    '/copy': async () => {
+      if (typeof window === 'undefined') return;
+      await navigator.clipboard.writeText(window.location.href);
+      toastStore.show('Page URL copied to clipboard', 'success');
+    }
+  };
+
+  /**
+   * Open palette: fill the input and hand off to the argument chord, never
+   * execute. Closed palette: run it outright.
+   */
+  function runCommandShortcut(item: SpotlightItem) {
+    const takesArgs = Boolean(item.requiresArgs || item.autocompleteQuery);
+
+    if (isOpen) {
+      rawQuery = item.autocompleteQuery || `${item.title} `;
+      runSearch(rawQuery);
+      activeIndex = -1;
+      inputEl?.focus();
+      if (takesArgs) {
+        tick().then(() => shortcutStore.armGroup('args'));
+      }
+      return;
+    }
+
+    if (!takesArgs) {
+      select(item);
+      return;
+    }
+
+    const runDefault = COMMAND_DEFAULTS[item.title];
+    if (runDefault) {
+      void runDefault();
+      return;
+    }
+
+    open(`${item.title} `);
+    tick().then(() => shortcutStore.armGroup('args'));
+  }
+
+  /**
+   * Commands have no element to click, so they hand the registry a callback.
+   * That keeps every leader key resolved in one dispatcher instead of racing
+   * this component's own window listener.
+   */
+  $effect(() => {
+    const disposers = defaultCommands
+      .filter(command => COMMAND_SHORTCUTS[command.title])
+      .map(command =>
+        shortcutStore.registerCommand(
+          COMMAND_SHORTCUTS[command.title],
+          command.title,
+          () => runCommandShortcut(command)
+        )
+      );
+    return () => disposers.forEach(dispose => dispose());
+  });
 
   function select(item: SpotlightItem) {
     if (
@@ -2228,7 +2429,7 @@
     ) {
       rawQuery = item.autocompleteQuery || `${item.title} `;
       runSearch(rawQuery);
-      activeIndex = 0;
+      activeIndex = -1;
       inputEl?.focus();
       return;
     }
@@ -2269,15 +2470,103 @@
     }
   }
 
+  function resolveHistoryItem(entry: SearchHistoryEntry): SpotlightItem | null {
+    if (
+      entry.id === 'dyn-code-minimal'
+      || entry.title.toLowerCase() === '/code minimal'
+    ) {
+      const dynamic = getDynamicCommandItems('/code clean');
+      const cleanItem = dynamic.find(d => d.id === 'dyn-code-clean');
+      if (cleanItem) return cleanItem;
+    }
+
+    const fromDefault = defaultCommands.find(
+      c =>
+        c.id === entry.id || c.title.toLowerCase() === entry.title.toLowerCase()
+    );
+    if (fromDefault) return fromDefault;
+
+    if (entry.title.startsWith('/')) {
+      const dynamic = getDynamicCommandItems(entry.title);
+      const matchedDyn = dynamic.find(
+        d =>
+          d.id === entry.id
+          || d.title.toLowerCase() === entry.title.toLowerCase()
+      );
+      if (matchedDyn) return matchedDyn;
+    }
+
+    const matchedProject = projects.find(
+      p =>
+        `proj-${p.name}` === entry.id
+        || p.name.toLowerCase() === entry.title.toLowerCase()
+    );
+    if (matchedProject) {
+      return {
+        id: `proj-${matchedProject.name}`,
+        category: 'projects',
+        title: matchedProject.name,
+        subtitle: matchedProject.desc,
+        url: matchedProject.url,
+        icon: FolderOpen,
+        badge: 'Project'
+      };
+    }
+
+    if (entry.category === 'posts' && entry.id.startsWith('post-')) {
+      const postUrl = entry.id.replace('post-', '');
+      return {
+        id: entry.id,
+        category: 'posts',
+        title: entry.title,
+        subtitle: entry.subtitle,
+        url: postUrl,
+        icon: Newspaper,
+        badge: 'Post'
+      };
+    }
+
+    const fromResults = results.find(
+      r =>
+        r.id === entry.id || r.title.toLowerCase() === entry.title.toLowerCase()
+    );
+    if (fromResults) return fromResults;
+
+    return null;
+  }
+
+  function getHistoryDisplay(entry: SearchHistoryEntry) {
+    const icon =
+      (entry.iconName && ALL_ICON_COMPONENTS[entry.iconName])
+      || CATEGORY_ICONS[entry.category]
+      || Command;
+
+    return {
+      icon,
+      title: entry.title,
+      subtitle: entry.subtitle,
+      badge: entry.badge
+    };
+  }
+
   function selectHistoryEntry(entry: SearchHistoryEntry) {
-    rawQuery = entry.title;
-    runSearch(rawQuery);
-    activeIndex = 0;
-    inputEl?.focus();
+    const resolved = resolveHistoryItem(entry);
+    if (resolved) {
+      select(resolved);
+    } else {
+      rawQuery = entry.title;
+      runSearch(rawQuery);
+      activeIndex = -1;
+      inputEl?.focus();
+    }
   }
 
   function handleKeydown(e: KeyboardEvent) {
     if (!isOpen) return;
+    // The shortcut registry runs first in the capture phase. When it consumed
+    // the key — cancelling a chord, or picking one of a command's options —
+    // this handler must not also act on it.
+    if (e.defaultPrevented) return;
 
     if (showHelp) {
       if (e.key === 'Escape') {
@@ -2290,10 +2579,7 @@
       return;
     }
 
-    const inHistoryMode =
-      rawQuery.length === 0 && searchHistoryStore.current.length > 0;
-    const navLength =
-      inHistoryMode ? searchHistoryStore.current.length : flatItems.length;
+    const navLength = filteredHistory.length + flatItems.length;
 
     switch (e.key) {
       case 'ArrowDown': {
@@ -2315,20 +2601,34 @@
         break;
       }
       case 'Tab': {
-        if (inHistoryMode) break;
         e.preventDefault();
         e.stopPropagation();
-        const activeItem =
-          activeIndex >= 0 ? flatItems[activeIndex] : flatItems[0];
-        if (activeItem) {
-          if (activeItem.requiresArgs) {
-            rawQuery = activeItem.autocompleteQuery || `${activeItem.title} `;
-            runSearch(rawQuery);
-            activeIndex = 0;
-          } else if (activeItem.title.startsWith('/')) {
-            rawQuery = activeItem.title;
-            runSearch(rawQuery);
-            activeIndex = 0;
+        if (
+          filteredHistory.length > 0
+          && activeIndex >= 0
+          && activeIndex < filteredHistory.length
+        ) {
+          const entry = filteredHistory[activeIndex];
+          rawQuery =
+            entry.title.startsWith('/') ? entry.title : `${entry.title}`;
+          runSearch(rawQuery);
+          activeIndex = -1;
+        } else {
+          const itemIdx =
+            activeIndex >= filteredHistory.length ?
+              activeIndex - filteredHistory.length
+            : 0;
+          const activeItem = flatItems[itemIdx] || flatItems[0];
+          if (activeItem) {
+            if (activeItem.requiresArgs) {
+              rawQuery = activeItem.autocompleteQuery || `${activeItem.title} `;
+              runSearch(rawQuery);
+              activeIndex = -1;
+            } else if (activeItem.title.startsWith('/')) {
+              rawQuery = activeItem.title;
+              runSearch(rawQuery);
+              activeIndex = -1;
+            }
           }
         }
         break;
@@ -2336,12 +2636,23 @@
       case 'Enter': {
         e.preventDefault();
         e.stopPropagation();
-        if (inHistoryMode) {
-          const entry =
-            searchHistoryStore.current[activeIndex >= 0 ? activeIndex : 0];
+        if (
+          filteredHistory.length > 0
+          && activeIndex >= 0
+          && activeIndex < filteredHistory.length
+        ) {
+          const entry = filteredHistory[activeIndex];
           if (entry) selectHistoryEntry(entry);
-        } else if (activeIndex >= 0 && flatItems[activeIndex]) {
-          select(flatItems[activeIndex]);
+        } else if (
+          activeIndex >= filteredHistory.length
+          && activeIndex < navLength
+        ) {
+          const itemIdx = activeIndex - filteredHistory.length;
+          if (flatItems[itemIdx]) {
+            select(flatItems[itemIdx]);
+          }
+        } else if (filteredHistory.length > 0) {
+          selectHistoryEntry(filteredHistory[0]);
         } else if (flatItems.length > 0) {
           select(flatItems[0]);
         }
@@ -2377,11 +2688,20 @@
 
   function scrollActiveIntoView() {
     if (!listEl || activeIndex < 0) return;
+    if (activeIndex === 0) {
+      listEl.scrollTop = 0;
+      return;
+    }
     const items = listEl.querySelectorAll('[data-result-item]');
     items[activeIndex]?.scrollIntoView({block: 'nearest', inline: 'nearest'});
   }
 
   function handleGlobalKeydown(e: KeyboardEvent) {
+    // The shortcut registry shares this window listener. When it has already
+    // handled a key it calls preventDefault, so a visible button wins and the
+    // command below stays the fallback for pages with no such button.
+    if (e.defaultPrevented) return;
+
     if (showHelp && e.key === 'Escape') {
       e.preventDefault();
       showHelp = false;
@@ -2393,11 +2713,9 @@
       close();
       return;
     }
-    const target = e.target as HTMLElement | null;
-    const inInput =
-      ['INPUT', 'TEXTAREA', 'SELECT'].includes(target?.tagName || '')
-      || Boolean(target?.isContentEditable);
-    if (e.ctrlKey && e.key === 'k') {
+
+    const isK = e.key?.toLowerCase() === 'k' || e.code === 'KeyK';
+    if ((e.ctrlKey || e.metaKey) && !e.altKey && isK) {
       e.preventDefault();
       if (isOpen) {
         close();
@@ -2406,12 +2724,29 @@
       }
       return;
     }
-    if (!inInput && e.key === '/') {
+
+    const target = e.target as HTMLElement | null;
+    const inInput =
+      Boolean(
+        target?.closest?.('input, textarea, select, [contenteditable="true"]')
+      )
+      || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target?.tagName || '')
+      || Boolean(target?.isContentEditable);
+
+    const isSlash =
+      e.key === '/'
+      || (!e.shiftKey
+        && !e.ctrlKey
+        && !e.metaKey
+        && !e.altKey
+        && (e.code === 'Slash' || e.code === 'NumpadDivide'));
+
+    if (!inInput && isSlash) {
       e.preventDefault();
-      if (isOpen) {
-        close();
-      } else {
+      if (!isOpen) {
         open('/');
+      } else {
+        inputEl?.focus();
       }
     }
   }
@@ -2421,24 +2756,25 @@
       const unlock = lockScroll();
       const handleViewportChange = () => {
         if (typeof window !== 'undefined' && window.visualViewport) {
-          visualViewportHeight = window.visualViewport.height;
-          visualViewportTop = window.visualViewport.offsetTop;
+          const newHeight = window.visualViewport.height;
+          const newTop = window.visualViewport.offsetTop;
+          if (visualViewportHeight !== newHeight) {
+            visualViewportHeight = newHeight;
+          }
+          if (visualViewportTop !== newTop) {
+            visualViewportTop = newTop;
+          }
         }
       };
-      handleViewportChange();
+      untrack(handleViewportChange);
       if (typeof window !== 'undefined' && window.visualViewport) {
         window.visualViewport.addEventListener('resize', handleViewportChange);
-        window.visualViewport.addEventListener('scroll', handleViewportChange);
       }
       return () => {
         unlock();
         if (typeof window !== 'undefined' && window.visualViewport) {
           window.visualViewport.removeEventListener(
             'resize',
-            handleViewportChange
-          );
-          window.visualViewport.removeEventListener(
-            'scroll',
             handleViewportChange
           );
         }
@@ -2475,7 +2811,85 @@
     );
   }
 
+  let filteredHistory = $derived.by(() => {
+    const allHistory = searchHistoryStore.current;
+    if (allHistory.length === 0) return [];
+    const trimmed = rawQuery.trim();
+    if (!trimmed) return allHistory;
+
+    if (trimmed === '/') {
+      return allHistory;
+    }
+
+    return allHistory.filter(entry => {
+      const matchTitle = fuzzyMatch(entry.title, trimmed);
+      const matchSub =
+        entry.subtitle ?
+          fuzzyMatch(entry.subtitle, trimmed)
+        : {matched: false, score: 0};
+      return matchTitle.matched || matchSub.matched;
+    });
+  });
+
+  let deduplicatedResults = $derived.by(() => {
+    const seenIds = new SvelteSet<string>();
+    const seenTitles = new SvelteSet<string>();
+    const seenUrls = new SvelteSet<string>();
+
+    if (filteredHistory.length > 0) {
+      for (const h of filteredHistory) {
+        seenIds.add(h.id);
+        seenTitles.add(h.title.toLowerCase());
+      }
+    }
+
+    const unique: SpotlightItem[] = [];
+    for (const item of results) {
+      const lowerTitle = item.title.toLowerCase();
+      if (seenIds.has(item.id) || seenTitles.has(lowerTitle)) {
+        continue;
+      }
+      if (item.url && seenUrls.has(item.url)) {
+        continue;
+      }
+      seenIds.add(item.id);
+      seenTitles.add(lowerTitle);
+      if (item.url) {
+        seenUrls.add(item.url);
+      }
+      unique.push(item);
+      if (unique.length >= MAX_RENDERED_RESULTS) break;
+    }
+    return unique;
+  });
+
+  let lastPointerX = -1;
+  let lastPointerY = -1;
+
+  function handleItemPointerMove(e: PointerEvent, index: number) {
+    if (e.clientX === lastPointerX && e.clientY === lastPointerY) return;
+    lastPointerX = e.clientX;
+    lastPointerY = e.clientY;
+    activeIndex = index;
+  }
+
   let categorizedResults = $derived.by(() => {
+    const trimmed = rawQuery.trim();
+    if (trimmed.length === 0) return [];
+
+    const isCommandQuery = trimmed.startsWith('/');
+
+    if (isCommandQuery) {
+      if (deduplicatedResults.length === 0) return [];
+      return [
+        {
+          category: 'commands' as ItemCategory,
+          label: 'Commands',
+          items: deduplicatedResults
+        }
+      ];
+    }
+
     const groups: {
       category: ItemCategory;
       label: string;
@@ -2488,12 +2902,12 @@
       actions: {label: 'System Actions', items: []},
       pages: {label: 'Pages & Sections', items: []},
       posts: {label: 'Blog Posts', items: []},
-      projects: {label: 'GitHub Projects', items: []},
+      projects: {label: 'Repositories', items: []},
       commands: {label: 'Commands', items: []},
       skills: {label: 'Skills & Tools', items: []}
     };
 
-    for (const item of results) {
+    for (const item of deduplicatedResults) {
       catMap[item.category]?.items.push(item);
     }
 
@@ -2517,6 +2931,59 @@
   let indexById = $derived.by(() => {
     return new Map(flatItems.map((item, i) => [item.id, i]));
   });
+
+  const flatHelpCommands = $derived(
+    helpCategories.flatMap(cat => cat.commands)
+  );
+
+  function selectHelpCommand(cmd: HelpCommandSpec) {
+    showHelp = false;
+    helpActiveIndex = -1;
+    if (cmd.command === '/refresh') {
+      if (typeof window !== 'undefined') window.location.reload();
+    } else {
+      rawQuery = cmd.actionQuery || cmd.command;
+      runSearch(rawQuery);
+      tick().then(() => inputEl?.focus());
+    }
+  }
+
+  function handleHelpKeydown(e: KeyboardEvent) {
+    const total = flatHelpCommands.length;
+    if (!total) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      helpActiveIndex = helpActiveIndex < total - 1 ? helpActiveIndex + 1 : 0;
+      tick().then(() => {
+        helpDialogEl
+          ?.querySelector(`[data-help-idx="${helpActiveIndex}"]`)
+          ?.scrollIntoView({block: 'nearest'});
+      });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      helpActiveIndex = helpActiveIndex > 0 ? helpActiveIndex - 1 : total - 1;
+      tick().then(() => {
+        helpDialogEl
+          ?.querySelector(`[data-help-idx="${helpActiveIndex}"]`)
+          ?.scrollIntoView({block: 'nearest'});
+      });
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (helpActiveIndex >= 0 && helpActiveIndex < total) {
+        selectHelpCommand(flatHelpCommands[helpActiveIndex]);
+      }
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      showHelp = false;
+      helpActiveIndex = -1;
+      tick().then(() => inputEl?.focus());
+    }
+  }
+
+  function handleHelpItemPointerMove(idx: number) {
+    if (helpActiveIndex !== idx) helpActiveIndex = idx;
+  }
 </script>
 
 <svelte:window onkeydown={handleGlobalKeydown} />
@@ -2586,11 +3053,13 @@
 {#if isOpen}
   <div
     use:portal
-    style:top={visualViewportTop !== null ? `${visualViewportTop}px` : '0px'}
+    style:top={visualViewportTop !== null ?
+      `${visualViewportTop}px`
+    : undefined}
     style:height={visualViewportHeight !== null ?
       `${visualViewportHeight}px`
-    : '100%'}
-    class="fixed inset-x-0 z-99999 flex items-center justify-center overscroll-contain p-4 transition-[top,height] duration-300 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)]">
+    : undefined}
+    class="fixed inset-0 z-[99999] flex items-center justify-center overscroll-contain p-4 transition-[top,height] duration-300 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)]">
     <button
       type="button"
       class="fixed inset-0 cursor-default touch-none bg-overlay/80 backdrop-blur-xs transition-opacity duration-200"
@@ -2621,7 +3090,7 @@
           spellcheck="false"
           autocomplete="off"
           placeholder="Search or type / for commands..."
-          class="search-input min-w-0 flex-1 border-none! border-transparent! bg-transparent py-0! pt-0! pb-0! font-sans-title text-xs font-medium text-text-primary shadow-none! ring-0! ring-transparent! ring-offset-0! outline-none! [-webkit-box-shadow:none]! [-webkit-tap-highlight-color:transparent] placeholder:font-sans-title placeholder:text-xs placeholder:font-normal placeholder:text-text-muted focus:border-none! focus:border-transparent! focus:shadow-none! focus:ring-0! focus:ring-transparent! focus:outline-none! focus-visible:border-none! focus-visible:border-transparent! focus-visible:shadow-none! focus-visible:ring-0! focus-visible:ring-transparent! focus-visible:outline-none! active:border-none! active:border-transparent! active:shadow-none! active:ring-0! active:ring-transparent! active:outline-none! sm:text-sm sm:placeholder:text-sm"
+          class="search-input min-w-0 flex-1 border-none! border-transparent! bg-transparent py-0! pt-0! pb-0! font-mono text-xs font-medium text-text-primary shadow-none! ring-0! ring-transparent! ring-offset-0! outline-none! [-webkit-box-shadow:none]! [-webkit-tap-highlight-color:transparent] placeholder:font-mono placeholder:text-xs placeholder:font-normal placeholder:text-text-muted focus:border-none! focus:border-transparent! focus:shadow-none! focus:ring-0! focus:ring-transparent! focus:outline-none! focus-visible:border-none! focus-visible:border-transparent! focus-visible:shadow-none! focus-visible:ring-0! focus-visible:ring-transparent! focus-visible:outline-none! active:border-none! active:border-transparent! active:shadow-none! active:ring-0! active:ring-transparent! active:outline-none!"
           aria-label="Search query"
           aria-autocomplete="list"
           aria-controls="search-results"
@@ -2640,6 +3109,7 @@
             aria-pressed={isCaseSensitive}
             onclick={() => {
               isCaseSensitive = !isCaseSensitive;
+              highlightCache.clear();
               runSearch(rawQuery);
             }}>
             <CaseSensitive
@@ -2660,6 +3130,7 @@
             aria-pressed={isWholeWord}
             onclick={() => {
               isWholeWord = !isWholeWord;
+              highlightCache.clear();
               runSearch(rawQuery);
             }}>
             <WholeWord
@@ -2680,6 +3151,7 @@
             aria-pressed={isRegex}
             onclick={() => {
               isRegex = !isRegex;
+              highlightCache.clear();
               runSearch(rawQuery);
             }}>
             <Regex
@@ -2695,96 +3167,158 @@
 
       <div
         bind:this={listEl}
-        class="min-h-0 flex-1 snap-y snap-mandatory scroll-py-1 overflow-y-auto overscroll-contain">
-        {#if rawQuery.length === 0}
-          {#if searchHistoryStore.current.length > 0}
-            <div class="flex flex-col gap-0.5 px-3 pt-1.5 pb-2.5">
-              <div class="flex items-center justify-between gap-2 px-1 pb-0.5">
-                <div
-                  class="flex items-center gap-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase select-none">
-                  <RotateCcwClock class="size-3.5 -translate-y-[1px]" />
-                  <span>Recently used</span>
-                </div>
-                <Button
-                  type="ghost"
-                  size="xs"
-                  aria-label="Clear recently used"
-                  title="Clear recently used"
-                  class="flex size-6 cursor-pointer items-center justify-center rounded-md p-0 text-text-muted transition-colors hover:bg-danger-subtle hover:text-danger"
-                  onclick={() => searchHistoryStore.clear()}>
-                  <Trash class="size-3.5" />
-                </Button>
+        class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        {#if filteredHistory.length > 0}
+          <div
+            class={cn(
+              'px-2.5 pt-2.5',
+              deduplicatedResults.length === 0 && 'pb-2.5'
+            )}>
+            <div
+              class="flex items-center justify-between gap-2 px-1.5 pb-1.5 select-none">
+              <div
+                class="flex items-center gap-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase">
+                <RotateCcwClock class="size-3.5 -translate-y-[1px]" />
+                <span>Recently used</span>
               </div>
-              {#each searchHistoryStore.current as entry, idx (entry.id)}
-                {@const isSlashCmd =
-                  entry.title.startsWith('/')
-                  || entry.category === 'commands'
-                  || entry.category === 'actions'}
+              <Button
+                type="ghost"
+                size="xs"
+                aria-label="Clear recently used"
+                title="Clear recently used"
+                class="flex size-6 cursor-pointer items-center justify-center rounded-md p-0 text-text-muted transition-colors hover:bg-danger-subtle hover:text-danger"
+                onclick={() => searchHistoryStore.clear()}>
+                <Trash class="size-3.5" />
+              </Button>
+            </div>
+            <div class="flex flex-col gap-0.5">
+              {#each filteredHistory as entry, idx (entry.id)}
+                {@const historyDisplay = getHistoryDisplay(entry)}
+                {@const EntryIcon = historyDisplay.icon}
+                {@const historyShortcut =
+                  COMMAND_SHORTCUTS[historyDisplay.title.split(' ')[0]]}
+                {@const historyShortcutKey =
+                  historyShortcut ? displayKey(historyShortcut) : ''}
                 <div
+                  id="result-{idx}"
                   role="option"
                   tabindex="-1"
                   aria-selected={activeIndex === idx}
                   data-result-item
                   onclick={() => selectHistoryEntry(entry)}
                   onkeydown={e => handleHistoryKeydown(e, entry)}
-                  onmouseenter={() => {
-                    activeIndex = idx;
-                  }}
+                  onpointermove={e => handleItemPointerMove(e, idx)}
                   class={cn(
-                    'group flex w-full cursor-pointer snap-start items-center justify-between gap-3 rounded-md px-1 py-1 transition-colors',
+                    'group flex w-full cursor-pointer items-center justify-between gap-2.5 rounded-md px-2 py-1.5 transition-colors',
                     activeIndex === idx ?
-                      'bg-accent/10 dark:bg-accent/20'
-                    : 'hover:bg-surface-hover'
+                      'bg-accent/10 text-text-primary dark:bg-accent/20'
+                    : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
                   )}>
-                  <div class="min-w-0 flex-1">
-                    {#if entry.title.startsWith('/')}
-                      <div class="truncate font-mono text-xs font-medium">
-                        <span class="font-normal text-text-muted/60">/</span
-                        ><span class="text-text-primary"
-                          >{entry.title.slice(1)}</span>
+                  <div class="flex min-w-0 flex-1 items-center gap-2.5">
+                    <div
+                      class={cn(
+                        'flex size-6 shrink-0 items-center justify-center rounded-md border transition-colors select-none',
+                        activeIndex === idx ?
+                          'border-accent/30 bg-accent/25 text-accent'
+                        : 'border-border-subtle/60 bg-surface-elevated text-text-secondary group-hover:border-accent/30 group-hover:bg-accent/15 group-hover:text-accent'
+                      )}>
+                      <EntryIcon class="size-3.5" />
+                    </div>
+
+                    {#if historyDisplay.title.startsWith('/')}
+                      {@const spaceIdx = historyDisplay.title.indexOf(' ')}
+                      {@const verb =
+                        spaceIdx === -1 ?
+                          historyDisplay.title.slice(1)
+                        : historyDisplay.title.slice(1, spaceIdx)}
+                      {@const args =
+                        spaceIdx === -1 ? '' : (
+                          historyDisplay.title.slice(spaceIdx)
+                        )}
+                      <div class="flex min-w-0 flex-1 items-center gap-2">
+                        <span class="shrink-0 font-mono text-xs">
+                          <span class="font-normal text-text-muted/60">/</span
+                          >{#each getHighlightChunks(verb, rawQuery) as chunk, cIdx (cIdx)}<span
+                              class={chunk.match ?
+                                'font-semibold text-accent'
+                              : 'font-medium text-text-primary'}
+                              >{chunk.text}</span
+                            >{/each}{#if args}{#each getHighlightChunks(args, rawQuery) as chunk, cIdx (cIdx)}<span
+                                class={chunk.match ?
+                                  'font-semibold text-accent'
+                                : 'font-normal text-text-muted/60'}
+                                >{chunk.text}</span
+                              >{/each}{/if}
+                        </span>
+                        {#if historyDisplay.subtitle}
+                          <span class="text-2xs text-text-muted/40 select-none"
+                            >—</span>
+                          <span
+                            class="min-w-0 flex-1 truncate font-sans text-2xs text-text-muted">
+                            {#each getHighlightChunks(historyDisplay.subtitle, rawQuery) as chunk, cIdx (cIdx)}
+                              {#if chunk.match}
+                                <span class="font-semibold text-accent"
+                                  >{chunk.text}</span>
+                              {:else}
+                                <span>{chunk.text}</span>
+                              {/if}
+                            {/each}
+                          </span>
+                        {/if}
                       </div>
                     {:else}
-                      <div
-                        class="truncate font-sans-title text-xs font-medium text-text-primary">
-                        {entry.title}
-                      </div>
-                    {/if}
-                    {#if entry.subtitle}
-                      <div
-                        class="mt-0.5 line-clamp-1 font-sans text-2xs leading-snug wrap-break-word text-text-secondary">
-                        {entry.subtitle}
+                      <div class="flex min-w-0 flex-1 items-center gap-2">
+                        <span
+                          class="max-w-[45%] shrink-0 truncate text-xs font-medium text-text-primary sm:max-w-[55%]">
+                          {#each getHighlightChunks(historyDisplay.title, rawQuery) as chunk, cIdx (cIdx)}
+                            <span
+                              class={chunk.match ?
+                                'font-semibold text-accent'
+                              : ''}>{chunk.text}</span>
+                          {/each}
+                        </span>
+                        {#if historyDisplay.subtitle}
+                          <span class="text-2xs text-text-muted/40 select-none"
+                            >—</span>
+                          <span
+                            class="min-w-0 flex-1 truncate font-sans text-2xs text-text-muted">
+                            {#each getHighlightChunks(historyDisplay.subtitle, rawQuery) as chunk, cIdx (cIdx)}
+                              {#if chunk.match}
+                                <span class="font-semibold text-accent"
+                                  >{chunk.text}</span>
+                              {:else}
+                                <span>{chunk.text}</span>
+                              {/if}
+                            {/each}
+                          </span>
+                        {/if}
                       </div>
                     {/if}
                   </div>
-                  <div class="flex shrink-0 items-center gap-1">
-                    {#if isSlashCmd}
-                      <span
-                        class={cn(
-                          'inline-flex h-[18px] shrink-0 items-center justify-center rounded-md border px-1 font-mono text-3xs font-medium select-none',
-                          activeIndex === idx ?
-                            'border-accent/30 bg-accent/25 text-accent'
-                          : 'border-border-subtle/60 bg-surface-elevated text-text-secondary'
-                        )}>
-                        <Command class="size-2.5" />
-                      </span>
+
+                  <div class="flex shrink-0 items-center gap-1.5">
+                    {#if historyShortcut}
+                      <ShortcutBadge
+                        combo={historyShortcutKey}
+                        active={activeIndex === idx} />
                     {/if}
-                    {#if entry.badge}
+                    {#if historyDisplay.badge}
                       <span
                         class={cn(
-                          'inline-flex h-[18px] shrink-0 items-center rounded-md border px-1.5 font-mono text-3xs font-medium select-none',
+                          'inline-flex h-[18px] shrink-0 items-center rounded-md border px-1.5 font-mono text-3xs font-medium transition-colors select-none',
                           activeIndex === idx ?
                             'border-accent/30 bg-accent/25 text-accent'
-                          : 'border-border-subtle/60 bg-surface-elevated text-text-secondary'
+                          : 'border-border-subtle/60 bg-surface-elevated text-text-secondary group-hover:border-accent/30 group-hover:bg-accent/15 group-hover:text-accent'
                         )}>
-                        {entry.badge}
+                        {historyDisplay.badge}
                       </span>
                     {/if}
                     <Button
                       type="ghost"
                       size="xs"
-                      aria-label="Remove {entry.title} from recently used"
+                      aria-label="Remove {historyDisplay.title} from recently used"
                       title="Remove from history"
-                      class="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-md p-0 text-text-muted transition-colors hover:bg-danger-subtle hover:text-danger"
+                      class="flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-md p-0 text-text-muted transition-colors hover:bg-danger-subtle hover:text-danger sm:size-6"
                       onclick={e => {
                         e.stopPropagation();
                         searchHistoryStore.remove(entry.id);
@@ -2795,20 +3329,10 @@
                 </div>
               {/each}
             </div>
-          {:else}
-            <div
-              class="flex h-full flex-col items-center justify-center gap-1 px-4 py-8 text-center select-none">
-              <p class="font-sans-title text-xs font-medium text-text-muted">
-                Search or run any commands
-              </p>
-              <p class="font-sans-title text-2xs text-text-muted">
-                Type <span class="font-mono text-accent">/</span> for commands,
-                or
-                <span class="font-mono text-accent">/help</span> for the guide
-              </p>
-            </div>
-          {/if}
-        {:else if isLoading && results.length === 0}
+          </div>
+        {/if}
+
+        {#if isLoading && deduplicatedResults.length === 0}
           <div class="space-y-2 p-3">
             {#each [1, 2, 3] as placeholderId (placeholderId)}
               <div
@@ -2821,163 +3345,211 @@
               </div>
             {/each}
           </div>
-        {:else if results.length === 0}
+        {:else if deduplicatedResults.length === 0 && filteredHistory.length === 0}
+          {#if rawQuery.length === 0}
+            <div
+              class="flex h-full flex-col items-center justify-center gap-1 px-4 py-8 text-center select-none">
+              <p class="text-xs font-medium text-text-muted">
+                Search or run any commands
+              </p>
+              <p class="text-2xs text-text-muted">
+                Type <span class="font-mono text-accent">/</span> for commands,
+                or
+                <span class="font-mono text-accent">/help</span> for the guide
+              </p>
+            </div>
+          {:else}
+            <div
+              class="flex h-full flex-col items-center justify-center px-4 py-10 text-center select-none">
+              <p class="text-xs font-medium text-text-muted">
+                No results found
+              </p>
+            </div>
+          {/if}
+        {:else if deduplicatedResults.length > 0}
           <div
-            class="flex h-full flex-col items-center justify-center px-4 py-10 text-center select-none">
-            <p class="font-sans-title text-xs font-medium text-text-muted">
-              No results found
-            </p>
-          </div>
-        {:else}
-          <ul
             id="search-results"
             role="listbox"
             aria-label="Search results"
-            class="scrollbar-none pt-1 pb-2.5 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-            {#each categorizedResults as group (group.category)}
-              <li class="px-4 pt-2 pb-0.5 select-none">
+            class="scrollbar-none px-2.5 pb-2.5 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            {#each categorizedResults as group, gIdx (group.category)}
+              <div
+                class={cn(
+                  'px-1.5 pb-1.5 select-none',
+                  filteredHistory.length > 0 || gIdx > 0 ? 'pt-3.5' : 'pt-2.5'
+                )}>
                 <span
-                  class="font-sans-title text-xxs font-bold tracking-wider text-text-muted uppercase">
+                  class="text-xxs font-bold tracking-wider text-text-muted uppercase">
                   {group.label}
                 </span>
-              </li>
-              {#each group.items as item (item.id)}
-                {@const globalIdx = indexById.get(item.id) ?? -1}
-                {@const isSlashCmd =
-                  item.title.startsWith('/')
-                  || item.category === 'commands'
-                  || item.category === 'actions'}
-                <li
-                  id="result-{globalIdx}"
-                  role="option"
-                  tabindex="-1"
-                  aria-selected={activeIndex === globalIdx}
-                  data-result-item
-                  onclick={() => select(item)}
-                  onkeydown={e => handleResultKeydown(e, item)}
-                  onmouseenter={() => {
-                    activeIndex = globalIdx;
-                  }}
-                  class="group mx-2.5 flex cursor-pointer snap-start items-center justify-between gap-3 rounded-md px-1.5 py-1 transition-colors {(
-                    activeIndex === globalIdx
-                  ) ?
-                    'bg-accent/10 text-text-primary dark:bg-accent/20'
-                  : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'}">
-                  <div class="min-w-0 flex-1 flex-col">
-                    {#if item.title.startsWith('/')}
-                      <span class="font-mono text-xs font-medium">
-                        {#each getHighlightChunks(item.title, rawQuery) as chunk, cIdx (cIdx)}
-                          {#if chunk.text === '/'}
-                            <span class="font-normal text-text-muted/60"
-                              >/</span>
-                          {:else if chunk.text.startsWith('/')}
+              </div>
+              <div class="flex flex-col gap-0.5">
+                {#each group.items as item (item.id)}
+                  {@const globalIdx =
+                    (indexById.get(item.id) ?? 0) + filteredHistory.length}
+                  {@const ItemIcon =
+                    item.icon ?? CATEGORY_ICONS[item.category] ?? Command}
+                  <div
+                    id="result-{globalIdx}"
+                    role="option"
+                    tabindex="-1"
+                    aria-selected={activeIndex === globalIdx}
+                    data-result-item
+                    onclick={() => select(item)}
+                    onkeydown={e => handleResultKeydown(e, item)}
+                    onpointermove={e => handleItemPointerMove(e, globalIdx)}
+                    class={cn(
+                      'group relative flex w-full cursor-pointer items-center justify-between gap-2.5 rounded-md px-2 py-1.5 transition-colors',
+                      activeIndex === globalIdx ?
+                        'bg-accent/10 text-text-primary dark:bg-accent/20'
+                      : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
+                    )}>
+                    <div class="flex min-w-0 flex-1 items-center gap-2.5">
+                      <div
+                        class={cn(
+                          'flex size-6 shrink-0 items-center justify-center rounded-md border transition-colors select-none',
+                          activeIndex === globalIdx ?
+                            'border-accent/30 bg-accent/25 text-accent'
+                          : 'border-border-subtle/60 bg-surface-elevated text-text-secondary group-hover:border-accent/30 group-hover:bg-accent/15 group-hover:text-accent'
+                        )}>
+                        <ItemIcon class="size-3.5" />
+                      </div>
+
+                      {#if item.title.startsWith('/')}
+                        {@const spaceIdx = item.title.indexOf(' ')}
+                        {@const verb =
+                          spaceIdx === -1 ?
+                            item.title.slice(1)
+                          : item.title.slice(1, spaceIdx)}
+                        {@const args =
+                          spaceIdx === -1 ? '' : item.title.slice(spaceIdx)}
+                        <div class="flex min-w-0 flex-1 items-center gap-2">
+                          <span class="shrink-0 font-mono text-xs">
                             <span class="font-normal text-text-muted/60">/</span
-                            ><span
-                              class={chunk.match ?
-                                'font-semibold text-accent'
-                              : 'text-text-primary'}
-                              >{chunk.text.slice(1)}</span>
-                          {:else}
+                            >{#each getHighlightChunks(verb, rawQuery) as chunk, cIdx (cIdx)}<span
+                                class={chunk.match ?
+                                  'font-semibold text-accent'
+                                : 'font-medium text-text-primary'}
+                                >{chunk.text}</span
+                              >{/each}{#if args}{#each getHighlightChunks(args, rawQuery) as chunk, cIdx (cIdx)}<span
+                                  class={chunk.match ?
+                                    'font-semibold text-accent'
+                                  : 'font-normal text-text-muted/60'}
+                                  >{chunk.text}</span
+                                >{/each}{/if}
+                          </span>
+                          {#if item.subtitle}
                             <span
-                              class={chunk.match ?
-                                'font-semibold text-accent'
-                              : 'text-text-primary'}>{chunk.text}</span>
+                              class="text-2xs text-text-muted/40 select-none"
+                              >—</span>
+                            <span
+                              class="min-w-0 flex-1 truncate font-sans text-2xs text-text-muted">
+                              {#each getHighlightChunks(item.subtitle, rawQuery) as chunk, cIdx (cIdx)}
+                                {#if chunk.match}
+                                  <span class="font-semibold text-accent"
+                                    >{chunk.text}</span>
+                                {:else}
+                                  <span>{chunk.text}</span>
+                                {/if}
+                              {/each}
+                            </span>
                           {/if}
-                        {/each}
-                      </span>
-                    {:else}
-                      <span
-                        class="font-sans-title text-xs font-medium text-text-primary">
-                        {#each getHighlightChunks(item.title, rawQuery) as chunk, cIdx (cIdx)}
+                        </div>
+                      {:else}
+                        <div class="flex min-w-0 flex-1 items-center gap-2">
                           <span
-                            class={chunk.match ?
-                              'font-semibold text-accent'
-                            : ''}>{chunk.text}</span>
-                        {/each}
-                      </span>
-                    {/if}
-
-                    {#if item.subtitle}
-                      <span
-                        class="mt-0.5 line-clamp-1 font-sans text-2xs leading-snug wrap-break-word text-text-secondary">
-                        {#each getHighlightChunks(item.subtitle, rawQuery) as chunk, cIdx (cIdx)}
-                          {#if chunk.match}
-                            <span class="font-semibold text-accent"
-                              >{chunk.text}</span>
-                          {:else}
-                            <span>{chunk.text}</span>
+                            class="max-w-[45%] shrink-0 truncate text-xs font-medium text-text-primary sm:max-w-[55%]">
+                            {#each getHighlightChunks(item.title, rawQuery) as chunk, cIdx (cIdx)}
+                              <span
+                                class={chunk.match ?
+                                  'font-semibold text-accent'
+                                : ''}>{chunk.text}</span>
+                            {/each}
+                          </span>
+                          {#if item.subtitle}
+                            <span
+                              class="text-2xs text-text-muted/40 select-none"
+                              >—</span>
+                            <span
+                              class="min-w-0 flex-1 truncate font-sans text-2xs text-text-muted">
+                              {#each getHighlightChunks(item.subtitle, rawQuery) as chunk, cIdx (cIdx)}
+                                {#if chunk.match}
+                                  <span class="font-semibold text-accent"
+                                    >{chunk.text}</span>
+                                {:else}
+                                  <span>{chunk.text}</span>
+                                {/if}
+                              {/each}
+                            </span>
                           {/if}
-                        {/each}
-                      </span>
-                    {/if}
-                  </div>
+                        </div>
+                      {/if}
+                    </div>
 
-                  <div class="flex shrink-0 items-center gap-1">
-                    {#if isSlashCmd}
-                      <span
-                        class="inline-flex h-[18px] shrink-0 items-center justify-center rounded-md border px-1 font-mono text-3xs font-medium select-none {(
-                          activeIndex === globalIdx
-                        ) ?
-                          'border-accent/30 bg-accent/25 text-accent'
-                        : 'border-border-subtle/60 bg-surface-elevated text-text-secondary'}">
-                        <Command class="size-2.5" />
-                      </span>
-                    {/if}
-                    {#if item.badge}
-                      <span
-                        class="inline-flex h-[18px] shrink-0 items-center rounded-md border px-1.5 font-mono text-3xs font-medium select-none {(
-                          activeIndex === globalIdx
-                        ) ?
-                          'border-accent/30 bg-accent/25 text-accent'
-                        : 'border-border-subtle/60 bg-surface-elevated text-text-secondary'}">
-                        {item.badge}
-                      </span>
-                    {/if}
+                    <div class="flex shrink-0 items-center gap-1.5">
+                      {#if COMMAND_SHORTCUTS[item.title]}
+                        <ShortcutBadge
+                          combo={displayKey(COMMAND_SHORTCUTS[item.title])}
+                          active={activeIndex === globalIdx} />
+                      {/if}
+                      {#if item.badge}
+                        <span
+                          class={cn(
+                            'inline-flex h-[18px] shrink-0 items-center rounded-md border px-1.5 font-mono text-3xs font-medium transition-colors select-none',
+                            activeIndex === globalIdx ?
+                              'border-accent/30 bg-accent/25 text-accent'
+                            : 'border-border-subtle/60 bg-surface-elevated text-text-secondary group-hover:border-accent/30 group-hover:bg-accent/15 group-hover:text-accent'
+                          )}>
+                          {item.badge}
+                        </span>
+                      {/if}
+                    </div>
                   </div>
-                </li>
-              {/each}
+                {/each}
+              </div>
             {/each}
-          </ul>
+          </div>
         {/if}
       </div>
 
       <div
         class="hidden flex-none items-center justify-between gap-2 border-t border-border-subtle/60 px-3.5 py-2 text-2xs select-none sm:flex">
         <div
-          class="flex min-w-0 flex-1 items-center font-sans-title text-2xs font-medium text-text-muted">
+          class="flex min-w-0 flex-1 items-center text-2xs font-medium text-text-muted">
           {#if isLoading}
             <span>Searching…</span>
           {:else}
-            <span
-              >{results.length} result{results.length === 1 ? '' : 's'}</span>
+            {@const totalCount =
+              filteredHistory.length + deduplicatedResults.length}
+            <span>{totalCount} result{totalCount === 1 ? '' : 's'}</span>
           {/if}
         </div>
         <div
-          class="flex shrink-0 items-center gap-2.5 font-sans-title text-2xs font-medium text-text-muted">
-          <span class="flex items-center gap-1 font-sans-title">
+          class="flex shrink-0 items-center gap-2.5 text-2xs font-medium text-text-muted">
+          <span class="flex items-center gap-1">
             <kbd
               class="inline-flex size-5 items-center justify-center rounded-md border border-border-subtle/60 bg-transparent text-text-muted dark:border-white/8">
               <ArrowDownUp
                 class="size-9"
                 strokeWidth={3} />
             </kbd>
-            <span class="hidden sm:inline">Navigate</span>
+            <span class="hidden sm:inline">navigate</span>
           </span>
-          <span class="flex items-center gap-1 font-sans-title">
+          <span class="flex items-center gap-1">
             <kbd
               class="inline-flex size-5 items-center justify-center rounded-md border border-border-subtle/60 bg-transparent text-text-muted dark:border-white/8">
               <CornerDownLeft
                 class="size-9"
                 strokeWidth={3} />
             </kbd>
-            <span class="hidden sm:inline">Execute</span>
+            <span class="hidden sm:inline">execute</span>
           </span>
-          <span class="flex items-center gap-1 font-sans-title">
+          <span class="flex items-center gap-1">
             <kbd
-              class="inline-flex h-5 min-w-6 items-center justify-center rounded-md border border-border-subtle/60 bg-transparent px-1.5 font-sans-title text-2xs font-medium text-text-muted dark:border-white/8">
+              class="inline-flex h-5 min-w-6 items-center justify-center rounded-md border border-border-subtle/60 bg-transparent px-1.5 text-2xs font-medium text-text-muted dark:border-white/8">
               esc
             </kbd>
-            <span class="hidden sm:inline">Close</span>
+            <span class="hidden sm:inline">close</span>
           </span>
         </div>
       </div>
@@ -2988,13 +3560,14 @@
 {#if showHelp}
   <div
     use:portal
-    class="fixed inset-0 z-100000 flex items-center justify-center overscroll-contain p-4">
+    class="fixed inset-0 z-[100000] flex items-center justify-center overscroll-contain p-4">
     <button
       type="button"
       class="fixed inset-0 cursor-default touch-none bg-overlay/80 backdrop-blur-xs transition-opacity duration-200"
       aria-label="Close reference guide"
       onclick={() => {
         showHelp = false;
+        helpActiveIndex = -1;
         tick().then(() => inputEl?.focus());
       }}></button>
 
@@ -3004,20 +3577,19 @@
       role="dialog"
       tabindex="-1"
       aria-modal="true"
-      aria-label="Commands & Search Reference Guide">
+      aria-label="Reference Guide"
+      onkeydown={handleHelpKeydown}>
       <div
         class="flex items-center justify-between border-b border-border-subtle/40 px-4 py-2.5">
-        <div class="flex items-center gap-2">
-          <Compass class="size-4 text-accent" />
-          <span
-            class="font-sans-title text-xs font-bold tracking-wide text-text-primary uppercase select-none">
-            Command & Search Reference
-          </span>
-        </div>
+        <span
+          class="text-xs font-bold tracking-wide text-text-primary uppercase select-none">
+          Reference Guide
+        </span>
         <button
           type="button"
           onclick={() => {
             showHelp = false;
+            helpActiveIndex = -1;
             tick().then(() => inputEl?.focus());
           }}
           class="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-md text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
@@ -3026,139 +3598,211 @@
         </button>
       </div>
 
-      <div class="flex-1 space-y-4 overflow-y-auto px-4 py-3 text-xs">
-        <div class="space-y-0.5">
-          {#each helpCommands as cmd (cmd.command)}
-            <button
-              type="button"
-              onclick={() => {
-                showHelp = false;
-                if (cmd.command === '/refresh') {
-                  if (typeof window !== 'undefined') window.location.reload();
-                } else {
-                  rawQuery = cmd.actionQuery || cmd.command;
-                  runSearch(rawQuery);
-                  tick().then(() => inputEl?.focus());
-                }
-              }}
-              class="flex w-full cursor-pointer flex-col gap-1 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-surface-hover/70 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
-              <div class="min-w-0 flex-1 space-y-0.5">
-                <div class="flex items-center gap-2 font-mono text-2xs">
-                  <span class="font-bold text-accent">{cmd.command}</span>
-                  {#if cmd.argHint}
-                    <span class="text-text-muted">{cmd.argHint}</span>
-                  {/if}
-                </div>
-                <p class="font-sans text-2xs text-text-secondary">
-                  {cmd.description}
-                </p>
-              </div>
-              {#if cmd.validArgs.length > 0}
-                <div
-                  class="flex flex-wrap items-center gap-1.5 font-mono text-3xs sm:max-w-xs sm:justify-end">
-                  {#each cmd.validArgs as arg (arg)}
-                    <span
-                      class={arg.includes('[slug]') || arg.includes('[scale]') ?
-                        'font-medium text-accent'
-                      : 'text-text-muted'}>
-                      {arg}
+      <div class="flex-1 space-y-3 overflow-y-auto px-2.5 py-2.5 text-xs">
+        {#each helpCategories as category (category.id)}
+          <div>
+            <div
+              class={cn(
+                'px-1.5 pb-1 select-none',
+                category.id !== helpCategories[0].id ? 'pt-2' : 'pt-0.5'
+              )}>
+              <span
+                class="text-xxs font-bold tracking-wider text-text-muted uppercase">
+                {category.label}
+              </span>
+            </div>
+            <div class="flex flex-col gap-0.5">
+              {#each category.commands as cmd (cmd.command)}
+                {@const cmdIdx = helpCmdIndexMap.get(cmd.command) ?? 0}
+                {@const CmdIcon = cmd.icon}
+                {@const spaceIdx = cmd.command.indexOf(' ')}
+                {@const verb =
+                  spaceIdx === -1 ?
+                    cmd.command.slice(1)
+                  : cmd.command.slice(1, spaceIdx)}
+                {@const args =
+                  spaceIdx === -1 ? '' : cmd.command.slice(spaceIdx)}
+                <button
+                  type="button"
+                  data-help-idx={cmdIdx}
+                  onclick={() => selectHelpCommand(cmd)}
+                  onpointermove={() => handleHelpItemPointerMove(cmdIdx)}
+                  class={cn(
+                    'group flex w-full cursor-pointer flex-col gap-1 rounded-md px-2 py-1.5 text-left transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none',
+                    helpActiveIndex === cmdIdx ?
+                      'bg-accent/10 text-text-primary dark:bg-accent/20'
+                    : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
+                  )}>
+                  <div class="flex min-w-0 items-center gap-2">
+                    <div
+                      class={cn(
+                        'flex size-5 shrink-0 items-center justify-center rounded border transition-colors select-none',
+                        helpActiveIndex === cmdIdx ?
+                          'border-accent/30 bg-accent/25 text-accent'
+                        : 'border-border-subtle/60 bg-surface-elevated text-text-secondary group-hover:border-accent/30 group-hover:bg-accent/15 group-hover:text-accent'
+                      )}>
+                      <CmdIcon class="size-3" />
+                    </div>
+                    <span class="shrink-0 font-sans text-2xs">
+                      <span class="font-normal text-text-muted/60">/</span><span
+                        class={cn(
+                          'font-medium',
+                          helpActiveIndex === cmdIdx ? 'text-accent' : (
+                            'text-text-primary group-hover:text-accent'
+                          )
+                        )}>{verb}</span
+                      >{#if args}<span class="font-normal text-text-muted/60"
+                          >{args}</span
+                        >{/if}
+                      {#if cmd.argHint}
+                        <span class="font-normal text-text-muted/60">
+                          {cmd.argHint}</span>
+                      {/if}
                     </span>
-                  {/each}
-                </div>
-              {/if}
-            </button>
-          {/each}
-        </div>
+                    <span class="text-2xs text-text-muted/40 select-none"
+                      >—</span>
+                    <p
+                      class="min-w-0 flex-1 truncate font-sans text-2xs text-text-secondary">
+                      {cmd.description}
+                    </p>
+                    {#if COMMAND_SHORTCUTS[cmd.command]}
+                      <ShortcutBadge
+                        combo={displayKey(COMMAND_SHORTCUTS[cmd.command])}
+                        active={helpActiveIndex === cmdIdx} />
+                    {/if}
+                  </div>
+                  {#if cmd.validArgs.length > 0}
+                    <div
+                      class="flex flex-wrap items-center gap-1 pl-7 font-mono text-3xs">
+                      {#each cmd.validArgs as arg (arg)}
+                        <span
+                          class={cn(
+                            'inline-flex items-center rounded px-1 py-0.5 leading-none transition-colors',
+                            arg.includes('[slug]') || arg.includes('[scale]') ?
+                              'bg-accent/10 font-medium text-accent'
+                            : 'border border-border-subtle/40 bg-surface-elevated text-text-muted'
+                          )}>
+                          {arg}
+                        </span>
+                      {/each}
+                    </div>
+                  {/if}
+                </button>
+              {/each}
+            </div>
+          </div>
+        {/each}
 
-        <div class="space-y-1.5">
-          <div class="px-1">
+        <div>
+          <div class="px-1.5 pt-2 pb-1 select-none">
             <span
-              class="font-sans-title text-2xs font-bold tracking-wider text-text-muted uppercase">
-              Search Filters & Toggles
+              class="text-xxs font-bold tracking-wider text-text-muted uppercase">
+              Search Filters
             </span>
           </div>
           <div class="space-y-0.5 text-2xs">
             <div
               class="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 transition-colors hover:bg-surface-hover/70">
               <div class="flex min-w-0 items-center gap-2">
-                <CaseSensitive class="size-3.5 shrink-0 text-accent" />
+                <div
+                  class="flex size-5 shrink-0 items-center justify-center rounded border border-border-subtle/60 bg-surface-elevated text-text-secondary select-none">
+                  <CaseSensitive class="size-3" />
+                </div>
                 <span class="font-medium text-text-primary">Match Case</span>
+                <span class="text-text-muted/40 select-none">—</span>
                 <span class="hidden font-sans text-text-muted sm:inline"
-                  >— Case-sensitive search toggle</span>
+                  >Case-sensitive search toggle</span>
               </div>
-              <span class="font-mono text-3xs text-accent">Aa button</span>
+              <span class="font-mono text-3xs text-accent">Aa</span>
             </div>
             <div
               class="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 transition-colors hover:bg-surface-hover/70">
               <div class="flex min-w-0 items-center gap-2">
-                <WholeWord class="size-3.5 shrink-0 text-accent" />
+                <div
+                  class="flex size-5 shrink-0 items-center justify-center rounded border border-border-subtle/60 bg-surface-elevated text-text-secondary select-none">
+                  <WholeWord class="size-3" />
+                </div>
                 <span class="font-medium text-text-primary">Whole Word</span>
+                <span class="text-text-muted/40 select-none">—</span>
                 <span class="hidden font-sans text-text-muted sm:inline"
-                  >— Match exact whole words</span>
+                  >Match exact whole words</span>
               </div>
-              <span class="font-mono text-3xs text-accent">ab button</span>
+              <span class="font-mono text-3xs text-accent">ab</span>
             </div>
             <div
               class="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 transition-colors hover:bg-surface-hover/70">
               <div class="flex min-w-0 items-center gap-2">
-                <Regex class="size-3.5 shrink-0 text-accent" />
+                <div
+                  class="flex size-5 shrink-0 items-center justify-center rounded border border-border-subtle/60 bg-surface-elevated text-text-secondary select-none">
+                  <Regex class="size-3" />
+                </div>
                 <span class="font-medium text-text-primary">Regex Mode</span>
+                <span class="text-text-muted/40 select-none">—</span>
                 <span class="hidden font-sans text-text-muted sm:inline"
-                  >— Regular expression pattern matching</span>
+                  >Regular expression pattern matching</span>
               </div>
-              <span class="font-mono text-3xs text-accent">svelte|react</span>
+              <span class="font-mono text-3xs text-accent">.*</span>
             </div>
           </div>
         </div>
 
-        <div class="space-y-1.5">
-          <div class="px-1">
+        <div>
+          <div class="px-1.5 pt-2 pb-1 select-none">
             <span
-              class="font-sans-title text-2xs font-bold tracking-wider text-text-muted uppercase">
+              class="text-xxs font-bold tracking-wider text-text-muted uppercase">
               Keyboard Shortcuts
             </span>
           </div>
-          <div class="grid grid-cols-2 grid-rows-2 gap-1.5 font-mono text-3xs">
-            <div
-              class="flex items-center justify-between rounded-md px-2 py-1 transition-colors hover:bg-surface-hover/70">
-              <span class="font-sans text-text-secondary">Toggle</span>
-              <div class="flex items-center justify-between gap-1">
+          <button
+            type="button"
+            class="flex w-full cursor-pointer items-center justify-between gap-3 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-surface-hover/70 focus-visible:outline-2 focus-visible:outline-focus-ring"
+            onclick={() => {
+              showHelp = false;
+              close();
+              shortcutStore.catalogOpen = true;
+            }}>
+            <span class="font-sans text-2xs text-text-secondary">
+              Browse every shortcut on this page
+            </span>
+            <span class="flex shrink-0 items-center gap-1">
+              {#each [LEADER_COMBO, CATALOG_KEY] as combo (combo)}
                 <kbd
-                  class="inline-flex h-5 min-w-6 items-center justify-center rounded-md border border-border-subtle/60 bg-transparent px-1.5 font-sans-title text-2xs font-medium text-text-secondary dark:border-white/8"
-                  >Ctrl+K</kbd>
-                or
-                <kbd
-                  class="inline-flex h-5 min-w-6 items-center justify-center rounded-md border border-border-subtle/60 bg-transparent px-1.5 font-sans-title text-2xs font-medium text-text-secondary dark:border-white/8"
-                  >/</kbd>
-              </div>
-            </div>
-            <div
-              class="flex items-center justify-between rounded-md px-2 py-1 transition-colors hover:bg-surface-hover/70">
-              <span class="font-sans text-text-secondary">Navigate</span>
-              <kbd
-                class="inline-flex size-5 items-center justify-center rounded-md border border-border-subtle/60 bg-transparent text-text-secondary dark:border-white/8"
-                ><ArrowDownUp
-                  class="size-9"
-                  strokeWidth={3} /></kbd>
-            </div>
-            <div
-              class="flex items-center justify-between rounded-md px-2 py-1 transition-colors hover:bg-surface-hover/70">
-              <span class="font-sans text-text-secondary">Complete</span>
-              <kbd
-                class="inline-flex h-5 min-w-6 items-center justify-center rounded-md border border-border-subtle/60 bg-transparent px-1.5 font-sans-title text-2xs font-medium text-text-secondary dark:border-white/8"
-                >Tab</kbd>
-            </div>
-            <div
-              class="flex items-center justify-between rounded-md px-2 py-1 transition-colors hover:bg-surface-hover/70">
-              <span class="font-sans text-text-secondary">Execute</span>
-              <kbd
-                class="inline-flex size-5 items-center justify-center rounded-md border border-border-subtle/60 bg-transparent text-text-secondary dark:border-white/8"
-                ><CornerDownLeft
-                  class="size-9"
-                  strokeWidth={3} /></kbd>
-            </div>
-          </div>
+                  class="inline-flex h-4 items-center justify-center rounded border border-border-subtle/60 bg-transparent px-1 text-3xs font-medium text-text-secondary dark:border-white/8">
+                  {combo}
+                </kbd>
+              {/each}
+            </span>
+          </button>
         </div>
+      </div>
+
+      <div
+        class="hidden flex-none items-center justify-end gap-2.5 border-t border-border-subtle/60 px-3.5 py-2 text-2xs select-none sm:flex">
+        <span class="flex items-center gap-1">
+          <kbd
+            class="inline-flex size-5 items-center justify-center rounded-md border border-border-subtle/60 bg-transparent text-text-muted dark:border-white/8">
+            <ArrowDownUp
+              class="size-9"
+              strokeWidth={3} />
+          </kbd>
+          <span class="text-text-muted">navigate</span>
+        </span>
+        <span class="flex items-center gap-1">
+          <kbd
+            class="inline-flex size-5 items-center justify-center rounded-md border border-border-subtle/60 bg-transparent text-text-muted dark:border-white/8">
+            <CornerDownLeft
+              class="size-9"
+              strokeWidth={3} />
+          </kbd>
+          <span class="text-text-muted">execute</span>
+        </span>
+        <span class="flex items-center gap-1">
+          <kbd
+            class="inline-flex h-5 min-w-6 items-center justify-center rounded-md border border-border-subtle/60 bg-transparent px-1.5 text-2xs font-medium text-text-muted dark:border-white/8">
+            esc
+          </kbd>
+          <span class="text-text-muted">close</span>
+        </span>
       </div>
     </div>
   </div>

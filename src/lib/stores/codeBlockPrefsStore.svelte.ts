@@ -1,4 +1,5 @@
 import {browser} from '$app/environment';
+import {SvelteSet} from 'svelte/reactivity';
 import type {CodeColorScheme} from '$lib/utils/codeBlocks';
 
 interface CodeBlockPrefs {
@@ -19,7 +20,13 @@ const defaults: CodeBlockPrefs = {
 
 function createCodeBlockPrefsStore() {
   let prefs = $state<CodeBlockPrefs>({...defaults});
-  let onExternalChange: (() => void) | null = null;
+  const listeners = new SvelteSet<() => void>();
+
+  function notify() {
+    for (const listener of listeners) {
+      listener();
+    }
+  }
 
   function persist() {
     if (!browser) return;
@@ -29,6 +36,7 @@ function createCodeBlockPrefsStore() {
   function apply(next: Partial<CodeBlockPrefs>) {
     prefs = {...prefs, ...next};
     persist();
+    notify();
   }
 
   function parseStored(raw: string | null): Partial<CodeBlockPrefs> {
@@ -39,6 +47,26 @@ function createCodeBlockPrefsStore() {
     } catch {
       return {};
     }
+  }
+
+  function setColorScheme(scheme: CodeColorScheme) {
+    apply({colorScheme: scheme});
+  }
+
+  function setWrap(enabled: boolean) {
+    apply({wrap: enabled});
+  }
+
+  function setLineNumbers(enabled: boolean) {
+    apply({lineNumbers: enabled});
+  }
+
+  function setMinimal(enabled: boolean) {
+    apply({minimal: enabled});
+  }
+
+  function setClean(enabled: boolean) {
+    apply({minimal: enabled});
   }
 
   function cycleColorScheme() {
@@ -59,9 +87,22 @@ function createCodeBlockPrefsStore() {
     apply({minimal: !prefs.minimal});
   }
 
+  function toggleClean() {
+    apply({minimal: !prefs.minimal});
+  }
+
+  function subscribe(fn: () => void) {
+    listeners.add(fn);
+    return () => {
+      listeners.delete(fn);
+    };
+  }
+
   function init(onChange?: () => void) {
     if (!browser) return;
-    onExternalChange = onChange || null;
+    if (onChange) {
+      listeners.add(onChange);
+    }
 
     const stored = parseStored(localStorage.getItem(STORAGE_KEY));
     prefs = {...defaults, ...stored};
@@ -69,14 +110,16 @@ function createCodeBlockPrefsStore() {
     const onStorage = (e: StorageEvent) => {
       if (e.key !== STORAGE_KEY) return;
       prefs = {...defaults, ...parseStored(e.newValue)};
-      onExternalChange?.();
+      notify();
     };
 
     window.addEventListener('storage', onStorage);
 
     return () => {
       window.removeEventListener('storage', onStorage);
-      onExternalChange = null;
+      if (onChange) {
+        listeners.delete(onChange);
+      }
     };
   }
 
@@ -85,11 +128,18 @@ function createCodeBlockPrefsStore() {
       return prefs;
     },
     init,
+    subscribe,
     apply,
+    setColorScheme,
+    setWrap,
+    setLineNumbers,
+    setMinimal,
+    setClean,
     cycleColorScheme,
     toggleLineNumbers,
     toggleWrap,
-    toggleMinimal
+    toggleMinimal,
+    toggleClean
   };
 }
 

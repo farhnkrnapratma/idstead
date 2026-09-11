@@ -1,5 +1,6 @@
 import {supabase} from '$lib/supabase';
 import type {PageServerLoad} from './$types';
+import {avatarSource} from '$lib/siteIdentity';
 import type {Project} from '$lib/types';
 import {decodeHtmlEntities} from '$lib/utils/formatters';
 import {fetchProjects, extractGitHubUsername} from '$lib/server/githubProjects';
@@ -12,6 +13,7 @@ import {
   fetchActiveCvDocument,
   fetchProjectRepoRules
 } from '$lib/author';
+import {estimateReadTime} from '$lib/readTime';
 
 export interface BlogPost {
   id: string;
@@ -20,7 +22,7 @@ export interface BlogPost {
   published: boolean;
   pinned: boolean;
   storage_path: string;
-  banner_path?: string | null;
+  banner_version?: string | null;
   created_at: string;
   updated_at?: string | null;
   excerpt?: string | null;
@@ -78,9 +80,7 @@ export const load: PageServerLoad = async ({fetch, platform, locals}) => {
             }).catch(() => null);
             if (fileRes?.ok) {
               const text = await fileRes.text();
-              const words = text.trim().split(/\s+/).length;
-              const minutes = Math.max(1, Math.ceil(words / 200));
-              readTime = `${minutes} min${minutes > 1 ? 's' : ''} read`;
+              readTime = estimateReadTime(text);
             }
           } catch (err) {
             console.error(err);
@@ -129,7 +129,7 @@ export const load: PageServerLoad = async ({fetch, platform, locals}) => {
     projects,
     pinnedRepoNames: repoRules.pinned,
     posts: dbPosts,
-    author,
+    author: author ? {...author, avatar: avatarSource(author)} : author,
     cv,
     funding,
     contact,

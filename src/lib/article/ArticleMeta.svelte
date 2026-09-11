@@ -13,7 +13,8 @@
   import {
     formatCommentCount,
     formatViewCount,
-    formatAbsoluteDate
+    formatAbsoluteDate,
+    formatExactDateTime
   } from '../utils/formatters';
   import RelativeTime from '../components/RelativeTime.svelte';
   import SkeletonBlock from '../components/SkeletonBlock.svelte';
@@ -65,28 +66,15 @@
     )
   );
 
-  function formatFullDateTime(input: string | Date | null | undefined): string {
-    if (!input) return '';
-    const d = typeof input === 'string' ? new Date(input) : input;
-    if (isNaN(d.getTime())) return '';
-    return d.toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit'
-    });
-  }
-
   const publishedTooltip = $derived(
-    safeDate ? `Published: ${formatFullDateTime(safeDate)}` : undefined
+    safeDate ? `Published: ${formatExactDateTime(safeDate)}` : undefined
   );
 
   const updatedTooltip = $derived(
     safeUpdatedAt ?
       safeDate ?
-        `Updated: ${formatFullDateTime(safeUpdatedAt)} (Published: ${formatFullDateTime(safeDate)})`
-      : `Updated: ${formatFullDateTime(safeUpdatedAt)}`
+        `Updated: ${formatExactDateTime(safeUpdatedAt)} (Published: ${formatExactDateTime(safeDate)})`
+      : `Updated: ${formatExactDateTime(safeUpdatedAt)}`
     : undefined
   );
 
@@ -178,7 +166,7 @@
         absoluteStrokeWidth={true} />
       <time
         datetime={safeDate}
-        class="sm:hidden">{formatAbsoluteDate(safeDate, 'short', true)}</time>
+        class="sm:hidden">{formatAbsoluteDate(safeDate, 'short')}</time>
       <RelativeTime
         date={safeDate}
         tag="time"
@@ -194,8 +182,7 @@
         absoluteStrokeWidth={true} />
       <time
         datetime={safeUpdatedAt}
-        class="sm:hidden"
-        >{formatAbsoluteDate(safeUpdatedAt, 'short', true)}</time>
+        class="sm:hidden">{formatAbsoluteDate(safeUpdatedAt, 'short')}</time>
       <span class="hidden sm:inline"
         >Updated <RelativeTime
           date={safeUpdatedAt}
@@ -233,11 +220,7 @@
 
 {#if loading}
   <div
-    class={cn(
-      'flex items-center gap-x-3.5 font-sans-title select-none',
-      textClass,
-      className
-    )}>
+    class={cn('flex items-center gap-x-3.5 select-none', textClass, className)}>
     <span class="inline-flex items-center gap-1">
       <CalendarCheck2
         class={iconClass}
@@ -279,7 +262,7 @@
 {:else if layout === 'single'}
   <div
     class={cn(
-      'flex items-center gap-x-3.5 font-sans-title select-none',
+      'flex items-center gap-x-3.5 select-none',
       wrap ? 'flex-wrap gap-y-1' : (
         'scrollbar-none overflow-x-auto whitespace-nowrap [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
       ),
@@ -292,12 +275,7 @@
     {@render trailing?.()}
   </div>
 {:else}
-  <div
-    class={cn(
-      'flex flex-col gap-1 font-sans-title select-none',
-      textClass,
-      className
-    )}>
+  <div class={cn('flex flex-col gap-1 select-none', textClass, className)}>
     {#if primaryParts.length > 0}
       <div
         class={cn(

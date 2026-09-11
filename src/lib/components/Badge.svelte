@@ -3,7 +3,9 @@
   import {cn} from '../utils/cn';
 
   interface Props {
-    variant?: 'default' | 'accent' | 'success' | 'warning' | 'danger';
+    variant?:
+      'default' | 'accent' | 'success' | 'warning' | 'danger' | 'custom';
+    color?: string;
     size?: 'sm' | 'md';
     children?: Snippet;
     class?: string;
@@ -11,12 +13,14 @@
 
   let {
     variant = 'default',
+    color,
     size = 'sm',
     children,
     class: className = ''
   }: Props = $props();
 
   const variantStyles = {
+    custom: 'border border-current/30 bg-current/10 text-(--badge-color)',
     default:
       'bg-border-subtle/50 text-text-secondary border border-border-subtle',
     accent: 'bg-accent-subtle text-accent border border-accent/30 font-bold',
@@ -31,6 +35,7 @@
 </script>
 
 <span
+  style:--badge-color={color}
   class={cn(
     'inline-flex items-center gap-1 rounded-md font-semibold tracking-wide select-none',
     variantStyles[variant],

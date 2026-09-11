@@ -21,10 +21,12 @@ jobs:
 
       - run: bun run lint
 
+      - run: bun run test
+
       - name: Prepare env for build
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ] || [ "${{ github.ref }}" != "refs/heads/main" ]; then
-            cp .env.preview.example .env
+            cp .env.development.example .env
           else
             cp .env.production.example .env
           fi

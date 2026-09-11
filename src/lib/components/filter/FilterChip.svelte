@@ -19,7 +19,7 @@
 
 <div
   class={cn(
-    'inline-flex items-center gap-1.5 rounded-md border border-border-subtle/50 bg-surface-card/85 px-3 py-1 font-sans-title text-xs font-semibold text-text-primary shadow-2xs select-none',
+    'inline-flex items-center gap-1.5 rounded-md border border-border-subtle/50 bg-surface-card/85 px-3 py-1 text-xs font-semibold text-text-primary shadow-2xs select-none',
     className
   )}>
   <span class="text-text-secondary">{label}:</span>

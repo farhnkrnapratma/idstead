@@ -3,6 +3,8 @@ import * as Sentry from '@sentry/sveltekit';
 import {redirect, type Handle} from '@sveltejs/kit';
 import {env as publicEnv} from '$env/dynamic/public';
 import {dev} from '$app/environment';
+import {assetNames, serveIdentityAsset} from '$lib/server/profileAssets';
+import {publicResponse} from '$lib/server/publicResponse';
 
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const MAX_REQUESTS_PER_WINDOW = 60;
@@ -30,16 +32,6 @@ function getClientIp(event: any): string {
     return '127.0.0.1';
   }
 }
-
-const STATIC_ASSET_PATHS = new Set([
-  '/site.webmanifest',
-  '/favicon.ico',
-  '/favicon-16x16.png',
-  '/favicon-32x32.png',
-  '/apple-touch-icon.png',
-  '/android-chrome-192x192.png',
-  '/android-chrome-512x512.png'
-]);
 
 function getStaticMimeType(
   pathname: string,
@@ -85,13 +77,33 @@ export const handle: Handle = sequence(
       );
     }
 
+    if (
+      assetNames.includes(event.url.pathname.slice(1))
+      || event.url.pathname === '/hero.png'
+    ) {
+      if (!['GET', 'HEAD'].includes(event.request.method))
+        return new Response(null, {status: 405, headers: {Allow: 'GET, HEAD'}});
+      try {
+        return await serveIdentityAsset(
+          event.request,
+          event.url,
+          event.platform
+        );
+      } catch (error) {
+        Sentry.captureException(error);
+        return new Response('Image storage unavailable.', {
+          status: 503,
+          headers: {'Cache-Control': 'no-store'}
+        });
+      }
+    }
+
     const cdnBaseUrl = getCdnBaseUrl();
 
     if (
       event.url.pathname.startsWith('/static/')
       || event.url.pathname.startsWith('/fonts/')
       || event.url.pathname.startsWith('/logo/')
-      || STATIC_ASSET_PATHS.has(event.url.pathname)
     ) {
       if (!cdnBaseUrl) {
         return new Response(
@@ -154,19 +166,44 @@ export const handle: Handle = sequence(
     }
 
     const isApiRequest =
-      event.url.pathname.startsWith('/api/')
-      || event.url.pathname === '/api'
-      || (event.request.headers.get('accept')?.includes('application/json')
-        ?? false);
+      event.url.pathname.startsWith('/api/') || event.url.pathname === '/api';
+    const isInternalApi =
+      event.url.pathname === '/api/internal'
+      || event.url.pathname.startsWith('/api/internal/');
+    const isAdminApi = event.url.pathname.startsWith('/api/internal/admin/');
 
-    const isInternalApi = event.url.pathname.startsWith('/api/internal');
-    const isAdminApi = event.url.pathname.startsWith('/api/internal/admin');
+    if (isApiRequest && event.request.method === 'OPTIONS') {
+      const origin = event.request.headers.get('origin');
+      if (isInternalApi && origin && origin !== event.url.origin)
+        return new Response(null, {
+          status: 403,
+          headers: {'Cache-Control': 'no-store'}
+        });
+      return new Response(null, {
+        status: 204,
+        headers: {
+          ...(isInternalApi ? {} : {'Access-Control-Allow-Origin': '*'}),
+          'Access-Control-Allow-Methods':
+            isInternalApi ? 'GET, HEAD, POST, OPTIONS' : 'GET, HEAD, OPTIONS',
+          'Access-Control-Allow-Headers':
+            'Content-Type, Authorization, If-None-Match',
+          'Access-Control-Max-Age': '86400',
+          'X-Request-ID': requestId
+        }
+      });
+    }
 
     let rateLimitHeaders: Record<string, string> = {};
 
     if (isApiRequest && !isAdminApi) {
       const clientIp = getClientIp(event);
       const now = Date.now();
+      for (const [key, value] of rateLimitMap) {
+        if (!value.timestamps.some(time => time > now - RATE_LIMIT_WINDOW_MS))
+          rateLimitMap.delete(key);
+      }
+      if (rateLimitMap.size >= 10000 && !rateLimitMap.has(clientIp))
+        rateLimitMap.delete(rateLimitMap.keys().next().value!);
       const record = rateLimitMap.get(clientIp) || {timestamps: []};
 
       record.timestamps = record.timestamps.filter(
@@ -225,21 +262,7 @@ export const handle: Handle = sequence(
       };
     }
 
-    if (isApiRequest && event.request.method === 'OPTIONS') {
-      return new Response(null, {
-        status: 204,
-        headers: {
-          ...(isInternalApi ? {} : {'Access-Control-Allow-Origin': '*'}),
-          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          'Access-Control-Max-Age': '86400',
-          'X-Request-ID': requestId,
-          ...rateLimitHeaders
-        }
-      });
-    }
-
-    const response = await resolve(event, {
+    let response = await resolve(event, {
       transformPageChunk: ({html}) => {
         const cdn = getCdnBaseUrl();
         let out = cdn ? html.replaceAll(`${cdn}//`, `${cdn}/`) : html;
@@ -251,6 +274,24 @@ export const handle: Handle = sequence(
       }
     });
     const contentType = response.headers.get('content-type') ?? '';
+    const privatePage =
+      event.url.pathname === '/admin'
+      || event.url.pathname.startsWith('/admin/')
+      || isInternalApi;
+    const preview =
+      publicEnv.PUBLIC_SENTRY_ENVIRONMENT === 'preview'
+      || event.url.hostname.endsWith('.pages.dev');
+    if (privatePage || preview)
+      response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    if (privatePage || response.status >= 400)
+      response.headers.set('Cache-Control', 'no-store');
+    if (isApiRequest && !isInternalApi) {
+      response.headers.append('Vary', 'Accept');
+      response.headers.set(
+        'Access-Control-Expose-Headers',
+        'ETag, Link, X-Request-ID, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, Retry-After, X-Checksum-SHA256'
+      );
+    }
 
     if (isApiRequest) {
       response.headers.set('X-Request-ID', requestId);
@@ -324,7 +365,15 @@ export const handle: Handle = sequence(
         'Content-Type': 'application/json; charset=utf-8',
         'Cache-Control': 'no-store',
         'X-Request-ID': requestId,
-        ...(isInternalApi ? {} : {'Access-Control-Allow-Origin': '*'}),
+        ...(privatePage || preview ?
+          {'X-Robots-Tag': 'noindex, nofollow'}
+        : {}),
+        ...(isInternalApi ?
+          {}
+        : {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Expose-Headers': 'X-Request-ID, Retry-After'
+          }),
         ...rateLimitHeaders
       };
 
@@ -359,6 +408,29 @@ export const handle: Handle = sequence(
       );
     }
 
+    if (
+      response.status === 200
+      && ['GET', 'HEAD'].includes(event.request.method)
+      && ((isApiRequest && !isInternalApi)
+        || event.url.pathname.startsWith('/.well-known/'))
+      && !response.headers.has('ETag')
+      && !contentType.includes('application/pdf')
+    ) {
+      const conditional = await publicResponse(
+        event.request,
+        await response.clone().text(),
+        contentType,
+        60
+      );
+      response.headers.set('ETag', conditional.headers.get('ETag')!);
+      if (conditional.status === 304)
+        response = new Response(null, {status: 304, headers: response.headers});
+    }
+    if (event.request.method === 'HEAD' && response.body)
+      response = new Response(null, {
+        status: response.status,
+        headers: response.headers
+      });
     return response;
   }
 );

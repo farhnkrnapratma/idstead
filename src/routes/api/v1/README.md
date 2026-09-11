@@ -36,14 +36,25 @@ This shape is enforced by one shared handler for the whole API, so it's the same
 | --- | --- | --- |
 | `BLOG_LIST_FETCH_FAILED` | 500 | `/api/v1/blog` couldn't query the database. |
 | `BLOG_POST_NOT_FOUND` | 404 | No published post matches the given ID/slug. |
-| `BLOG_INVALID_LANG` | 400 | `lang` was given but isn't `id`. |
+| `BLOG_INVALID_LANG` | 400 | `lang` was given but isn't one of `id`, `ja`, `zh`, `ko`. |
 | `BLOG_COMMENT_INVALID_POST_ID` | 400 | `postId` was given but isn't a valid UUID. |
 | `BLOG_COMMENTS_FETCH_FAILED` | 500 | `/api/v1/blog/comments` couldn't query the database. |
 | `BLOG_VIEW_POST_ID_REQUIRED` | 400 | `postId` query parameter is missing. |
 | `BLOG_VIEW_INVALID_POST_ID` | 400 | `postId` query parameter is not a valid UUID. |
 | `CV_DOCUMENT_NOT_FOUND` | 404 | `/api/v1/cv` — no active CV document is configured. |
 | `CV_FETCH_FAILED` | 502 | `/api/v1/cv` couldn't fetch the underlying PDF file from storage. |
-| `INVALID_JSON_BODY` | 400 | The request body isn't valid JSON. |
+| `SEARCH_FETCH_FAILED` | 500 | Search could not be read from the data source. |
+| `BLOG_POST_COUNTS_FETCH_FAILED` | 500 | Post comment/view counts could not be read. |
+| `BLOG_CONTENT_FETCH_FAILED` | 502 | Published post content could not be read from storage. |
+| `BLOG_POST_FETCH_FAILED` | 500 | Blog post could not be read from the data source. |
+| `BLOG_VIEWS_FETCH_FAILED` | 500 | View counts could not be read from the data source. |
+| `AUTHOR_FETCH_FAILED` | 500 | Combined author information could not be read from the data source. |
+| `AUTHOR_CONTACT_FETCH_FAILED` | 500 | Contact could not be read from the data source. |
+| `AUTHOR_CV_FETCH_FAILED` | 500 | Structured CV could not be read from the data source. |
+| `AUTHOR_SKILLS_FETCH_FAILED` | 500 | Skills could not be read from the data source. |
+| `AUTHOR_FUNDING_FETCH_FAILED` | 500 | Funding could not be read from the data source. |
+| `AUTHOR_SOCIALS_FETCH_FAILED` | 500 | Social links could not be read from the data source. |
+| `CV_METADATA_FETCH_FAILED` | 500 | CV document metadata could not be read from the data source. |
 | `RATE_LIMITED` | 429 | Over the rate limit — see below. |
 | `NOT_FOUND` | 404 | Generic fallback — hit a path that doesn't correspond to any endpoint. |
 | `BAD_REQUEST` / `UNAUTHORIZED` / `FORBIDDEN` / `INTERNAL_ERROR` | 400 / 401 / 403 / 500 | Generic fallback codes used only if an unexpected framework-level error bypasses one of the specific codes above — every endpoint documented here returns a specific code instead. |
@@ -75,20 +86,20 @@ Both also include `excerpt` (short teaser, nullable string), `summary` (longer A
 
 #### Translations (`lang`)
 
-Add `?lang=id` to get an AI-translated version (Indonesian) of `title`, `excerpt`, `summary`, `tldr`, and (on the detail endpoint) `content`. Translations are generated automatically when a post is published — there is no on-demand translation endpoint.
+Add `?lang=` with one of `id` (Indonesian), `ja` (Japanese), `zh` (Simplified Chinese) or `ko` (Korean) to get an AI-translated version of `title`, `excerpt`, `summary`, `tldr`, and (on the detail endpoint) `content`. Translations are generated automatically when a post is published — there is no on-demand translation endpoint.
 
 Every response (list items and the detail endpoint) includes:
 
-- `language` — the language actually returned (`en` or `id`). May differ from the requested `lang`.
+- `language` — the language actually returned (`en`, `id`, `ja`, `zh` or `ko`). May differ from the requested `lang`.
 - `requested_language` — the `lang` value that was requested, or `null` if none was given.
 - `machine_translated` — `true` when `language` isn't `en`.
 - `translation_disclaimer` — present only when `machine_translated` is `true`: a warning that the content was translated by AI and may contain errors, in the same language as `language`.
 
-If a translation hasn't been generated yet for the requested language, the response falls back to English (`language: "en"`, `machine_translated: false`) — **this is a `200`, never a `404`**. An unrecognized `lang` value (not `id`) returns `400 BLOG_INVALID_LANG`. The disclaimer is also prepended to `?format=md`/`?format=text` output when the response is a translation — on `?format=md` it's a real `[!NOTE]` GitHub-style alert block, matching how alerts render elsewhere in the article.
+If a translation hasn't been generated yet for the requested language, the response falls back to English (`language: "en"`, `machine_translated: false`) — **this is a `200`, never a `404`**. An unrecognized `lang` value (not `id`, `ja`, `zh` or `ko`) returns `400 BLOG_INVALID_LANG`. The disclaimer is also prepended to `?format=md`/`?format=text` output when the response is a translation — on `?format=md` it's a real `[!NOTE]` GitHub-style alert block, matching how alerts render elsewhere in the article.
 
 #### Comments
 
-Read-only — this API does not accept comment submissions. `GET` returns `{"data": [...]}`, each comment shaped as `{id, post_id, parent_id, author_name, content, is_anonymous, is_admin, is_approved, created_at}`; only approved comments are ever returned. This endpoint does not paginate — it's capped by `limit`, no `pagination` object.
+Read-only — this API does not accept comment submissions. `GET` returns `{"data": [...]}`, each comment shaped as `{id, post_id, parent_id, author_name, content, is_anonymous, is_admin, is_approved, created_at}`; only approved comments are ever returned. Site-wide results are newest first; a post thread is oldest first. This endpoint does not paginate — it's capped by `limit`, no `pagination` object.
 
 ```sh
 curl "https://fkp.my.id/api/v1/blog/comments?postId=<uuid>"
@@ -148,3 +159,15 @@ These mirror the canonical copies at `/.well-known/openapi.json` / `/.well-known
 Add `?format=md` (or send `Accept: text/markdown`) for a markdown response instead of JSON. Supported on `/api/v1/blog`, `/api/v1/blog/{id_or_slug}`, and `/api/v1/author` only — not on the author sub-routes, `blog/comments`, `blog/views`, or `search`.
 
 `/api/v1/blog/{id_or_slug}` additionally supports `?format=text` (alias `txt`, or `Accept: text/plain`) for a genuine plain-text rendering, distinct from `format=md`. Note `/api/v1/author`'s `?format=text` behaves differently — it's treated as an alias for markdown there, not plain text.
+
+## Caching and discovery
+
+Public JSON and text responses provide ETags. Send `If-None-Match` to revalidate; unchanged representations return `304` with no body. Negotiated responses include `Vary: Accept`, and query parameters remain part of the cache key. Mutable API data uses a maximum shared-cache lifetime of 60 seconds. Errors are not cached. GET routes also support HEAD; public preflight advertises GET, HEAD, and OPTIONS.
+
+Malformed numeric limits fall back to the documented default, and numeric limits are clamped to each endpoint's maximum. Data-source failures return endpoint-specific errors instead of empty successful responses.
+
+The agent discovery index is a site-specific JSON document containing `skills`. Each entry has `name`, `type: "skill-md"`, `description`, `url`, and `digest`. URLs resolve to Markdown SKILL.md documents. Digests are SHA-256 of the exact UTF-8 document bytes. The index does not claim conformance to an unverified external discovery schema.
+
+`/site.webmanifest` is generated from the public profile and app appearance settings. Avatar/icon files are stored in R2, while their metadata and active version are stored in Supabase. Image uploads use authenticated internal endpoints and are not part of this public API.
+
+Production robots policy permits search and AI input while declaring AI training disallowed. These crawler signals express policy, not access control. Preview deployments and admin/internal pages advertise noindex.

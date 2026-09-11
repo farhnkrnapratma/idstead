@@ -5,21 +5,10 @@ import {apiError} from '$lib/server/apiError';
 import {isSameOriginRequest} from '$lib/server/sameOrigin';
 import {verifyTurnstileToken} from '$lib/server/turnstile';
 import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
+import {REPORT_REASON_IDS} from '$lib/reportReasons';
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-const VALID_REASONS = new Set([
-  'spam',
-  'harassment',
-  'violence_or_illegal',
-  'sexual_content',
-  'self_harm',
-  'impersonation',
-  'removal_request',
-  'misinformation',
-  'other'
-]);
 
 export const POST: RequestHandler = async ({
   request,
@@ -71,7 +60,7 @@ export const POST: RequestHandler = async ({
     );
   }
 
-  if (!reason || !VALID_REASONS.has(reason)) {
+  if (!reason || !REPORT_REASON_IDS.has(reason)) {
     return apiError(
       400,
       'BLOG_COMMENT_REPORT_INVALID_REASON',

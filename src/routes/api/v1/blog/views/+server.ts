@@ -20,13 +20,24 @@ export const GET: RequestHandler = async ({url}) => {
     );
   }
 
-  const {count} = await supabase
+  const {count, error} = await supabase
     .from('db_views')
     .select('*', {count: 'exact', head: true})
     .eq('post_id', postId);
 
+  if (error)
+    return apiError(
+      500,
+      'BLOG_VIEWS_FETCH_FAILED',
+      'Could not fetch view counts.'
+    );
+
   return json(
     {postId, views: count ?? 0},
-    {headers: {'Cache-Control': 'public, max-age=3600, s-maxage=86400'}}
+    {
+      headers: {
+        'Cache-Control': 'public, max-age=0, s-maxage=60, must-revalidate'
+      }
+    }
   );
 };

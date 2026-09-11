@@ -117,7 +117,32 @@ bun run lint
 bun run check
 ```
 
-There's no test runner configured in this repo — `bun run check` (types) and `bun run lint` are the correctness gates instead.
+Run `bun run test` for regression tests covering identity, banners, post saves, feedback, notifications, validation, translations, reading time, shortcuts, and API contracts. Database tests use disposable in-memory PGlite databases and never connect to Supabase. CI runs tests, type checking, linting, and a production build.
+
+The optional concurrency suite uses PostgreSQL 17 in a disposable Docker container named `www-admin-activity-test`, with database and user `postgres`. Start a fresh container with `docker run --rm -d --name www-admin-activity-test -e POSTGRES_PASSWORD=fixture postgres:17-alpine`, wait for `docker exec www-admin-activity-test pg_isready -U postgres`, then run `ACTIVITY_POSTGRES_TEST=1 bun test tests/admin-activity-concurrency.test.ts`. Stop the container afterwards. These tests create their own roles and schema; never point them at a shared database.
+
+Build tooling lives in `tooling/vite`; the WebP plugin emits the decoder WASM required by the Cloudflare worker. `tooling/git-hooks` contains the secret-scan hook installed by `bun install`. Operational migration scripts remain in `scripts` until Production cutover is complete.
+
+Generated knowledge graphs, agent observations, and local development archives are ignored by Git. Keep permanent regression tests and their fixtures under `tests`; keep session reports and manual browser harnesses local. Graphify can still query and update the local graph.
+
+### Production cutover and asset cleanup
+
+Application deployment and legacy source deletion are deferred. Preview and Production share Supabase and the R2 bucket, so writes from either tier affect the same data. Required server configuration includes `SUPABASE_SERVICE_ROLE_KEY`, private `IP_SALT`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, and `R2_BUCKET_NAME`, alongside the public Supabase settings. Retain `PUBLIC_CDN_BASE_URL` while the legacy identity fallback is needed. Never commit credentials.
+
+The additive identity, banner, dashboard, and feedback migrations are retained in `supabase/migrations`. Identity assets, banner versions, and both page-feedback migrations have been applied to the shared project. Before rollout, compare the recorded migration history with the intended changes, including the partial-profile migration; older local and remote timestamps differ. Apply only verified missing migrations, preserving previously applied SQL and history. Do not use a bulk push or history repair to reconcile unrelated differences.
+
+Keep the legacy `record_post_feedback` RPC available while older Production callers use it. Its article writes feed the same event ledger and rolling 24-hour quota as the server handler. Revoke browser-role execution only in a separate cutover migration after all callers have moved to the server endpoint. Feedback requires the private IP secret; it has no public-salt fallback.
+
+Preserve `.local/blog-banner-migration/` with its resumable manifest, original sources, checksums, and reference inventory. The shared environment already has staged and activated banner versions; legacy source objects are retained. The operational script supports these steps for a new environment or a verified pending migration:
+
+1. Run `bun scripts/migrate-blog-banners.ts inventory` to save the source/reference snapshot. Start a local server and run its `prepare` mode with `PLAYWRIGHT_MODULE` pointing to an installed Playwright module and `BANNER_TEST_ORIGIN` pointing to that server. Preparation uses the application's image worker and permits legacy-image upscaling only during migration.
+2. Run `verify`, then `stage` and `activate` after the additive schema is available. Activation verifies staged objects and commits banner references atomically while retaining legacy paths. Reconcile content changes before proceeding; do not overwrite an activated manifest.
+3. After authorized deployment, verify the editor, admin list, articles, related posts, social metadata, avatar, and manifest/icon aliases. Run `BANNER_PRODUCTION_ORIGIN=https://<production-origin> bun scripts/migrate-blog-banners.ts verify-production`.
+4. Only after Production verification, use the same command with `cleanup-sources`. It verifies again and removes only migrated source objects recorded in the manifest, checking references and checksums. Unrelated Markdown, inline images, CVs, and identity assets remain excluded.
+
+For legacy identity assets, `bun scripts/cleanup-legacy-identity.ts` is an offline dry run. After Production verification, its `--delete --origin=https://<production-origin>` mode verifies the application aliases and deletes only the explicit legacy root-key list. It never deletes prefixes, CVs, or versioned identity objects.
+
+Rollback the application while retaining the additive schema, active objects, feedback history, and legacy sources. Do not restore the old lifetime feedback uniqueness constraint or delete current asset versions. Legacy source cleanup is a separate post-deployment operation; retain its scripts until that operation is complete.
 
 ## Public API
 

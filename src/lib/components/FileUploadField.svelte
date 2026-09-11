@@ -1,7 +1,8 @@
 <script lang="ts">
-  import {FileCheck2, UploadCloud, AlertCircle} from '@lucide/svelte';
+  import {FileCheck2, UploadCloud} from '@lucide/svelte';
   import {cn} from '../utils/cn';
   import Button from './Button.svelte';
+  import FieldMessage from './FieldMessage.svelte';
 
   interface Props {
     id: string;
@@ -10,6 +11,7 @@
     accept?: string;
     disabled?: boolean;
     isUploading?: boolean;
+    allowReselectWhileUploading?: boolean;
     uploadingLabel?: string;
     error?: string;
     selectedFileName?: string;
@@ -25,6 +27,7 @@
     accept = '*/*',
     disabled = false,
     isUploading = false,
+    allowReselectWhileUploading = false,
     uploadingLabel = 'Uploading…',
     error = '',
     selectedFileName = '',
@@ -33,15 +36,18 @@
     class: className = ''
   }: Props = $props();
 
-  let fileInputRef = $state<HTMLInputElement | null>(null);
+  let fileInputRef: HTMLInputElement | null = null;
   let isDragging = $state(false);
 
-  let isDisabled = $derived(disabled || isUploading);
+  let isDisabled = $derived(
+    disabled || (isUploading && !allowReselectWhileUploading)
+  );
 
   function handleFileChange(e: Event) {
     const input = e.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       onFileSelect?.(input.files[0]);
+      input.value = '';
     }
   }
 
@@ -72,7 +78,12 @@
 
 <div class={cn('flex w-full flex-col gap-1.5', className)}>
   <input
-    bind:this={fileInputRef}
+    {@attach element => {
+      fileInputRef = element;
+      return () => {
+        fileInputRef = null;
+      };
+    }}
     type="file"
     {id}
     {accept}
@@ -85,15 +96,18 @@
     aria-label={label}
     tabindex={isDisabled ? undefined : 0}
     onclick={() => !isDisabled && fileInputRef?.click()}
-    onkeydown={e =>
-      !isDisabled
-      && (e.key === 'Enter' || e.key === ' ')
-      && fileInputRef?.click()}
+    onkeydown={e => {
+      if (e.target !== e.currentTarget || isDisabled) return;
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        fileInputRef?.click();
+      }
+    }}
     ondrop={handleDrop}
     ondragover={handleDragOver}
     ondragleave={handleDragLeave}
     class={cn(
-      'group relative flex min-h-40 cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed p-6 text-center transition-all select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring',
+      'group relative flex min-h-40 min-w-0 flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed p-6 text-center transition-all select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring',
       isDragging ?
         'border-accent bg-accent-subtle/40'
       : cn(
@@ -139,6 +153,7 @@
         type="ghost"
         tone="critical"
         size="xs"
+        disabled={isDisabled}
         onclick={e => {
           e.stopPropagation();
           clearFile();
@@ -148,8 +163,7 @@
     {:else}
       <UploadCloud
         class="size-8 text-text-secondary transition-colors group-hover:text-accent" />
-      <span class="font-sans-title text-sm font-medium text-text-primary"
-        >{label}</span>
+      <span class="text-sm font-medium text-text-primary">{label}</span>
       {#if hint}
         <span class="text-xs text-text-muted">{hint}</span>
       {/if}
@@ -157,11 +171,8 @@
   </div>
 
   {#if error}
-    <span
-      role="alert"
-      class="mt-1 flex items-center gap-1 text-xxs font-medium text-danger">
-      <AlertCircle class="size-3 shrink-0" />
-      {error}
-    </span>
+    <FieldMessage
+      variant="error"
+      message={error} />
   {/if}
 </div>

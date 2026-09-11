@@ -2,6 +2,7 @@
   import type {Snippet} from 'svelte';
   import type {HTMLButtonAttributes} from 'svelte/elements';
   import {cn} from '../utils/cn';
+  import {shortcut} from '../utils/shortcut.svelte';
   import Tooltip from './Tooltip.svelte';
 
   interface Props extends HTMLButtonAttributes {
@@ -12,6 +13,10 @@
     tooltipPlacement?: 'top' | 'bottom' | 'left' | 'right';
     tooltipAlign?: 'center' | 'left' | 'right' | 'start' | 'end';
     showTooltip?: boolean;
+    keyboardShortcut?: string;
+    shortcutGroup?: string;
+    shortcutScope?: string;
+    shortcutLabel?: string;
     children?: Snippet;
   }
 
@@ -23,9 +28,14 @@
     tooltipPlacement = 'bottom',
     tooltipAlign = 'center',
     showTooltip = true,
+    keyboardShortcut,
+    shortcutGroup,
+    shortcutScope,
+    shortcutLabel,
     class: className = '',
     children,
     type = 'button',
+    disabled = false,
     ...restProps
   }: Props = $props();
 
@@ -51,9 +61,17 @@
 {#snippet buttonNode()}
   <button
     {type}
+    {disabled}
     aria-label={ariaLabel}
+    use:shortcut={{
+      combo: keyboardShortcut,
+      group: shortcutGroup,
+      scope: shortcutScope,
+      label: shortcutLabel ?? ariaLabel,
+      disabled: Boolean(disabled)
+    }}
     class={cn(
-      'inline-flex shrink-0 cursor-pointer items-center justify-center rounded-md leading-none transition-colors select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-50 [&>i]:inline-flex [&>i]:items-center [&>i]:justify-center [&>i]:leading-none [&>svg]:block [&>svg]:shrink-0',
+      'relative inline-flex shrink-0 cursor-pointer items-center justify-center rounded-md leading-none transition-colors select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-50 [&>i]:inline-flex [&>i]:items-center [&>i]:justify-center [&>i]:leading-none [&>svg]:block [&>svg]:shrink-0',
       variantStyles[variant],
       sizeStyles[size],
       className

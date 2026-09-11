@@ -1,0 +1,262 @@
+import {supabase} from '$lib/supabase';
+import {adminActivityRequest} from '$lib/adminActivityClient';
+import type {
+  AdminNotificationRow,
+  ClearOperation,
+  InboxCursor,
+  InboxPreferences,
+  InboxResult
+} from '$lib/adminActivity';
+import {toastStore} from './toastStore.svelte';
+export type {AdminNotificationRow} from '$lib/adminActivity';
+
+const defaults: InboxPreferences = {
+  query: '',
+  type: 'all',
+  read: 'all',
+  sort: 'date',
+  direction: 'desc'
+};
+let preferences = $state<InboxPreferences>({...defaults});
+let items = $state.raw<AdminNotificationRow[]>([]);
+let nextCursor = $state.raw<InboxCursor | null>(null);
+let unreadCount = $state(0);
+let total = $state(0);
+let isLoaded = $state(false);
+let isLoading = $state(false);
+let isMutating = $state(false);
+let error = $state('');
+let activityError = $state('');
+let pages = 1;
+let generation = 0;
+let requestId = 0;
+let controller: AbortController | undefined;
+let channel: ReturnType<typeof supabase.channel> | null = null;
+let timer: ReturnType<typeof setInterval> | undefined;
+let refreshActivity: (() => Promise<void>) | undefined;
+let restored = false;
+const listeners: Array<() => Promise<void>> = [];
+
+function restore() {
+  if (restored) return;
+  restored = true;
+  try {
+    const saved = JSON.parse(
+      sessionStorage.getItem('admin-inbox-preferences') ?? 'null'
+    );
+    if (
+      saved
+      && typeof saved.query === 'string'
+      && saved.query.length <= 200
+      && [
+        'all',
+        'comment_new',
+        'comment_report',
+        'helpful',
+        'unhelpful',
+        'contact_message',
+        'feedback_report'
+      ].includes(saved.type)
+      && ['all', 'unread', 'read'].includes(saved.read)
+      && ['date', 'type', 'page'].includes(saved.sort)
+      && ['asc', 'desc'].includes(saved.direction)
+    )
+      preferences = saved;
+  } catch {}
+}
+async function loadInbox(append = false) {
+  restore();
+  if (isMutating || (append && (!nextCursor || isLoading))) return;
+  controller?.abort();
+  controller = new AbortController();
+  const signal = AbortSignal.any([
+    controller.signal,
+    AbortSignal.timeout(15000)
+  ]);
+  const current = ++requestId;
+  const session = generation;
+  isLoading = true;
+  try {
+    let cursor = append ? nextCursor : null;
+    let rows: AdminNotificationRow[] = append ? [...items] : [];
+    let latest: InboxResult | undefined;
+    const count = append ? 1 : pages;
+    for (let index = 0; index < count; index++) {
+      latest = await adminActivityRequest<InboxResult>(
+        'notifications',
+        {...preferences, ...(cursor ? {cursor: JSON.stringify(cursor)} : {})},
+        undefined,
+        signal
+      );
+      rows = [...rows, ...latest.items];
+      cursor = latest.nextCursor;
+      if (!cursor) break;
+    }
+    if (current !== requestId || session !== generation || !latest) return;
+    items = [...new Map(rows.map(row => [row.id, row])).values()];
+    nextCursor = cursor;
+    unreadCount = latest.unreadCount;
+    total = latest.total;
+    if (append) pages++;
+    isLoaded = true;
+    error = '';
+  } catch (caught) {
+    if (current === requestId && session === generation)
+      error =
+        caught instanceof Error ?
+          caught.message
+        : 'Notifications could not be loaded.';
+  } finally {
+    if (current === requestId && session === generation) isLoading = false;
+  }
+}
+async function load() {
+  const session = generation;
+  const results = await Promise.allSettled([
+    loadInbox(),
+    refreshActivity?.(),
+    ...[...listeners].map(listener => listener())
+  ]);
+  if (session === generation)
+    activityError =
+      results.slice(1).some(result => result.status === 'rejected') ?
+        'Dashboard activity could not be refreshed.'
+      : '';
+}
+function setPreferences(change: Partial<InboxPreferences>) {
+  preferences = {...preferences, ...change};
+  pages = 1;
+  nextCursor = null;
+  items = [];
+  isLoaded = false;
+  try {
+    sessionStorage.setItem(
+      'admin-inbox-preferences',
+      JSON.stringify(preferences)
+    );
+  } catch {}
+  void loadInbox();
+}
+function refreshVisible() {
+  if (document.visibilityState === 'visible') void load();
+}
+function subscribe(onRefresh?: () => Promise<void>) {
+  if (channel) return;
+  refreshActivity = onRefresh;
+  const session = generation;
+  channel = supabase
+    .channel('admin-notifications')
+    .on(
+      'postgres_changes',
+      {event: '*', schema: 'public', table: 'db_admin_notifications'},
+      () => {
+        if (session === generation) void load();
+      }
+    )
+    .subscribe(status => {
+      if (status === 'SUBSCRIBED' && session === generation) void load();
+    });
+  timer = setInterval(refreshVisible, 30000);
+  document.addEventListener('visibilitychange', refreshVisible);
+  window.addEventListener('focus', refreshVisible);
+  window.addEventListener('online', refreshVisible);
+}
+function unsubscribe() {
+  generation++;
+  requestId++;
+  controller?.abort();
+  if (channel) void supabase.removeChannel(channel);
+  channel = null;
+  clearInterval(timer);
+  document.removeEventListener('visibilitychange', refreshVisible);
+  window.removeEventListener('focus', refreshVisible);
+  window.removeEventListener('online', refreshVisible);
+  refreshActivity = undefined;
+  items = [];
+  unreadCount = 0;
+  total = 0;
+  pages = 1;
+  nextCursor = null;
+  isLoaded = false;
+  isLoading = false;
+  isMutating = false;
+  error = '';
+  activityError = '';
+  restored = false;
+}
+async function mutate<T>(body: unknown): Promise<T> {
+  if (isMutating) throw new Error('A notification update is already running.');
+  const session = generation;
+  isMutating = true;
+  requestId++;
+  controller?.abort();
+  isLoading = false;
+  try {
+    return await adminActivityRequest<T>('notifications', {}, body);
+  } finally {
+    if (session === generation) {
+      isMutating = false;
+      void load();
+    }
+  }
+}
+async function action(action: 'read' | 'read_all' | 'delete', id?: string) {
+  try {
+    await mutate({action, id});
+  } catch (caught) {
+    toastStore.error(
+      caught instanceof Error ? caught.message : 'Notification update failed.'
+    );
+  }
+}
+export const adminNotificationsStore = {
+  get items() {
+    return items;
+  },
+  get preferences() {
+    return preferences;
+  },
+  get unreadCount() {
+    return unreadCount;
+  },
+  get total() {
+    return total;
+  },
+  get isLoaded() {
+    return isLoaded;
+  },
+  get isLoading() {
+    return isLoading;
+  },
+  get error() {
+    return error;
+  },
+  get activityError() {
+    return activityError;
+  },
+  get isMutating() {
+    return isMutating;
+  },
+  get hasMore() {
+    return nextCursor !== null;
+  },
+  load,
+  subscribe,
+  unsubscribe,
+  setPreferences,
+  loadMore: () => loadInbox(true),
+  markRead: (id: string) => action('read', id),
+  markAllRead: () => action('read_all'),
+  dismiss: (id: string) => action('delete', id),
+  prepareClear: (operationId: string) =>
+    mutate<ClearOperation>({action: 'prepare_clear', operationId}),
+  clear: (operationId: string) =>
+    mutate<ClearOperation>({action: 'clear', operationId}),
+  onActivityRefresh(listener: () => Promise<void>) {
+    listeners.push(listener);
+    return () => {
+      const index = listeners.indexOf(listener);
+      if (index >= 0) listeners.splice(index, 1);
+    };
+  }
+};

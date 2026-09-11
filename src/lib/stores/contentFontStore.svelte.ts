@@ -1,4 +1,5 @@
 import {browser} from '$app/environment';
+import {a11yStore} from './a11yStore.svelte';
 
 export type ContentFont = 'sans' | 'serif' | 'mono';
 
@@ -6,7 +7,7 @@ const STORAGE_KEY = 'fkp_content_font';
 const DEFAULT_FONT: ContentFont = 'sans';
 
 function createContentFontStore() {
-  let current = $state<ContentFont>(DEFAULT_FONT);
+  let preference = $state<ContentFont>(DEFAULT_FONT);
 
   if (browser) {
     try {
@@ -15,13 +16,14 @@ function createContentFontStore() {
         stored
         && (stored === 'sans' || stored === 'serif' || stored === 'mono')
       ) {
-        current = stored;
+        preference = stored;
       }
     } catch {}
   }
 
   function setFont(font: ContentFont) {
-    current = font;
+    if (a11yStore.current.dyslexicFont) return;
+    preference = font;
     if (browser) {
       try {
         localStorage.setItem(STORAGE_KEY, font);
@@ -35,7 +37,13 @@ function createContentFontStore() {
 
   return {
     get current() {
-      return current;
+      return a11yStore.current.dyslexicFont ? DEFAULT_FONT : preference;
+    },
+    get preference() {
+      return preference;
+    },
+    get locked() {
+      return a11yStore.current.dyslexicFont;
     },
     setFont,
     reset

@@ -17,13 +17,14 @@ bun run dev:preview    # start Vite dev server against Preview-tier config (mode
 bun run build         # production build -> .svelte-kit/cloudflare (mode: production)
 bun run build:preview  # build against Preview-tier config (mode: preview)
 bun run preview       # preview the production build
+bun run test           # Bun regression tests with isolated database fixtures
 bun run check          # svelte-kit sync + svelte-check (type checking)
 bun run check:watch    # same, in watch mode
 bun run lint            # prettier --check . && eslint .
 bun run format           # prettier --write .
 ```
 
-There is no test runner configured in this repo — `bun run check` (types) and `bun run lint` are the correctness gates. Always run `check` and `lint` after non-trivial changes.
+`bun run test` runs permanent Bun regression tests in `tests/`, including isolated PGlite database tests. Run tests, `bun run check`, and `bun run lint` after non-trivial changes; CI also builds the Cloudflare application. The optional PostgreSQL concurrency suite requires its own disposable Docker container, as documented in README. Keep manual browser harnesses and session reports in ignored local archives, not application source. Build plugins and Git hooks live in `tooling/`; `scripts/` retains operational migration and cleanup commands until Production cutover is complete.
 
 Requires a `.env` (copy from `.env.development.example` or `.env.production.example`) with at least `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY` for the dev server to start. Other vars: Cloudflare R2 (CV file storage), Sentry, Turnstile (bot protection), `IP_SALT` (hashing client IPs), `SUPABASE_SERVICE_ROLE_KEY` (server-only, bypasses RLS), `CLOUDFLARE_API_TOKEN` (wrangler CLI auth — needed for the `AI` binding's `remote: true` mode in `wrangler.jsonc` to reach Cloudflare; without it comment moderation returns `BLOG_COMMENT_MODERATION_UNAVAILABLE`). Tier templates are `.env.production.example` / `.env.development.example` — copy to `.env.production` / `.env.development` (and optionally `.env`) for the tier you're targeting locally (see [Environments](#environments) below).
 
@@ -120,7 +121,7 @@ Commit messages must follow [Conventional Commits](https://www.conventionalcommi
 
 ## graphify
 
-This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+The knowledge graph at `graphify-out/` is a local generated artifact with god nodes, community structure, and cross-file relationships. Its output and dated snapshots are ignored by Git and must not be committed. Use the installed graphify skill to generate a graph on a fresh checkout when needed. Agent observations and development archives are also local-only; preserve their local files when cleaning the Git index.
 
 Rules:
 

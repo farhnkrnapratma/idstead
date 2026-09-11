@@ -1,9 +1,12 @@
 <script lang="ts">
+  import {themeColors} from '$lib/themeColors';
   import './global.css';
   import {onMount} from 'svelte';
   import {onNavigate} from '$app/navigation';
   import {page} from '$app/state';
   import {ConsentBanner, Toast, ScrollToTopButton, FeedbackButton} from '$lib';
+  import ShortcutCatalogDialog from '$lib/components/ShortcutCatalogDialog.svelte';
+  import ShortcutModeIndicator from '$lib/components/ShortcutModeIndicator.svelte';
 
   import {themeStore} from '$lib/stores/themeStore.svelte';
   import {a11yStore} from '$lib/stores/a11yStore.svelte';
@@ -91,6 +94,37 @@
 
 <svelte:head>
   <link
+    rel="manifest"
+    href={`/site.webmanifest?theme=${themeStore.isDark ? 'dark' : 'light'}&v=${data?.author?.revision ?? 0}`} />
+  <link
+    rel="icon"
+    type="image/x-icon"
+    href={`/favicon.ico${data?.author?.avatarVersion ? `?v=${data.author.avatarVersion}` : ''}`} />
+  <link
+    rel="icon"
+    type="image/png"
+    sizes="16x16"
+    href={`/favicon-16x16.png${data?.author?.avatarVersion ? `?v=${data.author.avatarVersion}` : ''}`} />
+  <link
+    rel="icon"
+    type="image/png"
+    sizes="32x32"
+    href={`/favicon-32x32.png${data?.author?.avatarVersion ? `?v=${data.author.avatarVersion}` : ''}`} />
+  {#if data?.author?.avatarVersion}
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      sizes="any"
+      href={`/favicon.svg?v=${data.author.avatarVersion}`} />
+  {/if}
+  <link
+    rel="apple-touch-icon"
+    sizes="180x180"
+    href={`/apple-touch-icon.png${data?.author?.avatarVersion ? `?v=${data.author.avatarVersion}` : ''}`} />
+  <meta
+    name="theme-color"
+    content={themeColors(themeStore.isDark ? 'dark' : 'light').theme_color} />
+  <link
     rel="alternate"
     type="application/atom+xml"
     title={feedTitle}
@@ -122,3 +156,5 @@
 
 <ConsentBanner />
 <Toast />
+<ShortcutCatalogDialog />
+<ShortcutModeIndicator />

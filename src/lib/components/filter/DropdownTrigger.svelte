@@ -42,7 +42,7 @@
   aria-expanded={isOpen}
   aria-haspopup="listbox"
   class={cn(
-    'inline-flex cursor-pointer items-center justify-between gap-1 rounded-md font-sans-title font-medium disabled:cursor-not-allowed disabled:opacity-50',
+    'inline-flex cursor-pointer items-center justify-between gap-1 rounded-md font-medium disabled:cursor-not-allowed disabled:opacity-50',
     fullWidth ? 'w-full'
     : size === 'sm' ? 'w-full min-w-0 sm:w-auto'
     : 'w-full min-w-22 sm:w-auto',

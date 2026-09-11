@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {shortcut} from '../utils/shortcut.svelte';
   import {onDestroy} from 'svelte';
   import {Sparkles, Bot, ChevronsUpDown, ChevronsDownUp} from '@lucide/svelte';
   import {cn} from '../utils/cn';
@@ -107,11 +108,12 @@
         customClass
       )}>
       <summary
-        class="markdown-details-summary flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 font-sans-title text-sm font-medium text-text-primary transition-colors select-none group-open:border-border-subtle hover:bg-surface-hover/50 dark:group-open:border-white/10 [&::-webkit-details-marker]:hidden">
+        use:shortcut={{group: 'actions', label: 'TL;DR', placement: 'trailing'}}
+        class="markdown-details-summary relative flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 text-sm font-medium text-text-primary transition-colors select-none group-open:border-border-subtle hover:bg-surface-hover/50 dark:group-open:border-white/10 [&::-webkit-details-marker]:hidden">
         <span class="inline-flex items-center gap-2">
           <Sparkles class="size-4 shrink-0 text-text-primary" />
           <span
-            class="translate-y-px font-sans-title text-sm leading-none font-medium text-text-primary"
+            class="translate-y-px text-sm leading-none font-medium text-text-primary"
             >TL;DR</span>
         </span>
         <span
@@ -150,11 +152,16 @@
       )}
       ontoggle={handleSummaryToggle}>
       <summary
-        class="markdown-details-summary flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 font-sans-title text-sm font-medium text-text-primary transition-colors select-none group-open:border-border-subtle hover:bg-surface-hover/50 dark:group-open:border-white/10 [&::-webkit-details-marker]:hidden">
+        use:shortcut={{
+          group: 'actions',
+          label: 'Summary',
+          placement: 'trailing'
+        }}
+        class="markdown-details-summary relative flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 text-sm font-medium text-text-primary transition-colors select-none group-open:border-border-subtle hover:bg-surface-hover/50 dark:group-open:border-white/10 [&::-webkit-details-marker]:hidden">
         <span class="inline-flex items-center gap-2">
           <Bot class="size-4 shrink-0 text-text-primary" />
           <span
-            class="translate-y-px font-sans-title text-sm leading-none font-medium text-text-primary"
+            class="translate-y-px text-sm leading-none font-medium text-text-primary"
             >Summary</span>
         </span>
         <span

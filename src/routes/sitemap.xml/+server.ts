@@ -1,87 +1,54 @@
-import {supabase} from '$lib/supabase';
 import type {RequestHandler} from './$types';
-import {fetchAuthorProfile} from '$lib/author';
-import {escapeXml} from '$lib/utils/xml';
+import {error} from '@sveltejs/kit';
+import {supabase} from '$lib/supabase';
+import {
+  readSiteProfile,
+  readPublishedPosts,
+  validDate,
+  publicResponse
+} from '$lib/server/publicMetadata';
+import {escapeXml as xml} from '$lib/utils/xml';
 
-export const GET: RequestHandler = async () => {
-  const [authorProfile, {data: posts}] = await Promise.all([
-    fetchAuthorProfile(supabase),
-    supabase
-      .from('db_posts')
-      .select('slug, created_at, updated_at, title')
-      .eq('published', true)
-      .order('created_at', {ascending: false})
+export const GET: RequestHandler = async ({request}) => {
+  const [profile, posts, {data: legal, error: failure}] = await Promise.all([
+    readSiteProfile(),
+    readPublishedPosts(),
+    supabase.from('db_legals').select('slug,updated_at')
   ]);
-
-  const SITE_URL = (authorProfile?.siteUrl || '').replace(/\/$/, '');
-
-  const staticRoutes = [
-    {
-      url: `${SITE_URL}/`,
-      lastmod: '2026-08-30',
-      priority: '1.0',
-      changefreq: 'weekly'
-    },
-    {
-      url: `${SITE_URL}/feedback`,
-      lastmod: '2026-08-30',
-      priority: '0.5',
-      changefreq: 'monthly'
-    },
-    {
-      url: `${SITE_URL}/privacy`,
-      lastmod: '2026-08-30',
-      priority: '0.5',
-      changefreq: 'monthly'
-    },
-    {
-      url: `${SITE_URL}/terms`,
-      lastmod: '2026-08-30',
-      priority: '0.5',
-      changefreq: 'monthly'
-    },
-    {
-      url: `${SITE_URL}/security`,
-      lastmod: '2026-08-30',
-      priority: '0.5',
-      changefreq: 'monthly'
-    }
+  if (failure) error(503, 'Sitemap is temporarily unavailable.');
+  const routes = [
+    {path: '/', updated: undefined as string | undefined},
+    {path: '/feedback', updated: undefined as string | undefined},
+    ...(legal ?? [])
+      .filter(page => ['privacy', 'terms', 'security'].includes(page.slug))
+      .map(page => ({
+        path: '/' + page.slug,
+        updated: validDate(page.updated_at)
+      })),
+    ...posts.map(post => ({
+      path: '/blog/' + encodeURIComponent(post.slug),
+      updated: validDate(post.updated_at) ?? validDate(post.created_at)
+    }))
   ];
-
-  const postRoutes = (posts ?? []).map(post => ({
-    url: `${SITE_URL}/blog/${post.slug}`,
-    lastmod:
-      post.updated_at ?
-        new Date(post.updated_at).toISOString().split('T')[0]
-      : new Date(post.created_at).toISOString().split('T')[0],
-    priority: '0.8',
-    changefreq: 'monthly'
-  }));
-
-  const allRoutes = [...staticRoutes, ...postRoutes];
-
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset
-  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
-    http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
-${allRoutes
-  .map(
-    route => `  <url>
-    <loc>${escapeXml(route.url)}</loc>
-    <lastmod>${route.lastmod}</lastmod>
-    <changefreq>${route.changefreq}</changefreq>
-    <priority>${route.priority}</priority>
-  </url>`
+  const entries = routes.map(
+    route =>
+      `<url><loc>${xml(profile.siteUrl + route.path)}</loc>${route.updated ? `<lastmod>${route.updated}</lastmod>` : ''}</url>`
+  );
+  const page = Number(new URL(request.url).searchParams.get('page') ?? 0);
+  if (
+    !Number.isInteger(page)
+    || page < 0
+    || page > Math.ceil(entries.length / 10000)
   )
-  .join('\n')}
-</urlset>`;
-
-  return new Response(xml, {
-    headers: {
-      'Content-Type': 'application/xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600, s-maxage=3600'
-    }
-  });
+    error(404, 'Sitemap page not found.');
+  const body =
+    entries.length > 10000 && page === 0 ?
+      `<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${Array.from({length: Math.ceil(entries.length / 10000)}, (_, i) => `<sitemap><loc>${xml(profile.siteUrl + '/sitemap.xml?page=' + (i + 1))}</loc></sitemap>`).join('')}</sitemapindex>`
+    : `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${(page ? entries.slice((page - 1) * 10000, page * 10000) : entries).join('\n')}</urlset>`;
+  return publicResponse(
+    request,
+    '<?xml version="1.0" encoding="UTF-8"?>\n' + body,
+    'application/xml; charset=utf-8',
+    300
+  );
 };

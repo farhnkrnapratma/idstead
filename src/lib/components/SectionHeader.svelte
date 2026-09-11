@@ -27,7 +27,7 @@
   )}>
   <div>
     <h1
-      class="font-sans-title text-2xl font-bold tracking-tight text-text-primary sm:text-3xl lg:text-4xl">
+      class="text-2xl font-bold tracking-tight text-text-primary sm:text-3xl lg:text-4xl">
       {title}
     </h1>
     {#if subtitle}

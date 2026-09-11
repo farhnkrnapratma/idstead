@@ -1,4 +1,15 @@
 <script lang="ts">
+  import {createFeedbackClient} from '$lib/feedbackClient.svelte';
+  import {shortcut} from '$lib/utils/shortcut.svelte';
+  import {buttonKey} from '$lib/shortcuts';
+  import {FieldValidation, requiredText} from '$lib/fieldValidation';
+  import {ogLocale} from '$lib/translationLocales';
+  import '@fontsource-variable/noto-sans-jp';
+  import '@fontsource-variable/noto-sans-sc';
+  import '@fontsource-variable/noto-sans-kr';
+  import '@fontsource-variable/noto-serif-jp';
+  import '@fontsource-variable/noto-serif-sc';
+  import '@fontsource-variable/noto-serif-kr';
   import {onMount, onDestroy, tick, untrack} from 'svelte';
   import {fade} from 'svelte/transition';
   import {SvelteSet} from 'svelte/reactivity';
@@ -48,7 +59,6 @@
     ArticleMeta,
     HelpfulBlock,
     PostInsights,
-    formatAbsoluteDate,
     ConsentNotice,
     readingModeStore,
     Tooltip,
@@ -61,6 +71,7 @@
   import {themeStore} from '$lib/stores/themeStore.svelte';
   import {a11yStore} from '$lib/stores/a11yStore.svelte';
   import {contentFontStore} from '$lib/stores/contentFontStore.svelte';
+  import {codeBlockPrefsStore} from '$lib/stores/codeBlockPrefsStore.svelte';
 
   let {data}: PageProps = $props();
   const post = $derived(data.post);
@@ -147,12 +158,11 @@
 
   let isDark = $state(false);
 
-  const bannerPublicUrl = $derived(
-    data.bannerPublicUrl
-      || (data.post.banner_path ?
-        supabase.storage.from('blog-posts').getPublicUrl(data.post.banner_path)
-          .data.publicUrl
-      : '')
+  const bannerPublicUrl = $derived(data.bannerPublicUrl || '');
+  const bannerSocialUrl = $derived(
+    bannerPublicUrl && author?.siteUrl ?
+      new URL(bannerPublicUrl, author.siteUrl).href
+    : ''
   );
 
   const headings = $derived(data.headings || []);
@@ -176,26 +186,7 @@
   const failedAvatars = new SvelteSet<string>();
   const loadedAvatars = new SvelteSet<string>();
 
-  let hasVotedHelpful = $state(false);
-
-  async function handleHelpfulness(value: 'yes' | 'no') {
-    hasVotedHelpful = true;
-    if (value === 'yes') {
-      showYesFeedbackDialog = true;
-    } else {
-      showNoFeedbackDialog = true;
-    }
-
-    try {
-      await fetch('/api/internal/blog/feedback', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({postId: post.id, vote: value})
-      });
-    } catch (err) {
-      console.error('Failed to submit blog feedback:', err);
-    }
-  }
+  const feedback = createFeedbackClient(() => ({type: 'article', id: post.id}));
 
   let articleScrollTop = $state(0);
   let articleScrollHeight = $state(0);
@@ -228,7 +219,98 @@
     window.scrollTo({top: 0, behavior: 'smooth'});
   }
 
+  let articleEl = $state<HTMLElement | null>(null);
   let articleBodyEl: HTMLDivElement | undefined = $state();
+  let highlightTimer: ReturnType<typeof setTimeout> | undefined;
+
+  function highlightTarget(el: HTMLElement) {
+    document
+      .querySelectorAll('.footnote-target-highlight')
+      .forEach(node => node.classList.remove('footnote-target-highlight'));
+
+    const highlightEl = (el.closest('sup') || el) as HTMLElement;
+    highlightEl.classList.add('footnote-target-highlight');
+
+    if (highlightTimer) clearTimeout(highlightTimer);
+    highlightTimer = setTimeout(() => {
+      highlightEl.classList.remove('footnote-target-highlight');
+    }, 1800);
+  }
+
+  function scrollToTarget(targetId: string, smooth = true) {
+    const targetEl = document.getElementById(targetId);
+    if (!targetEl) return;
+
+    const isDesktop =
+      typeof window !== 'undefined'
+      && window.matchMedia('(min-width: 1024px)').matches
+      && !readingModeStore.active;
+
+    if (isDesktop && articleEl) {
+      const containerRect = articleEl.getBoundingClientRect();
+      const targetRect = targetEl.getBoundingClientRect();
+      const currentScrollTop = articleEl.scrollTop;
+      const targetScrollTop =
+        currentScrollTop + (targetRect.top - containerRect.top) - 32;
+
+      articleEl.scrollTo({
+        top: Math.max(0, targetScrollTop),
+        behavior: smooth ? 'smooth' : 'auto'
+      });
+
+      if (window.scrollY !== 0) {
+        window.scrollTo({top: 0, behavior: 'instant'});
+      }
+      const mainEl = document.getElementById('main-content');
+      if (mainEl && mainEl.scrollTop !== 0) {
+        mainEl.scrollTop = 0;
+      }
+    } else {
+      const topNavHeight = 56;
+      const targetRect = targetEl.getBoundingClientRect();
+      const targetWindowTop =
+        window.scrollY + targetRect.top - topNavHeight - 20;
+
+      window.scrollTo({
+        top: Math.max(0, targetWindowTop),
+        behavior: smooth ? 'smooth' : 'auto'
+      });
+    }
+
+    highlightTarget(targetEl);
+  }
+
+  function handleArticleLinkClick(e: MouseEvent) {
+    if (
+      e.defaultPrevented
+      || e.button !== 0
+      || e.ctrlKey
+      || e.metaKey
+      || e.shiftKey
+      || e.altKey
+      || !(e.target instanceof Element)
+    )
+      return;
+
+    const link = e.target.closest<HTMLAnchorElement>('a[href^="#"]');
+    if (
+      !link
+      || !articleEl?.contains(link)
+      || link.hasAttribute('download')
+      || (link.target && link.target !== '_self')
+    )
+      return;
+    const href = link.getAttribute('href');
+    if (!href || href === '#' || !href.startsWith('#')) return;
+
+    const targetId = href.slice(1);
+    const targetEl = document.getElementById(targetId);
+    if (!targetEl) return;
+
+    e.preventDefault();
+    pushState(`#${targetId}`, {});
+    scrollToTarget(targetId, true);
+  }
 
   $effect(() => {
     void html;
@@ -333,11 +415,8 @@
             } catch (err) {
               void err;
             }
-            const target = document.getElementById(el.id);
-            if (target) {
-              target.scrollIntoView({behavior: 'smooth', block: 'start'});
-              pushState(`#${el.id}`, {});
-            }
+            pushState(`#${el.id}`, {});
+            scrollToTarget(el.id, true);
           };
         });
       }
@@ -345,12 +424,14 @@
   });
 
   $effect(() => {
+    void codeBlockPrefsStore.current;
     void readingModeStore.active;
     refreshCodeBlockPrefs();
   });
 
   onDestroy(() => {
     readingModeStore.disable();
+    if (highlightTimer) clearTimeout(highlightTimer);
   });
 
   onMount(() => {
@@ -382,8 +463,24 @@
       }
     })();
 
+    if (typeof window !== 'undefined' && window.location.hash) {
+      const hashId = window.location.hash.slice(1);
+      tick().then(() => {
+        scrollToTarget(hashId, false);
+      });
+    }
+
+    function handlePopState() {
+      if (typeof window !== 'undefined' && window.location.hash) {
+        const hashId = window.location.hash.slice(1);
+        scrollToTarget(hashId, true);
+      }
+    }
+    window.addEventListener('popstate', handlePopState);
+
     return () => {
       observer.disconnect();
+      window.removeEventListener('popstate', handlePopState);
     };
   });
 
@@ -410,6 +507,7 @@
     replyTo = null;
     commentContent = '';
     feedbackMessage = null;
+    validation.reset();
     errors = {authorName: '', commentContent: ''};
     valid = {authorName: false, commentContent: false};
   }
@@ -422,6 +520,7 @@
     authorName = '';
     commentContent = '';
     feedbackMessage = null;
+    validation.reset();
     errors = {authorName: '', commentContent: ''};
     valid = {authorName: false, commentContent: false};
   }
@@ -429,49 +528,35 @@
   let errors = $state({authorName: '', commentContent: ''});
   let valid = $state({authorName: false, commentContent: false});
 
-  function debounce<T extends unknown[]>(cb: (...args: T) => void, ms: number) {
-    let timer: ReturnType<typeof setTimeout>;
-    return (...args: T) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => cb(...args), ms);
-    };
-  }
-
-  const validateAuthorName = debounce(() => {
-    const trimmed = authorName.trim();
-    if (trimmed === '') {
-      errors.authorName = '';
-      valid.authorName = false;
-    } else if (trimmed.length < 2) {
-      errors.authorName = 'Name must be at least 2 characters.';
-      valid.authorName = false;
-    } else if (trimmed.length > 50) {
-      errors.authorName = 'Name must be 50 characters or fewer.';
-      valid.authorName = false;
-    } else if (isNameReserved(trimmed, authorTokens)) {
-      errors.authorName = 'This name cannot be used. Please use another name.';
-      valid.authorName = false;
-    } else {
-      errors.authorName = '';
-      valid.authorName = true;
+  const validation = new FieldValidation();
+  onDestroy(() => validation.destroy());
+  validation.register('authorName', {
+    value: () => authorName,
+    baseline: () => '',
+    validate: value =>
+      requiredText('Name', 50)(value)
+      || (value.trim().length < 2 ? 'Name must be at least 2 characters.'
+      : isNameReserved(value, authorTokens) ?
+        'This name cannot be used. Please use another name.'
+      : ''),
+    report: result => {
+      errors.authorName = result.error;
+      valid.authorName = result.valid;
     }
-  }, 500);
-
-  const validateCommentContent = debounce(() => {
-    const trimmed = commentContent.trim();
-    if (trimmed === '') {
-      errors.commentContent = '';
-      valid.commentContent = false;
-    } else if (/(https?:\/\/|www\.[a-z0-9]|ftp:\/\/)/i.test(trimmed)) {
-      errors.commentContent =
-        'Links and URLs are not permitted in guest comments.';
-      valid.commentContent = false;
-    } else {
-      errors.commentContent = '';
-      valid.commentContent = true;
+  });
+  validation.register('commentContent', {
+    value: () => commentContent,
+    baseline: () => '',
+    validate: value =>
+      requiredText('Message', 2000)(value)
+      || (/(https?:\/\/|www\.[a-z0-9]|ftp:\/\/)/i.test(value) ?
+        'Links and URLs are not permitted in guest comments.'
+      : ''),
+    report: result => {
+      errors.commentContent = result.error;
+      valid.commentContent = result.valid;
     }
-  }, 500);
-
+  });
   function sanitizeInput(text: string): string {
     return text
       .replace(/&/g, '&amp;')
@@ -483,38 +568,12 @@
   }
 
   function validate() {
-    const nameTrimmed = authorName.trim();
-    let nameErr = '';
-    if (!nameTrimmed) {
-      nameErr = 'Name is required.';
-    } else if (nameTrimmed.length < 2) {
-      nameErr = 'Name must be at least 2 characters.';
-    } else if (nameTrimmed.length > 50) {
-      nameErr = 'Name must be 50 characters or fewer.';
-    } else if (isNameReserved(nameTrimmed, authorTokens)) {
-      nameErr = 'This name cannot be used. Please use another name.';
-    }
-
-    let msgErr = '';
-    const msgTrimmed = commentContent.trim();
-    if (!msgTrimmed) {
-      msgErr = 'Message is required.';
-    } else if (msgTrimmed.length > 2000) {
-      msgErr = 'Message must be 2000 characters or fewer.';
-    } else if (/(https?:\/\/|www\.[a-z0-9]|ftp:\/\/)/i.test(msgTrimmed)) {
-      msgErr = 'Links and URLs are not permitted in guest comments.';
-    }
-
-    errors = {authorName: nameErr, commentContent: msgErr};
-    valid = {authorName: !nameErr, commentContent: !msgErr};
-
-    return !nameErr && !msgErr;
+    return validation.submit(undefined, true);
   }
 
   async function handleSubmit(e: SubmitEvent, parentId: string | null = null) {
     e.preventDefault();
-    errors = {authorName: '', commentContent: ''};
-    if (!validate()) return;
+    if (!(await validate())) return;
 
     const turnstileToken = await executeTurnstile(turnstileEl);
     if (!turnstileToken) {
@@ -563,6 +622,7 @@
         commentContent = '';
         authorName = '';
         valid = {authorName: false, commentContent: false};
+        validation.reset();
         errors = {authorName: '', commentContent: ''};
         replyTo = null;
       } else {
@@ -624,6 +684,8 @@
   onpointerdown={handleCollaboratorsWindowPointerDown}
   onkeydown={handleCollaboratorsKeydown} />
 
+<svelte:body onclick={handleArticleLinkClick} />
+
 <svelte:head>
   <title>{post.title}{author?.name ? ` | ${author.name}` : ''}</title>
   <script
@@ -655,11 +717,11 @@
     content="article" />
   <meta
     property="og:locale"
-    content={language === 'en' ? 'en_US' : 'id_ID'} />
+    content={ogLocale(language)} />
   {#each langSwitcherOptions.filter(loc => loc !== language) as loc (loc)}
     <meta
       property="og:locale:alternate"
-      content={loc === 'en' ? 'en_US' : 'id_ID'} />
+      content={ogLocale(loc)} />
   {/each}
   <meta
     property="og:url"
@@ -672,13 +734,13 @@
       property="og:description"
       content={post.excerpt} />
   {/if}
-  {#if bannerPublicUrl}
+  {#if bannerSocialUrl}
     <meta
       property="og:image"
-      content={bannerPublicUrl} />
+      content={bannerSocialUrl} />
     <meta
       property="og:image:secure_url"
-      content={bannerPublicUrl} />
+      content={bannerSocialUrl} />
   {/if}
   <meta
     property="og:image:alt"
@@ -701,13 +763,13 @@
       property="twitter:description"
       content={post.excerpt} />
   {/if}
-  {#if bannerPublicUrl}
+  {#if bannerSocialUrl}
     <meta
       name="twitter:image"
-      content={bannerPublicUrl} />
+      content={bannerSocialUrl} />
     <meta
       property="twitter:image"
-      content={bannerPublicUrl} />
+      content={bannerSocialUrl} />
   {/if}
 </svelte:head>
 
@@ -731,7 +793,7 @@
   id="main-content"
   class="flex flex-col font-sans {readingModeStore.active ?
     'min-h-screen pt-4 sm:pt-6'
-  : 'min-h-[calc(100vh-3rem)] pt-12 sm:min-h-[calc(100vh-3.5rem)] sm:pt-14 lg:h-dvh lg:min-h-0 lg:overflow-hidden'}">
+  : 'min-h-[calc(100vh-3rem)] overscroll-none pt-12 sm:min-h-[calc(100vh-3.5rem)] sm:pt-14 lg:h-dvh lg:min-h-0 lg:overflow-clip'}">
   <div
     class={readingModeStore.active ?
       'relative mx-auto w-full px-3 pt-3 pb-16 sm:px-6 sm:pt-4 md:w-[80%] lg:w-[50%]'
@@ -746,17 +808,21 @@
           class="min-h-0 w-full flex-1 [scrollbar-width:none] overflow-hidden [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden" />
         <HelpfulBlock
           variant="compact"
-          voted={hasVotedHelpful ? true : null}
-          onVote={helpful => handleHelpfulness(helpful ? 'yes' : 'no')}
+          voted={feedback.voted}
+          pending={feedback.pending}
+          error={feedback.error}
+          onVote={helpful => feedback.vote(helpful ? 'yes' : 'no')}
           onFeedbackClick={() => (showNoFeedbackDialog = true)}
           class="w-full shrink-0" />
       </aside>
     {/if}
 
     <article
+      bind:this={articleEl}
       onscroll={handleArticleScroll}
       class="article-scroll-container flex w-full min-w-0 flex-col lg:h-full lg:max-h-full lg:overflow-y-auto lg:px-[5%] lg:pt-8 lg:pb-0">
       <ArticleHeader
+        banner={bannerPublicUrl}
         title={post.title}
         titleClass="text-text-primary"
         titleViewTransitionName="post-title-{post.slug}">
@@ -796,7 +862,7 @@
             </div>
 
             <div
-              class="flex min-w-0 flex-1 flex-wrap items-center gap-x-1 gap-y-0.5 font-sans-title text-xs text-text-secondary">
+              class="flex min-w-0 flex-1 flex-wrap items-center gap-x-1 gap-y-0.5 text-xs text-text-secondary">
               <span>Authored by</span>
               {#if allAuthors.length === 1}
                 <a
@@ -913,7 +979,7 @@
                           target="_blank"
                           rel="noopener noreferrer"
                           onclick={() => (isCollaboratorsPopoverOpen = false)}
-                          class="flex items-center gap-2 rounded-md px-1.5 py-1 font-sans-title text-xs transition-colors hover:bg-surface-hover hover:text-accent">
+                          class="flex items-center gap-2 rounded-md px-1.5 py-1 text-xs transition-colors hover:bg-surface-hover hover:text-accent">
                           <div
                             class="relative flex size-5 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border-subtle bg-surface-card">
                             {#if !loadedAvatars.has(collab)}
@@ -1017,8 +1083,10 @@
           class="mt-6 flex flex-col gap-4 select-none sm:mt-8 sm:gap-5">
           <div class="lg:hidden">
             <HelpfulBlock
-              voted={hasVotedHelpful ? true : null}
-              onVote={helpful => handleHelpfulness(helpful ? 'yes' : 'no')}
+              voted={feedback.voted}
+              pending={feedback.pending}
+              error={feedback.error}
+              onVote={helpful => feedback.vote(helpful ? 'yes' : 'no')}
               onFeedbackClick={() => (showNoFeedbackDialog = true)} />
           </div>
 
@@ -1164,7 +1232,7 @@
                     <div class="flex flex-col gap-1">
                       <div>
                         <h4
-                          class="line-clamp-2 font-sans-title text-lg leading-snug font-bold text-text-primary">
+                          class="line-clamp-2 text-lg leading-snug font-bold text-text-primary">
                           {related.title}
                         </h4>
                       </div>
@@ -1234,7 +1302,7 @@
           class="mt-8 border-t border-border-subtle pt-6 sm:mt-10 sm:pt-8"
           aria-label="Comments">
           <h2
-            class="mb-5 font-sans-title text-lg font-bold tracking-tight text-text-primary sm:mb-6 sm:text-xl">
+            class="mb-5 text-lg font-bold tracking-tight text-text-primary sm:mb-6 sm:text-xl">
             Comments ({comments.length})
           </h2>
 
@@ -1274,7 +1342,10 @@
                     oninput={() => {
                       errors.authorName = '';
                       valid.authorName = false;
-                      validateAuthorName();
+                      queueMicrotask(() => validation.input('authorName'));
+                    }}
+                    onblur={() => {
+                      void validation.check('authorName');
                     }} />
                 </FormField>
 
@@ -1299,9 +1370,12 @@
                     oninput={() => {
                       errors.commentContent = '';
                       valid.commentContent = false;
-                      validateCommentContent();
+                      queueMicrotask(() => validation.input('commentContent'));
                     }}
-                    aria-required="true" />
+                    aria-required="true"
+                    onblur={() => {
+                      void validation.check('commentContent');
+                    }} />
                 </FormField>
 
                 <div
@@ -1391,14 +1465,12 @@
                   class="mb-3 rounded-md border border-border-subtle bg-surface-base/80 p-3.5 text-left shadow-2xs sm:p-4">
                   <div
                     class="mb-3 flex items-center justify-between gap-3 border-b border-border-subtle/50 pb-2.5">
-                    <p
-                      class="font-sans-title text-xs font-semibold text-text-secondary">
+                    <p class="text-xs font-semibold text-text-secondary">
                       Replying to {getCommentAuthor(comment)}
                     </p>
                     <Button
                       type="ghost"
                       size="sm"
-                      showEscHint
                       onclick={cancelReply}>Cancel</Button>
                   </div>
 
@@ -1425,7 +1497,10 @@
                         oninput={() => {
                           errors.authorName = '';
                           valid.authorName = false;
-                          validateAuthorName();
+                          queueMicrotask(() => validation.input('authorName'));
+                        }}
+                        onblur={() => {
+                          void validation.check('authorName');
                         }} />
                     </FormField>
 
@@ -1450,9 +1525,14 @@
                         oninput={() => {
                           errors.commentContent = '';
                           valid.commentContent = false;
-                          validateCommentContent();
+                          queueMicrotask(() =>
+                            validation.input('commentContent')
+                          );
                         }}
-                        aria-required="true" />
+                        aria-required="true"
+                        onblur={() => {
+                          void validation.check('commentContent');
+                        }} />
                     </FormField>
 
                     <div
@@ -1569,6 +1649,10 @@
         type="button"
         class="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full glass-button border border-accent/40 bg-surface-card/90 px-0 text-xs font-semibold text-accent shadow-md transition-all hover:scale-105 hover:border-accent hover:bg-surface-hover active:scale-95 md:h-10 md:w-10 md:shadow-lg"
         onclick={readingModeStore.toggle}
+        use:shortcut={{
+          combo: buttonKey('readingMode'),
+          label: 'Exit reading mode'
+        }}
         aria-label="Exit reading mode">
         <BookOpenText class="size-4.5 shrink-0 md:size-5" />
       </button>
@@ -1613,20 +1697,23 @@
     showNoFeedbackDialog = false;
   }}>
   {#snippet footer()}
-    <Button
-      type="secondary"
-      size="md"
-      showEscHint
-      onclick={() => {
-        showNoFeedbackDialog = false;
-      }}>Cancel</Button>
-    <Button
-      type="primary"
-      size="md"
-      onclick={() => {
-        showNoFeedbackDialog = false;
-        window.location.href = '/feedback';
-      }}>Send feedback</Button>
+    <div class="grid w-full grid-cols-2 gap-2.5">
+      <Button
+        type="secondary"
+        size="md"
+        fullWidth
+        onclick={() => {
+          showNoFeedbackDialog = false;
+        }}>Cancel</Button>
+      <Button
+        type="primary"
+        size="md"
+        fullWidth
+        onclick={() => {
+          showNoFeedbackDialog = false;
+          window.location.href = '/feedback';
+        }}>Send feedback</Button>
+    </div>
   {/snippet}
 </Dialog>
 
@@ -1634,7 +1721,7 @@
   @reference "../../global.css";
 
   .prose-custom {
-    @apply text-sm leading-relaxed text-(--color-body);
+    @apply text-left text-base leading-normal text-(--color-body);
     --color-heading: var(--color-text-primary);
     --color-body: var(--color-text-secondary);
     --color-link: var(--color-accent);
@@ -1876,7 +1963,7 @@
   }
 
   .prose-custom :global(.markdown-alert-title) {
-    @apply mb-1.5 flex items-center gap-2 font-sans-title text-xs leading-none font-semibold select-none sm:text-sm;
+    @apply mb-1.5 flex items-center gap-2 text-xs leading-none font-semibold select-none sm:text-sm;
   }
 
   .prose-custom :global(.markdown-alert-title svg) {
@@ -1956,7 +2043,7 @@
 
   .prose-custom :global(.markdown-steps-container) {
     --step-line-w: 1px;
-    --step-badge-size: 1.5rem;
+    --step-badge-size: 1.375rem;
     @apply relative my-6 ml-0 space-y-0 select-text;
     counter-reset: step-counter;
   }
@@ -1965,12 +2052,12 @@
     :global(
       .markdown-steps-container > :not(.markdown-steps-list):not(.markdown-step)
     ) {
-    @apply pl-9;
+    @apply pl-8;
   }
 
   .prose-custom :global(.markdown-step) {
     counter-increment: step-counter;
-    @apply relative pb-6 pl-9 text-text-secondary;
+    @apply relative pb-6 pl-8 text-text-secondary;
   }
 
   .prose-custom :global(.markdown-step:last-child) {
@@ -1980,7 +2067,7 @@
   .prose-custom :global(.markdown-step::before) {
     content: counter(step-counter);
     position: absolute;
-    top: 0.125rem;
+    top: 0;
     left: 0;
     width: var(--step-badge-size);
     height: var(--step-badge-size);
@@ -1996,10 +2083,10 @@
   .prose-custom :global(.markdown-step::after) {
     content: '';
     position: absolute;
-    top: calc(var(--step-badge-size) / 2 + 0.125rem);
+    top: var(--step-badge-size);
     left: calc(var(--step-badge-size) / 2 - 0.5px);
     width: var(--step-line-w);
-    bottom: calc(-1 * var(--step-badge-size) / 2 - 0.125rem);
+    bottom: 0;
     @apply pointer-events-none bg-border-subtle;
   }
 
@@ -2016,7 +2103,7 @@
   }
 
   .prose-custom :global(.markdown-steps-list > li.markdown-step) {
-    @apply relative my-0! list-none! pb-6 pl-9 text-text-secondary;
+    @apply relative my-0! list-none! pb-6 pl-8 text-text-secondary;
   }
 
   .prose-custom :global(.markdown-steps-list > li.markdown-step:last-child) {
@@ -2137,7 +2224,7 @@
 
   .prose-custom :global(details > summary),
   .prose-custom :global(.markdown-details-summary) {
-    @apply flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 font-sans-title text-sm font-medium text-text-primary transition-colors select-none hover:bg-surface-hover/50 [&::-webkit-details-marker]:hidden;
+    @apply flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 text-sm font-medium text-text-primary transition-colors select-none hover:bg-surface-hover/50 [&::-webkit-details-marker]:hidden;
   }
 
   .prose-custom :global(details[open] > summary),
@@ -2203,7 +2290,7 @@
   }
 
   .prose-custom :global(.footnotes li) {
-    @apply relative pl-5! [counter-increment:footnotes];
+    @apply relative scroll-mt-20 pl-5! [counter-increment:footnotes];
   }
 
   .prose-custom :global(.footnotes li::before) {
@@ -2216,7 +2303,7 @@
   }
 
   .prose-custom :global([data-footnote-ref]) {
-    @apply font-mono text-[0.8em] font-medium text-security no-underline hover:underline;
+    @apply scroll-mt-20 font-mono text-[0.8em] font-medium text-security no-underline hover:underline;
   }
 
   .prose-custom :global(.footnote-backref) {
@@ -2241,5 +2328,35 @@
 
   .prose-custom :global(.footnotes li:target a) {
     @apply underline;
+  }
+
+  :global(.footnote-target-highlight) {
+    animation: footnote-highlight-pulse 1.8s ease-out forwards;
+    border-radius: 0.25rem;
+  }
+
+  @keyframes footnote-highlight-pulse {
+    0% {
+      background-color: color-mix(
+        in srgb,
+        var(--color-accent) 25%,
+        transparent
+      );
+      box-shadow: 0 0 0 2px
+        color-mix(in srgb, var(--color-accent) 40%, transparent);
+    }
+    70% {
+      background-color: color-mix(
+        in srgb,
+        var(--color-accent) 15%,
+        transparent
+      );
+      box-shadow: 0 0 0 2px
+        color-mix(in srgb, var(--color-accent) 25%, transparent);
+    }
+    100% {
+      background-color: transparent;
+      box-shadow: 0 0 0 0 transparent;
+    }
   }
 </style>

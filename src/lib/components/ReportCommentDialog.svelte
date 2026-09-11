@@ -1,4 +1,6 @@
 <script lang="ts">
+  import {onDestroy} from 'svelte';
+  import {FieldValidation} from '$lib/fieldValidation';
   import {
     ShieldAlert,
     MessageSquareWarning,
@@ -24,6 +26,11 @@
   } from '$lib/utils/turnstile';
   import {toastStore} from '$lib/stores/toastStore.svelte';
   import {cn} from '$lib/utils/cn';
+  import {
+    REPORT_REASONS,
+    reportReasonColor,
+    type ReportReasonId
+  } from '$lib/reportReasons';
 
   interface CommentInfo {
     id: string;
@@ -39,102 +46,42 @@
 
   let {isOpen = $bindable(false), comment = null, onClose}: Props = $props();
 
-  type ReasonType =
-    | 'spam'
-    | 'harassment'
-    | 'violence_or_illegal'
-    | 'sexual_content'
-    | 'self_harm'
-    | 'impersonation'
-    | 'removal_request'
-    | 'misinformation'
-    | 'other';
+  const REASON_ICONS: Record<ReportReasonId, typeof ShieldAlert> = {
+    spam: ShieldAlert,
+    harassment: MessageSquareWarning,
+    violence_or_illegal: Siren,
+    sexual_content: Ban,
+    self_harm: HeartCrack,
+    impersonation: UserX,
+    removal_request: FileX,
+    misinformation: Newspaper,
+    other: HelpCircle
+  };
+  const REASONS = REPORT_REASONS.map(r => ({...r, icon: REASON_ICONS[r.id]}));
 
-  const REASONS: {
-    id: ReasonType;
-    label: string;
-    description: string;
-    icon: typeof ShieldAlert;
-    colorClass: string;
-  }[] = [
-    {
-      id: 'spam',
-      label: 'Spam / Phishing',
-      description: 'Commercial advertisements, scam links, or repetitive spam',
-      icon: ShieldAlert,
-      colorClass: 'text-danger'
-    },
-    {
-      id: 'harassment',
-      label: 'Harassment / Hate',
-      description: 'Abusive language, insults, harassment, or hate speech',
-      icon: MessageSquareWarning,
-      colorClass: 'text-amber-500'
-    },
-    {
-      id: 'violence_or_illegal',
-      label: 'Violence / Illegal',
-      description:
-        'Threats of violence, promotion of crime, or dangerous weapons',
-      icon: Siren,
-      colorClass: 'text-orange-500'
-    },
-    {
-      id: 'sexual_content',
-      label: 'Sexual Content',
-      description: 'Sexually explicit content or exploitation of a minor',
-      icon: Ban,
-      colorClass: 'text-rose-500'
-    },
-    {
-      id: 'self_harm',
-      label: 'Self-Harm / Suicide',
-      description: 'Content that encourages or depicts self-harm or suicide',
-      icon: HeartCrack,
-      colorClass: 'text-fuchsia-400'
-    },
-    {
-      id: 'impersonation',
-      label: 'Impersonation',
-      description: 'Pretending to be someone else or using a deceptive name',
-      icon: UserX,
-      colorClass: 'text-purple-400'
-    },
-    {
-      id: 'removal_request',
-      label: 'Content / Privacy',
-      description:
-        'Request removal of private, sensitive, or copyrighted content',
-      icon: FileX,
-      colorClass: 'text-blue-400'
-    },
-    {
-      id: 'misinformation',
-      label: 'Misinformation',
-      description: 'False claims, defamation, or election misinformation',
-      icon: Newspaper,
-      colorClass: 'text-cyan-500'
-    },
-    {
-      id: 'other',
-      label: 'Other Violation',
-      description: 'Any other violation not covered above',
-      icon: HelpCircle,
-      colorClass: 'text-text-muted'
-    }
-  ];
-
-  let selectedReason = $state<ReasonType>('spam');
-  const selectedReasonInfo = $derived(
-    REASONS.find(r => r.id === selectedReason)
-  );
+  let selectedReason = $state<ReportReasonId>('spam');
   let details = $state('');
+  let detailsError = $state('');
+  let detailsValid = $state(false);
+  const validation = new FieldValidation();
+  validation.register('details', {
+    value: () => details,
+    baseline: () => '',
+    validate: (value: string) =>
+      value.trim().length > 500 ? 'Use at most 500 characters.' : '',
+    report: result => {
+      detailsError = result.error;
+      detailsValid = result.valid;
+    }
+  });
+  onDestroy(() => validation.destroy());
   let isSubmitting = $state(false);
   let turnstileEl = $state<HTMLDivElement | null>(null);
 
   function resetForm() {
     selectedReason = 'spam';
     details = '';
+    validation.reset();
     isSubmitting = false;
     resetTurnstile(turnstileEl);
   }
@@ -147,6 +94,7 @@
 
   async function submitReport() {
     if (!comment?.id) return;
+    if (!(await validation.submit(undefined, true))) return;
 
     let turnstileToken = '';
     if (turnstileSiteKey) {
@@ -200,10 +148,12 @@
   bind:isOpen
   title="Report Comment"
   description="Select the reason that best describes why this comment violates policy."
-  size="lg"
+  size="4xl"
+  compact
+  scrollBody
   onClose={handleClose}>
   {#if comment}
-    <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-2.5">
       <div
         class="rounded-md border border-border-subtle bg-surface-card/60 p-2.5 text-xs text-text-secondary">
         <span class="font-semibold text-text-primary"
@@ -215,16 +165,13 @@
 
       <div class="flex flex-col gap-1.5">
         <div
-          class="grid grid-cols-1 gap-1.5 sm:grid-cols-2"
+          class="grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-3"
           role="radiogroup"
           aria-label="Report reason">
-          {#each REASONS as r, idx (r.id)}
+          {#each REASONS as r (r.id)}
             <label
               class={cn(
-                'group flex cursor-pointer items-center gap-2 rounded-md border px-2.5 py-1.5 text-left transition-all select-none',
-                idx === REASONS.length - 1 && REASONS.length % 2 !== 0 ?
-                  'sm:col-span-2'
-                : '',
+                'group flex cursor-pointer items-start gap-2 rounded-md border px-2.5 py-2 text-left transition-all select-none has-focus-visible:outline-2 has-focus-visible:outline-focus-ring',
                 selectedReason === r.id ?
                   'border-accent bg-accent/10'
                 : 'border-border-subtle/70 bg-surface-card/60 hover:border-accent/40 hover:bg-surface-card'
@@ -237,18 +184,23 @@
                 onchange={() => (selectedReason = r.id)}
                 class="sr-only" />
               <div
+                style:color={reportReasonColor(r.id)}
                 class={cn(
-                  'shrink-0 transition-transform group-hover:scale-105',
-                  r.colorClass
+                  'mt-0.5 shrink-0 transition-transform group-hover:scale-105'
                 )}>
                 <r.icon class="size-3.5" />
               </div>
-              <span
-                class="min-w-0 flex-1 truncate text-2xs font-semibold text-text-primary transition-colors group-hover:text-accent">
-                {r.label}
+              <span class="flex min-w-0 flex-1 flex-col gap-0.5">
+                <span
+                  class="text-2xs font-semibold text-text-primary transition-colors group-hover:text-accent">
+                  {r.label}
+                </span>
+                <span class="text-3xs leading-relaxed text-text-muted">
+                  {r.description}
+                </span>
               </span>
               <span
-                class="relative flex size-3.5 shrink-0 items-center justify-center">
+                class="relative mt-0.5 flex size-3.5 shrink-0 items-center justify-center">
                 <Circle
                   class={cn(
                     'absolute size-3.5 transition-all duration-200',
@@ -267,25 +219,27 @@
             </label>
           {/each}
         </div>
-
-        {#if selectedReasonInfo}
-          <p class="text-2xs leading-relaxed text-text-muted">
-            {selectedReasonInfo.description}
-          </p>
-        {/if}
       </div>
 
       <FormField
         id="report-details"
         label="Additional details (optional)"
         variant="floating"
+        error={detailsError}
+        valid={detailsValid}
         maxlength={500}
         currentLength={details.length}
         counter={`${details.length}/500`}>
         <Textarea
           id="report-details"
-          rows={1}
+          rows={2}
           maxlength={500}
+          error={!!detailsError}
+          valid={detailsValid}
+          oninput={() => validation.input('details')}
+          onblur={() => {
+            void validation.check('details');
+          }}
           bind:value={details} />
       </FormField>
 
@@ -313,19 +267,23 @@
   {/if}
 
   {#snippet footer()}
-    <Button
-      type="secondary"
-      size="sm"
-      disabled={isSubmitting}
-      onclick={handleClose}>
-      Cancel
-    </Button>
-    <Button
-      type="danger"
-      size="sm"
-      disabled={isSubmitting}
-      onclick={submitReport}>
-      {isSubmitting ? 'Submitting…' : 'Submit Report'}
-    </Button>
+    <div class="grid w-full grid-cols-2 gap-2.5">
+      <Button
+        type="secondary"
+        size="sm"
+        fullWidth
+        disabled={isSubmitting}
+        onclick={handleClose}>
+        Cancel
+      </Button>
+      <Button
+        type="danger"
+        size="sm"
+        fullWidth
+        disabled={isSubmitting}
+        onclick={submitReport}>
+        {isSubmitting ? 'Submitting…' : 'Submit Report'}
+      </Button>
+    </div>
   {/snippet}
 </Dialog>

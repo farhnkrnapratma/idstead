@@ -14,6 +14,7 @@
   import {markdownToPlainText} from '../utils/markdownToText';
   import {cn} from '../utils/cn';
   import Button from './Button.svelte';
+  import {shortcut} from '../utils/shortcut.svelte';
 
   interface Props {
     variant?: 'inline' | 'sidebar' | 'toolbar';
@@ -208,6 +209,7 @@
           >Copy</span>
         {#if showCopyUrl}
           <Button
+            shortcutGroup="actions"
             type="ghost"
             size="xs"
             label={copiedUrl ? 'Copied!' : 'Post URL'}
@@ -228,6 +230,7 @@
         {/if}
         {#if pageId}
           <Button
+            shortcutGroup="actions"
             type="ghost"
             size="xs"
             label={copiedId ? 'Copied!' : 'Post ID'}
@@ -258,6 +261,7 @@
           class="px-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase"
           >Text</span>
         <Button
+          shortcutGroup="actions"
           type="ghost"
           size="xs"
           label={copiedText ? 'Copied!' : 'Copy as TXT'}
@@ -276,6 +280,7 @@
           {/snippet}
         </Button>
         <Button
+          shortcutGroup="actions"
           type="ghost"
           size="xs"
           href={viewTextUrl}
@@ -295,6 +300,7 @@
           class="px-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase"
           >Save</span>
         <Button
+          shortcutGroup="actions"
           type="ghost"
           size="xs"
           label="Save as MD"
@@ -311,6 +317,7 @@
           {/snippet}
         </Button>
         <Button
+          shortcutGroup="actions"
           type="ghost"
           size="xs"
           label="Save as TXT"
@@ -337,12 +344,13 @@
       className
     )}>
     <h3
-      class="font-sans-title text-xs font-bold tracking-wider text-text-secondary uppercase select-none">
+      class="text-xs font-bold tracking-wider text-text-secondary uppercase select-none">
       Actions
     </h3>
 
     <div class="grid grid-cols-2 gap-1.5">
       <Button
+        shortcutGroup="actions"
         type="secondary"
         size="xs"
         class="w-full justify-start gap-1.5 px-2 py-1.5 text-xs font-normal! text-text-secondary!"
@@ -359,6 +367,7 @@
       </Button>
 
       <Button
+        shortcutGroup="actions"
         href={viewMarkdownUrl}
         type="secondary"
         size="xs"
@@ -375,7 +384,12 @@
 
     <details class="group my-0 overflow-hidden pt-0.5">
       <summary
-        class="group/summary flex min-h-0 cursor-pointer list-none items-center justify-between gap-1 border-0! bg-transparent! px-0 py-0.5 font-sans-title text-xs font-bold tracking-wider text-text-secondary uppercase no-underline! transition-colors select-none group-open:border-b-0! group-open:bg-transparent! hover:bg-transparent! hover:text-security [&::-webkit-details-marker]:hidden">
+        use:shortcut={{
+          group: 'actions',
+          label: 'More options',
+          placement: 'trailing'
+        }}
+        class="group/summary relative flex min-h-0 cursor-pointer list-none items-center justify-between gap-1 border-0! bg-transparent! px-0 py-0.5 text-xs font-bold tracking-wider text-text-secondary uppercase no-underline! transition-colors select-none group-open:border-b-0! group-open:bg-transparent! hover:bg-transparent! hover:text-security [&::-webkit-details-marker]:hidden">
         <span>More options</span>
         <ChevronDown
           class="size-3.5 text-text-secondary transition-transform duration-200 group-open:rotate-180 group-hover/summary:text-security" />
@@ -393,6 +407,7 @@
               )} gap-1.5">
               {#if showCopyUrl}
                 <Button
+                  shortcutGroup="actions"
                   type="secondary"
                   size="xs"
                   class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
@@ -411,6 +426,7 @@
 
               {#if pageId}
                 <Button
+                  shortcutGroup="actions"
                   type="secondary"
                   size="xs"
                   class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
@@ -436,6 +452,7 @@
             >Text</span>
           <div class="grid grid-cols-2 gap-1.5">
             <Button
+              shortcutGroup="actions"
               type="secondary"
               size="xs"
               class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
@@ -452,6 +469,7 @@
             </Button>
 
             <Button
+              shortcutGroup="actions"
               href={viewTextUrl}
               type="secondary"
               size="xs"
@@ -471,6 +489,7 @@
             >Save</span>
           <div class="grid grid-cols-2 gap-1.5">
             <Button
+              shortcutGroup="actions"
               type="secondary"
               size="xs"
               class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
@@ -484,6 +503,7 @@
               {/snippet}
             </Button>
             <Button
+              shortcutGroup="actions"
               type="secondary"
               size="xs"
               class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
@@ -506,6 +526,7 @@
       className
     )}>
     <Button
+      shortcutGroup="actions"
       type="secondary"
       size="xs"
       onclick={handleCopyMarkdown}
@@ -522,6 +543,7 @@
     </Button>
 
     <Button
+      shortcutGroup="actions"
       type="secondary"
       size="xs"
       href={viewMarkdownUrl}
@@ -539,6 +561,7 @@
       bind:this={moreContainerRef}
       class="relative inline-block shrink-0 text-left">
       <Button
+        shortcutGroup="actions"
         type="ghost"
         size="xs"
         onclick={toggleMore}

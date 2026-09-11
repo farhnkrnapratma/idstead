@@ -100,7 +100,7 @@
                 role="tab"
                 aria-selected={activeTab === key}
                 onclick={() => (activeTab = key)}
-                class="markdown-tab-button relative -mb-px inline-flex shrink-0 cursor-pointer items-center justify-center border-b-[2.5px] px-3 py-1.5 font-sans-title text-xs font-medium whitespace-nowrap transition-all select-none {(
+                class="markdown-tab-button relative -mb-px inline-flex shrink-0 cursor-pointer items-center justify-center border-b-[2.5px] px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-all select-none {(
                   activeTab === key
                 ) ?
                   'active-tab border-b-accent font-bold text-accent'

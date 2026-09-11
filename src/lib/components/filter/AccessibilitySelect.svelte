@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {buttonKey} from '$lib/shortcuts';
   import {Accessibility, ToggleLeft, ToggleRight} from '@lucide/svelte';
   import {cn} from '../../utils/cn';
   import {popoverPosition} from '../../utils/popoverPosition';
@@ -69,6 +70,8 @@
     class="relative inline-block">
     <IconButton
       ariaLabel="Accessibility"
+      keyboardShortcut={buttonKey('accessibility')}
+      shortcutLabel="Accessibility options"
       tooltip="Accessibility"
       tooltipPlacement={dropdownDirection === 'up' ? 'top' : 'bottom'}
       tooltipAlign="right"

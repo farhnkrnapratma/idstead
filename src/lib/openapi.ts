@@ -43,13 +43,13 @@ const blogPostSummarySchema = {
     updated_at: {type: 'string', format: 'date-time'},
     language: {
       type: 'string',
-      enum: ['en', 'id'],
+      enum: ['en', 'id', 'ja', 'zh', 'ko'],
       description:
         'Language actually returned. May differ from `requested_language` if that translation is not yet available (falls back to English).'
     },
     requested_language: {
       type: 'string',
-      enum: ['id'],
+      enum: ['id', 'ja', 'zh', 'ko'],
       nullable: true,
       description: 'The `lang` query param that was requested, if any.'
     },
@@ -146,9 +146,9 @@ const formatParam = {
 const langParam = {
   name: 'lang',
   in: 'query',
-  schema: {type: 'string', enum: ['id']},
+  schema: {type: 'string', enum: ['id', 'ja', 'zh', 'ko']},
   description:
-    'Return an AI-translated version of the post (Indonesian). Falls back to English (with `language: "en"` in the response) if that translation is not yet available -- never a 404. An unrecognized value returns 400 BLOG_INVALID_LANG.'
+    'Return an AI-translated version of the post (`id` Indonesian, `ja` Japanese, `zh` Simplified Chinese, `ko` Korean). Falls back to English (with `language: "en"` in the response) if that translation is not yet available -- never a 404. An unrecognized value returns 400 BLOG_INVALID_LANG.'
 };
 
 const errorResponses = {
@@ -551,3 +551,35 @@ export const openapiSpec = {
     }
   }
 };
+
+const fetchFailures: Record<string, string> = {
+  '/api/v1/search': 'SEARCH_FETCH_FAILED',
+  '/api/v1/blog/{id_or_slug}':
+    'BLOG_POST_FETCH_FAILED or BLOG_POST_COUNTS_FETCH_FAILED',
+  '/api/v1/blog/views': 'BLOG_VIEWS_FETCH_FAILED',
+  '/api/v1/author': 'AUTHOR_FETCH_FAILED',
+  '/api/v1/author/contact': 'AUTHOR_CONTACT_FETCH_FAILED',
+  '/api/v1/author/cv': 'AUTHOR_CV_FETCH_FAILED',
+  '/api/v1/author/skills': 'AUTHOR_SKILLS_FETCH_FAILED',
+  '/api/v1/author/funding': 'AUTHOR_FUNDING_FETCH_FAILED',
+  '/api/v1/author/socials': 'AUTHOR_SOCIALS_FETCH_FAILED',
+  '/api/v1/cv': 'CV_METADATA_FETCH_FAILED'
+};
+for (const [path, methods] of Object.entries(openapiSpec.paths)) {
+  if (!('get' in methods)) continue;
+  const responses = methods.get.responses as Record<string, unknown>;
+  if (fetchFailures[path])
+    responses['500'] = {
+      description: fetchFailures[path] + ': the data source could not be read.',
+      content: {'application/json': {schema: errorSchema}}
+    };
+  if (path === '/api/v1/blog/{id_or_slug}')
+    responses['502'] = {
+      description:
+        'BLOG_CONTENT_FETCH_FAILED: post content could not be fetched.',
+      content: {'application/json': {schema: errorSchema}}
+    };
+  responses['304'] = {
+    description: 'The requested representation is unchanged. No response body.'
+  };
+}

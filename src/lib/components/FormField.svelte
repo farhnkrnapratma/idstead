@@ -90,7 +90,7 @@
     <div class="flex items-center justify-between">
       <label
         for={id}
-        class="font-sans-title text-xs font-bold text-text-secondary select-none">
+        class="text-xs font-bold text-text-secondary select-none">
         {label}
         {#if required && !hideAsterisk}
           <span

@@ -1,6 +1,14 @@
 <script lang="ts">
+  import {bannerUrl} from '$lib/blogBanner';
+  import {
+    FieldValidation,
+    requiredText,
+    emailError
+  } from '$lib/fieldValidation';
+  import {publicAvatarUrl} from '$lib/siteIdentity';
+  import {ogLocale, TRANSLATION_LOCALES} from '$lib/translationLocales';
   import {env as publicEnv} from '$env/dynamic/public';
-  import {onMount, tick, untrack} from 'svelte';
+  import {onDestroy, onMount, tick, untrack} from 'svelte';
   import type {Snippet} from 'svelte';
   import {
     Code,
@@ -80,7 +88,6 @@
     formatReadTime,
     formatCommentCount,
     formatViewCount,
-    formatAbsoluteDate,
     decodeHtmlEntities,
     Section,
     PageContainer,
@@ -90,6 +97,9 @@
     popoverPosition,
     withViewTransition
   } from '$lib';
+  import {shortcut} from '$lib/utils/shortcut.svelte';
+  import {goto} from '$app/navigation';
+  import {page} from '$app/state';
   import {supabase} from '$lib/supabase';
   import {SvelteSet} from 'svelte/reactivity';
   import {formatMonthAbbrev} from '$lib/author';
@@ -206,14 +216,6 @@
       checksumAnchor.click();
       document.body.removeChild(checksumAnchor);
     }, 250);
-  }
-
-  function getBannerUrl(bannerPath: string | null | undefined): string | null {
-    if (!bannerPath) return null;
-    const {data: res} = supabase.storage
-      .from('blog-posts')
-      .getPublicUrl(bannerPath);
-    return res.publicUrl;
   }
 
   const failedBanners = new SvelteSet<string>();
@@ -671,7 +673,19 @@
 
   const recentPosts = $derived(posts.slice(0, 2));
 
-  let activeSection = $state<Section>('home');
+  const SECTIONS: Section[] = [
+    'home',
+    'blog',
+    'contact',
+    'cv',
+    'projects',
+    'funding'
+  ];
+
+  const activeSection = $derived.by<Section>(() => {
+    const hash = page.url.hash.replace(/^#/, '').toLowerCase() as Section;
+    return SECTIONS.includes(hash) ? hash : 'home';
+  });
   let formName = $state('');
   let formEmail = $state('');
   let formMessage = $state('');
@@ -691,6 +705,7 @@
     formMessage = '';
     formErrors = {name: '', email: '', message: ''};
     formValid = {name: false, email: false, message: false};
+    validation.reset();
   }
 
   let contactEmail = $derived.by(() => {
@@ -705,52 +720,39 @@
     return author?.email?.trim() || '';
   });
 
-  function debounce<T extends unknown[]>(cb: (...args: T) => void, ms: number) {
-    let timer: ReturnType<typeof setTimeout>;
-    return (...args: T) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => cb(...args), ms);
-    };
-  }
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  const validateName = debounce(() => {
-    if (formName.trim() === '') {
-      formErrors.name = '';
-      formValid.name = false;
-    } else if (isNameReserved(formName, authorTokens)) {
-      formErrors.name = 'This name cannot be used. Please use another name.';
-      formValid.name = false;
-    } else {
-      formErrors.name = '';
-      formValid.name = true;
+  const validation = new FieldValidation();
+  onDestroy(() => validation.destroy());
+  validation.register('name', {
+    value: () => formName,
+    baseline: () => '',
+    validate: value =>
+      requiredText('Name')(value)
+      || (isNameReserved(value, authorTokens) ?
+        'This name cannot be used. Please use another name.'
+      : ''),
+    report: result => {
+      formErrors.name = result.error;
+      formValid.name = result.valid;
     }
-  }, 500);
-
-  const validateEmail = debounce(() => {
-    if (formEmail.trim() === '') {
-      formErrors.email = '';
-      formValid.email = false;
-    } else if (!emailRegex.test(formEmail.trim())) {
-      formErrors.email = 'Please enter a valid email address.';
-      formValid.email = false;
-    } else {
-      formErrors.email = '';
-      formValid.email = true;
+  });
+  validation.register('email', {
+    value: () => formEmail,
+    baseline: () => '',
+    validate: emailError,
+    report: result => {
+      formErrors.email = result.error;
+      formValid.email = result.valid;
     }
-  }, 500);
-
-  const validateMessage = debounce(() => {
-    if (formMessage.trim() === '') {
-      formErrors.message = '';
-      formValid.message = false;
-    } else {
-      formErrors.message = '';
-      formValid.message = true;
+  });
+  validation.register('message', {
+    value: () => formMessage,
+    baseline: () => '',
+    validate: requiredText('Message'),
+    report: result => {
+      formErrors.message = result.error;
+      formValid.message = result.valid;
     }
-  }, 500);
-
+  });
   function sanitizeInput(text: string): string {
     return text
       .replace(/&/g, '&amp;')
@@ -764,30 +766,7 @@
   async function validateForm(e: SubmitEvent) {
     e.preventDefault();
 
-    const nameErr = formName.trim() === '' ? 'Name is required.' : '';
-    const nameReservedErr =
-      !nameErr && isNameReserved(formName, authorTokens) ?
-        'This name is reserved.'
-      : '';
-    const emailErr = formEmail.trim() === '' ? 'Email is required.' : '';
-    const emailFormatErr =
-      !emailErr && !emailRegex.test(formEmail.trim()) ?
-        'Please enter a valid email address.'
-      : '';
-    const msgErr = formMessage.trim() === '' ? 'Message is required.' : '';
-
-    formErrors = {
-      name: nameErr || nameReservedErr,
-      email: emailErr || emailFormatErr,
-      message: msgErr
-    };
-    if (formErrors.name) formValid.name = false;
-    if (formErrors.email) formValid.email = false;
-    if (formErrors.message) formValid.message = false;
-
-    if (formErrors.name || formErrors.email || formErrors.message) {
-      return;
-    }
+    if (!(await validation.submit(undefined, true))) return;
 
     if (!contactEmail) {
       toastStore.error('Message submission is currently unavailable.');
@@ -797,42 +776,40 @@
     isSubmittingMessage = true;
 
     try {
+      let turnstileToken = '';
       if (turnstileSiteKey) {
         const token = await executeTurnstile(turnstileContactEl);
         if (!token) {
           toastStore.error('Please complete the security verification.');
           return;
         }
+        turnstileToken = token;
       }
 
       const sanitizedName = sanitizeInput(formName.trim());
       const sanitizedEmail = sanitizeInput(formEmail.trim());
       const sanitizedMessage = sanitizeInput(formMessage.trim());
 
-      const res = await fetch(
-        `https://formsubmit.co/ajax/${encodeURIComponent(contactEmail)}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json'
-          },
-          referrerPolicy: 'no-referrer-when-downgrade',
-          body: JSON.stringify({
-            name: sanitizedName,
-            email: sanitizedEmail,
-            message: sanitizedMessage,
-            _subject: 'New message from portfolio website!',
-            _captcha: 'false'
-          })
-        }
-      );
+      const res = await fetch('/api/internal/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
+        },
+        body: JSON.stringify({
+          kind: 'message',
+          name: sanitizedName,
+          email: sanitizedEmail,
+          message: sanitizedMessage,
+          turnstileToken
+        })
+      });
 
       const data = await res.json().catch(() => null);
-      if (!res.ok || data?.success === 'false' || data?.success === false) {
+      if (!res.ok || data?.success !== true) {
         throw new Error(
-          typeof data?.message === 'string' ?
-            data.message
+          typeof data?.error?.message === 'string' ?
+            data.error.message
           : 'Failed to send message.'
         );
       }
@@ -843,6 +820,7 @@
       formMessage = '';
       formErrors = {name: '', email: '', message: ''};
       formValid = {name: false, email: false, message: false};
+      validation.reset();
     } catch (err) {
       const msg =
         err instanceof Error && err.message ?
@@ -856,12 +834,11 @@
   }
 
   function navigate(section: Section) {
-    withViewTransition(() => {
-      activeSection = section;
-      if (typeof window !== 'undefined') {
-        window.location.hash = section === 'home' ? '' : section;
-      }
-    }, 'context');
+    if (section === activeSection) return;
+    withViewTransition(
+      () => goto(section === 'home' ? '/' : `/#${section}`, {noScroll: true}),
+      'context'
+    );
   }
 
   function handleWindowKeydown(event: KeyboardEvent) {
@@ -1037,25 +1014,6 @@
   onMount(() => {
     blogFilterStore.parseFromUrl(new URL(window.location.href));
     projectFilterStore.parseFromUrl(new URL(window.location.href));
-
-    const handleHashChange = () => {
-      if (typeof window !== 'undefined' && window.location.hash) {
-        const hash = window.location.hash.substring(1) as Section;
-        if (
-          ['home', 'blog', 'contact', 'cv', 'projects', 'funding'].includes(
-            hash
-          )
-        ) {
-          activeSection = hash;
-        }
-      }
-    };
-    handleHashChange();
-    window.addEventListener('hashchange', handleHashChange);
-
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-    };
   });
 
   let jsonLdScript = $derived(
@@ -1102,34 +1060,39 @@
     content={name} />
   <meta
     property="og:image"
-    content="{siteUrl}/hero.png" />
+    content={publicAvatarUrl(author)} />
   <meta
     property="og:image:secure_url"
-    content="{siteUrl}/hero.png" />
+    content={publicAvatarUrl(author)} />
   <meta
     property="og:image:type"
     content="image/png" />
   <meta
     property="og:image:width"
-    content="1280" />
+    content="512" />
   <meta
     property="og:image:height"
-    content="640" />
+    content="512" />
   <meta
     property="og:image:alt"
     content="{name} — {desc}" />
   <meta
     property="og:locale"
     content="en_US" />
-  <meta
-    property="og:locale:alternate"
-    content="id_ID" />
+  {#each TRANSLATION_LOCALES as locale (locale)}
+    <meta
+      property="og:locale:alternate"
+      content={ogLocale(locale)} />
+  {/each}
   <meta
     property="profile:username"
     content={username} />
   <meta
     property="profile:gender"
     content="male" />
+  <meta
+    name="twitter:image"
+    content={publicAvatarUrl(author)} />
   <meta
     name="twitter:card"
     content="summary_large_image" />
@@ -1268,7 +1231,7 @@
           <div class="relative flex items-start justify-between gap-2">
             <svelte:element
               this={headingTag}
-              class="line-clamp-2 min-w-0 flex-1 font-sans-title text-lg leading-snug font-bold text-text-primary">
+              class="line-clamp-2 min-w-0 flex-1 text-lg leading-snug font-bold text-text-primary">
               {project.name}
               {#if isRepoPinned(project) || isRepoNew(project)}
                 <span
@@ -1578,7 +1541,7 @@
                           onkeydown={event =>
                             handleProjectCodeTabKeydown(event, index)}
                           class={[
-                            'markdown-tab-button relative -mb-px inline-flex shrink-0 cursor-pointer items-center justify-center border-b-[2.5px] px-3 py-1.5 font-sans-title text-xs font-medium whitespace-nowrap transition-all select-none',
+                            'markdown-tab-button relative -mb-px inline-flex shrink-0 cursor-pointer items-center justify-center border-b-[2.5px] px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-all select-none',
                             projectCodeTab === key ?
                               'active-tab border-b-accent font-bold text-accent'
                             : 'border-b-transparent text-text-muted hover:text-text-primary'
@@ -1621,8 +1584,7 @@
             {/if}
           </div>
 
-          <div
-            class="flex flex-wrap items-center gap-x-3.5 gap-y-1 font-sans-title text-xs">
+          <div class="flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs">
             {#if project.lang}
               <span
                 class="inline-flex items-center gap-1 py-0.5 font-mono text-xxs leading-none font-medium text-text-secondary select-none">
@@ -1731,9 +1693,9 @@
       : ''}">
       <div
         class="relative aspect-2/1 w-full shrink-0 overflow-hidden rounded-t-md">
-        {#if post.banner_path && !failedBanners.has(post.id)}
+        {#if post.banner_version && !failedBanners.has(post.id)}
           <ImageWithSkeleton
-            src={getBannerUrl(post.banner_path)}
+            src={bannerUrl(post)}
             alt={post.title}
             rounded=""
             onerror={() => markBannerFailed(post.id)}
@@ -1752,7 +1714,7 @@
           <div class="relative flex items-start justify-between gap-2">
             <h4
               style="view-transition-name: post-title-{post.slug}"
-              class="line-clamp-2 min-w-0 flex-1 font-sans-title text-lg leading-snug font-bold text-text-primary">
+              class="line-clamp-2 min-w-0 flex-1 text-lg leading-snug font-bold text-text-primary">
               {post.title}
               {#if post.pinned || isPostNew(post)}
                 <span
@@ -2248,9 +2210,7 @@
             {/if}
 
             <h1
-              class="relative z-10 max-w-full px-0 font-sans-title sm:px-2 {(
-                avatar
-              ) ?
+              class="relative z-10 max-w-full px-0 sm:px-2 {avatar ?
                 'mt-1.5 sm:mt-4'
               : 'pt-5'} text-xl font-extrabold tracking-tight text-text-primary sm:text-2xl md:text-3xl">
               {name}
@@ -2258,7 +2218,7 @@
 
             {#if headline}
               <p
-                class="relative z-10 mt-1 max-w-lg font-sans-title text-xs leading-relaxed text-text-muted sm:mt-1.5 sm:text-sm">
+                class="relative z-10 mt-1 max-w-lg text-xs leading-relaxed text-text-muted sm:mt-1.5 sm:text-sm">
                 {headline}
               </p>
             {/if}
@@ -2280,7 +2240,8 @@
                     rel="noopener noreferrer"
                     aria-label={item.platform}
                     title={item.platform}
-                    class="flex size-7.5 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-text-muted transition-all hover:bg-surface-hover hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:size-8">
+                    use:shortcut={{group: 'social', label: item.platform}}
+                    class="relative flex size-7.5 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-text-muted transition-all hover:bg-surface-hover hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:size-8">
                     <BrandIcon
                       icon={item.icon}
                       class="text-sm leading-none sm:text-base" />
@@ -2465,7 +2426,7 @@
               <div class="flex items-center gap-3 sm:block">
                 <HandHeart
                   class="size-5 shrink-0 text-accent sm:mt-0.5 sm:size-6" />
-                <h4 class="font-sans-title text-sm font-bold sm:hidden">
+                <h4 class="text-sm font-bold sm:hidden">
                   <ShinyText
                     text="Support Open Source Work"
                     color="var(--color-accent)"
@@ -2474,7 +2435,7 @@
                 </h4>
               </div>
               <div>
-                <h4 class="hidden font-sans-title text-sm font-bold sm:block">
+                <h4 class="hidden text-sm font-bold sm:block">
                   <ShinyText
                     text="Support Open Source Work"
                     color="var(--color-accent)"
@@ -2523,9 +2484,7 @@
             value={siteUrl ? `${siteUrl}/` : '/'} />
 
           <div class="mb-2 select-none">
-            <h2 class="font-sans-title text-sm font-bold text-text-primary">
-              Send a Message
-            </h2>
+            <h2 class="text-sm font-bold text-text-primary">Send a Message</h2>
             <p class="mt-0.5 text-xs text-text-muted">
               Feel free to drop me a line. I'll get back to you as soon as
               possible.
@@ -2554,7 +2513,10 @@
               oninput={() => {
                 formErrors.name = '';
                 formValid.name = false;
-                validateName();
+                queueMicrotask(() => validation.input('name'));
+              }}
+              onblur={() => {
+                void validation.check('name');
               }} />
           </FormField>
 
@@ -2580,7 +2542,10 @@
               oninput={() => {
                 formErrors.email = '';
                 formValid.email = false;
-                validateEmail();
+                queueMicrotask(() => validation.input('email'));
+              }}
+              onblur={() => {
+                void validation.check('email');
               }} />
           </FormField>
 
@@ -2606,7 +2571,10 @@
               oninput={() => {
                 formErrors.message = '';
                 formValid.message = false;
-                validateMessage();
+                queueMicrotask(() => validation.input('message'));
+              }}
+              onblur={() => {
+                void validation.check('message');
               }} />
           </FormField>
 
@@ -2663,6 +2631,7 @@
       title="Contact"
       subtitle="Feel free to reach out via any of the channels below."
       items={contactItems}
+      shortcutGroup="contact"
       emptyTitle="No contact channels yet"
       emptyDescription="Check back soon for ways to get in touch." />
   {/if}
@@ -3034,6 +3003,7 @@
       title="Supporting & Funding"
       subtitle="Support open-source development and maintenance through these platforms."
       items={fundingPlatforms}
+      shortcutGroup="funding"
       emptyTitle="No funding platforms yet"
       emptyDescription="Check back soon for ways to support this work." />
   {/if}

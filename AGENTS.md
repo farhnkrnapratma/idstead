@@ -17,13 +17,14 @@ bun run dev:preview    # start Vite dev server against Preview-tier config (mode
 bun run build         # production build -> .svelte-kit/cloudflare (mode: production)
 bun run build:preview  # build against Preview-tier config (mode: preview)
 bun run preview       # preview the production build
+bun run test           # Bun regression tests with isolated database fixtures
 bun run check          # svelte-kit sync + svelte-check (type checking)
 bun run check:watch    # same, in watch mode
 bun run lint            # prettier --check . && eslint .
 bun run format           # prettier --write .
 ```
 
-There is no test runner configured in this repo — `bun run check` (types) and `bun run lint` are the correctness gates. Always run `check` and `lint` after non-trivial changes.
+`bun run test` runs permanent Bun regression tests in `tests/`, including isolated PGlite database tests. Run tests, `bun run check`, and `bun run lint` after non-trivial changes; CI also builds the Cloudflare application. The optional PostgreSQL concurrency suite requires its own disposable Docker container, as documented in README. Keep manual browser harnesses and session reports in ignored local archives, not application source. Build plugins and Git hooks live in `tooling/`; `scripts/` retains operational migration and cleanup commands until Production cutover is complete.
 
 Requires a `.env` (copy from `.env.development.example` or `.env.production.example`) with at least `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY` for the dev server to start. Other vars: Cloudflare R2 (CV file storage), Sentry, Turnstile (bot protection), `IP_SALT` (hashing client IPs), `SUPABASE_SERVICE_ROLE_KEY` (server-only, bypasses RLS), `CLOUDFLARE_API_TOKEN` (wrangler CLI auth — needed for the `AI` binding's `remote: true` mode in `wrangler.jsonc` to reach Cloudflare; without it comment moderation returns `BLOG_COMMENT_MODERATION_UNAVAILABLE`). Tier templates are `.env.production.example` / `.env.development.example` — copy to `.env.production` / `.env.development` (and optionally `.env`) for the tier you're targeting locally (see [Environments](#environments) below).
 
@@ -120,14 +121,14 @@ Commit messages must follow [Conventional Commits](https://www.conventionalcommi
 
 ## graphify
 
-This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+The knowledge graph at `graphify-out/` is a local generated artifact with god nodes, community structure, and cross-file relationships. Its output and dated snapshots are ignored by Git and must not be committed. Use the installed graphify skill to generate a graph on a fresh checkout when needed. Agent observations and development archives are also local-only; preserve their local files when cleaning the Git index.
 
 When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
 
 Rules:
 
 - For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
-- Dirty graphify-out/ files are expected after hooks or incremental updates; dirty graph files are not a reason to skip graphify. Only skip graphify if the task is about stale or incorrect graph output, or the user explicitly says not to use it.
+- Local graph changes are expected after hooks or incremental updates and remain ignored by Git; they are not a reason to skip graphify. Only skip graphify if the task is about stale or incorrect graph output, or the user explicitly says not to use it.
 - If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
 - Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
 - After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).

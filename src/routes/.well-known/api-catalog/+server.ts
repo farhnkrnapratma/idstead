@@ -1,95 +1,38 @@
-import {json} from '@sveltejs/kit';
 import type {RequestHandler} from './$types';
-import {supabase} from '$lib/supabase';
-import {fetchAuthorProfile} from '$lib/author';
+import {readSiteProfile, publicResponse} from '$lib/server/publicMetadata';
+import {discoveryOperations} from '$lib/server/apiDiscovery';
 
-export const GET: RequestHandler = async () => {
-  const authorProfile = await fetchAuthorProfile(supabase);
-  const siteUrl = (authorProfile?.siteUrl || '').replace(/\/$/, '');
-
+export const GET: RequestHandler = async ({request}) => {
+  const {siteUrl: base} = await readSiteProfile();
   const catalog = {
     linkset: [
       {
-        anchor: `${siteUrl}/api/v1/search`,
-        'service-doc': [
-          {
-            href: `${siteUrl}/api/v1/search`,
-            type: 'application/json',
-            title: 'Search API — full-text search over blog posts'
-          }
-        ]
-      },
-      {
-        anchor: `${siteUrl}/api/v1/blog/comments`,
-        'service-doc': [
-          {
-            href: `${siteUrl}/api/v1/blog/comments`,
-            type: 'application/json',
-            title: 'Comments API — read comments on blog entries'
-          }
-        ]
-      },
-      {
-        anchor: `${siteUrl}/api/v1/blog/views`,
-        'service-doc': [
-          {
-            href: `${siteUrl}/api/v1/blog/views`,
-            type: 'application/json',
-            title: 'Views API — retrieve post view counts'
-          }
-        ]
-      },
-      {
-        anchor: `${siteUrl}/.well-known/openapi.json`,
+        anchor: `${base}/api/v1`,
         'service-desc': [
-          {
-            href: `${siteUrl}/.well-known/openapi.json`,
-            type: 'application/json',
-            title: 'OpenAPI (machine-readable) — public API specification'
-          }
-        ]
-      },
-      {
-        anchor: `${siteUrl}/api/v1`,
-        'service-doc': [
-          {
-            href: `${siteUrl}/api/v1`,
-            type: 'text/markdown',
-            title:
-              'Public API reference (human-readable) — all v1 endpoints, auth, CORS, versioning'
-          }
-        ]
-      },
-      {
-        anchor: siteUrl,
+          {href: `${base}/.well-known/openapi.json`, type: 'application/json'},
+          {href: `${base}/.well-known/openapi.yaml`, type: 'application/yaml'}
+        ],
+        'service-doc': [{href: `${base}/api/v1`, type: 'text/markdown'}],
         describedby: [
           {
-            href: `${siteUrl}/.well-known/agent-skills/index.json`,
-            type: 'application/json',
-            title: 'Agent Skills Discovery Index'
+            href: `${base}/.well-known/agent-skills/index.json`,
+            type: 'application/json'
           }
         ],
-        alternate: [
-          {
-            href: `${siteUrl}/sitemap.xml`,
-            type: 'application/xml',
-            title: 'Sitemap'
-          },
-          {
-            href: `${siteUrl}/atom.xml`,
-            type: 'application/atom+xml',
-            title: 'Atom Feed'
-          }
-        ]
+        item: discoveryOperations()
+          .filter(operation => !operation.path.includes('{'))
+          .map(operation => ({
+            href: base + operation.path,
+            title: operation.description
+          }))
       }
     ]
   };
-
-  return json(catalog, {
-    headers: {
-      'Content-Type': 'application/linkset+json',
-      'Cache-Control': 'public, max-age=3600',
-      'Access-Control-Allow-Origin': '*'
-    }
-  });
+  const response = await publicResponse(
+    request,
+    JSON.stringify(catalog),
+    'application/linkset+json; profile="https://www.rfc-editor.org/info/rfc9727"'
+  );
+  response.headers.set('Access-Control-Allow-Origin', '*');
+  return response;
 };

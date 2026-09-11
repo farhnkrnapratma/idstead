@@ -46,7 +46,7 @@
       </p>
     </div>
     <span
-      class="inline-flex shrink-0 items-center gap-1.5 font-sans-title text-xs leading-none font-medium text-text-muted select-none sm:mt-1 sm:self-auto">
+      class="inline-flex shrink-0 items-center gap-1.5 text-xs leading-none font-medium text-text-muted select-none sm:mt-1 sm:self-auto">
       <Calendar
         class="size-3.5 shrink-0 text-text-muted"
         strokeWidth={1.5} />

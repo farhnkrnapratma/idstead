@@ -1,0 +1,193 @@
+<script lang="ts">
+  import {onDestroy, untrack} from 'svelte';
+  import FileUploadField from './FileUploadField.svelte';
+  import FieldMessage from './FieldMessage.svelte';
+  import Button from './Button.svelte';
+  import ImageWithSkeleton from './ImageWithSkeleton.svelte';
+  import {processBanner} from '$lib/processBanner';
+  import type {BannerChange} from '$lib/blogBanner';
+
+  let {
+    savedUrl,
+    savedRevision,
+    disabled = false,
+    onprepared,
+    onblocked
+  }: {
+    savedUrl: string | null;
+    savedRevision: number;
+    disabled?: boolean;
+    onprepared: (change: BannerChange) => void;
+    onblocked: (blocked: boolean) => void;
+  } = $props();
+  let busy = $state(false);
+  let error = $state('');
+  let loadError = $state('');
+  let filename = $state('');
+  let preview = $state('');
+  let size = $state('');
+  let removed = $state(false);
+  let loadedSource = $state('');
+  let controller: AbortController | undefined;
+  let generation = 0;
+  let previousRevision: number | undefined;
+
+  function clearPreview() {
+    if (preview) URL.revokeObjectURL(preview);
+    preview = '';
+    filename = '';
+    size = '';
+  }
+
+  function watchSaved(source: string | null, revision: number) {
+    return () =>
+      untrack(() => {
+        const committed =
+          previousRevision !== undefined && previousRevision !== revision;
+        previousRevision = revision;
+        const current = generation;
+        loadError = '';
+        if (!source) {
+          loadedSource = '';
+          if (committed) {
+            clearPreview();
+            removed = false;
+          }
+          return;
+        }
+        const image = new Image();
+        image.onload = () => {
+          loadedSource = source;
+          if (committed && current === generation) {
+            clearPreview();
+            removed = false;
+          }
+        };
+        image.onerror = () => {
+          loadError =
+            'Saved banner could not be loaded. Your local preview is retained.';
+        };
+        image.src = source;
+        return () => {
+          image.onload = null;
+          image.onerror = null;
+        };
+      });
+  }
+
+  async function select(file: File | null) {
+    if (disabled) return;
+    const current = ++generation;
+    controller?.abort();
+    clearPreview();
+    error = '';
+    removed = false;
+    onprepared({operation: 'keep'});
+    busy = !!file;
+    onblocked(busy);
+    if (!file) return;
+    filename = file.name;
+    controller = new AbortController();
+    try {
+      const {blob} = await processBanner(file, controller.signal);
+      if (current !== generation) return;
+      preview = URL.createObjectURL(blob);
+      size = `${Math.ceil(blob.size / 1024)} KiB · WebP · 1280 × 640`;
+      onprepared({operation: 'replace', file: blob});
+    } catch (failure) {
+      if (current !== generation) return;
+      error =
+        failure instanceof Error ? failure.message : 'Image processing failed.';
+    } finally {
+      if (current === generation) {
+        busy = false;
+        onblocked(!!error);
+      }
+    }
+  }
+
+  function remove() {
+    if (disabled) return;
+    generation++;
+    controller?.abort();
+    clearPreview();
+    error = '';
+    busy = false;
+    removed = true;
+    onblocked(false);
+    onprepared({operation: 'remove'});
+  }
+
+  onDestroy(() => {
+    generation++;
+    controller?.abort();
+    clearPreview();
+  });
+</script>
+
+<section
+  aria-labelledby="banner-image-title"
+  class="flex min-w-0 flex-col gap-3">
+  <h3
+    id="banner-image-title"
+    class="text-xs font-bold text-text-secondary">
+    Banner image <span class="font-normal text-text-muted">(optional)</span>
+  </h3>
+  <div
+    class="grid min-w-0 grid-cols-1 items-stretch gap-4 sm:grid-cols-2"
+    {@attach watchSaved(savedUrl, savedRevision)}>
+    <div
+      data-banner-preview
+      class="relative aspect-2/1 overflow-hidden rounded-md border border-border-subtle bg-surface-subtle [background-image:conic-gradient(var(--color-surface)_25%,transparent_0_50%,var(--color-surface)_0_75%,transparent_0)] [background-size:1rem_1rem]">
+      <ImageWithSkeleton
+        src={removed ? null : (
+          preview || (loadedSource === savedUrl ? savedUrl : null)
+        )}
+        alt="Banner preview"
+        loading="eager"
+        class="absolute inset-0 size-full bg-transparent!"
+        imgClass="object-contain" />
+    </div>
+    <FileUploadField
+      id="post-banner"
+      class="min-w-0"
+      accept="image/png,image/jpeg,image/webp,image/avif,image/gif,image/bmp"
+      hint="PNG, JPEG, WebP, AVIF, GIF, BMP · up to 10 MB / 40 MP · at least 1280 × 640"
+      {disabled}
+      isUploading={busy}
+      allowReselectWhileUploading
+      uploadingLabel="Preparing banner…"
+      selectedFileName={filename}
+      fileSize={size}
+      onFileSelect={select} />
+  </div>
+  {#if error}<FieldMessage
+      variant="error"
+      message={error} />{/if}
+  {#if loadError}<FieldMessage
+      variant="error"
+      message={loadError} />{/if}
+  <p
+    class="text-xs text-text-muted"
+    aria-live="polite">
+    {removed ? 'Banner will be removed when you save.'
+    : preview ? 'Banner is ready. Save draft or Publish post to apply it.'
+    : 'Images are cropped from the center to 2:1. Animated images use their first frame.'}
+  </p>
+  <div class="flex flex-wrap gap-2">
+    {#if busy || error || filename || removed}<Button
+        type="ghost"
+        size="xs"
+        {disabled}
+        onclick={() => select(null)}
+        >{busy ? 'Cancel processing' : 'Discard banner change'}</Button
+      >{/if}
+    {#if !removed && (savedUrl || preview)}<Button
+        type="ghost"
+        tone="critical"
+        size="xs"
+        {disabled}
+        onclick={remove}>Remove banner</Button
+      >{/if}
+  </div>
+</section>

@@ -16,6 +16,7 @@
 
   interface Props {
     headings: HeadingItem[];
+    title?: string;
     collapsible?: boolean;
     defaultCollapsed?: boolean;
     class?: string;
@@ -23,6 +24,7 @@
 
   let {
     headings = [],
+    title = 'Table of contents',
     collapsible = false,
     defaultCollapsed = false,
     class: className = ''
@@ -216,7 +218,7 @@
     <ul
       id="toc-list"
       bind:this={tocListEl}
-      class="relative flex min-h-full flex-col pl-3 font-sans-title"
+      class="relative flex min-h-full flex-col pl-3"
       role="list">
       <div
         class="pointer-events-none absolute top-0 bottom-1 left-0 w-px bg-[#d5ded7] dark:bg-[#232925]">
@@ -248,7 +250,7 @@
               navigateToHeading(heading.id);
             }}
             aria-current={isActive ? 'true' : undefined}
-            class="relative -ml-3 flex min-h-6 items-center rounded-r-xs py-0.5 pr-2 font-sans-title leading-snug transition-colors duration-150 ease-in-out hover:text-accent {(
+            class="relative -ml-3 flex min-h-6 items-center rounded-r-xs py-0.5 pr-2 leading-snug transition-colors duration-150 ease-in-out hover:text-accent {(
               isActive
             ) ?
               isSub ? 'bg-accent/10 font-medium text-accent'
@@ -285,12 +287,12 @@
       )}
       open={!defaultCollapsed}>
       <summary
-        class="markdown-details-summary flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 font-sans-title text-sm font-medium text-text-primary transition-colors select-none group-open:border-border-subtle hover:bg-surface-hover/50 dark:group-open:border-white/10 [&::-webkit-details-marker]:hidden">
+        class="markdown-details-summary flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 text-sm font-medium text-text-primary transition-colors select-none group-open:border-border-subtle hover:bg-surface-hover/50 dark:group-open:border-white/10 [&::-webkit-details-marker]:hidden">
         <span class="inline-flex items-center gap-2">
           <TableOfContentsIcon class="size-4 shrink-0 text-text-primary" />
           <span
-            class="markdown-details-title translate-y-px font-sans-title text-sm leading-none font-medium tracking-wide text-text-primary uppercase">
-            IN THIS ARTICLE
+            class="markdown-details-title translate-y-px text-sm leading-none font-medium text-text-primary">
+            {title}
           </span>
         </span>
         <span
@@ -301,7 +303,7 @@
         </span>
       </summary>
       <div
-        class="markdown-details-body px-3.5 py-3 font-sans-title text-sm leading-relaxed font-normal text-text-secondary">
+        class="markdown-details-body px-3.5 py-3 text-sm leading-relaxed font-normal text-text-secondary">
         {@render tocList()}
       </div>
     </details>
@@ -312,9 +314,8 @@
         'flex flex-col rounded-md glass-card p-4 select-none',
         className
       )}>
-      <h3
-        class="mb-3 shrink-0 font-sans-title text-xs font-bold tracking-wider text-text-secondary uppercase select-none">
-        In this article
+      <h3 class="mb-3 shrink-0 text-sm font-bold text-text-primary select-none">
+        {title}
       </h3>
       {@render tocList()}
     </nav>

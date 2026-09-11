@@ -38,7 +38,46 @@ export function lockScroll(): () => void {
 }
 
 export function scrollToTop(behavior: ScrollBehavior = 'smooth'): void {
-  if (typeof window !== 'undefined') {
-    window.scrollTo({top: 0, behavior});
+  if (typeof window === 'undefined') return;
+
+  const article = document.querySelector<HTMLElement>(
+    'article.article-scroll-container'
+  );
+  if (
+    article
+    && (article.scrollTop > 0 || article.scrollHeight > article.clientHeight)
+  ) {
+    article.scrollTo({top: 0, behavior});
   }
+
+  const main = document.getElementById('main-content');
+  if (main && (main.scrollTop > 0 || main.scrollHeight > main.clientHeight)) {
+    main.scrollTo({top: 0, behavior});
+  }
+
+  window.scrollTo({top: 0, behavior});
+}
+
+export function scrollToBottom(behavior: ScrollBehavior = 'smooth'): void {
+  if (typeof window === 'undefined') return;
+
+  const article = document.querySelector<HTMLElement>(
+    'article.article-scroll-container'
+  );
+  if (article && article.scrollHeight > article.clientHeight) {
+    article.scrollTo({top: article.scrollHeight, behavior});
+  }
+
+  const main = document.getElementById('main-content');
+  if (main && main.scrollHeight > main.clientHeight) {
+    main.scrollTo({top: main.scrollHeight, behavior});
+  }
+
+  const maxScroll = Math.max(
+    document.documentElement.scrollHeight,
+    document.body.scrollHeight,
+    document.documentElement.offsetHeight,
+    document.body.offsetHeight
+  );
+  window.scrollTo({top: maxScroll, behavior});
 }

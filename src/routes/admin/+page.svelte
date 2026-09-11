@@ -1,6 +1,22 @@
 <script lang="ts">
+  import {bannerUrl} from '$lib/blogBanner';
+  import {
+    submitPost,
+    rememberPostSave,
+    recallPostSave,
+    PostSaveError
+  } from '$lib/postSaveClient';
+  import {
+    FieldValidation,
+    requiredText,
+    emailError
+  } from '$lib/fieldValidation';
+  import {avatarSource} from '$lib/siteIdentity';
+  import {resolve} from '$app/paths';
+  import ProfileImageUpload from '$lib/components/ProfileImageUpload.svelte';
+  import type {ImagePackage, ManifestSettings} from '$lib/siteIdentity';
   import {page} from '$app/state';
-  import {replaceState} from '$app/navigation';
+  import {replaceState, invalidateAll} from '$app/navigation';
   import {supabase} from '$lib/supabase';
   import {
     FileText,
@@ -39,7 +55,11 @@
     Pin,
     PinOff,
     FolderGit2,
-    Sparkles
+    Sparkles,
+    ChevronUp,
+    ChevronDown,
+    Bell,
+    House
   } from '@lucide/svelte';
   import hljs from 'highlight.js';
   import {a11yStore} from '$lib/stores/a11yStore.svelte';
@@ -48,8 +68,16 @@
     enhanceCodeBlocks,
     splitHighlightedHtmlLines
   } from '$lib/utils/codeBlocks';
-  import {onMount, tick, untrack} from 'svelte';
+  import {onDestroy, onMount, tick, untrack} from 'svelte';
   import {SvelteSet} from 'svelte/reactivity';
+  import {TRANSLATION_LOCALES} from '$lib/translationLocales';
+  import CommentReportList from '$lib/components/admin/CommentReportList.svelte';
+  import type {ActivityFocus, AdminNotificationRow} from '$lib/adminActivity';
+  import AdminHome from '$lib/components/admin/AdminHome.svelte';
+  import AdminNotificationBell from '$lib/components/admin/AdminNotificationBell.svelte';
+  import {shortcut} from '$lib/utils/shortcut.svelte';
+  import {adminNotificationsStore} from '$lib/stores/adminNotificationsStore.svelte';
+  import {estimateReadTime} from '$lib/readTime';
   import {
     cn,
     Dialog,
@@ -60,13 +88,14 @@
     BrandIcon,
     Textarea,
     FormField,
+    FieldMessage,
     Input,
-    Select,
     Checkbox,
     ConfirmationDialog,
     CommentThread,
     LoadingState,
     EmptyState,
+    ErrorState,
     ImageWithSkeleton,
     SkipLink,
     FilterToolbar,
@@ -85,7 +114,6 @@
     StatusBanner,
     formatReadTime,
     formatViewCount,
-    formatAbsoluteDate,
     FormSection,
     FormActions,
     MarkdownEditor,
@@ -127,20 +155,15 @@
     storage_path: string;
     created_at: string;
     updated_at?: string | null;
-    banner_path?: string | null;
+    banner_version?: string | null;
+    post_revision: number;
     excerpt?: string | null;
     tags?: string[] | null;
     read_time?: string | null;
     comment_count?: number | null;
     views_count?: number | null;
-  }
-
-  function getBannerUrl(bannerPath: string | null | undefined): string | null {
-    if (!bannerPath) return null;
-    const {data: res} = supabase.storage
-      .from('blog-posts')
-      .getPublicUrl(bannerPath);
-    return res.publicUrl;
+    helpful_yes?: number | null;
+    helpful_no?: number | null;
   }
 
   const failedBanners = new SvelteSet<string>();
@@ -159,6 +182,8 @@
   }
 
   let isLoading = $state(true);
+  let postsLoading = $state(false);
+  let postsLoadError = $state('');
   let posts = $state<AdminPost[]>([]);
   let isLoggingOut = $state(false);
   let adminUserEmail = $state('');
@@ -192,6 +217,17 @@
   let comments = $state<AdminComment[]>([]);
   let replyTo = $state<AdminComment | null>(null);
   let commentContent = $state('');
+  let replyError = $state('');
+  const replyValidation = new FieldValidation();
+  replyValidation.register('content', {
+    value: () => commentContent,
+    baseline: () => '',
+    validate: requiredText('Reply', 1000),
+    report: result => {
+      replyError = result.error;
+    }
+  });
+  onDestroy(() => replyValidation.destroy());
   let isSubmitting = $state(false);
 
   interface CommentReport {
@@ -204,6 +240,106 @@
 
   let commentReports = $state<CommentReport[]>([]);
   let commentFilterReportedOnly = $state(false);
+  const expandedReportIds = new SvelteSet<string>();
+
+  let focusedCommentId = $state<string | null>(null);
+  let focusHighlightTimer: ReturnType<typeof setTimeout>;
+
+  let activityFocus = $state<ActivityFocus | null>(null);
+
+  function selectNotification(item: AdminNotificationRow) {
+    if (item.kind === 'comment_new') {
+      if (item.post_id && item.comment_id)
+        void focusComment(item.post_id, item.comment_id);
+      return;
+    }
+    if (
+      item.kind === 'comment_report'
+      || item.kind === 'post_feedback'
+      || item.kind === 'legal_feedback'
+    ) {
+      if (!item.page_id || !item.page_type) return;
+      activityFocus = {
+        section: item.kind === 'comment_report' ? 'reports' : 'feedback',
+        pageType: item.page_type,
+        pageId: item.page_id,
+        commentId: item.comment_id ?? undefined,
+        eventId: item.source_id ?? undefined,
+        reason: item.meta?.reason,
+        notification: item,
+        requestId: crypto.randomUUID()
+      };
+      selectTab('home');
+    }
+  }
+
+  function showPublishedPosts() {
+    selectTab('posts');
+    filterStore.clearAllFilters();
+    filterStore.setSingleFilter('status', 'published');
+    postsPage = 1;
+  }
+
+  async function focusPost(postId: string) {
+    selectTab('posts');
+    filterStore.clearAllFilters();
+    commentFilterReportedOnly = false;
+    await tick();
+    const index = filteredPosts.findIndex(p => p.id === postId);
+    if (index >= 0) postsPage = Math.floor(index / POSTS_PAGE_SIZE) + 1;
+    await tick();
+    document
+      .getElementById(`post-${postId}`)
+      ?.scrollIntoView({behavior: 'smooth', block: 'start'});
+  }
+
+  function waitForElement(id: string, timeoutMs = 2000) {
+    return new Promise<HTMLElement | null>(resolve => {
+      const existing = document.getElementById(id);
+      if (existing) {
+        resolve(existing);
+        return;
+      }
+      const startedAt = Date.now();
+      const poll = () => {
+        const el = document.getElementById(id);
+        if (el) {
+          resolve(el);
+          return;
+        }
+        if (Date.now() - startedAt >= timeoutMs) {
+          resolve(null);
+          return;
+        }
+        requestAnimationFrame(poll);
+      };
+      requestAnimationFrame(poll);
+    });
+  }
+
+  async function focusComment(postId: string, commentId: string) {
+    await focusPost(postId);
+    expandedPostIds.add(postId);
+    expandedReportIds.add(commentId);
+    focusedCommentId = commentId;
+    await tick();
+
+    const target = await waitForElement(`comment-${commentId}`);
+    target?.scrollIntoView({behavior: 'smooth', block: 'center'});
+
+    clearTimeout(focusHighlightTimer);
+    focusHighlightTimer = setTimeout(() => {
+      if (focusedCommentId === commentId) focusedCommentId = null;
+    }, 4000);
+  }
+
+  function toggleReportDetails(commentId: string) {
+    if (expandedReportIds.has(commentId)) {
+      expandedReportIds.delete(commentId);
+      return;
+    }
+    expandedReportIds.add(commentId);
+  }
 
   let commentReportsMap = $derived.by(() => {
     const map: Record<string, CommentReport[]> = {};
@@ -214,30 +350,41 @@
     return map;
   });
 
-  let initialTab = page.url.searchParams.get('tab');
+  const ADMIN_TAB_IDS = [
+    'home',
+    'posts',
+    'projects',
+    'profile',
+    'resume',
+    'skills',
+    'glossary',
+    'socials',
+    'sponsorship',
+    'contact',
+    'privacy',
+    'security',
+    'terms'
+  ] as const;
 
-  let activeAdminTab = $state<
-    | 'posts'
-    | 'projects'
-    | 'profile'
-    | 'resume'
-    | 'skills'
-    | 'glossary'
-    | 'socials'
-    | 'sponsorship'
-    | 'contact'
-    | 'privacy'
-    | 'security'
-    | 'terms'
-  >((initialTab as any) || 'posts');
+  type AdminTab = (typeof ADMIN_TAB_IDS)[number];
+
+  function resolveInitialTab(value: string | null): AdminTab {
+    return ADMIN_TAB_IDS.includes(value as AdminTab) ?
+        (value as AdminTab)
+      : 'home';
+  }
+
+  let activeAdminTab = $state<AdminTab>(
+    resolveInitialTab(page.url.searchParams.get('tab'))
+  );
   let sidebarMobileOpen = $state(false);
 
-  function selectTab(id: typeof activeAdminTab) {
+  function selectTab(id: AdminTab) {
     activeAdminTab = id;
     sidebarMobileOpen = false;
     const url = new URL(page.url);
     url.searchParams.set('tab', id);
-    replaceState(url, page.state);
+    replaceState(resolve(`/admin?${url.searchParams.toString()}`), page.state);
     if (id === 'privacy' || id === 'security' || id === 'terms') {
       checkLegalDrafts();
     }
@@ -325,6 +472,18 @@
   let isSavingLegal = $state(false);
   let legalSaveSuccess = $state(false);
   let legalSaveError = $state('');
+  let legalFieldErrors = $state<Record<string, string>>({});
+  const legalValidation = new FieldValidation();
+  for (const slug of ['privacy', 'security', 'terms'])
+    legalValidation.register(slug, {
+      value: () => legalPagesData[slug].content,
+      baseline: () => initialLegalPagesContent[slug],
+      validate: requiredText('Content'),
+      report: result => {
+        legalFieldErrors[slug] = result.error;
+      }
+    });
+  onDestroy(() => legalValidation.destroy());
 
   const isLegalDirty = $derived.by(() => {
     const slugs = ['privacy', 'security', 'terms'] as const;
@@ -416,6 +575,13 @@
     const slugToSave =
       targetSlug || (activeAdminTab as 'privacy' | 'security' | 'terms');
     if (!slugToSave || !legalPagesData[slugToSave]) return;
+    if (
+      !(await legalValidation.submit(
+        [slugToSave],
+        !initialLegalPagesContent[slugToSave]
+      ))
+    )
+      return;
 
     isSavingLegal = true;
     legalSaveError = '';
@@ -452,6 +618,7 @@
       }
       legalDrafts[slugToSave] = null;
       initialLegalPagesContent[slugToSave] = pageToSave.content;
+      legalValidation.clear(slugToSave);
 
       legalSaveSuccess = true;
       toastStore.success(`${pageToSave.title} saved successfully`);
@@ -464,11 +631,12 @@
     }
   }
   let isSavingAuthor = $state(false);
+  let preparedImage = $state.raw<ImagePackage | null>(null);
+  let preparingImage = $state(false);
+  let manifestSettings = $state<ManifestSettings | null>(null);
+  let initialManifest = $state('');
   let authorSaveSuccess = $state(false);
   let authorSaveError = $state('');
-
-  const authorEmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const authorUrlRegex = /^(https?:\/\/|\/)/;
 
   let authorErrors = $state({
     name: '',
@@ -501,162 +669,94 @@
   let authorInitial = $state<typeof authorState | null>(null);
 
   const authorIsDirty = $derived(
-    authorInitial !== null
-      && JSON.stringify({
-        name: authorState.name,
-        username: authorState.username,
-        jobTitle: authorState.jobTitle,
-        headline: authorState.headline,
-        avatar: authorState.avatar,
-        email: authorState.email,
-        city: authorState.city,
-        postalCode: authorState.postalCode,
-        country: authorState.country,
-        siteUrl: authorState.siteUrl,
-        bio: authorState.bio
-      })
-        !== JSON.stringify({
-          name: authorInitial.name,
-          username: authorInitial.username,
-          jobTitle: authorInitial.jobTitle,
-          headline: authorInitial.headline,
-          avatar: authorInitial.avatar,
-          email: authorInitial.email,
-          city: authorInitial.city,
-          postalCode: authorInitial.postalCode,
-          country: authorInitial.country,
-          siteUrl: authorInitial.siteUrl,
-          bio: authorInitial.bio
+    preparedImage !== null
+      || JSON.stringify(manifestSettings) !== initialManifest
+      || (authorInitial !== null
+        && JSON.stringify({
+          name: authorState.name,
+          username: authorState.username,
+          jobTitle: authorState.jobTitle,
+          headline: authorState.headline,
+          avatar: authorState.avatar,
+          email: authorState.email,
+          city: authorState.city,
+          postalCode: authorState.postalCode,
+          country: authorState.country,
+          siteUrl: authorState.siteUrl,
+          bio: authorState.bio
         })
+          !== JSON.stringify({
+            name: authorInitial.name,
+            username: authorInitial.username,
+            jobTitle: authorInitial.jobTitle,
+            headline: authorInitial.headline,
+            avatar: authorInitial.avatar,
+            email: authorInitial.email,
+            city: authorInitial.city,
+            postalCode: authorInitial.postalCode,
+            country: authorInitial.country,
+            siteUrl: authorInitial.siteUrl,
+            bio: authorInitial.bio
+          }))
   );
 
-  const avatarPreviewUrl = $derived(authorState.avatar.trim());
+  const avatarPreviewUrl = $derived(avatarSource(authorState));
 
-  function debounceAuthor<T extends unknown[]>(
-    cb: (...args: T) => void,
-    ms: number
-  ) {
-    let timer: ReturnType<typeof setTimeout>;
-    return (...args: T) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => cb(...args), ms);
-    };
-  }
-
-  const validateAuthorField = debounceAuthor(
-    (field: keyof typeof authorErrors) => {
-      const v =
-        (authorState[field as keyof typeof authorState] as string)?.trim()
-        || '';
-      if (field === 'email') {
-        if (!v) {
-          authorErrors.email = 'Email is required.';
-          authorValid.email = false;
-        } else if (!authorEmailRegex.test(v)) {
-          authorErrors.email = 'Please enter a valid email address.';
-          authorValid.email = false;
-        } else {
-          authorErrors.email = '';
-          authorValid.email = true;
+  const authorValidation = new FieldValidation();
+  const authorLabels: Record<string, string> = {
+    name: 'Name',
+    username: 'Username',
+    jobTitle: 'Job title',
+    headline: 'Headline',
+    email: 'Email',
+    city: 'City',
+    postalCode: 'Postal code',
+    country: 'Country',
+    siteUrl: 'Site URL',
+    bio: 'Description',
+    avatar: 'Profile image'
+  };
+  for (const field of Object.keys(
+    authorErrors
+  ) as (keyof typeof authorErrors)[]) {
+    authorValidation.register(field, {
+      value: () =>
+        field === 'avatar' && preparedImage ? 'prepared' : authorState[field],
+      baseline: () => authorInitial?.[field],
+      validate: value => {
+        const required = requiredText(authorLabels[field])(String(value || ''));
+        if (required) return required;
+        if (field === 'email') return emailError(value);
+        if (field === 'siteUrl') {
+          try {
+            const url = new URL(value);
+            if (
+              !['https:', 'http:'].includes(url.protocol)
+              || url.username
+              || url.password
+              || url.pathname !== '/'
+              || url.search
+              || url.hash
+            )
+              throw new Error();
+          } catch {
+            return 'Site URL must be an HTTP or HTTPS origin.';
+          }
         }
-      } else if (field === 'avatar' || field === 'siteUrl') {
-        if (!v) {
-          authorErrors[field] =
-            field === 'avatar' ?
-              'Avatar URL is required.'
-            : 'Site URL is required.';
-          authorValid[field] = false;
-        } else if (!authorUrlRegex.test(v)) {
-          authorErrors[field] = 'Must start with http:// or https://';
-          authorValid[field] = false;
-        } else {
-          authorErrors[field] = '';
-          authorValid[field] = true;
-        }
-      } else {
-        if (!v) {
-          const labels: Record<string, string> = {
-            name: 'Name',
-            username: 'Username',
-            jobTitle: 'Job title',
-            headline: 'Headline',
-            city: 'City',
-            postalCode: 'Postal code',
-            country: 'Country',
-            bio: 'Description'
-          };
-          authorErrors[field] = `${labels[field] || 'This field'} is required.`;
-          authorValid[field as keyof typeof authorValid] = false;
-        } else {
-          authorErrors[field] = '';
-          authorValid[field as keyof typeof authorValid] = true;
-        }
+        return '';
+      },
+      report: ({error, valid}) => {
+        authorErrors[field] = error;
+        authorValid[field] = valid;
       }
-    },
-    400
-  );
-
+    });
+  }
+  onDestroy(() => authorValidation.destroy());
   function onAuthorInput(field: keyof typeof authorErrors) {
-    authorErrors[field] = '';
-    authorValid[field as keyof typeof authorValid] = false;
-    validateAuthorField(field);
+    queueMicrotask(() => authorValidation.input(field));
   }
-
-  function validateAllAuthorFields(): boolean {
-    const fields = Object.keys(authorErrors) as (keyof typeof authorErrors)[];
-    let valid = true;
-    for (const field of fields) {
-      const v =
-        (authorState[field as keyof typeof authorState] as string)?.trim()
-        || '';
-      if (field === 'email') {
-        if (!v || !authorEmailRegex.test(v)) {
-          authorErrors[field] =
-            !v ? 'Email is required.' : 'Please enter a valid email address.';
-          authorValid[field] = false;
-          valid = false;
-        } else {
-          authorErrors[field] = '';
-          authorValid[field] = true;
-        }
-      } else if (field === 'avatar' || field === 'siteUrl') {
-        if (!v) {
-          authorErrors[field] =
-            field === 'avatar' ?
-              'Avatar URL is required.'
-            : 'Site URL is required.';
-          authorValid[field] = false;
-          valid = false;
-        } else if (!authorUrlRegex.test(v)) {
-          authorErrors[field] = 'Must start with http:// or https://';
-          authorValid[field] = false;
-          valid = false;
-        } else {
-          authorErrors[field] = '';
-          authorValid[field] = true;
-        }
-      } else {
-        if (!v) {
-          const labels: Record<string, string> = {
-            name: 'Name',
-            username: 'Username',
-            jobTitle: 'Job title',
-            headline: 'Headline',
-            city: 'City',
-            postalCode: 'Postal code',
-            country: 'Country',
-            bio: 'Description'
-          };
-          authorErrors[field] = `${labels[field] || 'This field'} is required.`;
-          authorValid[field as keyof typeof authorValid] = false;
-          valid = false;
-        } else {
-          authorErrors[field] = '';
-          authorValid[field as keyof typeof authorValid] = true;
-        }
-      }
-    }
-    return valid;
+  function validateAllAuthorFields() {
+    return authorValidation.submit(undefined, !authorState.id);
   }
 
   let cvState = $state<{
@@ -680,6 +780,49 @@
   let contactInitial = $state<ContactInfo[] | null>(null);
   let pinnedReposInitial = $state<string[] | null>(null);
   let excludedReposInitial = $state<string[] | null>(null);
+
+  const termValidation = new FieldValidation();
+  let termFeedback = $state<Record<string, {error: string; valid: boolean}>>(
+    {}
+  );
+  const termFields = {
+    pinned: {
+      value: () => pinnedReposState,
+      baseline: () => pinnedReposInitial,
+      max: 3,
+      length: 100
+    },
+    excluded: {
+      value: () => excludedReposState,
+      baseline: () => excludedReposInitial,
+      max: 50,
+      length: 100
+    },
+    glossary: {
+      value: () => glossaryState,
+      baseline: () => glossaryInitial,
+      max: 50,
+      length: 80
+    }
+  };
+  for (const [key, field] of Object.entries(termFields))
+    termValidation.register(key, {
+      value: field.value,
+      baseline: field.baseline,
+      validate: (values: string[]) =>
+        values.length > field.max ? `Use at most ${field.max} items.`
+        : (
+          values.some(
+            value => !value.trim() || value.trim().length > field.length
+          )
+        ) ?
+          `Each item must contain 1–${field.length} characters.`
+        : '',
+      report: result => {
+        termFeedback[key] = result;
+      }
+    });
+  onDestroy(() => termValidation.destroy());
 
   const cvIsDirty = $derived(
     cvInitial !== null && JSON.stringify(cvState) !== JSON.stringify(cvInitial)
@@ -743,350 +886,253 @@
     }
   }
 
-  function debounceAdmin<T extends unknown[]>(
-    cb: (...args: T) => void,
-    ms: number
-  ) {
-    let timer: ReturnType<typeof setTimeout>;
-    return (...args: T) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => cb(...args), ms);
+  const listValidation = new FieldValidation();
+  onDestroy(() => listValidation.destroy());
+  let experienceErrors = $state<Record<string, Record<string, string>>>({});
+  let experienceValid = $state<Record<string, Record<string, boolean>>>({});
+  let educationErrors = $state<Record<string, Record<string, string>>>({});
+  let educationValid = $state<Record<string, Record<string, boolean>>>({});
+  let skillsErrors = $state<Record<string, Record<string, string>>>({});
+  let skillsValid = $state<Record<string, Record<string, boolean>>>({});
+  let socialErrors = $state<Record<string, Record<string, string>>>({});
+  let socialValid = $state<Record<string, Record<string, boolean>>>({});
+  let sponsorshipErrors = $state<Record<string, Record<string, string>>>({});
+  let sponsorshipValid = $state<Record<string, Record<string, boolean>>>({});
+  let contactErrors = $state<Record<string, Record<string, string>>>({});
+  let contactValid = $state<Record<string, Record<string, boolean>>>({});
+  type ListGroup =
+    | 'experience'
+    | 'education'
+    | 'skills'
+    | 'social'
+    | 'sponsorship'
+    | 'contact';
+  function listConfig(group: ListGroup) {
+    const configs = {
+      experience: {
+        items: cvState.experience,
+        baseline: cvInitial?.experience,
+        errors: experienceErrors,
+        valid: experienceValid,
+        fields: {
+          title: 'Title',
+          type: 'Employment type',
+          locType: 'Location type',
+          company: 'Company',
+          location: 'Location',
+          description: 'Description'
+        }
+      },
+      education: {
+        items: cvState.education,
+        baseline: cvInitial?.education,
+        errors: educationErrors,
+        valid: educationValid,
+        fields: {
+          institution: 'Institution',
+          degree: 'Degree',
+          field: 'Field of study',
+          grade: 'Grade',
+          description: 'Description'
+        }
+      },
+      skills: {
+        items: skillsState,
+        baseline: skillsInitial,
+        errors: skillsErrors,
+        valid: skillsValid,
+        fields: {category: 'Area of expertise'}
+      },
+      social: {
+        items: socialState,
+        baseline: socialInitial,
+        errors: socialErrors,
+        valid: socialValid,
+        fields: {icon: 'Icon', platform: 'Platform', url: 'URL'}
+      },
+      sponsorship: {
+        items: sponsorshipState,
+        baseline: sponsorshipInitial,
+        errors: sponsorshipErrors,
+        valid: sponsorshipValid,
+        fields: {
+          icon: 'Icon',
+          platform: 'Platform',
+          displayValue: 'Display text',
+          url: 'URL'
+        }
+      },
+      contact: {
+        items: contactState,
+        baseline: contactInitial,
+        errors: contactErrors,
+        valid: contactValid,
+        fields: {
+          icon: 'Icon',
+          platform: 'Platform',
+          displayValue: 'Display text',
+          href: 'URL'
+        }
+      }
     };
+    return configs[group];
   }
-
-  let experienceErrors = $state<Record<number, Record<string, string>>>({});
-  let experienceValid = $state<Record<number, Record<string, boolean>>>({});
-  let educationErrors = $state<Record<number, Record<string, string>>>({});
-  let educationValid = $state<Record<number, Record<string, boolean>>>({});
-  let skillsErrors = $state<Record<number, Record<string, string>>>({});
-  let skillsValid = $state<Record<number, Record<string, boolean>>>({});
-  let socialErrors = $state<Record<number, Record<string, string>>>({});
-  let socialValid = $state<Record<number, Record<string, boolean>>>({});
-  let sponsorshipErrors = $state<Record<number, Record<string, string>>>({});
-  let sponsorshipValid = $state<Record<number, Record<string, boolean>>>({});
-  let contactErrors = $state<Record<number, Record<string, string>>>({});
-  let contactValid = $state<Record<number, Record<string, boolean>>>({});
-
-  const urlRegex = /^(https?:\/\/|mailto:|tel:).+/i;
-
-  function validateRequiredField(
-    errors: Record<number, Record<string, string>>,
-    valid: Record<number, Record<string, boolean>>,
+  function listField(
+    group: ListGroup,
+    item: {id?: string},
+    field: string,
+    label: string
+  ) {
+    const id = item.id!;
+    const key = `${group}:${id}:${field}`;
+    const value = (entry: unknown) =>
+      (entry as Record<string, unknown> | undefined)?.[field] ?? '';
+    listValidation.register(key, {
+      value: () => value(item),
+      baseline: () => {
+        const entry = listConfig(group).baseline?.find(
+          entry => entry.id === id
+        );
+        return entry ? value(entry) : undefined;
+      },
+      validate: value => {
+        const required = requiredText(label)(String(value));
+        if (required) return required;
+        if (
+          ['url', 'href'].includes(field)
+          && !/^(https?:\/\/|mailto:|tel:).+/i.test(String(value))
+        )
+          return 'Must start with http://, https://, mailto:, or tel:';
+        return '';
+      },
+      report: result => {
+        const config = listConfig(group);
+        config.errors[id] ??= {};
+        config.valid[id] ??= {};
+        config.errors[id][field] = result.error;
+        config.valid[id][field] = result.valid;
+      }
+    });
+    return key;
+  }
+  function listInput(
+    group: ListGroup,
     idx: number,
     field: string,
     label: string,
-    value: string,
-    isUrl = false
-  ): boolean {
-    if (!errors[idx]) errors[idx] = {};
-    if (!valid[idx]) valid[idx] = {};
-    const v = value.trim();
-    if (!v) {
-      errors[idx][field] = `${label} is required.`;
-      valid[idx][field] = false;
-      return false;
-    }
-    if (isUrl && !urlRegex.test(v)) {
-      errors[idx][field] =
-        'Must start with http://, https://, mailto:, or tel:';
-      valid[idx][field] = false;
-      return false;
-    }
-    errors[idx][field] = '';
-    valid[idx][field] = true;
-    return true;
-  }
-
-  function clearFieldError(
-    errors: Record<number, Record<string, string>>,
-    valid: Record<number, Record<string, boolean>>,
-    idx: number,
-    field: string
+    blur = false
   ) {
-    if (errors[idx]) errors[idx][field] = '';
-    if (valid[idx]) valid[idx][field] = false;
+    const item = listConfig(group).items[idx];
+    if (!item) return;
+    queueMicrotask(() => {
+      const key = listField(group, item, field, label);
+      if (blur) void listValidation.check(key);
+      else listValidation.input(key);
+    });
   }
-
-  const validateExperienceField = debounceAdmin(
-    (idx: number, field: keyof ExperienceItem, label: string) => {
-      const value = String(cvState.experience[idx]?.[field] ?? '');
-      validateRequiredField(
-        experienceErrors,
-        experienceValid,
-        idx,
-        field,
-        label,
-        value
-      );
-    },
-    400
-  );
-
-  const validateEducationField = debounceAdmin(
-    (idx: number, field: keyof EducationItem, label: string) => {
-      const value = String(cvState.education[idx]?.[field] ?? '');
-      validateRequiredField(
-        educationErrors,
-        educationValid,
-        idx,
-        field,
-        label,
-        value
-      );
-    },
-    400
-  );
-
-  const validateSkillField = debounceAdmin((idx: number) => {
-    validateRequiredField(
-      skillsErrors,
-      skillsValid,
-      idx,
-      'category',
-      'Area of expertise',
-      skillsState[idx]?.category || ''
-    );
-  }, 400);
-
-  const validateSocialField = debounceAdmin(
-    (idx: number, field: 'platform' | 'url') => {
-      const labels = {platform: 'Platform', url: 'URL'};
-      validateRequiredField(
-        socialErrors,
-        socialValid,
-        idx,
-        field,
-        labels[field],
-        socialState[idx]?.[field] || '',
-        field === 'url'
-      );
-    },
-    400
-  );
-
-  const validateSponsorshipField = debounceAdmin(
-    (idx: number, field: 'platform' | 'displayValue' | 'url') => {
-      const labels = {
-        platform: 'Platform',
-        displayValue: 'Display text',
-        url: 'URL'
-      };
-      validateRequiredField(
-        sponsorshipErrors,
-        sponsorshipValid,
-        idx,
-        field,
-        labels[field],
-        sponsorshipState[idx]?.[field] || '',
-        field === 'url'
-      );
-    },
-    400
-  );
-
-  const validateContactField = debounceAdmin(
-    (idx: number, field: 'platform' | 'displayValue' | 'href') => {
-      const labels = {
-        platform: 'Platform',
-        displayValue: 'Display text',
-        href: 'URL'
-      };
-      validateRequiredField(
-        contactErrors,
-        contactValid,
-        idx,
-        field,
-        labels[field],
-        contactState[idx]?.[field] || '',
-        field === 'href'
-      );
-    },
-    400
-  );
-
-  function validateAllExperience(): boolean {
-    let ok = true;
-    cvState.experience.forEach((exp, idx) => {
-      const fields: [keyof ExperienceItem, string][] = [
-        ['title', 'Title'],
-        ['company', 'Company'],
-        ['location', 'Location'],
-        ['description', 'Description']
-      ];
-      for (const [field, label] of fields) {
+  function dateField(
+    group: 'experience' | 'education',
+    item: ExperienceItem | EducationItem
+  ) {
+    const key = `${group}:${item.id}:dates`;
+    const dates = (entry?: ExperienceItem | EducationItem) =>
+      entry ?
+        [
+          entry.startMonth,
+          entry.startYear,
+          entry.endMonth,
+          entry.endYear,
+          entry.currentlyIn
+        ]
+      : undefined;
+    listValidation.register(key, {
+      value: () => dates(item),
+      baseline: () =>
+        dates(
+          listConfig(group).baseline?.find(entry => entry.id === item.id) as
+            ExperienceItem | EducationItem | undefined
+        ),
+      validate: () => {
+        if (!MONTHS.some(month => month === item.startMonth) || !item.startYear)
+          return 'Start month and year are required.';
+        if (item.currentlyIn) return '';
+        if (!!item.endMonth !== !!item.endYear)
+          return 'Select both end month and year.';
         if (
-          !validateRequiredField(
-            experienceErrors,
-            experienceValid,
-            idx,
-            field,
-            label,
-            String(exp[field] ?? '')
-          )
+          item.endMonth
+          && item.endYear
+          && item.endYear * 12
+            + MONTHS.findIndex(month => month === item.endMonth)
+            < item.startYear * 12
+              + MONTHS.findIndex(month => month === item.startMonth)
         )
-          ok = false;
+          return 'End date must be on or after the start date.';
+        return '';
+      },
+      report: result => {
+        const config = listConfig(group);
+        config.errors[item.id!] ??= {};
+        config.errors[item.id!].dates = result.error;
       }
     });
-    return ok;
+    return key;
   }
-
-  function validateAllEducation(): boolean {
-    let ok = true;
-    cvState.education.forEach((edu, idx) => {
-      const fields: [keyof EducationItem, string][] = [
-        ['institution', 'Institution'],
-        ['degree', 'Degree'],
-        ['field', 'Field of study'],
-        ['grade', 'Grade'],
-        ['description', 'Description']
-      ];
-      for (const [field, label] of fields) {
-        if (
-          !validateRequiredField(
-            educationErrors,
-            educationValid,
-            idx,
-            field,
-            label,
-            String(edu[field] ?? '')
-          )
-        )
-          ok = false;
-      }
+  function onDateInput(
+    group: 'experience' | 'education',
+    item: ExperienceItem | EducationItem
+  ) {
+    queueMicrotask(() => {
+      void listValidation.check(dateField(group, item));
     });
-    return ok;
   }
-
-  function validateAllSkills(): boolean {
-    let ok = true;
-    skillsState.forEach((item, idx) => {
-      if (
-        !validateRequiredField(
-          skillsErrors,
-          skillsValid,
-          idx,
-          'category',
-          'Area of expertise',
-          item.category || ''
-        )
-      )
-        ok = false;
+  async function validateList(group: ListGroup) {
+    const config = listConfig(group);
+    const keys = config.items.flatMap(item => {
+      const keys = Object.entries(config.fields).map(([field, label]) =>
+        listField(group, item, field, label)
+      );
+      if (group === 'experience' || group === 'education')
+        keys.push(dateField(group, item as ExperienceItem | EducationItem));
+      return keys;
     });
-    return ok;
+    return listValidation.submit(keys);
   }
-
-  function validateAllSocials(): boolean {
-    let ok = true;
-    socialState.forEach((item, idx) => {
-      if (
-        !validateRequiredField(
-          socialErrors,
-          socialValid,
-          idx,
-          'platform',
-          'Platform',
-          item.platform || ''
-        )
-      )
-        ok = false;
-      if (
-        !validateRequiredField(
-          socialErrors,
-          socialValid,
-          idx,
-          'url',
-          'URL',
-          item.url || '',
-          true
-        )
-      )
-        ok = false;
-    });
-    return ok;
+  function validateExperienceField(idx: number, field: string, label = field) {
+    listInput('experience', idx, field, label);
   }
-
-  function validateAllSponsorship(): boolean {
-    let ok = true;
-    sponsorshipState.forEach((item, idx) => {
-      if (
-        !validateRequiredField(
-          sponsorshipErrors,
-          sponsorshipValid,
-          idx,
-          'platform',
-          'Platform',
-          item.platform || ''
-        )
-      )
-        ok = false;
-      if (
-        !validateRequiredField(
-          sponsorshipErrors,
-          sponsorshipValid,
-          idx,
-          'displayValue',
-          'Display text',
-          item.displayValue || ''
-        )
-      )
-        ok = false;
-      if (
-        !validateRequiredField(
-          sponsorshipErrors,
-          sponsorshipValid,
-          idx,
-          'url',
-          'URL',
-          item.url || '',
-          true
-        )
-      )
-        ok = false;
-    });
-    return ok;
+  function validateEducationField(idx: number, field: string, label = field) {
+    listInput('education', idx, field, label);
   }
-
-  function validateAllContact(): boolean {
-    let ok = true;
-    contactState.forEach((item, idx) => {
-      if (
-        !validateRequiredField(
-          contactErrors,
-          contactValid,
-          idx,
-          'platform',
-          'Platform',
-          item.platform || ''
-        )
-      )
-        ok = false;
-      if (
-        !validateRequiredField(
-          contactErrors,
-          contactValid,
-          idx,
-          'displayValue',
-          'Display text',
-          item.displayValue || ''
-        )
-      )
-        ok = false;
-      if (
-        !validateRequiredField(
-          contactErrors,
-          contactValid,
-          idx,
-          'href',
-          'URL',
-          item.href || '',
-          true
-        )
-      )
-        ok = false;
-    });
-    return ok;
+  function validateSkillField(idx: number) {
+    listInput('skills', idx, 'category', 'Area of expertise');
   }
-
+  function validateSocialField(idx: number, field: string, label = field) {
+    listInput('social', idx, field, label);
+  }
+  function validateSponsorshipField(idx: number, field: string, label = field) {
+    listInput('sponsorship', idx, field, label);
+  }
+  function validateContactField(idx: number, field: string, label = field) {
+    listInput('contact', idx, field, label);
+  }
+  function validateAllExperience() {
+    return validateList('experience');
+  }
+  function validateAllEducation() {
+    return validateList('education');
+  }
+  function validateAllSkills() {
+    return validateList('skills');
+  }
+  function validateAllSocials() {
+    return validateList('social');
+  }
+  function validateAllSponsorship() {
+    return validateList('sponsorship');
+  }
+  function validateAllContact() {
+    return validateList('contact');
+  }
   let isClearingAuthor = $state(false);
 
   let pdfUploadError = $state('');
@@ -1138,7 +1184,6 @@
       skillsState[idx].skills,
       parsed.skills
     );
-    clearFieldError(skillsErrors, skillsValid, idx, 'category');
     validateSkillField(idx);
   }
 
@@ -1149,7 +1194,6 @@
     e.preventDefault();
     if (parsed.category !== null) {
       skillsState[idx].category = parsed.category;
-      clearFieldError(skillsErrors, skillsValid, idx, 'category');
       validateSkillField(idx);
     }
     skillsState[idx].skills = mergeSkills(
@@ -1284,6 +1328,7 @@
   });
 
   const expandedPostIds = new SvelteSet<string>();
+  const translatingPostIds = new SvelteSet<string>();
   const expandedExcerptIds = new SvelteSet<string>();
   const overflowingExcerptIds = new SvelteSet<string>();
 
@@ -1329,7 +1374,7 @@
     if (isSubmitting) return;
 
     const trimmed = commentContent.trim();
-    if (!trimmed) return;
+    if (!(await replyValidation.submit(undefined, true))) return;
 
     isSubmitting = true;
     try {
@@ -1372,6 +1417,7 @@
         };
         comments = [...comments, newComment];
         commentContent = '';
+        replyValidation.reset();
         replyTo = null;
         toastStore.success('Reply posted.');
       }
@@ -1437,6 +1483,7 @@
   }
 
   onMount(() => {
+    let active = true;
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (isLegalDirty) {
         e.preventDefault();
@@ -1448,6 +1495,7 @@
 
     (async () => {
       const {data: sessionData} = await supabase.auth.getSession();
+      if (!active) return;
       if (!sessionData.session) {
         const target = window.location.pathname + window.location.search;
         window.location.href = `/admin/login?redirectTo=${encodeURIComponent(target)}`;
@@ -1479,8 +1527,10 @@
           fetchPosts(),
           fetchComments(),
           loadAdminData(),
-          loadLegalPagesFromSupabase()
+          loadLegalPagesFromSupabase(),
+          adminNotificationsStore.load()
         ]);
+        if (active) adminNotificationsStore.subscribe(refreshAdminActivity);
       } catch (err) {
         console.error('Error loading admin dashboard data:', err);
       } finally {
@@ -1489,8 +1539,10 @@
     })();
 
     return () => {
+      active = false;
       clearTimeout(idleWarnTimer);
       clearInterval(countdownInterval);
+      adminNotificationsStore.unsubscribe();
       if (typeof window !== 'undefined') {
         window.removeEventListener('beforeunload', handleBeforeUnload);
         ACTIVITY_EVENTS.forEach(evt =>
@@ -1513,18 +1565,39 @@
         fetchActiveCvDocument(supabase),
         fetchProjectRepoRules(supabase)
       ]);
-      if (p) authorState = p;
+      if (p) {
+        authorState = p;
+        manifestSettings = p.manifestSettings ?? null;
+      }
+      if (!manifestSettings) {
+        const {
+          data: {session}
+        } = await supabase.auth.getSession();
+        if (session) {
+          const response = await fetch('/api/internal/admin/profile', {
+            headers: {Authorization: `Bearer ${session.access_token}`}
+          });
+          if (response.ok)
+            manifestSettings = (await response.json()).manifestSettings;
+        }
+      }
+      initialManifest = JSON.stringify(manifestSettings);
       authorInitial = {...authorState};
       if (cv) cvState = cv;
       cvInitial = $state.snapshot(cvState);
+      listValidation.reset();
       if (sp) sponsorshipState = sp;
       sponsorshipInitial = $state.snapshot(sponsorshipState);
+      listValidation.reset();
       if (ct) contactState = ct;
       contactInitial = $state.snapshot(contactState);
+      listValidation.reset();
       if (soc) socialState = soc;
       socialInitial = $state.snapshot(socialState);
+      listValidation.reset();
       if (sk) skillsState = sk;
       skillsInitial = $state.snapshot(skillsState);
+      listValidation.reset();
       if (gl) glossaryState = gl;
       glossaryInitial = $state.snapshot(glossaryState);
       if (rules) {
@@ -1544,23 +1617,34 @@
     }
   }
 
-  async function fetchPosts() {
+  let postsRequest = 0;
+
+  async function fetchPosts(withReadTimes = true) {
+    if (postsLoading) return true;
+    const current = ++postsRequest;
+    if (withReadTimes) postsLoading = true;
+    postsLoadError = '';
     try {
       const {data, error} = await supabase
         .from('db_posts')
         .select(
-          'id, title, slug, published, pinned, storage_path, created_at, updated_at, banner_path, excerpt, tags'
+          'id, title, slug, published, pinned, storage_path, created_at, updated_at, banner_version, post_revision, excerpt, tags, helpful_yes, helpful_no'
         )
-        .order('created_at', {ascending: false});
+        .order('created_at', {ascending: false})
+        .abortSignal(AbortSignal.timeout(10000));
 
       if (error) throw error;
 
+      if (current !== postsRequest) return true;
       const rawPosts = data || [];
       posts = rawPosts.map(post => ({
         ...post,
         pinned: Boolean(post.pinned),
-        read_time: '1 min read'
+        read_time:
+          posts.find(existing => existing.id === post.id)?.read_time
+          ?? '1 min read'
       }));
+      if (!withReadTimes) return true;
       rawPosts.forEach(post => fetchPostViews(post.id));
 
       void (async () => {
@@ -1576,9 +1660,7 @@
               }).catch(() => null);
               if (fileRes?.ok) {
                 const text = await fileRes.text();
-                const words = text.trim().split(/\s+/).length;
-                const minutes = Math.max(1, Math.ceil(words / 200));
-                readTime = `${minutes} min${minutes > 1 ? 's' : ''} read`;
+                readTime = estimateReadTime(text);
               }
             } catch (err) {
               console.error(err);
@@ -1586,39 +1668,64 @@
             return {...post, pinned: Boolean(post.pinned), read_time: readTime};
           })
         );
-        posts = postsWithReadTime;
+        const readTimes = new Map(
+          postsWithReadTime.map(post => [post.id, post])
+        );
+        posts = posts.map(post => {
+          const measured = readTimes.get(post.id);
+          return measured?.storage_path === post.storage_path ?
+              {...post, read_time: measured.read_time}
+            : post;
+        });
       })();
+      return true;
     } catch (err) {
       console.error('Error fetching admin posts:', err);
-      toastStore.error('Failed to load posts.');
+      postsLoadError = 'Posts could not be loaded. Please try again.';
+      return false;
+    } finally {
+      if (withReadTimes) postsLoading = false;
     }
   }
 
   async function fetchComments() {
     try {
-      const [{data, error}, {data: reportsData}] = await Promise.all([
-        supabase
-          .from('db_comments')
-          .select('*, posts:post_id(title)')
-          .order('created_at', {ascending: false}),
-        supabase
-          .from('db_comment_reports')
-          .select('*')
-          .order('created_at', {ascending: false})
-      ]);
+      const [{data, error}, {data: reportsData, error: reportsError}] =
+        await Promise.all([
+          supabase
+            .from('db_comments')
+            .select('*, posts:post_id(title)')
+            .order('created_at', {ascending: false})
+            .abortSignal(AbortSignal.timeout(10000)),
+          supabase
+            .from('db_comment_reports')
+            .select('id, comment_id, reason, details, created_at')
+            .order('created_at', {ascending: false})
+            .abortSignal(AbortSignal.timeout(10000))
+        ]);
 
       if (error) throw error;
+      if (reportsError) throw reportsError;
       comments = (data as any) || [];
       commentReports = (reportsData as any) || [];
+      return true;
     } catch (err) {
       console.error('Error fetching admin comments:', err);
+      return false;
     }
+  }
+
+  async function refreshAdminActivity() {
+    const results = await Promise.all([fetchPosts(false), fetchComments()]);
+    if (results.some(result => !result))
+      throw new Error('Activity unavailable');
   }
 
   async function handleLogout() {
     isLoggingOut = true;
     try {
       await supabase.auth.signOut();
+      adminNotificationsStore.unsubscribe();
       window.location.href = '/admin/login';
     } catch (err) {
       console.error('Error signing out:', err);
@@ -1629,14 +1736,22 @@
   async function handleTogglePublished(post: AdminPost) {
     try {
       const nextPublished = !post.published;
-      const {error} = await supabase
+      const {data: updatedPost, error} = await supabase
         .from('db_posts')
         .update({published: nextPublished})
-        .eq('id', post.id);
+        .eq('id', post.id)
+        .select('post_revision')
+        .single();
 
       if (error) throw error;
       posts = posts.map(p =>
-        p.id === post.id ? {...p, published: nextPublished} : p
+        p.id === post.id ?
+          {
+            ...p,
+            published: nextPublished,
+            post_revision: updatedPost.post_revision
+          }
+        : p
       );
       toastStore.success(
         nextPublished ? 'Post published.' : 'Post unpublished.'
@@ -1644,6 +1759,57 @@
     } catch (err) {
       console.error('Error updating post published status:', err);
       toastStore.error('Failed to update post status.');
+    }
+  }
+
+  async function handleTranslatePost(post: AdminPost) {
+    if (translatingPostIds.has(post.id)) return;
+    translatingPostIds.add(post.id);
+    try {
+      const {data: sessionData} = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token) {
+        toastStore.error('Admin session expired. Please log in again.');
+        return;
+      }
+
+      const failed: string[] = [];
+      const partial: string[] = [];
+      await Promise.all(
+        TRANSLATION_LOCALES.map(async locale => {
+          const res = await fetch('/api/internal/blog/translate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({postId: post.id, locale})
+          });
+          if (!res.ok) {
+            failed.push(locale);
+            return;
+          }
+          const result = await res.json();
+          if (result.skipped) return;
+          if (!result.stored) failed.push(locale);
+          else if (!result.bodyTranslated) partial.push(locale);
+        })
+      );
+
+      if (failed.length > 0) {
+        toastStore.error(`Translation failed for: ${failed.join(',')}.`);
+      } else if (partial.length > 0) {
+        toastStore.error(
+          `Body left untranslated for: ${partial.join(',')}. Try again.`
+        );
+      } else {
+        toastStore.success('Translations regenerated.');
+      }
+    } catch (err: any) {
+      console.error('Error translating post:', err);
+      toastStore.error(err?.message || 'Failed to translate post.');
+    } finally {
+      translatingPostIds.delete(post.id);
     }
   }
 
@@ -1657,14 +1823,18 @@
           return;
         }
       }
-      const {error} = await supabase
+      const {data: updatedPost, error} = await supabase
         .from('db_posts')
         .update({pinned: nextPinned})
-        .eq('id', post.id);
+        .eq('id', post.id)
+        .select('post_revision')
+        .single();
 
       if (error) throw error;
       posts = posts.map(p =>
-        p.id === post.id ? {...p, pinned: nextPinned} : p
+        p.id === post.id ?
+          {...p, pinned: nextPinned, post_revision: updatedPost.post_revision}
+        : p
       );
       toastStore.success(nextPinned ? 'Post pinned.' : 'Post unpinned.');
     } catch (err: any) {
@@ -1678,32 +1848,47 @@
     showDeletePostDialog = true;
   }
 
+  let deletingPost = $state(false);
+
   async function executeDeletePost() {
-    if (!postToDelete) return;
+    if (!postToDelete || deletingPost) return;
+    deletingPost = true;
+    const post = postToDelete;
+    const key = `post-delete:${post.id}`;
     try {
-      if (postToDelete.storage_path) {
-        await supabase.storage
-          .from('blog-posts')
-          .remove([postToDelete.storage_path]);
+      const {data} = await supabase.auth.getSession();
+      const token = data.session?.access_token;
+      if (!token) throw new Error('Your session has expired. Log in again.');
+      let form = await recallPostSave(key);
+      if (!form) {
+        form = new FormData();
+        form.set(
+          'post',
+          JSON.stringify({
+            operationId: crypto.randomUUID(),
+            id: post.id,
+            revision: post.post_revision,
+            kind: 'delete'
+          })
+        );
+        await rememberPostSave(key, form);
       }
-      if (postToDelete.banner_path) {
-        await supabase.storage
-          .from('blog-posts')
-          .remove([postToDelete.banner_path]);
-      }
-      const {error} = await supabase
-        .from('db_posts')
-        .delete()
-        .eq('id', postToDelete.id);
-      if (error) throw error;
-      posts = posts.filter(p => p.id !== postToDelete!.id);
+      await submitPost(form, token);
+      await rememberPostSave(key, null);
+      posts = posts.filter(p => p.id !== post.id);
       toastStore.success('Post deleted.');
-    } catch (err) {
-      console.error('Error deleting post:', err);
-      toastStore.error('Failed to delete post.');
-    } finally {
       showDeletePostDialog = false;
       postToDelete = null;
+    } catch (error) {
+      if (error instanceof PostSaveError && error.definitive)
+        await rememberPostSave(key, null);
+      toastStore.error(
+        error instanceof Error ?
+          error.message
+        : 'Delete is not confirmed. Retry to check its status.'
+      );
+    } finally {
+      deletingPost = false;
     }
   }
 
@@ -1786,8 +1971,8 @@
 
   async function handleSaveAuthor(e: SubmitEvent) {
     e.preventDefault();
-    if (isSavingAuthor) return;
-    if (!validateAllAuthorFields()) return;
+    if (isSavingAuthor || preparingImage) return;
+    if (!(await validateAllAuthorFields())) return;
     isSavingAuthor = true;
     authorSaveSuccess = false;
     authorSaveError = '';
@@ -1798,13 +1983,12 @@
       }
       cleanUsername = cleanUsername.replace(/\s+/g, '');
 
-      const payload = {
+      const payload: Record<string, unknown> = {
         name: sanitizeInput(authorState.name.trim()),
         username: sanitizeInput(cleanUsername),
         headline: sanitizeInput(authorState.headline.trim()),
         job_title: sanitizeInput(authorState.jobTitle.trim()),
         bio: sanitizeInput(authorState.bio.trim()),
-        avatar: authorState.avatar.trim(),
         email: authorState.email.trim(),
         city: sanitizeInput(authorState.city.trim()),
         postal_code: sanitizeInput(authorState.postalCode.trim()),
@@ -1812,71 +1996,94 @@
         site_url: authorState.siteUrl.trim()
       };
 
-      if (authorState.id) {
-        const {data, error} = await supabase
-          .from('db_profiles')
-          .update(payload)
-          .eq('id', authorState.id)
-          .select();
-        if (error) throw error;
-
-        if (!data || data.length === 0) {
-          const {data: existingRows} = await supabase
-            .from('db_profiles')
-            .select('id')
-            .limit(1);
-          if (existingRows && existingRows.length > 0) {
-            const realId = existingRows[0].id;
-            authorState.id = realId;
-            const {data: updated2, error: err2} = await supabase
-              .from('db_profiles')
-              .update(payload)
-              .eq('id', realId)
-              .select();
-            if (err2) throw err2;
-            if (!updated2 || updated2.length === 0) {
-              throw new Error('Could not update author profile record.');
-            }
-          } else {
-            const {data: inserted, error: err3} = await supabase
-              .from('db_profiles')
-              .insert(payload)
-              .select()
-              .single();
-            if (err3) throw err3;
-            if (inserted) authorState.id = inserted.id;
-          }
+      const fieldNames: Record<string, keyof typeof authorState> = {
+        name: 'name',
+        username: 'username',
+        headline: 'headline',
+        job_title: 'jobTitle',
+        bio: 'bio',
+        email: 'email',
+        city: 'city',
+        postal_code: 'postalCode',
+        country: 'country',
+        site_url: 'siteUrl'
+      };
+      if (authorState.id && authorInitial)
+        for (const [key, field] of Object.entries(fieldNames)) {
+          if (authorState[field] === authorInitial[field]) delete payload[key];
         }
-      } else {
-        const {data: existingRows} = await supabase
-          .from('db_profiles')
-          .select('id')
-          .limit(1);
-        if (existingRows && existingRows.length > 0) {
-          const realId = existingRows[0].id;
-          authorState.id = realId;
-          const {data: updated, error: err4} = await supabase
-            .from('db_profiles')
-            .update(payload)
-            .eq('id', realId)
-            .select();
-          if (err4) throw err4;
-        } else {
-          const {data: inserted, error: err5} = await supabase
-            .from('db_profiles')
-            .insert(payload)
-            .select()
-            .single();
-          if (err5) throw err5;
-          if (inserted) authorState.id = inserted.id;
-        }
+      if (!manifestSettings)
+        throw new Error(
+          'App appearance settings are unavailable. Reload the page.'
+        );
+      const {
+        data: {session}
+      } = await supabase.auth.getSession();
+      if (!session) throw new Error('Please sign in again.');
+      const form = new FormData();
+      form.set(
+        'profile',
+        JSON.stringify({
+          ...payload,
+          id: authorState.id || null,
+          revision: authorState.revision ?? 0,
+          ...((
+            JSON.stringify(manifestSettings) !== initialManifest
+            || !authorState.id
+          ) ?
+            {manifest_settings: {display: manifestSettings.display}}
+          : {})
+        })
+      );
+      if (preparedImage) {
+        for (const [name, bytes] of Object.entries(preparedImage.files))
+          form.set(name, new Blob([bytes]), name);
+        form.set('vector', JSON.stringify(preparedImage.paths));
       }
+      const response = await fetch('/api/internal/admin/profile', {
+        method: 'POST',
+        headers: {Authorization: `Bearer ${session.access_token}`},
+        body: form
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        const details = result.error?.details ?? result.details;
+        const fields =
+          typeof details === 'string' ?
+            JSON.parse(details).fields
+          : details?.fields;
+        if (fields)
+          authorValidation.serverErrors(
+            Object.fromEntries(
+              Object.entries(fields).map(([key, value]) => [
+                fieldNames[key] || key,
+                String(value)
+              ])
+            )
+          );
+        throw new Error(
+          result.error?.message || result.message || 'Could not save profile.'
+        );
+      }
+      for (const [key, field] of Object.entries(fieldNames)) {
+        if (typeof result.profile[key] === 'string')
+          (authorState as unknown as Record<string, unknown>)[field] =
+            decodeHtmlEntities(result.profile[key]);
+      }
+      authorState.id = result.profile.id;
+      authorState.avatar = result.profile.avatar;
+      authorState.revision = result.profile.profile_revision;
+      authorState.avatarVersion = result.profile.avatar_version;
+      preparedImage = null;
+      initialManifest = JSON.stringify(manifestSettings);
 
       authorState.username = cleanUsername;
       authorSaveSuccess = true;
       authorInitial = {...authorState};
+      authorValidation.reset();
       setTimeout(() => (authorSaveSuccess = false), 2500);
       toastStore.success('Author profile saved.');
+      await invalidateAll();
       executeGenerateCvPdf('patch');
     } catch (err: any) {
       console.error('Error saving author profile:', err);
@@ -1987,8 +2194,8 @@
   async function handleSaveCv(e: SubmitEvent) {
     e.preventDefault();
     if (isSavingCv) return;
-    const experienceOk = validateAllExperience();
-    const educationOk = validateAllEducation();
+    const experienceOk = await validateAllExperience();
+    const educationOk = await validateAllEducation();
     if (!experienceOk || !educationOk) {
       toastStore.error('Please fix the errors below before saving.');
       return;
@@ -2036,6 +2243,7 @@
       if (error) throw error;
 
       cvInitial = $state.snapshot(cvState);
+      listValidation.reset();
       cvSaveSuccess = true;
       setTimeout(() => (cvSaveSuccess = false), 2500);
       toastStore.success('CV entries saved.');
@@ -2052,7 +2260,7 @@
   async function handleSaveSkills(e: SubmitEvent) {
     e.preventDefault();
     if (isSavingSkills) return;
-    if (!validateAllSkills()) {
+    if (!(await validateAllSkills())) {
       toastStore.error('Please fix the errors below before saving.');
       return;
     }
@@ -2078,6 +2286,7 @@
       if (error) throw error;
 
       skillsInitial = $state.snapshot(skillsState);
+      listValidation.reset();
       skillsSaveSuccess = true;
       setTimeout(() => (skillsSaveSuccess = false), 2500);
       toastStore.success('Skills saved.');
@@ -2094,6 +2303,7 @@
   async function handleSaveProjects(e: SubmitEvent) {
     e.preventDefault();
     if (isSavingProjects) return;
+    if (!(await termValidation.submit(['pinned', 'excluded']))) return;
     isSavingProjects = true;
     try {
       const authorId = await getAuthorId();
@@ -2124,6 +2334,8 @@
 
       pinnedReposInitial = $state.snapshot(pinnedReposState);
       excludedReposInitial = $state.snapshot(excludedReposState);
+      termValidation.clear('pinned');
+      termValidation.clear('excluded');
       toastStore.success('Projects rules saved.');
     } catch (err: any) {
       console.error('Error saving project rules:', err);
@@ -2137,6 +2349,7 @@
   async function handleSaveGlossary(e: SubmitEvent) {
     e.preventDefault();
     if (isSavingGlossary) return;
+    if (!(await termValidation.submit(['glossary']))) return;
     isSavingGlossary = true;
     glossarySaveSuccess = false;
     try {
@@ -2154,6 +2367,7 @@
       if (error) throw error;
 
       glossaryInitial = $state.snapshot(glossaryState);
+      termValidation.clear('glossary');
       glossarySaveSuccess = true;
       setTimeout(() => (glossarySaveSuccess = false), 2500);
       toastStore.success('Glossary saved.');
@@ -2169,7 +2383,7 @@
   async function handleSaveSocials(e: SubmitEvent) {
     e.preventDefault();
     if (isSavingSocials) return;
-    if (!validateAllSocials()) {
+    if (!(await validateAllSocials())) {
       toastStore.error('Please fix the errors below before saving.');
       return;
     }
@@ -2196,6 +2410,7 @@
       if (error) throw error;
 
       socialInitial = $state.snapshot(socialState);
+      listValidation.reset();
       socialsSaveSuccess = true;
       setTimeout(() => (socialsSaveSuccess = false), 2500);
       toastStore.success('Social links saved.');
@@ -2211,7 +2426,7 @@
   async function handleSaveSponsorship(e: SubmitEvent) {
     e.preventDefault();
     if (isSavingSponsorship) return;
-    if (!validateAllSponsorship()) {
+    if (!(await validateAllSponsorship())) {
       toastStore.error('Please fix the errors below before saving.');
       return;
     }
@@ -2238,6 +2453,7 @@
       if (error) throw error;
 
       sponsorshipInitial = $state.snapshot(sponsorshipState);
+      listValidation.reset();
       sponsorshipSaveSuccess = true;
       setTimeout(() => (sponsorshipSaveSuccess = false), 2500);
       toastStore.success('Sponsorship links saved.');
@@ -2254,7 +2470,7 @@
   async function handleSaveContact(e: SubmitEvent) {
     e.preventDefault();
     if (isSavingContact) return;
-    if (!validateAllContact()) {
+    if (!(await validateAllContact())) {
       toastStore.error('Please fix the errors below before saving.');
       return;
     }
@@ -2281,6 +2497,7 @@
       if (error) throw error;
 
       contactInitial = $state.snapshot(contactState);
+      listValidation.reset();
       contactSaveSuccess = true;
       setTimeout(() => (contactSaveSuccess = false), 2500);
       toastStore.success('Contact info saved.');
@@ -2414,6 +2631,7 @@
       cvState.experience = [
         ...cvState.experience,
         {
+          id: crypto.randomUUID(),
           title: '',
           type: '',
           company: '',
@@ -2431,6 +2649,7 @@
       cvState.education = [
         ...cvState.education,
         {
+          id: crypto.randomUUID(),
           institution: '',
           degree: '',
           field: '',
@@ -2527,36 +2746,60 @@
   }
 
   function handleAddSkill() {
-    skillsState = [...skillsState, {category: '', skills: []}];
+    skillsState = [
+      ...skillsState,
+      {id: crypto.randomUUID(), category: '', skills: []}
+    ];
   }
 
   function handleAddSocial() {
     socialState = [
       ...socialState,
-      {platform: '', url: '', icon: '', description: ''}
+      {
+        id: crypto.randomUUID(),
+        platform: '',
+        url: '',
+        icon: '',
+        description: ''
+      }
     ];
   }
 
   function handleAddSponsorship() {
     sponsorshipState = [
       ...sponsorshipState,
-      {platform: '', displayValue: '', url: '', icon: '', description: ''}
+      {
+        id: crypto.randomUUID(),
+        platform: '',
+        displayValue: '',
+        url: '',
+        icon: '',
+        description: ''
+      }
     ];
   }
 
   function handleAddContact() {
     contactState = [
       ...contactState,
-      {platform: '', displayValue: '', href: '', icon: '', description: ''}
+      {
+        id: crypto.randomUUID(),
+        platform: '',
+        displayValue: '',
+        href: '',
+        icon: '',
+        description: ''
+      }
     ];
   }
 
   const adminNavLinks: {
-    id: typeof activeAdminTab;
+    id: AdminTab;
     label: string;
     icon: any;
-    section: 'content' | 'profile' | 'legal';
+    section: 'overview' | 'content' | 'profile' | 'legal';
   }[] = [
+    {id: 'home', label: 'Home', icon: House, section: 'overview'},
     {id: 'posts', label: 'Posts', icon: FileText, section: 'content'},
     {id: 'glossary', label: 'Glossary', icon: Languages, section: 'content'},
     {id: 'projects', label: 'Projects', icon: FolderGit2, section: 'content'},
@@ -2671,12 +2914,17 @@
         <Menu class="size-4 sm:size-5" />
       {/if}
     </Button>
-    <span class="font-sans-title text-base font-bold text-text-primary"
-      >Admin Console</span>
+    <span class="text-base font-bold text-text-primary">Admin Console</span>
   </div>
-  <ThemeSelect
-    theme={themeStore.current}
-    onThemeChange={themeStore.apply} />
+  <div class="flex items-center gap-1.5">
+    <AdminNotificationBell
+      id="mobile"
+      onSelect={selectNotification} />
+    <ThemeSelect
+      variant="ghost"
+      theme={themeStore.current}
+      onThemeChange={themeStore.apply} />
+  </div>
 </div>
 
 <div class="flex min-h-screen pt-14 md:pt-0">
@@ -2699,14 +2947,20 @@
           <X class="size-4 sm:size-5" />
         </Button>
         <h1
-          class="font-sans-title text-base font-bold tracking-tight text-text-primary md:text-sm">
+          class="text-base font-bold tracking-tight text-text-primary md:text-sm">
           Admin Console
         </h1>
       </div>
-      <ThemeSelect
-        theme={themeStore.current}
-        onThemeChange={themeStore.apply}
-        class="inline-flex" />
+      <div class="flex items-center gap-1.5">
+        <AdminNotificationBell
+          id="sidebar"
+          onSelect={selectNotification} />
+        <ThemeSelect
+          variant="ghost"
+          theme={themeStore.current}
+          onThemeChange={themeStore.apply}
+          class="inline-flex" />
+      </div>
     </div>
 
     <nav
@@ -2714,6 +2968,31 @@
       aria-label="Admin Navigation">
       <div
         class="px-2 py-1 text-2xs font-bold tracking-wider text-text-muted uppercase select-none">
+        Overview
+      </div>
+      <div class="flex flex-col gap-0.5">
+        {#each adminNavLinks.filter(l => l.section === 'overview') as link (link.id)}
+          <button
+            type="button"
+            onclick={() => selectTab(link.id)}
+            use:shortcut={{
+              group: 'sidebar',
+              placement: 'inline',
+              label: link.label
+            }}
+            class="group relative flex h-8 w-full items-center gap-2.5 rounded-sm px-2.5 text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
+              activeAdminTab === link.id
+            ) ?
+              'bg-accent-subtle font-bold text-accent shadow-2xs'
+            : 'text-text-primary hover:bg-surface-hover hover:text-accent'}">
+            <link.icon class="size-4 shrink-0 transition-colors" />
+            <span class="truncate">{link.label}</span>
+          </button>
+        {/each}
+      </div>
+
+      <div
+        class="mt-3 border-t border-border-subtle/30 px-2 pt-2.5 pb-1 text-2xs font-bold tracking-wider text-text-muted uppercase select-none">
         Content Management
       </div>
       <div class="flex flex-col gap-0.5">
@@ -2721,7 +3000,12 @@
           <button
             type="button"
             onclick={() => selectTab(link.id)}
-            class="group flex h-8 w-full items-center gap-2.5 rounded-sm px-2.5 text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
+            use:shortcut={{
+              group: 'sidebar',
+              placement: 'inline',
+              label: link.label
+            }}
+            class="group relative flex h-8 w-full items-center gap-2.5 rounded-sm px-2.5 text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
               activeAdminTab === link.id
             ) ?
               'bg-accent-subtle font-bold text-accent shadow-2xs'
@@ -2741,7 +3025,12 @@
           <button
             type="button"
             onclick={() => selectTab(link.id)}
-            class="group flex h-8 w-full items-center gap-2.5 rounded-sm px-2.5 text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
+            use:shortcut={{
+              group: 'sidebar',
+              placement: 'inline',
+              label: link.label
+            }}
+            class="group relative flex h-8 w-full items-center gap-2.5 rounded-sm px-2.5 text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
               activeAdminTab === link.id
             ) ?
               'bg-accent-subtle font-bold text-accent shadow-2xs'
@@ -2761,7 +3050,12 @@
           <button
             type="button"
             onclick={() => selectTab(link.id)}
-            class="group flex h-8 w-full items-center gap-2.5 rounded-sm px-2.5 text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
+            use:shortcut={{
+              group: 'sidebar',
+              placement: 'inline',
+              label: link.label
+            }}
+            class="group relative flex h-8 w-full items-center gap-2.5 rounded-sm px-2.5 text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
               activeAdminTab === link.id
             ) ?
               'bg-accent-subtle font-bold text-accent shadow-2xs'
@@ -2787,11 +3081,10 @@
               aria-hidden="true">
             </div>
           {:else}
-            <span
-              class="font-sans-title text-xs leading-tight font-bold text-text-primary"
+            <span class="text-xs leading-tight font-bold text-text-primary"
               >{authorState.name || ''}</span>
             <span
-              class="truncate font-sans-title text-xxs leading-tight font-normal text-text-muted"
+              class="truncate text-xxs leading-tight font-normal text-text-muted"
               title={adminUserEmail || authorState.email}>
               {adminUserEmail || authorState.email || ''}
             </span>
@@ -2830,6 +3123,11 @@
         variant="post-card"
         label="Loading dashboard..."
         count={3} />
+    {:else if activeAdminTab === 'home'}
+      <AdminHome
+        focus={activityFocus}
+        onOpenComment={focusComment}
+        onPublished={showPublishedPosts} />
     {:else if activeAdminTab === 'posts'}
       <div class="mb-6 flex items-center justify-between gap-3">
         <div>
@@ -2924,7 +3222,17 @@
         onClearAll={filterStore.clearAllFilters}
         class="mb-6" />
 
-      {#if filteredPosts.length === 0}
+      {#if postsLoading}
+        <LoadingState
+          variant="post-card"
+          label="Loading posts..."
+          count={3} />
+      {:else if postsLoadError}
+        <ErrorState
+          title="Unable to load posts"
+          description={postsLoadError}
+          onRetry={() => fetchPosts()} />
+      {:else if filteredPosts.length === 0}
         {#if filterStore.isFiltered}
           <FilterEmptyState onClearFilters={filterStore.clearAllFilters} />
         {:else}
@@ -2936,13 +3244,14 @@
         <div class="grid grid-cols-1 items-start gap-4">
           {#each paginatedPosts as post (post.id)}
             <Card
+              id="post-{post.id}"
               density="none"
               class="relative flex flex-col text-left">
               <div
                 class="relative aspect-2/1 w-full shrink-0 overflow-hidden border-b border-border-subtle">
-                {#if post.banner_path && !failedBanners.has(post.id)}
+                {#if post.banner_version && !failedBanners.has(post.id)}
                   <ImageWithSkeleton
-                    src={getBannerUrl(post.banner_path)}
+                    src={bannerUrl(post)}
                     alt={post.title}
                     rounded=""
                     onerror={() => markBannerFailed(post.id)}
@@ -2960,9 +3269,9 @@
                 <div class="flex flex-col gap-1">
                   <div>
                     <h3
-                      class="font-sans-title text-lg leading-snug font-bold text-text-primary transition-colors hover:text-accent">
+                      class="text-lg leading-snug font-bold text-text-primary transition-colors hover:text-accent">
                       <a
-                        href={`/blog/${post.slug}`}
+                        href={resolve('/blog/[slug]', {slug: post.slug})}
                         target="_blank"
                         rel="noopener noreferrer"
                         class="rounded-sm outline-none hover:underline focus-visible:ring-2 focus-visible:ring-accent">
@@ -3111,6 +3420,23 @@
                       type="secondary"
                       size="sm"
                       responsiveIconOnly
+                      disabled={translatingPostIds.has(post.id)}
+                      aria-label="Regenerate translations"
+                      title="Regenerate translations"
+                      onclick={() => handleTranslatePost(post)}>
+                      {#snippet leading()}
+                        <Languages class="size-3.5" />
+                      {/snippet}
+                      {translatingPostIds.has(post.id) ? 'Translating...' : (
+                        'Translate'
+                      )}
+                    </Button>
+
+                    <Button
+                      htmlType="button"
+                      type="secondary"
+                      size="sm"
+                      responsiveIconOnly
                       aria-label={post.pinned ? 'Unpin post' : 'Pin post'}
                       title={post.pinned ? 'Unpin post' : 'Pin post'}
                       onclick={() => handleTogglePinned(post)}>
@@ -3177,7 +3503,7 @@
                           class={cn(
                             'cursor-pointer rounded-sm border px-2 py-0.5 text-2xs font-semibold transition-colors',
                             commentFilterReportedOnly ?
-                              'border-danger/30 bg-danger/15 text-danger'
+                              'border-border-subtle bg-surface-hover text-text-secondary hover:text-accent'
                             : 'border-border-subtle text-text-muted hover:text-text-primary'
                           )}
                           onclick={() =>
@@ -3196,16 +3522,30 @@
                       <CommentThread
                         comments={getPostComments(post.id)}
                         isAdmin={true}
+                        focusCommentId={focusedCommentId}
                         onDelete={c => confirmDeleteComment(c.id)}
                         {replyTo}>
                         {#snippet statusBadge(comment)}
                           {#if commentReportsMap[comment.id]?.length}
-                            <Badge
-                              variant="danger"
-                              class="flex items-center gap-1 py-0.5 text-2xs">
-                              <AlertTriangle class="size-2.5 text-danger" />
-                              Reported ({commentReportsMap[comment.id].length})
-                            </Badge>
+                            <button
+                              type="button"
+                              class="cursor-pointer rounded-sm focus-visible:outline-2 focus-visible:outline-focus-ring"
+                              aria-expanded={expandedReportIds.has(comment.id)}
+                              aria-controls="reports-{comment.id}"
+                              onclick={() => toggleReportDetails(comment.id)}>
+                              <Badge
+                                variant="danger"
+                                class="flex items-center gap-1 py-0.5 text-2xs">
+                                <AlertTriangle class="size-2.5 text-danger" />
+                                Reported ({commentReportsMap[comment.id]
+                                  .length})
+                                {#if expandedReportIds.has(comment.id)}
+                                  <ChevronUp class="size-2.5" />
+                                {:else}
+                                  <ChevronDown class="size-2.5" />
+                                {/if}
+                              </Badge>
+                            </button>
                           {/if}
                         {/snippet}
 
@@ -3223,13 +3563,6 @@
                             class="cursor-pointer font-bold text-text-muted transition-colors hover:text-accent focus-visible:outline-none">
                             Reply
                           </button>
-                          <span aria-hidden="true">&middot;</span>
-                          <button
-                            type="button"
-                            onclick={() => confirmDeleteComment(comment.id)}
-                            class="cursor-pointer font-bold text-danger transition-colors hover:underline focus-visible:outline-none">
-                            Delete
-                          </button>
                           {#if commentReportsMap[comment.id]?.length}
                             <span aria-hidden="true">&middot;</span>
                             <button
@@ -3238,6 +3571,14 @@
                               class="cursor-pointer font-bold text-accent transition-colors hover:underline focus-visible:outline-none">
                               Dismiss Reports
                             </button>
+                          {/if}
+                          {#if expandedReportIds.has(comment.id) && commentReportsMap[comment.id]?.length}
+                            <div
+                              id="reports-{comment.id}"
+                              class="mt-1.5 w-full">
+                              <CommentReportList
+                                reports={commentReportsMap[comment.id]} />
+                            </div>
                           {/if}
                         {/snippet}
 
@@ -3249,8 +3590,7 @@
                             class="max-w-xl rounded-sm border border-border-subtle bg-surface-card p-3 shadow-2xs">
                             <div
                               class="mb-2 flex items-center justify-between gap-2">
-                              <p
-                                class="font-sans-title text-xs text-text-secondary">
+                              <p class="text-xs text-text-secondary">
                                 Replying to <span
                                   class="font-semibold text-accent"
                                   >{(
@@ -3272,10 +3612,21 @@
                               id="admin-reply-msg-{comment.id}"
                               rows={2}
                               maxlength={1000}
-                              bind:value={commentContent}
+                              bind:value={
+                                () => commentContent,
+                                value => {
+                                  commentContent = value;
+                                  replyValidation.input('content');
+                                }
+                              }
+                              onblur={() => {
+                                void replyValidation.check('content');
+                              }}
+                              error={!!replyError}
                               placeholder="Write an admin reply..."
-                              class="min-h-15 py-2 text-xs sm:text-sm"
-                              required />
+                              class="min-h-15 py-2 text-xs sm:text-sm" />
+                            {#if replyError}<FieldMessage
+                                message={replyError} />{/if}
 
                             <div
                               class="mt-2 flex items-center justify-between gap-2">
@@ -3328,11 +3679,22 @@
             id="proj-pinned"
             label="Pinned"
             variant="floating"
+            error={termFeedback.pinned?.error}
+            valid={termFeedback.pinned?.valid}
             counter={`${pinnedReposState.length}/3`}
             hideFeedbackSlot>
             <PillInput
               id="proj-pinned"
-              bind:value={pinnedReposState}
+              bind:value={
+                () => pinnedReposState,
+                value => {
+                  pinnedReposState = value;
+                  termValidation.input('pinned');
+                }
+              }
+              onblur={() => {
+                void termValidation.check('pinned');
+              }}
               itemLabel="Repository"
               placeholderEmpty="Type repository and press comma..."
               placeholderFilled="Add repository..."
@@ -3344,11 +3706,22 @@
             id="proj-excluded"
             label="Excluded"
             variant="floating"
+            error={termFeedback.excluded?.error}
+            valid={termFeedback.excluded?.valid}
             counter={`${excludedReposState.length}`}
             hideFeedbackSlot>
             <PillInput
               id="proj-excluded"
-              bind:value={excludedReposState}
+              bind:value={
+                () => excludedReposState,
+                value => {
+                  excludedReposState = value;
+                  termValidation.input('excluded');
+                }
+              }
+              onblur={() => {
+                void termValidation.check('excluded');
+              }}
               itemLabel="Repository"
               placeholderEmpty="Type repository and press comma..."
               placeholderFilled="Add repository..."
@@ -3388,6 +3761,15 @@
             message="Profile saved successfully!" />{/if}
 
         <div class="flex flex-col gap-6">
+          <ProfileImageUpload
+            avatar={avatarSource(authorState)}
+            disabled={isSavingAuthor || !manifestSettings}
+            onprepared={value => {
+              preparedImage = value;
+            }}
+            onbusy={value => {
+              preparingImage = value;
+            }} />
           <section aria-labelledby="section-identity">
             <h3
               id="section-identity"
@@ -3410,7 +3792,10 @@
                   aria-required="true"
                   error={!!authorErrors.name}
                   valid={authorValid.name}
-                  oninput={() => onAuthorInput('name')} />
+                  oninput={() => onAuthorInput('name')}
+                  onblur={() => {
+                    void authorValidation.check('name');
+                  }} />
               </FormField>
 
               <FormField
@@ -3428,7 +3813,10 @@
                   aria-required="true"
                   error={!!authorErrors.username}
                   valid={authorValid.username}
-                  oninput={() => onAuthorInput('username')} />
+                  oninput={() => onAuthorInput('username')}
+                  onblur={() => {
+                    void authorValidation.check('username');
+                  }} />
               </FormField>
 
               <FormField
@@ -3446,7 +3834,10 @@
                   aria-required="true"
                   error={!!authorErrors.jobTitle}
                   valid={authorValid.jobTitle}
-                  oninput={() => onAuthorInput('jobTitle')} />
+                  oninput={() => onAuthorInput('jobTitle')}
+                  onblur={() => {
+                    void authorValidation.check('jobTitle');
+                  }} />
               </FormField>
 
               <FormField
@@ -3465,10 +3856,42 @@
                   aria-required="true"
                   error={!!authorErrors.headline}
                   valid={authorValid.headline}
-                  oninput={() => onAuthorInput('headline')} />
+                  oninput={() => onAuthorInput('headline')}
+                  onblur={() => {
+                    void authorValidation.check('headline');
+                  }} />
               </FormField>
             </div>
           </section>
+
+          {#if manifestSettings}
+            <section
+              aria-labelledby="profile-app-appearance"
+              class="flex flex-col gap-3">
+              <h3
+                id="profile-app-appearance"
+                class="text-xxs font-bold tracking-widest text-text-secondary uppercase">
+                App appearance
+              </h3>
+              <FormField
+                id="app-display"
+                label="Display"
+                variant="floating"
+                hint="Colors follow the site theme automatically."
+                hideFeedbackSlot>
+                <DropdownSelect
+                  id="app-display"
+                  bind:value={manifestSettings.display}
+                  options={[
+                    {value: 'standalone', label: 'Standalone'},
+                    {value: 'minimal-ui', label: 'Minimal UI'},
+                    {value: 'browser', label: 'Browser'},
+                    {value: 'fullscreen', label: 'Fullscreen'}
+                  ]}
+                  disabled={isSavingAuthor} />
+              </FormField>
+            </section>
+          {/if}
 
           <section aria-labelledby="section-contact">
             <h3
@@ -3477,63 +3900,6 @@
               Contact
             </h3>
             <div class="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-              <FormField
-                id="author-avatar"
-                label="Avatar Image URL"
-                required
-                hideAsterisk
-                error={authorErrors.avatar}
-                valid={authorValid.avatar}>
-                <div class="flex items-center gap-3">
-                  <button
-                    type="button"
-                    class="group relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border-subtle bg-surface-base transition-transform select-none hover:scale-105 active:scale-95"
-                    onclick={() => {
-                      if (authorState.avatar) showAvatarPreviewDialog = true;
-                    }}
-                    aria-label="Preview avatar">
-                    {#if authorState.avatar}
-                      <div
-                        class="absolute inset-0 z-0 flex items-center justify-center bg-surface-subtle">
-                        <User class="size-5 text-text-muted" />
-                      </div>
-                      {#key authorState.avatar}
-                        <img
-                          src={authorState.avatar}
-                          alt="Avatar preview"
-                          class="absolute inset-0 z-10 h-full w-full object-cover"
-                          onerror={e =>
-                            ((
-                              e.currentTarget as HTMLImageElement
-                            ).style.display = 'none')}
-                          onload={e =>
-                            ((
-                              e.currentTarget as HTMLImageElement
-                            ).style.display = 'block')} />
-                      {/key}
-                      <div
-                        class="absolute inset-0 z-20 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                        <ZoomIn class="size-5 text-white" />
-                      </div>
-                    {:else}
-                      <div
-                        class="absolute inset-0 flex items-center justify-center bg-surface-subtle">
-                        <User class="size-5 text-text-muted" />
-                      </div>
-                    {/if}
-                  </button>
-                  <Input
-                    id="author-avatar"
-                    bind:value={authorState.avatar}
-                    placeholder="Ex: https://example.com/favicon.ico"
-                    maxlength={100}
-                    aria-required="true"
-                    error={!!authorErrors.avatar}
-                    valid={authorValid.avatar}
-                    oninput={() => onAuthorInput('avatar')} />
-                </div>
-              </FormField>
-
               <FormField
                 id="author-email"
                 label="Email"
@@ -3550,7 +3916,30 @@
                   aria-required="true"
                   error={!!authorErrors.email}
                   valid={authorValid.email}
-                  oninput={() => onAuthorInput('email')} />
+                  oninput={() => onAuthorInput('email')}
+                  onblur={() => {
+                    void authorValidation.check('email');
+                  }} />
+              </FormField>
+              <FormField
+                id="author-site"
+                label="Site URL"
+                variant="floating"
+                required
+                hideAsterisk
+                error={authorErrors.siteUrl}
+                valid={authorValid.siteUrl}>
+                <Input
+                  id="author-site"
+                  bind:value={authorState.siteUrl}
+                  maxlength={100}
+                  aria-required="true"
+                  error={!!authorErrors.siteUrl}
+                  valid={authorValid.siteUrl}
+                  oninput={() => onAuthorInput('siteUrl')}
+                  onblur={() => {
+                    void authorValidation.check('siteUrl');
+                  }} />
               </FormField>
             </div>
           </section>
@@ -3577,7 +3966,10 @@
                   aria-required="true"
                   error={!!authorErrors.city}
                   valid={authorValid.city}
-                  oninput={() => onAuthorInput('city')} />
+                  oninput={() => onAuthorInput('city')}
+                  onblur={() => {
+                    void authorValidation.check('city');
+                  }} />
               </FormField>
 
               <FormField
@@ -3595,7 +3987,10 @@
                   aria-required="true"
                   error={!!authorErrors.postalCode}
                   valid={authorValid.postalCode}
-                  oninput={() => onAuthorInput('postalCode')} />
+                  oninput={() => onAuthorInput('postalCode')}
+                  onblur={() => {
+                    void authorValidation.check('postalCode');
+                  }} />
               </FormField>
 
               <FormField
@@ -3613,7 +4008,10 @@
                   aria-required="true"
                   error={!!authorErrors.country}
                   valid={authorValid.country}
-                  oninput={() => onAuthorInput('country')} />
+                  oninput={() => onAuthorInput('country')}
+                  onblur={() => {
+                    void authorValidation.check('country');
+                  }} />
               </FormField>
             </div>
           </section>
@@ -3625,24 +4023,6 @@
               About
             </h3>
             <div class="flex flex-col gap-3.5">
-              <FormField
-                id="author-site"
-                label="Site URL"
-                variant="floating"
-                required
-                hideAsterisk
-                error={authorErrors.siteUrl}
-                valid={authorValid.siteUrl}>
-                <Input
-                  id="author-site"
-                  bind:value={authorState.siteUrl}
-                  maxlength={100}
-                  aria-required="true"
-                  error={!!authorErrors.siteUrl}
-                  valid={authorValid.siteUrl}
-                  oninput={() => onAuthorInput('siteUrl')} />
-              </FormField>
-
               <FormField
                 id="author-bio"
                 label="Description"
@@ -3660,7 +4040,10 @@
                   aria-required="true"
                   error={!!authorErrors.bio}
                   valid={authorValid.bio}
-                  oninput={() => onAuthorInput('bio')} />
+                  oninput={() => onAuthorInput('bio')}
+                  onblur={() => {
+                    void authorValidation.check('bio');
+                  }} />
               </FormField>
             </div>
           </section>
@@ -3694,7 +4077,7 @@
                 type="primary"
                 size="md"
                 class="w-full sm:w-auto"
-                disabled={!authorIsDirty}
+                disabled={!authorIsDirty || preparingImage || !manifestSettings}
                 isLoading={isSavingAuthor}>
                 Save Profile
               </Button>
@@ -3752,7 +4135,7 @@
                 title="No experience entries yet"
                 description="Add your first experience entry below." />
             {/if}
-            {#each cvState.experience as exp, idx (exp.id ?? idx)}
+            {#each cvState.experience as exp, idx (exp.id)}
               <div
                 class="flex flex-col gap-4 rounded-sm border border-border-subtle bg-surface-card p-4">
                 <div
@@ -3797,23 +4180,19 @@
                     variant="floating"
                     required
                     hideAsterisk
-                    error={experienceErrors[idx]?.title}
-                    valid={experienceValid[idx]?.title}>
+                    error={experienceErrors[exp.id!]?.title}
+                    valid={experienceValid[exp.id!]?.title}>
                     <Input
                       id={'exp-title-' + idx}
                       bind:value={exp.title}
                       maxlength={50}
-                      error={!!experienceErrors[idx]?.title}
-                      valid={experienceValid[idx]?.title}
+                      error={!!experienceErrors[exp.id!]?.title}
+                      valid={experienceValid[exp.id!]?.title}
                       oninput={() => {
-                        clearFieldError(
-                          experienceErrors,
-                          experienceValid,
-                          idx,
-                          'title'
-                        );
                         validateExperienceField(idx, 'title', 'Title');
-                      }} />
+                      }}
+                      onblur={() =>
+                        listInput('experience', idx, 'title', 'Title', true)} />
                   </FormField>
 
                   <FormField
@@ -3821,7 +4200,9 @@
                     label="Employment type"
                     variant="floating"
                     required
-                    hideAsterisk>
+                    hideAsterisk
+                    error={experienceErrors[exp.id!]?.type}
+                    valid={experienceValid[exp.id!]?.type}>
                     <DropdownSelect
                       placeholder="Employment type"
                       options={EMPLOYMENT_TYPES.map(t => ({
@@ -3829,7 +4210,15 @@
                         label: t
                       }))}
                       bind:value={exp.type}
-                      class="w-full" />
+                      class="w-full"
+                      onChange={() =>
+                        listInput(
+                          'experience',
+                          idx,
+                          'type',
+                          'Employment type',
+                          true
+                        )} />
                   </FormField>
                 </div>
 
@@ -3839,23 +4228,25 @@
                   variant="floating"
                   required
                   hideAsterisk
-                  error={experienceErrors[idx]?.company}
-                  valid={experienceValid[idx]?.company}>
+                  error={experienceErrors[exp.id!]?.company}
+                  valid={experienceValid[exp.id!]?.company}>
                   <Input
                     id={'exp-company-' + idx}
                     bind:value={exp.company}
                     maxlength={100}
-                    error={!!experienceErrors[idx]?.company}
-                    valid={experienceValid[idx]?.company}
+                    error={!!experienceErrors[exp.id!]?.company}
+                    valid={experienceValid[exp.id!]?.company}
                     oninput={() => {
-                      clearFieldError(
-                        experienceErrors,
-                        experienceValid,
-                        idx,
-                        'company'
-                      );
                       validateExperienceField(idx, 'company', 'Company');
-                    }} />
+                    }}
+                    onblur={() =>
+                      listInput(
+                        'experience',
+                        idx,
+                        'company',
+                        'Company',
+                        true
+                      )} />
                 </FormField>
 
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -3865,23 +4256,25 @@
                     variant="floating"
                     required
                     hideAsterisk
-                    error={experienceErrors[idx]?.location}
-                    valid={experienceValid[idx]?.location}>
+                    error={experienceErrors[exp.id!]?.location}
+                    valid={experienceValid[exp.id!]?.location}>
                     <Input
                       id={'exp-location-' + idx}
                       bind:value={exp.location}
                       maxlength={100}
-                      error={!!experienceErrors[idx]?.location}
-                      valid={experienceValid[idx]?.location}
+                      error={!!experienceErrors[exp.id!]?.location}
+                      valid={experienceValid[exp.id!]?.location}
                       oninput={() => {
-                        clearFieldError(
-                          experienceErrors,
-                          experienceValid,
-                          idx,
-                          'location'
-                        );
                         validateExperienceField(idx, 'location', 'Location');
-                      }} />
+                      }}
+                      onblur={() =>
+                        listInput(
+                          'experience',
+                          idx,
+                          'location',
+                          'Location',
+                          true
+                        )} />
                   </FormField>
 
                   <FormField
@@ -3889,7 +4282,9 @@
                     label="Location type"
                     variant="floating"
                     required
-                    hideAsterisk>
+                    hideAsterisk
+                    error={experienceErrors[exp.id!]?.locType}
+                    valid={experienceValid[exp.id!]?.locType}>
                     <DropdownSelect
                       placeholder="Location type"
                       options={LOCATION_TYPES.map(lt => ({
@@ -3897,7 +4292,15 @@
                         label: lt
                       }))}
                       bind:value={exp.locType}
-                      class="w-full" />
+                      class="w-full"
+                      onChange={() =>
+                        listInput(
+                          'experience',
+                          idx,
+                          'locType',
+                          'Location type',
+                          true
+                        )} />
                   </FormField>
                 </div>
 
@@ -3913,7 +4316,8 @@
                         placeholder="Month"
                         options={MONTHS.map(m => ({value: m, label: m}))}
                         bind:value={exp.startMonth}
-                        class="w-full" />
+                        class="w-full"
+                        onChange={() => onDateInput('experience', exp)} />
                     </FormField>
                     <FormField
                       id={'exp-start-year-' + idx}
@@ -3931,7 +4335,8 @@
                           }))
                         ]}
                         bind:value={exp.startYear}
-                        class="w-full" />
+                        class="w-full"
+                        onChange={() => onDateInput('experience', exp)} />
                     </FormField>
                   </div>
 
@@ -3949,7 +4354,8 @@
                             ...MONTHS.map(m => ({value: m, label: m}))
                           ]}
                           bind:value={exp.endMonth}
-                          class="w-full" />
+                          class="w-full"
+                          onChange={() => onDateInput('experience', exp)} />
                       </FormField>
                       <FormField
                         id={'exp-end-year-' + idx}
@@ -3966,7 +4372,8 @@
                             }))
                           ]}
                           bind:value={exp.endYear}
-                          class="w-full" />
+                          class="w-full"
+                          onChange={() => onDateInput('experience', exp)} />
                       </FormField>
                     </div>
                     <div class="mt-2">
@@ -3978,40 +4385,45 @@
                             exp.endMonth = null;
                             exp.endYear = null;
                           }
+                          onDateInput('experience', exp);
                         }} />
                     </div>
                   </div>
                 </div>
 
+                {#if experienceErrors[exp.id!]?.dates}<FieldMessage
+                    message={experienceErrors[exp.id!].dates} />{/if}
                 <FormField
                   id={'exp-desc-' + idx}
                   label="Description"
                   variant="floating"
                   required
                   hideAsterisk
-                  error={experienceErrors[idx]?.description}
-                  valid={experienceValid[idx]?.description}
+                  error={experienceErrors[exp.id!]?.description}
+                  valid={experienceValid[exp.id!]?.description}
                   counter={`${(exp.description || '').length}/1000`}>
                   <Textarea
                     id={'exp-desc-' + idx}
                     bind:value={exp.description}
                     rows={3}
                     maxlength={1000}
-                    error={!!experienceErrors[idx]?.description}
-                    valid={experienceValid[idx]?.description}
+                    error={!!experienceErrors[exp.id!]?.description}
+                    valid={experienceValid[exp.id!]?.description}
                     oninput={() => {
-                      clearFieldError(
-                        experienceErrors,
-                        experienceValid,
-                        idx,
-                        'description'
-                      );
                       validateExperienceField(
                         idx,
                         'description',
                         'Description'
                       );
-                    }} />
+                    }}
+                    onblur={() =>
+                      listInput(
+                        'experience',
+                        idx,
+                        'description',
+                        'Description',
+                        true
+                      )} />
                 </FormField>
 
                 <div
@@ -4080,7 +4492,7 @@
                 title="No education entries yet"
                 description="Add your first education entry below." />
             {/if}
-            {#each cvState.education as edu, idx (edu.id ?? idx)}
+            {#each cvState.education as edu, idx (edu.id)}
               <div
                 class="flex flex-col gap-4 rounded-sm border border-border-subtle bg-surface-card p-4">
                 <div
@@ -4125,27 +4537,29 @@
                     variant="floating"
                     required
                     hideAsterisk
-                    error={educationErrors[idx]?.institution}
-                    valid={educationValid[idx]?.institution}>
+                    error={educationErrors[edu.id!]?.institution}
+                    valid={educationValid[edu.id!]?.institution}>
                     <Input
                       id={'edu-inst-' + idx}
                       bind:value={edu.institution}
                       maxlength={100}
-                      error={!!educationErrors[idx]?.institution}
-                      valid={educationValid[idx]?.institution}
+                      error={!!educationErrors[edu.id!]?.institution}
+                      valid={educationValid[edu.id!]?.institution}
                       oninput={() => {
-                        clearFieldError(
-                          educationErrors,
-                          educationValid,
-                          idx,
-                          'institution'
-                        );
                         validateEducationField(
                           idx,
                           'institution',
                           'Institution'
                         );
-                      }} />
+                      }}
+                      onblur={() =>
+                        listInput(
+                          'education',
+                          idx,
+                          'institution',
+                          'Institution',
+                          true
+                        )} />
                   </FormField>
 
                   <FormField
@@ -4154,23 +4568,25 @@
                     variant="floating"
                     required
                     hideAsterisk
-                    error={educationErrors[idx]?.degree}
-                    valid={educationValid[idx]?.degree}>
+                    error={educationErrors[edu.id!]?.degree}
+                    valid={educationValid[edu.id!]?.degree}>
                     <Input
                       id={'edu-degree-' + idx}
                       bind:value={edu.degree}
                       maxlength={100}
-                      error={!!educationErrors[idx]?.degree}
-                      valid={educationValid[idx]?.degree}
+                      error={!!educationErrors[edu.id!]?.degree}
+                      valid={educationValid[edu.id!]?.degree}
                       oninput={() => {
-                        clearFieldError(
-                          educationErrors,
-                          educationValid,
-                          idx,
-                          'degree'
-                        );
                         validateEducationField(idx, 'degree', 'Degree');
-                      }} />
+                      }}
+                      onblur={() =>
+                        listInput(
+                          'education',
+                          idx,
+                          'degree',
+                          'Degree',
+                          true
+                        )} />
                   </FormField>
 
                   <FormField
@@ -4179,46 +4595,44 @@
                     variant="floating"
                     required
                     hideAsterisk
-                    error={educationErrors[idx]?.field}
-                    valid={educationValid[idx]?.field}>
+                    error={educationErrors[edu.id!]?.field}
+                    valid={educationValid[edu.id!]?.field}>
                     <Input
                       id={'edu-field-' + idx}
                       bind:value={edu.field}
                       maxlength={100}
-                      error={!!educationErrors[idx]?.field}
-                      valid={educationValid[idx]?.field}
+                      error={!!educationErrors[edu.id!]?.field}
+                      valid={educationValid[edu.id!]?.field}
                       oninput={() => {
-                        clearFieldError(
-                          educationErrors,
-                          educationValid,
-                          idx,
-                          'field'
-                        );
                         validateEducationField(idx, 'field', 'Field of study');
-                      }} />
+                      }}
+                      onblur={() =>
+                        listInput(
+                          'education',
+                          idx,
+                          'field',
+                          'Field of study',
+                          true
+                        )} />
                   </FormField>
 
                   <FormField
                     id={'edu-grade-' + idx}
                     label="Grade (optional)"
                     variant="floating"
-                    error={educationErrors[idx]?.grade}
-                    valid={educationValid[idx]?.grade}>
+                    error={educationErrors[edu.id!]?.grade}
+                    valid={educationValid[edu.id!]?.grade}>
                     <Input
                       id={'edu-grade-' + idx}
                       bind:value={edu.grade}
                       maxlength={50}
-                      error={!!educationErrors[idx]?.grade}
-                      valid={educationValid[idx]?.grade}
+                      error={!!educationErrors[edu.id!]?.grade}
+                      valid={educationValid[edu.id!]?.grade}
                       oninput={() => {
-                        clearFieldError(
-                          educationErrors,
-                          educationValid,
-                          idx,
-                          'grade'
-                        );
                         validateEducationField(idx, 'grade', 'Grade');
-                      }} />
+                      }}
+                      onblur={() =>
+                        listInput('education', idx, 'grade', 'Grade', true)} />
                   </FormField>
                 </div>
 
@@ -4234,7 +4648,8 @@
                         placeholder="Month"
                         options={MONTHS.map(m => ({value: m, label: m}))}
                         bind:value={edu.startMonth}
-                        class="w-full" />
+                        class="w-full"
+                        onChange={() => onDateInput('education', edu)} />
                     </FormField>
                     <FormField
                       id={'edu-start-year-' + idx}
@@ -4252,7 +4667,8 @@
                           }))
                         ]}
                         bind:value={edu.startYear}
-                        class="w-full" />
+                        class="w-full"
+                        onChange={() => onDateInput('education', edu)} />
                     </FormField>
                   </div>
 
@@ -4270,7 +4686,8 @@
                             ...MONTHS.map(m => ({value: m, label: m}))
                           ]}
                           bind:value={edu.endMonth}
-                          class="w-full" />
+                          class="w-full"
+                          onChange={() => onDateInput('education', edu)} />
                       </FormField>
                       <FormField
                         id={'edu-end-year-' + idx}
@@ -4287,7 +4704,8 @@
                             }))
                           ]}
                           bind:value={edu.endYear}
-                          class="w-full" />
+                          class="w-full"
+                          onChange={() => onDateInput('education', edu)} />
                       </FormField>
                     </div>
                     <div class="mt-2">
@@ -4299,36 +4717,41 @@
                             edu.endMonth = null;
                             edu.endYear = null;
                           }
+                          onDateInput('education', edu);
                         }} />
                     </div>
                   </div>
                 </div>
 
+                {#if educationErrors[edu.id!]?.dates}<FieldMessage
+                    message={educationErrors[edu.id!].dates} />{/if}
                 <FormField
                   id={'edu-desc-' + idx}
                   label="Description"
                   variant="floating"
                   required
                   hideAsterisk
-                  error={educationErrors[idx]?.description}
-                  valid={educationValid[idx]?.description}
+                  error={educationErrors[edu.id!]?.description}
+                  valid={educationValid[edu.id!]?.description}
                   counter={`${(edu.description || '').length}/1000`}>
                   <Textarea
                     id={'edu-desc-' + idx}
                     bind:value={edu.description}
                     rows={3}
                     maxlength={1000}
-                    error={!!educationErrors[idx]?.description}
-                    valid={educationValid[idx]?.description}
+                    error={!!educationErrors[edu.id!]?.description}
+                    valid={educationValid[edu.id!]?.description}
                     oninput={() => {
-                      clearFieldError(
-                        educationErrors,
-                        educationValid,
-                        idx,
-                        'description'
-                      );
                       validateEducationField(idx, 'description', 'Description');
-                    }} />
+                    }}
+                    onblur={() =>
+                      listInput(
+                        'education',
+                        idx,
+                        'description',
+                        'Description',
+                        true
+                      )} />
                 </FormField>
 
                 <div
@@ -4534,7 +4957,7 @@
               title="No skill groups yet"
               description="Add your first skill group below." />
           {/if}
-          {#each skillsState as item, idx (item.id ?? idx)}
+          {#each skillsState as item, idx (item.id)}
             <div
               class="flex flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-4">
               <div
@@ -4572,19 +4995,26 @@
                 variant="floating"
                 required
                 hideAsterisk
-                error={skillsErrors[idx]?.category}
-                valid={skillsValid[idx]?.category}>
+                error={skillsErrors[item.id!]?.category}
+                valid={skillsValid[item.id!]?.category}>
                 <Input
                   id={'sk-cat-' + idx}
                   bind:value={item.category}
                   maxlength={100}
-                  error={!!skillsErrors[idx]?.category}
-                  valid={skillsValid[idx]?.category}
+                  error={!!skillsErrors[item.id!]?.category}
+                  valid={skillsValid[item.id!]?.category}
                   oninput={() => {
-                    clearFieldError(skillsErrors, skillsValid, idx, 'category');
                     validateSkillField(idx);
                   }}
-                  onpaste={e => handleCategoryPaste(idx, e)} />
+                  onpaste={e => handleCategoryPaste(idx, e)}
+                  onblur={() =>
+                    listInput(
+                      'skills',
+                      idx,
+                      'category',
+                      'Area of expertise',
+                      true
+                    )} />
               </FormField>
 
               <FormField
@@ -4654,11 +5084,22 @@
           id="glossary-terms"
           label="Protected Terms"
           variant="floating"
+          error={termFeedback.glossary?.error}
+          valid={termFeedback.glossary?.valid}
           counter={`${glossaryState.length}/50`}
           hideFeedbackSlot>
           <PillInput
             id="glossary-terms"
-            bind:value={glossaryState}
+            bind:value={
+              () => glossaryState,
+              value => {
+                glossaryState = value;
+                termValidation.input('glossary');
+              }
+            }
+            onblur={() => {
+              void termValidation.check('glossary');
+            }}
             itemLabel="Term"
             placeholderEmpty="Type a term and press comma..."
             placeholderFilled="Add term..."
@@ -4713,7 +5154,7 @@
               title="No social links yet"
               description="Add your first social link below." />
           {/if}
-          {#each socialState as item, idx (item.id ?? idx)}
+          {#each socialState as item, idx (item.id)}
             <div
               class="flex flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-4">
               <div
@@ -4751,11 +5192,18 @@
                   label="Icon"
                   variant="floating"
                   required
-                  hideAsterisk>
+                  hideAsterisk
+                  error={socialErrors[item.id!]?.icon}
+                  valid={socialValid[item.id!]?.icon}>
                   <Input
                     id={'soc-icon-' + idx}
                     bind:value={item.icon}
                     placeholder="Ex: bi-github or <Github />"
+                    oninput={() => listInput('social', idx, 'icon', 'Icon')}
+                    onblur={() =>
+                      listInput('social', idx, 'icon', 'Icon', true)}
+                    error={!!socialErrors[item.id!]?.icon}
+                    valid={socialValid[item.id!]?.icon}
                     maxlength={100}>
                     {#snippet leadingSlot()}
                       <div
@@ -4778,23 +5226,19 @@
                   variant="floating"
                   required
                   hideAsterisk
-                  error={socialErrors[idx]?.platform}
-                  valid={socialValid[idx]?.platform}>
+                  error={socialErrors[item.id!]?.platform}
+                  valid={socialValid[item.id!]?.platform}>
                   <Input
                     id={'soc-plat-' + idx}
                     bind:value={item.platform}
                     maxlength={50}
-                    error={!!socialErrors[idx]?.platform}
-                    valid={socialValid[idx]?.platform}
+                    error={!!socialErrors[item.id!]?.platform}
+                    valid={socialValid[item.id!]?.platform}
                     oninput={() => {
-                      clearFieldError(
-                        socialErrors,
-                        socialValid,
-                        idx,
-                        'platform'
-                      );
                       validateSocialField(idx, 'platform');
-                    }} />
+                    }}
+                    onblur={() =>
+                      listInput('social', idx, 'platform', 'Platform', true)} />
                 </FormField>
               </div>
 
@@ -4804,18 +5248,18 @@
                 variant="floating"
                 required
                 hideAsterisk
-                error={socialErrors[idx]?.url}
-                valid={socialValid[idx]?.url}>
+                error={socialErrors[item.id!]?.url}
+                valid={socialValid[item.id!]?.url}>
                 <Input
                   id={'soc-url-' + idx}
                   bind:value={item.url}
                   maxlength={100}
-                  error={!!socialErrors[idx]?.url}
-                  valid={socialValid[idx]?.url}
+                  error={!!socialErrors[item.id!]?.url}
+                  valid={socialValid[item.id!]?.url}
                   oninput={() => {
-                    clearFieldError(socialErrors, socialValid, idx, 'url');
                     validateSocialField(idx, 'url');
-                  }} />
+                  }}
+                  onblur={() => listInput('social', idx, 'url', 'URL', true)} />
               </FormField>
 
               <FormField
@@ -4900,7 +5344,7 @@
               title="No funding platforms yet"
               description="Add your first funding platform below." />
           {/if}
-          {#each sponsorshipState as item, idx (item.id ?? idx)}
+          {#each sponsorshipState as item, idx (item.id)}
             <div
               class="flex flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-4">
               <div
@@ -4944,11 +5388,19 @@
                   label="Icon"
                   variant="floating"
                   required
-                  hideAsterisk>
+                  hideAsterisk
+                  error={sponsorshipErrors[item.id!]?.icon}
+                  valid={sponsorshipValid[item.id!]?.icon}>
                   <Input
                     id={'sp-icon-' + idx}
                     bind:value={item.icon}
                     placeholder="Ex: bi-currency-dollar or <Heart />"
+                    oninput={() =>
+                      listInput('sponsorship', idx, 'icon', 'Icon')}
+                    onblur={() =>
+                      listInput('sponsorship', idx, 'icon', 'Icon', true)}
+                    error={!!sponsorshipErrors[item.id!]?.icon}
+                    valid={sponsorshipValid[item.id!]?.icon}
                     maxlength={100}>
                     {#snippet leadingSlot()}
                       <div
@@ -4971,23 +5423,25 @@
                   variant="floating"
                   required
                   hideAsterisk
-                  error={sponsorshipErrors[idx]?.platform}
-                  valid={sponsorshipValid[idx]?.platform}>
+                  error={sponsorshipErrors[item.id!]?.platform}
+                  valid={sponsorshipValid[item.id!]?.platform}>
                   <Input
                     id={'sp-plat-' + idx}
                     bind:value={item.platform}
                     maxlength={50}
-                    error={!!sponsorshipErrors[idx]?.platform}
-                    valid={sponsorshipValid[idx]?.platform}
+                    error={!!sponsorshipErrors[item.id!]?.platform}
+                    valid={sponsorshipValid[item.id!]?.platform}
                     oninput={() => {
-                      clearFieldError(
-                        sponsorshipErrors,
-                        sponsorshipValid,
-                        idx,
-                        'platform'
-                      );
                       validateSponsorshipField(idx, 'platform');
-                    }} />
+                    }}
+                    onblur={() =>
+                      listInput(
+                        'sponsorship',
+                        idx,
+                        'platform',
+                        'Platform',
+                        true
+                      )} />
                 </FormField>
 
                 <FormField
@@ -4996,23 +5450,25 @@
                   variant="floating"
                   required
                   hideAsterisk
-                  error={sponsorshipErrors[idx]?.displayValue}
-                  valid={sponsorshipValid[idx]?.displayValue}>
+                  error={sponsorshipErrors[item.id!]?.displayValue}
+                  valid={sponsorshipValid[item.id!]?.displayValue}>
                   <Input
                     id={'sp-val-' + idx}
                     bind:value={item.displayValue}
                     maxlength={50}
-                    error={!!sponsorshipErrors[idx]?.displayValue}
-                    valid={sponsorshipValid[idx]?.displayValue}
+                    error={!!sponsorshipErrors[item.id!]?.displayValue}
+                    valid={sponsorshipValid[item.id!]?.displayValue}
                     oninput={() => {
-                      clearFieldError(
-                        sponsorshipErrors,
-                        sponsorshipValid,
-                        idx,
-                        'displayValue'
-                      );
                       validateSponsorshipField(idx, 'displayValue');
-                    }} />
+                    }}
+                    onblur={() =>
+                      listInput(
+                        'sponsorship',
+                        idx,
+                        'displayValue',
+                        'Display text',
+                        true
+                      )} />
                 </FormField>
 
                 <FormField
@@ -5021,23 +5477,19 @@
                   variant="floating"
                   required
                   hideAsterisk
-                  error={sponsorshipErrors[idx]?.url}
-                  valid={sponsorshipValid[idx]?.url}>
+                  error={sponsorshipErrors[item.id!]?.url}
+                  valid={sponsorshipValid[item.id!]?.url}>
                   <Input
                     id={'sp-url-' + idx}
                     bind:value={item.url}
                     maxlength={100}
-                    error={!!sponsorshipErrors[idx]?.url}
-                    valid={sponsorshipValid[idx]?.url}
+                    error={!!sponsorshipErrors[item.id!]?.url}
+                    valid={sponsorshipValid[item.id!]?.url}
                     oninput={() => {
-                      clearFieldError(
-                        sponsorshipErrors,
-                        sponsorshipValid,
-                        idx,
-                        'url'
-                      );
                       validateSponsorshipField(idx, 'url');
-                    }} />
+                    }}
+                    onblur={() =>
+                      listInput('sponsorship', idx, 'url', 'URL', true)} />
                 </FormField>
               </div>
 
@@ -5123,7 +5575,7 @@
               title="No contact channels yet"
               description="Add your first contact channel below." />
           {/if}
-          {#each contactState as item, idx (item.id ?? idx)}
+          {#each contactState as item, idx (item.id)}
             <div
               class="flex flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-4">
               <div
@@ -5161,11 +5613,18 @@
                   label="Icon"
                   variant="floating"
                   required
-                  hideAsterisk>
+                  hideAsterisk
+                  error={contactErrors[item.id!]?.icon}
+                  valid={contactValid[item.id!]?.icon}>
                   <Input
                     id={'ct-icon-' + idx}
                     bind:value={item.icon}
                     placeholder="Ex: bi-envelope or <Mail />"
+                    oninput={() => listInput('contact', idx, 'icon', 'Icon')}
+                    onblur={() =>
+                      listInput('contact', idx, 'icon', 'Icon', true)}
+                    error={!!contactErrors[item.id!]?.icon}
+                    valid={contactValid[item.id!]?.icon}
                     maxlength={100}>
                     {#snippet leadingSlot()}
                       <div
@@ -5188,23 +5647,25 @@
                   variant="floating"
                   required
                   hideAsterisk
-                  error={contactErrors[idx]?.platform}
-                  valid={contactValid[idx]?.platform}>
+                  error={contactErrors[item.id!]?.platform}
+                  valid={contactValid[item.id!]?.platform}>
                   <Input
                     id={'ct-plat-' + idx}
                     bind:value={item.platform}
                     maxlength={50}
-                    error={!!contactErrors[idx]?.platform}
-                    valid={contactValid[idx]?.platform}
+                    error={!!contactErrors[item.id!]?.platform}
+                    valid={contactValid[item.id!]?.platform}
                     oninput={() => {
-                      clearFieldError(
-                        contactErrors,
-                        contactValid,
-                        idx,
-                        'platform'
-                      );
                       validateContactField(idx, 'platform');
-                    }} />
+                    }}
+                    onblur={() =>
+                      listInput(
+                        'contact',
+                        idx,
+                        'platform',
+                        'Platform',
+                        true
+                      )} />
                 </FormField>
 
                 <FormField
@@ -5213,23 +5674,25 @@
                   variant="floating"
                   required
                   hideAsterisk
-                  error={contactErrors[idx]?.displayValue}
-                  valid={contactValid[idx]?.displayValue}>
+                  error={contactErrors[item.id!]?.displayValue}
+                  valid={contactValid[item.id!]?.displayValue}>
                   <Input
                     id={'ct-val-' + idx}
                     bind:value={item.displayValue}
                     maxlength={50}
-                    error={!!contactErrors[idx]?.displayValue}
-                    valid={contactValid[idx]?.displayValue}
+                    error={!!contactErrors[item.id!]?.displayValue}
+                    valid={contactValid[item.id!]?.displayValue}
                     oninput={() => {
-                      clearFieldError(
-                        contactErrors,
-                        contactValid,
-                        idx,
-                        'displayValue'
-                      );
                       validateContactField(idx, 'displayValue');
-                    }} />
+                    }}
+                    onblur={() =>
+                      listInput(
+                        'contact',
+                        idx,
+                        'displayValue',
+                        'Display text',
+                        true
+                      )} />
                 </FormField>
 
                 <FormField
@@ -5238,18 +5701,19 @@
                   variant="floating"
                   required
                   hideAsterisk
-                  error={contactErrors[idx]?.href}
-                  valid={contactValid[idx]?.href}>
+                  error={contactErrors[item.id!]?.href}
+                  valid={contactValid[item.id!]?.href}>
                   <Input
                     id={'ct-url-' + idx}
                     bind:value={item.href}
                     maxlength={100}
-                    error={!!contactErrors[idx]?.href}
-                    valid={contactValid[idx]?.href}
+                    error={!!contactErrors[item.id!]?.href}
+                    valid={contactValid[item.id!]?.href}
                     oninput={() => {
-                      clearFieldError(contactErrors, contactValid, idx, 'href');
                       validateContactField(idx, 'href');
-                    }} />
+                    }}
+                    onblur={() =>
+                      listInput('contact', idx, 'href', 'URL', true)} />
                 </FormField>
               </div>
 
@@ -5352,8 +5816,19 @@
             </div>
           </div>
         {/if}
+        {#if legalFieldErrors.privacy}<FieldMessage
+            message={legalFieldErrors.privacy} />{/if}
         <MarkdownEditor
-          bind:value={legalPagesData.privacy.content}
+          bind:value={
+            () => legalPagesData.privacy.content,
+            value => {
+              legalPagesData.privacy.content = value;
+              legalValidation.input('privacy');
+            }
+          }
+          onblur={() => {
+            void legalValidation.check('privacy');
+          }}
           autosaveKey="autosave_legal_privacy"
           placeholder="Write your Privacy Policy content in markdown..."
           minHeight="500px"
@@ -5407,8 +5882,19 @@
             </div>
           </div>
         {/if}
+        {#if legalFieldErrors.security}<FieldMessage
+            message={legalFieldErrors.security} />{/if}
         <MarkdownEditor
-          bind:value={legalPagesData.security.content}
+          bind:value={
+            () => legalPagesData.security.content,
+            value => {
+              legalPagesData.security.content = value;
+              legalValidation.input('security');
+            }
+          }
+          onblur={() => {
+            void legalValidation.check('security');
+          }}
           autosaveKey="autosave_legal_security"
           placeholder="Write your Security Policy content in markdown..."
           minHeight="500px"
@@ -5462,8 +5948,19 @@
             </div>
           </div>
         {/if}
+        {#if legalFieldErrors.terms}<FieldMessage
+            message={legalFieldErrors.terms} />{/if}
         <MarkdownEditor
-          bind:value={legalPagesData.terms.content}
+          bind:value={
+            () => legalPagesData.terms.content,
+            value => {
+              legalPagesData.terms.content = value;
+              legalValidation.input('terms');
+            }
+          }
+          onblur={() => {
+            void legalValidation.check('terms');
+          }}
           autosaveKey="autosave_legal_terms"
           placeholder="Write your Terms of Service content in markdown..."
           minHeight="500px"
@@ -5531,7 +6028,7 @@
       </div>
       {#key authorState.avatar}
         <img
-          src={authorState.avatar}
+          src={avatarSource(authorState)}
           alt="Avatar preview enlarged"
           class="relative z-10 h-full w-full object-cover"
           onerror={e =>
@@ -5585,7 +6082,6 @@
   @reference "../global.css";
   .editor-textarea,
   .editor-pre,
-  .editor-pre code,
   .editor-pre :global(span) {
     @apply font-mono text-[14.5px]! leading-6! tracking-normal! normal-case!;
     font-feature-settings: var(--font-feature-settings-mono) !important;
@@ -5830,7 +6326,7 @@
   }
 
   .prose-custom :global(.markdown-alert-title) {
-    @apply mb-1.5 flex items-center gap-2 font-sans-title text-xs leading-none font-semibold select-none sm:text-sm;
+    @apply mb-1.5 flex items-center gap-2 text-xs leading-none font-semibold select-none sm:text-sm;
   }
 
   .prose-custom :global(.markdown-alert-title svg) {

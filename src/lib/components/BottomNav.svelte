@@ -1,6 +1,7 @@
 <script lang="ts">
   import {House, FolderOpen, Newspaper, FileUser, Send} from '@lucide/svelte';
   import {cn} from '../utils/cn';
+  import {shortcut} from '../utils/shortcut.svelte';
   import type {Section} from '../types';
 
   interface NavItem {
@@ -46,8 +47,9 @@
       onclick={() => onNavigate?.(item.id)}
       aria-label={item.label}
       aria-current={isActive ? 'page' : undefined}
+      use:shortcut={{group: 'nav', label: item.label}}
       class={cn(
-        'group flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-md px-0.5 py-1 transition-all select-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none',
+        'group relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-md px-0.5 py-1 transition-all select-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none',
         isActive ?
           'font-bold text-accent'
         : 'text-text-muted hover:text-text-primary'
@@ -58,7 +60,7 @@
       </span>
       <span
         class={cn(
-          'max-w-full truncate font-sans-title text-2xs leading-none tracking-tight transition-colors',
+          'max-w-full truncate text-2xs leading-none tracking-tight transition-colors',
           isActive ? 'font-bold text-accent' : 'font-medium'
         )}>
         {item.label}

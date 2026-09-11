@@ -6,6 +6,7 @@ import {
   resolveTranslationsBulk,
   isTranslationLocale
 } from '$lib/server/blogTranslations';
+import {TRANSLATION_LOCALES} from '$lib/translationLocales';
 import {
   getTranslationDisclaimer,
   buildTranslationDisclaimerMarkdown
@@ -18,9 +19,13 @@ export const GET: RequestHandler = async ({url, request}) => {
   const slug = url.searchParams.get('slug')?.trim();
   const search = url.searchParams.get('q')?.trim();
   const limitParam = parseInt(url.searchParams.get('limit') || '20', 10);
-  const limit = Math.min(Math.max(1, limitParam), 100);
+  const limit = Math.min(
+    Math.max(1, Number.isNaN(limitParam) ? 20 : limitParam),
+    100
+  );
   const pageParam = parseInt(url.searchParams.get('page') || '1', 10);
-  const page = Number.isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
+  const page =
+    !Number.isSafeInteger(pageParam) || pageParam < 1 ? 1 : pageParam;
   const offset = (page - 1) * limit;
 
   const lang = url.searchParams.get('lang')?.trim() || null;
@@ -28,7 +33,7 @@ export const GET: RequestHandler = async ({url, request}) => {
     return apiError(
       400,
       'BLOG_INVALID_LANG',
-      "The 'lang' query parameter must be one of: id."
+      `The 'lang' query parameter must be one of: ${TRANSLATION_LOCALES.join(', ')}.`
     );
   }
 
@@ -132,7 +137,7 @@ export const GET: RequestHandler = async ({url, request}) => {
     return new Response(md, {
       headers: {
         'Content-Type': 'text/markdown; charset=utf-8',
-        'Cache-Control': 'public, max-age=3600, s-maxage=86400',
+        'Cache-Control': 'public, max-age=0, s-maxage=60, must-revalidate',
         'X-Robots-Tag': 'index, follow'
       }
     });
@@ -153,7 +158,7 @@ export const GET: RequestHandler = async ({url, request}) => {
     },
     {
       headers: {
-        'Cache-Control': 'public, max-age=3600, s-maxage=86400',
+        'Cache-Control': 'public, max-age=0, s-maxage=60, must-revalidate',
         'X-Robots-Tag': 'index, follow'
       }
     }

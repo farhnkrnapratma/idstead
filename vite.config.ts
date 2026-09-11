@@ -3,9 +3,11 @@ import tailwindcss from '@tailwindcss/vite';
 import adapter from '@sveltejs/adapter-cloudflare';
 import {sveltekit} from '@sveltejs/kit/vite';
 import {sentrySvelteKit} from '@sentry/sveltekit';
+import {webpWasmPlugin} from './tooling/vite/webp-wasm-plugin.ts';
 
 export default defineConfig({
   plugins: [
+    webpWasmPlugin(),
     sentrySvelteKit({
       org: 'farhnkrnapratma',
       project: 'www',

@@ -30,7 +30,8 @@ export const GET: RequestHandler = async ({url}) => {
       'id, post_id, parent_id, author_name, content, is_anonymous, is_admin, is_approved, created_at'
     )
     .eq('is_approved', true)
-    .order('created_at', {ascending: true})
+    .order('created_at', {ascending: !!postId})
+    .order('id')
     .limit(limit);
 
   if (postId) {
@@ -49,6 +50,10 @@ export const GET: RequestHandler = async ({url}) => {
 
   return json(
     {data: data ?? []},
-    {headers: {'Cache-Control': 'public, max-age=3600, s-maxage=86400'}}
+    {
+      headers: {
+        'Cache-Control': 'public, max-age=0, s-maxage=60, must-revalidate'
+      }
+    }
   );
 };

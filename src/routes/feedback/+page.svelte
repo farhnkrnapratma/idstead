@@ -1,6 +1,12 @@
 <script lang="ts">
+  import {
+    FieldValidation,
+    requiredText,
+    emailError
+  } from '$lib/fieldValidation';
+  import {publicAvatarUrl} from '$lib/siteIdentity';
   import {page} from '$app/state';
-  import {onMount} from 'svelte';
+  import {onDestroy, onMount} from 'svelte';
   import {
     PenLine,
     Code2,
@@ -72,74 +78,58 @@
   );
 
   function clearFeedbackForm() {
+    validation.reset();
     formName = '';
     formEmail = '';
     formUrl = '';
     formMessage = '';
     formErrors = {name: '', email: '', url: '', message: ''};
     formValid = {name: false, email: false, url: false, message: false};
+    validation.reset();
   }
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  function debounce<T extends unknown[]>(cb: (...args: T) => void, ms: number) {
-    let timer: ReturnType<typeof setTimeout>;
-    return (...args: T) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => cb(...args), ms);
-    };
-  }
-
-  const validateName = debounce(() => {
-    const val = formName.trim();
-    if (val === '') {
-      formErrors.name = '';
-      formValid.name = false;
-    } else if (isNameReserved(val, authorTokens)) {
-      formErrors.name = 'This name cannot be used. Please use another name.';
-      formValid.name = false;
-    } else {
-      formErrors.name = '';
-      formValid.name = true;
+  const validation = new FieldValidation();
+  onDestroy(() => validation.destroy());
+  validation.register('name', {
+    value: () => formName,
+    baseline: () => '',
+    validate: value =>
+      requiredText('Name')(value)
+      || (isNameReserved(value, authorTokens) ?
+        'This name cannot be used. Please use another name.'
+      : ''),
+    report: result => {
+      formErrors.name = result.error;
+      formValid.name = result.valid;
     }
-  }, 500);
-
-  const validateEmail = debounce(() => {
-    const val = formEmail.trim();
-    if (val === '') {
-      formErrors.email = '';
-      formValid.email = false;
-    } else if (!emailRegex.test(val)) {
-      formErrors.email = 'Please enter a valid email address.';
-      formValid.email = false;
-    } else {
-      formErrors.email = '';
-      formValid.email = true;
+  });
+  validation.register('email', {
+    value: () => formEmail,
+    baseline: () => '',
+    validate: emailError,
+    report: result => {
+      formErrors.email = result.error;
+      formValid.email = result.valid;
     }
-  }, 500);
-
-  const validateUrl = debounce(() => {
-    const val = formUrl.trim();
-    if (val === '') {
-      formErrors.url = '';
-      formValid.url = false;
-    } else {
-      formErrors.url = '';
-      formValid.url = true;
+  });
+  validation.register('message', {
+    value: () => formMessage,
+    baseline: () => '',
+    validate: requiredText('Message'),
+    report: result => {
+      formErrors.message = result.error;
+      formValid.message = result.valid;
     }
-  }, 500);
-
-  const validateMessage = debounce(() => {
-    const val = formMessage.trim();
-    if (val === '') {
-      formErrors.message = '';
-      formValid.message = false;
-    } else {
-      formErrors.message = '';
-      formValid.message = true;
+  });
+  validation.register('url', {
+    value: () => formUrl,
+    baseline: () => '',
+    validate: requiredText('URL/Page'),
+    report: result => {
+      formErrors.url = result.error;
+      formValid.url = result.valid;
     }
-  }, 500);
-
+  });
   function selectCategory(categoryTitle: string) {
     const prefix = `[${categoryTitle}] `;
     if (!formMessage.startsWith('[')) {
@@ -148,7 +138,7 @@
       formMessage = formMessage.replace(/^\[[^\]]*\]\s*/, prefix);
     }
     formErrors.message = '';
-    validateMessage();
+    queueMicrotask(() => validation.input('message'));
     const textarea = document.getElementById(
       'form-message'
     ) as HTMLTextAreaElement | null;
@@ -171,40 +161,7 @@
   async function handleSubmit(e: SubmitEvent) {
     e.preventDefault();
 
-    const nameErr = formName.trim() === '' ? 'Name is required.' : '';
-    const emailErr = formEmail.trim() === '' ? 'Email is required.' : '';
-    const urlErr = formUrl.trim() === '' ? 'URL/Page is required.' : '';
-    const msgErr = formMessage.trim() === '' ? 'Message is required.' : '';
-
-    const emailFormatErr =
-      !emailErr && !emailRegex.test(formEmail.trim()) ?
-        'Please enter a valid email address.'
-      : '';
-    const nameReservedErr =
-      !nameErr && isNameReserved(formName, authorTokens) ?
-        'This name cannot be used. Please use another name.'
-      : '';
-
-    formErrors = {
-      name: nameErr || nameReservedErr,
-      email: emailErr || emailFormatErr,
-      url: urlErr,
-      message: msgErr
-    };
-
-    if (formErrors.name) formValid.name = false;
-    if (formErrors.email) formValid.email = false;
-    if (formErrors.url) formValid.url = false;
-    if (formErrors.message) formValid.message = false;
-
-    if (
-      formErrors.name
-      || formErrors.email
-      || formErrors.url
-      || formErrors.message
-    ) {
-      return;
-    }
+    if (!(await validation.submit(undefined, true))) return;
 
     if (!contactEmail) {
       toastStore.error('Feedback submission is currently unavailable.');
@@ -214,12 +171,14 @@
     isSubmitting = true;
 
     try {
+      let turnstileToken = '';
       if (turnstileSiteKey) {
         const token = await executeTurnstile(turnstileFeedbackEl);
         if (!token) {
           toastStore.error('Please complete the security verification.');
           return;
         }
+        turnstileToken = token;
       }
 
       const sanitizedName = sanitizeInput(formName.trim());
@@ -227,31 +186,27 @@
       const sanitizedUrl = sanitizeInput(formUrl.trim());
       const sanitizedMessage = sanitizeInput(formMessage.trim());
 
-      const res = await fetch(
-        `https://formsubmit.co/ajax/${encodeURIComponent(contactEmail)}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json'
-          },
-          referrerPolicy: 'no-referrer-when-downgrade',
-          body: JSON.stringify({
-            name: sanitizedName,
-            email: sanitizedEmail,
-            url: sanitizedUrl,
-            message: sanitizedMessage,
-            _subject: 'New feedback report from website!',
-            _captcha: 'false'
-          })
-        }
-      );
+      const res = await fetch('/api/internal/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
+        },
+        body: JSON.stringify({
+          kind: 'feedback',
+          name: sanitizedName,
+          email: sanitizedEmail,
+          url: sanitizedUrl,
+          message: sanitizedMessage,
+          turnstileToken
+        })
+      });
 
       const data = await res.json().catch(() => null);
-      if (!res.ok || data?.success === 'false' || data?.success === false) {
+      if (!res.ok || data?.success !== true) {
         throw new Error(
-          typeof data?.message === 'string' ?
-            data.message
+          typeof data?.error?.message === 'string' ?
+            data.error.message
           : 'Failed to submit feedback.'
         );
       }
@@ -263,6 +218,7 @@
       formMessage = '';
       formErrors = {name: '', email: '', url: '', message: ''};
       formValid = {name: false, email: false, url: false, message: false};
+      validation.reset();
     } catch (err) {
       const msg =
         err instanceof Error && err.message ?
@@ -306,7 +262,7 @@
     content="{siteUrl}/feedback" />
   <meta
     property="og:image"
-    content="{siteUrl}/hero.png" />
+    content={publicAvatarUrl(pageAuthor)} />
   <meta
     name="twitter:card"
     content="summary_large_image" />
@@ -320,7 +276,7 @@
     : '.'}" />
   <meta
     name="twitter:image"
-    content="{siteUrl}/hero.png" />
+    content={publicAvatarUrl(pageAuthor)} />
 </svelte:head>
 
 <TopNav
@@ -352,7 +308,7 @@
           Feedback & Reports
         </Badge>
         <h1
-          class="font-sans-title text-3xl font-bold tracking-tight text-text-primary md:text-4xl lg:text-5xl">
+          class="text-3xl font-bold tracking-tight text-text-primary md:text-4xl lg:text-5xl">
           Your feedback matters
         </h1>
         <p class="mt-4 max-w-2xl text-base leading-relaxed text-text-secondary">
@@ -367,7 +323,7 @@
         class="relative z-10 p-5 select-none">
         <div class="flex flex-col gap-3.5">
           <div class="flex flex-col">
-            <h2 class="font-sans-title text-sm font-bold text-text-primary">
+            <h2 class="text-sm font-bold text-text-primary">
               Feedback categories
             </h2>
             <p class="mt-0.5 text-xs text-text-muted">
@@ -385,7 +341,7 @@
                 <PenLine
                   class="size-4 shrink-0 text-accent transition-transform group-hover:scale-105" />
                 <span
-                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
+                  class="translate-y-[0.5px] text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
                   Writing errors
                 </span>
               </div>
@@ -404,7 +360,7 @@
                 <Code2
                   class="size-4 shrink-0 text-accent transition-transform group-hover:scale-105" />
                 <span
-                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
+                  class="translate-y-[0.5px] text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
                   Technical inaccuracies
                 </span>
               </div>
@@ -423,7 +379,7 @@
                 <ClockFading
                   class="size-4 shrink-0 text-accent transition-transform group-hover:scale-105" />
                 <span
-                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
+                  class="translate-y-[0.5px] text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
                   Outdated information
                 </span>
               </div>
@@ -442,7 +398,7 @@
                 <Link2Off
                   class="size-4 shrink-0 text-accent transition-transform group-hover:scale-105" />
                 <span
-                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
+                  class="translate-y-[0.5px] text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
                   Broken links
                 </span>
               </div>
@@ -460,7 +416,7 @@
                 <Bug
                   class="size-4 shrink-0 text-accent transition-transform group-hover:scale-105" />
                 <span
-                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
+                  class="translate-y-[0.5px] text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
                   Website issues
                 </span>
               </div>
@@ -479,7 +435,7 @@
                 <HelpCircle
                   class="size-4 shrink-0 text-accent transition-transform group-hover:scale-105" />
                 <span
-                  class="translate-y-[0.5px] font-sans-title text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
+                  class="translate-y-[0.5px] text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
                   Other issues
                 </span>
               </div>
@@ -498,9 +454,7 @@
         class="relative z-10 flex w-full flex-col gap-3 rounded-md glass-card p-6 text-left"
         autocomplete="off">
         <div class="mb-2 select-none">
-          <h2 class="font-sans-title text-sm font-bold text-text-primary">
-            Report an issue
-          </h2>
+          <h2 class="text-sm font-bold text-text-primary">Report an issue</h2>
           <p class="mt-0.5 text-xs text-text-muted">
             Complete the fields below to submit your feedback directly.
           </p>
@@ -529,7 +483,10 @@
               oninput={() => {
                 formErrors.name = '';
                 formValid.name = false;
-                validateName();
+                queueMicrotask(() => validation.input('name'));
+              }}
+              onblur={() => {
+                void validation.check('name');
               }} />
           </FormField>
 
@@ -555,7 +512,10 @@
               oninput={() => {
                 formErrors.email = '';
                 formValid.email = false;
-                validateEmail();
+                queueMicrotask(() => validation.input('email'));
+              }}
+              onblur={() => {
+                void validation.check('email');
               }} />
           </FormField>
         </div>
@@ -581,7 +541,10 @@
             oninput={() => {
               formErrors.url = '';
               formValid.url = false;
-              validateUrl();
+              queueMicrotask(() => validation.input('url'));
+            }}
+            onblur={() => {
+              void validation.check('url');
             }} />
         </FormField>
 
@@ -607,7 +570,10 @@
             oninput={() => {
               formErrors.message = '';
               formValid.message = false;
-              validateMessage();
+              queueMicrotask(() => validation.input('message'));
+            }}
+            onblur={() => {
+              void validation.check('message');
             }} />
         </FormField>
 

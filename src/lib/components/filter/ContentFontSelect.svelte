@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {buttonKey} from '$lib/shortcuts';
   import {CaseSensitive, Circle, CircleDot} from '@lucide/svelte';
   import {cn} from '../../utils/cn';
   import {popoverPosition} from '../../utils/popoverPosition';
@@ -69,6 +70,8 @@
     class="relative inline-block">
     <IconButton
       ariaLabel="Reading Font"
+      keyboardShortcut={buttonKey('contentFont')}
+      shortcutLabel="Reading font"
       tooltip="Reading Font"
       tooltipPlacement={dropdownDirection === 'up' ? 'top' : 'bottom'}
       tooltipAlign="right"
@@ -109,29 +112,54 @@
             <button
               type="button"
               onclick={contentFontStore.reset}
-              class="cursor-pointer text-2xs font-semibold text-text-muted underline-offset-2 hover:text-accent hover:underline">
+              aria-disabled={contentFontStore.locked}
+              class={cn(
+                'text-2xs font-semibold text-text-muted underline-offset-2',
+                contentFontStore.locked ?
+                  'cursor-not-allowed opacity-50'
+                : 'cursor-pointer hover:text-accent hover:underline'
+              )}>
               Reset to default
             </button>
           </div>
 
+          {#if contentFontStore.locked}
+            <p
+              id="content-font-locked"
+              class="rounded-md border border-border-subtle bg-surface px-2.5 py-2 text-2xs text-text-muted">
+              Locked while the dyslexic-friendly font is on.
+            </p>
+          {/if}
+
           <div
             class="flex flex-col gap-1.5"
             role="radiogroup"
-            aria-labelledby="content-font-heading">
+            aria-labelledby="content-font-heading"
+            aria-describedby={contentFontStore.locked ?
+              'content-font-locked'
+            : undefined}>
             {#each fontOptions as option (option.value)}
               {@const selected = contentFontStore.current === option.value}
               <button
                 type="button"
                 role="radio"
                 aria-checked={selected}
+                aria-disabled={contentFontStore.locked}
                 onclick={() => contentFontStore.setFont(option.value)}
                 onmouseenter={() => (hoveredFont = option.value)}
                 onmouseleave={() => (hoveredFont = null)}
                 class={cn(
-                  'group flex cursor-pointer items-center justify-between gap-2.5 rounded-md border px-2.5 py-2 text-left transition-colors',
+                  'group flex items-center justify-between gap-2.5 rounded-md border px-2.5 py-2 text-left transition-colors',
+                  contentFontStore.locked ?
+                    'cursor-not-allowed opacity-50'
+                  : 'cursor-pointer',
                   selected ?
                     'border-accent bg-accent/10 text-accent'
-                  : 'border-border-subtle bg-surface text-text-secondary hover:border-accent/50 hover:text-text-primary'
+                  : cn(
+                      'border-border-subtle bg-surface text-text-secondary',
+                      !contentFontStore.locked
+                        && 'hover:border-accent/50 hover:text-text-primary'
+                    )
                 )}>
                 <span class={cn('text-xs font-medium', option.fontClass)}>
                   {option.label}

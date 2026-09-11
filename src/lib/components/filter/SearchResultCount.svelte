@@ -18,7 +18,7 @@
 
 <div
   class={cn(
-    'font-sans-title text-xs font-semibold whitespace-nowrap text-text-primary select-none',
+    'text-xs font-semibold whitespace-nowrap text-text-primary select-none',
     className
   )}
   aria-live="polite"

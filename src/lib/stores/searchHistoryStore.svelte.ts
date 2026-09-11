@@ -46,6 +46,32 @@ function createSearchHistoryStore() {
     persist();
   }
 
+  function syncEntry(id: string, updates: Partial<SearchHistoryEntry>) {
+    let changed = false;
+    current = current.map(item => {
+      if (item.id === id) {
+        let hasDiff = false;
+        for (const [k, v] of Object.entries(updates) as [
+          keyof SearchHistoryEntry,
+          unknown
+        ][]) {
+          if (item[k] !== v) {
+            hasDiff = true;
+            break;
+          }
+        }
+        if (hasDiff) {
+          changed = true;
+          return {...item, ...updates};
+        }
+      }
+      return item;
+    });
+    if (changed) {
+      persist();
+    }
+  }
+
   function remove(id: string) {
     current = current.filter(entry => entry.id !== id);
     persist();
@@ -61,6 +87,7 @@ function createSearchHistoryStore() {
       return current;
     },
     record,
+    syncEntry,
     remove,
     clear
   };

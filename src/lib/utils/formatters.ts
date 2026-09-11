@@ -91,6 +91,32 @@ export function formatViewCount(count?: number | null): string {
   return n === 1 ? `${n} view` : `${n} views`;
 }
 
+export function formatCompactCount(count?: number | null): string {
+  const n = count || 0;
+  if (n < 1000) return String(n);
+  return new Intl.NumberFormat('en-US', {
+    notation: 'compact',
+    maximumFractionDigits: 1
+  })
+    .format(n)
+    .toLowerCase();
+}
+
+export function formatExactDateTime(
+  input: string | Date | null | undefined
+): string {
+  if (!input) return '';
+  const date = typeof input === 'string' ? new Date(input) : input;
+  if (isNaN(date.getTime())) return '';
+  return date.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit'
+  });
+}
+
 export function formatAbsoluteDate(
   input: string | Date | null | undefined,
   monthFormat: 'long' | 'short' = 'short',

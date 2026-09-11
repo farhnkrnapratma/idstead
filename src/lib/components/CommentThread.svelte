@@ -53,6 +53,7 @@
     statusBadge?: Snippet<[comment: T]>;
     actions?: Snippet<[comment: T]>;
     replyForm?: Snippet<[comment: T]>;
+    focusCommentId?: string | null;
     onReport?: (comment: T) => void;
     onDelete?: (comment: T) => void;
   }
@@ -67,6 +68,7 @@
     statusBadge,
     actions,
     replyForm,
+    focusCommentId = null,
     onReport,
     onDelete
   }: Props = $props();
@@ -85,13 +87,13 @@
 
   async function toggleKebabMenu(commentId: string, e: MouseEvent) {
     e.stopPropagation();
+    const trigger = e.currentTarget as HTMLElement | null;
     const opening = activeMenuId !== commentId;
     activeMenuId = opening ? commentId : null;
     if (opening) {
       await tick();
-      const trigger = e.currentTarget as HTMLElement;
       const menu =
-        trigger.parentElement?.querySelector<HTMLElement>('[role="menu"]');
+        trigger?.parentElement?.querySelector<HTMLElement>('[role="menu"]');
       menu?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
     }
   }
@@ -208,6 +210,16 @@
   const commentTree = $derived(buildCommentTree(comments));
   const expandedReplies = new SvelteSet<string>();
 
+  $effect(() => {
+    if (!focusCommentId) return;
+    const root = commentTree.find(
+      node =>
+        node.comment.id === focusCommentId
+        || node.children.some(child => child.comment.id === focusCommentId)
+    );
+    if (root && root.children.length > 0) expandedReplies.add(root.comment.id);
+  });
+
   function toggleReplies(commentId: string) {
     if (expandedReplies.has(commentId)) {
       expandedReplies.delete(commentId);
@@ -235,7 +247,14 @@
   {@const replyContainerId = `reply-container-${comment.id}`}
   {@const author = getCommentAuthor(comment)}
 
-  <div class="comment-row-wrapper flex min-w-0 items-start gap-2.5 sm:gap-3">
+  <div
+    id="comment-{comment.id}"
+    class={cn(
+      'comment-row-wrapper flex min-w-0 items-start gap-2.5 rounded-md transition-shadow sm:gap-3',
+      focusCommentId === comment.id ?
+        'ring-2 ring-accent ring-offset-2 ring-offset-background'
+      : ''
+    )}>
     <div
       class="z-10 flex size-6.5 shrink-0 items-center justify-center rounded-full border border-border-subtle bg-surface-card text-text-secondary select-none sm:size-7"
       aria-hidden="true">
@@ -272,7 +291,7 @@
             {/if}
           </div>
 
-          {#if !isAuthorComment(comment)}
+          {#if isAdmin || !isAuthorComment(comment)}
             <div class="relative shrink-0">
               <IconButton
                 id="comment-menu-trigger-{comment.id}"
@@ -309,7 +328,7 @@
                     <button
                       type="button"
                       role="menuitem"
-                      class="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left font-sans-title text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover hover:text-accent"
+                      class="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover hover:text-accent"
                       onclick={() => handleCopyId(comment.id)}>
                       <Copy class="size-3.5" />
                       <span>Copy ID</span>
@@ -318,7 +337,7 @@
                       <button
                         type="button"
                         role="menuitem"
-                        class="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left font-sans-title text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover hover:text-accent"
+                        class="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover hover:text-accent"
                         onclick={() => handleReport(comment)}>
                         <Flag class="size-3.5" />
                         <span>Report</span>
@@ -328,7 +347,7 @@
                       <button
                         type="button"
                         role="menuitem"
-                        class="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left font-sans-title text-xs font-medium text-danger transition-colors hover:bg-danger/10 hover:text-danger"
+                        class="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left text-xs font-medium text-danger transition-colors hover:bg-danger/10 hover:text-danger"
                         onclick={() => handleDelete(comment)}>
                         <Trash class="size-3.5" />
                         <span>Delete</span>

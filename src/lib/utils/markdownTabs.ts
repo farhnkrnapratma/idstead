@@ -93,7 +93,7 @@ export function enhanceMarkdownTabs(
         });
         actionsWrapper.appendChild(codeControls.controls);
         codeControls.applyPrefs();
-        registerPrefsListener(codeControls.applyPrefs);
+        registerPrefsListener(codeControls.applyPrefs, codeControls.controls);
       }
     }
 
@@ -150,6 +150,10 @@ export function enhanceMarkdownTabs(
       }
 
       const syncHandler = (key: string, value: string) => {
+        if (!tabsEl.isConnected) {
+          tabListeners.delete(syncHandler);
+          return;
+        }
         if (key === syncKey) {
           const matchedIdx = Array.from(tabButtons).findIndex(
             b => b.getAttribute('data-tab-label') === value

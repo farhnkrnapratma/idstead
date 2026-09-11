@@ -1,5 +1,6 @@
 <script lang="ts">
   import type {Snippet} from 'svelte';
+  import ImageWithSkeleton from '../components/ImageWithSkeleton.svelte';
   import {cn} from '../utils/cn';
   import {contentFontStore} from '../stores/contentFontStore.svelte';
   import {toastStore} from '../stores/toastStore.svelte';
@@ -7,6 +8,7 @@
 
   interface Props {
     title: string;
+    banner?: string;
     excerpt?: string;
     class?: string;
     titleClass?: string;
@@ -17,6 +19,7 @@
   let {
     title,
     excerpt = '',
+    banner = '',
     class: className = '',
     titleClass = 'text-text-secondary',
     titleViewTransitionName = '',
@@ -54,13 +57,19 @@
 
 <header
   class={cn('article-header border-b border-b-border-subtle pb-4', className)}>
+  {#if banner}<ImageWithSkeleton
+      src={banner}
+      alt=""
+      loading="eager"
+      aspectRatio="aspect-2/1"
+      class="mb-4 w-full" />{/if}
   <h1
     id="title"
     style={titleViewTransitionName ?
       `view-transition-name: ${titleViewTransitionName}`
     : undefined}
     class={cn(
-      'group cursor-pointer scroll-mt-20 font-sans-title',
+      'group cursor-pointer scroll-mt-20',
       'text-lg leading-snug font-bold tracking-tight sm:text-3xl md:text-4xl',
       titleClass
     )}>

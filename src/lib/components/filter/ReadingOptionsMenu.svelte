@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {buttonKey} from '$lib/shortcuts';
   import {
     View,
     Circle,
@@ -19,6 +20,7 @@
     contentFontStore,
     type ContentFont
   } from '../../stores/contentFontStore.svelte';
+  import {languageLabel} from '$lib/translationLocales';
   import {
     a11yStore,
     A11Y_TOGGLES,
@@ -44,14 +46,6 @@
     class: className = '',
     dropdownDirection = 'down'
   }: Props = $props();
-
-  const LANGUAGE_LABELS: Record<string, string> = {
-    en: 'English',
-    id: 'Bahasa Indonesia',
-    ja: '日本語',
-    zh: '简体中文',
-    ko: '한국어'
-  };
 
   const fontOptions: {value: ContentFont; label: string; fontClass: string}[] =
     [
@@ -197,6 +191,8 @@
     class="relative inline-block">
     <IconButton
       ariaLabel="Reading and display preferences"
+      keyboardShortcut={buttonKey('readingOptions')}
+      shortcutLabel="Reading options"
       tooltip="Reading options"
       tooltipPlacement={dropdownDirection === 'up' ? 'top' : 'bottom'}
       tooltipAlign="right"
@@ -289,26 +285,51 @@
                 <button
                   type="button"
                   onclick={contentFontStore.reset}
-                  class="cursor-pointer text-2xs font-semibold text-text-muted underline-offset-2 hover:text-accent hover:underline">
+                  aria-disabled={contentFontStore.locked}
+                  class={cn(
+                    'text-2xs font-semibold text-text-muted underline-offset-2',
+                    contentFontStore.locked ?
+                      'cursor-not-allowed opacity-50'
+                    : 'cursor-pointer hover:text-accent hover:underline'
+                  )}>
                   Reset to default
                 </button>
               </div>
 
-              <div class="flex flex-col gap-1">
+              {#if contentFontStore.locked}
+                <p
+                  id="reading-font-locked"
+                  class="rounded-md border border-border-subtle bg-surface px-2.5 py-1.5 text-2xs text-text-muted">
+                  Locked while the dyslexic-friendly font is on.
+                </p>
+              {/if}
+
+              <div
+                class="flex flex-col gap-1"
+                aria-describedby={contentFontStore.locked ?
+                  'reading-font-locked'
+                : undefined}>
                 {#each fontOptions as opt (opt.value)}
                   {@const selected = contentFontStore.current === opt.value}
                   <button
                     type="button"
                     role="radio"
                     aria-checked={selected}
+                    aria-disabled={contentFontStore.locked}
                     onclick={() => contentFontStore.setFont(opt.value)}
                     onmouseenter={() => (hoveredFont = opt.value)}
                     onmouseleave={() => (hoveredFont = null)}
                     class={cn(
                       'group flex items-center justify-between rounded-md border px-2.5 py-1.5 text-xs transition-colors',
+                      contentFontStore.locked
+                        && 'cursor-not-allowed opacity-50',
                       selected ?
                         'border-accent bg-accent/10 text-accent'
-                      : 'border-border-subtle bg-surface text-text-secondary hover:border-accent/50 hover:text-text-primary'
+                      : cn(
+                          'border-border-subtle bg-surface text-text-secondary',
+                          !contentFontStore.locked
+                            && 'hover:border-accent/50 hover:text-text-primary'
+                        )
                     )}>
                     <span class={cn('font-medium', opt.fontClass)}>
                       {opt.label}
@@ -397,7 +418,7 @@
                       <FlagIcon
                         lang={loc}
                         class="size-3.5" />
-                      <span>{LANGUAGE_LABELS[loc] ?? loc}</span>
+                      <span>{languageLabel(loc)}</span>
                     </div>
                     <span
                       class="relative flex size-3.5 shrink-0 items-center justify-center">

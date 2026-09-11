@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {buttonKey} from '$lib/shortcuts';
   import {Sun, Moon, SunMoon} from '@lucide/svelte';
   import {cn} from '../../utils/cn';
   import IconButton from '../IconButton.svelte';
@@ -8,6 +9,7 @@
   type Theme = 'auto' | 'dark' | 'light';
 
   interface Props {
+    variant?: 'default' | 'ghost';
     label?: string;
     theme?: Theme;
     onThemeChange?: (newTheme: Theme) => void;
@@ -17,6 +19,7 @@
 
   let {
     label,
+    variant = 'default',
     theme = 'auto',
     onThemeChange,
     class: className = '',
@@ -83,11 +86,16 @@
 
   <IconButton
     ariaLabel={tooltipText}
+    shortcutLabel="Toggle theme"
+    keyboardShortcut={buttonKey('themeToggle')}
     tooltip={tooltipText}
     tooltipPlacement={dropdownDirection === 'up' ? 'top' : 'bottom'}
     size="sm"
+    {variant}
     onclick={handleToggle}
-    class="border-border-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover hover:text-accent sm:h-9 sm:w-9">
+    class={variant === 'ghost' ?
+      'hover:bg-surface-hover'
+    : 'border-border-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover hover:text-accent sm:h-9 sm:w-9'}>
     <span
       class={cn(
         'inline-flex items-center justify-center',

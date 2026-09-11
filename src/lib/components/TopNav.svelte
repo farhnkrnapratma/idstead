@@ -7,6 +7,8 @@
   import LanguageSelect from './filter/LanguageSelect.svelte';
   import ReadingOptionsMenu from './filter/ReadingOptionsMenu.svelte';
   import IconButton from './IconButton.svelte';
+  import {shortcut} from '../utils/shortcut.svelte';
+  import {buttonKey} from '$lib/shortcuts';
   import {themeStore} from '../stores/themeStore.svelte';
   import {ArrowLeft, BookOpenText} from '@lucide/svelte';
   import type {Project} from '../types';
@@ -45,7 +47,8 @@
   aria-label={ariaLabel}>
   <a
     href={backHref}
-    class="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-border-subtle/50 bg-surface-card px-2.5 text-xs font-semibold whitespace-nowrap text-text-primary shadow-2xs transition-colors hover:bg-surface-hover hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:h-9 sm:px-4">
+    use:shortcut={{combo: buttonKey('back'), label: backLabel}}
+    class="relative inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-border-subtle/50 bg-surface-card px-2.5 text-xs font-semibold whitespace-nowrap text-text-primary shadow-2xs transition-colors hover:bg-surface-hover hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:h-9 sm:px-4">
     <ArrowLeft class="size-3.5 shrink-0" />
     {backLabel}
   </a>
@@ -60,6 +63,8 @@
       <IconButton
         ariaLabel={readingMode ? 'Exit reading mode' : 'Enter reading mode'}
         tooltip={readingMode ? 'Exit reading mode' : 'Reading mode'}
+        keyboardShortcut={buttonKey('readingMode')}
+        shortcutLabel="Reading mode"
         tooltipPlacement="bottom"
         tooltipAlign="right"
         size="sm"

@@ -1,102 +1,63 @@
 import {supabase} from '$lib/supabase';
+import {error} from '@sveltejs/kit';
 import type {RequestHandler} from './$types';
-import {fetchAuthorProfile} from '$lib/author';
-import {escapeXml} from '$lib/utils/xml';
+import {
+  readSiteProfile,
+  validDate,
+  publicResponse
+} from '$lib/server/publicMetadata';
+import {escapeXml as xml} from '$lib/utils/xml';
 
-export const GET: RequestHandler = async ({fetch, url}) => {
-  const authorProfile = await fetchAuthorProfile(supabase, {
-    includeEmail: true
+export const GET: RequestHandler = async ({request}) => {
+  const [profile, {data, error: failure}] = await Promise.all([
+    readSiteProfile(),
+    supabase
+      .from('db_posts')
+      .select('id,title,slug,excerpt,summary,created_at,updated_at')
+      .eq('published', true)
+      .order('created_at', {ascending: false})
+      .order('id')
+      .limit(20)
+  ]);
+  if (failure) error(503, 'Feed is temporarily unavailable.');
+  const posts = (data ?? []).map(post => {
+    const published = validDate(post.created_at);
+    const updated = validDate(post.updated_at) ?? published;
+    if (!published || !updated) error(503, 'Feed timestamps are unavailable.');
+    return {...post, published, updated};
   });
-  const AUTHOR_NAME = authorProfile?.name || '';
-  const AUTHOR_EMAIL = authorProfile?.email || '';
-  const FEED_SUBTITLE = authorProfile?.bio || '';
-
-  const rawSiteUrl = authorProfile?.siteUrl || url.origin;
-  const SITE_URL = rawSiteUrl.replace(/\/$/, '');
-  let domain: string;
-  try {
-    domain = new URL(SITE_URL).hostname;
-  } catch {
-    domain = url.hostname;
-  }
-  const FEED_TITLE = `${domain} — Blog`;
-
-  const {data: posts} = await supabase
-    .from('db_posts')
-    .select('id, title, slug, excerpt, created_at, updated_at, storage_path')
-    .eq('published', true)
-    .order('created_at', {ascending: false})
-    .limit(20);
-
-  const enriched = await Promise.all(
-    (posts ?? []).map(async post => {
-      let content = post.excerpt ?? '';
-      try {
-        const {data: urlData} = supabase.storage
-          .from('blog-posts')
-          .getPublicUrl(post.storage_path);
-        const fileRes = await fetch(urlData.publicUrl);
-        if (fileRes.ok) {
-          const md = await fileRes.text();
-          content = md
-            .replace(/^#{1,6}\s+.*/gm, '')
-            .replace(/!\[.*?\]\(.*?\)/g, '')
-            .replace(/\[([^\]]+)\]\(.*?\)/g, '$1')
-            .replace(/[*_`~>#|-]/g, '')
-            .replace(/\s+/g, ' ')
-            .trim()
-            .slice(0, 500);
-          if (content.length === 500 && md.length > 500) content += '…';
-        }
-      } catch {
-        content = post.excerpt ?? '';
-      }
-      return {...post, summary: content};
-    })
-  );
-
-  const updatedDate =
-    enriched.length > 0 ?
-      new Date(enriched[0].updated_at || enriched[0].created_at).toISOString()
-    : new Date().toISOString();
-
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+  const timestamps = [
+    validDate(profile.updated_at),
+    validDate(profile.created_at),
+    ...posts.map(p => p.updated)
+  ]
+    .filter((v): v is string => !!v)
+    .sort();
+  const updated = timestamps.at(-1);
+  if (!updated) error(503, 'Feed timestamps are unavailable.');
+  const base = profile.siteUrl;
+  const body = `<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <title>${escapeXml(FEED_TITLE)}</title>
-  <subtitle>${escapeXml(FEED_SUBTITLE)}</subtitle>
-  <link href="${SITE_URL}/atom.xml" rel="self" type="application/atom+xml"/>
-  <link href="${SITE_URL}/" rel="alternate" type="text/html"/>
-  <id>${SITE_URL}/</id>
-  <updated>${updatedDate}</updated>
-  <author>
-    <name>${escapeXml(AUTHOR_NAME)}</name>
-    <email>${escapeXml(AUTHOR_EMAIL)}</email>
-    <uri>${SITE_URL}/</uri>
-  </author>
-  <generator uri="https://kit.svelte.dev" version="2.0">SvelteKit</generator>
-  <rights>© ${new Date().getFullYear()} ${escapeXml(AUTHOR_NAME)}. All rights reserved.</rights>
-${enriched
+<title>${xml(new URL(base).hostname)} — Blog</title>
+<subtitle>${xml(profile.bio)}</subtitle>
+<link href="${xml(base)}/atom.xml" rel="self" type="application/atom+xml"/>
+<link href="${xml(base)}/" rel="alternate" type="text/html"/>
+<id>${xml(base)}/</id><updated>${updated}</updated>
+<author><name>${xml(profile.name)}</name>${profile.email ? `<email>${xml(profile.email)}</email>` : ''}<uri>${xml(base)}/</uri></author>
+${posts
   .map(
-    post => `  <entry>
-    <title>${escapeXml(post.title)}</title>
-    <link href="${SITE_URL}/blog/${escapeXml(post.slug)}" rel="alternate" type="text/html"/>
-    <link href="${SITE_URL}/api/v1/blog/${escapeXml(post.slug)}?format=md" rel="alternate" type="text/markdown"/>
-    <id>urn:uuid:${post.id}</id>
-      <published>${new Date(post.created_at).toISOString()}</published>
-      <updated>${post.updated_at ? new Date(post.updated_at).toISOString() : new Date(post.created_at).toISOString()}</updated>
-    <author>
-      <name>${escapeXml(AUTHOR_NAME)}</name>
-    </author>
-    <summary type="text">${escapeXml(post.summary)}</summary>
-  </entry>`
+    post => `<entry><title>${xml(post.title)}</title>
+<link href="${xml(base + '/blog/' + encodeURIComponent(post.slug))}" rel="alternate" type="text/html"/>
+<link href="${xml(base + '/api/v1/blog/' + encodeURIComponent(post.slug) + '?format=md')}" rel="alternate" type="text/markdown"/>
+<id>urn:uuid:${xml(post.id)}</id><published>${post.published}</published><updated>${post.updated}</updated>
+<summary type="text">${xml(post.excerpt || post.summary || '')}</summary></entry>`
   )
   .join('\n')}
 </feed>`;
-
-  return new Response(xml, {
-    headers: {
-      'Content-Type': 'application/atom+xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=1800, s-maxage=1800'
-    }
-  });
+  return publicResponse(
+    request,
+    body,
+    'application/atom+xml; charset=utf-8',
+    300
+  );
 };

@@ -93,6 +93,21 @@
       color: defaultColors[idx % defaultColors.length]
     }));
   });
+
+  const computedYDomain = $derived.by(() => {
+    const allValues = rawData
+      .flatMap(d => seriesList.map(s => Number(d[s.key])))
+      .filter(v => typeof v === 'number' && !isNaN(v));
+    if (!allValues.length) return [0, 100];
+    const minVal = Math.min(...allValues);
+    const maxVal = Math.max(...allValues);
+    const domainMin = minVal < 0 ? minVal * 1.1 : 0;
+    const domainMax =
+      maxVal === 0 ? 10
+      : maxVal > 0 ? maxVal * 1.08
+      : 0;
+    return [domainMin, domainMax];
+  });
 </script>
 
 <svelte:window onclick={() => (isMenuOpen = false)} />
@@ -103,8 +118,7 @@
     {#if spec.title || spec.subtitle}
       <div class="flex min-w-0 flex-col gap-0.5">
         {#if spec.title}
-          <div
-            class="font-sans-title text-sm leading-tight font-bold text-text-primary">
+          <div class="text-sm leading-tight font-bold text-text-primary">
             {spec.title}
           </div>
         {/if}
@@ -164,7 +178,7 @@
     </div>
   {:else}
     <div
-      class="relative w-full"
+      class="relative w-full overflow-hidden"
       style="height: {chartHeight}px;">
       {#if chartType === 'bar'}
         <Chart
@@ -173,9 +187,9 @@
           xScale={scaleBand().padding(0.3)}
           y={yKey}
           yScale={scaleLinear()}
-          yDomain={[0, null]}
+          yDomain={computedYDomain}
           padding={{top: 16, right: 12, bottom: 28, left: 32}}>
-          <Svg>
+          <Svg clip>
             <Axis
               placement="bottom"
               grid={false}
@@ -223,9 +237,9 @@
           xScale={scaleBand().padding(0.05)}
           y={yKey}
           yScale={scaleLinear()}
-          yDomain={[0, null]}
+          yDomain={computedYDomain}
           padding={{top: 16, right: 12, bottom: 28, left: 32}}>
-          <Svg>
+          <Svg clip>
             <LinearGradient
               id="chartAreaGradient"
               stops={[
@@ -354,9 +368,9 @@
           xScale={scaleBand().padding(0.1)}
           y={yKey}
           yScale={scaleLinear()}
-          yDomain={[0, null]}
+          yDomain={computedYDomain}
           padding={{top: 16, right: 12, bottom: 28, left: 32}}>
-          <Svg>
+          <Svg clip>
             <Axis
               placement="bottom"
               grid={false}

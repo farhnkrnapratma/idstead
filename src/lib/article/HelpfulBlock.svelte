@@ -1,11 +1,16 @@
 <script lang="ts">
+  import {shortcut} from '../utils/shortcut.svelte';
+  import {onMount} from 'svelte';
   import {ThumbsUp, ThumbsDown, CheckCircle2} from '@lucide/svelte';
+  import FieldMessage from '../components/FieldMessage.svelte';
   import {cn} from '../utils/cn';
 
   interface Props {
     title?: string;
     subtitle?: string;
     voted?: boolean | null;
+    pending?: boolean;
+    error?: string;
     variant?: 'compact' | 'responsive';
     onVote?: (helpful: boolean) => void;
     onFeedbackClick?: () => void;
@@ -16,19 +21,22 @@
     title = 'Help improve this article',
     subtitle = 'Was this article helpful to you?',
     voted = null,
+    pending = false,
+    error = '',
     variant = 'responsive',
     onVote,
     onFeedbackClick,
     class: className = ''
   }: Props = $props();
 
-  let localVoted = $state<boolean | null>(null);
-
-  let currentVoted = $derived(voted !== null ? voted : localVoted);
+  const currentVoted = $derived(voted);
+  let ready = $state(false);
+  onMount(() => {
+    ready = true;
+  });
 
   function handleVote(helpful: boolean) {
-    localVoted = helpful;
-    onVote?.(helpful);
+    if (ready && !pending) onVote?.(helpful);
   }
 </script>
 
@@ -39,20 +47,18 @@
       className
     )}>
     <div class="flex flex-col gap-1">
-      <h3
-        class="font-sans-title text-xs font-bold tracking-tight text-text-primary sm:text-sm">
+      <h3 class="text-xs font-bold tracking-tight text-text-primary sm:text-sm">
         {title}
       </h3>
       {#if currentVoted === null}
-        <p class="font-sans-title text-xs leading-normal text-text-secondary">
+        <p class="text-xs leading-normal text-text-secondary">
           {subtitle}
         </p>
       {/if}
     </div>
 
     {#if currentVoted !== null}
-      <div
-        class="flex items-center gap-1.5 font-sans-title text-xs font-semibold text-accent">
+      <div class="flex items-center gap-1.5 text-xs font-semibold text-accent">
         <CheckCircle2 class="size-3.5 shrink-0" />
         <span>Thanks for your feedback!</span>
       </div>
@@ -60,7 +66,9 @@
       <div class="grid grid-cols-2 gap-1.5">
         <button
           type="button"
-          class="inline-flex cursor-pointer items-center justify-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/5 px-2 py-1.5 font-sans-title text-xs font-semibold text-emerald-600 transition-all hover:border-emerald-500/60 hover:bg-emerald-500/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 active:scale-95 dark:text-emerald-400"
+          class="relative inline-flex cursor-pointer items-center justify-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/5 px-2 py-1.5 text-xs font-semibold text-emerald-600 transition-all hover:border-emerald-500/60 hover:bg-emerald-500/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 active:scale-95 disabled:cursor-wait disabled:opacity-50 dark:text-emerald-400"
+          use:shortcut={{group: 'actions', label: 'Helpful: yes'}}
+          disabled={!ready || pending}
           onclick={() => handleVote(true)}
           aria-label="Yes, this was helpful">
           <ThumbsUp
@@ -71,7 +79,9 @@
         </button>
         <button
           type="button"
-          class="inline-flex cursor-pointer items-center justify-center gap-1 rounded-md border border-rose-500/30 bg-rose-500/5 px-2 py-1.5 font-sans-title text-xs font-semibold text-rose-600 transition-all hover:border-rose-500/60 hover:bg-rose-500/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500 active:scale-95 dark:text-rose-400"
+          class="relative inline-flex cursor-pointer items-center justify-center gap-1 rounded-md border border-rose-500/30 bg-rose-500/5 px-2 py-1.5 text-xs font-semibold text-rose-600 transition-all hover:border-rose-500/60 hover:bg-rose-500/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500 active:scale-95 disabled:cursor-wait disabled:opacity-50 dark:text-rose-400"
+          use:shortcut={{group: 'actions', label: 'Helpful: no'}}
+          disabled={!ready || pending}
           onclick={() => handleVote(false)}
           aria-label="No, this was not helpful">
           <ThumbsDown
@@ -85,7 +95,12 @@
       {#if onFeedbackClick}
         <button
           type="button"
-          class="w-fit cursor-pointer text-left font-sans-title text-xs font-medium text-accent hover:underline focus-visible:outline-none"
+          class="relative w-fit cursor-pointer text-left text-xs font-medium text-accent hover:underline focus-visible:outline-none"
+          use:shortcut={{
+            group: 'actions',
+            label: 'Share your feedback',
+            placement: 'after'
+          }}
           onclick={onFeedbackClick}>
           Share your feedback
         </button>
@@ -104,7 +119,7 @@
         class="flex flex-col items-center gap-3 text-center sm:items-start sm:text-left">
         <div class="flex flex-col gap-1">
           <h3
-            class="font-sans-title text-base font-bold tracking-tight text-text-primary sm:text-lg">
+            class="text-base font-bold tracking-tight text-text-primary sm:text-lg">
             {title}
           </h3>
           {#if currentVoted === null}
@@ -116,7 +131,7 @@
 
         {#if currentVoted !== null}
           <div
-            class="flex items-center justify-center gap-2 font-sans-title text-sm font-semibold text-accent sm:justify-start">
+            class="flex items-center justify-center gap-2 text-sm font-semibold text-accent sm:justify-start">
             <CheckCircle2 class="size-4 shrink-0" />
             <span>Thanks for your feedback!</span>
           </div>
@@ -125,7 +140,9 @@
             class="flex flex-wrap items-center justify-center gap-2.5 sm:justify-start">
             <button
               type="button"
-              class="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/5 px-3.5 py-1.5 font-sans-title text-xs font-semibold text-emerald-600 transition-all hover:border-emerald-500/60 hover:bg-emerald-500/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 active:scale-95 dark:text-emerald-400"
+              class="relative inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/5 px-3.5 py-1.5 text-xs font-semibold text-emerald-600 transition-all hover:border-emerald-500/60 hover:bg-emerald-500/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 active:scale-95 disabled:cursor-wait disabled:opacity-50 dark:text-emerald-400"
+              use:shortcut={{group: 'actions', label: 'Helpful: yes'}}
+              disabled={!ready || pending}
               onclick={() => handleVote(true)}
               aria-label="Yes, this was helpful">
               <ThumbsUp
@@ -136,7 +153,9 @@
             </button>
             <button
               type="button"
-              class="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-rose-500/30 bg-rose-500/5 px-3.5 py-1.5 font-sans-title text-xs font-semibold text-rose-600 transition-all hover:border-rose-500/60 hover:bg-rose-500/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500 active:scale-95 dark:text-rose-400"
+              class="relative inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-rose-500/30 bg-rose-500/5 px-3.5 py-1.5 text-xs font-semibold text-rose-600 transition-all hover:border-rose-500/60 hover:bg-rose-500/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500 active:scale-95 disabled:cursor-wait disabled:opacity-50 dark:text-rose-400"
+              use:shortcut={{group: 'actions', label: 'Helpful: no'}}
+              disabled={!ready || pending}
               onclick={() => handleVote(false)}
               aria-label="No, this was not helpful">
               <ThumbsDown
@@ -150,7 +169,12 @@
           {#if onFeedbackClick}
             <button
               type="button"
-              class="w-fit cursor-pointer text-center text-xs font-medium text-accent hover:underline focus-visible:outline-none sm:text-left"
+              class="relative w-fit cursor-pointer text-center text-xs font-medium text-accent hover:underline focus-visible:outline-none sm:text-left"
+              use:shortcut={{
+                group: 'actions',
+                label: 'Share your feedback',
+                placement: 'after'
+              }}
               onclick={onFeedbackClick}>
               Share your feedback
             </button>
@@ -212,3 +236,5 @@
     </div>
   </div>
 {/if}
+
+{#if error}<FieldMessage message={error} />{/if}

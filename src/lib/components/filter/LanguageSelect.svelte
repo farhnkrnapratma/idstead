@@ -1,5 +1,7 @@
 <script lang="ts">
+  import {buttonKey} from '$lib/shortcuts';
   import {Languages, Circle, CircleDot} from '@lucide/svelte';
+  import {languageLabel} from '$lib/translationLocales';
   import {cn} from '../../utils/cn';
   import {popoverPosition} from '../../utils/popoverPosition';
   import IconButton from '../IconButton.svelte';
@@ -20,11 +22,6 @@
     class: className = '',
     dropdownDirection = 'down'
   }: Props = $props();
-
-  const LANGUAGE_LABELS: Record<string, string> = {
-    en: 'English',
-    id: 'Bahasa Indonesia'
-  };
 
   let isOpen = $state(false);
   const languageOptions = $derived(['en', ...availableLocales]);
@@ -72,6 +69,8 @@
     class="relative inline-block">
     <IconButton
       ariaLabel="Translate"
+      keyboardShortcut={buttonKey('language')}
+      shortcutLabel="Translate page"
       tooltip="Translate"
       tooltipPlacement={dropdownDirection === 'up' ? 'top' : 'bottom'}
       tooltipAlign="right"
@@ -139,7 +138,7 @@
                     lang={loc}
                     class="size-4" />
                   <span class="text-xs font-medium">
-                    {LANGUAGE_LABELS[loc] ?? loc}
+                    {languageLabel(loc)}
                   </span>
                 </div>
                 <span

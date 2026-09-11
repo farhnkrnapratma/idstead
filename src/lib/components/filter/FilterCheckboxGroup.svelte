@@ -114,7 +114,7 @@
           class="relative z-10 flex max-h-52 [scrollbar-width:none] flex-col overflow-y-auto p-1.5 pt-0.5 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {#each filteredOptions as opt (opt.value)}
             <label
-              class="flex cursor-pointer items-center gap-2.5 rounded-md px-2 py-1.5 font-sans-title text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover hover:text-accent">
+              class="flex cursor-pointer items-center gap-2.5 rounded-md px-2 py-1.5 text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover hover:text-accent">
               <Checkbox
                 checked={selectedValues.includes(opt.value)}
                 onchange={() => onChange(opt.value)} />
@@ -130,13 +130,12 @@
     {/if}
   {:else}
     <fieldset class="flex flex-col gap-2">
-      <legend
-        class="mb-1 font-sans-title text-xs font-medium text-text-secondary"
+      <legend class="mb-1 text-xs font-medium text-text-secondary"
         >{label}</legend>
       <div class="flex flex-wrap gap-2">
         {#each options as opt (opt.value)}
           <label
-            class="flex cursor-pointer items-center gap-2 rounded-md border border-border-subtle bg-surface-card px-2.5 py-1 font-sans-title text-xs font-medium text-text-primary hover:bg-surface-hover">
+            class="flex cursor-pointer items-center gap-2 rounded-md border border-border-subtle bg-surface-card px-2.5 py-1 text-xs font-medium text-text-primary hover:bg-surface-hover">
             <Checkbox
               checked={selectedValues.includes(opt.value)}
               onchange={() => onChange(opt.value)} />

@@ -5,6 +5,7 @@ export interface PopoverPositionOptions {
   padding?: number;
   anchor?: HTMLElement | null;
   autoMaxHeight?: boolean;
+  strategy?: 'absolute' | 'fixed';
 }
 
 export function popoverPosition(
@@ -16,7 +17,8 @@ export function popoverPosition(
     offset: options.offset ?? 6,
     padding: options.padding ?? 8,
     anchor: options.anchor,
-    autoMaxHeight: options.autoMaxHeight ?? true
+    autoMaxHeight: options.autoMaxHeight ?? true,
+    strategy: options.strategy ?? 'absolute'
   };
 
   let rafId: number | null = null;
@@ -32,12 +34,32 @@ export function popoverPosition(
       ?? (node.parentElement as HTMLElement | null)
       ?? document.documentElement;
 
-    const anchorRect = anchor.getBoundingClientRect();
-    const parentRect = effectiveParent.getBoundingClientRect();
+    let zoom = 1;
+    for (
+      let element: HTMLElement | null = node;
+      element;
+      element = element.parentElement
+    ) {
+      const value = Number.parseFloat(getComputedStyle(element).zoom);
+      if (Number.isFinite(value) && value > 0) zoom *= value;
+    }
+    const anchorBounds = anchor.getBoundingClientRect();
+    const anchorRect = {
+      top: anchorBounds.top / zoom,
+      bottom: anchorBounds.bottom / zoom,
+      left: anchorBounds.left / zoom,
+      width: anchorBounds.width / zoom,
+      height: anchorBounds.height / zoom
+    };
+    const parentBounds = effectiveParent.getBoundingClientRect();
+    const parentRect =
+      opts.strategy === 'fixed' ?
+        {left: 0, top: 0}
+      : {left: parentBounds.left / zoom, top: parentBounds.top / zoom};
     const viewportWidth =
-      document.documentElement.clientWidth || window.innerWidth;
+      (document.documentElement.clientWidth || window.innerWidth) / zoom;
     const viewportHeight =
-      document.documentElement.clientHeight || window.innerHeight;
+      (document.documentElement.clientHeight || window.innerHeight) / zoom;
 
     const popoverWidth = node.offsetWidth || node.scrollWidth;
     const popoverHeight = node.offsetHeight || node.scrollHeight;
@@ -106,7 +128,7 @@ export function popoverPosition(
     node.style.bottom = 'auto';
     node.style.left = `${Math.round(targetLeft)}px`;
     node.style.right = 'auto';
-    node.style.maxWidth = `calc(100vw - ${opts.padding * 2}px)`;
+    node.style.maxWidth = `${Math.max(0, viewportWidth - opts.padding * 2)}px`;
     node.setAttribute('data-placement', actualPlacement);
   };
 
@@ -139,7 +161,8 @@ export function popoverPosition(
         offset: newOptions?.offset ?? opts.offset,
         padding: newOptions?.padding ?? opts.padding,
         anchor: newOptions?.anchor ?? opts.anchor,
-        autoMaxHeight: newOptions?.autoMaxHeight ?? opts.autoMaxHeight
+        autoMaxHeight: newOptions?.autoMaxHeight ?? opts.autoMaxHeight,
+        strategy: newOptions?.strategy ?? opts.strategy
       };
       scheduleUpdate();
     },

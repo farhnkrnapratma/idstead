@@ -899,7 +899,7 @@ export function restoreAllPlaceholders(
 ): string {
   let result = text;
   for (const [key, value] of store.entries()) {
-    result = result.replaceAll(key, value);
+    result = result.replaceAll(key, () => value);
   }
   return result;
 }
@@ -1242,7 +1242,7 @@ export async function resolveProtectedInterpolationTokens(
       replacement = r;
       if (error) errors.push(error);
     }
-    result = result.replaceAll(key, replacement);
+    result = result.replaceAll(key, () => replacement);
   }
 
   return {output: result, errors};

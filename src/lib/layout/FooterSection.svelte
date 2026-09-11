@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {buttonKey} from '$lib/shortcuts';
   import {cn} from '../utils/cn';
   import ThemeSelect from '../components/filter/ThemeSelect.svelte';
   import ContentFontSelect from '../components/filter/ContentFontSelect.svelte';
@@ -182,6 +183,8 @@
                 'Enter reading mode'
               )}
               tooltip={readingMode ? 'Exit reading mode' : 'Reading mode'}
+              keyboardShortcut={buttonKey('readingMode')}
+              shortcutLabel="Reading mode"
               tooltipPlacement="top"
               tooltipAlign="right"
               size="sm"

@@ -1,7 +1,9 @@
+import {bannerUrl} from '$lib/blogBanner';
 import {supabase} from '$lib/supabase';
 import {error} from '@sveltejs/kit';
 import {renderMarkdown, injectHeadingIds, extractHeadings} from '$lib/markdown';
 import {resolveTranslation} from '$lib/server/blogTranslations';
+import {estimateReadTime} from '$lib/readTime';
 import {buildTranslationDisclaimerMarkdown} from '$lib/server/blogTranslate';
 import type {PageServerLoad} from './$types';
 
@@ -28,12 +30,6 @@ export interface RelatedPost {
   read_time: string;
   comment_count: number;
   views_count: number;
-}
-
-function estimateReadTime(markdown: string): string {
-  const words = markdown.trim().split(/\s+/).filter(Boolean).length;
-  const minutes = Math.max(1, Math.ceil(words / 200));
-  return `${minutes} min${minutes > 1 ? 's' : ''} read`;
 }
 
 function getRelatedWindow<T extends {id: string}>(
@@ -144,20 +140,14 @@ export const load: PageServerLoad = async ({params, url, fetch, locals}) => {
     console.error('Error counting post views:', err);
   }
 
-  let bannerPublicUrl: string | null = null;
-  if (post.banner_path) {
-    const {data: bannerRes} = supabase.storage
-      .from('blog-posts')
-      .getPublicUrl(post.banner_path);
-    bannerPublicUrl = bannerRes?.publicUrl || null;
-  }
+  const bannerPublicUrl = bannerUrl(post);
 
   let relatedPosts: RelatedPost[] = [];
   try {
     const {data, error: relatedError} = await supabase
       .from('db_posts')
       .select(
-        'id, title, slug, excerpt, created_at, updated_at, banner_path, storage_path'
+        'id, title, slug, excerpt, created_at, updated_at, banner_version, storage_path'
       )
       .eq('published', true)
       .order('created_at', {ascending: false});
@@ -167,13 +157,7 @@ export const load: PageServerLoad = async ({params, url, fetch, locals}) => {
     } else if (data) {
       relatedPosts = await Promise.all(
         getRelatedWindow(data, post.id).map(async p => {
-          let relatedBannerUrl: string | null = null;
-          if (p.banner_path) {
-            const {data: bannerRes} = supabase.storage
-              .from('blog-posts')
-              .getPublicUrl(p.banner_path);
-            relatedBannerUrl = bannerRes?.publicUrl || null;
-          }
+          const relatedBannerUrl = bannerUrl(p);
 
           let readTime = '1 min read';
           try {
