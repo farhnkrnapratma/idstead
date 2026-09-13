@@ -223,11 +223,23 @@
           <ActivityGroupHeader
             title={article.page_title ?? 'Unavailable article'}
             url={article.page_url}
-            description={`${article.reports} ${article.reports === 1 ? 'report' : 'reports'} · ${article.comments} ${article.comments === 1 ? 'comment' : 'comments'}`}
             latest={article.latest}
             expanded={opened.has(article.id)}
             label={`reports for ${article.page_title}`}
-            onToggle={() => toggleArticle(article)} />
+            onToggle={() => toggleArticle(article)}>
+            {#snippet badges()}
+              <Badge
+                variant="danger"
+                size="sm"
+                >{article.reports}
+                {article.reports === 1 ? 'report' : 'reports'}</Badge>
+              <Badge
+                variant="default"
+                size="sm"
+                >{article.comments}
+                {article.comments === 1 ? 'comment' : 'comments'}</Badge>
+            {/snippet}
+          </ActivityGroupHeader>
           {#if opened.has(article.id)}
             <div class="border-t border-border-subtle p-2">
               {#if errors[article.id]}<ErrorState
@@ -240,21 +252,44 @@
                     <li class="rounded-md border border-border-subtle">
                       <ActivityGroupHeader
                         title={comment.author ?? 'Anonymous'}
-                        description={`${comment.content ?? ''} · ${comment.reports} ${comment.reports === 1 ? 'report' : 'reports'}`}
+                        description={comment.content ?? ''}
                         latest={comment.latest}
                         expanded={opened.has(comment.id)}
                         label={`reports on comment by ${comment.author}`}
-                        onToggle={() => toggleComment(comment)} />
+                        onToggle={() => toggleComment(comment)}>
+                        {#snippet badges()}
+                          <Badge
+                            variant="danger"
+                            size="sm"
+                            >{comment.reports}
+                            {comment.reports === 1 ?
+                              'report'
+                            : 'reports'}</Badge>
+                        {/snippet}
+                      </ActivityGroupHeader>
                       {#if opened.has(comment.id)}
                         <div
-                          class="flex flex-col gap-2 border-t border-border-subtle p-2">
-                          <Button
-                            type="ghost"
-                            size="xs"
-                            class="self-start"
-                            onclick={() =>
-                              onOpenComment(article.id, comment.id)}
-                            >Open comment in Posts</Button>
+                          class="flex flex-col gap-2.5 border-t border-border-subtle p-2.5">
+                          <div
+                            class="rounded-md border border-border-subtle bg-surface-subtle/50 p-3">
+                            <div
+                              class="mb-2 flex flex-wrap items-center justify-between gap-2">
+                              <span
+                                class="text-2xs font-semibold text-text-muted"
+                                >Comment by {comment.author
+                                  ?? 'Anonymous'}</span>
+                              <Button
+                                type="ghost"
+                                size="xs"
+                                onclick={() =>
+                                  onOpenComment(article.id, comment.id)}
+                                >Open comment in Posts</Button>
+                            </div>
+                            <blockquote
+                              class="font-sans text-xs leading-relaxed break-words whitespace-pre-wrap text-text-primary italic">
+                              "{comment.content || 'No content'}"
+                            </blockquote>
+                          </div>
                           {#if errors[`${comment.id}:undefined`]}<ErrorState
                               title="Unable to load report reasons"
                               description={errors[`${comment.id}:undefined`]}
@@ -290,6 +325,7 @@
                                     <CommentReportList
                                       reports={histories[key].items}
                                       focusedId={focus?.eventId}
+                                      showBadge={false}
                                       class="rounded-none border-x-0 border-b-0" />
                                     {#if histories[key].total > 20}<Pagination
                                         class="p-2"

@@ -71,8 +71,7 @@ export async function adminActivity(
           .from('db_admin_notifications')
           .update({read_at: new Date().toISOString()})
           .is('read_at', null)
-          .lte('created_at', new Date().toISOString())
-          .select('id');
+          .lte('created_at', new Date().toISOString());
       } else throw new ActivityInputError('Invalid notification action.');
     } else if (request.method === 'GET') {
       const params = url.searchParams;

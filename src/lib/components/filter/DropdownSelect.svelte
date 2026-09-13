@@ -183,7 +183,7 @@
         }}
         class={cn(
           'absolute z-60 flex max-h-56 flex-col popover-surface p-0',
-          fullWidth ? 'inset-x-0 w-full' : 'min-w-full',
+          fullWidth ? 'inset-x-0 w-full' : 'w-full',
           menuWidth
         )}>
         <div

@@ -21,7 +21,7 @@
 
   const fontOptions: {value: ContentFont; label: string; fontClass: string}[] =
     [
-      {value: 'sans', label: 'Sans Serif', fontClass: 'font-sans'},
+      {value: 'sans', label: 'Sans serif', fontClass: 'font-sans'},
       {value: 'serif', label: 'Serif', fontClass: 'font-serif'},
       {value: 'mono', label: 'Monospace', fontClass: 'font-mono'}
     ];
@@ -72,7 +72,7 @@
       ariaLabel="Reading Font"
       keyboardShortcut={buttonKey('contentFont')}
       shortcutLabel="Reading font"
-      tooltip="Reading Font"
+      tooltip="Reading font"
       tooltipPlacement={dropdownDirection === 'up' ? 'top' : 'bottom'}
       tooltipAlign="right"
       size="sm"

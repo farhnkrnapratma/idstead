@@ -96,8 +96,6 @@ export {default as AlertDialog} from './components/AlertDialog.svelte';
 export {default as ShareDialog} from './components/ShareDialog.svelte';
 export {default as QrCodeDialog} from './components/QrCodeDialog.svelte';
 export {default as ConfirmationDialog} from './components/ConfirmationDialog.svelte';
-export {default as ProjectCodeDialog} from './components/ProjectCodeDialog.svelte';
-export {default as BlogActionsDialog} from './components/BlogActionsDialog.svelte';
 export {default as ReportCommentDialog} from './components/ReportCommentDialog.svelte';
 
 export {default as ListRow} from './components/ListRow.svelte';

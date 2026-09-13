@@ -1,6 +1,6 @@
 <script lang="ts">
   import {buttonKey} from '$lib/shortcuts';
-  import {Accessibility, ToggleLeft, ToggleRight} from '@lucide/svelte';
+  import {PersonStanding, ToggleLeft, ToggleRight} from '@lucide/svelte';
   import {cn} from '../../utils/cn';
   import {popoverPosition} from '../../utils/popoverPosition';
   import IconButton from '../IconButton.svelte';
@@ -83,7 +83,7 @@
         'border-border-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9',
         isOpen && 'border-accent text-accent'
       )}>
-      <Accessibility class="size-4" />
+      <PersonStanding class="size-4" />
     </IconButton>
 
     {#if isOpen}

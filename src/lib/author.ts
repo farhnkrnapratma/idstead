@@ -106,6 +106,8 @@ export interface AuthorProfile {
   education?: EducationItem[];
 }
 
+export const LINK_LIMITS = {contact: 10, funding: 10, social: 6} as const;
+
 export function decodeHtmlEntities(str: string | null | undefined): string {
   if (!str) return '';
   return str
@@ -354,7 +356,8 @@ export async function fetchSocials(
       .from('db_links')
       .select('*')
       .eq('category', 'social')
-      .order('sort_order', {ascending: true});
+      .order('sort_order', {ascending: true})
+      .limit(LINK_LIMITS.social);
 
     if (error && options?.strict) throw error;
     if (error || !data) return [];
@@ -565,7 +568,8 @@ export async function fetchSponsorship(
       .from('db_links')
       .select('*')
       .eq('category', 'funding')
-      .order('sort_order', {ascending: true});
+      .order('sort_order', {ascending: true})
+      .limit(LINK_LIMITS.funding);
 
     if (error && options?.strict) throw error;
     if (error || !data) return [];
@@ -603,7 +607,8 @@ export async function fetchContactInfo(
       .from('db_links')
       .select('*')
       .eq('category', 'contact')
-      .order('sort_order', {ascending: true});
+      .order('sort_order', {ascending: true})
+      .limit(LINK_LIMITS.contact);
 
     if (error && options?.strict) throw error;
     if (error || !data) return [];

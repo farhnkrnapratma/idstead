@@ -1,109 +1,94 @@
 <script lang="ts">
   import {tick} from 'svelte';
-  import {Bell, CheckCheck, Trash2, X} from '@lucide/svelte';
-  import Button from '../Button.svelte';
+  import {Bell} from '@lucide/svelte';
   import IconButton from '../IconButton.svelte';
+  import Button from '../Button.svelte';
   import Badge from '../Badge.svelte';
-  import Input from '../Input.svelte';
+  import DialogCloseButton from '../DialogCloseButton.svelte';
   import ErrorState from '../ErrorState.svelte';
   import LoadingState from '../LoadingState.svelte';
   import EmptyState from '../EmptyState.svelte';
-  import ConfirmationDialog from '../ConfirmationDialog.svelte';
-  import FieldMessage from '../FieldMessage.svelte';
-  import FilterSelect from '../filter/FilterSelect.svelte';
-  import SortControl from '../filter/SortControl.svelte';
-  import ActivityRow from './ActivityRow.svelte';
   import {portal} from '$lib/utils/actions';
   import {popoverPosition} from '$lib/utils/popoverPosition';
   import {adminNotificationsStore as inbox} from '$lib/stores/adminNotificationsStore.svelte';
-  import type {
-    AdminNotificationRow,
-    ClearOperation,
-    InboxPreferences
-  } from '$lib/adminActivity';
+  import {adminActivityRequest} from '$lib/adminActivityClient';
   import {formatCompactCount} from '$lib/utils/formatters';
+  import {
+    formatCount,
+    notificationTypes,
+    type WorkspacePage
+  } from '$lib/adminWorkspace';
   import {cn} from '$lib/utils/cn';
-
   let {
     id,
-    onSelect,
+    onOpen,
+    size = 'sm',
     class: className = ''
   }: {
     id: string;
-    onSelect: (item: AdminNotificationRow) => void;
+    onOpen: (group?: string) => void;
+    size?: '2xs' | 'xs' | 'sm' | 'md' | 'lg';
     class?: string;
   } = $props();
   let isOpen = $state(false);
   let triggerEl = $state<HTMLElement | null>(null);
   let panelEl = $state<HTMLElement | null>(null);
-  let showClear = $state(false);
-  let clearOperation = $state<ClearOperation | null>(null);
-  let clearError = $state('');
-  let preparing = $state(false);
-  let clearOperationId: string | null = null;
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
+  let data = $state.raw<WorkspacePage | null>(null);
+  let loading = $state(false);
+  let error = $state('');
+  let controller: AbortController | undefined;
   function close() {
     isOpen = false;
+    controller?.abort();
     triggerEl?.querySelector('button')?.focus();
   }
-  async function togglePanel(event: MouseEvent) {
-    event.stopPropagation();
+  async function open() {
     isOpen = !isOpen;
-    if (isOpen) {
-      void inbox.load();
-      await tick();
-      panelEl?.focus();
-    }
-  }
-  function select(item: AdminNotificationRow) {
-    void inbox.markRead(item.id);
-    close();
-    onSelect(item);
-  }
-  async function prepareClear() {
-    preparing = true;
-    clearError = '';
-    clearOperationId ??= crypto.randomUUID();
+    if (!isOpen) return;
+    await tick();
+    panelEl?.focus();
+    controller?.abort();
+    controller = new AbortController();
+    loading = true;
+    error = '';
     try {
-      clearOperation = await inbox.prepareClear(clearOperationId);
-      showClear = true;
-    } catch (error) {
-      clearError =
-        error instanceof Error ?
-          error.message
-        : 'Clear all could not be prepared.';
+      let timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      try {
+        timeZone =
+          sessionStorage.getItem('admin-analytics-timezone') ?? timeZone;
+      } catch {}
+      data = await adminActivityRequest<WorkspacePage>(
+        'workspace',
+        {section: 'notifications', preview: 'true', timeZone, range: 'all'},
+        undefined,
+        controller.signal
+      );
+    } catch (caught) {
+      if (!controller.signal.aborted)
+        error =
+          caught instanceof Error ?
+            caught.message
+          : 'Notifications could not be loaded.';
     } finally {
-      preparing = false;
+      loading = false;
     }
   }
-  async function confirmClear() {
-    if (!clearOperation) return;
-    clearError = '';
-    try {
-      await inbox.clear(clearOperation.operationId);
-      showClear = false;
-      clearOperationId = null;
-      clearOperation = null;
-      await tick();
-      panelEl?.focus();
-    } catch (error) {
-      clearError =
-        error instanceof Error ?
-          error.message
-        : 'Clear all could not be confirmed. Please try again.';
-    }
+  function select(group?: string) {
+    close();
+    onOpen(group);
   }
 </script>
 
 <svelte:window
   onclick={() => {
-    if (!showClear) isOpen = false;
+    if (isOpen) close();
   }}
   onkeydown={event => {
-    if (isOpen && event.key === 'Escape' && !showClear) close();
+    if (isOpen && event.key === 'Escape') {
+      event.preventDefault();
+      close();
+    }
   }} />
-
 <div class={cn('relative shrink-0', className)}>
   <span
     {@attach element => {
@@ -115,17 +100,20 @@
     class="inline-flex">
     <IconButton
       id="admin-bell-{id}"
-      ariaLabel="Notifications"
+      ariaLabel={`Notifications, ${formatCount(inbox.unreadCount)} unread events`}
       shortcutLabel="Notifications"
       keyboardShortcut="Alt+Shift+N"
       variant="ghost"
-      size="sm"
+      {size}
       showTooltip={false}
       class="relative hover:bg-surface-hover"
       aria-haspopup="dialog"
       aria-expanded={isOpen}
-      onclick={togglePanel}>
-      <Bell class="size-4" />
+      onclick={event => {
+        event.stopPropagation();
+        void open();
+      }}>
+      <Bell class={size === 'xs' ? 'size-3.5' : 'size-4'} />
       {#if inbox.unreadCount > 0}<Badge
           variant="accent"
           class="absolute -top-1 -right-1 min-w-3.5 justify-center rounded-full border-0 bg-accent-subtle px-1 py-0 text-3xs leading-3.5 text-accent"
@@ -144,24 +132,21 @@
       use:portal
       role="dialog"
       tabindex="-1"
-      aria-label="Notifications"
-      class="fixed z-70 flex max-h-[calc(100dvh-1rem)] w-[56rem] max-w-[calc(100vw-1rem)] flex-col rounded-md border border-border-subtle bg-surface-elevated font-sans shadow-lg outline-none"
+      aria-label="Recent notifications"
+      class="fixed z-70 flex max-h-[75dvh] w-[calc(100vw-1rem)] flex-col rounded-md border border-border-subtle bg-surface-elevated font-sans shadow-lg outline-none sm:max-w-md"
       use:popoverPosition={{
         placement: 'bottom-end',
         offset: 8,
         padding: 8,
+        autoMaxHeight: false,
         strategy: 'fixed',
         anchor: triggerEl
       }}
       onclick={event => event.stopPropagation()}
       onkeydown={event => {
-        if (event.key === 'Escape' && !showClear) {
-          event.stopPropagation();
-          close();
-        }
         if (event.key === 'Tab') {
           const controls = panelEl?.querySelectorAll<HTMLElement>(
-            'button:not(:disabled), input, a[href]'
+            'button:not(:disabled), a[href]'
           );
           const first = controls?.[0];
           const last = controls?.[controls.length - 1];
@@ -179,146 +164,52 @@
         }
       }}>
       <div
-        class="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border-subtle px-3 py-2">
+        class="flex items-center justify-between gap-2 border-b border-border-subtle p-3">
         <div>
           <h2 class="text-sm font-bold text-text-primary">Notifications</h2>
-          <p class="text-2xs text-text-muted">
-            {timeZone} · {inbox.unreadCount} unread
+          <p class="text-xs text-text-muted">
+            {formatCount(inbox.unreadCount)} unread events
           </p>
         </div>
-        <div class="flex flex-wrap items-center gap-1">
-          <Button
-            type="ghost"
-            size="xs"
-            disabled={inbox.unreadCount === 0 || inbox.isMutating}
-            onclick={() => inbox.markAllRead()}
-            ><CheckCheck class="size-3.5" />Mark all read</Button>
-          <Button
-            type="ghost"
-            size="xs"
-            disabled={inbox.isMutating || preparing}
-            onclick={prepareClear}
-            ><Trash2 class="size-3.5" />{preparing ? 'Preparing…' : (
-              'Clear all'
-            )}</Button>
-          <IconButton
-            ariaLabel="Close notifications"
-            size="sm"
-            onclick={close}><X class="size-4" /></IconButton>
-        </div>
+        <DialogCloseButton
+          onClose={close}
+          ariaLabel="Close notifications" />
       </div>
-      <div
-        class="flex shrink-0 flex-col gap-2 border-b border-border-subtle p-2.5">
-        <Input
-          size="sm"
-          aria-label="Search notifications"
-          placeholder="Search notifications…"
-          maxlength={200}
-          value={inbox.preferences.query}
-          oninput={event =>
-            inbox.setPreferences({
-              query: (event.target as HTMLInputElement).value
-            })} />
-        <div
-          class="grid grid-cols-1 gap-2 min-[390px]:grid-cols-2 sm:flex sm:flex-wrap sm:items-center">
-          <FilterSelect
-            label="Type"
-            value={inbox.preferences.type}
-            options={[
-              {value: 'all', label: 'All'},
-              {value: 'comment_report', label: 'Reports'},
-              {value: 'comment_new', label: 'Comments'},
-              {value: 'helpful', label: 'Helpful'},
-              {value: 'unhelpful', label: 'Unhelpful'},
-              {value: 'contact_message', label: 'Contact messages'},
-              {value: 'feedback_report', label: 'Feedback forms'}
-            ]}
-            onChange={type => inbox.setPreferences({type})} />
-          <FilterSelect
-            label="Read status"
-            value={inbox.preferences.read}
-            options={[
-              {value: 'all', label: 'All'},
-              {value: 'unread', label: 'Unread'},
-              {value: 'read', label: 'Read'}
-            ]}
-            onChange={read =>
-              inbox.setPreferences({read: read as InboxPreferences['read']})} />
-          <SortControl
-            class="min-[390px]:col-span-2"
-            fields={[
-              {value: 'date', label: 'Date'},
-              {value: 'type', label: 'Type'},
-              {value: 'page', label: 'Page'}
-            ]}
-            currentField={inbox.preferences.sort}
-            currentDirection={inbox.preferences.direction}
-            onFieldChange={sort =>
-              inbox.setPreferences({
-                sort: sort as InboxPreferences['sort'],
-                direction: sort === 'date' ? 'desc' : 'asc'
-              })}
-            onDirectionToggle={() =>
-              inbox.setPreferences({
-                direction:
-                  inbox.preferences.direction === 'asc' ? 'desc' : 'asc'
-              })} />
-        </div>
-      </div>
-      {#if clearError && !showClear}<FieldMessage message={clearError} />{/if}
-      <div
-        class="min-h-0 overflow-y-auto overscroll-contain p-1.5"
-        data-inbox-scroll>
-        {#if inbox.error}<ErrorState
+      <div class="min-h-0 overflow-y-auto p-3">
+        {#if error}<ErrorState
             title="Unable to load notifications"
-            description={inbox.error}
-            onRetry={() => inbox.load()}
-            class="m-2 p-3" />{/if}
-        {#if !inbox.isLoaded && inbox.isLoading}<LoadingState
-            variant="spinner"
-            label="Loading notifications…"
-            class="p-4" />
-        {:else if inbox.items.length === 0 && inbox.isLoaded && !inbox.error}<EmptyState
-            title="No notifications"
-            description="No notifications match these filters."
-            class="border-0 p-4" />
-        {:else}
-          <ul class="flex flex-col gap-1">
-            {#each inbox.items as item (item.id)}<li>
-                <ActivityRow
-                  {item}
-                  onSelect={() => select(item)}
-                  onDelete={() => inbox.dismiss(item.id)}
-                  disabled={inbox.isMutating} />
+            description={error}
+            onRetry={() => {
+              isOpen = false;
+              void open();
+            }} />
+        {:else if loading}<LoadingState label="Loading recent activity…" />
+        {:else if !data?.items.length}<EmptyState title="No notifications" />
+        {:else}<ul class="divide-y divide-border-subtle">
+            {#each data.items as item (item.id)}<li>
+                <button
+                  type="button"
+                  class="flex w-full cursor-pointer flex-col gap-1 rounded-sm py-3 text-left focus-visible:outline-2 focus-visible:outline-focus-ring"
+                  onclick={() => select(item.id)}
+                  ><span class="text-xs font-semibold text-accent"
+                    >{notificationTypes.find(t => t.value === item.kind)?.label
+                      ?? (item.vote === 'yes' ? 'Helpful' : 'Unhelpful')}</span
+                  ><span class="line-clamp-2 text-sm text-text-primary"
+                    >{item.title}</span
+                  ><span class="text-xs text-text-muted"
+                    >{formatCount(item.total)} events · {formatCount(
+                      item.unread ?? 0
+                    )} unread</span
+                  ></button>
               </li>{/each}
-          </ul>
-        {/if}
-        {#if inbox.hasMore}<Button
-            type="ghost"
-            size="sm"
-            fullWidth
-            class="mt-2"
-            disabled={inbox.isLoading || inbox.isMutating}
-            onclick={() => inbox.loadMore()}
-            >{inbox.isLoading ? 'Loading…' : 'Load more'}</Button
-          >{/if}
+          </ul>{/if}
+      </div>
+      <div class="border-t border-border-subtle p-3">
+        <Button
+          size="sm"
+          fullWidth
+          onclick={() => select()}>View all notifications</Button>
       </div>
     </div>
   {/if}
 </div>
-
-<ConfirmationDialog
-  bind:isOpen={showClear}
-  title="Clear all notifications?"
-  message={`Permanently delete all ${clearOperation?.count ?? ''} notifications in this snapshot, including unread notifications and those hidden by filters. Reports and feedback stay saved. Notifications arriving after this snapshot will remain.`}
-  confirmLabel="Delete notifications"
-  isDestructive
-  isLoading={inbox.isMutating}
-  onConfirm={confirmClear}
-  onCancel={() => {
-    clearOperationId = null;
-    clearOperation = null;
-    clearError = '';
-  }}>
-  {#if clearError}<FieldMessage message={clearError} />{/if}
-</ConfirmationDialog>

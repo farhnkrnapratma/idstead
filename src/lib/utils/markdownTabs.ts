@@ -6,7 +6,9 @@ import {
   isShellScript
 } from './codeBlocks';
 import {getDownloadFilename} from './codeBlockExtensions';
-import {registerPrefsListener} from './codeBlocks';
+import {registerPrefsListener, nextCodeScope} from './codeBlocks';
+import {shortcut} from './shortcut.svelte';
+import {focusScope} from './focusScope';
 
 const tabPreferences = new Map<string, string>();
 const tabListeners = new Set<(key: string, value: string) => void>();
@@ -48,6 +50,8 @@ export function enhanceMarkdownTabs(
     );
 
     let codeControls: ReturnType<typeof createCodeActionControls> | null = null;
+    const tabsScope = nextCodeScope('tabs');
+    focusScope(tabsEl, tabsScope);
 
     if (!isContentGroup) {
       let actionsWrapper = tabsEl.querySelector<HTMLElement>(
@@ -89,7 +93,8 @@ export function enhanceMarkdownTabs(
             const codeText = codeEl?.innerText || codeEl?.textContent || '';
             return isShellLanguage(rawLang) && !isShellScript(codeText);
           },
-          triggerToast: triggerToast || (() => {})
+          triggerToast: triggerToast || (() => {}),
+          shortcutScope: tabsScope
         });
         actionsWrapper.appendChild(codeControls.controls);
         codeControls.applyPrefs();
@@ -136,6 +141,14 @@ export function enhanceMarkdownTabs(
 
     tabButtons.forEach((btn, idx) => {
       btn.addEventListener('click', () => selectTab(idx, true));
+      if (idx < 9) {
+        shortcut(btn, {
+          combo: String(idx + 1),
+          label: `Tab: ${btn.getAttribute('data-tab-label') || idx + 1}`,
+          scope: tabsScope,
+          placement: 'inline'
+        });
+      }
     });
 
     if (syncKey) {

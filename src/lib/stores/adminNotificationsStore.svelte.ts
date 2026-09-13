@@ -1,3 +1,4 @@
+import type {NotificationSummary} from '$lib/adminWorkspace';
 import {supabase} from '$lib/supabase';
 import {adminActivityRequest} from '$lib/adminActivityClient';
 import type {
@@ -33,7 +34,7 @@ let requestId = 0;
 let controller: AbortController | undefined;
 let channel: ReturnType<typeof supabase.channel> | null = null;
 let timer: ReturnType<typeof setInterval> | undefined;
-let refreshActivity: (() => Promise<void>) | undefined;
+
 let restored = false;
 const listeners: Array<() => Promise<void>> = [];
 
@@ -97,7 +98,8 @@ async function loadInbox(append = false) {
     nextCursor = cursor;
     unreadCount = latest.unreadCount;
     total = latest.total;
-    if (append) pages++;
+    if (append) pages = Math.min(pages + 1, 3);
+    items = items.slice(-60);
     isLoaded = true;
     error = '';
   } catch (caught) {
@@ -110,18 +112,47 @@ async function loadInbox(append = false) {
     if (current === requestId && session === generation) isLoading = false;
   }
 }
+let revision = '';
+let summaryRequest: Promise<void> | undefined;
+let scheduled: ReturnType<typeof setTimeout> | undefined;
+let lastSummaryAt = 0;
 async function load() {
+  if (summaryRequest) return summaryRequest;
   const session = generation;
-  const results = await Promise.allSettled([
-    loadInbox(),
-    refreshActivity?.(),
-    ...[...listeners].map(listener => listener())
-  ]);
-  if (session === generation)
-    activityError =
-      results.slice(1).some(result => result.status === 'rejected') ?
-        'Dashboard activity could not be refreshed.'
-      : '';
+  summaryRequest = (async () => {
+    try {
+      const result = await adminActivityRequest<NotificationSummary>(
+        'workspace',
+        {section: 'summary'}
+      );
+      if (session !== generation) return;
+      unreadCount = result.unreadCount;
+      total = result.total;
+      isLoaded = true;
+      activityError = '';
+      if (revision !== result.revision) {
+        revision = result.revision;
+        await Promise.allSettled([...listeners].map(listener => listener()));
+      }
+    } catch {
+      if (session === generation)
+        activityError = 'Updates could not be checked. Refresh to try again.';
+    } finally {
+      lastSummaryAt = Date.now();
+      summaryRequest = undefined;
+    }
+  })();
+  return summaryRequest;
+}
+function scheduleRefresh() {
+  if (scheduled || document.visibilityState !== 'visible') return;
+  scheduled = setTimeout(
+    () => {
+      scheduled = undefined;
+      void load();
+    },
+    Math.max(0, 5000 - (Date.now() - lastSummaryAt))
+  );
 }
 function setPreferences(change: Partial<InboxPreferences>) {
   preferences = {...preferences, ...change};
@@ -138,11 +169,10 @@ function setPreferences(change: Partial<InboxPreferences>) {
   void loadInbox();
 }
 function refreshVisible() {
-  if (document.visibilityState === 'visible') void load();
+  if (document.visibilityState === 'visible') scheduleRefresh();
 }
-function subscribe(onRefresh?: () => Promise<void>) {
+function subscribe() {
   if (channel) return;
-  refreshActivity = onRefresh;
   const session = generation;
   channel = supabase
     .channel('admin-notifications')
@@ -150,7 +180,7 @@ function subscribe(onRefresh?: () => Promise<void>) {
       'postgres_changes',
       {event: '*', schema: 'public', table: 'db_admin_notifications'},
       () => {
-        if (session === generation) void load();
+        if (session === generation) scheduleRefresh();
       }
     )
     .subscribe(status => {
@@ -168,10 +198,12 @@ function unsubscribe() {
   if (channel) void supabase.removeChannel(channel);
   channel = null;
   clearInterval(timer);
+  clearTimeout(scheduled);
+  scheduled = undefined;
+  revision = '';
   document.removeEventListener('visibilitychange', refreshVisible);
   window.removeEventListener('focus', refreshVisible);
   window.removeEventListener('online', refreshVisible);
-  refreshActivity = undefined;
   items = [];
   unreadCount = 0;
   total = 0;

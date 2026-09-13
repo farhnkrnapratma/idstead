@@ -10,9 +10,11 @@
   } from '$lib/translationLocales';
   import {
     Search,
+    Mail,
+    HandHeart,
     ArrowDownUp,
     CornerDownLeft,
-    Command,
+    SquareTerminal,
     FileText,
     RotateCw,
     SunMoon,
@@ -72,7 +74,23 @@
     Braces,
     Share2,
     QrCode,
-    HelpCircle
+    Keyboard,
+    HelpCircle,
+    Quote,
+    StepBack,
+    ArrowUpFromLine,
+    StepForward,
+    ArrowDownFromLine,
+    MessageSquareWarning,
+    MessageCircle,
+    ScrollText,
+    ShieldUser,
+    Lock,
+    AtSign,
+    Workflow,
+    Bot,
+    PersonStanding,
+    Rocket
   } from '@lucide/svelte';
   import type {Project} from '$lib/types';
   import {portal} from '../utils/actions';
@@ -80,10 +98,9 @@
   import ShortcutBadge from './ShortcutBadge.svelte';
   import {shortcutStore} from '../stores/shortcutStore.svelte';
   import {
-    LEADER_COMBO,
     CATALOG_KEY,
     COMMAND_SHORTCUTS,
-    displayKey
+    isTextEntryTarget
   } from '$lib/shortcuts';
   import {decodeHtmlEntities} from '../utils/formatters';
   import {lockScroll, scrollToTop, scrollToBottom} from '../utils/scroll';
@@ -112,20 +129,37 @@
   import {readingModeStore} from '../stores/readingModeStore.svelte';
 
   export type ItemCategory =
-    'pages' | 'posts' | 'projects' | 'actions' | 'commands' | 'skills';
+    | 'pages'
+    | 'posts'
+    | 'projects'
+    | 'actions'
+    | 'commands'
+    | 'skills'
+    | 'social'
+    | 'contact'
+    | 'funding';
 
   export interface SpotlightItem {
     id: string;
     category: ItemCategory;
     title: string;
     subtitle?: string;
+    description?: string;
     url?: string;
     action?: () => void;
-    tags?: string[];
     icon?: any;
     badge?: string;
+    shortcut?: string;
     requiresArgs?: boolean;
+    validArgs?: string[];
     autocompleteQuery?: string;
+    author?: string;
+    slug?: string;
+    tags?: string[];
+    date?: string;
+    snippet?: string;
+    topics?: string[];
+    meta?: Record<string, unknown>;
   }
 
   interface LanguageSwitcher {
@@ -156,6 +190,12 @@
   let isWholeWord = $state(false);
   let isRegex = $state(false);
   let results = $state<SpotlightItem[]>([]);
+  const SECTION_PAGE_SIZE = 5;
+  let linkItems = $state<SpotlightItem[] | null>(null);
+  let postResults = $state<SpotlightItem[]>([]);
+  let postsHasMore = $state(false);
+  let postsQuery = '';
+  let sectionPages = $state<Record<string, number>>({});
   let activeIndex = $state(-1);
   let isLoading = $state(false);
   let showHelp = $state(false);
@@ -178,19 +218,23 @@
   };
 
   const CATEGORY_ICONS: Record<ItemCategory, typeof Search> = {
-    commands: Command,
-    posts: Newspaper,
+    commands: SquareTerminal,
+    posts: Quote,
     projects: FolderOpen,
     pages: Compass,
     actions: Sparkles,
-    skills: CodeXml
+    skills: CodeXml,
+    social: AtSign,
+    contact: Mail,
+    funding: HandHeart
   };
 
   const ALL_ICON_COMPONENTS: Record<string, typeof Search> = {
     Search,
     ArrowDownUp,
     CornerDownLeft,
-    Command,
+    Command: SquareTerminal,
+    SquareTerminal,
     FileText,
     RotateCw,
     SunMoon,
@@ -248,7 +292,23 @@
     Braces,
     Share2,
     QrCode,
-    HelpCircle
+    Keyboard,
+    HelpCircle,
+    Quote,
+    StepBack,
+    ArrowUpFromLine,
+    StepForward,
+    ArrowDownFromLine,
+    MessageSquareWarning,
+    MessageCircle,
+    ScrollText,
+    ShieldUser,
+    Lock,
+    AtSign,
+    Workflow,
+    Bot,
+    PersonStanding,
+    Rocket
   };
 
   const ICON_NAME_BY_COMPONENT = new Map<unknown, string>(
@@ -313,8 +373,6 @@
     };
   });
 
-  const MAX_RENDERED_RESULTS = 50;
-
   let debounceTimer: ReturnType<typeof setTimeout>;
   let searchAbortController: AbortController | null = null;
 
@@ -341,9 +399,9 @@
       icon: Compass,
       commands: [
         {
-          command: '/open',
+          command: '/goto',
           argHint: '[target]',
-          description: 'Navigate directly to pages, sections, or articles.',
+          description: 'Jump to specific page, section, or post.',
           validArgs: [
             'home',
             'blog',
@@ -359,13 +417,13 @@
             'api',
             'blog [slug]'
           ],
-          actionQuery: '/open ',
-          icon: SquareArrowRightExit
+          actionQuery: '/goto ',
+          icon: Rocket
         },
         {
           command: '/home',
           argHint: '',
-          description: 'Navigate to the main home page.',
+          description: 'Navigate to the home section.',
           validArgs: [],
           actionQuery: '/home',
           icon: House
@@ -373,16 +431,15 @@
         {
           command: '/blog',
           argHint: '',
-          description: 'Read latest articles and posts.',
+          description: 'View published blog articles and posts.',
           validArgs: [],
           actionQuery: '/blog',
-          icon: Newspaper
+          icon: Quote
         },
         {
           command: '/projects',
           argHint: '',
-          description:
-            'Explore featured open-source repositories and projects.',
+          description: 'Browse featured projects and repositories.',
           validArgs: [],
           actionQuery: '/projects',
           icon: FolderOpen
@@ -390,7 +447,7 @@
         {
           command: '/cv',
           argHint: '',
-          description: 'View resume and work experience.',
+          description: 'View curriculum vitae and work experience.',
           validArgs: [],
           actionQuery: '/cv',
           icon: FileUser
@@ -398,7 +455,7 @@
         {
           command: '/funding',
           argHint: '',
-          description: 'Support projects and open development.',
+          description: 'Support open source work and development.',
           validArgs: [],
           actionQuery: '/funding',
           icon: HeartHandshake
@@ -406,54 +463,54 @@
         {
           command: '/contact',
           argHint: '',
-          description: 'Send a message or connect.',
+          description: 'Send a message or contact details.',
           validArgs: [],
           actionQuery: '/contact',
-          icon: Send
+          icon: AtSign
         },
         {
           command: '/back',
           argHint: '',
-          description: 'Go back to previous page in history.',
+          description: 'Navigate back to the previous page.',
           validArgs: [],
           actionQuery: '/back',
-          icon: ChevronLeft
+          icon: MoveLeft
         },
         {
           command: '/forward',
           argHint: '',
-          description: 'Go forward to next page in history.',
+          description: 'Navigate forward to the next page.',
           validArgs: [],
           actionQuery: '/forward',
-          icon: ChevronRight
+          icon: MoveRight
         },
         {
           command: '/top',
           argHint: '',
-          description: 'Scroll smoothly to top of page.',
+          description: 'Scroll to the top of page.',
           validArgs: [],
           actionQuery: '/top',
-          icon: ChevronUp
+          icon: MoveUp
         },
         {
           command: '/bottom',
           argHint: '',
-          description: 'Scroll smoothly to bottom of page.',
+          description: 'Scroll to the bottom of page.',
           validArgs: [],
           actionQuery: '/bottom',
-          icon: ChevronDown
+          icon: MoveDown
         }
       ]
     },
     {
       id: 'actions',
-      label: 'System Actions',
+      label: 'System actions',
       icon: Sparkles,
       commands: [
         {
           command: '/theme',
           argHint: '[mode]',
-          description: 'Change appearance and color theme.',
+          description: 'Switch between light, dark, or system theme.',
           validArgs: ['dark', 'light', 'auto'],
           actionQuery: '/theme ',
           icon: SunMoon
@@ -461,7 +518,7 @@
         {
           command: '/font',
           argHint: '[style]',
-          description: 'Change reading font for articles.',
+          description: 'Change font style for article reading.',
           validArgs: ['sans', 'serif', 'mono'],
           actionQuery: '/font ',
           icon: CaseSensitive
@@ -469,7 +526,7 @@
         {
           command: '/read',
           argHint: '',
-          description: 'Toggle distraction-free reading mode on blog posts.',
+          description: 'Toggle distraction-free reading mode for articles.',
           validArgs: [],
           actionQuery: '/read',
           icon: BookOpenText
@@ -477,7 +534,7 @@
         {
           command: '/code',
           argHint: '[option]',
-          description: 'Customize code snippet display options.',
+          description: 'Configure code block formatting and theme.',
           validArgs: ['wrap', 'lines', 'clean', 'theme'],
           actionQuery: '/code ',
           icon: CodeXml
@@ -485,7 +542,7 @@
         {
           command: '/a11y',
           argHint: '[feature]',
-          description: 'Adjust accessibility and display preferences.',
+          description: 'Configure accessibility and display preferences.',
           validArgs: [
             'high-contrast',
             'reduce-motion',
@@ -496,12 +553,12 @@
             'reset'
           ],
           actionQuery: '/a11y ',
-          icon: Accessibility
+          icon: PersonStanding
         },
         {
           command: '/lang',
           argHint: '[lang]',
-          description: 'Translate article to another language.',
+          description: 'Translate article content to another language.',
           validArgs: ['default', 'en', 'id'],
           actionQuery: '/lang ',
           icon: Languages
@@ -509,7 +566,7 @@
         {
           command: '/copy',
           argHint: '[target]',
-          description: 'Copy page link, post ID, or markdown/text content.',
+          description: 'Copy page link, identifier, or content.',
           validArgs: ['url', 'link', 'pid', 'md', 'txt'],
           actionQuery: '/copy ',
           icon: Copy
@@ -517,7 +574,7 @@
         {
           command: '/save',
           argHint: '[target]',
-          description: 'Download resume or export article markdown/text file.',
+          description: 'Download resume or export article file.',
           validArgs: ['cv', 'md', 'txt'],
           actionQuery: '/save ',
           icon: Save
@@ -525,7 +582,7 @@
         {
           command: '/share',
           argHint: '',
-          description: 'Open quick share modal for current page.',
+          description: 'Open share dialog for current page.',
           validArgs: [],
           actionQuery: '/share',
           icon: Share2
@@ -533,7 +590,7 @@
         {
           command: '/qr',
           argHint: '',
-          description: 'Show QR code for easy mobile sharing.',
+          description: 'Display QR code for current page.',
           validArgs: [],
           actionQuery: '/qr',
           icon: QrCode
@@ -541,7 +598,7 @@
         {
           command: '/print',
           argHint: '',
-          description: 'Print current page or save as PDF.',
+          description: 'Print current page or export PDF.',
           validArgs: [],
           actionQuery: '/print',
           icon: Printer
@@ -549,7 +606,7 @@
         {
           command: '/cookies',
           argHint: '',
-          description: 'Manage cookie preferences and privacy settings.',
+          description: 'Manage cookie preferences and consent settings.',
           validArgs: [],
           actionQuery: '/cookies',
           icon: Cookie
@@ -557,7 +614,7 @@
         {
           command: '/history',
           argHint: '[action]',
-          description: 'Manage search history records.',
+          description: 'View or clear recent search history.',
           validArgs: ['clear'],
           actionQuery: '/history ',
           icon: RotateCcwClock
@@ -573,7 +630,7 @@
         {
           command: '/rss',
           argHint: '',
-          description: 'Open RSS and Atom feed subscription.',
+          description: 'Open RSS and Atom web feed.',
           validArgs: [],
           actionQuery: '/rss',
           icon: Rss
@@ -581,34 +638,34 @@
         {
           command: '/sitemap',
           argHint: '',
-          description: 'Open website sitemap directory file.',
+          description: 'Open website sitemap XML document.',
           validArgs: [],
           actionQuery: '/sitemap',
-          icon: Compass
+          icon: Workflow
         },
         {
           command: '/llms',
           argHint: '',
-          description: 'Open structured context guide for AI assistants.',
+          description: 'Open LLM context guide for assistants.',
           validArgs: [],
           actionQuery: '/llms',
-          icon: Sparkles
+          icon: Bot
         },
         {
           command: '/security',
           argHint: '',
-          description: 'View security policy and reporting guidelines.',
+          description: 'View security policy and vulnerability guidelines.',
           validArgs: [],
           actionQuery: '/security',
-          icon: FingerprintPattern
+          icon: Lock
         },
         {
           command: '/privacy',
           argHint: '',
-          description: 'Read privacy policy and practices.',
+          description: 'Read privacy policy and data practices.',
           validArgs: [],
           actionQuery: '/privacy',
-          icon: ShieldCheck
+          icon: ShieldUser
         },
         {
           command: '/terms',
@@ -616,7 +673,7 @@
           description: 'Read terms and conditions agreement.',
           validArgs: [],
           actionQuery: '/terms',
-          icon: Scale
+          icon: ScrollText
         },
         {
           command: '/feedback',
@@ -624,7 +681,7 @@
           description: 'Send feedback or report an issue.',
           validArgs: [],
           actionQuery: '/feedback',
-          icon: MessageSquarePlus
+          icon: MessageSquareWarning
         },
         {
           command: '/refresh',
@@ -635,9 +692,17 @@
           icon: RotateCw
         },
         {
+          command: '/keyboard',
+          argHint: '',
+          description: 'Open keyboard shortcuts catalog.',
+          validArgs: [],
+          actionQuery: '/keyboard',
+          icon: Keyboard
+        },
+        {
           command: '/help',
           argHint: '',
-          description: 'Show this reference guide.',
+          description: 'Show command and shortcut reference guide.',
           validArgs: [],
           actionQuery: '/help',
           icon: HelpCircle
@@ -645,10 +710,10 @@
         {
           command: '/exit',
           argHint: '',
-          description: 'Close palette or current browser tab.',
+          description: 'Close command palette or browser tab.',
           validArgs: [],
           actionQuery: '/exit',
-          icon: Power
+          icon: LogOut
         }
       ]
     }
@@ -667,7 +732,7 @@
       id: 'cmd-home',
       category: 'pages',
       title: '/home',
-      subtitle: 'Navigate to the main home page.',
+      subtitle: 'Navigate to the home page.',
       url: '/',
       icon: House,
       badge: 'Page'
@@ -676,7 +741,7 @@
       id: 'cmd-projects',
       category: 'pages',
       title: '/projects',
-      subtitle: 'Explore featured projects and creations.',
+      subtitle: 'Browse featured projects and repositories.',
       url: '/#projects',
       icon: FolderOpen,
       badge: 'Section'
@@ -685,16 +750,16 @@
       id: 'cmd-blog',
       category: 'pages',
       title: '/blog',
-      subtitle: 'Read latest articles and posts.',
+      subtitle: 'View published blog articles and posts.',
       url: '/#blog',
-      icon: Newspaper,
+      icon: Quote,
       badge: 'Section'
     },
     {
       id: 'cmd-cv',
       category: 'pages',
       title: '/cv',
-      subtitle: 'View resume and work experience.',
+      subtitle: 'View curriculum vitae and work experience.',
       url: '/#cv',
       icon: FileUser,
       badge: 'Section'
@@ -703,7 +768,7 @@
       id: 'cmd-funding',
       category: 'pages',
       title: '/funding',
-      subtitle: 'Support projects and open development.',
+      subtitle: 'Support open source work and development.',
       url: '/#funding',
       icon: HeartHandshake,
       badge: 'Section'
@@ -712,18 +777,18 @@
       id: 'cmd-contact',
       category: 'pages',
       title: '/contact',
-      subtitle: 'Send a message or connect.',
+      subtitle: 'Send a message or contact details.',
       url: '/#contact',
-      icon: Send,
+      icon: AtSign,
       badge: 'Section'
     },
     {
       id: 'cmd-privacy',
       category: 'pages',
       title: '/privacy',
-      subtitle: 'Read privacy policy and practices.',
+      subtitle: 'Read privacy policy and data practices.',
       url: '/privacy',
-      icon: ShieldCheck,
+      icon: ShieldUser,
       badge: 'Legal'
     },
     {
@@ -732,35 +797,35 @@
       title: '/terms',
       subtitle: 'Read terms and conditions agreement.',
       url: '/terms',
-      icon: Scale,
+      icon: ScrollText,
       badge: 'Legal'
     },
     {
       id: 'cmd-security',
       category: 'pages',
       title: '/security',
-      subtitle: 'View security policy and guidelines.',
+      subtitle: 'View security policy and vulnerability guidelines.',
       url: '/security',
-      icon: FingerprintPattern,
+      icon: Lock,
       badge: 'Security'
     },
     {
       id: 'cmd-feedback',
       category: 'pages',
       title: '/feedback',
-      subtitle: 'Send feedback and report issues.',
+      subtitle: 'Send feedback or report an issue.',
       url: '/feedback',
-      icon: MessageSquarePlus,
+      icon: MessageSquareWarning,
       badge: 'Help'
     },
     {
-      id: 'cmd-open',
+      id: 'cmd-goto',
       category: 'actions',
-      title: '/open',
-      subtitle: 'Navigate to pages or articles.',
+      title: '/goto',
+      subtitle: 'Jump to specific page, section, or post.',
       requiresArgs: true,
-      autocompleteQuery: '/open ',
-      icon: SquareArrowRightExit,
+      autocompleteQuery: '/goto ',
+      icon: Rocket,
       badge: 'Navigation'
     },
     {
@@ -780,7 +845,7 @@
       id: 'cmd-theme',
       category: 'actions',
       title: '/theme',
-      subtitle: 'Change appearance and color theme.',
+      subtitle: 'Switch between light, dark, or system theme.',
       requiresArgs: true,
       autocompleteQuery: '/theme ',
       icon: SunMoon,
@@ -790,7 +855,7 @@
       id: 'cmd-font',
       category: 'actions',
       title: '/font',
-      subtitle: 'Change reading font for articles.',
+      subtitle: 'Change font style for article reading.',
       requiresArgs: true,
       autocompleteQuery: '/font ',
       icon: CaseSensitive,
@@ -800,7 +865,7 @@
       id: 'cmd-code',
       category: 'actions',
       title: '/code',
-      subtitle: 'Customize code snippet display options.',
+      subtitle: 'Configure code block formatting and theme.',
       requiresArgs: true,
       autocompleteQuery: '/code ',
       icon: CodeXml,
@@ -810,17 +875,17 @@
       id: 'cmd-a11y',
       category: 'actions',
       title: '/a11y',
-      subtitle: 'Adjust accessibility and display preferences.',
+      subtitle: 'Configure accessibility and display preferences.',
       requiresArgs: true,
       autocompleteQuery: '/a11y ',
-      icon: Accessibility,
+      icon: PersonStanding,
       badge: 'Accessibility'
     },
     {
       id: 'cmd-copy',
       category: 'actions',
       title: '/copy',
-      subtitle: 'Copy page link or content.',
+      subtitle: 'Copy page link, identifier, or content.',
       requiresArgs: true,
       autocompleteQuery: '/copy ',
       icon: Copy,
@@ -830,7 +895,7 @@
       id: 'cmd-save',
       category: 'actions',
       title: '/save',
-      subtitle: 'Download files or export content.',
+      subtitle: 'Download resume or export article file.',
       requiresArgs: true,
       autocompleteQuery: '/save ',
       icon: Save,
@@ -840,7 +905,7 @@
       id: 'cmd-back',
       category: 'actions',
       title: '/back',
-      subtitle: 'Go back to previous page.',
+      subtitle: 'Navigate back to the previous page.',
       action: () => {
         close();
         if (typeof window !== 'undefined') {
@@ -851,28 +916,28 @@
           }
         }
       },
-      icon: ChevronLeft,
+      icon: MoveLeft,
       badge: 'Navigation'
     },
     {
       id: 'cmd-forward',
       category: 'actions',
       title: '/forward',
-      subtitle: 'Go forward to next page.',
+      subtitle: 'Navigate forward to the next page.',
       action: () => {
         close();
         if (typeof window !== 'undefined') {
           window.history.forward();
         }
       },
-      icon: ChevronRight,
+      icon: MoveRight,
       badge: 'Navigation'
     },
     {
       id: 'cmd-top',
       category: 'actions',
       title: '/top',
-      subtitle: 'Scroll smoothly to top of page.',
+      subtitle: 'Scroll to the top of page.',
       action: () => {
         close();
         if (typeof window !== 'undefined') {
@@ -882,14 +947,14 @@
           }, 50);
         }
       },
-      icon: ChevronUp,
+      icon: MoveUp,
       badge: 'Navigation'
     },
     {
       id: 'cmd-bottom',
       category: 'actions',
       title: '/bottom',
-      subtitle: 'Scroll smoothly to bottom of page.',
+      subtitle: 'Scroll to the bottom of page.',
       action: () => {
         close();
         if (typeof window !== 'undefined') {
@@ -899,14 +964,14 @@
           }, 50);
         }
       },
-      icon: ChevronDown,
+      icon: MoveDown,
       badge: 'Navigation'
     },
     {
       id: 'cmd-print',
       category: 'actions',
       title: '/print',
-      subtitle: 'Print or save as PDF.',
+      subtitle: 'Print current page or export PDF.',
       action: () => {
         close();
         if (typeof window !== 'undefined') {
@@ -920,7 +985,7 @@
       id: 'cmd-cookies',
       category: 'actions',
       title: '/cookies',
-      subtitle: 'Manage cookie and privacy preferences.',
+      subtitle: 'Manage cookie preferences and consent settings.',
       action: () => {
         close();
         consentStore.openCustomizeModal();
@@ -932,7 +997,7 @@
       id: 'cmd-history',
       category: 'actions',
       title: '/history',
-      subtitle: 'Manage local search history records.',
+      subtitle: 'View or clear recent search history.',
       requiresArgs: true,
       autocompleteQuery: '/history ',
       icon: RotateCcwClock,
@@ -942,7 +1007,7 @@
       id: 'cmd-rss',
       category: 'pages',
       title: '/rss',
-      subtitle: 'Open RSS and Atom feed.',
+      subtitle: 'Open RSS and Atom web feed.',
       url: '/atom.xml',
       icon: Rss,
       badge: 'Feed'
@@ -951,25 +1016,25 @@
       id: 'cmd-llms',
       category: 'pages',
       title: '/llms',
-      subtitle: 'Open context guide for assistants.',
+      subtitle: 'Open LLM context guide for assistants.',
       url: '/llms.txt',
-      icon: Sparkles,
+      icon: Bot,
       badge: 'AI'
     },
     {
       id: 'cmd-sitemap',
       category: 'pages',
       title: '/sitemap',
-      subtitle: 'Open website sitemap directory file.',
+      subtitle: 'Open website sitemap XML document.',
       url: '/sitemap.xml',
-      icon: Compass,
+      icon: Workflow,
       badge: 'System'
     },
     {
       id: 'cmd-api',
       category: 'pages',
       title: '/api',
-      subtitle: 'Open developer API documentation.',
+      subtitle: 'Open developer REST API documentation.',
       url: '/api/v1',
       icon: Braces,
       badge: 'API'
@@ -978,7 +1043,7 @@
       id: 'cmd-share',
       category: 'actions',
       title: '/share',
-      subtitle: 'Share current page with others.',
+      subtitle: 'Open share dialog for current page.',
       action: () => {
         isShareOpen = true;
       },
@@ -989,7 +1054,7 @@
       id: 'cmd-qr',
       category: 'actions',
       title: '/qr',
-      subtitle: 'Show QR code for page.',
+      subtitle: 'Display QR code for current page.',
       action: () => {
         isQrOpen = true;
       },
@@ -1000,7 +1065,7 @@
       id: 'cmd-lang',
       category: 'actions',
       title: '/lang',
-      subtitle: 'Translate article to another language.',
+      subtitle: 'Translate article content to another language.',
       requiresArgs: true,
       autocompleteQuery: '/lang ',
       icon: Languages,
@@ -1010,21 +1075,34 @@
       id: 'cmd-exit',
       category: 'actions',
       title: '/exit',
-      subtitle: 'Close tab or leave page.',
+      subtitle: 'Close command palette or browser tab.',
       action: () => {
         if (typeof window !== 'undefined') {
           window.close();
           window.location.href = 'about:blank';
         }
       },
-      icon: Power,
+      icon: LogOut,
       badge: 'System'
+    },
+    {
+      id: 'cmd-keyboard',
+      category: 'actions',
+      title: '/keyboard',
+      subtitle: 'Open keyboard shortcuts catalog.',
+      action: () => {
+        showHelp = false;
+        close();
+        shortcutStore.catalogOpen = true;
+      },
+      icon: Keyboard,
+      badge: 'Help'
     },
     {
       id: 'cmd-help',
       category: 'actions',
       title: '/help',
-      subtitle: 'Show available commands and tips.',
+      subtitle: 'Show command and shortcut reference guide.',
       action: () => {
         showHelp = true;
       },
@@ -1035,7 +1113,7 @@
       id: 'cmd-read',
       category: 'actions',
       title: '/read',
-      subtitle: 'Toggle distraction free reading mode.',
+      subtitle: 'Toggle distraction-free reading mode for articles.',
       action: () => {
         if (page.url.pathname.startsWith('/blog/')) {
           readingModeStore.toggle();
@@ -1320,7 +1398,7 @@
                 );
               }
             },
-            icon: Accessibility,
+            icon: PersonStanding,
             badge: 'Accessibility'
           });
         }
@@ -1345,7 +1423,7 @@
               a11yStore.setFontScale(parsedScale as FontScale);
               toastStore.show(`Text scale set to ${parsedScale}%`, 'success');
             },
-            icon: Accessibility,
+            icon: PersonStanding,
             badge: 'Accessibility'
           });
         } else {
@@ -1360,7 +1438,7 @@
                   a11yStore.setFontScale(s);
                   toastStore.show(`Text scale set to ${s}%`, 'success');
                 },
-                icon: Accessibility,
+                icon: PersonStanding,
                 badge: 'Accessibility'
               });
             }
@@ -1381,15 +1459,15 @@
               'success'
             );
           },
-          icon: Accessibility,
+          icon: PersonStanding,
           badge: 'Accessibility'
         });
       }
     }
 
     if (
-      q.startsWith('/open')
-      || (root.length > 2 && '/open'.startsWith(root))
+      q.startsWith('/goto')
+      || (root.length > 2 && '/goto'.startsWith(root))
     ) {
       const parts = q.split(/\s+/);
       const sub = parts[1] || '';
@@ -1397,7 +1475,7 @@
       const openTargets = [
         {
           name: 'home',
-          title: '/open home',
+          title: '/goto home',
           subtitle: 'Navigate to the main home page.',
           url: '/',
           icon: House,
@@ -1405,15 +1483,15 @@
         },
         {
           name: 'blog',
-          title: '/open blog',
+          title: '/goto blog',
           subtitle: 'Read latest articles and posts.',
           url: '/#blog',
-          icon: Newspaper,
+          icon: Quote,
           badge: 'Section'
         },
         {
           name: 'projects',
-          title: '/open projects',
+          title: '/goto projects',
           subtitle: 'Explore featured projects and creations.',
           url: '/#projects',
           icon: FolderOpen,
@@ -1421,7 +1499,7 @@
         },
         {
           name: 'cv',
-          title: '/open cv',
+          title: '/goto cv',
           subtitle: 'View resume and work experience.',
           url: '/#cv',
           icon: FileUser,
@@ -1429,7 +1507,7 @@
         },
         {
           name: 'funding',
-          title: '/open funding',
+          title: '/goto funding',
           subtitle: 'Support projects and open development.',
           url: '/#funding',
           icon: HeartHandshake,
@@ -1437,47 +1515,47 @@
         },
         {
           name: 'contact',
-          title: '/open contact',
+          title: '/goto contact',
           subtitle: 'Send a message or connect.',
           url: '/#contact',
-          icon: Send,
+          icon: AtSign,
           badge: 'Section'
         },
         {
           name: 'terms',
-          title: '/open terms',
+          title: '/goto terms',
           subtitle: 'Read terms and conditions agreement.',
           url: '/terms',
-          icon: Scale,
+          icon: ScrollText,
           badge: 'Legal'
         },
         {
           name: 'privacy',
-          title: '/open privacy',
+          title: '/goto privacy',
           subtitle: 'Read privacy policy and practices.',
           url: '/privacy',
-          icon: FileLock,
+          icon: ShieldUser,
           badge: 'Legal'
         },
         {
           name: 'security',
-          title: '/open security',
+          title: '/goto security',
           subtitle: 'View security policy and guidelines.',
           url: '/security',
-          icon: FingerprintPattern,
+          icon: Lock,
           badge: 'Security'
         },
         {
           name: 'feedback',
-          title: '/open feedback',
+          title: '/goto feedback',
           subtitle: 'Send feedback and report issues.',
           url: '/feedback',
-          icon: MessageSquarePlus,
+          icon: MessageSquareWarning,
           badge: 'Help'
         },
         {
           name: 'feed',
-          title: '/open feed',
+          title: '/goto feed',
           subtitle: 'Open RSS and Atom feed.',
           url: '/atom.xml',
           icon: Rss,
@@ -1485,7 +1563,7 @@
         },
         {
           name: 'api',
-          title: '/open api',
+          title: '/goto api',
           subtitle: 'Open developer API documentation.',
           url: '/api/v1',
           icon: Braces,
@@ -1957,6 +2035,66 @@
     return items;
   }
 
+  async function loadLinkItems() {
+    if (linkItems) return;
+    const sources = [
+      {category: 'social', path: 'socials', badge: 'Social'},
+      {category: 'contact', path: 'contact', badge: 'Contact'},
+      {category: 'funding', path: 'funding', badge: 'Funding'}
+    ] as const;
+    const lists = await Promise.all(
+      sources.map(async source => {
+        try {
+          const res = await fetch(`/api/v1/author/${source.path}`);
+          if (!res.ok) return [];
+          const data = await res.json();
+          return (Array.isArray(data) ? data : []).flatMap((link: any) => {
+            const url = link.url || link.href;
+            if (!link.platform || !url) return [];
+            return [
+              {
+                id: `link-${source.category}-${url}`,
+                category: source.category,
+                title: link.platform,
+                subtitle: link.displayValue || url,
+                url,
+                badge: source.badge
+              } satisfies SpotlightItem
+            ];
+          });
+        } catch {
+          return [];
+        }
+      })
+    );
+    linkItems = lists.flat();
+  }
+
+  function toPostItem(post: any): SpotlightItem {
+    return {
+      id: `post-${post.url}`,
+      category: 'posts',
+      title: post.title,
+      subtitle: post.subtitle ?? 'Blog post',
+      url: post.url,
+      icon: Quote,
+      badge: 'Post'
+    };
+  }
+
+  async function fetchPostsPage(query: string, page: number) {
+    const offset = (page - 1) * SECTION_PAGE_SIZE;
+    const res = await fetch(
+      `/api/v1/search?q=${encodeURIComponent(query)}&limit=${SECTION_PAGE_SIZE}&offset=${offset}`,
+      {signal: searchAbortController?.signal}
+    );
+    const data = await res.json();
+    return {
+      items: (data.data ?? []).map(toPostItem) as SpotlightItem[],
+      hasMore: Boolean(data.pagination?.hasMore)
+    };
+  }
+
   function searchLocalItems(q: string): SpotlightItem[] {
     const cleanQ = q.trim();
     if (!cleanQ) {
@@ -2058,6 +2196,27 @@
       }
     }
 
+    if (!isCommandQuery) {
+      for (const link of linkItems ?? []) {
+        const matchTitle = fuzzyMatch(link.title, cleanQ);
+        const matchSub = fuzzyMatch(link.subtitle ?? '', cleanQ);
+        let score = Math.max(
+          matchTitle.matched ? matchTitle.score : 0,
+          matchSub.matched ? matchSub.score * 0.5 : 0
+        );
+        let isMatch = matchTitle.matched || matchSub.matched;
+        if (isRegexQuery) {
+          isMatch = Boolean(
+            compiledRegex
+            && (compiledRegex.test(link.title)
+              || compiledRegex.test(link.subtitle ?? ''))
+          );
+          score = isMatch ? 70 : 0;
+        }
+        if (isMatch) matchedItems.push({item: link, score});
+      }
+    }
+
     const sorted =
       cleanQ === '/' ?
         matchedItems.sort((a, b) => a.item.title.localeCompare(b.item.title))
@@ -2090,9 +2249,12 @@
 
   async function runSearch(inputString: string) {
     const trimmed = inputString.trim();
+    sectionPages = {};
     if (trimmed.length < 1) {
       searchAbortController?.abort();
       results = [];
+      postResults = [];
+      postsHasMore = false;
       isLoading = false;
       activeIndex = -1;
       return;
@@ -2103,37 +2265,29 @@
     searchAbortController = controller;
 
     isLoading = true;
+    postResults = [];
+    postsHasMore = false;
+
+    await loadLinkItems();
+    if (controller.signal.aborted) return;
 
     const localMatches = searchLocalItems(trimmed);
 
     let candidates: SpotlightItem[];
 
     if (trimmed.length >= 2 && !trimmed.startsWith('/')) {
+      candidates = localMatches;
+      postsQuery = trimmed;
       try {
-        const res = await fetch(
-          `/api/v1/search?q=${encodeURIComponent(trimmed)}`,
-          {signal: controller.signal}
-        );
-        const data = await res.json();
+        const page = await fetchPostsPage(trimmed, 1);
         if (controller.signal.aborted) return;
-        const postResults: SpotlightItem[] = (data.data ?? []).map(
-          (post: any) => ({
-            id: `post-${post.url}`,
-            category: 'posts' as const,
-            title: post.title,
-            subtitle: post.subtitle ?? 'Blog post',
-            url: post.url,
-            icon: Newspaper,
-            badge: 'Post'
-          })
-        );
-        candidates = [...localMatches, ...postResults];
+        postResults = page.items;
+        postsHasMore = page.hasMore;
       } catch (err) {
         if ((err as Error)?.name === 'AbortError') return;
-        candidates = localMatches;
       }
-    } else if (trimmed.startsWith('/open blog')) {
-      const blogSubQuery = trimmed.replace('/open blog', '').trim();
+    } else if (trimmed.startsWith('/goto blog')) {
+      const blogSubQuery = trimmed.replace('/goto blog', '').trim();
       try {
         const res = await fetch(
           `/api/v1/search?q=${encodeURIComponent(blogSubQuery || 'a')}`,
@@ -2145,10 +2299,10 @@
           (post: any) => ({
             id: `open-post-${post.url}`,
             category: 'posts' as const,
-            title: `/open blog ${post.url.replace('/blog/', '')}`,
+            title: `/goto blog ${post.url.replace('/blog/', '')}`,
             subtitle: post.title,
             url: post.url,
-            icon: Newspaper,
+            icon: Quote,
             badge: 'Post'
           })
         );
@@ -2193,7 +2347,7 @@
     if (showHelp) showHelp = false;
     clearTimeout(debounceTimer);
     const trimmed = rawQuery.trim();
-    if (trimmed.startsWith('/') && !trimmed.startsWith('/open blog')) {
+    if (trimmed.startsWith('/') && !trimmed.startsWith('/goto blog')) {
       runSearch(rawQuery);
       return;
     }
@@ -2331,6 +2485,8 @@
     showHelp = false;
     rawQuery = '';
     results = [];
+    postResults = [];
+    postsHasMore = false;
     activeIndex = -1;
     if (previouslyFocusedElement) {
       tick().then(() => {
@@ -2342,7 +2498,7 @@
 
   /**
    * Defaults for the argument-taking commands that have an unambiguous,
-   * non-destructive one. /open, /save, /a11y, /lang and /history have none, so
+   * non-destructive one. /goto, /save, /a11y, /lang and /history have none, so
    * they fall through to the pre-filled palette instead.
    */
   const COMMAND_DEFAULTS: Record<string, () => void> = {
@@ -2446,6 +2602,8 @@
       showHelp = true;
       rawQuery = '';
       results = [];
+      postResults = [];
+      postsHasMore = false;
       activeIndex = -1;
       return;
     }
@@ -2462,8 +2620,10 @@
     if (item.action) {
       item.action();
     } else if (item.url) {
-      if (item.url.startsWith('http')) {
+      if (/^https?:/i.test(item.url)) {
         window.open(item.url, '_blank', 'noopener,noreferrer');
+      } else if (/^(mailto|tel):/i.test(item.url)) {
+        window.location.href = item.url;
       } else {
         goto(item.url);
       }
@@ -2521,7 +2681,7 @@
         title: entry.title,
         subtitle: entry.subtitle,
         url: postUrl,
-        icon: Newspaper,
+        icon: Quote,
         badge: 'Post'
       };
     }
@@ -2539,7 +2699,7 @@
     const icon =
       (entry.iconName && ALL_ICON_COMPONENTS[entry.iconName])
       || CATEGORY_ICONS[entry.category]
-      || Command;
+      || SquareTerminal;
 
     return {
       icon,
@@ -2658,6 +2818,15 @@
         }
         break;
       }
+      case 'PageDown':
+      case 'PageUp': {
+        const category = activeCategory();
+        if (!category) break;
+        e.preventDefault();
+        e.stopPropagation();
+        void changeSectionPage(category, e.key === 'PageDown' ? 1 : -1);
+        break;
+      }
       case 'Escape': {
         e.preventDefault();
         e.stopPropagation();
@@ -2670,6 +2839,40 @@
         break;
       }
     }
+  }
+
+  async function changeSectionPage(category: ItemCategory, delta: number) {
+    const group = categorizedResults.find(g => g.category === category);
+    if (
+      !group
+      || (delta > 0 && !group.hasNext)
+      || (delta < 0 && !group.hasPrev)
+    )
+      return;
+    const nextPage = group.page + delta;
+    if (category === 'posts') {
+      try {
+        const page = await fetchPostsPage(postsQuery, nextPage);
+        postResults = page.items;
+        postsHasMore = page.hasMore;
+      } catch {
+        return;
+      }
+    }
+    sectionPages = {...sectionPages, [category]: nextPage};
+    await tick();
+    const first = categorizedResults.find(g => g.category === category)
+      ?.items[0];
+    if (first) {
+      activeIndex = (indexById.get(first.id) ?? 0) + filteredHistory.length;
+      scrollActiveIntoView();
+    }
+  }
+
+  function activeCategory(): ItemCategory | null {
+    const itemIdx = activeIndex - filteredHistory.length;
+    if (itemIdx >= 0 && flatItems[itemIdx]) return flatItems[itemIdx].category;
+    return categorizedResults[0]?.category ?? null;
   }
 
   function handleResultKeydown(e: KeyboardEvent, item: SpotlightItem) {
@@ -2726,12 +2929,7 @@
     }
 
     const target = e.target as HTMLElement | null;
-    const inInput =
-      Boolean(
-        target?.closest?.('input, textarea, select, [contenteditable="true"]')
-      )
-      || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target?.tagName || '')
-      || Boolean(target?.isContentEditable);
+    const inInput = isTextEntryTarget(target);
 
     const isSlash =
       e.key === '/'
@@ -2844,7 +3042,7 @@
     }
 
     const unique: SpotlightItem[] = [];
-    for (const item of results) {
+    for (const item of [...results, ...postResults]) {
       const lowerTitle = item.title.toLowerCase();
       if (seenIds.has(item.id) || seenTitles.has(lowerTitle)) {
         continue;
@@ -2858,7 +3056,6 @@
         seenUrls.add(item.url);
       }
       unique.push(item);
-      if (unique.length >= MAX_RENDERED_RESULTS) break;
     }
     return unique;
   });
@@ -2885,7 +3082,11 @@
         {
           category: 'commands' as ItemCategory,
           label: 'Commands',
-          items: deduplicatedResults
+          items: deduplicatedResults,
+          page: 1,
+          pageCount: null,
+          hasPrev: false,
+          hasNext: false
         }
       ];
     }
@@ -2894,17 +3095,24 @@
       category: ItemCategory;
       label: string;
       items: SpotlightItem[];
+      page: number;
+      pageCount: number | null;
+      hasPrev: boolean;
+      hasNext: boolean;
     }[] = [];
     const catMap: Record<
       ItemCategory,
       {label: string; items: SpotlightItem[]}
     > = {
-      actions: {label: 'System Actions', items: []},
+      actions: {label: 'System actions', items: []},
       pages: {label: 'Pages & Sections', items: []},
-      posts: {label: 'Blog Posts', items: []},
+      posts: {label: 'Blog posts', items: []},
       projects: {label: 'Repositories', items: []},
       commands: {label: 'Commands', items: []},
-      skills: {label: 'Skills & Tools', items: []}
+      skills: {label: 'Skills & Tools', items: []},
+      social: {label: 'Social links', items: []},
+      contact: {label: 'Contact', items: []},
+      funding: {label: 'Funding', items: []}
     };
 
     for (const item of deduplicatedResults) {
@@ -2912,13 +3120,34 @@
     }
 
     for (const [key, val] of Object.entries(catMap)) {
-      if (val.items.length > 0) {
+      if (val.items.length === 0) continue;
+      const requested = sectionPages[key] ?? 1;
+      if (key === 'posts') {
         groups.push({
-          category: key as ItemCategory,
+          category: 'posts',
           label: val.label,
-          items: val.items
+          items: val.items,
+          page: requested,
+          pageCount: null,
+          hasPrev: requested > 1,
+          hasNext: postsHasMore
         });
+        continue;
       }
+      const pageCount = Math.ceil(val.items.length / SECTION_PAGE_SIZE);
+      const page = Math.min(Math.max(requested, 1), pageCount);
+      groups.push({
+        category: key as ItemCategory,
+        label: val.label,
+        items: val.items.slice(
+          (page - 1) * SECTION_PAGE_SIZE,
+          page * SECTION_PAGE_SIZE
+        ),
+        page,
+        pageCount,
+        hasPrev: page > 1,
+        hasNext: page < pageCount
+      });
     }
 
     return groups;
@@ -2941,6 +3170,9 @@
     helpActiveIndex = -1;
     if (cmd.command === '/refresh') {
       if (typeof window !== 'undefined') window.location.reload();
+    } else if (cmd.command === '/keyboard') {
+      close();
+      shortcutStore.catalogOpen = true;
     } else {
       rawQuery = cmd.actionQuery || cmd.command;
       runSearch(rawQuery);
@@ -3023,15 +3255,9 @@
             >Search...</span>
         </div>
         <div class="ml-1.5 hidden items-center gap-1 lg:flex">
-          <kbd
-            class="inline-flex h-5 items-center justify-center rounded-md border border-border-subtle/50 bg-surface-base/80 px-1.5 align-middle font-mono text-xxs leading-none font-semibold text-text-secondary shadow-2xs">
-            Ctrl+K
-          </kbd>
+          <ShortcutBadge combo="Mod+K" />
           <span class="text-xxs text-text-muted">or</span>
-          <kbd
-            class="inline-flex h-5 items-center justify-center rounded-md border border-border-subtle/50 bg-surface-base/80 px-1.5 align-middle font-mono text-xxs leading-none font-semibold text-text-secondary shadow-2xs">
-            /
-          </kbd>
+          <ShortcutBadge combo="/" />
         </div>
       {/if}
     </button>
@@ -3076,7 +3302,7 @@
       role="dialog"
       tabindex="-1"
       aria-modal="true"
-      aria-label="Command Palette & Search">
+      aria-label="Command palette and search">
       <div
         class="flex items-center justify-between border-b border-border-subtle/40 px-3 py-1.5 sm:px-4 sm:py-2">
         <input
@@ -3105,7 +3331,7 @@
             size="xs"
             class="flex size-5 cursor-pointer items-center justify-center rounded p-0 transition-colors hover:bg-surface-hover sm:size-6 sm:rounded-md"
             title="Match Case ({isCaseSensitive ? 'ON' : 'OFF'})"
-            aria-label="Toggle Case Sensitivity"
+            aria-label="Toggle case sensitivity"
             aria-pressed={isCaseSensitive}
             onclick={() => {
               isCaseSensitive = !isCaseSensitive;
@@ -3126,7 +3352,7 @@
             size="xs"
             class="flex size-5 cursor-pointer items-center justify-center rounded p-0 transition-colors hover:bg-surface-hover sm:size-6 sm:rounded-md"
             title="Match Whole Word ({isWholeWord ? 'ON' : 'OFF'})"
-            aria-label="Toggle Whole Word Search"
+            aria-label="Toggle whole word search"
             aria-pressed={isWholeWord}
             onclick={() => {
               isWholeWord = !isWholeWord;
@@ -3147,7 +3373,7 @@
             size="xs"
             class="flex size-5 cursor-pointer items-center justify-center rounded p-0 transition-colors hover:bg-surface-hover sm:size-6 sm:rounded-md"
             title="Use Regular Expression ({isRegex ? 'ON' : 'OFF'})"
-            aria-label="Toggle Regular Expression Search"
+            aria-label="Toggle regular expression search"
             aria-pressed={isRegex}
             onclick={() => {
               isRegex = !isRegex;
@@ -3175,12 +3401,11 @@
               deduplicatedResults.length === 0 && 'pb-2.5'
             )}>
             <div
-              class="flex items-center justify-between gap-2 px-1.5 pb-1.5 select-none">
-              <div
-                class="flex items-center gap-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase">
-                <RotateCcwClock class="size-3.5 -translate-y-[1px]" />
-                <span>Recently used</span>
-              </div>
+              class="flex items-center justify-between gap-2 px-2 pb-1.5 select-none">
+              <span
+                class="text-xxs font-bold tracking-wider text-text-muted uppercase">
+                Recently used
+              </span>
               <Button
                 type="ghost"
                 size="xs"
@@ -3197,8 +3422,7 @@
                 {@const EntryIcon = historyDisplay.icon}
                 {@const historyShortcut =
                   COMMAND_SHORTCUTS[historyDisplay.title.split(' ')[0]]}
-                {@const historyShortcutKey =
-                  historyShortcut ? displayKey(historyShortcut) : ''}
+                {@const historyShortcutKey = historyShortcut ?? ''}
                 <div
                   id="result-{idx}"
                   role="option"
@@ -3300,12 +3524,13 @@
                     {#if historyShortcut}
                       <ShortcutBadge
                         combo={historyShortcutKey}
+                        leader
                         active={activeIndex === idx} />
                     {/if}
                     {#if historyDisplay.badge}
                       <span
                         class={cn(
-                          'inline-flex h-[18px] shrink-0 items-center rounded-md border px-1.5 font-mono text-3xs font-medium transition-colors select-none',
+                          'inline-flex h-[18px] shrink-0 items-center rounded-sm border px-1.5 font-mono text-3xs font-medium transition-colors select-none',
                           activeIndex === idx ?
                             'border-accent/30 bg-accent/25 text-accent'
                           : 'border-border-subtle/60 bg-surface-elevated text-text-secondary group-hover:border-accent/30 group-hover:bg-accent/15 group-hover:text-accent'
@@ -3375,20 +3600,50 @@
             {#each categorizedResults as group, gIdx (group.category)}
               <div
                 class={cn(
-                  'px-1.5 pb-1.5 select-none',
-                  filteredHistory.length > 0 || gIdx > 0 ? 'pt-3.5' : 'pt-2.5'
+                  'px-2 pb-1.5 select-none',
+                  filteredHistory.length > 0 || gIdx > 0 ? 'pt-1.5' : 'pt-2.5'
                 )}>
-                <span
-                  class="text-xxs font-bold tracking-wider text-text-muted uppercase">
-                  {group.label}
-                </span>
+                <div class="flex items-center justify-between gap-2">
+                  <span
+                    class="text-xxs font-bold tracking-wider text-text-muted uppercase">
+                    {group.label}
+                  </span>
+                  {#if group.hasPrev || group.hasNext}
+                    <div
+                      class="flex items-center gap-1 text-2xs text-text-muted">
+                      <button
+                        type="button"
+                        aria-label="Previous {group.label} page"
+                        disabled={!group.hasPrev}
+                        onclick={() => changeSectionPage(group.category, -1)}
+                        class="inline-flex size-5 cursor-pointer items-center justify-center rounded-sm hover:bg-surface-hover disabled:cursor-default disabled:opacity-40">
+                        <ChevronLeft class="size-3" />
+                      </button>
+                      <span class="min-w-8 text-center tabular-nums">
+                        {group.pageCount ?
+                          `${group.page} / ${group.pageCount}`
+                        : group.page}
+                      </span>
+                      <button
+                        type="button"
+                        aria-label="Next {group.label} page"
+                        disabled={!group.hasNext}
+                        onclick={() => changeSectionPage(group.category, 1)}
+                        class="inline-flex size-5 cursor-pointer items-center justify-center rounded-sm hover:bg-surface-hover disabled:cursor-default disabled:opacity-40">
+                        <ChevronRight class="size-3" />
+                      </button>
+                    </div>
+                  {/if}
+                </div>
               </div>
               <div class="flex flex-col gap-0.5">
                 {#each group.items as item (item.id)}
                   {@const globalIdx =
                     (indexById.get(item.id) ?? 0) + filteredHistory.length}
                   {@const ItemIcon =
-                    item.icon ?? CATEGORY_ICONS[item.category] ?? Command}
+                    item.icon
+                    ?? CATEGORY_ICONS[item.category]
+                    ?? SquareTerminal}
                   <div
                     id="result-{globalIdx}"
                     role="option"
@@ -3489,13 +3744,14 @@
                     <div class="flex shrink-0 items-center gap-1.5">
                       {#if COMMAND_SHORTCUTS[item.title]}
                         <ShortcutBadge
-                          combo={displayKey(COMMAND_SHORTCUTS[item.title])}
+                          combo={COMMAND_SHORTCUTS[item.title]}
+                          leader
                           active={activeIndex === globalIdx} />
                       {/if}
                       {#if item.badge}
                         <span
                           class={cn(
-                            'inline-flex h-[18px] shrink-0 items-center rounded-md border px-1.5 font-mono text-3xs font-medium transition-colors select-none',
+                            'inline-flex h-[18px] shrink-0 items-center rounded-sm border px-1.5 font-mono text-3xs font-medium transition-colors select-none',
                             activeIndex === globalIdx ?
                               'border-accent/30 bg-accent/25 text-accent'
                             : 'border-border-subtle/60 bg-surface-elevated text-text-secondary group-hover:border-accent/30 group-hover:bg-accent/15 group-hover:text-accent'
@@ -3528,16 +3784,23 @@
           class="flex shrink-0 items-center gap-2.5 text-2xs font-medium text-text-muted">
           <span class="flex items-center gap-1">
             <kbd
-              class="inline-flex size-5 items-center justify-center rounded-md border border-border-subtle/60 bg-transparent text-text-muted dark:border-white/8">
+              class="inline-flex size-5 items-center justify-center rounded-sm border border-border-subtle/60 bg-transparent text-text-muted dark:border-white/8">
               <ArrowDownUp
                 class="size-9"
                 strokeWidth={3} />
             </kbd>
             <span class="hidden sm:inline">navigate</span>
           </span>
+          {#if categorizedResults.some(group => group.hasPrev || group.hasNext)}
+            <span class="flex items-center gap-1">
+              <ShortcutBadge combo="PageUp" />
+              <ShortcutBadge combo="PageDown" />
+              <span class="hidden sm:inline">page</span>
+            </span>
+          {/if}
           <span class="flex items-center gap-1">
             <kbd
-              class="inline-flex size-5 items-center justify-center rounded-md border border-border-subtle/60 bg-transparent text-text-muted dark:border-white/8">
+              class="inline-flex size-5 items-center justify-center rounded-sm border border-border-subtle/60 bg-transparent text-text-muted dark:border-white/8">
               <CornerDownLeft
                 class="size-9"
                 strokeWidth={3} />
@@ -3546,7 +3809,7 @@
           </span>
           <span class="flex items-center gap-1">
             <kbd
-              class="inline-flex h-5 min-w-6 items-center justify-center rounded-md border border-border-subtle/60 bg-transparent px-1.5 text-2xs font-medium text-text-muted dark:border-white/8">
+              class="inline-flex h-5 min-w-6 items-center justify-center rounded-sm border border-border-subtle/60 bg-transparent px-1.5 text-2xs font-medium text-text-muted dark:border-white/8">
               esc
             </kbd>
             <span class="hidden sm:inline">close</span>
@@ -3577,7 +3840,7 @@
       role="dialog"
       tabindex="-1"
       aria-modal="true"
-      aria-label="Reference Guide"
+      aria-label="Reference guide"
       onkeydown={handleHelpKeydown}>
       <div
         class="flex items-center justify-between border-b border-border-subtle/40 px-4 py-2.5">
@@ -3603,7 +3866,7 @@
           <div>
             <div
               class={cn(
-                'px-1.5 pb-1 select-none',
+                'px-2 pb-1 select-none',
                 category.id !== helpCategories[0].id ? 'pt-2' : 'pt-0.5'
               )}>
               <span
@@ -3643,7 +3906,7 @@
                       )}>
                       <CmdIcon class="size-3" />
                     </div>
-                    <span class="shrink-0 font-sans text-2xs">
+                    <span class="shrink-0 font-sans text-2xs leading-none">
                       <span class="font-normal text-text-muted/60">/</span><span
                         class={cn(
                           'font-medium',
@@ -3659,15 +3922,17 @@
                           {cmd.argHint}</span>
                       {/if}
                     </span>
-                    <span class="text-2xs text-text-muted/40 select-none"
+                    <span
+                      class="text-2xs leading-none text-text-muted/40 select-none"
                       >—</span>
                     <p
-                      class="min-w-0 flex-1 truncate font-sans text-2xs text-text-secondary">
+                      class="min-w-0 flex-1 truncate font-sans text-2xs leading-none text-text-secondary">
                       {cmd.description}
                     </p>
                     {#if COMMAND_SHORTCUTS[cmd.command]}
                       <ShortcutBadge
-                        combo={displayKey(COMMAND_SHORTCUTS[cmd.command])}
+                        combo={COMMAND_SHORTCUTS[cmd.command]}
+                        leader
                         active={helpActiveIndex === cmdIdx} />
                     {/if}
                   </div>
@@ -3694,10 +3959,10 @@
         {/each}
 
         <div>
-          <div class="px-1.5 pt-2 pb-1 select-none">
+          <div class="px-2 pt-2 pb-1 select-none">
             <span
               class="text-xxs font-bold tracking-wider text-text-muted uppercase">
-              Search Filters
+              Search filters
             </span>
           </div>
           <div class="space-y-0.5 text-2xs">
@@ -3708,7 +3973,7 @@
                   class="flex size-5 shrink-0 items-center justify-center rounded border border-border-subtle/60 bg-surface-elevated text-text-secondary select-none">
                   <CaseSensitive class="size-3" />
                 </div>
-                <span class="font-medium text-text-primary">Match Case</span>
+                <span class="font-medium text-text-primary">Match case</span>
                 <span class="text-text-muted/40 select-none">—</span>
                 <span class="hidden font-sans text-text-muted sm:inline"
                   >Case-sensitive search toggle</span>
@@ -3722,7 +3987,7 @@
                   class="flex size-5 shrink-0 items-center justify-center rounded border border-border-subtle/60 bg-surface-elevated text-text-secondary select-none">
                   <WholeWord class="size-3" />
                 </div>
-                <span class="font-medium text-text-primary">Whole Word</span>
+                <span class="font-medium text-text-primary">Whole word</span>
                 <span class="text-text-muted/40 select-none">—</span>
                 <span class="hidden font-sans text-text-muted sm:inline"
                   >Match exact whole words</span>
@@ -3736,7 +4001,7 @@
                   class="flex size-5 shrink-0 items-center justify-center rounded border border-border-subtle/60 bg-surface-elevated text-text-secondary select-none">
                   <Regex class="size-3" />
                 </div>
-                <span class="font-medium text-text-primary">Regex Mode</span>
+                <span class="font-medium text-text-primary">Regex mode</span>
                 <span class="text-text-muted/40 select-none">—</span>
                 <span class="hidden font-sans text-text-muted sm:inline"
                   >Regular expression pattern matching</span>
@@ -3747,10 +4012,10 @@
         </div>
 
         <div>
-          <div class="px-1.5 pt-2 pb-1 select-none">
+          <div class="px-2 pt-2 pb-1 select-none">
             <span
               class="text-xxs font-bold tracking-wider text-text-muted uppercase">
-              Keyboard Shortcuts
+              Keyboard shortcuts
             </span>
           </div>
           <button
@@ -3761,16 +4026,19 @@
               close();
               shortcutStore.catalogOpen = true;
             }}>
-            <span class="font-sans text-2xs text-text-secondary">
-              Browse every shortcut on this page
-            </span>
+            <div class="flex min-w-0 items-center gap-2">
+              <div
+                class="flex size-5 shrink-0 items-center justify-center rounded border border-border-subtle/60 bg-surface-elevated text-text-secondary select-none">
+                <Keyboard class="size-3" />
+              </div>
+              <span class="font-sans text-2xs text-text-secondary">
+                Browse keyboard shortcuts on this page
+              </span>
+            </div>
             <span class="flex shrink-0 items-center gap-1">
-              {#each [LEADER_COMBO, CATALOG_KEY] as combo (combo)}
-                <kbd
-                  class="inline-flex h-4 items-center justify-center rounded border border-border-subtle/60 bg-transparent px-1 text-3xs font-medium text-text-secondary dark:border-white/8">
-                  {combo}
-                </kbd>
-              {/each}
+              <ShortcutBadge
+                combo={CATALOG_KEY}
+                leader />
             </span>
           </button>
         </div>
@@ -3780,7 +4048,7 @@
         class="hidden flex-none items-center justify-end gap-2.5 border-t border-border-subtle/60 px-3.5 py-2 text-2xs select-none sm:flex">
         <span class="flex items-center gap-1">
           <kbd
-            class="inline-flex size-5 items-center justify-center rounded-md border border-border-subtle/60 bg-transparent text-text-muted dark:border-white/8">
+            class="inline-flex size-5 items-center justify-center rounded-sm border border-border-subtle/60 bg-transparent text-text-muted dark:border-white/8">
             <ArrowDownUp
               class="size-9"
               strokeWidth={3} />
@@ -3789,7 +4057,7 @@
         </span>
         <span class="flex items-center gap-1">
           <kbd
-            class="inline-flex size-5 items-center justify-center rounded-md border border-border-subtle/60 bg-transparent text-text-muted dark:border-white/8">
+            class="inline-flex size-5 items-center justify-center rounded-sm border border-border-subtle/60 bg-transparent text-text-muted dark:border-white/8">
             <CornerDownLeft
               class="size-9"
               strokeWidth={3} />
@@ -3798,7 +4066,7 @@
         </span>
         <span class="flex items-center gap-1">
           <kbd
-            class="inline-flex h-5 min-w-6 items-center justify-center rounded-md border border-border-subtle/60 bg-transparent px-1.5 text-2xs font-medium text-text-muted dark:border-white/8">
+            class="inline-flex h-5 min-w-6 items-center justify-center rounded-sm border border-border-subtle/60 bg-transparent px-1.5 text-2xs font-medium text-text-muted dark:border-white/8">
             esc
           </kbd>
           <span class="text-text-muted">close</span>
@@ -3810,8 +4078,8 @@
 
 <ShareDialog
   bind:isOpen={isShareOpen}
-  title={activePageContext.isBlogPost ? 'Share this Article' : (
-    'Share this Page'
+  title={activePageContext.isBlogPost ? 'Share this article' : (
+    'Share this page'
   )}
   articleTitle={activePageContext.title}
   url={activePageContext.url}

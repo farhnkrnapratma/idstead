@@ -39,6 +39,8 @@
   import IconButton from './IconButton.svelte';
   import {cn} from '../utils/cn';
   import {popoverPosition} from '../utils/popoverPosition';
+  import {focusScope} from '../utils/focusScope';
+  import {shortcut} from '../utils/shortcut.svelte';
   import {contentFontStore} from '../stores/contentFontStore.svelte';
   import {decodeHtmlEntities} from '../utils/formatters';
   import {toastStore} from '../stores/toastStore.svelte';
@@ -246,9 +248,11 @@
   {@const isExpanded = expandedReplies.has(comment.id)}
   {@const replyContainerId = `reply-container-${comment.id}`}
   {@const author = getCommentAuthor(comment)}
+  {@const commentScope = `comment-${comment.id}`}
 
   <div
     id="comment-{comment.id}"
+    use:focusScope={commentScope}
     class={cn(
       'comment-row-wrapper flex min-w-0 items-start gap-2.5 rounded-md transition-shadow sm:gap-3',
       focusCommentId === comment.id ?
@@ -281,8 +285,8 @@
             {#if isAuthorComment(comment)}
               <span
                 class="inline-flex shrink-0 items-center text-success"
-                title="Verified Administrator"
-                aria-label="Verified Administrator">
+                title="Verified administrator"
+                aria-label="Verified administrator">
                 <BadgeCheck class="size-3" />
               </span>
             {/if}
@@ -302,6 +306,9 @@
                 class="hover:bg-surface-hover"
                 aria-haspopup="menu"
                 aria-expanded={activeMenuId === comment.id}
+                keyboardShortcut="O"
+                shortcutScope={commentScope}
+                shortcutLabel="Comment options"
                 onclick={e => toggleKebabMenu(comment.id, e)}>
                 <EllipsisVertical class="size-3.5" />
               </IconButton>
@@ -328,7 +335,13 @@
                     <button
                       type="button"
                       role="menuitem"
-                      class="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover hover:text-accent"
+                      use:shortcut={{
+                        combo: 'I',
+                        scope: commentScope,
+                        label: 'Copy comment ID',
+                        placement: 'inline'
+                      }}
+                      class="relative flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover hover:text-accent"
                       onclick={() => handleCopyId(comment.id)}>
                       <Copy class="size-3.5" />
                       <span>Copy ID</span>
@@ -337,7 +350,13 @@
                       <button
                         type="button"
                         role="menuitem"
-                        class="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover hover:text-accent"
+                        use:shortcut={{
+                          combo: 'F',
+                          scope: commentScope,
+                          label: 'Report comment',
+                          placement: 'inline'
+                        }}
+                        class="relative flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover hover:text-accent"
                         onclick={() => handleReport(comment)}>
                         <Flag class="size-3.5" />
                         <span>Report</span>
@@ -391,7 +410,12 @@
           <span aria-hidden="true">·</span>
           <button
             type="button"
-            class="inline-flex cursor-pointer items-center gap-0.5 text-2xs leading-none font-semibold text-text-muted transition-colors hover:text-accent hover:underline focus-visible:text-accent focus-visible:underline"
+            use:shortcut={{
+              combo: 'T',
+              scope: commentScope,
+              label: 'Toggle replies'
+            }}
+            class="relative inline-flex cursor-pointer items-center gap-0.5 text-2xs leading-none font-semibold text-text-muted transition-colors hover:text-accent hover:underline focus-visible:text-accent focus-visible:underline"
             aria-expanded={isExpanded}
             aria-controls={replyContainerId}
             onclick={() => toggleReplies(comment.id)}>

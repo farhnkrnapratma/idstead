@@ -9,6 +9,8 @@
     onclick?: () => void;
     children?: Snippet;
     class?: string;
+    title?: string;
+    ariaLabel?: string;
   }
 
   let {
@@ -17,7 +19,9 @@
     size = 'md',
     onclick,
     children,
-    class: className = ''
+    class: className = '',
+    title,
+    ariaLabel
   }: Props = $props();
 
   const sizeStyles = {
@@ -30,6 +34,8 @@
   type="button"
   {disabled}
   {onclick}
+  {title}
+  aria-label={ariaLabel}
   aria-pressed={active}
   class={cn(
     'inline-flex cursor-pointer items-center justify-center rounded-md border transition-all select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-50',

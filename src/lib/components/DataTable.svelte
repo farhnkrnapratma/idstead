@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type {Snippet} from 'svelte';
   import {cn} from '../utils/cn';
 
   interface Column {
@@ -12,12 +13,14 @@
     columns: Column[];
     data: Record<string, unknown>[];
     class?: string;
+    cell?: Snippet<[Record<string, unknown>, string]>;
   }
 
   let {
     caption = '',
     columns = [],
     data = [],
+    cell,
     class: className = ''
   }: Props = $props();
 
@@ -56,7 +59,8 @@
                 'px-4 py-3 font-medium',
                 alignStyles[col.align || 'left']
               )}>
-              {row[col.key] ?? '—'}
+              {#if cell}{@render cell(row, col.key)}{:else}{row[col.key]
+                  ?? '—'}{/if}
             </td>
           {/each}
         </tr>

@@ -22,7 +22,7 @@
     code,
     size = 'inline',
     onRetry,
-    retryLabel = 'Try Again',
+    retryLabel = 'Try again',
     actions,
     class: className = ''
   }: Props = $props();

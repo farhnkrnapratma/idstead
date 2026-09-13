@@ -1,29 +1,85 @@
 <script lang="ts">
+  import {SkipForward} from '@lucide/svelte';
   import {cn} from '../utils/cn';
+  import Button from './Button.svelte';
+  import {buttonKey} from '$lib/shortcuts';
 
   interface Props {
     targetId?: string;
     label?: string;
     class?: string;
-    variant?: 'default' | 'search-overlay';
   }
 
   let {
     targetId = 'main-content',
     label = 'Skip to main content',
-    class: className = '',
-    variant = 'default'
+    class: className = ''
   }: Props = $props();
+
+  let isFocused = $state(false);
+  let isVisible = $derived(isFocused);
+
+  function handleActivate() {
+    isFocused = false;
+    const target = document.getElementById(targetId);
+    if (target) {
+      target.tabIndex = -1;
+      target.focus({preventScroll: true});
+    }
+  }
+
+  function handleKeydown(e: KeyboardEvent) {
+    if (!isFocused) return;
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation();
+      isFocused = false;
+      return;
+    }
+    if (e.key === 'Tab') {
+      isFocused = false;
+      return;
+    }
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      e.stopPropagation();
+      handleActivate();
+    }
+  }
 </script>
 
-<a
-  href={`#${targetId}`}
+<svelte:window onkeydown={handleKeydown} />
+
+{#if isFocused}
+  <div
+    class="fixed inset-0 z-90 bg-overlay/60 backdrop-blur-xs transition-opacity duration-200"
+    role="presentation"
+    aria-hidden="true"
+    onclick={() => {
+      isFocused = false;
+    }}>
+  </div>
+{/if}
+
+<div
   class={cn(
-    'sr-only transition-all focus:not-sr-only focus:z-20 focus:rounded-md focus:bg-accent focus:font-semibold focus:text-text-on-accent focus:shadow-sm focus:outline-2 focus:outline-offset-2 focus:outline-focus-ring',
-    variant === 'search-overlay' ?
-      'focus:absolute focus:top-0 focus:bottom-0 focus:left-0 focus:flex focus:h-full focus:w-max focus:min-w-full focus:items-center focus:justify-center focus:px-3 focus:text-xs lg:focus:inset-0 lg:focus:w-full'
-    : 'focus:fixed focus:top-4 focus:left-4 focus:px-4 focus:py-2.5 focus:text-xs focus:font-bold focus:shadow-2xl',
+    'fixed top-3 left-1/2 z-100 -translate-x-1/2 transition-all duration-200 ease-out select-none',
+    isVisible ?
+      'pointer-events-auto translate-y-0 scale-100 opacity-100'
+    : 'pointer-events-none -translate-y-4 scale-95 opacity-0',
     className
   )}>
-  {label}
-</a>
+  <Button
+    type="primary"
+    size="sm"
+    {label}
+    keyboardShortcut={isFocused ? buttonKey('skipLink') : undefined}
+    onfocus={() => (isFocused = true)}
+    onblur={() => (isFocused = false)}
+    onclick={handleActivate}
+    class="font-sans font-semibold shadow-xl">
+    {#snippet trailing()}
+      <SkipForward class="size-3.5 shrink-0" />
+    {/snippet}
+  </Button>
+</div>

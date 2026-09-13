@@ -51,7 +51,7 @@ beforeAll(async () => {
   `);
   for (const filename of [
     '20260908072558_site_identity_assets.sql',
-    '20260908181613_partial_profile_identity.sql'
+    '20260913150122_partial_profile_identity.sql'
   ])
     await db.exec(
       await readFile(

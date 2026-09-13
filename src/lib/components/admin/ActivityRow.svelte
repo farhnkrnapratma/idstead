@@ -6,12 +6,11 @@
     ThumbsUp,
     ThumbsDown,
     Mail,
-    MessageSquareText,
     X
   } from '@lucide/svelte';
   import type {AdminNotificationRow} from '$lib/adminActivity';
   import {activityTimestamp, activityTimeZone} from '$lib/adminActivity';
-  import {reportReasonColor, reportReasonLabel} from '$lib/reportReasons';
+  import {reportReasonLabel} from '$lib/reportReasons';
   import ActivityTimestamp from './ActivityTimestamp.svelte';
   import {cn} from '$lib/utils/cn';
 
@@ -39,7 +38,7 @@
       helpful ? ThumbsUp
       : ThumbsDown
     : item.kind === 'contact_message' ? Mail
-    : MessageSquareText
+    : MessageCircle
   );
   const color = $derived(
     item.kind === 'comment_report' ? 'text-activity-report'
@@ -117,27 +116,47 @@
     </div>
     <div
       data-activity-line="metadata"
-      class="flex min-w-0 items-center gap-1 text-2xs leading-4">
-      <span
-        title={metadata}
-        class="min-w-0 flex-1 truncate font-sans font-normal text-text-secondary">
-        {#if item.kind === 'comment_report'}
-          Reason: <strong
-            style:color={reportReasonColor(item.meta?.reason ?? 'other')}
+      class="flex min-w-0 items-center pr-5 text-2xs leading-4">
+      {#if item.kind === 'comment_report'}
+        <span
+          title={metadata}
+          class="min-w-0 truncate font-sans font-normal text-text-secondary">
+          <span class="text-text-muted">Reason:&nbsp;</span><strong
+            class="font-bold text-text-primary"
             >{reportReasonLabel(item.meta?.reason ?? 'other')}</strong
-          >{#if item.report_status === 'resolved'}
-            · Resolved{/if}
-        {:else}{metadata}{/if}
-      </span>
-      {#if metadata}<span
+          >{#if item.report_status === 'resolved'}<span class="text-text-muted"
+              >&nbsp;&middot;&nbsp;Resolved</span
+            >{/if}
+        </span>
+        <span
           aria-hidden="true"
-          class="shrink-0 text-text-muted">·</span
-        >{/if}
+          class="shrink-0 px-1.5 text-text-muted select-none">&mdash;</span>
+      {:else if item.kind === 'comment_new'}
+        <span
+          title={metadata}
+          class="min-w-0 truncate font-sans font-normal text-text-secondary">
+          <span class="text-text-muted">Comment:&nbsp;</span><strong
+            class="font-semibold text-text-primary"
+            >“{item.meta?.comment ?? ''}”</strong>
+        </span>
+        <span
+          aria-hidden="true"
+          class="shrink-0 px-1.5 text-text-muted select-none">&mdash;</span>
+      {:else if metadata}
+        <span
+          title={metadata}
+          class="min-w-0 truncate font-sans font-normal text-text-secondary">
+          {metadata}
+        </span>
+        <span
+          aria-hidden="true"
+          class="shrink-0 px-1.5 text-text-muted select-none">&mdash;</span>
+      {/if}
       <ActivityTimestamp
         date={item.created_at}
         {prefix}
         compact={!detail}
-        class="pointer-events-auto ml-auto" />
+        class="pointer-events-auto shrink-0" />
     </div>
   </div>
   {#if onDelete}
@@ -146,7 +165,7 @@
       {disabled}
       aria-label="Delete notification"
       title="Permanently delete notification"
-      class="absolute top-2 right-1 z-20 flex size-5 cursor-pointer items-center justify-center rounded-sm text-text-muted transition-colors hover:bg-danger-subtle hover:text-danger focus-visible:outline-2 focus-visible:outline-focus-ring disabled:opacity-50"
+      class="absolute top-1/2 right-1.5 z-20 flex size-5 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm text-text-muted transition-colors hover:bg-danger-subtle hover:text-danger focus-visible:outline-2 focus-visible:outline-focus-ring disabled:opacity-50"
       onclick={onDelete}><X class="size-3" /></button>
   {/if}
 </div>
@@ -157,7 +176,7 @@
       href={resolve(...([item.page_url] as Parameters<typeof resolve>))}
       target="_blank"
       rel="noopener noreferrer"
-      class="pointer-events-auto relative font-bold underline decoration-border-strong underline-offset-2 hover:text-accent hover:decoration-accent focus-visible:text-accent focus-visible:outline-2 focus-visible:outline-focus-ring"
+      class="pointer-events-auto relative font-bold hover:text-accent focus-visible:text-accent focus-visible:outline-2 focus-visible:outline-focus-ring"
       onclick={event => event.stopPropagation()}>{title}</a>
   {:else}<strong>{title}</strong>{/if}
 {/snippet}

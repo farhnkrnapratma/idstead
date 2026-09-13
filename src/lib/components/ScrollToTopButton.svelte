@@ -3,7 +3,7 @@
   import {buttonKey} from '$lib/shortcuts';
   import {fade} from 'svelte/transition';
   import {page} from '$app/state';
-  import {ChevronUp} from '@lucide/svelte';
+  import {MoveUp} from '@lucide/svelte';
   import {scrollToTop} from '$lib/utils/scroll';
   import {scrollStore} from '../stores/scrollStore.svelte';
   import Tooltip from './Tooltip.svelte';
@@ -51,7 +51,7 @@
           class="relative inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full glass-button px-0 text-xs font-semibold text-text-primary shadow-md transition-colors hover:text-accent md:h-10 md:w-10 md:shadow-lg"
           onclick={onClick || (() => scrollToTop('smooth'))}
           aria-label="Scroll to top">
-          <ChevronUp class="size-4.5 shrink-0 md:size-5" />
+          <MoveUp class="size-4.5 shrink-0 md:size-5" />
         </button>
         <svg
           class="pointer-events-none absolute inset-0 h-9 w-9 -rotate-90 md:h-10 md:w-10"

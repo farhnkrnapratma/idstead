@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type {Snippet} from 'svelte';
   import {
     Info,
     CheckCircle2,
@@ -10,15 +11,17 @@
   interface Props {
     variant?: 'info' | 'success' | 'warning' | 'error';
     title?: string;
-    message: string;
+    message?: string;
     class?: string;
+    children?: Snippet;
   }
 
   let {
     variant = 'info',
     title = '',
-    message,
-    class: className = ''
+    message = '',
+    class: className = '',
+    children
   }: Props = $props();
 
   const variantStyles = {
@@ -50,6 +53,12 @@
     {#if title}
       <span class="leading-snug font-bold">{title}</span>
     {/if}
-    <span class="leading-relaxed font-medium wrap-break-word">{message}</span>
+    {#if children}
+      <div class="leading-relaxed font-medium wrap-break-word">
+        {@render children()}
+      </div>
+    {:else if message}
+      <span class="leading-relaxed font-medium wrap-break-word">{message}</span>
+    {/if}
   </div>
 </div>

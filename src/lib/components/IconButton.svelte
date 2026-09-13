@@ -8,13 +8,14 @@
   interface Props extends HTMLButtonAttributes {
     ariaLabel: string;
     variant?: 'default' | 'ghost' | 'borderless';
-    size?: 'xs' | 'sm' | 'md' | 'lg';
+    size?: '2xs' | 'xs' | 'sm' | 'md' | 'lg';
     tooltip?: string;
     tooltipPlacement?: 'top' | 'bottom' | 'left' | 'right';
     tooltipAlign?: 'center' | 'left' | 'right' | 'start' | 'end';
     showTooltip?: boolean;
     keyboardShortcut?: string;
     shortcutGroup?: string;
+    shortcutChordKey?: string;
     shortcutScope?: string;
     shortcutLabel?: string;
     children?: Snippet;
@@ -30,6 +31,7 @@
     showTooltip = true,
     keyboardShortcut,
     shortcutGroup,
+    shortcutChordKey,
     shortcutScope,
     shortcutLabel,
     class: className = '',
@@ -45,12 +47,13 @@
     default:
       'glass-button hover:text-accent hover:border-accent disabled:hover:text-text-primary',
     ghost:
-      'text-text-secondary hover:text-text-primary disabled:hover:bg-transparent disabled:hover:text-text-secondary',
+      'text-text-secondary hover:text-text-primary hover:bg-surface-hover disabled:hover:bg-transparent disabled:hover:text-text-secondary',
     borderless:
       'bg-transparent text-text-secondary hover:text-accent disabled:hover:text-text-secondary'
   };
 
   const sizeStyles = {
+    '2xs': 'h-7 w-7 text-xs',
     xs: 'h-6.5 w-6.5 text-2xs',
     sm: 'h-8 w-8 text-xs',
     md: 'h-9 w-9 text-sm',
@@ -66,6 +69,7 @@
     use:shortcut={{
       combo: keyboardShortcut,
       group: shortcutGroup,
+      chordKey: shortcutChordKey,
       scope: shortcutScope,
       label: shortcutLabel ?? ariaLabel,
       disabled: Boolean(disabled)

@@ -16,6 +16,8 @@
     onChange?: (val: string) => void;
     dropdownPlacement?: 'left' | 'right';
     popoverSpan?: 'self' | '2cols-left';
+    size?: 'sm' | 'md';
+    fullWidth?: boolean;
     class?: string;
   }
 
@@ -26,6 +28,8 @@
     onChange = () => {},
     dropdownPlacement = 'left',
     popoverSpan = 'self',
+    size = 'md',
+    fullWidth = false,
     class: className = ''
   }: Props = $props();
 
@@ -43,7 +47,8 @@
 
 <div
   class={cn(
-    'relative w-full select-none sm:w-auto',
+    'relative inline-block text-left select-none',
+    fullWidth ? 'w-full' : 'w-max max-w-full',
     isOpen ? 'z-50' : 'z-20',
     className
   )}>
@@ -52,6 +57,8 @@
     labelPrefix={label}
     {options}
     {isOpen}
+    {size}
+    {fullWidth}
     onclick={() => (isOpen = !isOpen)}>
     {displayLabel}
   </DropdownTrigger>
@@ -73,10 +80,8 @@
         padding: 8
       }}
       class={cn(
-        'absolute z-60 flex flex-col popover-surface p-0',
-        popoverSpan === '2cols-left' ?
-          'w-[calc(200%+0.625rem)] sm:w-full'
-        : 'w-full'
+        'absolute z-60 flex w-full flex-col popover-surface p-0',
+        popoverSpan === '2cols-left' && 'w-[calc(200%+0.625rem)] sm:w-full'
       )}>
       <div class="relative z-10 flex flex-col overflow-hidden rounded-md">
         {#each options as option (option.value)}
@@ -86,7 +91,8 @@
             aria-selected={option.value === value}
             onclick={() => select(option.value)}
             class={cn(
-              'flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-2 text-left text-xs font-medium transition-colors',
+              'flex w-full cursor-pointer items-center justify-between gap-2 text-left text-xs font-medium transition-colors',
+              size === 'sm' ? 'px-2 py-1.5' : 'px-2.5 py-2',
               option.value === value ?
                 'bg-accent/10 font-semibold text-accent'
               : 'text-text-primary hover:bg-surface-hover hover:text-accent'

@@ -1,5 +1,6 @@
 <script lang="ts">
   import {shortcut} from '../utils/shortcut.svelte';
+  import {buttonKey} from '$lib/shortcuts';
   import {onDestroy} from 'svelte';
   import {Sparkles, Bot, ChevronsUpDown, ChevronsDownUp} from '@lucide/svelte';
   import {cn} from '../utils/cn';
@@ -108,7 +109,11 @@
         customClass
       )}>
       <summary
-        use:shortcut={{group: 'actions', label: 'TL;DR', placement: 'trailing'}}
+        use:shortcut={{
+          combo: buttonKey('tldr'),
+          label: 'TL;DR',
+          placement: 'trailing'
+        }}
         class="markdown-details-summary relative flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 text-sm font-medium text-text-primary transition-colors select-none group-open:border-border-subtle hover:bg-surface-hover/50 dark:group-open:border-white/10 [&::-webkit-details-marker]:hidden">
         <span class="inline-flex items-center gap-2">
           <Sparkles class="size-4 shrink-0 text-text-primary" />
@@ -153,7 +158,7 @@
       ontoggle={handleSummaryToggle}>
       <summary
         use:shortcut={{
-          group: 'actions',
+          combo: buttonKey('summary'),
           label: 'Summary',
           placement: 'trailing'
         }}

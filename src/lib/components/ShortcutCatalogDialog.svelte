@@ -7,13 +7,20 @@
   import {
     CHORD_GROUPS,
     LEADER_COMBO,
+    LEADER_FALLBACK_COMBO,
     CATALOG_KEY,
     COMMAND_SHORTCUTS,
-    displayKey
+    shortcutText,
+    keyLabel
   } from '$lib/shortcuts';
+  import {platformStore} from '../stores/platformStore.svelte';
+
+  const description = $derived(
+    `Press ${shortcutText(LEADER_COMBO, platformStore.current)} and let go, then press one key. Hold ${keyLabel('Alt', platformStore.current).name} at any time to peek at the badges without arming anything.`
+  );
 
   const commandRows = Object.entries(COMMAND_SHORTCUTS).map(
-    ([command, combo]) => ({command, combo: displayKey(combo)})
+    ([command, combo]) => ({command, combo})
   );
 
   const entries = $derived(
@@ -46,7 +53,7 @@
   );
 </script>
 
-{#snippet row(label: string, badge: string, mono = false)}
+{#snippet row(label: string, badge: string, mono = false, leader = true)}
   <div
     class="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 hover:bg-surface-hover">
     <span
@@ -55,15 +62,18 @@
       )}">
       {label}
     </span>
-    <ShortcutBadge combo={badge} />
+    <ShortcutBadge
+      combo={badge}
+      {leader} />
   </div>
 {/snippet}
 
 <Dialog
   isOpen={shortcutStore.catalogOpen}
-  title="Keyboard Shortcuts"
-  description="Press Ctrl+Space and let go, then press one key. Hold Alt at any time to peek at the badges without arming anything."
+  title="Keyboard shortcuts"
+  {description}
   size="lg"
+  trapShortcuts={false}
   onClose={() => (shortcutStore.catalogOpen = false)}>
   {#if !hasAny}
     <EmptyState
@@ -81,12 +91,23 @@
           <span class="min-w-0 text-xs text-text-primary">
             Enter shortcut mode
           </span>
-          <ShortcutBadge
-            combo={LEADER_COMBO}
-            icon />
+          <ShortcutBadge combo={LEADER_COMBO} />
         </div>
-        {@render row('Open this catalog', displayKey(CATALOG_KEY))}
-        {@render row('Leave shortcut mode', 'Esc')}
+        <div
+          class="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 hover:bg-surface-hover">
+          <span class="min-w-0 text-xs text-text-primary">
+            Enter shortcut mode, if your input method owns the first
+          </span>
+          <ShortcutBadge combo={LEADER_FALLBACK_COMBO} />
+        </div>
+        {@render row('Open this catalog', CATALOG_KEY)}
+        {@render row('Leave shortcut mode', 'Esc', false, false)}
+        <p class="px-2 text-3xs leading-relaxed text-text-muted">
+          Shortcut mode ends on its own after 5 seconds. It stays out of the way
+          while you type in a text field, and while a dialog is open only that
+          dialog's own shortcuts respond. This catalog is the exception, so you
+          can press a key straight from here.
+        </p>
       </section>
 
       {#if directEntries.length > 0}
@@ -96,7 +117,7 @@
             Actions
           </h3>
           {#each directEntries as entry (entry.id)}
-            {@render row(entry.label, displayKey(entry.combos[0]))}
+            {@render row(entry.label, entry.combos[0])}
           {/each}
         </section>
       {/if}
@@ -119,14 +140,11 @@
             class="text-2xs font-bold tracking-wider text-text-secondary uppercase">
             {group.spec?.label ?? group.groupId}
           </h3>
-          {#if group.spec && group.spec.combos.length > 0}
-            <p class="px-2 text-3xs text-text-muted">
-              Press {group.spec.combos.map(displayKey).join(' or ')}, then the
-              key shown below.
-            </p>
-          {/if}
           {#each group.rows as entry (entry.id)}
-            {@render row(entry.label, entry.chordKey ?? '')}
+            {@render row(
+              entry.label,
+              `${group.spec?.combos[0] ?? ''} ${entry.chordKey ?? ''}`
+            )}
           {/each}
         </section>
       {/each}

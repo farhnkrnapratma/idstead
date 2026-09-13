@@ -15,6 +15,7 @@
   import {cn} from '../utils/cn';
   import Button from './Button.svelte';
   import {shortcut} from '../utils/shortcut.svelte';
+  import {buttonKey, argKey, VIEW_FORMAT_KEYS} from '$lib/shortcuts';
 
   interface Props {
     variant?: 'inline' | 'sidebar' | 'toolbar';
@@ -209,7 +210,9 @@
           >Copy</span>
         {#if showCopyUrl}
           <Button
-            shortcutGroup="actions"
+            shortcutGroup="copy"
+            shortcutChordKey={argKey('/copy', 'url')}
+            shortcutLabel="Post URL"
             type="ghost"
             size="xs"
             label={copiedUrl ? 'Copied!' : 'Post URL'}
@@ -230,7 +233,9 @@
         {/if}
         {#if pageId}
           <Button
-            shortcutGroup="actions"
+            shortcutGroup="copy"
+            shortcutChordKey={argKey('/copy', 'pid')}
+            shortcutLabel="Post ID"
             type="ghost"
             size="xs"
             label={copiedId ? 'Copied!' : 'Post ID'}
@@ -261,7 +266,9 @@
           class="px-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase"
           >Text</span>
         <Button
-          shortcutGroup="actions"
+          shortcutGroup="copy"
+          shortcutChordKey={argKey('/copy', 'txt')}
+          shortcutLabel="Copy as TXT"
           type="ghost"
           size="xs"
           label={copiedText ? 'Copied!' : 'Copy as TXT'}
@@ -280,7 +287,9 @@
           {/snippet}
         </Button>
         <Button
-          shortcutGroup="actions"
+          shortcutGroup="view"
+          shortcutChordKey={VIEW_FORMAT_KEYS.txt}
+          shortcutLabel="View as TXT"
           type="ghost"
           size="xs"
           href={viewTextUrl}
@@ -300,7 +309,9 @@
           class="px-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase"
           >Save</span>
         <Button
-          shortcutGroup="actions"
+          shortcutGroup="save"
+          shortcutChordKey={argKey('/save', 'md')}
+          shortcutLabel="Save as MD"
           type="ghost"
           size="xs"
           label="Save as MD"
@@ -317,7 +328,9 @@
           {/snippet}
         </Button>
         <Button
-          shortcutGroup="actions"
+          shortcutGroup="save"
+          shortcutChordKey={argKey('/save', 'txt')}
+          shortcutLabel="Save as TXT"
           type="ghost"
           size="xs"
           label="Save as TXT"
@@ -350,7 +363,9 @@
 
     <div class="grid grid-cols-2 gap-1.5">
       <Button
-        shortcutGroup="actions"
+        shortcutGroup="copy"
+        shortcutChordKey={argKey('/copy', 'md')}
+        shortcutLabel="Copy as MD"
         type="secondary"
         size="xs"
         class="w-full justify-start gap-1.5 px-2 py-1.5 text-xs font-normal! text-text-secondary!"
@@ -367,7 +382,9 @@
       </Button>
 
       <Button
-        shortcutGroup="actions"
+        shortcutGroup="view"
+        shortcutChordKey={VIEW_FORMAT_KEYS.md}
+        shortcutLabel="View as MD"
         href={viewMarkdownUrl}
         type="secondary"
         size="xs"
@@ -385,7 +402,7 @@
     <details class="group my-0 overflow-hidden pt-0.5">
       <summary
         use:shortcut={{
-          group: 'actions',
+          combo: buttonKey('moreActions'),
           label: 'More options',
           placement: 'trailing'
         }}
@@ -407,7 +424,9 @@
               )} gap-1.5">
               {#if showCopyUrl}
                 <Button
-                  shortcutGroup="actions"
+                  shortcutGroup="copy"
+                  shortcutChordKey={argKey('/copy', 'url')}
+                  shortcutLabel="Post URL"
                   type="secondary"
                   size="xs"
                   class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
@@ -426,7 +445,9 @@
 
               {#if pageId}
                 <Button
-                  shortcutGroup="actions"
+                  shortcutGroup="copy"
+                  shortcutChordKey={argKey('/copy', 'pid')}
+                  shortcutLabel="Post ID"
                   type="secondary"
                   size="xs"
                   class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
@@ -452,7 +473,9 @@
             >Text</span>
           <div class="grid grid-cols-2 gap-1.5">
             <Button
-              shortcutGroup="actions"
+              shortcutGroup="copy"
+              shortcutChordKey={argKey('/copy', 'txt')}
+              shortcutLabel="Copy as TXT"
               type="secondary"
               size="xs"
               class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
@@ -469,7 +492,9 @@
             </Button>
 
             <Button
-              shortcutGroup="actions"
+              shortcutGroup="view"
+              shortcutChordKey={VIEW_FORMAT_KEYS.txt}
+              shortcutLabel="View as TXT"
               href={viewTextUrl}
               type="secondary"
               size="xs"
@@ -489,7 +514,9 @@
             >Save</span>
           <div class="grid grid-cols-2 gap-1.5">
             <Button
-              shortcutGroup="actions"
+              shortcutGroup="save"
+              shortcutChordKey={argKey('/save', 'md')}
+              shortcutLabel="Save as MD"
               type="secondary"
               size="xs"
               class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
@@ -503,7 +530,9 @@
               {/snippet}
             </Button>
             <Button
-              shortcutGroup="actions"
+              shortcutGroup="save"
+              shortcutChordKey={argKey('/save', 'txt')}
+              shortcutLabel="Save as TXT"
               type="secondary"
               size="xs"
               class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
@@ -526,7 +555,9 @@
       className
     )}>
     <Button
-      shortcutGroup="actions"
+      shortcutGroup="copy"
+      shortcutChordKey={argKey('/copy', 'md')}
+      shortcutLabel="Copy as MD"
       type="secondary"
       size="xs"
       onclick={handleCopyMarkdown}
@@ -543,7 +574,9 @@
     </Button>
 
     <Button
-      shortcutGroup="actions"
+      shortcutGroup="view"
+      shortcutChordKey={VIEW_FORMAT_KEYS.md}
+      shortcutLabel="View as MD"
       type="secondary"
       size="xs"
       href={viewMarkdownUrl}
@@ -561,7 +594,8 @@
       bind:this={moreContainerRef}
       class="relative inline-block shrink-0 text-left">
       <Button
-        shortcutGroup="actions"
+        keyboardShortcut={buttonKey('moreActions')}
+        shortcutLabel="More actions"
         type="ghost"
         size="xs"
         onclick={toggleMore}

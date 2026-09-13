@@ -2,7 +2,16 @@ import {browser} from '$app/environment';
 
 export interface SearchHistoryEntry {
   id: string;
-  category: 'pages' | 'posts' | 'projects' | 'actions' | 'commands' | 'skills';
+  category:
+    | 'pages'
+    | 'posts'
+    | 'projects'
+    | 'actions'
+    | 'commands'
+    | 'skills'
+    | 'social'
+    | 'contact'
+    | 'funding';
   title: string;
   subtitle?: string;
   badge?: string;

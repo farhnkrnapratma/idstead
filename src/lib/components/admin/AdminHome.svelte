@@ -1,151 +1,178 @@
 <script lang="ts">
+  import {adminUrl, navigateAdmin} from '$lib/adminNavigation';
   import {onMount} from 'svelte';
+  import {analyticsPeriod} from '$lib/adminAnalytics';
   import {Eye, Flag, ThumbsUp, CalendarCheck2} from '@lucide/svelte';
-  import {supabase} from '$lib/supabase';
   import {adminActivityRequest} from '$lib/adminActivityClient';
   import {adminNotificationsStore} from '$lib/stores/adminNotificationsStore.svelte';
-  import type {ActivityFocus, DashboardTotals} from '$lib/adminActivity';
+  import {
+    formatCount,
+    helpfulPercent,
+    type WorkspaceOverview,
+    type WorkspaceArea
+  } from '$lib/adminWorkspace';
   import Card from '../Card.svelte';
   import StatsGrid from '../StatsGrid.svelte';
+  import Button from '../Button.svelte';
   import ErrorState from '../ErrorState.svelte';
+  import LoadingState from '../LoadingState.svelte';
+  import EmptyState from '../EmptyState.svelte';
+  import Section from '$lib/layout/Section.svelte';
   import ViewsChart from './ViewsChart.svelte';
-  import UserFeedback from './UserFeedback.svelte';
-  import ReportedComments from './ReportedComments.svelte';
-  import {
-    VIEWS_RANGES,
-    type ViewsRange,
-    type ViewsBucketRow
-  } from './viewsRange';
-  import {cn} from '$lib/utils/cn';
+  import AnalyticsPeriod from './AnalyticsPeriod.svelte';
   let {
-    onOpenComment,
-    onPublished,
-    focus = null,
-    class: className = ''
+    onNavigate,
+    onPublished
   }: {
-    onOpenComment: (postId: string, commentId: string) => void;
+    onNavigate: (area: WorkspaceArea, id?: string) => void;
     onPublished: () => void;
-    focus?: ActivityFocus | null;
-    class?: string;
   } = $props();
-  let totals = $state.raw<DashboardTotals | null>(null);
+  let data = $state.raw<WorkspaceOverview | null>(null);
   let error = $state('');
-  let viewsRange = $state<ViewsRange>('7d');
-  let viewsData = $state.raw<ViewsBucketRow[]>([]);
-  let viewsLoading = $state(true);
-  let viewsError = $state('');
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  let requestId = 0;
-  let statsRequest = 0;
-  let active = true;
-  async function loadViews(range: ViewsRange) {
-    const current = ++requestId;
-    viewsLoading = true;
-    const config = VIEWS_RANGES[range];
+  let loading = $state(true);
+  let dirty = $state(false);
+  let controller: AbortController | undefined;
+  let generation = 0;
+  const params = $derived(adminUrl().searchParams);
+  function period(values: Record<string, string>) {
+    const url = adminUrl();
+    for (const [key, value] of Object.entries(values))
+      if (value) url.searchParams.set(key, value);
+      else url.searchParams.delete(key);
+    navigateAdmin(url, true);
+  }
+  function refresh() {
     try {
-      const {data, error} = await supabase.rpc('db_views_timeseries', {
-        p_since: new Date(Date.now() - config.days * 86400000).toISOString(),
-        p_bucket: config.bucket,
-        p_tz: timeZone
-      });
-      if (current !== requestId || !active) return;
-      if (error) viewsError = 'ADMIN_VIEWS_UNAVAILABLE';
-      else {
-        viewsData = data || [];
-        viewsError = '';
-      }
-    } catch {
-      if (current === requestId && active)
-        viewsError = 'ADMIN_VIEWS_UNAVAILABLE';
-    } finally {
-      if (current === requestId && active) viewsLoading = false;
+      period(
+        analyticsPeriod(
+          params.get('range') ?? '7d',
+          params.get('timeZone') ?? 'UTC',
+          new Date(),
+          params.get('start') ?? undefined,
+          params.get('end') ?? undefined
+        )
+      );
+    } catch (caught) {
+      error =
+        caught instanceof Error ? caught.message : 'Choose a valid period.';
     }
   }
-  async function loadStats() {
-    const current = ++statsRequest;
+  async function load() {
+    const current = ++generation;
+    const query = Object.fromEntries(params);
+    if (!query.timeZone) return;
+    controller?.abort();
+    controller = new AbortController();
+    loading = true;
     try {
-      const result = await adminActivityRequest<DashboardTotals>('activity');
-      if (active && current === statsRequest) {
-        totals = result;
+      const result = await adminActivityRequest<WorkspaceOverview>(
+        'workspace',
+        {...query, section: 'overview'},
+        undefined,
+        controller.signal
+      );
+      if (current === generation) {
+        data = result;
         error = '';
+        dirty = false;
       }
     } catch (caught) {
-      if (active && current === statsRequest)
+      if (current === generation && !controller.signal.aborted)
         error =
           caught instanceof Error ?
             caught.message
           : 'Dashboard could not be loaded.';
+    } finally {
+      if (current === generation) loading = false;
     }
-  }
-  async function refresh() {
-    await Promise.all([loadStats(), loadViews(viewsRange)]);
-  }
-  onMount(() => {
-    void refresh();
-    const remove = adminNotificationsStore.onActivityRefresh(refresh);
-    return () => {
-      active = false;
-      remove();
-    };
-  });
-  function focusSection(id: string) {
-    const target = document.getElementById(id);
-    target?.focus({preventScroll: true});
-    target?.scrollIntoView({behavior: 'smooth', block: 'start'});
   }
   const stats = $derived([
     {
-      label: 'Readers',
-      value:
-        viewsError || (viewsLoading && !viewsData.length) ?
-          '—'
-        : String(viewsData.reduce((sum, row) => sum + Number(row.views), 0)),
-      description: `last ${VIEWS_RANGES[viewsRange].label}`,
+      label: 'Recorded reads',
+      value: data ? formatCount(data.reads) : '—',
+      description: 'Selected period · deduplicated per article',
       componentIcon: Eye,
-      onclick: () => focusSection('admin-readers')
+      onclick: () => document.getElementById('admin-readers')?.focus()
     },
     {
       label: 'Open reports',
-      value: totals ? String(totals.openReports) : '—',
+      value: data ? formatCount(data.openReports) : '—',
       description:
-        totals ?
-          `${totals.reportedComments} ${totals.reportedComments === 1 ? 'comment' : 'comments'}`
-        : 'Loading reports',
+        data ?
+          `${formatCount(data.reportedComments)} comments · Current`
+        : 'Current',
       componentIcon: Flag,
-      onclick: () => focusSection('admin-reported-comments')
+      onclick: () => onNavigate('reports')
     },
     {
       label: 'Helpful',
-      value:
-        totals && totals.helpful + totals.unhelpful > 0 ?
-          `${Math.round((totals.helpful / (totals.helpful + totals.unhelpful)) * 100)}%`
-        : '—',
+      value: data ? helpfulPercent(data.helpful, data.unhelpful) : '—',
       description:
-        totals ?
-          `${totals.helpful} helpful · ${totals.unhelpful} unhelpful`
+        data ?
+          `${formatCount(data.helpful + data.unhelpful)} responses · Selected period`
         : 'Articles and legal pages',
       componentIcon: ThumbsUp,
-      onclick: () => focusSection('admin-user-feedback')
+      onclick: () => onNavigate('feedback')
     },
     {
       label: 'Published',
-      value: totals ? String(totals.published) : '—',
-      description: totals ? `of ${totals.posts} posts` : 'Loading posts',
+      value: data ? formatCount(data.published) : '—',
+      description:
+        data ? `of ${formatCount(data.posts)} posts · Current` : 'Current',
       componentIcon: CalendarCheck2,
       onclick: onPublished
     }
   ]);
+  onMount(() => {
+    const remove = adminNotificationsStore.onActivityRefresh(async () => {
+      dirty = true;
+    });
+    return () => {
+      generation++;
+      controller?.abort();
+      remove();
+    };
+  });
 </script>
 
-<div class={cn('flex min-w-0 flex-col gap-6', className)}>
+<Section
+  spacing="none"
+  class="flex min-w-0 flex-col gap-6">
+  <div
+    {@attach () => {
+      params.toString();
+      void load();
+    }}
+    class="flex flex-wrap items-start justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-bold text-text-primary">Overview</h1>
+      <p class="mt-1 text-sm text-text-secondary">
+        Monitor activity, then open a workspace to investigate.
+      </p>
+    </div>
+    <Button
+      size="sm"
+      type="outline"
+      disabled={loading}
+      onclick={refresh}
+      >{loading ? 'Updating…'
+      : dirty ? 'Updates available · Refresh'
+      : 'Refresh'}</Button>
+  </div>
+  <AnalyticsPeriod
+    {params}
+    onchange={period} />
   {#if error}<ErrorState
-      title="Unable to load dashboard"
+      title="Unable to update overview"
       description={error}
-      onRetry={loadStats} />{/if}
-  {#if adminNotificationsStore.activityError}<ErrorState
-      title="Unable to refresh dashboard"
-      description={adminNotificationsStore.activityError}
-      onRetry={() => adminNotificationsStore.load()} />{/if}
+      onRetry={load} />{/if}
+  {#if data}<p
+      class="text-xs text-text-muted"
+      role="status">
+      {dirty ? 'New activity is available. ' : ''}Last updated {new Date(
+        data.updatedAt
+      ).toLocaleString('en-US', {timeZone: data.timeZone})} · {data.timeZone}
+    </p>{/if}
   <StatsGrid
     {stats}
     variant="funding" />
@@ -153,22 +180,51 @@
     id="admin-readers"
     tabindex={-1}
     density="padded"
-    class="scroll-mt-20 outline-none"
-    ><ViewsChart
-      range={viewsRange}
-      data={viewsData}
-      isLoading={viewsLoading}
-      error={viewsError}
-      onRangeChange={range => {
-        viewsRange = range;
-        void loadViews(range);
-      }}
-      onRetry={() => loadViews(viewsRange)} /></Card>
-  <div class="grid min-w-0 grid-cols-1 gap-4 xl:grid-cols-2">
-    <Card density="padded"
-      ><ReportedComments
-        {focus}
-        {onOpenComment} /></Card>
-    <Card density="padded"><UserFeedback {focus} /></Card>
+    class="scroll-mt-20 focus-visible:outline-2 focus-visible:outline-focus-ring">
+    {#if loading && !data}<LoadingState label="Loading analytics…" />
+    {:else if data}<ViewsChart
+        data={data.series}
+        timeZone={data.timeZone} />{/if}
+  </Card>
+  <div class="grid min-w-0 gap-4 xl:grid-cols-2">
+    {#each ['reports', 'feedback'] as area (area)}
+      <Card density="padded">
+        <div class="mb-4 flex items-center justify-between gap-2">
+          <h2 class="text-base font-bold text-text-primary">
+            {area === 'reports' ? 'Reported comments' : 'User feedback'}
+          </h2>
+          <Button
+            type="ghost"
+            size="sm"
+            onclick={() => onNavigate(area as WorkspaceArea)}>View all</Button>
+        </div>
+        {#if !data}<LoadingState label="Loading activity…" />
+        {:else if !data[area as 'reports' | 'feedback'].length}<EmptyState
+            title={area === 'reports' ? 'No open reports' : (
+              'No feedback in this period'
+            )} />
+        {:else}<ul class="divide-y divide-border-subtle">
+            {#each data[area as 'reports' | 'feedback'] as item (item.id)}
+              <li>
+                <button
+                  type="button"
+                  class="flex w-full cursor-pointer flex-col gap-1 rounded-sm py-3 text-left focus-visible:outline-2 focus-visible:outline-focus-ring"
+                  onclick={() => onNavigate(area as WorkspaceArea, item.id)}
+                  ><span
+                    class="line-clamp-1 text-sm font-semibold text-text-primary"
+                    >{item.title}</span
+                  ><span class="line-clamp-2 text-sm text-text-secondary"
+                    >{area === 'reports' ?
+                      `${item.author}: ${item.content}`
+                    : `${helpfulPercent(item.helpful ?? 0, item.unhelpful ?? 0)} helpful`}</span
+                  ><span class="text-xs text-text-muted"
+                    >{formatCount(item.total)}
+                    {area === 'reports' ? 'open reports' : 'responses'}</span
+                  ></button>
+              </li>
+            {/each}
+          </ul>{/if}
+      </Card>
+    {/each}
   </div>
-</div>
+</Section>

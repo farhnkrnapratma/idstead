@@ -3,6 +3,7 @@
   import type {HTMLInputAttributes} from 'svelte/elements';
   import type {FormFieldContext} from '../types';
   import {cn} from '../utils/cn';
+  import {shortcut} from '../utils/shortcut.svelte';
 
   interface Props extends Omit<HTMLInputAttributes, 'size'> {
     value?: string | number;
@@ -18,6 +19,9 @@
     trailingIcon?: string;
     leadingSlot?: Snippet;
     trailingSlot?: Snippet;
+    keyboardShortcut?: string;
+    shortcutScope?: string;
+    shortcutLabel?: string;
   }
 
   let {
@@ -34,6 +38,9 @@
     trailingIcon = '',
     leadingSlot,
     trailingSlot,
+    keyboardShortcut,
+    shortcutScope,
+    shortcutLabel,
     class: className = '',
     disabled = false,
     id,
@@ -87,6 +94,13 @@
     bind:value
     {disabled}
     placeholder={isFloating ? ' ' : placeholder}
+    use:shortcut={{
+      combo: keyboardShortcut,
+      scope: shortcutScope,
+      label: shortcutLabel,
+      placement: 'inline',
+      disabled: Boolean(disabled)
+    }}
     class={cn(
       'border border-border-subtle/50 bg-surface-card/85 text-text-primary shadow-2xs backdrop-blur-xs transition-colors focus:border-accent focus:bg-surface-card focus:ring-2 focus:ring-accent/20 focus:outline-none disabled:cursor-not-allowed disabled:border-border-subtle/30 disabled:bg-surface-card/20 disabled:opacity-50 disabled:backdrop-blur-none dark:border-white/10 dark:bg-surface-card/70 dark:focus:bg-surface-card/90',
       fullWidth ? 'w-full' : '',

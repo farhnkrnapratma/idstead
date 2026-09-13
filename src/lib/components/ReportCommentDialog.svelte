@@ -26,6 +26,7 @@
   } from '$lib/utils/turnstile';
   import {toastStore} from '$lib/stores/toastStore.svelte';
   import {cn} from '$lib/utils/cn';
+  import {shortcut} from '$lib/utils/shortcut.svelte';
   import {
     REPORT_REASONS,
     reportReasonColor,
@@ -146,7 +147,7 @@
 
 <Dialog
   bind:isOpen
-  title="Report Comment"
+  title="Report comment"
   description="Select the reason that best describes why this comment violates policy."
   size="4xl"
   compact
@@ -168,10 +169,11 @@
           class="grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-3"
           role="radiogroup"
           aria-label="Report reason">
-          {#each REASONS as r (r.id)}
+          {#each REASONS as r, index (r.id)}
             <label
+              use:shortcut={{combo: String(index + 1), label: r.label}}
               class={cn(
-                'group flex cursor-pointer items-start gap-2 rounded-md border px-2.5 py-2 text-left transition-all select-none has-focus-visible:outline-2 has-focus-visible:outline-focus-ring',
+                'group relative flex cursor-pointer items-start gap-2 rounded-md border px-2.5 py-2 text-left transition-all select-none has-focus-visible:outline-2 has-focus-visible:outline-focus-ring',
                 selectedReason === r.id ?
                   'border-accent bg-accent/10'
                 : 'border-border-subtle/70 bg-surface-card/60 hover:border-accent/40 hover:bg-surface-card'
@@ -273,6 +275,8 @@
         size="sm"
         fullWidth
         disabled={isSubmitting}
+        keyboardShortcut="C"
+        shortcutLabel="Cancel report"
         onclick={handleClose}>
         Cancel
       </Button>
@@ -281,8 +285,10 @@
         size="sm"
         fullWidth
         disabled={isSubmitting}
+        keyboardShortcut="S"
+        shortcutLabel="Submit report"
         onclick={submitReport}>
-        {isSubmitting ? 'Submitting…' : 'Submit Report'}
+        {isSubmitting ? 'Submitting…' : 'Submit report'}
       </Button>
     </div>
   {/snippet}

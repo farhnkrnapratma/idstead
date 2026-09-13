@@ -1,34 +1,81 @@
 <script lang="ts">
-  import {Command} from '@lucide/svelte';
+  import {
+    KeyRound,
+    Command,
+    Option,
+    ChevronUp,
+    ArrowBigUp,
+    CornerDownLeft,
+    ArrowRightToLine,
+    ArrowBigUpDash
+  } from '@lucide/svelte';
   import {cn} from '../utils/cn';
+  import {shortcutKeyParts, keyLabel, type KeyIcon} from '$lib/shortcuts';
+  import {platformStore} from '../stores/platformStore.svelte';
+  import {KEY_GROUP_CLASS, KEY_SEGMENT_CLASS} from '../utils/shortcut.svelte';
 
   interface Props {
     combo: string;
     active?: boolean;
-    icon?: boolean;
+    leader?: boolean;
     class?: string;
   }
 
   let {
     combo,
     active = false,
-    icon = false,
+    leader = false,
     class: className = ''
   }: Props = $props();
-</script>
 
-<kbd
-  class={cn(
-    'inline-flex h-[18px] shrink-0 items-center gap-1 rounded-md border px-1.5 font-mono text-3xs font-medium transition-colors select-none',
+  const KEY_ICONS: Record<KeyIcon, typeof Command> = {
+    Command,
+    Option,
+    ChevronUp,
+    ArrowBigUp,
+    CornerDownLeft,
+    ArrowRightToLine,
+    ArrowBigUpDash
+  };
+
+  const labels = $derived(
+    shortcutKeyParts(combo, platformStore.current).map(token =>
+      keyLabel(token, platformStore.current)
+    )
+  );
+
+  const spoken = $derived(
+    [leader ? 'Leader' : '', ...labels.map(label => label.name)]
+      .filter(Boolean)
+      .join(' then ')
+  );
+
+  const tone = $derived(
     active ?
       'border-accent/30 bg-accent/25 text-accent'
-    : 'border-border-subtle/60 bg-surface-elevated text-text-secondary group-hover:border-accent/30 group-hover:bg-accent/15 group-hover:text-accent',
-    className
-  )}>
-  {#if icon}
-    <Command
-      class="size-2.5"
-      aria-hidden="true" />
-  {/if}
-  {combo}
-</kbd>
+    : 'border-border-subtle/60 bg-surface-elevated text-text-secondary group-hover:border-accent/30 group-hover:bg-accent/15 group-hover:text-accent'
+  );
+</script>
+
+<span class={cn('inline-flex shrink-0', className)}>
+  <span class="sr-only">{spoken}</span>
+  <span
+    class={KEY_GROUP_CLASS}
+    aria-hidden="true">
+    {#if leader}
+      <kbd class={cn(KEY_SEGMENT_CLASS, tone)}>
+        <KeyRound class="size-2.5" />
+      </kbd>
+    {/if}
+    {#each labels as label, index (`${index}-${label.text}`)}
+      <kbd class={cn(KEY_SEGMENT_CLASS, tone)}>
+        {#if label.icon}
+          {@const Icon = KEY_ICONS[label.icon]}
+          <Icon class="size-2.5" />
+        {:else}
+          {label.text}
+        {/if}
+      </kbd>
+    {/each}
+  </span>
+</span>

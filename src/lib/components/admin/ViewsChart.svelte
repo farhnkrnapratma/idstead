@@ -1,11 +1,14 @@
 <script lang="ts">
-  import {Chart, Svg, Axis, Spline, Tooltip, Highlight} from 'layerchart';
-  import {SvelteMap} from 'svelte/reactivity';
+  import {Chart, Svg, Axis, Spline, Bars, Tooltip, Highlight} from 'layerchart';
+  import {ChartColumnBig, ChartSpline} from '@lucide/svelte';
+  import {onMount} from 'svelte';
+
   import {scaleBand, scaleLinear} from 'd3-scale';
-  import {curveMonotoneX} from 'd3-shape';
-  import {timeDay, timeHour} from 'd3-time';
-  import {timeFormat} from 'd3-time-format';
+  import {curveLinear} from 'd3-shape';
+
   import Chip from '../Chip.svelte';
+  import DataTable from '../DataTable.svelte';
+  import Button from '../Button.svelte';
   import LoadingState from '../LoadingState.svelte';
   import ErrorState from '../ErrorState.svelte';
   import {cn} from '$lib/utils/cn';
@@ -16,17 +19,25 @@
   } from './viewsRange';
 
   interface Props {
-    range: ViewsRange;
+    ceiling?: number;
+    range?: ViewsRange;
+    timeZone?: string;
+    title?: string;
+    description?: string;
     data: ViewsBucketRow[];
     isLoading?: boolean;
     error?: string;
-    onRangeChange: (range: ViewsRange) => void;
+    onRangeChange?: (range: ViewsRange) => void;
     onRetry?: () => void;
     class?: string;
   }
 
   let {
+    ceiling = 4,
     range,
+    timeZone = 'UTC',
+    title = 'Recorded reads',
+    description = 'Recorded once per article and IP hash. This is not a count of unique people across the blog.',
     data = [],
     isLoading = false,
     error = '',
@@ -35,53 +46,95 @@
     class: className = ''
   }: Props = $props();
 
-  const formatHour = timeFormat('%H:00');
-  const formatDay = timeFormat('%b %d');
+  const series = $derived(
+    data.map(row => ({
+      label: new Intl.DateTimeFormat('en-US', {
+        timeZone,
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZoneName: 'short'
+      }).format(new Date(row.bucket)),
+      views: Number(row.views),
+      partial: 'partial' in row && row.partial ? 'Partial interval' : ''
+    }))
+  );
+  const maxViews = $derived(Math.max(ceiling, ...series.map(d => d.views)));
+  const tickCount = $derived(Math.min(6, series.length));
+  let showTable = $state(false);
+  let chartType = $state<'spline' | 'bar'>('spline');
 
-  const series = $derived.by(() => {
-    const config = VIEWS_RANGES[range];
-    const counts = new SvelteMap<number, number>();
-    for (const row of data) {
-      counts.set(new Date(row.bucket).getTime(), Number(row.views) || 0);
+  onMount(() => {
+    let saved: string | null = null;
+    try {
+      saved = localStorage.getItem('admin-views-chart-type');
+    } catch {}
+    if (saved === 'bar' || saved === 'spline') {
+      chartType = saved;
     }
-
-    const now = new Date();
-    const interval = config.bucket === 'hour' ? timeHour : timeDay;
-    const start = interval.offset(interval.floor(now), -(config.buckets - 1));
-    const format = config.bucket === 'hour' ? formatHour : formatDay;
-
-    return interval
-      .range(start, interval.offset(now, 1))
-      .map(date => ({
-        label: format(date),
-        views: counts.get(date.getTime()) ?? 0
-      }));
   });
 
-  const maxViews = $derived(Math.max(4, ...series.map(d => d.views)));
-  const tickCount = $derived(range === '30d' ? 8 : 6);
+  function setChartType(type: 'spline' | 'bar') {
+    chartType = type;
+    try {
+      localStorage.setItem('admin-views-chart-type', type);
+    } catch {}
+  }
 </script>
 
 <div class={cn('flex flex-col gap-3', className)}>
   <div class="flex flex-wrap items-center justify-between gap-2">
     <div class="flex flex-col gap-0.5">
-      <h3 class="text-xs font-bold text-text-secondary">Blog readers</h3>
+      <h3 class="text-xs font-bold text-text-secondary">{title}</h3>
       <p class="text-2xs text-text-muted">
-        Counted once per reader, per post, per day
+        {description}
       </p>
     </div>
-    <div
-      class="flex items-center gap-1.5"
-      role="group"
-      aria-label="Views range">
-      {#each Object.entries(VIEWS_RANGES) as [id, config] (id)}
+    <div class="flex items-center gap-2">
+      <div
+        class="flex items-center gap-1"
+        role="group"
+        aria-label="Chart type">
         <Chip
           size="sm"
-          active={range === id}
-          onclick={() => onRangeChange(id as ViewsRange)}>
-          {config.label}
+          active={chartType === 'spline'}
+          onclick={() => setChartType('spline')}
+          ariaLabel="Line chart"
+          title="Line chart">
+          <ChartSpline class="size-3.5" />
         </Chip>
-      {/each}
+        <Chip
+          size="sm"
+          active={chartType === 'bar'}
+          onclick={() => setChartType('bar')}
+          ariaLabel="Bar chart"
+          title="Bar chart">
+          <ChartColumnBig class="size-3.5" />
+        </Chip>
+      </div>
+
+      {#if range && onRangeChange}
+        <div
+          class="flex items-center gap-1.5"
+          role="group"
+          aria-label="Views range">
+          {#each Object.entries(VIEWS_RANGES) as [id, config] (id)}
+            <Chip
+              size="sm"
+              active={range === id}
+              onclick={() => onRangeChange?.(id as ViewsRange)}
+              >{config.label}</Chip>
+          {/each}
+        </div>
+      {/if}
+      <Button
+        type="ghost"
+        size="sm"
+        onclick={() => (showTable = !showTable)}
+        aria-expanded={showTable}
+        >{showTable ? 'Hide data table' : 'View data table'}</Button>
     </div>
   </div>
 
@@ -95,11 +148,14 @@
       size="inline"
       {onRetry} />
   {:else}
-    <div class="h-65 w-full">
+    <div
+      class="h-65 w-full"
+      role="img"
+      aria-label={`${title} over time. Exact values are available in the data table.`}>
       <Chart
         data={series}
         x="label"
-        xScale={scaleBand().padding(0.05)}
+        xScale={scaleBand().padding(chartType === 'bar' ? 0.25 : 0.05)}
         y="views"
         yScale={scaleLinear()}
         yDomain={[0, maxViews]}
@@ -109,6 +165,7 @@
             placement="bottom"
             grid={false}
             ticks={tickCount}
+            tickOcclusion
             tickLabelProps={{stroke: 'none', strokeWidth: 0}}
             classes={{
               tick: 'text-xs sm:text-sm fill-text-muted font-mono',
@@ -126,27 +183,40 @@
               tick: 'text-xs sm:text-sm fill-text-muted font-mono',
               rule: 'stroke-border-subtle'
             }} />
-          <Spline
-            class="stroke-2"
-            curve={curveMonotoneX}
-            stroke="var(--color-accent)" />
-          <Highlight
-            points={{
-              class: 'fill-surface-card stroke-2',
-              stroke: 'var(--color-accent)',
-              r: 4
-            }}
-            lines={{class: 'stroke-border-subtle'}} />
+          {#if chartType === 'bar'}
+            <Bars
+              radius={3}
+              fill="var(--color-accent)"
+              class="transition-opacity duration-200 hover:opacity-85" />
+            <Highlight area={{class: 'fill-surface-hover/30'}} />
+          {:else}
+            <Spline
+              class="stroke-2"
+              curve={curveLinear}
+              stroke="var(--color-accent)" />
+            <Highlight
+              points={{
+                class: 'fill-surface-card stroke-2',
+                stroke: 'var(--color-accent)',
+                r: 4
+              }}
+              lines={{class: 'stroke-border-subtle'}} />
+          {/if}
         </Svg>
         <Tooltip.Root>
-          {#snippet children({data}: {data: {label: string; views: number}})}
+          {#snippet children({
+            data
+          }: {
+            data: {label: string; views: number; partial: string};
+          })}
             {#if data}
               <div
                 class="rounded-md border border-border-subtle bg-surface-elevated px-2.5 py-1.5 text-xs shadow-md">
                 <div class="font-medium text-text-primary">{data.label}</div>
                 <div class="font-mono font-semibold text-accent">
                   {data.views}
-                  {data.views === 1 ? 'reader' : 'readers'}
+                  {title.toLowerCase()}
+                  {data.partial}
                 </div>
               </div>
             {/if}
@@ -154,5 +224,15 @@
         </Tooltip.Root>
       </Chart>
     </div>
+    {#if showTable}
+      <DataTable
+        caption={`${title} by interval, ${timeZone}`}
+        columns={[
+          {key: 'label', header: 'Interval'},
+          {key: 'views', header: title, align: 'right'},
+          {key: 'partial', header: 'Status'}
+        ]}
+        data={series} />
+    {/if}
   {/if}
 </div>

@@ -7,6 +7,7 @@
   import {ConsentBanner, Toast, ScrollToTopButton, FeedbackButton} from '$lib';
   import ShortcutCatalogDialog from '$lib/components/ShortcutCatalogDialog.svelte';
   import ShortcutModeIndicator from '$lib/components/ShortcutModeIndicator.svelte';
+  import {platformStore} from '$lib/stores/platformStore.svelte';
 
   import {themeStore} from '$lib/stores/themeStore.svelte';
   import {a11yStore} from '$lib/stores/a11yStore.svelte';
@@ -42,6 +43,7 @@
   );
 
   onMount(() => {
+    platformStore.detect();
     const cleanupTheme = themeStore.init();
     const cleanupA11y = a11yStore.init();
     const cleanupCodeBlockPrefs = codeBlockPrefsStore.init(
@@ -137,7 +139,7 @@
   <link
     rel="describedby"
     type="text/markdown"
-    title="Public API Documentation"
+    title="Public API documentation"
     href="/api/v1" />
 </svelte:head>
 

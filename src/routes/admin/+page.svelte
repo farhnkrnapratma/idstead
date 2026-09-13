@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {adminUrl, navigateAdmin} from '$lib/adminNavigation';
   import {bannerUrl} from '$lib/blogBanner';
   import {
     submitPost,
@@ -16,18 +17,21 @@
   import ProfileImageUpload from '$lib/components/ProfileImageUpload.svelte';
   import type {ImagePackage, ManifestSettings} from '$lib/siteIdentity';
   import {page} from '$app/state';
-  import {replaceState, invalidateAll} from '$app/navigation';
+  import {invalidateAll} from '$app/navigation';
   import {supabase} from '$lib/supabase';
   import {
     FileText,
+    BookA,
+    Quote,
     User,
     FileUser,
     Layers,
     Share2,
-    HandHeart,
+    HeartHandshake,
     Send,
+    AtSign,
     Lock,
-    ShieldCheck,
+    ShieldUser,
     ScrollText,
     Image as ImageIcon,
     ZoomIn,
@@ -39,6 +43,7 @@
     CopyCheck,
     SquareArrowOutUpRight,
     Download,
+    Hash,
     X,
     Plus,
     Pencil,
@@ -50,16 +55,18 @@
     MessageCircle,
     CircleDotDashed,
     CircleCheckBig,
+    FileXCorner,
     AlertTriangle,
     Languages,
     Pin,
     PinOff,
-    FolderGit2,
+    FolderOpen,
     Sparkles,
     ChevronUp,
     ChevronDown,
     Bell,
-    House
+    House,
+    RefreshCw
   } from '@lucide/svelte';
   import hljs from 'highlight.js';
   import {a11yStore} from '$lib/stores/a11yStore.svelte';
@@ -71,9 +78,11 @@
   import {onDestroy, onMount, tick, untrack} from 'svelte';
   import {SvelteSet} from 'svelte/reactivity';
   import {TRANSLATION_LOCALES} from '$lib/translationLocales';
-  import CommentReportList from '$lib/components/admin/CommentReportList.svelte';
-  import type {ActivityFocus, AdminNotificationRow} from '$lib/adminActivity';
+  import type {AdminNotificationRow} from '$lib/adminActivity';
   import AdminHome from '$lib/components/admin/AdminHome.svelte';
+  import ActivityWorkspace from '$lib/components/admin/ActivityWorkspace.svelte';
+  import {adminActivityRequest} from '$lib/adminActivityClient';
+  import type {WorkspaceArea, WorkspacePage} from '$lib/adminWorkspace';
   import AdminNotificationBell from '$lib/components/admin/AdminNotificationBell.svelte';
   import {shortcut} from '$lib/utils/shortcut.svelte';
   import {adminNotificationsStore} from '$lib/stores/adminNotificationsStore.svelte';
@@ -212,9 +221,24 @@
     is_approved: boolean;
     created_at: string;
     posts?: {title: string};
+    reports?: number;
   }
 
   let comments = $state<AdminComment[]>([]);
+  let commentPages = $state<
+    Record<
+      string,
+      {
+        cursor: string | null;
+        next: string | null;
+        total: number;
+        previous: Array<string | null>;
+        focused: boolean;
+      }
+    >
+  >({});
+  let commentsLoading = $state<Record<string, boolean>>({});
+  let commentsError = $state<Record<string, string>>({});
   let replyTo = $state<AdminComment | null>(null);
   let commentContent = $state('');
   let replyError = $state('');
@@ -230,24 +254,13 @@
   onDestroy(() => replyValidation.destroy());
   let isSubmitting = $state(false);
 
-  interface CommentReport {
-    id: string;
-    comment_id: string;
-    reason: string;
-    details?: string;
-    created_at: string;
-  }
-
-  let commentReports = $state<CommentReport[]>([]);
   let commentFilterReportedOnly = $state(false);
-  const expandedReportIds = new SvelteSet<string>();
 
   let focusedCommentId = $state<string | null>(null);
   let focusHighlightTimer: ReturnType<typeof setTimeout>;
 
-  let activityFocus = $state<ActivityFocus | null>(null);
-
   function selectNotification(item: AdminNotificationRow) {
+    if (item.kind === 'comment_report' && !item.comment_id) return;
     if (item.kind === 'comment_new') {
       if (item.post_id && item.comment_id)
         void focusComment(item.post_id, item.comment_id);
@@ -259,17 +272,14 @@
       || item.kind === 'legal_feedback'
     ) {
       if (!item.page_id || !item.page_type) return;
-      activityFocus = {
-        section: item.kind === 'comment_report' ? 'reports' : 'feedback',
-        pageType: item.page_type,
-        pageId: item.page_id,
-        commentId: item.comment_id ?? undefined,
-        eventId: item.source_id ?? undefined,
-        reason: item.meta?.reason,
-        notification: item,
-        requestId: crypto.randomUUID()
-      };
-      selectTab('home');
+      openWorkspace(
+        item.kind === 'comment_report' ? 'reports' : 'feedback',
+        item.kind === 'comment_report' ?
+          (item.comment_id ?? undefined)
+        : `${item.page_type}:${item.page_id}`,
+        item.source_id ?? undefined,
+        item.id
+      );
     }
   }
 
@@ -318,9 +328,10 @@
   }
 
   async function focusComment(postId: string, commentId: string) {
+    await ensureTabData('posts');
+    await fetchComments(postId, commentId);
     await focusPost(postId);
     expandedPostIds.add(postId);
-    expandedReportIds.add(commentId);
     focusedCommentId = commentId;
     await tick();
 
@@ -333,25 +344,11 @@
     }, 4000);
   }
 
-  function toggleReportDetails(commentId: string) {
-    if (expandedReportIds.has(commentId)) {
-      expandedReportIds.delete(commentId);
-      return;
-    }
-    expandedReportIds.add(commentId);
-  }
-
-  let commentReportsMap = $derived.by(() => {
-    const map: Record<string, CommentReport[]> = {};
-    for (const r of commentReports) {
-      if (!map[r.comment_id]) map[r.comment_id] = [];
-      map[r.comment_id].push(r);
-    }
-    return map;
-  });
-
   const ADMIN_TAB_IDS = [
     'home',
+    'reports',
+    'feedback',
+    'notifications',
     'posts',
     'projects',
     'profile',
@@ -359,7 +356,7 @@
     'skills',
     'glossary',
     'socials',
-    'sponsorship',
+    'funding',
     'contact',
     'privacy',
     'security',
@@ -374,17 +371,46 @@
       : 'home';
   }
 
-  let activeAdminTab = $state<AdminTab>(
-    resolveInitialTab(page.url.searchParams.get('tab'))
+  let activeAdminTab = $derived(
+    resolveInitialTab(adminUrl().searchParams.get('tab'))
   );
   let sidebarMobileOpen = $state(false);
 
   function selectTab(id: AdminTab) {
-    activeAdminTab = id;
     sidebarMobileOpen = false;
-    const url = new URL(page.url);
+    const url = adminUrl();
     url.searchParams.set('tab', id);
-    replaceState(resolve(`/admin?${url.searchParams.toString()}`), page.state);
+    for (const key of [
+      'selected',
+      'notificationId',
+      'cursor',
+      'detailCursor',
+      'focus',
+      'detailQuery',
+      'detailReason',
+      'query',
+      'type',
+      'read',
+      'sort',
+      'direction',
+      'minimum',
+      'postId',
+      'reason',
+      'vote'
+    ])
+      url.searchParams.delete(key);
+    if (id === 'reports' || id === 'notifications') {
+      url.searchParams.set('range', 'all');
+      url.searchParams.delete('from');
+      url.searchParams.delete('to');
+    } else if (url.searchParams.get('range') === 'all') {
+      url.searchParams.delete('range');
+      url.searchParams.delete('from');
+      url.searchParams.delete('to');
+      url.searchParams.delete('timeZone');
+    }
+    navigateAdmin(url);
+    void ensureTabData(id);
     if (id === 'privacy' || id === 'security' || id === 'terms') {
       checkLegalDrafts();
     }
@@ -859,11 +885,43 @@
     filename: '',
     fileUrl: '',
     hash: '',
-    isActive: true
+    isActive: false
   });
   let isGeneratingPdf = $state(false);
-  let copiedHash = $state(false);
   let isDownloadingCv = $state(false);
+  let isDownloadingChecksum = $state(false);
+
+  const isCvAvailable = $derived(
+    Boolean(cvDocState?.filename && cvDocState?.isActive)
+  );
+
+  const cvLastUpdated = $derived.by(() => {
+    if (!cvDocState?.updatedAt) return '';
+    const d = new Date(cvDocState.updatedAt);
+    if (isNaN(d.getTime())) return '';
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    }).format(d);
+  });
+
+  const cvVersion = $derived.by(() => {
+    if (!cvDocState?.filename) return '';
+    const match =
+      cvDocState.filename.match(/-v(\d+\.\d+\.\d+)\.pdf$/i)
+      || cvDocState.filename.match(/(v\d+\.\d+\.\d+)/i);
+    return (
+      match ?
+        match[1].startsWith('v') ?
+          match[1]
+        : `v${match[1]}`
+      : ''
+    );
+  });
 
   async function downloadCvDocument() {
     if (!cvDocState.fileUrl) return;
@@ -883,6 +941,25 @@
       window.open(cvDocState.fileUrl, '_blank');
     } finally {
       isDownloadingCv = false;
+    }
+  }
+
+  function downloadCvChecksum() {
+    if (!cvDocState.hash || !cvDocState.filename) return;
+    isDownloadingChecksum = true;
+    try {
+      const content = `${cvDocState.hash}  ${cvDocState.filename}\n`;
+      const blob = new Blob([content], {type: 'text/plain;charset=utf-8'});
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = objectUrl;
+      a.download = `${cvDocState.filename}.sha256`;
+      a.click();
+      URL.revokeObjectURL(objectUrl);
+    } catch {
+      toastStore.error('Failed to download checksum');
+    } finally {
+      isDownloadingChecksum = false;
     }
   }
 
@@ -1136,7 +1213,8 @@
   let isClearingAuthor = $state(false);
 
   let pdfUploadError = $state('');
-  let pdfUploadSuccess = $state('');
+  let pdfGeneratedFilename = $state('');
+  let pdfDeleteSuccess = $state(false);
 
   let isSavingCv = $state(false);
   let cvSaveSuccess = $state(false);
@@ -1234,7 +1312,7 @@
   function getPostComments(postId: string): AdminComment[] {
     let postComments = comments.filter(c => c.post_id === postId);
     if (commentFilterReportedOnly) {
-      postComments = postComments.filter(c => commentReportsMap[c.id]?.length);
+      postComments = postComments.filter(c => c.reports);
     }
     return postComments;
   }
@@ -1362,6 +1440,7 @@
       expandedPostIds.delete(postId);
     } else {
       expandedPostIds.add(postId);
+      void fetchComments(postId);
     }
   }
 
@@ -1524,13 +1603,10 @@
 
       try {
         await Promise.allSettled([
-          fetchPosts(),
-          fetchComments(),
-          loadAdminData(),
-          loadLegalPagesFromSupabase(),
+          ensureTabData(activeAdminTab),
           adminNotificationsStore.load()
         ]);
-        if (active) adminNotificationsStore.subscribe(refreshAdminActivity);
+        if (active) adminNotificationsStore.subscribe();
       } catch (err) {
         console.error('Error loading admin dashboard data:', err);
       } finally {
@@ -1688,37 +1764,103 @@
     }
   }
 
-  async function fetchComments() {
-    try {
-      const [{data, error}, {data: reportsData, error: reportsError}] =
-        await Promise.all([
-          supabase
-            .from('db_comments')
-            .select('*, posts:post_id(title)')
-            .order('created_at', {ascending: false})
-            .abortSignal(AbortSignal.timeout(10000)),
-          supabase
-            .from('db_comment_reports')
-            .select('id, comment_id, reason, details, created_at')
-            .order('created_at', {ascending: false})
-            .abortSignal(AbortSignal.timeout(10000))
-        ]);
-
-      if (error) throw error;
-      if (reportsError) throw reportsError;
-      comments = (data as any) || [];
-      commentReports = (reportsData as any) || [];
+  async function fetchComments(
+    postId?: string,
+    focusId?: string,
+    cursor: string | null = null
+  ) {
+    if (!postId) {
+      await Promise.all([...expandedPostIds].map(id => fetchComments(id)));
       return true;
-    } catch (err) {
-      console.error('Error fetching admin comments:', err);
+    }
+    commentsLoading[postId] = true;
+    try {
+      const result = await adminActivityRequest<
+        Omit<WorkspacePage, 'items'> & {items: {comment: AdminComment}[]}
+      >('workspace', {
+        section: 'comments',
+        id: postId,
+        ...(focusId ? {focus: focusId} : {}),
+        ...(cursor ? {cursor, meta: 'false'} : {}),
+        ...(commentFilterReportedOnly ? {reason: 'other'} : {})
+      });
+      comments = [
+        ...comments.filter(c => c.post_id !== postId),
+        ...result.items.map(item => item.comment)
+      ];
+      const previous = commentPages[postId]?.previous ?? [];
+      commentPages[postId] = {
+        cursor,
+        next: result.nextCursor,
+        total: result.total ?? commentPages[postId]?.total ?? 0,
+        previous,
+        focused: !!focusId
+      };
+      commentsError[postId] = '';
+      return true;
+    } catch (caught) {
+      commentsError[postId] =
+        caught instanceof Error ? caught.message : 'Unable to load comments.';
       return false;
+    } finally {
+      commentsLoading[postId] = false;
     }
   }
+  async function pageComments(postId: string, next: boolean) {
+    const state = commentPages[postId];
+    if (!state) return;
+    if (next) {
+      state.previous.push(state.cursor);
+      await fetchComments(postId, undefined, state.next);
+    } else await fetchComments(postId, undefined, state.previous.pop() ?? null);
+  }
 
-  async function refreshAdminActivity() {
-    const results = await Promise.all([fetchPosts(false), fetchComments()]);
-    if (results.some(result => !result))
-      throw new Error('Activity unavailable');
+  let supplementaryLoaded = false;
+  let legalLoaded = false;
+  let postsLoaded = false;
+  const tabRequests: Partial<Record<string, Promise<void>>> = {};
+  async function ensureTabData(tab: AdminTab) {
+    if (['home', 'reports', 'feedback', 'notifications'].includes(tab)) return;
+    const group =
+      tab === 'posts' ? 'posts'
+      : ['privacy', 'security', 'terms'].includes(tab) ? 'legal'
+      : 'supplementary';
+    if (
+      (group === 'posts' && postsLoaded)
+      || (group === 'legal' && legalLoaded)
+      || (group === 'supplementary' && supplementaryLoaded)
+    )
+      return;
+    if (tabRequests[group]) return tabRequests[group];
+    const request = (async () => {
+      if (group === 'posts') postsLoaded = await fetchPosts();
+      else if (group === 'legal') {
+        await loadLegalPagesFromSupabase();
+        legalLoaded = true;
+      } else {
+        await loadAdminData();
+        supplementaryLoaded = true;
+      }
+    })();
+    tabRequests[group] = request;
+    try {
+      await request;
+    } finally {
+      delete tabRequests[group];
+    }
+  }
+  function openWorkspace(
+    area: WorkspaceArea,
+    id?: string,
+    eventId?: string,
+    notificationId?: string
+  ) {
+    selectTab(area);
+    const url = adminUrl();
+    if (id) url.searchParams.set('selected', id);
+    if (eventId) url.searchParams.set('focus', eventId);
+    if (notificationId) url.searchParams.set('notificationId', notificationId);
+    navigateAdmin(url, true);
   }
 
   async function handleLogout() {
@@ -1897,35 +2039,19 @@
     showDeleteCommentDialog = true;
   }
 
-  function getCommentDescendantIds(
-    targetId: string,
-    allComments: AdminComment[]
-  ): string[] {
-    const ids = new SvelteSet<string>([targetId]);
-    let prevSize = 0;
-    while (ids.size > prevSize) {
-      prevSize = ids.size;
-      for (const c of allComments) {
-        if (c.parent_id && ids.has(c.parent_id)) {
-          ids.add(c.id);
-        }
-      }
-    }
-    return Array.from(ids);
-  }
-
   async function executeDeleteComment() {
     if (!commentIdToDelete) return;
     try {
-      const idsToDelete = getCommentDescendantIds(commentIdToDelete, comments);
-
-      const {error} = await supabase
-        .from('db_comments')
-        .delete()
-        .in('id', idsToDelete);
-      if (error) throw error;
-
-      comments = comments.filter(c => !idsToDelete.includes(c.id));
+      const postId = comments.find(
+        comment => comment.id === commentIdToDelete
+      )?.post_id;
+      await adminActivityRequest(
+        'workspace',
+        {},
+        {action: 'delete_comment', id: commentIdToDelete}
+      );
+      if (postId) await fetchComments(postId);
+      await adminNotificationsStore.load();
       toastStore.success('Comment deleted.');
     } catch (err) {
       console.error('Error deleting comment:', err);
@@ -1948,7 +2074,10 @@
         body: JSON.stringify({commentId})
       });
       if (!res.ok) throw new Error('Failed to dismiss reports');
-      commentReports = commentReports.filter(r => r.comment_id !== commentId);
+      comments = comments.map(comment =>
+        comment.id === commentId ? {...comment, reports: 0} : comment
+      );
+      await adminNotificationsStore.load();
       toastStore.success('Reports dismissed.');
     } catch (err) {
       console.error('Error dismissing comment reports:', err);
@@ -2456,11 +2585,10 @@
       listValidation.reset();
       sponsorshipSaveSuccess = true;
       setTimeout(() => (sponsorshipSaveSuccess = false), 2500);
-      toastStore.success('Sponsorship links saved.');
+      toastStore.success('Funding links saved.');
     } catch (err: any) {
-      console.error('Error saving sponsorship links:', err);
-      const msg =
-        err?.message || err?.error || 'Failed to save sponsorship links.';
+      console.error('Error saving funding links:', err);
+      const msg = err?.message || err?.error || 'Failed to save funding links.';
       toastStore.error(msg);
     } finally {
       isSavingSponsorship = false;
@@ -2515,7 +2643,8 @@
   ) {
     isGeneratingPdf = true;
     pdfUploadError = '';
-    pdfUploadSuccess = '';
+    pdfGeneratedFilename = '';
+    pdfDeleteSuccess = false;
 
     try {
       const {
@@ -2555,11 +2684,11 @@
         filename: res.filename,
         fileUrl: res.fileUrl,
         hash: res.hash,
-        isActive: true
+        isActive: true,
+        updatedAt: new Date().toISOString()
       };
 
-      const provider = res.storageProvider || 'R2';
-      pdfUploadSuccess = `Successfully generated ${res.filename} (v${res.version}) & synced to ${provider}!`;
+      pdfGeneratedFilename = res.filename;
       toastStore.success(`CV PDF generated (v${res.version})`);
     } catch (err: any) {
       console.error('PDF generation error:', err);
@@ -2606,10 +2735,17 @@
       const result = await response.json().catch(() => ({}));
 
       if (response.ok) {
-        cvDocState = {filename: '', fileUrl: '', hash: '', isActive: false};
-        pdfUploadSuccess = 'CV document deleted successfully.';
-        setTimeout(() => (pdfUploadSuccess = ''), 3000);
-        toastStore.success('CV document deleted.');
+        cvDocState = {
+          filename: '',
+          fileUrl: '',
+          hash: '',
+          isActive: false,
+          updatedAt: undefined
+        };
+        pdfGeneratedFilename = '';
+        pdfDeleteSuccess = true;
+        setTimeout(() => (pdfDeleteSuccess = false), 3000);
+        toastStore.success('CV deleted.');
       } else {
         const errMsg =
           typeof result?.message === 'string' ? result.message
@@ -2680,7 +2816,7 @@
     'cv-education': 'this education entry',
     skill: 'this skill category',
     social: 'this social link',
-    sponsorship: 'this sponsorship link',
+    sponsorship: 'this funding link',
     contact: 'this contact'
   };
   const removeEntryTitles: Record<RemovableEntry, string> = {
@@ -2688,7 +2824,7 @@
     'cv-education': 'Delete Education',
     skill: 'Delete Skill Category',
     social: 'Delete Social Link',
-    sponsorship: 'Delete Sponsorship',
+    sponsorship: 'Delete Funding',
     contact: 'Delete Contact'
   };
   const removeEntryMessage = $derived(
@@ -2799,28 +2935,36 @@
     icon: any;
     section: 'overview' | 'content' | 'profile' | 'legal';
   }[] = [
-    {id: 'home', label: 'Home', icon: House, section: 'overview'},
-    {id: 'posts', label: 'Posts', icon: FileText, section: 'content'},
-    {id: 'glossary', label: 'Glossary', icon: Languages, section: 'content'},
-    {id: 'projects', label: 'Projects', icon: FolderGit2, section: 'content'},
+    {id: 'home', label: 'Overview', icon: House, section: 'overview'},
+    {id: 'reports', label: 'Reports', icon: AlertTriangle, section: 'overview'},
+    {
+      id: 'feedback',
+      label: 'Feedback',
+      icon: MessageCircle,
+      section: 'overview'
+    },
+    {
+      id: 'notifications',
+      label: 'Notifications',
+      icon: Bell,
+      section: 'overview'
+    },
+    {id: 'posts', label: 'Posts', icon: Quote, section: 'content'},
+    {id: 'glossary', label: 'Glossary', icon: BookA, section: 'content'},
+    {id: 'projects', label: 'Projects', icon: FolderOpen, section: 'content'},
     {id: 'profile', label: 'Profile', icon: User, section: 'profile'},
     {id: 'resume', label: 'Resume', icon: FileUser, section: 'profile'},
     {id: 'skills', label: 'Skills', icon: Layers, section: 'profile'},
     {id: 'socials', label: 'Social Links', icon: Share2, section: 'profile'},
+    {id: 'funding', label: 'Funding', icon: HeartHandshake, section: 'profile'},
+    {id: 'contact', label: 'Contact', icon: AtSign, section: 'profile'},
     {
-      id: 'sponsorship',
-      label: 'Sponsorship',
-      icon: HandHeart,
-      section: 'profile'
-    },
-    {id: 'contact', label: 'Contact', icon: Send, section: 'profile'},
-    {id: 'privacy', label: 'Privacy Policy', icon: Lock, section: 'legal'},
-    {
-      id: 'security',
-      label: 'Security Policy',
-      icon: ShieldCheck,
+      id: 'privacy',
+      label: 'Privacy Policy',
+      icon: ShieldUser,
       section: 'legal'
     },
+    {id: 'security', label: 'Security Policy', icon: Lock, section: 'legal'},
     {id: 'terms', label: 'Terms of Service', icon: ScrollText, section: 'legal'}
   ];
 </script>
@@ -2834,19 +2978,21 @@
 <Dialog
   isOpen={showSessionTimeoutDialog}
   onClose={() => {}}
+  showCloseButton={false}
+  closeOnBackdrop={false}
+  closeOnEscape={false}
   title="Session Timeout Warning"
-  class="max-w-md">
-  <div class="flex flex-col gap-6 py-2">
+  size="md">
+  <div class="flex flex-col items-center py-2 text-center">
     <p class="text-sm text-text-secondary">
       Your admin session is about to expire due to inactivity. Would you like to
       extend your session or log out?
     </p>
 
-    <div
-      class="flex flex-col items-center gap-5 sm:flex-row sm:justify-between sm:gap-4">
-      <div class="relative flex h-16 w-16 shrink-0 items-center justify-center">
+    <div class="my-5 flex flex-col items-center justify-center">
+      <div class="relative flex size-20 shrink-0 items-center justify-center">
         <svg
-          class="h-16 w-16 -rotate-90 transform"
+          class="size-20 -rotate-90 transform"
           viewBox="0 0 48 48">
           <circle
             cx="24"
@@ -2867,67 +3013,74 @@
             stroke-dasharray="125.66"
             stroke-dashoffset={125.66 * (1 - countdownSeconds / 30)} />
         </svg>
-        <span class="absolute font-mono text-sm font-bold text-accent">
+        <span class="absolute font-mono text-base font-bold text-accent">
           {countdownSeconds}s
         </span>
       </div>
-
-      <div
-        class="flex w-full flex-col-reverse gap-2.5 sm:w-auto sm:flex-row sm:items-center sm:gap-3">
-        <Button
-          htmlType="button"
-          type="danger"
-          tone="critical"
-          size="md"
-          class="w-full sm:w-auto"
-          onclick={handleLogout}
-          disabled={isLoggingOut}>
-          Sign out
-        </Button>
-        <Button
-          htmlType="button"
-          type="primary"
-          size="md"
-          class="w-full sm:w-auto"
-          onclick={handleExtendSession}>
-          Extend session
-        </Button>
-      </div>
+      <span class="mt-3 text-xs text-text-muted">
+        Signing out automatically in <strong class="font-mono text-text-primary"
+          >{countdownSeconds}s</strong>
+      </span>
     </div>
   </div>
+
+  {#snippet footer()}
+    <div class="grid w-full grid-cols-2 gap-3">
+      <Button
+        htmlType="button"
+        type="danger"
+        tone="critical"
+        size="md"
+        fullWidth
+        onclick={handleLogout}
+        disabled={isLoggingOut}>
+        Sign out
+      </Button>
+      <Button
+        htmlType="button"
+        type="primary"
+        size="md"
+        fullWidth
+        onclick={handleExtendSession}>
+        Extend session
+      </Button>
+    </div>
+  {/snippet}
 </Dialog>
 
 <div
-  class="fixed top-0 z-40 flex h-14 w-full items-center justify-between border-b border-border-subtle bg-surface-card px-4 md:hidden">
+  class="fixed top-0 z-40 flex h-10 w-full items-center justify-between border-b border-border-subtle bg-surface-card px-4 md:hidden">
   <div class="flex items-center gap-2">
     <Button
       type="secondary"
-      size="sm"
-      class="size-8 shrink-0 p-0 sm:size-9"
+      size="2xs"
+      class="size-7 shrink-0 p-0"
       onclick={() => (sidebarMobileOpen = !sidebarMobileOpen)}
       aria-expanded={sidebarMobileOpen}
       aria-label={sidebarMobileOpen ? 'Close sidebar' : 'Open sidebar'}
       title={sidebarMobileOpen ? 'Close sidebar' : 'Open sidebar'}>
       {#if sidebarMobileOpen}
-        <X class="size-4 sm:size-5" />
+        <X class="size-4" />
       {:else}
-        <Menu class="size-4 sm:size-5" />
+        <Menu class="size-4" />
       {/if}
     </Button>
-    <span class="text-base font-bold text-text-primary">Admin Console</span>
+    <span class="text-sm font-bold text-text-primary">Admin Console</span>
   </div>
   <div class="flex items-center gap-1.5">
     <AdminNotificationBell
       id="mobile"
-      onSelect={selectNotification} />
+      size="2xs"
+      onOpen={group => openWorkspace('notifications', group)} />
     <ThemeSelect
       variant="ghost"
+      size="2xs"
       theme={themeStore.current}
       onThemeChange={themeStore.apply} />
   </div>
 </div>
 
-<div class="flex min-h-screen pt-14 md:pt-0">
+<div class="flex min-h-screen pt-10 md:pt-0">
   <aside
     class="fixed inset-y-0 left-0 z-50 flex w-56 shrink-0 flex-col justify-between overflow-y-auto border-r border-border-subtle bg-surface-card transition-transform duration-200 ease-in-out md:sticky md:top-0 md:h-screen md:w-56 md:translate-x-0 {(
       sidebarMobileOpen
@@ -2935,28 +3088,29 @@
       'translate-x-0 shadow-2xl'
     : '-translate-x-full'}">
     <div
-      class="sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between border-b border-border-subtle bg-surface-card px-4">
+      class="sticky top-0 z-10 flex h-10 shrink-0 items-center justify-between border-b border-border-subtle bg-surface-card px-4">
       <div class="flex items-center gap-2">
         <Button
           type="secondary"
-          size="sm"
-          class="size-8 shrink-0 p-0 sm:size-9 md:hidden"
+          size="2xs"
+          class="size-7 shrink-0 p-0 md:hidden"
           onclick={() => (sidebarMobileOpen = false)}
           aria-label="Close sidebar"
           title="Close sidebar">
-          <X class="size-4 sm:size-5" />
+          <X class="size-4" />
         </Button>
-        <h1
-          class="text-base font-bold tracking-tight text-text-primary md:text-sm">
+        <h1 class="text-sm font-bold tracking-tight text-text-primary">
           Admin Console
         </h1>
       </div>
       <div class="flex items-center gap-1.5">
         <AdminNotificationBell
           id="sidebar"
-          onSelect={selectNotification} />
+          size="2xs"
+          onOpen={group => openWorkspace('notifications', group)} />
         <ThemeSelect
           variant="ghost"
+          size="2xs"
           theme={themeStore.current}
           onThemeChange={themeStore.apply}
           class="inline-flex" />
@@ -2964,23 +3118,24 @@
     </div>
 
     <nav
-      class="flex flex-1 flex-col px-2.5 py-2 font-sans"
+      class="flex flex-1 flex-col px-2 py-1.5 font-sans"
       aria-label="Admin Navigation">
       <div
-        class="px-2 py-1 text-2xs font-bold tracking-wider text-text-muted uppercase select-none">
+        class="px-2 pt-0.5 pb-1 text-2xs font-bold tracking-wider text-text-muted uppercase select-none">
         Overview
       </div>
       <div class="flex flex-col gap-0.5">
         {#each adminNavLinks.filter(l => l.section === 'overview') as link (link.id)}
           <button
             type="button"
+            aria-current={activeAdminTab === link.id ? 'page' : undefined}
             onclick={() => selectTab(link.id)}
             use:shortcut={{
               group: 'sidebar',
               placement: 'inline',
               label: link.label
             }}
-            class="group relative flex h-8 w-full items-center gap-2.5 rounded-sm px-2.5 text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
+            class="group relative flex h-7 w-full items-center gap-2 rounded-sm px-2 text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
               activeAdminTab === link.id
             ) ?
               'bg-accent-subtle font-bold text-accent shadow-2xs'
@@ -2992,20 +3147,21 @@
       </div>
 
       <div
-        class="mt-3 border-t border-border-subtle/30 px-2 pt-2.5 pb-1 text-2xs font-bold tracking-wider text-text-muted uppercase select-none">
+        class="mt-1.5 px-2 pt-1 pb-1 text-2xs font-bold tracking-wider text-text-muted uppercase select-none">
         Content Management
       </div>
       <div class="flex flex-col gap-0.5">
         {#each adminNavLinks.filter(l => l.section === 'content') as link (link.id)}
           <button
             type="button"
+            aria-current={activeAdminTab === link.id ? 'page' : undefined}
             onclick={() => selectTab(link.id)}
             use:shortcut={{
               group: 'sidebar',
               placement: 'inline',
               label: link.label
             }}
-            class="group relative flex h-8 w-full items-center gap-2.5 rounded-sm px-2.5 text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
+            class="group relative flex h-7 w-full items-center gap-2 rounded-sm px-2 text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
               activeAdminTab === link.id
             ) ?
               'bg-accent-subtle font-bold text-accent shadow-2xs'
@@ -3017,20 +3173,21 @@
       </div>
 
       <div
-        class="mt-3 border-t border-border-subtle/30 px-2 pt-2.5 pb-1 text-2xs font-bold tracking-wider text-text-muted uppercase select-none">
+        class="mt-1.5 px-2 pt-1 pb-1 text-2xs font-bold tracking-wider text-text-muted uppercase select-none">
         Profile & Resume
       </div>
       <div class="flex flex-col gap-0.5">
         {#each adminNavLinks.filter(l => l.section === 'profile') as link (link.id)}
           <button
             type="button"
+            aria-current={activeAdminTab === link.id ? 'page' : undefined}
             onclick={() => selectTab(link.id)}
             use:shortcut={{
               group: 'sidebar',
               placement: 'inline',
               label: link.label
             }}
-            class="group relative flex h-8 w-full items-center gap-2.5 rounded-sm px-2.5 text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
+            class="group relative flex h-7 w-full items-center gap-2 rounded-sm px-2 text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
               activeAdminTab === link.id
             ) ?
               'bg-accent-subtle font-bold text-accent shadow-2xs'
@@ -3042,20 +3199,21 @@
       </div>
 
       <div
-        class="mt-3 border-t border-border-subtle/30 px-2 pt-2.5 pb-1 text-2xs font-bold tracking-wider text-text-muted uppercase select-none">
+        class="mt-1.5 px-2 pt-1 pb-1 text-2xs font-bold tracking-wider text-text-muted uppercase select-none">
         Legal & Policy
       </div>
       <div class="flex flex-col gap-0.5">
         {#each adminNavLinks.filter(l => l.section === 'legal') as link (link.id)}
           <button
             type="button"
+            aria-current={activeAdminTab === link.id ? 'page' : undefined}
             onclick={() => selectTab(link.id)}
             use:shortcut={{
               group: 'sidebar',
               placement: 'inline',
               label: link.label
             }}
-            class="group relative flex h-8 w-full items-center gap-2.5 rounded-sm px-2.5 text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
+            class="group relative flex h-7 w-full items-center gap-2 rounded-sm px-2 text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
               activeAdminTab === link.id
             ) ?
               'bg-accent-subtle font-bold text-accent shadow-2xs'
@@ -3068,9 +3226,9 @@
     </nav>
 
     <div
-      class="sticky bottom-0 z-10 mt-auto shrink-0 border-t border-border-subtle bg-surface-card px-2 py-2.5">
+      class="sticky bottom-0 z-10 mt-auto shrink-0 border-t border-border-subtle bg-surface-card px-2 py-2">
       <div class="flex items-center justify-between gap-2">
-        <div class="flex min-w-0 flex-col truncate px-1">
+        <div class="flex min-w-0 flex-col truncate px-2">
           {#if isLoading || (!authorState.name && !adminUserEmail)}
             <div
               class="h-3 w-20 animate-pulse rounded bg-surface-hover"
@@ -3093,12 +3251,13 @@
 
         <Button
           type="ghost"
-          size="xs"
+          size="2xs"
+          class="size-7 shrink-0 p-0"
           aria-label="Sign out"
           onclick={handleLogout}
           disabled={isLoggingOut}
           isLoading={isLoggingOut}
-          title="Sign out"><LogOut class="size-3.5" /></Button>
+          title="Sign out"><LogOut class="size-4" /></Button>
       </div>
     </div>
   </aside>
@@ -3113,6 +3272,16 @@
 
   <main
     id="main-content"
+    {@attach element => {
+      const tab = activeAdminTab;
+      const scroll = page.state.adminScroll;
+      if (!isLoading)
+        untrack(() => {
+          void ensureTabData(tab);
+        });
+      if (typeof scroll === 'number')
+        queueMicrotask(() => element.scrollTo({top: scroll}));
+    }}
     class="flex-1 overflow-y-auto p-4 pb-24 font-sans sm:p-6 md:h-screen {(
       ['privacy', 'security', 'terms'].includes(activeAdminTab)
     ) ?
@@ -3125,9 +3294,15 @@
         count={3} />
     {:else if activeAdminTab === 'home'}
       <AdminHome
-        focus={activityFocus}
-        onOpenComment={focusComment}
+        onNavigate={openWorkspace}
         onPublished={showPublishedPosts} />
+    {:else if activeAdminTab === 'reports' || activeAdminTab === 'feedback' || activeAdminTab === 'notifications'}
+      {#key activeAdminTab}
+        <ActivityWorkspace
+          area={activeAdminTab}
+          onOpenComment={focusComment}
+          onSelectNotification={selectNotification} />
+      {/key}
     {:else if activeAdminTab === 'posts'}
       <div class="mb-6 flex items-center justify-between gap-3">
         <div>
@@ -3457,19 +3632,17 @@
                       responsiveIconOnly
                       aria-label="{expandedPostIds.has(post.id) ? 'Hide' : (
                         'Show'
-                      )} comments ({getPostComments(post.id).length})"
+                      )} comments"
                       title="{expandedPostIds.has(post.id) ? 'Hide' : (
                         'Show'
-                      )} comments ({getPostComments(post.id).length})"
+                      )} comments"
                       aria-expanded={expandedPostIds.has(post.id)}
                       aria-controls="comments-{post.id}"
                       onclick={() => toggleComments(post.id)}>
                       {#snippet leading()}
                         <MessageCircle class="size-3.5" />
                       {/snippet}
-                      {expandedPostIds.has(post.id) ? 'Hide' : 'Show'} comments ({getPostComments(
-                        post.id
-                      ).length})
+                      {expandedPostIds.has(post.id) ? 'Hide' : 'Show'} comments
                     </Button>
                   </div>
 
@@ -3495,9 +3668,9 @@
                     class="mt-4 border-t border-border-subtle pt-4">
                     <div class="mb-3 flex items-center justify-between gap-2">
                       <h4 class="text-xs font-bold text-text-secondary">
-                        Comments ({getPostComments(post.id).length})
+                        Comments ({commentPages[post.id]?.total ?? 0})
                       </h4>
-                      {#if comments.some(c => c.post_id === post.id && commentReportsMap[c.id]?.length)}
+                      {#if comments.some(c => c.post_id === post.id && c.reports)}
                         <button
                           type="button"
                           class={cn(
@@ -3506,9 +3679,11 @@
                               'border-border-subtle bg-surface-hover text-text-secondary hover:text-accent'
                             : 'border-border-subtle text-text-muted hover:text-text-primary'
                           )}
-                          onclick={() =>
-                            (commentFilterReportedOnly =
-                              !commentFilterReportedOnly)}>
+                          onclick={() => {
+                            commentFilterReportedOnly =
+                              !commentFilterReportedOnly;
+                            void fetchComments(post.id);
+                          }}>
                           <AlertTriangle class="mr-1 inline size-2.5" />
                           {commentFilterReportedOnly ? 'Showing Reported' : (
                             'Filter Reported'
@@ -3516,7 +3691,39 @@
                         </button>
                       {/if}
                     </div>
-                    {#if getPostComments(post.id).length === 0}
+                    {#if commentsError[post.id]}<ErrorState
+                        title="Unable to load comments"
+                        description={commentsError[post.id]}
+                        onRetry={() => fetchComments(post.id)} />{/if}
+                    {#if commentPages[post.id]?.focused}<Button
+                        size="sm"
+                        type="outline"
+                        onclick={() => fetchComments(post.id)}
+                        >Showing linked comment · Show all comments</Button
+                      >{/if}
+                    <nav
+                      aria-label="Comment pagination"
+                      class="mb-3 flex flex-wrap items-center gap-2">
+                      <Button
+                        size="sm"
+                        type="outline"
+                        disabled={commentsLoading[post.id]
+                          || !commentPages[post.id]?.cursor}
+                        onclick={() => pageComments(post.id, false)}
+                        >Previous comments</Button>
+                      <Button
+                        size="sm"
+                        type="outline"
+                        disabled={commentsLoading[post.id]
+                          || !commentPages[post.id]?.next}
+                        onclick={() => pageComments(post.id, true)}
+                        >Next comments</Button>
+                      <span class="text-xs text-text-muted"
+                        >Up to 20 comments per page</span>
+                    </nav>
+                    {#if commentsLoading[post.id]}<LoadingState
+                        label="Loading comments…" />
+                    {:else if getPostComments(post.id).length === 0}
                       <p class="text-xs text-text-muted">No comments yet.</p>
                     {:else}
                       <CommentThread
@@ -3526,27 +3733,13 @@
                         onDelete={c => confirmDeleteComment(c.id)}
                         {replyTo}>
                         {#snippet statusBadge(comment)}
-                          {#if commentReportsMap[comment.id]?.length}
-                            <button
-                              type="button"
-                              class="cursor-pointer rounded-sm focus-visible:outline-2 focus-visible:outline-focus-ring"
-                              aria-expanded={expandedReportIds.has(comment.id)}
-                              aria-controls="reports-{comment.id}"
-                              onclick={() => toggleReportDetails(comment.id)}>
-                              <Badge
-                                variant="danger"
-                                class="flex items-center gap-1 py-0.5 text-2xs">
-                                <AlertTriangle class="size-2.5 text-danger" />
-                                Reported ({commentReportsMap[comment.id]
-                                  .length})
-                                {#if expandedReportIds.has(comment.id)}
-                                  <ChevronUp class="size-2.5" />
-                                {:else}
-                                  <ChevronDown class="size-2.5" />
-                                {/if}
-                              </Badge>
-                            </button>
-                          {/if}
+                          {#if comment.reports}<Button
+                              type="ghost"
+                              size="xs"
+                              onclick={() =>
+                                openWorkspace('reports', comment.id)}
+                              >Reported ({comment.reports})</Button
+                            >{/if}
                         {/snippet}
 
                         {#snippet actions(comment)}
@@ -3563,7 +3756,7 @@
                             class="cursor-pointer font-bold text-text-muted transition-colors hover:text-accent focus-visible:outline-none">
                             Reply
                           </button>
-                          {#if commentReportsMap[comment.id]?.length}
+                          {#if comment.reports}
                             <span aria-hidden="true">&middot;</span>
                             <button
                               type="button"
@@ -3571,14 +3764,6 @@
                               class="cursor-pointer font-bold text-accent transition-colors hover:underline focus-visible:outline-none">
                               Dismiss Reports
                             </button>
-                          {/if}
-                          {#if expandedReportIds.has(comment.id) && commentReportsMap[comment.id]?.length}
-                            <div
-                              id="reports-{comment.id}"
-                              class="mt-1.5 w-full">
-                              <CommentReportList
-                                reports={commentReportsMap[comment.id]} />
-                            </div>
                           {/if}
                         {/snippet}
 
@@ -3741,8 +3926,15 @@
               htmlType="submit"
               type="primary"
               size="md"
+              aria-label="Save Projects"
+              title="Save Projects"
               disabled={!projectsIsDirty}
-              isLoading={isSavingProjects}>Save Projects</Button>
+              isLoading={isSavingProjects}>
+              {#snippet leading()}
+                <Save class="size-3.5" />
+              {/snippet}
+              Save Projects
+            </Button>
           </FormActions>
         {/snippet}
       </FormSection>
@@ -4077,8 +4269,13 @@
                 type="primary"
                 size="md"
                 class="w-full sm:w-auto"
+                aria-label="Save Profile"
+                title="Save Profile"
                 disabled={!authorIsDirty || preparingImage || !manifestSettings}
                 isLoading={isSavingAuthor}>
+                {#snippet leading()}
+                  <Save class="size-3.5" />
+                {/snippet}
                 Save Profile
               </Button>
             </div>
@@ -4457,8 +4654,15 @@
               htmlType="submit"
               type="primary"
               size="md"
+              aria-label="Save Experiences"
+              title="Save Experiences"
               disabled={!cvIsDirty}
-              isLoading={isSavingCv}>Save Experiences</Button>
+              isLoading={isSavingCv}>
+              {#snippet leading()}
+                <Save class="size-3.5" />
+              {/snippet}
+              Save Experiences
+            </Button>
           </FormActions>
         </Card>
 
@@ -4785,8 +4989,15 @@
               htmlType="submit"
               type="primary"
               size="md"
+              aria-label="Save Education"
+              title="Save Education"
               disabled={!cvIsDirty}
-              isLoading={isSavingCv}>Save Education</Button>
+              isLoading={isSavingCv}>
+              {#snippet leading()}
+                <Save class="size-3.5" />
+              {/snippet}
+              Save Education
+            </Button>
           </FormActions>
         </Card>
       </form>
@@ -4794,14 +5005,14 @@
       <Card
         variant="glass"
         class="mt-10 flex flex-col gap-3">
-        {#snippet header()}
+        <div>
           <h2 class="text-lg font-bold tracking-tight text-text-primary">
             CV Document
           </h2>
           <p class="mt-1 text-xs text-text-secondary">
             The PDF resume served across your portfolio and public API.
           </p>
-        {/snippet}
+        </div>
 
         {#if pdfUploadError}
           <StatusBanner
@@ -4809,120 +5020,168 @@
             message={pdfUploadError} />
         {/if}
 
-        {#if pdfUploadSuccess}
-          <StatusBanner
-            variant="success"
-            message={pdfUploadSuccess} />
+        {#if pdfGeneratedFilename}
+          <StatusBanner variant="success">
+            <span
+              >Successfully generated <strong class="font-bold"
+                >{pdfGeneratedFilename}</strong
+              >!</span>
+          </StatusBanner>
         {/if}
 
-        <div class="flex flex-col gap-5">
-          {#if cvDocState && cvDocState.filename}
-            <div
-              class="flex flex-col gap-3 rounded-sm border border-border-subtle bg-surface-card p-4">
-              <div class="flex items-center gap-3">
-                <FileText class="size-6 shrink-0 text-accent" />
-                <div class="min-w-0 flex-1">
-                  <p
-                    class="mb-1 text-xxs font-semibold tracking-wide text-text-muted uppercase">
-                    Filename
-                  </p>
-                  <p
-                    class="font-mono text-sm font-semibold break-all text-text-primary">
-                    {cvDocState.filename}
-                  </p>
-                  <p class="mt-1 text-xs font-semibold text-success">Live</p>
-                </div>
-              </div>
+        {#if pdfDeleteSuccess}
+          <StatusBanner
+            variant="success"
+            message="CV deleted successfully." />
+        {/if}
 
-              {#if cvDocState.hash}
-                <div class="flex flex-col gap-1">
-                  <span
-                    class="text-xxs font-semibold tracking-wide text-text-muted uppercase">
-                    SHA-256 checksum
-                  </span>
-                  <div
-                    class="flex items-center gap-2 rounded-sm border border-border-subtle bg-surface-base/60 px-2.5 py-2">
-                    <span
-                      class="min-w-0 flex-1 scrollbar-none overflow-x-auto font-mono text-xxs break-all text-text-secondary select-all [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                      {cvDocState.hash}
-                    </span>
-                    <IconButton
-                      variant="borderless"
-                      size="sm"
-                      onclick={() => {
-                        navigator.clipboard
-                          .writeText(cvDocState.hash || '')
-                          .then(() => {
-                            copiedHash = true;
-                            toastStore.success('Copied!');
-                            setTimeout(() => {
-                              copiedHash = false;
-                            }, 2000);
-                          })
-                          .catch(() => toastStore.error('Failed to copy'));
-                      }}
-                      ariaLabel={copiedHash ? 'Checksum copied' : (
-                        'Copy SHA-256 checksum'
-                      )}>
-                      {#if copiedHash}
-                        <CopyCheck class="size-3.5 text-accent" />
-                      {:else}
-                        <Copy class="size-3.5" />
-                      {/if}
-                    </IconButton>
-                  </div>
+        <div
+          class="flex flex-col gap-3.5 rounded-sm border border-border-subtle bg-surface-card p-4">
+          <p
+            class="text-xxs font-semibold tracking-wide text-text-muted uppercase">
+            Filename
+          </p>
+
+          <div
+            class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex min-w-0 items-center gap-3.5">
+              {#if isCvAvailable}
+                <div
+                  class="flex size-11 shrink-0 items-center justify-center rounded-lg border border-accent/20 bg-accent/10 text-accent dark:border-accent/30 dark:bg-accent/15">
+                  <FileUser class="size-5.5" />
+                </div>
+              {:else}
+                <div
+                  class="flex size-11 shrink-0 items-center justify-center rounded-lg border border-danger/30 bg-danger-subtle/70 text-danger dark:bg-danger-subtle/40">
+                  <FileXCorner class="size-5.5" />
                 </div>
               {/if}
-
-              <div
-                class="flex flex-col gap-2 pt-1 sm:flex-row sm:items-center sm:justify-between">
-                <div class="grid grid-cols-2 gap-2 sm:flex sm:items-center">
-                  <Button
-                    htmlType="button"
-                    type="secondary"
-                    size="sm"
-                    class="w-full sm:w-auto"
-                    onclick={() =>
-                      window.open(cvDocState.fileUrl || '/cv.pdf', '_blank')}>
-                    {#snippet leading()}
-                      <SquareArrowOutUpRight class="size-3.5" />
-                    {/snippet}
-                    <span>View</span>
-                  </Button>
-                  <Button
-                    htmlType="button"
-                    type="secondary"
-                    size="sm"
-                    class="w-full sm:w-auto"
-                    disabled={isDownloadingCv}
-                    isLoading={isDownloadingCv}
-                    onclick={downloadCvDocument}>
-                    {#snippet leading()}
-                      <Download class="size-3.5" />
-                    {/snippet}
-                    <span>Download</span>
-                  </Button>
+              <div class="min-w-0 flex-1">
+                <p
+                  class="font-mono text-sm font-semibold break-all text-text-primary {(
+                    isCvAvailable
+                  ) ?
+                    ''
+                  : 'text-text-muted'}">
+                  {isCvAvailable ?
+                    cvDocState.filename
+                  : 'CV-[name]-[patch].pdf'}
+                </p>
+                <div
+                  class="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-text-muted">
+                  {#if isCvAvailable}
+                    <span
+                      class="inline-flex items-center gap-1 rounded-full bg-copilot-subtle px-2 py-0.5 text-2xs font-semibold text-copilot"
+                      title="Available"
+                      aria-label="Available">
+                      <CircleCheckBig class="size-3 shrink-0" />
+                      Available
+                    </span>
+                    {#if cvLastUpdated}
+                      <span>&middot;</span>
+                      <span class="text-text-secondary"
+                        >Last updated: {cvLastUpdated}</span>
+                    {/if}
+                    {#if cvVersion}
+                      <span>&middot;</span>
+                      <span class="font-mono text-text-secondary"
+                        >{cvVersion}</span>
+                    {/if}
+                  {:else}
+                    <span
+                      class="inline-flex items-center gap-1 rounded-full bg-warning-subtle px-2 py-0.5 text-2xs font-semibold text-warning"
+                      title="Unavailable"
+                      aria-label="Unavailable">
+                      <CircleDotDashed class="size-3 shrink-0" />
+                      Unavailable
+                    </span>
+                  {/if}
                 </div>
-                <Button
-                  htmlType="button"
-                  type="danger"
-                  tone="critical"
-                  size="sm"
-                  class="w-full sm:w-auto"
-                  aria-label="Delete CV Document"
-                  title="Delete CV Document"
-                  onclick={confirmDeleteCvDoc}>
-                  {#snippet leading()}
-                    <Trash class="size-3.5" />
-                  {/snippet}
-                  <span>Delete</span>
-                </Button>
               </div>
             </div>
-          {:else}
-            <EmptyState
-              title="No CV PDF generated yet"
-              description="Save your profile, CV entries, or skills to automatically build your CV PDF." />
+
+            {#if !isCvAvailable}
+              <Button
+                htmlType="button"
+                type="primary"
+                size="sm"
+                class="w-full shrink-0 sm:w-auto"
+                isLoading={isGeneratingPdf}
+                disabled={isGeneratingPdf}
+                onclick={() => executeGenerateCvPdf('patch')}>
+                {#snippet leading()}
+                  <RefreshCw class="size-3.5" />
+                {/snippet}
+                <span>Generate CV</span>
+              </Button>
+            {/if}
+          </div>
+
+          {#if isCvAvailable}
+            <div
+              class="flex flex-col gap-2 pt-1 sm:flex-row sm:items-center sm:justify-between">
+              <div
+                class="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:items-center">
+                <Button
+                  htmlType="button"
+                  type="primary"
+                  size="sm"
+                  class="w-full sm:w-auto"
+                  aria-label="View PDF"
+                  title="View PDF"
+                  onclick={() =>
+                    window.open(cvDocState.fileUrl || '/cv.pdf', '_blank')}>
+                  {#snippet leading()}
+                    <SquareArrowOutUpRight class="size-3.5" />
+                  {/snippet}
+                  <span>View PDF</span>
+                </Button>
+                <Button
+                  htmlType="button"
+                  type="secondary"
+                  size="sm"
+                  class="w-full sm:w-auto"
+                  aria-label="Download PDF"
+                  title="Download PDF"
+                  disabled={isDownloadingCv}
+                  isLoading={isDownloadingCv}
+                  onclick={downloadCvDocument}>
+                  {#snippet leading()}
+                    <Download class="size-3.5" />
+                  {/snippet}
+                  <span>Download PDF</span>
+                </Button>
+                <Button
+                  htmlType="button"
+                  type="secondary"
+                  size="sm"
+                  class="w-full sm:w-auto"
+                  aria-label="Download Checksum"
+                  title="Download Checksum"
+                  disabled={isDownloadingChecksum || !cvDocState.hash}
+                  isLoading={isDownloadingChecksum}
+                  onclick={downloadCvChecksum}>
+                  {#snippet leading()}
+                    <Hash class="size-3.5" />
+                  {/snippet}
+                  <span>Download Checksum</span>
+                </Button>
+              </div>
+              <Button
+                htmlType="button"
+                type="danger"
+                tone="critical"
+                size="sm"
+                class="w-full sm:w-auto"
+                aria-label="Delete CV"
+                title="Delete CV"
+                onclick={confirmDeleteCvDoc}>
+                {#snippet leading()}
+                  <Trash class="size-3.5" />
+                {/snippet}
+                <span>Delete CV</span>
+              </Button>
+            </div>
           {/if}
         </div>
       </Card>
@@ -5065,8 +5324,15 @@
               htmlType="submit"
               type="primary"
               size="md"
+              aria-label="Save Skills"
+              title="Save Skills"
               disabled={!skillsIsDirty}
-              isLoading={isSavingSkills}>Save Skills</Button>
+              isLoading={isSavingSkills}>
+              {#snippet leading()}
+                <Save class="size-3.5" />
+              {/snippet}
+              Save Skills
+            </Button>
           </FormActions>
         {/snippet}
       </FormSection>
@@ -5118,8 +5384,15 @@
               htmlType="submit"
               type="primary"
               size="md"
+              aria-label="Save Glossary"
+              title="Save Glossary"
               disabled={!glossaryIsDirty}
-              isLoading={isSavingGlossary}>Save Glossary</Button>
+              isLoading={isSavingGlossary}>
+              {#snippet leading()}
+                <Save class="size-3.5" />
+              {/snippet}
+              Save Glossary
+            </Button>
           </FormActions>
         {/snippet}
       </FormSection>
@@ -5308,35 +5581,42 @@
               htmlType="submit"
               type="primary"
               size="md"
+              aria-label="Save Social Links"
+              title="Save Social Links"
               disabled={!socialIsDirty}
-              isLoading={isSavingSocials}>Save Social Links</Button>
+              isLoading={isSavingSocials}>
+              {#snippet leading()}
+                <Save class="size-3.5" />
+              {/snippet}
+              Save Social Links
+            </Button>
           </FormActions>
         {/snippet}
       </FormSection>
-    {:else if activeAdminTab === 'sponsorship'}
+    {:else if activeAdminTab === 'funding'}
       <FormSection
         onsubmit={handleSaveSponsorship}
-        title="Sponsorship"
-        description="Manage funding and sponsorship platforms.">
+        title="Funding"
+        description="Manage funding and donation platforms.">
         {#snippet headerActions()}
           <Button
             htmlType="button"
             type="primary"
             size="md"
             responsiveIconOnly
-            aria-label="Add Sponsorship"
-            title="Add Sponsorship"
+            aria-label="Add Funding"
+            title="Add Funding"
             onclick={handleAddSponsorship}>
             {#snippet leading()}
               <Plus class="size-3.5" />
             {/snippet}
-            Add Sponsorship
+            Add Funding
           </Button>
         {/snippet}
 
         {#if sponsorshipSaveSuccess}<StatusBanner
             variant="success"
-            message="Sponsorship links saved successfully!" />{/if}
+            message="Funding links saved successfully!" />{/if}
 
         <div class="flex flex-col gap-4">
           {#if sponsorshipState.length === 0}
@@ -5351,14 +5631,14 @@
                 class="flex items-center justify-between gap-2 border-b border-border-subtle/40 pb-2">
                 <span
                   class="min-w-0 truncate font-mono text-xs font-light text-text-muted"
-                  >Sponsorship #{idx + 1}</span>
+                  >Funding #{idx + 1}</span>
                 <div class="flex items-center gap-1">
                   <Button
                     htmlType="button"
                     type="ghost"
                     size="sm"
-                    aria-label="Move sponsorship link up"
-                    title="Move sponsorship link up"
+                    aria-label="Move funding link up"
+                    title="Move funding link up"
                     disabled={idx === 0}
                     onclick={() =>
                       (sponsorshipState = moveArrayItem(
@@ -5370,8 +5650,8 @@
                     htmlType="button"
                     type="ghost"
                     size="sm"
-                    aria-label="Move sponsorship link down"
-                    title="Move sponsorship link down"
+                    aria-label="Move funding link down"
+                    title="Move funding link down"
                     disabled={idx === sponsorshipState.length - 1}
                     onclick={() =>
                       (sponsorshipState = moveArrayItem(
@@ -5515,13 +5795,13 @@
                   tone="critical"
                   size="sm"
                   class="w-full sm:w-auto"
-                  aria-label="Delete Sponsorship"
-                  title="Delete Sponsorship"
+                  aria-label="Delete Funding"
+                  title="Delete Funding"
                   onclick={() => confirmRemoveSponsorship(idx)}>
                   {#snippet leading()}
                     <Trash class="size-3.5" />
                   {/snippet}
-                  Delete Sponsorship
+                  Delete Funding
                 </Button>
               </div>
             </div>
@@ -5539,8 +5819,15 @@
               htmlType="submit"
               type="primary"
               size="md"
+              aria-label="Save Funding"
+              title="Save Funding"
               disabled={!sponsorshipIsDirty}
-              isLoading={isSavingSponsorship}>Save Sponsorship</Button>
+              isLoading={isSavingSponsorship}>
+              {#snippet leading()}
+                <Save class="size-3.5" />
+              {/snippet}
+              Save Funding
+            </Button>
           </FormActions>
         {/snippet}
       </FormSection>
@@ -5763,8 +6050,15 @@
               htmlType="submit"
               type="primary"
               size="md"
+              aria-label="Save Contact"
+              title="Save Contact"
               disabled={!contactIsDirty}
-              isLoading={isSavingContact}>Save Contact</Button>
+              isLoading={isSavingContact}>
+              {#snippet leading()}
+                <Save class="size-3.5" />
+              {/snippet}
+              Save Contact
+            </Button>
           </FormActions>
         {/snippet}
       </FormSection>
@@ -5997,9 +6291,9 @@
 
 <ConfirmationDialog
   bind:isOpen={showDeleteCvDocDialog}
-  title="Delete CV Document"
-  message={`Delete CV document "${cvDocState.filename}" from CDN & database?`}
-  confirmLabel="Delete CV Document"
+  title="Delete CV"
+  message="Are you sure you want to delete this CV? The PDF and checksum will be removed from CDN and database."
+  confirmLabel="Delete CV"
   isDestructive
   onConfirm={executeDeleteCvDoc} />
 

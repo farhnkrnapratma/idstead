@@ -12,6 +12,7 @@
   import ActivityRow from './ActivityRow.svelte';
   import ActivityGroupHeader from './ActivityGroupHeader.svelte';
   import Pagination from '../Pagination.svelte';
+  import Badge from '../Badge.svelte';
   import ErrorState from '../ErrorState.svelte';
   import EmptyState from '../EmptyState.svelte';
   import LoadingState from '../LoadingState.svelte';
@@ -169,11 +170,25 @@
           <ActivityGroupHeader
             title={group.page_title ?? 'Unavailable page'}
             url={group.page_url}
-            description={`${group.target_type === 'article' ? 'Article' : 'Legal page'} · ${group.helpful} helpful · ${group.unhelpful} unhelpful`}
             latest={group.latest}
             expanded={opened.has(id)}
             label={`feedback for ${group.page_title}`}
-            onToggle={() => toggle(group)} />
+            onToggle={() => toggle(group)}>
+            {#snippet badges()}
+              <Badge
+                variant="default"
+                size="sm"
+                >{group.target_type === 'article' ?
+                  'Article'
+                : 'Legal page'}</Badge>
+              <Badge
+                variant="success"
+                size="sm">{group.helpful} helpful</Badge>
+              <Badge
+                variant="danger"
+                size="sm">{group.unhelpful} unhelpful</Badge>
+            {/snippet}
+          </ActivityGroupHeader>
           {#if opened.has(id)}
             <div class="border-t border-border-subtle p-2">
               {#if historyErrors[id]}<ErrorState

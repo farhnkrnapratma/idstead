@@ -43,6 +43,7 @@ This shape is enforced by one shared handler for the whole API, so it's the same
 | `BLOG_VIEW_INVALID_POST_ID` | 400 | `postId` query parameter is not a valid UUID. |
 | `CV_DOCUMENT_NOT_FOUND` | 404 | `/api/v1/cv` — no active CV document is configured. |
 | `CV_FETCH_FAILED` | 502 | `/api/v1/cv` couldn't fetch the underlying PDF file from storage. |
+| `SEARCH_INVALID_OFFSET` | 400 | `offset` was given but isn't a non-negative integer. |
 | `SEARCH_FETCH_FAILED` | 500 | Search could not be read from the data source. |
 | `BLOG_POST_COUNTS_FETCH_FAILED` | 500 | Post comment/view counts could not be read. |
 | `BLOG_CONTENT_FETCH_FAILED` | 502 | Published post content could not be read from storage. |
@@ -135,7 +136,7 @@ The per-field sub-routes (`contact`, `socials`, `skills`, `funding`, `cv`) don't
 
 | Method | Path | Description |
 | --- | --- | --- |
-| GET | `/api/v1/search` | Search blog posts by title/excerpt. Query: `q` (min 2 chars, returns an empty result below that — not a `400`), `limit` (max 20, default 6). |
+| GET | `/api/v1/search` | Search blog posts by title/excerpt. Query: `q` (min 2 chars, returns an empty result below that — not a `400`), `limit` (max 20, default 6), `offset` (non-negative integer, default 0; `400 SEARCH_INVALID_OFFSET` otherwise). |
 
 Response shape is `{query, data, pagination: {limit, returned}}` — lighter than the `/api/v1/blog` pagination object below, and no separate `page` param (single page of up to `limit` results).
 
@@ -152,7 +153,7 @@ These mirror the canonical copies at `/.well-known/openapi.json` / `/.well-known
 
 ## Pagination
 
-`/api/v1/blog` returns `data` plus a `pagination` object: `page`, `limit`, `total`, `totalPages`, `hasNextPage`, `hasPrevPage`. `/api/v1/search` uses the lighter `{limit, returned}` shape noted above. `/api/v1/blog/comments` doesn't paginate at all — it's a flat list capped by `limit`.
+`/api/v1/blog` returns `data` plus a `pagination` object: `page`, `limit`, `total`, `totalPages`, `hasNextPage`, `hasPrevPage`. `/api/v1/search` uses the lighter `{limit, offset, returned, hasMore}` shape: page with `offset` and stop when `hasMore` is `false`. `/api/v1/blog/comments` doesn't paginate at all — it's a flat list capped by `limit`.
 
 ## Markdown responses
 

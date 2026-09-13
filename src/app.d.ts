@@ -37,6 +37,10 @@ declare global {
       code?: string;
       details?: string;
     }
+    interface PageState {
+      adminSearch?: string;
+      adminScroll?: number;
+    }
     interface Locals {
       pageLanguage?: string;
     }

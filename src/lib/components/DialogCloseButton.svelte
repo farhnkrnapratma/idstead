@@ -4,18 +4,27 @@
 
   interface Props {
     onClose: () => void;
+    ariaLabel?: string;
+    tooltip?: string;
+    size?: '2xs' | 'xs' | 'sm' | 'md' | 'lg';
     class?: string;
   }
 
-  let {onClose, class: className = ''}: Props = $props();
+  let {
+    onClose,
+    ariaLabel = 'Close',
+    tooltip = 'Close',
+    size = 'sm',
+    class: className = ''
+  }: Props = $props();
 </script>
 
 <IconButton
-  ariaLabel="Close"
-  tooltip="Close"
+  {ariaLabel}
+  {tooltip}
   variant="ghost"
-  size="sm"
+  {size}
   class={className}
   onclick={onClose}>
-  <X class="size-3.5" />
+  <X class={size === 'xs' || size === '2xs' ? 'size-3' : 'size-3.5'} />
 </IconButton>

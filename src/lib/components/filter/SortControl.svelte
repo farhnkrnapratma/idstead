@@ -1,6 +1,7 @@
 <script lang="ts">
   import {Check, ArrowUpNarrowWide, ArrowDownWideNarrow} from '@lucide/svelte';
   import {cn} from '../../utils/cn';
+  import {buttonKey} from '$lib/shortcuts';
   import {popoverPosition} from '../../utils/popoverPosition';
   import DropdownTrigger from './DropdownTrigger.svelte';
   import IconButton from '../IconButton.svelte';
@@ -16,6 +17,9 @@
     currentDirection: 'asc' | 'desc';
     onFieldChange?: (field: string) => void;
     onDirectionToggle?: () => void;
+    size?: 'sm' | 'md';
+    labelPrefix?: string;
+    fullWidth?: boolean;
     class?: string;
   }
 
@@ -25,6 +29,9 @@
     currentDirection,
     onFieldChange,
     onDirectionToggle,
+    size = 'md',
+    labelPrefix = 'Sort by',
+    fullWidth = false,
     class: className = ''
   }: Props = $props();
 
@@ -40,13 +47,23 @@
   }
 </script>
 
-<div class={cn('flex w-full items-center gap-1.5 sm:w-auto', className)}>
-  <div class="relative inline-block min-w-0 flex-1 sm:flex-initial">
+<div
+  class={cn(
+    'flex items-center gap-1.5',
+    fullWidth ? 'w-full' : 'w-max max-w-full',
+    className
+  )}>
+  <div
+    class={cn(
+      'relative inline-block min-w-0',
+      fullWidth ? 'w-full flex-1' : 'w-max max-w-full'
+    )}>
     <DropdownTrigger
-      fullWidth
-      labelPrefix="Sort by"
-      ariaLabel="Sort by: {currentFieldOption?.label ?? 'Select'}"
+      {fullWidth}
+      {labelPrefix}
+      ariaLabel="{labelPrefix}: {currentFieldOption?.label ?? 'Select'}"
       {isOpen}
+      {size}
       onclick={() => (isOpen = !isOpen)}
       options={fields}>
       {currentFieldOption?.label ?? 'Sort field'}
@@ -72,7 +89,8 @@
               aria-selected={currentField === field.value}
               onclick={() => selectField(field.value)}
               class={cn(
-                'flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-2 text-left text-xs font-medium transition-colors',
+                'flex w-full cursor-pointer items-center justify-between gap-2 text-left text-xs font-medium transition-colors',
+                size === 'sm' ? 'px-2 py-1.5' : 'px-2.5 py-2',
                 currentField === field.value ?
                   'bg-accent/10 font-semibold text-accent'
                 : 'text-text-primary hover:bg-surface-hover hover:text-accent'
@@ -97,6 +115,8 @@
     )}
     size="sm"
     onclick={onDirectionToggle}
+    keyboardShortcut={buttonKey('sortDirection')}
+    shortcutLabel="Sort direction"
     class="shrink-0 text-text-secondary hover:text-accent">
     {#if currentDirection === 'asc'}
       <ArrowUpNarrowWide class="size-4" />

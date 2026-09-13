@@ -1,6 +1,7 @@
 <script lang="ts">
   import {ArrowLeft, ArrowRight} from '@lucide/svelte';
   import {cn} from '../utils/cn';
+  import {buttonKey} from '$lib/shortcuts';
   import Button from './Button.svelte';
 
   interface Props {
@@ -58,6 +59,8 @@
     class="size-9 shrink-0 p-0 sm:h-9 sm:w-auto sm:px-4"
     onclick={() => goTo(page - 1)}
     disabled={page <= 1}
+    keyboardShortcut={buttonKey('pagePrev')}
+    shortcutLabel="Previous page"
     aria-label="Previous page">
     <ArrowLeft class="size-3.5" />
     <span class="hidden sm:inline">Previous</span>
@@ -96,6 +99,8 @@
     class="size-9 shrink-0 p-0 sm:h-9 sm:w-auto sm:px-4"
     onclick={() => goTo(page + 1)}
     disabled={page >= totalPages}
+    keyboardShortcut={buttonKey('pageNext')}
+    shortcutLabel="Next page"
     aria-label="Next page">
     <span class="hidden sm:inline">Next</span>
     <ArrowRight class="size-3.5" />

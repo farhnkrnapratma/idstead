@@ -1,19 +1,21 @@
 import {SvelteMap, SvelteSet} from 'svelte/reactivity';
 import {
   CHORD_GROUPS,
-  CATALOG_KEY,
   shortcutLabelAt,
   normalizeKey,
-  displayKey,
-  isLeaderEvent,
-  leaderKeyFromEvent,
+  shortcutKeyParts,
+  ARM_TIMEOUT_MS,
+  TEXT_ENTRY_SELECTOR,
+  resolveShortcutAction,
   chordKeyFromEvent
 } from '$lib/shortcuts';
+import {platformStore} from './platformStore.svelte';
 
 export interface ShortcutEntry {
   id: string;
   combos: string[];
   group?: string;
+  chordKey?: string;
   label: string;
   scope: string;
   element: HTMLElement;
@@ -35,13 +37,13 @@ interface CommandEntry {
   run: () => void;
 }
 
-const ARM_TIMEOUT_MS = 5000;
-
 let altHeld = $state(false);
 let leaderArmed = $state(false);
+let armedAt = $state(0);
 let pendingGroup = $state<string | null>(null);
 let catalogOpen = $state(false);
 let scopeStack = $state<string[]>(['page']);
+let modalScopes = $state<string[]>([]);
 
 const entries = new SvelteMap<string, ShortcutEntry>();
 const commands = new SvelteMap<string, CommandEntry>();
@@ -51,6 +53,13 @@ let armTimer: ReturnType<typeof setTimeout> | undefined;
 let listening = false;
 
 const activeScope = $derived(scopeStack[scopeStack.length - 1] ?? 'page');
+const modalActive = $derived(modalScopes.length > 0);
+
+function entryInScope(entry: ShortcutEntry) {
+  if (entry.scope === activeScope) return true;
+  if (modalActive) return false;
+  return entry.scope === 'page';
+}
 
 /**
  * Chord labels are assigned by DOM order within a group, so database-driven
@@ -60,10 +69,10 @@ const activeScope = $derived(scopeStack[scopeStack.length - 1] ?? 'page');
 const chordAssignments = $derived.by(() => {
   const byGroup = new SvelteMap<string, ShortcutEntry[]>();
   for (const entry of entries.values()) {
-    if (!entry.group || entry.scope !== activeScope) continue;
+    if (!entry.group || !entryInScope(entry)) continue;
     // A control rendered for both breakpoints registers twice. Numbering the
     // hidden copy would burn a key and shift every label after it.
-    if (!isVisible(entry)) continue;
+    if (!entry.chordKey && !isVisible(entry)) continue;
     const bucket = byGroup.get(entry.group);
     if (bucket) bucket.push(entry);
     else byGroup.set(entry.group, [entry]);
@@ -71,13 +80,19 @@ const chordAssignments = $derived.by(() => {
 
   const assigned = new SvelteMap<string, string>();
   for (const [, groupEntries] of byGroup) {
-    groupEntries
-      .slice()
-      .sort((a, b) => compareDomOrder(a, b))
-      .forEach((entry, index) => {
-        const label = shortcutLabelAt(index);
-        if (label) assigned.set(entry.id, label);
-      });
+    const positional = groupEntries.filter(entry => !entry.chordKey);
+    for (const entry of groupEntries) {
+      if (entry.chordKey) assigned.set(entry.id, entry.chordKey);
+    }
+    const keyByLabel = new SvelteMap<string, string>();
+    for (const entry of positional.sort((a, b) => compareDomOrder(a, b))) {
+      let key = keyByLabel.get(entry.label);
+      if (key === undefined) {
+        key = shortcutLabelAt(keyByLabel.size);
+        keyByLabel.set(entry.label, key);
+      }
+      if (key) assigned.set(entry.id, key);
+    }
   }
   return assigned;
 });
@@ -100,6 +115,7 @@ function disarm() {
 function armFor(group: string | null) {
   leaderArmed = true;
   pendingGroup = group;
+  armedAt = Date.now();
   clearTimeout(armTimer);
   armTimer = setTimeout(disarm, ARM_TIMEOUT_MS);
 }
@@ -116,112 +132,117 @@ function isVisible(entry: ShortcutEntry) {
   return el.getClientRects().length > 0;
 }
 
-/**
- * Arms a chord from outside the keydown handler. The palette uses it so the
- * keypress after a command shortcut picks one of that command's options.
- */
+function groupHasMembers(groupId: string) {
+  return [...entries.values()].some(
+    entry => entry.group === groupId && entryInScope(entry)
+  );
+}
+
 function armGroup(groupId: string) {
+  if (!groupHasMembers(groupId)) return;
   armFor(groupId);
 }
 
 function trigger(entry: ShortcutEntry) {
-  entry.element.click();
-}
-
-function groupForKey(key: string): string | null {
-  for (const group of Object.values(CHORD_GROUPS)) {
-    if (group.combos.some(c => normalizeKey(c) === key)) return group.id;
-  }
-  return null;
+  if (entry.element.matches(TEXT_ENTRY_SELECTOR)) entry.element.focus();
+  else entry.element.click();
 }
 
 function matchEntry(key: string): ShortcutEntry | undefined {
   const matches = [...entries.values()].filter(
     entry =>
-      entry.scope === activeScope
+      entryInScope(entry) && entry.combos.some(c => normalizeKey(c) === key)
+  );
+  const scoped = matches.filter(entry => entry.scope === activeScope);
+  const pool = scoped.length > 0 ? scoped : matches;
+  return pool.find(isVisible) ?? pool[0];
+}
+
+function matchEntryInForm(
+  key: string,
+  target: EventTarget | null
+): ShortcutEntry | undefined {
+  const form =
+    target instanceof Element ?
+      (target.closest('form') ?? target.closest('[data-shortcut-scope]'))
+    : null;
+  if (!form) return undefined;
+  return [...entries.values()].find(
+    entry =>
+      entryInScope(entry)
+      && form.contains(entry.element)
+      && isVisible(entry)
       && entry.combos.some(c => normalizeKey(c) === key)
   );
-  return matches.find(isVisible) ?? matches[0];
 }
 
 function resolveChord(e: KeyboardEvent, group: string) {
   const chordKey = chordKeyFromEvent(e);
   if (!chordKey) return;
-  const match = [...entries.values()].find(
+  const matches = [...entries.values()].filter(
     entry =>
       entry.group === group
-      && entry.scope === activeScope
+      && entryInScope(entry)
       && chordAssignments.get(entry.id) === chordKey
   );
+  const match = matches.find(isVisible) ?? matches[0];
   disarm();
-  // Swallow the key either way: the page is in shortcut mode, so a miss must
-  // not leak through and scroll or type.
-  e.preventDefault();
   if (match) trigger(match);
 }
 
 function handleKeydown(e: KeyboardEvent) {
-  if (e.key === 'Alt') altHeld = true;
+  const action = resolveShortcutAction(e, {
+    leaderArmed,
+    pendingGroup,
+    hasGroupMembers: groupHasMembers,
+    hasEntryFor: key => Boolean(matchEntry(key)),
+    hasScopedEntryFor: key =>
+      activeScope !== 'page' && matchEntry(key)?.scope === activeScope,
+    hasEntryInForm: (key, target) => Boolean(matchEntryInForm(key, target)),
+    modalActive,
+    hasCommandFor: key => commands.has(key)
+  });
 
-  if (isLeaderEvent(e)) {
-    e.preventDefault();
-    if (leaderArmed) disarm();
-    else armFor(null);
-    return;
-  }
+  if (action.preventDefault) e.preventDefault();
 
-  if (!leaderArmed) return;
-
-  if (e.key === 'Escape') {
-    e.preventDefault();
-    disarm();
-    return;
-  }
-
-  if (pendingGroup) {
-    resolveChord(e, pendingGroup);
-    return;
-  }
-
-  const key = leaderKeyFromEvent(e);
-  if (!key) return;
-
-  if (key === normalizeKey(CATALOG_KEY)) {
-    e.preventDefault();
-    disarm();
-    catalogOpen = !catalogOpen;
-    return;
-  }
-
-  const group = groupForKey(key);
-  if (group) {
-    const hasMembers = [...entries.values()].some(
-      entry => entry.group === group && entry.scope === activeScope
-    );
-    if (hasMembers) {
-      e.preventDefault();
-      armFor(group);
+  switch (action.kind) {
+    case 'altDown':
+      if (!altHeld) altHeld = true;
+      return;
+    case 'toggleLeader':
+      if (leaderArmed) disarm();
+      else armFor(null);
+      return;
+    case 'escape':
+    case 'disarm':
+      disarm();
+      return;
+    case 'chord':
+      if (pendingGroup) resolveChord(e, pendingGroup);
+      return;
+    case 'catalog':
+      disarm();
+      catalogOpen = !catalogOpen;
+      return;
+    case 'arm':
+      if (action.group) armFor(action.group);
+      return;
+    case 'entry': {
+      disarm();
+      if (!action.key) return;
+      const match =
+        action.inForm ?
+          matchEntryInForm(action.key, e.target)
+        : matchEntry(action.key);
+      if (match) trigger(match);
+      return;
+    }
+    case 'command': {
+      disarm();
+      if (action.key) commands.get(action.key)?.run();
       return;
     }
   }
-
-  const direct = matchEntry(key);
-  if (direct) {
-    e.preventDefault();
-    disarm();
-    trigger(direct);
-    return;
-  }
-
-  const command = commands.get(key);
-  if (command) {
-    e.preventDefault();
-    disarm();
-    command.run();
-    return;
-  }
-
-  disarm();
 }
 
 function handleKeyup(e: KeyboardEvent) {
@@ -245,6 +266,9 @@ function ensureListening() {
 
 function register(entry: Omit<ShortcutEntry, 'id' | 'order'>): string {
   ensureListening();
+  for (const [key, existing] of entries) {
+    if (!existing.element.isConnected) entries.delete(key);
+  }
   const id = `shortcut-${++seq}`;
   entries.set(id, {...entry, id, order: seq});
   return id;
@@ -253,6 +277,20 @@ function register(entry: Omit<ShortcutEntry, 'id' | 'order'>): string {
 function update(id: string, patch: Partial<Omit<ShortcutEntry, 'id'>>) {
   const existing = entries.get(id);
   if (!existing) return;
+  const sameCombos =
+    !patch.combos
+    || (existing.combos.length === patch.combos.length
+      && existing.combos.every((c, i) => c === patch.combos![i]));
+  if (
+    sameCombos
+    && (patch.group === undefined || existing.group === patch.group)
+    && (patch.chordKey === undefined || existing.chordKey === patch.chordKey)
+    && (patch.label === undefined || existing.label === patch.label)
+    && (patch.scope === undefined || existing.scope === patch.scope)
+    && (patch.element === undefined || existing.element === patch.element)
+  ) {
+    return;
+  }
   entries.set(id, {...existing, ...patch});
 }
 
@@ -274,8 +312,10 @@ function registerCommand(key: string, label: string, run: () => void) {
   };
 }
 
-function pushScope(scope: string) {
+function pushScope(scope: string, modal = false) {
   scopeStack = [...scopeStack, scope];
+  if (!modal) return;
+  modalScopes = [...modalScopes, scope];
   disarm();
 }
 
@@ -283,32 +323,33 @@ function popScope(scope: string) {
   const index = scopeStack.lastIndexOf(scope);
   if (index <= 0) return;
   scopeStack = [...scopeStack.slice(0, index), ...scopeStack.slice(index + 1)];
+  if (!modalScopes.includes(scope)) return;
+  modalScopes = modalScopes.filter(s => s !== scope);
   disarm();
 }
 
-/** The label a button should show right now, or '' when nothing is revealed. */
-function hintFor(id: string): string {
-  if (!pendingGroup && !leaderArmed && !altHeld) return '';
+function hintFor(id: string): string[] {
+  if (!pendingGroup && !leaderArmed && !altHeld) return [];
 
   const entry = entries.get(id);
-  if (!entry || entry.scope !== activeScope) return '';
+  if (!entry || !entryInScope(entry)) return [];
 
   if (entry.group) {
     const label = chordAssignments.get(id);
-    if (!label) return '';
-    // Once the group is armed the prefix is spent, so only the item key is left
-    // to press.
-    if (pendingGroup === entry.group) return label;
-    if (pendingGroup || !(leaderArmed || altHeld)) return '';
+    if (!label) return [];
+    if (pendingGroup === entry.group)
+      return shortcutKeyParts(label, platformStore.current);
+    if (pendingGroup || !(leaderArmed || altHeld)) return [];
     const prefix = CHORD_GROUPS[entry.group]?.combos[0];
-    // Show the whole path while peeking. A bare "0" would advertise a key that
-    // does nothing until its group is armed.
-    return prefix ? `${displayKey(prefix)} ${label}` : label;
+    return shortcutKeyParts(
+      prefix ? `${prefix} ${label}` : label,
+      platformStore.current
+    );
   }
 
-  if (pendingGroup || !(leaderArmed || altHeld)) return '';
+  if (pendingGroup || !(leaderArmed || altHeld)) return [];
   const combo = entry.combos[0];
-  return combo ? displayKey(combo) : '';
+  return combo ? shortcutKeyParts(combo, platformStore.current) : [];
 }
 
 function catalogEntries(): ResolvedShortcut[] {
@@ -338,6 +379,9 @@ export const shortcutStore = {
   },
   get leaderArmed() {
     return leaderArmed;
+  },
+  get armedAt() {
+    return armedAt;
   },
   get pendingGroup() {
     return pendingGroup;

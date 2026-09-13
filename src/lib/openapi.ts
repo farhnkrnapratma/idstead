@@ -461,7 +461,14 @@ export const openapiSpec = {
             description:
               'Query string (minimum 2 characters; shorter values return an empty result set, not an error).'
           },
-          limitParam(6, 20)
+          limitParam(6, 20),
+          {
+            name: 'offset',
+            in: 'query',
+            schema: {type: 'integer', minimum: 0, default: 0},
+            description:
+              'Number of matching posts to skip. Combine with `limit` to page through results; `pagination.hasMore` reports whether another page exists.'
+          }
         ],
         responses: {
           '200': {
@@ -477,14 +484,17 @@ export const openapiSpec = {
                       type: 'object',
                       properties: {
                         limit: {type: 'integer'},
-                        returned: {type: 'integer'}
+                        offset: {type: 'integer'},
+                        returned: {type: 'integer'},
+                        hasMore: {type: 'boolean'}
                       }
                     }
                   }
                 }
               }
             }
-          }
+          },
+          '400': errorResponses['400']
         }
       }
     },

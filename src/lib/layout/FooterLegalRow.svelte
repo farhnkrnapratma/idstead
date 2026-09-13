@@ -1,6 +1,8 @@
 <script lang="ts">
   import {cn} from '../utils/cn';
   import {consentStore} from '../stores/consentStore.svelte';
+  import {buttonKey} from '$lib/shortcuts';
+  import {shortcut} from '../utils/shortcut.svelte';
 
   interface Props {
     name?: string;
@@ -20,33 +22,39 @@
   </span>
   <a
     href="/terms"
-    class="inline-flex shrink-0 items-center transition-colors hover:text-text-primary focus-visible:text-text-primary focus-visible:outline-none">
+    use:shortcut={{combo: buttonKey('termsLink'), label: 'Terms'}}
+    class="relative inline-flex shrink-0 items-center transition-colors hover:text-text-primary focus-visible:text-text-primary focus-visible:outline-none">
     Terms
   </a>
   <a
     href="/privacy"
-    class="inline-flex shrink-0 items-center transition-colors hover:text-text-primary focus-visible:text-text-primary focus-visible:outline-none">
+    use:shortcut={{combo: buttonKey('privacyLink'), label: 'Privacy'}}
+    class="relative inline-flex shrink-0 items-center transition-colors hover:text-text-primary focus-visible:text-text-primary focus-visible:outline-none">
     Privacy
   </a>
   <a
     href="/security"
-    class="inline-flex shrink-0 items-center transition-colors hover:text-text-primary focus-visible:text-text-primary focus-visible:outline-none">
+    use:shortcut={{combo: buttonKey('securityLink'), label: 'Security'}}
+    class="relative inline-flex shrink-0 items-center transition-colors hover:text-text-primary focus-visible:text-text-primary focus-visible:outline-none">
     Security
   </a>
   <button
     type="button"
     onclick={() => consentStore.openCustomizeModal()}
-    class="inline-flex shrink-0 cursor-pointer items-center transition-colors hover:text-text-primary focus-visible:text-text-primary focus-visible:outline-none">
-    Manage cookies
+    use:shortcut={{combo: buttonKey('cookiesLink'), label: 'Cookies'}}
+    class="relative inline-flex shrink-0 cursor-pointer items-center transition-colors hover:text-text-primary focus-visible:text-text-primary focus-visible:outline-none">
+    Cookies
   </button>
   <a
     href="/sitemap.xml"
-    class="inline-flex shrink-0 items-center transition-colors hover:text-text-primary focus-visible:text-text-primary focus-visible:outline-none">
+    use:shortcut={{combo: buttonKey('sitemapLink'), label: 'Sitemap'}}
+    class="relative inline-flex shrink-0 items-center transition-colors hover:text-text-primary focus-visible:text-text-primary focus-visible:outline-none">
     Sitemap
   </a>
   <a
     href="/atom.xml"
-    class="inline-flex shrink-0 items-center transition-colors hover:text-text-primary focus-visible:text-text-primary focus-visible:outline-none">
+    use:shortcut={{combo: buttonKey('feed'), label: 'RSS'}}
+    class="relative inline-flex shrink-0 items-center transition-colors hover:text-text-primary focus-visible:text-text-primary focus-visible:outline-none">
     RSS
   </a>
 </div>

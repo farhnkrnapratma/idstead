@@ -1,7 +1,8 @@
 <script lang="ts">
   import {shortcut} from '../utils/shortcut.svelte';
   import {buttonKey} from '$lib/shortcuts';
-  import type {Snippet} from 'svelte';
+  import {shortcutStore} from '../stores/shortcutStore.svelte';
+  import {untrack, type Snippet} from 'svelte';
   import {AlertTriangle, X} from '@lucide/svelte';
   import {cn} from '../utils/cn';
   import {portal} from '../utils/actions';
@@ -19,6 +20,7 @@
     closeOnBackdrop?: boolean;
     closeOnEscape?: boolean;
     returnFocusToTrigger?: boolean;
+    trapShortcuts?: boolean;
     onClose: () => void;
     children?: Snippet;
     footer?: Snippet;
@@ -37,6 +39,7 @@
     closeOnBackdrop = true,
     closeOnEscape = true,
     returnFocusToTrigger = true,
+    trapShortcuts = true,
     onClose,
     children,
     footer,
@@ -45,6 +48,14 @@
 
   let dialogRef = $state<HTMLElement | null>(null);
   let previouslyFocusedElement: HTMLElement | null = null;
+  const instanceId = $props.id();
+  const shortcutScope = `dialog-${instanceId}`;
+
+  $effect(() => {
+    if (!isOpen || !trapShortcuts) return;
+    untrack(() => shortcutStore.pushScope(shortcutScope, true));
+    return () => untrack(() => shortcutStore.popScope(shortcutScope));
+  });
 
   const sizeStyles = {
     sm: 'max-w-sm',
@@ -141,6 +152,7 @@
 
     <div
       bind:this={dialogRef}
+      data-shortcut-scope={trapShortcuts ? shortcutScope : undefined}
       role="dialog"
       aria-modal="true"
       tabindex="-1"
@@ -161,7 +173,8 @@
           aria-label="Close dialog"
           use:shortcut={{
             combo: buttonKey('dialogClose'),
-            label: 'Close dialog'
+            label: 'Close dialog',
+            scope: trapShortcuts ? shortcutScope : undefined
           }}
           class={cn(
             'absolute inline-flex size-6.5 cursor-pointer items-center justify-center rounded-md text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring',

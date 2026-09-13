@@ -1,5 +1,6 @@
 <script lang="ts">
-  import {buttonKey} from '$lib/shortcuts';
+  import {buttonKey, sectionCommandKey} from '$lib/shortcuts';
+  import {shortcut} from '../utils/shortcut.svelte';
   import {cn} from '../utils/cn';
   import ThemeSelect from '../components/filter/ThemeSelect.svelte';
   import ContentFontSelect from '../components/filter/ContentFontSelect.svelte';
@@ -134,13 +135,21 @@
                     <button
                       type="button"
                       onclick={() => onNavClick(item.url)}
-                      class="cursor-pointer text-left text-xs leading-7.25 font-normal text-text-secondary transition-colors hover:text-accent focus-visible:text-accent focus-visible:outline-none">
+                      use:shortcut={{
+                        combo: sectionCommandKey(item.url),
+                        label: item.label
+                      }}
+                      class="relative cursor-pointer text-left text-xs leading-7.25 font-normal text-text-secondary transition-colors hover:text-accent focus-visible:text-accent focus-visible:outline-none">
                       {item.label}
                     </button>
                   {:else}
                     <a
                       href={item.url}
-                      class="cursor-pointer text-left text-xs leading-7.25 font-normal text-text-secondary transition-colors hover:text-accent focus-visible:text-accent focus-visible:outline-none">
+                      use:shortcut={{
+                        combo: sectionCommandKey(item.url),
+                        label: item.label
+                      }}
+                      class="relative cursor-pointer text-left text-xs leading-7.25 font-normal text-text-secondary transition-colors hover:text-accent focus-visible:text-accent focus-visible:outline-none">
                       {item.label}
                     </a>
                   {/if}
@@ -162,7 +171,8 @@
                 rel="noopener noreferrer"
                 aria-label={item.platform}
                 title={item.platform}
-                class="flex size-8 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-text-muted transition-all hover:bg-surface-hover hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:size-9">
+                use:shortcut={{group: 'social', label: item.platform}}
+                class="relative flex size-8 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-text-muted transition-all hover:bg-surface-hover hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:size-9">
                 <BrandIcon
                   icon={item.icon}
                   class="size-4 text-base leading-none sm:size-4.5 sm:text-lg" />

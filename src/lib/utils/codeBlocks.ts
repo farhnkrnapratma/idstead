@@ -3,6 +3,15 @@ import {codeBlockPrefsStore} from '../stores/codeBlockPrefsStore.svelte';
 import {readingModeStore} from '../stores/readingModeStore.svelte';
 import {getDownloadFilename} from './codeBlockExtensions';
 import {cn} from './cn';
+import {shortcut, type ShortcutParams} from './shortcut.svelte';
+import {focusScope} from './focusScope';
+import {argKey} from '$lib/shortcuts';
+
+let codeScopeSeq = 0;
+
+export function nextCodeScope(prefix: string) {
+  return `${prefix}-${++codeScopeSeq}`;
+}
 
 export type CodeColorScheme = 'auto' | 'light' | 'dark';
 
@@ -190,7 +199,7 @@ export function splitHighlightedHtmlLines(html: string): string[] {
 }
 
 const ICON_BUTTON_CLASS =
-  'flex h-5 w-5 items-center justify-center rounded-md border-0 bg-transparent text-text-secondary transition-colors cursor-pointer hover:bg-surface-hover hover:text-text-primary leading-none';
+  'relative flex h-5 w-5 items-center justify-center rounded-md border-0 bg-transparent text-text-secondary transition-colors cursor-pointer hover:bg-surface-hover hover:text-text-primary leading-none';
 
 const ICON_BUTTON_GHOST_CLASS = ICON_BUTTON_CLASS;
 
@@ -292,7 +301,7 @@ function buildMenuCheckboxRow(
   row.type = 'button';
   row.setAttribute('role', 'menuitemcheckbox');
   row.className =
-    'group flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover';
+    'group relative flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover';
 
   const box = document.createElement('span');
   const labelEl = document.createElement('span');
@@ -329,6 +338,7 @@ export interface CodeActionControlsOptions {
   onDownload?: () => void;
   shouldHideLineNumbers?: () => boolean;
   triggerToast: (message: string) => void;
+  shortcutScope?: string;
 }
 
 export interface CodeActionControlsResult {
@@ -347,7 +357,8 @@ export function createCodeActionControls(
     downloadLabel = 'Download',
     onDownload,
     shouldHideLineNumbers,
-    triggerToast
+    triggerToast,
+    shortcutScope
   } = options;
   const controls = document.createElement('div');
   controls.className = 'code-action-controls flex items-center gap-1';
@@ -517,6 +528,38 @@ export function createCodeActionControls(
   kebabPanel.appendChild(divider);
   kebabPanel.appendChild(downloadRow);
 
+  if (shortcutScope) {
+    const bind = (node: HTMLElement, params: ShortcutParams) =>
+      queueMicrotask(() => {
+        if (node.isConnected) shortcut(node, params);
+      });
+    const blockKey = (
+      node: HTMLElement,
+      combo: string,
+      label: string,
+      placement: ShortcutParams['placement'] = 'overhang'
+    ) => bind(node, {combo, label, scope: shortcutScope, placement});
+    const prefKey = (
+      node: HTMLElement,
+      arg: 'theme' | 'wrap' | 'lines' | 'clean',
+      label: string,
+      placement: ShortcutParams['placement'] = 'inline'
+    ) =>
+      bind(node, {
+        group: 'code',
+        chordKey: argKey('/code', arg),
+        label,
+        placement
+      });
+    blockKey(copyBtn, 'C', 'Copy code');
+    blockKey(kebabBtn, 'O', 'Code block options');
+    blockKey(downloadRow, 'D', downloadLabel, 'inline');
+    prefKey(themeToggleBtn, 'theme', 'Code color scheme', 'overhang');
+    prefKey(lineNumbersRow.row, 'lines', 'Line numbers');
+    prefKey(wrapRow.row, 'wrap', 'Wrap lines');
+    prefKey(minimalRow.row, 'clean', 'Clean mode');
+  }
+
   function setMinimalMode(isMinimal: boolean) {
     themeToggleBtn.style.display = isMinimal ? 'none' : '';
     copyBtn.className = isMinimal ? ICON_BUTTON_GHOST_CLASS : ICON_BUTTON_CLASS;
@@ -632,6 +675,7 @@ export function enhanceCodeBlocks(
     let leftSpan: HTMLElement | null = null;
     let headerControlsResult: CodeActionControlsResult | null = null;
     let lineCount = 0;
+    const blockScope = isInsideTabs ? null : nextCodeScope('code');
 
     if (!isInsideTabs) {
       headerBar = document.createElement('div');
@@ -649,7 +693,8 @@ export function enhanceCodeBlocks(
         getDownloadFilename: () =>
           getDownloadFilename(codeElement?.className || ''),
         shouldHideLineNumbers: () => isCommandBlock,
-        triggerToast
+        triggerToast,
+        shortcutScope: blockScope ?? undefined
       });
       headerBar.appendChild(headerControlsResult.controls);
     }
@@ -681,6 +726,7 @@ export function enhanceCodeBlocks(
     }
 
     pre.parentNode?.insertBefore(codeContainer, pre);
+    if (blockScope) focusScope(codeContainer, blockScope);
     if (headerBar) codeContainer.appendChild(headerBar);
     codeContainer.appendChild(codeBody);
 

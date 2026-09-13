@@ -1,5 +1,6 @@
 <script lang="ts">
   import {shortcut} from '../utils/shortcut.svelte';
+  import {buttonKey} from '$lib/shortcuts';
   import {onMount} from 'svelte';
   import {ThumbsUp, ThumbsDown, CheckCircle2} from '@lucide/svelte';
   import FieldMessage from '../components/FieldMessage.svelte';
@@ -67,7 +68,7 @@
         <button
           type="button"
           class="relative inline-flex cursor-pointer items-center justify-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/5 px-2 py-1.5 text-xs font-semibold text-emerald-600 transition-all hover:border-emerald-500/60 hover:bg-emerald-500/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 active:scale-95 disabled:cursor-wait disabled:opacity-50 dark:text-emerald-400"
-          use:shortcut={{group: 'actions', label: 'Helpful: yes'}}
+          use:shortcut={{combo: buttonKey('helpfulYes'), label: 'Helpful: yes'}}
           disabled={!ready || pending}
           onclick={() => handleVote(true)}
           aria-label="Yes, this was helpful">
@@ -80,7 +81,7 @@
         <button
           type="button"
           class="relative inline-flex cursor-pointer items-center justify-center gap-1 rounded-md border border-rose-500/30 bg-rose-500/5 px-2 py-1.5 text-xs font-semibold text-rose-600 transition-all hover:border-rose-500/60 hover:bg-rose-500/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500 active:scale-95 disabled:cursor-wait disabled:opacity-50 dark:text-rose-400"
-          use:shortcut={{group: 'actions', label: 'Helpful: no'}}
+          use:shortcut={{combo: buttonKey('helpfulNo'), label: 'Helpful: no'}}
           disabled={!ready || pending}
           onclick={() => handleVote(false)}
           aria-label="No, this was not helpful">
@@ -97,7 +98,7 @@
           type="button"
           class="relative w-fit cursor-pointer text-left text-xs font-medium text-accent hover:underline focus-visible:outline-none"
           use:shortcut={{
-            group: 'actions',
+            combo: buttonKey('shareFeedback'),
             label: 'Share your feedback',
             placement: 'after'
           }}
@@ -141,7 +142,10 @@
             <button
               type="button"
               class="relative inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/5 px-3.5 py-1.5 text-xs font-semibold text-emerald-600 transition-all hover:border-emerald-500/60 hover:bg-emerald-500/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 active:scale-95 disabled:cursor-wait disabled:opacity-50 dark:text-emerald-400"
-              use:shortcut={{group: 'actions', label: 'Helpful: yes'}}
+              use:shortcut={{
+                combo: buttonKey('helpfulYes'),
+                label: 'Helpful: yes'
+              }}
               disabled={!ready || pending}
               onclick={() => handleVote(true)}
               aria-label="Yes, this was helpful">
@@ -154,7 +158,10 @@
             <button
               type="button"
               class="relative inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-rose-500/30 bg-rose-500/5 px-3.5 py-1.5 text-xs font-semibold text-rose-600 transition-all hover:border-rose-500/60 hover:bg-rose-500/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500 active:scale-95 disabled:cursor-wait disabled:opacity-50 dark:text-rose-400"
-              use:shortcut={{group: 'actions', label: 'Helpful: no'}}
+              use:shortcut={{
+                combo: buttonKey('helpfulNo'),
+                label: 'Helpful: no'
+              }}
               disabled={!ready || pending}
               onclick={() => handleVote(false)}
               aria-label="No, this was not helpful">
@@ -171,7 +178,7 @@
               type="button"
               class="relative w-fit cursor-pointer text-center text-xs font-medium text-accent hover:underline focus-visible:outline-none sm:text-left"
               use:shortcut={{
-                group: 'actions',
+                combo: buttonKey('shareFeedback'),
                 label: 'Share your feedback',
                 placement: 'after'
               }}

@@ -1,7 +1,7 @@
 import {supabase} from './supabase';
 
 export async function adminActivityRequest<T>(
-  path: 'notifications' | 'activity',
+  path: 'notifications' | 'activity' | 'workspace',
   params: Record<string, string> = {},
   body?: unknown,
   signal?: AbortSignal

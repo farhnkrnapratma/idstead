@@ -9,7 +9,7 @@
       'primary' | 'danger' | 'outline' | 'ghost' | 'secondary' | 'tertiary';
     tone?: 'neutral' | 'critical';
     htmlType?: 'button' | 'submit' | 'reset';
-    size?: 'xs' | 'sm' | 'md' | 'lg';
+    size?: '2xs' | 'xs' | 'sm' | 'md' | 'lg';
     isLoading?: boolean;
     fullWidth?: boolean;
     leading?: Snippet;
@@ -24,6 +24,7 @@
     truncateMiddle?: boolean;
     keyboardShortcut?: string;
     shortcutGroup?: string;
+    shortcutChordKey?: string;
     shortcutScope?: string;
     shortcutLabel?: string;
   }
@@ -47,6 +48,7 @@
     truncateMiddle = false,
     keyboardShortcut,
     shortcutGroup,
+    shortcutChordKey,
     shortcutScope,
     shortcutLabel,
     class: className = '',
@@ -89,6 +91,7 @@
   );
 
   const sizeStyles = {
+    '2xs': 'h-7 px-2 text-xs gap-2 rounded-sm',
     xs: 'h-7.5 px-2.5 py-1.5 text-2xs gap-1 rounded-md',
     sm: 'h-8 px-3 text-xs gap-1.5 rounded-md',
     md: 'h-9 px-4 text-xs sm:text-sm gap-2 rounded-md',
@@ -96,6 +99,8 @@
   };
 
   const responsiveSizeStyles = {
+    '2xs':
+      'size-7 shrink-0 p-0 text-xs gap-2 rounded-sm sm:h-7 sm:w-auto sm:px-2 sm:text-xs sm:gap-2',
     xs: 'size-8 shrink-0 p-0 text-2xs gap-1 rounded-md sm:h-7.5 sm:w-auto sm:px-2.5 sm:py-1.5 sm:text-2xs sm:gap-1',
     sm: 'size-8 shrink-0 p-0 text-xs gap-1.5 rounded-md sm:h-8 sm:w-auto sm:px-3 sm:text-xs sm:gap-1.5',
     md: 'size-8 shrink-0 p-0 text-xs gap-1.5 rounded-md sm:h-9 sm:w-auto sm:px-4 sm:text-xs sm:text-sm sm:gap-2',
@@ -155,6 +160,7 @@
   use:shortcut={{
     combo: keyboardShortcut,
     group: shortcutGroup,
+    chordKey: shortcutChordKey,
     scope: shortcutScope,
     label: shortcutLabel ?? resolvedAriaLabel ?? label,
     disabled: disabled || isLoading

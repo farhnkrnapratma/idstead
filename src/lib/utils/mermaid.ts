@@ -232,7 +232,7 @@ function attachDiagramToolbar(
   copyCodeItem.type = 'button';
   copyCodeItem.className =
     'flex w-full cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs font-medium text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary';
-  copyCodeItem.innerHTML = `<svg class="size-3.5 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg><span>Copy Code</span>`;
+  copyCodeItem.innerHTML = `<svg class="size-3.5 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg><span>Copy code</span>`;
 
   copyCodeItem.onclick = async e => {
     e.stopPropagation();
@@ -241,7 +241,7 @@ function attachDiagramToolbar(
       copyCodeItem.innerHTML = `<svg class="size-3.5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span class="font-semibold text-accent">Copied Code!</span>`;
       setTimeout(() => {
         dropdown.classList.add('hidden');
-        copyCodeItem.innerHTML = `<svg class="size-3.5 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg><span>Copy Code</span>`;
+        copyCodeItem.innerHTML = `<svg class="size-3.5 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg><span>Copy code</span>`;
       }, 1200);
     } catch {}
   };

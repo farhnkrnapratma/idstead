@@ -7,8 +7,12 @@
     type ConsentStatus
   } from '../stores/consentStore.svelte';
   import {popoverPosition} from '../utils/popoverPosition';
+  import {focusScope} from '../utils/focusScope';
+  import {buttonKey} from '$lib/shortcuts';
   import Button from './Button.svelte';
   import Dialog from './Dialog.svelte';
+
+  const CONSENT_BANNER_SCOPE = 'consent-banner';
 
   let tempAnalytics = $state<ConsentStatus>('denied');
   let tempAdStorage = $state<ConsentStatus>('denied');
@@ -94,9 +98,9 @@
   );
 
   const presetLabel = $derived(
-    presetSliderValue === 0 ? 'Allow All'
-    : presetSliderValue === 1 ? 'Analytics Only'
-    : 'Deny All'
+    presetSliderValue === 0 ? 'Allow all'
+    : presetSliderValue === 1 ? 'Analytics only'
+    : 'Deny all'
   );
 
   function handlePresetSlider(e: Event) {
@@ -112,7 +116,8 @@
 {#if consentStore.isBannerOpen}
   <aside
     transition:fade={{duration: 200}}
-    aria-label="Cookie and Privacy Consent"
+    use:focusScope={CONSENT_BANNER_SCOPE}
+    aria-label="Cookie and privacy consent"
     class="fixed right-4 bottom-4 left-4 z-50 mx-auto max-w-xl rounded-md glass-overlay p-5 transition-all sm:right-auto sm:bottom-6 sm:left-6 sm:w-full">
     <div class="flex flex-col gap-4">
       <div class="flex items-start justify-between gap-3">
@@ -123,7 +128,7 @@
           </div>
           <div>
             <h3 class="text-sm font-bold text-text-primary">
-              Cookie & Privacy Preferences
+              Cookie and privacy preferences
             </h3>
             <p class="text-xxs text-text-muted">
               We use cookies to analyze site traffic and enhance your
@@ -155,6 +160,9 @@
           type="primary"
           size="sm"
           class="w-full sm:w-auto"
+          keyboardShortcut="A"
+          shortcutScope={CONSENT_BANNER_SCOPE}
+          shortcutLabel="Accept all cookies"
           onclick={consentStore.acceptAll}>
           Accept all
         </Button>
@@ -162,6 +170,9 @@
           type="secondary"
           size="sm"
           class="w-full sm:w-auto"
+          keyboardShortcut="N"
+          shortcutScope={CONSENT_BANNER_SCOPE}
+          shortcutLabel="Analytics cookies only"
           onclick={consentStore.acceptAnalyticsOnly}>
           Analytics only
         </Button>
@@ -169,6 +180,9 @@
           type="ghost"
           size="sm"
           class="w-full sm:w-auto"
+          keyboardShortcut="D"
+          shortcutScope={CONSENT_BANNER_SCOPE}
+          shortcutLabel="Reject all cookies"
           onclick={consentStore.rejectAll}>
           Reject all
         </Button>
@@ -176,8 +190,11 @@
           type="ghost"
           size="sm"
           onclick={openCustomize}
+          keyboardShortcut={buttonKey('cookiesLink')}
+          shortcutScope={CONSENT_BANNER_SCOPE}
+          shortcutLabel="Cookie settings"
           class="w-full sm:ml-auto sm:w-auto">
-          Cookie Settings
+          Cookie settings
         </Button>
       </div>
     </div>
@@ -186,7 +203,7 @@
 
 <Dialog
   bind:isOpen={consentStore.isCustomizeModalOpen}
-  title="Cookie Preferences"
+  title="Cookie preferences"
   description="Manage your analytics and advertising privacy choices."
   size="2xl"
   class="w-[95vw] max-w-2xl"
@@ -196,7 +213,7 @@
       class="flex flex-col gap-2.5 rounded-md border border-border-subtle/70 bg-surface-card/50 p-3">
       <div class="flex items-center justify-between gap-2">
         <span class="text-xs font-semibold text-text-secondary"
-          >Quick Presets</span>
+          >Quick presets</span>
         <span
           class="text-xs font-bold transition-colors"
           style="color: {presetColor}">
@@ -227,9 +244,9 @@
 
       <div
         class="flex items-center justify-between text-2xs font-medium text-text-secondary">
-        <span>Allow All</span>
-        <span>Analytics Only</span>
-        <span>Deny All</span>
+        <span>Allow all</span>
+        <span>Analytics only</span>
+        <span>Deny all</span>
       </div>
     </div>
 
@@ -238,7 +255,7 @@
       <div class="flex items-center justify-between gap-3 p-3 sm:p-3.5">
         <div class="flex min-w-0 flex-1 flex-col gap-0.5">
           <h4 class="text-xs font-bold text-text-primary">
-            Behavioral Analytics
+            Behavioral analytics
           </h4>
           <p class="text-xs leading-snug text-text-secondary">
             Measures sessions, page views and interactions.
@@ -251,7 +268,7 @@
             onclick={() =>
               (activeDropdown =
                 activeDropdown === 'analytics' ? null : 'analytics')}
-            aria-label="Behavioral Analytics preference"
+            aria-label="Behavioral analytics preference"
             aria-expanded={activeDropdown === 'analytics'}
             aria-haspopup="listbox"
             class="inline-flex h-8 min-w-22 cursor-pointer items-center justify-between gap-1.5 rounded-md border border-border-subtle bg-surface-card px-2.5 text-xs font-semibold text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none">
@@ -275,7 +292,7 @@
               aria-label="Close menu"></button>
             <div
               role="listbox"
-              aria-label="Behavioral Analytics options"
+              aria-label="Behavioral analytics options"
               use:popoverPosition={{
                 placement: 'bottom-end',
                 offset: 8,
@@ -329,7 +346,7 @@
       <div class="flex items-center justify-between gap-3 p-3 sm:p-3.5">
         <div class="flex min-w-0 flex-1 flex-col gap-0.5">
           <h4 class="text-xs font-bold text-text-primary">
-            Advertising Storage
+            Advertising storage
           </h4>
           <p class="text-xs leading-snug text-text-secondary">
             Stores advertising identifiers.
@@ -342,7 +359,7 @@
             onclick={() =>
               (activeDropdown =
                 activeDropdown === 'ad_storage' ? null : 'ad_storage')}
-            aria-label="Advertising Storage preference"
+            aria-label="Advertising storage preference"
             aria-expanded={activeDropdown === 'ad_storage'}
             aria-haspopup="listbox"
             class="inline-flex h-8 min-w-22 cursor-pointer items-center justify-between gap-1.5 rounded-md border border-border-subtle bg-surface-card px-2.5 text-xs font-semibold text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none">
@@ -366,7 +383,7 @@
               aria-label="Close menu"></button>
             <div
               role="listbox"
-              aria-label="Advertising Storage options"
+              aria-label="Advertising storage options"
               use:popoverPosition={{
                 placement: 'bottom-end',
                 offset: 8,
@@ -419,7 +436,7 @@
 
       <div class="flex items-center justify-between gap-3 p-3 sm:p-3.5">
         <div class="flex min-w-0 flex-1 flex-col gap-0.5">
-          <h4 class="text-xs font-bold text-text-primary">Ad User Data</h4>
+          <h4 class="text-xs font-bold text-text-primary">Ad user data</h4>
           <p class="text-xs leading-snug text-text-secondary">
             Shares advertising measurement data.
           </p>
@@ -431,7 +448,7 @@
             onclick={() =>
               (activeDropdown =
                 activeDropdown === 'ad_user_data' ? null : 'ad_user_data')}
-            aria-label="Ad User Data preference"
+            aria-label="Ad user data preference"
             aria-expanded={activeDropdown === 'ad_user_data'}
             aria-haspopup="listbox"
             class="inline-flex h-8 min-w-22 cursor-pointer items-center justify-between gap-1.5 rounded-md border border-border-subtle bg-surface-card px-2.5 text-xs font-semibold text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none">
@@ -455,7 +472,7 @@
               aria-label="Close menu"></button>
             <div
               role="listbox"
-              aria-label="Ad User Data options"
+              aria-label="Ad user data options"
               use:popoverPosition={{
                 placement: 'bottom-end',
                 offset: 8,
@@ -509,7 +526,7 @@
       <div class="flex items-center justify-between gap-3 p-3 sm:p-3.5">
         <div class="flex min-w-0 flex-1 flex-col gap-0.5">
           <h4 class="text-xs font-bold text-text-primary">
-            Ad Personalization
+            Ad personalization
           </h4>
           <p class="text-xs leading-snug text-text-secondary">
             Personalized advertising preferences.
@@ -524,7 +541,7 @@
                 activeDropdown === 'ad_personalization' ? null : (
                   'ad_personalization'
                 ))}
-            aria-label="Ad Personalization preference"
+            aria-label="Ad personalization preference"
             aria-expanded={activeDropdown === 'ad_personalization'}
             aria-haspopup="listbox"
             class="inline-flex h-8 min-w-22 cursor-pointer items-center justify-between gap-1.5 rounded-md border border-border-subtle bg-surface-card px-2.5 text-xs font-semibold text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none">
@@ -548,7 +565,7 @@
               aria-label="Close menu"></button>
             <div
               role="listbox"
-              aria-label="Ad Personalization options"
+              aria-label="Ad personalization options"
               use:popoverPosition={{
                 placement: 'bottom-end',
                 offset: 8,
@@ -609,6 +626,8 @@
         tone="critical"
         size="sm"
         onclick={consentStore.resetVisitorConsent}
+        keyboardShortcut="R"
+        shortcutLabel="Reset choice"
         class="w-full sm:w-auto">
         <Trash class="size-3" />
         Reset choice
@@ -626,16 +645,20 @@
           applyPreset('all');
           saveCustomPreferences();
         }}
+        keyboardShortcut="A"
+        shortcutLabel="Accept all cookies"
         class="w-full sm:w-auto">
-        Accept All
+        Accept all
       </Button>
 
       <Button
         type="primary"
         size="md"
         onclick={saveCustomPreferences}
+        keyboardShortcut={buttonKey('formSubmit')}
+        shortcutLabel="Save preferences"
         class="w-full sm:w-auto">
-        Save Preferences
+        Save preferences
       </Button>
     </div>
   {/snippet}

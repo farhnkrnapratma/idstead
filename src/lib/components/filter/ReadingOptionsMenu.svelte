@@ -8,7 +8,7 @@
     ToggleRight,
     CaseSensitive,
     Languages,
-    Accessibility,
+    PersonStanding,
     X
   } from '@lucide/svelte';
   import {cn} from '../../utils/cn';
@@ -49,7 +49,7 @@
 
   const fontOptions: {value: ContentFont; label: string; fontClass: string}[] =
     [
-      {value: 'sans', label: 'Sans Serif', fontClass: 'font-sans'},
+      {value: 'sans', label: 'Sans serif', fontClass: 'font-sans'},
       {value: 'serif', label: 'Serif', fontClass: 'font-serif'},
       {value: 'mono', label: 'Monospace', fontClass: 'font-mono'}
     ];
@@ -71,7 +71,7 @@
     if (languageSwitcher && languageOptions.length > 1) {
       tabs.push({id: 'language', label: 'Language', icon: Languages});
     }
-    tabs.push({id: 'accessibility', label: 'A11y', icon: Accessibility});
+    tabs.push({id: 'accessibility', label: 'A11y', icon: PersonStanding});
     return tabs;
   });
 

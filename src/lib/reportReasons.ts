@@ -1,27 +1,27 @@
 export const REPORT_REASONS = [
   {
     id: 'spam',
-    label: 'Spam / Phishing',
+    label: 'Spam / phishing',
     description: 'Commercial advertisements, scam links, or repetitive spam'
   },
   {
     id: 'harassment',
-    label: 'Harassment / Hate',
+    label: 'Harassment / hate',
     description: 'Abusive language, insults, harassment, or hate speech'
   },
   {
     id: 'violence_or_illegal',
-    label: 'Violence / Illegal',
+    label: 'Violence / illegal',
     description: 'Threats of violence, promotion of crime, or dangerous weapons'
   },
   {
     id: 'sexual_content',
-    label: 'Sexual Content',
+    label: 'Sexual content',
     description: 'Sexually explicit content or exploitation of a minor'
   },
   {
     id: 'self_harm',
-    label: 'Self-Harm / Suicide',
+    label: 'Self-harm / suicide',
     description: 'Content that encourages or depicts self-harm or suicide'
   },
   {
@@ -31,7 +31,7 @@ export const REPORT_REASONS = [
   },
   {
     id: 'removal_request',
-    label: 'Content / Privacy',
+    label: 'Content / privacy',
     description: 'Request removal of private, sensitive, or copyrighted content'
   },
   {
@@ -41,7 +41,7 @@ export const REPORT_REASONS = [
   },
   {
     id: 'other',
-    label: 'Other Violation',
+    label: 'Other violation',
     description: 'Any other violation not covered above'
   }
 ] as const;

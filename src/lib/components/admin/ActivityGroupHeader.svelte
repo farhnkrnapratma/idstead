@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type {Snippet} from 'svelte';
   import {resolve} from '$app/paths';
   import {ChevronRight} from '@lucide/svelte';
   import ActivityTimestamp from './ActivityTimestamp.svelte';
@@ -9,15 +10,17 @@
     latest,
     expanded,
     onToggle,
-    label = title
+    label = title,
+    badges
   }: {
     title: string;
     url?: string | null;
-    description: string;
+    description?: string;
     latest: string;
     expanded: boolean;
     onToggle: () => void;
     label?: string;
+    badges?: Snippet;
   } = $props();
 </script>
 
@@ -31,16 +34,26 @@
     ><ChevronRight
       class={`mt-0.5 size-4 shrink-0 transition-transform ${expanded ? 'rotate-90' : ''}`} /></button>
   <div class="pointer-events-none relative ml-6 min-w-0">
-    <div class="text-xs font-bold break-words text-text-primary">
-      {#if url}<a
-          href={resolve(...([url] as Parameters<typeof resolve>))}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="pointer-events-auto underline decoration-border-strong underline-offset-2 hover:text-accent focus-visible:text-accent focus-visible:outline-2 focus-visible:outline-focus-ring"
-          >{title}</a
-        >{:else}{title}{/if}
+    <div class="flex flex-wrap items-center gap-2">
+      <span class="text-xs font-bold break-words text-text-primary">
+        {#if url}<a
+            href={resolve(...([url] as Parameters<typeof resolve>))}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="pointer-events-auto hover:text-accent focus-visible:text-accent focus-visible:outline-2 focus-visible:outline-focus-ring"
+            >{title}</a
+          >{:else}{title}{/if}
+      </span>
+      {#if badges}
+        <div
+          class="pointer-events-auto inline-flex flex-wrap items-center gap-1.5">
+          {@render badges()}
+        </div>
+      {/if}
     </div>
-    <p class="mt-1 text-2xs break-words text-text-secondary">{description}</p>
+    {#if description}
+      <p class="mt-1 text-2xs break-words text-text-secondary">{description}</p>
+    {/if}
     <ActivityTimestamp
       date={latest}
       class="mt-1 inline-block" />

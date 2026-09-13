@@ -2,6 +2,7 @@
   import {createFeedbackClient} from '$lib/feedbackClient.svelte';
   import {shortcut} from '$lib/utils/shortcut.svelte';
   import {buttonKey} from '$lib/shortcuts';
+  import {focusScope} from '$lib/utils/focusScope';
   import {FieldValidation, requiredText} from '$lib/fieldValidation';
   import {ogLocale} from '$lib/translationLocales';
   import '@fontsource-variable/noto-sans-jp';
@@ -965,13 +966,13 @@
                   {#if isCollaboratorsPopoverOpen}
                     <div
                       role="dialog"
-                      aria-label="Other Collaborators"
+                      aria-label="Other collaborators"
                       class="absolute top-full right-0 z-50 mt-2 flex w-max max-w-[calc(100vw-2.5rem)] min-w-36 flex-col gap-0.5 rounded-md border border-border-subtle bg-surface-elevated p-1.5 shadow-lg sm:right-auto sm:left-0">
                       <span
                         class="px-1.5 py-0.5 text-2xs font-semibold tracking-wider text-text-muted uppercase">
                         {hiddenCollaborators.length > 1 ?
-                          'Other Collaborators'
-                        : 'Other Collaborator'}
+                          'Other collaborators'
+                        : 'Other collaborator'}
                       </span>
                       {#each hiddenCollaborators as collab (collab)}
                         <a
@@ -1104,6 +1105,8 @@
                 size="sm"
                 class="w-full justify-center px-2 py-2 sm:px-3"
                 title="Share on X"
+                keyboardShortcut={buttonKey('shareX')}
+                shortcutLabel="Share on X"
                 aria-label="Share on X (opens in a new tab)">
                 {#snippet leading()}
                   <i
@@ -1121,6 +1124,8 @@
                 size="sm"
                 class="w-full justify-center px-2 py-2 sm:px-3"
                 title="Share on LinkedIn"
+                keyboardShortcut={buttonKey('shareLinkedIn')}
+                shortcutLabel="Share on LinkedIn"
                 aria-label="Share on LinkedIn (opens in a new tab)">
                 {#snippet leading()}
                   <i
@@ -1138,6 +1143,8 @@
                 size="sm"
                 class="w-full justify-center px-2 py-2 sm:px-3"
                 title="Share on WhatsApp"
+                keyboardShortcut={buttonKey('shareWhatsApp')}
+                shortcutLabel="Share on WhatsApp"
                 aria-label="Share on WhatsApp (opens in a new tab)">
                 {#snippet leading()}
                   <i
@@ -1155,6 +1162,8 @@
                 size="sm"
                 class="w-full justify-center px-2 py-2 sm:px-3"
                 title="Share on Facebook"
+                keyboardShortcut={buttonKey('shareFacebook')}
+                shortcutLabel="Share on Facebook"
                 aria-label="Share on Facebook (opens in a new tab)">
                 {#snippet leading()}
                   <i
@@ -1172,6 +1181,8 @@
                 size="sm"
                 class="w-full justify-center px-2 py-2 sm:px-3"
                 title="Share on Reddit"
+                keyboardShortcut={buttonKey('shareReddit')}
+                shortcutLabel="Share on Reddit"
                 aria-label="Share on Reddit (opens in a new tab)">
                 {#snippet leading()}
                   <i
@@ -1187,6 +1198,8 @@
                 size="sm"
                 class="w-full justify-center px-2 py-2 sm:px-3"
                 title="Share via Email"
+                keyboardShortcut={buttonKey('shareEmail')}
+                shortcutLabel="Share via email"
                 aria-label="Share via email">
                 {#snippet leading()}
                   <i
@@ -1208,91 +1221,109 @@
             </h3>
             <div class="relative z-0 grid grid-cols-1 gap-3 sm:gap-4">
               {#each relatedPosts as related (related.id)}
-                <Card
-                  class="relative flex flex-col gap-3.5 p-4 text-left sm:flex-row sm:gap-4">
-                  <div
-                    class="aspect-video w-full shrink-0 overflow-hidden rounded-md border border-border-subtle sm:w-48 md:w-56">
-                    {#if related.bannerPublicUrl && !failedRelatedBanners.has(related.id)}
-                      <ImageWithSkeleton
-                        src={related.bannerPublicUrl}
-                        alt={related.title}
-                        aspectRatio="aspect-video"
-                        onerror={() => markRelatedBannerFailed(related.id)}
-                        class="h-full w-full object-cover" />
-                    {:else}
-                      <div
-                        class="relative flex h-full w-full items-center justify-center overflow-hidden bg-linear-to-br from-accent/15 to-accent/5 select-none">
-                        <ImageIcon class="size-8 text-text-muted" />
-                      </div>
-                    {/if}
-                  </div>
-
-                  <div
-                    class="flex min-w-0 flex-1 flex-col justify-between gap-2.5 font-sans">
-                    <div class="flex flex-col gap-1">
-                      <div>
-                        <h4
-                          class="line-clamp-2 text-lg leading-snug font-bold text-text-primary">
-                          {related.title}
-                        </h4>
-                      </div>
-                      <ArticleMeta
-                        size="xs"
-                        layout="single"
-                        class="min-h-4.5"
-                        date={related.created_at || ''}
-                        updatedAt={related.updated_at || ''}
-                        readingTime={formatReadTime(related.read_time)}
-                        commentsCount={related.comment_count}
-                        views={related.views_count} />
-                      {#if related.excerpt}
-                        {@const isExpanded = expandedExcerptIds.has(related.id)}
-                        {@const isOverflowing = overflowingExcerptIds.has(
-                          related.id
-                        )}
-                        <div class="flex flex-col items-start gap-1">
-                          <p
-                            {@attach !isExpanded
-                              && observeExcerptOverflow(related.id)}
-                            class="text-xs leading-relaxed text-text-secondary {(
-                              isExpanded
-                            ) ?
-                              ''
-                            : 'line-clamp-2'}">
-                            {related.excerpt}
-                            {#if isOverflowing && isExpanded}
-                              <button
-                                type="button"
-                                onclick={() => toggleExcerpt(related.id)}
-                                class="ml-1 inline cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
-                                Show less
-                              </button>
-                            {/if}
-                          </p>
-                          {#if isOverflowing && !isExpanded}
-                            <button
-                              type="button"
-                              onclick={() => toggleExcerpt(related.id)}
-                              class="inline-flex cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
-                              Show more
-                            </button>
-                          {/if}
+                {@const relatedScope = `related-${related.id}`}
+                <div use:focusScope={relatedScope}>
+                  <Card
+                    class="relative flex flex-col gap-3.5 p-4 text-left sm:flex-row sm:gap-4">
+                    <div
+                      class="aspect-video w-full shrink-0 overflow-hidden rounded-md border border-border-subtle sm:w-48 md:w-56">
+                      {#if related.bannerPublicUrl && !failedRelatedBanners.has(related.id)}
+                        <ImageWithSkeleton
+                          src={related.bannerPublicUrl}
+                          alt={related.title}
+                          aspectRatio="aspect-video"
+                          onerror={() => markRelatedBannerFailed(related.id)}
+                          class="h-full w-full object-cover" />
+                      {:else}
+                        <div
+                          class="relative flex h-full w-full items-center justify-center overflow-hidden bg-linear-to-br from-accent/15 to-accent/5 select-none">
+                          <ImageIcon class="size-8 text-text-muted" />
                         </div>
                       {/if}
                     </div>
 
-                    <div class="relative z-20 mt-auto flex flex-col gap-2 pt-1">
-                      <hr class="border-border-subtle/50" />
-                      <Button
-                        href="/blog/{related.slug}"
-                        type="primary"
-                        size="sm"
-                        fullWidth>
-                        Read post
-                      </Button>
+                    <div
+                      class="flex min-w-0 flex-1 flex-col justify-between gap-2.5 font-sans">
+                      <div class="flex flex-col gap-1">
+                        <div>
+                          <h4
+                            class="line-clamp-2 text-lg leading-snug font-bold text-text-primary">
+                            {related.title}
+                          </h4>
+                        </div>
+                        <ArticleMeta
+                          size="xs"
+                          layout="single"
+                          class="min-h-4.5"
+                          date={related.created_at || ''}
+                          updatedAt={related.updated_at || ''}
+                          readingTime={formatReadTime(related.read_time)}
+                          commentsCount={related.comment_count}
+                          views={related.views_count} />
+                        {#if related.excerpt}
+                          {@const isExpanded = expandedExcerptIds.has(
+                            related.id
+                          )}
+                          {@const isOverflowing = overflowingExcerptIds.has(
+                            related.id
+                          )}
+                          <div class="flex flex-col items-start gap-1">
+                            <p
+                              {@attach !isExpanded
+                                && observeExcerptOverflow(related.id)}
+                              class="text-xs leading-relaxed text-text-secondary {(
+                                isExpanded
+                              ) ?
+                                ''
+                              : 'line-clamp-2'}">
+                              {related.excerpt}
+                              {#if isOverflowing && isExpanded}
+                                <button
+                                  type="button"
+                                  onclick={() => toggleExcerpt(related.id)}
+                                  use:shortcut={{
+                                    combo: 'E',
+                                    scope: relatedScope,
+                                    label: 'Show less'
+                                  }}
+                                  class="relative ml-1 inline cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
+                                  Show less
+                                </button>
+                              {/if}
+                            </p>
+                            {#if isOverflowing && !isExpanded}
+                              <button
+                                type="button"
+                                onclick={() => toggleExcerpt(related.id)}
+                                use:shortcut={{
+                                  combo: 'E',
+                                  scope: relatedScope,
+                                  label: 'Show more'
+                                }}
+                                class="relative inline-flex cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
+                                Show more
+                              </button>
+                            {/if}
+                          </div>
+                        {/if}
+                      </div>
+
+                      <div
+                        class="relative z-20 mt-auto flex flex-col gap-2 pt-1">
+                        <hr class="border-border-subtle/50" />
+                        <Button
+                          href="/blog/{related.slug}"
+                          type="primary"
+                          size="sm"
+                          shortcutGroup="posts"
+                          shortcutLabel={related.title}
+                          fullWidth>
+                          Read post
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                </Card>
+                  </Card>
+                </div>
               {/each}
             </div>
           </section>
@@ -1408,6 +1439,8 @@
                     size="md"
                     class="flex-1 sm:flex-initial"
                     disabled={!canClearComment || isSubmitting}
+                    keyboardShortcut={buttonKey('formClear')}
+                    shortcutLabel="Clear comment"
                     onclick={clearCommentForm}>
                     <span
                       >Clear<span class="hidden sm:inline">&nbsp;comment</span
@@ -1419,7 +1452,9 @@
                     size="md"
                     class="flex-1 sm:flex-initial"
                     disabled={isSubmitting}
-                    isLoading={isSubmitting}>
+                    isLoading={isSubmitting}
+                    keyboardShortcut={buttonKey('formSubmit')}
+                    shortcutLabel="Post comment">
                     {isSubmitting ? 'Posting…' : 'Post comment'}
                   </Button>
                 </div>
@@ -1453,7 +1488,12 @@
                     feedbackMessage = null;
                     commentContent = '';
                   }}
-                  class="cursor-pointer font-bold text-text-muted transition-colors hover:text-accent focus-visible:outline-none">
+                  use:shortcut={{
+                    combo: 'R',
+                    scope: `comment-${comment.id}`,
+                    label: 'Reply'
+                  }}
+                  class="relative cursor-pointer font-bold text-text-muted transition-colors hover:text-accent focus-visible:outline-none">
                   Reply
                 </button>
               {/snippet}
@@ -1471,6 +1511,8 @@
                     <Button
                       type="ghost"
                       size="sm"
+                      keyboardShortcut={buttonKey('formClear')}
+                      shortcutLabel="Cancel reply"
                       onclick={cancelReply}>Cancel</Button>
                   </div>
 
@@ -1562,7 +1604,9 @@
                         type="primary"
                         size="sm"
                         disabled={isSubmitting}
-                        isLoading={isSubmitting}>
+                        isLoading={isSubmitting}
+                        keyboardShortcut={buttonKey('formSubmit')}
+                        shortcutLabel="Post reply">
                         {isSubmitting ? 'Posting…' : 'Post reply'}
                       </Button>
                     </div>
@@ -1702,6 +1746,8 @@
         type="secondary"
         size="md"
         fullWidth
+        keyboardShortcut="C"
+        shortcutLabel="Cancel"
         onclick={() => {
           showNoFeedbackDialog = false;
         }}>Cancel</Button>
@@ -1709,6 +1755,8 @@
         type="primary"
         size="md"
         fullWidth
+        keyboardShortcut={buttonKey('formSubmit')}
+        shortcutLabel="Send feedback"
         onclick={() => {
           showNoFeedbackDialog = false;
           window.location.href = '/feedback';

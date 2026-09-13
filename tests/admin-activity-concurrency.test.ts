@@ -13,7 +13,7 @@ function sql(query: string): Promise<string> {
     const child = spawn('docker', [
       'exec',
       '-i',
-      'www-admin-activity-test',
+      process.env.ACTIVITY_POSTGRES_CONTAINER ?? 'www-admin-activity-test',
       'psql',
       '-U',
       'postgres',
@@ -48,7 +48,8 @@ describe.skipIf(!enabled)('isolated PostgreSQL concurrency', () => {
       'supabase/migrations/20260825000000_add_collaborators_and_feedback.sql',
       'supabase/migrations/20260910000000_admin_dashboard_notifications.sql',
       'supabase/migrations/20260910120000_admin_notifications_inbox.sql',
-      ...activityMigrationPaths
+      ...activityMigrationPaths,
+      'supabase/migrations/20260913144335_scalable_admin_workspace.sql'
     ])
       await sql(await readFile(file, 'utf8'));
     await sql(
@@ -146,6 +147,41 @@ describe.skipIf(!enabled)('isolated PostgreSQL concurrency', () => {
     expect(
       await sql(
         'select count(*) from db_admin_notifications; select count(*) from db_feedback_events;'
+      )
+    ).toBe('1\n4');
+  }, 30000);
+  test('concurrent group retries affect each notification once and preserve source feedback', async () => {
+    await sql(
+      `insert into db_admin_notifications(kind,post_id,meta) select 'post_feedback','${post}',jsonb_build_object('page_id','${post}','vote','yes') from generate_series(1,80);`
+    );
+    const prepared = JSON.parse(
+      await sql(
+        `select db_admin_workspace('notifications',jsonb_build_object('type','helpful','to',clock_timestamp(),'timeZone','UTC'));`
+      )
+    );
+    const group = prepared.items[0].id.replaceAll("'", "''");
+    const snapshot = prepared.asOf;
+    await sql(
+      `insert into db_admin_notifications(kind,post_id,meta) values('post_feedback','${post}',jsonb_build_object('page_id','${post}','vote','yes'));`
+    );
+    for (const remove of [false, true]) {
+      const results = await Promise.all(
+        Array.from({length: 8}, () =>
+          sql(
+            `select db_admin_notification_group_action('${group}','${snapshot}','UTC',${remove});`
+          )
+        )
+      );
+      expect(
+        results.reduce(
+          (total, result) => total + JSON.parse(result).affected,
+          0
+        )
+      ).toBe(80);
+    }
+    expect(
+      await sql(
+        "select count(*) from db_admin_notifications where kind='post_feedback' and read_at is null; select count(*) from db_feedback_events;"
       )
     ).toBe('1\n4');
   }, 30000);

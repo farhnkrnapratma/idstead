@@ -4,7 +4,7 @@
   import {fade} from 'svelte/transition';
   import {goto} from '$app/navigation';
   import {page} from '$app/state';
-  import {MessageSquarePlus} from '@lucide/svelte';
+  import {MessageSquareWarning} from '@lucide/svelte';
   import Tooltip from './Tooltip.svelte';
 
   interface Props {
@@ -35,7 +35,7 @@
         class="relative inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full glass-button px-0 text-xs font-semibold text-text-primary shadow-md transition-colors hover:text-accent md:h-10 md:w-10 md:shadow-lg"
         onclick={() => goto('/feedback')}
         aria-label="Report an issue or give feedback">
-        <MessageSquarePlus class="size-4.5 shrink-0 md:size-5" />
+        <MessageSquareWarning class="size-4.5 shrink-0 md:size-5" />
       </button>
     </Tooltip>
   </div>

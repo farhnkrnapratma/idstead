@@ -2,6 +2,7 @@
   import FilterChip from './FilterChip.svelte';
   import Button from '../Button.svelte';
   import {cn} from '../../utils/cn';
+  import {buttonKey} from '$lib/shortcuts';
 
   interface ChipItem {
     id: string;
@@ -43,6 +44,8 @@
       type="ghost"
       size="sm"
       onclick={onClearAll}
+      keyboardShortcut={buttonKey('clearFilters')}
+      shortcutLabel="Clear all filters"
       class="text-xs text-text-muted hover:text-text-primary">
       {clearAllLabel}
     </Button>

@@ -6,6 +6,7 @@
   let {
     reports = [],
     focusedId,
+    showBadge = true,
     class: className = ''
   }: {
     reports: {
@@ -15,6 +16,7 @@
       created_at: string;
     }[];
     focusedId?: string;
+    showBadge?: boolean;
     class?: string;
   } = $props();
 </script>
@@ -33,17 +35,22 @@
         focusedId === report.id ? 'bg-accent-subtle/40' : ''
       )}>
       <div class="flex flex-wrap items-center gap-1.5">
-        <Badge
-          variant="custom"
-          color={reportReasonColor(report.reason)}
-          class="py-0.5 text-2xs">{reportReasonLabel(report.reason)}</Badge>
+        {#if showBadge}
+          <Badge
+            variant="custom"
+            color={reportReasonColor(report.reason)}
+            class="py-0.5 text-2xs">{reportReasonLabel(report.reason)}</Badge>
+        {/if}
         <ActivityTimestamp
           date={report.created_at}
           prefix="Reported at"
-          class="ml-auto" />
+          class={showBadge ? 'ml-auto' : ''} />
       </div>
       <p
-        class="font-sans text-xs leading-relaxed break-words whitespace-pre-wrap text-text-secondary">
+        class={cn(
+          'font-sans text-xs leading-relaxed break-words whitespace-pre-wrap',
+          report.details ? 'text-text-secondary' : 'text-text-muted italic'
+        )}>
         {report.details || 'No description provided.'}
       </p>
     </li>

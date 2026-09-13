@@ -6,6 +6,8 @@
   } from '$lib/fieldValidation';
   import {publicAvatarUrl} from '$lib/siteIdentity';
   import {page} from '$app/state';
+  import {shortcut} from '$lib/utils/shortcut.svelte';
+  import {buttonKey} from '$lib/shortcuts';
   import {onDestroy, onMount} from 'svelte';
   import {
     PenLine,
@@ -335,7 +337,8 @@
             <button
               type="button"
               onclick={() => selectCategory('Writing error')}
-              class="group flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
+              use:shortcut={{combo: '1', label: 'Writing errors'}}
+              class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
               aria-label="Select category: Writing errors">
               <div class="flex items-center gap-2">
                 <PenLine
@@ -354,7 +357,8 @@
             <button
               type="button"
               onclick={() => selectCategory('Technical inaccuracy')}
-              class="group flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
+              use:shortcut={{combo: '2', label: 'Technical inaccuracies'}}
+              class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
               aria-label="Select category: Technical inaccuracies">
               <div class="flex items-center gap-2">
                 <Code2
@@ -373,7 +377,8 @@
             <button
               type="button"
               onclick={() => selectCategory('Outdated information')}
-              class="group flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
+              use:shortcut={{combo: '3', label: 'Outdated information'}}
+              class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
               aria-label="Select category: Outdated information">
               <div class="flex items-center gap-2">
                 <ClockFading
@@ -392,7 +397,8 @@
             <button
               type="button"
               onclick={() => selectCategory('Broken link')}
-              class="group flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
+              use:shortcut={{combo: '4', label: 'Broken links'}}
+              class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
               aria-label="Select category: Broken links">
               <div class="flex items-center gap-2">
                 <Link2Off
@@ -410,7 +416,8 @@
             <button
               type="button"
               onclick={() => selectCategory('Website issue')}
-              class="group flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
+              use:shortcut={{combo: '5', label: 'Website issues'}}
+              class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
               aria-label="Select category: Website issues">
               <div class="flex items-center gap-2">
                 <Bug
@@ -429,7 +436,8 @@
             <button
               type="button"
               onclick={() => selectCategory('Other issue')}
-              class="group flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
+              use:shortcut={{combo: '6', label: 'Other issues'}}
+              class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
               aria-label="Select category: Other issues">
               <div class="flex items-center gap-2">
                 <HelpCircle
@@ -608,6 +616,8 @@
             size="md"
             class="flex-1 sm:flex-initial"
             disabled={!canClearFeedback || isSubmitting}
+            keyboardShortcut={buttonKey('formClear')}
+            shortcutLabel="Clear feedback"
             onclick={clearFeedbackForm}>
             <span
               >Clear<span class="hidden sm:inline">&nbsp;feedback</span></span>
@@ -618,7 +628,9 @@
             size="md"
             class="flex-1 sm:flex-initial"
             disabled={isSubmitting}
-            isLoading={isSubmitting}>
+            isLoading={isSubmitting}
+            keyboardShortcut={buttonKey('formSubmit')}
+            shortcutLabel="Submit feedback">
             {isSubmitting ? 'Submitting…' : 'Submit feedback'}
           </Button>
         </div>

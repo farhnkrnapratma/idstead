@@ -11,42 +11,20 @@
   import {onDestroy, onMount, tick, untrack} from 'svelte';
   import type {Snippet} from 'svelte';
   import {
-    Code,
-    Terminal,
-    Copy,
-    CopyCheck,
     FolderArchive,
-    Share2,
-    Link2 as LinkIcon,
-    Paperclip,
-    Hash,
-    QrCode,
-    FileBracesCorner,
-    SquareText,
     Dot,
-    Eye,
-    Save,
-    ChevronRight,
-    EllipsisVertical,
     Image as ImageIcon,
     ArrowRight,
-    HandHeart,
+    HeartHandshake,
     Rss,
     Star,
-    GitBranch,
     GitFork,
     RotateCcwClock,
     Scale,
-    GitCommitHorizontal,
     SquareArrowOutUpRight,
-    Link,
-    ScanText,
-    TextAlignStart,
-    FileText,
     Pin,
     Sparkles
   } from '@lucide/svelte';
-  import {cn} from '$lib/utils/cn';
   import {
     isNameReserved,
     extractAuthorNameTokens
@@ -68,10 +46,6 @@
     EmptyState,
     Tooltip,
     CvEntryCard,
-    ShareDialog,
-    QrCodeDialog,
-    ProjectCodeDialog,
-    BlogActionsDialog,
     FilterToolbar,
     FilterChipGroup,
     SortControl,
@@ -94,24 +68,17 @@
     ConsentNotice,
     ArticleMeta,
     staggerChildren,
-    popoverPosition,
     withViewTransition
   } from '$lib';
   import {shortcut} from '$lib/utils/shortcut.svelte';
+  import {buttonKey, argKey, sectionCommandKey} from '$lib/shortcuts';
   import {goto} from '$app/navigation';
   import {page} from '$app/state';
   import {supabase} from '$lib/supabase';
   import {SvelteSet} from 'svelte/reactivity';
   import {formatMonthAbbrev} from '$lib/author';
   import {themeStore} from '$lib/stores/themeStore.svelte';
-  import {codeBlockPrefsStore} from '$lib/stores/codeBlockPrefsStore.svelte';
   import {a11yStore} from '$lib/stores/a11yStore.svelte';
-  import {
-    applyCodeThemeVariables,
-    createCodeActionControls,
-    ensureHljsThemeStylesheet,
-    resolveHljsTheme
-  } from '$lib/utils/codeBlocks';
   import AccessibilitySelect from '$lib/components/filter/AccessibilitySelect.svelte';
   import {
     turnstileWidget,
@@ -256,289 +223,6 @@
 
   function markRepoBannerFailed(projectName: string) {
     failedRepoBanners.add(projectName);
-  }
-
-  let shareDialogData = $state<{title: string; url: string} | null>(null);
-  let showShareDialog = $state(false);
-
-  let selectedCodeProject = $state<Project | null>(null);
-  let showProjectCodeDialog = $state(false);
-
-  function openProjectCodeDialog(project: Project) {
-    selectedCodeProject = project;
-    showProjectCodeDialog = true;
-  }
-
-  let selectedBlogActionPost = $state<BlogPost | null>(null);
-  let showBlogActionsDialog = $state(false);
-  let activeProjectShareId = $state<string | null>(null);
-  let activeProjectCodeId = $state<string | null>(null);
-  let activeProjectCodeMenuId = $state<string | null>(null);
-  const projectCodeTabs = [
-    ['https', 'HTTPS'],
-    ['ssh', 'SSH'],
-    ['cli', 'GitHub CLI']
-  ] as const;
-  type ProjectCodeTab = (typeof projectCodeTabs)[number][0];
-  let projectCodeTab = $state<ProjectCodeTab>('https');
-  let projectCodeTheme = $derived(
-    resolveHljsTheme(themeStore.isDark, codeBlockPrefsStore.current.colorScheme)
-  );
-  let activeBlogShareId = $state<string | null>(null);
-  let activeBlogQuickActionsId = $state<string | null>(null);
-  let copiedProjectShareUrlId = $state<string | null>(null);
-  let copiedProjectCloneId = $state<string | null>(null);
-  let copiedBlogShareUrlId = $state<string | null>(null);
-
-  function closeAllCardPopovers() {
-    activeProjectShareId = null;
-    activeProjectCodeId = null;
-    activeProjectCodeMenuId = null;
-    activeBlogShareId = null;
-    activeBlogQuickActionsId = null;
-    copiedProjectShareUrlId = null;
-    copiedProjectCloneId = null;
-    copiedBlogShareUrlId = null;
-  }
-
-  function handleProjectCodeTabKeydown(event: KeyboardEvent, index: number) {
-    let targetIndex: number;
-
-    if (event.key === 'ArrowRight') {
-      targetIndex = (index + 1) % projectCodeTabs.length;
-    } else if (event.key === 'ArrowLeft') {
-      targetIndex =
-        (index - 1 + projectCodeTabs.length) % projectCodeTabs.length;
-    } else if (event.key === 'Home') {
-      targetIndex = 0;
-    } else if (event.key === 'End') {
-      targetIndex = projectCodeTabs.length - 1;
-    } else {
-      return;
-    }
-
-    event.preventDefault();
-    projectCodeTab = projectCodeTabs[targetIndex][0];
-    const currentButton = event.currentTarget as HTMLButtonElement;
-    currentButton.parentElement
-      ?.querySelectorAll<HTMLButtonElement>('[role="tab"]')
-      [targetIndex]?.focus();
-  }
-
-  function syncProjectCodeTheme(node: HTMLElement) {
-    const theme = projectCodeTheme;
-    const header =
-      node.querySelector<HTMLElement>('.markdown-tabs-header')
-      || node.querySelector<HTMLElement>('.code-header-bar');
-    const body = node.querySelector<HTMLElement>('.code-body');
-    if (!header || !body) return;
-
-    node.dataset.codeTheme = theme;
-    header.dataset.codeTheme = theme;
-    body.dataset.codeTheme = theme;
-    applyCodeThemeVariables(node, body);
-    void ensureHljsThemeStylesheet(theme).then(() => {
-      if (theme === projectCodeTheme && node.isConnected) {
-        applyCodeThemeVariables(node, body);
-      }
-    });
-  }
-
-  let activeProjectCodeControls: ReturnType<
-    typeof createCodeActionControls
-  > | null = null;
-
-  function mountProjectCodeControls(node: HTMLElement, project: Project) {
-    const controls = createCodeActionControls({
-      getCodeText: () => {
-        return (
-          projectCodeTab === 'https' ? `git clone ${project.cloneUrl}`
-          : projectCodeTab === 'ssh' ? `git clone ${project.sshUrl}`
-          : `gh repo clone ${project.fullName}`
-        );
-      },
-      getDownloadFilename: () => `clone-${project.name}.sh`,
-      downloadLabel: 'Download ZIP',
-      onDownload: () => {
-        if (project.zipUrl) {
-          const a = document.createElement('a');
-          a.href = project.zipUrl;
-          a.download = '';
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-        }
-      },
-      shouldHideLineNumbers: () => true,
-      triggerToast: toastStore.success
-    });
-    node.appendChild(controls.controls);
-    controls.syncKebabTheme(projectCodeTheme);
-    activeProjectCodeControls = controls;
-
-    return {
-      update() {
-        controls.syncKebabTheme(projectCodeTheme);
-        controls.applyPrefs();
-      },
-      destroy() {
-        if (activeProjectCodeControls === controls) {
-          activeProjectCodeControls = null;
-        }
-        controls.controls.remove();
-      }
-    };
-  }
-
-  $effect(() => {
-    void codeBlockPrefsStore.current;
-    activeProjectCodeControls?.applyPrefs();
-  });
-
-  function openBlogActionsDialog(post: BlogPost) {
-    selectedBlogActionPost = post;
-    showBlogActionsDialog = true;
-  }
-
-  function openShareDialog(data: {title: string; url: string}) {
-    shareDialogData = data;
-    showShareDialog = true;
-  }
-
-  function shareBlogPostDialog(post: {title: string; slug: string}) {
-    if (typeof window === 'undefined') return;
-    openShareDialog({
-      title: post.title,
-      url: `${window.location.origin}/blog/${post.slug}`
-    });
-  }
-
-  function shareProjectDialog(project: {name: string; url: string}) {
-    openShareDialog({title: project.name, url: project.url});
-  }
-
-  let qrCodeDialogData = $state<{
-    title: string;
-    url: string;
-    slug: string;
-    avatarUrl?: string;
-  } | null>(null);
-  let showQrCodeDialog = $state(false);
-
-  function openBlogQrDialog(post: {title: string; slug: string}) {
-    if (typeof window === 'undefined') return;
-    qrCodeDialogData = {
-      title: post.title,
-      url: `${window.location.origin}/blog/${post.slug}`,
-      slug: post.slug,
-      avatarUrl: author?.avatar || ''
-    };
-    showQrCodeDialog = true;
-  }
-
-  function openProjectQrDialog(project: {name: string; url: string}) {
-    if (typeof window === 'undefined') return;
-    qrCodeDialogData = {
-      title: project.name,
-      url: project.url,
-      slug: project.name,
-      avatarUrl: author?.avatar || ''
-    };
-    showQrCodeDialog = true;
-  }
-
-  async function copyBlogId(post: {id: string}) {
-    try {
-      await navigator.clipboard.writeText(post.id);
-      toastStore.success('Copied!');
-    } catch {
-      toastStore.error('Failed to copy');
-    }
-  }
-
-  async function copyBlogMarkdown(post: {id: string; slug: string}) {
-    try {
-      const res = await fetch(`/api/v1/blog/${post.slug}?format=md`);
-      if (res.ok) {
-        const mdText = await res.text();
-        await navigator.clipboard.writeText(mdText);
-        toastStore.success('Copied!');
-      } else {
-        toastStore.error('Failed to fetch Markdown');
-      }
-    } catch {
-      toastStore.error('Failed to copy');
-    }
-  }
-
-  async function copyBlogText(post: {title: string; slug: string}) {
-    try {
-      const res = await fetch(`/api/v1/blog/${post.slug}?format=text`);
-      if (res.ok) {
-        const text = await res.text();
-        await navigator.clipboard.writeText(text);
-        toastStore.success('Copied!');
-      } else {
-        toastStore.error('Failed to fetch Text');
-      }
-    } catch {
-      toastStore.error('Failed to copy');
-    }
-  }
-
-  async function copyBlogUrl(post: {id: string; slug: string}) {
-    if (typeof window === 'undefined') return;
-    try {
-      await navigator.clipboard.writeText(
-        `${window.location.origin}/blog/${post.slug}`
-      );
-      toastStore.success('Copied!');
-    } catch {
-      toastStore.error('Failed to copy');
-    }
-  }
-
-  function downloadFile(filename: string, content: string, mimeType: string) {
-    if (typeof window === 'undefined') return;
-    const blob = new Blob([content], {type: mimeType});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
-
-  async function downloadBlogMarkdown(post: {title: string; slug: string}) {
-    try {
-      const res = await fetch(`/api/v1/blog/${post.slug}?format=md`);
-      if (res.ok) {
-        const mdText = await res.text();
-        downloadFile(`${post.slug}.md`, mdText, 'text/markdown;charset=utf-8');
-        toastStore.success('Markdown file downloaded');
-      } else {
-        toastStore.error('Failed to download Markdown');
-      }
-    } catch {
-      toastStore.error('Failed to download');
-    }
-  }
-
-  async function downloadBlogText(post: {title: string; slug: string}) {
-    try {
-      const res = await fetch(`/api/v1/blog/${post.slug}?format=text`);
-      if (res.ok) {
-        const text = await res.text();
-        downloadFile(`${post.slug}.txt`, text, 'text/plain;charset=utf-8');
-        toastStore.success('Text file downloaded');
-      } else {
-        toastStore.error('Failed to download Text');
-      }
-    } catch {
-      toastStore.error('Failed to download');
-    }
   }
 
   let experiences = $derived(cvData.experience || []);
@@ -841,12 +525,6 @@
     );
   }
 
-  function handleWindowKeydown(event: KeyboardEvent) {
-    if (event.key === 'Escape') {
-      closeAllCardPopovers();
-    }
-  }
-
   const blogFilterStore = createFilterSortStore({
     defaultSortField: 'date',
     defaultSortDir: 'desc'
@@ -966,7 +644,7 @@
     });
   });
 
-  const PAGE_SIZE = 6;
+  const PAGE_SIZE = 5;
 
   let blogPage = $state(1);
   let projectPage = $state(1);
@@ -1109,21 +787,15 @@
     defer></script>
 </svelte:head>
 
-<svelte:window
-  onclick={closeAllCardPopovers}
-  onscroll={closeAllCardPopovers}
-  onkeydown={handleWindowKeydown} />
+<SkipLink />
 
 <nav
   class="fixed top-0 z-40 flex h-12 w-full items-center justify-between glass-card border-b border-border-subtle/30 px-3 font-sans shadow-2xs sm:h-14 sm:px-5"
   aria-label="Main navigation">
   <div class="flex shrink-0 items-center lg:w-1/4 lg:flex-none">
-    <div class="relative inline-flex">
-      <SkipLink variant="search-overlay" />
-      <SpotlightSearch
-        projects={data.projects}
-        variant="responsive" />
-    </div>
+    <SpotlightSearch
+      projects={data.projects}
+      variant="responsive" />
   </div>
 
   <nav
@@ -1134,7 +806,11 @@
         <li>
           <button
             onclick={() => navigate(item.id)}
-            class="flex h-9 cursor-pointer items-center justify-center rounded-md border-0 px-3 text-sm leading-none font-medium whitespace-nowrap transition-all {(
+            use:shortcut={{
+              combo: sectionCommandKey(item.id),
+              label: item.label
+            }}
+            class="relative flex h-9 cursor-pointer items-center justify-center rounded-md border-0 px-3 text-sm leading-none font-medium whitespace-nowrap transition-all {(
               activeSection === item.id
             ) ?
               'bg-accent-contrast-bg font-semibold text-white shadow-xs hover:bg-accent-contrast-bg/90'
@@ -1202,12 +878,7 @@
       project.openGraphImageUrl
       || `https://opengraph.githubassets.com/1/${project.fullName}`}
     <div
-      class="relative flex flex-col rounded-md glass-card border-0! text-left dark:border-0! {(
-        activeProjectShareId === project.name
-        || activeProjectCodeId === project.name
-      ) ?
-        'z-40'
-      : ''}">
+      class="relative flex flex-col rounded-md glass-card border-0! text-left dark:border-0!">
       <div
         class="relative aspect-2/1 w-full shrink-0 overflow-hidden rounded-t-md">
         {#if !failedRepoBanners.has(project.name)}
@@ -1228,10 +899,10 @@
       <div
         class="flex min-w-0 flex-1 flex-col justify-between gap-2 p-3 font-sans sm:gap-2.5 sm:p-4">
         <div class="flex flex-col gap-1.5 sm:gap-2">
-          <div class="relative flex items-start justify-between gap-2">
+          <div>
             <svelte:element
               this={headingTag}
-              class="line-clamp-2 min-w-0 flex-1 text-lg leading-snug font-bold text-text-primary">
+              class="line-clamp-2 text-lg leading-snug font-bold text-text-primary">
               {project.name}
               {#if isRepoPinned(project) || isRepoNew(project)}
                 <span
@@ -1255,333 +926,6 @@
                 </span>
               {/if}
             </svelte:element>
-
-            <div class="relative z-20 flex shrink-0 items-center gap-1">
-              <div class="relative shrink-0">
-                <Button
-                  type="ghost"
-                  size="xs"
-                  aria-label="Share project"
-                  aria-expanded={activeProjectShareId === project.name}
-                  aria-haspopup="dialog"
-                  class={cn(
-                    'size-6.5! px-0! text-text-muted hover:text-accent',
-                    activeProjectShareId === project.name
-                      && 'border-accent text-accent'
-                  )}
-                  onclick={(e: MouseEvent) => {
-                    e.stopPropagation();
-                    activeProjectCodeId = null;
-                    activeProjectShareId =
-                      activeProjectShareId === project.name ?
-                        null
-                      : project.name;
-                  }}>
-                  <Share2 class="size-3.5" />
-                </Button>
-              </div>
-
-              <div class="relative shrink-0">
-                <Button
-                  type="ghost"
-                  size="xs"
-                  aria-label="Clone options"
-                  aria-expanded={activeProjectCodeId === project.name}
-                  aria-haspopup="dialog"
-                  class={cn(
-                    'size-6.5! px-0! text-text-muted hover:text-accent',
-                    activeProjectCodeId === project.name
-                      && 'border-accent text-accent'
-                  )}
-                  onclick={(e: MouseEvent) => {
-                    e.stopPropagation();
-                    activeProjectShareId = null;
-                    activeProjectCodeMenuId = null;
-                    projectCodeTab = 'https';
-                    activeProjectCodeId =
-                      activeProjectCodeId === project.name ?
-                        null
-                      : project.name;
-                  }}>
-                  <Code class="size-3.5" />
-                </Button>
-              </div>
-            </div>
-
-            {#if activeProjectShareId === project.name}
-              {@const projectUrl = project.url}
-              {@const encodedUrl = encodeURIComponent(projectUrl)}
-              {@const encodedTitle = encodeURIComponent(project.name)}
-              <div
-                role="dialog"
-                tabindex="-1"
-                aria-label="Share project"
-                use:popoverPosition={{
-                  placement: 'bottom-end',
-                  offset: 6,
-                  padding: 8
-                }}
-                class="absolute z-50 flex flex-col gap-3 popover-surface p-3 sm:w-80"
-                onclick={(e: MouseEvent) => e.stopPropagation()}
-                onkeydown={(e: KeyboardEvent) => {
-                  if (e.key === 'Escape') activeProjectShareId = null;
-                }}>
-                <div class="flex flex-col gap-1.5">
-                  <span
-                    class="text-2xs font-semibold tracking-wider text-text-muted uppercase"
-                    >Direct link</span>
-                  <div
-                    class="flex items-center gap-1.5 rounded-md border border-border-subtle bg-surface-base/80 p-1 pr-1.5 pl-2.5 shadow-2xs">
-                    <span
-                      class="min-w-0 flex-1 truncate font-mono text-xs text-text-secondary select-all"
-                      >{projectUrl}</span>
-                    <Button
-                      type={copiedProjectShareUrlId === project.name ?
-                        'tertiary'
-                      : 'secondary'}
-                      size="xs"
-                      class="size-6.5! shrink-0 px-0!"
-                      aria-label={copiedProjectShareUrlId === project.name ?
-                        'Copied project URL'
-                      : 'Copy project URL'}
-                      onclick={async () => {
-                        try {
-                          await navigator.clipboard.writeText(projectUrl);
-                          toastStore.success('Project URL copied');
-                          copiedProjectShareUrlId = project.name;
-                          setTimeout(() => {
-                            if (copiedProjectShareUrlId === project.name) {
-                              copiedProjectShareUrlId = null;
-                            }
-                          }, 2000);
-                        } catch {
-                          toastStore.error('Failed to copy');
-                        }
-                      }}>
-                      {#snippet leading()}
-                        {#if copiedProjectShareUrlId === project.name}
-                          <CopyCheck class="size-3.5 text-accent" />
-                        {:else}
-                          <Copy class="size-3.5" />
-                        {/if}
-                      {/snippet}
-                    </Button>
-                  </div>
-                </div>
-
-                <div class="flex flex-col gap-1.5">
-                  <span
-                    class="text-2xs font-semibold tracking-wider text-text-muted uppercase"
-                    >Share to platform</span>
-                  <div class="grid grid-cols-6 gap-1.5 sm:grid-cols-3">
-                    <Button
-                      href="https://x.com/intent/post?url={encodedUrl}&text={encodedTitle}"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      type="secondary"
-                      size="xs"
-                      class="w-full justify-center px-1.5 sm:px-2"
-                      title="Share on X"
-                      aria-label="Share on X">
-                      {#snippet leading()}
-                        <i
-                          class="bi bi-twitter-x inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
-                          aria-hidden="true"></i>
-                      {/snippet}
-                      <span class="hidden truncate sm:inline">X</span>
-                    </Button>
-                    <Button
-                      href="https://linkedin.com/sharing/share-offsite/?url={encodedUrl}"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      type="secondary"
-                      size="xs"
-                      class="w-full justify-center px-1.5 sm:px-2"
-                      title="Share on LinkedIn"
-                      aria-label="Share on LinkedIn">
-                      {#snippet leading()}
-                        <i
-                          class="bi bi-linkedin inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
-                          aria-hidden="true"></i>
-                      {/snippet}
-                      <span class="hidden truncate sm:inline">LinkedIn</span>
-                    </Button>
-                    <Button
-                      href="https://api.whatsapp.com/send?text={encodedTitle}%20{encodedUrl}"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      type="secondary"
-                      size="xs"
-                      class="w-full justify-center px-1.5 sm:px-2"
-                      title="Share on WhatsApp"
-                      aria-label="Share on WhatsApp">
-                      {#snippet leading()}
-                        <i
-                          class="bi bi-whatsapp inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
-                          aria-hidden="true"></i>
-                      {/snippet}
-                      <span class="hidden truncate sm:inline">WhatsApp</span>
-                    </Button>
-                    <Button
-                      href="https://www.facebook.com/sharer/sharer.php?u={encodedUrl}"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      type="secondary"
-                      size="xs"
-                      class="w-full justify-center px-1.5 sm:px-2"
-                      title="Share on Facebook"
-                      aria-label="Share on Facebook">
-                      {#snippet leading()}
-                        <i
-                          class="bi bi-facebook inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
-                          aria-hidden="true"></i>
-                      {/snippet}
-                      <span class="hidden truncate sm:inline">Facebook</span>
-                    </Button>
-                    <Button
-                      href="https://reddit.com/submit?url={encodedUrl}&title={encodedTitle}"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      type="secondary"
-                      size="xs"
-                      class="w-full justify-center px-1.5 sm:px-2"
-                      title="Share on Reddit"
-                      aria-label="Share on Reddit">
-                      {#snippet leading()}
-                        <i
-                          class="bi bi-reddit inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
-                          aria-hidden="true"></i>
-                      {/snippet}
-                      <span class="hidden truncate sm:inline">Reddit</span>
-                    </Button>
-                    <Button
-                      href="mailto:?subject={encodedTitle}&body={encodedUrl}"
-                      type="secondary"
-                      size="xs"
-                      class="w-full justify-center px-1.5 sm:px-2"
-                      title="Share via Email"
-                      aria-label="Share via Email">
-                      {#snippet leading()}
-                        <i
-                          class="bi bi-envelope-fill inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
-                          aria-hidden="true"></i>
-                      {/snippet}
-                      <span class="hidden truncate sm:inline">Email</span>
-                    </Button>
-                  </div>
-                </div>
-
-                <div class="border-t border-border-subtle/60 pt-1.5">
-                  <Button
-                    type="ghost"
-                    size="xs"
-                    class="w-full justify-center text-text-secondary hover:text-text-primary"
-                    onclick={() => {
-                      activeProjectShareId = null;
-                      openProjectQrDialog(project);
-                    }}>
-                    {#snippet leading()}
-                      <QrCode class="size-3.5" />
-                    {/snippet}
-                    <span>View QR Code</span>
-                  </Button>
-                </div>
-              </div>
-            {/if}
-
-            {#if activeProjectCodeId === project.name}
-              {@const cloneCmd =
-                projectCodeTab === 'https' ? `git clone ${project.cloneUrl}`
-                : projectCodeTab === 'ssh' ? `git clone ${project.sshUrl}`
-                : `gh repo clone ${project.fullName}`}
-              <div
-                role="dialog"
-                tabindex="-1"
-                aria-label="Clone repository"
-                use:popoverPosition={{
-                  placement: 'bottom-end',
-                  offset: 6,
-                  padding: 8
-                }}
-                class="absolute z-50 flex w-84 flex-col gap-3 popover-surface p-3 sm:w-96"
-                onclick={(e: MouseEvent) => e.stopPropagation()}
-                onkeydown={(e: KeyboardEvent) => {
-                  if (e.key === 'Escape') {
-                    activeProjectCodeId = null;
-                    activeProjectCodeMenuId = null;
-                  }
-                }}>
-                <div class="flex items-center justify-between">
-                  <span
-                    class="text-2xs font-semibold tracking-wider text-text-muted uppercase">
-                    Clone repository
-                  </span>
-                </div>
-
-                <div
-                  {@attach syncProjectCodeTheme}
-                  data-code-theme={projectCodeTheme}
-                  class="markdown-tabs-container group/codemin relative m-0 flex flex-col overflow-visible rounded-md border border-border-subtle shadow-2xs">
-                  <div
-                    data-code-theme={projectCodeTheme}
-                    class="markdown-tabs-header hljs relative flex min-h-8 items-end justify-between rounded-t-md border-b border-border-subtle px-3 pt-0 pb-0 select-none"
-                    role="tablist">
-                    <div
-                      aria-label="Clone method"
-                      class="markdown-tabs-nav m-0 flex min-w-0 flex-1 scrollbar-none items-end gap-1.5 overflow-x-auto p-0 [-ms-overflow-style:none]">
-                      {#each projectCodeTabs as [key, label], index (key)}
-                        <button
-                          id="project-clone-tab-{key}"
-                          type="button"
-                          role="tab"
-                          aria-selected={projectCodeTab === key}
-                          aria-controls="project-clone-panel"
-                          tabindex={projectCodeTab === key ? 0 : -1}
-                          onclick={() => (projectCodeTab = key)}
-                          onkeydown={event =>
-                            handleProjectCodeTabKeydown(event, index)}
-                          class={[
-                            'markdown-tab-button relative -mb-px inline-flex shrink-0 cursor-pointer items-center justify-center border-b-[2.5px] px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-all select-none',
-                            projectCodeTab === key ?
-                              'active-tab border-b-accent font-bold text-accent'
-                            : 'border-b-transparent text-text-muted hover:text-text-primary'
-                          ]}>
-                          {label}
-                        </button>
-                      {/each}
-                    </div>
-
-                    <div
-                      use:mountProjectCodeControls={project}
-                      class="markdown-tabs-actions ml-2 flex shrink-0 items-center gap-1 self-center pb-0.5">
-                    </div>
-                  </div>
-
-                  <div
-                    id="project-clone-panel"
-                    role="tabpanel"
-                    aria-labelledby="project-clone-tab-{projectCodeTab}"
-                    data-code-theme={projectCodeTheme}
-                    class="code-body hljs relative flex min-w-0 items-center overflow-hidden rounded-b-md font-mono text-xs">
-                    <span
-                      class="pointer-events-none absolute top-1/2 right-3.5 z-10 -translate-y-1/2 font-mono text-[11px] text-text-muted/70 lowercase select-none">
-                      bash
-                    </span>
-                    <span
-                      class="shrink-0 py-2.5 pr-1 pl-3 font-normal text-accent select-none">
-                      $
-                    </span>
-                    <span
-                      class={[
-                        'min-w-0 flex-1 scrollbar-none py-2.5 pr-14 pl-1 select-all [-ms-overflow-style:none]',
-                        codeBlockPrefsStore.current.wrap ?
-                          'break-all whitespace-pre-wrap'
-                        : 'overflow-x-auto whitespace-pre'
-                      ]}>{cloneCmd}</span>
-                  </div>
-                </div>
-              </div>
-            {/if}
           </div>
 
           <div class="flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs">
@@ -1673,6 +1017,8 @@
             rel="noopener noreferrer"
             type="primary"
             size="sm"
+            shortcutGroup="projects"
+            shortcutLabel={project.name}
             fullWidth>
             View repo
             {#snippet trailing()}
@@ -1686,11 +1032,7 @@
 
   {#snippet blogPostCard(post: BlogPost, tagItem: Snippet<[string]>)}
     <div
-      class="relative flex flex-col rounded-md glass-card border-0! text-left dark:border-0! {(
-        activeBlogShareId === post.id || activeBlogQuickActionsId === post.id
-      ) ?
-        'z-40'
-      : ''}">
+      class="relative flex flex-col rounded-md glass-card border-0! text-left dark:border-0!">
       <div
         class="relative aspect-2/1 w-full shrink-0 overflow-hidden rounded-t-md">
         {#if post.banner_version && !failedBanners.has(post.id)}
@@ -1711,10 +1053,10 @@
       <div
         class="flex min-w-0 flex-1 flex-col justify-between gap-2 p-3 font-sans sm:gap-2.5 sm:p-4">
         <div class="flex flex-col gap-1.5 sm:gap-2">
-          <div class="relative flex items-start justify-between gap-2">
+          <div>
             <h4
               style="view-transition-name: post-title-{post.slug}"
-              class="line-clamp-2 min-w-0 flex-1 text-lg leading-snug font-bold text-text-primary">
+              class="line-clamp-2 text-lg leading-snug font-bold text-text-primary">
               {post.title}
               {#if post.pinned || isPostNew(post)}
                 <span
@@ -1738,385 +1080,6 @@
                 </span>
               {/if}
             </h4>
-
-            <div class="relative z-20 flex shrink-0 items-center gap-1">
-              <div class="relative shrink-0">
-                <Button
-                  type="ghost"
-                  size="xs"
-                  aria-label="Share post"
-                  aria-expanded={activeBlogShareId === post.id}
-                  aria-haspopup="dialog"
-                  class={cn(
-                    'size-6.5! px-0! text-text-muted hover:text-accent',
-                    activeBlogShareId === post.id && 'border-accent text-accent'
-                  )}
-                  onclick={(e: MouseEvent) => {
-                    e.stopPropagation();
-                    activeBlogQuickActionsId = null;
-                    activeBlogShareId =
-                      activeBlogShareId === post.id ? null : post.id;
-                  }}>
-                  <Share2 class="size-3.5" />
-                </Button>
-              </div>
-
-              <div class="relative shrink-0">
-                <Button
-                  type="ghost"
-                  size="xs"
-                  aria-label="Blog quick actions"
-                  aria-expanded={activeBlogQuickActionsId === post.id}
-                  aria-haspopup="menu"
-                  class={cn(
-                    'size-6.5! px-0! text-text-muted hover:text-accent',
-                    activeBlogQuickActionsId === post.id
-                      && 'border-accent text-accent'
-                  )}
-                  onclick={(e: MouseEvent) => {
-                    e.stopPropagation();
-                    activeBlogShareId = null;
-                    activeBlogQuickActionsId =
-                      activeBlogQuickActionsId === post.id ? null : post.id;
-                  }}>
-                  <EllipsisVertical class="size-3.5" />
-                </Button>
-              </div>
-            </div>
-
-            {#if activeBlogShareId === post.id}
-              {@const postUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/blog/${post.slug}`}
-              {@const encodedUrl = encodeURIComponent(postUrl)}
-              {@const encodedTitle = encodeURIComponent(post.title)}
-              <div
-                role="dialog"
-                tabindex="-1"
-                aria-label="Share post"
-                use:popoverPosition={{
-                  placement: 'bottom-end',
-                  offset: 6,
-                  padding: 8
-                }}
-                class="absolute z-50 flex flex-col gap-3 popover-surface p-3 sm:w-80"
-                onclick={(e: MouseEvent) => e.stopPropagation()}
-                onkeydown={(e: KeyboardEvent) => {
-                  if (e.key === 'Escape') activeBlogShareId = null;
-                }}>
-                <div class="flex flex-col gap-1.5">
-                  <span
-                    class="text-2xs font-semibold tracking-wider text-text-muted uppercase"
-                    >Direct link</span>
-                  <div
-                    class="flex items-center gap-1.5 rounded-md border border-border-subtle bg-surface-base/80 p-1 pr-1.5 pl-2.5 shadow-2xs">
-                    <span
-                      class="min-w-0 flex-1 truncate font-mono text-xs text-text-secondary select-all"
-                      >{postUrl}</span>
-                    <Button
-                      type={copiedBlogShareUrlId === post.id ?
-                        'tertiary'
-                      : 'secondary'}
-                      size="xs"
-                      class="size-6.5! shrink-0 px-0!"
-                      aria-label={copiedBlogShareUrlId === post.id ?
-                        'Copied post link'
-                      : 'Copy post URL'}
-                      onclick={async () => {
-                        try {
-                          await navigator.clipboard.writeText(postUrl);
-                          toastStore.success('Post link copied');
-                          copiedBlogShareUrlId = post.id;
-                          setTimeout(() => {
-                            if (copiedBlogShareUrlId === post.id) {
-                              copiedBlogShareUrlId = null;
-                            }
-                          }, 2000);
-                        } catch {
-                          toastStore.error('Failed to copy');
-                        }
-                      }}>
-                      {#snippet leading()}
-                        {#if copiedBlogShareUrlId === post.id}
-                          <CopyCheck class="size-3.5 text-accent" />
-                        {:else}
-                          <Copy class="size-3.5" />
-                        {/if}
-                      {/snippet}
-                    </Button>
-                  </div>
-                </div>
-
-                <div class="flex flex-col gap-1.5">
-                  <span
-                    class="text-2xs font-semibold tracking-wider text-text-muted uppercase"
-                    >Share to platform</span>
-                  <div class="grid grid-cols-6 gap-1.5 sm:grid-cols-3">
-                    <Button
-                      href="https://x.com/intent/post?url={encodedUrl}&text={encodedTitle}"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      type="secondary"
-                      size="xs"
-                      class="w-full justify-center px-1.5 sm:px-2"
-                      title="Share on X"
-                      aria-label="Share on X">
-                      {#snippet leading()}
-                        <i
-                          class="bi bi-twitter-x inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
-                          aria-hidden="true"></i>
-                      {/snippet}
-                      <span class="hidden truncate sm:inline">X</span>
-                    </Button>
-                    <Button
-                      href="https://linkedin.com/sharing/share-offsite/?url={encodedUrl}"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      type="secondary"
-                      size="xs"
-                      class="w-full justify-center px-1.5 sm:px-2"
-                      title="Share on LinkedIn"
-                      aria-label="Share on LinkedIn">
-                      {#snippet leading()}
-                        <i
-                          class="bi bi-linkedin inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
-                          aria-hidden="true"></i>
-                      {/snippet}
-                      <span class="hidden truncate sm:inline">LinkedIn</span>
-                    </Button>
-                    <Button
-                      href="https://api.whatsapp.com/send?text={encodedTitle}%20{encodedUrl}"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      type="secondary"
-                      size="xs"
-                      class="w-full justify-center px-1.5 sm:px-2"
-                      title="Share on WhatsApp"
-                      aria-label="Share on WhatsApp">
-                      {#snippet leading()}
-                        <i
-                          class="bi bi-whatsapp inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
-                          aria-hidden="true"></i>
-                      {/snippet}
-                      <span class="hidden truncate sm:inline">WhatsApp</span>
-                    </Button>
-                    <Button
-                      href="https://www.facebook.com/sharer/sharer.php?u={encodedUrl}"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      type="secondary"
-                      size="xs"
-                      class="w-full justify-center px-1.5 sm:px-2"
-                      title="Share on Facebook"
-                      aria-label="Share on Facebook">
-                      {#snippet leading()}
-                        <i
-                          class="bi bi-facebook inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
-                          aria-hidden="true"></i>
-                      {/snippet}
-                      <span class="hidden truncate sm:inline">Facebook</span>
-                    </Button>
-                    <Button
-                      href="https://reddit.com/submit?url={encodedUrl}&title={encodedTitle}"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      type="secondary"
-                      size="xs"
-                      class="w-full justify-center px-1.5 sm:px-2"
-                      title="Share on Reddit"
-                      aria-label="Share on Reddit">
-                      {#snippet leading()}
-                        <i
-                          class="bi bi-reddit inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
-                          aria-hidden="true"></i>
-                      {/snippet}
-                      <span class="hidden truncate sm:inline">Reddit</span>
-                    </Button>
-                    <Button
-                      href="mailto:?subject={encodedTitle}&body={encodedUrl}"
-                      type="secondary"
-                      size="xs"
-                      class="w-full justify-center px-1.5 sm:px-2"
-                      title="Share via Email"
-                      aria-label="Share via Email">
-                      {#snippet leading()}
-                        <i
-                          class="bi bi-envelope-fill inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
-                          aria-hidden="true"></i>
-                      {/snippet}
-                      <span class="hidden truncate sm:inline">Email</span>
-                    </Button>
-                  </div>
-                </div>
-
-                <div class="border-t border-border-subtle/60 pt-1.5">
-                  <Button
-                    type="ghost"
-                    size="xs"
-                    class="w-full justify-center text-text-secondary hover:text-text-primary"
-                    onclick={() => {
-                      activeBlogShareId = null;
-                      openBlogQrDialog(post);
-                    }}>
-                    {#snippet leading()}
-                      <QrCode class="size-3.5" />
-                    {/snippet}
-                    <span>View QR Code</span>
-                  </Button>
-                </div>
-              </div>
-            {/if}
-
-            {#if activeBlogQuickActionsId === post.id}
-              <div
-                role="menu"
-                tabindex="-1"
-                aria-label="Blog quick actions"
-                use:popoverPosition={{
-                  placement: 'top-end',
-                  offset: 6,
-                  padding: 8
-                }}
-                class="absolute z-50 flex max-h-[85vh] max-w-[calc(100vw-2rem)] flex-row divide-x divide-border-subtle/60 overflow-y-auto rounded-md border border-border-subtle bg-surface-elevated/95 p-2.5 shadow-xl backdrop-blur-md">
-                <div class="flex flex-col gap-1 pr-3">
-                  <span
-                    class="px-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase"
-                    >Copy</span>
-                  <Button
-                    type="ghost"
-                    size="xs"
-                    label="Copy as MD"
-                    truncateMiddle
-                    class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
-                    onclick={() => {
-                      activeBlogQuickActionsId = null;
-                      copyBlogMarkdown(post);
-                    }}>
-                    {#snippet leading()}
-                      <Copy class="size-3.5" />
-                    {/snippet}
-                  </Button>
-
-                  <Button
-                    type="ghost"
-                    size="xs"
-                    label="Copy as TXT"
-                    truncateMiddle
-                    class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
-                    onclick={() => {
-                      activeBlogQuickActionsId = null;
-                      copyBlogText(post);
-                    }}>
-                    {#snippet leading()}
-                      <ScanText class="size-3.5" />
-                    {/snippet}
-                  </Button>
-
-                  <Button
-                    type="ghost"
-                    size="xs"
-                    label="Post URL"
-                    truncateMiddle
-                    class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
-                    onclick={() => {
-                      activeBlogQuickActionsId = null;
-                      copyBlogUrl(post);
-                    }}>
-                    {#snippet leading()}
-                      <Link class="size-3.5" />
-                    {/snippet}
-                  </Button>
-
-                  {#if post.id}
-                    <Button
-                      type="ghost"
-                      size="xs"
-                      label="Post ID"
-                      truncateMiddle
-                      class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
-                      onclick={() => {
-                        activeBlogQuickActionsId = null;
-                        copyBlogId(post);
-                      }}>
-                      {#snippet leading()}
-                        <Hash class="size-3.5" />
-                      {/snippet}
-                    </Button>
-                  {/if}
-                </div>
-
-                <div class="flex flex-col gap-2 pl-3 sm:contents">
-                  <div class="flex flex-col gap-1 sm:px-3">
-                    <span
-                      class="px-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase"
-                      >View</span>
-                    <Button
-                      type="ghost"
-                      size="xs"
-                      href="/api/v1/blog/{post.slug}?format=md"
-                      label="View as MD"
-                      truncateMiddle
-                      class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
-                      onclick={() => (activeBlogQuickActionsId = null)}>
-                      {#snippet leading()}
-                        <i
-                          class="bi bi-markdown inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
-                          aria-hidden="true"></i>
-                      {/snippet}
-                    </Button>
-
-                    <Button
-                      type="ghost"
-                      size="xs"
-                      href="/api/v1/blog/{post.slug}?format=text"
-                      label="View as TXT"
-                      truncateMiddle
-                      class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
-                      onclick={() => (activeBlogQuickActionsId = null)}>
-                      {#snippet leading()}
-                        <TextAlignStart class="size-3.5" />
-                      {/snippet}
-                    </Button>
-                  </div>
-
-                  <div
-                    class="flex flex-col gap-1 border-t border-border-subtle/60 pt-2 sm:border-t-0 sm:pt-0 sm:pl-3">
-                    <span
-                      class="px-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase"
-                      >Save</span>
-                    <Button
-                      type="ghost"
-                      size="xs"
-                      label="Save as MD"
-                      truncateMiddle
-                      class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
-                      onclick={() => {
-                        activeBlogQuickActionsId = null;
-                        downloadBlogMarkdown(post);
-                      }}>
-                      {#snippet leading()}
-                        <i
-                          class="bi bi-filetype-md inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
-                          aria-hidden="true"></i>
-                      {/snippet}
-                    </Button>
-
-                    <Button
-                      type="ghost"
-                      size="xs"
-                      label="Save as TXT"
-                      truncateMiddle
-                      class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
-                      onclick={() => {
-                        activeBlogQuickActionsId = null;
-                        downloadBlogText(post);
-                      }}>
-                      {#snippet leading()}
-                        <FileText class="size-3.5" />
-                      {/snippet}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            {/if}
           </div>
 
           <ArticleMeta
@@ -2143,7 +1106,8 @@
                   <button
                     type="button"
                     onclick={() => toggleExcerpt(post.id)}
-                    class="ml-1 inline cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
+                    use:shortcut={{combo: 'E', label: 'Show less'}}
+                    class="relative ml-1 inline cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
                     Show less
                   </button>
                 {/if}
@@ -2152,7 +1116,8 @@
                 <button
                   type="button"
                   onclick={() => toggleExcerpt(post.id)}
-                  class="inline-flex cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
+                  use:shortcut={{combo: 'E', label: 'Show more'}}
+                  class="relative inline-flex cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
                   Show more
                 </button>
               {/if}
@@ -2175,6 +1140,8 @@
             href="/blog/{post.slug}"
             type="primary"
             size="sm"
+            shortcutGroup="posts"
+            shortcutLabel={post.title}
             fullWidth>
             Read post
           </Button>
@@ -2261,6 +1228,9 @@
                     size="xs"
                     href="/api/v1/cv?download=1"
                     download
+                    shortcutGroup="save"
+                    shortcutChordKey={argKey('/save', 'cv')}
+                    shortcutLabel="Download CV"
                     onclick={handleCvDownload}
                     class="w-full sm:h-9 sm:w-auto sm:gap-2 sm:px-4 sm:text-sm">
                     Download CV
@@ -2281,6 +1251,8 @@
                   type="secondary"
                   size="xs"
                   onclick={() => navigate('projects')}
+                  keyboardShortcut={buttonKey('browseProjects')}
+                  shortcutLabel="Browse projects"
                   class="w-full sm:h-9 sm:w-auto sm:gap-2 sm:px-4 sm:text-sm">
                   Browse projects
                 </Button>
@@ -2290,40 +1262,13 @@
                 type="ghost"
                 size="xs"
                 onclick={() => navigate('contact')}
+                keyboardShortcut={buttonKey('getInTouch')}
+                shortcutLabel="Get in touch"
                 class="w-auto sm:h-9 sm:gap-2 sm:px-4 sm:text-sm">
                 Get in touch
               </Button>
             </div>
           </div>
-        </div>
-
-        <div>
-          <h3
-            class="mb-3 text-lg font-bold tracking-tight text-text-primary sm:mb-4">
-            Top projects
-          </h3>
-          {#if recentProjects.length === 0}
-            <EmptyState
-              title="No projects yet"
-              description="Check back soon for featured repositories." />
-          {:else}
-            <div class="mt-2 grid grid-cols-1 gap-3 sm:gap-4">
-              {#each recentProjects as project (project.name)}
-                {@render projectCard(project, 'h4', staticTag)}
-              {/each}
-            </div>
-          {/if}
-          {#if projects.length > 0}
-            <div class="mt-3 flex justify-end sm:mt-4">
-              <button
-                onclick={() => navigate('projects')}
-                class="group inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-accent hover:underline">
-                <span class="leading-none">View all projects</span>
-                <ArrowRight
-                  class="size-4 transition-transform select-none group-hover:translate-x-0.5" />
-              </button>
-            </div>
-          {/if}
         </div>
 
         <div>
@@ -2346,8 +1291,45 @@
             <div class="mt-4 flex justify-end">
               <button
                 onclick={() => navigate('blog')}
-                class="group inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-accent hover:underline">
+                use:shortcut={{
+                  combo: buttonKey('viewAllPosts'),
+                  label: 'View all posts'
+                }}
+                class="group relative inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-accent hover:underline">
                 <span class="leading-none">View all posts</span>
+                <ArrowRight
+                  class="size-4 transition-transform select-none group-hover:translate-x-0.5" />
+              </button>
+            </div>
+          {/if}
+        </div>
+
+        <div>
+          <h3
+            class="mb-3 text-lg font-bold tracking-tight text-text-primary sm:mb-4">
+            Top projects
+          </h3>
+          {#if recentProjects.length === 0}
+            <EmptyState
+              title="No projects yet"
+              description="Check back soon for featured repositories." />
+          {:else}
+            <div class="mt-2 grid grid-cols-1 gap-3 sm:gap-4">
+              {#each recentProjects as project (project.name)}
+                {@render projectCard(project, 'h4', staticTag)}
+              {/each}
+            </div>
+          {/if}
+          {#if projects.length > 0}
+            <div class="mt-3 flex justify-end sm:mt-4">
+              <button
+                onclick={() => navigate('projects')}
+                use:shortcut={{
+                  combo: buttonKey('viewAllProjects'),
+                  label: 'View all projects'
+                }}
+                class="group relative inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-accent hover:underline">
+                <span class="leading-none">View all projects</span>
                 <ArrowRight
                   class="size-4 transition-transform select-none group-hover:translate-x-0.5" />
               </button>
@@ -2408,7 +1390,11 @@
           <div class="mt-4 flex justify-end">
             <button
               onclick={() => navigate('cv')}
-              class="group inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+              use:shortcut={{
+                combo: buttonKey('viewFullCv'),
+                label: 'View full CV'
+              }}
+              class="group relative inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
               aria-label="View full CV including education and experience">
               <span class="leading-none">View full CV</span>
               <ArrowRight
@@ -2424,7 +1410,7 @@
             <div
               class="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:gap-4">
               <div class="flex items-center gap-3 sm:block">
-                <HandHeart
+                <HeartHandshake
                   class="size-5 shrink-0 text-accent sm:mt-0.5 sm:size-6" />
                 <h4 class="text-sm font-bold sm:hidden">
                   <ShinyText
@@ -2452,7 +1438,9 @@
             <Button
               type="primary"
               size="sm"
-              onclick={() => navigate('funding')}>
+              onclick={() => navigate('funding')}
+              keyboardShortcut={buttonKey('becomeSponsor')}
+              shortcutLabel="Become a sponsor">
               Become a sponsor
             </Button>
           </div>
@@ -2607,6 +1595,8 @@
               size="md"
               class="flex-1 sm:flex-initial"
               disabled={!canClearContactForm || isSubmittingMessage}
+              keyboardShortcut={buttonKey('formClear')}
+              shortcutLabel="Clear message"
               onclick={clearContactForm}>
               <span
                 >Clear<span class="hidden sm:inline">&nbsp;message</span></span>
@@ -2617,7 +1607,9 @@
               size="md"
               class="flex-1 sm:flex-initial"
               disabled={isSubmittingMessage}
-              isLoading={isSubmittingMessage}>
+              isLoading={isSubmittingMessage}
+              keyboardShortcut={buttonKey('formSubmit')}
+              shortcutLabel="Send message">
               {isSubmittingMessage ? 'Sending…' : 'Send message'}
             </Button>
           </div>
@@ -2658,6 +1650,9 @@
               size="md"
               href="/api/v1/cv?download=1"
               download
+              shortcutGroup="save"
+              shortcutChordKey={argKey('/save', 'cv')}
+              shortcutLabel="Download CV"
               onclick={handleCvDownload}>
               Download CV
             </Button>
@@ -2786,7 +1781,8 @@
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Subscribe via Atom/RSS feed"
-              class="mb-0.5 inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-md border border-border-subtle bg-surface-card px-3 text-xs font-semibold text-text-muted transition-colors select-none hover:bg-surface-hover hover:text-brand-rss">
+              use:shortcut={{combo: buttonKey('feed'), label: 'RSS feed'}}
+              class="relative mb-0.5 inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-md border border-border-subtle bg-surface-card px-3 text-xs font-semibold text-text-muted transition-colors select-none hover:bg-surface-hover hover:text-brand-rss">
               <Rss class="size-3.5 select-none" />
               <span class="hidden items-center sm:inline">Feed</span>
             </a>
@@ -2807,6 +1803,8 @@
                         (e.target as HTMLInputElement).value
                       )}
                     size="sm"
+                    keyboardShortcut={buttonKey('filterSearch')}
+                    shortcutLabel="Search articles"
                     aria-label="Search articles" />
                 </div>
               {/snippet}
@@ -2871,11 +1869,7 @@
         {:else}
           <div
             use:staggerChildren
-            class="stagger-children relative mt-2 grid grid-cols-1 gap-4 {(
-              activeBlogShareId || activeBlogQuickActionsId
-            ) ?
-              'z-40'
-            : 'z-0'}">
+            class="stagger-children relative z-0 mt-2 grid grid-cols-1 gap-4">
             {#each paginatedBlogPosts as post (post.id)}
               {@render blogPostCard(post, blogFilterableTag)}
             {/each}
@@ -2919,6 +1913,8 @@
                         (e.target as HTMLInputElement).value
                       )}
                     size="sm"
+                    keyboardShortcut={buttonKey('filterSearch')}
+                    shortcutLabel="Search projects"
                     aria-label="Search projects" />
                 </div>
               {/snippet}
@@ -2978,11 +1974,7 @@
         {:else}
           <div
             use:staggerChildren
-            class="stagger-children relative mt-2 grid grid-cols-1 gap-4 {(
-              activeProjectShareId || activeProjectCodeId
-            ) ?
-              'z-40'
-            : 'z-0'}">
+            class="stagger-children relative z-0 mt-2 grid grid-cols-1 gap-4">
             {#each paginatedProjectList as project (project.name)}
               {@render projectCard(project, 'h3', filterableTag)}
             {/each}
@@ -3000,7 +1992,7 @@
 
   {#if activeSection === 'funding'}
     <LinkGridSection
-      title="Supporting & Funding"
+      title="Supporting & funding"
       subtitle="Support open-source development and maintenance through these platforms."
       items={fundingPlatforms}
       shortcutGroup="funding"
@@ -3032,63 +2024,6 @@
       }
     }} />
 </main>
-
-<ShareDialog
-  bind:isOpen={showShareDialog}
-  title="Share this?"
-  url={shareDialogData?.url ?? ''}
-  articleTitle={shareDialogData?.title ?? ''}
-  showEmail
-  onOpenQr={() => {
-    if (shareDialogData) {
-      qrCodeDialogData = {
-        title: shareDialogData.title,
-        url: shareDialogData.url,
-        slug: 'share',
-        avatarUrl: author?.avatar || ''
-      };
-      showQrCodeDialog = true;
-    }
-  }}
-  onClose={() => (showShareDialog = false)} />
-
-<QrCodeDialog
-  bind:isOpen={showQrCodeDialog}
-  title={qrCodeDialogData?.title ?? ''}
-  url={qrCodeDialogData?.url ?? ''}
-  slug={qrCodeDialogData?.slug ?? ''}
-  avatarUrl={qrCodeDialogData?.avatarUrl || author?.avatar || ''}
-  onClose={() => (showQrCodeDialog = false)} />
-
-<ProjectCodeDialog
-  bind:isOpen={showProjectCodeDialog}
-  project={selectedCodeProject}
-  onClose={() => (showProjectCodeDialog = false)} />
-
-<BlogActionsDialog
-  bind:isOpen={showBlogActionsDialog}
-  post={selectedBlogActionPost}
-  onClose={() => (showBlogActionsDialog = false)}
-  onCopyMarkdown={() => {
-    if (selectedBlogActionPost) {
-      copyBlogMarkdown(selectedBlogActionPost);
-    }
-  }}
-  onCopyText={() => {
-    if (selectedBlogActionPost) {
-      copyBlogText(selectedBlogActionPost);
-    }
-  }}
-  onSaveMarkdown={() => {
-    if (selectedBlogActionPost) {
-      downloadBlogMarkdown(selectedBlogActionPost);
-    }
-  }}
-  onSaveText={() => {
-    if (selectedBlogActionPost) {
-      downloadBlogText(selectedBlogActionPost);
-    }
-  }} />
 
 <BottomNav
   {activeSection}

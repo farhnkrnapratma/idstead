@@ -43,19 +43,17 @@
   aria-haspopup="listbox"
   class={cn(
     'inline-flex cursor-pointer items-center justify-between gap-1 rounded-md font-medium disabled:cursor-not-allowed disabled:opacity-50',
-    fullWidth ? 'w-full'
-    : size === 'sm' ? 'w-full min-w-0 sm:w-auto'
-    : 'w-full min-w-22 sm:w-auto',
+    fullWidth ? 'w-full' : 'w-auto',
     variant === 'primary' ?
       cn(
         size === 'sm' ?
-          'h-8 border border-accent/50 bg-accent px-2.5 text-xs text-white shadow-xs'
+          'h-8 border border-accent/50 bg-accent px-2 text-xs text-white shadow-xs'
         : 'h-10 border border-accent/50 bg-accent px-3 text-xs text-white shadow-lg sm:px-4 sm:text-sm',
         !disabled && 'transition-all hover:brightness-110'
       )
     : cn(
         'glass-button',
-        size === 'sm' ? 'h-8 px-2.5 text-xs' : 'h-9 px-3 text-xs',
+        size === 'sm' ? 'h-8 px-2 text-xs' : 'h-9 px-3 text-xs',
         !disabled && 'hover:text-accent',
         isOpen && 'border-accent/60 bg-surface-card text-accent'
       ),
@@ -63,11 +61,10 @@
     className
   )}>
   {#if options && options.length > 0}
-    <span
-      class="grid min-w-0 grid-cols-1 grid-rows-1 items-center overflow-hidden">
+    <span class="grid min-w-0 grid-cols-1 grid-rows-1 items-center">
       {#each options as opt (opt.label)}
         <span
-          class="pointer-events-none invisible col-start-1 row-start-1 inline-flex items-center gap-1 truncate leading-none"
+          class="pointer-events-none invisible col-start-1 row-start-1 inline-flex items-center gap-1 leading-none whitespace-nowrap"
           aria-hidden="true">
           {#if labelPrefix}
             <span class="font-normal text-text-muted">{labelPrefix}:</span>

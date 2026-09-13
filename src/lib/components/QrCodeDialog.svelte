@@ -193,7 +193,7 @@
 
 <Dialog
   bind:isOpen
-  title="Scan QR Code"
+  title="Scan QR code"
   description="Scan with your smartphone camera to open this page directly."
   size="sm"
   {onClose}>

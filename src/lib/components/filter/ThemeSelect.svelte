@@ -10,6 +10,7 @@
 
   interface Props {
     variant?: 'default' | 'ghost';
+    size?: '2xs' | 'xs' | 'sm' | 'md' | 'lg';
     label?: string;
     theme?: Theme;
     onThemeChange?: (newTheme: Theme) => void;
@@ -20,6 +21,7 @@
   let {
     label,
     variant = 'default',
+    size = 'sm',
     theme = 'auto',
     onThemeChange,
     class: className = '',
@@ -90,19 +92,22 @@
     keyboardShortcut={buttonKey('themeToggle')}
     tooltip={tooltipText}
     tooltipPlacement={dropdownDirection === 'up' ? 'top' : 'bottom'}
-    size="sm"
+    {size}
     {variant}
     onclick={handleToggle}
     class={variant === 'ghost' ?
       'hover:bg-surface-hover'
-    : 'border-border-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover hover:text-accent sm:h-9 sm:w-9'}>
+    : cn(
+        'border-border-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover hover:text-accent',
+        size !== '2xs' && 'sm:h-9 sm:w-9'
+      )}>
     <span
       class={cn(
         'inline-flex items-center justify-center',
         iconState === 'out' && 'code-icon-out',
         iconState === 'in' && 'code-icon-in'
       )}>
-      <themeInfo.icon class="size-4" />
+      <themeInfo.icon class={size === 'xs' ? 'size-3.5' : 'size-4'} />
     </span>
   </IconButton>
 </div>

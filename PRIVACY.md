@@ -65,7 +65,7 @@ The Website loads a **Google Tag Manager** container, identifier `GTM-TSBRHB6V`,
 - `ad_user_data`
 - `ad_personalization`
 
-Analytics measurement therefore does not begin until you grant consent through the banner. You may accept all signals, accept analytics only, or reject everything, and you may revisit that decision at any time by selecting "**Manage cookies**" in the Website footer or by opening the search dialog and choosing the cookie settings command. Withdrawing consent is as straightforward as granting it and takes effect immediately.
+Analytics measurement therefore does not begin until you grant consent through the banner. You may accept all signals, accept analytics only, or reject everything, and you may revisit that decision at any time by selecting "**Cookies**" in the Website footer or by opening the search dialog and choosing the cookie settings command. Withdrawing consent is as straightforward as granting it and takes effect immediately.
 
 Analytics data associated with the property is retained by Google for fourteen months before automated deletion.
 

@@ -20,10 +20,22 @@ export const GET: RequestHandler = async ({url}) => {
     Math.max(1, Number.isNaN(limitParam) ? 6 : limitParam),
     20
   );
+  const offsetParam = url.searchParams.get('offset');
+  if (offsetParam !== null && !/^\d+$/.test(offsetParam))
+    return apiError(
+      400,
+      'SEARCH_INVALID_OFFSET',
+      '`offset` must be a non-negative integer.'
+    );
+  const offset = offsetParam === null ? 0 : Number(offsetParam);
 
   if (q.length < 2) {
     return json(
-      {query: q, data: [], pagination: {limit, returned: 0}},
+      {
+        query: q,
+        data: [],
+        pagination: {limit, offset, returned: 0, hasMore: false}
+      },
       {
         headers: {
           'Cache-Control': 'public, max-age=0, s-maxage=60, must-revalidate'
@@ -41,7 +53,7 @@ export const GET: RequestHandler = async ({url}) => {
     .eq('published', true)
     .or(`title.ilike.%${normalizedQuery}%,excerpt.ilike.%${normalizedQuery}%`)
     .order('created_at', {ascending: false})
-    .limit(limit);
+    .range(offset, offset + limit);
 
   if (postsError)
     return apiError(
@@ -50,8 +62,10 @@ export const GET: RequestHandler = async ({url}) => {
       'Could not search published posts.'
     );
 
+  const hasMore = (posts?.length ?? 0) > limit;
+
   if (posts) {
-    for (const post of posts) {
+    for (const post of posts.slice(0, limit)) {
       results.push({
         type: 'post',
         title: post.title,
@@ -62,7 +76,11 @@ export const GET: RequestHandler = async ({url}) => {
   }
 
   return json(
-    {query: q, data: results, pagination: {limit, returned: results.length}},
+    {
+      query: q,
+      data: results,
+      pagination: {limit, offset, returned: results.length, hasMore}
+    },
     {
       headers: {
         'Cache-Control': 'public, max-age=0, s-maxage=60, must-revalidate'
