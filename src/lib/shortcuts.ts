@@ -11,6 +11,7 @@ export interface ChordGroupSpec {
   label: string;
   combos: string[];
   shadows?: string;
+  listed?: boolean;
 }
 
 /**
@@ -27,11 +28,31 @@ export const LEADER_FALLBACK_COMBO = 'Ctrl+Shift+Space';
 export const CATALOG_KEY = 'Space';
 
 export const CHORD_GROUPS: Record<string, ChordGroupSpec> = {
-  social: {id: 'social', label: 'Social links', combos: ['Shift+S']},
-  contact: {id: 'contact', label: 'Contact channels', combos: ['Shift+C']},
-  funding: {id: 'funding', label: 'Funding platforms', combos: ['Shift+U']},
-  posts: {id: 'posts', label: 'Blog posts', combos: ['Shift+B']},
-  projects: {id: 'projects', label: 'Projects', combos: ['Shift+J']},
+  social: {
+    id: 'social',
+    label: 'Social links',
+    combos: ['Shift+S'],
+    listed: false
+  },
+  contact: {
+    id: 'contact',
+    label: 'Contact channels',
+    combos: ['Shift+C'],
+    listed: false
+  },
+  funding: {
+    id: 'funding',
+    label: 'Funding platforms',
+    combos: ['Shift+U'],
+    listed: false
+  },
+  posts: {id: 'posts', label: 'Blog posts', combos: ['Shift+B'], listed: false},
+  projects: {
+    id: 'projects',
+    label: 'Projects',
+    combos: ['Shift+J'],
+    listed: false
+  },
   sidebar: {id: 'sidebar', label: 'Admin sidebar', combos: ['Shift+A']},
   copy: {id: 'copy', label: 'Copy', combos: ['C'], shadows: '/copy'},
   save: {id: 'save', label: 'Save', combos: ['S'], shadows: '/save'},
@@ -82,17 +103,12 @@ export const BUTTON_SHORTCUTS: Record<
   cookiesLink: {combo: 'Shift+K', mirrors: '/cookies'},
   sitemapLink: {combo: 'Shift+M', mirrors: '/sitemap'},
   moreActions: {combo: '.'},
-  tldr: {combo: '1'},
-  summary: {combo: '2'},
-  helpfulYes: {combo: '3'},
-  helpfulNo: {combo: '4'},
-  shareFeedback: {combo: '5'},
-  shareX: {combo: 'Shift+1'},
-  shareLinkedIn: {combo: 'Shift+2'},
-  shareWhatsApp: {combo: 'Shift+3'},
-  shareFacebook: {combo: 'Shift+4'},
-  shareReddit: {combo: 'Shift+5'},
-  shareEmail: {combo: 'Shift+6'}
+  tldr: {combo: 'Alt+T'},
+  summary: {combo: 'Alt+S'},
+  helpfulYes: {combo: 'Alt+Y'},
+  helpfulNo: {combo: 'Alt+N'},
+  shareFeedback: {combo: 'Alt+F'},
+  share: {combo: 'Shift+E', mirrors: '/share'}
 };
 
 export function buttonKey(id: keyof typeof BUTTON_SHORTCUTS | string): string {
@@ -166,6 +182,44 @@ export const COMMAND_SHORTCUTS: Record<string, string> = {
   '/help': 'Shift+F'
 };
 
+export const COMMAND_LABELS: Record<string, string> = {
+  '/home': 'Home',
+  '/projects': 'Projects',
+  '/blog': 'Blog',
+  '/cv': 'CV',
+  '/funding': 'Funding',
+  '/contact': 'Contact',
+  '/privacy': 'Privacy policy',
+  '/terms': 'Terms of service',
+  '/security': 'Security policy',
+  '/read': 'Reading mode',
+  '/open': 'Search',
+  '/refresh': 'Refresh',
+  '/theme': 'Theme',
+  '/font': 'Reading font',
+  '/code': 'Code blocks',
+  '/a11y': 'Accessibility',
+  '/copy': 'Copy',
+  '/save': 'Save',
+  '/back': 'Back',
+  '/forward': 'Forward',
+  '/top': 'Scroll to top',
+  '/bottom': 'Scroll to bottom',
+  '/print': 'Print',
+  '/rss': 'RSS feed',
+  '/qr': 'QR code',
+  '/lang': 'Translate',
+  '/feedback': 'Feedback',
+  '/llms': 'LLM guide',
+  '/cookies': 'Cookie settings',
+  '/history': 'Search history',
+  '/sitemap': 'Sitemap',
+  '/api': 'API docs',
+  '/share': 'Share',
+  '/exit': 'Exit',
+  '/help': 'Help'
+};
+
 /**
  * Every key bound at leader level must be unique, otherwise one binding
  * silently shadows another. Returns the keys claimed more than once.
@@ -216,8 +270,9 @@ export function normalizeKey(spec: string): string {
     .map(part => part.trim())
     .filter(Boolean);
   const key = (parts.pop() ?? '').toLowerCase();
-  const shifted = parts.some(part => part.toLowerCase() === 'shift');
-  return shifted ? `shift+${key}` : key;
+  const has = (name: string) => parts.some(part => part.toLowerCase() === name);
+  const alt = has('alt') || has('option');
+  return `${alt ? 'alt+' : ''}${has('shift') ? 'shift+' : ''}${key}`;
 }
 
 export const ARM_TIMEOUT_MS = 5000;
@@ -363,7 +418,7 @@ export function isLeaderEvent(e: KeyboardEvent): boolean {
  * so bindings survive non-QWERTY layouts and Shift, which rewrites event.key.
  */
 export function leaderKeyFromEvent(e: KeyboardEvent): string | null {
-  if (e.ctrlKey || e.metaKey || e.altKey) return null;
+  if (e.ctrlKey || e.metaKey) return null;
   const code = e.code || '';
   let key: string;
   if (code.startsWith('Key')) key = code.slice(3).toLowerCase();
@@ -374,7 +429,7 @@ export function leaderKeyFromEvent(e: KeyboardEvent): string | null {
   else if (code === 'Enter' || code === 'NumpadEnter') key = 'enter';
   else if (code in PUNCTUATION_CODES) key = PUNCTUATION_CODES[code];
   else return null;
-  return e.shiftKey ? `shift+${key}` : key;
+  return `${e.altKey ? 'alt+' : ''}${e.shiftKey ? 'shift+' : ''}${key}`;
 }
 
 /** The single key that resolves a pending chord: no modifiers, 0-9 or a-z. */

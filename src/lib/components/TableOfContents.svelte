@@ -221,12 +221,13 @@
       class="relative flex min-h-full flex-col pl-3"
       role="list">
       <div
-        class="pointer-events-none absolute top-0 bottom-1 left-0 w-px bg-[#d5ded7] dark:bg-[#232925]">
+        class="pointer-events-none absolute top-0 bottom-0 left-0 z-10 w-px bg-border-tree transition-none"
+        aria-hidden="true">
       </div>
 
       {#if isIndicatorVisible}
         <div
-          class="pointer-events-none absolute top-(--indicator-top) left-0 h-(--indicator-height) w-px bg-accent"
+          class="pointer-events-none absolute top-(--indicator-top) left-0 z-20 h-(--indicator-height) w-px bg-accent transition-none"
           style="--indicator-top: {indicatorTop}px; --indicator-height: {indicatorHeight}px;"
           aria-hidden="true">
         </div>
@@ -237,12 +238,7 @@
         {@const depth = Math.max(0, heading.level - minLevel)}
         {@const isSub = depth > 0}
         {@const branchWidth = isSub ? 16 + (depth - 1) * 12 : 0}
-        {@const hasTopGap = index !== 0 && depth === 0}
-        <li
-          class="text-xs {index === 0 ? 'mt-0'
-          : hasTopGap ? 'mt-1.5'
-          : isSub ? 'mt-0.5'
-          : 'mt-1'}">
+        <li class="text-xs">
           <a
             href="#{heading.id}"
             onclick={e => {
@@ -250,22 +246,21 @@
               navigateToHeading(heading.id);
             }}
             aria-current={isActive ? 'true' : undefined}
-            class="relative -ml-3 flex min-h-6 items-center rounded-r-xs py-0.5 pr-2 leading-snug transition-colors duration-150 ease-in-out hover:text-accent {(
-              isActive
+            class="relative -ml-3 flex items-center rounded-r-xs py-1.5 pr-2 leading-4 transition-colors duration-150 ease-in-out hover:text-accent {(
+              isSub
             ) ?
-              isSub ? 'bg-accent/10 font-medium text-accent'
-              : 'bg-accent/10 font-semibold text-accent'
-            : isSub ?
-              'font-normal text-text-secondary hover:bg-surface-hover/30'
-            : 'font-medium text-text-primary hover:bg-surface-hover/30'}"
+              'font-normal'
+            : 'font-medium'} {isActive ? 'bg-accent/10 text-accent'
+            : isSub ? 'text-text-secondary hover:bg-surface-hover/30'
+            : 'text-text-primary hover:bg-surface-hover/30'}"
             style="padding-left: {isSub ? `${branchWidth + 8}px` : '10px'};">
             {#if isSub}
               <span
-                class="pointer-events-none absolute top-1/2 left-0 h-0 border-t transition-colors duration-150 select-none {(
+                class="pointer-events-none absolute top-1/2 left-0 h-px transition-none select-none {(
                   isActive
                 ) ?
-                  'border-accent'
-                : 'border-[#d5ded7] dark:border-[#232925]'}"
+                  'bg-accent'
+                : 'bg-border-tree'}"
                 style="width: {branchWidth}px;"
                 aria-hidden="true"></span>
             {/if}

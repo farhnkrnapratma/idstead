@@ -57,6 +57,8 @@
     CircleCheckBig,
     FileXCorner,
     AlertTriangle,
+    Flag,
+    MessageSquareWarning,
     Languages,
     Pin,
     PinOff,
@@ -83,10 +85,10 @@
   import ActivityWorkspace from '$lib/components/admin/ActivityWorkspace.svelte';
   import {adminActivityRequest} from '$lib/adminActivityClient';
   import type {WorkspaceArea, WorkspacePage} from '$lib/adminWorkspace';
-  import AdminNotificationBell from '$lib/components/admin/AdminNotificationBell.svelte';
   import {shortcut} from '$lib/utils/shortcut.svelte';
   import {adminNotificationsStore} from '$lib/stores/adminNotificationsStore.svelte';
   import {estimateReadTime} from '$lib/readTime';
+  import {formatCompactCount} from '$lib/utils/formatters';
   import {
     cn,
     Dialog,
@@ -108,9 +110,7 @@
     ImageWithSkeleton,
     SkipLink,
     FilterToolbar,
-    FilterSelect,
-    FilterCheckboxGroup,
-    DropdownSelect,
+    Dropdown,
     SortControl,
     SearchResultCount,
     FilterChipGroup,
@@ -195,6 +195,7 @@
   let postsLoadError = $state('');
   let posts = $state<AdminPost[]>([]);
   let isLoggingOut = $state(false);
+  let adminUserName = $state('');
   let adminUserEmail = $state('');
 
   const filterStore = createFilterSortStore({
@@ -209,6 +210,7 @@
   let showClearAuthorDialog = $state(false);
   let showDeleteCvDocDialog = $state(false);
   let showAvatarPreviewDialog = $state(false);
+  let showLogoutDialog = $state(false);
 
   interface AdminComment {
     id: string;
@@ -226,16 +228,7 @@
 
   let comments = $state<AdminComment[]>([]);
   let commentPages = $state<
-    Record<
-      string,
-      {
-        cursor: string | null;
-        next: string | null;
-        total: number;
-        previous: Array<string | null>;
-        focused: boolean;
-      }
-    >
+    Record<string, {page: number; total: number; focused: boolean}>
   >({});
   let commentsLoading = $state<Record<string, boolean>>({});
   let commentsError = $state<Record<string, string>>({});
@@ -1488,13 +1481,7 @@
       }
 
       if (resData?.comment) {
-        const postObj = posts.find(p => p.id === postId);
-        const newComment: AdminComment = {
-          ...resData.comment,
-          author_name: 'Administrator',
-          posts: {title: postObj?.title || ''}
-        };
-        comments = [...comments, newComment];
+        await fetchComments(postId);
         commentContent = '';
         replyValidation.reset();
         replyTo = null;
@@ -1581,9 +1568,10 @@
         return;
       }
 
-      if (sessionData.session.user?.email) {
-        adminUserEmail = sessionData.session.user.email;
-      }
+      const sessionUser = sessionData.session.user;
+      const displayName = sessionUser?.user_metadata?.display_name;
+      if (typeof displayName === 'string') adminUserName = displayName;
+      if (sessionUser?.email) adminUserEmail = sessionUser.email;
 
       const pendingToast = sessionStorage.getItem('admin_toast');
       if (pendingToast) {
@@ -1764,11 +1752,7 @@
     }
   }
 
-  async function fetchComments(
-    postId?: string,
-    focusId?: string,
-    cursor: string | null = null
-  ) {
+  async function fetchComments(postId?: string, focusId?: string, page = 1) {
     if (!postId) {
       await Promise.all([...expandedPostIds].map(id => fetchComments(id)));
       return true;
@@ -1781,21 +1765,14 @@
         section: 'comments',
         id: postId,
         ...(focusId ? {focus: focusId} : {}),
-        ...(cursor ? {cursor, meta: 'false'} : {}),
+        ...(page > 1 ? {page: String(page)} : {}),
         ...(commentFilterReportedOnly ? {reason: 'other'} : {})
       });
       comments = [
         ...comments.filter(c => c.post_id !== postId),
         ...result.items.map(item => item.comment)
       ];
-      const previous = commentPages[postId]?.previous ?? [];
-      commentPages[postId] = {
-        cursor,
-        next: result.nextCursor,
-        total: result.total ?? commentPages[postId]?.total ?? 0,
-        previous,
-        focused: !!focusId
-      };
+      commentPages[postId] = {page, total: result.total, focused: !!focusId};
       commentsError[postId] = '';
       return true;
     } catch (caught) {
@@ -1805,14 +1782,6 @@
     } finally {
       commentsLoading[postId] = false;
     }
-  }
-  async function pageComments(postId: string, next: boolean) {
-    const state = commentPages[postId];
-    if (!state) return;
-    if (next) {
-      state.previous.push(state.cursor);
-      await fetchComments(postId, undefined, state.next);
-    } else await fetchComments(postId, undefined, state.previous.pop() ?? null);
   }
 
   let supplementaryLoaded = false;
@@ -1861,6 +1830,10 @@
     if (eventId) url.searchParams.set('focus', eventId);
     if (notificationId) url.searchParams.set('notificationId', notificationId);
     navigateAdmin(url, true);
+  }
+
+  function requestLogout() {
+    showLogoutDialog = true;
   }
 
   async function handleLogout() {
@@ -1917,26 +1890,24 @@
 
       const failed: string[] = [];
       const partial: string[] = [];
-      await Promise.all(
-        TRANSLATION_LOCALES.map(async locale => {
-          const res = await fetch('/api/internal/blog/translate', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`
-            },
-            body: JSON.stringify({postId: post.id, locale})
-          });
-          if (!res.ok) {
-            failed.push(locale);
-            return;
-          }
-          const result = await res.json();
-          if (result.skipped) return;
-          if (!result.stored) failed.push(locale);
-          else if (!result.bodyTranslated) partial.push(locale);
-        })
-      );
+      for (const locale of TRANSLATION_LOCALES) {
+        const res = await fetch('/api/internal/blog/translate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({postId: post.id, locale})
+        });
+        if (!res.ok) {
+          failed.push(locale);
+          continue;
+        }
+        const result = await res.json();
+        if (result.skipped) continue;
+        if (!result.stored) failed.push(locale);
+        else if (!result.bodyTranslated) partial.push(locale);
+      }
 
       if (failed.length > 0) {
         toastStore.error(`Translation failed for: ${failed.join(',')}.`);
@@ -2936,11 +2907,11 @@
     section: 'overview' | 'content' | 'profile' | 'legal';
   }[] = [
     {id: 'home', label: 'Overview', icon: House, section: 'overview'},
-    {id: 'reports', label: 'Reports', icon: AlertTriangle, section: 'overview'},
+    {id: 'reports', label: 'Reports', icon: Flag, section: 'overview'},
     {
       id: 'feedback',
       label: 'Feedback',
-      icon: MessageCircle,
+      icon: MessageSquareWarning,
       section: 'overview'
     },
     {
@@ -3068,10 +3039,6 @@
     <span class="text-sm font-bold text-text-primary">Admin Console</span>
   </div>
   <div class="flex items-center gap-1.5">
-    <AdminNotificationBell
-      id="mobile"
-      size="2xs"
-      onOpen={group => openWorkspace('notifications', group)} />
     <ThemeSelect
       variant="ghost"
       size="2xs"
@@ -3104,10 +3071,6 @@
         </h1>
       </div>
       <div class="flex items-center gap-1.5">
-        <AdminNotificationBell
-          id="sidebar"
-          size="2xs"
-          onOpen={group => openWorkspace('notifications', group)} />
         <ThemeSelect
           variant="ghost"
           size="2xs"
@@ -3142,6 +3105,15 @@
             : 'text-text-primary hover:bg-surface-hover hover:text-accent'}">
             <link.icon class="size-4 shrink-0 transition-colors" />
             <span class="truncate">{link.label}</span>
+            {#if link.id === 'notifications' && adminNotificationsStore.unreadCount > 0}
+              <Badge
+                variant="accent"
+                class="ml-auto"
+                >{formatCompactCount(adminNotificationsStore.unreadCount)}<span
+                  class="sr-only">
+                  unread</span
+                ></Badge>
+            {/if}
           </button>
         {/each}
       </div>
@@ -3229,7 +3201,7 @@
       class="sticky bottom-0 z-10 mt-auto shrink-0 border-t border-border-subtle bg-surface-card px-2 py-2">
       <div class="flex items-center justify-between gap-2">
         <div class="flex min-w-0 flex-col truncate px-2">
-          {#if isLoading || (!authorState.name && !adminUserEmail)}
+          {#if isLoading || (!adminUserName && !adminUserEmail)}
             <div
               class="h-3 w-20 animate-pulse rounded bg-surface-hover"
               aria-hidden="true">
@@ -3239,12 +3211,12 @@
               aria-hidden="true">
             </div>
           {:else}
-            <span class="text-xs leading-tight font-bold text-text-primary"
-              >{authorState.name || ''}</span>
+            <span class="text-xs leading-tight font-bold text-text-primary">
+              {adminUserName}</span>
             <span
               class="truncate text-xxs leading-tight font-normal text-text-muted"
-              title={adminUserEmail || authorState.email}>
-              {adminUserEmail || authorState.email || ''}
+              title={adminUserEmail}>
+              {adminUserEmail}
             </span>
           {/if}
         </div>
@@ -3254,7 +3226,7 @@
           size="2xs"
           class="size-7 shrink-0 p-0"
           aria-label="Sign out"
-          onclick={handleLogout}
+          onclick={requestLogout}
           disabled={isLoggingOut}
           isLoading={isLoggingOut}
           title="Sign out"><LogOut class="size-4" /></Button>
@@ -3338,7 +3310,6 @@
             value={filterStore.search}
             oninput={e =>
               filterStore.setSearch((e.target as HTMLInputElement).value)}
-            size="sm"
             aria-label="Search blog posts" />
         {/snippet}
         {#snippet countSlot()}
@@ -3348,9 +3319,8 @@
             itemLabel="posts" />
         {/snippet}
         {#snippet filterControlsSlot()}
-          <div
-            class="grid grid-cols-2 gap-2.5 sm:flex sm:items-center sm:gap-3 [&>*:only-child]:col-span-2">
-            <FilterSelect
+          <div class="flex flex-wrap items-center gap-2">
+            <Dropdown
               label="Status"
               value={statusFilter}
               options={[
@@ -3360,12 +3330,12 @@
               ]}
               onChange={val => filterStore.setSingleFilter('status', val)} />
             {#if allPostTags.length > 0}
-              <FilterCheckboxGroup
+              <Dropdown
+                multiple
+                searchable
                 label="Tag"
-                dropdownPlacement="right"
-                popoverSpan="2cols-right"
                 options={allPostTags.map(t => ({value: t, label: t}))}
-                selectedValues={filterStore.filters['tag'] || []}
+                value={filterStore.filters['tag'] || []}
                 onChange={val => filterStore.toggleMultiFilter('tag', val)} />
             {/if}
           </div>
@@ -3701,26 +3671,14 @@
                         onclick={() => fetchComments(post.id)}
                         >Showing linked comment · Show all comments</Button
                       >{/if}
-                    <nav
-                      aria-label="Comment pagination"
-                      class="mb-3 flex flex-wrap items-center gap-2">
-                      <Button
-                        size="sm"
-                        type="outline"
-                        disabled={commentsLoading[post.id]
-                          || !commentPages[post.id]?.cursor}
-                        onclick={() => pageComments(post.id, false)}
-                        >Previous comments</Button>
-                      <Button
-                        size="sm"
-                        type="outline"
-                        disabled={commentsLoading[post.id]
-                          || !commentPages[post.id]?.next}
-                        onclick={() => pageComments(post.id, true)}
-                        >Next comments</Button>
-                      <span class="text-xs text-text-muted"
-                        >Up to 20 comments per page</span>
-                    </nav>
+                    {#if (commentPages[post.id]?.total ?? 0) > 20}
+                      <Pagination
+                        class="mb-3"
+                        page={commentPages[post.id].page}
+                        totalPages={Math.ceil(commentPages[post.id].total / 20)}
+                        onPageChange={page =>
+                          fetchComments(post.id, undefined, page)} />
+                    {/if}
                     {#if commentsLoading[post.id]}<LoadingState
                         label="Loading comments…" />
                     {:else if getPostComments(post.id).length === 0}
@@ -4071,7 +4029,8 @@
                 variant="floating"
                 hint="Colors follow the site theme automatically."
                 hideFeedbackSlot>
-                <DropdownSelect
+                <Dropdown
+                  fullWidth
                   id="app-display"
                   bind:value={manifestSettings.display}
                   options={[
@@ -4400,7 +4359,8 @@
                     hideAsterisk
                     error={experienceErrors[exp.id!]?.type}
                     valid={experienceValid[exp.id!]?.type}>
-                    <DropdownSelect
+                    <Dropdown
+                      fullWidth
                       placeholder="Employment type"
                       options={EMPLOYMENT_TYPES.map(t => ({
                         value: t,
@@ -4482,7 +4442,8 @@
                     hideAsterisk
                     error={experienceErrors[exp.id!]?.locType}
                     valid={experienceValid[exp.id!]?.locType}>
-                    <DropdownSelect
+                    <Dropdown
+                      fullWidth
                       placeholder="Location type"
                       options={LOCATION_TYPES.map(lt => ({
                         value: lt,
@@ -4509,7 +4470,8 @@
                       variant="floating"
                       required
                       hideAsterisk>
-                      <DropdownSelect
+                      <Dropdown
+                        fullWidth
                         placeholder="Month"
                         options={MONTHS.map(m => ({value: m, label: m}))}
                         bind:value={exp.startMonth}
@@ -4522,7 +4484,8 @@
                       variant="floating"
                       required
                       hideAsterisk>
-                      <DropdownSelect
+                      <Dropdown
+                        fullWidth
                         placeholder="Year"
                         options={[
                           {value: null, label: 'Year'},
@@ -4543,7 +4506,8 @@
                         id={'exp-end-month-' + idx}
                         label="End month"
                         variant="floating">
-                        <DropdownSelect
+                        <Dropdown
+                          fullWidth
                           placeholder="Month"
                           disabled={exp.currentlyIn}
                           options={[
@@ -4558,7 +4522,8 @@
                         id={'exp-end-year-' + idx}
                         label="End year"
                         variant="floating">
-                        <DropdownSelect
+                        <Dropdown
+                          fullWidth
                           placeholder="Year"
                           disabled={exp.currentlyIn}
                           options={[
@@ -4848,7 +4813,8 @@
                       variant="floating"
                       required
                       hideAsterisk>
-                      <DropdownSelect
+                      <Dropdown
+                        fullWidth
                         placeholder="Month"
                         options={MONTHS.map(m => ({value: m, label: m}))}
                         bind:value={edu.startMonth}
@@ -4861,7 +4827,8 @@
                       variant="floating"
                       required
                       hideAsterisk>
-                      <DropdownSelect
+                      <Dropdown
+                        fullWidth
                         placeholder="Year"
                         options={[
                           {value: null, label: 'Year'},
@@ -4882,7 +4849,8 @@
                         id={'edu-end-month-' + idx}
                         label="End month"
                         variant="floating">
-                        <DropdownSelect
+                        <Dropdown
+                          fullWidth
                           placeholder="Month"
                           disabled={edu.currentlyIn}
                           options={[
@@ -4897,7 +4865,8 @@
                         id={'edu-end-year-' + idx}
                         label="End year"
                         variant="floating">
-                        <DropdownSelect
+                        <Dropdown
+                          fullWidth
                           placeholder="Year"
                           disabled={edu.currentlyIn}
                           options={[
@@ -6263,6 +6232,19 @@
     {/if}
   </main>
 </div>
+
+<ConfirmationDialog
+  bind:isOpen={showLogoutDialog}
+  title="Sign out"
+  message="Are you sure you want to sign out of the admin console?"
+  confirmLabel="Sign out"
+  isDestructive
+  isLoading={isLoggingOut}
+  onConfirm={handleLogout}>
+  {#snippet confirmIcon()}
+    <LogOut class="size-3.5" />
+  {/snippet}
+</ConfirmationDialog>
 
 <ConfirmationDialog
   bind:isOpen={showDeletePostDialog}

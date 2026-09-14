@@ -1,6 +1,7 @@
 <script lang="ts">
   import {adminUrl, navigateAdmin} from '$lib/adminNavigation';
   import {onMount, tick} from 'svelte';
+  import {CheckCheck, Trash} from '@lucide/svelte';
   import {analyticsPeriod} from '$lib/adminAnalytics';
   import {adminActivityRequest} from '$lib/adminActivityClient';
   import {WorkspaceFeed} from '$lib/stores/workspaceFeed.svelte';
@@ -10,25 +11,34 @@
     formatCount,
     helpfulPercent,
     type WorkspaceArea,
-    type WorkspaceRow
+    type WorkspaceRow,
+    ADMIN_WORKSPACE_PAGE_SIZE
   } from '$lib/adminWorkspace';
   import {REPORT_REASONS, reportReasonLabel} from '$lib/reportReasons';
-  import type {AdminNotificationRow, ClearOperation} from '$lib/adminActivity';
+  import {
+    activityTimestamp,
+    type AdminNotificationRow,
+    type ClearOperation
+  } from '$lib/adminActivity';
   import Section from '$lib/layout/Section.svelte';
   import Card from '../Card.svelte';
   import Button from '../Button.svelte';
   import Input from '../Input.svelte';
   import Chip from '../Chip.svelte';
   import DataTable from '../DataTable.svelte';
-  import FilterSelect from '../filter/FilterSelect.svelte';
+  import Dropdown from '../Dropdown.svelte';
+  import Pagination from '../Pagination.svelte';
   import LoadingState from '../LoadingState.svelte';
   import ErrorState from '../ErrorState.svelte';
   import EmptyState from '../EmptyState.svelte';
   import ConfirmationDialog from '../ConfirmationDialog.svelte';
   import FieldMessage from '../FieldMessage.svelte';
+  import FilterToolbar from '../filter/FilterToolbar.svelte';
+  import SortControl from '../filter/SortControl.svelte';
+  import SearchResultCount from '../filter/SearchResultCount.svelte';
   import ActivityRow from './ActivityRow.svelte';
   import AnalyticsPeriod from './AnalyticsPeriod.svelte';
-  import ViewsChart from './ViewsChart.svelte';
+  import FeedbackDonut from './FeedbackDonut.svelte';
   let {
     area,
     onOpenComment,
@@ -38,13 +48,14 @@
     onOpenComment: (postId: string, commentId: string) => void;
     onSelectNotification: (item: AdminNotificationRow) => void;
   } = $props();
+  const PAGE_SIZE = ADMIN_WORKSPACE_PAGE_SIZE;
   const list = new WorkspaceFeed();
   const detail = new WorkspaceFeed();
-  let dirty = $state(false);
   let search = $state('');
   let detailSearch = $state('');
   let debounce: ReturnType<typeof setTimeout> | undefined;
   let detailDebounce: ReturnType<typeof setTimeout> | undefined;
+  let autoRefresh: ReturnType<typeof setTimeout> | undefined;
   let busy = $state(false);
   let actionError = $state('');
   let confirmation = $state<'group' | 'all' | null>(null);
@@ -57,8 +68,6 @@
   } | null>(null);
   let groupCount = $state<number | null>(null);
   let detailTitle = $state('');
-  const listCursors: Array<string | null> = [];
-  const detailCursors: Array<string | null> = [];
   const params = $derived(adminUrl().searchParams);
   const selected = $derived(params.get('selected') ?? '');
   const title = $derived(
@@ -77,6 +86,17 @@
     : area === 'feedback' ? 'feedback_events'
     : 'notification_events'
   );
+  const sortFields = $derived([
+    {value: 'date', label: 'Latest'},
+    {value: 'page', label: 'Page title'},
+    ...(area === 'notifications' ? [{value: 'type', label: 'Category'}]
+    : area === 'reports' ? [{value: 'total', label: 'Report count'}]
+    : [
+        {value: 'total', label: 'Response count'},
+        {value: 'helpful', label: 'Helpful percentage'}
+      ])
+  ]);
+  const readCount = $derived(Math.max(0, inbox.total - inbox.unreadCount));
   function navigate(values: Record<string, string | null>, replace = false) {
     const url = adminUrl();
     for (const [key, value] of Object.entries(values))
@@ -85,22 +105,20 @@
     navigateAdmin(url, replace);
   }
   function filter(values: Record<string, string>) {
-    listCursors.length = 0;
     list.invalidate();
     navigate({
       ...values,
-      cursor: null,
+      page: null,
+      asOf: null,
       selected: null,
-      detailCursor: null,
+      detailPage: null,
       focus: null
     });
   }
   function period(values: Record<string, string>) {
-    listCursors.length = 0;
-    detailCursors.length = 0;
     list.invalidate();
     detail.invalidate();
-    navigate({...values, cursor: null, detailCursor: null}, true);
+    navigate({...values, page: null, asOf: null, detailPage: null}, true);
   }
   function options(isDetail = false) {
     const values = Object.fromEntries(params);
@@ -111,8 +129,8 @@
     for (const key of [
       'tab',
       'selected',
-      'cursor',
-      'detailCursor',
+      'page',
+      'detailPage',
       'detailQuery',
       'detailReason',
       'start',
@@ -134,17 +152,11 @@
       query.read = 'all';
       query.sort = 'date';
       if (params.has('focus')) query.focus = params.get('focus')!;
-      if (params.has('detailCursor')) {
-        query.cursor = params.get('detailCursor')!;
-        query.meta = detail.data ? 'false' : 'true';
-      }
+      if (params.has('detailPage')) query.page = params.get('detailPage')!;
     } else {
       delete query.focus;
       delete query.notificationId;
-      if (params.has('cursor')) {
-        query.cursor = params.get('cursor')!;
-        query.meta = list.data ? 'false' : 'true';
-      }
+      if (params.has('page')) query.page = params.get('page')!;
     }
     return query;
   }
@@ -158,13 +170,12 @@
   async function open(item: WorkspaceRow) {
     groupCount = item.total;
     detailTitle = item.title;
-    detailCursors.length = 0;
     detail.invalidate();
     navigate({
       selected: item.id,
       notificationId: null,
       history: null,
-      detailCursor: null,
+      detailPage: null,
       detailQuery: null,
       detailReason: null,
       vote: null,
@@ -173,12 +184,30 @@
     await tick();
     document.getElementById('workspace-detail')?.focus();
   }
+  async function selectEvent(event: AdminNotificationRow) {
+    if (busy || inbox.isMutating) return;
+    if (!event.read_at) {
+      if (!(await inbox.markRead(event.id))) return;
+      if (list.data)
+        list.data = {
+          ...list.data,
+          items: list.data.items.map(row =>
+            row.id === event.id ?
+              {...row, event: {...event, read_at: new Date().toISOString()}}
+            : row
+          )
+        };
+    }
+    await refresh();
+    onSelectNotification(event);
+  }
+  async function deleteEvent(id: string) {
+    if (busy || inbox.isMutating) return;
+    if (await inbox.dismiss(id)) await refresh();
+  }
   async function refresh() {
-    listCursors.length = 0;
-    detailCursors.length = 0;
     list.invalidate();
     detail.invalidate();
-    dirty = false;
     try {
       const dates = analyticsPeriod(
         params.get('range') ?? (area === 'feedback' ? '7d' : 'all'),
@@ -187,7 +216,7 @@
         params.get('start') ?? undefined,
         params.get('end') ?? undefined
       );
-      navigate({...dates, cursor: null, detailCursor: null}, true);
+      navigate({...dates, asOf: null}, true);
     } catch (caught) {
       actionError =
         caught instanceof Error ? caught.message : 'Choose a valid period.';
@@ -195,17 +224,23 @@
     }
     await tick();
     await list.load(options(), true);
+    const lastPage = Math.max(
+      1,
+      Math.ceil((list.data?.total ?? 0) / PAGE_SIZE)
+    );
+    if (!list.error && Number(params.get('page') ?? 1) > lastPage) {
+      goToPage(false, lastPage);
+      await tick();
+      await list.load(options(), true);
+    }
     if (selected) await detail.load(options(true), true);
     await inbox.load();
   }
-  function paginate(isDetail: boolean, next: boolean) {
-    const feed = isDetail ? detail : list;
-    const key = isDetail ? 'detailCursor' : 'cursor';
-    const cursors = isDetail ? detailCursors : listCursors;
-    if (next && feed.data?.nextCursor) {
-      cursors.push(params.get(key));
-      navigate({[key]: feed.data.nextCursor});
-    } else if (!next) navigate({[key]: cursors.pop() ?? null});
+  function goToPage(isDetail: boolean, page: number) {
+    const value = page > 1 ? String(page) : null;
+    if (isDetail) navigate({detailPage: value});
+    else
+      navigate({page: value, asOf: value ? (list.data?.asOf ?? null) : null});
   }
   async function groupAction(remove = false) {
     const target =
@@ -233,7 +268,7 @@
       );
       confirmation = null;
       preparedGroup = null;
-      if (remove) navigate({selected: null, detailCursor: null}, true);
+      if (remove) navigate({selected: null, detailPage: null}, true);
       await refresh();
     } catch (caught) {
       actionError =
@@ -277,40 +312,17 @@
     }
   }
   function updateDetail(values: Record<string, string>) {
-    detailCursors.length = 0;
     detail.invalidate();
-    navigate({...values, detailCursor: null, focus: null});
-  }
-  function reset() {
-    search = '';
-    detailSearch = '';
-    listCursors.length = 0;
-    detailCursors.length = 0;
-    list.invalidate();
-    detail.invalidate();
-    const url = adminUrl();
-    for (const key of [
-      'query',
-      'postId',
-      'reason',
-      'type',
-      'read',
-      'sort',
-      'direction',
-      'minimum',
-      'selected',
-      'cursor',
-      'detailCursor',
-      'focus',
-      'detailQuery',
-      'detailReason',
-      'vote'
-    ])
-      url.searchParams.delete(key);
-    navigateAdmin(url);
+    navigate({...values, detailPage: null, focus: null});
   }
   function date(value: string) {
-    return new Date(value).toLocaleString('en-US', {timeZone});
+    return activityTimestamp(value, timeZone);
+  }
+  function categoryLabel(item: WorkspaceRow) {
+    return (
+      notificationTypes.find(t => t.value === item.kind)?.label
+      ?? (item.vote === 'yes' ? 'Helpful' : 'Unhelpful')
+    );
   }
   const columns = $derived(
     area === 'reports' ?
@@ -336,11 +348,13 @@
   );
   onMount(() => {
     const remove = inbox.onActivityRefresh(async () => {
-      dirty = true;
+      clearTimeout(autoRefresh);
+      autoRefresh = setTimeout(() => void refresh(), 1000);
     });
     return () => {
       clearTimeout(debounce);
       clearTimeout(detailDebounce);
+      clearTimeout(autoRefresh);
       list.dispose();
       detail.dispose();
       remove();
@@ -355,68 +369,35 @@
     {@attach () => {
       params.toString();
       sync();
-    }}
-    class="flex flex-wrap items-start justify-between gap-3">
-    <div>
-      <h1 class="text-2xl font-bold text-text-primary">{title}</h1>
-      <p class="mt-1 text-sm text-text-secondary">
-        {area === 'reports' ?
-          'Review comments as cases. Open a case to inspect its reports.'
-        : area === 'feedback' ?
-          'Compare recorded responses across articles and legal pages.'
-        : 'Review activity grouped by category, target, and day.'}
-      </p>
-    </div>
-    <Button
-      size="sm"
-      type="outline"
-      disabled={list.loading}
-      onclick={refresh}
-      >{dirty ? 'Updates available · Refresh' : 'Refresh'}</Button>
+    }}>
+    <h1 class="text-2xl font-bold text-text-primary">{title}</h1>
+    <p class="mt-1 text-sm text-text-secondary">
+      {area === 'reports' ? 'Review flagged comments and decide what to do.'
+      : area === 'feedback' ? 'See how readers rate your articles and pages.'
+      : 'Recent activity across your site.'}
+    </p>
   </div>
   <AnalyticsPeriod
     {params}
     allowAll={area !== 'feedback'}
     onchange={period} />
-  {#if area === 'notifications'}
-    <div class="flex flex-wrap items-center gap-2">
-      <span class="mr-auto text-sm text-text-secondary"
-        >{formatCount(inbox.unreadCount)} unread events across all categories</span
-      ><Button
-        size="sm"
-        type="ghost"
-        disabled={busy || inbox.isMutating || !inbox.unreadCount}
-        onclick={async () => {
-          await inbox.markAllRead();
-          await refresh();
-        }}>Mark all read</Button
-      ><Button
-        size="sm"
-        type="ghost"
-        disabled={busy || inbox.isMutating || !inbox.total}
-        onclick={prepareClear}>Clear all notifications</Button>
-    </div>
-  {/if}
+
   {#if actionError}<FieldMessage message={actionError} />{/if}
   {#if inbox.activityError}<FieldMessage message={inbox.activityError} />{/if}
   <p
     class="text-xs text-text-muted"
     role="status">
-    {dirty ? 'New activity is available. Refresh when you are ready. ' : ''}{(
-      list.data
-    ) ?
-      `Updated ${date(list.data.asOf)} · ${timeZone}`
-    : 'Loading activity…'}
+    {list.data ? `Updated ${date(list.data.asOf)} · ${timeZone}` : 'Loading…'}
   </p>
   <div class={selected ? 'grid min-w-0 gap-5 xl:grid-cols-2' : 'min-w-0'}>
     <div
       class={selected ?
         'hidden min-w-0 flex-col gap-4 xl:flex'
       : 'flex min-w-0 flex-col gap-4'}>
-      <Card density="padded">
-        <div class="flex flex-col gap-3">
+      <FilterToolbar title={`${title} filters`}>
+        {#snippet searchSlot()}
           <Input
-            size="sm"
+            type="search"
             aria-label={`Search ${title.toLowerCase()}`}
             placeholder={area === 'reports' ?
               'Search comments, authors, or articles…'
@@ -428,101 +409,134 @@
               clearTimeout(debounce);
               debounce = setTimeout(() => filter({query: search}), 300);
             }} />
-          <div class="flex flex-wrap items-center gap-2">
-            {#if area === 'reports'}
-              <FilterSelect
-                label="Category"
-                value={params.get('reason') ?? ''}
-                options={[
-                  {value: '', label: 'All categories'},
-                  ...REPORT_REASONS.map(r => ({value: r.id, label: r.label}))
-                ]}
-                onChange={reason => filter({reason})} />
-              {#if params.has('postId')}<Chip
-                  onclick={() => filter({postId: ''})}>Article filter ×</Chip
-                >{/if}
-            {:else if area === 'feedback'}
-              <FilterSelect
-                label="Page type"
-                value={params.get('type') ?? 'all'}
-                options={[
-                  {value: 'all', label: 'All pages'},
-                  {value: 'article', label: 'Articles'},
-                  {value: 'legal', label: 'Legal pages'}
-                ]}
-                onChange={type => filter({type})} />
-              <Input
-                type="number"
-                min="0"
-                max="999999999"
-                label="Minimum responses"
-                size="sm"
-                fullWidth={false}
-                value={params.get('minimum') ?? '0'}
-                onchange={event =>
-                  filter({minimum: event.currentTarget.value || '0'})} />
-            {:else}
-              <FilterSelect
-                label="Category"
-                value={params.get('type') ?? 'all'}
-                options={notificationTypes}
-                onChange={type => filter({type})} />
-              <FilterSelect
-                label="Read status"
-                value={params.get('read') ?? 'all'}
-                options={[
-                  {value: 'all', label: 'All statuses'},
-                  {value: 'unread', label: 'Unread'},
-                  {value: 'read', label: 'Read'}
-                ]}
-                onChange={read => filter({read})} />
-            {/if}
-            <FilterSelect
-              label="Sort"
-              value={params.get('sort') ?? 'date'}
+        {/snippet}
+        {#snippet filterControlsSlot()}
+          {#if area === 'reports'}
+            <Dropdown
+              label="Category"
+              value={params.get('reason') ?? ''}
               options={[
-                {value: 'date', label: 'Latest activity'},
-                {value: 'page', label: 'Page title'},
-                ...(area === 'notifications' ?
-                  [{value: 'type', label: 'Category'}]
-                : [
-                    {
-                      value: 'total',
-                      label:
-                        area === 'reports' ? 'Report count' : 'Response count'
-                    }
-                  ]),
-                ...(area === 'feedback' ?
-                  [{value: 'helpful', label: 'Helpful percentage'}]
-                : [])
+                {value: '', label: 'All'},
+                ...REPORT_REASONS.map(r => ({value: r.id, label: r.label}))
               ]}
-              onChange={sort => filter({sort})} />
-            <FilterSelect
-              label="Order"
-              value={params.get('direction') ?? 'desc'}
+              onChange={reason => filter({reason})} />
+            {#if params.has('postId')}<Chip onclick={() => filter({postId: ''})}
+                >Article filter ×</Chip
+              >{/if}
+          {:else if area === 'feedback'}
+            <Dropdown
+              label="Page"
+              value={params.get('type') ?? 'all'}
               options={[
-                {value: 'desc', label: 'Descending'},
-                {value: 'asc', label: 'Ascending'}
+                {value: 'all', label: 'All'},
+                {value: 'article', label: 'Articles'},
+                {value: 'legal', label: 'Legal pages'}
               ]}
-              onChange={direction => filter({direction})} />
-            <Button
-              type="ghost"
-              size="sm"
-              onclick={reset}>Reset filters</Button>
-          </div>
-          {#if params.get('query')}<Chip onclick={() => filter({query: ''})}
-              >Search: {params.get('query')} ×</Chip
-            >{/if}
+              onChange={type => filter({type})} />
+          {:else}
+            <Dropdown
+              label="Category"
+              value={params.get('type') ?? 'all'}
+              options={notificationTypes}
+              onChange={type => filter({type})} />
+            <Dropdown
+              label="Status"
+              value={params.get('read') ?? 'all'}
+              options={[
+                {value: 'all', label: 'All'},
+                {value: 'unread', label: 'Unread'},
+                {value: 'read', label: 'Read'}
+              ]}
+              onChange={read => filter({read})} />
+          {/if}
+        {/snippet}
+        {#snippet sortSlot()}
+          <SortControl
+            labelPrefix="Sort by"
+            fields={sortFields}
+            currentField={params.get('sort') ?? 'date'}
+            currentDirection={params.get('direction') === 'asc' ?
+              'asc'
+            : 'desc'}
+            onFieldChange={sort => filter({sort})}
+            onDirectionToggle={() =>
+              filter({
+                direction: params.get('direction') === 'asc' ? 'desc' : 'asc'
+              })} />
+        {/snippet}
+        {#snippet countSlot()}
+          <SearchResultCount
+            count={list.data?.items.length ?? 0}
+            total={list.data?.total ?? 0}
+            itemLabel={area === 'reports' ? 'reported comments'
+            : area === 'feedback' ? 'pages'
+            : 'notifications'} />
+        {/snippet}
+      </FilterToolbar>
+      {#if area === 'notifications'}
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="mr-auto text-sm text-text-secondary"
+            >{formatCount(inbox.unreadCount)} unread</span>
+          <Button
+            size="sm"
+            type="ghost"
+            disabled={busy || inbox.isMutating || !inbox.unreadCount}
+            onclick={async () => {
+              if (await inbox.markAllRead()) {
+                if (list.data)
+                  list.data = {
+                    ...list.data,
+                    items: list.data.items.map(row => ({
+                      ...row,
+                      event:
+                        row.event ?
+                          {
+                            ...row.event,
+                            read_at:
+                              row.event.read_at ?? new Date().toISOString()
+                          }
+                        : undefined
+                    }))
+                  };
+                await refresh();
+              }
+            }}>
+            {#snippet leading()}<CheckCheck class="size-3.5" />{/snippet}
+            Mark all as read
+          </Button>
+          <Button
+            size="sm"
+            type="ghost"
+            disabled={busy || inbox.isMutating || !readCount}
+            onclick={prepareClear}>
+            {#snippet leading()}<Trash class="size-3.5" />{/snippet}
+            Clear all read
+          </Button>
         </div>
-      </Card>
+      {/if}
       {#if list.error}<ErrorState
           title="Unable to load results"
           description={list.error}
           onRetry={() => list.load(options(), true)} />{/if}
-      {#if list.loading}<LoadingState label="Loading results…" />
+      {#if list.loading && !list.data}<LoadingState label="Loading results…" />
       {:else if list.data && !list.data.items.length}<EmptyState
           title="No matching activity"
-          description="Try another period or reset the filters." />
+          description="Try another period or filter." />
+      {:else if area === 'notifications'}
+        <ul
+          class="flex flex-col gap-2"
+          aria-label="Notifications">
+          {#each list.data?.items ?? [] as row (row.id)}
+            {#if row.event}<li>
+                <ActivityRow
+                  item={row.event}
+                  {timeZone}
+                  disabled={busy || inbox.isMutating}
+                  onSelect={() => selectEvent(row.event!)}
+                  onDelete={() => deleteEvent(row.id)} />
+              </li>{/if}
+          {/each}
+        </ul>
       {:else}
         <DataTable
           caption={title}
@@ -533,26 +547,33 @@
             {#if key === 'title'}
               <button
                 type="button"
-                class="flex w-full cursor-pointer flex-col gap-1 rounded-sm text-left whitespace-normal focus-visible:outline-2 focus-visible:outline-focus-ring"
+                class="flex w-full min-w-0 cursor-pointer items-center gap-3 rounded-sm text-left focus-visible:outline-2 focus-visible:outline-focus-ring"
                 onclick={() => open(item)}
                 aria-label={`Open ${item.title}`}>
-                {#if area === 'notifications'}<span class="text-xs text-accent"
-                    >{notificationTypes.find(t => t.value === item.kind)?.label
-                      ?? (item.vote === 'yes' ? 'Helpful' : 'Unhelpful')}</span
-                  >{/if}
-                <span class="line-clamp-2 text-sm font-semibold"
-                  >{item.title}</span>
-                {#if area === 'reports'}<span
-                    class="line-clamp-2 text-sm font-normal text-text-secondary"
-                    >{item.author}: {item.content}</span
-                  >{/if}
-                {#if area === 'feedback'}<span class="text-xs text-text-muted"
-                    >{item.targetType === 'legal' ?
-                      'Legal page'
-                    : 'Article'}</span
-                  >{/if}
-                <span class="text-xs font-normal text-text-muted"
-                  >{date(item.latest)}</span>
+                <span class="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <span class="truncate text-sm font-semibold"
+                    >{item.title}</span>
+                  <span
+                    class="flex min-w-0 items-center gap-1 text-xs font-normal text-text-muted">
+                    {#if area === 'reports'}
+                      <span class="min-w-0 truncate text-text-secondary"
+                        >{item.author}: {item.content}</span>
+                    {:else if area === 'feedback'}
+                      <span class="shrink-0"
+                        >{item.targetType === 'legal' ?
+                          'Legal page'
+                        : 'Article'}</span>
+                    {:else}
+                      <span class="shrink-0">{categoryLabel(item)}</span>
+                    {/if}
+                    <span
+                      class="shrink-0"
+                      aria-hidden="true">·</span>
+                    <time
+                      class="shrink-0 whitespace-nowrap"
+                      datetime={item.latest}>{date(item.latest)}</time>
+                  </span>
+                </span>
               </button>
             {:else if key === 'reason'}{reportReasonLabel(item.reason ?? '')}
             {:else if key === 'helpful'}<span class="block font-semibold"
@@ -577,7 +598,7 @@
             size="sm"
             type="outline"
             onclick={() =>
-              navigate({selected: null, detailCursor: null, focus: null})}
+              navigate({selected: null, detailPage: null, focus: null})}
             >Back to {title.toLowerCase()}</Button
           ><span class="text-xs text-text-muted"
             >{area === 'reports' ? 'Case details' : 'Activity details'}</span>
@@ -586,7 +607,8 @@
             title="Unable to load details"
             description={detail.error}
             onRetry={() => detail.load(options(true), true)} />{/if}
-        {#if detail.loading}<LoadingState label="Loading details…" />
+        {#if detail.loading && !detail.data}<LoadingState
+            label="Loading details…" />
         {:else if detail.data}
           {#if detail.data.savedNotification?.report_status === 'resolved'}
             <Card density="padded"
@@ -636,8 +658,8 @@
                   >Filter this article</Button>
               </div>
               <p class="mt-3 text-xs text-text-muted">
-                {formatCount(detail.data.context.total)} open reports. Report volume
-                alone does not establish a violation.
+                {formatCount(detail.data.context.total)} open reports. Read the comment
+                before taking action.
               </p></Card>
             <div
               class="flex flex-wrap gap-2"
@@ -645,8 +667,7 @@
               aria-label="Report categories">
               <Chip
                 active={!params.get('detailReason')}
-                onclick={() => updateDetail({detailReason: ''})}
-                >All categories</Chip
+                onclick={() => updateDetail({detailReason: ''})}>All</Chip
               >{#each REPORT_REASONS as reason (reason.id)}<Chip
                   active={params.get('detailReason') === reason.id}
                   onclick={() => updateDetail({detailReason: reason.id})}
@@ -657,9 +678,10 @@
                 >{/each}
             </div>
             <Input
+              type="search"
               size="sm"
-              aria-label="Search additional details"
-              placeholder="Search additional details…"
+              aria-label="Search report details"
+              placeholder="Search report details…"
               value={detailSearch}
               oninput={event => {
                 detailSearch = event.currentTarget.value;
@@ -679,47 +701,14 @@
                   ?? detail.data.items[0]?.title
                   ?? (detailTitle || 'Page feedback')}
               </h2>
-              <p class="mt-2 text-sm text-text-secondary">
-                {formatCount(yes + no)} responses · {helpfulPercent(yes, no)} helpful
-              </p>
-              <p class="mt-2 text-sm text-text-primary">
-                Helpful: {formatCount(yes)} · Unhelpful: {formatCount(no)}
-              </p>
-              <div
-                class="mt-3 flex h-3 overflow-hidden rounded-full bg-surface-hover"
-                aria-label={`${helpfulPercent(yes, no)} helpful`}>
-                <div
-                  class="bg-activity-helpful"
-                  style:width={`${yes + no ? (yes / (yes + no)) * 100 : 0}%`}>
-                </div>
-                <div
-                  class="bg-activity-unhelpful"
-                  style:width={`${yes + no ? (no / (yes + no)) * 100 : 0}%`}>
-                </div>
-              </div></Card>
-            <Card density="padded"
-              ><ViewsChart
-                title="Helpful responses"
-                description="Recorded helpful responses during the selected period."
-                data={series.map(r => ({...r, views: r.helpful}))}
-                ceiling={Math.max(
-                  4,
-                  ...series.flatMap(r => [r.helpful, r.unhelpful])
-                )}
-                {timeZone} /><ViewsChart
-                title="Unhelpful responses"
-                description="Recorded unhelpful responses during the selected period."
-                data={series.map(r => ({...r, views: r.unhelpful}))}
-                ceiling={Math.max(
-                  4,
-                  ...series.flatMap(r => [r.helpful, r.unhelpful])
-                )}
-                {timeZone} /></Card>
-            {#if showHistory}<FilterSelect
+              <FeedbackDonut
+                helpful={yes}
+                unhelpful={no} /></Card>
+            {#if showHistory}<Dropdown
                 label="Response"
                 value={params.get('vote') ?? 'all'}
                 options={[
-                  {value: 'all', label: 'All responses'},
+                  {value: 'all', label: 'All'},
                   {value: 'yes', label: 'Helpful'},
                   {value: 'no', label: 'Unhelpful'}
                 ]}
@@ -738,7 +727,7 @@
                 <Button
                   size="sm"
                   disabled={busy}
-                  onclick={() => groupAction()}>Mark group read</Button
+                  onclick={() => groupAction()}>Mark group as read</Button
                 ><Button
                   size="sm"
                   type="ghost"
@@ -760,23 +749,21 @@
               aria-expanded={showHistory}
               onclick={() =>
                 updateDetail({history: showHistory ? 'false' : 'true'})}
-              >{showHistory ? 'Hide event history' : (
-                'View event history'
-              )}</Button
+              >{showHistory ? 'Hide responses' : 'View responses'}</Button
             >{/if}
           {#if showHistory}
             {#if params.has('focus')}<Button
                 size="sm"
                 type="outline"
                 onclick={() => updateDetail({})}
-                >Showing linked event · Show all events in this period</Button
+                >Showing one event · Show all</Button
               >{/if}
             <h3 class="text-sm font-bold text-text-primary">
-              {area === 'reports' ? 'Reports' : 'Event history'}
+              {area === 'reports' ? 'Reports' : 'Events'}
             </h3>
             {#if !detail.data.items.length}<EmptyState
-                title="No events in this view"
-                description="The event may have been resolved or removed, or may fall outside the selected period." />{/if}
+                title="Nothing here"
+                description="It may have been resolved, removed, or fall outside the selected period." />{/if}
             <ul class="flex flex-col gap-3">
               {#each detail.data.items as item (item.id)}
                 <li
@@ -784,6 +771,7 @@
                   class="rounded-md border border-border-subtle bg-surface-card p-3">
                   {#if item.event}<ActivityRow
                       item={item.event}
+                      {timeZone}
                       detail
                       onSelect={async () => {
                         await inbox.markRead(item.id);
@@ -808,14 +796,6 @@
                           </p>{/if}
                       </details>
                     {/if}
-                    {#if item.event.meta?.details}<details class="mt-2 text-sm">
-                        <summary class="cursor-pointer text-accent"
-                          >Additional details</summary>
-                        <p
-                          class="mt-2 break-words whitespace-pre-wrap text-text-secondary">
-                          {item.event.meta.details}
-                        </p>
-                      </details>{/if}
                   {:else}<div class="flex flex-wrap justify-between gap-2">
                       <strong class="text-sm text-text-primary"
                         >{area === 'reports' ?
@@ -852,37 +832,26 @@
 
 {#snippet pagination(isDetail: boolean)}
   {@const feed = isDetail ? detail : list}
-  {@const cursor = params.get(isDetail ? 'detailCursor' : 'cursor')}
-  <nav
-    class="flex flex-wrap items-center justify-between gap-2"
-    aria-label={isDetail ? 'Event pagination' : 'Results pagination'}>
-    <span class="text-xs text-text-muted"
-      >{formatCount(feed.data?.total ?? 0)} results · {feed.data?.items.length
-        ?? 0} shown</span>
-    <div class="flex gap-2">
-      <Button
-        size="sm"
-        type="outline"
-        disabled={feed.loading || !cursor}
-        onclick={() => paginate(isDetail, false)}>Previous</Button
-      ><Button
-        size="sm"
-        type="outline"
-        disabled={feed.loading || !feed.data?.nextCursor}
-        onclick={() => paginate(isDetail, true)}>Next</Button>
-    </div>
-  </nav>
+  {@const total = feed.data?.total ?? 0}
+  {@const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))}
+  {#if feed.data}
+    <Pagination
+      page={Number(params.get(isDetail ? 'detailPage' : 'page') ?? '1')}
+      {totalPages}
+      onPageChange={page => goToPage(isDetail, page)}
+      class="mt-6" />
+  {/if}
 {/snippet}
 
 <ConfirmationDialog
   isOpen={confirmation !== null}
   title={confirmation === 'all' ?
-    'Clear all notifications?'
+    'Clear read notifications?'
   : 'Delete this notification group?'}
   message={confirmation === 'all' ?
-    `Delete all ${formatCount(clearOperation?.count ?? 0)} notifications prepared for this operation? Reports and feedback remain saved. New arrivals are excluded.`
-  : `Delete ${formatCount(preparedGroup?.count ?? 0)} events in this group? New arrivals are excluded. Reports and feedback remain saved.`}
-  confirmLabel="Delete notifications"
+    `Delete ${formatCount(clearOperation?.count ?? 0)} read notifications? Unread notifications stay, and reports and feedback remain saved.`
+  : `Delete ${formatCount(preparedGroup?.count ?? 0)} events in this group? Reports and feedback remain saved.`}
+  confirmLabel={confirmation === 'all' ? 'Clear read' : 'Delete group'}
   isDestructive
   isLoading={busy}
   onConfirm={confirmDelete}

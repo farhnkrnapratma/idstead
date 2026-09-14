@@ -24,6 +24,7 @@ export function workspaceOptions(params: URLSearchParams, now = new Date()) {
     params,
     'section',
     [
+      'calendar',
       'overview',
       'summary',
       'reports',
@@ -66,31 +67,7 @@ export function workspaceOptions(params: URLSearchParams, now = new Date()) {
     throw new ActivityInputError(
       'Choose an analytics period of up to one year.'
     );
-  let pageToken: {
-    asOf: string;
-    from: string | null;
-    to: string;
-    cursor: {n: number; t: string; id: string};
-    signature: string;
-  } | null = null;
-  if (params.has('cursor')) {
-    try {
-      const token = params.get('cursor')!;
-      if (token.length > 8000) throw new Error();
-      pageToken = JSON.parse(
-        new TextDecoder().decode(
-          Uint8Array.from(atob(token), c => c.charCodeAt(0))
-        )
-      );
-      if (!pageToken || !pageToken.to) throw new Error();
-    } catch {
-      throw new ActivityInputError('This page has expired. Refresh the list.');
-    }
-  }
-  const to =
-    params.has('to') ? timestamp(params.get('to'))
-    : pageToken ? timestamp(pageToken.to)
-    : now.toISOString();
+  const to = params.has('to') ? timestamp(params.get('to')) : now.toISOString();
   let start = new Date(to);
   if (range === '1y') start.setUTCFullYear(start.getUTCFullYear() - 1);
   else
@@ -100,7 +77,6 @@ export function workspaceOptions(params: URLSearchParams, now = new Date()) {
   const from =
     range === 'all' ? null
     : params.has('from') ? timestamp(params.get('from'))
-    : pageToken?.from ? timestamp(pageToken.from)
     : start.toISOString();
   if (range === 'custom' && (!params.has('from') || !params.has('to')))
     throw new ActivityInputError('Choose both dates.');
@@ -125,9 +101,13 @@ export function workspaceOptions(params: URLSearchParams, now = new Date()) {
   if (['report_events', 'comments'].includes(section)) activityUuid(id);
   if (['feedback_events', 'notification_events'].includes(section) && !id)
     throw new ActivityInputError('A target is required.');
-  const minimum = params.get('minimum') ?? '0';
-  if (!/^\d{1,9}$/.test(minimum))
-    throw new ActivityInputError('Invalid minimum responses.');
+  const page = params.get('page') ?? '1';
+  if (!/^[1-9]\d{0,3}$/.test(page))
+    throw new ActivityInputError('Invalid page.');
+  const asOf =
+    params.has('asOf') ? timestamp(params.get('asOf')) : now.toISOString();
+  if (Date.parse(asOf) > now.getTime() + 60000)
+    throw new ActivityInputError('Invalid snapshot.');
   const postId = params.get('postId') ?? '';
   if (postId) activityUuid(postId);
   const options = {
@@ -164,7 +144,6 @@ export function workspaceOptions(params: URLSearchParams, now = new Date()) {
       'date'
     ),
     direction: option(params, 'direction', ['asc', 'desc'], 'desc'),
-    minimum: Number(minimum),
     notificationId:
       params.has('notificationId') ?
         activityUuid(params.get('notificationId'))
@@ -173,37 +152,10 @@ export function workspaceOptions(params: URLSearchParams, now = new Date()) {
     meta: params.get('meta') !== 'false',
     events: params.get('history') !== 'false',
     limit: params.get('preview') === 'true' ? 5 : 20,
-    asOf: now.toISOString(),
-    cursor: null as null | {n: number; t: string; id: string}
+    page: Number(page),
+    asOf
   };
-  if (params.has('cursor')) {
-    try {
-      const {asOf, cursor, signature} = pageToken!;
-      if (
-        signature !== workspaceSignature(section, options)
-        || !cursor
-        || !Number.isFinite(cursor.n)
-        || typeof cursor.t !== 'string'
-        || typeof cursor.id !== 'string'
-        || cursor.id.length > 1500
-        || cursor.t.length > 1000
-      )
-        throw new Error();
-      options.asOf = timestamp(asOf);
-      if (Date.parse(options.asOf) > now.getTime()) throw new Error();
-      options.cursor = cursor;
-    } catch {
-      throw new ActivityInputError('This page has expired. Refresh the list.');
-    }
-  }
   return {section, options};
-}
-function workspaceSignature(section: string, options: Record<string, unknown>) {
-  const {asOf, cursor, meta, ...filters} = options;
-  void asOf;
-  void cursor;
-  void meta;
-  return JSON.stringify([section, filters]);
 }
 export async function adminWorkspace({
   request,
@@ -284,20 +236,6 @@ export async function adminWorkspace({
     const data = result.data;
     if (data && typeof data === 'object')
       data.scope = {from: options.from, to: options.to};
-    if (data?.nextCursor) {
-      const encoded = new TextEncoder().encode(
-        JSON.stringify({
-          asOf: data.asOf,
-          from: options.from,
-          to: options.to,
-          cursor: data.nextCursor,
-          signature: workspaceSignature(section, options)
-        })
-      );
-      data.nextCursor = btoa(
-        Array.from(encoded, byte => String.fromCharCode(byte)).join('')
-      );
-    }
     return Response.json(data, {headers: {'Cache-Control': 'no-store'}});
   } catch (error) {
     if (error instanceof ActivityInputError)

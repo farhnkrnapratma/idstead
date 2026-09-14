@@ -48,8 +48,8 @@
     CvEntryCard,
     FilterToolbar,
     FilterChipGroup,
+    Dropdown,
     SortControl,
-    FilterCheckboxGroup,
     SearchResultCount,
     FilterEmptyState,
     Pagination,
@@ -1020,10 +1020,10 @@
             shortcutGroup="projects"
             shortcutLabel={project.name}
             fullWidth>
-            View repo
-            {#snippet trailing()}
+            {#snippet leading()}
               <SquareArrowOutUpRight class="size-3.5" />
             {/snippet}
+            View on GitHub
           </Button>
         </div>
       </div>
@@ -1793,31 +1793,30 @@
           <div class="mb-6">
             <FilterToolbar title="Blog posts filter">
               {#snippet searchSlot()}
-                <div class="w-full sm:w-60">
-                  <Input
-                    type="search"
-                    placeholder="Search articles..."
-                    value={blogFilterStore.search}
-                    oninput={e =>
-                      blogFilterStore.setSearch(
-                        (e.target as HTMLInputElement).value
-                      )}
-                    size="sm"
-                    keyboardShortcut={buttonKey('filterSearch')}
-                    shortcutLabel="Search articles"
-                    aria-label="Search articles" />
-                </div>
+                <Input
+                  type="search"
+                  placeholder="Search articles..."
+                  value={blogFilterStore.search}
+                  oninput={e =>
+                    blogFilterStore.setSearch(
+                      (e.target as HTMLInputElement).value
+                    )}
+                  keyboardShortcut={buttonKey('filterSearch')}
+                  shortcutLabel="Search articles"
+                  aria-label="Search articles" />
               {/snippet}
 
               {#snippet filterControlsSlot()}
                 {#if allBlogTags.length > 0}
-                  <FilterCheckboxGroup
+                  <Dropdown
+                    multiple
+                    searchable
                     label="Tags"
                     options={allBlogTags.map(t => ({
                       value: t,
                       label: decodeHtmlEntities(t)
                     }))}
-                    selectedValues={blogFilterStore.filters['tag'] || []}
+                    value={blogFilterStore.filters['tag'] || []}
                     onChange={val =>
                       blogFilterStore.toggleMultiFilter('tag', val)} />
                 {/if}
@@ -1903,28 +1902,27 @@
           <div class="mb-6">
             <FilterToolbar title="Projects filter">
               {#snippet searchSlot()}
-                <div class="w-full sm:w-60">
-                  <Input
-                    type="search"
-                    placeholder="Search projects..."
-                    value={projectFilterStore.search}
-                    oninput={e =>
-                      projectFilterStore.setSearch(
-                        (e.target as HTMLInputElement).value
-                      )}
-                    size="sm"
-                    keyboardShortcut={buttonKey('filterSearch')}
-                    shortcutLabel="Search projects"
-                    aria-label="Search projects" />
-                </div>
+                <Input
+                  type="search"
+                  placeholder="Search projects..."
+                  value={projectFilterStore.search}
+                  oninput={e =>
+                    projectFilterStore.setSearch(
+                      (e.target as HTMLInputElement).value
+                    )}
+                  keyboardShortcut={buttonKey('filterSearch')}
+                  shortcutLabel="Search projects"
+                  aria-label="Search projects" />
               {/snippet}
 
               {#snippet filterControlsSlot()}
                 {#if allProjectTags.length > 0}
-                  <FilterCheckboxGroup
+                  <Dropdown
+                    multiple
+                    searchable
                     label="Topics"
                     options={allProjectTags.map(t => ({value: t, label: t}))}
-                    selectedValues={projectFilterStore.filters['tag'] || []}
+                    value={projectFilterStore.filters['tag'] || []}
                     onChange={val =>
                       projectFilterStore.toggleMultiFilter('tag', val)} />
                 {/if}

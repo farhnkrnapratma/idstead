@@ -2,17 +2,19 @@
   import {activityTimestamp, activityTimeZone} from '$lib/adminActivity';
   let {
     date,
+    timeZone,
     prefix = '',
     compact = false,
     class: className = ''
   }: {
     date: string;
+    timeZone?: string;
     prefix?: string;
     compact?: boolean;
     class?: string;
   } = $props();
-  const formatted = $derived(activityTimestamp(date));
-  const zone = $derived(activityTimeZone(date));
+  const formatted = $derived(activityTimestamp(date, timeZone));
+  const zone = $derived(activityTimeZone(date, timeZone));
 </script>
 
 <time

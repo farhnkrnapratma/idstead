@@ -32,11 +32,7 @@ export class WorkspaceFeed {
         this.controller.signal
       );
       if (generation !== this.generation) return;
-      this.data = {
-        ...data,
-        total: data.total ?? this.data?.total ?? null,
-        series: data.series ?? this.data?.series
-      };
+      this.data = {...data, series: data.series ?? this.data?.series};
       this.cache = [
         ...this.cache.filter(entry => entry.key !== key),
         {key, data: this.data}

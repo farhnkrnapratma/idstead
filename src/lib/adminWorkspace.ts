@@ -1,11 +1,13 @@
 import type {AdminNotificationRow, DashboardTotals} from './adminActivity';
 
 export type WorkspaceArea = 'reports' | 'feedback' | 'notifications';
+export const ADMIN_WORKSPACE_PAGE_SIZE = 20;
 export type WorkspaceSection =
   | WorkspaceArea
   | 'report_events'
   | 'feedback_events'
   | 'notification_events'
+  | 'calendar'
   | 'overview'
   | 'summary'
   | 'comments';
@@ -30,8 +32,8 @@ export interface WorkspaceRow {
 }
 export interface WorkspacePage {
   items: WorkspaceRow[];
-  nextCursor: string | null;
-  total: number | null;
+  page: number;
+  total: number;
   asOf: string;
   scope?: {from: string | null; to: string};
   context?: WorkspaceRow | null;
@@ -62,7 +64,7 @@ export interface NotificationSummary {
   revision: string;
 }
 export const notificationTypes = [
-  {value: 'all', label: 'All categories'},
+  {value: 'all', label: 'All'},
   {value: 'comment_report', label: 'Reports'},
   {value: 'comment_new', label: 'Comments'},
   {value: 'helpful', label: 'Helpful'},
@@ -83,4 +85,12 @@ export function formatCount(value: number) {
 }
 export function helpfulPercent(yes: number, no: number) {
   return yes + no ? `${Math.round((yes / (yes + no)) * 100)}%` : 'No feedback';
+}
+
+export interface WorkspaceCalendar {
+  year: number;
+  today: string;
+  timeZone: string;
+  updatedAt: string;
+  days: {date: string; views: number}[];
 }

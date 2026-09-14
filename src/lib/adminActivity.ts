@@ -115,15 +115,20 @@ export interface ActivityFocus {
   requestId: string;
 }
 export function activityTimestamp(date: string, timeZone?: string) {
-  return new Intl.DateTimeFormat('en-US', {
+  const value = new Date(date);
+  const day = new Intl.DateTimeFormat('en-US', {
     timeZone,
     year: 'numeric',
     month: 'short',
-    day: 'numeric',
+    day: 'numeric'
+  }).format(value);
+  const time = new Intl.DateTimeFormat('en-US', {
+    timeZone,
     hour: 'numeric',
     minute: '2-digit',
     hour12: true
-  }).format(new Date(date));
+  }).format(value);
+  return `${day} ${time}`;
 }
 export function activityTimeZone(
   date: string,

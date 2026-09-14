@@ -4,7 +4,7 @@
   import {onMount} from 'svelte';
 
   import {scaleBand, scaleLinear} from 'd3-scale';
-  import {curveLinear} from 'd3-shape';
+  import {curveMonotoneX} from 'd3-shape';
 
   import Chip from '../Chip.svelte';
   import DataTable from '../DataTable.svelte';
@@ -12,6 +12,7 @@
   import LoadingState from '../LoadingState.svelte';
   import ErrorState from '../ErrorState.svelte';
   import {cn} from '$lib/utils/cn';
+  import {activityTimestamp} from '$lib/adminActivity';
   import {
     VIEWS_RANGES,
     type ViewsRange,
@@ -36,8 +37,8 @@
     ceiling = 4,
     range,
     timeZone = 'UTC',
-    title = 'Recorded reads',
-    description = 'Recorded once per article and IP hash. This is not a count of unique people across the blog.',
+    title = 'Article views',
+    description = 'Each visitor is counted once per article.',
     data = [],
     isLoading = false,
     error = '',
@@ -48,15 +49,7 @@
 
   const series = $derived(
     data.map(row => ({
-      label: new Intl.DateTimeFormat('en-US', {
-        timeZone,
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZoneName: 'short'
-      }).format(new Date(row.bucket)),
+      label: activityTimestamp(row.bucket, timeZone),
       views: Number(row.views),
       partial: 'partial' in row && row.partial ? 'Partial interval' : ''
     }))
@@ -101,8 +94,8 @@
           size="sm"
           active={chartType === 'spline'}
           onclick={() => setChartType('spline')}
-          ariaLabel="Line chart"
-          title="Line chart">
+          ariaLabel="Spline chart"
+          title="Spline chart">
           <ChartSpline class="size-3.5" />
         </Chip>
         <Chip
@@ -192,7 +185,7 @@
           {:else}
             <Spline
               class="stroke-2"
-              curve={curveLinear}
+              curve={curveMonotoneX}
               stroke="var(--color-accent)" />
             <Highlight
               points={{
@@ -203,7 +196,7 @@
               lines={{class: 'stroke-border-subtle'}} />
           {/if}
         </Svg>
-        <Tooltip.Root>
+        <Tooltip.Root variant="none">
           {#snippet children({
             data
           }: {

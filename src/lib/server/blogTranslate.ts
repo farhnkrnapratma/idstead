@@ -36,6 +36,7 @@ const MAX_CONCURRENT_INFERENCES = 2;
 const RETRY_BASE_DELAY_MS = 250;
 const RETRY_JITTER_MS = 100;
 const ACCESS_REDIRECT_COOLDOWN_MS = 60_000;
+const MODEL_CALL_TIMEOUT_MS = 60_000;
 
 const TRANSLATION_DISCLAIMER_TEXT: Record<'en' | TranslationLocale, string> = {
   en: 'This content was translated automatically by AI and may contain errors. See the original English version for the authoritative text.',
@@ -153,24 +154,27 @@ async function runModel(
     const result = await inferenceQueue.run(() =>
       accessRedirectBlockedUntil > Date.now() ?
         Promise.reject(new CloudflareAccessRedirectError())
-      : ai
-          .run(MODEL, {
-            messages: [
-              {role: 'system', content: systemPrompt},
-              {role: 'user', content: input}
-            ],
-            max_tokens: maxTokens,
-            max_completion_tokens: maxTokens,
-            reasoning_effort: 'low',
-            temperature: 0.2
-          })
-          .catch(err => {
-            if (isCloudflareAccessRedirect(getErrorDetails(err))) {
-              accessRedirectBlockedUntil =
-                Date.now() + ACCESS_REDIRECT_COOLDOWN_MS;
-            }
-            throw err;
-          })
+      : withTimeout(
+          ai
+            .run(MODEL, {
+              messages: [
+                {role: 'system', content: systemPrompt},
+                {role: 'user', content: input}
+              ],
+              max_tokens: maxTokens,
+              max_completion_tokens: maxTokens,
+              reasoning_effort: 'low',
+              temperature: 0.2
+            })
+            .catch(err => {
+              if (isCloudflareAccessRedirect(getErrorDetails(err))) {
+                accessRedirectBlockedUntil =
+                  Date.now() + ACCESS_REDIRECT_COOLDOWN_MS;
+              }
+              throw err;
+            }),
+          MODEL_CALL_TIMEOUT_MS
+        )
     );
     const text = extractResponseText(result);
     if (!text) {
@@ -320,6 +324,19 @@ function retryDelay(attempt: number): number {
 
 function wait(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) => {
+      const timer = setTimeout(
+        () => reject(new Error(`model request timed out after ${ms}ms`)),
+        ms
+      );
+      promise.finally(() => clearTimeout(timer));
+    })
+  ]);
 }
 
 async function generateWithRetry<T>(

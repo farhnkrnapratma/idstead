@@ -16,8 +16,8 @@ export function nextCodeScope(prefix: string) {
 export type CodeColorScheme = 'auto' | 'light' | 'dark';
 
 export const HLJS_THEME_BASIS: Record<'light' | 'dark', string> = {
-  light: 'github',
-  dark: 'github-dark'
+  light: 'stackoverflow-light',
+  dark: 'stackoverflow-dark'
 };
 
 export function resolveHljsTheme(
@@ -29,7 +29,7 @@ export function resolveHljsTheme(
 }
 
 const hljsThemeStylesheets = import.meta.glob<string>(
-  '/node_modules/highlight.js/styles/*.css',
+  '/node_modules/highlight.js/styles/**/*.css',
   {query: '?url', import: 'default'}
 );
 
@@ -108,7 +108,7 @@ export function applyCodeThemeVariables(
   target.style.setProperty(
     '--code-theme-border',
     isDark ?
-      `color-mix(in srgb, ${themeForeground} 35%, ${themeBackground})`
+      `color-mix(in srgb, ${themeForeground} 18%, ${themeBackground})`
     : `color-mix(in srgb, ${themeForeground} 20%, ${themeBackground})`
   );
 }

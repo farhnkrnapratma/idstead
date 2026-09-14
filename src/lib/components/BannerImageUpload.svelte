@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {X} from '@lucide/svelte';
   import {onDestroy, untrack} from 'svelte';
   import FileUploadField from './FileUploadField.svelte';
   import FieldMessage from './FieldMessage.svelte';
@@ -147,6 +148,19 @@
         loading="eager"
         class="absolute inset-0 size-full bg-transparent!"
         imgClass="object-contain" />
+      {#if !removed && (savedUrl || preview)}
+        <div class="absolute top-2 right-2 z-10 rounded-md bg-surface-card">
+          <Button
+            type="outline"
+            tone="critical"
+            size="xs"
+            class="size-8 p-0!"
+            aria-label="Remove banner"
+            title="Remove banner"
+            {disabled}
+            onclick={remove}><X class="size-4" /></Button>
+        </div>
+      {/if}
     </div>
     <FileUploadField
       id="post-banner"
@@ -167,13 +181,13 @@
   {#if loadError}<FieldMessage
       variant="error"
       message={loadError} />{/if}
-  <p
-    class="text-xs text-text-muted"
-    aria-live="polite">
-    {removed ? 'Banner will be removed when you save.'
-    : preview ? 'Banner is ready. Save draft or Publish post to apply it.'
-    : 'Images are cropped from the center to 2:1. Animated images use their first frame.'}
-  </p>
+  {#if removed || preview}<p
+      class="text-xs text-text-muted"
+      aria-live="polite">
+      {removed ?
+        'Banner will be removed when you save.'
+      : 'Banner is ready. Save draft or Publish post to apply it.'}
+    </p>{/if}
   <div class="flex flex-wrap gap-2">
     {#if busy || error || filename || removed}<Button
         type="ghost"
@@ -181,13 +195,6 @@
         {disabled}
         onclick={() => select(null)}
         >{busy ? 'Cancel processing' : 'Discard banner change'}</Button
-      >{/if}
-    {#if !removed && (savedUrl || preview)}<Button
-        type="ghost"
-        tone="critical"
-        size="xs"
-        {disabled}
-        onclick={remove}>Remove banner</Button
       >{/if}
   </div>
 </section>

@@ -1,10 +1,14 @@
 <script lang="ts">
-  import {Check, ArrowUpNarrowWide, ArrowDownWideNarrow} from '@lucide/svelte';
+  import {getContext} from 'svelte';
+  import {ArrowUpNarrowWide, ArrowDownWideNarrow} from '@lucide/svelte';
   import {cn} from '../../utils/cn';
   import {buttonKey} from '$lib/shortcuts';
-  import {popoverPosition} from '../../utils/popoverPosition';
-  import DropdownTrigger from './DropdownTrigger.svelte';
+  import Dropdown from '../Dropdown.svelte';
   import IconButton from '../IconButton.svelte';
+  import {
+    FILTER_TOOLBAR_CONTROL_SIZE,
+    type FilterToolbarContext
+  } from './filterToolbarContext';
 
   interface SortOption {
     value: string;
@@ -29,22 +33,20 @@
     currentDirection,
     onFieldChange,
     onDirectionToggle,
-    size = 'md',
+    size,
     labelPrefix = 'Sort by',
     fullWidth = false,
     class: className = ''
   }: Props = $props();
 
-  let isOpen = $state(false);
-
   let currentFieldOption = $derived(
     fields.find(f => f.value === currentField) ?? fields[0]
   );
 
-  function selectField(value: string) {
-    onFieldChange?.(value);
-    isOpen = false;
-  }
+  const filterToolbar = getContext<FilterToolbarContext | undefined>(
+    FILTER_TOOLBAR_CONTROL_SIZE
+  );
+  const resolvedSize = $derived(filterToolbar?.controlSize ?? size ?? 'md');
 </script>
 
 <div
@@ -53,58 +55,14 @@
     fullWidth ? 'w-full' : 'w-max max-w-full',
     className
   )}>
-  <div
-    class={cn(
-      'relative inline-block min-w-0',
-      fullWidth ? 'w-full flex-1' : 'w-max max-w-full'
-    )}>
-    <DropdownTrigger
-      {fullWidth}
-      {labelPrefix}
-      ariaLabel="{labelPrefix}: {currentFieldOption?.label ?? 'Select'}"
-      {isOpen}
-      {size}
-      onclick={() => (isOpen = !isOpen)}
-      options={fields}>
-      {currentFieldOption?.label ?? 'Sort field'}
-    </DropdownTrigger>
-
-    {#if isOpen}
-      <button
-        type="button"
-        class="fixed inset-0 z-30 cursor-default"
-        onclick={() => (isOpen = false)}
-        aria-label="Close sort menu"></button>
-
-      <div
-        role="listbox"
-        aria-label="Sort options"
-        use:popoverPosition={{placement: 'bottom-start', offset: 8, padding: 8}}
-        class="absolute z-40 flex w-full flex-col popover-surface p-0">
-        <div class="relative z-10 flex flex-col overflow-hidden rounded-md">
-          {#each fields as field (field.value)}
-            <button
-              type="button"
-              role="option"
-              aria-selected={currentField === field.value}
-              onclick={() => selectField(field.value)}
-              class={cn(
-                'flex w-full cursor-pointer items-center justify-between gap-2 text-left text-xs font-medium transition-colors',
-                size === 'sm' ? 'px-2 py-1.5' : 'px-2.5 py-2',
-                currentField === field.value ?
-                  'bg-accent/10 font-semibold text-accent'
-                : 'text-text-primary hover:bg-surface-hover hover:text-accent'
-              )}>
-              <span class="truncate">{field.label}</span>
-              {#if currentField === field.value}
-                <Check class="size-3.5 shrink-0 text-accent" />
-              {/if}
-            </button>
-          {/each}
-        </div>
-      </div>
-    {/if}
-  </div>
+  <Dropdown
+    label={labelPrefix}
+    options={fields}
+    value={currentFieldOption?.value}
+    size={resolvedSize}
+    {fullWidth}
+    class={fullWidth ? 'min-w-0 flex-1' : 'min-w-0'}
+    onChange={value => onFieldChange?.(value)} />
 
   <IconButton
     ariaLabel="Sort direction: {currentDirection === 'asc' ? 'Ascending' : (
@@ -113,7 +71,7 @@
     tooltip={currentDirection === 'asc' ? 'Sort: Ascending' : (
       'Sort: Descending'
     )}
-    size="sm"
+    size={resolvedSize}
     onclick={onDirectionToggle}
     keyboardShortcut={buttonKey('sortDirection')}
     shortcutLabel="Sort direction"

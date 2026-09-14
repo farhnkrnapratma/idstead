@@ -1,8 +1,17 @@
 <script lang="ts">
   import {shortcut} from '../utils/shortcut.svelte';
-  import {buttonKey} from '$lib/shortcuts';
+  import {buttonKey, COMMAND_SHORTCUTS} from '$lib/shortcuts';
+  import {shortcutStore} from '../stores/shortcutStore.svelte';
   import {onMount} from 'svelte';
-  import {ThumbsUp, ThumbsDown, CheckCircle2} from '@lucide/svelte';
+  import {
+    ThumbsUp,
+    ThumbsDown,
+    CheckCircle2,
+    Share2,
+    Send,
+    MessageSquareQuote,
+    AtSign
+  } from '@lucide/svelte';
   import FieldMessage from '../components/FieldMessage.svelte';
   import {cn} from '../utils/cn';
 
@@ -12,7 +21,7 @@
     voted?: boolean | null;
     pending?: boolean;
     error?: string;
-    variant?: 'compact' | 'responsive';
+    shareLabel?: string;
     onVote?: (helpful: boolean) => void;
     onFeedbackClick?: () => void;
     class?: string;
@@ -24,7 +33,7 @@
     voted = null,
     pending = false,
     error = '',
-    variant = 'responsive',
+    shareLabel = 'Share this article',
     onVote,
     onFeedbackClick,
     class: className = ''
@@ -41,207 +50,112 @@
   }
 </script>
 
-{#if variant === 'compact'}
-  <div
-    class={cn(
-      'flex shrink-0 flex-col gap-2.5 rounded-md glass-card p-3.5 text-left select-none sm:p-4',
-      className
-    )}>
-    <div class="flex flex-col gap-1">
-      <h3 class="text-xs font-bold tracking-tight text-text-primary sm:text-sm">
-        {title}
-      </h3>
-      {#if currentVoted === null}
-        <p class="text-xs leading-normal text-text-secondary">
-          {subtitle}
-        </p>
-      {/if}
-    </div>
-
-    {#if currentVoted !== null}
-      <div class="flex items-center gap-1.5 text-xs font-semibold text-accent">
-        <CheckCircle2 class="size-3.5 shrink-0" />
-        <span>Thanks for your feedback!</span>
-      </div>
-    {:else}
-      <div class="grid grid-cols-2 gap-1.5">
-        <button
-          type="button"
-          class="relative inline-flex cursor-pointer items-center justify-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/5 px-2 py-1.5 text-xs font-semibold text-emerald-600 transition-all hover:border-emerald-500/60 hover:bg-emerald-500/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 active:scale-95 disabled:cursor-wait disabled:opacity-50 dark:text-emerald-400"
-          use:shortcut={{combo: buttonKey('helpfulYes'), label: 'Helpful: yes'}}
-          disabled={!ready || pending}
-          onclick={() => handleVote(true)}
-          aria-label="Yes, this was helpful">
-          <ThumbsUp
-            class="size-3.5 select-none"
-            strokeWidth={1.75}
-            absoluteStrokeWidth={true} />
-          <span>Yes</span>
-        </button>
-        <button
-          type="button"
-          class="relative inline-flex cursor-pointer items-center justify-center gap-1 rounded-md border border-rose-500/30 bg-rose-500/5 px-2 py-1.5 text-xs font-semibold text-rose-600 transition-all hover:border-rose-500/60 hover:bg-rose-500/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500 active:scale-95 disabled:cursor-wait disabled:opacity-50 dark:text-rose-400"
-          use:shortcut={{combo: buttonKey('helpfulNo'), label: 'Helpful: no'}}
-          disabled={!ready || pending}
-          onclick={() => handleVote(false)}
-          aria-label="No, this was not helpful">
-          <ThumbsDown
-            class="size-3.5 select-none"
-            strokeWidth={1.75}
-            absoluteStrokeWidth={true} />
-          <span>No</span>
-        </button>
-      </div>
-
-      {#if onFeedbackClick}
-        <button
-          type="button"
-          class="relative w-fit cursor-pointer text-left text-xs font-medium text-accent hover:underline focus-visible:outline-none"
-          use:shortcut={{
-            combo: buttonKey('shareFeedback'),
-            label: 'Share your feedback',
-            placement: 'after'
-          }}
-          onclick={onFeedbackClick}>
-          Share your feedback
-        </button>
-      {/if}
-    {/if}
-  </div>
-{:else}
-  <div
-    class={cn(
-      'relative overflow-hidden rounded-md glass-card p-5 select-none sm:p-6',
-      className
-    )}>
+<div
+  class={cn(
+    'relative shrink-0 overflow-hidden rounded-md glass-card p-5 select-none sm:p-6',
+    className
+  )}>
+  <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
     <div
-      class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-      <div
-        class="flex flex-col items-center gap-3 text-center sm:items-start sm:text-left">
-        <div class="flex flex-col gap-1">
-          <h3
-            class="text-base font-bold tracking-tight text-text-primary sm:text-lg">
-            {title}
-          </h3>
-          {#if currentVoted === null}
-            <p class="font-sans text-xs text-text-secondary sm:text-sm">
-              {subtitle}
-            </p>
-          {/if}
-        </div>
-
-        {#if currentVoted !== null}
-          <div
-            class="flex items-center justify-center gap-2 text-sm font-semibold text-accent sm:justify-start">
-            <CheckCircle2 class="size-4 shrink-0" />
-            <span>Thanks for your feedback!</span>
-          </div>
-        {:else}
-          <div
-            class="flex flex-wrap items-center justify-center gap-2.5 sm:justify-start">
-            <button
-              type="button"
-              class="relative inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/5 px-3.5 py-1.5 text-xs font-semibold text-emerald-600 transition-all hover:border-emerald-500/60 hover:bg-emerald-500/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 active:scale-95 disabled:cursor-wait disabled:opacity-50 dark:text-emerald-400"
-              use:shortcut={{
-                combo: buttonKey('helpfulYes'),
-                label: 'Helpful: yes'
-              }}
-              disabled={!ready || pending}
-              onclick={() => handleVote(true)}
-              aria-label="Yes, this was helpful">
-              <ThumbsUp
-                class="size-3.5 select-none"
-                strokeWidth={1.75}
-                absoluteStrokeWidth={true} />
-              <span>Yes</span>
-            </button>
-            <button
-              type="button"
-              class="relative inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-rose-500/30 bg-rose-500/5 px-3.5 py-1.5 text-xs font-semibold text-rose-600 transition-all hover:border-rose-500/60 hover:bg-rose-500/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500 active:scale-95 disabled:cursor-wait disabled:opacity-50 dark:text-rose-400"
-              use:shortcut={{
-                combo: buttonKey('helpfulNo'),
-                label: 'Helpful: no'
-              }}
-              disabled={!ready || pending}
-              onclick={() => handleVote(false)}
-              aria-label="No, this was not helpful">
-              <ThumbsDown
-                class="size-3.5 select-none"
-                strokeWidth={1.75}
-                absoluteStrokeWidth={true} />
-              <span>No</span>
-            </button>
-          </div>
-
-          {#if onFeedbackClick}
-            <button
-              type="button"
-              class="relative w-fit cursor-pointer text-center text-xs font-medium text-accent hover:underline focus-visible:outline-none sm:text-left"
-              use:shortcut={{
-                combo: buttonKey('shareFeedback'),
-                label: 'Share your feedback',
-                placement: 'after'
-              }}
-              onclick={onFeedbackClick}>
-              Share your feedback
-            </button>
-          {/if}
+      class="flex flex-col items-center gap-3 text-center sm:items-start sm:text-left">
+      <div class="flex flex-col gap-1">
+        <h3
+          class="text-base font-bold tracking-tight text-text-primary sm:text-lg">
+          {title}
+        </h3>
+        {#if currentVoted === null}
+          <p class="font-sans text-xs text-text-secondary sm:text-sm">
+            {subtitle}
+          </p>
         {/if}
       </div>
 
-      <div
-        class="relative hidden size-20 shrink-0 items-center justify-center sm:flex"
-        aria-hidden="true">
+      {#if currentVoted !== null}
         <div
-          class="absolute inset-0 rounded-full border border-dashed border-border-subtle/80 bg-surface-elevated/40">
+          class="flex items-center justify-center gap-2 text-sm font-semibold text-accent sm:justify-start">
+          <CheckCircle2 class="size-4 shrink-0" />
+          <span>Thanks for your feedback!</span>
         </div>
-        <svg
-          class="relative size-14 text-accent"
-          viewBox="0 0 56 56"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg">
-          <rect
-            x="4"
-            y="6"
-            width="28"
-            height="22"
-            rx="5"
-            class="fill-accent/20 stroke-accent"
-            stroke-width="1.5" />
-          <path
-            d="M8 28L5 33L13 28H8Z"
-            class="fill-accent/20 stroke-accent"
-            stroke-width="1.5" />
-          <text
-            x="18"
-            y="21"
-            text-anchor="middle"
-            class="fill-accent font-serif text-[14px] font-bold">
-            &ldquo;
-          </text>
-          <rect
-            x="24"
-            y="24"
-            width="26"
-            height="20"
-            rx="5"
-            class="fill-surface-elevated stroke-border-subtle"
-            stroke-width="1.5" />
-          <path
-            d="M44 44L47 49L39 44H44Z"
-            class="fill-surface-elevated stroke-border-subtle"
-            stroke-width="1.5" />
-          <text
-            x="37"
-            y="38"
-            text-anchor="middle"
-            class="fill-text-secondary font-serif text-[13px] font-bold">
-            &rdquo;
-          </text>
-        </svg>
+      {:else}
+        <div
+          class="flex flex-wrap items-center justify-center gap-2.5 sm:justify-start">
+          <button
+            type="button"
+            class="relative inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/5 px-3.5 py-1.5 text-xs font-semibold text-emerald-600 transition-all hover:border-emerald-500/60 hover:bg-emerald-500/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 active:scale-95 disabled:cursor-wait disabled:opacity-50 dark:text-emerald-400"
+            use:shortcut={{
+              combo: buttonKey('helpfulYes'),
+              label: 'Helpful: yes'
+            }}
+            disabled={!ready || pending}
+            onclick={() => handleVote(true)}
+            aria-label="Yes, this was helpful">
+            <ThumbsUp
+              class="size-3.5 select-none"
+              strokeWidth={1.75}
+              absoluteStrokeWidth={true} />
+            <span>Yes</span>
+          </button>
+          <button
+            type="button"
+            class="relative inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-rose-500/30 bg-rose-500/5 px-3.5 py-1.5 text-xs font-semibold text-rose-600 transition-all hover:border-rose-500/60 hover:bg-rose-500/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500 active:scale-95 disabled:cursor-wait disabled:opacity-50 dark:text-rose-400"
+            use:shortcut={{combo: buttonKey('helpfulNo'), label: 'Helpful: no'}}
+            disabled={!ready || pending}
+            onclick={() => handleVote(false)}
+            aria-label="No, this was not helpful">
+            <ThumbsDown
+              class="size-3.5 select-none"
+              strokeWidth={1.75}
+              absoluteStrokeWidth={true} />
+            <span>No</span>
+          </button>
+        </div>
+      {/if}
+
+      <div
+        class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:justify-start">
+        {#if onFeedbackClick && currentVoted === null}
+          <button
+            type="button"
+            class="relative inline-flex w-fit cursor-pointer items-center gap-1.5 text-xs font-medium text-accent hover:underline focus-visible:underline focus-visible:outline-none"
+            use:shortcut={{
+              combo: buttonKey('shareFeedback'),
+              label: 'Share your feedback',
+              placement: 'after'
+            }}
+            onclick={onFeedbackClick}>
+            <Send class="size-3.5" />
+            Share your feedback
+          </button>
+        {/if}
+        <button
+          type="button"
+          class="relative inline-flex w-fit cursor-pointer items-center gap-1.5 text-xs font-medium text-accent hover:underline focus-visible:underline focus-visible:outline-none"
+          use:shortcut={{
+            combo: buttonKey('share'),
+            label: shareLabel,
+            placement: 'after'
+          }}
+          onclick={() => shortcutStore.runCommand(COMMAND_SHORTCUTS['/share'])}>
+          <Share2 class="size-3.5" />
+          {shareLabel}
+        </button>
       </div>
     </div>
+
+    <div
+      class="relative hidden size-20 shrink-0 items-center justify-center sm:flex"
+      aria-hidden="true">
+      <div
+        class="absolute inset-0 rounded-full border border-dashed border-border-subtle/80 bg-surface-elevated/40">
+      </div>
+      <MessageSquareQuote
+        class="absolute top-4 left-4 size-9 fill-accent/15 text-accent"
+        strokeWidth={1.5} />
+      <AtSign
+        class="absolute right-3 bottom-3 size-8 rounded-full bg-surface-card p-1 text-copilot-purple"
+        strokeWidth={1.75} />
+    </div>
   </div>
-{/if}
+</div>
 
 {#if error}<FieldMessage message={error} />{/if}

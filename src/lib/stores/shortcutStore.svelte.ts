@@ -312,6 +312,10 @@ function registerCommand(key: string, label: string, run: () => void) {
   };
 }
 
+function runCommand(key: string) {
+  commands.get(normalizeKey(key))?.run();
+}
+
 function pushScope(scope: string, modal = false) {
   scopeStack = [...scopeStack, scope];
   if (!modal) return;
@@ -341,10 +345,7 @@ function hintFor(id: string): string[] {
       return shortcutKeyParts(label, platformStore.current);
     if (pendingGroup || !(leaderArmed || altHeld)) return [];
     const prefix = CHORD_GROUPS[entry.group]?.combos[0];
-    return shortcutKeyParts(
-      prefix ? `${prefix} ${label}` : label,
-      platformStore.current
-    );
+    return shortcutKeyParts(prefix ?? label, platformStore.current);
   }
 
   if (pendingGroup || !(leaderArmed || altHeld)) return [];
@@ -399,6 +400,7 @@ export const shortcutStore = {
   update,
   unregister,
   registerCommand,
+  runCommand,
   pushScope,
   popScope,
   armGroup,

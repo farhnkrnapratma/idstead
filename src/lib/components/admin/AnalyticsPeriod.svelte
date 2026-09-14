@@ -2,7 +2,7 @@
   import {onMount} from 'svelte';
   import {analyticsRanges} from '$lib/adminWorkspace';
   import {analyticsPeriod} from '$lib/adminAnalytics';
-  import FilterSelect from '../filter/FilterSelect.svelte';
+  import Dropdown from '../Dropdown.svelte';
   import Input from '../Input.svelte';
   import Button from '../Button.svelte';
   import FieldMessage from '../FieldMessage.svelte';
@@ -75,7 +75,7 @@
     sync();
   }}>
   <div class="flex flex-wrap items-end gap-2">
-    <FilterSelect
+    <Dropdown
       label="Period"
       value={selected}
       options={allowAll ?
@@ -85,7 +85,7 @@
         selected = value;
         if (value !== 'custom') apply();
       }} />
-    <FilterSelect
+    <Dropdown
       label="Time zone"
       value={zone}
       options={zones}

@@ -6,6 +6,7 @@ export interface PopoverPositionOptions {
   anchor?: HTMLElement | null;
   autoMaxHeight?: boolean;
   strategy?: 'absolute' | 'fixed';
+  matchWidth?: boolean;
 }
 
 export function popoverPosition(
@@ -18,7 +19,8 @@ export function popoverPosition(
     padding: options.padding ?? 8,
     anchor: options.anchor,
     autoMaxHeight: options.autoMaxHeight ?? true,
-    strategy: options.strategy ?? 'absolute'
+    strategy: options.strategy ?? 'absolute',
+    matchWidth: options.matchWidth ?? false
   };
 
   let rafId: number | null = null;
@@ -61,6 +63,7 @@ export function popoverPosition(
     const viewportHeight =
       (document.documentElement.clientHeight || window.innerHeight) / zoom;
 
+    if (opts.matchWidth) node.style.width = `${anchorRect.width}px`;
     const popoverWidth = node.offsetWidth || node.scrollWidth;
     const popoverHeight = node.offsetHeight || node.scrollHeight;
 
@@ -162,7 +165,8 @@ export function popoverPosition(
         padding: newOptions?.padding ?? opts.padding,
         anchor: newOptions?.anchor ?? opts.anchor,
         autoMaxHeight: newOptions?.autoMaxHeight ?? opts.autoMaxHeight,
-        strategy: newOptions?.strategy ?? opts.strategy
+        strategy: newOptions?.strategy ?? opts.strategy,
+        matchWidth: newOptions?.matchWidth ?? opts.matchWidth
       };
       scheduleUpdate();
     },

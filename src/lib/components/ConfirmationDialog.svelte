@@ -17,6 +17,7 @@
     onConfirm?: () => void;
     onCancel?: () => void;
     children?: import('svelte').Snippet;
+    confirmIcon?: import('svelte').Snippet;
     class?: string;
   }
 
@@ -32,6 +33,7 @@
     onConfirm = () => {},
     onCancel = () => {},
     children,
+    confirmIcon,
     class: className = ''
   }: Props = $props();
 
@@ -146,7 +148,11 @@
         onclick={confirm}>
         {#snippet leading()}
           {#if isDestructive}
-            <Trash class="size-3.5" />
+            {#if confirmIcon}
+              {@render confirmIcon()}
+            {:else}
+              <Trash class="size-3.5" />
+            {/if}
           {/if}
         {/snippet}
         {confirmLabel || (isDestructive ? 'Delete' : 'Confirm')}

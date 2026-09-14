@@ -23,8 +23,7 @@ const options = {
   read: 'all',
   vote: 'all',
   sort: 'date',
-  direction: 'desc',
-  minimum: 0
+  direction: 'desc'
 };
 async function call(section: string, extra: Record<string, unknown> = {}) {
   const r = await db.query<{data: any}>(
@@ -36,12 +35,11 @@ async function call(section: string, extra: Record<string, unknown> = {}) {
 beforeAll(async () => {
   db = await activityDb();
   await db.exec(await activityMigrationSql());
-  await db.exec(
-    await readFile(
-      'supabase/migrations/20260913144335_scalable_admin_workspace.sql',
-      'utf8'
-    )
-  );
+  for (const migration of [
+    '20260913144335_scalable_admin_workspace.sql',
+    '20260914002736_admin_workspace_pages.sql'
+  ])
+    await db.exec(await readFile(`supabase/migrations/${migration}`, 'utf8'));
   await db.query('insert into db_posts(id,title,slug) values($1,$2,$3)', [
     post,
     '日本語 testing article',
@@ -75,23 +73,24 @@ test('case and feedback totals aggregate before pagination', async () => {
   const grouped = await call('notifications');
   expect(grouped.items.some((r: any) => r.total === 100)).toBe(true);
 });
-test('cursor traverses all report events without duplicate equal timestamps', async () => {
+test('pages traverse all report events without duplicate equal timestamps', async () => {
   const ids = new Set<string>();
-  let cursor = null;
-  do {
-    const data = await call('report_events', {
-      id: comment,
-      cursor,
-      meta: cursor === null
-    });
+  const first = await call('report_events', {id: comment, page: 1});
+  const pages = Math.ceil(first.total / 20);
+  expect(first.total).toBe(100);
+  for (let page = 1; page <= pages; page++) {
+    const data = await call('report_events', {id: comment, page});
+    expect(data.page).toBe(page);
     expect(data.items.length).toBeLessThanOrEqual(20);
     for (const r of data.items) {
       expect(ids.has(r.id)).toBe(false);
       ids.add(r.id);
     }
-    cursor = data.nextCursor;
-  } while (cursor);
+  }
   expect(ids.size).toBe(100);
+  expect(
+    (await call('report_events', {id: comment, page: 6})).items
+  ).toHaveLength(0);
 });
 test('search reaches records beyond the first page and preserves full text', async () => {
   const result = await call('report_events', {id: comment, query: 'needle'});
@@ -188,7 +187,7 @@ test('private RPCs cannot be executed by browser roles', async () => {
     await db.exec('reset role');
   }
 });
-test('rejects unbounded analytics and malformed cursor input', () => {
+test('rejects unbounded analytics and malformed page input', () => {
   expect(() =>
     workspaceOptions(
       new URLSearchParams({section: 'overview', range: 'all'}),
@@ -197,7 +196,20 @@ test('rejects unbounded analytics and malformed cursor input', () => {
   ).toThrow();
   expect(() =>
     workspaceOptions(
-      new URLSearchParams({section: 'reports', cursor: 'bad'}),
+      new URLSearchParams({section: 'reports', page: 'bad'}),
+      now
+    )
+  ).toThrow();
+  for (const page of ['0', '-1', '10000', '1.5'])
+    expect(() =>
+      workspaceOptions(new URLSearchParams({section: 'reports', page}), now)
+    ).toThrow();
+  expect(() =>
+    workspaceOptions(
+      new URLSearchParams({
+        section: 'reports',
+        asOf: new Date(now.getTime() + 3600000).toISOString()
+      }),
       now
     )
   ).toThrow();
@@ -249,7 +261,7 @@ test('API authenticates before querying and rejects cross-origin access', async 
     expect(response.status).toBe(status);
   }
 });
-test('opaque cursors preserve implicit dates and Unicode sort keys and reject changed filters', async () => {
+test('page requests keep the snapshot and report totals through the API', async () => {
   const url = new URL(endpoint);
   url.search = new URLSearchParams({
     section: 'report_events',
@@ -262,34 +274,15 @@ test('opaque cursors preserve implicit dates and Unicode sort keys and reject ch
   });
   expect(response.status).toBe(200);
   const first = await response.json();
-  expect(first.nextCursor).toBeString();
-  url.searchParams.set('cursor', first.nextCursor);
-  const later = new Date(Date.now() + 10000);
+  expect(first.page).toBe(1);
+  expect(first.total).toBe(100);
+  expect(first.nextCursor).toBeUndefined();
+  url.searchParams.set('page', '2');
+  url.searchParams.set('asOf', first.asOf);
+  const later = new Date(Date.parse(first.asOf) + 10000);
   const second = workspaceOptions(url.searchParams, later);
-  expect(second.options.to).toBe(first.scope.to);
+  expect(second.options.page).toBe(2);
   expect(Date.parse(second.options.asOf)).toBe(Date.parse(first.asOf));
-  const decoded = JSON.parse(
-    new TextDecoder().decode(
-      Uint8Array.from(atob(first.nextCursor), c => c.charCodeAt(0))
-    )
-  );
-  decoded.cursor.t = '日本語';
-  url.searchParams.set(
-    'cursor',
-    btoa(
-      Array.from(new TextEncoder().encode(JSON.stringify(decoded)), byte =>
-        String.fromCharCode(byte)
-      ).join('')
-    )
-  );
-  expect(workspaceOptions(url.searchParams, later).options.cursor?.t).toBe(
-    '日本語'
-  );
-  url.searchParams.set('reason', 'spam');
-  expect(() => workspaceOptions(url.searchParams, later)).toThrow();
-  url.searchParams.delete('reason');
-  url.searchParams.set('to', '2026-09-12T12:00:00Z');
-  expect(() => workspaceOptions(url.searchParams, later)).toThrow();
 });
 test('feedback distribution is available without retrieving event history', async () => {
   const result = await call('feedback_events', {
@@ -378,21 +371,45 @@ test('fractional helpful-rate sorting traverses equal rates without skips or dup
     "insert into db_feedback_events(target_type,target_id,page_title,vote,ip_hash,created_at) select 'legal','ratio-'||i,'Ratio page '||i,case when v=1 then 'yes' else 'no' end,'fixture','2026-09-12' from generate_series(1,35)i cross join generate_series(1,3)v"
   );
   for (const direction of ['asc', 'desc']) {
-    let cursor = null;
     const ids = new Set<string>();
-    do {
+    for (let page = 1; page <= 2; page++) {
       const result = await call('feedback', {
         query: 'Ratio',
         sort: 'helpful',
         direction,
-        cursor
+        page
       });
       for (const item of result.items) {
         expect(ids.has(item.id)).toBe(false);
         ids.add(item.id);
       }
-      cursor = result.nextCursor;
-    } while (cursor);
+    }
     expect(ids.size).toBe(35);
   }
+});
+
+test('clearing notifications removes read items and keeps unread ones', async () => {
+  const counts = async () =>
+    (
+      await db.query<{read: number; unread: number}>(
+        'select count(*) filter(where read_at is not null)::int as read, count(*) filter(where read_at is null)::int as unread from db_admin_notifications'
+      )
+    ).rows[0];
+  await db.exec(
+    'update db_admin_notifications set read_at = now() where id in (select id from db_admin_notifications order by created_at limit 3)'
+  );
+  const before = await counts();
+  expect(before.read).toBeGreaterThan(0);
+  expect(before.unread).toBeGreaterThan(0);
+  const operation = '33333333-3333-4333-8333-333333333333';
+  const prepared = await db.query<{data: any}>(
+    'select db_admin_clear_notifications($1,$2,false) data',
+    [post, operation]
+  );
+  expect(prepared.rows[0].data.count).toBe(before.read);
+  await db.query('select db_admin_clear_notifications($1,$2,true)', [
+    post,
+    operation
+  ]);
+  expect(await counts()).toEqual({read: 0, unread: before.unread});
 });

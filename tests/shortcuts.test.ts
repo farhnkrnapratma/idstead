@@ -25,7 +25,8 @@ import {
   CATALOG_KEY,
   CHORD_GROUPS,
   BUTTON_SHORTCUTS,
-  COMMAND_SHORTCUTS
+  COMMAND_SHORTCUTS,
+  COMMAND_LABELS
 } from '../src/lib/shortcuts';
 
 function keyEvent(init: {
@@ -60,6 +61,8 @@ test('shortcut keys preserve browser modifiers, chord assignments and collision 
   assert.equal(normalizeKey('Shift+D'), 'shift+d');
   assert.equal(normalizeKey(' t '), 't');
   assert.equal(normalizeKey('Esc'), 'esc');
+  assert.equal(normalizeKey('Alt+t'), 'alt+t');
+  assert.equal(normalizeKey('Shift+Alt+T'), 'alt+shift+t');
 
   assert.deepEqual(shortcutKeyParts('Shift+P'), ['Shift', 'P']);
   assert.deepEqual(shortcutKeyParts('t'), ['T']);
@@ -103,6 +106,14 @@ test('shortcut keys preserve browser modifiers, chord assignments and collision 
   );
   assert.equal(
     leaderKeyFromEvent(keyEvent({code: 'KeyT', altKey: true})),
+    'alt+t'
+  );
+  assert.equal(
+    leaderKeyFromEvent(keyEvent({code: 'KeyT', altKey: true, shiftKey: true})),
+    'alt+shift+t'
+  );
+  assert.equal(
+    leaderKeyFromEvent(keyEvent({code: 'KeyT', altKey: true, metaKey: true})),
     null
   );
 
@@ -495,6 +506,20 @@ test('chord groups are an exact, bounded allow-list', () => {
     'view'
   ]);
   assert.equal(CHORD_GROUPS.nav, undefined, 'nav items mirror their commands');
+  assert.deepEqual(
+    Object.values(CHORD_GROUPS)
+      .filter(group => group.listed === false)
+      .map(group => group.id)
+      .sort(),
+    ['contact', 'funding', 'posts', 'projects', 'social'],
+    'data-driven groups stay out of the catalog'
+  );
+  assert.equal(buttonKey('tldr'), 'Alt+T');
+  assert.equal(
+    Object.values(BUTTON_SHORTCUTS).some(button => /^\d$/.test(button.combo)),
+    false,
+    'no button owns a bare digit'
+  );
   assert.equal(groupForKey('shift+g'), null, 'Shift+G stays unassigned');
   assert.equal(findShortcutCollisions().includes('shift+g'), false);
 });
@@ -593,4 +618,11 @@ test('the leader and its fallback are physical Control on every platform', () =>
   );
   assert.equal(isLeaderEvent(keyEvent({code: 'Space', metaKey: true})), false);
   assert.equal(isLeaderEvent(keyEvent({code: 'Space', altKey: true})), false);
+});
+
+test('every catalog command has a human label', () => {
+  const missing = Object.keys(COMMAND_SHORTCUTS).filter(
+    command => command !== '/keyboard' && !COMMAND_LABELS[command]
+  );
+  assert.deepEqual(missing, []);
 });

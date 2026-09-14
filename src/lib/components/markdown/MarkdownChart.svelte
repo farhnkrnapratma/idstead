@@ -14,7 +14,9 @@
   } from 'layerchart';
   import {scaleBand, scaleLinear, scaleOrdinal} from 'd3-scale';
 
-  import {EllipsisVertical, Copy, Check} from '@lucide/svelte';
+  import {EllipsisVertical, Copy} from '@lucide/svelte';
+  import Dropdown from '../Dropdown.svelte';
+  import {toastStore} from '../../stores/toastStore.svelte';
 
   export interface ChartSpec {
     type?: 'line' | 'bar' | 'area' | 'donut' | 'pie';
@@ -34,18 +36,13 @@
 
   let {spec, class: className = ''}: Props = $props();
 
-  let isMenuOpen = $state(false);
-  let copiedSpec = $state(false);
-
   async function copySpecJson() {
     try {
       await navigator.clipboard.writeText(JSON.stringify(spec, null, 2));
-      copiedSpec = true;
-      setTimeout(() => {
-        copiedSpec = false;
-        isMenuOpen = false;
-      }, 1200);
-    } catch {}
+      toastStore.success('Chart spec copied');
+    } catch {
+      toastStore.error('Failed to copy chart spec');
+    }
   }
 
   const chartType = $derived(spec.type || 'line');
@@ -59,12 +56,12 @@
   const chartHeight = $derived(spec.height || 300);
 
   const defaultColors = [
-    '#10b981',
-    '#3b82f6',
-    '#f59e0b',
-    '#ef4444',
-    '#8b5cf6',
-    '#ec4899'
+    'var(--color-accent)',
+    'var(--color-activity-helpful)',
+    'var(--color-activity-report)',
+    'var(--color-activity-unhelpful)',
+    'var(--color-copilot-purple)',
+    'var(--color-report-sexual)'
   ];
 
   const seriesList = $derived.by(() => {
@@ -110,8 +107,6 @@
   });
 </script>
 
-<svelte:window onclick={() => (isMenuOpen = false)} />
-
 <div
   class="relative my-6 flex flex-col gap-2 rounded-md glass-card border border-border-subtle/60 p-4 shadow-md backdrop-blur-md transition-colors {className}">
   <div class="flex items-start justify-between gap-2">
@@ -132,43 +127,22 @@
       <div></div>
     {/if}
 
-    <div class="relative shrink-0">
-      <button
-        type="button"
-        aria-label="Chart options"
-        class="flex size-7 cursor-pointer items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring"
-        onclick={e => {
-          e.stopPropagation();
-          isMenuOpen = !isMenuOpen;
-        }}>
-        <EllipsisVertical class="size-4" />
-      </button>
-
-      {#if isMenuOpen}
-        <div
-          role="menu"
-          tabindex="-1"
+    <Dropdown
+      ariaLabel="Chart options"
+      placement="bottom-end"
+      actions={[{label: 'Copy spec JSON', icon: Copy, onSelect: copySpecJson}]}>
+      {#snippet trigger({isOpen, toggle})}
+        <button
+          type="button"
           aria-label="Chart options"
-          class="absolute top-full right-0 z-20 mt-1.5 flex min-w-[9rem] flex-col rounded-md border border-border-subtle bg-surface-card p-1 shadow-lg backdrop-blur-md"
-          onclick={e => e.stopPropagation()}
-          onkeydown={e => {
-            if (e.key === 'Escape') isMenuOpen = false;
-          }}>
-          <button
-            type="button"
-            role="menuitem"
-            class="flex w-full cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs font-medium text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary"
-            onclick={copySpecJson}>
-            {#if copiedSpec}
-              <Check class="size-3.5 text-accent" />
-            {:else}
-              <Copy class="size-3.5 opacity-60" />
-            {/if}
-            <span>{copiedSpec ? 'Copied Spec!' : 'Copy Spec JSON'}</span>
-          </button>
-        </div>
-      {/if}
-    </div>
+          aria-haspopup="menu"
+          aria-expanded={isOpen}
+          class="flex size-7 cursor-pointer items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring"
+          onclick={toggle}>
+          <EllipsisVertical class="size-4" />
+        </button>
+      {/snippet}
+    </Dropdown>
   </div>
 
   {#if rawData.length === 0}
@@ -216,7 +190,7 @@
               class="transition-opacity duration-200 hover:opacity-85" />
             <Highlight area={{class: 'fill-surface-hover/30'}} />
           </Svg>
-          <Tooltip.Root>
+          <Tooltip.Root variant="none">
             {#snippet children({data})}
               {#if data}
                 <div
@@ -284,7 +258,7 @@
               }}
               lines={{class: 'stroke-border-subtle stroke-dasharray-2'}} />
           </Svg>
-          <Tooltip.Root>
+          <Tooltip.Root variant="none">
             {#snippet children({data})}
               {#if data}
                 <div
@@ -312,7 +286,7 @@
                 <Pie
                   range={[0, 360]}
                   innerRadius={chartType === 'donut' ? 0.6 : 0}
-                  padAngle={0.03}
+                  padAngle={0}
                   cornerRadius={3}>
                   {#snippet children({arcs})}
                     {#each arcs as arc, i (arc.data?.label ?? i)}
@@ -329,7 +303,7 @@
                   {/snippet}
                 </Pie>
               </Svg>
-              <Tooltip.Root>
+              <Tooltip.Root variant="none">
                 {#snippet children({data})}
                   {#if data}
                     <div
@@ -405,7 +379,7 @@
               }}
               lines={{class: 'stroke-border-subtle stroke-dasharray-2'}} />
           </Svg>
-          <Tooltip.Root>
+          <Tooltip.Root variant="none">
             {#snippet children({data})}
               {#if data}
                 <div

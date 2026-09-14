@@ -56,14 +56,13 @@
   <Button
     type="outline"
     size="md"
-    class="size-9 shrink-0 p-0 sm:h-9 sm:w-auto sm:px-4"
+    class="size-9 shrink-0 p-0"
     onclick={() => goTo(page - 1)}
     disabled={page <= 1}
     keyboardShortcut={buttonKey('pagePrev')}
     shortcutLabel="Previous page"
     aria-label="Previous page">
     <ArrowLeft class="size-3.5" />
-    <span class="hidden sm:inline">Previous</span>
   </Button>
 
   <div
@@ -96,13 +95,12 @@
   <Button
     type="outline"
     size="md"
-    class="size-9 shrink-0 p-0 sm:h-9 sm:w-auto sm:px-4"
+    class="size-9 shrink-0 p-0"
     onclick={() => goTo(page + 1)}
     disabled={page >= totalPages}
     keyboardShortcut={buttonKey('pageNext')}
     shortcutLabel="Next page"
     aria-label="Next page">
-    <span class="hidden sm:inline">Next</span>
     <ArrowRight class="size-3.5" />
   </Button>
 </nav>

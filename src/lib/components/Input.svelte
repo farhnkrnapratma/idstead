@@ -1,5 +1,9 @@
 <script lang="ts">
   import {getContext, type Snippet} from 'svelte';
+  import {
+    FILTER_TOOLBAR_CONTROL_SIZE,
+    type FilterToolbarContext
+  } from './filter/filterToolbarContext';
   import type {HTMLInputAttributes} from 'svelte/elements';
   import type {FormFieldContext} from '../types';
   import {cn} from '../utils/cn';
@@ -28,7 +32,7 @@
     value = $bindable(''),
     error = false,
     valid = false,
-    size = 'md',
+    size,
     variant,
     label = '',
     required,
@@ -48,10 +52,15 @@
     ...restProps
   }: Props = $props();
 
+  const filterToolbar = getContext<FilterToolbarContext | undefined>(
+    FILTER_TOOLBAR_CONTROL_SIZE
+  );
+  const resolvedSize = $derived(filterToolbar?.controlSize ?? size ?? 'md');
+
   const sizeStyles = {
-    sm: 'h-8 text-xs rounded-md px-2.5',
-    md: 'h-9 text-sm rounded-md px-3',
-    lg: 'h-11 text-base rounded-md px-4'
+    sm: 'box-border h-8 text-xs rounded-md px-2.5',
+    md: 'box-border h-9 text-sm rounded-md px-3',
+    lg: 'box-border h-11 text-base rounded-md px-4'
   };
 
   const formCtx = getContext<FormFieldContext>('formField');
@@ -106,7 +115,7 @@
       fullWidth ? 'w-full' : '',
       isFloating ?
         'peer block h-12 rounded-md px-3 pt-5! pb-1.5! text-sm leading-5 placeholder-transparent'
-      : sizeStyles[size],
+      : sizeStyles[resolvedSize],
       isFloating ? '' : 'placeholder:text-text-secondary/70',
       leadingSlot ? 'pl-12'
       : leadingIcon ? 'pl-9'

@@ -22,7 +22,7 @@
 <script
   lang="ts"
   generics="T extends CommentItem">
-  import {onMount, tick, type Snippet} from 'svelte';
+  import type {Snippet} from 'svelte';
   import {SvelteMap, SvelteSet} from 'svelte/reactivity';
   import {
     EllipsisVertical,
@@ -38,7 +38,7 @@
   import RelativeTime from './RelativeTime.svelte';
   import IconButton from './IconButton.svelte';
   import {cn} from '../utils/cn';
-  import {popoverPosition} from '../utils/popoverPosition';
+  import Dropdown from './Dropdown.svelte';
   import {focusScope} from '../utils/focusScope';
   import {shortcut} from '../utils/shortcut.svelte';
   import {contentFontStore} from '../stores/contentFontStore.svelte';
@@ -75,57 +75,7 @@
     onDelete
   }: Props = $props();
 
-  let activeMenuId = $state<string | null>(null);
-
-  onMount(() => {
-    const handleGlobalClick = () => {
-      activeMenuId = null;
-    };
-    window.addEventListener('click', handleGlobalClick);
-    return () => {
-      window.removeEventListener('click', handleGlobalClick);
-    };
-  });
-
-  async function toggleKebabMenu(commentId: string, e: MouseEvent) {
-    e.stopPropagation();
-    const trigger = e.currentTarget as HTMLElement | null;
-    const opening = activeMenuId !== commentId;
-    activeMenuId = opening ? commentId : null;
-    if (opening) {
-      await tick();
-      const menu =
-        trigger?.parentElement?.querySelector<HTMLElement>('[role="menu"]');
-      menu?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
-    }
-  }
-
-  function closeKebabMenu(commentId: string) {
-    activeMenuId = null;
-    document.getElementById(`comment-menu-trigger-${commentId}`)?.focus();
-  }
-
-  function handleMenuKeydown(e: KeyboardEvent, commentId: string) {
-    const menu = e.currentTarget as HTMLElement;
-    const items = Array.from(
-      menu.querySelectorAll<HTMLElement>('[role="menuitem"]')
-    );
-    const currentIndex = items.indexOf(document.activeElement as HTMLElement);
-
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      closeKebabMenu(commentId);
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      items[(currentIndex + 1) % items.length]?.focus();
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      items[(currentIndex - 1 + items.length) % items.length]?.focus();
-    }
-  }
-
   async function handleCopyId(commentId: string) {
-    activeMenuId = null;
     try {
       await navigator.clipboard.writeText(commentId);
       toastStore.success('Comment ID copied to clipboard');
@@ -135,12 +85,10 @@
   }
 
   function handleReport(comment: T) {
-    activeMenuId = null;
     onReport?.(comment);
   }
 
   function handleDelete(comment: T) {
-    activeMenuId = null;
     onDelete?.(comment);
   }
 
@@ -275,7 +223,7 @@
 
     <div class="min-w-0 flex-1">
       <div
-        class="relative inline-block max-w-full rounded-md border border-border-subtle bg-surface-card px-2.5 py-1.5 text-left sm:px-3 sm:py-2">
+        class="relative inline-block max-w-full rounded-md border border-border-subtle bg-surface-card px-2 py-1.5 text-left">
         <div class="flex items-center justify-between gap-3">
           <div class="flex min-w-0 items-center gap-1">
             <span
@@ -296,92 +244,71 @@
           </div>
 
           {#if isAdmin || !isAuthorComment(comment)}
-            <div class="relative shrink-0">
-              <IconButton
-                id="comment-menu-trigger-{comment.id}"
-                ariaLabel="Comment options"
-                variant="ghost"
-                size="xs"
-                showTooltip={false}
-                class="hover:bg-surface-hover"
-                aria-haspopup="menu"
-                aria-expanded={activeMenuId === comment.id}
-                keyboardShortcut="O"
-                shortcutScope={commentScope}
-                shortcutLabel="Comment options"
-                onclick={e => toggleKebabMenu(comment.id, e)}>
-                <EllipsisVertical class="size-3.5" />
-              </IconButton>
-
-              {#if activeMenuId === comment.id}
-                <button
-                  type="button"
-                  class="fixed inset-0 z-40 cursor-default"
-                  onclick={() => (activeMenuId = null)}
-                  aria-label="Close menu"></button>
-
-                <div
-                  use:popoverPosition={{
-                    placement: 'bottom-end',
-                    offset: 6,
-                    padding: 8
-                  }}
-                  class="absolute z-50 flex min-w-[130px] flex-col popover-surface p-0 text-xs shadow-xl select-none"
-                  role="menu"
-                  tabindex="-1"
-                  onkeydown={e => handleMenuKeydown(e, comment.id)}>
-                  <div
-                    class="relative z-10 flex flex-col overflow-hidden rounded-md">
-                    <button
-                      type="button"
-                      role="menuitem"
-                      use:shortcut={{
-                        combo: 'I',
+            <Dropdown
+              ariaLabel="Comment options"
+              placement="bottom-end"
+              shortcutScope={commentScope}
+              actions={[
+                {
+                  label: 'Copy ID',
+                  icon: Copy,
+                  onSelect: () => handleCopyId(comment.id),
+                  shortcut: {
+                    combo: 'I',
+                    scope: commentScope,
+                    label: 'Copy comment ID',
+                    placement: 'inline'
+                  }
+                },
+                ...(onReport ?
+                  [
+                    {
+                      label: 'Report',
+                      icon: Flag,
+                      onSelect: () => handleReport(comment),
+                      shortcut: {
+                        combo: 'F',
                         scope: commentScope,
-                        label: 'Copy comment ID',
-                        placement: 'inline'
-                      }}
-                      class="relative flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover hover:text-accent"
-                      onclick={() => handleCopyId(comment.id)}>
-                      <Copy class="size-3.5" />
-                      <span>Copy ID</span>
-                    </button>
-                    {#if onReport}
-                      <button
-                        type="button"
-                        role="menuitem"
-                        use:shortcut={{
-                          combo: 'F',
-                          scope: commentScope,
-                          label: 'Report comment',
-                          placement: 'inline'
-                        }}
-                        class="relative flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover hover:text-accent"
-                        onclick={() => handleReport(comment)}>
-                        <Flag class="size-3.5" />
-                        <span>Report</span>
-                      </button>
-                    {/if}
-                    {#if isAdmin && onDelete}
-                      <button
-                        type="button"
-                        role="menuitem"
-                        class="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left text-xs font-medium text-danger transition-colors hover:bg-danger/10 hover:text-danger"
-                        onclick={() => handleDelete(comment)}>
-                        <Trash class="size-3.5" />
-                        <span>Delete</span>
-                      </button>
-                    {/if}
-                  </div>
-                </div>
-              {/if}
-            </div>
+                        label: 'Report comment',
+                        placement: 'inline' as const
+                      }
+                    }
+                  ]
+                : []),
+                ...(isAdmin && onDelete ?
+                  [
+                    {
+                      label: 'Delete',
+                      icon: Trash,
+                      danger: true,
+                      onSelect: () => handleDelete(comment)
+                    }
+                  ]
+                : [])
+              ]}>
+              {#snippet trigger({isOpen, toggle})}
+                <IconButton
+                  ariaLabel="Comment options"
+                  variant="ghost"
+                  size="xs"
+                  showTooltip={false}
+                  class="hover:bg-surface-hover"
+                  aria-haspopup="menu"
+                  aria-expanded={isOpen}
+                  keyboardShortcut="O"
+                  shortcutScope={commentScope}
+                  shortcutLabel="Comment options"
+                  onclick={toggle}>
+                  <EllipsisVertical class="size-3.5" />
+                </IconButton>
+              {/snippet}
+            </Dropdown>
           {/if}
         </div>
 
         <div
           class={cn(
-            'mt-0.5 text-xs leading-relaxed text-text-primary/90 sm:text-sm',
+            'mt-0.5 text-xs leading-relaxed font-normal text-text-secondary sm:text-sm',
             useContentFont && `font-content-${contentFontStore.current}`,
             useContentFont
               && contentFontStore.current === 'mono'

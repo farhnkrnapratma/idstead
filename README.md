@@ -176,3 +176,21 @@ Found a security issue? Please don't open a public issue — see [`SECURITY.md`]
 ## License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+
+## Article references
+
+Use a single references directive to place a bibliography and automatically add a visible `References` heading to the article and its table of contents:
+
+```markdown
+A statement with a source[^source].
+
+:::references
+
+[^source]: Source description with a [link](https://example.com). :::
+```
+
+Footnote numbering and links back to each citation work across the document. Existing Markdown footnotes remain supported; their hidden accessibility heading is excluded from the table of contents. Unclosed or duplicate references blocks display a validation message in the editor preview.
+
+The admin Overview calendar shows daily article views for the current calendar year in the selected time zone, independently of the Period selector. Feedback details show the selected period's helpful/unhelpful distribution. Notifications display individual events, with a blue background and unread marker until read. Admin activity lists and comment sections paginate at up to 20 items.
+
+Apply `20260914062855_admin_calendar_notification_events.sql` after the preceding workspace migrations before deploying these admin changes. It replaces the internal workspace query, adds daily calendar aggregation, and retains service-role-only execution permissions.

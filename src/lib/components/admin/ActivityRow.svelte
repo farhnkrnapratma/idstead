@@ -1,13 +1,7 @@
 <script lang="ts">
   import {resolve} from '$app/paths';
-  import {
-    Flag,
-    MessageCircle,
-    ThumbsUp,
-    ThumbsDown,
-    Mail,
-    X
-  } from '@lucide/svelte';
+  import {X} from '@lucide/svelte';
+  import ActivityIcon from './ActivityIcon.svelte';
   import type {AdminNotificationRow} from '$lib/adminActivity';
   import {activityTimestamp, activityTimeZone} from '$lib/adminActivity';
   import {reportReasonLabel} from '$lib/reportReasons';
@@ -17,12 +11,14 @@
   let {
     item,
     detail = false,
+    timeZone,
     onSelect,
     onDelete,
     disabled = false
   }: {
     item: AdminNotificationRow;
     detail?: boolean;
+    timeZone?: string;
     onSelect?: () => void;
     onDelete?: () => void;
     disabled?: boolean;
@@ -31,36 +27,15 @@
     item.kind === 'post_feedback' || item.kind === 'legal_feedback'
   );
   const helpful = $derived(item.meta?.vote === 'yes');
-  const Icon = $derived(
-    item.kind === 'comment_report' ? Flag
-    : item.kind === 'comment_new' ? MessageCircle
-    : feedback ?
-      helpful ? ThumbsUp
-      : ThumbsDown
-    : item.kind === 'contact_message' ? Mail
-    : MessageCircle
-  );
-  const color = $derived(
-    item.kind === 'comment_report' ? 'text-activity-report'
-    : item.kind === 'comment_new' ? 'text-activity-comment'
-    : feedback ?
-      helpful ? 'text-activity-helpful'
-      : 'text-activity-unhelpful'
-    : 'text-accent'
-  );
   const author = $derived(item.meta?.author ?? 'Anonymous');
   const title = $derived(item.page_title ?? 'Unavailable page');
   const pageKind = $derived(item.page_type === 'legal' ? 'page' : 'article');
-  const prefix = $derived(
-    item.kind === 'comment_report' ? 'Reported at'
-    : feedback ? 'Clicked at'
-    : 'Sent at'
-  );
+  const unread = $derived(!item.read_at);
   const sentence = $derived(
     item.kind === 'comment_report' ?
-      `Someone reported a comment by ${author} on ${title}.`
+      `Someone reported a comment by ${author} on the ${title} ${pageKind}.`
     : item.kind === 'comment_new' ?
-      `${author} commented on the ${title} article.`
+      `${author} commented on the ${title} ${pageKind}.`
     : feedback ?
       `Someone marked the ${title} ${pageKind} as ${helpful ? 'helpful' : 'unhelpful'}.`
     : item.kind === 'contact_message' ?
@@ -78,84 +53,75 @@
 
 <div
   data-activity-row={item.id}
+  data-unread={unread}
   class={cn(
-    'group relative flex min-w-0 gap-2 rounded-md px-2 py-2 font-sans',
-    item.read_at || detail ? '' : 'bg-accent-subtle/40'
+    'group relative flex min-w-0 items-start gap-3 rounded-md border border-border-subtle px-3 py-2 font-sans transition-colors',
+    unread ?
+      'bg-notification-unread hover:bg-notification-unread-hover'
+    : 'bg-surface-card hover:bg-surface-hover'
   )}>
   {#if onSelect}
     <button
       type="button"
-      class="absolute inset-0 z-0 cursor-pointer rounded-md transition-colors hover:bg-surface-hover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-ring"
-      aria-label={`${sentence} ${metadata} ${prefix}: ${activityTimestamp(item.created_at)} · ${activityTimeZone(item.created_at)}`}
+      class="absolute inset-0 z-0 cursor-pointer rounded-md transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-ring"
+      aria-label={`${sentence} ${metadata} ${activityTimestamp(item.created_at, timeZone)} · ${activityTimeZone(item.created_at, timeZone)}`}
+      {disabled}
       onclick={onSelect}></button>
   {/if}
-  <span
-    aria-hidden="true"
-    class={`pointer-events-none relative flex h-9 w-8 shrink-0 items-center justify-center rounded-md border border-current/25 bg-current/5 ${color}`}>
-    <Icon class="size-4" />
-  </span>
+  <ActivityIcon
+    kind={item.kind}
+    vote={item.meta?.vote}
+    class="pointer-events-none relative" />
   <div class="pointer-events-none relative min-w-0 flex-1">
     <div
       data-activity-line="summary"
       title={sentence}
       class={cn(
-        'pr-5 text-xs leading-5 text-text-primary',
-        detail && !feedback ? 'break-words' : 'truncate'
+        'pr-7 leading-5 break-words text-text-primary',
+        detail ? 'text-xs' : 'text-sm'
       )}>
-      {#if feedback && detail}
-        Marked as <strong>{helpful ? 'helpful' : 'unhelpful'}</strong>
-      {:else if item.kind === 'comment_report'}
+      {#if item.kind === 'comment_report'}
         Someone reported a comment by <strong>{author}</strong>
-        on&nbsp;{@render pageLink()}.
+        on the&nbsp;{@render pageLink()}&nbsp;{pageKind}.
       {:else if feedback}
         Someone marked the&nbsp;{@render pageLink()}&nbsp;{pageKind} as
         <strong>{helpful ? 'helpful' : 'unhelpful'}</strong>.
       {:else if item.kind === 'comment_new'}
-        <strong>{author}</strong> commented on the&nbsp;{@render pageLink()}&nbsp;article.
+        <strong>{author}</strong> commented on the&nbsp;{@render pageLink()}&nbsp;{pageKind}.
       {:else}{sentence}{/if}
     </div>
     <div
       data-activity-line="metadata"
-      class="flex min-w-0 items-center pr-5 text-2xs leading-4">
+      class="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 pr-7 text-xs leading-4">
       {#if item.kind === 'comment_report'}
         <span
           title={metadata}
-          class="min-w-0 truncate font-sans font-normal text-text-secondary">
-          <span class="text-text-muted">Reason:&nbsp;</span><strong
-            class="font-bold text-text-primary"
-            >{reportReasonLabel(item.meta?.reason ?? 'other')}</strong
+          class="min-w-0 font-sans font-normal break-words text-text-secondary">
+          <span class="text-text-muted">Reason:&nbsp;</span><span
+            class="font-normal text-text-secondary"
+            >{reportReasonLabel(item.meta?.reason ?? 'other')}</span
           >{#if item.report_status === 'resolved'}<span class="text-text-muted"
               >&nbsp;&middot;&nbsp;Resolved</span
             >{/if}
         </span>
-        <span
-          aria-hidden="true"
-          class="shrink-0 px-1.5 text-text-muted select-none">&mdash;</span>
       {:else if item.kind === 'comment_new'}
         <span
           title={metadata}
-          class="min-w-0 truncate font-sans font-normal text-text-secondary">
-          <span class="text-text-muted">Comment:&nbsp;</span><strong
-            class="font-semibold text-text-primary"
-            >“{item.meta?.comment ?? ''}”</strong>
+          class="min-w-0 font-sans font-normal break-words text-text-secondary">
+          <span class="text-text-muted">Comment:&nbsp;</span><span
+            class="font-normal text-text-secondary"
+            >“{item.meta?.comment ?? ''}”</span>
         </span>
-        <span
-          aria-hidden="true"
-          class="shrink-0 px-1.5 text-text-muted select-none">&mdash;</span>
       {:else if metadata}
         <span
           title={metadata}
-          class="min-w-0 truncate font-sans font-normal text-text-secondary">
+          class="min-w-0 font-sans font-normal break-words text-text-secondary">
           {metadata}
         </span>
-        <span
-          aria-hidden="true"
-          class="shrink-0 px-1.5 text-text-muted select-none">&mdash;</span>
       {/if}
       <ActivityTimestamp
         date={item.created_at}
-        {prefix}
-        compact={!detail}
+        {timeZone}
         class="pointer-events-auto shrink-0" />
     </div>
   </div>
@@ -165,8 +131,8 @@
       {disabled}
       aria-label="Delete notification"
       title="Permanently delete notification"
-      class="absolute top-1/2 right-1.5 z-20 flex size-5 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm text-text-muted transition-colors hover:bg-danger-subtle hover:text-danger focus-visible:outline-2 focus-visible:outline-focus-ring disabled:opacity-50"
-      onclick={onDelete}><X class="size-3" /></button>
+      class="absolute top-1/2 right-1.5 z-20 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm text-text-muted transition-colors hover:bg-danger-subtle hover:text-danger focus-visible:outline-2 focus-visible:outline-focus-ring disabled:opacity-50"
+      onclick={onDelete}><X class="size-4" /></button>
   {/if}
 </div>
 
@@ -176,7 +142,7 @@
       href={resolve(...([item.page_url] as Parameters<typeof resolve>))}
       target="_blank"
       rel="noopener noreferrer"
-      class="pointer-events-auto relative font-bold hover:text-accent focus-visible:text-accent focus-visible:outline-2 focus-visible:outline-focus-ring"
+      class="pointer-events-auto relative font-bold hover:text-accent hover:underline focus-visible:text-accent focus-visible:underline focus-visible:outline-2 focus-visible:outline-focus-ring"
       onclick={event => event.stopPropagation()}>{title}</a>
   {:else}<strong>{title}</strong>{/if}
 {/snippet}

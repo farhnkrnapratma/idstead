@@ -235,10 +235,12 @@ async function mutate<T>(body: unknown): Promise<T> {
 async function action(action: 'read' | 'read_all' | 'delete', id?: string) {
   try {
     await mutate({action, id});
+    return true;
   } catch (caught) {
     toastStore.error(
       caught instanceof Error ? caught.message : 'Notification update failed.'
     );
+    return false;
   }
 }
 export const adminNotificationsStore = {

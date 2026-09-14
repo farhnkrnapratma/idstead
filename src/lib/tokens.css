@@ -1,8 +1,46 @@
 @theme {
+  --color-notification-unread: color-mix(
+    in srgb,
+    var(--color-accent) 6%,
+    var(--color-surface-card)
+  );
+  --color-notification-unread-hover: color-mix(
+    in srgb,
+    var(--color-accent) 12%,
+    var(--color-surface-card)
+  );
+  --color-calendar-cell-gap: var(--color-surface-card);
+  --color-calendar-month-border: color-mix(
+    in srgb,
+    var(--color-border-subtle) 70%,
+    transparent
+  );
+  --color-calendar-0: color-mix(
+    in srgb,
+    var(--color-text-muted) 10%,
+    var(--color-surface-card)
+  );
+  --color-calendar-1: color-mix(
+    in srgb,
+    var(--color-accent) 25%,
+    var(--color-surface-card)
+  );
+  --color-calendar-2: color-mix(
+    in srgb,
+    var(--color-accent) 45%,
+    var(--color-surface-card)
+  );
+  --color-calendar-3: color-mix(
+    in srgb,
+    var(--color-accent) 70%,
+    var(--color-surface-card)
+  );
+  --color-calendar-4: var(--color-accent);
   --color-activity-comment: #1d4ed8;
   --color-activity-helpful: #047857;
   --color-activity-unhelpful: #be123c;
   --color-activity-report: #92400e;
+  --color-activity-message: #6d28d9;
   --color-report-spam: #b91c1c;
   --color-report-harassment: #92400e;
   --color-report-violence: #c2410c;
@@ -93,6 +131,7 @@
   --color-border-subtle: #e4ebe6;
   --color-border-default: #b6bfb8;
   --color-border-strong: #909692;
+  --color-border-tree: var(--color-gh-gray-2);
   --color-accent: #3094ff;
   --color-accent-hover: #1a61fe;
   --color-accent-active: #0527fc;
@@ -157,10 +196,48 @@
 }
 
 :root.dark {
+  --color-notification-unread: color-mix(
+    in srgb,
+    var(--color-accent) 10%,
+    var(--color-surface-card)
+  );
+  --color-notification-unread-hover: color-mix(
+    in srgb,
+    var(--color-accent) 16%,
+    var(--color-surface-card)
+  );
+  --color-calendar-cell-gap: var(--color-surface-card);
+  --color-calendar-month-border: color-mix(
+    in srgb,
+    var(--color-border-subtle) 45%,
+    transparent
+  );
+  --color-calendar-0: color-mix(
+    in srgb,
+    var(--color-text-muted) 10%,
+    var(--color-surface-card)
+  );
+  --color-calendar-1: color-mix(
+    in srgb,
+    var(--color-accent) 25%,
+    var(--color-surface-card)
+  );
+  --color-calendar-2: color-mix(
+    in srgb,
+    var(--color-accent) 45%,
+    var(--color-surface-card)
+  );
+  --color-calendar-3: color-mix(
+    in srgb,
+    var(--color-accent) 70%,
+    var(--color-surface-card)
+  );
+  --color-calendar-4: var(--color-accent);
   --color-activity-comment: #60a5fa;
   --color-activity-helpful: #34d399;
   --color-activity-unhelpful: #fb7185;
   --color-activity-report: #fbbf24;
+  --color-activity-message: #a78bfa;
   --color-background: #050705;
   --color-surface-base: #050705;
   --color-surface: #101411;
@@ -177,6 +254,7 @@
   --color-border-subtle: rgba(228, 235, 230, 0.12);
   --color-border-default: rgba(182, 191, 184, 0.38);
   --color-border-strong: #b6bfb8;
+  --color-border-tree: var(--color-gh-gray-5);
   --color-accent: #3094ff;
   --color-accent-hover: #9eecff;
   --color-accent-active: #1a61fe;

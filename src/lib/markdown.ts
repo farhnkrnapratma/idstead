@@ -1,4 +1,5 @@
 import {Marked, Renderer} from 'marked';
+import {extractReferences, placeReferences} from './markdownReferences';
 import markedFootnote from 'marked-footnote';
 import katex from 'katex';
 import {
@@ -1057,12 +1058,16 @@ export async function renderMarkdown(
     scope,
     apiRegistry
   );
-  const withContainers = parseContainers(withInterpolated);
+  const references = extractReferences(withInterpolated);
+  const withContainers = parseContainers(references.markdown);
   const rawHtml = await markdownParser.parse(withContainers);
   const withAlerts = parseMarkdownAlerts(rawHtml);
   const withDetails = parseDetailsBlocks(withAlerts);
   const withSteps = parseSteps(withDetails);
-  const withFootnotes = formatFootnoteReferences(withSteps);
+  const withFootnotes = placeReferences(
+    formatFootnoteReferences(withSteps),
+    references.marker
+  );
   const withMathRestored = restoreAllPlaceholders(
     withFootnotes,
     mathPlaceholders
@@ -1134,6 +1139,13 @@ export function extractHeadings(html: string): HeadingItem[] {
     /<h([2-6])\b[^>]*\bid="([^"]*)"[^>]*>([\s\S]*?)<\/h\1>/gi;
   let match;
   while ((match = headingRegex.exec(html)) !== null) {
+    const opening = match[0].slice(0, match[0].indexOf('>') + 1);
+    if (
+      /class="[^"]*\bsr-only\b|\shidden(?:\s|>|=)|aria-hidden="true"/i.test(
+        opening
+      )
+    )
+      continue;
     const level = parseInt(match[1], 10);
     const id = match[2];
     let content = match[3]

@@ -1,16 +1,16 @@
 <script lang="ts">
   import {onMount, untrack} from 'svelte';
   import {fade} from 'svelte/transition';
-  import {ShieldCheck, X, ChevronDown, Check, Trash} from '@lucide/svelte';
+  import {ShieldCheck, X, Trash} from '@lucide/svelte';
   import {
     consentStore,
     type ConsentStatus
   } from '../stores/consentStore.svelte';
-  import {popoverPosition} from '../utils/popoverPosition';
   import {focusScope} from '../utils/focusScope';
   import {buttonKey} from '$lib/shortcuts';
   import Button from './Button.svelte';
   import Dialog from './Dialog.svelte';
+  import Dropdown from './Dropdown.svelte';
 
   const CONSENT_BANNER_SCOPE = 'consent-banner';
 
@@ -19,9 +19,10 @@
   let tempAdUserData = $state<ConsentStatus>('denied');
   let tempAdPersonalization = $state<ConsentStatus>('denied');
 
-  type DropdownKey =
-    'analytics' | 'ad_storage' | 'ad_user_data' | 'ad_personalization' | null;
-  let activeDropdown = $state<DropdownKey>(null);
+  const CONSENT_OPTIONS = [
+    {value: 'denied', label: 'Deny'},
+    {value: 'granted', label: 'Allow'}
+  ];
 
   onMount(() => {
     consentStore.init();
@@ -34,7 +35,6 @@
         tempAdStorage = consentStore.signals.ad_storage;
         tempAdUserData = consentStore.signals.ad_user_data;
         tempAdPersonalization = consentStore.signals.ad_personalization;
-        activeDropdown = null;
       });
     }
   });
@@ -70,7 +70,6 @@
       tempAdUserData = 'denied';
       tempAdPersonalization = 'denied';
     }
-    activeDropdown = null;
   }
 
   const presetSliderValue = $derived(
@@ -262,85 +261,11 @@
           </p>
         </div>
 
-        <div class="relative shrink-0">
-          <button
-            type="button"
-            onclick={() =>
-              (activeDropdown =
-                activeDropdown === 'analytics' ? null : 'analytics')}
-            aria-label="Behavioral analytics preference"
-            aria-expanded={activeDropdown === 'analytics'}
-            aria-haspopup="listbox"
-            class="inline-flex h-8 min-w-22 cursor-pointer items-center justify-between gap-1.5 rounded-md border border-border-subtle bg-surface-card px-2.5 text-xs font-semibold text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none">
-            <span class="leading-none"
-              >{tempAnalytics === 'granted' ? 'Allow' : 'Deny'}</span>
-            <span
-              class="inline-flex h-4 w-4 shrink-0 origin-center items-center justify-center text-text-muted transition-transform duration-200 ease-out {(
-                activeDropdown === 'analytics'
-              ) ?
-                'rotate-180'
-              : ''}">
-              <ChevronDown class="size-3 leading-none" />
-            </span>
-          </button>
-
-          {#if activeDropdown === 'analytics'}
-            <button
-              type="button"
-              class="fixed inset-0 z-40 cursor-default"
-              onclick={() => (activeDropdown = null)}
-              aria-label="Close menu"></button>
-            <div
-              role="listbox"
-              aria-label="Behavioral analytics options"
-              use:popoverPosition={{
-                placement: 'bottom-end',
-                offset: 8,
-                padding: 8
-              }}
-              class="absolute z-60 flex w-max min-w-full flex-col popover-surface p-0">
-              <div
-                class="relative z-10 flex flex-col overflow-hidden rounded-md">
-                <button
-                  type="button"
-                  role="option"
-                  aria-selected={tempAnalytics === 'denied'}
-                  onclick={() => {
-                    tempAnalytics = 'denied';
-                    activeDropdown = null;
-                  }}
-                  class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
-                    tempAnalytics === 'denied'
-                  ) ?
-                    'bg-accent/10 text-accent'
-                  : 'text-text-primary hover:bg-surface-hover'}">
-                  <span>Deny</span>
-                  {#if tempAnalytics === 'denied'}
-                    <Check class="size-3.5 shrink-0 text-accent" />
-                  {/if}
-                </button>
-                <button
-                  type="button"
-                  role="option"
-                  aria-selected={tempAnalytics === 'granted'}
-                  onclick={() => {
-                    tempAnalytics = 'granted';
-                    activeDropdown = null;
-                  }}
-                  class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
-                    tempAnalytics === 'granted'
-                  ) ?
-                    'bg-accent/10 text-accent'
-                  : 'text-text-primary hover:bg-surface-hover'}">
-                  <span>Allow</span>
-                  {#if tempAnalytics === 'granted'}
-                    <Check class="size-3.5 shrink-0 text-accent" />
-                  {/if}
-                </button>
-              </div>
-            </div>
-          {/if}
-        </div>
+        <Dropdown
+          size="sm"
+          ariaLabel="Behavioral analytics preference"
+          options={CONSENT_OPTIONS}
+          bind:value={tempAnalytics} />
       </div>
 
       <div class="flex items-center justify-between gap-3 p-3 sm:p-3.5">
@@ -353,85 +278,11 @@
           </p>
         </div>
 
-        <div class="relative shrink-0">
-          <button
-            type="button"
-            onclick={() =>
-              (activeDropdown =
-                activeDropdown === 'ad_storage' ? null : 'ad_storage')}
-            aria-label="Advertising storage preference"
-            aria-expanded={activeDropdown === 'ad_storage'}
-            aria-haspopup="listbox"
-            class="inline-flex h-8 min-w-22 cursor-pointer items-center justify-between gap-1.5 rounded-md border border-border-subtle bg-surface-card px-2.5 text-xs font-semibold text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none">
-            <span class="leading-none"
-              >{tempAdStorage === 'granted' ? 'Allow' : 'Deny'}</span>
-            <span
-              class="inline-flex h-4 w-4 shrink-0 origin-center items-center justify-center text-text-muted transition-transform duration-200 ease-out {(
-                activeDropdown === 'ad_storage'
-              ) ?
-                'rotate-180'
-              : ''}">
-              <ChevronDown class="size-3 leading-none" />
-            </span>
-          </button>
-
-          {#if activeDropdown === 'ad_storage'}
-            <button
-              type="button"
-              class="fixed inset-0 z-40 cursor-default"
-              onclick={() => (activeDropdown = null)}
-              aria-label="Close menu"></button>
-            <div
-              role="listbox"
-              aria-label="Advertising storage options"
-              use:popoverPosition={{
-                placement: 'bottom-end',
-                offset: 8,
-                padding: 8
-              }}
-              class="absolute z-60 flex w-max min-w-full flex-col popover-surface p-0">
-              <div
-                class="relative z-10 flex flex-col overflow-hidden rounded-md">
-                <button
-                  type="button"
-                  role="option"
-                  aria-selected={tempAdStorage === 'denied'}
-                  onclick={() => {
-                    tempAdStorage = 'denied';
-                    activeDropdown = null;
-                  }}
-                  class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
-                    tempAdStorage === 'denied'
-                  ) ?
-                    'bg-accent/10 text-accent'
-                  : 'text-text-primary hover:bg-surface-hover'}">
-                  <span>Deny</span>
-                  {#if tempAdStorage === 'denied'}
-                    <Check class="size-3.5 shrink-0 text-accent" />
-                  {/if}
-                </button>
-                <button
-                  type="button"
-                  role="option"
-                  aria-selected={tempAdStorage === 'granted'}
-                  onclick={() => {
-                    tempAdStorage = 'granted';
-                    activeDropdown = null;
-                  }}
-                  class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
-                    tempAdStorage === 'granted'
-                  ) ?
-                    'bg-accent/10 text-accent'
-                  : 'text-text-primary hover:bg-surface-hover'}">
-                  <span>Allow</span>
-                  {#if tempAdStorage === 'granted'}
-                    <Check class="size-3.5 shrink-0 text-accent" />
-                  {/if}
-                </button>
-              </div>
-            </div>
-          {/if}
-        </div>
+        <Dropdown
+          size="sm"
+          ariaLabel="Advertising storage preference"
+          options={CONSENT_OPTIONS}
+          bind:value={tempAdStorage} />
       </div>
 
       <div class="flex items-center justify-between gap-3 p-3 sm:p-3.5">
@@ -442,85 +293,11 @@
           </p>
         </div>
 
-        <div class="relative shrink-0">
-          <button
-            type="button"
-            onclick={() =>
-              (activeDropdown =
-                activeDropdown === 'ad_user_data' ? null : 'ad_user_data')}
-            aria-label="Ad user data preference"
-            aria-expanded={activeDropdown === 'ad_user_data'}
-            aria-haspopup="listbox"
-            class="inline-flex h-8 min-w-22 cursor-pointer items-center justify-between gap-1.5 rounded-md border border-border-subtle bg-surface-card px-2.5 text-xs font-semibold text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none">
-            <span class="leading-none"
-              >{tempAdUserData === 'granted' ? 'Allow' : 'Deny'}</span>
-            <span
-              class="inline-flex h-4 w-4 shrink-0 origin-center items-center justify-center text-text-muted transition-transform duration-200 ease-out {(
-                activeDropdown === 'ad_user_data'
-              ) ?
-                'rotate-180'
-              : ''}">
-              <ChevronDown class="size-3 leading-none" />
-            </span>
-          </button>
-
-          {#if activeDropdown === 'ad_user_data'}
-            <button
-              type="button"
-              class="fixed inset-0 z-40 cursor-default"
-              onclick={() => (activeDropdown = null)}
-              aria-label="Close menu"></button>
-            <div
-              role="listbox"
-              aria-label="Ad user data options"
-              use:popoverPosition={{
-                placement: 'bottom-end',
-                offset: 8,
-                padding: 8
-              }}
-              class="absolute z-60 flex w-max min-w-full flex-col popover-surface p-0">
-              <div
-                class="relative z-10 flex flex-col overflow-hidden rounded-md">
-                <button
-                  type="button"
-                  role="option"
-                  aria-selected={tempAdUserData === 'denied'}
-                  onclick={() => {
-                    tempAdUserData = 'denied';
-                    activeDropdown = null;
-                  }}
-                  class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
-                    tempAdUserData === 'denied'
-                  ) ?
-                    'bg-accent/10 text-accent'
-                  : 'text-text-primary hover:bg-surface-hover'}">
-                  <span>Deny</span>
-                  {#if tempAdUserData === 'denied'}
-                    <Check class="size-3.5 shrink-0 text-accent" />
-                  {/if}
-                </button>
-                <button
-                  type="button"
-                  role="option"
-                  aria-selected={tempAdUserData === 'granted'}
-                  onclick={() => {
-                    tempAdUserData = 'granted';
-                    activeDropdown = null;
-                  }}
-                  class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
-                    tempAdUserData === 'granted'
-                  ) ?
-                    'bg-accent/10 text-accent'
-                  : 'text-text-primary hover:bg-surface-hover'}">
-                  <span>Allow</span>
-                  {#if tempAdUserData === 'granted'}
-                    <Check class="size-3.5 shrink-0 text-accent" />
-                  {/if}
-                </button>
-              </div>
-            </div>
-          {/if}
-        </div>
+        <Dropdown
+          size="sm"
+          ariaLabel="Ad user data preference"
+          options={CONSENT_OPTIONS}
+          bind:value={tempAdUserData} />
       </div>
 
       <div class="flex items-center justify-between gap-3 p-3 sm:p-3.5">
@@ -533,87 +310,11 @@
           </p>
         </div>
 
-        <div class="relative shrink-0">
-          <button
-            type="button"
-            onclick={() =>
-              (activeDropdown =
-                activeDropdown === 'ad_personalization' ? null : (
-                  'ad_personalization'
-                ))}
-            aria-label="Ad personalization preference"
-            aria-expanded={activeDropdown === 'ad_personalization'}
-            aria-haspopup="listbox"
-            class="inline-flex h-8 min-w-22 cursor-pointer items-center justify-between gap-1.5 rounded-md border border-border-subtle bg-surface-card px-2.5 text-xs font-semibold text-text-primary shadow-2xs transition-all hover:border-border-subtle/80 hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none">
-            <span class="flex-1 text-left leading-none"
-              >{tempAdPersonalization === 'granted' ? 'Allow' : 'Deny'}</span>
-            <span
-              class="inline-flex h-4 w-4 shrink-0 origin-center items-center justify-center text-text-muted transition-transform duration-200 ease-out {(
-                activeDropdown === 'ad_personalization'
-              ) ?
-                'rotate-180'
-              : ''}">
-              <ChevronDown class="size-3 leading-none" />
-            </span>
-          </button>
-
-          {#if activeDropdown === 'ad_personalization'}
-            <button
-              type="button"
-              class="fixed inset-0 z-40 cursor-default"
-              onclick={() => (activeDropdown = null)}
-              aria-label="Close menu"></button>
-            <div
-              role="listbox"
-              aria-label="Ad personalization options"
-              use:popoverPosition={{
-                placement: 'bottom-end',
-                offset: 8,
-                padding: 8
-              }}
-              class="absolute z-60 flex w-max min-w-full flex-col popover-surface p-0">
-              <div
-                class="relative z-10 flex flex-col overflow-hidden rounded-md">
-                <button
-                  type="button"
-                  role="option"
-                  aria-selected={tempAdPersonalization === 'denied'}
-                  onclick={() => {
-                    tempAdPersonalization = 'denied';
-                    activeDropdown = null;
-                  }}
-                  class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
-                    tempAdPersonalization === 'denied'
-                  ) ?
-                    'bg-accent/10 text-accent'
-                  : 'text-text-primary hover:bg-surface-hover'}">
-                  <span>Deny</span>
-                  {#if tempAdPersonalization === 'denied'}
-                    <Check class="size-3.5 shrink-0 text-accent" />
-                  {/if}
-                </button>
-                <button
-                  type="button"
-                  role="option"
-                  aria-selected={tempAdPersonalization === 'granted'}
-                  onclick={() => {
-                    tempAdPersonalization = 'granted';
-                    activeDropdown = null;
-                  }}
-                  class="flex items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors {(
-                    tempAdPersonalization === 'granted'
-                  ) ?
-                    'bg-accent/10 text-accent'
-                  : 'text-text-primary hover:bg-surface-hover'}">
-                  <span>Allow</span>
-                  {#if tempAdPersonalization === 'granted'}
-                    <Check class="size-3.5 shrink-0 text-accent" />
-                  {/if}
-                </button>
-              </div>
-            </div>
-          {/if}
-        </div>
+        <Dropdown
+          size="sm"
+          ariaLabel="Ad personalization preference"
+          options={CONSENT_OPTIONS}
+          bind:value={tempAdPersonalization} />
       </div>
     </div>
 

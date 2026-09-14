@@ -39,6 +39,7 @@
     RefreshCw,
     RefreshCwOff
   } from '@lucide/svelte';
+  import FieldMessage from './FieldMessage.svelte';
   import {renderMarkdown} from '$lib/markdown';
   import {supabase} from '$lib/supabase';
   import {splitHighlightedHtmlLines} from '$lib/utils/codeBlocks';
@@ -51,6 +52,7 @@
   } from '$lib/utils/codeBlocks';
   import {cn} from '$lib/utils/cn';
   import IconButton from './IconButton.svelte';
+  import Dropdown from './Dropdown.svelte';
   import Tooltip from './Tooltip.svelte';
   import {themeStore} from '$lib/stores/themeStore.svelte';
 
@@ -78,21 +80,11 @@
 
   let activeTab = $state<'editor' | 'preview'>('editor');
   let previewHtml = $state('');
+  let previewError = $state('');
   let previewContainerEl: HTMLDivElement | undefined = $state();
   let lineWrapMode = $state<'soft' | 'none'>('soft');
   let indentMode = $state<'spaces' | 'tabs'>('spaces');
   let indentSize = $state(4);
-
-  let headingDropdownOpen = $state(false);
-  let overflowPopoverOpen = $state(false);
-  let indentSizePopoverOpen = $state(false);
-  let editorSettingsPopoverOpen = $state(false);
-
-  let headingPopoverPos = $state({top: 0, left: 0});
-  let overflowPopoverPos = $state({top: 0, left: 0});
-  let indentSizePopoverPos = $state({top: 0, left: 0});
-  let indentSizePopoverWidth = $state(0);
-  let editorSettingsPopoverPos = $state({top: 0, right: 0});
 
   const EDITOR_PREFERENCES_STORAGE_KEY = 'markdown_editor_preferences';
   const INDENT_SIZES = [2, 4, 8] as const;
@@ -298,11 +290,28 @@
   }
 
   $effect(() => {
+    let active = true;
     if (value !== undefined) {
-      renderMarkdown(value, undefined, supabase).then(html => {
-        previewHtml = html;
-      });
+      renderMarkdown(value, undefined, supabase)
+        .then(html => {
+          if (active) {
+            previewHtml = html;
+            previewError = '';
+          }
+        })
+        .catch(error => {
+          if (active) {
+            previewHtml = '';
+            previewError =
+              error instanceof Error ?
+                error.message
+              : 'Preview could not be rendered.';
+          }
+        });
     }
+    return () => {
+      active = false;
+    };
   });
 
   $effect(() => {
@@ -485,81 +494,7 @@
       input.value = '';
     }
   }
-
-  function closeAllPopovers() {
-    headingDropdownOpen = false;
-    overflowPopoverOpen = false;
-    indentSizePopoverOpen = false;
-    editorSettingsPopoverOpen = false;
-  }
-
-  function openHeadingDropdown(el: HTMLButtonElement) {
-    const rect = el.getBoundingClientRect();
-    const popoverWidth = 140;
-    const padding = 8;
-    const clampedLeft = Math.max(
-      padding,
-      Math.min(rect.left, window.innerWidth - popoverWidth - padding)
-    );
-    const wasOpen = headingDropdownOpen;
-    headingPopoverPos = {top: rect.bottom + 4, left: clampedLeft};
-    closeAllPopovers();
-    headingDropdownOpen = !wasOpen;
-  }
-
-  function openOverflowPopover(el: HTMLButtonElement) {
-    const rect = el.getBoundingClientRect();
-    const popoverWidth = 180;
-    const padding = 8;
-    const clampedLeft = Math.max(
-      padding,
-      Math.min(rect.left, window.innerWidth - popoverWidth - padding)
-    );
-    const wasOpen = overflowPopoverOpen;
-    overflowPopoverPos = {top: rect.bottom + 4, left: clampedLeft};
-    closeAllPopovers();
-    overflowPopoverOpen = !wasOpen;
-  }
-
-  function toggleIndentSizePopover(el: HTMLButtonElement) {
-    const rect = el.getBoundingClientRect();
-    const padding = 8;
-    const wasOpen = indentSizePopoverOpen;
-    indentSizePopoverWidth = rect.width;
-    indentSizePopoverPos = {
-      top: rect.bottom + 4,
-      left: Math.max(
-        padding,
-        Math.min(rect.left, window.innerWidth - rect.width - padding)
-      )
-    };
-    closeAllPopovers();
-    indentSizePopoverOpen = !wasOpen;
-  }
-
-  function toggleEditorSettingsPopover(el: HTMLButtonElement) {
-    const rect = el.getBoundingClientRect();
-    const padding = 8;
-    const wasOpen = editorSettingsPopoverOpen;
-    editorSettingsPopoverPos = {
-      top: rect.bottom + 4,
-      right: Math.max(padding, window.innerWidth - rect.right)
-    };
-    closeAllPopovers();
-    editorSettingsPopoverOpen = !wasOpen;
-  }
-
-  function closeIndentSizePopover() {
-    indentSizePopoverOpen = false;
-  }
-
-  function handleWindowKeydown(event: KeyboardEvent) {
-    if (event.key !== 'Escape') return;
-    closeAllPopovers();
-  }
 </script>
-
-<svelte:window onkeydown={handleWindowKeydown} />
 
 {#snippet statusContent()}
   <div class="flex min-w-0 items-center gap-3 overflow-x-auto">
@@ -686,19 +621,27 @@
                 <ArrowRightToLine class="size-3.5" />
               {/if}
             </IconButton>
-            <IconButton
-              ariaLabel="Indent size: {indentSize} spaces"
-              tooltip="Indent size: {indentSize}"
-              size="sm"
-              class="editor-control-button"
-              aria-haspopup="listbox"
-              aria-expanded={indentSizePopoverOpen}
-              onclick={event =>
-                toggleIndentSizePopover(
-                  event.currentTarget as HTMLButtonElement
-                )}>
-              <RulerDimensionLine class="size-3.5" />
-            </IconButton>
+            <Dropdown
+              ariaLabel="Indent size"
+              options={INDENT_SIZES.map(size => ({
+                value: size,
+                label: `${size} spaces`
+              }))}
+              value={indentSize}
+              onChange={setIndentSize}>
+              {#snippet trigger({isOpen, toggle})}
+                <IconButton
+                  ariaLabel="Indent size: {indentSize} spaces"
+                  tooltip="Indent size: {indentSize}"
+                  size="sm"
+                  class="editor-control-button"
+                  aria-haspopup="listbox"
+                  aria-expanded={isOpen}
+                  onclick={toggle}>
+                  <RulerDimensionLine class="size-3.5" />
+                </IconButton>
+              {/snippet}
+            </Dropdown>
             <IconButton
               ariaLabel="Line wrapping: {lineWrapMode === 'soft' ? 'Wrap' : (
                 'Nowrap'
@@ -731,19 +674,98 @@
           </div>
 
           <div class="ml-auto flex items-center select-none sm:hidden">
-            <IconButton
+            <Dropdown
               ariaLabel="Editor settings"
-              tooltip="Editor settings"
-              size="sm"
-              class="editor-control-button"
-              aria-haspopup="true"
-              aria-expanded={editorSettingsPopoverOpen}
-              onclick={event =>
-                toggleEditorSettingsPopover(
-                  event.currentTarget as HTMLButtonElement
-                )}>
-              <Bolt class="size-3.5" />
-            </IconButton>
+              placement="bottom-end">
+              {#snippet trigger({isOpen, toggle})}
+                <IconButton
+                  ariaLabel="Editor settings"
+                  tooltip="Editor settings"
+                  size="sm"
+                  class="editor-control-button"
+                  aria-haspopup="dialog"
+                  aria-expanded={isOpen}
+                  onclick={toggle}>
+                  <Bolt class="size-3.5" />
+                </IconButton>
+              {/snippet}
+              <div
+                class="flex max-w-[calc(100vw-1rem)] min-w-56 flex-col text-xs">
+                <div
+                  class="flex items-center justify-between gap-3 px-3 py-1.5">
+                  <span class="text-text-muted">Indent mode</span>
+                  <IconButton
+                    ariaLabel="Indent mode: {indentMode === 'spaces' ? 'Spaces'
+                    : 'Tabs'}"
+                    size="xs"
+                    class="text-text-secondary hover:text-accent"
+                    onclick={() =>
+                      setIndentMode(
+                        indentMode === 'spaces' ? 'tabs' : 'spaces'
+                      )}>
+                    {#if indentMode === 'spaces'}
+                      <Space class="size-3.5" />
+                    {:else}
+                      <ArrowRightToLine class="size-3.5" />
+                    {/if}
+                  </IconButton>
+                </div>
+                <div
+                  class="flex items-center justify-between gap-3 px-3 py-1.5">
+                  <span class="text-text-muted">Indent size</span>
+                  <div class="flex items-center gap-1">
+                    {#each INDENT_SIZES as size (size)}
+                      <button
+                        type="button"
+                        aria-pressed={indentSize === size}
+                        onclick={() => setIndentSize(size)}
+                        class={cn(
+                          'inline-flex cursor-pointer items-center justify-center rounded-md px-2.5 py-1 transition-colors hover:bg-surface-hover hover:text-accent',
+                          indentSize === size ?
+                            'bg-accent/10 font-semibold text-accent'
+                          : 'text-text-secondary'
+                        )}>
+                        {size}
+                      </button>
+                    {/each}
+                  </div>
+                </div>
+                <div
+                  class="flex items-center justify-between gap-3 px-3 py-1.5">
+                  <span class="text-text-muted">Line wrapping</span>
+                  <IconButton
+                    ariaLabel="Line wrapping: {lineWrapMode === 'soft' ? 'Wrap'
+                    : 'Nowrap'}"
+                    size="xs"
+                    class="text-text-secondary hover:text-accent"
+                    onclick={() =>
+                      setLineWrapMode(
+                        lineWrapMode === 'soft' ? 'none' : 'soft'
+                      )}>
+                    {#if lineWrapMode === 'soft'}
+                      <TextWrap class="size-3.5" />
+                    {:else}
+                      <Summary class="size-3.5" />
+                    {/if}
+                  </IconButton>
+                </div>
+                <div
+                  class="flex items-center justify-between gap-3 px-3 py-1.5">
+                  <span class="text-text-muted">Line numbers</span>
+                  <IconButton
+                    ariaLabel="Line numbers: {showLineNumbers ? 'on' : 'off'}"
+                    size="xs"
+                    class="text-text-secondary hover:text-accent"
+                    onclick={() => setLineNumbers(!showLineNumbers)}>
+                    {#if showLineNumbers}
+                      <ListOrdered class="size-3.5" />
+                    {:else}
+                      <TextAlignJustify class="size-3.5" />
+                    {/if}
+                  </IconButton>
+                </div>
+              </div>
+            </Dropdown>
           </div>
         {/if}
       </div>
@@ -766,22 +788,41 @@
             </button>
           {/each}
 
-          <button
-            type="button"
-            onclick={e =>
-              openHeadingDropdown(e.currentTarget as HTMLButtonElement)}
-            aria-label="More headings (H4-H6)"
-            aria-haspopup="true"
-            aria-expanded={headingDropdownOpen}
-            class="flex h-7 shrink-0 cursor-pointer items-center justify-center gap-0.5 rounded-md px-1 transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
-            <Heading class="size-4" />
-            <ChevronDown
-              class="size-3 transition-transform duration-200 {(
-                headingDropdownOpen
-              ) ?
-                'rotate-180'
-              : ''}" />
-          </button>
+          <Dropdown
+            ariaLabel="More headings"
+            actions={[
+              {
+                label: 'Heading 4',
+                icon: Heading4,
+                onSelect: () => insertMarkdown('#### ')
+              },
+              {
+                label: 'Heading 5',
+                icon: Heading5,
+                onSelect: () => insertMarkdown('##### ')
+              },
+              {
+                label: 'Heading 6',
+                icon: Heading6,
+                onSelect: () => insertMarkdown('###### ')
+              }
+            ]}>
+            {#snippet trigger({isOpen, toggle})}
+              <button
+                type="button"
+                onclick={toggle}
+                aria-label="More headings (H4-H6)"
+                aria-haspopup="menu"
+                aria-expanded={isOpen}
+                class="flex h-7 shrink-0 cursor-pointer items-center justify-center gap-0.5 rounded-md px-1 transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
+                <Heading class="size-4" />
+                <ChevronDown
+                  class="size-3 transition-transform duration-200 {isOpen ?
+                    'rotate-180'
+                  : ''}" />
+              </button>
+            {/snippet}
+          </Dropdown>
 
           <div
             class="mx-1 h-4 w-px shrink-0 bg-border-subtle"
@@ -845,17 +886,65 @@
             aria-hidden="true">
           </div>
 
-          <button
-            type="button"
-            onclick={e =>
-              openOverflowPopover(e.currentTarget as HTMLButtonElement)}
-            aria-label="More formatting options"
-            aria-haspopup="true"
-            aria-expanded={overflowPopoverOpen}
-            class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
-            <span class="text-sm leading-none font-bold tracking-widest"
-              >···</span>
-          </button>
+          <Dropdown
+            ariaLabel="More formatting options"
+            actions={[
+              {
+                onSelect: () => insertMarkdown('<kbd>', '</kbd>'),
+                icon: Keyboard,
+                label: 'Keyboard key'
+              },
+              {
+                onSelect: () => insertMarkdown('<mark>', '</mark>'),
+                icon: Highlighter,
+                label: 'Highlight'
+              },
+              {
+                onSelect: () => insertMarkdown('<sub>', '</sub>'),
+                icon: Subscript,
+                label: 'Subscript'
+              },
+              {
+                onSelect: () => insertMarkdown('<sup>', '</sup>'),
+                icon: Superscript,
+                label: 'Superscript'
+              },
+              {
+                onSelect: () =>
+                  insertMarkdown(
+                    '| Header 1 | Header 2 |\n|----------|-----------|\n|  Cell 1  |  Cell 2  |\n'
+                  ),
+                icon: TableIcon,
+                label: 'Add table'
+              },
+              {
+                onSelect: () =>
+                  insertMarkdown(
+                    '<details>\n<summary>Details</summary>\n\n',
+                    '\n</details>\n'
+                  ),
+                icon: ChevronsUpDown,
+                label: 'Collapsible details'
+              },
+              {
+                onSelect: () => insertMarkdown('\n---\n'),
+                icon: Minus,
+                label: 'Horizontal rule'
+              }
+            ]}>
+            {#snippet trigger({isOpen, toggle})}
+              <button
+                type="button"
+                onclick={toggle}
+                aria-label="More formatting options"
+                aria-haspopup="menu"
+                aria-expanded={isOpen}
+                class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
+                <span class="text-sm leading-none font-bold tracking-widest"
+                  >···</span>
+              </button>
+            {/snippet}
+          </Dropdown>
         </div>
       </div>
     {/if}
@@ -996,6 +1085,9 @@
         bind:this={previewContainerEl}
         class="prose-custom editor-surface w-full p-6"
         style:min-height={minHeight || undefined}>
+        {#if previewError}<FieldMessage
+            variant="error"
+            message={previewError} />{/if}
         {#if previewHtml}
           {@html previewHtml}
         {:else}
@@ -1011,183 +1103,7 @@
       {@render statusContent()}
     </div>
   {/if}
-
-  {#if indentSizePopoverOpen}
-    <button
-      class="fixed inset-0 z-40 cursor-default"
-      onclick={closeIndentSizePopover}
-      tabindex="-1"
-      aria-label="Close indent size menu"></button>
-    <div
-      role="listbox"
-      class="editor-control-menu fixed z-50 flex flex-col overflow-hidden rounded-md border p-0 text-xs shadow-xl"
-      aria-label="Indent size"
-      style="top:{indentSizePopoverPos.top}px; left:{indentSizePopoverPos.left}px; width:{indentSizePopoverWidth}px">
-      {#each INDENT_SIZES as size (size)}
-        <button
-          type="button"
-          role="option"
-          aria-selected={indentSize === size}
-          onclick={() => {
-            setIndentSize(size);
-            closeIndentSizePopover();
-          }}
-          class={cn(
-            'editor-control-option flex w-full items-center justify-center',
-            indentSize === size && 'editor-control-option-active'
-          )}>
-          {size}
-        </button>
-      {/each}
-    </div>
-  {/if}
-
-  {#if editorSettingsPopoverOpen}
-    <button
-      class="fixed inset-0 z-40 cursor-default"
-      onclick={() => (editorSettingsPopoverOpen = false)}
-      tabindex="-1"
-      aria-label="Close editor settings menu"></button>
-    <div
-      class="editor-control-menu fixed z-50 flex max-w-[calc(100vw-1rem)] min-w-56 flex-col overflow-hidden rounded-md border p-1 text-xs shadow-xl"
-      aria-label="Editor settings"
-      style="top:{editorSettingsPopoverPos.top}px; right:{editorSettingsPopoverPos.right}px">
-      <div class="flex items-center justify-between gap-3 px-2 py-1.5">
-        <span class="editor-control-row-label">Indent mode</span>
-        <IconButton
-          ariaLabel="Indent mode: {indentMode === 'spaces' ? 'Spaces' : 'Tabs'}"
-          size="xs"
-          class="editor-control-button"
-          onclick={() =>
-            setIndentMode(indentMode === 'spaces' ? 'tabs' : 'spaces')}>
-          {#if indentMode === 'spaces'}
-            <Space class="size-3.5" />
-          {:else}
-            <ArrowRightToLine class="size-3.5" />
-          {/if}
-        </IconButton>
-      </div>
-      <div class="flex items-center justify-between gap-3 px-2 py-1.5">
-        <span class="editor-control-row-label">Indent size</span>
-        <div class="flex items-center gap-1">
-          {#each INDENT_SIZES as size (size)}
-            <button
-              type="button"
-              aria-pressed={indentSize === size}
-              onclick={() => setIndentSize(size)}
-              class={cn(
-                'editor-control-option inline-flex items-center justify-center rounded-md px-2.5 py-1',
-                indentSize === size && 'editor-control-option-active'
-              )}>
-              {size}
-            </button>
-          {/each}
-        </div>
-      </div>
-      <div class="flex items-center justify-between gap-3 px-2 py-1.5">
-        <span class="editor-control-row-label">Line wrapping</span>
-        <IconButton
-          ariaLabel="Line wrapping: {lineWrapMode === 'soft' ? 'Wrap' : (
-            'Nowrap'
-          )}"
-          size="xs"
-          class="editor-control-button"
-          onclick={() =>
-            setLineWrapMode(lineWrapMode === 'soft' ? 'none' : 'soft')}>
-          {#if lineWrapMode === 'soft'}
-            <TextWrap class="size-3.5" />
-          {:else}
-            <Summary class="size-3.5" />
-          {/if}
-        </IconButton>
-      </div>
-      <div class="flex items-center justify-between gap-3 px-2 py-1.5">
-        <span class="editor-control-row-label">Line numbers</span>
-        <IconButton
-          ariaLabel="Line numbers: {showLineNumbers ? 'on' : 'off'}"
-          size="xs"
-          class="editor-control-button"
-          onclick={() => setLineNumbers(!showLineNumbers)}>
-          {#if showLineNumbers}
-            <ListOrdered class="size-3.5" />
-          {:else}
-            <TextAlignJustify class="size-3.5" />
-          {/if}
-        </IconButton>
-      </div>
-    </div>
-  {/if}
 </div>
-
-{#if headingDropdownOpen}
-  <button
-    class="fixed inset-0 z-40 cursor-default"
-    onclick={() => (headingDropdownOpen = false)}
-    aria-label="Close heading menu"></button>
-  <div
-    role="menu"
-    class="editor-control-menu fixed z-50 flex min-w-32 flex-col overflow-hidden rounded-md border p-0 text-xs shadow-xl"
-    style="top:{headingPopoverPos.top}px; left:{headingPopoverPos.left}px">
-    <button
-      type="button"
-      role="menuitem"
-      onclick={() => {
-        insertMarkdown('#### ');
-        headingDropdownOpen = false;
-      }}
-      class="editor-control-option flex w-full cursor-pointer items-center gap-2 text-left text-xs font-medium">
-      <Heading4 class="size-4" />
-      <span>Heading 4</span>
-    </button>
-    <button
-      type="button"
-      role="menuitem"
-      onclick={() => {
-        insertMarkdown('##### ');
-        headingDropdownOpen = false;
-      }}
-      class="editor-control-option flex w-full cursor-pointer items-center gap-2 text-left text-xs font-medium">
-      <Heading5 class="size-4" />
-      <span>Heading 5</span>
-    </button>
-    <button
-      type="button"
-      role="menuitem"
-      onclick={() => {
-        insertMarkdown('###### ');
-        headingDropdownOpen = false;
-      }}
-      class="editor-control-option flex w-full cursor-pointer items-center gap-2 text-left text-xs font-medium">
-      <Heading6 class="size-4" />
-      <span>Heading 6</span>
-    </button>
-  </div>
-{/if}
-
-{#if overflowPopoverOpen}
-  <button
-    class="fixed inset-0 z-40 cursor-default"
-    onclick={() => (overflowPopoverOpen = false)}
-    aria-label="Close more options menu"></button>
-  <div
-    role="menu"
-    class="editor-control-menu fixed z-50 flex max-w-[calc(100vw-1rem)] min-w-44 flex-col overflow-hidden rounded-md border p-0 text-xs shadow-xl"
-    style="top:{overflowPopoverPos.top}px; left:{overflowPopoverPos.left}px">
-    {#each [{action: () => insertMarkdown('<kbd>', '</kbd>'), icon: Keyboard, label: 'Keyboard key'}, {action: () => insertMarkdown('<mark>', '</mark>'), icon: Highlighter, label: 'Highlight'}, {action: () => insertMarkdown('<sub>', '</sub>'), icon: Subscript, label: 'Subscript'}, {action: () => insertMarkdown('<sup>', '</sup>'), icon: Superscript, label: 'Superscript'}, {action: () => insertMarkdown('| Header 1 | Header 2 |\n|----------|-----------|\n|  Cell 1  |  Cell 2  |\n'), icon: TableIcon, label: 'Add table'}, {action: () => insertMarkdown('<details>\n<summary>Details</summary>\n\n', '\n</details>\n'), icon: ChevronsUpDown, label: 'Collapsible details'}, {action: () => insertMarkdown('\n---\n'), icon: Minus, label: 'Horizontal rule'}] as const as item (item.label)}
-      <button
-        type="button"
-        role="menuitem"
-        onclick={() => {
-          item.action();
-          overflowPopoverOpen = false;
-        }}
-        class="editor-control-option flex w-full cursor-pointer items-center gap-2 text-left text-xs font-medium">
-        <item.icon class="size-4 shrink-0" />
-        <span>{item.label}</span>
-      </button>
-    {/each}
-  </div>
-{/if}
 
 <style>
   @reference "../../routes/global.css";
@@ -1326,47 +1242,6 @@
 
   :global(.editor-control-button:focus-visible) {
     border-color: var(--code-theme-border);
-  }
-
-  .editor-control-menu {
-    background-color: var(--code-theme-bg);
-    border-color: var(--code-theme-border);
-    color: var(--code-theme-fg);
-  }
-
-  .editor-control-option {
-    color: var(--code-theme-muted);
-    cursor: pointer;
-    padding: 0.5rem 0.75rem;
-    text-align: left;
-    transition:
-      background-color 150ms,
-      color 150ms;
-  }
-
-  .editor-control-option:hover,
-  .editor-control-option:focus-visible {
-    background-color: color-mix(
-      in srgb,
-      var(--code-theme-fg) 14%,
-      var(--code-theme-bg)
-    );
-    color: var(--code-theme-fg);
-    outline: none;
-  }
-
-  .editor-control-option-active,
-  .editor-control-option-active:hover {
-    background-color: color-mix(
-      in srgb,
-      var(--code-theme-fg) 8%,
-      var(--code-theme-bg)
-    );
-    color: var(--code-theme-fg);
-  }
-
-  .editor-control-row-label {
-    color: var(--code-theme-muted);
   }
 
   .editor-toolbar-scroll {

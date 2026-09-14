@@ -109,6 +109,14 @@
   color: var(--code-theme-fg) !important;
 }
 
+.hljs-addition {
+  @apply text-code-addition!;
+}
+
+.hljs-deletion {
+  @apply text-code-deletion!;
+}
+
 @utility glass-button {
   @apply border border-border-subtle/50 bg-surface-card/85 text-text-primary shadow-2xs backdrop-blur-md transition-all hover:border-accent hover:bg-surface-card dark:border-white/8 dark:bg-surface-card/60 dark:hover:bg-surface-card/85;
 }

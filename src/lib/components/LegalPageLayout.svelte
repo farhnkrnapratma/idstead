@@ -274,28 +274,18 @@
     {#if !readingModeStore.active}
       <aside
         transition:fade={{duration: 150}}
-        class="hidden select-none lg:sticky lg:top-0 lg:z-20 lg:flex lg:max-h-full lg:w-full lg:flex-col lg:overflow-hidden lg:px-[5%] lg:pt-[5%] lg:pb-[5%] [&>*+*]:lg:mt-[5%]"
+        class="hidden select-none lg:sticky lg:top-0 lg:z-20 lg:flex lg:max-h-full lg:w-full lg:flex-col lg:overflow-hidden lg:px-3 lg:pt-[1.25vw] lg:pb-[1.25vw] [&>*+*]:lg:mt-4"
         aria-label="Table of contents">
         <TableOfContents
           {headings}
           class="min-h-0 w-full flex-1 [scrollbar-width:none] overflow-hidden [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden" />
-        <HelpfulBlock
-          title="Help improve this page"
-          subtitle="Was this page helpful to you?"
-          variant="compact"
-          voted={feedback.voted}
-          pending={feedback.pending}
-          error={feedback.error}
-          onVote={helpful => feedback.vote(helpful ? 'yes' : 'no')}
-          onFeedbackClick={() => goto('/feedback')}
-          class="w-full shrink-0" />
       </aside>
     {/if}
 
     <article
       bind:this={articleBodyEl}
       onscroll={handleArticleScroll}
-      class="article-scroll-container flex w-full min-w-0 flex-col lg:h-full lg:max-h-full lg:overflow-y-auto lg:px-[5%] lg:pt-8 lg:pb-0">
+      class="article-scroll-container flex w-full min-w-0 flex-col lg:h-full lg:max-h-full lg:overflow-y-auto lg:px-[5%] lg:pt-[1.25vw] lg:pb-0">
       <ArticleHeader
         {title}
         titleClass="text-text-primary">
@@ -341,10 +331,11 @@
       </div>
 
       {#if !readingModeStore.active}
-        <div class="mt-8 border-t border-border-subtle pt-6 lg:hidden">
+        <div class="mt-8">
           <HelpfulBlock
             title="Help improve this page"
             subtitle="Was this page helpful to you?"
+            shareLabel="Share this page"
             voted={feedback.voted}
             pending={feedback.pending}
             error={feedback.error}
@@ -371,7 +362,7 @@
     {#if !readingModeStore.active}
       <aside
         transition:fade={{duration: 150}}
-        class="article-scroll-container hidden select-none lg:sticky lg:top-0 lg:z-20 lg:flex lg:max-h-full lg:w-full lg:flex-col lg:overflow-y-auto lg:px-[5%] lg:pt-[5%] lg:pb-[5%] [&>*+*]:lg:mt-[5%]"
+        class="article-scroll-container hidden select-none lg:sticky lg:top-0 lg:z-20 lg:flex lg:max-h-full lg:w-full lg:flex-col lg:overflow-y-auto lg:px-3 lg:pt-[1.25vw] lg:pb-[1.25vw] [&>*+*]:lg:mt-4"
         aria-label="Article actions">
         <ContentActions
           variant="sidebar"
@@ -391,18 +382,18 @@
 
 <FeedbackButton
   show={!readingModeStore.active}
-  class="hidden lg:fixed lg:bottom-6 lg:left-[calc(25%+1.5rem)] lg:z-40 lg:block" />
+  class="hidden lg:fixed lg:bottom-6 lg:left-[calc(25%+0.75rem)] lg:z-40 lg:block" />
 
 <ScrollToTopButton
   show={isArticleScrolledPast && !readingModeStore.active}
   onClick={scrollArticleToTop}
   progress={articleScrollProgress}
-  class="hidden lg:fixed lg:right-[calc(25%+1.5rem)] lg:bottom-6 lg:z-40 lg:block" />
+  class="hidden lg:fixed lg:right-[calc(25%+0.75rem)] lg:bottom-6 lg:z-40 lg:block" />
 
 {#if readingModeStore.active}
   <div
     transition:fade={{duration: 150}}
-    class="fixed right-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 md:right-6 md:bottom-6 lg:right-[calc(25%+1.5rem)]">
+    class="fixed right-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 md:right-6 md:bottom-6 lg:right-[calc(25%+0.75rem)]">
     <Tooltip
       content="Exit reading mode"
       placement="top"

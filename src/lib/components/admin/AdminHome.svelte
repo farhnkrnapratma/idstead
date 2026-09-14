@@ -8,16 +8,19 @@
   import {
     formatCount,
     helpfulPercent,
+    type WorkspaceCalendar,
     type WorkspaceOverview,
     type WorkspaceArea
   } from '$lib/adminWorkspace';
   import Card from '../Card.svelte';
   import StatsGrid from '../StatsGrid.svelte';
   import Button from '../Button.svelte';
+  import {activityTimestamp} from '$lib/adminActivity';
   import ErrorState from '../ErrorState.svelte';
   import LoadingState from '../LoadingState.svelte';
   import EmptyState from '../EmptyState.svelte';
   import Section from '$lib/layout/Section.svelte';
+  import ViewsCalendar from './ViewsCalendar.svelte';
   import ViewsChart from './ViewsChart.svelte';
   import AnalyticsPeriod from './AnalyticsPeriod.svelte';
   let {
@@ -28,10 +31,12 @@
     onPublished: () => void;
   } = $props();
   let data = $state.raw<WorkspaceOverview | null>(null);
+  let calendar = $state.raw<WorkspaceCalendar | null>(null);
+  let calendarError = $state('');
   let error = $state('');
   let loading = $state(true);
-  let dirty = $state(false);
   let controller: AbortController | undefined;
+  let autoRefresh: ReturnType<typeof setTimeout> | undefined;
   let generation = 0;
   const params = $derived(adminUrl().searchParams);
   function period(values: Record<string, string>) {
@@ -65,16 +70,37 @@
     controller = new AbortController();
     loading = true;
     try {
-      const result = await adminActivityRequest<WorkspaceOverview>(
-        'workspace',
-        {...query, section: 'overview'},
-        undefined,
-        controller.signal
-      );
+      const [overviewResult, calendarResult] = await Promise.allSettled([
+        adminActivityRequest<WorkspaceOverview>(
+          'workspace',
+          {...query, section: 'overview'},
+          undefined,
+          controller.signal
+        ),
+        adminActivityRequest<WorkspaceCalendar>(
+          'workspace',
+          {section: 'calendar', timeZone: query.timeZone},
+          undefined,
+          controller.signal
+        )
+      ]);
       if (current === generation) {
-        data = result;
-        error = '';
-        dirty = false;
+        if (overviewResult.status === 'fulfilled') {
+          data = overviewResult.value;
+          error = '';
+        } else
+          error =
+            overviewResult.reason instanceof Error ?
+              overviewResult.reason.message
+            : 'Dashboard could not be loaded.';
+        if (calendarResult.status === 'fulfilled') {
+          calendar = calendarResult.value;
+          calendarError = '';
+        } else
+          calendarError =
+            calendarResult.reason instanceof Error ?
+              calendarResult.reason.message
+            : 'Calendar could not be loaded.';
       }
     } catch (caught) {
       if (current === generation && !controller.signal.aborted)
@@ -88,9 +114,9 @@
   }
   const stats = $derived([
     {
-      label: 'Recorded reads',
+      label: 'Article views',
       value: data ? formatCount(data.reads) : '—',
-      description: 'Selected period · deduplicated per article',
+      description: 'In the selected period',
       componentIcon: Eye,
       onclick: () => document.getElementById('admin-readers')?.focus()
     },
@@ -98,9 +124,7 @@
       label: 'Open reports',
       value: data ? formatCount(data.openReports) : '—',
       description:
-        data ?
-          `${formatCount(data.reportedComments)} comments · Current`
-        : 'Current',
+        data ? `${formatCount(data.reportedComments)} comments` : 'Comments',
       componentIcon: Flag,
       onclick: () => onNavigate('reports')
     },
@@ -109,25 +133,26 @@
       value: data ? helpfulPercent(data.helpful, data.unhelpful) : '—',
       description:
         data ?
-          `${formatCount(data.helpful + data.unhelpful)} responses · Selected period`
-        : 'Articles and legal pages',
+          `${formatCount(data.helpful + data.unhelpful)} responses`
+        : 'Responses',
       componentIcon: ThumbsUp,
       onclick: () => onNavigate('feedback')
     },
     {
       label: 'Published',
       value: data ? formatCount(data.published) : '—',
-      description:
-        data ? `of ${formatCount(data.posts)} posts · Current` : 'Current',
+      description: data ? `of ${formatCount(data.posts)} posts` : 'Posts',
       componentIcon: CalendarCheck2,
       onclick: onPublished
     }
   ]);
   onMount(() => {
     const remove = adminNotificationsStore.onActivityRefresh(async () => {
-      dirty = true;
+      clearTimeout(autoRefresh);
+      autoRefresh = setTimeout(refresh, 1000);
     });
     return () => {
+      clearTimeout(autoRefresh);
       generation++;
       controller?.abort();
       remove();
@@ -142,22 +167,11 @@
     {@attach () => {
       params.toString();
       void load();
-    }}
-    class="flex flex-wrap items-start justify-between gap-3">
-    <div>
-      <h1 class="text-2xl font-bold text-text-primary">Overview</h1>
-      <p class="mt-1 text-sm text-text-secondary">
-        Monitor activity, then open a workspace to investigate.
-      </p>
-    </div>
-    <Button
-      size="sm"
-      type="outline"
-      disabled={loading}
-      onclick={refresh}
-      >{loading ? 'Updating…'
-      : dirty ? 'Updates available · Refresh'
-      : 'Refresh'}</Button>
+    }}>
+    <h1 class="text-2xl font-bold text-text-primary">Overview</h1>
+    <p class="mt-1 text-sm text-text-secondary">
+      Your site activity at a glance.
+    </p>
   </div>
   <AnalyticsPeriod
     {params}
@@ -169,13 +183,20 @@
   {#if data}<p
       class="text-xs text-text-muted"
       role="status">
-      {dirty ? 'New activity is available. ' : ''}Last updated {new Date(
-        data.updatedAt
-      ).toLocaleString('en-US', {timeZone: data.timeZone})} · {data.timeZone}
+      Updated {activityTimestamp(data.updatedAt, data.timeZone)} · {data.timeZone}
     </p>{/if}
   <StatsGrid
     {stats}
     variant="funding" />
+  <Card density="padded">
+    {#if calendarError}<ErrorState
+        title="Unable to load calendar"
+        description={calendarError}
+        onRetry={load} />
+    {:else if calendar && calendar.timeZone === params.get('timeZone')}<ViewsCalendar
+        data={calendar} />
+    {:else}<LoadingState label="Loading calendar…" />{/if}
+  </Card>
   <Card
     id="admin-readers"
     tabindex={-1}
@@ -211,15 +232,21 @@
                   class="flex w-full cursor-pointer flex-col gap-1 rounded-sm py-3 text-left focus-visible:outline-2 focus-visible:outline-focus-ring"
                   onclick={() => onNavigate(area as WorkspaceArea, item.id)}
                   ><span
-                    class="line-clamp-1 text-sm font-semibold text-text-primary"
+                    class="truncate text-sm font-semibold text-text-primary"
                     >{item.title}</span
-                  ><span class="line-clamp-2 text-sm text-text-secondary"
-                    >{area === 'reports' ?
-                      `${item.author}: ${item.content}`
-                    : `${helpfulPercent(item.helpful ?? 0, item.unhelpful ?? 0)} helpful`}</span
-                  ><span class="text-xs text-text-muted"
-                    >{formatCount(item.total)}
-                    {area === 'reports' ? 'open reports' : 'responses'}</span
+                  ><span
+                    class="flex min-w-0 items-center gap-1 text-xs text-text-muted"
+                    ><span class="min-w-0 truncate text-text-secondary"
+                      >{area === 'reports' ?
+                        `${item.author}: ${item.content}`
+                      : `${helpfulPercent(item.helpful ?? 0, item.unhelpful ?? 0)} helpful`}</span
+                    ><span
+                      class="shrink-0"
+                      aria-hidden="true">·</span
+                    ><span class="shrink-0 whitespace-nowrap"
+                      >{formatCount(item.total)}
+                      {area === 'reports' ? 'open reports' : 'responses'}</span
+                    ></span
                   ></button>
               </li>
             {/each}

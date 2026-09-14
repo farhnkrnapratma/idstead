@@ -474,38 +474,36 @@
       markdownContent = String(form.get('markdown'));
       const missing: string[] = [];
       if (submitted.published) {
-        await Promise.all(
-          TRANSLATION_LOCALES.map(async locale => {
-            try {
-              const response = await fetch('/api/internal/blog/translate', {
-                method: 'POST',
-                headers: {
-                  Authorization: `Bearer ${accessToken}`,
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  postId: editId,
-                  slug: submitted.slug,
-                  locale,
-                  title: submitted.title,
-                  excerpt: submitted.excerpt,
-                  summary: submitted.summary ?? null,
-                  tldr: submitted.tldr ?? null,
-                  markdown: markdownContent
-                })
-              });
-              const translation = await response.json();
-              if (
-                !response.ok
-                || (!translation.stored && !translation.skipped)
-                || (translation.stored && !translation.bodyTranslated)
-              )
-                missing.push(locale);
-            } catch {
+        for (const locale of TRANSLATION_LOCALES) {
+          try {
+            const response = await fetch('/api/internal/blog/translate', {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                postId: editId,
+                slug: submitted.slug,
+                locale,
+                title: submitted.title,
+                excerpt: submitted.excerpt,
+                summary: submitted.summary ?? null,
+                tldr: submitted.tldr ?? null,
+                markdown: markdownContent
+              })
+            });
+            const translation = await response.json();
+            if (
+              !response.ok
+              || (!translation.stored && !translation.skipped)
+              || (translation.stored && !translation.bodyTranslated)
+            )
               missing.push(locale);
-            }
-          })
-        );
+          } catch {
+            missing.push(locale);
+          }
+        }
       }
       await rememberPostSave(operationKey, null);
       pendingSave = null;

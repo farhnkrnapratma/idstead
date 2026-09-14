@@ -802,26 +802,19 @@
     {#if !readingModeStore.active}
       <aside
         transition:fade={{duration: 150}}
-        class="hidden select-none lg:sticky lg:top-0 lg:z-20 lg:flex lg:max-h-full lg:w-full lg:flex-col lg:overflow-hidden lg:px-[5%] lg:pt-[5%] lg:pb-[5%] [&>*+*]:lg:mt-[5%]"
+        class="hidden select-none lg:sticky lg:top-0 lg:z-20 lg:flex lg:max-h-full lg:w-full lg:flex-col lg:overflow-hidden lg:px-3 lg:pt-[1.25vw] lg:pb-[1.25vw] [&>*+*]:lg:mt-4"
         aria-label="Table of contents">
         <TableOfContents
+          title="In this article"
           {headings}
           class="min-h-0 w-full flex-1 [scrollbar-width:none] overflow-hidden [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden" />
-        <HelpfulBlock
-          variant="compact"
-          voted={feedback.voted}
-          pending={feedback.pending}
-          error={feedback.error}
-          onVote={helpful => feedback.vote(helpful ? 'yes' : 'no')}
-          onFeedbackClick={() => (showNoFeedbackDialog = true)}
-          class="w-full shrink-0" />
       </aside>
     {/if}
 
     <article
       bind:this={articleEl}
       onscroll={handleArticleScroll}
-      class="article-scroll-container flex w-full min-w-0 flex-col lg:h-full lg:max-h-full lg:overflow-y-auto lg:px-[5%] lg:pt-8 lg:pb-0">
+      class="article-scroll-container flex w-full min-w-0 flex-col lg:h-full lg:max-h-full lg:overflow-y-auto lg:px-[5%] lg:pt-[1.25vw] lg:pb-0">
       <ArticleHeader
         banner={bannerPublicUrl}
         title={post.title}
@@ -1066,6 +1059,7 @@
           transition:fade={{duration: 150}}
           class="mt-3 flex flex-col lg:hidden">
           <TableOfContents
+            title="In this article"
             {headings}
             collapsible={true}
             defaultCollapsed={true} />
@@ -1079,138 +1073,13 @@
       </div>
 
       {#if !readingModeStore.active}
-        <div
-          transition:fade={{duration: 150}}
-          class="mt-6 flex flex-col gap-4 select-none sm:mt-8 sm:gap-5">
-          <div class="lg:hidden">
-            <HelpfulBlock
-              voted={feedback.voted}
-              pending={feedback.pending}
-              error={feedback.error}
-              onVote={helpful => feedback.vote(helpful ? 'yes' : 'no')}
-              onFeedbackClick={() => (showNoFeedbackDialog = true)} />
-          </div>
-
-          <div class="border-t border-border-subtle pt-4 sm:pt-5">
-            <h3
-              class="mb-2.5 text-sm font-bold tracking-tight text-text-primary">
-              Share this article
-            </h3>
-            <div class="grid grid-cols-6 gap-1.5 sm:grid-cols-3 sm:gap-2">
-              <Button
-                href={`https://x.com/intent/post?url=${encodeURIComponent(page.url.href)}&text=${encodeURIComponent(post.title)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                type="secondary"
-                size="sm"
-                class="w-full justify-center px-2 py-2 sm:px-3"
-                title="Share on X"
-                keyboardShortcut={buttonKey('shareX')}
-                shortcutLabel="Share on X"
-                aria-label="Share on X (opens in a new tab)">
-                {#snippet leading()}
-                  <i
-                    class="bi bi-twitter-x inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
-                    aria-hidden="true"></i>
-                {/snippet}
-                <span class="hidden truncate sm:inline">X</span>
-              </Button>
-
-              <Button
-                href={`https://linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(page.url.href)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                type="secondary"
-                size="sm"
-                class="w-full justify-center px-2 py-2 sm:px-3"
-                title="Share on LinkedIn"
-                keyboardShortcut={buttonKey('shareLinkedIn')}
-                shortcutLabel="Share on LinkedIn"
-                aria-label="Share on LinkedIn (opens in a new tab)">
-                {#snippet leading()}
-                  <i
-                    class="bi bi-linkedin inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
-                    aria-hidden="true"></i>
-                {/snippet}
-                <span class="hidden truncate sm:inline">LinkedIn</span>
-              </Button>
-
-              <Button
-                href={`https://api.whatsapp.com/send?text=${encodeURIComponent(post.title)}%20${encodeURIComponent(page.url.href)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                type="secondary"
-                size="sm"
-                class="w-full justify-center px-2 py-2 sm:px-3"
-                title="Share on WhatsApp"
-                keyboardShortcut={buttonKey('shareWhatsApp')}
-                shortcutLabel="Share on WhatsApp"
-                aria-label="Share on WhatsApp (opens in a new tab)">
-                {#snippet leading()}
-                  <i
-                    class="bi bi-whatsapp inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
-                    aria-hidden="true"></i>
-                {/snippet}
-                <span class="hidden truncate sm:inline">WhatsApp</span>
-              </Button>
-
-              <Button
-                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(page.url.href)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                type="secondary"
-                size="sm"
-                class="w-full justify-center px-2 py-2 sm:px-3"
-                title="Share on Facebook"
-                keyboardShortcut={buttonKey('shareFacebook')}
-                shortcutLabel="Share on Facebook"
-                aria-label="Share on Facebook (opens in a new tab)">
-                {#snippet leading()}
-                  <i
-                    class="bi bi-facebook inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
-                    aria-hidden="true"></i>
-                {/snippet}
-                <span class="hidden truncate sm:inline">Facebook</span>
-              </Button>
-
-              <Button
-                href={`https://reddit.com/submit?url=${encodeURIComponent(page.url.href)}&title=${encodeURIComponent(post.title)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                type="secondary"
-                size="sm"
-                class="w-full justify-center px-2 py-2 sm:px-3"
-                title="Share on Reddit"
-                keyboardShortcut={buttonKey('shareReddit')}
-                shortcutLabel="Share on Reddit"
-                aria-label="Share on Reddit (opens in a new tab)">
-                {#snippet leading()}
-                  <i
-                    class="bi bi-reddit inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
-                    aria-hidden="true"></i>
-                {/snippet}
-                <span class="hidden truncate sm:inline">Reddit</span>
-              </Button>
-
-              <Button
-                href={`mailto:?subject=${encodeURIComponent(post.title)}&body=${encodeURIComponent(page.url.href)}`}
-                type="secondary"
-                size="sm"
-                class="w-full justify-center px-2 py-2 sm:px-3"
-                title="Share via Email"
-                keyboardShortcut={buttonKey('shareEmail')}
-                shortcutLabel="Share via email"
-                aria-label="Share via email">
-                {#snippet leading()}
-                  <i
-                    class="bi bi-envelope-fill inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
-                    aria-hidden="true"></i>
-                {/snippet}
-                <span class="hidden truncate sm:inline">Email</span>
-              </Button>
-            </div>
-          </div>
-        </div>
+        <HelpfulBlock
+          class="mt-6 sm:mt-8"
+          voted={feedback.voted}
+          pending={feedback.pending}
+          error={feedback.error}
+          onVote={helpful => feedback.vote(helpful ? 'yes' : 'no')}
+          onFeedbackClick={() => (showNoFeedbackDialog = true)} />
 
         {#if relatedPosts.length > 0}
           <section
@@ -1641,7 +1510,7 @@
     {#if !readingModeStore.active}
       <aside
         transition:fade={{duration: 150}}
-        class="article-scroll-container hidden select-none lg:sticky lg:top-0 lg:z-20 lg:flex lg:max-h-full lg:w-full lg:flex-col lg:overflow-y-auto lg:px-[5%] lg:pt-[5%] lg:pb-[5%] [&>*+*]:lg:mt-[5%]"
+        class="article-scroll-container hidden select-none lg:sticky lg:top-0 lg:z-20 lg:flex lg:max-h-full lg:w-full lg:flex-col lg:overflow-y-auto lg:px-3 lg:pt-[1.25vw] lg:pb-[1.25vw] [&>*+*]:lg:mt-4"
         aria-label="Article actions and insights">
         {#if post.tldr && post.tldr.length > 0}
           <PostInsights
@@ -1673,18 +1542,18 @@
 
 <FeedbackButton
   show={!readingModeStore.active}
-  class="hidden lg:fixed lg:bottom-6 lg:left-[calc(25%+1.5rem)] lg:z-40 lg:block" />
+  class="hidden lg:fixed lg:bottom-6 lg:left-[calc(25%+0.75rem)] lg:z-40 lg:block" />
 
 <ScrollToTopButton
   show={isArticleScrolledPast && !readingModeStore.active}
   onClick={scrollArticleToTop}
   progress={articleScrollProgress}
-  class="hidden lg:fixed lg:right-[calc(25%+1.5rem)] lg:bottom-6 lg:z-40 lg:block" />
+  class="hidden lg:fixed lg:right-[calc(25%+0.75rem)] lg:bottom-6 lg:z-40 lg:block" />
 
 {#if readingModeStore.active}
   <div
     transition:fade={{duration: 150}}
-    class="fixed right-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 md:right-6 md:bottom-6 lg:right-[calc(25%+1.5rem)]">
+    class="fixed right-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 md:right-6 md:bottom-6 lg:right-[calc(25%+0.75rem)]">
     <Tooltip
       content="Exit reading mode"
       placement="top"

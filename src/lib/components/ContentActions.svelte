@@ -11,6 +11,7 @@
     ChevronDown
   } from '@lucide/svelte';
   import {toastStore} from '../stores/toastStore.svelte';
+  import Dropdown from './Dropdown.svelte';
   import {markdownToPlainText} from '../utils/markdownToText';
   import {cn} from '../utils/cn';
   import Button from './Button.svelte';
@@ -47,38 +48,12 @@
     class: className = ''
   }: Props = $props();
 
-  let isMoreOpen = $state(false);
-  let moreContainerRef: HTMLDivElement | undefined = $state();
   let cachedMarkdown = $state<string | null>(null);
 
   let copiedMarkdown = $state(false);
   let copiedText = $state(false);
   let copiedUrl = $state(false);
   let copiedId = $state(false);
-
-  function handleWindowPointerDown(e: PointerEvent) {
-    if (
-      isMoreOpen
-      && moreContainerRef
-      && !moreContainerRef.contains(e.target as Node)
-    ) {
-      isMoreOpen = false;
-    }
-  }
-
-  function handleKeydown(e: KeyboardEvent) {
-    if (e.key === 'Escape' && isMoreOpen) {
-      isMoreOpen = false;
-    }
-  }
-
-  function handleWindowScroll() {
-    if (isMoreOpen) isMoreOpen = false;
-  }
-
-  function toggleMore() {
-    isMoreOpen = !isMoreOpen;
-  }
 
   async function getMarkdown(): Promise<string> {
     if (markdownContent) return markdownContent;
@@ -194,19 +169,13 @@
   }
 </script>
 
-<svelte:window
-  onpointerdown={handleWindowPointerDown}
-  onkeydown={handleKeydown}
-  onscroll={handleWindowScroll} />
-
-{#snippet popoverMenu()}
+{#snippet popoverMenu(close: () => void)}
   <div
-    role="menu"
-    class="absolute top-full right-0 left-auto z-50 mt-1.5 flex max-h-[85vh] max-w-[calc(100vw-2rem)] flex-row divide-x divide-border-subtle/60 overflow-y-auto rounded-md border border-border-subtle bg-surface-elevated/95 p-2.5 shadow-xl backdrop-blur-md">
+    class="flex max-h-[85vh] flex-row divide-x divide-border-subtle/60 overflow-y-auto">
     {#if showCopyUrl || pageId}
-      <div class="flex flex-col gap-1 pr-3">
+      <div class="flex flex-col pt-2">
         <span
-          class="px-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase"
+          class="px-3 pb-1 text-2xs font-semibold tracking-wider text-text-muted uppercase"
           >Copy</span>
         {#if showCopyUrl}
           <Button
@@ -217,9 +186,9 @@
             size="xs"
             label={copiedUrl ? 'Copied!' : 'Post URL'}
             truncateMiddle
-            class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
+            class="w-full justify-start rounded-none! px-3 text-xs font-normal! whitespace-nowrap text-text-secondary!"
             onclick={() => {
-              isMoreOpen = false;
+              close();
               handleCopyPageUrl();
             }}>
             {#snippet leading()}
@@ -240,9 +209,9 @@
             size="xs"
             label={copiedId ? 'Copied!' : 'Post ID'}
             truncateMiddle
-            class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
+            class="w-full justify-start rounded-none! px-3 text-xs font-normal! whitespace-nowrap text-text-secondary!"
             onclick={() => {
-              isMoreOpen = false;
+              close();
               handleCopyPageId();
             }}>
             {#snippet leading()}
@@ -257,13 +226,10 @@
       </div>
     {/if}
 
-    <div class="flex flex-col gap-2 pl-3 sm:contents">
-      <div
-        class="flex flex-col gap-1 sm:px-3 {showCopyUrl || pageId ? '' : (
-          'sm:pr-3'
-        )}">
+    <div class="flex flex-col sm:contents">
+      <div class="flex flex-col pt-2">
         <span
-          class="px-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase"
+          class="px-3 pb-1 text-2xs font-semibold tracking-wider text-text-muted uppercase"
           >Text</span>
         <Button
           shortcutGroup="copy"
@@ -273,9 +239,9 @@
           size="xs"
           label={copiedText ? 'Copied!' : 'Copy as TXT'}
           truncateMiddle
-          class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
+          class="w-full justify-start rounded-none! px-3 text-xs font-normal! whitespace-nowrap text-text-secondary!"
           onclick={() => {
-            isMoreOpen = false;
+            close();
             handleCopyPlainText();
           }}>
           {#snippet leading()}
@@ -295,8 +261,8 @@
           href={viewTextUrl}
           label="View as TXT"
           truncateMiddle
-          class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
-          onclick={() => (isMoreOpen = false)}>
+          class="w-full justify-start rounded-none! px-3 text-xs font-normal! whitespace-nowrap text-text-secondary!"
+          onclick={close}>
           {#snippet leading()}
             <TextAlignStart class="size-3.5" />
           {/snippet}
@@ -304,9 +270,9 @@
       </div>
 
       <div
-        class="flex flex-col gap-1 border-t border-border-subtle/60 pt-2 sm:border-t-0 sm:pt-0 sm:pl-3">
+        class="flex flex-col border-t border-border-subtle/60 pt-2 sm:border-t-0">
         <span
-          class="px-1.5 text-2xs font-semibold tracking-wider text-text-muted uppercase"
+          class="px-3 pb-1 text-2xs font-semibold tracking-wider text-text-muted uppercase"
           >Save</span>
         <Button
           shortcutGroup="save"
@@ -316,9 +282,9 @@
           size="xs"
           label="Save as MD"
           truncateMiddle
-          class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
+          class="w-full justify-start rounded-none! px-3 text-xs font-normal! whitespace-nowrap text-text-secondary!"
           onclick={() => {
-            isMoreOpen = false;
+            close();
             handleSaveMarkdown();
           }}>
           {#snippet leading()}
@@ -335,9 +301,9 @@
           size="xs"
           label="Save as TXT"
           truncateMiddle
-          class="w-full justify-start px-1.5 text-xs font-normal! whitespace-nowrap text-text-secondary!"
+          class="w-full justify-start rounded-none! px-3 text-xs font-normal! whitespace-nowrap text-text-secondary!"
           onclick={() => {
-            isMoreOpen = false;
+            close();
             handleSaveText();
           }}>
           {#snippet leading()}
@@ -406,7 +372,7 @@
           label: 'More options',
           placement: 'trailing'
         }}
-        class="group/summary relative flex min-h-0 cursor-pointer list-none items-center justify-between gap-1 border-0! bg-transparent! px-0 py-0.5 text-xs font-bold tracking-wider text-text-secondary uppercase no-underline! transition-colors select-none group-open:border-b-0! group-open:bg-transparent! hover:bg-transparent! hover:text-security [&::-webkit-details-marker]:hidden">
+        class="group/summary relative flex min-h-0 cursor-pointer list-none items-center justify-between gap-1 border-0! bg-transparent! px-0 py-0.5 text-2xs font-semibold tracking-wider text-text-muted uppercase no-underline! transition-colors select-none group-open:border-b-0! group-open:bg-transparent! hover:bg-transparent! hover:text-security [&::-webkit-details-marker]:hidden">
         <span>More options</span>
         <ChevronDown
           class="size-3.5 text-text-secondary transition-transform duration-200 group-open:rotate-180 group-hover/summary:text-security" />
@@ -590,28 +556,29 @@
       {/snippet}
     </Button>
 
-    <div
-      bind:this={moreContainerRef}
-      class="relative inline-block shrink-0 text-left">
-      <Button
-        keyboardShortcut={buttonKey('moreActions')}
-        shortcutLabel="More actions"
-        type="ghost"
-        size="xs"
-        onclick={toggleMore}
-        aria-label="More actions"
-        aria-expanded={isMoreOpen}
-        aria-haspopup="menu"
-        class={cn(
-          'size-7 px-0 text-text-muted hover:text-accent',
-          isMoreOpen && 'border border-accent text-accent'
-        )}>
-        <EllipsisVertical class="size-3.5" />
-      </Button>
-
-      {#if isMoreOpen}
-        {@render popoverMenu()}
-      {/if}
-    </div>
+    <Dropdown
+      ariaLabel="More actions"
+      placement="bottom-end">
+      {#snippet trigger({isOpen, toggle})}
+        <Button
+          keyboardShortcut={buttonKey('moreActions')}
+          shortcutLabel="More actions"
+          type="ghost"
+          size="xs"
+          onclick={toggle}
+          aria-label="More actions"
+          aria-expanded={isOpen}
+          aria-haspopup="dialog"
+          class={cn(
+            'size-7 px-0 text-text-muted hover:text-accent',
+            isOpen && 'border border-accent text-accent'
+          )}>
+          <EllipsisVertical class="size-3.5" />
+        </Button>
+      {/snippet}
+      {#snippet children({close})}
+        {@render popoverMenu(close)}
+      {/snippet}
+    </Dropdown>
   </div>
 {/if}
