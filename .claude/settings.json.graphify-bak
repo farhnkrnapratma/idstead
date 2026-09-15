@@ -34,7 +34,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "graphify hook-guard search"
+            "command": "/home/hanz/.local/bin/graphify hook-guard search"
           }
         ]
       },
@@ -43,7 +43,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "graphify hook-guard read"
+            "command": "/home/hanz/.local/bin/graphify hook-guard read"
           }
         ]
       }

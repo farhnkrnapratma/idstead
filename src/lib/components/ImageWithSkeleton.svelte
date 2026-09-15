@@ -75,7 +75,7 @@
   )}>
   {#if isError || !src}
     <div
-      class="absolute inset-0 flex h-full w-full items-center justify-center bg-black/[0.04] p-1 text-text-muted select-none dark:bg-white/[0.05]">
+      class="absolute inset-0 flex h-full w-full items-center justify-center bg-black/4 p-1 text-text-muted select-none dark:bg-white/5">
       {#if isAvatar}
         <UserIcon
           class="size-1/2 text-text-muted"
@@ -89,7 +89,7 @@
   {:else}
     {#if !isLoaded}
       <div
-        class="absolute inset-0 flex h-full w-full animate-pulse bg-black/[0.06] dark:bg-white/[0.08]"
+        class="absolute inset-0 flex h-full w-full animate-pulse bg-black/6 dark:bg-white/8"
         aria-hidden="true">
       </div>
     {/if}

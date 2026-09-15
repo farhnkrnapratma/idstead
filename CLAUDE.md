@@ -121,7 +121,7 @@ Commit messages must follow [Conventional Commits](https://www.conventionalcommi
 
 ## graphify
 
-The knowledge graph at `graphify-out/` is a local generated artifact with god nodes, community structure, and cross-file relationships. Its output and dated snapshots are ignored by Git and must not be committed. Use the installed graphify skill to generate a graph on a fresh checkout when needed. Agent observations and development archives are also local-only; preserve their local files when cleaning the Git index.
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
 
 Rules:
 

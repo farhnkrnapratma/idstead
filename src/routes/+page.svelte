@@ -76,7 +76,11 @@
   import {page} from '$app/state';
   import {supabase} from '$lib/supabase';
   import {SvelteSet} from 'svelte/reactivity';
-  import {formatMonthAbbrev} from '$lib/author';
+  import {
+    formatPeriod,
+    normalizeSkillGroups,
+    type SkillGroup as SkillGroupData
+  } from '$lib/profilePageHelpers';
   import {themeStore} from '$lib/stores/themeStore.svelte';
   import {a11yStore} from '$lib/stores/a11yStore.svelte';
   import AccessibilitySelect from '$lib/components/filter/AccessibilitySelect.svelte';
@@ -229,41 +233,10 @@
   let education = $derived(cvData.education || []);
   let contact = $derived(contactData || []);
 
-  interface SkillGroup {
-    category: string;
-    items: string[];
-  }
-
   let rawSkills = $derived(data.skills || author?.skills || []);
-  let skills = $derived<SkillGroup[]>(
-    (Array.isArray(rawSkills) ?
-      rawSkills.map((s: any) =>
-        typeof s === 'string' ?
-          {category: 'Skills', items: [s]}
-        : {
-            category: decodeHtmlEntities(s.category || 'General'),
-            items: (s.items || []).map((i: string) => decodeHtmlEntities(i))
-          }
-      )
-    : []
-    ).sort((a, b) => a.items.length - b.items.length)
-  );
+  let skills = $derived<SkillGroupData[]>(normalizeSkillGroups(rawSkills));
 
-  const snapshotSkillGroups = [
-    'Software Engineering',
-    'Linux/Unix',
-    'Linux',
-    'Unix',
-    'Programming Languages',
-    'DevOps & Tooling',
-    'Cybersecurity',
-    'Artificial Intelligence'
-  ];
-  const skillsSnapshot = $derived(
-    skills.filter(g => snapshotSkillGroups.includes(g.category)).length > 0 ?
-      skills.filter(g => snapshotSkillGroups.includes(g.category))
-    : skills.slice(0, 6)
-  );
+  const skillsSnapshot = $derived(skills.slice(0, 5));
 
   function skillGroupBasis(skillCount: number): number {
     return 160 + skillCount * 24;
@@ -271,24 +244,6 @@
 
   function pluralize(count: number, singular: string, plural: string): string {
     return count === 1 ? singular : plural;
-  }
-
-  function formatPeriod(
-    startMonth?: string,
-    startYear?: number | null,
-    endMonth?: string | null,
-    endYear?: number | null,
-    currentlyIn?: boolean
-  ): string {
-    const sMonth = formatMonthAbbrev(startMonth);
-    const eMonth = formatMonthAbbrev(endMonth);
-    const start = [sMonth, startYear].filter(Boolean).join(' ');
-    if (currentlyIn) return `${start} - Present`;
-    const end = [eMonth, endYear].filter(Boolean).join(' ');
-    if (start && end) return `${start} - ${end}`;
-    if (start) return start;
-    if (end) return end;
-    return '';
   }
 
   let contactItems = $derived(
@@ -942,7 +897,7 @@
             <span
               class="inline-flex items-center gap-1.5 font-normal whitespace-nowrap text-text-secondary">
               <Star
-                class="size-3.5 shrink-0 -translate-y-[0.5px] text-text-muted/70 transition-colors"
+                class="size-3.5 shrink-0 translate-y-[-0.5px] text-text-muted/70 transition-colors"
                 strokeWidth={1.75}
                 absoluteStrokeWidth={true} />
               <span
@@ -952,7 +907,7 @@
             <span
               class="hidden items-center gap-1.5 font-normal whitespace-nowrap text-text-secondary sm:inline-flex">
               <GitFork
-                class="size-3.5 shrink-0 -translate-y-[0.5px] text-text-muted/70 transition-colors"
+                class="size-3.5 shrink-0 translate-y-[-0.5px] text-text-muted/70 transition-colors"
                 strokeWidth={1.75}
                 absoluteStrokeWidth={true} />
               <span
@@ -962,7 +917,7 @@
             <span
               class="hidden items-center gap-1.5 font-normal whitespace-nowrap text-text-secondary sm:inline-flex">
               <RotateCcwClock
-                class="size-3.5 shrink-0 -translate-y-[0.5px] text-text-muted/70 transition-colors"
+                class="size-3.5 shrink-0 translate-y-[-0.5px] text-text-muted/70 transition-colors"
                 strokeWidth={1.75}
                 absoluteStrokeWidth={true} />
               <span
@@ -973,20 +928,10 @@
               <span
                 class="hidden items-center gap-1.5 font-normal whitespace-nowrap text-text-secondary sm:inline-flex">
                 <Scale
-                  class="size-3.5 shrink-0 -translate-y-[0.5px] text-text-muted/70 transition-colors"
+                  class="size-3.5 shrink-0 translate-y-[-0.5px] text-text-muted/70 transition-colors"
                   strokeWidth={1.75}
                   absoluteStrokeWidth={true} />
-                {#if project.licenseUrl}
-                  <a
-                    href={project.licenseUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="text-text-secondary transition-colors hover:text-accent hover:underline">
-                    {project.licenseName} License
-                  </a>
-                {:else}
-                  <span>{project.licenseName} License</span>
-                {/if}
+                <span>{project.licenseName} License</span>
               </span>
             {/if}
           </div>
@@ -1776,16 +1721,21 @@
             placement="bottom"
             align="right"
             class="sm:hidden">
-            <a
+            <Button
+              type="ghost"
+              size="md"
               href="/atom.xml"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Subscribe via Atom/RSS feed"
-              use:shortcut={{combo: buttonKey('feed'), label: 'RSS feed'}}
-              class="relative mb-0.5 inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-md border border-border-subtle bg-surface-card px-3 text-xs font-semibold text-text-muted transition-colors select-none hover:bg-surface-hover hover:text-brand-rss">
-              <Rss class="size-3.5 select-none" />
+              keyboardShortcut={buttonKey('feed')}
+              shortcutLabel="RSS feed"
+              class="mb-0.5 shrink-0 border border-border-subtle bg-surface-card text-text-muted hover:bg-surface-hover hover:text-brand-rss">
+              {#snippet leading()}
+                <Rss class="size-3.5 select-none" />
+              {/snippet}
               <span class="hidden items-center sm:inline">Feed</span>
-            </a>
+            </Button>
           </Tooltip>
         </div>
 
