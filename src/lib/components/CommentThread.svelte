@@ -88,8 +88,8 @@
     const opening = activeMenuId !== commentId;
     activeMenuId = opening ? commentId : null;
     if (opening) {
-      await tick();
       const trigger = e.currentTarget as HTMLElement;
+      await tick();
       const menu =
         trigger.parentElement?.querySelector<HTMLElement>('[role="menu"]');
       menu?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
