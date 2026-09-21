@@ -34,6 +34,8 @@ export const GITHUB_LANGUAGE_COLORS: Record<string, string> = {
   'Objective-C': '#438eff'
 };
 
-export function getLanguageColor(name: string): string {
+export function getLanguageColor(name?: string | null): string {
+  if (!name) return '#909692';
+
   return GITHUB_LANGUAGE_COLORS[name] ?? '#909692';
 }

@@ -152,6 +152,12 @@ test('admin authentication checks origin and trusted app metadata', async () => 
           },
           error: null
         };
+      },
+      mfa: {
+        getAuthenticatorAssuranceLevel: async () => ({
+          data: {currentLevel: 'aal1', nextLevel: 'aal1'},
+          error: null
+        })
       }
     }
   } as unknown as SupabaseClient;

@@ -17,18 +17,20 @@
   }: Props = $props();
 
   const variantStyles = {
-    neutral:
-      'bg-surface-subtle text-text-secondary border border-border-subtle',
-    subtle: 'rounded-full bg-border-subtle/40 text-text-muted',
-    accent: 'bg-accent-subtle text-accent border border-accent/20 font-bold'
+    neutral: 'text-text-muted border border-text-muted/20',
+    subtle: 'bg-text-muted/10 text-text-muted',
+    accent: 'bg-accent-subtle text-accent border border-accent/20'
   };
 
-  const sizeStyles = {sm: 'px-2 py-0.5 text-xxs', md: 'px-2.5 py-1 text-xs'};
+  const sizeStyles = {
+    sm: 'px-2 py-0.5 text-xs leading-snug',
+    md: 'px-2.5 py-1 text-sm leading-snug'
+  };
 </script>
 
 <span
   class={cn(
-    'inline-flex items-center gap-1 rounded-md font-medium tracking-normal select-none',
+    'inline-block max-w-full rounded-full whitespace-normal',
     variantStyles[variant],
     sizeStyles[size],
     className

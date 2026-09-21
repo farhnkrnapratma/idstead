@@ -4,6 +4,7 @@
   import {cn} from '../../utils/cn';
   import {popoverPosition} from '../../utils/popoverPosition';
   import IconButton from '../IconButton.svelte';
+  import ShortcutBadge from '../ShortcutBadge.svelte';
   import {
     a11yStore,
     A11Y_TOGGLES,
@@ -48,9 +49,17 @@
   }
 
   function handleKeydown(event: KeyboardEvent) {
-    if (event.key === 'Escape' && isOpen) {
+    if (!isOpen) return;
+    if (event.key === 'Escape') {
       event.preventDefault();
       close();
+      return;
+    }
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    const index = Number(event.key) - 1;
+    if (Number.isInteger(index) && index >= 0 && index < A11Y_TOGGLES.length) {
+      event.preventDefault();
+      A11Y_TOGGLES[index].toggle();
     }
   }
 </script>
@@ -156,18 +165,22 @@
             class="flex flex-col gap-1"
             role="group"
             aria-labelledby="a11y-settings-heading">
-            {#each A11Y_TOGGLES as item (item.key)}
+            {#each A11Y_TOGGLES as item, index (item.key)}
               {@const checked = a11yStore.current[item.key]}
               <div
                 class="group/item flex items-center justify-between gap-2 py-0.5">
                 <span
-                  class="truncate text-xs font-normal text-text-secondary transition-colors group-hover/item:text-text-primary">
+                  class="flex min-w-0 items-center gap-1.5 truncate text-xs font-normal text-text-secondary transition-colors group-hover/item:text-text-primary">
                   {item.label}
+                  <ShortcutBadge
+                    combo={String(index + 1)}
+                    class="opacity-0 transition-opacity group-hover/item:opacity-100" />
                 </span>
                 <button
                   type="button"
                   role="switch"
                   aria-checked={checked}
+                  aria-keyshortcuts={String(index + 1)}
                   aria-label="{item.label}: {item.description}"
                   onclick={item.toggle}
                   class="relative flex h-6.5 w-7 shrink-0 cursor-pointer items-center justify-center">

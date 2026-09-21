@@ -16,8 +16,8 @@ export function nextCodeScope(prefix: string) {
 export type CodeColorScheme = 'auto' | 'light' | 'dark';
 
 export const HLJS_THEME_BASIS: Record<'light' | 'dark', string> = {
-  light: 'stackoverflow-light',
-  dark: 'stackoverflow-dark'
+  light: 'github',
+  dark: 'github-dark'
 };
 
 export function resolveHljsTheme(
@@ -201,8 +201,6 @@ export function splitHighlightedHtmlLines(html: string): string[] {
 const ICON_BUTTON_CLASS =
   'relative flex h-5 w-5 items-center justify-center rounded-md border-0 bg-transparent text-text-secondary transition-colors cursor-pointer hover:bg-surface-hover hover:text-text-primary leading-none';
 
-const ICON_BUTTON_GHOST_CLASS = ICON_BUTTON_CLASS;
-
 const HEADER_BAR_CLASS =
   'code-header-bar hljs m-0 flex min-h-[1.75rem] items-center justify-between rounded-t-md border border-border-subtle px-3 py-0.5 text-xs font-semibold text-text-secondary select-none';
 
@@ -212,10 +210,7 @@ const HEADER_BAR_MINIMAL_CLASS =
 const HEADER_BAR_MINIMAL_CENTERED_CLASS =
   'code-header-bar hljs absolute right-1 top-1/2 -translate-y-1/2 z-20 m-0 flex items-center justify-end gap-1 border-0 bg-transparent p-0 text-xs font-semibold text-text-secondary select-none';
 
-const KEBAB_WRAPPER_NORMAL_CLASS = 'relative';
-
-const KEBAB_WRAPPER_MINIMAL_CLASS =
-  'relative opacity-0 transition-opacity group-hover/codemin:opacity-100 focus-within:opacity-100';
+const ACTION_WRAPPER_CLASS = 'relative';
 
 const ICONS = {
   copy: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>',
@@ -387,7 +382,7 @@ export function createCodeActionControls(
   });
 
   const copyWrapper = document.createElement('div');
-  copyWrapper.className = KEBAB_WRAPPER_NORMAL_CLASS;
+  copyWrapper.className = ACTION_WRAPPER_CLASS;
   copyWrapper.appendChild(copyBtn);
   controls.appendChild(copyWrapper);
 
@@ -422,7 +417,7 @@ export function createCodeActionControls(
   });
 
   const kebabWrapper = document.createElement('div');
-  kebabWrapper.className = KEBAB_WRAPPER_NORMAL_CLASS;
+  kebabWrapper.className = ACTION_WRAPPER_CLASS;
   controls.appendChild(kebabWrapper);
 
   const kebabBtn = document.createElement('button');
@@ -562,16 +557,10 @@ export function createCodeActionControls(
 
   function setMinimalMode(isMinimal: boolean) {
     themeToggleBtn.style.display = isMinimal ? 'none' : '';
-    copyBtn.className = isMinimal ? ICON_BUTTON_GHOST_CLASS : ICON_BUTTON_CLASS;
-    copyWrapper.className =
-      isMinimal ? KEBAB_WRAPPER_MINIMAL_CLASS : KEBAB_WRAPPER_NORMAL_CLASS;
-
     kebabBtn.removeEventListener('click', kebabClickHandler);
     if (isMinimal) {
       kebabBtn.innerHTML = ICONS.unfoldVertical;
       kebabBtn.setAttribute('aria-label', 'Exit clean mode');
-      kebabBtn.className = ICON_BUTTON_GHOST_CLASS;
-      kebabWrapper.className = KEBAB_WRAPPER_MINIMAL_CLASS;
       kebabClickHandler = (e: MouseEvent) => {
         e.stopPropagation();
         codeBlockPrefsStore.toggleMinimal();
@@ -580,8 +569,6 @@ export function createCodeActionControls(
     } else {
       kebabBtn.innerHTML = ICONS.kebab;
       kebabBtn.setAttribute('aria-label', 'Code block options');
-      kebabBtn.className = ICON_BUTTON_CLASS;
-      kebabWrapper.className = KEBAB_WRAPPER_NORMAL_CLASS;
       kebabClickHandler = (e: MouseEvent) => {
         e.stopPropagation();
         if (kebabPanel.classList.contains('hidden')) openKebab();

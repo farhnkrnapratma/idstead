@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {Calendar} from '@lucide/svelte';
+  import {Calendar, MapPin, BuildingComplex} from '@lucide/svelte';
   import Tag from '../components/Tag.svelte';
   import TagGroup from '../components/TagGroup.svelte';
   import {cn} from '../utils/cn';
@@ -20,8 +20,8 @@
     role,
     organization,
     period,
-    location = '',
-    description = '',
+    location,
+    description,
     highlights = [],
     tags = [],
     class: className = ''
@@ -33,29 +33,41 @@
     'flex flex-col gap-1.5 px-3.5 py-3 transition-all hover:bg-surface-hover/40 sm:gap-2 sm:px-6 sm:py-5',
     className
   )}>
-  <div
-    class="flex flex-col items-start gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-    <div class="min-w-0 flex-1">
-      <h3 class="text-sm leading-snug font-bold text-text-primary sm:text-base">
-        {role}
-      </h3>
-      <p class="mt-0.5 text-xs font-medium text-text-secondary">
-        {organization}{#if location}
-          &bull; {location}
-        {/if}
-      </p>
-    </div>
-    <span
-      class="inline-flex shrink-0 items-center gap-1.5 text-xs leading-none font-medium text-text-muted select-none sm:mt-1 sm:self-auto">
+  <div class="block sm:inline-flex sm:justify-between">
+    <h3
+      class="mb-1.5 text-base font-semibold text-text-primary sm:mb-0 sm:text-lg sm:leading-none">
+      {role}
+    </h3>
+    <div
+      class="flex shrink-0 items-center gap-1.5 text-2xs leading-none font-medium text-text-muted select-none sm:mt-1 sm:self-auto sm:text-xs">
       <Calendar
-        class="size-3.5 shrink-0 text-text-muted"
+        class="size-3 shrink-0 text-text-muted sm:size-3.5"
         strokeWidth={1.5} />
       <span class="leading-none">{period}</span>
-    </span>
+    </div>
+  </div>
+  <div class="flex flex-col gap-1.5">
+    <div
+      class="flex shrink-0 items-center gap-1.5 text-2xs leading-none font-medium text-text-muted select-none sm:mt-1 sm:self-auto sm:text-xs">
+      <BuildingComplex
+        class="size-3 shrink-0 text-text-muted sm:size-3.5"
+        strokeWidth={1.5} />
+      <span class="leading-none">{organization}</span>
+    </div>
+    {#if location}
+      <div
+        class="flex shrink-0 items-center gap-1.5 text-2xs leading-none font-medium text-text-muted select-none sm:mt-1 sm:self-auto sm:text-xs">
+        <MapPin
+          class="size-3 shrink-0 text-text-muted sm:size-3.5"
+          strokeWidth={1.5} />
+        <span class="leading-none">{location}</span>
+      </div>
+    {/if}
   </div>
 
   {#if description}
-    <p class="mt-1 text-xs leading-relaxed text-text-secondary">
+    <p
+      class="mt-1 border-t border-t-border-subtle/60 pt-2 text-xs leading-relaxed text-text-secondary sm:text-sm">
       {description}
     </p>
   {/if}

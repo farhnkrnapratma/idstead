@@ -3,6 +3,7 @@ import {
   PutObjectCommand,
   DeleteObjectCommand
 } from '@aws-sdk/client-s3';
+import {verifyAdminToken} from './adminAuth';
 import {env as privateEnv} from '$env/dynamic/private';
 import {env as publicEnv} from '$env/dynamic/public';
 import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
@@ -82,52 +83,12 @@ export async function requireAdminAuth(
   req: Request,
   platform?: unknown
 ): Promise<Response | null> {
-  const auth = req.headers.get('authorization');
-  if (!auth) {
+  const auth = await verifyAdminToken(req, getAdminDb(platform));
+  if (auth.status)
     return jsonResponse(
-      {success: false, code: 401, message: 'Missing Authorization header.'},
-      401
+      {success: false, code: auth.status, message: auth.message},
+      auth.status
     );
-  }
-
-  const token = auth.replace(/^Bearer\s+/i, '').trim();
-  const db = getAdminDb(platform);
-
-  let user: any;
-
-  try {
-    const res = await db.auth.getUser(token);
-    user = res.data?.user;
-  } catch {
-    user = null;
-  }
-
-  if (!user?.id && db !== publicSupabase) {
-    try {
-      const fallbackRes = await publicSupabase.auth.getUser(token);
-      if (fallbackRes.data?.user?.id) {
-        user = fallbackRes.data.user;
-      }
-    } catch {
-      user = null;
-    }
-  }
-
-  if (!user?.id) {
-    return jsonResponse(
-      {success: false, code: 401, message: 'Invalid or expired admin token.'},
-      401
-    );
-  }
-
-  const role = (user.app_metadata as {role?: string} | null)?.role;
-  if (role !== 'admin' && role !== 'service_role') {
-    return jsonResponse(
-      {success: false, code: 403, message: 'Admin privileges required.'},
-      403
-    );
-  }
-
   return null;
 }
 

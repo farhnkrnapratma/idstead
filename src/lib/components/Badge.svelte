@@ -37,7 +37,7 @@
 <span
   style:--badge-color={color}
   class={cn(
-    'inline-flex items-center gap-1 rounded-md font-semibold tracking-wide select-none',
+    'inline-flex items-center gap-1 rounded-full font-semibold tracking-wide select-none',
     variantStyles[variant],
     sizeStyles[size],
     className

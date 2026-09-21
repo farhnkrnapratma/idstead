@@ -13,10 +13,18 @@
     LinearGradient
   } from 'layerchart';
   import {scaleBand, scaleLinear, scaleOrdinal} from 'd3-scale';
+  import {curveMonotoneX} from 'd3-shape';
 
   import {EllipsisVertical, Copy} from '@lucide/svelte';
   import Dropdown from '../Dropdown.svelte';
   import {toastStore} from '../../stores/toastStore.svelte';
+  import {
+    ADMIN_CHART_AXIS_CLASSES,
+    ADMIN_CHART_PADDING,
+    ADMIN_CHART_X_TICK_LABEL_PROPS,
+    ADMIN_CHART_Y_TICK_LABEL_PROPS,
+    ADMIN_CHART_TICK_LENGTH
+  } from '$lib/utils/chartAxisStyles';
 
   export interface ChartSpec {
     type?: 'line' | 'bar' | 'area' | 'donut' | 'pie';
@@ -162,16 +170,14 @@
           y={yKey}
           yScale={scaleLinear()}
           yDomain={computedYDomain}
-          padding={{top: 16, right: 12, bottom: 28, left: 32}}>
+          padding={ADMIN_CHART_PADDING}>
           <Svg clip>
             <Axis
               placement="bottom"
               grid={false}
-              tickLabelProps={{stroke: 'none', strokeWidth: 0}}
-              classes={{
-                tick: 'text-[10px] sm:text-[11px] fill-text-muted font-mono',
-                rule: 'stroke-border-subtle'
-              }} />
+              tickLabelProps={ADMIN_CHART_X_TICK_LABEL_PROPS}
+              tickLength={ADMIN_CHART_TICK_LENGTH}
+              classes={ADMIN_CHART_AXIS_CLASSES} />
             <Axis
               placement="left"
               grid={{
@@ -179,11 +185,9 @@
                 dashArray: '3 3',
                 opacity: 0.4
               }}
-              tickLabelProps={{stroke: 'none', strokeWidth: 0}}
-              classes={{
-                tick: 'text-[10px] sm:text-[11px] fill-text-muted font-mono',
-                rule: 'stroke-border-subtle'
-              }} />
+              tickLabelProps={ADMIN_CHART_Y_TICK_LABEL_PROPS}
+              tickLength={ADMIN_CHART_TICK_LENGTH}
+              classes={ADMIN_CHART_AXIS_CLASSES} />
             <Bars
               radius={3}
               fill={seriesList[0]?.color || defaultColors[0]}
@@ -212,7 +216,7 @@
           y={yKey}
           yScale={scaleLinear()}
           yDomain={computedYDomain}
-          padding={{top: 16, right: 12, bottom: 28, left: 32}}>
+          padding={ADMIN_CHART_PADDING}>
           <Svg clip>
             <LinearGradient
               id="chartAreaGradient"
@@ -224,11 +228,9 @@
             <Axis
               placement="bottom"
               grid={false}
-              tickLabelProps={{stroke: 'none', strokeWidth: 0}}
-              classes={{
-                tick: 'text-[10px] sm:text-[11px] fill-text-muted font-mono',
-                rule: 'stroke-border-subtle'
-              }} />
+              tickLabelProps={ADMIN_CHART_X_TICK_LABEL_PROPS}
+              tickLength={ADMIN_CHART_TICK_LENGTH}
+              classes={ADMIN_CHART_AXIS_CLASSES} />
             <Axis
               placement="left"
               grid={{
@@ -236,18 +238,18 @@
                 dashArray: '3 3',
                 opacity: 0.4
               }}
-              tickLabelProps={{stroke: 'none', strokeWidth: 0}}
-              classes={{
-                tick: 'text-[10px] sm:text-[11px] fill-text-muted font-mono',
-                rule: 'stroke-border-subtle'
-              }} />
+              tickLabelProps={ADMIN_CHART_Y_TICK_LABEL_PROPS}
+              tickLength={ADMIN_CHART_TICK_LENGTH}
+              classes={ADMIN_CHART_AXIS_CLASSES} />
             <Area
+              curve={curveMonotoneX}
               line={{
                 class: 'stroke-2',
                 stroke: seriesList[0]?.color || defaultColors[0]
               }}
               fill="url(#chartAreaGradient)" />
             <Spline
+              curve={curveMonotoneX}
               class="stroke-2"
               stroke={seriesList[0]?.color || defaultColors[0]} />
             <Highlight
@@ -343,16 +345,14 @@
           y={yKey}
           yScale={scaleLinear()}
           yDomain={computedYDomain}
-          padding={{top: 16, right: 12, bottom: 28, left: 32}}>
+          padding={ADMIN_CHART_PADDING}>
           <Svg clip>
             <Axis
               placement="bottom"
               grid={false}
-              tickLabelProps={{stroke: 'none', strokeWidth: 0}}
-              classes={{
-                tick: 'text-[10px] sm:text-[11px] fill-text-muted font-mono',
-                rule: 'stroke-border-subtle'
-              }} />
+              tickLabelProps={ADMIN_CHART_X_TICK_LABEL_PROPS}
+              tickLength={ADMIN_CHART_TICK_LENGTH}
+              classes={ADMIN_CHART_AXIS_CLASSES} />
             <Axis
               placement="left"
               grid={{
@@ -360,14 +360,13 @@
                 dashArray: '3 3',
                 opacity: 0.4
               }}
-              tickLabelProps={{stroke: 'none', strokeWidth: 0}}
-              classes={{
-                tick: 'text-[10px] sm:text-[11px] fill-text-muted font-mono',
-                rule: 'stroke-border-subtle'
-              }} />
+              tickLabelProps={ADMIN_CHART_Y_TICK_LABEL_PROPS}
+              tickLength={ADMIN_CHART_TICK_LENGTH}
+              classes={ADMIN_CHART_AXIS_CLASSES} />
             {#each seriesList as s (s.key)}
               <Spline
                 y={s.key}
+                curve={curveMonotoneX}
                 class="stroke-2"
                 stroke={s.color} />
             {/each}

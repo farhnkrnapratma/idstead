@@ -56,6 +56,7 @@ export {default as BreakpointVisibility} from './components/BreakpointVisibility
 
 export {default as SkillGroup} from './components/SkillGroup.svelte';
 export {default as CvEntryCard} from './components/CvEntryCard.svelte';
+export {default as SubscribeForm} from './components/SubscribeForm.svelte';
 export {default as StatsGrid} from './components/StatsGrid.svelte';
 export {default as DataTable} from './components/DataTable.svelte';
 export {default as CommentThread} from './components/CommentThread.svelte';

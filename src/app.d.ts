@@ -43,6 +43,10 @@ declare global {
     }
     interface Locals {
       pageLanguage?: string;
+      supabase: import('$lib/server/supabaseAuth').AuthClient;
+      getAdminSession: () => Promise<
+        import('$lib/server/supabaseAuth').AdminSession | null
+      >;
     }
     interface Platform {
       env: {

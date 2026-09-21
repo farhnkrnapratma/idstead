@@ -1,0 +1,1 @@
+{"nodes": [{"id": "$graphify-root$_supabase_migrations_20260919040000_close_legacy_admin_predicates_sql", "label": "20260919040000_close_legacy_admin_predicates.sql", "file_type": "code", "source_file": "supabase/migrations/20260919040000_close_legacy_admin_predicates.sql", "source_location": null}], "edges": []}

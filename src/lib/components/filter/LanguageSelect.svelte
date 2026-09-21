@@ -6,6 +6,8 @@
   import {popoverPosition} from '../../utils/popoverPosition';
   import IconButton from '../IconButton.svelte';
   import FlagIcon from '../FlagIcon.svelte';
+  import ShortcutBadge from '../ShortcutBadge.svelte';
+  import {goto} from '$app/navigation';
 
   interface Props {
     slug: string;
@@ -47,9 +49,22 @@
   }
 
   function handleKeydown(event: KeyboardEvent) {
-    if (event.key === 'Escape' && isOpen) {
+    if (!isOpen) return;
+    if (event.key === 'Escape') {
       event.preventDefault();
       close();
+      return;
+    }
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    const index = Number(event.key) - 1;
+    if (
+      Number.isInteger(index)
+      && index >= 0
+      && index < languageOptions.length
+    ) {
+      event.preventDefault();
+      close();
+      void goto(hrefForLang(languageOptions[index]));
     }
   }
 </script>
@@ -120,12 +135,13 @@
             class="flex flex-col gap-1.5"
             role="radiogroup"
             aria-labelledby="language-select-heading">
-            {#each languageOptions as loc (loc)}
+            {#each languageOptions as loc, index (loc)}
               {@const selected = loc === currentLanguage}
               <a
                 href={hrefForLang(loc)}
                 role="radio"
                 aria-checked={selected}
+                aria-keyshortcuts={String(index + 1)}
                 onclick={close}
                 class={cn(
                   'group flex items-center justify-between gap-2.5 rounded-md border px-2.5 py-2 text-left transition-colors',
@@ -137,8 +153,11 @@
                   <FlagIcon
                     lang={loc}
                     class="size-4" />
-                  <span class="text-xs font-medium">
+                  <span class="flex items-center gap-1.5 text-xs font-medium">
                     {languageLabel(loc)}
+                    <ShortcutBadge
+                      combo={String(index + 1)}
+                      class="opacity-0 transition-opacity group-hover:opacity-100" />
                   </span>
                 </div>
                 <span

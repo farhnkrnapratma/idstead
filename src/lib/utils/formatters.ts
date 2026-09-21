@@ -1,3 +1,5 @@
+import {pluralize} from './pluralize';
+
 interface RelativeUnit {
   unit:
     'decade' | 'year' | 'month' | 'week' | 'day' | 'hour' | 'minute' | 'second';
@@ -82,13 +84,11 @@ export function formatReadTime(readTimeInput?: string | number | null): string {
 }
 
 export function formatCommentCount(count?: number | null): string {
-  const n = count || 0;
-  return n === 1 ? `${n} comment` : `${n} comments`;
+  return pluralize(count || 0, 'comment');
 }
 
 export function formatViewCount(count?: number | null): string {
-  const n = count || 0;
-  return n === 1 ? `${n} view` : `${n} views`;
+  return pluralize(count || 0, 'view');
 }
 
 export function formatCompactCount(count?: number | null): string {

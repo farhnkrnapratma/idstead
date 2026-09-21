@@ -28,7 +28,6 @@
   );
 
   const isAdminPage = $derived(page.url.pathname.startsWith('/admin'));
-  const isPostEditorPage = $derived(page.url.pathname === '/admin/new');
   const isBlogPost = $derived(page.route.id === '/blog/[slug]');
   const isLegalPage = $derived(
     page.route.id === '/terms'
@@ -146,12 +145,8 @@
 {@render children()}
 
 <ScrollToTopButton
-  show={scrollStore.pastThreshold
-    && (!isAdminPage || isPostEditorPage)
-    && !readingModeStore.active}
-  class="{isPostEditorPage ? 'hidden md:block' : ''} {isArticleLikePage ?
-    'lg:hidden'
-  : ''}" />
+  show={scrollStore.pastThreshold && !isAdminPage && !readingModeStore.active}
+  class={isArticleLikePage ? 'lg:hidden' : ''} />
 <FeedbackButton
   show={isPageWithFeedback && !readingModeStore.active}
   class={isArticleLikePage ? 'lg:hidden' : ''} />

@@ -5,6 +5,7 @@ import {env as publicEnv} from '$env/dynamic/public';
 import {dev} from '$app/environment';
 import {assetNames, serveIdentityAsset} from '$lib/server/profileAssets';
 import {publicResponse} from '$lib/server/publicResponse';
+import {createAuthClient, safeGetSession} from '$lib/server/supabaseAuth';
 
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const MAX_REQUESTS_PER_WINDOW = 60;
@@ -65,6 +66,28 @@ export const handle: Handle = sequence(
     enableLogs: !dev
   }),
   Sentry.sentryHandle(),
+  async ({event, resolve}) => {
+    event.locals.supabase = createAuthClient(event);
+    event.locals.getAdminSession = safeGetSession(event.locals.supabase);
+
+    const path = event.url.pathname;
+    if (
+      (path === '/admin' || path.startsWith('/admin/'))
+      && path !== '/admin/login'
+    ) {
+      const session = await event.locals.getAdminSession();
+      if (session?.role !== 'admin' || !session.mfaSatisfied)
+        redirect(
+          303,
+          `/admin/login?redirectTo=${encodeURIComponent(path + event.url.search)}`
+        );
+    }
+
+    return resolve(event, {
+      filterSerializedResponseHeaders: name =>
+        name === 'content-range' || name === 'x-supabase-api-version'
+    });
+  },
   async ({event, resolve}) => {
     const requestId =
       event.request.headers.get('x-request-id') || crypto.randomUUID();
@@ -170,7 +193,9 @@ export const handle: Handle = sequence(
     const isInternalApi =
       event.url.pathname === '/api/internal'
       || event.url.pathname.startsWith('/api/internal/');
-    const isAdminApi = event.url.pathname.startsWith('/api/internal/admin/');
+    const isAdminApi =
+      event.url.pathname.startsWith('/api/internal/admin/')
+      && event.url.pathname !== '/api/internal/admin/login';
 
     if (isApiRequest && event.request.method === 'OPTIONS') {
       const origin = event.request.headers.get('origin');

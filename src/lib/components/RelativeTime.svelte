@@ -12,6 +12,7 @@
     tag?: 'span' | 'time';
     titlePrefix?: string;
     prefix?: string;
+    title?: string;
   }
 
   let {
@@ -19,7 +20,8 @@
     class: className = '',
     tag = 'span',
     titlePrefix,
-    prefix = ''
+    prefix = '',
+    title
   }: Props = $props();
 
   let now = $state(new Date());
@@ -29,7 +31,8 @@
   );
   let exact = $derived(formatExactDateTime(date));
   let titleAttr = $derived(
-    exact ?
+    title ? title
+    : exact ?
       titlePrefix !== undefined ?
         `${titlePrefix}${exact}`
       : exact

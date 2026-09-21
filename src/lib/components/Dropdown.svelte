@@ -66,7 +66,7 @@
   let {
     id,
     label = '',
-    placeholder = 'Select',
+    placeholder = 'All',
     ariaLabel,
     options = [],
     value = $bindable(null),
@@ -92,6 +92,9 @@
     FILTER_TOOLBAR_CONTROL_SIZE
   );
   const resolvedSize = $derived(filterToolbar?.controlSize ?? size ?? 'md');
+  const stackOnMobile = $derived(
+    !fullWidth && !trigger && (filterToolbar?.stackOnMobile ?? false)
+  );
 
   let isOpen = $state(false);
   let query = $state('');
@@ -141,8 +144,7 @@
 
   const visibleOptions = $derived.by(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return options;
-    return options.filter(o => o.label.toLowerCase().includes(q));
+    return q ? options.filter(o => o.label.toLowerCase().includes(q)) : options;
   });
 
   const menuRole = $derived(
@@ -264,6 +266,7 @@
     'relative text-left select-none',
     trigger ? 'inline-flex'
     : fullWidth ? 'flex w-full'
+    : stackOnMobile ? 'flex w-full sm:inline-flex sm:w-max sm:max-w-full'
     : 'inline-flex w-max max-w-full',
     className
   )}>
@@ -281,7 +284,8 @@
       class={cn(
         'inline-flex max-w-full min-w-0 cursor-pointer items-center justify-between gap-2 rounded-md glass-button text-xs font-medium focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
         resolvedSize === 'sm' ? 'box-border h-8 px-2' : 'box-border h-9 px-3',
-        fullWidth && 'w-full',
+        (fullWidth || stackOnMobile) && 'w-full',
+        stackOnMobile && 'sm:w-auto',
         !disabled && 'hover:text-accent',
         isOpen && 'border-accent/60 bg-surface-card text-accent',
         isFloating && 'h-12 pt-5 pb-1.5 text-sm leading-5'

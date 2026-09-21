@@ -7,7 +7,7 @@
   import {page} from '$app/state';
   import {supabase} from '$lib/supabase';
   import {onDestroy, onMount} from 'svelte';
-  import {ShieldUser, ArrowLeft, Eye, EyeOff} from '@lucide/svelte';
+  import {ShieldUser, ArrowLeft, Eye, EyeOff, KeyRound} from '@lucide/svelte';
   import {
     Card,
     FormField,
@@ -80,6 +80,61 @@
   function validate() {
     return validation.submit(undefined, true);
   }
+
+  let needsMfa = $state(false);
+  let mfaFactorId = $state('');
+  let mfaCode = $state('');
+  let mfaError = $state('');
+  let verifyingMfa = $state(false);
+
+  function completeLogin() {
+    window.location.href = getSafeRedirectUrl(
+      page.url.searchParams.get('redirectTo')
+    );
+  }
+
+  async function submitMfaCode(event: SubmitEvent) {
+    event.preventDefault();
+    if (verifyingMfa) return;
+    mfaError = '';
+    verifyingMfa = true;
+    try {
+      const {error} = await supabase.auth.mfa.challengeAndVerify({
+        factorId: mfaFactorId,
+        code: mfaCode.trim()
+      });
+      if (error) throw error;
+      completeLogin();
+    } catch (err) {
+      mfaError =
+        err instanceof Error ? err.message : 'That code was not accepted.';
+      verifyingMfa = false;
+    }
+  }
+
+  let passkeyBusy = $state(false);
+
+  async function signInWithPasskey() {
+    if (passkeyBusy) return;
+    passkeyBusy = true;
+    try {
+      const {error} = await supabase.auth.signInWithPasskey();
+      if (error) throw error;
+      completeLogin();
+    } catch (err) {
+      const text = err instanceof Error ? err.message : '';
+      if (!/cancel|abort|NotAllowed/i.test(text))
+        toastStore.error(text || 'Passkey sign-in failed.');
+      passkeyBusy = false;
+    }
+  }
+
+  async function cancelMfa() {
+    needsMfa = false;
+    mfaCode = '';
+    mfaError = '';
+    await supabase.auth.signOut();
+  }
   async function handleLogin(e: SubmitEvent) {
     e.preventDefault();
     if (!(await validate())) return;
@@ -111,16 +166,16 @@
         throw new Error(result.error?.message || 'Invalid email or password.');
       }
 
-      const {error} = await supabase.auth.setSession({
-        access_token: result.session.access_token,
-        refresh_token: result.session.refresh_token
-      });
-      if (error) throw error;
+      if (result.mfaRequired) {
+        const {data: factorData} = await supabase.auth.mfa.listFactors();
+        const factor = factorData?.totp?.[0] ?? factorData?.all?.[0];
+        if (!factor) throw new Error('No verification method is available.');
+        mfaFactorId = factor.id;
+        needsMfa = true;
+        return;
+      }
 
-      const redirectTo = getSafeRedirectUrl(
-        page.url.searchParams.get('redirectTo')
-      );
-      window.location.href = redirectTo;
+      completeLogin();
     } catch (err: unknown) {
       console.error('Login failed:', err);
       const message =
@@ -181,108 +236,158 @@
         </p>
       </div>
 
-      <form
-        novalidate
-        onsubmit={handleLogin}
-        class="flex w-full flex-col gap-2.5">
-        <FormField
-          id="login-email"
-          label="Email"
-          variant="floating"
-          required
-          hideAsterisk
-          error={errors.email}
-          valid={valid.email}>
-          <Input
-            type="text"
+      {#if needsMfa}
+        <form
+          novalidate
+          onsubmit={submitMfaCode}
+          class="flex w-full flex-col gap-2.5">
+          <p class="text-xs text-text-secondary">
+            Enter the six-digit code from your authenticator app.
+          </p>
+          <FormField
+            id="login-mfa"
+            label="Verification code"
+            variant="floating"
+            error={mfaError}>
+            <Input
+              id="login-mfa"
+              variant="floating"
+              label="Verification code"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              maxlength={6}
+              bind:value={mfaCode}
+              error={Boolean(mfaError)}
+              disabled={verifyingMfa} />
+          </FormField>
+          <Button
+            htmlType="submit"
+            size="md"
+            fullWidth
+            isLoading={verifyingMfa}
+            disabled={verifyingMfa}>Verify and continue</Button>
+          <Button
+            type="ghost"
+            size="sm"
+            fullWidth
+            onclick={cancelMfa}
+            disabled={verifyingMfa}>Use a different account</Button>
+        </form>
+      {:else}
+        <form
+          novalidate
+          onsubmit={handleLogin}
+          class="flex w-full flex-col gap-2.5">
+          <FormField
             id="login-email"
-            autocomplete="username"
-            autofocus
-            bind:value={email}
-            error={!!errors.email}
-            valid={valid.email}
-            oninput={() => {
-              errors.email = '';
-              valid.email = false;
-              queueMicrotask(() => validation.input('email'));
-            }}
-            aria-required="true"
-            aria-invalid={!!errors.email}
-            onblur={() => {
-              void validation.check('email');
-            }} />
-        </FormField>
+            label="Email"
+            variant="floating"
+            required
+            hideAsterisk
+            error={errors.email}
+            valid={valid.email}>
+            <Input
+              type="text"
+              id="login-email"
+              autocomplete="username"
+              autofocus
+              bind:value={email}
+              error={!!errors.email}
+              valid={valid.email}
+              oninput={() => {
+                errors.email = '';
+                valid.email = false;
+                queueMicrotask(() => validation.input('email'));
+              }}
+              aria-required="true"
+              aria-invalid={!!errors.email}
+              onblur={() => {
+                void validation.check('email');
+              }} />
+          </FormField>
 
-        <FormField
-          id="login-pass"
-          label="Password"
-          variant="floating"
-          required
-          hideAsterisk
-          error={errors.password}
-          valid={valid.password}>
-          <Input
-            type={showPassword ? 'text' : 'password'}
+          <FormField
             id="login-pass"
-            autocomplete="current-password"
-            bind:value={password}
-            error={!!errors.password}
-            valid={valid.password}
-            oninput={() => {
-              errors.password = '';
-              valid.password = false;
-              queueMicrotask(() => validation.input('password'));
-            }}
-            aria-required="true"
-            aria-invalid={!!errors.password}>
-            {#snippet trailingSlot()}
-              <IconButton
-                ariaLabel={showPassword ? 'Hide password' : 'Show password'}
-                variant="ghost"
-                size="md"
-                onclick={() => (showPassword = !showPassword)}>
-                {#if showPassword}
-                  <EyeOff
-                    class="size-4"
-                    onblur={() => {
-                      void validation.check('password');
-                    }} />
-                {:else}
-                  <Eye class="size-4" />
-                {/if}
-              </IconButton>
-            {/snippet}
-          </Input>
-        </FormField>
+            label="Password"
+            variant="floating"
+            required
+            hideAsterisk
+            error={errors.password}
+            valid={valid.password}>
+            <Input
+              type={showPassword ? 'text' : 'password'}
+              id="login-pass"
+              autocomplete="current-password"
+              bind:value={password}
+              error={!!errors.password}
+              valid={valid.password}
+              oninput={() => {
+                errors.password = '';
+                valid.password = false;
+                queueMicrotask(() => validation.input('password'));
+              }}
+              aria-required="true"
+              aria-invalid={!!errors.password}>
+              {#snippet trailingSlot()}
+                <IconButton
+                  ariaLabel={showPassword ? 'Hide password' : 'Show password'}
+                  variant="ghost"
+                  size="md"
+                  onclick={() => (showPassword = !showPassword)}>
+                  {#if showPassword}
+                    <EyeOff
+                      class="size-4"
+                      onblur={() => {
+                        void validation.check('password');
+                      }} />
+                  {:else}
+                    <Eye class="size-4" />
+                  {/if}
+                </IconButton>
+              {/snippet}
+            </Input>
+          </FormField>
 
-        <div
-          bind:this={turnstileEl}
-          class="cf-turnstile select-none"
-          data-sitekey={turnstileSiteKey}
-          data-action="admin-login"
-          data-size="flexible"
-          data-theme="auto"
-          data-appearance="interaction-only"
-          data-execution="execute"
-          use:turnstileWidget={{
-            sitekey: turnstileSiteKey,
-            size: 'flexible',
-            action: 'admin-login',
-            theme: 'auto',
-            appearance: 'interaction-only',
-            execution: 'execute'
-          }}>
-        </div>
+          <div
+            bind:this={turnstileEl}
+            class="cf-turnstile select-none"
+            data-sitekey={turnstileSiteKey}
+            data-action="admin-login"
+            data-size="flexible"
+            data-theme="auto"
+            data-appearance="interaction-only"
+            data-execution="execute"
+            use:turnstileWidget={{
+              sitekey: turnstileSiteKey,
+              size: 'flexible',
+              action: 'admin-login',
+              theme: 'auto',
+              appearance: 'interaction-only',
+              execution: 'execute'
+            }}>
+          </div>
 
-        <Button
-          htmlType="submit"
-          type="primary"
-          size="lg"
-          isLoading={isSubmitting}
-          class="mt-2 w-full">
-          {isSubmitting ? 'Signing in…' : 'Sign in'}
-        </Button>
-      </form>
+          <Button
+            htmlType="submit"
+            type="primary"
+            size="lg"
+            isLoading={isSubmitting}
+            class="mt-2 w-full">
+            {isSubmitting ? 'Signing in…' : 'Sign in'}
+          </Button>
+
+          <Button
+            type="ghost"
+            size="md"
+            class="w-full"
+            onclick={signInWithPasskey}
+            isLoading={passkeyBusy}
+            disabled={isSubmitting || passkeyBusy}>
+            {#snippet leading()}<KeyRound class="size-4" />{/snippet}
+            Sign in with a passkey
+          </Button>
+        </form>
+      {/if}
     </Card>
   </div>
 

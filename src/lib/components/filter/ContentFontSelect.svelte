@@ -4,6 +4,7 @@
   import {cn} from '../../utils/cn';
   import {popoverPosition} from '../../utils/popoverPosition';
   import IconButton from '../IconButton.svelte';
+  import ShortcutBadge from '../ShortcutBadge.svelte';
   import {
     contentFontStore,
     type ContentFont
@@ -48,9 +49,18 @@
   }
 
   function handleKeydown(event: KeyboardEvent) {
-    if (event.key === 'Escape' && isOpen) {
+    if (!isOpen) return;
+    if (event.key === 'Escape') {
       event.preventDefault();
       close();
+      return;
+    }
+    if (contentFontStore.locked) return;
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    const index = Number(event.key) - 1;
+    if (Number.isInteger(index) && index >= 0 && index < fontOptions.length) {
+      event.preventDefault();
+      contentFontStore.setFont(fontOptions[index].value);
     }
   }
 </script>
@@ -138,13 +148,16 @@
             aria-describedby={contentFontStore.locked ?
               'content-font-locked'
             : undefined}>
-            {#each fontOptions as option (option.value)}
+            {#each fontOptions as option, index (option.value)}
               {@const selected = contentFontStore.current === option.value}
               <button
                 type="button"
                 role="radio"
                 aria-checked={selected}
                 aria-disabled={contentFontStore.locked}
+                aria-keyshortcuts={contentFontStore.locked ? undefined : (
+                  String(index + 1)
+                )}
                 onclick={() => contentFontStore.setFont(option.value)}
                 onmouseenter={() => (hoveredFont = option.value)}
                 onmouseleave={() => (hoveredFont = null)}
@@ -161,8 +174,14 @@
                         && 'hover:border-accent/50 hover:text-text-primary'
                     )
                 )}>
-                <span class={cn('text-xs font-medium', option.fontClass)}>
+                <span
+                  class="flex items-center gap-1.5 text-xs font-medium {option.fontClass}">
                   {option.label}
+                  {#if !contentFontStore.locked}
+                    <ShortcutBadge
+                      combo={String(index + 1)}
+                      class="opacity-0 transition-opacity group-hover:opacity-100" />
+                  {/if}
                 </span>
                 <span
                   class="relative flex size-4 shrink-0 items-center justify-center">

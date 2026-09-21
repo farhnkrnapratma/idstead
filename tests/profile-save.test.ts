@@ -58,7 +58,10 @@ mock.module('../src/lib/server/profileAssets', () => ({
 const {POST} = await import('../src/routes/api/internal/admin/profile/+server');
 let counter = 0;
 
-async function save(origin?: string, patch: Record<string, unknown> = {}) {
+async function save(
+  origin: string = 'https://example.com',
+  patch: Record<string, unknown> = {}
+) {
   const files = Object.fromEntries(
     Object.entries(iconSizes).map(([name, size]) => [
       name,

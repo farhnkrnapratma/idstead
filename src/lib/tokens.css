@@ -41,6 +41,7 @@
   --color-activity-unhelpful: #be123c;
   --color-activity-report: #92400e;
   --color-activity-message: #6d28d9;
+  --color-activity-feedback: #0e7490;
   --color-report-spam: #b91c1c;
   --color-report-harassment: #92400e;
   --color-report-violence: #c2410c;
@@ -52,15 +53,16 @@
   --color-report-other: #475569;
 
   --font-sans:
-    'Atkinson Hyperlegible Next Variable', 'Noto Sans JP Variable',
+    'iA Writer Quattro', 'Noto Sans Variable', 'Noto Sans JP Variable',
     'Noto Sans SC Variable', 'Noto Sans KR Variable', ui-sans-serif, system-ui,
     sans-serif;
   --font-serif:
-    'Noto Serif Variable', 'Noto Serif JP Variable', 'Noto Serif SC Variable',
-    'Noto Serif KR Variable', Georgia, Cambria, 'Times New Roman', Times, serif;
+    'IBM Plex Serif', 'Noto Serif Variable', 'Noto Serif JP Variable',
+    'Noto Serif SC Variable', 'Noto Serif KR Variable', Georgia, Cambria,
+    'Times New Roman', Times, serif;
   --font-mono:
-    'Atkinson Hyperlegible Mono Variable', 'Noto Sans JP Variable',
-    'Noto Sans SC Variable', 'Noto Sans KR Variable', ui-monospace, monospace;
+    'Lilex Variable', 'Noto Sans JP Variable', 'Noto Sans SC Variable',
+    'Noto Sans KR Variable', ui-monospace, monospace;
 
   --text-3xs: 0.5625rem;
   --text-2xs: 0.625rem;
@@ -238,6 +240,7 @@
   --color-activity-unhelpful: #fb7185;
   --color-activity-report: #fbbf24;
   --color-activity-message: #a78bfa;
+  --color-activity-feedback: #22d3ee;
   --color-background: #050705;
   --color-surface-base: #050705;
   --color-surface: #101411;
@@ -307,9 +310,6 @@
   --color-chip-bg-hover: #101411;
   --color-chip-border: rgba(182, 191, 184, 0.25);
   --color-chip-text: #f2f5f3;
-}
-
-:root.dark {
   --color-report-spam: #f87171;
   --color-report-harassment: #fbbf24;
   --color-report-violence: #fb923c;

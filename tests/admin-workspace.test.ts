@@ -231,7 +231,13 @@ function apiDb(role = 'admin') {
       getUser: async () => ({
         data: {user: {id: post, app_metadata: {role}}},
         error: null
-      })
+      }),
+      mfa: {
+        getAuthenticatorAssuranceLevel: async () => ({
+          data: {currentLevel: 'aal1', nextLevel: 'aal1'},
+          error: null
+        })
+      }
     },
     rpc: async (name: string, args: Record<string, unknown>) => {
       const entries = Object.entries(args);

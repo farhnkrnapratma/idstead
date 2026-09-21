@@ -176,7 +176,13 @@ test('all admin endpoints authenticate server-side and reject non-admin and cros
                 )
             },
             error: null
-          })
+          }),
+          mfa: {
+            getAuthenticatorAssuranceLevel: async () => ({
+              data: {currentLevel: 'aal1', nextLevel: 'aal1'},
+              error: null
+            })
+          }
         },
         rpc: () => {
           rpcCalls++;
@@ -227,7 +233,13 @@ test('clear operations bind the verified admin and stable operation ID; malforme
       getUser: () => ({
         data: {user: {id, app_metadata: {role: 'admin'}}},
         error: null
-      })
+      }),
+      mfa: {
+        getAuthenticatorAssuranceLevel: async () => ({
+          data: {currentLevel: 'aal1', nextLevel: 'aal1'},
+          error: null
+        })
+      }
     },
     rpc: (name: string, args: any) => {
       calls++;
@@ -244,7 +256,8 @@ test('clear operations bind the verified admin and stable operation ID; malforme
           method: 'POST',
           headers: {
             Authorization: 'Bearer fixture',
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            Origin: new URL(adminUrl).origin
           },
           body: JSON.stringify({
             action,

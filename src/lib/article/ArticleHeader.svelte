@@ -1,5 +1,6 @@
 <script lang="ts">
   import type {Snippet} from 'svelte';
+  import {blogBannerAlt} from '../blogBanner';
   import ImageWithSkeleton from '../components/ImageWithSkeleton.svelte';
   import {cn} from '../utils/cn';
   import {contentFontStore} from '../stores/contentFontStore.svelte';
@@ -9,6 +10,7 @@
   interface Props {
     title: string;
     banner?: string;
+    bannerAlt?: string;
     excerpt?: string;
     class?: string;
     titleClass?: string;
@@ -20,6 +22,7 @@
     title,
     excerpt = '',
     banner = '',
+    bannerAlt,
     class: className = '',
     titleClass = 'text-text-secondary',
     titleViewTransitionName = '',
@@ -59,7 +62,7 @@
   class={cn('article-header border-b border-b-border-subtle pb-4', className)}>
   {#if banner}<ImageWithSkeleton
       src={banner}
-      alt=""
+      alt={bannerAlt ?? blogBannerAlt(title, excerpt)}
       loading="eager"
       aspectRatio="aspect-2/1"
       class="mb-4 w-full" />{/if}

@@ -29,6 +29,14 @@ export interface WorkspaceRow {
   targetId?: string;
   vote?: 'yes' | 'no';
   event?: AdminNotificationRow;
+  commentedAt?: string;
+}
+
+export interface TopPageEntry {
+  metric: string;
+  page: string;
+  value: string;
+  href?: string;
 }
 export interface WorkspacePage {
   items: WorkspaceRow[];
@@ -46,13 +54,13 @@ export interface AnalyticsBucket {
   views: number;
   helpful: number;
   unhelpful: number;
+  reports: Record<string, number>;
   partial: boolean;
 }
 export interface WorkspaceOverview extends DashboardTotals {
   reads: number;
   series: AnalyticsBucket[];
-  reports: WorkspaceRow[];
-  feedback: WorkspaceRow[];
+  topPages: TopPageEntry[];
   from: string;
   to: string;
   timeZone: string;
@@ -72,19 +80,17 @@ export const notificationTypes = [
   {value: 'contact_message', label: 'Messages'},
   {value: 'feedback_report', label: 'Feedback forms'}
 ];
-export const analyticsRanges = [
-  {value: '1d', label: '24 hours'},
-  {value: '7d', label: '7 days'},
-  {value: '30d', label: '30 days'},
-  {value: '90d', label: '90 days'},
-  {value: '1y', label: '1 year'},
-  {value: 'custom', label: 'Custom dates'}
-];
 export function formatCount(value: number) {
   return new Intl.NumberFormat('en-US').format(value);
 }
 export function helpfulPercent(yes: number, no: number) {
   return yes + no ? `${Math.round((yes / (yes + no)) * 100)}%` : 'No feedback';
+}
+export function majorityPercent(yes: number, no: number) {
+  if (!(yes + no)) return 'No feedback';
+  const helpfulMajority = yes >= no;
+  const percent = Math.round(((helpfulMajority ? yes : no) / (yes + no)) * 100);
+  return `${percent}% ${helpfulMajority ? 'helpful' : 'unhelpful'}`;
 }
 
 export interface WorkspaceCalendar {

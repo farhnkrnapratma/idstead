@@ -232,7 +232,10 @@ async function mutate<T>(body: unknown): Promise<T> {
     }
   }
 }
-async function action(action: 'read' | 'read_all' | 'delete', id?: string) {
+async function action(
+  action: 'read' | 'read_all' | 'delete' | 'pin' | 'unpin',
+  id?: string
+) {
   try {
     await mutate({action, id});
     return true;
@@ -282,6 +285,8 @@ export const adminNotificationsStore = {
   markRead: (id: string) => action('read', id),
   markAllRead: () => action('read_all'),
   dismiss: (id: string) => action('delete', id),
+  setPinned: (id: string, pinned: boolean) =>
+    action(pinned ? 'pin' : 'unpin', id),
   prepareClear: (operationId: string) =>
     mutate<ClearOperation>({action: 'prepare_clear', operationId}),
   clear: (operationId: string) =>

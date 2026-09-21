@@ -259,7 +259,7 @@
           data-pill-text
           role="button"
           tabindex="0"
-          class="inline-flex cursor-pointer items-center leading-tight break-words whitespace-normal hover:underline"
+          class="inline-flex cursor-pointer items-center leading-tight wrap-break-word whitespace-normal hover:underline"
           onclick={() => startEdit(idx, item)}
           onkeydown={e => {
             if (e.key === 'Enter' || e.key === ' ') {

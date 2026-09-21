@@ -45,8 +45,6 @@
     Rss,
     Code,
     CodeXml,
-    RotateCcwClock,
-    Trash,
     LogOut,
     Power,
     CaseSensitive,
@@ -96,6 +94,8 @@
   import {portal} from '../utils/actions';
   import {cn} from '../utils/cn';
   import ShortcutBadge from './ShortcutBadge.svelte';
+  import CommandSectionHeading from './CommandSectionHeading.svelte';
+  import {SHORTCUT_SECTIONS, commandSection} from '$lib/shortcutCatalog';
   import {shortcutStore} from '../stores/shortcutStore.svelte';
   import {
     CATALOG_KEY,
@@ -173,7 +173,7 @@
     languageSwitcher?: LanguageSwitcher;
     class?: string;
     wrapperClass?: string;
-    variant?: 'default' | 'expanded' | 'responsive';
+    variant?: 'default' | 'expanded' | 'responsive' | 'icon';
   }
 
   let {
@@ -265,8 +265,6 @@
     Rss,
     Code,
     CodeXml,
-    RotateCcwClock,
-    Trash,
     LogOut,
     Power,
     CaseSensitive,
@@ -392,7 +390,7 @@
     commands: HelpCommandSpec[];
   }
 
-  const helpCategories: HelpCategory[] = [
+  const helpCommandCategories: HelpCategory[] = [
     {
       id: 'pages',
       label: 'Pages & Sections',
@@ -612,14 +610,6 @@
           icon: Cookie
         },
         {
-          command: '/history',
-          argHint: '[action]',
-          description: 'View or clear recent search history.',
-          validArgs: ['clear'],
-          actionQuery: '/history ',
-          icon: RotateCcwClock
-        },
-        {
           command: '/api',
           argHint: '',
           description: 'Open developer REST API documentation.',
@@ -718,6 +708,13 @@
       ]
     }
   ];
+
+  const helpCategories = SHORTCUT_SECTIONS.map(section => ({
+    ...section,
+    commands: helpCommandCategories
+      .flatMap(category => category.commands)
+      .filter(command => commandSection(command.command) === section.id)
+  })).filter(section => section.commands.length > 0);
 
   const helpCmdIndexMap = new SvelteMap<string, number>();
   let helpCmdIdxCounter = 0;
@@ -992,16 +989,6 @@
       },
       icon: Cookie,
       badge: 'Privacy'
-    },
-    {
-      id: 'cmd-history',
-      category: 'actions',
-      title: '/history',
-      subtitle: 'View or clear recent search history.',
-      requiresArgs: true,
-      autocompleteQuery: '/history ',
-      icon: RotateCcwClock,
-      badge: 'Search'
     },
     {
       id: 'cmd-rss',
@@ -2010,28 +1997,6 @@
       }
     }
 
-    if (
-      q.startsWith('/history')
-      || (root.length > 2 && '/history'.startsWith(root))
-    ) {
-      const parts = q.split(/\s+/);
-      const arg = (parts[1] || '').toLowerCase();
-      if (!arg || 'clear'.startsWith(arg)) {
-        items.push({
-          id: 'dyn-history-clear',
-          category: 'actions',
-          title: '/history clear',
-          subtitle: 'Clear all recent search history.',
-          action: () => {
-            searchHistoryStore.clear();
-            toastStore.show('Search history cleared', 'success');
-          },
-          icon: Trash,
-          badge: 'Search'
-        });
-      }
-    }
-
     return items;
   }
 
@@ -2496,11 +2461,6 @@
     }
   }
 
-  /**
-   * Defaults for the argument-taking commands that have an unambiguous,
-   * non-destructive one. /goto, /save, /a11y, /lang and /history have none, so
-   * they fall through to the pre-filled palette instead.
-   */
   const COMMAND_DEFAULTS: Record<string, () => void> = {
     '/theme': () => {
       const next = themeStore.cycle();
@@ -2760,39 +2720,6 @@
         }
         break;
       }
-      case 'Tab': {
-        e.preventDefault();
-        e.stopPropagation();
-        if (
-          filteredHistory.length > 0
-          && activeIndex >= 0
-          && activeIndex < filteredHistory.length
-        ) {
-          const entry = filteredHistory[activeIndex];
-          rawQuery =
-            entry.title.startsWith('/') ? entry.title : `${entry.title}`;
-          runSearch(rawQuery);
-          activeIndex = -1;
-        } else {
-          const itemIdx =
-            activeIndex >= filteredHistory.length ?
-              activeIndex - filteredHistory.length
-            : 0;
-          const activeItem = flatItems[itemIdx] || flatItems[0];
-          if (activeItem) {
-            if (activeItem.requiresArgs) {
-              rawQuery = activeItem.autocompleteQuery || `${activeItem.title} `;
-              runSearch(rawQuery);
-              activeIndex = -1;
-            } else if (activeItem.title.startsWith('/')) {
-              rawQuery = activeItem.title;
-              runSearch(rawQuery);
-              activeIndex = -1;
-            }
-          }
-        }
-        break;
-      }
       case 'Enter': {
         e.preventDefault();
         e.stopPropagation();
@@ -2875,17 +2802,67 @@
     return categorizedResults[0]?.category ?? null;
   }
 
+  function handleDialogTab(e: KeyboardEvent) {
+    if (e.defaultPrevented || e.key !== 'Tab') return;
+    const dialog = e.currentTarget as HTMLElement;
+    const focusables = Array.from(
+      dialog.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]'
+      )
+    ).filter(
+      element =>
+        element.tabIndex >= 0
+        && !element.matches(':disabled')
+        && !element.closest('[inert]')
+        && element.getClientRects().length > 0
+    );
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (!first) {
+      e.preventDefault();
+      dialog.focus();
+      return;
+    }
+    if (
+      e.shiftKey
+      && (document.activeElement === first || document.activeElement === dialog)
+    ) {
+      e.preventDefault();
+      last.focus();
+    } else if (
+      !e.shiftKey
+      && (document.activeElement === last || document.activeElement === dialog)
+    ) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
+  function handleItemArrowKey(e: KeyboardEvent) {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    handleKeydown(e);
+    tick().then(() => {
+      listEl?.querySelector<HTMLElement>(`#result-${activeIndex}`)?.focus();
+    });
+  }
+
   function handleResultKeydown(e: KeyboardEvent, item: SpotlightItem) {
+    if (e.defaultPrevented) return;
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       select(item);
+    } else {
+      handleItemArrowKey(e);
     }
   }
 
   function handleHistoryKeydown(e: KeyboardEvent, entry: SearchHistoryEntry) {
+    if (e.defaultPrevented) return;
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       selectHistoryEntry(entry);
+    } else {
+      handleItemArrowKey(e);
     }
   }
 
@@ -3181,6 +3158,8 @@
   }
 
   function handleHelpKeydown(e: KeyboardEvent) {
+    handleDialogTab(e);
+    if (e.defaultPrevented) return;
     const total = flatHelpCommands.length;
     if (!total) return;
 
@@ -3189,18 +3168,18 @@
       helpActiveIndex = helpActiveIndex < total - 1 ? helpActiveIndex + 1 : 0;
       tick().then(() => {
         helpDialogEl
-          ?.querySelector(`[data-help-idx="${helpActiveIndex}"]`)
-          ?.scrollIntoView({block: 'nearest'});
+          ?.querySelector<HTMLElement>(`[data-help-idx="${helpActiveIndex}"]`)
+          ?.focus();
       });
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       helpActiveIndex = helpActiveIndex > 0 ? helpActiveIndex - 1 : total - 1;
       tick().then(() => {
         helpDialogEl
-          ?.querySelector(`[data-help-idx="${helpActiveIndex}"]`)
-          ?.scrollIntoView({block: 'nearest'});
+          ?.querySelector<HTMLElement>(`[data-help-idx="${helpActiveIndex}"]`)
+          ?.focus();
       });
-    } else if (e.key === 'Enter') {
+    } else if (e.key === 'Enter' && e.target === helpDialogEl) {
       e.preventDefault();
       if (helpActiveIndex >= 0 && helpActiveIndex < total) {
         selectHelpCommand(flatHelpCommands[helpActiveIndex]);
@@ -3233,6 +3212,8 @@
       class={cn(
         variant === 'expanded' ?
           'flex h-8 w-full cursor-pointer items-center justify-between gap-2 rounded-md glass-button px-2.5 text-xs font-medium text-text-secondary hover:border-accent/50 hover:text-accent sm:h-9 sm:px-3'
+        : variant === 'icon' ?
+          'flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-border-subtle bg-surface p-0 text-xs font-semibold text-text-secondary backdrop-blur-none transition-colors hover:border-accent hover:bg-surface-hover hover:text-accent sm:h-9 sm:w-9'
         : 'flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-border-subtle bg-surface p-0 text-xs font-semibold text-text-secondary backdrop-blur-none transition-colors hover:border-accent hover:bg-surface-hover hover:text-accent sm:h-9 sm:w-9 lg:h-9 lg:w-auto lg:justify-between lg:gap-2 lg:px-3',
         className
       )}
@@ -3247,9 +3228,11 @@
           class="inline-flex h-5 items-center justify-center rounded-md border border-border-subtle/50 bg-surface-base/80 px-1.5 align-middle font-mono text-xxs leading-none font-semibold text-text-secondary shadow-2xs">
           /
         </kbd>
+      {:else if variant === 'icon'}
+        <Search class="size-4 shrink-0" />
       {:else}
         <div class="flex min-w-0 items-center gap-2">
-          <Search class="size-4 shrink-0" />
+          <Search class="size-4 shrink-0 lg:hidden" />
           <span
             class="hidden truncate font-sans text-xs text-text-muted lg:inline"
             >Search...</span>
@@ -3265,6 +3248,13 @@
 
   {#if variant === 'expanded'}
     {@render triggerButton()}
+  {:else if variant === 'icon'}
+    <Tooltip
+      content="Search (Ctrl+K or /)"
+      placement="bottom"
+      align="center">
+      {@render triggerButton()}
+    </Tooltip>
   {:else}
     <Tooltip
       content="Search (Ctrl+K or /)"
@@ -3285,11 +3275,12 @@
     style:height={visualViewportHeight !== null ?
       `${visualViewportHeight}px`
     : undefined}
-    class="fixed inset-0 z-[99999] flex items-center justify-center overscroll-contain p-4 transition-[top,height] duration-300 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)]">
+    class="fixed inset-0 z-99999 flex items-center justify-center overscroll-contain p-4 transition-[top,height] duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]">
     <button
       type="button"
       class="fixed inset-0 cursor-default touch-none bg-overlay/80 backdrop-blur-xs transition-opacity duration-200"
       aria-label="Close search"
+      tabindex="-1"
       onwheel={e => e.preventDefault()}
       ontouchmove={e => e.preventDefault()}
       onclick={close}></button>
@@ -3298,11 +3289,13 @@
       style:max-height={visualViewportHeight !== null ?
         `${Math.min(visualViewportHeight * 0.85, (typeof window !== 'undefined' ? window.innerHeight : 800) * 0.8)}px`
       : undefined}
-      class="relative z-10 flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-md border-0 bg-surface-card text-text-primary shadow-xl backdrop-blur-md transition-[max-height] duration-300 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)] outline-none focus:outline-none md:w-[40vw] md:max-w-none dark:border dark:border-white/8"
+      class="relative z-10 flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-md border-0 bg-surface-card text-text-primary shadow-xl backdrop-blur-md transition-[max-height] duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] outline-none focus:outline-none md:w-[40vw] md:max-w-none dark:border dark:border-white/8"
       role="dialog"
       tabindex="-1"
       aria-modal="true"
-      aria-label="Command palette and search">
+      aria-label="Command palette and search"
+      inert={showHelp}
+      onkeydown={handleDialogTab}>
       <div
         class="flex items-center justify-between border-b border-border-subtle/40 px-3 py-1.5 sm:px-4 sm:py-2">
         <input
@@ -3402,19 +3395,9 @@
             )}>
             <div
               class="flex items-center justify-between gap-2 px-2 pb-1.5 select-none">
-              <span
-                class="text-xxs font-bold tracking-wider text-text-muted uppercase">
-                Recently used
+              <span class="text-xxs font-bold tracking-wider text-text-muted">
+                Recents
               </span>
-              <Button
-                type="ghost"
-                size="xs"
-                aria-label="Clear recently used"
-                title="Clear recently used"
-                class="flex size-6 cursor-pointer items-center justify-center rounded-md p-0 text-text-muted transition-colors hover:bg-danger-subtle hover:text-danger"
-                onclick={() => searchHistoryStore.clear()}>
-                <Trash class="size-3.5" />
-              </Button>
             </div>
             <div class="flex flex-col gap-0.5">
               {#each filteredHistory as entry, idx (entry.id)}
@@ -3426,25 +3409,26 @@
                 <div
                   id="result-{idx}"
                   role="option"
-                  tabindex="-1"
+                  tabindex="0"
                   aria-selected={activeIndex === idx}
                   data-result-item
+                  onfocus={() => (activeIndex = idx)}
                   onclick={() => selectHistoryEntry(entry)}
                   onkeydown={e => handleHistoryKeydown(e, entry)}
                   onpointermove={e => handleItemPointerMove(e, idx)}
                   class={cn(
-                    'group flex w-full cursor-pointer items-center justify-between gap-2.5 rounded-md px-2 py-1.5 transition-colors',
+                    'group flex w-full cursor-pointer items-center justify-between gap-2.5 rounded-md px-2 py-1.5 transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-ring',
                     activeIndex === idx ?
                       'bg-accent/10 text-text-primary dark:bg-accent/20'
                     : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
                   )}>
-                  <div class="flex min-w-0 flex-1 items-center gap-2.5">
+                  <div class="flex min-w-0 flex-1 items-center gap-1.5">
                     <div
                       class={cn(
-                        'flex size-6 shrink-0 items-center justify-center rounded-md border transition-colors select-none',
-                        activeIndex === idx ?
-                          'border-accent/30 bg-accent/25 text-accent'
-                        : 'border-border-subtle/60 bg-surface-elevated text-text-secondary group-hover:border-accent/30 group-hover:bg-accent/15 group-hover:text-accent'
+                        'flex size-6 shrink-0 items-center justify-center transition-colors select-none',
+                        activeIndex === idx ? 'text-accent' : (
+                          'text-text-secondary group-hover:text-accent'
+                        )
                       )}>
                       <EntryIcon class="size-3.5" />
                     </div>
@@ -3453,16 +3437,15 @@
                       {@const spaceIdx = historyDisplay.title.indexOf(' ')}
                       {@const verb =
                         spaceIdx === -1 ?
-                          historyDisplay.title.slice(1)
-                        : historyDisplay.title.slice(1, spaceIdx)}
+                          historyDisplay.title
+                        : historyDisplay.title.slice(0, spaceIdx)}
                       {@const args =
                         spaceIdx === -1 ? '' : (
                           historyDisplay.title.slice(spaceIdx)
                         )}
                       <div class="flex min-w-0 flex-1 items-center gap-2">
                         <span class="shrink-0 font-mono text-xs">
-                          <span class="font-normal text-text-muted/60">/</span
-                          >{#each getHighlightChunks(verb, rawQuery) as chunk, cIdx (cIdx)}<span
+                          {#each getHighlightChunks(verb, rawQuery) as chunk, cIdx (cIdx)}<span
                               class={chunk.match ?
                                 'font-semibold text-accent'
                               : 'font-medium text-text-primary'}
@@ -3520,36 +3503,23 @@
                     {/if}
                   </div>
 
-                  <div class="flex shrink-0 items-center gap-1.5">
+                  <div class="flex shrink-0 items-center gap-0.5">
                     {#if historyShortcut}
                       <ShortcutBadge
                         combo={historyShortcutKey}
                         leader
                         active={activeIndex === idx} />
                     {/if}
-                    {#if historyDisplay.badge}
-                      <span
+                    <span
+                      aria-hidden="true"
+                      class="flex size-6 shrink-0 items-center justify-center">
+                      <CornerDownLeft
+                        strokeWidth={1.5}
                         class={cn(
-                          'inline-flex h-[18px] shrink-0 items-center rounded-sm border px-1.5 font-mono text-3xs font-medium transition-colors select-none',
-                          activeIndex === idx ?
-                            'border-accent/30 bg-accent/25 text-accent'
-                          : 'border-border-subtle/60 bg-surface-elevated text-text-secondary group-hover:border-accent/30 group-hover:bg-accent/15 group-hover:text-accent'
-                        )}>
-                        {historyDisplay.badge}
-                      </span>
-                    {/if}
-                    <Button
-                      type="ghost"
-                      size="xs"
-                      aria-label="Remove {historyDisplay.title} from recently used"
-                      title="Remove from history"
-                      class="flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-md p-0 text-text-muted transition-colors hover:bg-danger-subtle hover:text-danger sm:size-6"
-                      onclick={e => {
-                        e.stopPropagation();
-                        searchHistoryStore.remove(entry.id);
-                      }}>
-                      <X class="size-3.5" />
-                    </Button>
+                          'size-3 text-accent transition-opacity group-hover:opacity-100',
+                          activeIndex === idx ? 'opacity-100' : 'opacity-0'
+                        )} />
+                    </span>
                   </div>
                 </div>
               {/each}
@@ -3605,7 +3575,7 @@
                 )}>
                 <div class="flex items-center justify-between gap-2">
                   <span
-                    class="text-xxs font-bold tracking-wider text-text-muted uppercase">
+                    class="text-xxs font-bold tracking-wider text-text-muted">
                     {group.label}
                   </span>
                   {#if group.hasPrev || group.hasNext}
@@ -3647,25 +3617,26 @@
                   <div
                     id="result-{globalIdx}"
                     role="option"
-                    tabindex="-1"
+                    tabindex="0"
                     aria-selected={activeIndex === globalIdx}
                     data-result-item
+                    onfocus={() => (activeIndex = globalIdx)}
                     onclick={() => select(item)}
                     onkeydown={e => handleResultKeydown(e, item)}
                     onpointermove={e => handleItemPointerMove(e, globalIdx)}
                     class={cn(
-                      'group relative flex w-full cursor-pointer items-center justify-between gap-2.5 rounded-md px-2 py-1.5 transition-colors',
+                      'group relative flex w-full cursor-pointer items-center justify-between gap-2.5 rounded-md px-2 py-1.5 transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-ring',
                       activeIndex === globalIdx ?
                         'bg-accent/10 text-text-primary dark:bg-accent/20'
                       : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
                     )}>
-                    <div class="flex min-w-0 flex-1 items-center gap-2.5">
+                    <div class="flex min-w-0 flex-1 items-center gap-1.5">
                       <div
                         class={cn(
-                          'flex size-6 shrink-0 items-center justify-center rounded-md border transition-colors select-none',
-                          activeIndex === globalIdx ?
-                            'border-accent/30 bg-accent/25 text-accent'
-                          : 'border-border-subtle/60 bg-surface-elevated text-text-secondary group-hover:border-accent/30 group-hover:bg-accent/15 group-hover:text-accent'
+                          'flex size-6 shrink-0 items-center justify-center transition-colors select-none',
+                          activeIndex === globalIdx ? 'text-accent' : (
+                            'text-text-secondary group-hover:text-accent'
+                          )
                         )}>
                         <ItemIcon class="size-3.5" />
                       </div>
@@ -3674,14 +3645,13 @@
                         {@const spaceIdx = item.title.indexOf(' ')}
                         {@const verb =
                           spaceIdx === -1 ?
-                            item.title.slice(1)
-                          : item.title.slice(1, spaceIdx)}
+                            item.title
+                          : item.title.slice(0, spaceIdx)}
                         {@const args =
                           spaceIdx === -1 ? '' : item.title.slice(spaceIdx)}
                         <div class="flex min-w-0 flex-1 items-center gap-2">
                           <span class="shrink-0 font-mono text-xs">
-                            <span class="font-normal text-text-muted/60">/</span
-                            >{#each getHighlightChunks(verb, rawQuery) as chunk, cIdx (cIdx)}<span
+                            {#each getHighlightChunks(verb, rawQuery) as chunk, cIdx (cIdx)}<span
                                 class={chunk.match ?
                                   'font-semibold text-accent'
                                 : 'font-medium text-text-primary'}
@@ -3741,24 +3711,25 @@
                       {/if}
                     </div>
 
-                    <div class="flex shrink-0 items-center gap-1.5">
+                    <div class="flex shrink-0 items-center gap-0.5">
                       {#if COMMAND_SHORTCUTS[item.title]}
                         <ShortcutBadge
                           combo={COMMAND_SHORTCUTS[item.title]}
                           leader
                           active={activeIndex === globalIdx} />
                       {/if}
-                      {#if item.badge}
-                        <span
+                      <span
+                        aria-hidden="true"
+                        class="flex size-6 shrink-0 items-center justify-center">
+                        <CornerDownLeft
+                          strokeWidth={1.5}
                           class={cn(
-                            'inline-flex h-[18px] shrink-0 items-center rounded-sm border px-1.5 font-mono text-3xs font-medium transition-colors select-none',
-                            activeIndex === globalIdx ?
-                              'border-accent/30 bg-accent/25 text-accent'
-                            : 'border-border-subtle/60 bg-surface-elevated text-text-secondary group-hover:border-accent/30 group-hover:bg-accent/15 group-hover:text-accent'
-                          )}>
-                          {item.badge}
-                        </span>
-                      {/if}
+                            'size-3 text-accent transition-opacity group-hover:opacity-100',
+                            activeIndex === globalIdx ? 'opacity-100' : (
+                              'opacity-0'
+                            )
+                          )} />
+                      </span>
                     </div>
                   </div>
                 {/each}
@@ -3823,11 +3794,12 @@
 {#if showHelp}
   <div
     use:portal
-    class="fixed inset-0 z-[100000] flex items-center justify-center overscroll-contain p-4">
+    class="fixed inset-0 z-100000 flex items-center justify-center overscroll-contain p-4">
     <button
       type="button"
       class="fixed inset-0 cursor-default touch-none bg-overlay/80 backdrop-blur-xs transition-opacity duration-200"
       aria-label="Close reference guide"
+      tabindex="-1"
       onclick={() => {
         showHelp = false;
         helpActiveIndex = -1;
@@ -3845,7 +3817,7 @@
       <div
         class="flex items-center justify-between border-b border-border-subtle/40 px-4 py-2.5">
         <span
-          class="text-xs font-bold tracking-wide text-text-primary uppercase select-none">
+          class="text-xs font-bold tracking-wide text-text-primary select-none">
           Reference Guide
         </span>
         <button
@@ -3863,115 +3835,87 @@
 
       <div class="flex-1 space-y-3 overflow-y-auto px-2.5 py-2.5 text-xs">
         {#each helpCategories as category (category.id)}
-          <div>
-            <div
-              class={cn(
-                'px-2 pb-1 select-none',
-                category.id !== helpCategories[0].id ? 'pt-2' : 'pt-0.5'
-              )}>
-              <span
-                class="text-xxs font-bold tracking-wider text-text-muted uppercase">
-                {category.label}
-              </span>
-            </div>
+          <section aria-label={category.label}>
+            <CommandSectionHeading
+              label={category.label}
+              context={category.context} />
             <div class="flex flex-col gap-0.5">
               {#each category.commands as cmd (cmd.command)}
                 {@const cmdIdx = helpCmdIndexMap.get(cmd.command) ?? 0}
                 {@const CmdIcon = cmd.icon}
-                {@const spaceIdx = cmd.command.indexOf(' ')}
-                {@const verb =
-                  spaceIdx === -1 ?
-                    cmd.command.slice(1)
-                  : cmd.command.slice(1, spaceIdx)}
-                {@const args =
-                  spaceIdx === -1 ? '' : cmd.command.slice(spaceIdx)}
                 <button
                   type="button"
                   data-help-idx={cmdIdx}
+                  onfocus={() => (helpActiveIndex = cmdIdx)}
                   onclick={() => selectHelpCommand(cmd)}
                   onpointermove={() => handleHelpItemPointerMove(cmdIdx)}
                   class={cn(
-                    'group flex w-full cursor-pointer flex-col gap-1 rounded-md px-2 py-1.5 text-left transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none',
+                    'group flex w-full cursor-pointer flex-col gap-1.5 rounded-md px-2 py-1.5 text-left transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-ring',
                     helpActiveIndex === cmdIdx ?
                       'bg-accent/10 text-text-primary dark:bg-accent/20'
                     : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
                   )}>
-                  <div class="flex min-w-0 items-center gap-2">
+                  <div class="flex min-w-0 items-start gap-1.5">
                     <div
                       class={cn(
-                        'flex size-5 shrink-0 items-center justify-center rounded border transition-colors select-none',
-                        helpActiveIndex === cmdIdx ?
-                          'border-accent/30 bg-accent/25 text-accent'
-                        : 'border-border-subtle/60 bg-surface-elevated text-text-secondary group-hover:border-accent/30 group-hover:bg-accent/15 group-hover:text-accent'
+                        'flex size-6 shrink-0 items-center justify-center transition-colors select-none',
+                        helpActiveIndex === cmdIdx ? 'text-accent' : (
+                          'text-text-secondary group-hover:text-accent'
+                        )
                       )}>
-                      <CmdIcon class="size-3" />
+                      <CmdIcon class="size-3.5" />
                     </div>
-                    <span class="shrink-0 font-sans text-2xs leading-none">
-                      <span class="font-normal text-text-muted/60">/</span><span
-                        class={cn(
-                          'font-medium',
-                          helpActiveIndex === cmdIdx ? 'text-accent' : (
-                            'text-text-primary group-hover:text-accent'
-                          )
-                        )}>{verb}</span
-                      >{#if args}<span class="font-normal text-text-muted/60"
-                          >{args}</span
-                        >{/if}
-                      {#if cmd.argHint}
-                        <span class="font-normal text-text-muted/60">
-                          {cmd.argHint}</span>
-                      {/if}
-                    </span>
-                    <span
-                      class="text-2xs leading-none text-text-muted/40 select-none"
-                      >—</span>
-                    <p
-                      class="min-w-0 flex-1 truncate font-sans text-2xs leading-none text-text-secondary">
-                      {cmd.description}
-                    </p>
+                    <div
+                      class="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 gap-y-1 py-1">
+                      <span
+                        class="font-mono text-xs font-medium text-text-primary">
+                        {cmd.command}{#if cmd.argHint}<span
+                            class="ml-1 font-normal text-text-muted">
+                            {cmd.argHint}</span
+                          >{/if}
+                      </span>
+                      <span
+                        class="hidden text-2xs text-text-muted/40 select-none sm:inline"
+                        >—</span>
+                      <span
+                        class="min-w-0 basis-full font-sans text-2xs text-text-muted sm:flex-1 sm:basis-auto">
+                        {cmd.description}
+                      </span>
+                    </div>
                     {#if COMMAND_SHORTCUTS[cmd.command]}
-                      <ShortcutBadge
-                        combo={COMMAND_SHORTCUTS[cmd.command]}
-                        leader
-                        active={helpActiveIndex === cmdIdx} />
+                      <span class="shrink-0 pt-1">
+                        <ShortcutBadge
+                          combo={COMMAND_SHORTCUTS[cmd.command]}
+                          leader
+                          active={helpActiveIndex === cmdIdx} />
+                      </span>
                     {/if}
                   </div>
                   {#if cmd.validArgs.length > 0}
                     <div
-                      class="flex flex-wrap items-center gap-1 pl-7 font-mono text-3xs">
+                      class="flex flex-wrap items-center gap-1 pl-7.5 font-mono text-3xs">
                       {#each cmd.validArgs as arg (arg)}
                         <span
-                          class={cn(
-                            'inline-flex items-center rounded px-1 py-0.5 leading-none transition-colors',
-                            arg.includes('[slug]') || arg.includes('[scale]') ?
-                              'bg-accent/10 font-medium text-accent'
-                            : 'border border-border-subtle/40 bg-surface-elevated text-text-muted'
-                          )}>
-                          {arg}
-                        </span>
+                          class="inline-flex items-center rounded bg-surface-hover px-1 py-0.5 leading-normal text-text-secondary"
+                          >{arg}</span>
                       {/each}
                     </div>
                   {/if}
                 </button>
               {/each}
             </div>
-          </div>
+          </section>
         {/each}
 
         <div>
-          <div class="px-2 pt-2 pb-1 select-none">
-            <span
-              class="text-xxs font-bold tracking-wider text-text-muted uppercase">
-              Search filters
-            </span>
-          </div>
+          <CommandSectionHeading label="Search filters" />
           <div class="space-y-0.5 text-2xs">
             <div
               class="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 transition-colors hover:bg-surface-hover/70">
               <div class="flex min-w-0 items-center gap-2">
                 <div
-                  class="flex size-5 shrink-0 items-center justify-center rounded border border-border-subtle/60 bg-surface-elevated text-text-secondary select-none">
-                  <CaseSensitive class="size-3" />
+                  class="flex size-6 shrink-0 items-center justify-center text-text-secondary select-none">
+                  <CaseSensitive class="size-3.5" />
                 </div>
                 <span class="font-medium text-text-primary">Match case</span>
                 <span class="text-text-muted/40 select-none">—</span>
@@ -3984,8 +3928,8 @@
               class="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 transition-colors hover:bg-surface-hover/70">
               <div class="flex min-w-0 items-center gap-2">
                 <div
-                  class="flex size-5 shrink-0 items-center justify-center rounded border border-border-subtle/60 bg-surface-elevated text-text-secondary select-none">
-                  <WholeWord class="size-3" />
+                  class="flex size-6 shrink-0 items-center justify-center text-text-secondary select-none">
+                  <WholeWord class="size-3.5" />
                 </div>
                 <span class="font-medium text-text-primary">Whole word</span>
                 <span class="text-text-muted/40 select-none">—</span>
@@ -3998,8 +3942,8 @@
               class="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 transition-colors hover:bg-surface-hover/70">
               <div class="flex min-w-0 items-center gap-2">
                 <div
-                  class="flex size-5 shrink-0 items-center justify-center rounded border border-border-subtle/60 bg-surface-elevated text-text-secondary select-none">
-                  <Regex class="size-3" />
+                  class="flex size-6 shrink-0 items-center justify-center text-text-secondary select-none">
+                  <Regex class="size-3.5" />
                 </div>
                 <span class="font-medium text-text-primary">Regex mode</span>
                 <span class="text-text-muted/40 select-none">—</span>
@@ -4012,12 +3956,7 @@
         </div>
 
         <div>
-          <div class="px-2 pt-2 pb-1 select-none">
-            <span
-              class="text-xxs font-bold tracking-wider text-text-muted uppercase">
-              Keyboard shortcuts
-            </span>
-          </div>
+          <CommandSectionHeading label="Keyboard shortcuts" />
           <button
             type="button"
             class="flex w-full cursor-pointer items-center justify-between gap-3 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-surface-hover/70 focus-visible:outline-2 focus-visible:outline-focus-ring"
@@ -4028,8 +3967,8 @@
             }}>
             <div class="flex min-w-0 items-center gap-2">
               <div
-                class="flex size-5 shrink-0 items-center justify-center rounded border border-border-subtle/60 bg-surface-elevated text-text-secondary select-none">
-                <Keyboard class="size-3" />
+                class="flex size-6 shrink-0 items-center justify-center text-text-secondary select-none">
+                <Keyboard class="size-3.5" />
               </div>
               <span class="font-sans text-2xs text-text-secondary">
                 Browse keyboard shortcuts on this page

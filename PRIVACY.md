@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Effective date:** 8 September 2026
+**Effective date:** 19 September 2026
 
 This **Privacy Policy** explains what personal data is processed when you visit **https://fkp.my.id** (the "**Website**"), why it is processed, who else receives it, and what rights you have over it.
 
@@ -26,21 +26,22 @@ Processing is carried out in accordance with **Law of the Republic of Indonesia 
 
 **Technical request data.** Every request carries an IP address, a user agent string, and the requested URL. Your IP address is used transiently, in unhashed form and held only in memory, for the purpose of enforcing the request rate limit described in Section 15; it is discarded within sixty seconds and is not written to any database.
 
-**Pseudonymised identifiers derived from your IP address.** Three features store a salted `SHA-256` hash of your IP address rather than the address itself. They differ in how long the resulting identifier remains stable, and it would be misleading to describe them all in one sentence:
+**Pseudonymised identifiers derived from your IP address.** Four features store a salted `SHA-256` hash of your IP address rather than the address itself. They differ in how long the resulting identifier remains stable, and it would be misleading to describe them all in one sentence:
 
 - **Article view counting.** The stored value combines the current date with the hash, so the identifier changes every day and views cannot be correlated across days. It exists solely to avoid counting the same reader twice for the same article on the same day.
 - **Article helpfulness votes.** The stored value is the hash alone, without a date component. It is therefore a stable pseudonym for as long as your IP address and our salt remain unchanged, and it exists to prevent repeat voting.
 - **Comment reports.** The stored value is likewise the hash alone, retained with the report for abuse-prevention purposes.
+- **Email subscriptions.** The stored value is the hash alone, recorded once when a subscription is requested, so that abusive sign-up attempts can be identified. See Section 18.
 
 We cannot recover your IP address from these hashes, but the second and third are stable identifiers and are treated as personal data.
 
-**Content you submit.** Comments and replies consist of a display name between two and fifty characters and a body of up to two thousand characters. **No email address, account, or registration is required or collected in order to comment.** No IP address is stored alongside a comment. Comment reports consist of a category, optional supporting text of up to five hundred characters, and the identifier of the comment concerned. Contact and feedback messages consist of the name, email address, message, and, for feedback, the page URL that you supply.
+**Content you submit.** Comments and replies consist of a display name between two and fifty characters and a body of up to two thousand characters. **No email address, account, or registration is required or collected in order to comment.** No IP address is stored alongside a comment. Comment reports consist of a category, optional supporting text of up to five hundred characters, and the identifier of the comment concerned. Contact and feedback messages consist of the name, email address, message, and, for feedback, the page URL that you supply. If you subscribe to new-article notifications, your email address is stored, together with the hashed identifier described above and the user agent string sent by your browser; Section 18 describes that process in full.
 
 **Preferences stored on your own device.** See Section 4.
 
 ## 4. Local Storage and Cookies
 
-> [!IMPORTANT] **The Website itself sets no cookies.** It writes no first-party cookie of any kind. Preferences are kept in your browser's `localStorage`, which is never transmitted to us. The only cookies you may encounter are set by third parties, as listed at the end of this section.
+> [!IMPORTANT] **The Website sets no first-party cookie for Visitors.** Your preferences are kept in your browser's `localStorage`, which is never transmitted to us. A first-party session cookie is set on one path only, the administrator area at `/admin`, and only after the administrator signs in; it is never issued to Visitors browsing the public Website. The other cookies you may encounter are set by third parties, as listed at the end of this section.
 
 The following entries are written to `localStorage` on your device. They remain on your device, are readable only by this Website, and can be erased at any time by clearing site data in your browser.
 
@@ -50,7 +51,7 @@ The following entries are written to `localStorage` on your device. They remain 
 - `a11y_settings` — accessibility preferences such as font scale and dyslexia-friendly typeface.
 - `fkp_content_font` — your reading typeface choice.
 - `codeblock_prefs` — display preferences for code blocks.
-- `fkp_search_history` — the last eight entries you opened from the search dialog, kept so that the dialog can offer them again. This is a record of your activity on the Website, but it is stored only on your device and is never transmitted to us or to any third party.
+- `fkp_search_history` — the last five entries you opened from the search dialog, kept so that the dialog can offer them again. This is a record of your activity on the Website, but it is stored only on your device and is never transmitted to us or to any third party.
 
 Third-party cookies that may be set in your browser: `_ga` and `_ga_G-6HR3DKWZLF` by Google, only after you grant analytics consent; and `__cf_bm` together with `cf_clearance` by Cloudflare, in connection with bot management and the anti-abuse challenge described in Section 8.
 
@@ -96,13 +97,13 @@ The contact form on the home page and the form at [Feedback](https://fkp.my.id/f
 
 These messages are delivered to us as email. **They are not stored in the Website's database.** Their retention is therefore governed by our mailbox, as described in Section 12.
 
-> [!NOTE] An anti-abuse challenge is displayed on these two forms, but in the current implementation its result is not verified on the server before the message is relayed. It should not be relied upon as a security control. The challenge is verified for comments, comment reports, and administrator sign-in, as described in Section 8.
+> [!NOTE] An anti-abuse challenge is displayed on these two forms, but in the current implementation its result is not verified on the server before the message is relayed. It should not be relied upon as a security control. The challenge is verified for comments, comment reports, newsletter subscription requests, and administrator sign-in, as described in Section 8.
 
 **Legal basis:** consent, and the taking of steps at your request prior to contact, under Article 20(2)(a) of the PDP Law and Articles 6(1)(a) and 6(1)(b) GDPR.
 
 ## 8. Anti-Abuse Challenge
 
-Comments, comment reports, and administrator sign-in are protected by [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/). When the challenge is verified, your IP address is transmitted to Cloudflare as part of that verification.
+Comments, comment reports, newsletter subscription requests, and administrator sign-in are protected by [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/). When the challenge is verified, your IP address is transmitted to Cloudflare as part of that verification.
 
 **Legal basis:** legitimate interests in preventing spam and automated abuse, under Article 20(2) of the PDP Law and Article 6(1)(f) GDPR.
 
@@ -121,10 +122,11 @@ The outcome of that evaluation determines, on its own, whether your comment is p
 Personal data described in this policy may be processed by the following recipients, each acting on our behalf or as an independent controller in respect of its own services:
 
 - **Cloudflare, Inc.** — hosting and content delivery, the anti-abuse challenge, request rate limiting, automated comment moderation through Workers AI, and object storage for downloadable documents.
-- **Supabase, Inc.** — the database in which published Content, comments, reports, view counts, and helpfulness votes are stored.
+- **Supabase, Inc.** — the database in which published Content, comments, reports, view counts, helpfulness votes, and email subscriptions are stored, and the authentication service used for the administrator area.
 - **Google LLC** — tag management and analytics, subject to your consent.
 - **Functional Software, Inc. (Sentry)** — error monitoring, performance tracing, and session replay.
 - **FormSubmit** — relay of contact and feedback messages to our mailbox.
+- **Resend (Plus Five Five, Inc.)** — delivery of the subscription confirmation and new-article emails described in Section 18, and of security notifications sent to the administrator.
 - **GitHub, Inc.** — retrieval of public repository metadata displayed on the Website. This is a server-side request; your data is not sent to GitHub as part of it.
 
 We do not sell personal data, and we do not disclose it to any other party except where required by law or necessary to establish, exercise, or defend a legal claim.
@@ -140,6 +142,7 @@ We are established in Indonesia. Several of the recipients listed in Section 10 
 - **Helpfulness votes and comment reports.** Retained for as long as the associated article or comment remains published, and thereafter for as long as necessary for abuse prevention.
 - **Comments and replies.** Retained until you request their removal, or until the associated article is withdrawn.
 - **Contact and feedback messages.** Retained in our mailbox for as long as necessary to deal with the matter raised, and thereafter in accordance with ordinary correspondence practice.
+- **Email subscriptions.** Retained until you unsubscribe. An unconfirmed subscription request is deleted within seven days by a scheduled job. On unsubscribing, the record is kept in a suppressed state so that the address is not re-added by mistake; ask us and it will be erased outright.
 - **Analytics data.** Fourteen months, as described in Section 5.
 - **Error reports and session replays.** Retained according to the retention period applicable to our Sentry plan, typically ninety days for replays and error events.
 
@@ -154,7 +157,7 @@ Subject to the conditions and exceptions in the applicable law, you have the rig
 - **receive your data in a structured, commonly used, machine-readable format** and have it transmitted to another controller (PDP Law Art. 13; GDPR Art. 20);
 - **withdraw consent** at any time, without affecting the lawfulness of processing carried out before withdrawal (PDP Law Art. 9(2); GDPR Art. 7(3));
 - **not be subject to a decision based solely on automated processing** that produces legal or similarly significant effects, and to obtain human intervention as described in Section 9 (PDP Law Art. 10; GDPR Art. 22);
-- **lodge a complaint** with a supervisory authority, as described in Section 18.
+- **lodge a complaint** with a supervisory authority, as described in Section 19.
 
 To exercise any of these rights, write to [contact@fkp.my.id](mailto:contact@fkp.my.id). We will respond without undue delay and, in any event, within the period prescribed by the applicable law. We may ask you for information sufficient to establish that the request concerns your own data.
 
@@ -168,7 +171,7 @@ Because comments are posted without an account, the practical identifier for a r
 
 ## 15. Security Measures
 
-We apply, among others: transport encryption; a content security policy and associated response headers; restriction of the internal interface to same-origin requests; database row-level security; rate limiting of the public interface; a lockout after repeated failed administrator sign-in attempts; and the salted hashing of IP addresses described in Section 3.
+We apply, among others: transport encryption; a content security policy and associated response headers; restriction of the internal interface to same-origin requests; database row-level security; rate limiting of the public interface; a lockout after repeated failed administrator sign-in attempts, applied to both the originating address and the account; optional two-factor authentication and passkeys for the administrator account, enforced on the server and in the database; an email notification to the administrator when a password sign-in succeeds; and the salted hashing of IP addresses described in Section 3.
 
 No system is perfectly secure, and we make no assurance that these measures will prevent every incident. Our vulnerability disclosure procedure is published at [Security Policy](https://fkp.my.id/security).
 
@@ -180,7 +183,19 @@ The Website is not directed at children and does not knowingly solicit personal 
 
 Documents offered for download may be accompanied by a `SHA-256` checksum. A checksum is a deterministic fingerprint of the file's contents. It lets you verify the file's integrity, contains no information about you, and its publication or use collects no data about the person downloading the file.
 
-## 18. Changes, Contact, and Complaints
+## 18. Email Subscriptions
+
+You may ask to be notified by email when a new article is published. This is optional; nothing else on the Website depends on it.
+
+**Confirmed opt-in.** Entering an address does not subscribe it. We store the address in a pending state and send one confirmation email. The subscription becomes active only when you open the link in that email. If the link is never opened, the pending record is deleted as described in Section 12. This exists so that your address cannot be added to the list by someone else.
+
+**What is stored.** Your email address, a salted hash of the IP address the request came from, and your browser's user agent string. The hash and user agent are kept to identify abusive sign-up attempts. We do not track whether you open or click the emails we send.
+
+**Unsubscribing.** Every email carries a one-click unsubscribe link and the standard `List-Unsubscribe` headers, so your mail client may also offer an unsubscribe button of its own. Unsubscribing requires no account, no password, and no reply from us, and takes effect immediately.
+
+**Legal basis:** consent, under Article 20(1) of the PDP Law and Article 6(1)(a) GDPR. You may withdraw it at any time by unsubscribing, without affecting the lawfulness of anything sent beforehand.
+
+## 19. Changes, Contact, and Complaints
 
 We may revise this **Privacy Policy**. The revised version takes effect on publication, and the modification date shown alongside this document reflects the most recent revision.
 

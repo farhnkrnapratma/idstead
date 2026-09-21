@@ -11,8 +11,10 @@
   import {onDestroy, onMount, tick, untrack} from 'svelte';
   import type {Snippet} from 'svelte';
   import {
+    CircleDollarSign,
     FolderArchive,
     Dot,
+    ChevronRight,
     Image as ImageIcon,
     ArrowRight,
     HeartHandshake,
@@ -32,6 +34,7 @@
   import {
     LinkListSection,
     LinkGridSection,
+    Card,
     ShinyText,
     SkipLink,
     ImageWithSkeleton,
@@ -64,15 +67,16 @@
     formatViewCount,
     decodeHtmlEntities,
     Section,
+    SubscribeForm,
     PageContainer,
     ConsentNotice,
     ArticleMeta,
     staggerChildren,
     withViewTransition
   } from '$lib';
-  import {shortcut} from '$lib/utils/shortcut.svelte';
   import {buttonKey, argKey, sectionCommandKey} from '$lib/shortcuts';
   import {goto} from '$app/navigation';
+  import {resolve} from '$app/paths';
   import {page} from '$app/state';
   import {supabase} from '$lib/supabase';
   import {SvelteSet} from 'svelte/reactivity';
@@ -82,6 +86,7 @@
     type SkillGroup as SkillGroupData
   } from '$lib/profilePageHelpers';
   import {themeStore} from '$lib/stores/themeStore.svelte';
+  import {pluralize} from '$lib/utils/pluralize';
   import {a11yStore} from '$lib/stores/a11yStore.svelte';
   import AccessibilitySelect from '$lib/components/filter/AccessibilitySelect.svelte';
   import {
@@ -242,10 +247,6 @@
     return 160 + skillCount * 24;
   }
 
-  function pluralize(count: number, singular: string, plural: string): string {
-    return count === 1 ? singular : plural;
-  }
-
   let contactItems = $derived(
     contactData.map(c => ({
       label: c.platform || c.displayValue,
@@ -325,6 +326,9 @@
     const hash = page.url.hash.replace(/^#/, '').toLowerCase() as Section;
     return SECTIONS.includes(hash) ? hash : 'home';
   });
+
+  const tagBadgeClass =
+    'inline-flex items-center rounded-full px-2 py-0.5 font-mono text-[12px] font-medium leading-normal';
   let formName = $state('');
   let formEmail = $state('');
   let formMessage = $state('');
@@ -475,7 +479,10 @@
   function navigate(section: Section) {
     if (section === activeSection) return;
     withViewTransition(
-      () => goto(section === 'home' ? '/' : `/#${section}`, {noScroll: true}),
+      () =>
+        goto(section === 'home' ? resolve('/') : `${resolve('/')}#${section}`, {
+          noScroll: true
+        }),
       'context'
     );
   }
@@ -650,18 +657,15 @@
   });
 
   let jsonLdScript = $derived(
-    '<script type="application/ld+json">'
-      + JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'Person',
-        name: name,
-        url: siteUrl,
-        sameAs: Object.values(author?.socials || {}).filter(Boolean),
-        jobTitle: jobTitle,
-        description: desc
-      }).replace(/</g, '\\u003c')
-      + '</'
-      + 'script>'
+    JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Person',
+      name: name,
+      url: siteUrl,
+      sameAs: Object.values(author?.socials || {}).filter(Boolean),
+      jobTitle: jobTitle,
+      description: desc
+    }).replace(/</g, '\\u003c')
   );
 </script>
 
@@ -735,7 +739,11 @@
   <meta
     name="twitter:description"
     content={desc} />
-  {@html jsonLdScript}
+  <script
+    type="application/ld+json"
+    {@attach (node: HTMLScriptElement) => {
+      node.textContent = jsonLdScript;
+    }}></script>
   <script
     src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
     async
@@ -748,9 +756,30 @@
   class="fixed top-0 z-40 flex h-12 w-full items-center justify-between glass-card border-b border-border-subtle/30 px-3 font-sans shadow-2xs sm:h-14 sm:px-5"
   aria-label="Main navigation">
   <div class="flex shrink-0 items-center lg:w-1/4 lg:flex-none">
-    <SpotlightSearch
-      projects={data.projects}
-      variant="responsive" />
+    <Button
+      type="ghost"
+      size="sm"
+      htmlType="button"
+      onclick={() => navigate('home')}
+      aria-label={name}
+      class="flex h-9 items-center gap-2 rounded-md border-0 px-1.5 sm:px-2">
+      {#snippet leading()}
+        {#if avatar}
+          <ImageWithSkeleton
+            src={avatar}
+            alt={name}
+            variant="avatar"
+            rounded="rounded-full"
+            class="h-7 w-7 shrink-0 sm:h-8 sm:w-8" />
+        {/if}
+      {/snippet}
+      <span
+        class="truncate text-sm font-semibold text-text-primary {avatar ?
+          'hidden sm:inline'
+        : 'inline'}">
+        {name}
+      </span>
+    </Button>
   </div>
 
   <nav
@@ -759,19 +788,20 @@
     <ul class="flex items-center gap-1">
       {#each navItems as item (item.id)}
         <li>
-          <button
+          <Button
+            type="ghost"
+            size="sm"
+            htmlType="button"
             onclick={() => navigate(item.id)}
-            use:shortcut={{
-              combo: sectionCommandKey(item.id),
-              label: item.label
-            }}
+            keyboardShortcut={sectionCommandKey(item.id)}
+            shortcutLabel={item.label}
             class="relative flex h-9 cursor-pointer items-center justify-center rounded-md border-0 px-3 text-sm leading-none font-medium whitespace-nowrap transition-all {(
               activeSection === item.id
             ) ?
               'bg-accent-contrast-bg font-semibold text-white shadow-xs hover:bg-accent-contrast-bg/90'
             : 'text-text-secondary hover:bg-surface-hover hover:text-accent'}">
             {item.label}
-          </button>
+          </Button>
         </li>
       {/each}
     </ul>
@@ -779,6 +809,9 @@
 
   <div
     class="flex shrink-0 items-center justify-end gap-1 sm:gap-2 lg:w-1/4 lg:flex-none">
+    <SpotlightSearch
+      projects={data.projects}
+      variant="responsive" />
     <ThemeSelect
       theme={themeStore.current}
       onThemeChange={themeStore.apply} />
@@ -790,38 +823,41 @@
   id="main-content"
   class="flex min-h-[calc(100vh-3rem)] flex-col pt-12 pb-16 font-sans sm:min-h-[calc(100vh-3.5rem)] sm:pt-14 md:pb-0">
   {#snippet staticTag(tag: string)}
-    <span
-      class="inline-flex items-center rounded-full bg-accent-subtle px-2 py-0.5 font-mono text-[12px] font-medium text-accent transition-colors">
+    <span class="{tagBadgeClass} bg-accent-subtle! text-accent!">
       {decodeHtmlEntities(tag)}
     </span>
   {/snippet}
 
   {#snippet filterableTag(tag: string)}
     {@const cleanTag = decodeHtmlEntities(tag)}
-    <button
-      type="button"
+    <Button
+      type="ghost"
+      size="2xs"
+      htmlType="button"
       onclick={() => projectFilterStore.toggleMultiFilter('tag', tag)}
-      class="inline-flex cursor-pointer items-center rounded-full px-2 py-0.5 font-mono text-[12px] font-medium transition-colors {(
+      class="{tagBadgeClass} h-auto! min-h-0! rounded-full! px-2! py-0.5! font-mono! text-[12px]! leading-normal! font-medium! {(
         projectFilterStore.filters['tag']?.includes(tag)
       ) ?
-        'bg-accent text-text-on-accent'
-      : 'bg-accent-subtle text-accent hover:bg-accent/15'}">
+        'bg-accent! text-text-on-accent!'
+      : 'bg-accent-subtle! text-accent! hover:bg-accent-subtle!'}">
       {cleanTag}
-    </button>
+    </Button>
   {/snippet}
 
   {#snippet blogFilterableTag(tag: string)}
     {@const cleanTag = decodeHtmlEntities(tag)}
-    <button
-      type="button"
+    <Button
+      type="ghost"
+      size="2xs"
+      htmlType="button"
       onclick={() => blogFilterStore.toggleMultiFilter('tag', tag)}
-      class="inline-flex cursor-pointer items-center rounded-full px-2 py-0.5 font-mono text-[12px] font-medium transition-colors {(
+      class="{tagBadgeClass} h-auto! min-h-0! rounded-full! px-2! py-0.5! font-mono! text-[12px]! leading-normal! font-medium! {(
         blogFilterStore.filters['tag']?.includes(tag)
       ) ?
-        'bg-accent text-text-on-accent'
-      : 'bg-accent-subtle text-accent hover:bg-accent/15'}">
+        'bg-accent! text-text-on-accent!'
+      : 'bg-accent-subtle! text-accent! hover:bg-accent-subtle!'}">
       {cleanTag}
-    </button>
+    </Button>
   {/snippet}
 
   {#snippet projectCard(
@@ -857,11 +893,11 @@
           <div>
             <svelte:element
               this={headingTag}
-              class="line-clamp-2 text-lg leading-snug font-bold text-text-primary">
+              class="line-clamp-2 text-xl leading-snug font-bold text-text-primary">
               {project.name}
               {#if isRepoPinned(project) || isRepoNew(project)}
                 <span
-                  class="ml-1.5 inline-flex items-center gap-1 align-middle select-none">
+                  class="inline-flex items-center gap-1 align-middle select-none">
                   {#if isRepoPinned(project)}
                     <span
                       class="inline-flex size-4.5 items-center justify-center rounded-full bg-success-subtle text-success"
@@ -886,7 +922,7 @@
           <div class="flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs">
             {#if project.lang}
               <span
-                class="inline-flex items-center gap-1 py-0.5 font-mono text-xxs leading-none font-medium text-text-secondary select-none">
+                class="inline-flex items-center text-xs leading-none font-medium text-text-secondary select-none">
                 <Dot
                   strokeWidth={10}
                   class="size-3.5 shrink-0"
@@ -900,9 +936,7 @@
                 class="size-3.5 shrink-0 translate-y-[-0.5px] text-text-muted/70 transition-colors"
                 strokeWidth={1.75}
                 absoluteStrokeWidth={true} />
-              <span
-                >{project.stars}
-                {pluralize(project.stars, 'star', 'stars')}</span>
+              <span>{pluralize(project.stars, 'star')}</span>
             </span>
             <span
               class="hidden items-center gap-1.5 font-normal whitespace-nowrap text-text-secondary sm:inline-flex">
@@ -910,9 +944,7 @@
                 class="size-3.5 shrink-0 translate-y-[-0.5px] text-text-muted/70 transition-colors"
                 strokeWidth={1.75}
                 absoluteStrokeWidth={true} />
-              <span
-                >{project.forks}
-                {pluralize(project.forks, 'fork', 'forks')}</span>
+              <span>{pluralize(project.forks, 'fork')}</span>
             </span>
             <span
               class="hidden items-center gap-1.5 font-normal whitespace-nowrap text-text-secondary sm:inline-flex">
@@ -920,13 +952,11 @@
                 class="size-3.5 shrink-0 translate-y-[-0.5px] text-text-muted/70 transition-colors"
                 strokeWidth={1.75}
                 absoluteStrokeWidth={true} />
-              <span
-                >{project.commits}
-                {pluralize(project.commits, 'commit', 'commits')}</span>
+              <span>{pluralize(project.commits, 'commit')}</span>
             </span>
             {#if project.licenseName}
               <span
-                class="hidden items-center gap-1.5 font-normal whitespace-nowrap text-text-secondary sm:inline-flex">
+                class="inline-flex items-center gap-1.5 font-normal whitespace-nowrap text-text-secondary">
                 <Scale
                   class="size-3.5 shrink-0 translate-y-[-0.5px] text-text-muted/70 transition-colors"
                   strokeWidth={1.75}
@@ -938,7 +968,7 @@
 
           {#if project.desc}
             <p
-              class="line-clamp-2 text-xs leading-relaxed text-text-secondary"
+              class="line-clamp-2 text-xs leading-relaxed text-text-secondary sm:text-sm"
               title={project.desc}>
               {project.desc}
             </p>
@@ -1001,11 +1031,11 @@
           <div>
             <h4
               style="view-transition-name: post-title-{post.slug}"
-              class="line-clamp-2 text-lg leading-snug font-bold text-text-primary">
+              class="line-clamp-2 text-xl leading-snug font-bold text-text-primary">
               {post.title}
               {#if post.pinned || isPostNew(post)}
                 <span
-                  class="ml-1.5 inline-flex items-center gap-1 align-middle select-none">
+                  class="inline-flex items-center gap-1 align-middle select-none">
                   {#if post.pinned}
                     <span
                       class="inline-flex size-4.5 items-center justify-center rounded-full bg-success-subtle text-success"
@@ -1043,28 +1073,36 @@
             <div class="flex flex-col items-start gap-1">
               <p
                 {@attach !isExpanded && observeExcerptOverflow(post.id)}
-                class="text-xs leading-relaxed text-text-secondary {isExpanded ?
+                class="text-xs leading-relaxed text-text-secondary sm:text-sm {(
+                  isExpanded
+                ) ?
                   ''
                 : 'line-clamp-2'}">
                 {post.excerpt}
                 {#if isOverflowing && isExpanded}
-                  <button
-                    type="button"
+                  <Button
+                    type="ghost"
+                    size="2xs"
+                    htmlType="button"
                     onclick={() => toggleExcerpt(post.id)}
-                    use:shortcut={{combo: 'E', label: 'Show less'}}
-                    class="relative ml-1 inline cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
+                    keyboardShortcut="E"
+                    shortcutLabel="Show less"
+                    class="relative inline-flex h-auto! min-h-0! p-0! text-xs font-normal whitespace-nowrap text-security! underline hover:opacity-80 focus-visible:outline-none">
                     Show less
-                  </button>
+                  </Button>
                 {/if}
               </p>
               {#if isOverflowing && !isExpanded}
-                <button
-                  type="button"
+                <Button
+                  type="ghost"
+                  size="2xs"
+                  htmlType="button"
                   onclick={() => toggleExcerpt(post.id)}
-                  use:shortcut={{combo: 'E', label: 'Show more'}}
-                  class="relative inline-flex cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
+                  keyboardShortcut="E"
+                  shortcutLabel="Show more"
+                  class="relative inline-flex h-auto! min-h-0! p-0! text-xs font-normal whitespace-nowrap text-security! underline hover:opacity-80 focus-visible:outline-none">
                   Show more
-                </button>
+                </Button>
               {/if}
             </div>
           {/if}
@@ -1098,7 +1136,7 @@
   {#if activeSection === 'home'}
     <Section
       spacing="none"
-      class="relative z-10 pt-4 pb-6 sm:pt-5 md:pt-6 md:pb-8">
+      class="relative z-10 pt-4 pb-6 sm:pt-5 md:pt-10 md:pb-8">
       <PageContainer
         width="standard"
         class="flex flex-col gap-4 sm:gap-5">
@@ -1109,7 +1147,7 @@
         <div class="relative z-10 mx-auto w-full">
           <div
             use:staggerChildren
-            class="stagger-children relative mt-8 flex w-full flex-col items-center justify-center rounded-md glass-card px-3 pt-0 pb-4 text-center sm:mt-10 sm:px-8 sm:pt-0 sm:pb-6">
+            class="stagger-children relative mt-12 flex w-full flex-col items-center justify-center rounded-md glass-card px-3 pt-0 pb-4 text-center sm:px-8 sm:pt-0 sm:pb-6">
             {#if avatar}
               <ImageWithSkeleton
                 src={avatar}
@@ -1117,7 +1155,7 @@
                 referrerpolicy="no-referrer"
                 variant="avatar"
                 rounded="rounded-full"
-                class="relative z-10 -mt-8 mb-1 h-20 w-20 border border-border-subtle/30 shadow-sm sm:-mt-12 sm:mb-2 sm:h-28 sm:w-28 dark:border-white/8"
+                class="relative z-10 -mt-11 h-20 w-20 border border-border-subtle/30 shadow-sm sm:-mt-16 sm:h-28 sm:w-28 dark:border-white/8"
                 imgClass="object-top" />
             {/if}
 
@@ -1146,18 +1184,21 @@
               <div
                 class="relative z-10 mt-3 flex flex-wrap items-center justify-center gap-1 select-none sm:mt-5 sm:gap-1.5">
                 {#each socials as item (item.url + item.platform)}
-                  <a
+                  <Button
+                    type="ghost"
+                    size="2xs"
                     href={item.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={item.platform}
                     title={item.platform}
-                    use:shortcut={{group: 'social', label: item.platform}}
-                    class="relative flex size-7.5 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-text-muted transition-all hover:bg-surface-hover hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:size-8">
+                    shortcutGroup="social"
+                    shortcutLabel={item.platform}
+                    class="size-7.5! rounded-md! border-0! bg-transparent! p-0! text-text-muted transition-all hover:bg-surface-hover hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:size-8!">
                     <BrandIcon
                       icon={item.icon}
                       class="text-sm leading-none sm:text-base" />
-                  </a>
+                  </Button>
                 {/each}
               </div>
             {/if}
@@ -1170,7 +1211,7 @@
                   <Button
                     type="primary"
                     tone="neutral"
-                    size="xs"
+                    size="sm"
                     href="/api/v1/cv?download=1"
                     download
                     shortcutGroup="save"
@@ -1184,7 +1225,7 @@
                   <Button
                     type="primary"
                     tone="neutral"
-                    size="xs"
+                    size="sm"
                     disabled
                     title="No CV document is available yet."
                     class="w-full sm:h-9 sm:w-auto sm:gap-2 sm:px-4 sm:text-sm">
@@ -1194,7 +1235,7 @@
 
                 <Button
                   type="secondary"
-                  size="xs"
+                  size="sm"
                   onclick={() => navigate('projects')}
                   keyboardShortcut={buttonKey('browseProjects')}
                   shortcutLabel="Browse projects"
@@ -1205,7 +1246,7 @@
 
               <Button
                 type="ghost"
-                size="xs"
+                size="sm"
                 onclick={() => navigate('contact')}
                 keyboardShortcut={buttonKey('getInTouch')}
                 shortcutLabel="Get in touch"
@@ -1219,7 +1260,7 @@
         <div>
           <h3
             class="mb-3 text-lg font-bold tracking-tight text-text-primary sm:mb-4">
-            Recent posts
+            Recent Posts
           </h3>
           {#if posts.length === 0}
             <EmptyState
@@ -1234,25 +1275,25 @@
           {/if}
           {#if posts.length > 0}
             <div class="mt-4 flex justify-end">
-              <button
+              <Button
+                type="ghost"
+                size="sm"
+                htmlType="button"
                 onclick={() => navigate('blog')}
-                use:shortcut={{
-                  combo: buttonKey('viewAllPosts'),
-                  label: 'View all posts'
-                }}
-                class="group relative inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-accent hover:underline">
-                <span class="leading-none">View all posts</span>
-                <ArrowRight
-                  class="size-4 transition-transform select-none group-hover:translate-x-0.5" />
-              </button>
+                keyboardShortcut={buttonKey('viewAllPosts')}
+                shortcutLabel="View all posts">
+                View all posts
+                {#snippet trailing()}<ChevronRight class="size-3" />{/snippet}
+              </Button>
             </div>
           {/if}
+          <SubscribeForm class="mt-4" />
         </div>
 
         <div>
           <h3
             class="mb-3 text-lg font-bold tracking-tight text-text-primary sm:mb-4">
-            Top projects
+            Top Projects
           </h3>
           {#if recentProjects.length === 0}
             <EmptyState
@@ -1267,17 +1308,17 @@
           {/if}
           {#if projects.length > 0}
             <div class="mt-3 flex justify-end sm:mt-4">
-              <button
+              <Button
+                type="ghost"
+                size="sm"
+                htmlType="button"
                 onclick={() => navigate('projects')}
-                use:shortcut={{
-                  combo: buttonKey('viewAllProjects'),
-                  label: 'View all projects'
-                }}
-                class="group relative inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-accent hover:underline">
-                <span class="leading-none">View all projects</span>
-                <ArrowRight
-                  class="size-4 transition-transform select-none group-hover:translate-x-0.5" />
-              </button>
+                keyboardShortcut={buttonKey('viewAllProjects')}
+                aria-label="View all available posts"
+                shortcutLabel="View all projects">
+                View all projects
+                {#snippet trailing()}<ChevronRight class="size-3" />{/snippet}
+              </Button>
             </div>
           {/if}
         </div>
@@ -1317,10 +1358,11 @@
           {:else}
             <div
               class="divide-y divide-border-subtle/40 overflow-hidden rounded-md glass-card text-left">
-              {#each experiences.slice(0, 2) as exp (exp.title || exp.company)}
+              {#each experiences as exp (exp.company + exp.location + exp.startYear)}
                 <CvEntryCard
                   role={exp.title}
                   organization={exp.company}
+                  location={exp.location}
                   period={formatPeriod(
                     exp.startMonth,
                     exp.startYear,
@@ -1333,63 +1375,75 @@
             </div>
           {/if}
           <div class="mt-4 flex justify-end">
-            <button
+            <Button
+              type="ghost"
+              size="sm"
+              htmlType="button"
               onclick={() => navigate('cv')}
-              use:shortcut={{
-                combo: buttonKey('viewFullCv'),
-                label: 'View full CV'
-              }}
-              class="group relative inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+              keyboardShortcut={buttonKey('viewFullCv')}
+              shortcutLabel="View full CV"
               aria-label="View full CV including education and experience">
               <span class="leading-none">View full CV</span>
-              <ArrowRight
-                class="size-4 transition-transform select-none group-hover:translate-x-0.5" />
-            </button>
+              {#snippet trailing()}
+                <ChevronRight class="size-3" />
+              {/snippet}
+            </Button>
           </div>
         </div>
 
-        <div
-          class="divide-y divide-border-subtle/40 overflow-hidden rounded-md glass-card bg-accent/5 text-left">
+        <Card
+          density="none"
+          class="text-left">
           <div
-            class="flex flex-col justify-between gap-3 px-4 py-3 sm:flex-row sm:items-center sm:gap-4 sm:px-5 sm:py-4">
+            class="flex flex-col justify-between gap-4 gap-x-4 gap-y-1 p-3 sm:flex-row sm:items-center sm:p-4">
             <div
-              class="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:gap-4">
-              <div class="flex items-center gap-3 sm:block">
-                <HeartHandshake
-                  class="size-5 shrink-0 text-accent sm:mt-0.5 sm:size-6" />
-                <h4 class="text-sm font-bold sm:hidden">
-                  <ShinyText
-                    text="Support Open Source Work"
-                    color="var(--color-accent)"
-                    shineColor="#ffffff"
-                    speed={3} />
-                </h4>
+              class="relative size-20 shrink-0 items-center justify-center sm:flex"
+              aria-hidden="true">
+              <div
+                class="absolute inset-0 border-border-subtle/80 bg-surface-elevated/40 sm:rounded-full sm:border sm:border-dashed">
               </div>
-              <div>
-                <h4 class="hidden text-sm font-bold sm:block">
-                  <ShinyText
-                    text="Support Open Source Work"
-                    color="var(--color-accent)"
-                    shineColor="#ffffff"
-                    speed={3} />
-                </h4>
-                <p
-                  class="text-xs leading-relaxed text-text-secondary sm:mt-0.5">
-                  Your support helps maintain and improve these open-source
-                  projects
-                </p>
-              </div>
+              <HeartHandshake
+                class="absolute top-4 left-4 size-9 fill-accent/15 text-accent"
+                strokeWidth={1.5} />
+              <CircleDollarSign
+                class="absolute right-3 bottom-3 size-8 rounded-full bg-surface-card p-1 text-gh-orange-1"
+                strokeWidth={1.75} />
             </div>
+            <div>
+              <h4
+                class="text-base leading-snug font-bold text-balance text-text-primary sm:text-lg">
+                <ShinyText
+                  text="Support My Open Source Work"
+                  color="var(--color-accent)"
+                  shineColor="var(--color-text-on-accent)"
+                  speed={3}
+                  class="motion-reduce:animate-none!" />
+              </h4>
+              <p
+                class="col-span-2 text-xs leading-relaxed text-pretty text-text-secondary sm:text-sm">
+                Your support helps keep my open source projects maintained and
+                sustainable over time.
+              </p>
+            </div>
+          </div>
+          <div
+            class="flex justify-center border-t border-border-subtle/60 px-3.5 py-3 sm:px-4">
             <Button
               type="primary"
               size="sm"
+              class="w-full"
               onclick={() => navigate('funding')}
               keyboardShortcut={buttonKey('becomeSponsor')}
               shortcutLabel="Become a sponsor">
               Become a sponsor
+              {#snippet trailing()}
+                <ChevronRight
+                  class="size-3"
+                  aria-hidden="true" />
+              {/snippet}
             </Button>
           </div>
-        </div>
+        </Card>
 
         <form
           bind:this={contactFormElement}
@@ -1626,10 +1680,11 @@
           {:else}
             <div
               class="divide-y divide-border-subtle/40 overflow-hidden rounded-md glass-card">
-              {#each experiences as exp (exp.company + exp.startYear)}
+              {#each experiences as exp (exp.company + exp.location + exp.startYear)}
                 <CvEntryCard
                   role={exp.title}
                   organization={exp.company}
+                  location={exp.location}
                   period={formatPeriod(
                     exp.startMonth,
                     exp.startYear,
@@ -1940,7 +1995,7 @@
 
   {#if activeSection === 'funding'}
     <LinkGridSection
-      title="Supporting & funding"
+      title="Supporting & Funding"
       subtitle="Support open-source development and maintenance through these platforms."
       items={fundingPlatforms}
       shortcutGroup="funding"

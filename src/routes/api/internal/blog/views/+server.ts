@@ -1,9 +1,9 @@
-import {supabase} from '$lib/supabase';
 import {json} from '@sveltejs/kit';
 import {env as privateEnv} from '$env/dynamic/private';
 import type {RequestHandler} from './$types';
 import {apiError} from '$lib/server/apiError';
 import {isSameOriginRequest} from '$lib/server/sameOrigin';
+import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
 
 export const POST: RequestHandler = async ({
   request,
@@ -18,6 +18,14 @@ export const POST: RequestHandler = async ({
       'Cross-origin requests are not allowed on this endpoint.'
     );
   }
+
+  const supabase = getSupabaseAdminClient(platform);
+  if (!supabase)
+    return apiError(
+      503,
+      'BLOG_VIEW_UNAVAILABLE',
+      'View counting is not configured.'
+    );
 
   try {
     const body = await request.json();

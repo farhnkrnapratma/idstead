@@ -1,6 +1,6 @@
 <script lang="ts">
   import {page} from '$app/state';
-  import {ArrowLeft, MessageSquareWarning} from '@lucide/svelte';
+  import {House, MessageSquareWarning} from '@lucide/svelte';
   import {Button, SkipLink, ErrorState, FooterLegalRow} from '$lib';
 
   let pageAuthor = $derived((page?.data as any)?.author);
@@ -80,16 +80,12 @@
           type="primary"
           size="md"
           onclick={() => {
-            if (typeof window !== 'undefined' && window.history.length > 1) {
-              window.history.back();
-            } else {
-              window.location.href = '/';
-            }
+            window.location.href = '/';
           }}>
           {#snippet leading()}
-            <ArrowLeft class="size-3.5" />
+            <House class="size-3.5" />
           {/snippet}
-          Go back
+          Home
         </Button>
         <a href="/feedback">
           <Button

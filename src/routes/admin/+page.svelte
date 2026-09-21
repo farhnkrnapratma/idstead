@@ -20,6 +20,10 @@
   import {invalidateAll} from '$app/navigation';
   import {supabase} from '$lib/supabase';
   import {
+    PanelLeftClose,
+    PanelLeftOpen,
+    Settings,
+    ChevronRight,
     FileText,
     BookA,
     Quote,
@@ -58,7 +62,7 @@
     FileXCorner,
     AlertTriangle,
     Flag,
-    MessageSquareWarning,
+    Users,
     Languages,
     Pin,
     PinOff,
@@ -67,7 +71,7 @@
     ChevronUp,
     ChevronDown,
     Bell,
-    House,
+    ChartPie,
     RefreshCw
   } from '@lucide/svelte';
   import hljs from 'highlight.js';
@@ -83,6 +87,8 @@
   import type {AdminNotificationRow} from '$lib/adminActivity';
   import AdminHome from '$lib/components/admin/AdminHome.svelte';
   import ActivityWorkspace from '$lib/components/admin/ActivityWorkspace.svelte';
+  import AccountSettings from '$lib/components/admin/AccountSettings.svelte';
+  import PostEditor from '$lib/components/admin/PostEditor.svelte';
   import {adminActivityRequest} from '$lib/adminActivityClient';
   import type {WorkspaceArea, WorkspacePage} from '$lib/adminWorkspace';
   import {shortcut} from '$lib/utils/shortcut.svelte';
@@ -106,6 +112,7 @@
     CommentThread,
     LoadingState,
     EmptyState,
+    SkeletonBlock,
     ErrorState,
     ImageWithSkeleton,
     SkipLink,
@@ -353,7 +360,8 @@
     'contact',
     'privacy',
     'security',
-    'terms'
+    'terms',
+    'account'
   ] as const;
 
   type AdminTab = (typeof ADMIN_TAB_IDS)[number];
@@ -368,6 +376,17 @@
     resolveInitialTab(adminUrl().searchParams.get('tab'))
   );
   let sidebarMobileOpen = $state(false);
+  let sidebarCollapsed = $state(false);
+
+  function toggleSidebarCollapsed() {
+    sidebarCollapsed = !sidebarCollapsed;
+    try {
+      localStorage.setItem(
+        'admin-sidebar-collapsed',
+        sidebarCollapsed ? '1' : '0'
+      );
+    } catch {}
+  }
 
   function selectTab(id: AdminTab) {
     sidebarMobileOpen = false;
@@ -407,6 +426,23 @@
     if (id === 'privacy' || id === 'security' || id === 'terms') {
       checkLegalDrafts();
     }
+  }
+
+  let editPostParam = $derived(adminUrl().searchParams.get('editPost'));
+  function openPostEditor(id: string) {
+    const url = adminUrl();
+    url.searchParams.set('tab', 'posts');
+    url.searchParams.set('editPost', id);
+    navigateAdmin(url);
+  }
+  function closePostEditor() {
+    const url = adminUrl();
+    url.searchParams.delete('editPost');
+    navigateAdmin(url);
+  }
+  async function handlePostSaved() {
+    closePostEditor();
+    await fetchPosts();
   }
 
   type Theme = 'auto' | 'dark' | 'light';
@@ -720,6 +756,7 @@
   );
 
   const avatarPreviewUrl = $derived(avatarSource(authorState));
+  const adminAvatarUrl = $derived(avatarSource(authorState) || '/avatar.png');
 
   const authorValidation = new FieldValidation();
   const authorLabels: Record<string, string> = {
@@ -1498,6 +1535,7 @@
   }
 
   let sessionTimeoutMultiplier = $state(1);
+  const MAX_IDLE_TIMEOUT_MULTIPLIER = 4;
   let BASE_IDLE_TIMEOUT_MS = 30 * 60 * 1000;
   let idleWarnTimer: ReturnType<typeof setTimeout>;
   let showSessionTimeoutDialog = $state(false);
@@ -1523,7 +1561,10 @@
   }
 
   async function handleExtendSession() {
-    sessionTimeoutMultiplier *= 2;
+    sessionTimeoutMultiplier = Math.min(
+      sessionTimeoutMultiplier * 2,
+      MAX_IDLE_TIMEOUT_MULTIPLIER
+    );
     showSessionTimeoutDialog = false;
     clearInterval(countdownInterval);
     try {
@@ -1550,6 +1591,10 @@
 
   onMount(() => {
     let active = true;
+    try {
+      sidebarCollapsed =
+        localStorage.getItem('admin-sidebar-collapsed') === '1';
+    } catch {}
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (isLegalDirty) {
         e.preventDefault();
@@ -2900,20 +2945,25 @@
     ];
   }
 
+  const adminNavSections: {
+    id: 'overview' | 'content' | 'profile' | 'legal';
+    title: string;
+  }[] = [
+    {id: 'overview', title: ''},
+    {id: 'content', title: 'Content Management'},
+    {id: 'profile', title: 'Profile & Resume'},
+    {id: 'legal', title: 'Legal & Policy'}
+  ];
+
   const adminNavLinks: {
     id: AdminTab;
     label: string;
     icon: any;
     section: 'overview' | 'content' | 'profile' | 'legal';
   }[] = [
-    {id: 'home', label: 'Overview', icon: House, section: 'overview'},
+    {id: 'home', label: 'Overview', icon: ChartPie, section: 'overview'},
     {id: 'reports', label: 'Reports', icon: Flag, section: 'overview'},
-    {
-      id: 'feedback',
-      label: 'Feedback',
-      icon: MessageSquareWarning,
-      section: 'overview'
-    },
+    {id: 'feedback', label: 'Feedback', icon: Users, section: 'overview'},
     {
       id: 'notifications',
       label: 'Notifications',
@@ -3036,7 +3086,8 @@
         <Menu class="size-4" />
       {/if}
     </Button>
-    <span class="text-sm font-bold text-text-primary">Admin Console</span>
+    <span class="truncate text-sm font-bold text-text-primary"
+      >{adminUserName || 'Admin'}</span>
   </div>
   <div class="flex items-center gap-1.5">
     <ThemeSelect
@@ -3049,14 +3100,18 @@
 
 <div class="flex min-h-screen pt-10 md:pt-0">
   <aside
-    class="fixed inset-y-0 left-0 z-50 flex w-56 shrink-0 flex-col justify-between overflow-y-auto border-r border-border-subtle bg-surface-card transition-transform duration-200 ease-in-out md:sticky md:top-0 md:h-screen md:w-56 md:translate-x-0 {(
+    class="fixed inset-y-0 left-0 z-50 flex w-56 shrink-0 flex-col justify-between overflow-y-auto border-r border-border-subtle bg-surface-card transition-transform duration-200 ease-in-out md:sticky md:top-0 md:h-screen md:translate-x-0 md:transition-[width] {(
       sidebarMobileOpen
     ) ?
       'translate-x-0 shadow-2xl'
-    : '-translate-x-full'}">
+    : '-translate-x-full'} {sidebarCollapsed ? 'md:w-11' : 'md:w-56'}">
     <div
-      class="sticky top-0 z-10 flex h-10 shrink-0 items-center justify-between border-b border-border-subtle bg-surface-card px-4">
-      <div class="flex items-center gap-2">
+      class="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border-subtle bg-surface-card {(
+        sidebarCollapsed
+      ) ?
+        'px-3 md:justify-center md:px-0'
+      : 'px-3'}">
+      <div class="flex min-w-0 items-center gap-2">
         <Button
           type="secondary"
           size="2xs"
@@ -3066,11 +3121,34 @@
           title="Close sidebar">
           <X class="size-4" />
         </Button>
-        <h1 class="text-sm font-bold tracking-tight text-text-primary">
-          Admin Console
-        </h1>
+        <ImageWithSkeleton
+          src={adminAvatarUrl}
+          alt={adminUserName || 'Account'}
+          variant="avatar"
+          rounded="rounded-full"
+          class="size-8 shrink-0" />
+        <span
+          class="flex min-w-0 flex-col {sidebarCollapsed ? 'md:hidden' : ''}">
+          {#if isLoading || (!adminUserName && !adminUserEmail)}
+            <SkeletonBlock
+              height="h-3"
+              width="w-20" />
+            <SkeletonBlock
+              height="h-2"
+              width="w-24"
+              class="mt-1" />
+          {:else}
+            <span
+              class="truncate text-xs leading-tight font-bold text-text-primary"
+              >{adminUserName}</span>
+            <span
+              class="truncate text-xxs leading-tight text-text-muted"
+              title={adminUserEmail}>{adminUserEmail}</span>
+          {/if}
+        </span>
       </div>
-      <div class="flex items-center gap-1.5">
+      <div
+        class="flex items-center gap-1.5 {sidebarCollapsed ? 'md:hidden' : ''}">
         <ThemeSelect
           variant="ghost"
           size="2xs"
@@ -3081,150 +3159,126 @@
     </div>
 
     <nav
-      class="flex flex-1 flex-col px-2 py-1.5 font-sans"
+      class="flex min-h-0 flex-1 flex-col overflow-y-auto px-2 py-1.5 font-sans"
       aria-label="Admin Navigation">
-      <div
-        class="px-2 pt-0.5 pb-1 text-2xs font-bold tracking-wider text-text-muted uppercase select-none">
-        Overview
-      </div>
-      <div class="flex flex-col gap-0.5">
-        {#each adminNavLinks.filter(l => l.section === 'overview') as link (link.id)}
-          <button
-            type="button"
-            aria-current={activeAdminTab === link.id ? 'page' : undefined}
-            onclick={() => selectTab(link.id)}
-            use:shortcut={{
-              group: 'sidebar',
-              placement: 'inline',
-              label: link.label
-            }}
-            class="group relative flex h-7 w-full items-center gap-2 rounded-sm px-2 text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
-              activeAdminTab === link.id
+      {#each adminNavSections as section, sectionIndex (section.id)}
+        {#if section.title}
+          <div
+            class="px-2 pt-1 pb-1 text-xxs font-bold text-text-muted select-none {(
+              sectionIndex > 0
             ) ?
-              'bg-accent-subtle font-bold text-accent shadow-2xs'
-            : 'text-text-primary hover:bg-surface-hover hover:text-accent'}">
-            <link.icon class="size-4 shrink-0 transition-colors" />
-            <span class="truncate">{link.label}</span>
-            {#if link.id === 'notifications' && adminNotificationsStore.unreadCount > 0}
-              <Badge
-                variant="accent"
-                class="ml-auto"
-                >{formatCompactCount(adminNotificationsStore.unreadCount)}<span
-                  class="sr-only">
-                  unread</span
-                ></Badge>
-            {/if}
-          </button>
-        {/each}
-      </div>
-
+              'mt-1.5'
+            : ''} {sidebarCollapsed ? 'md:hidden' : ''}">
+            {section.title}
+          </div>
+        {/if}
+        <div
+          class="flex flex-col gap-0.5 {sidebarCollapsed ? 'md:min-h-0' : ''} {(
+            sectionIndex > 0 && sidebarCollapsed
+          ) ?
+            'md:mt-1 md:border-t md:border-border-subtle md:pt-1'
+          : ''}">
+          {#each adminNavLinks.filter(l => l.section === section.id) as link (link.id)}
+            <button
+              type="button"
+              aria-current={activeAdminTab === link.id ? 'page' : undefined}
+              onclick={() => selectTab(link.id)}
+              title={link.label}
+              use:shortcut={{
+                group: 'sidebar',
+                placement: 'inline',
+                label: link.label
+              }}
+              class="group relative flex h-7 w-full items-center rounded-sm text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
+                sidebarCollapsed
+              ) ?
+                'gap-2 px-2 md:min-h-0 md:justify-center md:gap-0 md:px-0'
+              : 'gap-2 px-2'} {activeAdminTab === link.id ?
+                'bg-accent-subtle font-bold text-accent shadow-2xs'
+              : 'text-text-primary hover:bg-surface-hover hover:text-accent'}">
+              <link.icon
+                class="size-3.5 shrink-0 transition-colors {(
+                  activeAdminTab === link.id
+                ) ?
+                  'text-accent'
+                : 'text-text-muted group-hover:text-accent'}" />
+              <span class={sidebarCollapsed ? 'truncate md:hidden' : 'truncate'}
+                >{link.label}</span>
+              {#if link.id === 'notifications' && adminNotificationsStore.unreadCount > 0}
+                <Badge
+                  variant="accent"
+                  class={sidebarCollapsed ?
+                    'ml-auto md:absolute md:top-0 md:right-0 md:ml-0 md:px-1'
+                  : 'ml-auto'}
+                  >{formatCompactCount(
+                    adminNotificationsStore.unreadCount
+                  )}<span class="sr-only"> unread</span></Badge>
+              {/if}
+            </button>
+          {/each}
+        </div>
+      {/each}
       <div
-        class="mt-1.5 px-2 pt-1 pb-1 text-2xs font-bold tracking-wider text-text-muted uppercase select-none">
-        Content Management
-      </div>
-      <div class="flex flex-col gap-0.5">
-        {#each adminNavLinks.filter(l => l.section === 'content') as link (link.id)}
-          <button
-            type="button"
-            aria-current={activeAdminTab === link.id ? 'page' : undefined}
-            onclick={() => selectTab(link.id)}
-            use:shortcut={{
-              group: 'sidebar',
-              placement: 'inline',
-              label: link.label
-            }}
-            class="group relative flex h-7 w-full items-center gap-2 rounded-sm px-2 text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
-              activeAdminTab === link.id
+        class="mt-1.5 flex flex-col gap-0.5 border-t border-border-subtle pt-1.5 {(
+          sidebarCollapsed
+        ) ?
+          'md:mt-1 md:min-h-0 md:pt-1'
+        : ''}">
+        <button
+          type="button"
+          aria-current={activeAdminTab === 'account' ? 'page' : undefined}
+          onclick={() => selectTab('account')}
+          title="Manage account"
+          class="group flex h-7 w-full items-center rounded-sm text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
+            sidebarCollapsed
+          ) ?
+            'gap-2 px-2 md:min-h-0 md:justify-center md:gap-0 md:px-0'
+          : 'gap-2 px-2'} {activeAdminTab === 'account' ?
+            'bg-accent-subtle font-bold text-accent shadow-2xs'
+          : 'text-text-primary hover:bg-surface-hover hover:text-accent'}">
+          <Settings
+            class="size-3.5 shrink-0 transition-colors {(
+              activeAdminTab === 'account'
             ) ?
-              'bg-accent-subtle font-bold text-accent shadow-2xs'
-            : 'text-text-primary hover:bg-surface-hover hover:text-accent'}">
-            <link.icon class="size-4 shrink-0 transition-colors" />
-            <span class="truncate">{link.label}</span>
-          </button>
-        {/each}
-      </div>
-
-      <div
-        class="mt-1.5 px-2 pt-1 pb-1 text-2xs font-bold tracking-wider text-text-muted uppercase select-none">
-        Profile & Resume
-      </div>
-      <div class="flex flex-col gap-0.5">
-        {#each adminNavLinks.filter(l => l.section === 'profile') as link (link.id)}
-          <button
-            type="button"
-            aria-current={activeAdminTab === link.id ? 'page' : undefined}
-            onclick={() => selectTab(link.id)}
-            use:shortcut={{
-              group: 'sidebar',
-              placement: 'inline',
-              label: link.label
-            }}
-            class="group relative flex h-7 w-full items-center gap-2 rounded-sm px-2 text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
-              activeAdminTab === link.id
-            ) ?
-              'bg-accent-subtle font-bold text-accent shadow-2xs'
-            : 'text-text-primary hover:bg-surface-hover hover:text-accent'}">
-            <link.icon class="size-4 shrink-0 transition-colors" />
-            <span class="truncate">{link.label}</span>
-          </button>
-        {/each}
-      </div>
-
-      <div
-        class="mt-1.5 px-2 pt-1 pb-1 text-2xs font-bold tracking-wider text-text-muted uppercase select-none">
-        Legal & Policy
-      </div>
-      <div class="flex flex-col gap-0.5">
-        {#each adminNavLinks.filter(l => l.section === 'legal') as link (link.id)}
-          <button
-            type="button"
-            aria-current={activeAdminTab === link.id ? 'page' : undefined}
-            onclick={() => selectTab(link.id)}
-            use:shortcut={{
-              group: 'sidebar',
-              placement: 'inline',
-              label: link.label
-            }}
-            class="group relative flex h-7 w-full items-center gap-2 rounded-sm px-2 text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
-              activeAdminTab === link.id
-            ) ?
-              'bg-accent-subtle font-bold text-accent shadow-2xs'
-            : 'text-text-primary hover:bg-surface-hover hover:text-accent'}">
-            <link.icon class="size-4 shrink-0 transition-colors" />
-            <span class="truncate">{link.label}</span>
-          </button>
-        {/each}
+              'text-accent'
+            : 'text-text-muted group-hover:text-accent'}" />
+          <span class={sidebarCollapsed ? 'truncate md:hidden' : 'truncate'}
+            >Manage account</span>
+          <ChevronRight
+            class="ml-auto size-3 shrink-0 text-text-muted {sidebarCollapsed ?
+              'md:hidden'
+            : ''}" />
+        </button>
       </div>
     </nav>
 
     <div
-      class="sticky bottom-0 z-10 mt-auto shrink-0 border-t border-border-subtle bg-surface-card px-2 py-2">
-      <div class="flex items-center justify-between gap-2">
-        <div class="flex min-w-0 flex-col truncate px-2">
-          {#if isLoading || (!adminUserName && !adminUserEmail)}
-            <div
-              class="h-3 w-20 animate-pulse rounded bg-surface-hover"
-              aria-hidden="true">
-            </div>
-            <div
-              class="mt-1 h-2 w-24 animate-pulse rounded bg-border-subtle/60"
-              aria-hidden="true">
-            </div>
+      class="shrink-0 border-t border-border-subtle bg-surface-card px-2 py-2">
+      <div
+        class="flex items-center gap-2 {sidebarCollapsed ?
+          'justify-between md:flex-col-reverse md:justify-center'
+        : 'justify-between'}">
+        <Button
+          type="ghost"
+          size="2xs"
+          class="hidden size-7 shrink-0 p-0 md:inline-flex"
+          onclick={toggleSidebarCollapsed}
+          aria-expanded={!sidebarCollapsed}
+          aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
+          {#if sidebarCollapsed}
+            <PanelLeftOpen class="size-4" />
           {:else}
-            <span class="text-xs leading-tight font-bold text-text-primary">
-              {adminUserName}</span>
-            <span
-              class="truncate text-xxs leading-tight font-normal text-text-muted"
-              title={adminUserEmail}>
-              {adminUserEmail}
-            </span>
+            <PanelLeftClose class="size-4" />
           {/if}
-        </div>
+        </Button>
 
         <Button
           type="ghost"
           size="2xs"
-          class="size-7 shrink-0 p-0"
+          class="ml-auto size-7 shrink-0 p-0 md:ml-0 {sidebarCollapsed ?
+            'md:hidden'
+          : ''}"
           aria-label="Sign out"
           onclick={requestLogout}
           disabled={isLoggingOut}
@@ -3276,540 +3330,561 @@
           onSelectNotification={selectNotification} />
       {/key}
     {:else if activeAdminTab === 'posts'}
-      <div class="mb-6 flex items-center justify-between gap-3">
-        <div>
-          <h1 class="text-2xl font-bold tracking-tight text-text-primary">
-            Posts
-          </h1>
-          <p class="mt-1 text-xs text-text-secondary">
-            Manage articles and post comments
-          </p>
+      {#if editPostParam}
+        <PostEditor
+          postId={editPostParam === 'new' ? undefined : editPostParam}
+          onCancel={closePostEditor}
+          onSaved={handlePostSaved} />
+      {:else}
+        <div class="mb-6 flex items-center justify-between gap-3">
+          <div>
+            <h1 class="text-2xl font-bold tracking-tight text-text-primary">
+              Posts
+            </h1>
+            <p class="mt-1 text-xs text-text-secondary">
+              Manage articles and post comments
+            </p>
+          </div>
+
+          <Button
+            onclick={() => openPostEditor('new')}
+            type="primary"
+            size="md"
+            responsiveIconOnly
+            aria-label="New Post"
+            title="New Post">
+            {#snippet leading()}
+              <Plus class="size-3.5" />
+            {/snippet}
+            New Post
+          </Button>
         </div>
 
-        <Button
-          href="/admin/new"
-          type="primary"
-          size="md"
-          responsiveIconOnly
-          aria-label="New Post"
-          title="New Post">
-          {#snippet leading()}
-            <Plus class="size-3.5" />
+        <FilterToolbar
+          title="Posts filter"
+          class="mb-6">
+          {#snippet searchSlot()}
+            <Input
+              type="search"
+              placeholder="Search posts..."
+              value={filterStore.search}
+              oninput={e =>
+                filterStore.setSearch((e.target as HTMLInputElement).value)}
+              aria-label="Search blog posts" />
           {/snippet}
-          New Post
-        </Button>
-      </div>
-
-      <FilterToolbar
-        title="Posts filter"
-        class="mb-6">
-        {#snippet searchSlot()}
-          <Input
-            type="search"
-            placeholder="Search posts..."
-            value={filterStore.search}
-            oninput={e =>
-              filterStore.setSearch((e.target as HTMLInputElement).value)}
-            aria-label="Search blog posts" />
-        {/snippet}
-        {#snippet countSlot()}
-          <SearchResultCount
-            count={filteredPosts.length}
-            total={posts.length}
-            itemLabel="posts" />
-        {/snippet}
-        {#snippet filterControlsSlot()}
-          <div class="flex flex-wrap items-center gap-2">
-            <Dropdown
-              label="Status"
-              value={statusFilter}
-              options={[
-                {value: 'all', label: 'All'},
-                {value: 'published', label: 'Published'},
-                {value: 'draft', label: 'Draft'}
-              ]}
-              onChange={val => filterStore.setSingleFilter('status', val)} />
-            {#if allPostTags.length > 0}
+          {#snippet countSlot()}
+            <SearchResultCount
+              count={filteredPosts.length}
+              total={posts.length}
+              itemLabel="posts" />
+          {/snippet}
+          {#snippet filterControlsSlot()}
+            <div
+              class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
               <Dropdown
-                multiple
-                searchable
-                label="Tag"
-                options={allPostTags.map(t => ({value: t, label: t}))}
-                value={filterStore.filters['tag'] || []}
-                onChange={val => filterStore.toggleMultiFilter('tag', val)} />
-            {/if}
-          </div>
-        {/snippet}
-        {#snippet sortSlot()}
-          <SortControl
-            currentField={filterStore.sort.field}
-            currentDirection={filterStore.sort.direction}
-            fields={[
-              {value: 'date', label: 'Date'},
-              {value: 'title', label: 'Title'},
-              {value: 'status', label: 'Status'},
-              {value: 'views', label: 'Views'},
-              {value: 'comments', label: 'Comments'}
-            ]}
-            onFieldChange={val =>
-              filterStore.setSort(val, filterStore.sort.direction)}
-            onDirectionToggle={() =>
-              filterStore.setSort(
-                filterStore.sort.field,
-                filterStore.sort.direction === 'asc' ? 'desc' : 'asc'
-              )} />
-        {/snippet}
-      </FilterToolbar>
+                label="Status"
+                value={statusFilter}
+                options={[
+                  {value: 'all', label: 'All'},
+                  {value: 'published', label: 'Published'},
+                  {value: 'draft', label: 'Draft'}
+                ]}
+                onChange={val => filterStore.setSingleFilter('status', val)} />
+              {#if allPostTags.length > 0}
+                <Dropdown
+                  multiple
+                  searchable
+                  label="Tag"
+                  options={allPostTags.map(t => ({value: t, label: t}))}
+                  value={filterStore.filters['tag'] || []}
+                  onChange={val => filterStore.toggleMultiFilter('tag', val)} />
+              {/if}
+            </div>
+          {/snippet}
+          {#snippet sortSlot()}
+            <SortControl
+              currentField={filterStore.sort.field}
+              currentDirection={filterStore.sort.direction}
+              fields={[
+                {value: 'date', label: 'Date'},
+                {value: 'title', label: 'Title'},
+                {value: 'status', label: 'Status'},
+                {value: 'views', label: 'Views'},
+                {value: 'comments', label: 'Comments'}
+              ]}
+              onFieldChange={val =>
+                filterStore.setSort(val, filterStore.sort.direction)}
+              onDirectionToggle={() =>
+                filterStore.setSort(
+                  filterStore.sort.field,
+                  filterStore.sort.direction === 'asc' ? 'desc' : 'asc'
+                )} />
+          {/snippet}
+        </FilterToolbar>
 
-      <FilterChipGroup
-        chips={filterStore.activeChips}
-        onRemove={filterStore.removeFilter}
-        onClearAll={filterStore.clearAllFilters}
-        class="mb-6" />
+        <FilterChipGroup
+          chips={filterStore.activeChips}
+          onRemove={filterStore.removeFilter}
+          onClearAll={filterStore.clearAllFilters}
+          class="mb-6" />
 
-      {#if postsLoading}
-        <LoadingState
-          variant="post-card"
-          label="Loading posts..."
-          count={3} />
-      {:else if postsLoadError}
-        <ErrorState
-          title="Unable to load posts"
-          description={postsLoadError}
-          onRetry={() => fetchPosts()} />
-      {:else if filteredPosts.length === 0}
-        {#if filterStore.isFiltered}
-          <FilterEmptyState onClearFilters={filterStore.clearAllFilters} />
+        {#if postsLoading}
+          <LoadingState
+            variant="post-card"
+            label="Loading posts..."
+            count={3} />
+        {:else if postsLoadError}
+          <ErrorState
+            title="Unable to load posts"
+            description={postsLoadError}
+            onRetry={() => fetchPosts()} />
+        {:else if filteredPosts.length === 0}
+          {#if filterStore.isFiltered}
+            <FilterEmptyState onClearFilters={filterStore.clearAllFilters} />
+          {:else}
+            <EmptyState
+              title="No posts found"
+              description="Try adjusting your filter or search query." />
+          {/if}
         {:else}
-          <EmptyState
-            title="No posts found"
-            description="Try adjusting your filter or search query." />
-        {/if}
-      {:else}
-        <div class="grid grid-cols-1 items-start gap-4">
-          {#each paginatedPosts as post (post.id)}
-            <Card
-              id="post-{post.id}"
-              density="none"
-              class="relative flex flex-col text-left">
-              <div
-                class="relative aspect-2/1 w-full shrink-0 overflow-hidden border-b border-border-subtle">
-                {#if post.banner_version && !failedBanners.has(post.id)}
-                  <ImageWithSkeleton
-                    src={bannerUrl(post)}
-                    alt={post.title}
-                    rounded=""
-                    onerror={() => markBannerFailed(post.id)}
-                    class="h-full w-full object-cover" />
-                {:else}
-                  <div
-                    class="relative flex h-full w-full items-center justify-center overflow-hidden bg-linear-to-br from-accent/15 to-accent/5 select-none">
-                    <ImageIcon class="size-10 text-accent/50" />
-                  </div>
-                {/if}
-              </div>
-
-              <div
-                class="flex min-w-0 flex-1 flex-col justify-between gap-2.5 p-4 font-sans">
-                <div class="flex flex-col gap-1">
-                  <div>
-                    <h3
-                      class="text-lg leading-snug font-bold text-text-primary transition-colors hover:text-accent">
-                      <a
-                        href={resolve('/blog/[slug]', {slug: post.slug})}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="rounded-sm outline-none hover:underline focus-visible:ring-2 focus-visible:ring-accent">
-                        {post.title}
-                      </a>
-                      <span
-                        class="ml-1.5 inline-flex items-center gap-1 align-middle select-none">
-                        {#if post.published}
-                          <span
-                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-copilot-subtle text-copilot"
-                            title="Published"
-                            aria-label="Published">
-                            <CircleCheckBig class="size-3 shrink-0" />
-                          </span>
-                        {:else}
-                          <span
-                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-warning-subtle text-warning"
-                            title="Draft"
-                            aria-label="Draft">
-                            <CircleDotDashed class="size-3 shrink-0" />
-                          </span>
-                        {/if}
-                        {#if post.pinned}
-                          <span
-                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-success-subtle text-success"
-                            title="Pinned post"
-                            aria-label="Pinned post">
-                            <Pin class="size-3 shrink-0" />
-                          </span>
-                        {/if}
-                        {#if isPostNew(post)}
-                          <span
-                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-security-subtle text-security"
-                            title="New post"
-                            aria-label="New post">
-                            <Sparkles class="size-3 shrink-0" />
-                          </span>
-                        {/if}
-                      </span>
-                    </h3>
-                  </div>
-
-                  <ArticleMeta
-                    status={null}
-                    size="xs"
-                    layout="single"
-                    class="min-h-4.5"
-                    date={post.created_at}
-                    updatedAt={post.updated_at}
-                    readingTime={formatReadTime(post.read_time)}
-                    commentsCount={post.comment_count ?? 0}
-                    views={postViewsMap.get(post.id)
-                      ?? post.views_count
-                      ?? 0} />
-
-                  {#if post.excerpt}
-                    {@const isExpanded = expandedExcerptIds.has(post.id)}
-                    {@const isOverflowing = overflowingExcerptIds.has(post.id)}
-                    <div class="flex flex-col items-start gap-1">
-                      <p
-                        {@attach !isExpanded && observeExcerptOverflow(post.id)}
-                        class="text-xs leading-relaxed text-text-secondary {(
-                          isExpanded
-                        ) ?
-                          ''
-                        : 'line-clamp-2'}">
-                        {post.excerpt}
-                        {#if isOverflowing && isExpanded}
-                          <button
-                            type="button"
-                            onclick={() => toggleExcerpt(post.id)}
-                            class="ml-1 inline cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
-                            Show less
-                          </button>
-                        {/if}
-                      </p>
-                      {#if isOverflowing && !isExpanded}
-                        <button
-                          type="button"
-                          onclick={() => toggleExcerpt(post.id)}
-                          class="inline-flex cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
-                          Show more
-                        </button>
-                      {/if}
-                    </div>
-                  {/if}
-
-                  {#if post.tags && post.tags.length > 0}
-                    <div class="flex flex-wrap items-center gap-1.5 pt-1">
-                      {#each post.tags as tag (tag)}
-                        {@const cleanTag = decodeHtmlEntities(tag)}
-                        <button
-                          type="button"
-                          onclick={() =>
-                            filterStore.toggleMultiFilter('tag', tag)}
-                          class="inline-flex cursor-pointer items-center rounded-full px-2 py-0.5 font-mono text-[12px] font-medium transition-colors {(
-                            filterStore.filters['tag']?.includes(tag)
-                          ) ?
-                            'bg-accent text-text-on-accent'
-                          : 'bg-accent-subtle text-accent hover:bg-accent/15'}">
-                          {cleanTag}
-                        </button>
-                      {/each}
+          <div class="grid grid-cols-1 items-start gap-4">
+            {#each paginatedPosts as post (post.id)}
+              <Card
+                id="post-{post.id}"
+                density="none"
+                class="relative flex flex-col text-left">
+                <div
+                  class="relative aspect-2/1 w-full shrink-0 overflow-hidden border-b border-border-subtle">
+                  {#if post.banner_version && !failedBanners.has(post.id)}
+                    <ImageWithSkeleton
+                      src={bannerUrl(post)}
+                      alt={post.title}
+                      rounded=""
+                      onerror={() => markBannerFailed(post.id)}
+                      class="h-full w-full object-cover" />
+                  {:else}
+                    <div
+                      class="relative flex h-full w-full items-center justify-center overflow-hidden bg-linear-to-br from-accent/15 to-accent/5 select-none">
+                      <ImageIcon class="size-10 text-accent/50" />
                     </div>
                   {/if}
                 </div>
 
                 <div
-                  class="mt-auto flex w-full flex-wrap items-center justify-between gap-1.5 border-t border-border-subtle/40 pt-3 sm:gap-2">
-                  <Button
-                    href="/admin/new?id={post.id}"
-                    type="primary"
-                    size="sm"
-                    class="order-1 w-full px-2.5 sm:px-3 md:w-auto"
-                    aria-label="Edit Post"
-                    title="Edit Post">
-                    {#snippet leading()}
-                      <PenLine class="size-3.5" />
-                    {/snippet}
-                    Edit Post
-                  </Button>
+                  class="flex min-w-0 flex-1 flex-col justify-between gap-2.5 p-4 font-sans">
+                  <div class="flex flex-col gap-1">
+                    <div>
+                      <h3
+                        class="text-lg leading-snug font-bold text-text-primary transition-colors hover:text-accent">
+                        <a
+                          href={resolve('/blog/[slug]', {slug: post.slug})}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="rounded-sm outline-none hover:underline focus-visible:ring-2 focus-visible:ring-accent">
+                          {post.title}
+                        </a>
+                        <span
+                          class="ml-1.5 inline-flex items-center gap-1 align-middle select-none">
+                          {#if post.published}
+                            <span
+                              class="inline-flex size-4.5 items-center justify-center rounded-full bg-copilot-subtle text-copilot"
+                              title="Published"
+                              aria-label="Published">
+                              <CircleCheckBig class="size-3 shrink-0" />
+                            </span>
+                          {:else}
+                            <span
+                              class="inline-flex size-4.5 items-center justify-center rounded-full bg-warning-subtle text-warning"
+                              title="Draft"
+                              aria-label="Draft">
+                              <CircleDotDashed class="size-3 shrink-0" />
+                            </span>
+                          {/if}
+                          {#if post.pinned}
+                            <span
+                              class="inline-flex size-4.5 items-center justify-center rounded-full bg-success-subtle text-success"
+                              title="Pinned post"
+                              aria-label="Pinned post">
+                              <Pin class="size-3 shrink-0" />
+                            </span>
+                          {/if}
+                          {#if isPostNew(post)}
+                            <span
+                              class="inline-flex size-4.5 items-center justify-center rounded-full bg-security-subtle text-security"
+                              title="New post"
+                              aria-label="New post">
+                              <Sparkles class="size-3 shrink-0" />
+                            </span>
+                          {/if}
+                        </span>
+                      </h3>
+                    </div>
 
-                  <div class="order-2 flex items-center gap-1.5 sm:gap-2">
-                    <Button
-                      htmlType="button"
-                      type="secondary"
-                      size="sm"
-                      responsiveIconOnly
-                      aria-label={post.published ? 'Unpublish post' : (
-                        'Publish post'
+                    <ArticleMeta
+                      status={null}
+                      size="xs"
+                      layout="single"
+                      class="min-h-4.5"
+                      date={post.created_at}
+                      updatedAt={post.updated_at}
+                      readingTime={formatReadTime(post.read_time)}
+                      commentsCount={post.comment_count ?? 0}
+                      views={postViewsMap.get(post.id)
+                        ?? post.views_count
+                        ?? 0} />
+
+                    {#if post.excerpt}
+                      {@const isExpanded = expandedExcerptIds.has(post.id)}
+                      {@const isOverflowing = overflowingExcerptIds.has(
+                        post.id
                       )}
-                      title={post.published ? 'Unpublish post' : 'Publish post'}
-                      onclick={() => handleTogglePublished(post)}>
-                      {#snippet leading()}
-                        {#if post.published}
-                          <EyeOff class="size-3.5" />
-                        {:else}
-                          <Send class="size-3.5" />
+                      <div class="flex flex-col items-start gap-1">
+                        <p
+                          {@attach !isExpanded
+                            && observeExcerptOverflow(post.id)}
+                          class="text-xs leading-relaxed text-text-secondary {(
+                            isExpanded
+                          ) ?
+                            ''
+                          : 'line-clamp-2'}">
+                          {post.excerpt}
+                          {#if isOverflowing && isExpanded}
+                            <button
+                              type="button"
+                              onclick={() => toggleExcerpt(post.id)}
+                              class="ml-1 inline cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
+                              Show less
+                            </button>
+                          {/if}
+                        </p>
+                        {#if isOverflowing && !isExpanded}
+                          <button
+                            type="button"
+                            onclick={() => toggleExcerpt(post.id)}
+                            class="inline-flex cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
+                            Show more
+                          </button>
                         {/if}
+                      </div>
+                    {/if}
+
+                    {#if post.tags && post.tags.length > 0}
+                      <div class="flex flex-wrap items-center gap-1.5 pt-1">
+                        {#each post.tags as tag (tag)}
+                          {@const cleanTag = decodeHtmlEntities(tag)}
+                          <button
+                            type="button"
+                            onclick={() =>
+                              filterStore.toggleMultiFilter('tag', tag)}
+                            class="inline-flex cursor-pointer items-center rounded-full px-2 py-0.5 font-mono text-[12px] font-medium transition-colors {(
+                              filterStore.filters['tag']?.includes(tag)
+                            ) ?
+                              'bg-accent text-text-on-accent'
+                            : 'bg-accent-subtle text-accent hover:bg-accent/15'}">
+                            {cleanTag}
+                          </button>
+                        {/each}
+                      </div>
+                    {/if}
+                  </div>
+
+                  <div
+                    class="mt-auto flex w-full flex-wrap items-center justify-between gap-1.5 border-t border-border-subtle/40 pt-3 sm:gap-2">
+                    <Button
+                      onclick={() => openPostEditor(post.id)}
+                      type="primary"
+                      size="sm"
+                      class="order-1 w-full px-2.5 sm:px-3 md:w-auto"
+                      aria-label="Edit post"
+                      title="Edit Post">
+                      {#snippet leading()}
+                        <PenLine class="size-3.5" />
                       {/snippet}
-                      {post.published ? 'Unpublish' : 'Publish'}
+                      Edit post
                     </Button>
+
+                    <div class="order-2 flex items-center gap-1.5 sm:gap-2">
+                      <Button
+                        htmlType="button"
+                        type="secondary"
+                        size="sm"
+                        responsiveIconOnly
+                        aria-label={post.published ? 'Unpublish post' : (
+                          'Publish post'
+                        )}
+                        title={post.published ? 'Unpublish post' : (
+                          'Publish post'
+                        )}
+                        onclick={() => handleTogglePublished(post)}>
+                        {#snippet leading()}
+                          {#if post.published}
+                            <EyeOff class="size-3.5" />
+                          {:else}
+                            <Send class="size-3.5" />
+                          {/if}
+                        {/snippet}
+                        {post.published ? 'Unpublish' : 'Publish'}
+                      </Button>
+
+                      <Button
+                        htmlType="button"
+                        type="secondary"
+                        size="sm"
+                        responsiveIconOnly
+                        disabled={translatingPostIds.has(post.id)}
+                        aria-label="Regenerate translations"
+                        title="Regenerate translations"
+                        onclick={() => handleTranslatePost(post)}>
+                        {#snippet leading()}
+                          <Languages class="size-3.5" />
+                        {/snippet}
+                        {translatingPostIds.has(post.id) ? 'Translating...' : (
+                          'Translate'
+                        )}
+                      </Button>
+
+                      <Button
+                        htmlType="button"
+                        type="secondary"
+                        size="sm"
+                        responsiveIconOnly
+                        aria-label={post.pinned ? 'Unpin post' : 'Pin post'}
+                        title={post.pinned ? 'Unpin post' : 'Pin post'}
+                        onclick={() => handleTogglePinned(post)}>
+                        {#snippet leading()}
+                          {#if post.pinned}
+                            <PinOff class="size-3.5" />
+                          {:else}
+                            <Pin class="size-3.5" />
+                          {/if}
+                        {/snippet}
+                        {post.pinned ? 'Unpin' : 'Pin'}
+                      </Button>
+
+                      <Button
+                        htmlType="button"
+                        type="secondary"
+                        size="sm"
+                        responsiveIconOnly
+                        aria-label="{expandedPostIds.has(post.id) ? 'Hide' : (
+                          'Show'
+                        )} comments"
+                        title="{expandedPostIds.has(post.id) ? 'Hide' : (
+                          'Show'
+                        )} comments"
+                        aria-expanded={expandedPostIds.has(post.id)}
+                        aria-controls="comments-{post.id}"
+                        onclick={() => toggleComments(post.id)}>
+                        {#snippet leading()}
+                          <MessageCircle class="size-3.5" />
+                        {/snippet}
+                        {expandedPostIds.has(post.id) ? 'Hide' : 'Show'} comments
+                      </Button>
+                    </div>
 
                     <Button
                       htmlType="button"
-                      type="secondary"
+                      type="danger"
                       size="sm"
                       responsiveIconOnly
-                      disabled={translatingPostIds.has(post.id)}
-                      aria-label="Regenerate translations"
-                      title="Regenerate translations"
-                      onclick={() => handleTranslatePost(post)}>
+                      aria-label="Delete post"
+                      title="Delete post"
+                      class="order-3 md:ml-auto"
+                      onclick={() => confirmDeletePost(post)}>
                       {#snippet leading()}
-                        <Languages class="size-3.5" />
+                        <Trash class="size-3.5" />
                       {/snippet}
-                      {translatingPostIds.has(post.id) ? 'Translating...' : (
-                        'Translate'
-                      )}
-                    </Button>
-
-                    <Button
-                      htmlType="button"
-                      type="secondary"
-                      size="sm"
-                      responsiveIconOnly
-                      aria-label={post.pinned ? 'Unpin post' : 'Pin post'}
-                      title={post.pinned ? 'Unpin post' : 'Pin post'}
-                      onclick={() => handleTogglePinned(post)}>
-                      {#snippet leading()}
-                        {#if post.pinned}
-                          <PinOff class="size-3.5" />
-                        {:else}
-                          <Pin class="size-3.5" />
-                        {/if}
-                      {/snippet}
-                      {post.pinned ? 'Unpin' : 'Pin'}
-                    </Button>
-
-                    <Button
-                      htmlType="button"
-                      type="secondary"
-                      size="sm"
-                      responsiveIconOnly
-                      aria-label="{expandedPostIds.has(post.id) ? 'Hide' : (
-                        'Show'
-                      )} comments"
-                      title="{expandedPostIds.has(post.id) ? 'Hide' : (
-                        'Show'
-                      )} comments"
-                      aria-expanded={expandedPostIds.has(post.id)}
-                      aria-controls="comments-{post.id}"
-                      onclick={() => toggleComments(post.id)}>
-                      {#snippet leading()}
-                        <MessageCircle class="size-3.5" />
-                      {/snippet}
-                      {expandedPostIds.has(post.id) ? 'Hide' : 'Show'} comments
+                      Delete post
                     </Button>
                   </div>
 
-                  <Button
-                    htmlType="button"
-                    type="danger"
-                    size="sm"
-                    responsiveIconOnly
-                    aria-label="Delete post"
-                    title="Delete post"
-                    class="order-3 md:ml-auto"
-                    onclick={() => confirmDeletePost(post)}>
-                    {#snippet leading()}
-                      <Trash class="size-3.5" />
-                    {/snippet}
-                    Delete
-                  </Button>
-                </div>
-
-                {#if expandedPostIds.has(post.id)}
-                  <div
-                    id="comments-{post.id}"
-                    class="mt-4 border-t border-border-subtle pt-4">
-                    <div class="mb-3 flex items-center justify-between gap-2">
-                      <h4 class="text-xs font-bold text-text-secondary">
-                        Comments ({commentPages[post.id]?.total ?? 0})
-                      </h4>
-                      {#if comments.some(c => c.post_id === post.id && c.reports)}
-                        <button
-                          type="button"
-                          class={cn(
-                            'cursor-pointer rounded-sm border px-2 py-0.5 text-2xs font-semibold transition-colors',
-                            commentFilterReportedOnly ?
-                              'border-border-subtle bg-surface-hover text-text-secondary hover:text-accent'
-                            : 'border-border-subtle text-text-muted hover:text-text-primary'
-                          )}
-                          onclick={() => {
-                            commentFilterReportedOnly =
-                              !commentFilterReportedOnly;
-                            void fetchComments(post.id);
-                          }}>
-                          <AlertTriangle class="mr-1 inline size-2.5" />
-                          {commentFilterReportedOnly ? 'Showing Reported' : (
-                            'Filter Reported'
-                          )}
-                        </button>
-                      {/if}
-                    </div>
-                    {#if commentsError[post.id]}<ErrorState
-                        title="Unable to load comments"
-                        description={commentsError[post.id]}
-                        onRetry={() => fetchComments(post.id)} />{/if}
-                    {#if commentPages[post.id]?.focused}<Button
-                        size="sm"
-                        type="outline"
-                        onclick={() => fetchComments(post.id)}
-                        >Showing linked comment · Show all comments</Button
-                      >{/if}
-                    {#if (commentPages[post.id]?.total ?? 0) > 20}
-                      <Pagination
-                        class="mb-3"
-                        page={commentPages[post.id].page}
-                        totalPages={Math.ceil(commentPages[post.id].total / 20)}
-                        onPageChange={page =>
-                          fetchComments(post.id, undefined, page)} />
-                    {/if}
-                    {#if commentsLoading[post.id]}<LoadingState
-                        label="Loading comments…" />
-                    {:else if getPostComments(post.id).length === 0}
-                      <p class="text-xs text-text-muted">No comments yet.</p>
-                    {:else}
-                      <CommentThread
-                        comments={getPostComments(post.id)}
-                        isAdmin={true}
-                        focusCommentId={focusedCommentId}
-                        onDelete={c => confirmDeleteComment(c.id)}
-                        {replyTo}>
-                        {#snippet statusBadge(comment)}
-                          {#if comment.reports}<Button
-                              type="ghost"
-                              size="xs"
-                              onclick={() =>
-                                openWorkspace('reports', comment.id)}
-                              >Reported ({comment.reports})</Button
-                            >{/if}
-                        {/snippet}
-
-                        {#snippet actions(comment)}
-                          <RelativeTime
-                            date={comment.created_at}
-                            tag="time" />
-                          <span aria-hidden="true">&middot;</span>
+                  {#if expandedPostIds.has(post.id)}
+                    <div
+                      id="comments-{post.id}"
+                      class="mt-4 border-t border-border-subtle pt-4">
+                      <div class="mb-3 flex items-center justify-between gap-2">
+                        <h4 class="text-xs font-bold text-text-secondary">
+                          Comments ({commentPages[post.id]?.total ?? 0})
+                        </h4>
+                        {#if comments.some(c => c.post_id === post.id && c.reports)}
                           <button
                             type="button"
+                            class={cn(
+                              'cursor-pointer rounded-sm border px-2 py-0.5 text-2xs font-semibold transition-colors',
+                              commentFilterReportedOnly ?
+                                'border-border-subtle bg-surface-hover text-text-secondary hover:text-accent'
+                              : 'border-border-subtle text-text-muted hover:text-text-primary'
+                            )}
                             onclick={() => {
-                              replyTo = comment;
-                              commentContent = '';
-                            }}
-                            class="cursor-pointer font-bold text-text-muted transition-colors hover:text-accent focus-visible:outline-none">
-                            Reply
+                              commentFilterReportedOnly =
+                                !commentFilterReportedOnly;
+                              void fetchComments(post.id);
+                            }}>
+                            <AlertTriangle class="mr-1 inline size-2.5" />
+                            {commentFilterReportedOnly ? 'Showing Reported' : (
+                              'Filter Reported'
+                            )}
                           </button>
-                          {#if comment.reports}
+                        {/if}
+                      </div>
+                      {#if commentsError[post.id]}<ErrorState
+                          title="Unable to load comments"
+                          description={commentsError[post.id]}
+                          onRetry={() => fetchComments(post.id)} />{/if}
+                      {#if commentPages[post.id]?.focused}<Button
+                          size="sm"
+                          type="outline"
+                          onclick={() => fetchComments(post.id)}
+                          >Showing linked comment · Show all comments</Button
+                        >{/if}
+                      {#if (commentPages[post.id]?.total ?? 0) > 20}
+                        <Pagination
+                          class="mb-3"
+                          page={commentPages[post.id].page}
+                          totalPages={Math.ceil(
+                            commentPages[post.id].total / 20
+                          )}
+                          onPageChange={page =>
+                            fetchComments(post.id, undefined, page)} />
+                      {/if}
+                      {#if commentsLoading[post.id]}<LoadingState
+                          label="Loading comments…" />
+                      {:else if getPostComments(post.id).length === 0}
+                        <p class="text-xs text-text-muted">No comments yet.</p>
+                      {:else}
+                        <CommentThread
+                          comments={getPostComments(post.id)}
+                          isAdmin={true}
+                          focusCommentId={focusedCommentId}
+                          onDelete={c => confirmDeleteComment(c.id)}
+                          {replyTo}>
+                          {#snippet statusBadge(comment)}
+                            {#if comment.reports}<Button
+                                type="ghost"
+                                size="xs"
+                                onclick={() =>
+                                  openWorkspace('reports', comment.id)}
+                                >Reported ({comment.reports})</Button
+                              >{/if}
+                          {/snippet}
+
+                          {#snippet actions(comment)}
+                            <RelativeTime
+                              date={comment.created_at}
+                              tag="time" />
                             <span aria-hidden="true">&middot;</span>
                             <button
                               type="button"
-                              onclick={() => dismissCommentReports(comment.id)}
-                              class="cursor-pointer font-bold text-accent transition-colors hover:underline focus-visible:outline-none">
-                              Dismiss Reports
+                              onclick={() => {
+                                replyTo = comment;
+                                commentContent = '';
+                              }}
+                              class="cursor-pointer font-bold text-text-muted transition-colors hover:text-accent focus-visible:outline-none">
+                              Reply
                             </button>
-                          {/if}
-                        {/snippet}
-
-                        {#snippet replyForm(comment)}
-                          <form
-                            novalidate
-                            onsubmit={e =>
-                              handleAdminSubmit(e, comment.id, comment.post_id)}
-                            class="max-w-xl rounded-sm border border-border-subtle bg-surface-card p-3 shadow-2xs">
-                            <div
-                              class="mb-2 flex items-center justify-between gap-2">
-                              <p class="text-xs text-text-secondary">
-                                Replying to <span
-                                  class="font-semibold text-accent"
-                                  >{(
-                                    comment.is_anonymous || !comment.author_name
-                                  ) ?
-                                    'Anonymous'
-                                  : comment.author_name}</span>
-                              </p>
+                            {#if comment.reports}
+                              <span aria-hidden="true">&middot;</span>
                               <button
                                 type="button"
-                                onclick={() => (replyTo = null)}
-                                class="inline-flex size-5 cursor-pointer items-center justify-center rounded-sm text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring"
-                                aria-label="Cancel reply">
-                                <X class="size-3.5" />
+                                onclick={() =>
+                                  dismissCommentReports(comment.id)}
+                                class="cursor-pointer font-bold text-accent transition-colors hover:underline focus-visible:outline-none">
+                                Dismiss Reports
                               </button>
-                            </div>
+                            {/if}
+                          {/snippet}
 
-                            <Textarea
-                              id="admin-reply-msg-{comment.id}"
-                              rows={2}
-                              maxlength={1000}
-                              bind:value={
-                                () => commentContent,
-                                value => {
-                                  commentContent = value;
-                                  replyValidation.input('content');
-                                }
-                              }
-                              onblur={() => {
-                                void replyValidation.check('content');
-                              }}
-                              error={!!replyError}
-                              placeholder="Write an admin reply..."
-                              class="min-h-15 py-2 text-xs sm:text-sm" />
-                            {#if replyError}<FieldMessage
-                                message={replyError} />{/if}
-
-                            <div
-                              class="mt-2 flex items-center justify-between gap-2">
-                              <span
-                                class="text-2xs text-text-muted tabular-nums">
-                                {1000 - commentContent.length} left
-                              </span>
-                              <div class="flex items-center gap-1.5">
-                                <Button
-                                  type="ghost"
-                                  size="xs"
-                                  onclick={() => (replyTo = null)}>
-                                  Cancel
-                                </Button>
-                                <Button
-                                  htmlType="submit"
-                                  type="primary"
-                                  size="xs"
-                                  disabled={isSubmitting
-                                    || !commentContent.trim()}
-                                  isLoading={isSubmitting}>
-                                  {isSubmitting ? 'Replying...' : 'Reply'}
-                                </Button>
+                          {#snippet replyForm(comment)}
+                            <form
+                              novalidate
+                              onsubmit={e =>
+                                handleAdminSubmit(
+                                  e,
+                                  comment.id,
+                                  comment.post_id
+                                )}
+                              class="max-w-xl rounded-sm border border-border-subtle bg-surface-card p-3 shadow-2xs">
+                              <div
+                                class="mb-2 flex items-center justify-between gap-2">
+                                <p class="text-xs text-text-secondary">
+                                  Replying to <span
+                                    class="font-semibold text-accent"
+                                    >{(
+                                      comment.is_anonymous
+                                      || !comment.author_name
+                                    ) ?
+                                      'Anonymous'
+                                    : comment.author_name}</span>
+                                </p>
+                                <button
+                                  type="button"
+                                  onclick={() => (replyTo = null)}
+                                  class="inline-flex size-5 cursor-pointer items-center justify-center rounded-sm text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring"
+                                  aria-label="Cancel reply">
+                                  <X class="size-3.5" />
+                                </button>
                               </div>
-                            </div>
-                          </form>
-                        {/snippet}
-                      </CommentThread>
-                    {/if}
-                  </div>
-                {/if}
-              </div></Card>
-          {/each}
-        </div>
-        <div class="mt-6">
-          <Pagination
-            page={postsPageClamped}
-            totalPages={postsTotalPages}
-            onPageChange={p => (postsPage = p)} />
-        </div>
+
+                              <Textarea
+                                id="admin-reply-msg-{comment.id}"
+                                rows={2}
+                                maxlength={1000}
+                                bind:value={
+                                  () => commentContent,
+                                  value => {
+                                    commentContent = value;
+                                    replyValidation.input('content');
+                                  }
+                                }
+                                onblur={() => {
+                                  void replyValidation.check('content');
+                                }}
+                                error={!!replyError}
+                                placeholder="Write an admin reply..."
+                                class="min-h-15 py-2 text-xs sm:text-sm" />
+                              {#if replyError}<FieldMessage
+                                  message={replyError} />{/if}
+
+                              <div
+                                class="mt-2 flex items-center justify-between gap-2">
+                                <span
+                                  class="text-2xs text-text-muted tabular-nums">
+                                  {1000 - commentContent.length} left
+                                </span>
+                                <div class="flex items-center gap-1.5">
+                                  <Button
+                                    type="ghost"
+                                    size="xs"
+                                    onclick={() => (replyTo = null)}>
+                                    Cancel
+                                  </Button>
+                                  <Button
+                                    htmlType="submit"
+                                    type="primary"
+                                    size="xs"
+                                    disabled={isSubmitting
+                                      || !commentContent.trim()}
+                                    isLoading={isSubmitting}>
+                                    {isSubmitting ? 'Replying...' : 'Reply'}
+                                  </Button>
+                                </div>
+                              </div>
+                            </form>
+                          {/snippet}
+                        </CommentThread>
+                      {/if}
+                    </div>
+                  {/if}
+                </div></Card>
+            {/each}
+          </div>
+          <div class="mt-6">
+            <Pagination
+              page={postsPageClamped}
+              totalPages={postsTotalPages}
+              onPageChange={p => (postsPage = p)} />
+          </div>
+        {/if}
       {/if}
     {:else if activeAdminTab === 'projects'}
       <FormSection
@@ -6229,6 +6304,8 @@
           minHeight="500px"
           stickyTopClass="top-14 md:top-0" />
       </FormSection>
+    {:else if activeAdminTab === 'account'}
+      <AccountSettings />
     {/if}
   </main>
 </div>

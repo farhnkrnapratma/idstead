@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {ArrowLeft, ArrowRight} from '@lucide/svelte';
+  import {ChevronLeft, ChevronRight} from '@lucide/svelte';
   import {cn} from '../utils/cn';
   import {buttonKey} from '$lib/shortcuts';
   import Button from './Button.svelte';
@@ -8,10 +8,23 @@
     page: number;
     totalPages: number;
     onPageChange: (page: number) => void;
+    size?: 'md' | 'sm';
     class?: string;
   }
 
-  let {page, totalPages, onPageChange, class: className = ''}: Props = $props();
+  let {
+    page,
+    totalPages,
+    onPageChange,
+    size = 'md',
+    class: className = ''
+  }: Props = $props();
+
+  const compact = $derived(size === 'sm');
+  const controlClass = $derived(
+    compact ? 'size-6 shrink-0 p-0' : 'size-9 shrink-0 p-0'
+  );
+  const pageClass = $derived(compact ? 'h-6 w-6' : 'h-9 w-9');
 
   function goTo(target: number) {
     const clamped = Math.min(Math.max(target, 1), totalPages);
@@ -55,14 +68,14 @@
   )}>
   <Button
     type="outline"
-    size="md"
-    class="size-9 shrink-0 p-0"
+    size={compact ? '3xs' : 'md'}
+    class={controlClass}
     onclick={() => goTo(page - 1)}
     disabled={page <= 1}
     keyboardShortcut={buttonKey('pagePrev')}
     shortcutLabel="Previous page"
     aria-label="Previous page">
-    <ArrowLeft class="size-3.5" />
+    <ChevronLeft class="size-3" />
   </Button>
 
   <div
@@ -70,37 +83,36 @@
     {#each pageNumbers as entry, i (entry === 'ellipsis' ? `ellipsis-${i}` : entry)}
       {#if entry === 'ellipsis'}
         <span
-          class="inline-flex h-9 w-9 shrink-0 items-center justify-center text-xs font-semibold text-text-muted"
+          class={cn(
+            'inline-flex shrink-0 items-center justify-center text-xs font-semibold text-text-muted',
+            pageClass
+          )}
           aria-hidden="true">
           &hellip;
         </span>
       {:else}
-        <button
-          type="button"
+        <Button
+          type={entry === page ? 'primary' : 'outline'}
+          size={compact ? '3xs' : 'md'}
+          class={cn(controlClass, 'text-xs font-bold sm:text-xs')}
           onclick={() => goTo(entry)}
           aria-label="Go to page {entry}"
-          aria-current={entry === page ? 'page' : undefined}
-          class={cn(
-            'inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-md text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring',
-            entry === page ?
-              'bg-accent text-white shadow-xs'
-            : 'border border-border-subtle bg-surface text-text-primary hover:bg-surface-hover hover:text-accent'
-          )}>
+          aria-current={entry === page ? 'page' : undefined}>
           {entry}
-        </button>
+        </Button>
       {/if}
     {/each}
   </div>
 
   <Button
     type="outline"
-    size="md"
-    class="size-9 shrink-0 p-0"
+    size={compact ? '3xs' : 'md'}
+    class={controlClass}
     onclick={() => goTo(page + 1)}
     disabled={page >= totalPages}
     keyboardShortcut={buttonKey('pageNext')}
     shortcutLabel="Next page"
     aria-label="Next page">
-    <ArrowRight class="size-3.5" />
+    <ChevronRight class="size-3" />
   </Button>
 </nav>

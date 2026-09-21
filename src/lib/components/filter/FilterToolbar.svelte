@@ -9,6 +9,7 @@
   interface Props {
     title?: string;
     controlSize?: FilterToolbarControlSize;
+    embedded?: boolean;
     searchSlot?: Snippet;
     filterControlsSlot?: Snippet;
     sortSlot?: Snippet;
@@ -20,6 +21,7 @@
   let {
     title = '',
     controlSize = 'md',
+    embedded = false,
     searchSlot,
     filterControlsSlot,
     sortSlot,
@@ -31,6 +33,9 @@
   setContext(FILTER_TOOLBAR_CONTROL_SIZE, {
     get controlSize() {
       return controlSize;
+    },
+    get stackOnMobile() {
+      return true;
     }
   });
 </script>
@@ -39,10 +44,13 @@
   role="region"
   aria-label={title || 'Filter and sort options'}
   class={cn(
-    'relative z-20 flex flex-col gap-2.5 rounded-md glass-card p-3 select-none sm:p-4',
+    'relative z-20 flex flex-col gap-2.5 select-none',
+    embedded ?
+      'border-b border-border-subtle px-4 pb-3'
+    : 'rounded-md glass-card p-3 sm:p-4',
     className
   )}>
-  <div class="flex flex-wrap items-center gap-2">
+  <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
     {#if searchSlot}
       <div class="min-w-48 flex-1">
         {@render searchSlot()}

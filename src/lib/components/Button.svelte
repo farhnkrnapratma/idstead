@@ -9,7 +9,7 @@
       'primary' | 'danger' | 'outline' | 'ghost' | 'secondary' | 'tertiary';
     tone?: 'neutral' | 'critical';
     htmlType?: 'button' | 'submit' | 'reset';
-    size?: '2xs' | 'xs' | 'sm' | 'md' | 'lg';
+    size?: '3xs' | '2xs' | 'xs' | 'sm' | 'md' | 'lg';
     isLoading?: boolean;
     fullWidth?: boolean;
     leading?: Snippet;
@@ -59,13 +59,13 @@
   }: Props = $props();
 
   const baseStyles =
-    'inline-flex min-w-0 items-center justify-center font-semibold whitespace-nowrap transition-all cursor-pointer select-none leading-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50 disabled:cursor-not-allowed [&>svg]:shrink-0 [&>i]:shrink-0';
+    'inline-flex min-w-0 items-center justify-center whitespace-nowrap transition-all cursor-pointer select-none leading-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50 disabled:cursor-not-allowed [&>svg]:shrink-0 [&>i]:shrink-0';
 
   const typeToneStyles: Record<string, string> = {
     'primary:neutral':
-      'bg-accent text-text-on-accent hover:bg-accent-hover active:bg-accent-active disabled:hover:bg-accent disabled:active:bg-accent shadow-xs',
+      'font-semibold bg-accent text-text-on-accent hover:bg-accent-hover active:bg-accent-active disabled:hover:bg-accent disabled:active:bg-accent shadow-xs',
     'primary:critical':
-      'bg-danger text-text-on-accent hover:bg-danger-hover active:bg-danger-hover disabled:hover:bg-danger shadow-xs',
+      'bg-danger font-semibold text-text-on-accent hover:bg-danger-hover active:bg-danger-hover disabled:hover:bg-danger shadow-xs',
     'secondary:neutral':
       'glass-button hover:border-accent disabled:hover:border-border-subtle/70',
     'secondary:critical':
@@ -79,11 +79,11 @@
     'outline:critical':
       'border border-danger/40 bg-transparent text-danger shadow-2xs hover:bg-danger-subtle disabled:hover:bg-transparent',
     'ghost:neutral':
-      'text-text-secondary hover:text-text-primary hover:bg-surface-hover disabled:hover:text-text-secondary disabled:hover:bg-transparent',
+      'text-text-secondary hover:text-accent disabled:hover:text-text-secondary disabled:hover:bg-transparent',
     'ghost:critical':
       'text-danger hover:text-danger-hover hover:bg-danger-subtle disabled:hover:text-danger disabled:hover:bg-transparent',
     'danger:critical':
-      'border border-danger/30 bg-danger-subtle/70 text-danger backdrop-blur-sm hover:bg-danger hover:text-text-on-accent disabled:hover:bg-danger-subtle/70 shadow-xs dark:bg-danger-subtle/40 dark:hover:bg-danger'
+      'font-semibold border border-danger/30 bg-danger-subtle/70 text-danger backdrop-blur-sm hover:bg-danger hover:text-text-on-accent disabled:hover:bg-danger-subtle/70 shadow-xs dark:bg-danger-subtle/40 dark:hover:bg-danger'
   };
 
   const styleKey = $derived(
@@ -91,6 +91,7 @@
   );
 
   const sizeStyles = {
+    '3xs': 'h-6 px-1.5 text-2xs gap-1 rounded-sm',
     '2xs': 'h-7 px-2 text-xs gap-2 rounded-sm',
     xs: 'h-7.5 px-2.5 py-1.5 text-2xs gap-1 rounded-md',
     sm: 'h-8 px-3 text-xs gap-1.5 rounded-md',
@@ -99,6 +100,8 @@
   };
 
   const responsiveSizeStyles = {
+    '3xs':
+      'size-6 shrink-0 p-0 text-2xs gap-1 rounded-sm sm:h-6 sm:w-auto sm:px-1.5 sm:text-2xs sm:gap-1',
     '2xs':
       'size-7 shrink-0 p-0 text-xs gap-2 rounded-sm sm:h-7 sm:w-auto sm:px-2 sm:text-xs sm:gap-2',
     xs: 'size-8 shrink-0 p-0 text-2xs gap-1 rounded-md sm:h-7.5 sm:w-auto sm:px-2.5 sm:py-1.5 sm:text-2xs sm:gap-1',

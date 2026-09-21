@@ -1,8 +1,18 @@
 @import 'tailwindcss';
-@import '@fontsource-variable/atkinson-hyperlegible-next';
-@import '@fontsource-variable/atkinson-hyperlegible-mono';
-@import '@fontsource-variable/noto-serif';
 @import '@fontsource-variable/lexend';
+@import '@fontsource-variable/lilex';
+@import '@fontsource-variable/noto-sans';
+@import '@fontsource-variable/noto-sans-jp';
+@import '@fontsource-variable/noto-sans-kr';
+@import '@fontsource-variable/noto-sans-sc';
+@import '@fontsource-variable/noto-serif';
+@import '@fontsource-variable/noto-serif-jp';
+@import '@fontsource-variable/noto-serif-kr';
+@import '@fontsource-variable/noto-serif-sc';
+@import '@fontsource/ia-writer-quattro';
+@import '@fontsource/ibm-plex-serif';
+@import '@fontsource/ibm-plex-serif/400-italic.css';
+@import '@fontsource/ibm-plex-serif/700-italic.css';
 @import '../lib/tokens.css';
 @import 'bootstrap-icons/font/bootstrap-icons.css';
 
@@ -115,6 +125,22 @@
 
 .hljs-deletion {
   @apply text-code-deletion!;
+}
+
+.code-line:has(.hljs-addition) {
+  background-color: color-mix(
+    in srgb,
+    var(--color-code-addition) 15%,
+    transparent
+  );
+}
+
+.code-line:has(.hljs-deletion) {
+  background-color: color-mix(
+    in srgb,
+    var(--color-code-deletion) 15%,
+    transparent
+  );
 }
 
 @utility glass-button {
@@ -504,7 +530,7 @@ select {
   .prose-custom h4,
   .prose-custom h5,
   .prose-custom h6 {
-    @apply text-(--color-heading);
+    @apply font-serif text-(--color-heading);
   }
 
   .prose-custom h1 {
@@ -658,7 +684,7 @@ select {
   }
 
   .prose-custom .heading-text {
-    @apply inline transition-none;
+    @apply inline font-serif italic transition-none;
   }
 
   .prose-custom a.anchor-link {
@@ -940,7 +966,9 @@ select {
       .markdown-tabs-actions
     ):not(.markdown-tabs-actions *):not(.markdown-tab-button):not(
       .mermaid-block *
-    ):not(.katex):not(.katex *):not(.katex-block):not(.katex-block *) {
+    ):not(.katex):not(.katex *):not(.katex-block):not(.katex-block *):not(
+      :where(h1, h2, h3, h4, h5, h6, h1 *, h2 *, h3 *, h4 *, h5 *, h6 *)
+    ) {
     @apply font-sans!;
   }
 
@@ -956,7 +984,9 @@ select {
       .markdown-tabs-actions
     ):not(.markdown-tabs-actions *):not(.markdown-tab-button):not(
       .mermaid-block *
-    ):not(.katex):not(.katex *):not(.katex-block):not(.katex-block *) {
+    ):not(.katex):not(.katex *):not(.katex-block):not(.katex-block *):not(
+      :where(h1, h2, h3, h4, h5, h6, h1 *, h2 *, h3 *, h4 *, h5 *, h6 *)
+    ) {
     @apply font-serif!;
   }
 
@@ -972,7 +1002,9 @@ select {
       .markdown-tabs-actions
     ):not(.markdown-tabs-actions *):not(.markdown-tab-button):not(
       .mermaid-block *
-    ):not(.katex):not(.katex *):not(.katex-block):not(.katex-block *) {
+    ):not(.katex):not(.katex *):not(.katex-block):not(.katex-block *):not(
+      :where(h1, h2, h3, h4, h5, h6, h1 *, h2 *, h3 *, h4 *, h5 *, h6 *)
+    ) {
     @apply font-mono!;
   }
 

@@ -19,7 +19,6 @@ vite.config.ts.timestamp-*
 .claude/worktrees/
 .worktrees/
 .env.sentry-build-plugin
-graphify-out/
 skill-observations/
 skill-updates/
 supabase/.temp/

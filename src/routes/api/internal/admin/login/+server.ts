@@ -1,6 +1,5 @@
 import {json} from '@sveltejs/kit';
 import type {RequestHandler} from './$types';
-import {supabase} from '$lib/supabase';
 import {verifyTurnstileToken} from '$lib/server/turnstile';
 import {apiError} from '$lib/server/apiError';
 import {
@@ -9,6 +8,16 @@ import {
   clearLoginAttempts
 } from '$lib/server/loginRateLimit';
 import {isSameOriginRequest} from '$lib/server/sameOrigin';
+import {env as privateEnv} from '$env/dynamic/private';
+import {fetchAuthorProfile} from '$lib/author';
+import {supabase as publicSupabase} from '$lib/supabase';
+import {
+  hashIp,
+  loginAlertEmail,
+  resendApiKey,
+  sendEmail,
+  senderAddress
+} from '$lib/server/subscribers';
 
 function getClientIp(getClientAddress: () => string) {
   try {
@@ -18,11 +27,42 @@ function getClientIp(getClientAddress: () => string) {
   }
 }
 
+async function sendLoginAlert(
+  to: string,
+  request: Request,
+  clientIp: string,
+  platform: unknown,
+  url: URL,
+  mfaRequired: boolean
+) {
+  const apiKey = resendApiKey(platform);
+  const from = senderAddress(platform);
+  if (!apiKey || !from || !to) return;
+
+  const salt =
+    (platform as {env?: {IP_SALT?: string}} | undefined)?.env?.IP_SALT
+    ?? privateEnv.IP_SALT
+    ?? '';
+
+  const profile = await fetchAuthorProfile(publicSupabase);
+  await sendEmail(apiKey, from, {
+    to,
+    ...loginAlertEmail(profile?.name?.trim() || url.hostname, {
+      when: new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC',
+      userAgent: (request.headers.get('user-agent') ?? '').slice(0, 200),
+      ipHash:
+        salt ? (await hashIp(clientIp, salt)).slice(0, 16) : 'unavailable',
+      mfa: mfaRequired
+    })
+  });
+}
+
 export const POST: RequestHandler = async ({
   request,
   platform,
   getClientAddress,
-  url
+  url,
+  locals
 }) => {
   if (!isSameOriginRequest(request, url)) {
     return apiError(403, 'FORBIDDEN', 'Cross-origin requests are forbidden.');
@@ -30,7 +70,7 @@ export const POST: RequestHandler = async ({
 
   const clientIp = getClientIp(getClientAddress);
 
-  const lockout = checkLoginLockout(clientIp);
+  const lockout = checkLoginLockout(`ip:${clientIp}`);
   if (!lockout.allowed) {
     return apiError(
       429,
@@ -60,13 +100,23 @@ export const POST: RequestHandler = async ({
     );
   }
 
+  const emailKey = `email:${email.toLowerCase()}`;
+  const emailLockout = checkLoginLockout(emailKey);
+  if (!emailLockout.allowed)
+    return apiError(
+      429,
+      'ADMIN_LOGIN_LOCKED',
+      'Too many failed login attempts. Please wait before retrying.',
+      `Retry after ${emailLockout.retryAfterSeconds}s.`
+    );
+
   const turnstileOk = await verifyTurnstileToken(
     turnstileToken,
     clientIp,
     platform
   );
   if (!turnstileOk) {
-    recordFailedLogin(clientIp);
+    recordFailedLogin(`ip:${clientIp}`);
     return apiError(
       403,
       'ADMIN_LOGIN_TURNSTILE_FAILED',
@@ -74,13 +124,19 @@ export const POST: RequestHandler = async ({
     );
   }
 
-  const {data, error} = await supabase.auth.signInWithPassword({
+  const {data, error} = await locals.supabase.auth.signInWithPassword({
     email,
     password
   });
 
   if (error || !data.session) {
-    recordFailedLogin(clientIp);
+    if (error && error.code !== 'invalid_credentials')
+      console.error(
+        'Admin login rejected by Supabase:',
+        error.code,
+        error.message
+      );
+    recordFailedLogin(`ip:${clientIp}`, emailKey);
     return apiError(
       401,
       'ADMIN_LOGIN_INVALID_CREDENTIALS',
@@ -88,6 +144,27 @@ export const POST: RequestHandler = async ({
     );
   }
 
-  clearLoginAttempts(clientIp);
-  return json({session: data.session});
+  clearLoginAttempts(`ip:${clientIp}`, emailKey);
+
+  const {data: aal} =
+    await locals.supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  const mfaRequired = aal?.nextLevel === 'aal2' && aal.currentLevel !== 'aal2';
+
+  const alert = sendLoginAlert(
+    data.user?.email ?? email,
+    request,
+    clientIp,
+    platform,
+    url,
+    mfaRequired
+  ).catch(error => console.error('Login alert failed:', error));
+  const waitUntil = (
+    platform as {context?: {waitUntil?: (p: Promise<unknown>) => void}}
+  )?.context?.waitUntil;
+  if (waitUntil) waitUntil(alert);
+
+  return json(
+    {ok: true, mfaRequired},
+    {headers: {'Cache-Control': 'no-store'}}
+  );
 };

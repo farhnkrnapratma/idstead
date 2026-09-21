@@ -47,12 +47,17 @@
     FILTER_TOOLBAR_CONTROL_SIZE
   );
   const resolvedSize = $derived(filterToolbar?.controlSize ?? size ?? 'md');
+  const stackOnMobile = $derived(
+    !fullWidth && (filterToolbar?.stackOnMobile ?? false)
+  );
 </script>
 
 <div
   class={cn(
     'flex items-center gap-1.5',
-    fullWidth ? 'w-full' : 'w-max max-w-full',
+    fullWidth ? 'w-full'
+    : stackOnMobile ? 'w-full sm:w-max sm:max-w-full'
+    : 'w-max max-w-full',
     className
   )}>
   <Dropdown
@@ -61,7 +66,7 @@
     value={currentFieldOption?.value}
     size={resolvedSize}
     {fullWidth}
-    class={fullWidth ? 'min-w-0 flex-1' : 'min-w-0'}
+    class={fullWidth || stackOnMobile ? 'min-w-0 flex-1' : 'min-w-0'}
     onChange={value => onFieldChange?.(value)} />
 
   <IconButton

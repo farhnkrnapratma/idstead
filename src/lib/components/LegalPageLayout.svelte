@@ -382,18 +382,18 @@
 
 <FeedbackButton
   show={!readingModeStore.active}
-  class="hidden lg:fixed lg:bottom-6 lg:left-[calc(25%+0.75rem)] lg:z-40 lg:block" />
+  class="hidden lg:fixed lg:bottom-6 lg:left-[calc(25%+(2.5vw-0.75rem)/2)] lg:z-40 lg:block lg:-translate-x-1/2" />
 
 <ScrollToTopButton
   show={isArticleScrolledPast && !readingModeStore.active}
   onClick={scrollArticleToTop}
   progress={articleScrollProgress}
-  class="hidden lg:fixed lg:right-[calc(25%+0.75rem)] lg:bottom-6 lg:z-40 lg:block" />
+  class="hidden lg:fixed lg:right-[calc(25%+(2.5vw-0.75rem)/2)] lg:bottom-6 lg:z-40 lg:block lg:translate-x-1/2" />
 
 {#if readingModeStore.active}
   <div
     transition:fade={{duration: 150}}
-    class="fixed right-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 md:right-6 md:bottom-6 lg:right-[calc(25%+0.75rem)]">
+    class="fixed right-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 md:right-6 md:bottom-6 lg:right-[calc(25%+(2.5vw-0.75rem)/2)] lg:translate-x-1/2">
     <Tooltip
       content="Exit reading mode"
       placement="top"

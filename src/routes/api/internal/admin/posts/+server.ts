@@ -9,6 +9,7 @@ import {cleanupBlogAssets, putBanner} from '$lib/server/blogBannerStorage';
 import {UUID_PATTERN} from '$lib/blogBanner';
 import {extractPostConfig} from '$lib/markdown';
 import {createApiRegistry, validateDefineForSave} from '$lib/define';
+import {notifyNewPost} from '$lib/server/subscriberBroadcast';
 
 export const POST: RequestHandler = async ({request, url, platform}) => {
   const db = getSupabaseAdminClient(platform);
@@ -60,6 +61,21 @@ export const POST: RequestHandler = async ({request, url, platform}) => {
         'BLOG_SAVE_REJECTED',
         'Post fields could not be committed. Check that the slug is unique.'
       );
+    if (operation.result?.published && operation.result.id) {
+      const broadcast = notifyNewPost(
+        db,
+        platform,
+        url.origin,
+        operation.result.id
+      ).catch(error => {
+        console.error('Subscriber broadcast failed:', error);
+      });
+      const waitUntil = (
+        platform as {context?: {waitUntil?: (p: Promise<unknown>) => void}}
+      )?.context?.waitUntil;
+      if (waitUntil) waitUntil(broadcast);
+      else await broadcast;
+    }
     let cleanupPending = false;
     try {
       ({cleanupPending} = await cleanupBlogAssets(db, platform));

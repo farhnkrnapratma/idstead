@@ -25,11 +25,11 @@
   import type {Snippet} from 'svelte';
   import {SvelteMap, SvelteSet} from 'svelte/reactivity';
   import {
-    EllipsisVertical,
+    Ellipsis,
     Copy,
     Flag,
     Trash,
-    UserCheck,
+    Crown,
     User,
     BadgeCheck,
     ChevronDown,
@@ -97,7 +97,7 @@
   }
 
   function getCommentAuthor(comment: T): string {
-    if (comment.is_admin) return 'Administrator';
+    if (comment.is_admin) return 'Admin';
     if (!comment.author_name) return 'Anonymous';
     return comment.author_name;
   }
@@ -211,7 +211,7 @@
       class="z-10 flex size-6.5 shrink-0 items-center justify-center rounded-full border border-border-subtle bg-surface-card text-text-secondary select-none sm:size-7"
       aria-hidden="true">
       {#if isAuthorComment(comment)}
-        <UserCheck
+        <Crown
           class="size-3.5 sm:size-4"
           strokeWidth={1.25} />
       {:else}
@@ -223,8 +223,8 @@
 
     <div class="min-w-0 flex-1">
       <div
-        class="relative inline-block max-w-full rounded-md border border-border-subtle bg-surface-card px-2 py-1.5 text-left">
-        <div class="flex items-center justify-between gap-3">
+        class="relative inline-block max-w-full rounded-md border border-border-subtle bg-surface-card px-2 py-1 text-left">
+        <div class="flex min-h-6.5 items-center justify-between gap-3">
           <div class="flex min-w-0 items-center gap-1">
             <span
               class="truncate text-xs leading-none font-semibold text-text-primary">
@@ -232,7 +232,7 @@
             </span>
             {#if isAuthorComment(comment)}
               <span
-                class="inline-flex shrink-0 items-center text-success"
+                class="inline-flex shrink-0 items-center text-accent"
                 title="Verified administrator"
                 aria-label="Verified administrator">
                 <BadgeCheck class="size-3" />
@@ -292,20 +292,18 @@
                   variant="ghost"
                   size="xs"
                   showTooltip={false}
-                  class="hover:bg-surface-hover"
                   aria-haspopup="menu"
                   aria-expanded={isOpen}
                   keyboardShortcut="O"
                   shortcutScope={commentScope}
                   shortcutLabel="Comment options"
                   onclick={toggle}>
-                  <EllipsisVertical class="size-3.5" />
+                  <Ellipsis class="size-3.5" />
                 </IconButton>
               {/snippet}
             </Dropdown>
           {/if}
         </div>
-
         <div
           class={cn(
             'mt-0.5 text-xs leading-relaxed font-normal text-text-secondary sm:text-sm',
@@ -315,7 +313,7 @@
               && 'text-[0.78125rem]! sm:text-[0.84375rem]!'
           )}>
           {#if node.reply_to_author}
-            <span class="mr-1 font-normal text-accent select-none">
+            <span class="font-normal text-accent select-none">
               @{node.reply_to_author}
             </span>
           {/if}
@@ -377,7 +375,7 @@
       {#if rootNode.children.length > 0 && rootExpanded}
         <div
           id={rootReplyContainerId}
-          class="mt-3 ml-4.5 flex flex-col gap-3 sm:ml-7">
+          class="mt-3 ml-4.5 flex flex-col gap-3 sm:ml-10">
           {#each rootNode.children as childNode (childNode.comment.id)}
             {@render renderNode(childNode)}
           {/each}

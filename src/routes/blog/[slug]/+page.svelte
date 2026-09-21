@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {blogBannerAlt} from '$lib/blogBanner';
   import {createFeedbackClient} from '$lib/feedbackClient.svelte';
   import {shortcut} from '$lib/utils/shortcut.svelte';
   import {buttonKey} from '$lib/shortcuts';
@@ -59,6 +60,7 @@
     QrCodeDialog,
     ArticleMeta,
     HelpfulBlock,
+    SubscribeForm,
     PostInsights,
     ConsentNotice,
     readingModeStore,
@@ -792,7 +794,7 @@
 
 <main
   id="main-content"
-  class="flex flex-col font-sans {readingModeStore.active ?
+  class="blog-reading-page flex flex-col font-sans {readingModeStore.active ?
     'min-h-screen pt-4 sm:pt-6'
   : 'min-h-[calc(100vh-3rem)] overscroll-none pt-12 sm:min-h-[calc(100vh-3.5rem)] sm:pt-14 lg:h-dvh lg:min-h-0 lg:overflow-clip'}">
   <div
@@ -807,7 +809,8 @@
         <TableOfContents
           title="In this article"
           {headings}
-          class="min-h-0 w-full flex-1 [scrollbar-width:none] overflow-hidden [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden" />
+          scrollLinkedEl={articleEl}
+          class="min-h-0 w-full flex-1 scrollbar-none overflow-hidden [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden" />
       </aside>
     {/if}
 
@@ -817,6 +820,7 @@
       class="article-scroll-container flex w-full min-w-0 flex-col lg:h-full lg:max-h-full lg:overflow-y-auto lg:px-[5%] lg:pt-[1.25vw] lg:pb-0">
       <ArticleHeader
         banner={bannerPublicUrl}
+        bannerAlt={blogBannerAlt(post.title, post.excerpt)}
         title={post.title}
         titleClass="text-text-primary"
         titleViewTransitionName="post-title-{post.slug}">
@@ -1080,6 +1084,8 @@
           error={feedback.error}
           onVote={helpful => feedback.vote(helpful ? 'yes' : 'no')}
           onFeedbackClick={() => (showNoFeedbackDialog = true)} />
+
+        <SubscribeForm class="mt-6 sm:mt-8" />
 
         {#if relatedPosts.length > 0}
           <section
@@ -1542,18 +1548,18 @@
 
 <FeedbackButton
   show={!readingModeStore.active}
-  class="hidden lg:fixed lg:bottom-6 lg:left-[calc(25%+0.75rem)] lg:z-40 lg:block" />
+  class="hidden lg:fixed lg:bottom-6 lg:left-[calc(25%+(2.5vw-0.75rem)/2)] lg:z-40 lg:block lg:-translate-x-1/2" />
 
 <ScrollToTopButton
   show={isArticleScrolledPast && !readingModeStore.active}
   onClick={scrollArticleToTop}
   progress={articleScrollProgress}
-  class="hidden lg:fixed lg:right-[calc(25%+0.75rem)] lg:bottom-6 lg:z-40 lg:block" />
+  class="hidden lg:fixed lg:right-[calc(25%+(2.5vw-0.75rem)/2)] lg:bottom-6 lg:z-40 lg:block lg:translate-x-1/2" />
 
 {#if readingModeStore.active}
   <div
     transition:fade={{duration: 150}}
-    class="fixed right-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 md:right-6 md:bottom-6 lg:right-[calc(25%+0.75rem)]">
+    class="fixed right-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 md:right-6 md:bottom-6 lg:right-[calc(25%+(2.5vw-0.75rem)/2)] lg:translate-x-1/2">
     <Tooltip
       content="Exit reading mode"
       placement="top"
@@ -1655,7 +1661,7 @@
   .prose-custom :global(h4),
   .prose-custom :global(h5),
   .prose-custom :global(h6) {
-    @apply text-(--color-heading);
+    @apply font-serif text-(--color-heading);
   }
 
   .prose-custom :global(h1) {
@@ -1680,6 +1686,10 @@
 
   .prose-custom :global(h6) {
     @apply mt-4 mb-2 text-xs font-semibold sm:text-sm;
+  }
+
+  .blog-reading-page :global(:is(h1, h2, h3, h4, h5, h6)) {
+    @apply font-serif font-normal italic;
   }
 
   .prose-custom :global(li > p) {
@@ -1730,7 +1740,7 @@
   }
 
   .prose-custom :global(.heading-text) {
-    @apply inline! transition-none!;
+    @apply inline! font-serif transition-none!;
   }
 
   .prose-custom :global(a.anchor-link) {

@@ -1,3 +1,4 @@
+import {reportReasonLabel} from './reportReasons';
 export type PageType = 'article' | 'legal';
 export type FeedbackVote = 'yes' | 'no';
 export type NotificationKind =
@@ -28,6 +29,7 @@ export interface AdminNotificationRow extends ActivityPage {
   } | null;
   created_at: string;
   read_at: string | null;
+  pinned_at?: string | null;
   report_status?: 'open' | 'resolved' | null;
 }
 export interface InboxCursor {
@@ -97,6 +99,9 @@ export interface DashboardTotals {
   reportedComments: number;
   published: number;
   posts: number;
+  allTimeReads: number;
+  allTimeHelpful: number;
+  allTimeUnhelpful: number;
 }
 export interface ClearOperation {
   operationId: string;
@@ -114,14 +119,17 @@ export interface ActivityFocus {
   notification?: AdminNotificationRow;
   requestId: string;
 }
-export function activityTimestamp(date: string, timeZone?: string) {
-  const value = new Date(date);
-  const day = new Intl.DateTimeFormat('en-US', {
+export function activityDate(date: string, timeZone?: string) {
+  return new Intl.DateTimeFormat('en-US', {
     timeZone,
     year: 'numeric',
     month: 'short',
     day: 'numeric'
-  }).format(value);
+  }).format(new Date(date));
+}
+export function activityTimestamp(date: string, timeZone?: string) {
+  const value = new Date(date);
+  const day = activityDate(date, timeZone);
   const time = new Intl.DateTimeFormat('en-US', {
     timeZone,
     hour: 'numeric',
@@ -141,4 +149,38 @@ export function activityTimeZone(
     .formatToParts(new Date(date))
     .find(part => part.type === 'timeZoneName')?.value;
   return `${timeZone} · ${offset}`;
+}
+export function activityAuthor(item: AdminNotificationRow) {
+  return item.meta?.author ?? 'Anonymous';
+}
+export function activityPageTitle(item: AdminNotificationRow) {
+  return item.page_title ?? 'Unavailable page';
+}
+export function activityPageKind(item: AdminNotificationRow) {
+  return item.page_type === 'legal' ? 'page' : 'article';
+}
+export function isFeedbackActivity(item: {kind: string}) {
+  return item.kind === 'post_feedback' || item.kind === 'legal_feedback';
+}
+export function activitySentence(item: AdminNotificationRow) {
+  const author = activityAuthor(item);
+  const title = activityPageTitle(item);
+  const pageKind = activityPageKind(item);
+  if (item.kind === 'comment_report')
+    return `Someone reported a comment by ${author} on the ${title} ${pageKind}.`;
+  if (item.kind === 'comment_new')
+    return `${author} commented on the ${title} ${pageKind}.`;
+  if (isFeedbackActivity(item))
+    return `Someone marked the ${title} ${pageKind} as ${item.meta?.vote === 'yes' ? 'helpful' : 'unhelpful'}.`;
+  if (item.kind === 'contact_message')
+    return 'Someone sent a message through the contact form.';
+  return 'Someone submitted the feedback form.';
+}
+export function activityMetadata(item: AdminNotificationRow) {
+  if (item.kind === 'comment_report')
+    return `Reason: ${reportReasonLabel(item.meta?.reason ?? 'other')}${item.report_status === 'resolved' ? ' · Resolved' : ''}`;
+  if (item.kind === 'comment_new')
+    return `Comment: “${item.meta?.comment ?? ''}”`;
+  if (isFeedbackActivity(item)) return '';
+  return 'Check your email inbox.';
 }

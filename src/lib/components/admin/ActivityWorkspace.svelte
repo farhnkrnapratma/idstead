@@ -1,21 +1,45 @@
 <script lang="ts">
   import {adminUrl, navigateAdmin} from '$lib/adminNavigation';
   import {onMount, tick} from 'svelte';
-  import {CheckCheck, Trash} from '@lucide/svelte';
+  import {
+    ArrowLeft,
+    CheckCheck,
+    Check,
+    ChevronRight,
+    Pin,
+    PinOff,
+    SquareArrowOutUpRight,
+    Trash,
+    Flag,
+    Calendar,
+    Hash,
+    User
+  } from '@lucide/svelte';
   import {analyticsPeriod} from '$lib/adminAnalytics';
   import {adminActivityRequest} from '$lib/adminActivityClient';
   import {WorkspaceFeed} from '$lib/stores/workspaceFeed.svelte';
   import {adminNotificationsStore as inbox} from '$lib/stores/adminNotificationsStore.svelte';
+  import {adminChartRangeStore} from '$lib/stores/adminChartRangeStore.svelte';
+  import {pluralize} from '$lib/utils/pluralize';
   import {
     notificationTypes,
     formatCount,
-    helpfulPercent,
+    majorityPercent,
     type WorkspaceArea,
     type WorkspaceRow,
+    type WorkspaceOverview,
+    type WorkspacePage,
+    type AnalyticsBucket,
     ADMIN_WORKSPACE_PAGE_SIZE
   } from '$lib/adminWorkspace';
-  import {REPORT_REASONS, reportReasonLabel} from '$lib/reportReasons';
   import {
+    REPORT_REASONS,
+    reportReasonLabel,
+    reportReasonColor,
+    reportReasonIcon
+  } from '$lib/reportReasons';
+  import {
+    activitySentence,
     activityTimestamp,
     type AdminNotificationRow,
     type ClearOperation
@@ -24,8 +48,6 @@
   import Card from '../Card.svelte';
   import Button from '../Button.svelte';
   import Input from '../Input.svelte';
-  import Chip from '../Chip.svelte';
-  import DataTable from '../DataTable.svelte';
   import Dropdown from '../Dropdown.svelte';
   import Pagination from '../Pagination.svelte';
   import LoadingState from '../LoadingState.svelte';
@@ -36,9 +58,16 @@
   import FilterToolbar from '../filter/FilterToolbar.svelte';
   import SortControl from '../filter/SortControl.svelte';
   import SearchResultCount from '../filter/SearchResultCount.svelte';
+  import DataTable, {type DataTableColumn} from '../DataTable.svelte';
+  import ActionMenu from '../ActionMenu.svelte';
+  import Badge from '../Badge.svelte';
   import ActivityRow from './ActivityRow.svelte';
-  import AnalyticsPeriod from './AnalyticsPeriod.svelte';
-  import FeedbackDonut from './FeedbackDonut.svelte';
+  import ActivityBadge from './ActivityBadge.svelte';
+  import ActivityPageLink from './ActivityPageLink.svelte';
+  import ActivityDetails from './ActivityDetails.svelte';
+  import ActivityTimestamp from './ActivityTimestamp.svelte';
+  import CategoryTrendChart from './CategoryTrendChart.svelte';
+  import type {ViewsRange} from './viewsRange';
   let {
     area,
     onOpenComment,
@@ -68,17 +97,18 @@
   } | null>(null);
   let groupCount = $state<number | null>(null);
   let detailTitle = $state('');
+  let analytics = $state.raw<AnalyticsBucket[]>([]);
+  let analyticsLoading = $state(true);
+  let analyticsError = $state('');
+  let detailAnalytics = $state.raw<AnalyticsBucket[]>([]);
+  let detailAnalyticsLoading = $state(true);
+  let detailAnalyticsError = $state('');
   const params = $derived(adminUrl().searchParams);
   const selected = $derived(params.get('selected') ?? '');
   const title = $derived(
     area === 'reports' ? 'Reported comments'
     : area === 'feedback' ? 'User feedback'
     : 'Notifications'
-  );
-  const showHistory = $derived(
-    area !== 'feedback'
-      || params.get('history') === 'true'
-      || params.has('focus')
   );
   const timeZone = $derived(params.get('timeZone') ?? 'UTC');
   const source = $derived(
@@ -115,11 +145,6 @@
       focus: null
     });
   }
-  function period(values: Record<string, string>) {
-    list.invalidate();
-    detail.invalidate();
-    navigate({...values, page: null, asOf: null, detailPage: null}, true);
-  }
   function options(isDetail = false) {
     const values = Object.fromEntries(params);
     const query: Record<string, string> = {
@@ -142,15 +167,14 @@
       query.id = selected;
       if (params.has('notificationId'))
         query.notificationId = params.get('notificationId')!;
-      if (area === 'feedback')
-        query.history =
-          params.has('focus') ? 'true' : (params.get('history') ?? 'false');
+      if (area === 'feedback') query.history = 'true';
       query.query = params.get('detailQuery') ?? '';
       query.reason = params.get('detailReason') ?? '';
       query.vote = params.get('vote') ?? 'all';
       query.type = 'all';
       query.read = 'all';
       query.sort = 'date';
+      query.direction = params.get('detailDirection') ?? 'desc';
       if (params.has('focus')) query.focus = params.get('focus')!;
       if (params.has('detailPage')) query.page = params.get('detailPage')!;
     } else {
@@ -160,12 +184,56 @@
     }
     return query;
   }
+  async function loadAnalytics() {
+    if (area === 'notifications') return;
+    analyticsLoading = true;
+    try {
+      const {from, to, ...rest} = options();
+      const result = await adminActivityRequest<WorkspaceOverview>(
+        'workspace',
+        {...rest, section: 'overview', range: trendRange}
+      );
+      analytics = result.series;
+      analyticsError = '';
+    } catch (caught) {
+      analyticsError =
+        caught instanceof Error ? caught.message : 'Unable to load trend.';
+    } finally {
+      analyticsLoading = false;
+    }
+  }
+  async function loadDetailAnalytics() {
+    if (area !== 'feedback' || !selected) return;
+    detailAnalyticsLoading = true;
+    try {
+      const result = await adminActivityRequest<WorkspacePage>('workspace', {
+        ...analyticsPeriod(trendRange, timeZone, new Date()),
+        section: 'feedback_events',
+        id: selected,
+        events: 'false'
+      });
+      detailAnalytics = result.series ?? [];
+      detailAnalyticsError = '';
+    } catch (caught) {
+      detailAnalyticsError =
+        caught instanceof Error ? caught.message : 'Unable to load trend.';
+    } finally {
+      detailAnalyticsLoading = false;
+    }
+  }
+  function setChartRange(next: ViewsRange) {
+    adminChartRangeStore.set(next);
+    void loadAnalytics();
+    void loadDetailAnalytics();
+  }
   function sync() {
     search = params.get('query') ?? '';
     detailSearch = params.get('detailQuery') ?? '';
     if (!params.has('timeZone')) return;
     void list.load(options());
     if (selected) void detail.load(options(true));
+    if (selected && area === 'feedback') void loadDetailAnalytics();
+    void loadAnalytics();
   }
   async function open(item: WorkspaceRow) {
     groupCount = item.total;
@@ -208,21 +276,12 @@
   async function refresh() {
     list.invalidate();
     detail.invalidate();
-    try {
-      const dates = analyticsPeriod(
-        params.get('range') ?? (area === 'feedback' ? '7d' : 'all'),
-        timeZone,
-        new Date(),
-        params.get('start') ?? undefined,
-        params.get('end') ?? undefined
-      );
-      navigate({...dates, asOf: null}, true);
-    } catch (caught) {
-      actionError =
-        caught instanceof Error ? caught.message : 'Choose a valid period.';
-      return;
-    }
+    navigate(
+      {...analyticsPeriod(defaultRange, timeZone, new Date()), asOf: null},
+      true
+    );
     await tick();
+    void loadAnalytics();
     await list.load(options(), true);
     const lastPage = Math.max(
       1,
@@ -318,35 +377,165 @@
   function date(value: string) {
     return activityTimestamp(value, timeZone);
   }
-  function categoryLabel(item: WorkspaceRow) {
-    return (
-      notificationTypes.find(t => t.value === item.kind)?.label
-      ?? (item.vote === 'yes' ? 'Helpful' : 'Unhelpful')
-    );
-  }
-  const columns = $derived(
-    area === 'reports' ?
+  const defaultRange = $derived(area === 'feedback' ? '1y' : 'all');
+  const trendRange = $derived(adminChartRangeStore.current);
+  const rows = $derived((list.data?.items ?? []) as unknown as WorkspaceRow[]);
+  const notificationRows = $derived(
+    rows.filter(row => row.event) as unknown as Record<string, unknown>[]
+  );
+  const historyRows = $derived(
+    (detail.data?.items ?? []).filter(
+      row => (row as unknown as WorkspaceRow).event
+    ) as unknown as Record<string, unknown>[]
+  );
+  const listColumns: DataTableColumn[] = $derived(
+    area === 'notifications' ?
       [
-        {key: 'title', header: 'Comment / article'},
-        {key: 'total', header: 'Open reports'},
-        {key: 'reason', header: 'Top category'}
+        {key: 'activity', header: 'Activity', width: '12%'},
+        {key: 'page', header: 'Page', width: '22%'},
+        {key: 'details', header: 'Details', width: '30%'},
+        {key: 'time', header: 'Time', width: '16%'},
+        {
+          key: 'actions',
+          header: '',
+          align: 'right',
+          width: '20%',
+          class: 'overflow-visible'
+        }
       ]
-    : area === 'feedback' ?
+    : area === 'reports' ?
       [
-        {key: 'title', header: 'Page'},
-        {key: 'total', header: 'Responses'},
-        {key: 'helpful', header: 'Helpful / Unhelpful'}
+        {key: 'page', header: 'Page', width: '26%'},
+        {key: 'author', header: 'Author', width: '16%'},
+        {key: 'reason', header: 'Reason', width: '20%'},
+        {key: 'total', header: 'Reports', align: 'right', width: '10%'},
+        {key: 'latest', header: 'Last activity', width: '16%'},
+        {
+          key: 'actions',
+          header: '',
+          align: 'right',
+          width: '12%',
+          class: 'overflow-visible'
+        }
       ]
     : [
-        {key: 'title', header: 'Activity / page'},
-        {key: 'total', header: 'Events'},
-        {key: 'unread', header: 'Unread'}
+        {key: 'page', header: 'Page', width: '36%'},
+        {key: 'score', header: 'Score', width: '26%'},
+        {key: 'total', header: 'Responses', align: 'right', width: '10%'},
+        {key: 'latest', header: 'Last activity', width: '16%'},
+        {
+          key: 'actions',
+          header: '',
+          align: 'right',
+          width: '12%',
+          class: 'overflow-visible'
+        }
       ]
   );
-  const rows = $derived(
-    (list.data?.items ?? []) as unknown as Record<string, unknown>[]
+  const listBlocked = $derived(
+    Boolean(
+      (list.loading && !list.data) || (list.data && !list.data.items.length)
+    )
+  );
+  const historyTitle = $derived(
+    area === 'reports' ? 'Report history'
+    : area === 'feedback' ? 'Response history'
+    : 'Notification history'
+  );
+  const historyColumns: DataTableColumn[] = $derived(
+    area === 'notifications' ?
+      [
+        {key: 'activity', header: 'Activity', width: '14%'},
+        {key: 'page', header: 'Page', width: '26%'},
+        {key: 'details', header: 'Details', width: '30%'},
+        {key: 'time', header: 'Time', width: '18%'},
+        {
+          key: 'actions',
+          header: '',
+          align: 'right',
+          width: '12%',
+          class: 'overflow-visible'
+        }
+      ]
+    : area === 'reports' ?
+      [
+        {key: 'reason', header: 'Reason', width: '40%'},
+        {key: 'details', header: 'Details', width: '45%'},
+        {key: 'time', header: 'Time', width: '15%'}
+      ]
+    : [
+        {key: 'response', header: 'Response', width: '40%'},
+        {key: 'time', header: 'Time', width: '60%'}
+      ]
+  );
+  function openEvent(entry: WorkspaceRow) {
+    if (busy || inbox.isMutating || !entry.event) return;
+    void selectEvent(entry.event);
+  }
+  async function readEvent(entry: WorkspaceRow) {
+    if (busy || inbox.isMutating || !entry.event?.id) return;
+    if (await inbox.markRead(entry.id)) await refresh();
+  }
+  async function openHistoryEvent(entry: WorkspaceRow) {
+    if (busy || inbox.isMutating || !entry.event) return;
+    await inbox.markRead(entry.id);
+    onSelectNotification(entry.event);
+  }
+  async function pinEvent(entry: WorkspaceRow, pinned: boolean) {
+    if (busy || inbox.isMutating) return;
+    if (await inbox.setPinned(entry.id, pinned)) await refresh();
+  }
+  const chartSeries = $derived(
+    area === 'reports' ?
+      REPORT_REASONS.map(r => ({
+        key: r.id,
+        label: r.label,
+        color: reportReasonColor(r.id)
+      }))
+    : [
+        {
+          key: 'helpful',
+          label: 'Helpful',
+          color: 'var(--color-activity-helpful)'
+        },
+        {
+          key: 'unhelpful',
+          label: 'Unhelpful',
+          color: 'var(--color-activity-unhelpful)'
+        }
+      ]
+  );
+  const chartRows = $derived(
+    area === 'reports' ?
+      analytics.map(b => ({
+        bucket: b.bucket,
+        ...Object.fromEntries(
+          REPORT_REASONS.map(r => [r.id, b.reports?.[r.id] ?? 0])
+        )
+      }))
+    : analytics.map(b => ({
+        bucket: b.bucket,
+        helpful: b.helpful,
+        unhelpful: b.unhelpful
+      }))
+  );
+  const detailChartRows = $derived(
+    detailAnalytics.map(b => ({
+      bucket: b.bucket,
+      helpful: b.helpful,
+      unhelpful: b.unhelpful
+    }))
   );
   onMount(() => {
+    adminChartRangeStore.init();
+    if (!params.has('timeZone'))
+      navigate(
+        analyticsPeriod(
+          defaultRange,
+          Intl.DateTimeFormat().resolvedOptions().timeZone
+        ),
+        true
+      );
     const remove = inbox.onActivityRefresh(async () => {
       clearTimeout(autoRefresh);
       autoRefresh = setTimeout(() => void refresh(), 1000);
@@ -364,7 +553,7 @@
 
 <Section
   spacing="none"
-  class="flex min-w-0 flex-col gap-5">
+  class="flex min-w-0 flex-col gap-4">
   <div
     {@attach () => {
       params.toString();
@@ -377,216 +566,154 @@
       : 'Recent activity across your site.'}
     </p>
   </div>
-  <AnalyticsPeriod
-    {params}
-    allowAll={area !== 'feedback'}
-    onchange={period} />
-
   {#if actionError}<FieldMessage message={actionError} />{/if}
   {#if inbox.activityError}<FieldMessage message={inbox.activityError} />{/if}
-  <p
-    class="text-xs text-text-muted"
-    role="status">
-    {list.data ? `Updated ${date(list.data.asOf)} · ${timeZone}` : 'Loading…'}
-  </p>
-  <div class={selected ? 'grid min-w-0 gap-5 xl:grid-cols-2' : 'min-w-0'}>
-    <div
-      class={selected ?
-        'hidden min-w-0 flex-col gap-4 xl:flex'
-      : 'flex min-w-0 flex-col gap-4'}>
-      <FilterToolbar title={`${title} filters`}>
-        {#snippet searchSlot()}
-          <Input
-            type="search"
-            aria-label={`Search ${title.toLowerCase()}`}
-            placeholder={area === 'reports' ?
-              'Search comments, authors, or articles…'
-            : area === 'feedback' ? 'Search page titles…'
-            : 'Search notifications…'}
-            value={search}
-            oninput={event => {
-              search = event.currentTarget.value;
-              clearTimeout(debounce);
-              debounce = setTimeout(() => filter({query: search}), 300);
-            }} />
-        {/snippet}
-        {#snippet filterControlsSlot()}
-          {#if area === 'reports'}
-            <Dropdown
-              label="Category"
-              value={params.get('reason') ?? ''}
-              options={[
-                {value: '', label: 'All'},
-                ...REPORT_REASONS.map(r => ({value: r.id, label: r.label}))
-              ]}
-              onChange={reason => filter({reason})} />
-            {#if params.has('postId')}<Chip onclick={() => filter({postId: ''})}
-                >Article filter ×</Chip
-              >{/if}
-          {:else if area === 'feedback'}
-            <Dropdown
-              label="Page"
-              value={params.get('type') ?? 'all'}
-              options={[
-                {value: 'all', label: 'All'},
-                {value: 'article', label: 'Articles'},
-                {value: 'legal', label: 'Legal pages'}
-              ]}
-              onChange={type => filter({type})} />
-          {:else}
-            <Dropdown
-              label="Category"
-              value={params.get('type') ?? 'all'}
-              options={notificationTypes}
-              onChange={type => filter({type})} />
-            <Dropdown
-              label="Status"
-              value={params.get('read') ?? 'all'}
-              options={[
-                {value: 'all', label: 'All'},
-                {value: 'unread', label: 'Unread'},
-                {value: 'read', label: 'Read'}
-              ]}
-              onChange={read => filter({read})} />
-          {/if}
-        {/snippet}
-        {#snippet sortSlot()}
-          <SortControl
-            labelPrefix="Sort by"
-            fields={sortFields}
-            currentField={params.get('sort') ?? 'date'}
-            currentDirection={params.get('direction') === 'asc' ?
-              'asc'
-            : 'desc'}
-            onFieldChange={sort => filter({sort})}
-            onDirectionToggle={() =>
-              filter({
-                direction: params.get('direction') === 'asc' ? 'desc' : 'asc'
-              })} />
-        {/snippet}
-        {#snippet countSlot()}
-          <SearchResultCount
-            count={list.data?.items.length ?? 0}
-            total={list.data?.total ?? 0}
-            itemLabel={area === 'reports' ? 'reported comments'
-            : area === 'feedback' ? 'pages'
-            : 'notifications'} />
-        {/snippet}
-      </FilterToolbar>
-      {#if area === 'notifications'}
-        <div class="flex flex-wrap items-center gap-2">
-          <span class="mr-auto text-sm text-text-secondary"
-            >{formatCount(inbox.unreadCount)} unread</span>
-          <Button
-            size="sm"
-            type="ghost"
-            disabled={busy || inbox.isMutating || !inbox.unreadCount}
-            onclick={async () => {
-              if (await inbox.markAllRead()) {
-                if (list.data)
-                  list.data = {
-                    ...list.data,
-                    items: list.data.items.map(row => ({
-                      ...row,
-                      event:
-                        row.event ?
-                          {
-                            ...row.event,
-                            read_at:
-                              row.event.read_at ?? new Date().toISOString()
-                          }
-                        : undefined
-                    }))
-                  };
-                await refresh();
-              }
-            }}>
-            {#snippet leading()}<CheckCheck class="size-3.5" />{/snippet}
-            Mark all as read
-          </Button>
-          <Button
-            size="sm"
-            type="ghost"
-            disabled={busy || inbox.isMutating || !readCount}
-            onclick={prepareClear}>
-            {#snippet leading()}<Trash class="size-3.5" />{/snippet}
-            Clear all read
-          </Button>
-        </div>
+  <div class="min-w-0">
+    <div class={selected ? 'hidden' : 'flex min-w-0 flex-col gap-4'}>
+      {#if area !== 'notifications'}
+        <Card density="compact">
+          <CategoryTrendChart
+            title={area === 'reports' ? 'Reports over time' : (
+              'Feedback over time'
+            )}
+            description={area === 'reports' ?
+              'All reported comments across every page, by category.'
+            : 'Helpful vs. unhelpful responses across every page.'}
+            data={chartRows}
+            series={chartSeries}
+            {timeZone}
+            isLoading={analyticsLoading}
+            error={analyticsError}
+            range={trendRange}
+            onRangeChange={setChartRange}
+            onRetry={loadAnalytics}
+            allowDonut={area === 'feedback'} />
+        </Card>
       {/if}
+
       {#if list.error}<ErrorState
           title="Unable to load results"
           description={list.error}
           onRetry={() => list.load(options(), true)} />{/if}
-      {#if list.loading && !list.data}<LoadingState label="Loading results…" />
-      {:else if list.data && !list.data.items.length}<EmptyState
-          title="No matching activity"
-          description="Try another period or filter." />
-      {:else if area === 'notifications'}
-        <ul
-          class="flex flex-col gap-2"
-          aria-label="Notifications">
-          {#each list.data?.items ?? [] as row (row.id)}
-            {#if row.event}<li>
-                <ActivityRow
-                  item={row.event}
-                  {timeZone}
+      {#if area === 'notifications'}
+        <DataTable
+          title={`All ${title.toLowerCase()}`}
+          meta={listCount}
+          toolbar={listToolbar}
+          state={listBlocked ? listStateView : undefined}
+          footer={listBlocked ? undefined : listPagination}
+          caption={title}
+          header={notificationActions}
+          columns={listColumns}
+          data={notificationRows}
+          rowClass={row =>
+            (row as unknown as WorkspaceRow).event?.read_at ?
+              ''
+            : 'bg-notification-unread hover:bg-notification-unread-hover'}
+          onRowSelect={row => openEvent(row as unknown as WorkspaceRow)}>
+          {#snippet cell(row, key)}
+            {@const entry = row as unknown as WorkspaceRow}
+            {@const event = entry.event as AdminNotificationRow}
+            {#if key === 'activity'}
+              <span class="flex items-center gap-1.5">
+                <ActivityBadge
+                  kind={event.kind}
+                  vote={event.meta?.vote} />
+                {#if event.pinned_at}<Pin
+                    class="size-3 shrink-0 text-text-muted"
+                    aria-label="Pinned" />{/if}
+              </span>
+            {:else if key === 'page'}
+              <ActivityPageLink item={event} />
+            {:else if key === 'details'}
+              <span class="flex min-w-0 items-center gap-x-2 leading-4">
+                <ActivityDetails
+                  item={event}
+                  withAuthor />
+              </span>
+            {:else if key === 'time'}
+              <ActivityTimestamp
+                date={event.created_at}
+                {timeZone}
+                relative
+                class="text-xs" />
+            {:else}
+              <span class="flex items-center justify-end gap-1">
+                <Button
+                  size="xs"
+                  type="ghost"
                   disabled={busy || inbox.isMutating}
-                  onSelect={() => selectEvent(row.event!)}
-                  onDelete={() => deleteEvent(row.id)} />
-              </li>{/if}
-          {/each}
-        </ul>
+                  onclick={() => openEvent(entry)}>
+                  Details
+                  {#snippet trailing()}<ChevronRight class="size-2" />{/snippet}
+                </Button>
+                <ActionMenu
+                  ariaLabel={`Actions for ${activitySentence(event)}`}
+                  disabled={busy || inbox.isMutating}
+                  items={[
+                    {
+                      label:
+                        event.pinned_at ? 'Unpin notification' : (
+                          'Pin notification'
+                        ),
+                      icon: event.pinned_at ? PinOff : Pin,
+                      onSelect: () => pinEvent(entry, !event.pinned_at)
+                    },
+                    {
+                      label: 'Mark as read',
+                      icon: Check,
+                      disabled: Boolean(event.read_at),
+                      onSelect: () => readEvent(entry)
+                    },
+                    {
+                      label: 'Delete notification',
+                      icon: Trash,
+                      danger: true,
+                      onSelect: () => deleteEvent(entry.id)
+                    }
+                  ]} />
+              </span>
+            {/if}
+          {/snippet}
+        </DataTable>
       {:else}
         <DataTable
+          title={`All ${title.toLowerCase()}`}
+          meta={listCount}
+          toolbar={listToolbar}
+          state={listBlocked ? listStateView : undefined}
+          footer={listBlocked ? undefined : listPagination}
           caption={title}
-          {columns}
-          data={rows}>
-          {#snippet cell(raw, key)}
-            {@const item = raw as unknown as WorkspaceRow}
-            {#if key === 'title'}
-              <button
-                type="button"
-                class="flex w-full min-w-0 cursor-pointer items-center gap-3 rounded-sm text-left focus-visible:outline-2 focus-visible:outline-focus-ring"
-                onclick={() => open(item)}
-                aria-label={`Open ${item.title}`}>
-                <span class="flex min-w-0 flex-1 flex-col gap-0.5">
-                  <span class="truncate text-sm font-semibold"
-                    >{item.title}</span>
-                  <span
-                    class="flex min-w-0 items-center gap-1 text-xs font-normal text-text-muted">
-                    {#if area === 'reports'}
-                      <span class="min-w-0 truncate text-text-secondary"
-                        >{item.author}: {item.content}</span>
-                    {:else if area === 'feedback'}
-                      <span class="shrink-0"
-                        >{item.targetType === 'legal' ?
-                          'Legal page'
-                        : 'Article'}</span>
-                    {:else}
-                      <span class="shrink-0">{categoryLabel(item)}</span>
-                    {/if}
-                    <span
-                      class="shrink-0"
-                      aria-hidden="true">·</span>
-                    <time
-                      class="shrink-0 whitespace-nowrap"
-                      datetime={item.latest}>{date(item.latest)}</time>
-                  </span>
-                </span>
-              </button>
-            {:else if key === 'reason'}{reportReasonLabel(item.reason ?? '')}
-            {:else if key === 'helpful'}<span class="block font-semibold"
-                >{helpfulPercent(item.helpful ?? 0, item.unhelpful ?? 0)}</span
-              ><span class="text-xs font-normal text-text-secondary"
-                >{formatCount(item.helpful ?? 0)} / {formatCount(
-                  item.unhelpful ?? 0
-                )}</span>
-            {:else}{formatCount(Number(raw[key] ?? 0))}{/if}
+          columns={listColumns}
+          data={rows as unknown as Record<string, unknown>[]}
+          onRowSelect={row => open(row as unknown as WorkspaceRow)}>
+          {#snippet cell(row, key)}
+            {@const item = row as unknown as WorkspaceRow}
+            {#if key === 'page'}
+              <span title={item.title}>{item.title}</span>
+            {:else if key === 'author'}
+              {item.author}
+            {:else if key === 'reason'}
+              <span title={reportReasonLabel(item.reason ?? '')}
+                >{reportReasonLabel(item.reason ?? '')}</span>
+            {:else if key === 'score'}
+              {majorityPercent(item.helpful ?? 0, item.unhelpful ?? 0)}
+            {:else if key === 'total'}
+              {formatCount(item.total)}
+            {:else if key === 'latest'}
+              <span class="whitespace-nowrap">{date(item.latest)}</span>
+            {:else}
+              <Button
+                size="xs"
+                type="ghost"
+                onclick={() => open(item)}>
+                Details
+                {#snippet trailing()}<ChevronRight class="size-2" />{/snippet}
+              </Button>
+            {/if}
           {/snippet}
         </DataTable>
       {/if}
-      {@render pagination(false)}
     </div>
     {#if selected}
       <div
@@ -598,10 +725,11 @@
             size="sm"
             type="outline"
             onclick={() =>
-              navigate({selected: null, detailPage: null, focus: null})}
-            >Back to {title.toLowerCase()}</Button
-          ><span class="text-xs text-text-muted"
-            >{area === 'reports' ? 'Case details' : 'Activity details'}</span>
+              navigate({selected: null, detailPage: null, focus: null})}>
+            {#snippet leading()}<ArrowLeft
+                class="size-3.5 shrink-0" />{/snippet}
+            Back to {title.toLowerCase()}
+          </Button>
         </div>
         {#if detail.error}<ErrorState
             title="Unable to load details"
@@ -611,117 +739,88 @@
             label="Loading details…" />
         {:else if detail.data}
           {#if detail.data.savedNotification?.report_status === 'resolved'}
-            <Card density="padded"
+            <Card density="compact"
               ><h2 class="mb-2 text-sm font-bold text-text-primary">
                 Resolved report · Saved context
               </h2>
               <ActivityRow
                 item={detail.data.savedNotification}
                 detail />
-              <p class="mt-2 text-sm break-words whitespace-pre-wrap">
+              <p class="mt-2 text-sm wrap-break-word whitespace-pre-wrap">
                 {detail.data.savedNotification.meta?.comment}
               </p>
-              <p class="mt-2 text-sm break-words whitespace-pre-wrap">
+              <p class="mt-2 text-sm wrap-break-word whitespace-pre-wrap">
                 {detail.data.savedNotification.meta?.details}
               </p></Card>
           {/if}
           {#if area === 'reports' && detail.data.context}
-            <Card density="padded"
-              ><h2 class="text-base font-bold text-text-primary">
-                {detail.data.context.author}
-              </h2>
-              <p class="mt-1 text-sm text-text-muted">
-                {detail.data.context.title}
-              </p>
-              <p
-                class="mt-4 line-clamp-4 text-sm break-words whitespace-pre-wrap text-text-primary">
-                {detail.data.context.content}
-              </p>
-              <details class="mt-2 text-sm">
-                <summary class="cursor-pointer text-accent"
-                  >Read full comment</summary>
-                <p class="mt-2 break-words whitespace-pre-wrap">
+            <Card density="compact">
+              <div class="inline-flex w-full items-center gap-1">
+                <span
+                  class="rounded-full border border-border-subtle bg-surface-card p-2 text-text-secondary">
+                  <User />
+                </span>
+                <span
+                  class="w-full rounded-md border border-border-subtle bg-surface-card p-2 text-sm wrap-break-word whitespace-pre-wrap text-text-secondary">
                   {detail.data.context.content}
-                </p>
-              </details>
-              <div class="mt-4 flex flex-wrap gap-2">
-                <Button
-                  size="sm"
-                  onclick={() =>
-                    onOpenComment(detail.data!.context!.postId!, selected)}
-                  >Open comment in Posts</Button
-                ><Button
-                  size="sm"
-                  type="ghost"
-                  onclick={() =>
-                    filter({postId: detail.data!.context!.postId!})}
-                  >Filter this article</Button>
+                </span>
               </div>
-              <p class="mt-3 text-xs text-text-muted">
-                {formatCount(detail.data.context.total)} open reports. Read the comment
-                before taking action.
-              </p></Card>
-            <div
-              class="flex flex-wrap gap-2"
-              role="group"
-              aria-label="Report categories">
-              <Chip
-                active={!params.get('detailReason')}
-                onclick={() => updateDetail({detailReason: ''})}>All</Chip
-              >{#each REPORT_REASONS as reason (reason.id)}<Chip
-                  active={params.get('detailReason') === reason.id}
-                  onclick={() => updateDetail({detailReason: reason.id})}
-                  >{reason.label} · {formatCount(
-                    detail.data.reasons?.find(r => r.reason === reason.id)
-                      ?.count ?? 0
-                  )}</Chip
-                >{/each}
-            </div>
-            <Input
-              type="search"
-              size="sm"
-              aria-label="Search report details"
-              placeholder="Search report details…"
-              value={detailSearch}
-              oninput={event => {
-                detailSearch = event.currentTarget.value;
-                clearTimeout(detailDebounce);
-                detailDebounce = setTimeout(
-                  () => updateDetail({detailQuery: detailSearch}),
-                  300
-                );
-              }} />
+              <div
+                class="mt-2 ml-1 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+                <span class="inline-flex items-center gap-1">
+                  <Flag
+                    class="size-3 text-text-muted"
+                    aria-hidden="true" />{pluralize(
+                    detail.data.context.total,
+                    'report',
+                    undefined,
+                    formatCount
+                  )}</span>
+                {#if detail.data.context.commentedAt}
+                  <span class="inline-flex items-center gap-1"
+                    ><Calendar
+                      class="size-3 text-text-muted"
+                      aria-hidden="true" />
+                    {date(detail.data.context.commentedAt)}</span>
+                {/if}
+                <span class="inline-flex items-center gap-1"
+                  ><Hash
+                    class="size-3 text-text-muted"
+                    aria-hidden="true" />
+                  {detail.data.context.id}</span>
+              </div></Card>
           {:else if area === 'feedback'}
-            {@const series = detail.data.series ?? []}
-            {@const yes = series.reduce((sum, r) => sum + r.helpful, 0)}
-            {@const no = series.reduce((sum, r) => sum + r.unhelpful, 0)}
-            <Card density="padded"
-              ><h2 class="text-base font-bold text-text-primary">
-                {detail.data.context?.title
+            <Card density="compact">
+              <CategoryTrendChart
+                title={detail.data.context?.title
                   ?? detail.data.items[0]?.title
                   ?? (detailTitle || 'Page feedback')}
-              </h2>
-              <FeedbackDonut
-                helpful={yes}
-                unhelpful={no} /></Card>
-            {#if showHistory}<Dropdown
-                label="Response"
-                value={params.get('vote') ?? 'all'}
-                options={[
-                  {value: 'all', label: 'All'},
-                  {value: 'yes', label: 'Helpful'},
-                  {value: 'no', label: 'Unhelpful'}
-                ]}
-                onChange={vote => updateDetail({vote})} />{/if}
+                description="Helpful vs. unhelpful responses for this page."
+                data={detailChartRows}
+                series={chartSeries}
+                {timeZone}
+                isLoading={detailAnalyticsLoading}
+                error={detailAnalyticsError}
+                range={trendRange}
+                onRangeChange={setChartRange}
+                onRetry={loadDetailAnalytics}
+                allowDonut />
+            </Card>
+
+            {@render eventsHistory()}
           {:else if area === 'notifications'}
-            <Card density="padded"
+            <Card density="compact"
               ><h2 class="text-base font-bold text-text-primary">
                 {detail.data.items[0]?.title
                   ?? (detailTitle || 'Notification group')}
               </h2>
               <p class="mt-2 text-sm text-text-secondary">
-                {formatCount(detail.data.total ?? groupCount ?? 0)} events in this
-                group
+                {pluralize(
+                  detail.data.total ?? groupCount ?? 0,
+                  'event',
+                  undefined,
+                  formatCount
+                )} in this group
               </p>
               <div class="mt-3 flex flex-wrap gap-2">
                 <Button
@@ -743,92 +842,367 @@
                   }}>Delete group</Button>
               </div></Card>
           {/if}
-          {#if area === 'feedback'}<Button
-              size="sm"
-              type="outline"
-              aria-expanded={showHistory}
-              onclick={() =>
-                updateDetail({history: showHistory ? 'false' : 'true'})}
-              >{showHistory ? 'Hide responses' : 'View responses'}</Button
-            >{/if}
-          {#if showHistory}
-            {#if params.has('focus')}<Button
-                size="sm"
-                type="outline"
-                onclick={() => updateDetail({})}
-                >Showing one event · Show all</Button
-              >{/if}
-            <h3 class="text-sm font-bold text-text-primary">
-              {area === 'reports' ? 'Reports' : 'Events'}
-            </h3>
-            {#if !detail.data.items.length}<EmptyState
-                title="Nothing here"
-                description="It may have been resolved, removed, or fall outside the selected period." />{/if}
-            <ul class="flex flex-col gap-3">
-              {#each detail.data.items as item (item.id)}
-                <li
-                  id={`workspace-event-${item.id}`}
-                  class="rounded-md border border-border-subtle bg-surface-card p-3">
-                  {#if item.event}<ActivityRow
-                      item={item.event}
-                      {timeZone}
-                      detail
-                      onSelect={async () => {
-                        await inbox.markRead(item.id);
-                        onSelectNotification(item.event!);
-                      }}
-                      onDelete={async () => {
-                        await inbox.dismiss(item.id);
-                        await refresh();
-                      }}
-                      disabled={busy || inbox.isMutating} />
-                    {#if item.event.meta?.comment || item.event.meta?.details}
-                      <details class="mt-2 text-sm">
-                        <summary class="cursor-pointer text-accent"
-                          >View saved context</summary>
-                        {#if item.event.meta.comment}<p
-                            class="mt-2 break-words whitespace-pre-wrap text-text-primary">
-                            {item.event.meta.comment}
-                          </p>{/if}
-                        {#if item.event.meta.details}<p
-                            class="mt-2 break-words whitespace-pre-wrap text-text-secondary">
-                            {item.event.meta.details}
-                          </p>{/if}
-                      </details>
-                    {/if}
-                  {:else}<div class="flex flex-wrap justify-between gap-2">
-                      <strong class="text-sm text-text-primary"
-                        >{area === 'reports' ?
-                          reportReasonLabel(item.reason ?? '')
-                        : item.vote === 'yes' ? 'Helpful'
-                        : 'Unhelpful'}</strong
-                      ><time
-                        class="text-xs text-text-muted"
-                        datetime={item.latest}>{date(item.latest)}</time>
-                    </div>
-                    {#if area === 'reports'}<p
-                        class="mt-3 line-clamp-3 text-sm break-words whitespace-pre-wrap text-text-secondary">
-                        {item.details || 'No additional details provided.'}
-                      </p>
-                      {#if item.details}<details class="mt-2">
-                          <summary class="cursor-pointer text-sm text-accent"
-                            >Read full details</summary>
-                          <p
-                            class="mt-2 text-sm break-words whitespace-pre-wrap text-text-secondary">
-                            {item.details}
-                          </p>
-                        </details>{/if}{/if}
-                  {/if}
-                </li>
-              {/each}
-            </ul>
-            {@render pagination(true)}
-          {/if}
+          {#if area !== 'feedback'}{@render eventsHistory()}{/if}
         {/if}
       </div>
     {/if}
   </div>
 </Section>
+
+{#snippet notificationActions()}
+  <span class="ml-auto text-xs leading-5 text-text-muted"
+    >{pluralize(
+      inbox.unreadCount,
+      'unread notification',
+      undefined,
+      formatCount
+    )}</span>
+  <Button
+    size="xs"
+    type="ghost"
+    disabled={busy || inbox.isMutating || !inbox.unreadCount}
+    onclick={async () => {
+      if (await inbox.markAllRead()) {
+        if (list.data)
+          list.data = {
+            ...list.data,
+            items: list.data.items.map(row => ({
+              ...row,
+              event:
+                row.event ?
+                  {
+                    ...row.event,
+                    read_at: row.event.read_at ?? new Date().toISOString()
+                  }
+                : undefined
+            }))
+          };
+        await refresh();
+      }
+    }}>
+    {#snippet leading()}<CheckCheck class="size-3" />{/snippet}
+    Mark all as read
+  </Button>
+  <Button
+    size="xs"
+    type="ghost"
+    disabled={busy || inbox.isMutating || !readCount}
+    onclick={prepareClear}>
+    {#snippet leading()}<Trash class="size-3" />{/snippet}
+    Clear all read
+  </Button>
+{/snippet}
+
+{#snippet eventsHistory()}
+  {#if detail.data}
+    {#if params.has('focus')}<Button
+        size="sm"
+        type="outline"
+        onclick={() => updateDetail({})}>Showing one event · Show all</Button
+      >{/if}
+    {@const empty = !detail.data.items.length}
+    {#if area === 'notifications'}
+      <DataTable
+        title={historyTitle}
+        state={empty ? historyEmpty : undefined}
+        footer={empty ? undefined : detailPagination}
+        caption={`${title} history`}
+        columns={historyColumns}
+        data={historyRows}
+        rowClass={row =>
+          (row as unknown as WorkspaceRow).event?.read_at ?
+            ''
+          : 'bg-notification-unread hover:bg-notification-unread-hover'}
+        onRowSelect={row => openHistoryEvent(row as unknown as WorkspaceRow)}>
+        {#snippet cell(row, key)}
+          {@const entry = row as unknown as WorkspaceRow}
+          {@const event = entry.event as AdminNotificationRow}
+          {#if key === 'activity'}
+            <ActivityBadge
+              kind={event.kind}
+              vote={event.meta?.vote} />
+          {:else if key === 'page'}
+            <ActivityPageLink item={event} />
+          {:else if key === 'details'}
+            <span class="flex min-w-0 flex-col gap-1">
+              <ActivityDetails
+                item={event}
+                withAuthor />
+              {#if event.meta?.comment || event.meta?.details}
+                <details>
+                  <summary class="cursor-pointer text-accent"
+                    >View saved context</summary>
+                  {#if event.meta.comment}<span
+                      class="mt-1 block wrap-break-word whitespace-pre-wrap"
+                      >{event.meta.comment}</span
+                    >{/if}
+                  {#if event.meta.details}<span
+                      class="mt-1 block wrap-break-word whitespace-pre-wrap text-text-muted"
+                      >{event.meta.details}</span
+                    >{/if}
+                </details>
+              {/if}
+            </span>
+          {:else if key === 'time'}
+            <ActivityTimestamp
+              date={event.created_at}
+              {timeZone}
+              relative
+              class="text-xs" />
+          {:else}
+            <span class="flex items-center justify-end gap-1">
+              <Button
+                size="xs"
+                type="ghost"
+                disabled={busy || inbox.isMutating}
+                onclick={() => openHistoryEvent(entry)}>
+                Details
+                {#snippet trailing()}<ChevronRight class="size-2" />{/snippet}
+              </Button>
+              <ActionMenu
+                ariaLabel={`Actions for ${activitySentence(event)}`}
+                disabled={busy || inbox.isMutating}
+                items={[
+                  {
+                    label:
+                      event.pinned_at ? 'Unpin notification' : (
+                        'Pin notification'
+                      ),
+                    icon: event.pinned_at ? PinOff : Pin,
+                    onSelect: () => pinEvent(entry, !event.pinned_at)
+                  },
+                  {
+                    label: 'Mark as read',
+                    icon: Check,
+                    disabled: Boolean(event.read_at),
+                    onSelect: () => readEvent(entry)
+                  },
+                  {
+                    label: 'Delete notification',
+                    icon: Trash,
+                    danger: true,
+                    onSelect: () => deleteEvent(entry.id)
+                  }
+                ]} />
+            </span>
+          {/if}
+        {/snippet}
+      </DataTable>
+    {:else}
+      <DataTable
+        title={historyTitle}
+        meta={area === 'reports' ? reportsCount : feedbackCount}
+        toolbar={area === 'reports' ? reportsToolbar : feedbackToolbar}
+        state={empty ? historyEmpty : undefined}
+        footer={empty ? undefined : detailPagination}
+        caption={`${title} history`}
+        columns={historyColumns}
+        data={detail.data.items as unknown as Record<string, unknown>[]}>
+        {#snippet cell(row, key)}
+          {@const item = row as unknown as WorkspaceRow}
+          {#if key === 'reason'}
+            <Badge
+              variant="custom"
+              color={reportReasonColor(item.reason ?? '')}
+              class="whitespace-nowrap">
+              {reportReasonLabel(item.reason ?? '')}
+            </Badge>
+          {:else if key === 'response'}
+            <ActivityBadge
+              kind="helpful"
+              vote={item.vote === 'yes' ? 'yes' : 'no'} />
+          {:else if key === 'details'}
+            <span
+              title={item.details || undefined}
+              class={item.details ? undefined : 'text-text-muted italic'}
+              >{item.details || 'No additional details provided.'}</span>
+          {:else}
+            <span class="whitespace-nowrap">{date(item.latest)}</span>
+          {/if}
+        {/snippet}
+      </DataTable>
+    {/if}
+  {/if}
+{/snippet}
+
+{#snippet listToolbar()}
+  <FilterToolbar
+    embedded
+    title={`${title} filters`}>
+    {#snippet searchSlot()}
+      <Input
+        type="search"
+        aria-label={`Search ${title.toLowerCase()}`}
+        placeholder={area === 'reports' ?
+          'Search comments, authors, or articles…'
+        : area === 'feedback' ? 'Search page titles…'
+        : 'Search notifications…'}
+        value={search}
+        oninput={event => {
+          search = event.currentTarget.value;
+          clearTimeout(debounce);
+          debounce = setTimeout(() => filter({query: search}), 300);
+        }} />
+    {/snippet}
+    {#snippet filterControlsSlot()}
+      {#if area === 'reports'}
+        <Dropdown
+          label="Category"
+          value={params.get('reason') ?? ''}
+          options={[
+            {value: '', label: 'All'},
+            ...REPORT_REASONS.map(r => ({value: r.id, label: r.label}))
+          ]}
+          onChange={reason => filter({reason})} />
+      {:else if area === 'feedback'}
+        <Dropdown
+          label="Page"
+          value={params.get('type') ?? 'all'}
+          options={[
+            {value: 'all', label: 'All'},
+            {value: 'article', label: 'Articles'},
+            {value: 'legal', label: 'Legal pages'}
+          ]}
+          onChange={type => filter({type})} />
+      {:else}
+        <Dropdown
+          label="Category"
+          value={params.get('type') ?? 'all'}
+          options={notificationTypes}
+          onChange={type => filter({type})} />
+        <Dropdown
+          label="Status"
+          value={params.get('read') ?? 'all'}
+          options={[
+            {value: 'all', label: 'All'},
+            {value: 'unread', label: 'Unread'},
+            {value: 'read', label: 'Read'}
+          ]}
+          onChange={read => filter({read})} />
+      {/if}
+    {/snippet}
+    {#snippet sortSlot()}
+      <SortControl
+        labelPrefix="Sort by"
+        fields={sortFields}
+        currentField={params.get('sort') ?? 'date'}
+        currentDirection={params.get('direction') === 'asc' ? 'asc' : 'desc'}
+        onFieldChange={sort => filter({sort})}
+        onDirectionToggle={() =>
+          filter({
+            direction: params.get('direction') === 'asc' ? 'desc' : 'asc'
+          })} />
+    {/snippet}
+  </FilterToolbar>
+{/snippet}
+
+{#snippet listCount()}
+  <SearchResultCount
+    count={list.data?.items.length ?? 0}
+    total={list.data?.total ?? 0}
+    itemLabel={area === 'reports' ? 'reported comments'
+    : area === 'feedback' ? 'pages'
+    : 'notifications'} />
+{/snippet}
+
+{#snippet reportsToolbar()}
+  <FilterToolbar
+    embedded
+    title="Report details filters">
+    {#snippet searchSlot()}
+      <Input
+        type="search"
+        size="sm"
+        aria-label="Search report details"
+        placeholder="Search report details…"
+        value={detailSearch}
+        oninput={event => {
+          detailSearch = event.currentTarget.value;
+          clearTimeout(detailDebounce);
+          detailDebounce = setTimeout(
+            () => updateDetail({detailQuery: detailSearch}),
+            300
+          );
+        }} />
+    {/snippet}
+    {#snippet filterControlsSlot()}
+      <Dropdown
+        label="Category"
+        value={params.get('detailReason') ?? ''}
+        options={[
+          {value: '', label: 'All'},
+          ...REPORT_REASONS.map(r => ({value: r.id, label: r.label}))
+        ]}
+        onChange={detailReason => updateDetail({detailReason})} />
+    {/snippet}
+  </FilterToolbar>
+{/snippet}
+
+{#snippet reportsCount()}
+  <SearchResultCount
+    count={detail.data?.items.length ?? 0}
+    total={detail.data!.total ?? 0}
+    itemLabel="reports" />
+{/snippet}
+
+{#snippet feedbackToolbar()}
+  <FilterToolbar
+    embedded
+    title="Response filter">
+    {#snippet filterControlsSlot()}
+      <Dropdown
+        label="Response"
+        value={params.get('vote') ?? 'all'}
+        options={[
+          {value: 'all', label: 'All'},
+          {value: 'yes', label: 'Helpful'},
+          {value: 'no', label: 'Unhelpful'}
+        ]}
+        onChange={vote => updateDetail({vote})} />
+    {/snippet}
+
+    {#snippet sortSlot()}
+      <SortControl
+        fields={[{value: 'date', label: 'Date'}]}
+        currentField="date"
+        currentDirection={params.get('detailDirection') === 'asc' ?
+          'asc'
+        : 'desc'}
+        onDirectionToggle={() =>
+          updateDetail({
+            detailDirection:
+              params.get('detailDirection') === 'asc' ? 'desc' : 'asc'
+          })} />
+    {/snippet}
+  </FilterToolbar>
+{/snippet}
+
+{#snippet feedbackCount()}
+  <SearchResultCount
+    count={detail.data?.items.length ?? 0}
+    total={detail.data?.total ?? 0}
+    itemLabel="events" />
+{/snippet}
+
+{#snippet listStateView()}
+  {#if list.loading && !list.data}
+    <LoadingState label="Loading results…" />
+  {:else}
+    <EmptyState
+      title="No matching activity"
+      description="Try another period or filter." />
+  {/if}
+{/snippet}
+
+{#snippet historyEmpty()}
+  <EmptyState
+    title="Nothing here"
+    description="It may have been resolved, removed, or fall outside the selected period." />
+{/snippet}
+
+{#snippet listPagination()}{@render pagination(false)}{/snippet}
+
+{#snippet detailPagination()}{@render pagination(true)}{/snippet}
 
 {#snippet pagination(isDetail: boolean)}
   {@const feed = isDetail ? detail : list}
@@ -839,7 +1213,7 @@
       page={Number(params.get(isDetail ? 'detailPage' : 'page') ?? '1')}
       {totalPages}
       onPageChange={page => goToPage(isDetail, page)}
-      class="mt-6" />
+      size="sm" />
   {/if}
 {/snippet}
 
@@ -849,8 +1223,8 @@
     'Clear read notifications?'
   : 'Delete this notification group?'}
   message={confirmation === 'all' ?
-    `Delete ${formatCount(clearOperation?.count ?? 0)} read notifications? Unread notifications stay, and reports and feedback remain saved.`
-  : `Delete ${formatCount(preparedGroup?.count ?? 0)} events in this group? Reports and feedback remain saved.`}
+    `Delete ${pluralize(clearOperation?.count ?? 0, 'read notification', undefined, formatCount)}? Unread notifications stay, and reports and feedback remain saved.`
+  : `Delete ${pluralize(preparedGroup?.count ?? 0, 'event', undefined, formatCount)} in this group? Reports and feedback remain saved.`}
   confirmLabel={confirmation === 'all' ? 'Clear read' : 'Delete group'}
   isDestructive
   isLoading={busy}

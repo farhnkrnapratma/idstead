@@ -1,3 +1,15 @@
+import {
+  ShieldAlert,
+  MessageSquareWarning,
+  Siren,
+  Ban,
+  HeartCrack,
+  UserX,
+  FileX,
+  Newspaper,
+  HelpCircle
+} from '@lucide/svelte';
+
 export const REPORT_REASONS = [
   {
     id: 'spam',
@@ -74,4 +86,20 @@ export const REPORT_REASON_COLORS: Record<ReportReasonId, string> = {
 
 export function reportReasonColor(id: string): string {
   return REPORT_REASON_COLORS[isReportReasonId(id) ? id : 'other'];
+}
+
+export const REPORT_REASON_ICONS: Record<ReportReasonId, typeof ShieldAlert> = {
+  spam: ShieldAlert,
+  harassment: MessageSquareWarning,
+  violence_or_illegal: Siren,
+  sexual_content: Ban,
+  self_harm: HeartCrack,
+  impersonation: UserX,
+  removal_request: FileX,
+  misinformation: Newspaper,
+  other: HelpCircle
+};
+
+export function reportReasonIcon(id: string) {
+  return REPORT_REASON_ICONS[isReportReasonId(id) ? id : 'other'];
 }

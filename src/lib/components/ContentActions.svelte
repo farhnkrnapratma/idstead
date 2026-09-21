@@ -2,7 +2,7 @@
   import {
     Copy,
     CopyCheck,
-    Link,
+    Link2,
     EllipsisVertical,
     Hash,
     ScanText,
@@ -183,7 +183,7 @@
             shortcutChordKey={argKey('/copy', 'url')}
             shortcutLabel="Post URL"
             type="ghost"
-            size="xs"
+            size="2xs"
             label={copiedUrl ? 'Copied!' : 'Post URL'}
             truncateMiddle
             class="w-full justify-start rounded-none! px-3 text-xs font-normal! whitespace-nowrap text-text-secondary!"
@@ -195,7 +195,7 @@
               {#if copiedUrl}
                 <CopyCheck class="size-3.5 text-accent" />
               {:else}
-                <Link class="size-3.5" />
+                <Link2 class="size-3.5" />
               {/if}
             {/snippet}
           </Button>
@@ -206,7 +206,7 @@
             shortcutChordKey={argKey('/copy', 'pid')}
             shortcutLabel="Post ID"
             type="ghost"
-            size="xs"
+            size="2xs"
             label={copiedId ? 'Copied!' : 'Post ID'}
             truncateMiddle
             class="w-full justify-start rounded-none! px-3 text-xs font-normal! whitespace-nowrap text-text-secondary!"
@@ -236,7 +236,7 @@
           shortcutChordKey={argKey('/copy', 'txt')}
           shortcutLabel="Copy as TXT"
           type="ghost"
-          size="xs"
+          size="2xs"
           label={copiedText ? 'Copied!' : 'Copy as TXT'}
           truncateMiddle
           class="w-full justify-start rounded-none! px-3 text-xs font-normal! whitespace-nowrap text-text-secondary!"
@@ -257,7 +257,7 @@
           shortcutChordKey={VIEW_FORMAT_KEYS.txt}
           shortcutLabel="View as TXT"
           type="ghost"
-          size="xs"
+          size="2xs"
           href={viewTextUrl}
           label="View as TXT"
           truncateMiddle
@@ -279,7 +279,7 @@
           shortcutChordKey={argKey('/save', 'md')}
           shortcutLabel="Save as MD"
           type="ghost"
-          size="xs"
+          size="2xs"
           label="Save as MD"
           truncateMiddle
           class="w-full justify-start rounded-none! px-3 text-xs font-normal! whitespace-nowrap text-text-secondary!"
@@ -298,7 +298,7 @@
           shortcutChordKey={argKey('/save', 'txt')}
           shortcutLabel="Save as TXT"
           type="ghost"
-          size="xs"
+          size="2xs"
           label="Save as TXT"
           truncateMiddle
           class="w-full justify-start rounded-none! px-3 text-xs font-normal! whitespace-nowrap text-text-secondary!"
@@ -322,10 +322,10 @@
       'flex shrink-0 flex-col gap-2.5 rounded-md glass-card p-3.5 text-left select-none sm:p-4',
       className
     )}>
-    <h3
+    <div
       class="text-xs font-bold tracking-wider text-text-secondary uppercase select-none">
       Actions
-    </h3>
+    </div>
 
     <div class="grid grid-cols-2 gap-1.5">
       <Button
@@ -333,7 +333,7 @@
         shortcutChordKey={argKey('/copy', 'md')}
         shortcutLabel="Copy as MD"
         type="secondary"
-        size="xs"
+        size="2xs"
         class="w-full justify-start gap-1.5 px-2 py-1.5 text-xs font-normal! text-text-secondary!"
         onclick={handleCopyMarkdown}
         label={copiedMarkdown ? 'Copied!' : 'Copy as MD'}
@@ -353,7 +353,7 @@
         shortcutLabel="View as MD"
         href={viewMarkdownUrl}
         type="secondary"
-        size="xs"
+        size="2xs"
         class="w-full justify-start gap-1.5 px-2 py-1.5 text-xs font-normal! text-text-secondary!"
         label="View as MD"
         truncateMiddle>
@@ -369,11 +369,11 @@
       <summary
         use:shortcut={{
           combo: buttonKey('moreActions'),
-          label: 'More options',
+          label: 'All actions',
           placement: 'trailing'
         }}
         class="group/summary relative flex min-h-0 cursor-pointer list-none items-center justify-between gap-1 border-0! bg-transparent! px-0 py-0.5 text-2xs font-semibold tracking-wider text-text-muted uppercase no-underline! transition-colors select-none group-open:border-b-0! group-open:bg-transparent! hover:bg-transparent! hover:text-security [&::-webkit-details-marker]:hidden">
-        <span>More options</span>
+        <span>All actions</span>
         <ChevronDown
           class="size-3.5 text-text-secondary transition-transform duration-200 group-open:rotate-180 group-hover/summary:text-security" />
       </summary>
@@ -382,8 +382,8 @@
         {#if showCopyUrl || pageId}
           <div class="flex flex-col gap-1.5">
             <span
-              class="text-2xs font-semibold tracking-wider text-text-muted uppercase select-none"
-              >Copy</span>
+              class="text-3xs font-semibold tracking-wider text-text-muted uppercase select-none"
+              >Post</span>
             <div
               class="grid {showCopyUrl && pageId ? 'grid-cols-2' : (
                 'grid-cols-1'
@@ -392,18 +392,18 @@
                 <Button
                   shortcutGroup="copy"
                   shortcutChordKey={argKey('/copy', 'url')}
-                  shortcutLabel="Post URL"
+                  shortcutLabel="Copy URL"
                   type="secondary"
-                  size="xs"
+                  size="2xs"
                   class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
                   onclick={handleCopyPageUrl}
-                  label={copiedUrl ? 'Copied!' : 'Post URL'}
+                  label={copiedUrl ? 'Copied!' : 'Copy URL'}
                   truncateMiddle>
                   {#snippet leading()}
                     {#if copiedUrl}
                       <CopyCheck class="size-3.5 text-accent" />
                     {:else}
-                      <Link class="size-3.5 text-text-secondary" />
+                      <Link2 class="size-3.5 text-text-secondary" />
                     {/if}
                   {/snippet}
                 </Button>
@@ -413,12 +413,12 @@
                 <Button
                   shortcutGroup="copy"
                   shortcutChordKey={argKey('/copy', 'pid')}
-                  shortcutLabel="Post ID"
+                  shortcutLabel="Copy PID"
                   type="secondary"
-                  size="xs"
+                  size="2xs"
                   class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
                   onclick={handleCopyPageId}
-                  label={copiedId ? 'Copied!' : 'Post ID'}
+                  label={copiedId ? 'Copied!' : 'Copy PID'}
                   truncateMiddle>
                   {#snippet leading()}
                     {#if copiedId}
@@ -435,7 +435,7 @@
 
         <div class="flex flex-col gap-1.5">
           <span
-            class="text-2xs font-semibold tracking-wider text-text-muted uppercase select-none"
+            class="text-3xs font-semibold tracking-wider text-text-muted uppercase select-none"
             >Text</span>
           <div class="grid grid-cols-2 gap-1.5">
             <Button
@@ -443,7 +443,7 @@
               shortcutChordKey={argKey('/copy', 'txt')}
               shortcutLabel="Copy as TXT"
               type="secondary"
-              size="xs"
+              size="2xs"
               class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
               onclick={handleCopyPlainText}
               label={copiedText ? 'Copied!' : 'Copy as TXT'}
@@ -463,7 +463,7 @@
               shortcutLabel="View as TXT"
               href={viewTextUrl}
               type="secondary"
-              size="xs"
+              size="2xs"
               class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
               label="View as TXT"
               truncateMiddle>
@@ -476,7 +476,7 @@
 
         <div class="flex flex-col gap-1.5">
           <span
-            class="text-2xs font-semibold tracking-wider text-text-muted uppercase select-none"
+            class="text-3xs font-semibold tracking-wider text-text-muted uppercase select-none"
             >Save</span>
           <div class="grid grid-cols-2 gap-1.5">
             <Button
@@ -484,7 +484,7 @@
               shortcutChordKey={argKey('/save', 'md')}
               shortcutLabel="Save as MD"
               type="secondary"
-              size="xs"
+              size="2xs"
               class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
               onclick={handleSaveMarkdown}
               label="Save as MD"
@@ -500,7 +500,7 @@
               shortcutChordKey={argKey('/save', 'txt')}
               shortcutLabel="Save as TXT"
               type="secondary"
-              size="xs"
+              size="2xs"
               class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
               onclick={handleSaveText}
               label="Save as TXT"
@@ -525,7 +525,7 @@
       shortcutChordKey={argKey('/copy', 'md')}
       shortcutLabel="Copy as MD"
       type="secondary"
-      size="xs"
+      size="2xs"
       onclick={handleCopyMarkdown}
       label={copiedMarkdown ? 'Copied!' : 'Copy as MD'}
       truncateMiddle
@@ -544,7 +544,7 @@
       shortcutChordKey={VIEW_FORMAT_KEYS.md}
       shortcutLabel="View as MD"
       type="secondary"
-      size="xs"
+      size="2xs"
       href={viewMarkdownUrl}
       label="View as MD"
       truncateMiddle
@@ -564,7 +564,7 @@
           keyboardShortcut={buttonKey('moreActions')}
           shortcutLabel="More actions"
           type="ghost"
-          size="xs"
+          size="2xs"
           onclick={toggle}
           aria-label="More actions"
           aria-expanded={isOpen}

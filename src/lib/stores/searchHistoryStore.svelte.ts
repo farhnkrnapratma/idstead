@@ -19,7 +19,7 @@ export interface SearchHistoryEntry {
 }
 
 const STORAGE_KEY = 'fkp_search_history';
-const MAX_ENTRIES = 8;
+const MAX_ENTRIES = 5;
 
 function createSearchHistoryStore() {
   let current = $state<SearchHistoryEntry[]>([]);
@@ -28,13 +28,17 @@ function createSearchHistoryStore() {
     try {
       const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
       if (Array.isArray(stored)) {
-        current = stored.filter(
-          (entry): entry is SearchHistoryEntry =>
-            entry
-            && typeof entry === 'object'
-            && typeof entry.id === 'string'
-            && typeof entry.title === 'string'
-        );
+        current = stored
+          .filter(
+            (entry): entry is SearchHistoryEntry =>
+              entry
+              && typeof entry === 'object'
+              && typeof entry.id === 'string'
+              && typeof entry.title === 'string'
+              && entry.id !== 'cmd-history'
+              && entry.id !== 'dyn-history-clear'
+          )
+          .slice(0, MAX_ENTRIES);
       }
     } catch {}
   }
@@ -81,24 +85,12 @@ function createSearchHistoryStore() {
     }
   }
 
-  function remove(id: string) {
-    current = current.filter(entry => entry.id !== id);
-    persist();
-  }
-
-  function clear() {
-    current = [];
-    persist();
-  }
-
   return {
     get current() {
       return current;
     },
     record,
-    syncEntry,
-    remove,
-    clear
+    syncEntry
   };
 }
 

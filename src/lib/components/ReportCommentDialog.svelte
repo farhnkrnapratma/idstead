@@ -1,19 +1,7 @@
 <script lang="ts">
   import {onDestroy} from 'svelte';
   import {FieldValidation} from '$lib/fieldValidation';
-  import {
-    ShieldAlert,
-    MessageSquareWarning,
-    Siren,
-    Ban,
-    HeartCrack,
-    UserX,
-    FileX,
-    Newspaper,
-    HelpCircle,
-    Circle,
-    CircleDot
-  } from '@lucide/svelte';
+  import {Circle, CircleDot} from '@lucide/svelte';
   import Dialog from './Dialog.svelte';
   import Button from './Button.svelte';
   import FormField from './FormField.svelte';
@@ -30,6 +18,7 @@
   import {
     REPORT_REASONS,
     reportReasonColor,
+    reportReasonIcon,
     type ReportReasonId
   } from '$lib/reportReasons';
 
@@ -47,18 +36,10 @@
 
   let {isOpen = $bindable(false), comment = null, onClose}: Props = $props();
 
-  const REASON_ICONS: Record<ReportReasonId, typeof ShieldAlert> = {
-    spam: ShieldAlert,
-    harassment: MessageSquareWarning,
-    violence_or_illegal: Siren,
-    sexual_content: Ban,
-    self_harm: HeartCrack,
-    impersonation: UserX,
-    removal_request: FileX,
-    misinformation: Newspaper,
-    other: HelpCircle
-  };
-  const REASONS = REPORT_REASONS.map(r => ({...r, icon: REASON_ICONS[r.id]}));
+  const REASONS = REPORT_REASONS.map(r => ({
+    ...r,
+    icon: reportReasonIcon(r.id)
+  }));
 
   let selectedReason = $state<ReportReasonId>('spam');
   let details = $state('');

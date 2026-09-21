@@ -57,4 +57,11 @@
     class="relative inline-flex shrink-0 items-center transition-colors hover:text-text-primary focus-visible:text-text-primary focus-visible:outline-none">
     RSS
   </a>
+  <a
+    href="https://fkp.instatus.com/"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="relative inline-flex shrink-0 items-center transition-colors hover:text-text-primary focus-visible:text-text-primary focus-visible:outline-none">
+    Status
+  </a>
 </div>

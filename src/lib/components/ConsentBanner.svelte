@@ -214,7 +214,7 @@
         <span class="text-xs font-semibold text-text-secondary"
           >Quick presets</span>
         <span
-          class="text-xs font-bold transition-colors"
+          class="text-xs font-bold"
           style="color: {presetColor}">
           {presetLabel}
         </span>
@@ -225,7 +225,7 @@
           class="pointer-events-none absolute inset-x-0 h-1.5 rounded-full bg-border-subtle">
         </div>
         <div
-          class="pointer-events-none absolute inset-y-0 left-0 h-1.5 self-center rounded-full transition-[width,background-color] duration-200"
+          class="pointer-events-none absolute inset-y-0 left-0 h-1.5 self-center rounded-full"
           style="width: {(presetSliderValue / 2)
             * 100}%; background-color: {presetColor}">
         </div>
@@ -330,7 +330,7 @@
         keyboardShortcut="R"
         shortcutLabel="Reset choice"
         class="w-full sm:w-auto">
-        <Trash class="size-3" />
+        {#snippet leading()}<Trash class="size-3" />{/snippet}
         Reset choice
       </Button>
     </div>
@@ -383,7 +383,6 @@
     background: var(--thumb-color);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     cursor: pointer;
-    transition: background-color 0.2s ease;
   }
   .preset-slider::-moz-range-track {
     height: 0.375rem;
@@ -397,6 +396,5 @@
     background: var(--thumb-color);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     cursor: pointer;
-    transition: background-color 0.2s ease;
   }
 </style>

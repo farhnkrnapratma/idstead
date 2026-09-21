@@ -7,17 +7,22 @@
   import {curveMonotoneX} from 'd3-shape';
 
   import Chip from '../Chip.svelte';
-  import DataTable from '../DataTable.svelte';
-  import Button from '../Button.svelte';
   import LoadingState from '../LoadingState.svelte';
   import ErrorState from '../ErrorState.svelte';
   import {cn} from '$lib/utils/cn';
-  import {activityTimestamp} from '$lib/adminActivity';
+  import {activityDate, activityTimestamp} from '$lib/adminActivity';
   import {
     VIEWS_RANGES,
     type ViewsRange,
     type ViewsBucketRow
   } from './viewsRange';
+  import {
+    ADMIN_CHART_AXIS_CLASSES,
+    ADMIN_CHART_PADDING,
+    ADMIN_CHART_X_TICK_LABEL_PROPS,
+    ADMIN_CHART_Y_TICK_LABEL_PROPS,
+    ADMIN_CHART_TICK_LENGTH
+  } from '$lib/utils/chartAxisStyles';
 
   interface Props {
     ceiling?: number;
@@ -38,7 +43,7 @@
     range,
     timeZone = 'UTC',
     title = 'Article views',
-    description = 'Each visitor is counted once per article.',
+    description = 'Cumulative visits across all pages.',
     data = [],
     isLoading = false,
     error = '',
@@ -50,13 +55,16 @@
   const series = $derived(
     data.map(row => ({
       label: activityTimestamp(row.bucket, timeZone),
+      axisLabel: activityDate(row.bucket, timeZone),
       views: Number(row.views),
       partial: 'partial' in row && row.partial ? 'Partial interval' : ''
     }))
   );
+  const axisLabels = $derived(
+    new Map(series.map(row => [row.label, row.axisLabel]))
+  );
   const maxViews = $derived(Math.max(ceiling, ...series.map(d => d.views)));
   const tickCount = $derived(Math.min(6, series.length));
-  let showTable = $state(false);
   let chartType = $state<'spline' | 'bar'>('spline');
 
   onMount(() => {
@@ -122,12 +130,6 @@
           {/each}
         </div>
       {/if}
-      <Button
-        type="ghost"
-        size="sm"
-        onclick={() => (showTable = !showTable)}
-        aria-expanded={showTable}
-        >{showTable ? 'Hide data table' : 'View data table'}</Button>
     </div>
   </div>
 
@@ -144,7 +146,7 @@
     <div
       class="h-65 w-full"
       role="img"
-      aria-label={`${title} over time. Exact values are available in the data table.`}>
+      aria-label={`${title} over time. Hover a point for its exact value.`}>
       <Chart
         data={series}
         x="label"
@@ -152,18 +154,17 @@
         y="views"
         yScale={scaleLinear()}
         yDomain={[0, maxViews]}
-        padding={{top: 16, right: 12, bottom: 34, left: 44}}>
+        padding={ADMIN_CHART_PADDING}>
         <Svg clip>
           <Axis
             placement="bottom"
             grid={false}
             ticks={tickCount}
             tickOcclusion
-            tickLabelProps={{stroke: 'none', strokeWidth: 0}}
-            classes={{
-              tick: 'text-xs sm:text-sm fill-text-muted font-mono',
-              rule: 'stroke-border-subtle'
-            }} />
+            format={value => axisLabels.get(value) ?? value}
+            tickLabelProps={ADMIN_CHART_X_TICK_LABEL_PROPS}
+            tickLength={ADMIN_CHART_TICK_LENGTH}
+            classes={ADMIN_CHART_AXIS_CLASSES} />
           <Axis
             placement="left"
             grid={{
@@ -171,11 +172,9 @@
               dashArray: '3 3',
               opacity: 0.4
             }}
-            tickLabelProps={{stroke: 'none', strokeWidth: 0}}
-            classes={{
-              tick: 'text-xs sm:text-sm fill-text-muted font-mono',
-              rule: 'stroke-border-subtle'
-            }} />
+            tickLabelProps={ADMIN_CHART_Y_TICK_LABEL_PROPS}
+            tickLength={ADMIN_CHART_TICK_LENGTH}
+            classes={ADMIN_CHART_AXIS_CLASSES} />
           {#if chartType === 'bar'}
             <Bars
               radius={3}
@@ -217,15 +216,5 @@
         </Tooltip.Root>
       </Chart>
     </div>
-    {#if showTable}
-      <DataTable
-        caption={`${title} by interval, ${timeZone}`}
-        columns={[
-          {key: 'label', header: 'Interval'},
-          {key: 'views', header: title, align: 'right'},
-          {key: 'partial', header: 'Status'}
-        ]}
-        data={series} />
-    {/if}
   {/if}
 </div>

@@ -10,6 +10,11 @@ export const UUID_PATTERN =
 export type BannerChange =
   {operation: 'keep' | 'remove'} | {operation: 'replace'; file: Blob};
 
+export function blogBannerAlt(title: string, excerpt?: string | null) {
+  const description = excerpt?.trim();
+  return `Banner image for the blog post “${title.trim()}”${description ? ` — ${description}` : ''}`;
+}
+
 export function bannerKey(postId: string, version: string) {
   if (!UUID_PATTERN.test(postId) || !UUID_PATTERN.test(version))
     throw new Error('Invalid banner identity.');

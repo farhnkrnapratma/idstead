@@ -141,7 +141,6 @@
         </button>
       </div>
     </div>
-
     <div
       class="relative hidden size-20 shrink-0 items-center justify-center sm:flex"
       aria-hidden="true">
@@ -152,7 +151,7 @@
         class="absolute top-4 left-4 size-9 fill-accent/15 text-accent"
         strokeWidth={1.5} />
       <AtSign
-        class="absolute right-3 bottom-3 size-8 rounded-full bg-surface-card p-1 text-copilot-purple"
+        class="absolute right-3 bottom-3 size-8 rounded-full bg-surface-card p-1 text-gh-green-3"
         strokeWidth={1.75} />
     </div>
   </div>

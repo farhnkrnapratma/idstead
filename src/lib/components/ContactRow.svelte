@@ -62,11 +62,16 @@
         size="sm"
         onclick={handleCopy}
         aria-label="Copy contact information">
+        {#snippet leading()}
+          {#if copied}
+            <CopyCheck class="size-3.5 text-accent" />
+          {:else}
+            <Copy class="size-3.5" />
+          {/if}
+        {/snippet}
         {#if copied}
-          <CopyCheck class="size-3.5 text-accent" />
           <span class="text-accent">Copied</span>
         {:else}
-          <Copy class="size-3.5" />
           <span>Copy</span>
         {/if}
       </Button>

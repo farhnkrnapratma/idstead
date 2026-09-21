@@ -66,6 +66,14 @@ export async function adminActivity(
               .delete()
               .eq('id', id)
               .select('id');
+      } else if (body.action === 'pin' || body.action === 'unpin') {
+        result = await db
+          .from('db_admin_notifications')
+          .update({
+            pinned_at: body.action === 'pin' ? new Date().toISOString() : null
+          })
+          .eq('id', activityUuid(body.id))
+          .select('id');
       } else if (body.action === 'read_all') {
         result = await db
           .from('db_admin_notifications')
