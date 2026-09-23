@@ -543,13 +543,13 @@
   let education = $derived(cvData.education || []);
   let contact = $derived(contactData || []);
 
-  interface SkillGroup {
+  interface SkillGroupData {
     category: string;
     items: string[];
   }
 
   let rawSkills = $derived(data.skills || author?.skills || []);
-  let skills = $derived<SkillGroup[]>(
+  let skills = $derived<SkillGroupData[]>(
     (Array.isArray(rawSkills) ?
       rawSkills.map((s: any) =>
         typeof s === 'string' ?
