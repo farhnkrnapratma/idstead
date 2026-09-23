@@ -631,7 +631,7 @@ select {
   }
 
   .prose-custom pre code {
-    @apply overflow-visible border-0 p-0 font-mono text-[0.8rem] leading-snug break-normal whitespace-pre;
+    @apply block w-max min-w-full overflow-visible! border-0 p-0! font-mono text-[0.8rem] leading-snug break-normal whitespace-pre;
   }
 
   .prose-custom .code-line {
@@ -904,12 +904,16 @@ select {
     @apply my-0 inline;
   }
 
+  .prose-custom sup:has(> [data-footnote-ref]) {
+    @apply mx-0.5 inline-flex align-baseline;
+  }
+
   .prose-custom [data-footnote-ref] {
-    @apply font-mono text-[0.8em] font-medium text-security no-underline hover:underline;
+    @apply inline-flex items-center justify-center px-0.5 py-0.5 font-mono text-[0.8em] leading-none font-medium text-security no-underline hover:underline;
   }
 
   .prose-custom .footnote-backref {
-    @apply inline-flex items-center font-mono text-security no-underline hover:underline;
+    @apply inline-flex items-center justify-center px-0.5 py-0.5 font-mono text-security no-underline hover:underline;
     vertical-align: baseline;
     line-height: 1;
   }
@@ -921,7 +925,7 @@ select {
   }
 
   .prose-custom .footnote-sub-backref {
-    @apply inline-flex items-center font-mono text-security italic no-underline hover:underline;
+    @apply inline-flex items-center justify-center px-0.5 py-0.5 font-mono text-security italic no-underline hover:underline;
     font-size: 0.75rem !important;
     line-height: 1 !important;
     vertical-align: 0.32em;
@@ -1093,10 +1097,42 @@ select {
     @apply pb-0;
   }
 
+  .markdown-step:has(> :is(h2, h3, h4)) {
+    --step-title-line-height: calc(
+      var(--text-lg) * var(--text-lg--line-height)
+    );
+  }
+
+  .markdown-step:has(> h4) {
+    --step-title-line-height: calc(
+      var(--text-base) * var(--text-base--line-height)
+    );
+  }
+
+  @media (width >= 40rem) {
+    .markdown-step:has(> h2) {
+      --step-title-line-height: calc(
+        var(--text-2xl) * var(--text-2xl--line-height)
+      );
+    }
+
+    .markdown-step:has(> h4) {
+      --step-title-line-height: calc(
+        var(--text-lg) * var(--text-lg--line-height)
+      );
+    }
+  }
+
   .markdown-step::before {
     content: counter(step-counter);
     position: absolute;
-    top: 0;
+    top: calc(
+      (
+          var(--step-title-line-height, var(--step-badge-size)) -
+            var(--step-badge-size)
+        ) /
+        2
+    );
     left: 0;
     width: var(--step-badge-size);
     height: var(--step-badge-size);
@@ -1115,7 +1151,7 @@ select {
     top: var(--step-badge-size);
     left: calc(var(--step-badge-size) / 2 - 0.5px);
     width: var(--step-line-w);
-    bottom: 0;
+    bottom: calc(-1 * var(--step-badge-size));
     @apply pointer-events-none bg-border-subtle;
   }
 
@@ -1125,6 +1161,11 @@ select {
 
   .markdown-step > :is(h2, h3, h4) {
     @apply relative mt-0! mb-2 flex items-center font-bold text-text-primary;
+  }
+
+  .markdown-step > :is(h2, h3, h4),
+  .markdown-step > :is(h2, h3, h4) .heading-text {
+    @apply font-sans! not-italic!;
   }
 
   .markdown-steps-list {

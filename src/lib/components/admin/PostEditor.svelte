@@ -563,7 +563,7 @@
   <form
     onsubmit={e => e.preventDefault()}
     novalidate
-    class="flex flex-col gap-4">
+    class="flex flex-col gap-4 py-4 sm:py-6">
     <fieldset
       disabled={isSubmitting || !!pendingSave || loadFailed}
       class="contents">
@@ -705,6 +705,7 @@
         autosaveKey={editId ? `autosave_edit_${editId}` : 'autosave_new'}
         placeholder="Write your markdown content here..."
         minHeight="500px"
+        stickyTopClass="top-14 md:top-0"
         onImageUpload={handleImageUploadFile} />
     </fieldset>
     <div

@@ -1566,14 +1566,14 @@
       align="right">
       <button
         type="button"
-        class="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full glass-button border border-accent/40 bg-surface-card/90 px-0 text-xs font-semibold text-accent shadow-md transition-all hover:scale-105 hover:border-accent hover:bg-surface-hover active:scale-95 md:h-10 md:w-10 md:shadow-lg"
+        class="inline-flex size-8 cursor-pointer items-center justify-center rounded-full glass-button border border-accent/40 bg-surface-card/90 px-0 text-xs font-semibold text-accent shadow-md transition-all hover:scale-105 hover:border-accent hover:bg-surface-hover active:scale-95 md:shadow-lg"
         onclick={readingModeStore.toggle}
         use:shortcut={{
           combo: buttonKey('readingMode'),
           label: 'Exit reading mode'
         }}
         aria-label="Exit reading mode">
-        <BookOpenText class="size-4.5 shrink-0 md:size-5" />
+        <BookOpenText class="size-4 shrink-0" />
       </button>
     </Tooltip>
   </div>
@@ -1994,7 +1994,13 @@
   .prose-custom :global(.markdown-step::before) {
     content: counter(step-counter);
     position: absolute;
-    top: 0;
+    top: calc(
+      (
+          var(--step-title-line-height, var(--step-badge-size)) -
+            var(--step-badge-size)
+        ) /
+        2
+    );
     left: 0;
     width: var(--step-badge-size);
     height: var(--step-badge-size);
@@ -2013,7 +2019,7 @@
     top: var(--step-badge-size);
     left: calc(var(--step-badge-size) / 2 - 0.5px);
     width: var(--step-line-w);
-    bottom: 0;
+    bottom: calc(-1 * var(--step-badge-size));
     @apply pointer-events-none bg-border-subtle;
   }
 
@@ -2023,6 +2029,11 @@
 
   .prose-custom :global(.markdown-step > :is(h2, h3, h4)) {
     @apply relative mt-0! mb-2 flex items-center font-bold text-text-primary;
+  }
+
+  .prose-custom :global(.markdown-step > :is(h2, h3, h4)),
+  .prose-custom :global(.markdown-step > :is(h2, h3, h4) .heading-text) {
+    @apply font-sans! not-italic!;
   }
 
   .prose-custom :global(.markdown-steps-list) {
@@ -2229,12 +2240,16 @@
     @apply my-0 inline;
   }
 
+  .prose-custom :global(sup:has(> [data-footnote-ref])) {
+    @apply mx-0.5 inline-flex align-baseline;
+  }
+
   .prose-custom :global([data-footnote-ref]) {
-    @apply scroll-mt-20 font-mono text-[0.8em] font-medium text-security no-underline hover:underline;
+    @apply inline-flex scroll-mt-20 items-center justify-center px-0.5 py-0.5 font-mono text-[0.8em] leading-none font-medium text-security no-underline hover:underline;
   }
 
   .prose-custom :global(.footnote-backref) {
-    @apply inline-flex items-center font-mono text-security no-underline hover:underline;
+    @apply inline-flex items-center justify-center px-0.5 py-0.5 font-mono text-security no-underline hover:underline;
     vertical-align: baseline;
     line-height: 1;
   }
@@ -2246,7 +2261,7 @@
   }
 
   .prose-custom :global(.footnote-sub-backref) {
-    @apply inline-flex items-center font-mono text-security italic no-underline hover:underline;
+    @apply inline-flex items-center justify-center px-0.5 py-0.5 font-mono text-security italic no-underline hover:underline;
     font-size: 0.75rem !important;
     line-height: 1 !important;
     vertical-align: 0.32em;

@@ -1674,10 +1674,28 @@
     @apply pb-0;
   }
 
+  .prose-custom :global(.markdown-step:has(> h2)) {
+    --step-title-line-height: calc(
+      var(--text-2xl) * var(--text-2xl--line-height)
+    );
+  }
+
+  .prose-custom :global(.markdown-step:has(> h4)) {
+    --step-title-line-height: calc(
+      var(--text-lg) * var(--text-lg--line-height)
+    );
+  }
+
   .prose-custom :global(.markdown-step::before) {
     content: counter(step-counter);
     position: absolute;
-    top: 0;
+    top: calc(
+      (
+          var(--step-title-line-height, var(--step-badge-size)) -
+            var(--step-badge-size)
+        ) /
+        2
+    );
     left: 0;
     width: var(--step-badge-size);
     height: var(--step-badge-size);
@@ -1696,7 +1714,7 @@
     top: var(--step-badge-size);
     left: calc(var(--step-badge-size) / 2 - 0.5px);
     width: var(--step-line-w);
-    bottom: 0;
+    bottom: calc(-1 * var(--step-badge-size));
     @apply pointer-events-none bg-border-subtle;
   }
 
@@ -1706,6 +1724,11 @@
 
   .prose-custom :global(.markdown-step > :is(h2, h3, h4)) {
     @apply relative mt-0! mb-2 flex items-center font-bold text-text-primary;
+  }
+
+  .prose-custom :global(.markdown-step > :is(h2, h3, h4)),
+  .prose-custom :global(.markdown-step > :is(h2, h3, h4) .heading-text) {
+    @apply font-sans! not-italic!;
   }
 
   .prose-custom :global(.markdown-steps-list) {
@@ -1912,12 +1935,16 @@
     @apply my-0 inline;
   }
 
+  .prose-custom :global(sup:has(> [data-footnote-ref])) {
+    @apply mx-0.5 inline-flex align-baseline;
+  }
+
   .prose-custom :global([data-footnote-ref]) {
-    @apply font-mono text-[0.8em] font-medium text-security no-underline hover:underline;
+    @apply inline-flex items-center justify-center px-0.5 py-0.5 font-mono text-[0.8em] leading-none font-medium text-security no-underline hover:underline;
   }
 
   .prose-custom :global(.footnote-backref) {
-    @apply inline-flex items-center font-mono text-security no-underline hover:underline;
+    @apply inline-flex items-center justify-center px-0.5 py-0.5 font-mono text-security no-underline hover:underline;
     vertical-align: baseline;
     line-height: 1;
   }
@@ -1929,7 +1956,7 @@
   }
 
   .prose-custom :global(.footnote-sub-backref) {
-    @apply inline-flex items-center font-mono text-security italic no-underline hover:underline;
+    @apply inline-flex items-center justify-center px-0.5 py-0.5 font-mono text-security italic no-underline hover:underline;
     font-size: 0.75rem !important;
     line-height: 1 !important;
     vertical-align: 0.32em;

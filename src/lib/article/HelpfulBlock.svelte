@@ -1,5 +1,4 @@
 <script lang="ts">
-  import {shortcut} from '../utils/shortcut.svelte';
   import {buttonKey, COMMAND_SHORTCUTS} from '$lib/shortcuts';
   import {shortcutStore} from '../stores/shortcutStore.svelte';
   import {onMount} from 'svelte';
@@ -12,6 +11,7 @@
     MessageSquareQuote,
     AtSign
   } from '@lucide/svelte';
+  import Button from '../components/Button.svelte';
   import FieldMessage from '../components/FieldMessage.svelte';
   import {cn} from '../utils/cn';
 
@@ -57,7 +57,7 @@
   )}>
   <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
     <div
-      class="flex flex-col items-center gap-3 text-center sm:items-start sm:text-left">
+      class="flex flex-col items-center gap-4 text-center sm:items-start sm:text-left">
       <div class="flex flex-col gap-1">
         <h3
           class="text-base font-bold tracking-tight text-text-primary sm:text-lg">
@@ -79,13 +79,12 @@
       {:else}
         <div
           class="flex flex-wrap items-center justify-center gap-2.5 sm:justify-start">
-          <button
-            type="button"
-            class="relative inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/5 px-3.5 py-1.5 text-xs font-semibold text-emerald-600 transition-all hover:border-emerald-500/60 hover:bg-emerald-500/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 active:scale-95 disabled:cursor-wait disabled:opacity-50 dark:text-emerald-400"
-            use:shortcut={{
-              combo: buttonKey('helpfulYes'),
-              label: 'Helpful: yes'
-            }}
+          <Button
+            type="ghost"
+            size="sm"
+            class="h-auto! justify-start! border border-emerald-500/30 bg-emerald-500/5 px-3.5! py-1.5 leading-(--text-xs--line-height)! font-semibold whitespace-normal! text-emerald-600! hover:border-emerald-500/60 hover:bg-emerald-500/15! active:scale-95 disabled:cursor-wait! dark:text-emerald-400!"
+            keyboardShortcut={buttonKey('helpfulYes')}
+            shortcutLabel="Helpful: yes"
             disabled={!ready || pending}
             onclick={() => handleVote(true)}
             aria-label="Yes, this was helpful">
@@ -94,11 +93,13 @@
               strokeWidth={1.75}
               absoluteStrokeWidth={true} />
             <span>Yes</span>
-          </button>
-          <button
-            type="button"
-            class="relative inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-rose-500/30 bg-rose-500/5 px-3.5 py-1.5 text-xs font-semibold text-rose-600 transition-all hover:border-rose-500/60 hover:bg-rose-500/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500 active:scale-95 disabled:cursor-wait disabled:opacity-50 dark:text-rose-400"
-            use:shortcut={{combo: buttonKey('helpfulNo'), label: 'Helpful: no'}}
+          </Button>
+          <Button
+            type="ghost"
+            size="sm"
+            class="h-auto! justify-start! border border-rose-500/30 bg-rose-500/5 px-3.5! py-1.5 leading-(--text-xs--line-height)! font-semibold whitespace-normal! text-rose-600! hover:border-rose-500/60 hover:bg-rose-500/15! active:scale-95 disabled:cursor-wait! dark:text-rose-400!"
+            keyboardShortcut={buttonKey('helpfulNo')}
+            shortcutLabel="Helpful: no"
             disabled={!ready || pending}
             onclick={() => handleVote(false)}
             aria-label="No, this was not helpful">
@@ -107,38 +108,36 @@
               strokeWidth={1.75}
               absoluteStrokeWidth={true} />
             <span>No</span>
-          </button>
+          </Button>
         </div>
       {/if}
 
       <div
         class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:justify-start">
         {#if onFeedbackClick && currentVoted === null}
-          <button
-            type="button"
-            class="relative inline-flex w-fit cursor-pointer items-center gap-1.5 text-xs font-medium text-accent hover:underline focus-visible:underline focus-visible:outline-none"
-            use:shortcut={{
-              combo: buttonKey('shareFeedback'),
-              label: 'Share your feedback',
-              placement: 'after'
-            }}
+          <Button
+            type="ghost"
+            size="sm"
+            class="h-auto! w-fit justify-start! rounded-none p-0! leading-(--text-xs--line-height)! font-medium whitespace-normal! text-accent! hover:underline focus-visible:underline focus-visible:outline-none"
+            keyboardShortcut={buttonKey('shareFeedback')}
+            shortcutLabel="Share your feedback"
+            shortcutPlacement="after"
             onclick={onFeedbackClick}>
             <Send class="size-3.5" />
             Share your feedback
-          </button>
+          </Button>
         {/if}
-        <button
-          type="button"
-          class="relative inline-flex w-fit cursor-pointer items-center gap-1.5 text-xs font-medium text-accent hover:underline focus-visible:underline focus-visible:outline-none"
-          use:shortcut={{
-            combo: buttonKey('share'),
-            label: shareLabel,
-            placement: 'after'
-          }}
+        <Button
+          type="ghost"
+          size="sm"
+          class="h-auto! w-fit justify-start! rounded-none p-0! leading-(--text-xs--line-height)! font-medium whitespace-normal! text-accent! hover:underline focus-visible:underline focus-visible:outline-none"
+          keyboardShortcut={buttonKey('share')}
+          shortcutLabel={shareLabel}
+          shortcutPlacement="after"
           onclick={() => shortcutStore.runCommand(COMMAND_SHORTCUTS['/share'])}>
           <Share2 class="size-3.5" />
           {shareLabel}
-        </button>
+        </Button>
       </div>
     </div>
     <div

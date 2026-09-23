@@ -2,7 +2,7 @@
   import type {Snippet} from 'svelte';
   import type {HTMLButtonAttributes} from 'svelte/elements';
   import {cn} from '../utils/cn';
-  import {shortcut} from '../utils/shortcut.svelte';
+  import {shortcut, type ShortcutParams} from '../utils/shortcut.svelte';
 
   interface Props extends Omit<HTMLButtonAttributes, 'type'> {
     type?:
@@ -27,6 +27,7 @@
     shortcutChordKey?: string;
     shortcutScope?: string;
     shortcutLabel?: string;
+    shortcutPlacement?: ShortcutParams['placement'];
   }
 
   let {
@@ -51,6 +52,7 @@
     shortcutChordKey,
     shortcutScope,
     shortcutLabel,
+    shortcutPlacement,
     class: className = '',
     title,
     'aria-label': ariaLabel,
@@ -166,6 +168,7 @@
     chordKey: shortcutChordKey,
     scope: shortcutScope,
     label: shortcutLabel ?? resolvedAriaLabel ?? label,
+    placement: shortcutPlacement,
     disabled: disabled || isLoading
   }}
   class={cn(

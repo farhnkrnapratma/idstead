@@ -400,10 +400,10 @@
       align="right">
       <button
         type="button"
-        class="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full glass-button border border-accent/40 bg-surface-card/90 px-0 text-xs font-semibold text-accent shadow-md transition-all hover:scale-105 hover:border-accent hover:bg-surface-hover active:scale-95 md:h-10 md:w-10 md:shadow-lg"
+        class="inline-flex size-8 cursor-pointer items-center justify-center rounded-full glass-button border border-accent/40 bg-surface-card/90 px-0 text-xs font-semibold text-accent shadow-md transition-all hover:scale-105 hover:border-accent hover:bg-surface-hover active:scale-95 md:shadow-lg"
         onclick={readingModeStore.toggle}
         aria-label="Exit reading mode">
-        <BookOpenText class="size-4.5 shrink-0 md:size-5" />
+        <BookOpenText class="size-4 shrink-0" />
       </button>
     </Tooltip>
   </div>

@@ -48,13 +48,13 @@
         <button
           transition:fade={{duration: 150}}
           use:shortcut={{combo: buttonKey('scrollTop'), label: 'Scroll to top'}}
-          class="relative inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full glass-button px-0 text-xs font-semibold text-text-primary shadow-md transition-colors hover:text-accent md:h-10 md:w-10 md:shadow-lg"
+          class="relative inline-flex size-8 cursor-pointer items-center justify-center rounded-full glass-button px-0 text-xs font-semibold text-text-primary shadow-md transition-colors hover:text-accent md:shadow-lg"
           onclick={onClick || (() => scrollToTop('smooth'))}
           aria-label="Scroll to top">
-          <MoveUp class="size-4.5 shrink-0 md:size-5" />
+          <MoveUp class="size-4 shrink-0" />
         </button>
         <svg
-          class="pointer-events-none absolute inset-0 h-9 w-9 -rotate-90 md:h-10 md:w-10"
+          class="pointer-events-none absolute inset-0 size-full -rotate-90"
           viewBox="0 0 36 36"
           aria-hidden="true">
           <circle

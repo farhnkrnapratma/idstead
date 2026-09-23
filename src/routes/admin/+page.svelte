@@ -3310,6 +3310,7 @@
     }}
     class="flex-1 overflow-y-auto p-4 pb-24 font-sans sm:p-6 md:h-screen {(
       ['privacy', 'security', 'terms'].includes(activeAdminTab)
+      || (activeAdminTab === 'posts' && !!editPostParam)
     ) ?
       'pt-0! pb-0!'
     : ''}">

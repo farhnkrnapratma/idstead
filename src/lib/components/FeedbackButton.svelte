@@ -32,10 +32,10 @@
       <button
         transition:fade={{duration: 150}}
         use:shortcut={{combo: buttonKey('feedback'), label: 'Send feedback'}}
-        class="relative inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full glass-button px-0 text-xs font-semibold text-text-primary shadow-md transition-colors hover:text-accent md:h-10 md:w-10 md:shadow-lg"
+        class="relative inline-flex size-8 cursor-pointer items-center justify-center rounded-full glass-button px-0 text-xs font-semibold text-text-primary shadow-md transition-colors hover:text-accent md:shadow-lg"
         onclick={() => goto('/feedback')}
         aria-label="Report an issue or give feedback">
-        <MessageSquareWarning class="size-4.5 shrink-0 md:size-5" />
+        <MessageSquareWarning class="size-4 shrink-0" />
       </button>
     </Tooltip>
   </div>
