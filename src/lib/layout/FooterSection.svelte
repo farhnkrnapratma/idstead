@@ -229,3 +229,19 @@
     </div>
   </div>
 </footer>
+
+<style>
+  @reference '../../routes/global.css';
+
+  footer {
+    @apply font-sans text-xs leading-normal font-normal not-italic;
+  }
+
+  h3 {
+    @apply text-base font-bold not-italic sm:text-lg;
+  }
+
+  h4 {
+    @apply text-xs font-semibold not-italic;
+  }
+</style>

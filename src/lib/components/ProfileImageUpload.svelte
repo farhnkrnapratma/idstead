@@ -8,11 +8,13 @@
 
   let {
     avatar,
+    name,
     disabled = false,
     onprepared,
     onbusy
   }: {
     avatar: string;
+    name: string;
     disabled?: boolean;
     onprepared: (value: ImagePackage | null) => void;
     onbusy: (busy: boolean) => void;
@@ -111,7 +113,7 @@
       {#if preview || (avatar && loadedSource === avatar)}
         <img
           src={preview || avatar}
-          alt="Avatar preview"
+          alt={`Profile picture of ${name} — preview`}
           width="512"
           height="512"
           onerror={() => {

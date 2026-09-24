@@ -118,18 +118,27 @@ test('notifications are individual events with stable pages, metadata and read f
   expect((await query('notifications', {type: 'comment_new'})).total).toBe(41);
 });
 
-test('all workspace sections enforce twenty items and preserve totals', async () => {
-  expect(ADMIN_WORKSPACE_PAGE_SIZE).toBe(20);
+test('workspace pages default to ten items and previews to five', () => {
+  expect(ADMIN_WORKSPACE_PAGE_SIZE).toBe(10);
+  const limit = (query: Record<string, string>) =>
+    workspaceOptions(new URLSearchParams({section: 'reports', ...query}))
+      .options.limit;
+  expect(limit({})).toBe(ADMIN_WORKSPACE_PAGE_SIZE);
+  expect(limit({preview: 'true'})).toBe(5);
+});
+
+test('the database caps pages at twenty items and preserves totals', async () => {
+  const DATABASE_PAGE_SIZE = 20;
   for (const [section, extra] of [
     ['comments', {id: post}],
     ['reports', {}],
     ['feedback_events', {id: `article:${post}`, from: '2026-09-01'}]
   ] as const) {
     const result = await query(section, {...extra, limit: 1000});
-    expect(result.items).toHaveLength(ADMIN_WORKSPACE_PAGE_SIZE);
+    expect(result.items).toHaveLength(DATABASE_PAGE_SIZE);
     expect(result.total).toBe(41);
     expect((await query(section, {...extra, page: 3})).items).toHaveLength(
-      41 - ADMIN_WORKSPACE_PAGE_SIZE * 2
+      41 - DATABASE_PAGE_SIZE * 2
     );
     expect((await query(section, {...extra, page: 4})).items).toHaveLength(0);
   }

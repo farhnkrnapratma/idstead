@@ -1,7 +1,11 @@
 <script lang="ts">
   import {adminUrl, navigateAdmin} from '$lib/adminNavigation';
   import {onMount} from 'svelte';
-  import {analyticsPeriod, zonedMidnight} from '$lib/adminAnalytics';
+  import {
+    analyticsPeriod,
+    browserTimeZone,
+    zonedMidnight
+  } from '$lib/adminAnalytics';
   import {
     Eye,
     Flag,
@@ -30,9 +34,8 @@
   import StatsGrid from '../StatsGrid.svelte';
   import Button from '../Button.svelte';
   import {reportReasonLabel} from '$lib/reportReasons';
-  import Pagination from '../Pagination.svelte';
   import DataTable, {type DataTableColumn} from '../DataTable.svelte';
-  import {activityTimestamp} from '$lib/adminActivity';
+  import ActivityTimestamp from './ActivityTimestamp.svelte';
   import ErrorState from '../ErrorState.svelte';
   import LoadingState from '../LoadingState.svelte';
   import EmptyState from '../EmptyState.svelte';
@@ -48,7 +51,6 @@
     onNavigate: (area: WorkspaceArea, id?: string) => void;
     onPublished: () => void;
   } = $props();
-  const OVERVIEW_LIST_PAGE_SIZE = 5;
   let data = $state.raw<WorkspaceOverview | null>(null);
   let calendar = $state.raw<WorkspaceCalendar | null>(null);
   let calendarError = $state('');
@@ -59,9 +61,8 @@
   let generation = 0;
   const reportsFeed = new WorkspaceFeed();
   const feedbackFeed = new WorkspaceFeed();
-  let reportsPage = $state(1);
-  let feedbackPage = $state(1);
   const params = $derived(adminUrl().searchParams);
+  const timeZone = browserTimeZone();
   function period(values: Record<string, string>) {
     const url = adminUrl();
     for (const [key, value] of Object.entries(values))
@@ -82,18 +83,13 @@
     Number(params.get('calendarYear')) || new Date().getFullYear()
   );
   function setCalendarYear(year: number) {
-    period({calendarYear: String(year)});
+    period({
+      calendarYear: year === new Date().getFullYear() ? '' : String(year)
+    });
   }
   function loadLists(refresh = false) {
-    const timeZone = params.get('timeZone');
-    if (!timeZone) return;
     void reportsFeed.load(
-      {
-        section: 'reports',
-        timeZone,
-        limit: String(OVERVIEW_LIST_PAGE_SIZE),
-        page: String(reportsPage)
-      },
+      {section: 'reports', timeZone, preview: 'true'},
       refresh
     );
     const feedbackPeriod = analyticsPeriod('1y', timeZone, new Date());
@@ -103,25 +99,16 @@
         timeZone,
         from: feedbackPeriod.from,
         to: feedbackPeriod.to,
-        limit: String(OVERVIEW_LIST_PAGE_SIZE),
-        page: String(feedbackPage)
+        preview: 'true'
       },
       refresh
     );
   }
-  function setReportsPage(next: number) {
-    reportsPage = next;
-    loadLists();
-  }
-  function setFeedbackPage(next: number) {
-    feedbackPage = next;
-    loadLists();
-  }
   const reportColumns: DataTableColumn[] = [
-    {key: 'page', header: 'Page', width: '26%'},
-    {key: 'author', header: 'Author', width: '18%'},
+    {key: 'page', header: 'Page', width: '30%'},
+    {key: 'author', header: 'Author', width: '20%'},
     {key: 'reason', header: 'Reason', width: '22%'},
-    {key: 'total', header: 'Reports', align: 'right', width: '14%'},
+    {key: 'total', header: 'Reports', align: 'right', width: '8%'},
     {key: 'latest', header: 'Last activity', width: '20%'}
   ];
   const feedbackColumns: DataTableColumn[] = [
@@ -135,17 +122,13 @@
       area: 'reports' as const,
       title: 'Reported comments',
       empty: 'No reports',
-      feed: reportsFeed,
-      page: reportsPage,
-      setPage: setReportsPage
+      feed: reportsFeed
     },
     {
       area: 'feedback' as const,
       title: 'User feedback',
       empty: 'No feedback yet',
-      feed: feedbackFeed,
-      page: feedbackPage,
-      setPage: setFeedbackPage
+      feed: feedbackFeed
     }
   ]);
   let subscribers = $state<{
@@ -161,11 +144,10 @@
 
   async function load() {
     const current = ++generation;
-    const query: Record<string, string> = Object.fromEntries(params);
-    if (!query.timeZone) return;
-    Object.assign(
-      query,
-      analyticsPeriod(adminChartRangeStore.current, query.timeZone, new Date())
+    const query: Record<string, string> = analyticsPeriod(
+      adminChartRangeStore.current,
+      timeZone,
+      new Date()
     );
     controller?.abort();
     controller = new AbortController();
@@ -182,13 +164,13 @@
           'workspace',
           {
             section: 'calendar',
-            timeZone: query.timeZone,
+            timeZone,
             ...(calendarYear === new Date().getFullYear() ?
               {}
             : {
                 asOf: new Date(
                   Date.parse(
-                    zonedMidnight(`${calendarYear + 1}-01-01`, query.timeZone)
+                    zonedMidnight(`${calendarYear + 1}-01-01`, timeZone)
                   ) - 1000
                 ).toISOString()
               })
@@ -269,7 +251,12 @@
       onclick: onPublished
     },
     {
-      label: 'Subscribers',
+      label: pluralize(
+        subscribers?.active ?? 0,
+        'Subscriber',
+        undefined,
+        () => ''
+      ).trim(),
       value: subscribers ? formatCount(subscribers.active) : '—',
       description:
         subscribers ?
@@ -281,8 +268,6 @@
   onMount(() => {
     adminChartRangeStore.init();
     void loadSubscribers();
-    if (!params.has('timeZone'))
-      period({timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone});
     loadLists();
     const remove = adminNotificationsStore.onActivityRefresh(async () => {
       clearTimeout(autoRefresh);
@@ -324,7 +309,7 @@
         title="Unable to load calendar"
         description={calendarError}
         onRetry={load} />
-    {:else if calendar && calendar.timeZone === params.get('timeZone') && calendar.year === calendarYear}<ViewsCalendar
+    {:else if calendar && calendar.timeZone === timeZone && calendar.year === calendarYear}<ViewsCalendar
         data={calendar}
         onPrevYear={() => setCalendarYear(calendarYear - 1)}
         onNextYear={() => setCalendarYear(calendarYear + 1)}
@@ -380,11 +365,7 @@
     </DataTable>
   {/if}
   <div class="grid min-w-0 gap-4">
-    {#each overviewLists as { area, title, empty, feed, page, setPage } (area)}
-      {@const totalPages = Math.max(
-        1,
-        Math.ceil((feed.data?.total ?? 0) / OVERVIEW_LIST_PAGE_SIZE)
-      )}
+    {#each overviewLists as { area, title, empty, feed } (area)}
       {#snippet viewAll()}
         <Button
           type="ghost"
@@ -393,13 +374,6 @@
           View all
           {#snippet trailing()}<ArrowRight class="size-3" />{/snippet}
         </Button>
-      {/snippet}
-      {#snippet listPagination()}
-        <Pagination
-          {page}
-          {totalPages}
-          onPageChange={setPage}
-          size="sm" />
       {/snippet}
       {#snippet listState()}
         {#if feed.loading && !feed.data}
@@ -426,7 +400,6 @@
           <DataTable
             caption={title}
             {title}
-            footer={totalPages > 1 ? listPagination : undefined}
             columns={area === 'reports' ? reportColumns : feedbackColumns}
             data={feed.data.items as unknown as Record<string, unknown>[]}
             onRowSelect={row => onNavigate(area, String(row.id))}>
@@ -444,11 +417,10 @@
               {:else if key === 'total'}
                 <span class="whitespace-nowrap">{formatCount(item.total)}</span>
               {:else}
-                <span class="whitespace-nowrap"
-                  >{activityTimestamp(
-                    item.latest,
-                    params.get('timeZone') ?? 'UTC'
-                  )}</span>
+                <ActivityTimestamp
+                  date={item.latest}
+                  {timeZone}
+                  class="text-xs" />
               {/if}
             {/snippet}
           </DataTable>

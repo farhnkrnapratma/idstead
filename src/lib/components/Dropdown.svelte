@@ -263,7 +263,7 @@
 <div
   bind:this={anchor}
   class={cn(
-    'relative text-left select-none',
+    'relative min-w-0 text-left select-none',
     trigger ? 'inline-flex'
     : fullWidth ? 'flex w-full'
     : stackOnMobile ? 'flex w-full sm:inline-flex sm:w-max sm:max-w-full'
@@ -301,7 +301,7 @@
         <span
           class="col-start-1 row-start-1 inline-flex min-w-0 items-center gap-1 whitespace-nowrap">
           {#if label}
-            <span class="shrink-0 font-normal text-text-muted">{label}:</span>
+            <span class="truncate font-normal text-text-muted">{label}:</span>
           {/if}
           {#if selectedOption?.shortLabel}
             <span class="truncate sm:hidden">{selectedOption.shortLabel}</span>

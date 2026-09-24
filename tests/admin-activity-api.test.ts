@@ -300,10 +300,10 @@ test('clear operations bind the verified admin and stable operation ID; malforme
 });
 test('timestamps keep a full date and event-specific UTC offsets across DST', () => {
   expect(activityTimestamp('2026-09-11T17:30:00Z', 'Asia/Jakarta')).toBe(
-    'Sep 12, 2026 12:30 AM'
+    'Sep 12, 2026 00:30'
   );
   expect(activityTimestamp('2026-09-11T17:30:00Z', 'UTC')).toBe(
-    'Sep 11, 2026 5:30 PM'
+    'Sep 11, 2026 17:30'
   );
   expect(
     activityTimeZone('2026-01-12T12:30:00Z', 'America/New_York')
@@ -312,9 +312,9 @@ test('timestamps keep a full date and event-specific UTC offsets across DST', ()
     activityTimeZone('2026-09-12T12:30:00Z', 'America/New_York')
   ).toContain('GMT-04:00');
   expect(activityTimestamp('2026-03-08T06:59:00Z', 'America/New_York')).toBe(
-    'Mar 8, 2026 1:59 AM'
+    'Mar 8, 2026 01:59'
   );
   expect(activityTimestamp('2026-03-08T07:00:00Z', 'America/New_York')).toBe(
-    'Mar 8, 2026 3:00 AM'
+    'Mar 8, 2026 03:00'
   );
 });

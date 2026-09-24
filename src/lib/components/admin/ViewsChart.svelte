@@ -11,6 +11,7 @@
   import ErrorState from '../ErrorState.svelte';
   import {cn} from '$lib/utils/cn';
   import {activityDate, activityTimestamp} from '$lib/adminActivity';
+  import {adminDisplayStore} from '$lib/stores/adminDisplayStore.svelte';
   import {
     VIEWS_RANGES,
     type ViewsRange,
@@ -54,8 +55,8 @@
 
   const series = $derived(
     data.map(row => ({
-      label: activityTimestamp(row.bucket, timeZone),
-      axisLabel: activityDate(row.bucket, timeZone),
+      label: activityTimestamp(row.bucket, timeZone, adminDisplayStore.current),
+      axisLabel: activityDate(row.bucket, timeZone, adminDisplayStore.current),
       views: Number(row.views),
       partial: 'partial' in row && row.partial ? 'Partial interval' : ''
     }))

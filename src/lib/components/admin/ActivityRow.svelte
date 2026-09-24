@@ -8,6 +8,7 @@
     activityTimestamp,
     activityTimeZone
   } from '$lib/adminActivity';
+  import {adminDisplayStore} from '$lib/stores/adminDisplayStore.svelte';
   import ActivityTimestamp from './ActivityTimestamp.svelte';
   import ActivitySentence from './ActivitySentence.svelte';
   import ActivityDetails from './ActivityDetails.svelte';
@@ -47,7 +48,7 @@
     <button
       type="button"
       class="absolute inset-0 z-0 cursor-pointer rounded-md transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-ring"
-      aria-label={`${activitySentence(item)} ${activityMetadata(item)} ${activityTimestamp(item.created_at, timeZone)} · ${activityTimeZone(item.created_at, timeZone)}`}
+      aria-label={`${activitySentence(item)} ${activityMetadata(item)} ${activityTimestamp(item.created_at, timeZone, adminDisplayStore.current)} · ${activityTimeZone(item.created_at, timeZone)}`}
       {disabled}
       onclick={onSelect}></button>
   {/if}

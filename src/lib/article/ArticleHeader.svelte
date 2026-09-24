@@ -73,7 +73,7 @@
     : undefined}
     class={cn(
       'group cursor-pointer scroll-mt-20',
-      'text-lg leading-snug font-bold tracking-tight sm:text-3xl md:text-4xl',
+      'text-lg leading-snug font-bold tracking-tight not-italic sm:text-3xl md:text-4xl [&_.heading-text]:font-bold [&_.heading-text]:not-italic',
       titleClass
     )}>
     {#if titleParts.hasMultiple}

@@ -91,6 +91,11 @@ export function formatViewCount(count?: number | null): string {
   return pluralize(count || 0, 'view');
 }
 
+export function formatBadgeCount(count?: number | null, max = 99): string {
+  const n = count || 0;
+  return n > max ? `${max}+` : String(n);
+}
+
 export function formatCompactCount(count?: number | null): string {
   const n = count || 0;
   if (n < 1000) return String(n);

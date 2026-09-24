@@ -1,18 +1,8 @@
 <script lang="ts">
   import {Mail, Paperclip, MailCheck} from '@lucide/svelte';
   import Card from './Card.svelte';
-  import Button from './Button.svelte';
-  import FormField from './FormField.svelte';
-  import Input from './Input.svelte';
+  import MailingForm from './MailingForm.svelte';
   import {ShinyText} from '$lib';
-  import {toastStore} from '$lib/stores/toastStore.svelte';
-  import {
-    turnstileWidget,
-    executeTurnstile,
-    resetTurnstile,
-    turnstileSiteKey
-  } from '$lib/utils/turnstile';
-  import {emailError} from '$lib/fieldValidation';
 
   let {
     title = 'Subscribe to Stay Updated',
@@ -20,63 +10,8 @@
     class: className = ''
   }: {title?: string; description?: string; class?: string} = $props();
 
-  let email = $state('');
-  let error = $state('');
-  let isSubmitting = $state(false);
   let isDone = $state(false);
-  let turnstileEl = $state<HTMLDivElement | null>(null);
-
   const fieldId = $props.id();
-
-  async function handleSubmit(event: SubmitEvent) {
-    event.preventDefault();
-    if (isSubmitting) return;
-
-    const value = email.trim();
-    error = !value ? 'Enter your email address.' : emailError(value);
-    if (error) {
-      (event.currentTarget as HTMLFormElement).querySelector('input')?.focus();
-      return;
-    }
-    error = '';
-    isSubmitting = true;
-
-    try {
-      const turnstileToken = await executeTurnstile(turnstileEl);
-      if (!turnstileToken) {
-        error = 'Verification failed. Please try again.';
-        return;
-      }
-
-      const res = await fetch('/api/internal/subscribe', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({email: value, turnstileToken})
-      });
-      const result = (await res.json().catch(() => null)) as {
-        message?: string;
-        error?: {message?: string};
-      } | null;
-
-      if (!res.ok) {
-        error =
-          result?.error?.message
-          || 'Could not subscribe right now. Please try again.';
-        return;
-      }
-
-      isDone = true;
-      email = '';
-      toastStore.success(
-        result?.message ?? 'Check your inbox to confirm the subscription.'
-      );
-    } catch {
-      error = 'Could not subscribe right now. Please try again.';
-    } finally {
-      isSubmitting = false;
-      resetTurnstile(turnstileEl);
-    }
-  }
 </script>
 
 <section
@@ -102,6 +37,7 @@
       </div>
       <div>
         <h4
+          id="{fieldId}-title"
           class="text-base leading-snug font-bold text-balance text-text-primary sm:text-lg">
           <ShinyText
             text={title}
@@ -137,60 +73,8 @@
         {/if}
       </div>
       {#if !isDone}
-        <form
-          onsubmit={handleSubmit}
-          aria-busy={isSubmitting}
-          novalidate>
-          <FormField
-            id={fieldId}
-            {error}
-            hideFeedbackSlot>
-            <div class="inline-flex gap-3">
-              <Input
-                id={fieldId}
-                name="email"
-                type="email"
-                size="sm"
-                autocomplete="email"
-                placeholder="Enter your email"
-                aria-label="Email address"
-                aria-invalid={Boolean(error)}
-                aria-describedby={error ? `${fieldId}-error` : undefined}
-                bind:value={email}
-                error={Boolean(error)}
-                disabled={isSubmitting}
-                oninput={() => (error = '')} />
-              <Button
-                type="primary"
-                htmlType="submit"
-                size="sm"
-                responsiveIconOnly
-                isLoading={isSubmitting}
-                disabled={isSubmitting}
-                class="shrink-0">
-                {isSubmitting ? 'Subscribing…' : 'Subscribe'}
-                {#snippet leading()}
-                  <MailCheck
-                    class="size-4"
-                    aria-hidden="true" />
-                {/snippet}
-              </Button>
-            </div>
-          </FormField>
-        </form>
+        <MailingForm onSuccess={() => (isDone = true)} />
       {/if}
-
-      <div
-        bind:this={turnstileEl}
-        use:turnstileWidget={{
-          sitekey: turnstileSiteKey,
-          size: 'flexible',
-          action: 'subscribe',
-          theme: 'auto',
-          appearance: 'interaction-only',
-          execution: 'execute'
-        }}>
-      </div>
     </div>
   </Card>
 </section>

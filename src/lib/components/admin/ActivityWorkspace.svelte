@@ -12,14 +12,14 @@
     Trash,
     Flag,
     Calendar,
-    Hash,
-    User
+    Hash
   } from '@lucide/svelte';
-  import {analyticsPeriod} from '$lib/adminAnalytics';
+  import {analyticsPeriod, browserTimeZone} from '$lib/adminAnalytics';
   import {adminActivityRequest} from '$lib/adminActivityClient';
   import {WorkspaceFeed} from '$lib/stores/workspaceFeed.svelte';
   import {adminNotificationsStore as inbox} from '$lib/stores/adminNotificationsStore.svelte';
   import {adminChartRangeStore} from '$lib/stores/adminChartRangeStore.svelte';
+  import {adminDisplayStore} from '$lib/stores/adminDisplayStore.svelte';
   import {pluralize} from '$lib/utils/pluralize';
   import {
     notificationTypes,
@@ -45,6 +45,7 @@
     type ClearOperation
   } from '$lib/adminActivity';
   import Section from '$lib/layout/Section.svelte';
+  import Avatar from '../Avatar.svelte';
   import Card from '../Card.svelte';
   import Button from '../Button.svelte';
   import Input from '../Input.svelte';
@@ -110,7 +111,7 @@
     : area === 'feedback' ? 'User feedback'
     : 'Notifications'
   );
-  const timeZone = $derived(params.get('timeZone') ?? 'UTC');
+  const timeZone = browserTimeZone();
   const source = $derived(
     area === 'reports' ? 'report_events'
     : area === 'feedback' ? 'feedback_events'
@@ -145,10 +146,14 @@
       focus: null
     });
   }
+  function definedEntries(values: Record<string, string>) {
+    return Object.fromEntries(Object.entries(values).filter(([, v]) => v));
+  }
   function options(isDetail = false) {
     const values = Object.fromEntries(params);
     const query: Record<string, string> = {
       ...values,
+      ...definedEntries(analyticsPeriod(defaultRange, timeZone, new Date())),
       section: isDetail ? source : area
     };
     for (const key of [
@@ -173,9 +178,11 @@
       query.vote = params.get('vote') ?? 'all';
       query.type = 'all';
       query.read = 'all';
-      query.sort = 'date';
+      query.sort =
+        area === 'reports' ? (params.get('detailSort') ?? 'date') : 'date';
       query.direction = params.get('detailDirection') ?? 'desc';
-      if (params.has('focus')) query.focus = params.get('focus')!;
+      if (area === 'reports') delete query.focus;
+      else if (params.has('focus')) query.focus = params.get('focus')!;
       if (params.has('detailPage')) query.page = params.get('detailPage')!;
     } else {
       delete query.focus;
@@ -229,7 +236,6 @@
   function sync() {
     search = params.get('query') ?? '';
     detailSearch = params.get('detailQuery') ?? '';
-    if (!params.has('timeZone')) return;
     void list.load(options());
     if (selected) void detail.load(options(true));
     if (selected && area === 'feedback') void loadDetailAnalytics();
@@ -276,10 +282,7 @@
   async function refresh() {
     list.invalidate();
     detail.invalidate();
-    navigate(
-      {...analyticsPeriod(defaultRange, timeZone, new Date()), asOf: null},
-      true
-    );
+    navigate({asOf: null}, true);
     await tick();
     void loadAnalytics();
     await list.load(options(), true);
@@ -375,7 +378,7 @@
     navigate({...values, detailPage: null, focus: null});
   }
   function date(value: string) {
-    return activityTimestamp(value, timeZone);
+    return activityTimestamp(value, timeZone, adminDisplayStore.current);
   }
   const defaultRange = $derived(area === 'feedback' ? '1y' : 'all');
   const trendRange = $derived(adminChartRangeStore.current);
@@ -393,41 +396,41 @@
       [
         {key: 'activity', header: 'Activity', width: '12%'},
         {key: 'page', header: 'Page', width: '22%'},
-        {key: 'details', header: 'Details', width: '30%'},
-        {key: 'time', header: 'Time', width: '16%'},
+        {key: 'details', header: 'Details', width: '40%'},
+        {key: 'time', header: 'Time', width: '12%'},
         {
           key: 'actions',
           header: '',
           align: 'right',
-          width: '20%',
+          width: '14%',
           class: 'overflow-visible'
         }
       ]
     : area === 'reports' ?
       [
-        {key: 'page', header: 'Page', width: '26%'},
+        {key: 'page', header: 'Page', width: '24%'},
         {key: 'author', header: 'Author', width: '16%'},
-        {key: 'reason', header: 'Reason', width: '20%'},
-        {key: 'total', header: 'Reports', align: 'right', width: '10%'},
-        {key: 'latest', header: 'Last activity', width: '16%'},
+        {key: 'reason', header: 'Reason', width: '18%'},
+        {key: 'total', header: 'Reports', align: 'right', width: '8%'},
+        {key: 'latest', header: 'Last activity', width: '24%'},
         {
           key: 'actions',
           header: '',
           align: 'right',
-          width: '12%',
+          width: '10%',
           class: 'overflow-visible'
         }
       ]
     : [
-        {key: 'page', header: 'Page', width: '36%'},
-        {key: 'score', header: 'Score', width: '26%'},
+        {key: 'page', header: 'Page', width: '34%'},
+        {key: 'score', header: 'Score', width: '22%'},
         {key: 'total', header: 'Responses', align: 'right', width: '10%'},
-        {key: 'latest', header: 'Last activity', width: '16%'},
+        {key: 'latest', header: 'Last activity', width: '24%'},
         {
           key: 'actions',
           header: '',
           align: 'right',
-          width: '12%',
+          width: '10%',
           class: 'overflow-visible'
         }
       ]
@@ -459,9 +462,9 @@
       ]
     : area === 'reports' ?
       [
-        {key: 'reason', header: 'Reason', width: '40%'},
-        {key: 'details', header: 'Details', width: '45%'},
-        {key: 'time', header: 'Time', width: '15%'}
+        {key: 'reason', header: 'Reason', width: '20%'},
+        {key: 'details', header: 'Details', width: '55%'},
+        {key: 'time', header: 'Time', width: '25%'}
       ]
     : [
         {key: 'response', header: 'Response', width: '40%'},
@@ -528,14 +531,6 @@
   );
   onMount(() => {
     adminChartRangeStore.init();
-    if (!params.has('timeZone'))
-      navigate(
-        analyticsPeriod(
-          defaultRange,
-          Intl.DateTimeFormat().resolvedOptions().timeZone
-        ),
-        true
-      );
     const remove = inbox.onActivityRefresh(async () => {
       clearTimeout(autoRefresh);
       autoRefresh = setTimeout(() => void refresh(), 1000);
@@ -587,7 +582,8 @@
             range={trendRange}
             onRangeChange={setChartRange}
             onRetry={loadAnalytics}
-            allowDonut={area === 'feedback'} />
+            allowDonut
+            donutUnit={area === 'reports' ? 'reports' : 'responses'} />
         </Card>
       {/if}
 
@@ -635,7 +631,6 @@
               <ActivityTimestamp
                 date={event.created_at}
                 {timeZone}
-                relative
                 class="text-xs" />
             {:else}
               <span class="flex items-center justify-end gap-1">
@@ -754,40 +749,50 @@
               </p></Card>
           {/if}
           {#if area === 'reports' && detail.data.context}
+            {@const commenter = detail.data.context.author || 'Anonymous'}
             <Card density="compact">
-              <div class="inline-flex w-full items-center gap-1">
-                <span
-                  class="rounded-full border border-border-subtle bg-surface-card p-2 text-text-secondary">
-                  <User />
-                </span>
-                <span
-                  class="w-full rounded-md border border-border-subtle bg-surface-card p-2 text-sm wrap-break-word whitespace-pre-wrap text-text-secondary">
-                  {detail.data.context.content}
-                </span>
-              </div>
-              <div
-                class="mt-2 ml-1 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
-                <span class="inline-flex items-center gap-1">
-                  <Flag
-                    class="size-3 text-text-muted"
-                    aria-hidden="true" />{pluralize(
-                    detail.data.context.total,
-                    'report',
-                    undefined,
-                    formatCount
-                  )}</span>
-                {#if detail.data.context.commentedAt}
-                  <span class="inline-flex items-center gap-1"
-                    ><Calendar
-                      class="size-3 text-text-muted"
-                      aria-hidden="true" />
-                    {date(detail.data.context.commentedAt)}</span>
-                {/if}
-                <span class="inline-flex items-center gap-1"
-                  ><Hash
-                    class="size-3 text-text-muted"
-                    aria-hidden="true" />
-                  {detail.data.context.id}</span>
+              <div class="flex items-start gap-2.5 sm:gap-3">
+                <Avatar
+                  name={commenter}
+                  class="size-6.5 sm:size-7" />
+                <div class="min-w-0 flex-1">
+                  <div
+                    class="inline-block max-w-full rounded-md border border-border-subtle bg-surface-card px-2 py-1 text-left">
+                    <div class="flex min-h-6.5 items-center">
+                      <span
+                        class="truncate text-xs leading-none font-semibold text-text-primary"
+                        >{commenter}</span>
+                    </div>
+                    <div
+                      class="mt-0.5 text-xs leading-relaxed wrap-break-word whitespace-pre-wrap text-text-secondary sm:text-sm">
+                      {detail.data.context.content}
+                    </div>
+                  </div>
+                  <div
+                    class="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-text-secondary">
+                    <span class="inline-flex items-center gap-1">
+                      <Flag
+                        class="size-3 text-text-muted"
+                        aria-hidden="true" />{pluralize(
+                        detail.data.context.total,
+                        'report',
+                        undefined,
+                        formatCount
+                      )}</span>
+                    {#if detail.data.context.commentedAt}
+                      <span class="inline-flex items-center gap-1"
+                        ><Calendar
+                          class="size-3 text-text-muted"
+                          aria-hidden="true" />
+                        {date(detail.data.context.commentedAt)}</span>
+                    {/if}
+                    <span class="inline-flex items-center gap-1"
+                      ><Hash
+                        class="size-3 text-text-muted"
+                        aria-hidden="true" />
+                      {detail.data.context.id}</span>
+                  </div>
+                </div>
               </div></Card>
           {:else if area === 'feedback'}
             <Card density="compact">
@@ -895,7 +900,7 @@
 
 {#snippet eventsHistory()}
   {#if detail.data}
-    {#if params.has('focus')}<Button
+    {#if params.has('focus') && area !== 'reports'}<Button
         size="sm"
         type="outline"
         onclick={() => updateDetail({})}>Showing one event · Show all</Button
@@ -947,7 +952,6 @@
             <ActivityTimestamp
               date={event.created_at}
               {timeZone}
-              relative
               class="text-xs" />
           {:else}
             <span class="flex items-center justify-end gap-1">
@@ -997,6 +1001,10 @@
         footer={empty ? undefined : detailPagination}
         caption={`${title} history`}
         columns={historyColumns}
+        rowClass={row =>
+          (row as unknown as WorkspaceRow).id === params.get('focus') ?
+            'bg-accent-subtle'
+          : ''}
         data={detail.data.items as unknown as Record<string, unknown>[]}>
         {#snippet cell(row, key)}
           {@const item = row as unknown as WorkspaceRow}
@@ -1134,6 +1142,25 @@
           ...REPORT_REASONS.map(r => ({value: r.id, label: r.label}))
         ]}
         onChange={detailReason => updateDetail({detailReason})} />
+    {/snippet}
+
+    {#snippet sortSlot()}
+      <SortControl
+        fields={[
+          {value: 'date', label: 'Date'},
+          {value: 'reason', label: 'Reason'},
+          {value: 'details', label: 'Details'}
+        ]}
+        currentField={params.get('detailSort') ?? 'date'}
+        onFieldChange={detailSort => updateDetail({detailSort})}
+        currentDirection={params.get('detailDirection') === 'asc' ?
+          'asc'
+        : 'desc'}
+        onDirectionToggle={() =>
+          updateDetail({
+            detailDirection:
+              params.get('detailDirection') === 'asc' ? 'desc' : 'asc'
+          })} />
     {/snippet}
   </FilterToolbar>
 {/snippet}

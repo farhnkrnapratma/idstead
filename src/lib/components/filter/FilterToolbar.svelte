@@ -50,9 +50,10 @@
     : 'rounded-md glass-card p-3 sm:p-4',
     className
   )}>
-  <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+  <div
+    class="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-nowrap sm:items-center">
     {#if searchSlot}
-      <div class="min-w-48 flex-1">
+      <div class="min-w-0 flex-1 sm:min-w-20 sm:flex-[1_0_5rem]">
         {@render searchSlot()}
       </div>
     {/if}

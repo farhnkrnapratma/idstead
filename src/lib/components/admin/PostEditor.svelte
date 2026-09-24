@@ -575,6 +575,7 @@
 
         <div class="flex flex-col gap-4">
           <BannerImageUpload
+            {title}
             savedUrl={savedBannerUrl}
             savedRevision={postRevision ?? 0}
             disabled={isSubmitting || !!pendingSave}

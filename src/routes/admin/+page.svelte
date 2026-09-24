@@ -1,4 +1,8 @@
 <script lang="ts">
+  import SubmitShortcutHint from '$lib/components/SubmitShortcutHint.svelte';
+  import Tag from '$lib/components/Tag.svelte';
+  import {COMMENTS_PAGE_SIZE, commentAuthorName} from '$lib/commentAuthor';
+  import {blogBannerAlt} from '$lib/blogBanner';
   import {adminUrl, navigateAdmin} from '$lib/adminNavigation';
   import {bannerUrl} from '$lib/blogBanner';
   import {
@@ -88,16 +92,28 @@
   import AdminHome from '$lib/components/admin/AdminHome.svelte';
   import ActivityWorkspace from '$lib/components/admin/ActivityWorkspace.svelte';
   import AccountSettings from '$lib/components/admin/AccountSettings.svelte';
+  import ActivityTimestamp from '$lib/components/admin/ActivityTimestamp.svelte';
+  import SessionTimeoutDialog from '$lib/components/admin/SessionTimeoutDialog.svelte';
+  import {
+    SESSION_WARNING_SECONDS,
+    extendedTimeoutMinutes
+  } from '$lib/sessionTimeout';
+  import {formatAdminDateTime} from '$lib/adminDateFormat';
+  import {cleanAdminParams} from '$lib/adminUrl';
+  import {adminDisplayStore} from '$lib/stores/adminDisplayStore.svelte';
   import PostEditor from '$lib/components/admin/PostEditor.svelte';
   import {adminActivityRequest} from '$lib/adminActivityClient';
-  import type {WorkspaceArea, WorkspacePage} from '$lib/adminWorkspace';
+  import {
+    ADMIN_WORKSPACE_PAGE_SIZE,
+    type WorkspaceArea,
+    type WorkspacePage
+  } from '$lib/adminWorkspace';
   import {shortcut} from '$lib/utils/shortcut.svelte';
   import {adminNotificationsStore} from '$lib/stores/adminNotificationsStore.svelte';
   import {estimateReadTime} from '$lib/readTime';
-  import {formatCompactCount} from '$lib/utils/formatters';
+  import {formatBadgeCount} from '$lib/utils/formatters';
   import {
     cn,
-    Dialog,
     Button,
     IconButton,
     Badge,
@@ -109,6 +125,7 @@
     Input,
     Checkbox,
     ConfirmationDialog,
+    Dialog,
     CommentThread,
     LoadingState,
     EmptyState,
@@ -123,7 +140,6 @@
     FilterChipGroup,
     FilterEmptyState,
     Pagination,
-    RelativeTime,
     toastStore,
     createFilterSortStore,
     ThemeSelect,
@@ -234,9 +250,6 @@
   }
 
   let comments = $state<AdminComment[]>([]);
-  let commentPages = $state<
-    Record<string, {page: number; total: number; focused: boolean}>
-  >({});
   let commentsLoading = $state<Record<string, boolean>>({});
   let commentsError = $state<Record<string, string>>({});
   let replyTo = $state<AdminComment | null>(null);
@@ -253,8 +266,6 @@
   });
   onDestroy(() => replyValidation.destroy());
   let isSubmitting = $state(false);
-
-  let commentFilterReportedOnly = $state(false);
 
   let focusedCommentId = $state<string | null>(null);
   let focusHighlightTimer: ReturnType<typeof setTimeout>;
@@ -293,7 +304,6 @@
   async function focusPost(postId: string) {
     selectTab('posts');
     filterStore.clearAllFilters();
-    commentFilterReportedOnly = false;
     await tick();
     const index = filteredPosts.findIndex(p => p.id === postId);
     if (index >= 0) postsPage = Math.floor(index / POSTS_PAGE_SIZE) + 1;
@@ -329,7 +339,7 @@
 
   async function focusComment(postId: string, commentId: string) {
     await ensureTabData('posts');
-    await fetchComments(postId, commentId);
+    await fetchComments(postId);
     await focusPost(postId);
     expandedPostIds.add(postId);
     focusedCommentId = commentId;
@@ -391,7 +401,8 @@
   function selectTab(id: AdminTab) {
     sidebarMobileOpen = false;
     const url = adminUrl();
-    url.searchParams.set('tab', id);
+    if (id === 'home') url.searchParams.delete('tab');
+    else url.searchParams.set('tab', id);
     for (const key of [
       'selected',
       'notificationId',
@@ -400,6 +411,7 @@
       'focus',
       'detailQuery',
       'detailReason',
+      'detailSort',
       'query',
       'type',
       'read',
@@ -411,16 +423,6 @@
       'vote'
     ])
       url.searchParams.delete(key);
-    if (id === 'reports' || id === 'notifications') {
-      url.searchParams.set('range', 'all');
-      url.searchParams.delete('from');
-      url.searchParams.delete('to');
-    } else if (url.searchParams.get('range') === 'all') {
-      url.searchParams.delete('range');
-      url.searchParams.delete('from');
-      url.searchParams.delete('to');
-      url.searchParams.delete('timeZone');
-    }
     navigateAdmin(url);
     void ensureTabData(id);
     if (id === 'privacy' || id === 'security' || id === 'terms') {
@@ -494,6 +496,13 @@
 
   const LOCATION_TYPES = ['On-Site', 'Remote', 'Hybrid'] as const;
 
+  let siteAuthorName = $state('');
+  async function loadSiteAuthorName() {
+    if (siteAuthorName) return;
+    try {
+      siteAuthorName = (await fetchAuthorProfile(supabase))?.name ?? '';
+    } catch {}
+  }
   let authorState = $state<AuthorProfile>({
     name: '',
     username: '',
@@ -929,14 +938,7 @@
     if (!cvDocState?.updatedAt) return '';
     const d = new Date(cvDocState.updatedAt);
     if (isNaN(d.getTime())) return '';
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    }).format(d);
+    return formatAdminDateTime(d, undefined, adminDisplayStore.current);
   });
 
   const cvVersion = $derived.by(() => {
@@ -1339,12 +1341,22 @@
     }
   }
 
-  function getPostComments(postId: string): AdminComment[] {
-    let postComments = comments.filter(c => c.post_id === postId);
-    if (commentFilterReportedOnly) {
-      postComments = postComments.filter(c => c.reports);
+  const postCommentCounts = $state(new Map<string, number>());
+
+  async function fetchPostCommentCount(postId: string) {
+    try {
+      const {count, error} = await supabase
+        .from('db_comments')
+        .select('id', {count: 'exact', head: true})
+        .eq('post_id', postId);
+      if (!error && count !== null) postCommentCounts.set(postId, count);
+    } catch (err) {
+      console.error('Failed to count comments for post:', postId, err);
     }
-    return postComments;
+  }
+
+  function getPostComments(postId: string): AdminComment[] {
+    return comments.filter(c => c.post_id === postId);
   }
 
   let filteredPosts = $derived.by(() => {
@@ -1396,8 +1408,8 @@
         return mult * (vA - vB);
       }
       if (field === 'comments') {
-        const cA = getPostComments(a.id).length;
-        const cB = getPostComments(b.id).length;
+        const cA = postCommentCounts.get(a.id) ?? 0;
+        const cB = postCommentCounts.get(b.id) ?? 0;
         return mult * (cA - cB);
       }
       if (field === 'readingTime') {
@@ -1503,7 +1515,7 @@
         body: JSON.stringify({
           postId,
           parentId,
-          authorName: 'Administrator',
+          authorName: authorState.name,
           content: trimmed
         })
       });
@@ -1537,26 +1549,29 @@
   let sessionTimeoutMultiplier = $state(1);
   const MAX_IDLE_TIMEOUT_MULTIPLIER = 4;
   let BASE_IDLE_TIMEOUT_MS = 30 * 60 * 1000;
+  const SESSION_WARNING_MS = SESSION_WARNING_SECONDS * 1000;
   let idleWarnTimer: ReturnType<typeof setTimeout>;
+  let signOutTimer: ReturnType<typeof setTimeout>;
   let showSessionTimeoutDialog = $state(false);
-  let countdownSeconds = $state(30);
-  let countdownInterval: ReturnType<typeof setInterval>;
+  let sessionDeadline = $state(0);
+  const extendMinutes = $derived(
+    extendedTimeoutMinutes(
+      BASE_IDLE_TIMEOUT_MS,
+      sessionTimeoutMultiplier,
+      MAX_IDLE_TIMEOUT_MULTIPLIER
+    )
+  );
 
   function startIdleTimer() {
     clearTimeout(idleWarnTimer);
-    clearInterval(countdownInterval);
-    const warnMs = BASE_IDLE_TIMEOUT_MS * sessionTimeoutMultiplier - 30000;
+    clearTimeout(signOutTimer);
+    const warnMs =
+      BASE_IDLE_TIMEOUT_MS * sessionTimeoutMultiplier - SESSION_WARNING_MS;
 
     idleWarnTimer = setTimeout(() => {
+      sessionDeadline = Date.now() + SESSION_WARNING_MS;
       showSessionTimeoutDialog = true;
-      countdownSeconds = 30;
-      countdownInterval = setInterval(() => {
-        countdownSeconds -= 1;
-        if (countdownSeconds <= 0) {
-          clearInterval(countdownInterval);
-          handleLogout();
-        }
-      }, 1000);
+      signOutTimer = setTimeout(handleLogout, SESSION_WARNING_MS);
     }, warnMs);
   }
 
@@ -1566,13 +1581,23 @@
       MAX_IDLE_TIMEOUT_MULTIPLIER
     );
     showSessionTimeoutDialog = false;
-    clearInterval(countdownInterval);
+    clearTimeout(signOutTimer);
     try {
       await supabase.auth.refreshSession();
     } catch (err) {
       console.error('Failed to refresh session:', err);
     }
     startIdleTimer();
+  }
+
+  function handleVisibilityChange() {
+    if (
+      document.visibilityState === 'visible'
+      && showSessionTimeoutDialog
+      && Date.now() >= sessionDeadline
+    ) {
+      void handleLogout();
+    }
   }
 
   const ACTIVITY_EVENTS = [
@@ -1647,10 +1672,21 @@
       }
     })();
 
+    const legacyUrl = adminUrl();
+    if (
+      cleanAdminParams(legacyUrl.searchParams).toString()
+      !== legacyUrl.searchParams.toString()
+    )
+      navigateAdmin(legacyUrl, true);
+    const stopDisplaySync = adminDisplayStore.init();
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     return () => {
       active = false;
+      stopDisplaySync?.();
       clearTimeout(idleWarnTimer);
-      clearInterval(countdownInterval);
+      clearTimeout(signOutTimer);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       adminNotificationsStore.unsubscribe();
       if (typeof window !== 'undefined') {
         window.removeEventListener('beforeunload', handleBeforeUnload);
@@ -1754,7 +1790,10 @@
           ?? '1 min read'
       }));
       if (!withReadTimes) return true;
-      rawPosts.forEach(post => fetchPostViews(post.id));
+      rawPosts.forEach(post => {
+        fetchPostViews(post.id);
+        void fetchPostCommentCount(post.id);
+      });
 
       void (async () => {
         const postsWithReadTime = await Promise.all(
@@ -1797,27 +1836,40 @@
     }
   }
 
-  async function fetchComments(postId?: string, focusId?: string, page = 1) {
+  const MAX_COMMENT_PAGES = 50;
+
+  async function fetchComments(postId?: string) {
     if (!postId) {
       await Promise.all([...expandedPostIds].map(id => fetchComments(id)));
       return true;
     }
     commentsLoading[postId] = true;
     try {
-      const result = await adminActivityRequest<
-        Omit<WorkspacePage, 'items'> & {items: {comment: AdminComment}[]}
-      >('workspace', {
-        section: 'comments',
-        id: postId,
-        ...(focusId ? {focus: focusId} : {}),
-        ...(page > 1 ? {page: String(page)} : {}),
-        ...(commentFilterReportedOnly ? {reason: 'other'} : {})
-      });
+      type CommentsPage = Omit<WorkspacePage, 'items'> & {
+        items: {comment: AdminComment}[];
+      };
+      const request = (extra: Record<string, string> = {}) =>
+        adminActivityRequest<CommentsPage>('workspace', {
+          section: 'comments',
+          id: postId,
+          ...extra
+        });
+      const first = await request();
+      const pages = Math.min(
+        MAX_COMMENT_PAGES,
+        Math.ceil((first.total ?? 0) / ADMIN_WORKSPACE_PAGE_SIZE)
+      );
+      const rest = await Promise.all(
+        Array.from({length: Math.max(0, pages - 1)}, (_, index) =>
+          request({page: String(index + 2), asOf: first.asOf})
+        )
+      );
+      const items = [first, ...rest].flatMap(result => result.items);
       comments = [
         ...comments.filter(c => c.post_id !== postId),
-        ...result.items.map(item => item.comment)
+        ...items.map(item => item.comment)
       ];
-      commentPages[postId] = {page, total: result.total, focused: !!focusId};
+      postCommentCounts.set(postId, first.total ?? items.length);
       commentsError[postId] = '';
       return true;
     } catch (caught) {
@@ -1847,7 +1899,8 @@
       return;
     if (tabRequests[group]) return tabRequests[group];
     const request = (async () => {
-      if (group === 'posts') postsLoaded = await fetchPosts();
+      if (group === 'posts')
+        [postsLoaded] = await Promise.all([fetchPosts(), loadSiteAuthorName()]);
       else if (group === 'legal') {
         await loadLegalPagesFromSupabase();
         legalLoaded = true;
@@ -2996,78 +3049,13 @@
 
 <SkipLink />
 
-<Dialog
+<SessionTimeoutDialog
   isOpen={showSessionTimeoutDialog}
-  onClose={() => {}}
-  showCloseButton={false}
-  closeOnBackdrop={false}
-  closeOnEscape={false}
-  title="Session Timeout Warning"
-  size="md">
-  <div class="flex flex-col items-center py-2 text-center">
-    <p class="text-sm text-text-secondary">
-      Your admin session is about to expire due to inactivity. Would you like to
-      extend your session or log out?
-    </p>
-
-    <div class="my-5 flex flex-col items-center justify-center">
-      <div class="relative flex size-20 shrink-0 items-center justify-center">
-        <svg
-          class="size-20 -rotate-90 transform"
-          viewBox="0 0 48 48">
-          <circle
-            cx="24"
-            cy="24"
-            r="20"
-            fill="none"
-            class="stroke-accent-subtle"
-            stroke-width="4" />
-
-          <circle
-            cx="24"
-            cy="24"
-            r="20"
-            fill="none"
-            class="stroke-accent transition-all duration-1000 ease-linear"
-            stroke-width="4"
-            stroke-linecap="round"
-            stroke-dasharray="125.66"
-            stroke-dashoffset={125.66 * (1 - countdownSeconds / 30)} />
-        </svg>
-        <span class="absolute font-mono text-base font-bold text-accent">
-          {countdownSeconds}s
-        </span>
-      </div>
-      <span class="mt-3 text-xs text-text-muted">
-        Signing out automatically in <strong class="font-mono text-text-primary"
-          >{countdownSeconds}s</strong>
-      </span>
-    </div>
-  </div>
-
-  {#snippet footer()}
-    <div class="grid w-full grid-cols-2 gap-3">
-      <Button
-        htmlType="button"
-        type="danger"
-        tone="critical"
-        size="md"
-        fullWidth
-        onclick={handleLogout}
-        disabled={isLoggingOut}>
-        Sign out
-      </Button>
-      <Button
-        htmlType="button"
-        type="primary"
-        size="md"
-        fullWidth
-        onclick={handleExtendSession}>
-        Extend session
-      </Button>
-    </div>
-  {/snippet}
-</Dialog>
+  deadline={sessionDeadline}
+  {extendMinutes}
+  isSigningOut={isLoggingOut}
+  onExtend={handleExtendSession}
+  onSignOut={handleLogout} />
 
 <div
   class="fixed top-0 z-40 flex h-10 w-full items-center justify-between border-b border-border-subtle bg-surface-card px-4 md:hidden">
@@ -3100,7 +3088,7 @@
 
 <div class="flex min-h-screen pt-10 md:pt-0">
   <aside
-    class="fixed inset-y-0 left-0 z-50 flex w-56 shrink-0 flex-col justify-between overflow-y-auto border-r border-border-subtle bg-surface-card transition-transform duration-200 ease-in-out md:sticky md:top-0 md:h-screen md:translate-x-0 md:transition-[width] {(
+    class="fixed inset-y-0 left-0 z-50 flex w-56 shrink-0 flex-col justify-between overflow-y-auto border-r border-border-subtle bg-surface-card transition-transform duration-200 ease-in-out md:sticky md:top-0 md:h-screen md:translate-x-0 {(
       sidebarMobileOpen
     ) ?
       'translate-x-0 shadow-2xl'
@@ -3123,12 +3111,16 @@
         </Button>
         <ImageWithSkeleton
           src={adminAvatarUrl}
-          alt={adminUserName || 'Account'}
+          alt={`Profile picture of ${adminUserName || 'the account owner'}`}
           variant="avatar"
           rounded="rounded-full"
           class="size-8 shrink-0" />
         <span
-          class="flex min-w-0 flex-col {sidebarCollapsed ? 'md:hidden' : ''}">
+          class="flex min-w-0 flex-col transition-opacity duration-150 starting:opacity-0 {(
+            sidebarCollapsed
+          ) ?
+            'md:hidden'
+          : ''}">
           {#if isLoading || (!adminUserName && !adminUserEmail)}
             <SkeletonBlock
               height="h-3"
@@ -3148,7 +3140,11 @@
         </span>
       </div>
       <div
-        class="flex items-center gap-1.5 {sidebarCollapsed ? 'md:hidden' : ''}">
+        class="flex items-center gap-1.5 transition-opacity duration-150 starting:opacity-0 {(
+          sidebarCollapsed
+        ) ?
+          'md:hidden'
+        : ''}">
         <ThemeSelect
           variant="ghost"
           size="2xs"
@@ -3164,7 +3160,7 @@
       {#each adminNavSections as section, sectionIndex (section.id)}
         {#if section.title}
           <div
-            class="px-2 pt-1 pb-1 text-xxs font-bold text-text-muted select-none {(
+            class="px-2 pt-1 pb-1 text-xxs font-bold whitespace-nowrap text-text-muted transition-opacity duration-150 select-none starting:opacity-0 {(
               sectionIndex > 0
             ) ?
               'mt-1.5'
@@ -3189,7 +3185,7 @@
                 placement: 'inline',
                 label: link.label
               }}
-              class="group relative flex h-7 w-full items-center rounded-sm text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
+              class="group relative flex h-7 w-full items-center rounded-sm text-left text-xs font-semibold transition-colors duration-150 ease-in-out {(
                 sidebarCollapsed
               ) ?
                 'gap-2 px-2 md:min-h-0 md:justify-center md:gap-0 md:px-0'
@@ -3202,17 +3198,23 @@
                 ) ?
                   'text-accent'
                 : 'text-text-muted group-hover:text-accent'}" />
-              <span class={sidebarCollapsed ? 'truncate md:hidden' : 'truncate'}
-                >{link.label}</span>
+              <span
+                class="truncate transition-opacity duration-150 starting:opacity-0 {(
+                  sidebarCollapsed
+                ) ?
+                  'md:hidden'
+                : ''}">{link.label}</span>
               {#if link.id === 'notifications' && adminNotificationsStore.unreadCount > 0}
                 <Badge
                   variant="accent"
+                  circle
                   class={sidebarCollapsed ?
-                    'ml-auto md:absolute md:top-0 md:right-0 md:ml-0 md:px-1'
+                    'ml-auto md:absolute md:top-0 md:right-0 md:ml-0'
                   : 'ml-auto'}
-                  >{formatCompactCount(
-                    adminNotificationsStore.unreadCount
-                  )}<span class="sr-only"> unread</span></Badge>
+                  >{formatBadgeCount(adminNotificationsStore.unreadCount)}<span
+                    class="sr-only">
+                    unread</span
+                  ></Badge>
               {/if}
             </button>
           {/each}
@@ -3229,7 +3231,7 @@
           aria-current={activeAdminTab === 'account' ? 'page' : undefined}
           onclick={() => selectTab('account')}
           title="Manage account"
-          class="group flex h-7 w-full items-center rounded-sm text-left text-xs font-semibold transition-all duration-150 ease-in-out {(
+          class="group flex h-7 w-full items-center rounded-sm text-left text-xs font-semibold transition-colors duration-150 ease-in-out {(
             sidebarCollapsed
           ) ?
             'gap-2 px-2 md:min-h-0 md:justify-center md:gap-0 md:px-0'
@@ -3242,10 +3244,16 @@
             ) ?
               'text-accent'
             : 'text-text-muted group-hover:text-accent'}" />
-          <span class={sidebarCollapsed ? 'truncate md:hidden' : 'truncate'}
-            >Manage account</span>
+          <span
+            class="truncate transition-opacity duration-150 starting:opacity-0 {(
+              sidebarCollapsed
+            ) ?
+              'md:hidden'
+            : ''}">Manage account</span>
           <ChevronRight
-            class="ml-auto size-3 shrink-0 text-text-muted {sidebarCollapsed ?
+            class="ml-auto size-3 shrink-0 text-text-muted transition-opacity duration-150 starting:opacity-0 {(
+              sidebarCollapsed
+            ) ?
               'md:hidden'
             : ''}" />
         </button>
@@ -3276,7 +3284,9 @@
         <Button
           type="ghost"
           size="2xs"
-          class="ml-auto size-7 shrink-0 p-0 md:ml-0 {sidebarCollapsed ?
+          class="ml-auto size-7 shrink-0 p-0 transition-opacity duration-150 md:ml-0 starting:opacity-0 {(
+            sidebarCollapsed
+          ) ?
             'md:hidden'
           : ''}"
           aria-label="Sign out"
@@ -3459,7 +3469,7 @@
                   {#if post.banner_version && !failedBanners.has(post.id)}
                     <ImageWithSkeleton
                       src={bannerUrl(post)}
-                      alt={post.title}
+                      alt={blogBannerAlt(post.title, post.excerpt)}
                       rounded=""
                       onerror={() => markBannerFailed(post.id)}
                       class="h-full w-full object-cover" />
@@ -3529,7 +3539,7 @@
                       date={post.created_at}
                       updatedAt={post.updated_at}
                       readingTime={formatReadTime(post.read_time)}
-                      commentsCount={post.comment_count ?? 0}
+                      commentsCount={postCommentCounts.get(post.id) ?? 0}
                       views={postViewsMap.get(post.id)
                         ?? post.views_count
                         ?? 0} />
@@ -3553,7 +3563,7 @@
                             <button
                               type="button"
                               onclick={() => toggleExcerpt(post.id)}
-                              class="ml-1 inline cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
+                              class="ml-1 inline cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none sm:text-sm">
                               Show less
                             </button>
                           {/if}
@@ -3573,17 +3583,18 @@
                       <div class="flex flex-wrap items-center gap-1.5 pt-1">
                         {#each post.tags as tag (tag)}
                           {@const cleanTag = decodeHtmlEntities(tag)}
-                          <button
-                            type="button"
+                          <Tag
+                            variant="accent"
                             onclick={() =>
                               filterStore.toggleMultiFilter('tag', tag)}
-                            class="inline-flex cursor-pointer items-center rounded-full px-2 py-0.5 font-mono text-[12px] font-medium transition-colors {(
-                              filterStore.filters['tag']?.includes(tag)
-                            ) ?
-                              'bg-accent text-text-on-accent'
-                            : 'bg-accent-subtle text-accent hover:bg-accent/15'}">
+                            aria-pressed={filterStore.filters['tag']?.includes(
+                              tag
+                            ) ?? false}
+                            class={filterStore.filters['tag']?.includes(tag) ?
+                              'bg-accent font-mono text-text-on-accent'
+                            : 'font-mono hover:bg-accent/15'}>
                             {cleanTag}
-                          </button>
+                          </Tag>
                         {/each}
                       </div>
                     {/if}
@@ -3705,57 +3716,24 @@
                       class="mt-4 border-t border-border-subtle pt-4">
                       <div class="mb-3 flex items-center justify-between gap-2">
                         <h4 class="text-xs font-bold text-text-secondary">
-                          Comments ({commentPages[post.id]?.total ?? 0})
+                          Comments ({postCommentCounts.get(post.id) ?? 0})
                         </h4>
-                        {#if comments.some(c => c.post_id === post.id && c.reports)}
-                          <button
-                            type="button"
-                            class={cn(
-                              'cursor-pointer rounded-sm border px-2 py-0.5 text-2xs font-semibold transition-colors',
-                              commentFilterReportedOnly ?
-                                'border-border-subtle bg-surface-hover text-text-secondary hover:text-accent'
-                              : 'border-border-subtle text-text-muted hover:text-text-primary'
-                            )}
-                            onclick={() => {
-                              commentFilterReportedOnly =
-                                !commentFilterReportedOnly;
-                              void fetchComments(post.id);
-                            }}>
-                            <AlertTriangle class="mr-1 inline size-2.5" />
-                            {commentFilterReportedOnly ? 'Showing Reported' : (
-                              'Filter Reported'
-                            )}
-                          </button>
-                        {/if}
                       </div>
                       {#if commentsError[post.id]}<ErrorState
                           title="Unable to load comments"
                           description={commentsError[post.id]}
                           onRetry={() => fetchComments(post.id)} />{/if}
-                      {#if commentPages[post.id]?.focused}<Button
-                          size="sm"
-                          type="outline"
-                          onclick={() => fetchComments(post.id)}
-                          >Showing linked comment · Show all comments</Button
-                        >{/if}
-                      {#if (commentPages[post.id]?.total ?? 0) > 20}
-                        <Pagination
-                          class="mb-3"
-                          page={commentPages[post.id].page}
-                          totalPages={Math.ceil(
-                            commentPages[post.id].total / 20
-                          )}
-                          onPageChange={page =>
-                            fetchComments(post.id, undefined, page)} />
-                      {/if}
-                      {#if commentsLoading[post.id]}<LoadingState
+                      {#if commentsLoading[post.id] && getPostComments(post.id).length === 0}<LoadingState
                           label="Loading comments…" />
                       {:else if getPostComments(post.id).length === 0}
                         <p class="text-xs text-text-muted">No comments yet.</p>
                       {:else}
                         <CommentThread
                           comments={getPostComments(post.id)}
+                          authorName={authorState.name || siteAuthorName}
                           isAdmin={true}
+                          controls
+                          pageSize={COMMENTS_PAGE_SIZE}
                           focusCommentId={focusedCommentId}
                           onDelete={c => confirmDeleteComment(c.id)}
                           {replyTo}>
@@ -3770,10 +3748,9 @@
                           {/snippet}
 
                           {#snippet actions(comment)}
-                            <RelativeTime
+                            <ActivityTimestamp
                               date={comment.created_at}
-                              tag="time" />
-                            <span aria-hidden="true">&middot;</span>
+                              class="text-xs" />
                             <button
                               type="button"
                               onclick={() => {
@@ -3784,7 +3761,6 @@
                               Reply
                             </button>
                             {#if comment.reports}
-                              <span aria-hidden="true">&middot;</span>
                               <button
                                 type="button"
                                 onclick={() =>
@@ -3810,12 +3786,10 @@
                                 <p class="text-xs text-text-secondary">
                                   Replying to <span
                                     class="font-semibold text-accent"
-                                    >{(
-                                      comment.is_anonymous
-                                      || !comment.author_name
-                                    ) ?
-                                      'Anonymous'
-                                    : comment.author_name}</span>
+                                    >{commentAuthorName(
+                                      comment,
+                                      authorState.name || siteAuthorName
+                                    )}</span>
                                 </p>
                                 <button
                                   type="button"
@@ -3859,10 +3833,12 @@
                                     onclick={() => (replyTo = null)}>
                                     Cancel
                                   </Button>
+                                  <SubmitShortcutHint class="max-sm:hidden" />
                                   <Button
                                     htmlType="submit"
                                     type="primary"
                                     size="xs"
+                                    aria-keyshortcuts="Control+Enter Meta+Enter"
                                     disabled={isSubmitting
                                       || !commentContent.trim()}
                                     isLoading={isSubmitting}>
@@ -3988,6 +3964,7 @@
 
         <div class="flex flex-col gap-6">
           <ProfileImageUpload
+            name={authorState.name || adminUserName}
             avatar={avatarSource(authorState)}
             disabled={isSavingAuthor || !manifestSettings}
             onprepared={value => {
@@ -6383,7 +6360,7 @@
       {#key authorState.avatar}
         <img
           src={avatarSource(authorState)}
-          alt="Avatar preview enlarged"
+          alt={`Profile picture of ${authorState.name || adminUserName} — enlarged preview`}
           class="relative z-10 h-full w-full object-cover"
           onerror={e =>
             ((e.currentTarget as HTMLImageElement).style.display = 'none')}
@@ -6431,313 +6408,3 @@
     </div>
   {/snippet}
 </Dialog>
-
-<style>
-  @reference "../global.css";
-  .editor-textarea,
-  .editor-pre,
-  .editor-pre :global(span) {
-    @apply font-mono text-[14.5px]! leading-6! tracking-normal! normal-case!;
-    font-feature-settings: var(--font-feature-settings-mono) !important;
-  }
-
-  .editor-textarea,
-  .editor-pre {
-    @apply wrap-break-word!;
-    word-break: normal !important;
-  }
-
-  .editor-textarea {
-    @apply m-0! box-border! border-0! outline-hidden!;
-  }
-
-  .editor-textarea:focus,
-  .editor-textarea:focus-visible {
-    @apply border-transparent! shadow-none! outline-hidden!;
-    --tw-ring-shadow: none !important;
-  }
-
-  .editor-code-line {
-    @apply block! min-h-6! leading-6!;
-  }
-
-  .prose-custom :global(h1),
-  .prose-custom :global(h2),
-  .prose-custom :global(h3) {
-    @apply font-sans;
-  }
-
-  .prose-custom {
-    @apply font-sans text-[0.9rem] leading-[1.7] text-(--color-body);
-    --color-heading: var(--color-gh-gray-6);
-    --color-body: var(--color-gh-gray-5);
-    --color-link: var(--color-accent);
-    --color-link-hover: var(--color-accent-hover);
-  }
-
-  :global(:root.dark) .prose-custom {
-    --color-heading: var(--color-gh-gray-1);
-    --color-body: var(--color-gh-gray-3);
-    --color-link: var(--color-accent);
-    --color-link-hover: var(--color-accent-hover);
-  }
-
-  .prose-custom :global(p) {
-    @apply mt-5 mb-5 text-(--color-body);
-  }
-
-  .prose-custom :global(h1),
-  .prose-custom :global(h2),
-  .prose-custom :global(h3),
-  .prose-custom :global(h4),
-  .prose-custom :global(h5),
-  .prose-custom :global(h6) {
-    @apply font-sans text-(--color-heading);
-  }
-
-  .prose-custom :global(h1) {
-    @apply mt-8 mb-4 text-3xl font-extrabold;
-  }
-
-  .prose-custom :global(h2) {
-    @apply mt-7 mb-3 text-2xl font-bold;
-  }
-
-  .prose-custom :global(h3) {
-    @apply mt-6 mb-2 text-xl font-semibold;
-  }
-
-  .prose-custom :global(ul) {
-    @apply mt-4 mb-4 list-disc pl-6;
-  }
-
-  .prose-custom :global(ol) {
-    @apply mt-4 mb-4 list-decimal pl-6;
-  }
-
-  .prose-custom :global(li) {
-    @apply mt-1 mb-1;
-  }
-
-  .prose-custom :global(li > p) {
-    @apply my-0!;
-  }
-
-  .prose-custom :global(blockquote:not(.markdown-alert)) {
-    @apply my-6 rounded-sm border border-border-default/40 bg-surface-hover/30 p-4 text-sm leading-relaxed text-text-secondary;
-  }
-
-  .prose-custom :global(blockquote:not(.markdown-alert) p) {
-    @apply my-1 text-text-secondary;
-  }
-
-  .prose-custom :global(pre) {
-    @apply mt-6 mb-6 scrollbar-none! overflow-x-auto rounded-sm border border-border-subtle bg-surface-hover px-3! py-1.5! font-mono text-[0.8rem] leading-snug break-normal! whitespace-pre! [-ms-overflow-style:none]!;
-  }
-
-  .prose-custom :global(pre[data-enhanced='true']) {
-    @apply pt-0! pr-0! pl-0!;
-  }
-
-  .prose-custom :global(pre)::-webkit-scrollbar {
-    @apply hidden! h-0! w-0!;
-  }
-
-  .prose-custom :global(code:not(pre code)) {
-    @apply rounded bg-code-inline-bg px-0.5 py-px font-mono text-[0.925em] font-normal wrap-break-word [word-break:break-word] text-inherit;
-  }
-
-  .prose-custom :global(pre code) {
-    @apply block! w-max! min-w-full! overflow-visible! border-0 bg-transparent py-0! pr-0! pl-0! font-mono text-[0.8rem] leading-snug break-normal! whitespace-pre!;
-  }
-
-  .prose-custom :global(.code-line) {
-    @apply block! w-full! pr-3.5! pl-2!;
-  }
-
-  .prose-custom :global(pre.code-wrap),
-  .prose-custom :global(pre[data-wrap='true']) {
-    @apply overflow-x-hidden! wrap-anywhere! [word-break:break-word]! whitespace-pre-wrap!;
-  }
-
-  .prose-custom :global(pre.code-wrap code),
-  .prose-custom :global(pre[data-wrap='true'] code) {
-    @apply box-border! block! w-full! max-w-full! overflow-x-hidden! wrap-anywhere! [word-break:break-word]! whitespace-pre-wrap!;
-  }
-
-  .prose-custom :global(pre.code-wrap .code-line),
-  .prose-custom :global(pre[data-wrap='true'] .code-line) {
-    @apply box-border! w-full! max-w-full! pl-[calc(0.5rem+4ch)]! indent-[-4ch] wrap-anywhere! [word-break:break-word]! whitespace-pre-wrap!;
-  }
-
-  .prose-custom :global(a) {
-    @apply text-security no-underline hover:underline;
-  }
-
-  .prose-custom :global(.heading-text) {
-    @apply inline! transition-none!;
-  }
-
-  .prose-custom :global(a.anchor-link) {
-    @apply ml-[0.35rem]! inline-flex! items-center! justify-center! align-middle! leading-none! whitespace-nowrap! text-text-primary! no-underline! transition-none!;
-  }
-
-  :global(:root.dark) .prose-custom :global(a.anchor-link) {
-    @apply text-gh-gray-4!;
-  }
-
-  .prose-custom :global(a.anchor-link svg) {
-    @apply inline-block! size-[0.85em]! align-middle! leading-none! text-inherit! no-underline!;
-  }
-
-  .prose-custom :global(h1:hover .heading-text),
-  .prose-custom :global(h2:hover .heading-text),
-  .prose-custom :global(h3:hover .heading-text),
-  .prose-custom :global(h4:hover .heading-text),
-  .prose-custom :global(h5:hover .heading-text),
-  .prose-custom :global(h6:hover .heading-text),
-  .prose-custom :global(.heading-text):hover,
-  :global(:root.dark) .prose-custom :global(h1:hover .heading-text),
-  :global(:root.dark) .prose-custom :global(h2:hover .heading-text),
-  :global(:root.dark) .prose-custom :global(h3:hover .heading-text),
-  :global(:root.dark) .prose-custom :global(h4:hover .heading-text),
-  :global(:root.dark) .prose-custom :global(h5:hover .heading-text),
-  :global(:root.dark) .prose-custom :global(h6:hover .heading-text),
-  :global(:root.dark) .prose-custom :global(.heading-text):hover {
-    @apply text-accent underline underline-offset-4;
-  }
-
-  .prose-custom :global(h1:hover a.anchor-link),
-  .prose-custom :global(h2:hover a.anchor-link),
-  .prose-custom :global(h3:hover a.anchor-link),
-  .prose-custom :global(h4:hover a.anchor-link),
-  .prose-custom :global(h5:hover a.anchor-link),
-  .prose-custom :global(h6:hover a.anchor-link),
-  .prose-custom :global(a.anchor-link):hover,
-  :global(:root.dark) .prose-custom :global(h1:hover a.anchor-link),
-  :global(:root.dark) .prose-custom :global(h2:hover a.anchor-link),
-  :global(:root.dark) .prose-custom :global(h3:hover a.anchor-link),
-  :global(:root.dark) .prose-custom :global(h4:hover a.anchor-link),
-  :global(:root.dark) .prose-custom :global(h5:hover a.anchor-link),
-  :global(:root.dark) .prose-custom :global(h6:hover a.anchor-link),
-  :global(:root.dark) .prose-custom :global(a.anchor-link):hover,
-  .prose-custom :global(h1:hover a.anchor-link svg),
-  .prose-custom :global(h2:hover a.anchor-link svg),
-  .prose-custom :global(h3:hover a.anchor-link svg),
-  .prose-custom :global(h4:hover a.anchor-link svg),
-  .prose-custom :global(h5:hover a.anchor-link svg),
-  .prose-custom :global(h6:hover a.anchor-link svg),
-  .prose-custom :global(a.anchor-link):hover :global(svg),
-  :global(:root.dark) .prose-custom :global(h1:hover a.anchor-link svg),
-  :global(:root.dark) .prose-custom :global(h2:hover a.anchor-link svg),
-  :global(:root.dark) .prose-custom :global(h3:hover a.anchor-link svg),
-  :global(:root.dark) .prose-custom :global(h4:hover a.anchor-link svg),
-  :global(:root.dark) .prose-custom :global(h5:hover a.anchor-link svg),
-  :global(:root.dark) .prose-custom :global(h6:hover a.anchor-link svg),
-  :global(:root.dark) .prose-custom :global(a.anchor-link):hover :global(svg) {
-    @apply text-accent! no-underline! opacity-100;
-  }
-
-  .prose-custom :global(table) {
-    @apply my-6 w-full max-w-full table-fixed border-separate border-spacing-0 overflow-hidden rounded-sm border border-border-subtle text-left text-xs shadow-2xs;
-  }
-
-  .prose-custom :global(thead) {
-    @apply border-b border-border-subtle bg-surface-hover/80 font-semibold tracking-wider text-text-primary uppercase;
-  }
-
-  .prose-custom :global(th) {
-    @apply px-2.5 py-2 text-center font-semibold wrap-break-word [word-break:break-word] text-text-primary;
-  }
-
-  .prose-custom :global(tbody tr) {
-    @apply transition-colors hover:bg-surface-hover/30;
-  }
-
-  .prose-custom :global(td) {
-    @apply border-r border-border-subtle/40 px-2.5 py-1.5 text-left leading-relaxed wrap-break-word [word-break:break-word] text-text-secondary last:border-r-0;
-  }
-
-  .prose-custom :global(td code),
-  .prose-custom :global(th code) {
-    @apply wrap-anywhere [word-break:break-word] whitespace-normal;
-  }
-
-  .prose-custom :global(td[align='right']) {
-    @apply text-right;
-  }
-
-  .prose-custom :global(td[align='center']) {
-    @apply text-center;
-  }
-
-  .prose-custom :global(hr) {
-    @apply my-8 h-px border-0 bg-border-default;
-  }
-
-  .prose-custom :global(.markdown-alert) {
-    @apply my-6 rounded-sm border p-4 text-xs transition-colors duration-200 sm:text-sm;
-  }
-
-  .prose-custom :global(.markdown-alert-title) {
-    @apply mb-1.5 flex items-center gap-2 text-xs leading-none font-semibold select-none sm:text-sm;
-  }
-
-  .prose-custom :global(.markdown-alert-title svg) {
-    @apply size-4 shrink-0 translate-y-[-6%];
-  }
-
-  .prose-custom :global(.markdown-alert-content) {
-    @apply leading-relaxed text-text-secondary;
-  }
-
-  .prose-custom :global(.markdown-alert-content > p) {
-    @apply my-1 text-text-secondary;
-  }
-
-  .prose-custom :global(.markdown-alert-content > *:first-child) {
-    @apply mt-0!;
-  }
-
-  .prose-custom :global(.markdown-alert-content > *:last-child) {
-    @apply mb-0!;
-  }
-
-  .prose-custom :global(.markdown-alert-note) {
-    @apply border-security/40 bg-security-subtle text-text-secondary;
-  }
-  .prose-custom :global(.markdown-alert-note .markdown-alert-title) {
-    @apply text-security;
-  }
-
-  .prose-custom :global(.markdown-alert-tip) {
-    @apply border-success/40 bg-success-subtle text-text-secondary;
-  }
-  .prose-custom :global(.markdown-alert-tip .markdown-alert-title) {
-    @apply text-success;
-  }
-
-  .prose-custom :global(.markdown-alert-important) {
-    @apply border-copilot/40 bg-copilot-subtle text-text-secondary;
-  }
-  .prose-custom :global(.markdown-alert-important .markdown-alert-title) {
-    @apply text-copilot;
-  }
-
-  .prose-custom :global(.markdown-alert-warning) {
-    @apply border-warning/40 bg-warning-subtle text-text-secondary;
-  }
-  .prose-custom :global(.markdown-alert-warning .markdown-alert-title) {
-    @apply text-warning-strong;
-  }
-
-  .prose-custom :global(.markdown-alert-caution) {
-    @apply border-danger/40 bg-danger-subtle text-text-secondary;
-  }
-  .prose-custom :global(.markdown-alert-caution .markdown-alert-title) {
-    @apply text-danger;
-  }
-  .prose-custom > :global(*:first-child) {
-    @apply mt-0!;
-  }
-</style>

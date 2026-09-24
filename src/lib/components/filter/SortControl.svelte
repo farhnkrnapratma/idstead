@@ -54,7 +54,7 @@
 
 <div
   class={cn(
-    'flex items-center gap-1.5',
+    'flex min-w-0 items-center gap-1.5',
     fullWidth ? 'w-full'
     : stackOnMobile ? 'w-full sm:w-max sm:max-w-full'
     : 'w-max max-w-full',

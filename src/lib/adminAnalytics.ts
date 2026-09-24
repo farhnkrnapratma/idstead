@@ -1,3 +1,6 @@
+export function browserTimeZone() {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
 export function zonedDate(date: Date, timeZone: string) {
   return new Intl.DateTimeFormat('en-CA', {
     timeZone,

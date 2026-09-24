@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SubmitShortcutHint from '$lib/components/SubmitShortcutHint.svelte';
   import {
     FieldValidation,
     requiredText,
@@ -622,11 +623,13 @@
             <span
               >Clear<span class="hidden sm:inline">&nbsp;feedback</span></span>
           </Button>
+          <SubmitShortcutHint class="max-sm:hidden" />
           <Button
             htmlType="submit"
             type="primary"
             size="md"
             class="flex-1 sm:flex-initial"
+            aria-keyshortcuts="Control+Enter Meta+Enter"
             disabled={isSubmitting}
             isLoading={isSubmitting}
             keyboardShortcut={buttonKey('formSubmit')}

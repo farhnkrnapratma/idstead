@@ -158,10 +158,10 @@ export const POST: RequestHandler = async ({
     url,
     mfaRequired
   ).catch(error => console.error('Login alert failed:', error));
-  const waitUntil = (
+  const context = (
     platform as {context?: {waitUntil?: (p: Promise<unknown>) => void}}
-  )?.context?.waitUntil;
-  if (waitUntil) waitUntil(alert);
+  )?.context;
+  context?.waitUntil?.(alert);
 
   return json(
     {ok: true, mfaRequired},

@@ -7,6 +7,7 @@
       'default' | 'accent' | 'success' | 'warning' | 'danger' | 'custom';
     color?: string;
     size?: 'sm' | 'md';
+    circle?: boolean;
     children?: Snippet;
     class?: string;
   }
@@ -15,6 +16,7 @@
     variant = 'default',
     color,
     size = 'sm',
+    circle = false,
     children,
     class: className = ''
   }: Props = $props();
@@ -32,6 +34,10 @@
   };
 
   const sizeStyles = {sm: 'px-2 py-0.5 text-2xs', md: 'px-2.5 py-1 text-xs'};
+  const circleStyles = {
+    sm: 'size-5.5 justify-center p-0 text-2xs leading-none tracking-normal',
+    md: 'size-7 justify-center p-0 text-xs leading-none tracking-normal'
+  };
 </script>
 
 <span
@@ -39,7 +45,7 @@
   class={cn(
     'inline-flex items-center gap-1 rounded-full font-semibold tracking-wide select-none',
     variantStyles[variant],
-    sizeStyles[size],
+    circle ? circleStyles[size] : sizeStyles[size],
     className
   )}>
   {@render children?.()}

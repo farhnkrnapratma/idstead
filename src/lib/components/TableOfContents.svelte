@@ -242,13 +242,13 @@
       class="relative flex min-h-full flex-col pl-3"
       role="list">
       <div
-        class="pointer-events-none absolute top-0 bottom-0 left-0 z-10 w-px bg-border-tree transition-none"
+        class="pointer-events-none absolute top-0 bottom-0 left-0 z-10 w-0 border-l border-border-tree transition-none"
         aria-hidden="true">
       </div>
 
       {#if isIndicatorVisible}
         <div
-          class="pointer-events-none absolute top-(--indicator-top) left-0 z-20 h-(--indicator-height) w-px bg-accent transition-none"
+          class="pointer-events-none absolute top-(--indicator-top) left-0 z-20 h-(--indicator-height) w-0 border-l border-accent transition-none"
           style="--indicator-top: {indicatorTop}px; --indicator-height: {indicatorHeight}px;"
           aria-hidden="true">
         </div>
@@ -278,17 +278,12 @@
             style="padding-left: {isSub ? `${branchWidth + 8}px` : '10px'};">
             {#if isSub}
               <span
-                class="pointer-events-none absolute left-0 transition-none select-none {(
+                class="pointer-events-none absolute top-1/2 left-0 h-0 border-t transition-none select-none {(
                   isActive
                 ) ?
-                  'bg-accent'
-                : 'bg-border-tree'}"
-                style="
-                  top: 50%;
-                  width: {branchWidth}px;
-                  height: 1px;
-                  transform: translateY(-0.5px);
-                "
+                  'border-accent'
+                : 'border-border-tree'}"
+                style:width="{branchWidth}px"
                 aria-hidden="true"></span>
             {/if}
 

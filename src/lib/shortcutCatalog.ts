@@ -25,7 +25,7 @@ export const SHORTCUT_SECTIONS = [
     id: 'forms',
     label: 'Forms',
     context:
-      'These shortcuts work in the focused form on this page, such as a comment or feedback form.'
+      'Press Ctrl+Enter (Cmd+Enter on Mac) inside any form to send it; Enter adds a new line in message boxes. The shortcuts below work in the focused form on this page, such as a comment or feedback form.'
   },
   {
     id: 'admin',
@@ -81,6 +81,7 @@ const commandSections: Record<string, ShortcutSection> = {
   '/sitemap': 'resources',
   '/api': 'resources',
   '/feedback': 'resources',
+  '/mailing': 'forms',
   '/open': 'system',
   '/refresh': 'system',
   '/exit': 'system',

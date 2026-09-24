@@ -3,31 +3,30 @@
   import {scaleOrdinal} from 'd3-scale';
   import {formatCount} from '$lib/adminWorkspace';
   import EmptyState from '../EmptyState.svelte';
-  let {helpful, unhelpful}: {helpful: number; unhelpful: number} = $props();
-  const total = $derived(helpful + unhelpful);
-  const series = $derived([
-    {label: 'Helpful', value: helpful, color: 'var(--color-activity-helpful)'},
-    {
-      label: 'Unhelpful',
-      value: unhelpful,
-      color: 'var(--color-activity-unhelpful)'
-    }
-  ]);
+  interface Segment {
+    label: string;
+    value: number;
+    color: string;
+  }
+  let {segments, unit = 'responses'}: {segments: Segment[]; unit?: string} =
+    $props();
+  const series = $derived(segments.filter(row => row.value > 0));
+  const total = $derived(series.reduce((sum, row) => sum + row.value, 0));
 </script>
 
 {#if total === 0}
   <EmptyState
-    title="No feedback in this period"
-    description="Responses will appear here when readers vote." />
+    title={`No ${unit} in this period`}
+    description="Nothing to show for the selected range." />
 {:else}
   <div
     class="flex flex-col items-center gap-6 py-4 sm:flex-row sm:justify-center">
     <div
       class="relative size-48 shrink-0"
       role="img"
-      aria-label={`${helpful} helpful and ${unhelpful} unhelpful responses`}>
+      aria-label={`${formatCount(total)} ${unit}: ${series.map(row => `${row.value} ${row.label}`).join(', ')}`}>
       <Chart
-        data={series.filter(row => row.value > 0)}
+        data={series}
         x="value"
         c="label"
         cScale={scaleOrdinal()}
@@ -66,7 +65,7 @@
       <div
         class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
         <strong class="text-2xl text-text-primary">{formatCount(total)}</strong>
-        <span class="text-xs text-text-muted">responses</span>
+        <span class="text-xs text-text-muted">{unit}</span>
       </div>
     </div>
     <ul class="flex flex-col gap-3 text-sm">

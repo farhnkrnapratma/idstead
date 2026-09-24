@@ -1,4 +1,7 @@
 <script lang="ts">
+  import SubmitShortcutHint from '$lib/components/SubmitShortcutHint.svelte';
+  import Tag from '$lib/components/Tag.svelte';
+  import {blogBannerAlt} from '$lib/blogBanner';
   import {bannerUrl} from '$lib/blogBanner';
   import {
     FieldValidation,
@@ -327,8 +330,15 @@
     return SECTIONS.includes(hash) ? hash : 'home';
   });
 
-  const tagBadgeClass =
-    'inline-flex items-center rounded-full px-2 py-0.5 font-mono text-[12px] font-medium leading-normal';
+  let previousSection = $state(untrack(() => activeSection));
+  $effect(() => {
+    const current = activeSection;
+    if (previousSection !== current) {
+      previousSection = current;
+      window.scrollTo({top: 0, behavior: 'instant'});
+    }
+  });
+
   let formName = $state('');
   let formEmail = $state('');
   let formMessage = $state('');
@@ -477,7 +487,10 @@
   }
 
   function navigate(section: Section) {
-    if (section === activeSection) return;
+    if (section === activeSection) {
+      window.scrollTo({top: 0, behavior: 'smooth'});
+      return;
+    }
     withViewTransition(
       () =>
         goto(section === 'home' ? resolve('/') : `${resolve('/')}#${section}`, {
@@ -767,7 +780,7 @@
         {#if avatar}
           <ImageWithSkeleton
             src={avatar}
-            alt={name}
+            alt={`Profile picture of ${name}`}
             variant="avatar"
             rounded="rounded-full"
             class="h-7 w-7 shrink-0 sm:h-8 sm:w-8" />
@@ -798,7 +811,7 @@
             class="relative flex h-9 cursor-pointer items-center justify-center rounded-md border-0 px-3 text-sm leading-none font-medium whitespace-nowrap transition-all {(
               activeSection === item.id
             ) ?
-              'bg-accent-contrast-bg font-semibold text-white shadow-xs hover:bg-accent-contrast-bg/90'
+              'bg-accent-contrast-bg font-semibold text-white shadow-xs hover:bg-accent-contrast-bg/90 hover:text-white'
             : 'text-text-secondary hover:bg-surface-hover hover:text-accent'}">
             {item.label}
           </Button>
@@ -823,41 +836,33 @@
   id="main-content"
   class="flex min-h-[calc(100vh-3rem)] flex-col pt-12 pb-16 font-sans sm:min-h-[calc(100vh-3.5rem)] sm:pt-14 md:pb-0">
   {#snippet staticTag(tag: string)}
-    <span class="{tagBadgeClass} bg-accent-subtle! text-accent!">
-      {decodeHtmlEntities(tag)}
-    </span>
+    <Tag
+      variant="accent"
+      class="font-mono">{decodeHtmlEntities(tag)}</Tag>
   {/snippet}
 
   {#snippet filterableTag(tag: string)}
-    {@const cleanTag = decodeHtmlEntities(tag)}
-    <Button
-      type="ghost"
-      size="2xs"
-      htmlType="button"
+    <Tag
+      variant="accent"
       onclick={() => projectFilterStore.toggleMultiFilter('tag', tag)}
-      class="{tagBadgeClass} h-auto! min-h-0! rounded-full! px-2! py-0.5! font-mono! text-[12px]! leading-normal! font-medium! {(
-        projectFilterStore.filters['tag']?.includes(tag)
-      ) ?
-        'bg-accent! text-text-on-accent!'
-      : 'bg-accent-subtle! text-accent! hover:bg-accent-subtle!'}">
-      {cleanTag}
-    </Button>
+      aria-pressed={projectFilterStore.filters['tag']?.includes(tag) ?? false}
+      class={projectFilterStore.filters['tag']?.includes(tag) ?
+        'bg-accent font-mono text-text-on-accent'
+      : 'font-mono hover:bg-accent/15'}>
+      {decodeHtmlEntities(tag)}
+    </Tag>
   {/snippet}
 
   {#snippet blogFilterableTag(tag: string)}
-    {@const cleanTag = decodeHtmlEntities(tag)}
-    <Button
-      type="ghost"
-      size="2xs"
-      htmlType="button"
+    <Tag
+      variant="accent"
       onclick={() => blogFilterStore.toggleMultiFilter('tag', tag)}
-      class="{tagBadgeClass} h-auto! min-h-0! rounded-full! px-2! py-0.5! font-mono! text-[12px]! leading-normal! font-medium! {(
-        blogFilterStore.filters['tag']?.includes(tag)
-      ) ?
-        'bg-accent! text-text-on-accent!'
-      : 'bg-accent-subtle! text-accent! hover:bg-accent-subtle!'}">
-      {cleanTag}
-    </Button>
+      aria-pressed={blogFilterStore.filters['tag']?.includes(tag) ?? false}
+      class={blogFilterStore.filters['tag']?.includes(tag) ?
+        'bg-accent font-mono text-text-on-accent'
+      : 'font-mono hover:bg-accent/15'}>
+      {decodeHtmlEntities(tag)}
+    </Tag>
   {/snippet}
 
   {#snippet projectCard(
@@ -875,7 +880,7 @@
         {#if !failedRepoBanners.has(project.name)}
           <ImageWithSkeleton
             src={repoBannerUrl}
-            alt={project.name}
+            alt={`Banner image for project “${project.name}”`}
             rounded=""
             onerror={() => markRepoBannerFailed(project.name)}
             class="h-full w-full object-cover" />
@@ -1013,7 +1018,7 @@
         {#if post.banner_version && !failedBanners.has(post.id)}
           <ImageWithSkeleton
             src={bannerUrl(post)}
-            alt={post.title}
+            alt={blogBannerAlt(post.title, post.excerpt)}
             rounded=""
             onerror={() => markBannerFailed(post.id)}
             class="h-full w-full object-cover" />
@@ -1087,7 +1092,7 @@
                     onclick={() => toggleExcerpt(post.id)}
                     keyboardShortcut="E"
                     shortcutLabel="Show less"
-                    class="relative inline-flex h-auto! min-h-0! p-0! text-xs font-normal whitespace-nowrap text-security! underline hover:opacity-80 focus-visible:outline-none">
+                    class="relative inline-flex h-auto! min-h-0! p-0! text-xs font-normal whitespace-nowrap text-security! underline hover:opacity-80 focus-visible:outline-none sm:text-sm">
                     Show less
                   </Button>
                 {/if}
@@ -1100,7 +1105,7 @@
                   onclick={() => toggleExcerpt(post.id)}
                   keyboardShortcut="E"
                   shortcutLabel="Show more"
-                  class="relative inline-flex h-auto! min-h-0! p-0! text-xs font-normal whitespace-nowrap text-security! underline hover:opacity-80 focus-visible:outline-none">
+                  class="relative inline-flex h-auto! min-h-0! p-0! text-xs font-normal whitespace-nowrap text-security! underline hover:opacity-80 focus-visible:outline-none sm:text-sm">
                   Show more
                 </Button>
               {/if}
@@ -1151,7 +1156,7 @@
             {#if avatar}
               <ImageWithSkeleton
                 src={avatar}
-                alt={name || author?.name || ''}
+                alt={`Profile picture of ${name || author?.name || 'the author'}`}
                 referrerpolicy="no-referrer"
                 variant="avatar"
                 rounded="rounded-full"
@@ -1600,11 +1605,13 @@
               <span
                 >Clear<span class="hidden sm:inline">&nbsp;message</span></span>
             </Button>
+            <SubmitShortcutHint class="max-sm:hidden" />
             <Button
               htmlType="submit"
               type="primary"
               size="md"
               class="flex-1 sm:flex-initial"
+              aria-keyshortcuts="Control+Enter Meta+Enter"
               disabled={isSubmittingMessage}
               isLoading={isSubmittingMessage}
               keyboardShortcut={buttonKey('formSubmit')}
@@ -2016,12 +2023,9 @@
   <FooterSection
     onNavClick={url => {
       if (url.startsWith('/#')) {
-        const sectionId = url.replace('/#', '');
-        navigate(sectionId as Section);
-        window.scrollTo({top: 0, behavior: 'smooth'});
+        navigate(url.replace('/#', '') as Section);
       } else if (url === '/') {
         navigate('home');
-        window.scrollTo({top: 0, behavior: 'smooth'});
       } else {
         window.location.href = url;
       }

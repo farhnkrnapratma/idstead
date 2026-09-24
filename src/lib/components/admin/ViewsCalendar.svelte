@@ -4,6 +4,8 @@
   import {ChevronLeft, ChevronRight} from '@lucide/svelte';
   import type {WorkspaceCalendar} from '$lib/adminWorkspace';
   import {formatCount} from '$lib/adminWorkspace';
+  import {formatAdminDate} from '$lib/adminDateFormat';
+  import {adminDisplayStore} from '$lib/stores/adminDisplayStore.svelte';
   import {pluralize} from '$lib/utils/pluralize';
   import IconButton from '../IconButton.svelte';
   let {
@@ -22,7 +24,15 @@
   const days = $derived(
     data.days.map(row => {
       const [year, month, day] = row.date.split('-').map(Number);
-      return {...row, label: row.date, date: new Date(year, month - 1, day)};
+      return {
+        ...row,
+        label: formatAdminDate(
+          new Date(Date.UTC(year, month - 1, day)),
+          'UTC',
+          adminDisplayStore.current.dateFormat
+        ),
+        date: new Date(year, month - 1, day)
+      };
     })
   );
   const maximum = $derived(Math.max(1, ...data.days.map(row => row.views)));

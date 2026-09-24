@@ -130,6 +130,7 @@
   --color-text-secondary: #232925;
   --color-text-muted: #909692;
   --color-text-on-accent: #ffffff;
+  --color-text-on-accent-hover: #ffffff;
   --color-border-subtle: #e4ebe6;
   --color-border-default: #b6bfb8;
   --color-border-strong: #909692;
@@ -254,6 +255,7 @@
   --color-text-secondary: #b6bfb8;
   --color-text-muted: #909692;
   --color-text-on-accent: #ffffff;
+  --color-text-on-accent-hover: #101411;
   --color-border-subtle: rgba(228, 235, 230, 0.12);
   --color-border-default: rgba(182, 191, 184, 0.38);
   --color-border-strong: #b6bfb8;

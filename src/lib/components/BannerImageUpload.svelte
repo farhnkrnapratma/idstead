@@ -6,16 +6,19 @@
   import Button from './Button.svelte';
   import ImageWithSkeleton from './ImageWithSkeleton.svelte';
   import {processBanner} from '$lib/processBanner';
+  import {blogBannerAlt} from '$lib/blogBanner';
   import type {BannerChange} from '$lib/blogBanner';
 
   let {
     savedUrl,
+    title,
     savedRevision,
     disabled = false,
     onprepared,
     onblocked
   }: {
     savedUrl: string | null;
+    title: string;
     savedRevision: number;
     disabled?: boolean;
     onprepared: (change: BannerChange) => void;
@@ -144,7 +147,7 @@
         src={removed ? null : (
           preview || (loadedSource === savedUrl ? savedUrl : null)
         )}
-        alt="Banner preview"
+        alt={`${blogBannerAlt(title || 'untitled post')} — preview`}
         loading="eager"
         class="absolute inset-0 size-full bg-transparent!"
         imgClass="object-contain" />

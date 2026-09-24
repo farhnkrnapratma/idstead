@@ -1,4 +1,11 @@
 <script lang="ts">
+  import MailingDialog from './MailingDialog.svelte';
+  import {
+    parseMailingCommand,
+    type MailingCommand,
+    type MailingAction
+  } from '$lib/mailing';
+  let mailingRequest = $state<MailingCommand | null>(null);
   import {SvelteMap, SvelteSet} from 'svelte/reactivity';
   import {tick, untrack} from 'svelte';
   import {goto} from '$app/navigation';
@@ -666,6 +673,15 @@
           icon: ScrollText
         },
         {
+          command: '/mailing',
+          argHint: '[subscribe/unsubscribe] <email>',
+          description:
+            'Subscribe or request an unsubscribe confirmation email. Omit the email to open a form.',
+          validArgs: ['subscribe [email]', 'unsubscribe [email]'],
+          icon: Mail,
+          actionQuery: '/mailing '
+        },
+        {
           command: '/feedback',
           argHint: '',
           description: 'Send feedback or report an issue.',
@@ -1027,6 +1043,17 @@
       badge: 'API'
     },
     {
+      id: 'cmd-mailing',
+      category: 'actions',
+      title: '/mailing',
+      subtitle: 'Subscribe or unsubscribe by email.',
+      requiresArgs: true,
+      autocompleteQuery: '/mailing ',
+      validArgs: ['subscribe', 'unsubscribe'],
+      icon: Mail,
+      badge: 'Mailing'
+    },
+    {
       id: 'cmd-share',
       category: 'actions',
       title: '/share',
@@ -1207,6 +1234,37 @@
 
     const items: SpotlightItem[] = [];
     const root = q.split(/\s+/)[0];
+
+    if (
+      root === '/mailing'
+      || (root.length > 2 && '/mailing'.startsWith(root))
+    ) {
+      const parsed = parseMailingCommand(query);
+      const argument = q.split(/\s+/)[1] ?? '';
+      const actions: MailingAction[] = ['subscribe', 'unsubscribe'];
+      for (const action of actions) {
+        if (parsed ? parsed.action !== action : !action.startsWith(argument))
+          continue;
+        const email = parsed?.email ?? '';
+        items.push({
+          id: `dyn-mailing-${action}`,
+          category: 'actions',
+          title: `/mailing ${action}${email ? ` ${email}` : ''}`,
+          subtitle:
+            action === 'subscribe' ?
+              'Confirm your subscription by email.'
+            : 'Receive a link to confirm unsubscribing.',
+          action: () => {
+            void tick().then(() => {
+              mailingRequest = {action, email};
+            });
+          },
+          icon: Mail,
+          badge: 'Mailing'
+        });
+      }
+      return items;
+    }
 
     if (
       q.startsWith('/theme')
@@ -2568,14 +2626,16 @@
       return;
     }
 
-    searchHistoryStore.record({
-      id: item.id,
-      category: item.category,
-      title: item.title,
-      subtitle: item.subtitle,
-      badge: item.badge,
-      iconName: item.icon ? ICON_NAME_BY_COMPONENT.get(item.icon) : undefined
-    });
+    if (!item.id.startsWith('dyn-mailing-')) {
+      searchHistoryStore.record({
+        id: item.id,
+        category: item.category,
+        title: item.title,
+        subtitle: item.subtitle,
+        badge: item.badge,
+        iconName: item.icon ? ICON_NAME_BY_COMPONENT.get(item.icon) : undefined
+      });
+    }
     close();
     if (item.action) {
       item.action();
@@ -4033,6 +4093,10 @@
   slug={activePageContext.slug}
   avatarUrl={activePageContext.avatarUrl}
   onClose={() => (isQrOpen = false)} />
+
+<MailingDialog
+  request={mailingRequest}
+  onClose={() => (mailingRequest = null)} />
 
 <style>
   @reference "../../routes/global.css";

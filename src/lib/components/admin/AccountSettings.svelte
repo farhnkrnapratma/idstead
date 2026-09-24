@@ -20,7 +20,8 @@
     toastStore
   } from '$lib';
   import FormSection from '$lib/layout/FormSection.svelte';
-  import RelativeTime from '../RelativeTime.svelte';
+  import ActivityTimestamp from './ActivityTimestamp.svelte';
+  import DisplaySettings from './DisplaySettings.svelte';
   import type {Factor, PasskeyListItem} from '@supabase/supabase-js';
 
   let loading = $state(true);
@@ -230,9 +231,12 @@
   <div>
     <h1 class="text-2xl font-bold text-text-primary">Account</h1>
     <p class="mt-1 text-sm text-text-secondary">
-      Password, sessions, and sign-in methods for this admin account.
+      Display preferences, password, sessions, and sign-in methods for this
+      admin account.
     </p>
   </div>
+
+  <DisplaySettings />
 
   {#if loading}
     <LoadingState label="Loading account…" />
@@ -343,10 +347,9 @@
                 <span class="min-w-0">
                   <span class="block truncate text-xs font-bold"
                     >{factor.friendly_name || 'Authenticator app'}</span>
-                  <RelativeTime
+                  <ActivityTimestamp
                     date={factor.created_at}
-                    prefix="Added"
-                    class="text-2xs text-text-muted" />
+                    prefix="Added" />
                 </span>
               </span>
               <span class="flex shrink-0 items-center gap-2">
@@ -395,10 +398,9 @@
                 <span class="min-w-0">
                   <span class="block truncate text-xs font-bold"
                     >{factor.friendly_name || 'Passkey'}</span>
-                  <RelativeTime
+                  <ActivityTimestamp
                     date={factor.created_at}
-                    prefix="Added"
-                    class="text-2xs text-text-muted" />
+                    prefix="Added" />
                 </span>
               </span>
               <Button
@@ -439,9 +441,9 @@
         class="flex flex-col gap-3 rounded-md border border-border-subtle bg-surface-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
         <span class="text-xs text-text-secondary">
           {#if lastSignInAt}
-            This session signed in <RelativeTime
+            This session signed in <ActivityTimestamp
               date={lastSignInAt}
-              class="font-semibold text-text-primary" />.
+              class="text-xs font-semibold" />.
           {:else}
             Sign-in time is unavailable for this session.
           {/if}

@@ -65,9 +65,9 @@
 
   const typeToneStyles: Record<string, string> = {
     'primary:neutral':
-      'font-semibold bg-accent text-text-on-accent hover:bg-accent-hover active:bg-accent-active disabled:hover:bg-accent disabled:active:bg-accent shadow-xs',
+      'font-semibold bg-accent text-text-on-accent hover:bg-accent-hover hover:text-(--color-text-on-accent-hover) active:bg-accent-active active:text-text-on-accent disabled:hover:bg-accent disabled:hover:text-text-on-accent disabled:active:bg-accent shadow-xs',
     'primary:critical':
-      'bg-danger font-semibold text-text-on-accent hover:bg-danger-hover active:bg-danger-hover disabled:hover:bg-danger shadow-xs',
+      'bg-danger font-semibold text-text-on-accent hover:bg-danger-hover hover:text-text-on-accent active:bg-danger-hover active:text-text-on-accent disabled:hover:bg-danger shadow-xs',
     'secondary:neutral':
       'glass-button hover:border-accent disabled:hover:border-border-subtle/70',
     'secondary:critical':

@@ -32,7 +32,7 @@
     {#if avatarUrl}
       <ImageWithSkeleton
         src={avatarUrl}
-        alt={name}
+        alt={`Profile picture of ${name}`}
         referrerpolicy="no-referrer"
         rounded="rounded-full"
         class="h-12 w-12 shrink-0 border border-border-subtle/40 shadow-2xs" />

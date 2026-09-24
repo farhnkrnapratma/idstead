@@ -133,6 +133,12 @@ Build tooling lives in `tooling/vite`; the WebP plugin emits the decoder WASM re
 
 Generated knowledge graphs, agent observations, and local development archives are ignored by Git. Keep permanent regression tests and their fixtures under `tests`; keep session reports and manual browser harnesses local. Graphify can still query and update the local graph.
 
+### Mailing commands
+
+The command palette accepts `/mailing subscribe <email>` and `/mailing unsubscribe <email>`. Omitting the email opens an email form. Both actions require Turnstile verification and email confirmation; an unsubscribe request sends a confirmation link without changing the subscription. Mailing commands containing email addresses are excluded from search history.
+
+The Subscribe button also supports `Ctrl+Space`, then `Shift+H`. An empty or invalid email focuses the field and shows its validation message. `POST /api/internal/subscribe/unsubscribe-request` is a first-party endpoint using the existing Supabase subscribers and Resend configuration; no new migration or public API change is required.
+
 ### Production cutover and asset cleanup
 
 Application deployment and legacy source deletion are deferred. Preview and Production share Supabase and the R2 bucket, so writes from either tier affect the same data. Required server configuration includes `SUPABASE_SERVICE_ROLE_KEY`, private `IP_SALT`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, and `R2_BUCKET_NAME`, alongside the public Supabase settings. Retain `PUBLIC_CDN_BASE_URL` while the legacy identity fallback is needed. Never commit credentials.

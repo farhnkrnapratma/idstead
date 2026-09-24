@@ -78,6 +78,7 @@ export const BUTTON_SHORTCUTS: Record<
   accessibility: {combo: 'I', mirrors: '/a11y'},
   language: {combo: 'L', mirrors: '/lang'},
   readingMode: {combo: 'D', mirrors: '/read'},
+  subscribe: {combo: 'Shift+H'},
   feedback: {combo: 'Shift+D', mirrors: '/feedback'},
   readingOptions: {combo: 'Shift+R'},
   notifications: {combo: 'Shift+N'},

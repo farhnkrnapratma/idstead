@@ -3,6 +3,7 @@ import {apiError} from './apiError';
 import {blogAdmin} from './blogPostAuth';
 import {ActivityInputError, activityJson, activityUuid} from './activityInput';
 import {REPORT_REASON_IDS} from '$lib/reportReasons';
+import {ADMIN_WORKSPACE_PAGE_SIZE} from '$lib/adminWorkspace';
 
 function option(
   params: URLSearchParams,
@@ -140,7 +141,7 @@ export function workspaceOptions(params: URLSearchParams, now = new Date()) {
     sort: option(
       params,
       'sort',
-      ['date', 'total', 'helpful', 'type', 'page'],
+      ['date', 'total', 'helpful', 'type', 'page', 'reason', 'details'],
       'date'
     ),
     direction: option(params, 'direction', ['asc', 'desc'], 'desc'),
@@ -151,7 +152,7 @@ export function workspaceOptions(params: URLSearchParams, now = new Date()) {
     focus: params.has('focus') ? activityUuid(params.get('focus')) : null,
     meta: params.get('meta') !== 'false',
     events: params.get('history') !== 'false',
-    limit: params.get('preview') === 'true' ? 5 : 20,
+    limit: params.get('preview') === 'true' ? 5 : ADMIN_WORKSPACE_PAGE_SIZE,
     page: Number(page),
     asOf
   };

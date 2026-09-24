@@ -77,7 +77,8 @@
   const resolvedCounter = $derived(formCtx?.counter ?? '');
 </script>
 
-<div class={cn('relative flex items-center', fullWidth ? 'w-full' : '')}>
+<div
+  class={cn('relative flex min-w-0 items-center', fullWidth ? 'w-full' : '')}>
   {#if leadingIcon}
     <div
       class={cn(
@@ -112,7 +113,7 @@
     }}
     class={cn(
       'border border-border-subtle/50 bg-surface-card/85 text-text-primary shadow-2xs backdrop-blur-xs transition-colors focus:border-accent focus:bg-surface-card focus:ring-2 focus:ring-accent/20 focus:outline-none disabled:cursor-not-allowed disabled:border-border-subtle/30 disabled:bg-surface-card/20 disabled:opacity-50 disabled:backdrop-blur-none dark:border-white/10 dark:bg-surface-card/70 dark:focus:bg-surface-card/90',
-      fullWidth ? 'w-full' : '',
+      fullWidth ? 'w-full min-w-0' : '',
       isFloating ?
         'peer block h-12 rounded-md px-3 pt-5! pb-1.5! text-sm leading-5 placeholder-transparent'
       : sizeStyles[resolvedSize],

@@ -1,8 +1,10 @@
 <script lang="ts">
   import {createFeedbackClient} from '$lib/feedbackClient.svelte';
-  import {tick, onMount} from 'svelte';
+  import {tick, onMount, onDestroy} from 'svelte';
   import {fade} from 'svelte/transition';
   import {BookOpenText} from '@lucide/svelte';
+  import {refreshCodeBlockPrefs} from '$lib/utils/codeBlocks';
+  import {codeBlockPrefsStore} from '$lib/stores/codeBlockPrefsStore.svelte';
   import {
     TopNav,
     TableOfContents,
@@ -81,17 +83,103 @@
     articleClientHeight = target.clientHeight;
   }
 
-  let articleBodyEl: HTMLElement | undefined = $state();
+  let articleEl = $state<HTMLElement | null>(null);
+  let articleBodyEl: HTMLDivElement | undefined = $state();
+  let highlightTimer: ReturnType<typeof setTimeout> | undefined;
+
+  function highlightTarget(el: HTMLElement) {
+    document
+      .querySelectorAll('.footnote-target-highlight')
+      .forEach(node => node.classList.remove('footnote-target-highlight'));
+
+    const highlightEl = (el.closest('sup') || el) as HTMLElement;
+    highlightEl.classList.add('footnote-target-highlight');
+
+    if (highlightTimer) clearTimeout(highlightTimer);
+    highlightTimer = setTimeout(() => {
+      highlightEl.classList.remove('footnote-target-highlight');
+    }, 1800);
+  }
+
+  function scrollToTarget(targetId: string, smooth = true) {
+    const targetEl = document.getElementById(targetId);
+    if (!targetEl) return;
+
+    const isDesktop =
+      typeof window !== 'undefined'
+      && window.matchMedia('(min-width: 1024px)').matches
+      && !readingModeStore.active;
+
+    if (isDesktop && articleEl) {
+      const containerRect = articleEl.getBoundingClientRect();
+      const targetRect = targetEl.getBoundingClientRect();
+      const currentScrollTop = articleEl.scrollTop;
+      const targetScrollTop =
+        currentScrollTop + (targetRect.top - containerRect.top) - 32;
+
+      articleEl.scrollTo({
+        top: Math.max(0, targetScrollTop),
+        behavior: smooth ? 'smooth' : 'auto'
+      });
+
+      if (window.scrollY !== 0) {
+        window.scrollTo({top: 0, behavior: 'instant'});
+      }
+      const mainEl = document.getElementById('main-content');
+      if (mainEl && mainEl.scrollTop !== 0) {
+        mainEl.scrollTop = 0;
+      }
+    } else {
+      const topNavHeight = 56;
+      const targetRect = targetEl.getBoundingClientRect();
+      const targetWindowTop =
+        window.scrollY + targetRect.top - topNavHeight - 20;
+
+      window.scrollTo({
+        top: Math.max(0, targetWindowTop),
+        behavior: smooth ? 'smooth' : 'auto'
+      });
+    }
+
+    highlightTarget(targetEl);
+  }
+
+  function handleArticleLinkClick(e: MouseEvent) {
+    if (
+      e.defaultPrevented
+      || e.button !== 0
+      || e.ctrlKey
+      || e.metaKey
+      || e.shiftKey
+      || e.altKey
+      || !(e.target instanceof Element)
+    )
+      return;
+
+    const link = e.target.closest<HTMLAnchorElement>('a[href^="#"]');
+    if (
+      !link
+      || !articleEl?.contains(link)
+      || link.hasAttribute('download')
+      || (link.target && link.target !== '_self')
+    )
+      return;
+    const href = link.getAttribute('href');
+    if (!href || href === '#' || !href.startsWith('#')) return;
+
+    const targetId = href.slice(1);
+    const targetEl = document.getElementById(targetId);
+    if (!targetEl) return;
+
+    e.preventDefault();
+    pushState(`#${targetId}`, {});
+    scrollToTarget(targetId, true);
+  }
 
   function scrollArticleToTop() {
-    if (articleBodyEl) {
-      const container = articleBodyEl.closest(
-        '.article-scroll-container'
-      ) as HTMLElement | null;
-      if (container) {
-        container.scrollTo({top: 0, behavior: 'smooth'});
-        return;
-      }
+    if (articleEl) {
+      articleEl.scrollTo({top: 0, behavior: 'smooth'});
+      return;
     }
     window.scrollTo({top: 0, behavior: 'smooth'});
   }
@@ -109,7 +197,7 @@
     void isDark;
 
     tick().then(() => {
-      const container = document.querySelector('.prose-custom');
+      const container = articleBodyEl;
       if (container) {
         const blocks = container.querySelectorAll('pre code');
         blocks.forEach(block => {
@@ -204,16 +292,26 @@
             try {
               await navigator.clipboard.writeText(url);
               triggerToast('Link copied to clipboard');
-            } catch {}
-            const target = document.getElementById(el.id);
-            if (target) {
-              target.scrollIntoView({behavior: 'smooth', block: 'start'});
-              pushState(`#${el.id}`, {});
+            } catch (err) {
+              void err;
             }
+            pushState(`#${el.id}`, {});
+            scrollToTarget(el.id, true);
           };
         });
       }
     });
+  });
+
+  $effect(() => {
+    void codeBlockPrefsStore.current;
+    void readingModeStore.active;
+    refreshCodeBlockPrefs();
+  });
+
+  onDestroy(() => {
+    readingModeStore.disable();
+    if (highlightTimer) clearTimeout(highlightTimer);
   });
 
   onMount(() => {
@@ -228,9 +326,24 @@
       attributeFilter: ['class']
     });
 
+    if (typeof window !== 'undefined' && window.location.hash) {
+      const hashId = window.location.hash.slice(1);
+      tick().then(() => {
+        scrollToTarget(hashId, false);
+      });
+    }
+
+    function handlePopState() {
+      if (typeof window !== 'undefined' && window.location.hash) {
+        const hashId = window.location.hash.slice(1);
+        scrollToTarget(hashId, true);
+      }
+    }
+    window.addEventListener('popstate', handlePopState);
+
     return () => {
       observer.disconnect();
-      readingModeStore.disable();
+      window.removeEventListener('popstate', handlePopState);
     };
   });
 </script>
@@ -248,6 +361,8 @@
       href="{siteUrl}/{slug}" />
   {/if}
 </svelte:head>
+
+<svelte:body onclick={handleArticleLinkClick} />
 
 <SkipLink />
 
@@ -277,13 +392,15 @@
         class="hidden select-none lg:sticky lg:top-0 lg:z-20 lg:flex lg:max-h-full lg:w-full lg:flex-col lg:overflow-hidden lg:px-3 lg:pt-[1.25vw] lg:pb-[1.25vw] [&>*+*]:lg:mt-4"
         aria-label="Table of contents">
         <TableOfContents
+          title="In this article"
           {headings}
-          class="min-h-0 w-full flex-1 [scrollbar-width:none] overflow-hidden [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden" />
+          scrollLinkedEl={articleEl}
+          class="min-h-0 w-full flex-1 scrollbar-none overflow-hidden [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden" />
       </aside>
     {/if}
 
     <article
-      bind:this={articleBodyEl}
+      bind:this={articleEl}
       onscroll={handleArticleScroll}
       class="article-scroll-container flex w-full min-w-0 flex-col lg:h-full lg:max-h-full lg:overflow-y-auto lg:px-[5%] lg:pt-[1.25vw] lg:pb-0">
       <ArticleHeader
@@ -319,6 +436,7 @@
       {#if !readingModeStore.active}
         <div class="mt-3 flex flex-col lg:hidden">
           <TableOfContents
+            title="In this article"
             {headings}
             collapsible={true}
             defaultCollapsed={true} />
@@ -326,7 +444,8 @@
       {/if}
 
       <div
-        class="prose-custom font-content-{contentFontStore.current} mt-4 w-full">
+        bind:this={articleBodyEl}
+        class="prose-custom font-content-{contentFontStore.current} mt-3 w-full">
         {@html html}
       </div>
 

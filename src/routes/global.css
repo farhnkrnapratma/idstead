@@ -557,6 +557,10 @@ select {
     @apply mt-4 mb-2 text-xs font-semibold sm:text-sm;
   }
 
+  .prose-custom :is(h1, h2, h3, h4, h5, h6) {
+    @apply font-serif font-normal italic;
+  }
+
   .prose-custom h1 + *,
   .prose-custom h2 + *,
   .prose-custom h3 + *,
@@ -684,19 +688,19 @@ select {
   }
 
   .prose-custom .heading-text {
-    @apply inline font-serif italic transition-none;
+    @apply inline! font-serif transition-none!;
   }
 
   .prose-custom a.anchor-link {
-    @apply ml-1.5 inline-flex items-center justify-center align-middle leading-none whitespace-nowrap text-text-primary no-underline transition-none;
+    @apply ml-[0.35rem]! inline-flex! items-center! justify-center! align-middle! leading-none! whitespace-nowrap! text-text-primary! no-underline! transition-none!;
   }
 
   :root.dark .prose-custom a.anchor-link {
-    @apply text-gh-gray-4;
+    @apply text-gh-gray-4!;
   }
 
   .prose-custom a.anchor-link svg {
-    @apply inline-block size-[0.85em] align-middle leading-none text-inherit no-underline;
+    @apply inline-block! size-[0.85em]! align-middle! leading-none! text-inherit! no-underline!;
   }
 
   .prose-custom h1:hover .heading-text,
@@ -892,7 +896,7 @@ select {
   }
 
   .prose-custom .footnotes li {
-    @apply relative pl-5! [counter-increment:footnotes];
+    @apply relative scroll-mt-20 pl-5! [counter-increment:footnotes];
   }
 
   .prose-custom .footnotes li::before {
@@ -909,7 +913,7 @@ select {
   }
 
   .prose-custom [data-footnote-ref] {
-    @apply inline-flex items-center justify-center px-0.5 py-0.5 font-mono text-[0.8em] leading-none font-medium text-security no-underline hover:underline;
+    @apply inline-flex scroll-mt-20 items-center justify-center px-0.5 py-0.5 font-mono text-[0.8em] leading-none font-medium text-security no-underline hover:underline;
   }
 
   .prose-custom .footnote-backref {
@@ -956,6 +960,10 @@ select {
 
   .code-icon-in {
     animation: code-icon-in 150ms ease-out forwards;
+  }
+
+  .prose-custom .table-wrapper > table {
+    @apply my-0 border-0 shadow-none;
   }
 
   .font-content-sans,
@@ -1376,6 +1384,40 @@ select {
   .prose-custom .markdown-details-body li,
   .prose-custom details li {
     @apply text-sm leading-relaxed;
+  }
+
+  .translation-disclaimer .markdown-alert {
+    @apply mb-2;
+  }
+
+  .footnote-target-highlight {
+    animation: footnote-highlight-pulse 1.8s ease-out forwards;
+    border-radius: 0.25rem;
+  }
+
+  @keyframes footnote-highlight-pulse {
+    0% {
+      background-color: color-mix(
+        in srgb,
+        var(--color-accent) 25%,
+        transparent
+      );
+      box-shadow: 0 0 0 2px
+        color-mix(in srgb, var(--color-accent) 40%, transparent);
+    }
+    70% {
+      background-color: color-mix(
+        in srgb,
+        var(--color-accent) 15%,
+        transparent
+      );
+      box-shadow: 0 0 0 2px
+        color-mix(in srgb, var(--color-accent) 25%, transparent);
+    }
+    100% {
+      background-color: transparent;
+      box-shadow: 0 0 0 0 transparent;
+    }
   }
 }
 

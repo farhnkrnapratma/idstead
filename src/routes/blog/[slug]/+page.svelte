@@ -1,4 +1,7 @@
 <script lang="ts">
+  import SubmitShortcutHint from '$lib/components/SubmitShortcutHint.svelte';
+  import Avatar from '$lib/components/Avatar.svelte';
+  import {COMMENTS_PAGE_SIZE, commentAuthorName} from '$lib/commentAuthor';
   import {blogBannerAlt} from '$lib/blogBanner';
   import {createFeedbackClient} from '$lib/feedbackClient.svelte';
   import {shortcut} from '$lib/utils/shortcut.svelte';
@@ -15,7 +18,7 @@
   import {onMount, onDestroy, tick, untrack} from 'svelte';
   import {fade} from 'svelte/transition';
   import {SvelteSet} from 'svelte/reactivity';
-  import {Mail, Image as ImageIcon, User, BookOpenText} from '@lucide/svelte';
+  import {Mail, Image as ImageIcon, BookOpenText} from '@lucide/svelte';
   import type {PageProps} from './$types';
   import type {BlogComment} from './+page.server';
   import hljs from 'highlight.js';
@@ -186,8 +189,6 @@
   const hiddenCollaborators = $derived(allAuthors.slice(3));
   let isCollaboratorsPopoverOpen = $state(false);
   let collaboratorsContainerRef: HTMLDivElement | undefined = $state();
-  const failedAvatars = new SvelteSet<string>();
-  const loadedAvatars = new SvelteSet<string>();
 
   const feedback = createFeedbackClient(() => ({type: 'article', id: post.id}));
 
@@ -501,9 +502,7 @@
   let reportingComment = $state<BlogComment | null>(null);
 
   function getCommentAuthor(comment: BlogComment) {
-    if (comment.is_anonymous) return 'Anonymous';
-    if (comment.is_admin) return 'Administrator';
-    return comment.author_name || 'Anonymous';
+    return commentAuthorName(comment, author?.name || '');
   }
 
   function cancelReply() {
@@ -836,25 +835,10 @@
                   class="relative inline-block transition-transform hover:z-40 hover:scale-110 focus-visible:outline-none"
                   style="z-index: {30 - idx * 10};"
                   aria-label="{user}'s GitHub profile">
-                  <div
-                    class="relative flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-surface-base bg-surface-elevated">
-                    {#if !loadedAvatars.has(user)}
-                      <User class="size-3 text-text-muted" />
-                    {/if}
-                    {#if !failedAvatars.has(user)}
-                      <img
-                        src="https://github.com/{user}.png?size=64"
-                        alt={user}
-                        class="absolute inset-0 size-full object-cover transition-opacity duration-200 {(
-                          loadedAvatars.has(user)
-                        ) ?
-                          'opacity-100'
-                        : 'opacity-0'}"
-                        loading="lazy"
-                        onload={() => loadedAvatars.add(user)}
-                        onerror={() => failedAvatars.add(user)} />
-                    {/if}
-                  </div>
+                  <Avatar
+                    name={user}
+                    src={`https://github.com/${user}.png?size=64`}
+                    class="size-6 border-2 border-surface-base" />
                 </a>
               {/each}
             </div>
@@ -978,25 +962,10 @@
                           rel="noopener noreferrer"
                           onclick={() => (isCollaboratorsPopoverOpen = false)}
                           class="flex items-center gap-2 rounded-md px-1.5 py-1 text-xs transition-colors hover:bg-surface-hover hover:text-accent">
-                          <div
-                            class="relative flex size-5 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border-subtle bg-surface-card">
-                            {#if !loadedAvatars.has(collab)}
-                              <User class="size-3 text-text-muted" />
-                            {/if}
-                            {#if !failedAvatars.has(collab)}
-                              <img
-                                src="https://github.com/{collab}.png?size=64"
-                                alt={collab}
-                                class="absolute inset-0 size-full object-cover transition-opacity duration-200 {(
-                                  loadedAvatars.has(collab)
-                                ) ?
-                                  'opacity-100'
-                                : 'opacity-0'}"
-                                loading="lazy"
-                                onload={() => loadedAvatars.add(collab)}
-                                onerror={() => failedAvatars.add(collab)} />
-                            {/if}
-                          </div>
+                          <Avatar
+                            name={collab}
+                            src={`https://github.com/${collab}.png?size=64`}
+                            class="size-6 border-2 border-surface-base" />
                           <span
                             class="font-semibold text-text-primary hover:underline"
                             >{collab}</span>
@@ -1105,7 +1074,7 @@
                       {#if related.bannerPublicUrl && !failedRelatedBanners.has(related.id)}
                         <ImageWithSkeleton
                           src={related.bannerPublicUrl}
-                          alt={related.title}
+                          alt={blogBannerAlt(related.title, related.excerpt)}
                           aspectRatio="aspect-video"
                           onerror={() => markRelatedBannerFailed(related.id)}
                           class="h-full w-full object-cover" />
@@ -1161,7 +1130,7 @@
                                     scope: relatedScope,
                                     label: 'Show less'
                                   }}
-                                  class="relative ml-1 inline cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
+                                  class="relative ml-1 inline cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none sm:text-sm">
                                   Show less
                                 </button>
                               {/if}
@@ -1321,11 +1290,13 @@
                       >Clear<span class="hidden sm:inline">&nbsp;comment</span
                       ></span>
                   </Button>
+                  <SubmitShortcutHint class="max-sm:hidden" />
                   <Button
                     htmlType="submit"
                     type="primary"
                     size="md"
                     class="flex-1 sm:flex-initial"
+                    aria-keyshortcuts="Control+Enter Meta+Enter"
                     disabled={isSubmitting}
                     isLoading={isSubmitting}
                     keyboardShortcut={buttonKey('formSubmit')}
@@ -1345,6 +1316,8 @@
             <CommentThread
               {comments}
               {replyTo}
+              pageSize={COMMENTS_PAGE_SIZE}
+              controls
               useContentFont={true}
               authorName={author?.name || ''}
               onReport={comment => {
@@ -1355,7 +1328,6 @@
                 <RelativeTime
                   date={comment.created_at}
                   tag="time" />
-                <span aria-hidden="true">&middot;</span>
                 <button
                   type="button"
                   onclick={() => {
@@ -1473,11 +1445,13 @@
 
                     <ConsentNotice action="posting a reply" />
 
-                    <div class="mt-1 flex justify-end">
+                    <div class="mt-1 flex items-center justify-end gap-3">
+                      <SubmitShortcutHint class="max-sm:hidden" />
                       <Button
                         htmlType="submit"
                         type="primary"
                         size="sm"
+                        aria-keyshortcuts="Control+Enter Meta+Enter"
                         disabled={isSubmitting}
                         isLoading={isSubmitting}
                         keyboardShortcut={buttonKey('formSubmit')}
@@ -1639,666 +1613,3 @@
     </div>
   {/snippet}
 </Dialog>
-
-<style>
-  @reference "../../global.css";
-
-  .prose-custom {
-    @apply text-left text-base leading-normal text-(--color-body);
-    --color-heading: var(--color-text-primary);
-    --color-body: var(--color-text-secondary);
-    --color-link: var(--color-accent);
-    --color-link-hover: var(--color-accent-hover);
-  }
-
-  .prose-custom :global(p) {
-    @apply mt-5 mb-5 text-(--color-body);
-  }
-
-  .prose-custom :global(h1),
-  .prose-custom :global(h2),
-  .prose-custom :global(h3),
-  .prose-custom :global(h4),
-  .prose-custom :global(h5),
-  .prose-custom :global(h6) {
-    @apply font-serif text-(--color-heading);
-  }
-
-  .prose-custom :global(h1) {
-    @apply mt-8 mb-4 text-2xl font-extrabold sm:text-3xl;
-  }
-
-  .prose-custom :global(h2) {
-    @apply mt-7 mb-3 text-xl font-bold sm:text-2xl;
-  }
-
-  .prose-custom :global(h3) {
-    @apply mt-6 mb-2 text-lg font-semibold sm:text-xl;
-  }
-
-  .prose-custom :global(h4) {
-    @apply mt-5 mb-2 text-base font-semibold sm:text-lg;
-  }
-
-  .prose-custom :global(h5) {
-    @apply mt-4 mb-2 text-sm font-semibold sm:text-base;
-  }
-
-  .prose-custom :global(h6) {
-    @apply mt-4 mb-2 text-xs font-semibold sm:text-sm;
-  }
-
-  .blog-reading-page :global(:is(h1, h2, h3, h4, h5, h6)) {
-    @apply font-serif font-normal italic;
-  }
-
-  .prose-custom :global(li > p) {
-    @apply my-0!;
-  }
-
-  .prose-custom :global(pre) {
-    @apply mt-6 mb-6 scrollbar-none! overflow-x-auto rounded-md border border-border-subtle bg-surface-hover px-3! py-1.5! font-mono text-[0.8rem] leading-snug break-normal! whitespace-pre! [-ms-overflow-style:none]!;
-  }
-
-  .prose-custom :global(pre[data-enhanced='true']) {
-    @apply pt-0! pr-0! pl-0!;
-  }
-
-  .prose-custom :global(pre)::-webkit-scrollbar {
-    @apply hidden! h-0! w-0!;
-  }
-
-  .prose-custom :global(code:not(pre code)) {
-    @apply rounded bg-code-inline-bg px-0.5 py-px font-mono text-[0.925em] font-normal wrap-break-word [word-break:break-word] text-inherit;
-  }
-
-  .prose-custom :global(pre code) {
-    @apply block! w-max! min-w-full! overflow-visible! border-0 bg-transparent py-0! pr-0! pl-0! font-mono text-[0.8rem] leading-snug break-normal! whitespace-pre!;
-  }
-
-  .prose-custom :global(.code-line) {
-    @apply block! w-full! pr-3.5! pl-2!;
-  }
-
-  .prose-custom :global(pre.code-wrap),
-  .prose-custom :global(pre[data-wrap='true']) {
-    @apply overflow-x-hidden! wrap-anywhere! [word-break:break-word]! whitespace-pre-wrap!;
-  }
-
-  .prose-custom :global(pre.code-wrap code),
-  .prose-custom :global(pre[data-wrap='true'] code) {
-    @apply box-border! block! w-full! max-w-full! overflow-x-hidden! wrap-anywhere! [word-break:break-word]! whitespace-pre-wrap!;
-  }
-
-  .prose-custom :global(pre.code-wrap .code-line),
-  .prose-custom :global(pre[data-wrap='true'] .code-line) {
-    @apply box-border! w-full! max-w-full! pl-[calc(0.5rem+4ch)]! indent-[-4ch] wrap-anywhere! [word-break:break-word]! whitespace-pre-wrap!;
-  }
-
-  .prose-custom :global(a:not(.anchor-link)) {
-    @apply text-security no-underline hover:underline;
-  }
-
-  .prose-custom :global(.heading-text) {
-    @apply inline! font-serif transition-none!;
-  }
-
-  .prose-custom :global(a.anchor-link) {
-    @apply ml-[0.35rem]! inline-flex! items-center! justify-center! align-middle! leading-none! whitespace-nowrap! text-text-primary! no-underline! transition-none!;
-  }
-
-  :global(:root.dark) .prose-custom :global(a.anchor-link) {
-    @apply text-gh-gray-4!;
-  }
-
-  .prose-custom :global(a.anchor-link svg) {
-    @apply inline-block! size-[0.85em]! align-middle! leading-none! text-inherit! no-underline!;
-  }
-
-  .prose-custom :global(h1:hover .heading-text),
-  .prose-custom :global(h2:hover .heading-text),
-  .prose-custom :global(h3:hover .heading-text),
-  .prose-custom :global(h4:hover .heading-text),
-  .prose-custom :global(h5:hover .heading-text),
-  .prose-custom :global(h6:hover .heading-text),
-  .prose-custom :global(.heading-text):hover,
-  :global(:root.dark) .prose-custom :global(h1:hover .heading-text),
-  :global(:root.dark) .prose-custom :global(h2:hover .heading-text),
-  :global(:root.dark) .prose-custom :global(h3:hover .heading-text),
-  :global(:root.dark) .prose-custom :global(h4:hover .heading-text),
-  :global(:root.dark) .prose-custom :global(h5:hover .heading-text),
-  :global(:root.dark) .prose-custom :global(h6:hover .heading-text),
-  :global(:root.dark) .prose-custom :global(.heading-text):hover {
-    @apply text-accent underline underline-offset-4;
-  }
-
-  .prose-custom :global(h1:hover a.anchor-link),
-  .prose-custom :global(h2:hover a.anchor-link),
-  .prose-custom :global(h3:hover a.anchor-link),
-  .prose-custom :global(h4:hover a.anchor-link),
-  .prose-custom :global(h5:hover a.anchor-link),
-  .prose-custom :global(h6:hover a.anchor-link),
-  .prose-custom :global(a.anchor-link):hover,
-  :global(:root.dark) .prose-custom :global(h1:hover a.anchor-link),
-  :global(:root.dark) .prose-custom :global(h2:hover a.anchor-link),
-  :global(:root.dark) .prose-custom :global(h3:hover a.anchor-link),
-  :global(:root.dark) .prose-custom :global(h4:hover a.anchor-link),
-  :global(:root.dark) .prose-custom :global(h5:hover a.anchor-link),
-  :global(:root.dark) .prose-custom :global(h6:hover a.anchor-link),
-  :global(:root.dark) .prose-custom :global(a.anchor-link):hover,
-  .prose-custom :global(h1:hover a.anchor-link svg),
-  .prose-custom :global(h2:hover a.anchor-link svg),
-  .prose-custom :global(h3:hover a.anchor-link svg),
-  .prose-custom :global(h4:hover a.anchor-link svg),
-  .prose-custom :global(h5:hover a.anchor-link svg),
-  .prose-custom :global(h6:hover a.anchor-link svg),
-  .prose-custom :global(a.anchor-link):hover :global(svg),
-  :global(:root.dark) .prose-custom :global(h1:hover a.anchor-link svg),
-  :global(:root.dark) .prose-custom :global(h2:hover a.anchor-link svg),
-  :global(:root.dark) .prose-custom :global(h3:hover a.anchor-link svg),
-  :global(:root.dark) .prose-custom :global(h4:hover a.anchor-link svg),
-  :global(:root.dark) .prose-custom :global(h5:hover a.anchor-link svg),
-  :global(:root.dark) .prose-custom :global(h6:hover a.anchor-link svg),
-  :global(:root.dark) .prose-custom :global(a.anchor-link):hover :global(svg) {
-    @apply text-accent! no-underline! opacity-100;
-  }
-
-  .prose-custom :global(table) {
-    @apply my-6 w-full max-w-full table-fixed border-separate border-spacing-0 overflow-hidden rounded-md border border-border-subtle text-left text-xs shadow-2xs;
-  }
-
-  .prose-custom :global(thead) {
-    @apply border-b border-border-subtle bg-surface-hover/80 font-semibold tracking-wider text-text-primary uppercase;
-  }
-
-  .prose-custom :global(th) {
-    @apply w-[1%] px-2.5 py-2 text-center font-semibold wrap-break-word [word-break:break-word] text-text-primary;
-  }
-
-  .prose-custom :global(tbody tr) {
-    @apply transition-colors hover:bg-surface-hover/30;
-  }
-
-  .prose-custom :global(td) {
-    @apply w-[1%] border-r border-border-subtle/40 px-2.5 py-1.5 text-left leading-relaxed wrap-break-word [word-break:break-word] text-text-secondary last:border-r-0;
-  }
-
-  .prose-custom :global(td code),
-  .prose-custom :global(th code) {
-    @apply wrap-anywhere [word-break:break-word] whitespace-normal;
-  }
-
-  .prose-custom :global(td[align='right']) {
-    @apply text-right;
-  }
-
-  .prose-custom :global(td[align='center']) {
-    @apply text-center;
-  }
-
-  .prose-custom :global(hr) {
-    @apply my-8 h-px border-0 bg-border-subtle;
-  }
-
-  .prose-custom :global(blockquote:not(.markdown-alert)) {
-    @apply my-6 rounded-md border border-border-default/40 bg-surface-hover/30 p-4 text-sm leading-relaxed text-text-secondary;
-  }
-
-  .prose-custom :global(blockquote:not(.markdown-alert) p) {
-    @apply my-1 text-text-secondary;
-  }
-
-  .prose-custom :global(ul) {
-    @apply my-2 flex list-none flex-col gap-1 pl-0!;
-  }
-
-  .prose-custom :global(ol) {
-    @apply my-2 list-decimal space-y-1 pl-6!;
-  }
-
-  .prose-custom :global(ul ul),
-  .prose-custom :global(ol ul),
-  .prose-custom :global(.ul-content > ul),
-  .prose-custom :global(.task-content > ul) {
-    @apply my-1 pl-0!;
-  }
-
-  .prose-custom :global(ul ol),
-  .prose-custom :global(ol ol),
-  .prose-custom :global(.ul-content > ol),
-  .prose-custom :global(.task-content > ol) {
-    @apply my-1 pl-6!;
-  }
-
-  .prose-custom :global(li.ul-list-item),
-  .prose-custom :global(li.task-list-item) {
-    @apply my-0.5 flex list-none items-start gap-2 pl-0!;
-  }
-
-  .prose-custom :global(li.ol-list-item) {
-    @apply my-0.5 pl-0.5!;
-  }
-
-  .prose-custom :global(li p),
-  .prose-custom :global(li > p) {
-    margin: 0 !important;
-    display: inline !important;
-  }
-
-  .prose-custom :global(.markdown-alert) {
-    @apply my-6 rounded-md border p-4 text-xs transition-colors duration-200 sm:text-sm;
-  }
-
-  .prose-custom :global(.markdown-alert-title) {
-    @apply mb-1.5 flex items-center gap-2 text-xs leading-none font-semibold select-none sm:text-sm;
-  }
-
-  .prose-custom :global(.markdown-alert-title svg) {
-    @apply size-4 shrink-0 translate-y-[-6%];
-  }
-
-  .prose-custom :global(.markdown-alert-content) {
-    @apply leading-relaxed text-text-secondary;
-  }
-
-  .prose-custom :global(.markdown-alert-content > p) {
-    @apply my-1 text-text-secondary;
-  }
-
-  .prose-custom :global(.markdown-alert-content > *:first-child) {
-    @apply mt-0!;
-  }
-
-  .prose-custom :global(.markdown-alert-content > *:last-child) {
-    @apply mb-0!;
-  }
-
-  .prose-custom :global(.markdown-alert-note) {
-    @apply border-security/40 bg-security-subtle text-text-secondary;
-  }
-  .prose-custom :global(.markdown-alert-note .markdown-alert-title) {
-    @apply text-security;
-  }
-
-  .prose-custom :global(.markdown-alert-tip) {
-    @apply border-success/40 bg-success-subtle text-text-secondary;
-  }
-  .prose-custom :global(.markdown-alert-tip .markdown-alert-title) {
-    @apply text-success;
-  }
-
-  .prose-custom :global(.markdown-alert-important) {
-    @apply border-copilot/40 bg-copilot-subtle text-text-secondary;
-  }
-  .prose-custom :global(.markdown-alert-important .markdown-alert-title) {
-    @apply text-copilot;
-  }
-
-  .prose-custom :global(.markdown-alert-warning) {
-    @apply border-warning/40 bg-warning-subtle text-text-secondary;
-  }
-  .prose-custom :global(.markdown-alert-warning .markdown-alert-title) {
-    @apply text-warning-strong;
-  }
-
-  .prose-custom :global(.markdown-alert-caution) {
-    @apply border-danger/40 bg-danger-subtle text-text-secondary;
-  }
-  .prose-custom :global(.markdown-alert-caution .markdown-alert-title) {
-    @apply text-danger;
-  }
-
-  .translation-disclaimer :global(.markdown-alert) {
-    @apply mb-2;
-  }
-
-  .prose-custom :global(mark) {
-    @apply rounded-md bg-security-subtle px-1 py-0.5 font-normal text-security;
-  }
-
-  .prose-custom :global(kbd) {
-    @apply inline-block rounded bg-code-inline-bg px-1.5 py-0.5 font-mono text-[0.875em] leading-normal font-normal text-inherit;
-  }
-
-  .prose-custom :global(sub) {
-    @apply align-sub text-[0.75em] leading-none;
-  }
-
-  .prose-custom :global(sup) {
-    @apply align-super text-[0.75em] leading-none;
-  }
-
-  .prose-custom :global(.markdown-steps-container) {
-    --step-line-w: 1px;
-    --step-badge-size: 1.375rem;
-    @apply relative my-6 ml-0 space-y-0 select-text;
-    counter-reset: step-counter;
-  }
-
-  .prose-custom
-    :global(
-      .markdown-steps-container > :not(.markdown-steps-list):not(.markdown-step)
-    ) {
-    @apply pl-8;
-  }
-
-  .prose-custom :global(.markdown-step) {
-    counter-increment: step-counter;
-    @apply relative pb-6 pl-8 text-text-secondary;
-  }
-
-  .prose-custom :global(.markdown-step:last-child) {
-    @apply pb-0;
-  }
-
-  .prose-custom :global(.markdown-step::before) {
-    content: counter(step-counter);
-    position: absolute;
-    top: calc(
-      (
-          var(--step-title-line-height, var(--step-badge-size)) -
-            var(--step-badge-size)
-        ) /
-        2
-    );
-    left: 0;
-    width: var(--step-badge-size);
-    height: var(--step-badge-size);
-    line-height: var(--step-badge-size);
-    background-color: color-mix(
-      in srgb,
-      var(--color-text-primary) 8%,
-      var(--color-surface-base)
-    );
-    @apply z-10 flex items-center justify-center rounded border border-border-subtle/70 text-center font-mono text-xs font-medium text-text-primary tabular-nums select-none;
-  }
-
-  .prose-custom :global(.markdown-step::after) {
-    content: '';
-    position: absolute;
-    top: var(--step-badge-size);
-    left: calc(var(--step-badge-size) / 2 - 0.5px);
-    width: var(--step-line-w);
-    bottom: calc(-1 * var(--step-badge-size));
-    @apply pointer-events-none bg-border-subtle;
-  }
-
-  .prose-custom :global(.markdown-step:last-child::after) {
-    display: none;
-  }
-
-  .prose-custom :global(.markdown-step > :is(h2, h3, h4)) {
-    @apply relative mt-0! mb-2 flex items-center font-bold text-text-primary;
-  }
-
-  .prose-custom :global(.markdown-step > :is(h2, h3, h4)),
-  .prose-custom :global(.markdown-step > :is(h2, h3, h4) .heading-text) {
-    @apply font-sans! not-italic!;
-  }
-
-  .prose-custom :global(.markdown-steps-list) {
-    @apply my-0! list-none! space-y-0! pl-0!;
-  }
-
-  .prose-custom :global(.markdown-steps-list > li.markdown-step) {
-    @apply relative my-0! list-none! pb-6 pl-8 text-text-secondary;
-  }
-
-  .prose-custom :global(.markdown-steps-list > li.markdown-step:last-child) {
-    @apply pb-0!;
-  }
-
-  .prose-custom
-    :global(.markdown-steps-list > li.markdown-step:last-child::after) {
-    display: none;
-  }
-
-  .prose-custom :global(.markdown-tab-group) {
-    @apply my-6;
-  }
-
-  .prose-custom :global(.markdown-tab-group-header) {
-    @apply relative flex min-h-8 items-end border-b border-border-subtle select-none;
-  }
-
-  .prose-custom :global(.markdown-tab-group-nav) {
-    @apply m-0 flex min-w-0 flex-1 scrollbar-none items-end gap-1.5 overflow-x-auto p-0 [-ms-overflow-style:none];
-  }
-
-  .prose-custom :global(.markdown-tab-group-body) {
-    @apply pt-2;
-  }
-
-  .prose-custom
-    :global(.markdown-tab-group-body > .markdown-tab-panel > :first-child) {
-    @apply mt-2!;
-  }
-
-  .prose-custom :global(.markdown-tab-group .markdown-tab-panel) {
-    @apply p-0;
-  }
-
-  .prose-custom :global(.markdown-tabs-container) {
-    @apply my-6 rounded-md border border-border-subtle shadow-2xs;
-  }
-
-  .prose-custom :global(.markdown-tabs-header) {
-    @apply relative flex min-h-8 items-end justify-between rounded-t-md border-b border-border-subtle px-3 pt-0 pb-0 select-none;
-  }
-
-  .prose-custom :global(.markdown-tabs-nav) {
-    @apply m-0 flex min-w-0 flex-1 scrollbar-none items-end gap-1.5 overflow-x-auto p-0 [-ms-overflow-style:none];
-  }
-
-  .prose-custom :global(.markdown-tabs-actions) {
-    @apply ml-2 flex shrink-0 items-center gap-1 self-center pb-0.5;
-  }
-
-  .prose-custom :global(.markdown-tab-button) {
-    @apply relative -mb-px inline-flex shrink-0 cursor-pointer items-center justify-center border-b-[2.5px] px-3 py-1.5 text-xs font-medium transition-all select-none;
-  }
-
-  .prose-custom :global(.markdown-tab-button.active-tab) {
-    @apply border-b-accent font-bold text-accent;
-  }
-
-  .prose-custom :global(.markdown-tab-button:not(.active-tab)) {
-    @apply border-b-transparent text-text-muted hover:text-text-primary;
-  }
-
-  .prose-custom :global(.markdown-tabs-body) {
-    @apply rounded-b-md;
-  }
-
-  .prose-custom :global(.markdown-tabs-container .markdown-tab-panel) {
-    @apply rounded-b-md p-4;
-  }
-
-  .prose-custom
-    :global(
-      .markdown-tabs-container .markdown-tab-panel:has(> .code-block-container)
-    ),
-  .prose-custom
-    :global(.markdown-tabs-container .markdown-tab-panel:has(> .code-body)),
-  .prose-custom
-    :global(.markdown-tabs-container .markdown-tab-panel:has(> pre)),
-  .prose-custom
-    :global(
-      .markdown-tabs-container .markdown-tab-panel:has(.code-block-container)
-    ) {
-    @apply rounded-b-md p-0!;
-  }
-
-  .prose-custom :global(.markdown-tabs-container .code-block-container) {
-    @apply my-0! rounded-b-md! border-0!;
-  }
-
-  .prose-custom :global(.markdown-tabs-container .code-header-bar) {
-    @apply hidden!;
-  }
-
-  .prose-custom :global(.markdown-tabs-container .code-body) {
-    @apply rounded-b-md! border-0!;
-  }
-
-  .prose-custom :global(.markdown-tabs-container .code-scrollbar-wrapper) {
-    @apply rounded-b-md! border-0!;
-  }
-
-  .prose-custom :global(.markdown-tabs-container pre) {
-    @apply my-0! rounded-b-md! border-0!;
-  }
-
-  .prose-custom :global(details.markdown-details),
-  .prose-custom :global(details) {
-    @apply my-4 overflow-hidden rounded-md glass-card border border-border-subtle text-text-primary shadow-md backdrop-blur-md;
-    border: 1px solid var(--color-border-subtle);
-  }
-
-  :global(.dark) .prose-custom :global(details.markdown-details),
-  :global(.dark) .prose-custom :global(details) {
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .prose-custom :global(details > summary),
-  .prose-custom :global(.markdown-details-summary) {
-    @apply flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 text-sm font-medium text-text-primary transition-colors select-none hover:bg-surface-hover/50 [&::-webkit-details-marker]:hidden;
-  }
-
-  .prose-custom :global(details[open] > summary),
-  .prose-custom :global(details[open] .markdown-details-summary) {
-    border-bottom: 1px solid var(--color-border-subtle) !important;
-    @apply bg-surface-hover/30;
-  }
-
-  :global(.dark) .prose-custom :global(details[open] > summary),
-  :global(.dark)
-    .prose-custom
-    :global(details[open] .markdown-details-summary) {
-    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
-  }
-
-  .prose-custom :global(.markdown-details-title) {
-    @apply inline-flex translate-y-px items-center text-sm leading-none font-medium text-text-primary;
-  }
-
-  .prose-custom :global(.markdown-details-icon) {
-    @apply inline-flex shrink-0 items-center justify-center text-text-muted;
-  }
-
-  .prose-custom :global(.markdown-details-body) {
-    @apply px-3.5 py-3 text-sm leading-relaxed font-normal text-text-secondary;
-  }
-
-  .prose-custom :global(details[open] .markdown-details-body) {
-    animation: details-expand 300ms cubic-bezier(0.25, 1, 0.5, 1) both;
-  }
-
-  .prose-custom :global(.markdown-details-body > :first-child) {
-    @apply mt-0!;
-  }
-
-  .prose-custom :global(.markdown-details-body > :last-child) {
-    @apply mb-0!;
-  }
-
-  .prose-custom :global(.markdown-details-body p),
-  .prose-custom :global(details p) {
-    @apply my-2 text-sm leading-relaxed text-text-secondary;
-  }
-
-  .prose-custom :global(.markdown-details-body ul),
-  .prose-custom :global(.markdown-details-body ol),
-  .prose-custom :global(details ul),
-  .prose-custom :global(details ol) {
-    @apply my-2 pl-4 text-sm leading-relaxed;
-  }
-
-  .prose-custom :global(.markdown-details-body li),
-  .prose-custom :global(details li) {
-    @apply text-sm leading-relaxed;
-  }
-
-  .prose-custom :global(.footnotes) {
-    @apply mt-10 border-t border-border-subtle pt-4 text-[calc(0.84375rem*var(--a11y-scale))] leading-relaxed text-text-secondary;
-  }
-
-  .prose-custom :global(.footnotes ol) {
-    @apply my-2 list-none! space-y-1.5 pl-0! [counter-reset:footnotes];
-  }
-
-  .prose-custom :global(.footnotes li) {
-    @apply relative scroll-mt-20 pl-5! [counter-increment:footnotes];
-  }
-
-  .prose-custom :global(.footnotes li::before) {
-    content: counter(footnotes) '.';
-    @apply absolute top-0 left-0 font-mono text-text-secondary tabular-nums select-none;
-  }
-
-  .prose-custom :global(.footnotes li p) {
-    @apply my-0 inline;
-  }
-
-  .prose-custom :global(sup:has(> [data-footnote-ref])) {
-    @apply mx-0.5 inline-flex align-baseline;
-  }
-
-  .prose-custom :global([data-footnote-ref]) {
-    @apply inline-flex scroll-mt-20 items-center justify-center px-0.5 py-0.5 font-mono text-[0.8em] leading-none font-medium text-security no-underline hover:underline;
-  }
-
-  .prose-custom :global(.footnote-backref) {
-    @apply inline-flex items-center justify-center px-0.5 py-0.5 font-mono text-security no-underline hover:underline;
-    vertical-align: baseline;
-    line-height: 1;
-  }
-
-  .prose-custom :global(.footnote-backref-static) {
-    @apply inline-flex items-center font-mono text-text-muted;
-    vertical-align: baseline;
-    line-height: 1;
-  }
-
-  .prose-custom :global(.footnote-sub-backref) {
-    @apply inline-flex items-center justify-center px-0.5 py-0.5 font-mono text-security italic no-underline hover:underline;
-    font-size: 0.75rem !important;
-    line-height: 1 !important;
-    vertical-align: 0.32em;
-    text-underline-offset: 2px;
-  }
-
-  .prose-custom :global(.footnotes li:target a) {
-    @apply underline;
-  }
-
-  :global(.footnote-target-highlight) {
-    animation: footnote-highlight-pulse 1.8s ease-out forwards;
-    border-radius: 0.25rem;
-  }
-
-  @keyframes footnote-highlight-pulse {
-    0% {
-      background-color: color-mix(
-        in srgb,
-        var(--color-accent) 25%,
-        transparent
-      );
-      box-shadow: 0 0 0 2px
-        color-mix(in srgb, var(--color-accent) 40%, transparent);
-    }
-    70% {
-      background-color: color-mix(
-        in srgb,
-        var(--color-accent) 15%,
-        transparent
-      );
-      box-shadow: 0 0 0 2px
-        color-mix(in srgb, var(--color-accent) 25%, transparent);
-    }
-    100% {
-      background-color: transparent;
-      box-shadow: 0 0 0 0 transparent;
-    }
-  }
-</style>

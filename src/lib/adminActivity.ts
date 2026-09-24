@@ -1,3 +1,9 @@
+import {
+  DEFAULT_ADMIN_DISPLAY,
+  formatAdminDate,
+  formatAdminDateTime,
+  type AdminDisplayPrefs
+} from './adminDateFormat';
 import {reportReasonLabel} from './reportReasons';
 export type PageType = 'article' | 'legal';
 export type FeedbackVote = 'yes' | 'no';
@@ -119,24 +125,19 @@ export interface ActivityFocus {
   notification?: AdminNotificationRow;
   requestId: string;
 }
-export function activityDate(date: string, timeZone?: string) {
-  return new Intl.DateTimeFormat('en-US', {
-    timeZone,
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  }).format(new Date(date));
+export function activityDate(
+  date: string,
+  timeZone?: string,
+  prefs: AdminDisplayPrefs = DEFAULT_ADMIN_DISPLAY
+) {
+  return formatAdminDate(date, timeZone, prefs.dateFormat, true);
 }
-export function activityTimestamp(date: string, timeZone?: string) {
-  const value = new Date(date);
-  const day = activityDate(date, timeZone);
-  const time = new Intl.DateTimeFormat('en-US', {
-    timeZone,
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true
-  }).format(value);
-  return `${day} ${time}`;
+export function activityTimestamp(
+  date: string,
+  timeZone?: string,
+  prefs: AdminDisplayPrefs = DEFAULT_ADMIN_DISPLAY
+) {
+  return formatAdminDateTime(date, timeZone, prefs);
 }
 export function activityTimeZone(
   date: string,

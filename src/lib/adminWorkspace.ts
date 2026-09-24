@@ -1,7 +1,7 @@
 import type {AdminNotificationRow, DashboardTotals} from './adminActivity';
 
 export type WorkspaceArea = 'reports' | 'feedback' | 'notifications';
-export const ADMIN_WORKSPACE_PAGE_SIZE = 20;
+export const ADMIN_WORKSPACE_PAGE_SIZE = 10;
 export type WorkspaceSection =
   | WorkspaceArea
   | 'report_events'

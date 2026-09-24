@@ -2,6 +2,7 @@
   import {themeColors} from '$lib/themeColors';
   import './global.css';
   import {onMount} from 'svelte';
+  import {installSubmitShortcut} from '$lib/utils/submitShortcut';
   import {onNavigate} from '$app/navigation';
   import {page} from '$app/state';
   import {ConsentBanner, Toast, ScrollToTopButton, FeedbackButton} from '$lib';
@@ -49,11 +50,13 @@
       refreshCodeBlockPrefs
     );
     const cleanupScroll = scrollStore.init();
+    const cleanupSubmitShortcut = installSubmitShortcut();
     return () => {
       cleanupTheme?.();
       cleanupA11y?.();
       cleanupCodeBlockPrefs?.();
       cleanupScroll?.();
+      cleanupSubmitShortcut();
     };
   });
 

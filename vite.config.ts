@@ -6,6 +6,7 @@ import {sentrySvelteKit} from '@sentry/sveltekit';
 import {webpWasmPlugin} from './tooling/vite/webp-wasm-plugin.ts';
 
 export default defineConfig({
+  server: {allowedHosts: ['rc.fkp.my.id']},
   plugins: [
     webpWasmPlugin(),
     sentrySvelteKit({

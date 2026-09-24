@@ -10,6 +10,7 @@
   import ErrorState from '../ErrorState.svelte';
   import {cn} from '$lib/utils/cn';
   import {activityDate} from '$lib/adminActivity';
+  import {adminDisplayStore} from '$lib/stores/adminDisplayStore.svelte';
   import {formatCount} from '$lib/adminWorkspace';
   import {VIEWS_RANGES, type ViewsRange} from './viewsRange';
   import {
@@ -19,7 +20,8 @@
     ADMIN_CHART_Y_TICK_LABEL_PROPS,
     ADMIN_CHART_TICK_LENGTH
   } from '$lib/utils/chartAxisStyles';
-  import FeedbackDonut from './FeedbackDonut.svelte';
+  import CategoryDonut from './CategoryDonut.svelte';
+  import {segmentRounding} from '$lib/chartRounding';
 
   interface SeriesConfig {
     key: string;
@@ -43,6 +45,7 @@
     class?: string;
     storageKey?: string;
     allowDonut?: boolean;
+    donutUnit?: string;
   }
 
   let {
@@ -58,25 +61,33 @@
     onRetry,
     class: className = '',
     storageKey = 'admin-trend-chart-type',
-    allowDonut = false
+    allowDonut = false,
+    donutUnit = 'responses'
   }: Props = $props();
 
-  const donutTotals = $derived(
-    Object.fromEntries(
-      series.map(s => [
-        s.key,
-        data.reduce((sum, row) => sum + Number(row[s.key] ?? 0), 0)
-      ])
-    )
+  const donutSegments = $derived(
+    series.map(s => ({
+      label: s.label,
+      color: s.color,
+      value: data.reduce((sum, row) => sum + Number(row[s.key] ?? 0), 0)
+    }))
   );
 
   const rows = $derived(
-    data.map(row => ({...row, label: activityDate(row.bucket, timeZone)}))
+    data.map(row => ({
+      ...row,
+      label: activityDate(row.bucket, timeZone, adminDisplayStore.current)
+    }))
   );
   const maxValue = $derived(
     Math.max(
       1,
-      ...data.flatMap(row => series.map(s => Number(row[s.key] ?? 0)))
+      ...data.map(row => {
+        const values = series.map(s => Number(row[s.key] ?? 0));
+        return chartType === 'bar' ?
+            values.reduce((sum, value) => sum + value, 0)
+          : Math.max(0, ...values);
+      })
     )
   );
   const tickCount = $derived(Math.min(6, rows.length));
@@ -170,9 +181,9 @@
       size="inline"
       {onRetry} />
   {:else if chartType === 'donut'}
-    <FeedbackDonut
-      helpful={donutTotals.helpful ?? 0}
-      unhelpful={donutTotals.unhelpful ?? 0} />
+    <CategoryDonut
+      segments={donutSegments}
+      unit={donutUnit} />
   {:else}
     <div
       class="h-56 w-full"
@@ -208,10 +219,17 @@
             tickLength={ADMIN_CHART_TICK_LENGTH}
             classes={ADMIN_CHART_AXIS_CLASSES} />
           {#if chartType === 'bar'}
-            {#each series as s (s.key)}
+            {#each series as s, index (s.key)}
               <Bars
                 seriesKey={s.key}
                 fill={s.color}
+                radius={3}
+                rounded={(datum: Record<string, unknown>) =>
+                  segmentRounding(
+                    datum,
+                    series.map(s => s.key),
+                    index
+                  )}
                 class="transition-opacity duration-200 hover:opacity-85" />
             {/each}
             <Highlight area={{class: 'fill-surface-hover/30'}} />

@@ -13,6 +13,7 @@
     title: string;
     description?: string;
     size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl';
+    role?: 'dialog' | 'alertdialog';
     compact?: boolean;
     scrollBody?: boolean;
     isDestructive?: boolean;
@@ -32,6 +33,7 @@
     title,
     description = '',
     size = 'md',
+    role = 'dialog',
     compact = false,
     scrollBody = false,
     isDestructive = false,
@@ -116,7 +118,7 @@
       previouslyFocusedElement = document.activeElement as HTMLElement;
       const timer = setTimeout(() => {
         const initialInput = dialogRef?.querySelector<HTMLElement>(
-          'input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled])'
+          '[data-autofocus]:not([disabled]), input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled])'
         );
         if (initialInput) {
           initialInput.focus();
@@ -153,7 +155,7 @@
     <div
       bind:this={dialogRef}
       data-shortcut-scope={trapShortcuts ? shortcutScope : undefined}
-      role="dialog"
+      {role}
       aria-modal="true"
       tabindex="-1"
       aria-labelledby="dialog-title"

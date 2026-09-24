@@ -6,6 +6,7 @@
   import Button from './Button.svelte';
   import FormField from './FormField.svelte';
   import Textarea from './Textarea.svelte';
+  import SubmitShortcutHint from './SubmitShortcutHint.svelte';
   import {
     turnstileWidget,
     executeTurnstile,
@@ -135,7 +136,15 @@
   scrollBody
   onClose={handleClose}>
   {#if comment}
-    <div class="flex flex-col gap-2.5">
+    <form
+      id="report-form"
+      novalidate
+      autocomplete="off"
+      class="flex flex-col gap-2.5"
+      onsubmit={event => {
+        event.preventDefault();
+        void submitReport();
+      }}>
       <div
         class="rounded-md border border-border-subtle bg-surface-card/60 p-2.5 text-xs text-text-secondary">
         <span class="font-semibold text-text-primary"
@@ -165,6 +174,10 @@
                 value={r.id}
                 checked={selectedReason === r.id}
                 onchange={() => (selectedReason = r.id)}
+                onkeydown={event => {
+                  if (event.key === 'Enter' && !event.ctrlKey && !event.metaKey)
+                    event.preventDefault();
+                }}
                 class="sr-only" />
               <div
                 style:color={reportReasonColor(r.id)}
@@ -225,6 +238,9 @@
           }}
           bind:value={details} />
       </FormField>
+      <SubmitShortcutHint
+        label="to submit report"
+        class="self-end max-sm:hidden" />
 
       {#if turnstileSiteKey}
         <div
@@ -246,7 +262,7 @@
           }}>
         </div>
       {/if}
-    </div>
+    </form>
   {/if}
 
   {#snippet footer()}
@@ -266,9 +282,11 @@
         size="sm"
         fullWidth
         disabled={isSubmitting}
+        htmlType="submit"
+        form="report-form"
+        aria-keyshortcuts="Control+Enter Meta+Enter"
         keyboardShortcut="S"
-        shortcutLabel="Submit report"
-        onclick={submitReport}>
+        shortcutLabel="Submit report">
         {isSubmitting ? 'Submitting…' : 'Submit report'}
       </Button>
     </div>

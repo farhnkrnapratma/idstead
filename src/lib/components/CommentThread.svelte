@@ -7,9 +7,11 @@
     parent_id: string | null;
     author_name: string | null;
     is_admin?: boolean;
+    is_anonymous?: boolean;
     content: string;
     created_at: string;
     reply_to_author?: string | null;
+    reports?: number | null;
   }
 
   export interface CommentTreeNode<T> {
@@ -22,6 +24,22 @@
 <script
   lang="ts"
   generics="T extends CommentItem">
+  import Avatar from './Avatar.svelte';
+  import {commentAuthorName} from '$lib/commentAuthor';
+  import {clampPage, pageCount, pageOfIndex, pageSlice} from '$lib/pagination';
+  import {
+    arrangeThreads,
+    commentMatchesQuery,
+    countThreadComments,
+    type CommentFilter,
+    type CommentSort,
+    type CommentSortDirection
+  } from '$lib/commentFilter';
+  import Pagination from './Pagination.svelte';
+  import Input from './Input.svelte';
+  import FilterToolbar from './filter/FilterToolbar.svelte';
+  import SortControl from './filter/SortControl.svelte';
+  import SearchResultCount from './filter/SearchResultCount.svelte';
   import type {Snippet} from 'svelte';
   import {SvelteMap, SvelteSet} from 'svelte/reactivity';
   import {
@@ -29,8 +47,6 @@
     Copy,
     Flag,
     Trash,
-    Crown,
-    User,
     BadgeCheck,
     ChevronDown,
     ChevronUp
@@ -50,6 +66,8 @@
     comments: T[];
     replyTo?: T | null;
     authorName?: string;
+    pageSize?: number;
+    controls?: boolean;
     useContentFont?: boolean;
     isAdmin?: boolean;
     statusBadge?: Snippet<[comment: T]>;
@@ -65,6 +83,8 @@
     comments = [],
     replyTo = null,
     authorName = '',
+    pageSize,
+    controls = false,
     useContentFont = false,
     isAdmin = false,
     statusBadge,
@@ -97,9 +117,7 @@
   }
 
   function getCommentAuthor(comment: T): string {
-    if (comment.is_admin) return 'Admin';
-    if (!comment.author_name) return 'Anonymous';
-    return comment.author_name;
+    return commentAuthorName(comment, authorName);
   }
 
   function buildCommentTree(items: T[]): CommentTreeNode<T>[] {
@@ -157,17 +175,109 @@
     return roots;
   }
 
-  const commentTree = $derived(buildCommentTree(comments));
+  let query = $state('');
+  let filter = $state<CommentFilter>('all');
+  let sortField = $state<CommentSort>('date');
+  let direction = $state<CommentSortDirection>('asc');
+  const filterOptions = $derived([
+    {value: 'all', label: 'All'},
+    {value: 'replied', label: 'With replies'},
+    {value: 'unanswered', label: 'No replies'},
+    {value: 'admin', label: 'From author'},
+    ...(isAdmin ? [{value: 'reported', label: 'Reported'}] : [])
+  ]);
+  const sortFields = [
+    {value: 'date', label: 'Date'},
+    {value: 'replies', label: 'Replies'},
+    {value: 'author', label: 'Name'}
+  ];
+  const fullTree = $derived(buildCommentTree(comments));
+  const commentTree = $derived(
+    controls ?
+      arrangeThreads(fullTree, {
+        query,
+        filter,
+        sort: sortField,
+        direction,
+        nameOf: getCommentAuthor
+      })
+    : fullTree
+  );
+  const searching = $derived(controls && query.trim() !== '');
+  const visibleCount = $derived(countThreadComments(commentTree));
   const expandedReplies = new SvelteSet<string>();
+
+  function repliesOpen(node: CommentTreeNode<T>) {
+    return (
+      expandedReplies.has(node.comment.id)
+      || (searching
+        && node.children.some(child =>
+          commentMatchesQuery(child.comment, query, getCommentAuthor)
+        ))
+    );
+  }
+
+  function updateControls(next: {
+    query?: string;
+    filter?: CommentFilter;
+    sort?: CommentSort;
+    direction?: CommentSortDirection;
+  }) {
+    query = next.query ?? query;
+    filter = next.filter ?? filter;
+    sortField = next.sort ?? sortField;
+    direction = next.direction ?? direction;
+    page = 1;
+  }
+  let threadElement = $state<HTMLElement | null>(null);
+  let page = $state(1);
+  const totalPages = $derived(
+    pageSize ? pageCount(commentTree.length, pageSize) : 1
+  );
+  const currentPage = $derived(
+    pageSize ? clampPage(page, commentTree.length, pageSize) : 1
+  );
+  const visibleTree = $derived(
+    pageSize ? pageSlice(commentTree, currentPage, pageSize) : commentTree
+  );
+
+  function rootIndexOf(commentId: string) {
+    return commentTree.findIndex(
+      node =>
+        node.comment.id === commentId
+        || node.children.some(child => child.comment.id === commentId)
+    );
+  }
+
+  function goToPage(next: number) {
+    page = next;
+    threadElement?.scrollIntoView({block: 'start'});
+  }
+
+  let knownIds: Set<string> | null = null;
+  $effect(() => {
+    const previous = knownIds;
+    knownIds = new Set(comments.map(comment => comment.id));
+    if (!pageSize || !previous) return;
+    const added = comments.filter(comment => !previous.has(comment.id));
+    if (added.length !== 1) return;
+    const index = rootIndexOf(added[0].id);
+    if (index >= 0) page = pageOfIndex(index, pageSize);
+  });
 
   $effect(() => {
     if (!focusCommentId) return;
-    const root = commentTree.find(
-      node =>
-        node.comment.id === focusCommentId
-        || node.children.some(child => child.comment.id === focusCommentId)
-    );
-    if (root && root.children.length > 0) expandedReplies.add(root.comment.id);
+    const index = rootIndexOf(focusCommentId);
+    if (index < 0) {
+      if (controls && (query || filter !== 'all')) {
+        query = '';
+        filter = 'all';
+      }
+      return;
+    }
+    if (pageSize) page = pageOfIndex(index, pageSize);
+    const root = commentTree[index];
+    if (root.children.length > 0) expandedReplies.add(root.comment.id);
   });
 
   function toggleReplies(commentId: string) {
@@ -193,7 +303,7 @@
   {@const comment = node.comment}
   {@const children = node.children}
   {@const hasChildren = children.length > 0}
-  {@const isExpanded = expandedReplies.has(comment.id)}
+  {@const isExpanded = repliesOpen(node)}
   {@const replyContainerId = `reply-container-${comment.id}`}
   {@const author = getCommentAuthor(comment)}
   {@const commentScope = `comment-${comment.id}`}
@@ -207,19 +317,9 @@
         'ring-2 ring-accent ring-offset-2 ring-offset-background'
       : ''
     )}>
-    <div
-      class="z-10 flex size-6.5 shrink-0 items-center justify-center rounded-full border border-border-subtle bg-surface-card text-text-secondary select-none sm:size-7"
-      aria-hidden="true">
-      {#if isAuthorComment(comment)}
-        <Crown
-          class="size-3.5 sm:size-4"
-          strokeWidth={1.25} />
-      {:else}
-        <User
-          class="size-3.5 sm:size-4"
-          strokeWidth={1.25} />
-      {/if}
-    </div>
+    <Avatar
+      name={author}
+      class="z-10 size-6.5 sm:size-7" />
 
     <div class="min-w-0 flex-1">
       <div
@@ -323,7 +423,7 @@
       </div>
 
       <div
-        class="mt-1 ml-1 flex flex-wrap items-center gap-1.5 text-2xs text-text-muted select-none sm:ml-1.5 sm:gap-2">
+        class="mt-1 ml-1 flex flex-wrap items-center gap-2.5 text-2xs text-text-muted select-none sm:ml-1.5 sm:gap-3">
         {#if actions}
           {@render actions(comment)}
         {:else}
@@ -332,7 +432,6 @@
             tag="time" />
         {/if}
         {#if showReplyToggle && hasChildren}
-          <span aria-hidden="true">·</span>
           <button
             type="button"
             use:shortcut={{
@@ -364,10 +463,59 @@
 {/snippet}
 
 <div
-  class={cn('comment-thread-root flex flex-col gap-4.5 sm:gap-5.5', className)}>
-  {#each commentTree as rootNode (rootNode.comment.id)}
+  bind:this={threadElement}
+  class={cn(
+    'comment-thread-root flex scroll-mt-28 flex-col gap-4.5 sm:gap-5.5',
+    className
+  )}>
+  {#if controls && comments.length > 0}
+    <FilterToolbar
+      title="Comment filters"
+      controlSize="sm">
+      {#snippet searchSlot()}
+        <Input
+          type="search"
+          size="sm"
+          aria-label="Search comments"
+          placeholder="Search comments or names…"
+          value={query}
+          oninput={event =>
+            updateControls({query: event.currentTarget.value})} />
+      {/snippet}
+      {#snippet filterControlsSlot()}
+        <Dropdown
+          label="Show"
+          value={filter}
+          options={filterOptions}
+          onChange={value => updateControls({filter: value})} />
+      {/snippet}
+      {#snippet sortSlot()}
+        <SortControl
+          fields={sortFields}
+          currentField={sortField}
+          currentDirection={direction}
+          onFieldChange={value => updateControls({sort: value as CommentSort})}
+          onDirectionToggle={() =>
+            updateControls({
+              direction: direction === 'asc' ? 'desc' : 'asc'
+            })} />
+      {/snippet}
+      {#snippet countSlot()}
+        <SearchResultCount
+          count={visibleCount}
+          total={comments.length}
+          itemLabel="comments" />
+      {/snippet}
+    </FilterToolbar>
+    {#if commentTree.length === 0}
+      <p class="text-xs text-text-muted">
+        No comments match your search or filter.
+      </p>
+    {/if}
+  {/if}
+  {#each visibleTree as rootNode (rootNode.comment.id)}
     {@const rootReplyContainerId = `reply-container-${rootNode.comment.id}`}
-    {@const rootExpanded = expandedReplies.has(rootNode.comment.id)}
+    {@const rootExpanded = repliesOpen(rootNode)}
 
     <div class="comment-thread-node flex min-w-0 flex-col">
       {@render renderNode(rootNode, true)}
@@ -383,4 +531,11 @@
       {/if}
     </div>
   {/each}
+  {#if pageSize && totalPages > 1}
+    <Pagination
+      page={currentPage}
+      {totalPages}
+      onPageChange={goToPage}
+      size="sm" />
+  {/if}
 </div>

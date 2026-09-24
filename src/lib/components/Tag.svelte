@@ -1,8 +1,9 @@
 <script lang="ts">
   import type {Snippet} from 'svelte';
+  import type {HTMLButtonAttributes} from 'svelte/elements';
   import {cn} from '../utils/cn';
 
-  interface Props {
+  interface Props extends Omit<HTMLButtonAttributes, 'children' | 'class'> {
     variant?: 'neutral' | 'subtle' | 'accent';
     size?: 'sm' | 'md';
     children?: Snippet;
@@ -13,7 +14,10 @@
     variant = 'neutral',
     size = 'sm',
     children,
-    class: className = ''
+    class: className = '',
+    onclick,
+    disabled = false,
+    ...rest
   }: Props = $props();
 
   const variantStyles = {
@@ -28,12 +32,19 @@
   };
 </script>
 
-<span
+<svelte:element
+  this={onclick ? 'button' : 'span'}
+  type={onclick ? 'button' : undefined}
+  {onclick}
+  disabled={onclick ? disabled : undefined}
+  {...rest}
   class={cn(
     'inline-block max-w-full rounded-full whitespace-normal',
     variantStyles[variant],
     sizeStyles[size],
+    onclick
+      && 'cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-50',
     className
   )}>
   {@render children?.()}
-</span>
+</svelte:element>

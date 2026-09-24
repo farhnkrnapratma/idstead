@@ -179,6 +179,22 @@ export function confirmEmail(
   };
 }
 
+export function unsubscribeEmail(
+  siteName: string,
+  unsubscribeUrl: string
+): Pick<OutgoingEmail, 'subject' | 'html' | 'text'> {
+  const safeUrl = escapeHtml(unsubscribeUrl);
+  const safeName = escapeHtml(siteName);
+  return {
+    subject: `Confirm unsubscribing from ${siteName}`,
+    html: shell(
+      `<h1 style="margin:0 0 12px;font-size:20px">Confirm unsubscribe</h1><p>Open the link below to stop receiving new article notifications from ${safeName}.</p><p><a href="${safeUrl}">Unsubscribe</a></p>`,
+      'If you did not request this, ignore this email. Your subscription will stay active.'
+    ),
+    text: `Confirm unsubscribing from ${siteName}\n\nOpen this link to unsubscribe:\n${unsubscribeUrl}\n\nIf you did not request this, ignore this email. Your subscription will stay active.`
+  };
+}
+
 export function newPostEmail(
   siteName: string,
   post: {title: string; excerpt: string | null; url: string},
