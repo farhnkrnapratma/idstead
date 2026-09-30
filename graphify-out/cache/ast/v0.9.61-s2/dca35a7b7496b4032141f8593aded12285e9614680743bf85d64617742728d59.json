@@ -1,1 +1,0 @@
-{"nodes": [{"id": "$graphify-root$_supabase_migrations_20260919030000_is_admin_executable_by_anon_sql", "label": "20260919030000_is_admin_executable_by_anon.sql", "file_type": "code", "source_file": "supabase/migrations/20260919030000_is_admin_executable_by_anon.sql", "source_location": null}], "edges": []}

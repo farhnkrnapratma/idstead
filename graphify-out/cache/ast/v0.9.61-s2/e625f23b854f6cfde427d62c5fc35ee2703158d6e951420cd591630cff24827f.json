@@ -1,1 +1,0 @@
-{"nodes": [{"id": "$graphify-root$_supabase_migrations_20260813000000_fix_admin_escalation_and_legal_rls_sql", "label": "20260813000000_fix_admin_escalation_and_legal_rls.sql", "file_type": "code", "source_file": "supabase/migrations/20260813000000_fix_admin_escalation_and_legal_rls.sql", "source_location": null}], "edges": []}

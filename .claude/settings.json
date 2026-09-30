@@ -28,24 +28,6 @@
             "timeout": 120
           }
         ]
-      },
-      {
-        "matcher": "Bash|Grep",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/home/hanz/.local/bin/graphify hook-guard search"
-          }
-        ]
-      },
-      {
-        "matcher": "Read|Glob",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/home/hanz/.local/bin/graphify hook-guard read"
-          }
-        ]
       }
     ],
     "PostToolUse": [
