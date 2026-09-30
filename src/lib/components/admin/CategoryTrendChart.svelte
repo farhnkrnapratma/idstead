@@ -2,9 +2,8 @@
   import {Chart, Svg, Axis, Spline, Bars, Highlight, Tooltip} from 'layerchart';
   import {curveMonotoneX} from 'd3-shape';
   import {scaleBand, scaleLinear} from 'd3-scale';
-  import {ChartColumnBig, ChartSpline} from '@lucide/svelte';
+  import {ChartColumnBig, ChartSpline, ChartPie} from '@lucide/svelte';
   import {onMount} from 'svelte';
-  import {ChartPie} from '@lucide/svelte';
   import Chip from '../Chip.svelte';
   import LoadingState from '../LoadingState.svelte';
   import ErrorState from '../ErrorState.svelte';

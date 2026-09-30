@@ -1038,7 +1038,7 @@
       category: 'pages',
       title: '/api',
       subtitle: 'Open developer REST API documentation.',
-      url: '/api/v1',
+      url: '/api/v1/docs',
       icon: Braces,
       badge: 'API'
     },
@@ -1610,7 +1610,7 @@
           name: 'api',
           title: '/goto api',
           subtitle: 'Open developer API documentation.',
-          url: '/api/v1',
+          url: '/api/v1/docs',
           icon: Braces,
           badge: 'Developer'
         }
@@ -2270,6 +2270,29 @@
     return uniqueMatches;
   }
 
+  function dedupeItems(candidates: SpotlightItem[]): SpotlightItem[] {
+    const seenIds = new SvelteSet<string>();
+    const seenUrls = new SvelteSet<string>();
+    const seenTitles = new SvelteSet<string>();
+    const uniqueCombined: SpotlightItem[] = [];
+
+    for (const item of candidates) {
+      const lowerTitle = item.title.toLowerCase();
+      if (
+        seenIds.has(item.id)
+        || seenTitles.has(lowerTitle)
+        || (item.url && seenUrls.has(item.url))
+      ) {
+        continue;
+      }
+      seenIds.add(item.id);
+      seenTitles.add(lowerTitle);
+      if (item.url) seenUrls.add(item.url);
+      uniqueCombined.push(item);
+    }
+    return uniqueCombined;
+  }
+
   async function runSearch(inputString: string) {
     const trimmed = inputString.trim();
     sectionPages = {};
@@ -2287,18 +2310,26 @@
     const controller = new AbortController();
     searchAbortController = controller;
 
-    isLoading = true;
+    const isCommandQuery = trimmed.startsWith('/');
     postResults = [];
     postsHasMore = false;
 
-    await loadLinkItems();
+    if (isCommandQuery && !trimmed.startsWith('/goto blog')) {
+      results = dedupeItems(searchLocalItems(trimmed));
+      activeIndex = -1;
+      isLoading = false;
+      return;
+    }
+
+    isLoading = true;
+    if (!isCommandQuery) await loadLinkItems();
     if (controller.signal.aborted) return;
 
     const localMatches = searchLocalItems(trimmed);
 
     let candidates: SpotlightItem[];
 
-    if (trimmed.length >= 2 && !trimmed.startsWith('/')) {
+    if (trimmed.length >= 2 && !isCommandQuery) {
       candidates = localMatches;
       postsQuery = trimmed;
       try {
@@ -2340,26 +2371,7 @@
 
     if (controller.signal.aborted) return;
 
-    const seenIds = new SvelteSet<string>();
-    const seenUrls = new SvelteSet<string>();
-    const seenTitles = new SvelteSet<string>();
-    const uniqueCombined: SpotlightItem[] = [];
-
-    for (const item of candidates) {
-      const lowerTitle = item.title.toLowerCase();
-      if (
-        seenIds.has(item.id)
-        || seenTitles.has(lowerTitle)
-        || (item.url && seenUrls.has(item.url))
-      ) {
-        continue;
-      }
-      seenIds.add(item.id);
-      seenTitles.add(lowerTitle);
-      if (item.url) seenUrls.add(item.url);
-      uniqueCombined.push(item);
-    }
-    results = uniqueCombined;
+    results = dedupeItems(candidates);
 
     if (controller.signal.aborted) return;
     activeIndex = -1;

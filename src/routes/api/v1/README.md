@@ -1,6 +1,6 @@
 # Public REST API (v1)
 
-Public, read-only endpoints documentation served under `/api/v1/`. No authentication required for anything below. This document is also served live at `GET /api/v1` as `text/markdown`. Full machine-readable spec: `/.well-known/openapi.json` / `/.well-known/openapi.yaml`.
+Public, read-only endpoints documentation served under `/api/v1/`. No authentication required for anything below. This document is also served live at `GET /api/v1/docs` as `text/markdown` (`GET /api/v1` redirects there). Full machine-readable spec: `/.well-known/openapi.json` / `/.well-known/openapi.yaml`.
 
 **Base URL**: `https://fkp.my.id`. Versioned by URL path — breaking changes ship under `/api/v2/`, not in place.
 
@@ -122,7 +122,7 @@ curl "https://fkp.my.id/api/v1/blog/views?postId=<uuid>"
 
 | Method | Path | Description |
 | --- | --- | --- |
-| GET | `/api/v1/author` | Combined profile. `profile` includes the public `email` field. Query: `fields` (comma-separated subset of `profile,cv,funding,contact,skills,socials`, defaults to all — a bare `?profile`, `?cv`, etc. flag also works, and `?sponsorship` is an alias for `funding`), `format=md`. |
+| GET | `/api/v1/author` | Combined profile. `profile` includes the public `email` field and an optional `pronunciation` field (preserved as entered, including any slashes or brackets; empty when unset). Query: `fields` (comma-separated subset of `profile,cv,funding,contact,skills,socials`, defaults to all — a bare `?profile`, `?cv`, etc. flag also works, and `?sponsorship` is an alias for `funding`), `format=md`. |
 | GET | `/api/v1/author/contact` | Contact info. |
 | GET | `/api/v1/author/socials` | Social links. |
 | GET | `/api/v1/author/skills` | Skills grouped by category. |
@@ -144,6 +144,7 @@ Response shape is `{query, data, pagination: {limit, returned}}` — lighter tha
 
 | Method | Path                   | Description                     |
 | ------ | ---------------------- | ------------------------------- |
+| GET    | `/api/v1/docs`         | This document, `text/markdown`. |
 | GET    | `/api/v1/openapi.json` | OpenAPI v3 specification, JSON. |
 | GET    | `/api/v1/openapi.yaml` | Same spec, YAML.                |
 

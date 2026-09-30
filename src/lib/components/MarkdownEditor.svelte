@@ -13,11 +13,13 @@
     Underline,
     Strikethrough,
     Code,
+    Ellipsis,
     Highlighter,
     Keyboard,
     Subscript,
     Superscript,
     Image as ImageIcon,
+    Video,
     Link2 as LinkIcon,
     ListOrdered,
     List,
@@ -65,6 +67,7 @@
     class?: string;
     onblur?: () => void;
     onImageUpload?: (file: File) => Promise<string | null>;
+    onVideoUpload?: (file: File) => Promise<string | null>;
   }
 
   let {
@@ -75,6 +78,7 @@
     stickyTopClass = 'top-0',
     class: className = '',
     onImageUpload,
+    onVideoUpload,
     onblur
   }: Props = $props();
 
@@ -208,6 +212,7 @@
   let editorElement = $state<HTMLDivElement | null>(null);
   let themeProbeElement = $state<HTMLSpanElement | null>(null);
   let imageFileInput = $state<HTMLInputElement | null>(null);
+  let videoFileInput = $state<HTMLInputElement | null>(null);
 
   let autoSaveTimer: ReturnType<typeof setTimeout>;
 
@@ -494,6 +499,30 @@
       input.value = '';
     }
   }
+
+  function handleVideoClick() {
+    if (onVideoUpload) {
+      videoFileInput?.click();
+    } else {
+      insertMarkdown('<video controls preload="metadata" src="', '"></video>');
+    }
+  }
+
+  async function handleVideoFileSelected(e: Event) {
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || !onVideoUpload) return;
+    try {
+      const url = await onVideoUpload(file);
+      if (url)
+        insertMarkdown(
+          `<video controls preload="metadata" src="${url}"></video>\n`
+        );
+    } catch {
+    } finally {
+      input.value = '';
+    }
+  }
 </script>
 
 {#snippet statusContent()}
@@ -581,10 +610,10 @@
             onclick={() => (activeTab = 'editor')}
             role="tab"
             aria-selected={activeTab === 'editor'}
-            class="editor-tab inline-flex h-full cursor-pointer items-center rounded-xs px-3 font-mono text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none sm:px-4 {(
+            class="editor-tab inline-flex h-7 cursor-pointer items-center rounded-sm px-3 font-mono text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none sm:px-4 {(
               activeTab === 'editor'
             ) ?
-              'editor-tab-active'
+              'bg-accent text-text-on-accent! shadow-xs'
             : 'editor-tab-inactive'}">
             Edit
           </button>
@@ -593,10 +622,10 @@
             onclick={() => (activeTab = 'preview')}
             role="tab"
             aria-selected={activeTab === 'preview'}
-            class="editor-tab inline-flex h-full cursor-pointer items-center rounded-xs px-3 font-mono text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none sm:px-4 {(
+            class="editor-tab inline-flex h-7 cursor-pointer items-center rounded-sm px-3 font-mono text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none sm:px-4 {(
               activeTab === 'preview'
             ) ?
-              'editor-tab-active'
+              'bg-accent text-text-on-accent! shadow-xs'
             : 'editor-tab-inactive'}">
             Preview
           </button>
@@ -858,6 +887,20 @@
             onchange={handleFileSelected}
             class="hidden"
             aria-label="Upload image file" />
+          <button
+            type="button"
+            onclick={handleVideoClick}
+            aria-label="Insert video"
+            class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
+            <Video class="size-4" />
+          </button>
+          <input
+            type="file"
+            bind:this={videoFileInput}
+            accept="video/mp4, video/webm"
+            onchange={handleVideoFileSelected}
+            class="hidden"
+            aria-label="Upload video file" />
           {#each [{action: () => insertMarkdown('[', '](url)'), icon: LinkIcon, label: 'Insert link'}, {action: () => insertMarkdown('1. '), icon: ListOrdered, label: 'Numbered list'}, {action: () => insertMarkdown('- '), icon: List, label: 'Bulleted list'}, {action: () => insertMarkdown('- [ ] '), icon: ListTodo, label: 'Task list'}, {action: () => insertMarkdown('> '), icon: Quote, label: 'Blockquote'}] as const as item (item.label)}
             <button
               type="button"
@@ -940,8 +983,7 @@
                 aria-haspopup="menu"
                 aria-expanded={isOpen}
                 class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
-                <span class="text-sm leading-none font-bold tracking-widest"
-                  >···</span>
+                <Ellipsis class="size-4" />
               </button>
             {/snippet}
           </Dropdown>
@@ -1166,15 +1208,6 @@
   .editor-tab-list,
   .editor-toolbar {
     border-color: var(--code-theme-border);
-  }
-
-  .editor-tab-active {
-    background-color: color-mix(
-      in srgb,
-      var(--code-theme-fg) 14%,
-      var(--code-theme-bg)
-    );
-    color: var(--code-theme-fg);
   }
 
   .editor-tab-inactive:hover {

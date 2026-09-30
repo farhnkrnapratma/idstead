@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type {Snippet} from 'svelte';
   import {FileCheck2, UploadCloud} from '@lucide/svelte';
   import {cn} from '../utils/cn';
   import Button from './Button.svelte';
@@ -10,6 +11,7 @@
     hint?: string;
     accept?: string;
     disabled?: boolean;
+    required?: boolean;
     isUploading?: boolean;
     allowReselectWhileUploading?: boolean;
     uploadingLabel?: string;
@@ -17,6 +19,7 @@
     selectedFileName?: string;
     fileSize?: string;
     onFileSelect?: (file: File | null) => void;
+    actions?: Snippet<[{trigger: () => void}]>;
     class?: string;
   }
 
@@ -26,6 +29,7 @@
     hint = '',
     accept = '*/*',
     disabled = false,
+    required = false,
     isUploading = false,
     allowReselectWhileUploading = false,
     uploadingLabel = 'Uploading…',
@@ -33,6 +37,7 @@
     selectedFileName = '',
     fileSize = '',
     onFileSelect,
+    actions,
     class: className = ''
   }: Props = $props();
 
@@ -87,6 +92,8 @@
     type="file"
     {id}
     {accept}
+    aria-required={required}
+    aria-invalid={!!error}
     disabled={isDisabled}
     onchange={handleFileChange}
     class="sr-only" />
@@ -163,7 +170,11 @@
     {:else}
       <UploadCloud
         class="size-8 text-text-secondary transition-colors group-hover:text-accent" />
-      <span class="text-sm font-medium text-text-primary">{label}</span>
+      {#if actions}
+        {@render actions({trigger: () => fileInputRef?.click()})}
+      {:else}
+        <span class="text-sm font-medium text-text-primary">{label}</span>
+      {/if}
       {#if hint}
         <span class="text-xs text-text-muted">{hint}</span>
       {/if}

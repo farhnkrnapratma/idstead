@@ -3,11 +3,12 @@ import {
   PutObjectCommand,
   DeleteObjectCommand
 } from '@aws-sdk/client-s3';
-import {verifyAdminToken} from './adminAuth';
+import {verifyAdminToken, bearerToken} from './adminAuth';
 import {env as privateEnv} from '$env/dynamic/private';
 import {env as publicEnv} from '$env/dynamic/public';
 import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
 import {supabase as publicSupabase} from '$lib/supabase';
+import {logActivity, type ActivityCategory} from '$lib/server/activityLog';
 import {
   generateCvPdfBuffer,
   type AuthorCvData,
@@ -79,6 +80,57 @@ function decodeHtmlEntities(str: string): string {
     .replace(/&gt;/g, '>');
 }
 
+function safeClientAddress(getClientAddress?: () => string): string | null {
+  if (!getClientAddress) return null;
+  try {
+    return getClientAddress();
+  } catch {
+    return null;
+  }
+}
+
+function ipSaltFromPlatform(platform?: unknown): string {
+  return (
+    (platform as {env?: {IP_SALT?: string}} | undefined)?.env?.IP_SALT
+    ?? privateEnv.IP_SALT
+    ?? ''
+  );
+}
+
+async function resolveActor(
+  req: Request,
+  db: ReturnType<typeof getAdminDb>
+): Promise<string | null> {
+  const token = bearerToken(req);
+  if (!token) return null;
+  const {data} = await db.auth.getUser(token);
+  return data.user?.email ?? data.user?.id ?? null;
+}
+
+async function logCvActivity(
+  req: Request,
+  platform: unknown,
+  db: ReturnType<typeof getAdminDb>,
+  action: string,
+  entityId: string,
+  summary: string,
+  getClientAddress?: () => string
+) {
+  await logActivity(
+    {
+      actor: await resolveActor(req, db),
+      action,
+      category: 'cv' as ActivityCategory,
+      entityId,
+      summary,
+      ip: safeClientAddress(getClientAddress),
+      ipSalt: ipSaltFromPlatform(platform),
+      userAgent: req.headers.get('user-agent') ?? undefined
+    },
+    db
+  );
+}
+
 export async function requireAdminAuth(
   req: Request,
   platform?: unknown
@@ -135,9 +187,63 @@ function bumpSemver(
   }
 }
 
+export async function deleteCvFile(
+  platform: unknown,
+  db: ReturnType<typeof getAdminDb>,
+  filename: string,
+  strict = false
+): Promise<boolean> {
+  const sha256Filename = `${filename}.sha256`;
+  const r2Creds = getR2Credentials(platform);
+  if (strict && !r2Creds) return false;
+
+  if (r2Creds) {
+    const r2Client = new S3Client({
+      region: 'auto',
+      endpoint: `https://${r2Creds.accountId}.r2.cloudflarestorage.com`,
+      credentials: {
+        accessKeyId: r2Creds.accessKeyId,
+        secretAccessKey: r2Creds.secretAccessKey
+      }
+    });
+    try {
+      await r2Client.send(
+        new DeleteObjectCommand({Bucket: r2Creds.bucketName, Key: filename})
+      );
+      await r2Client.send(
+        new DeleteObjectCommand({
+          Bucket: r2Creds.bucketName,
+          Key: sha256Filename
+        })
+      );
+    } catch (err) {
+      console.error('R2 deletion warning:', err);
+      if (strict) return false;
+    }
+  }
+
+  try {
+    const {error} = await db.storage
+      .from('cv_documents')
+      .remove([filename, sha256Filename]);
+    if (strict && error) return false;
+  } catch (err) {
+    console.error('Supabase storage removal warning:', err);
+    if (strict) return false;
+  }
+
+  const {error: deleteError} = await db
+    .from('db_documents')
+    .delete()
+    .eq('filename', filename);
+
+  return !deleteError;
+}
+
 export async function processCvGenerate(
   req: Request,
-  platform?: unknown
+  platform?: unknown,
+  getClientAddress?: () => string
 ): Promise<Response> {
   try {
     const authError = await requireAdminAuth(req, platform);
@@ -393,6 +499,16 @@ export async function processCvGenerate(
       return fail('Failed to save CV record.');
     }
 
+    await logCvActivity(
+      req,
+      platform,
+      db,
+      'cv.upload',
+      filename,
+      `Generated CV document v${nextVersion}.`,
+      getClientAddress
+    );
+
     return jsonResponse(
       {
         success: true,
@@ -412,14 +528,16 @@ export async function processCvGenerate(
 
 export async function processCvUpload(
   req: Request,
-  platform?: unknown
+  platform?: unknown,
+  getClientAddress?: () => string
 ): Promise<Response> {
-  return processCvGenerate(req, platform);
+  return processCvGenerate(req, platform, getClientAddress);
 }
 
 export async function processCvDelete(
   req: Request,
-  platform?: unknown
+  platform?: unknown,
+  getClientAddress?: () => string
 ): Promise<Response> {
   try {
     const authError = await requireAdminAuth(req, platform);
@@ -469,47 +587,20 @@ export async function processCvDelete(
       filename = activeDoc.filename;
     }
 
-    const sha256Filename = `${filename}.sha256`;
-    const r2Creds = getR2Credentials(platform);
-
-    if (r2Creds) {
-      const r2Client = new S3Client({
-        region: 'auto',
-        endpoint: `https://${r2Creds.accountId}.r2.cloudflarestorage.com`,
-        credentials: {
-          accessKeyId: r2Creds.accessKeyId,
-          secretAccessKey: r2Creds.secretAccessKey
-        }
-      });
-      try {
-        await r2Client.send(
-          new DeleteObjectCommand({Bucket: r2Creds.bucketName, Key: filename})
-        );
-        await r2Client.send(
-          new DeleteObjectCommand({
-            Bucket: r2Creds.bucketName,
-            Key: sha256Filename
-          })
-        );
-      } catch (err) {
-        console.error('R2 deletion warning:', err);
-      }
-    }
-
-    try {
-      await db.storage.from('cv_documents').remove([filename, sha256Filename]);
-    } catch (err) {
-      console.error('Supabase storage removal warning:', err);
-    }
-
-    const {error: deleteError} = await db
-      .from('db_documents')
-      .delete()
-      .eq('filename', filename);
-
-    if (deleteError) {
+    const deleted = await deleteCvFile(platform, db, filename);
+    if (!deleted) {
       return fail('Failed to remove CV record.');
     }
+
+    await logCvActivity(
+      req,
+      platform,
+      db,
+      'cv.delete',
+      filename,
+      'Deleted CV document.',
+      getClientAddress
+    );
 
     return jsonResponse({success: true, filename}, 200);
   } catch (err: any) {

@@ -8,7 +8,13 @@ export type AdminDateFormat =
   | 'wd-mon-d-y'
   | 'iso';
 export type AdminTimeFormat =
-  'HH:mm' | 'H:mm' | 'hh:mm a' | 'h:mm a' | 'HH:mm:ss' | 'hh:mm:ss a';
+  | 'HH:mm'
+  | 'H:mm'
+  | 'hh:mm a'
+  | 'h:mm a'
+  | 'HH:mm:ss'
+  | 'hh:mm:ss a'
+  | 'h[:mm]a';
 
 export interface AdminDisplayPrefs {
   mode: AdminDateMode;
@@ -47,7 +53,8 @@ export const ADMIN_TIME_FORMATS: readonly AdminTimeFormat[] = [
   'hh:mm a',
   'h:mm a',
   'HH:mm:ss',
-  'hh:mm:ss a'
+  'hh:mm:ss a',
+  'h[:mm]a'
 ];
 
 const SMART_RELATIVE_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
@@ -133,6 +140,8 @@ export function formatAdminTime(
   });
   const hour =
     padHour ? parts.hour.padStart(2, '0') : String(Number(parts.hour));
+  if (timeFormat === 'h[:mm]a')
+    return `${hour}${parts.minute === '00' ? '' : `:${parts.minute}`}${parts.dayPeriod.toLowerCase()}`;
   const clock = `${hour}:${parts.minute}${withSeconds ? `:${parts.second}` : ''}`;
   return twelveHour ? `${clock} ${parts.dayPeriod}` : clock;
 }

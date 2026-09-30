@@ -64,7 +64,7 @@
       class={cn(
         baseStyles,
         isFloating ?
-          'peer block px-3 pt-5! pb-1.5! text-sm leading-5 placeholder-transparent'
+          'peer block min-h-12 px-3 pt-5! pb-1.5! text-sm leading-5 placeholder-transparent'
         : 'px-3 py-2.5 text-sm placeholder:text-text-secondary/70',
         'resize-none scrollbar-none overflow-hidden [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden',
         error ? 'border-danger! ring-danger/20!' : '',
@@ -82,7 +82,7 @@
       class={cn(
         baseStyles,
         isFloating ?
-          'peer block px-3 pt-5! pb-1.5! text-sm leading-5 placeholder-transparent'
+          'peer block min-h-12 px-3 pt-5! pb-1.5! text-sm leading-5 placeholder-transparent'
         : 'px-3 py-2.5 text-sm placeholder:text-text-secondary/70',
         error ? 'border-danger! ring-danger/20!' : '',
         valid && !error ? 'border-accent!' : '',

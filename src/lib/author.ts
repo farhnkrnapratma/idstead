@@ -89,6 +89,7 @@ export interface AuthorProfile {
   manifestSettings?: import('./siteIdentity').ManifestSettings;
   id?: string;
   name: string;
+  pronunciation?: string;
   username: string;
   headline: string;
   jobTitle: string;
@@ -311,6 +312,7 @@ export async function fetchAuthorProfile(
       avatarVersion: data.avatar_version,
       manifestSettings: data.manifest_settings,
       name: rawName,
+      pronunciation: data.pronunciation || '',
       username: decodeHtmlEntities(data.username || ''),
       email: options?.includeEmail ? decodeHtmlEntities(data.email || '') : '',
       headline: decodeHtmlEntities(data.headline || ''),

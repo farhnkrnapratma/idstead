@@ -171,3 +171,111 @@ for (const locale of TRANSLATION_LOCALES) {
   test(`translation preserves Markdown, directives and math for ${locale}`, () =>
     checkLocale(locale));
 }
+
+test('summary and tldr translation completeness flags reflect real success/failure', async () => {
+  const success = await translatePost(
+    'id',
+    {
+      title: 'Judul',
+      excerpt: null,
+      summary: 'Ringkasan.',
+      tldr: ['Satu', 'Dua'],
+      markdown: '# Judul\n\nIsi.'
+    },
+    fakeAi(content => content),
+    []
+  );
+  assert(
+    success?.summaryTranslated === true,
+    'summary should be marked translated on success'
+  );
+  assert(
+    success?.tldrTranslated === true,
+    'tldr should be marked translated on success'
+  );
+
+  const failure = await translatePost(
+    'id',
+    {
+      title: 'Judul',
+      excerpt: null,
+      summary: 'Ringkasan.',
+      tldr: ['Satu', 'Dua'],
+      markdown: '# Judul\n\nIsi.'
+    },
+    fakeAi(() => 'UNTRANSLATABLE'),
+    []
+  );
+  assert(
+    failure?.summaryTranslated === false,
+    'summary should be marked untranslated when the model refuses'
+  );
+  assert(
+    failure?.tldrTranslated === false,
+    'tldr should be marked untranslated when the model refuses'
+  );
+
+  const nothingToTranslate = await translatePost(
+    'id',
+    {
+      title: 'Judul',
+      excerpt: null,
+      summary: null,
+      tldr: null,
+      markdown: '# Judul\n\nIsi.'
+    },
+    fakeAi(content => content),
+    []
+  );
+  assert(
+    nothingToTranslate?.summaryTranslated === true,
+    'no summary to translate should not count as a failure'
+  );
+  assert(
+    nothingToTranslate?.tldrTranslated === true,
+    'no tldr to translate should not count as a failure'
+  );
+});
+
+test('markdown chunk quality gate tolerates a small heading-count drift but rejects a large one', async () => {
+  const source = '# Heading One\n\nSome text.\n\n## Heading Two\n\nMore text.';
+  const addExtraHeadings =
+    (count: number) => (content: string, system: string) =>
+      isLabelPass(system) ? content : (
+        `${'# Extra\n\n'.repeat(count)}${content}`
+      );
+
+  const withinTolerance = await translatePost(
+    'id',
+    {
+      title: 'Judul',
+      excerpt: null,
+      summary: null,
+      tldr: null,
+      markdown: source
+    },
+    fakeAi(addExtraHeadings(1)),
+    []
+  );
+  assert(
+    (withinTolerance?.markdownFallbackChunks ?? 1) === 0,
+    'one extra heading per chunk should be tolerated'
+  );
+
+  const beyondTolerance = await translatePost(
+    'id',
+    {
+      title: 'Judul',
+      excerpt: null,
+      summary: null,
+      tldr: null,
+      markdown: source
+    },
+    fakeAi(addExtraHeadings(2)),
+    []
+  );
+  assert(
+    (beyondTolerance?.markdownFallbackChunks ?? 0) > 0,
+    'two extra headings per chunk should still be rejected'
+  );
+});

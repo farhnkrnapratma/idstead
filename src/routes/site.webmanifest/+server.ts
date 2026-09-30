@@ -13,6 +13,7 @@ export const GET: RequestHandler = async ({request, url}) => {
     start_url: '/',
     scope: '/',
     ...profile.manifest_settings,
+    display: 'standalone',
     ...themeColors(url.searchParams.get('theme') === 'dark' ? 'dark' : 'light'),
     icons: [192, 512].map(size => ({
       src: `/android-chrome-${size}x${size}.png${version}`,

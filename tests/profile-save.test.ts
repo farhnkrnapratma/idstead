@@ -10,6 +10,7 @@ let commits = 0;
 let cleanupCalls = 0;
 let cleanupFailed = false;
 let currentRevision = 0;
+let currentAvatar = '';
 const database = {
   auth: {getUser: async () => ({data: {user: {id: 'test-admin'}}})},
   from: () => ({
@@ -20,7 +21,11 @@ const database = {
         maybeSingle: async () => ({
           data:
             field === 'id' ?
-              {id: 'profile', profile_revision: currentRevision}
+              {
+                id: 'profile',
+                profile_revision: currentRevision,
+                avatar: currentAvatar
+              }
             : committed,
           error: null
         })
@@ -60,7 +65,8 @@ let counter = 0;
 
 async function save(
   origin: string = 'https://example.com',
-  patch: Record<string, unknown> = {}
+  patch: Record<string, unknown> = {},
+  includeImage = true
 ) {
   const files = Object.fromEntries(
     Object.entries(iconSizes).map(([name, size]) => [
@@ -107,6 +113,10 @@ async function save(
       {d: 'M 0 0 L 128 0 L 128 128 Z', fill: '#000000', opacity: 1}
     ])
   );
+  if (!includeImage) {
+    for (const name of [...form.keys()])
+      if (name !== 'profile') form.delete(name);
+  }
   database.auth.getUser = async () => ({
     data: {user: {id: `test-admin-${counter++}`}}
   });
@@ -135,6 +145,7 @@ beforeEach(() => {
   cleanupCalls = 0;
   cleanupFailed = false;
   currentRevision = 0;
+  currentAvatar = '';
 });
 
 describe('profile save failure recovery', () => {
@@ -187,4 +198,18 @@ test('invalid fields use the details shape consumed by the profile form', async 
   expect(JSON.parse(result.details).fields.email).toBeTruthy();
   expect(commits).toBe(0);
   expect(removed).toEqual([]);
+});
+
+test('profile creation and edits require an uploaded or saved image', async () => {
+  for (const patch of [{id: null}, {}]) {
+    const response = await save('https://example.com', patch, false);
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({
+      message: 'Profile image is required.'
+    });
+    expect(commits).toBe(0);
+  }
+  currentAvatar = 'https://example.com/avatar.png';
+  expect((await save('https://example.com', {}, false)).status).toBe(200);
+  expect(commits).toBe(1);
 });

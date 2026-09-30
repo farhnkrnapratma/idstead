@@ -1,5 +1,4 @@
 <script lang="ts">
-  import SubmitShortcutHint from '$lib/components/SubmitShortcutHint.svelte';
   import Tag from '$lib/components/Tag.svelte';
   import {blogBannerAlt} from '$lib/blogBanner';
   import {bannerUrl} from '$lib/blogBanner';
@@ -143,6 +142,7 @@
   let contactData = $derived(data.contact || []);
 
   let name = $derived(author?.name || '');
+  let pronunciation = $derived(author?.pronunciation || '');
   let username = $derived(author?.username || '');
   let desc = $derived(author?.bio || '');
   let headline = $derived(author?.headline || '');
@@ -683,7 +683,7 @@
 </script>
 
 <svelte:head>
-  <title>{name}{headline ? ` — ${headline}` : ''}</title>
+  <title>{name}{headline ? ` · ${headline}` : ''}</title>
   <meta
     name="description"
     content={desc} />
@@ -695,7 +695,7 @@
     href={siteUrl} />
   <meta
     property="og:title"
-    content="{name} — {headline}" />
+    content="{name} · {headline}" />
   <meta
     property="og:description"
     content={desc} />
@@ -725,7 +725,7 @@
     content="512" />
   <meta
     property="og:image:alt"
-    content="{name} — {desc}" />
+    content="{name} · {desc}" />
   <meta
     property="og:locale"
     content="en_US" />
@@ -748,7 +748,7 @@
     content="summary_large_image" />
   <meta
     name="twitter:title"
-    content="{name} — {headline}" />
+    content="{name} · {headline}" />
   <meta
     name="twitter:description"
     content={desc} />
@@ -1170,6 +1170,13 @@
               : 'pt-5'} text-xl font-extrabold tracking-tight text-text-primary sm:text-2xl md:text-3xl">
               {name}
             </h1>
+
+            {#if pronunciation}
+              <p
+                class="relative z-10 mt-0.5 font-sans text-xs text-text-muted sm:text-sm">
+                {pronunciation}
+              </p>
+            {/if}
 
             {#if headline}
               <p
@@ -1605,7 +1612,6 @@
               <span
                 >Clear<span class="hidden sm:inline">&nbsp;message</span></span>
             </Button>
-            <SubmitShortcutHint class="max-sm:hidden" />
             <Button
               htmlType="submit"
               type="primary"
@@ -1627,7 +1633,7 @@
   {#if activeSection === 'contact'}
     <LinkGridSection
       title="Contact"
-      subtitle="Feel free to reach out via any of the channels below."
+      subtitle="Reach out through any of the channels below."
       items={contactItems}
       shortcutGroup="contact"
       emptyTitle="No contact channels yet"
@@ -1646,7 +1652,7 @@
               Curriculum Vitae
             </h1>
             <p class="mt-2 text-sm text-text-secondary">
-              View or download my updated resume.
+              View or download my resume.
             </p>
           </div>
           {#if data.cvExists}
@@ -1775,7 +1781,7 @@
               Blog
             </h1>
             <p class="mt-2 text-sm text-text-secondary">
-              Thoughts on Linux, security, and open source.
+              Articles on the things I'm building, learning, and thinking about.
             </p>
           </div>
           <Tooltip
@@ -2003,7 +2009,7 @@
   {#if activeSection === 'funding'}
     <LinkGridSection
       title="Supporting & Funding"
-      subtitle="Support open-source development and maintenance through these platforms."
+      subtitle="Ways to support my work."
       items={fundingPlatforms}
       shortcutGroup="funding"
       emptyTitle="No funding platforms yet"

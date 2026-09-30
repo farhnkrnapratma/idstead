@@ -257,9 +257,9 @@
         undefined,
         () => ''
       ).trim(),
-      value: subscribers ? formatCount(subscribers.active) : '—',
+      value: data && subscribers ? formatCount(subscribers.active) : '—',
       description:
-        subscribers ?
+        data && subscribers ?
           `${formatCount(subscribers.pending)} awaiting confirmation`
         : 'Email list',
       componentIcon: Mail

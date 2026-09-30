@@ -13,6 +13,7 @@ import {
 } from '$lib/server/profileAssets';
 import {profilePatch, ProfileInputError} from '$lib/server/profilePatch';
 import type {IdentityAsset} from '$lib/siteIdentity';
+import {logActivity} from '$lib/server/activityLog';
 
 const attempts = new Map<string, number>();
 
@@ -39,7 +40,12 @@ export const GET: RequestHandler = async ({request, platform}) => {
   );
 };
 
-export const POST: RequestHandler = async ({request, platform, url}) => {
+export const POST: RequestHandler = async ({
+  request,
+  platform,
+  url,
+  getClientAddress
+}) => {
   if (!isSameOriginRequest(request, url))
     return apiError(
       403,
@@ -157,6 +163,8 @@ export const POST: RequestHandler = async ({request, platform, url}) => {
     }
     payload = profilePatch(payload, current);
     files = await validateAvatar(form);
+    if (!files && !current?.avatar?.trim() && !current?.avatar_version)
+      throw new ProfileInputError({avatar: 'Profile image is required.'});
   } catch (error) {
     return apiError(
       400,
@@ -252,6 +260,33 @@ export const POST: RequestHandler = async ({request, platform, url}) => {
     );
   }
   const cleanupPending = await cleanupAfterSave(platform);
+  const changedFields = Object.keys(payload).filter(
+    key => !['id', 'revision'].includes(key)
+  );
+  await logActivity(
+    {
+      actor: user.email ?? user.id,
+      action: version ? 'profile.avatar_update' : 'profile.update',
+      category: 'profile',
+      summary:
+        version ?
+          `Updated profile avatar${changedFields.length ? ` and ${changedFields.join(', ')}` : ''}.`
+        : `Updated ${changedFields.join(', ') || 'profile'}.`,
+      details: {fields: changedFields, avatarUpdated: Boolean(version)},
+      ip: (() => {
+        try {
+          return getClientAddress();
+        } catch {
+          return null;
+        }
+      })(),
+      ipSalt:
+        (platform as {env?: {IP_SALT?: string}} | undefined)?.env?.IP_SALT
+        ?? '',
+      userAgent: request.headers.get('user-agent') ?? undefined
+    },
+    db
+  );
   return json(
     {success: true, profile: data, cleanupPending},
     {headers: {'Cache-Control': 'no-store'}}

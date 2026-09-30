@@ -1,6 +1,7 @@
 <script lang="ts">
   import {FieldValidation, requiredText} from '$lib/fieldValidation';
   import {supabase} from '$lib/supabase';
+  import {processContentImage} from '$lib/processContentImage';
   import {onDestroy, onMount} from 'svelte';
   import {TRANSLATION_LOCALES} from '$lib/translationLocales';
   import {
@@ -57,6 +58,7 @@
   let savedBannerUrl = $state<string | null>(null);
   let bannerChange = $state.raw<BannerChange>({operation: 'keep'});
   let bannerBlocked = $state(false);
+  let bannerError = $state('');
   let pendingSave = $state.raw<FormData | null>(null);
   let operationKey = '';
   let loadFailed = $state(false);
@@ -246,31 +248,66 @@
   }
 
   async function handleImageUploadFile(file: File): Promise<string | null> {
-    const allowedTypes = ['image/png', 'image/webp', 'image/jpeg', 'image/jpg'];
+    isSubmitting = true;
+    errorMessage = null;
+    const controller = new AbortController();
+    try {
+      const {blob} = await processContentImage(file, controller.signal);
+      const {data: sessionData} = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken)
+        throw new Error('Your session has expired. Please log in again.');
+      const form = new FormData();
+      form.append('file', blob, 'image.webp');
+      const response = await fetch('/api/internal/admin/blog/content-image', {
+        method: 'POST',
+        headers: {Authorization: `Bearer ${accessToken}`},
+        body: form
+      });
+      const result = await response.json();
+      if (!response.ok)
+        throw new Error(result?.error?.message ?? 'Failed to upload image.');
+      return result.url;
+    } catch (err) {
+      errorMessage =
+        err instanceof Error ? err.message : 'Failed to upload image.';
+      return null;
+    } finally {
+      isSubmitting = false;
+    }
+  }
+
+  async function handleVideoUploadFile(file: File): Promise<string | null> {
+    const allowedTypes = ['video/mp4', 'video/webm'];
     if (!allowedTypes.includes(file.type)) {
-      errorMessage = 'Supported image formats are PNG, WebP, JPEG, JPG.';
+      errorMessage = 'Supported video formats are MP4 and WebM.';
       return null;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      errorMessage = 'Image size must be 5MB or less.';
+    if (file.size > 50 * 1024 * 1024) {
+      errorMessage = 'Video size must be 50MB or less.';
       return null;
     }
     isSubmitting = true;
     errorMessage = null;
     try {
-      const ext = file.name.split('.').pop() || 'png';
-      const path = `images/${slug || 'post'}-${Date.now()}.${ext}`;
-      const {error: uploadError} = await supabase.storage
-        .from('blog-posts')
-        .upload(path, file, {cacheControl: '3600', upsert: true});
-      if (uploadError) throw uploadError;
-      const {data: urlData} = supabase.storage
-        .from('blog-posts')
-        .getPublicUrl(path);
-      return urlData.publicUrl;
+      const {data: sessionData} = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken)
+        throw new Error('Your session has expired. Please log in again.');
+      const form = new FormData();
+      form.append('file', file, file.name);
+      const response = await fetch('/api/internal/admin/blog/content-video', {
+        method: 'POST',
+        headers: {Authorization: `Bearer ${accessToken}`},
+        body: form
+      });
+      const result = await response.json();
+      if (!response.ok)
+        throw new Error(result?.error?.message ?? 'Failed to upload video.');
+      return result.url;
     } catch (err) {
-      const error = err as Error;
-      errorMessage = error.message || 'Failed to upload image.';
+      errorMessage =
+        err instanceof Error ? err.message : 'Failed to upload video.';
       return null;
     } finally {
       isSubmitting = false;
@@ -297,6 +334,16 @@
 
   const validation = new FieldValidation();
   onDestroy(() => validation.destroy());
+  validation.register('banner', {
+    value: () =>
+      bannerChange.operation === 'replace' ? 'prepared'
+      : bannerChange.operation === 'keep' ? savedBannerUrl || ''
+      : '',
+    validate: requiredText('Banner image'),
+    report: result => {
+      bannerError = result.error;
+    }
+  });
   validation.register('content', {
     value: () => markdownContent,
     baseline: () => (isEditMode ? initialMarkdownContent : undefined),
@@ -347,8 +394,17 @@
     if (isDirty) {
       showCancelDialog = true;
     } else {
-      onCancel();
+      discardDraft();
     }
+  }
+
+  function discardDraft() {
+    if (isSubmitting) return;
+    localStorage.removeItem(
+      editId ? `autosave_edit_${editId}` : 'autosave_new'
+    );
+    showCancelDialog = false;
+    onCancel();
   }
 
   let showNotifyDialog = $state(false);
@@ -505,7 +561,11 @@
             if (
               !response.ok
               || (!translation.stored && !translation.skipped)
-              || (translation.stored && !translation.bodyTranslated)
+              || (translation.stored
+                && (!translation.bodyTranslated
+                  || !translation.titleTranslated
+                  || !translation.summaryTranslated
+                  || !translation.tldrTranslated))
             )
               missing.push(locale);
           } catch {
@@ -553,17 +613,15 @@
     variant="post-editor"
     label="Loading post..." />
 {:else}
-  {#if errorMessage}
-    <StatusBanner
-      variant="error"
-      message={errorMessage}
-      class="mb-6" />
-  {/if}
-
   <form
     onsubmit={e => e.preventDefault()}
     novalidate
     class="flex flex-col gap-4 py-4 sm:py-6">
+    {#if errorMessage}
+      <StatusBanner
+        variant="error"
+        message={errorMessage} />
+    {/if}
     <fieldset
       disabled={isSubmitting || !!pendingSave || loadFailed}
       class="contents">
@@ -578,14 +636,16 @@
             {title}
             savedUrl={savedBannerUrl}
             savedRevision={postRevision ?? 0}
+            validationError={bannerError}
             disabled={isSubmitting || !!pendingSave}
             onprepared={change => {
               bannerChange = change;
+              validation.input('banner');
             }}
             onblocked={blocked => {
               bannerBlocked = blocked;
             }} />
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div class="flex flex-col gap-4">
             <FormField
               id="post-title"
               label="Title"
@@ -707,22 +767,21 @@
         placeholder="Write your markdown content here..."
         minHeight="500px"
         stickyTopClass="top-14 md:top-0"
-        onImageUpload={handleImageUploadFile} />
+        onImageUpload={handleImageUploadFile}
+        onVideoUpload={handleVideoUploadFile} />
     </fieldset>
     <div
-      class="mt-4 mb-10 flex flex-col gap-2.5 select-none sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-      <Button
-        type="danger"
-        size="md"
-        class="order-2 w-full sm:order-1 sm:w-auto"
-        onclick={handleCancelClick}
-        disabled={isSubmitting}>
-        {isEditMode ? 'Discard changes' : 'Discard draft'}
-      </Button>
-
-      <div
-        class="order-1 grid grid-cols-2 gap-2.5 sm:order-2 sm:flex sm:items-center sm:gap-3">
-        {#if isEditMode}
+      class="mt-4 mb-10 flex flex-col gap-2.5 select-none sm:flex-row sm:items-center sm:justify-end sm:gap-3">
+      <div class="grid grid-cols-2 gap-2.5 sm:flex sm:items-center sm:gap-3">
+        <Button
+          type="danger"
+          size="md"
+          class="col-span-2 w-full sm:w-auto"
+          onclick={handleCancelClick}
+          disabled={isSubmitting}>
+          {isEditMode ? 'Discard changes' : 'Discard draft'}
+        </Button>
+        {#if isEditMode && !pendingSave}
           <Button
             type="ghost"
             size="md"
@@ -734,28 +793,36 @@
             Email subscribers
           </Button>
         {/if}
-        <Button
-          type="secondary"
-          size="md"
-          class="w-full sm:w-auto"
-          onclick={() => handleSaveClick(false)}
-          disabled={isSubmitting || bannerBlocked || loadFailed}
-          isLoading={submittingAction === 'draft'}>
-          {submittingAction === 'draft' ? 'Saving draft…'
-          : pendingSave ? 'Retry Save'
-          : 'Save draft'}
-        </Button>
-        <Button
-          type="primary"
-          size="md"
-          class="w-full sm:w-auto"
-          onclick={() => handleSaveClick(true)}
-          disabled={isSubmitting || bannerBlocked || loadFailed}
-          isLoading={submittingAction === 'publish'}>
-          {submittingAction === 'publish' ? 'Publishing…'
-          : pendingSave ? 'Retry Save'
-          : 'Publish post'}
-        </Button>
+        {#if pendingSave}
+          <Button
+            type="primary"
+            size="md"
+            class="col-span-2 w-full sm:w-auto"
+            onclick={() => handleSaveClick(true)}
+            disabled={isSubmitting || bannerBlocked || loadFailed}
+            isLoading={isSubmitting}>
+            {isSubmitting ? 'Retrying…' : 'Retry Save'}
+          </Button>
+        {:else}
+          <Button
+            type="secondary"
+            size="md"
+            class="w-full sm:w-auto"
+            onclick={() => handleSaveClick(false)}
+            disabled={isSubmitting || bannerBlocked || loadFailed}
+            isLoading={submittingAction === 'draft'}>
+            {submittingAction === 'draft' ? 'Saving draft…' : 'Save draft'}
+          </Button>
+          <Button
+            type="primary"
+            size="md"
+            class="w-full sm:w-auto"
+            onclick={() => handleSaveClick(true)}
+            disabled={isSubmitting || bannerBlocked || loadFailed}
+            isLoading={submittingAction === 'publish'}>
+            {submittingAction === 'publish' ? 'Publishing…' : 'Publish post'}
+          </Button>
+        {/if}
       </div>
     </div>
   </form>
@@ -786,7 +853,7 @@
       type="danger"
       tone="critical"
       size="md"
-      onclick={onCancel}
+      onclick={discardDraft}
       >{isEditMode ? 'Discard changes' : 'Discard draft'}</Button>
   {/snippet}
 </Dialog>

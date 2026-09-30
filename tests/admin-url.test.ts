@@ -1,5 +1,5 @@
 import {expect, test} from 'bun:test';
-import {cleanAdminParams} from '../src/lib/adminUrl';
+import {cleanAdminParams, resolveAdminSettings} from '../src/lib/adminUrl';
 
 const clean = (search: string, year = 2026) =>
   cleanAdminParams(new URLSearchParams(search), year).toString();
@@ -22,4 +22,28 @@ test('meaningful params are kept and defaults are dropped', () => {
   expect(clean('calendarYear=2026')).toBe('');
   expect(clean('calendarYear=2025')).toBe('calendarYear=2025');
   expect(clean('')).toBe('');
+});
+
+test('settings links preserve supported sections and existing workspace URLs', () => {
+  for (const section of ['appearance', 'security', 'data']) {
+    expect(clean(`tab=account&settings=${section}`)).toBe(
+      `tab=account&settings=${section}`
+    );
+  }
+  expect(clean('tab=account')).toBe('tab=account');
+  expect(clean('tab=logs')).toBe('tab=logs');
+  expect(clean('tab=security&settings=data')).toBe('tab=security');
+  expect(clean('settings=security')).toBe('');
+});
+
+test('unknown settings sections fall back to appearance without leaking into other workspaces', () => {
+  for (const value of [null, '', 'display', 'unknown']) {
+    expect(resolveAdminSettings(value)).toBe('appearance');
+  }
+  expect(resolveAdminSettings('security')).toBe('security');
+  expect(resolveAdminSettings('data')).toBe('data');
+  expect(clean('tab=account&settings=unknown')).toBe('tab=account');
+  expect(clean('tab=logs&settings=data&query=login')).toBe(
+    'tab=logs&query=login'
+  );
 });

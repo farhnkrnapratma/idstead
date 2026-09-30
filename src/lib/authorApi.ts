@@ -69,7 +69,10 @@ export function generateAuthorMarkdown(data: Record<string, any>): string {
 
   if (data.profile) {
     const p = data.profile;
-    lines.push(`# ${p.name || 'Profile'}`);
+    const pronunciation = p.pronunciation || '';
+    lines.push(
+      `# ${p.name || 'Profile'}${pronunciation ? ` (${pronunciation})` : ''}`
+    );
     lines.push('');
     if (p.headline) lines.push(`**Headline**: ${p.headline}`);
     if (p.bio) {

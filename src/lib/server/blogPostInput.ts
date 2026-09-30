@@ -120,6 +120,11 @@ export async function parsePostInput(
     markdown = body;
     if (!['keep', 'replace', 'remove'].includes(input.bannerOperation))
       throw new Error('Invalid banner operation.');
+    if (
+      input.bannerOperation === 'remove'
+      || (input.revision === null && input.bannerOperation !== 'replace')
+    )
+      throw new Error('Banner image is required.');
     banner = {operation: input.bannerOperation};
     const file = form.get('banner');
     if (banner.operation === 'replace') {

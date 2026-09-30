@@ -1,5 +1,4 @@
 <script lang="ts">
-  import {X} from '@lucide/svelte';
   import {onDestroy, untrack} from 'svelte';
   import FileUploadField from './FileUploadField.svelte';
   import FieldMessage from './FieldMessage.svelte';
@@ -14,6 +13,7 @@
     title,
     savedRevision,
     disabled = false,
+    validationError = '',
     onprepared,
     onblocked
   }: {
@@ -21,6 +21,7 @@
     title: string;
     savedRevision: number;
     disabled?: boolean;
+    validationError?: string;
     onprepared: (change: BannerChange) => void;
     onblocked: (blocked: boolean) => void;
   } = $props();
@@ -30,7 +31,6 @@
   let filename = $state('');
   let preview = $state('');
   let size = $state('');
-  let removed = $state(false);
   let loadedSource = $state('');
   let controller: AbortController | undefined;
   let generation = 0;
@@ -55,7 +55,6 @@
           loadedSource = '';
           if (committed) {
             clearPreview();
-            removed = false;
           }
           return;
         }
@@ -64,7 +63,6 @@
           loadedSource = source;
           if (committed && current === generation) {
             clearPreview();
-            removed = false;
           }
         };
         image.onerror = () => {
@@ -85,7 +83,6 @@
     controller?.abort();
     clearPreview();
     error = '';
-    removed = false;
     onprepared({operation: 'keep'});
     busy = !!file;
     onblocked(busy);
@@ -110,18 +107,6 @@
     }
   }
 
-  function remove() {
-    if (disabled) return;
-    generation++;
-    controller?.abort();
-    clearPreview();
-    error = '';
-    busy = false;
-    removed = true;
-    onblocked(false);
-    onprepared({operation: 'remove'});
-  }
-
   onDestroy(() => {
     generation++;
     controller?.abort();
@@ -134,40 +119,26 @@
   class="flex min-w-0 flex-col gap-3">
   <h3
     id="banner-image-title"
-    class="text-xs font-bold text-text-secondary">
-    Banner image <span class="font-normal text-text-muted">(optional)</span>
+    class="text-xxs font-bold tracking-widest text-text-secondary uppercase">
+    Banner image <span class="font-normal text-text-muted">(required)</span>
   </h3>
   <div
-    class="grid min-w-0 grid-cols-1 items-stretch gap-4 sm:grid-cols-2"
+    class="grid min-w-0 grid-cols-1 items-stretch gap-4 sm:grid-cols-[auto_1fr]"
     {@attach watchSaved(savedUrl, savedRevision)}>
     <div
       data-banner-preview
-      class="relative aspect-2/1 overflow-hidden rounded-md border border-border-subtle bg-surface-subtle [background-image:conic-gradient(var(--color-surface)_25%,transparent_0_50%,var(--color-surface)_0_75%,transparent_0)] [background-size:1rem_1rem]">
+      class="relative aspect-2/1 w-full max-w-80 overflow-hidden rounded-md border border-border-subtle bg-surface-subtle [background-image:conic-gradient(var(--color-surface)_25%,transparent_0_50%,var(--color-surface)_0_75%,transparent_0)] [background-size:1rem_1rem] sm:w-64 sm:max-w-none">
       <ImageWithSkeleton
-        src={removed ? null : (
-          preview || (loadedSource === savedUrl ? savedUrl : null)
-        )}
+        src={preview || (loadedSource === savedUrl ? savedUrl : null)}
         alt={`${blogBannerAlt(title || 'untitled post')} — preview`}
         loading="eager"
         class="absolute inset-0 size-full bg-transparent!"
         imgClass="object-contain" />
-      {#if !removed && (savedUrl || preview)}
-        <div class="absolute top-2 right-2 z-10 rounded-md bg-surface-card">
-          <Button
-            type="outline"
-            tone="critical"
-            size="xs"
-            class="size-8 p-0!"
-            aria-label="Remove banner"
-            title="Remove banner"
-            {disabled}
-            onclick={remove}><X class="size-4" /></Button>
-        </div>
-      {/if}
     </div>
     <FileUploadField
       id="post-banner"
       class="min-w-0"
+      required
       accept="image/png,image/jpeg,image/webp,image/avif,image/gif,image/bmp"
       hint="PNG, JPEG, WebP, AVIF, GIF, BMP · up to 10 MB / 40 MP · at least 1280 × 640"
       {disabled}
@@ -176,23 +147,19 @@
       uploadingLabel="Preparing banner…"
       selectedFileName={filename}
       fileSize={size}
+      error={error || validationError}
       onFileSelect={select} />
   </div>
-  {#if error}<FieldMessage
-      variant="error"
-      message={error} />{/if}
   {#if loadError}<FieldMessage
       variant="error"
       message={loadError} />{/if}
-  {#if removed || preview}<p
+  {#if preview}<p
       class="text-xs text-text-muted"
       aria-live="polite">
-      {removed ?
-        'Banner will be removed when you save.'
-      : 'Banner is ready. Save draft or Publish post to apply it.'}
+      Banner is ready. Save draft or Publish post to apply it.
     </p>{/if}
   <div class="flex flex-wrap gap-2">
-    {#if busy || error || filename || removed}<Button
+    {#if busy || error || filename}<Button
         type="ghost"
         size="xs"
         {disabled}

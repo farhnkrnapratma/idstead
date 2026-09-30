@@ -12,7 +12,7 @@ export const GET: RequestHandler = async ({request}) => {
           {href: `${base}/.well-known/openapi.json`, type: 'application/json'},
           {href: `${base}/.well-known/openapi.yaml`, type: 'application/yaml'}
         ],
-        'service-doc': [{href: `${base}/api/v1`, type: 'text/markdown'}],
+        'service-doc': [{href: `${base}/api/v1/docs`, type: 'text/markdown'}],
         describedby: [
           {
             href: `${base}/.well-known/agent-skills/index.json`,

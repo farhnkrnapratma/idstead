@@ -31,7 +31,7 @@ test('a partial change preserves untouched legacy fields and rejects unknown key
   ).toThrow();
 });
 
-test('Display is partial and legacy color settings cannot override theme tokens', () => {
+test('Display stays standalone and legacy settings cannot override theme tokens', () => {
   const current = {manifest_settings: {display: 'standalone'}};
   expect(
     profilePatch(
@@ -41,11 +41,7 @@ test('Display is partial and legacy color settings cannot override theme tokens'
       },
       current
     )
-  ).toEqual({
-    id: undefined,
-    revision: 1,
-    manifest_settings: {display: 'browser'}
-  });
+  ).toEqual({id: undefined, revision: 1});
   expect(() =>
     profilePatch({manifest_settings: {display: 'invalid'}}, current)
   ).toThrow('display');
@@ -67,4 +63,27 @@ test('avatars use the current environment while public metadata remains absolute
     'https://production.example/avatar.png?v=new'
   );
   expect(avatarSource({avatar: '/legacy.png'})).toBe('/legacy.png');
+});
+
+test('pronunciation preserves the entered text and remains optional', () => {
+  for (const pronunciation of [
+    ' /ˈælbərt ˈaɪnstaɪn/ ',
+    '[ˈælbərt ˈaɪnstaɪn]',
+    'ˈælbərt ˈaɪnstaɪn'
+  ])
+    expect(
+      profilePatch(
+        {pronunciation},
+        {manifest_settings: {display: 'standalone'}}
+      ).pronunciation
+    ).toBe(pronunciation);
+  expect(
+    profilePatch({pronunciation: ''}, {pronunciation: 'before'}).pronunciation
+  ).toBe('');
+  expect(
+    profilePatch(
+      {name: 'Updated'},
+      {name: 'Before', manifest_settings: {display: 'browser'}}
+    ).manifest_settings
+  ).toEqual({display: 'standalone'});
 });

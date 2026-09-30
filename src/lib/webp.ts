@@ -1,12 +1,22 @@
 import {BANNER_HEIGHT, BANNER_LIMIT, BANNER_WIDTH} from './blogBanner';
 
-export function inspectWebp(bytes: Uint8Array) {
+export function inspectWebp(
+  bytes: Uint8Array,
+  limits: {
+    maxBytes: number;
+    width?: number;
+    height?: number;
+    maxPixels?: number;
+  } = {maxBytes: BANNER_LIMIT, width: BANNER_WIDTH, height: BANNER_HEIGHT}
+) {
   const invalid = () => {
     throw new Error(
-      'Banner must be a valid, still WebP image at 1280 × 640 pixels and no larger than 500 KiB.'
+      limits.width !== undefined ?
+        `Banner must be a valid, still WebP image at ${limits.width} × ${limits.height} pixels and no larger than ${Math.round(limits.maxBytes / 1024)} KiB.`
+      : `Image must be a valid, still WebP image no larger than ${Math.round(limits.maxBytes / 1024)} KiB.`
     );
   };
-  if (bytes.length < 20 || bytes.length > BANNER_LIMIT) return invalid();
+  if (bytes.length < 20 || bytes.length > limits.maxBytes) return invalid();
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const tag = (offset: number) =>
     String.fromCharCode(...bytes.subarray(offset, offset + 4));
@@ -72,8 +82,9 @@ export function inspectWebp(bytes: Uint8Array) {
   }
   if (
     imageChunks !== 1
-    || width !== BANNER_WIDTH
-    || height !== BANNER_HEIGHT
+    || (limits.width !== undefined
+      && (width !== limits.width || height !== limits.height))
+    || (limits.maxPixels !== undefined && width * height > limits.maxPixels)
     || (canvasWidth && (canvasWidth !== width || canvasHeight !== height))
   )
     return invalid();

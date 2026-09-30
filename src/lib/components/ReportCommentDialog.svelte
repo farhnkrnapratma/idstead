@@ -6,7 +6,6 @@
   import Button from './Button.svelte';
   import FormField from './FormField.svelte';
   import Textarea from './Textarea.svelte';
-  import SubmitShortcutHint from './SubmitShortcutHint.svelte';
   import {
     turnstileWidget,
     executeTurnstile,
@@ -238,9 +237,6 @@
           }}
           bind:value={details} />
       </FormField>
-      <SubmitShortcutHint
-        label="to submit report"
-        class="self-end max-sm:hidden" />
 
       {#if turnstileSiteKey}
         <div

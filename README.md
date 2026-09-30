@@ -133,6 +133,16 @@ Build tooling lives in `tooling/vite`; the WebP plugin emits the decoder WASM re
 
 Generated knowledge graphs, agent observations, and local development archives are ignored by Git. Keep permanent regression tests and their fixtures under `tests`; keep session reports and manual browser harnesses local. Graphify can still query and update the local graph.
 
+### Admin passwords
+
+New admin passwords accept 15–64 Unicode code points without required character classes. Spaces, paste, autofill, and password managers are supported; passwords are never trimmed or silently truncated. Supabase Auth also imposes a 72-byte UTF-8 limit, reported explicitly for multi-byte input. The form uses one column with a maximum width of 32rem. Current and New password have independent Show/Hide controls. Validation appears only after blur or submission when input does not meet the policy, with no persistent checklist or strength indicator. Correcting a field clears its error immediately. Clearing New password clears its confirmation, which always stays masked.
+
+The Generate password button below New password supports random passwords (15–64 characters, default 24) and English passphrases (8–10 words, default 8). Random passwords always contain lowercase letters and each enabled uppercase, number, or symbol group. Passphrases use all 1,296 entries of EFF Short Wordlist #1, with optional capitalization, spaces/hyphens/periods, and an independently random digit after each word. See [word-list attribution](src/lib/data/password-words.LICENSE.md). Generation uses cryptographic randomness with rejection sampling; all results meet the password policy. Candidates exceeding the maximum length are regenerated as a whole, never truncated. Previewing and regenerating do not overwrite the form. Copy and close copies the selected password, fills both new-password fields, masks them, and closes the dialog. Clipboard failures keep the dialog open and preserve the form. No generated password is persisted.
+
+`POST /api/internal/admin/password` requires an authenticated admin, the appropriate MFA assurance level, a same-origin request, bounded input, and rate limiting. Accepted requests reach Supabase Auth using the user's access token and current password. Passwords are excluded from activity logs and request bodies are excluded from server error telemetry. Breach/blocklist checks are intentionally disabled, so this policy does not claim full NIST compliance.
+
+The shared Supabase Auth settings are minimum length **15**, required character classes **none**, current-password verification **enabled**, reauthentication **enabled**, and leaked-password protection **disabled**. Verify these hosted settings separately when configuring another deployment; source changes do not apply them. Existing passwords remain valid for sign-in. The application imposes its own maximum length; direct Auth requests are governed by the provider's limits.
+
 ### Mailing commands
 
 The command palette accepts `/mailing subscribe <email>` and `/mailing unsubscribe <email>`. Omitting the email opens an email form. Both actions require Turnstile verification and email confirmation; an unsubscribe request sends a confirmation link without changing the subscription. Mailing commands containing email addresses are excluded from search history.

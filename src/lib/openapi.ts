@@ -121,7 +121,14 @@ const authorProfileSchema = {
   ...authorSubResourceSchema,
   description:
     'Public author profile, including the public contact email address.',
-  properties: {email: {type: 'string', format: 'email'}}
+  properties: {
+    email: {type: 'string', format: 'email'},
+    pronunciation: {
+      type: 'string',
+      description:
+        'Pronunciation of the author name, preserved as entered, including any slashes or brackets; empty when unset.'
+    }
+  }
 };
 
 const pageParam = {
@@ -202,6 +209,13 @@ export const openapiSpec = {
   },
   paths: {
     '/api/v1': {
+      get: {
+        summary: 'Redirects to the API reference',
+        description: 'Permanently redirects to GET /api/v1/docs.',
+        responses: {'301': {description: 'Moved Permanently to /api/v1/docs'}}
+      }
+    },
+    '/api/v1/docs': {
       get: {
         summary: 'API reference (human-readable)',
         description:

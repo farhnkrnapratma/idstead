@@ -9,6 +9,7 @@ function fixture() {
   let loseCommit = false;
   let lookupFails = false;
   let markdownFails = false;
+  let hasBanner = true;
   const post = {
     id: crypto.randomUUID(),
     post_revision: 1,
@@ -51,13 +52,19 @@ function fixture() {
         download: async () => ({data: null, error: new Error('Missing object')})
       })
     },
-    from: () => {
+    from: (table: string) => {
       const query = {
         select: () => query,
         eq: () => query,
         maybeSingle: async () => ({
           data:
-            lookupFails ? null : {id: input.operationId, state, result: post},
+            lookupFails ? null
+            : table === 'db_posts' ?
+              {
+                post_revision: input.revision,
+                banner_version: hasBanner ? post.banner_version : null
+              }
+            : {id: input.operationId, state, result: post},
           error: lookupFails ? new Error('Offline') : null
         })
       };
@@ -69,6 +76,9 @@ function fixture() {
     input,
     calls,
     state: () => state,
+    removeBanner: () => {
+      hasBanner = false;
+    },
     loseCommit: () => {
       loseCommit = true;
     },
@@ -196,4 +206,37 @@ test('admin authentication checks origin and trusted app metadata', async () => 
       )
     ).actor
   ).toBe('fixture');
+});
+
+test('edits require an existing banner and committed retries still reconcile', async () => {
+  const sample = fixture();
+  sample.input.banner.operation = 'keep';
+  sample.removeBanner();
+  await expect(
+    savePostOperation(sample.database, 'actor', sample.input, async () => {})
+  ).rejects.toThrow('Banner image is required.');
+  expect(sample.calls).toEqual(['db_prepare_post_operation']);
+  const saved = fixture();
+  saved.input.banner.operation = 'keep';
+  expect(
+    (
+      await savePostOperation(
+        saved.database,
+        'actor',
+        saved.input,
+        async () => {}
+      )
+    ).state
+  ).toBe('committed');
+  saved.removeBanner();
+  expect(
+    (
+      await savePostOperation(
+        saved.database,
+        'actor',
+        saved.input,
+        async () => {}
+      )
+    ).state
+  ).toBe('committed');
 });

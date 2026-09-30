@@ -1,6 +1,6 @@
 <script lang="ts">
   import type {Component} from 'svelte';
-  import {Ellipsis} from '@lucide/svelte';
+  import {Check, Ellipsis} from '@lucide/svelte';
   import IconButton from './IconButton.svelte';
   import {cn} from '../utils/cn';
   import {portal} from '../utils/actions';
@@ -10,18 +10,23 @@
     icon?: Component<{class?: string}>;
     danger?: boolean;
     disabled?: boolean;
+    selected?: boolean;
     onSelect: () => void;
   }
+
+  type MenuEntry = MenuItem | {divider: true};
 
   let {
     items,
     ariaLabel = 'More actions',
     disabled = false,
+    triggerIcon: TriggerIcon = Ellipsis,
     class: className = ''
   }: {
-    items: MenuItem[];
+    items: MenuEntry[];
     ariaLabel?: string;
     disabled?: boolean;
+    triggerIcon?: Component<{class?: string}>;
     class?: string;
   } = $props();
 
@@ -92,7 +97,7 @@
     showTooltip={false}
     aria-haspopup="menu"
     aria-expanded={open}
-    onclick={toggle}><Ellipsis class="size-4" /></IconButton>
+    onclick={toggle}><TriggerIcon class="size-4" /></IconButton>
 </span>
 
 {#if open}
@@ -106,24 +111,32 @@
       undefined
     : `${position.bottom}px`}
     style:right={`${position.right}px`}
-    class="fixed z-50 max-h-[calc(100dvh-1rem)] min-w-44 overflow-y-auto rounded-md border border-border-subtle bg-surface-elevated shadow-md">
-    {#each items as item (item.label)}
-      <button
-        type="button"
-        role="menuitem"
-        disabled={item.disabled}
-        class={cn(
-          'flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-xs transition-colors hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
-          item.danger ? 'text-danger' : 'text-text-secondary'
-        )}
-        onclick={() => {
-          open = false;
-          item.onSelect();
-        }}>
-        {#if item.icon}{@const Icon = item.icon}<Icon
-            class="size-3.5 shrink-0" />{/if}
-        {item.label}
-      </button>
-    {/each}
+    class="fixed z-50 min-w-36 overflow-hidden rounded-md border border-border-subtle bg-surface-elevated shadow-md">
+    <div class="flex max-h-[calc(100dvh-1rem)] flex-col overflow-y-auto">
+      {#each items as item, index ('divider' in item ? `divider-${index}` : item.label)}
+        {#if 'divider' in item}
+          <div class="my-1 border-t border-border-subtle"></div>
+        {:else}
+          <button
+            type="button"
+            role={item.selected === undefined ? 'menuitem' : 'menuitemradio'}
+            aria-checked={item.selected}
+            disabled={item.disabled}
+            class={cn(
+              'flex w-full cursor-pointer items-center gap-1.5 px-2.5 py-1.5 text-left text-xs whitespace-nowrap transition-colors hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+              item.danger ? 'text-danger' : 'text-text-secondary'
+            )}
+            onclick={() => {
+              open = false;
+              item.onSelect();
+            }}>
+            {#if item.icon}{@const Icon = item.icon}<Icon
+                class="size-3.5 shrink-0" />{/if}
+            {item.label}
+            {#if item.selected}<Check class="ml-auto size-3.5 shrink-0" />{/if}
+          </button>
+        {/if}
+      {/each}
+    </div>
   </div>
 {/if}

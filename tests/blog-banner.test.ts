@@ -126,9 +126,34 @@ test('server rejects malformed banner operations and accepts verified replacemen
     operation: 'replace',
     bytes: valid.length
   });
-  form.set('post', JSON.stringify({...metadata, bannerOperation: 'keep'}));
+  form.set(
+    'post',
+    JSON.stringify({...metadata, revision: 1, bannerOperation: 'keep'})
+  );
   await expect(parse()).rejects.toThrow('Unexpected banner');
   form.delete('banner');
+  for (const published of [false, true]) {
+    form.set(
+      'post',
+      JSON.stringify({...metadata, published, bannerOperation: 'keep'})
+    );
+    await expect(parse()).rejects.toThrow('Banner image is required.');
+    form.set(
+      'post',
+      JSON.stringify({
+        ...metadata,
+        published,
+        revision: 1,
+        bannerOperation: 'remove'
+      })
+    );
+    await expect(parse()).rejects.toThrow('Banner image is required.');
+  }
+  form.set(
+    'post',
+    JSON.stringify({...metadata, revision: 1, bannerOperation: 'keep'})
+  );
+  expect((await parse()).banner.operation).toBe('keep');
   form.set('post', JSON.stringify({...metadata, revision: -1}));
   await expect(parse()).rejects.toThrow('revision');
 });

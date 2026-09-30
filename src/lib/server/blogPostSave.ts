@@ -16,6 +16,12 @@ export type PostOperation = {
   } | null;
 };
 
+export class BannerRequiredError extends Error {
+  constructor() {
+    super('Banner image is required.');
+  }
+}
+
 export async function savePostOperation(
   db: SupabaseClient,
   actor: string,
@@ -40,6 +46,16 @@ export async function savePostOperation(
     || operation.state === 'rejected'
   )
     return operation;
+  if (input.kind === 'save' && input.banner.operation === 'keep') {
+    const {data: current, error: readError} = await db
+      .from('db_posts')
+      .select('banner_version, post_revision')
+      .eq('id', input.id)
+      .maybeSingle();
+    if (readError) throw readError;
+    if (current?.post_revision === input.revision && !current.banner_version)
+      throw new BannerRequiredError();
+  }
   if (operation.state === 'pending') {
     if (input.kind === 'save') {
       if (input.image) await upload();

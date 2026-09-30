@@ -1,5 +1,4 @@
 <script lang="ts">
-  import SubmitShortcutHint from '$lib/components/SubmitShortcutHint.svelte';
   import Avatar from '$lib/components/Avatar.svelte';
   import {COMMENTS_PAGE_SIZE, commentAuthorName} from '$lib/commentAuthor';
   import {blogBannerAlt} from '$lib/blogBanner';
@@ -837,8 +836,8 @@
                   aria-label="{user}'s GitHub profile">
                   <Avatar
                     name={user}
-                    src={`https://github.com/${user}.png?size=64`}
-                    class="size-6 border-2 border-surface-base" />
+                    src={`https://github.com/${user}.png?size=128`}
+                    class="size-5" />
                 </a>
               {/each}
             </div>
@@ -964,8 +963,8 @@
                           class="flex items-center gap-2 rounded-md px-1.5 py-1 text-xs transition-colors hover:bg-surface-hover hover:text-accent">
                           <Avatar
                             name={collab}
-                            src={`https://github.com/${collab}.png?size=64`}
-                            class="size-6 border-2 border-surface-base" />
+                            src={`https://github.com/${collab}.png?size=128`}
+                            class="size-5" />
                           <span
                             class="font-semibold text-text-primary hover:underline"
                             >{collab}</span>
@@ -986,7 +985,7 @@
             readingTime={formatReadTime(post.read_time)}
             commentsCount={comments.length}
             views={viewCount !== null ? viewCount : undefined}
-            class="mt-2.5 w-full" />
+            class="mt-3 w-full" />
 
           {#if !readingModeStore.active}
             <div
@@ -1290,7 +1289,6 @@
                       >Clear<span class="hidden sm:inline">&nbsp;comment</span
                       ></span>
                   </Button>
-                  <SubmitShortcutHint class="max-sm:hidden" />
                   <Button
                     htmlType="submit"
                     type="primary"
@@ -1446,7 +1444,6 @@
                     <ConsentNotice action="posting a reply" />
 
                     <div class="mt-1 flex items-center justify-end gap-3">
-                      <SubmitShortcutHint class="max-sm:hidden" />
                       <Button
                         htmlType="submit"
                         type="primary"

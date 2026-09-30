@@ -18,6 +18,16 @@ import {
   sendEmail,
   senderAddress
 } from '$lib/server/subscribers';
+import {logActivity} from '$lib/server/activityLog';
+import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
+
+function ipSalt(platform: unknown): string {
+  return (
+    (platform as {env?: {IP_SALT?: string}} | undefined)?.env?.IP_SALT
+    ?? privateEnv.IP_SALT
+    ?? ''
+  );
+}
 
 function getClientIp(getClientAddress: () => string) {
   try {
@@ -69,9 +79,24 @@ export const POST: RequestHandler = async ({
   }
 
   const clientIp = getClientIp(getClientAddress);
+  const salt = ipSalt(platform);
+  const activityDb = getSupabaseAdminClient(platform);
+  const userAgent = request.headers.get('user-agent') ?? undefined;
 
   const lockout = checkLoginLockout(`ip:${clientIp}`);
   if (!lockout.allowed) {
+    await logActivity(
+      {
+        actor: null,
+        action: 'auth.login_locked',
+        category: 'security',
+        summary: 'Login blocked by IP lockout.',
+        ip: clientIp,
+        ipSalt: salt,
+        userAgent
+      },
+      activityDb
+    );
     return apiError(
       429,
       'ADMIN_LOGIN_LOCKED',
@@ -117,6 +142,18 @@ export const POST: RequestHandler = async ({
   );
   if (!turnstileOk) {
     recordFailedLogin(`ip:${clientIp}`);
+    await logActivity(
+      {
+        actor: email,
+        action: 'auth.login_turnstile_failed',
+        category: 'security',
+        summary: 'Turnstile verification failed during login.',
+        ip: clientIp,
+        ipSalt: salt,
+        userAgent
+      },
+      activityDb
+    );
     return apiError(
       403,
       'ADMIN_LOGIN_TURNSTILE_FAILED',
@@ -137,6 +174,18 @@ export const POST: RequestHandler = async ({
         error.message
       );
     recordFailedLogin(`ip:${clientIp}`, emailKey);
+    await logActivity(
+      {
+        actor: email,
+        action: 'auth.login_failed',
+        category: 'auth',
+        summary: 'Invalid email or password.',
+        ip: clientIp,
+        ipSalt: salt,
+        userAgent
+      },
+      activityDb
+    );
     return apiError(
       401,
       'ADMIN_LOGIN_INVALID_CREDENTIALS',
@@ -145,6 +194,18 @@ export const POST: RequestHandler = async ({
   }
 
   clearLoginAttempts(`ip:${clientIp}`, emailKey);
+  await logActivity(
+    {
+      actor: data.user?.email ?? email,
+      action: 'auth.login',
+      category: 'auth',
+      summary: 'Admin signed in.',
+      ip: clientIp,
+      ipSalt: salt,
+      userAgent
+    },
+    activityDb
+  );
 
   const {data: aal} =
     await locals.supabase.auth.mfa.getAuthenticatorAssuranceLevel();

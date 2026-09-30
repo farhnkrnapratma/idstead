@@ -28,7 +28,7 @@ export {TRANSLATION_LOCALES, type TranslationLocale};
 
 const MODEL = '@cf/zai-org/glm-4.7-flash';
 const MAX_ATTEMPTS = 3;
-const MARKDOWN_MAX_ATTEMPTS = 2;
+const MARKDOWN_MAX_ATTEMPTS = 3;
 const MARKDOWN_CHUNK_CHARS = 2500;
 const MARKDOWN_MAX_OUTPUT_TOKENS = 4096;
 const UNTRANSLATABLE = 'UNTRANSLATABLE';
@@ -91,6 +91,9 @@ export interface PostTranslationFields {
 export interface PostTranslationResult extends PostTranslationFields {
   markdownChunks: number;
   markdownFallbackChunks: number;
+  titleTranslated: boolean;
+  summaryTranslated: boolean;
+  tldrTranslated: boolean;
 }
 
 function buildPrompt(
@@ -476,7 +479,9 @@ function chunkQualityFailure(
     if (translatedTokens.get(token) !== count) return 'placeholder_mismatch';
   }
   if (
-    countMatches(source, HEADING_RE) !== countMatches(translated, HEADING_RE)
+    Math.abs(
+      countMatches(source, HEADING_RE) - countMatches(translated, HEADING_RE)
+    ) > 1
   ) {
     return 'heading_count_mismatch';
   }
@@ -769,6 +774,15 @@ export async function translatePost(
     );
   }
 
+  const titleTranslated =
+    titleResult.status === 'fulfilled' && Boolean(titleResult.value);
+  const summaryTranslated =
+    !summaryForAi
+    || (summaryResult.status === 'fulfilled' && Boolean(summaryResult.value));
+  const tldrTranslated =
+    !tldrForAi
+    || (tldrResult.status === 'fulfilled' && Boolean(tldrResult.value));
+
   return {
     title: translatedTitle,
     excerpt: translatedExcerpt,
@@ -776,6 +790,9 @@ export async function translatePost(
     tldr: translatedTldr,
     markdown: translatedMarkdown,
     markdownChunks: markdownResult.chunks,
-    markdownFallbackChunks: markdownResult.fallbacks
+    markdownFallbackChunks: markdownResult.fallbacks,
+    titleTranslated,
+    summaryTranslated,
+    tldrTranslated
   };
 }

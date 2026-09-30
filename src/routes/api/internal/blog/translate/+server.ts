@@ -152,6 +152,13 @@ export const POST: RequestHandler = async ({request, url, platform}) => {
     return json({locale, stored: false, error: 'TRANSLATION_FAILED'});
   }
 
+  const {data: existing} = await db
+    .from('db_post_translations')
+    .select('excerpt, summary, tldr, storage_path')
+    .eq('post_id', postId)
+    .eq('locale', locale)
+    .maybeSingle();
+
   let storagePath: string | null = null;
   if (translation.markdown) {
     storagePath = `${slug}.${locale}.md`;
@@ -177,10 +184,10 @@ export const POST: RequestHandler = async ({request, url, platform}) => {
         post_id: postId,
         locale,
         title: translation.title,
-        excerpt: translation.excerpt,
-        summary: translation.summary,
-        tldr: translation.tldr,
-        storage_path: storagePath,
+        excerpt: translation.excerpt ?? existing?.excerpt ?? null,
+        summary: translation.summary ?? existing?.summary ?? null,
+        tldr: translation.tldr ?? existing?.tldr ?? null,
+        storage_path: storagePath ?? existing?.storage_path ?? null,
         updated_at: new Date().toISOString()
       },
       {onConflict: 'post_id,locale'}
@@ -194,7 +201,11 @@ export const POST: RequestHandler = async ({request, url, platform}) => {
   return json({
     locale,
     stored: true,
-    bodyTranslated: Boolean(translation.markdown),
+    bodyTranslated:
+      translation.markdownFallbackChunks === 0 && Boolean(translation.markdown),
+    titleTranslated: translation.titleTranslated,
+    summaryTranslated: translation.summaryTranslated,
+    tldrTranslated: translation.tldrTranslated,
     chunksTotal: translation.markdownChunks,
     chunksFallenBack: translation.markdownFallbackChunks
   });

@@ -163,6 +163,9 @@
       'detailPage',
       'detailQuery',
       'detailReason',
+      'detailSort',
+      'detailDirection',
+      'vote',
       'start',
       'end',
       'history'
@@ -179,7 +182,9 @@
       query.type = 'all';
       query.read = 'all';
       query.sort =
-        area === 'reports' ? (params.get('detailSort') ?? 'date') : 'date';
+        area === 'reports' || area === 'feedback' ?
+          (params.get('detailSort') ?? 'date')
+        : 'date';
       query.direction = params.get('detailDirection') ?? 'desc';
       if (area === 'reports') delete query.focus;
       else if (params.has('focus')) query.focus = params.get('focus')!;
@@ -191,8 +196,17 @@
     }
     return query;
   }
-  async function loadAnalytics() {
+  function relevantKey(query: Record<string, string>) {
+    const {asOf, from, to, ...rest} = query;
+    return JSON.stringify(rest);
+  }
+  let lastListKey = '';
+  let lastDetailKey = '';
+  let lastAnalyticsKey = '';
+  async function loadAnalytics(force = false) {
     if (area === 'notifications') return;
+    if (!force && trendRange === lastAnalyticsKey) return;
+    lastAnalyticsKey = trendRange;
     analyticsLoading = true;
     try {
       const {from, to, ...rest} = options();
@@ -209,8 +223,12 @@
       analyticsLoading = false;
     }
   }
+  let lastDetailAnalyticsKey = '';
   async function loadDetailAnalytics() {
     if (area !== 'feedback' || !selected) return;
+    const key = `${trendRange}:${selected}`;
+    if (key === lastDetailAnalyticsKey) return;
+    lastDetailAnalyticsKey = key;
     detailAnalyticsLoading = true;
     try {
       const result = await adminActivityRequest<WorkspacePage>('workspace', {
@@ -236,9 +254,23 @@
   function sync() {
     search = params.get('query') ?? '';
     detailSearch = params.get('detailQuery') ?? '';
-    void list.load(options());
-    if (selected) void detail.load(options(true));
-    if (selected && area === 'feedback') void loadDetailAnalytics();
+    const listOptions = options();
+    const listKey = relevantKey(listOptions);
+    if (listKey !== lastListKey) {
+      lastListKey = listKey;
+      void list.load(listOptions);
+    }
+    if (selected) {
+      const detailOptions = options(true);
+      const detailKey = relevantKey(detailOptions);
+      if (detailKey !== lastDetailKey) {
+        lastDetailKey = detailKey;
+        void detail.load(detailOptions);
+        if (area === 'feedback') void loadDetailAnalytics();
+      }
+    } else {
+      lastDetailKey = '';
+    }
     void loadAnalytics();
   }
   async function open(item: WorkspaceRow) {
@@ -284,7 +316,7 @@
     detail.invalidate();
     navigate({asOf: null}, true);
     await tick();
-    void loadAnalytics();
+    void loadAnalytics(true);
     await list.load(options(), true);
     const lastPage = Math.max(
       1,
@@ -1108,6 +1140,7 @@
   <SearchResultCount
     count={list.data?.items.length ?? 0}
     total={list.data?.total ?? 0}
+    loading={list.loading}
     itemLabel={area === 'reports' ? 'reported comments'
     : area === 'feedback' ? 'pages'
     : 'notifications'} />
@@ -1168,7 +1201,8 @@
 {#snippet reportsCount()}
   <SearchResultCount
     count={detail.data?.items.length ?? 0}
-    total={detail.data!.total ?? 0}
+    total={detail.data?.total ?? 0}
+    loading={detail.loading}
     itemLabel="reports" />
 {/snippet}
 
@@ -1190,8 +1224,12 @@
 
     {#snippet sortSlot()}
       <SortControl
-        fields={[{value: 'date', label: 'Date'}]}
-        currentField="date"
+        fields={[
+          {value: 'date', label: 'Date'},
+          {value: 'response', label: 'Response'}
+        ]}
+        currentField={params.get('detailSort') ?? 'date'}
+        onFieldChange={detailSort => updateDetail({detailSort})}
         currentDirection={params.get('detailDirection') === 'asc' ?
           'asc'
         : 'desc'}
@@ -1208,6 +1246,7 @@
   <SearchResultCount
     count={detail.data?.items.length ?? 0}
     total={detail.data?.total ?? 0}
+    loading={detail.loading}
     itemLabel="events" />
 {/snippet}
 

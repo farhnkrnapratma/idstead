@@ -1,5 +1,4 @@
 <script lang="ts">
-  import SubmitShortcutHint from '$lib/components/SubmitShortcutHint.svelte';
   import {
     FieldValidation,
     requiredText,
@@ -623,7 +622,6 @@
             <span
               >Clear<span class="hidden sm:inline">&nbsp;feedback</span></span>
           </Button>
-          <SubmitShortcutHint class="max-sm:hidden" />
           <Button
             htmlType="submit"
             type="primary"

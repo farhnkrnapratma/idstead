@@ -1,47 +1,47 @@
 # Graph Report - www  (2026-09-22)
 
 ## Corpus Check
-- 563 files · ~420,466 words
+- 572 files · ~420,973 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 20 file(s) not represented in the graph (top: (none) 10, .example 2, .graphify-bak 1)
 
 ## Summary
-- 2952 nodes · 5294 edges · 291 communities (158 shown, 101 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 147 edges (avg confidence: 0.85)
+- 2978 nodes · 5382 edges · 298 communities (164 shown, 101 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 151 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `f353dda6`
+- Built from commit: `05f2cfa2`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- routes/+page.svelte
+- publicResponse
 - define.ts
 - lib/index.ts
 - lib/adminActivity.ts
 - SpotlightSearch.svelte
-- toastStore.svelte.ts
+- LegalPageLayout.svelte
 - shortcutStore.svelte.ts
 - adminNotificationsStore.svelte.ts
 - Definisi Operasional Change Type
 - internal/blog/comments/+server.ts
-- getSupabaseAdminClient
-- fieldValidation.ts
+- @supabase/supabase-js
+- codeBlocks.ts
 - blogTranslate.ts
-- server/adminActivity.ts
+- server/adminWorkspace.ts
 - shortcut.svelte.ts
 - markdown.ts
 - author.ts
-- admin-calendar-notifications.test.ts
-- shortcuts.test.ts
+- apiError
+- shortcuts.ts
 - devDependencies
 - 20260911042344_admin_activity_feedback.sql
-- login/+server.ts
+- loginRateLimit.ts
 - What You Must Do When Invoked
 - What You Must Do When Invoked
 - What You Must Do When Invoked
-- publicResponse
+- siteIdentity.ts
 - What You Must Do When Invoked
 - [slug]/+page.svelte
 - Button.svelte
@@ -56,7 +56,7 @@
 - Changelog
 - task-observer - One Skill to Rule Them All
 - package.json
-- [slug]/+page.server.ts
+- blog/+server.ts
 - createCodeBlockPrefsStore
 - Changelog
 - Writing Guidelines for Postgres References
@@ -67,19 +67,19 @@
 - svelte-core-bestpractices
 - Task Observer — Continuous Skill Discovery & Improvement
 - scripts
-- routes/+page.server.ts
-- shortcuts.ts
-- formatters.ts
-- @electric-sql/pglite
+- [slug]/+page.server.ts
+- IconButton.svelte
+- admin/+page.svelte
+- admin-workspace.test.ts
 - createA11yStore
 - ActivityWorkspace.svelte
-- codeBlocks.ts
+- markdownTabs.ts
 - Documentation Lookup
 - Documentation Lookup
 - Core Principles
 - Skill Authoring — taxonomy, licensing, confidentiality, editing rules
 - Documentation Lookup
-- pdfGenerator.ts
+- toastStore.svelte.ts
 - admin/index.ts
 - dotenvx
 - Security, Idempotency, Observability, and Reliability
@@ -87,7 +87,7 @@
 - public.db_admin_top_pages
 - Validation, Reporting, and Verification
 - Section Definitions
-- apiError
+- adminCv.ts
 - Architecture
 - graphify reference: extra exports and benchmark
 - Client-Side and Browser Hunting
@@ -98,7 +98,7 @@
 - graphify reference: extra exports and benchmark
 - Get Started
 - searchHistoryStore.svelte.ts
-- subscribe/+server.ts
+- subscribers.ts
 - README.md
 - security-audit/SKILL.md
 - AI, LLM, and Agent Hunting
@@ -113,7 +113,7 @@
 - CLI tools
 - Environments, Activation Setup, and Handoff-Doc Mode
 - Committing in a repository that uses commitlint
-- adminActivityClient.ts
+- createCodeActionControls
 - image-codecs.d.ts
 - 20260910120000_admin_notifications_inbox.sql
 - graphify reference: query, path, explain
@@ -134,7 +134,7 @@
 - 20260903000000_add_pinned_to_db_posts.sql
 - 20260919000000_blog_subscribers.sql
 - public.db_post_feedback
-- admin-workspace.test.ts
+- Parser
 - API contract check
 - Create migration
 - Finish feature
@@ -170,7 +170,7 @@
 - 20260809000000_legal_pages.sql
 - public.db_comment_reports
 - 20260910000000_admin_dashboard_notifications.sql
-- vite.config.ts
+- @sentry/sveltekit
 - bun.md
 - copywriting.md
 - rules/graphify.md
@@ -225,17 +225,18 @@
 - commitlint.config.ts
 - markdownCharts.ts
 - .copilot/skills/graphify/references/extraction-spec.md
-- server/adminWorkspace.ts
-- handleKeydown
+- getSupabaseAdminClient
+- openapi.ts
 - eslint.config.ts
 - lib/adminWorkspace.ts
 - public.db_admin_top_pages
 - normalizeKey
-- cleanup-legacy-identity.ts
+- profile/+server.ts
 - reportReasons.ts
-- entryInScope
-- a11yStore.svelte.ts
-- LegalPageLayout.svelte
+- app.d.ts
+- markdownEnhancer.ts
+- supabase.ts
+- themeColors.ts
 - public.is_admin
 - postSaveClient.ts
 - public.db_admin_notification_items
@@ -247,10 +248,15 @@
 - .opencode/skills/graphify/references/extraction-spec.md
 - public.db_posts
 - admin/+layout.svelte
-- link-category-limits.test.ts
-- supabase.ts
-- pageFeedback.ts
+- routes/+page.server.ts
+- sanitizePublicApiData
+- routes/+page.svelte
+- a11yStore.svelte.ts
 - InferenceQueue
+- mailing.ts
+- apiDiscovery.ts
+- adminActivityClient.ts
+- codeBlockPrefsStore.svelte.ts
 - 20260913144335_scalable_admin_workspace.sql
 - prettier.config.ts
 - banner-wasm.d.ts
@@ -277,11 +283,11 @@
 - claude-mem: Cross-Session Memory
 
 ## God Nodes (most connected - your core abstractions)
-1. `apiError()` - 69 edges
-2. `getSupabaseAdminClient()` - 52 edges
-3. `isSameOriginRequest()` - 40 edges
-4. `@sveltejs/kit` - 37 edges
-5. `supabase` - 35 edges
+1. `apiError()` - 71 edges
+2. `getSupabaseAdminClient()` - 54 edges
+3. `isSameOriginRequest()` - 42 edges
+4. `@sveltejs/kit` - 38 edges
+5. `supabase` - 36 edges
 6. `publicResponse()` - 26 edges
 7. `Definisi Operasional Change Type` - 23 edges
 8. `Parser` - 22 edges
@@ -297,25 +303,25 @@
   tests/site-identity.test.ts → src/lib/png.ts
 - `checkLocale()` --calls--> `translatePost()`  [EXTRACTED]
   tests/blog-translate.test.ts → src/lib/server/blogTranslate.ts
-- `svelte` --references--> `bunx`  [EXTRACTED]
-  .claude/mcp.json → .mcp.json
+- `fixture()` --calls--> `requestUnsubscribe()`  [EXTRACTED]
+  tests/mailing.test.ts → src/lib/server/unsubscribeRequest.ts
 
 ## Import Cycles
 - None detected.
 
-## Communities (291 total, 101 thin omitted)
+## Communities (298 total, 101 thin omitted)
 
-### Community 0 - "routes/+page.svelte"
-Cohesion: 0.13
-Nodes (10): themeStore, BlogPost, Comment, FormFieldContext, NavItem, Post, Project, SearchResult (+2 more)
+### Community 0 - "publicResponse"
+Cohesion: 0.26
+Nodes (14): openapiSpec, markdownText(), readPublishedPosts(), readSiteProfile(), validDate(), publicResponse(), escapeXml(), GET() (+6 more)
 
 ### Community 1 - "define.ts"
 Cohesion: 0.05
-Nodes (66): ADDITIVE_MAP, ApiRegistry, ApiResolver, ArrayLit, arrayVal(), Assignment, BinaryExpr, BoolLit (+58 more)
+Nodes (64): ADDITIVE_MAP, ApiRegistry, ApiResolver, ArrayLit, arrayVal(), Assignment, BinaryExpr, BoolLit (+56 more)
 
 ### Community 2 - "lib/index.ts"
 Cohesion: 0.06
-Nodes (9): actions(), {
+Nodes (5): {
     title,
     subtitle = '',
     href,
@@ -325,81 +331,71 @@ Nodes (9): actions(), {
     actions,
     children,
     class: className = ''
-  }, children(), {
-    title,
-    href = '',
-    description = '',
-    interactive = true,
-    class: className = '',
-    meta,
-    tags,
-    actions,
-    children
-  }, DISPLAY_KEYWORDS, TEXT_SIZE_KEYWORDS, splitEscapedCommas(), tryEscapeComma() (+1 more)
+  }, DISPLAY_KEYWORDS, TEXT_SIZE_KEYWORDS, splitEscapedCommas(), tryEscapeComma()
 
 ### Community 3 - "lib/adminActivity.ts"
-Cohesion: 0.13
-Nodes (22): activityAuthor(), activityDate(), ActivityFocus, activityMetadata(), ActivityPage, activityPageKind(), ActivityPageResult, activityPageTitle() (+14 more)
+Cohesion: 0.11
+Nodes (25): activityAuthor(), activityDate(), ActivityFocus, activityMetadata(), ActivityPage, activityPageKind(), ActivityPageResult, activityPageTitle() (+17 more)
 
 ### Community 4 - "SpotlightSearch.svelte"
 Cohesion: 0.09
 Nodes (7): active, readingModeStore, createScrollStore(), handleScroll(), init(), scrollStore, scrollToTop()
 
-### Community 5 - "toastStore.svelte.ts"
-Cohesion: 0.10
-Nodes (16): FILTER_TOOLBAR_CONTROL_SIZE, FilterToolbarContext, FilterToolbarControlSize, close(), text(), error(), formatToastMessage(), info() (+8 more)
+### Community 5 - "LegalPageLayout.svelte"
+Cohesion: 0.11
+Nodes (10): FILTER_TOOLBAR_CONTROL_SIZE, FilterToolbarContext, FilterToolbarControlSize, close(), createThemeStore(), apply(), checkIsDark(), cycle() (+2 more)
 
 ### Community 6 - "shortcutStore.svelte.ts"
 Cohesion: 0.09
-Nodes (21): ARM_TIMEOUT_MS, TEXT_ENTRY_SELECTOR, activeScope, altHeld, armedAt, catalogOpen, CommandEntry, commands (+13 more)
+Nodes (36): chordKeyFromEvent(), shortcutLabelAt(), activeScope, altHeld, armedAt, armFor(), armGroup(), catalogOpen (+28 more)
 
 ### Community 7 - "adminNotificationsStore.svelte.ts"
-Cohesion: 0.10
-Nodes (27): ClearOperation, InboxCursor, InboxPreferences, InboxResult, action(), activityError, adminNotificationsStore, defaults (+19 more)
+Cohesion: 0.12
+Nodes (23): action(), activityError, adminNotificationsStore, defaults, error, isLoaded, isLoading, isMutating (+15 more)
 
 ### Community 8 - "Definisi Operasional Change Type"
 Cohesion: 0.04
 Nodes (43): Anti-Pattern Guide untuk Change Type Framework, AP-01: Scope Creep (Paling Umum), AP-02: Implicit Type Assumption, AP-03: Risk Underestimation, AP-04: Menggabungkan Multiple Change Types, AP-05: Missing Forbidden Zone Awareness, AP-06: Test Assumption Error, AP-07: Rollback Plan Omission (+35 more)
 
 ### Community 9 - "internal/blog/comments/+server.ts"
-Cohesion: 0.18
-Nodes (15): isPublicIp(), PlatformEnv, SiteverifyResponse, verifyTurnstileToken(), extractAuthorNameTokens(), isNameReserved(), normalizeName(), moderateContent() (+7 more)
+Cohesion: 0.16
+Nodes (16): isPublicIp(), PlatformEnv, SiteverifyResponse, verifyTurnstileToken(), extractAuthorNameTokens(), isNameReserved(), normalizeName(), POST() (+8 more)
 
-### Community 10 - "getSupabaseAdminClient"
-Cohesion: 0.09
-Nodes (34): @aws-sdk/client-s3, @sentry/sveltekit, @supabase/supabase-js, handleError, ADMIN_ROLES, AdminAuth, bearerToken(), isMfaSatisfied() (+26 more)
+### Community 10 - "@supabase/supabase-js"
+Cohesion: 0.22
+Nodes (8): @supabase/supabase-js, ADMIN_ROLES, AdminAuth, bearerToken(), isMfaSatisfied(), verifyAdminToken(), blogAdmin(), GET()
 
-### Community 11 - "fieldValidation.ts"
-Cohesion: 0.18
-Nodes (6): emailError(), Field, FieldValidation, requiredText(), Result, snapshot()
+### Community 11 - "codeBlocks.ts"
+Cohesion: 0.15
+Nodes (17): highlight.js, CodeActionControlsOptions, CodeActionControlsResult, enhanceCodeBlocks(), EnhancedBlock, enhancedBlocks, ensureSiteThemeObserver(), getPrettyLanguage() (+9 more)
 
 ### Community 12 - "blogTranslate.ts"
-Cohesion: 0.11
-Nodes (35): AiRunner, buildPrompt(), chunkQualityFailure(), cleanMarkdown(), cleanText(), cleanTldr(), CloudflareAccessRedirectError, countMatches() (+27 more)
+Cohesion: 0.09
+Nodes (39): ALERT_MARKER_RE, FENCED_CODE_RE, IGNORE_TRANSLATE_RE, INLINE_CODE_RE, AiRunner, buildPrompt(), chunkQualityFailure(), cleanMarkdown() (+31 more)
 
-### Community 13 - "server/adminActivity.ts"
-Cohesion: 0.36
-Nodes (7): adminActivity(), choice(), offset(), optionalId(), GET(), GET(), POST
+### Community 13 - "server/adminWorkspace.ts"
+Cohesion: 0.17
+Nodes (22): activityTimeZone(), ACTIVITY_UUID, ActivityInputError, activityJson(), activityTarget(), activityUuid(), adminActivity(), choice() (+14 more)
 
 ### Community 14 - "shortcut.svelte.ts"
-Cohesion: 0.11
-Nodes (11): keyLabel, badgeText(), collides(), coverage(), HINT_PLACEMENT, HINT_POSITIONS, HintPosition, intersects() (+3 more)
+Cohesion: 0.16
+Nodes (19): keyLabel, shortcutStore, badgeText(), candidatesFor(), clippedArea(), collides(), comboList(), coverage() (+11 more)
 
 ### Community 15 - "markdown.ts"
-Cohesion: 0.08
-Nodes (41): katex, marked, marked-footnote, ALERT_MARKER_RE, cleanListItemHtml(), code(), decodeHtmlEntities(), decodeMathEntities() (+33 more)
+Cohesion: 0.09
+Nodes (38): katex, marked, marked-footnote, cleanListItemHtml(), code(), decodeHtmlEntities(), decodeMathEntities(), DIRECTIVE_CLOSE_RE (+30 more)
 
 ### Community 16 - "author.ts"
 Cohesion: 0.10
-Nodes (36): ALLOWED_LUCIDE_PROPS, AuthorProfile, ContactInfo, CvDocument, decodeHtmlEntities(), EducationItem, ExperienceItem, fetchAuthorProfile() (+28 more)
+Nodes (24): ALLOWED_LUCIDE_PROPS, AuthorProfile, ContactInfo, CvDocument, decodeHtmlEntities(), EducationItem, ExperienceItem, fetchCvEntries() (+16 more)
 
-### Community 17 - "admin-calendar-notifications.test.ts"
-Cohesion: 0.17
-Nodes (11): ADMIN_WORKSPACE_PAGE_SIZE, hash, hash, value(), vote(), options, query(), activityDb() (+3 more)
+### Community 17 - "apiError"
+Cohesion: 0.19
+Nodes (19): @sveltejs/kit, fetchGlossaryTerms(), extractPostConfig(), processCvUpload(), requireAdminAuth(), apiError(), isSameOriginRequest(), sanitizeInput() (+11 more)
 
-### Community 18 - "shortcuts.test.ts"
-Cohesion: 0.11
-Nodes (20): BUTTON_SHORTCUTS, CATALOG_KEY, CHORD_GROUPS, COMMAND_ARG_KEYS, COMMAND_LABELS, COMMAND_SHORTCUTS, groupForKey(), isLeaderEvent() (+12 more)
+### Community 18 - "shortcuts.ts"
+Cohesion: 0.08
+Nodes (36): ArgCommand, argKey(), ARM_TIMEOUT_MS, BUTTON_SHORTCUTS, CATALOG_KEY, CHORD_GROUPS, ChordGroupSpec, COMMAND_ARG_KEYS (+28 more)
 
 ### Community 19 - "devDependencies"
 Cohesion: 0.05
@@ -409,8 +405,8 @@ Nodes (37): devDependencies, @commitlint/cli, @commitlint/config-conventional, @
 Cohesion: 0.14
 Nodes (25): public.db_notify_page_feedback, db_feedback_events_page_idx, db_feedback_events_quota_idx, public.db_admin_clear_notifications(), public.db_admin_feedback_groups(), public.db_admin_feedback_history(), public.db_admin_feedback_items, public.db_admin_inbox() (+17 more)
 
-### Community 21 - "login/+server.ts"
-Cohesion: 0.29
+### Community 21 - "loginRateLimit.ts"
+Cohesion: 0.26
 Nodes (11): AttemptRecord, attempts, checkKey(), checkLoginLockout(), clearLoginAttempts(), evictExpired(), pruneOld(), recordFailedLogin() (+3 more)
 
 ### Community 22 - "What You Must Do When Invoked"
@@ -425,21 +421,21 @@ Nodes (24): For /graphify add and --watch, For /graphify query, For the commit h
 Cohesion: 0.08
 Nodes (24): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands, Part A - Structural extraction for code files (+16 more)
 
-### Community 25 - "publicResponse"
-Cohesion: 0.05
-Nodes (66): imagetracerjs, pako, upng-js, authorProfileSchema, authorSubResourceSchema, blogPostDetailSchema, blogPostSummarySchema, commentSchema (+58 more)
+### Community 25 - "siteIdentity.ts"
+Cohesion: 0.16
+Nodes (22): imagetracerjs, pako, upng-js, crc32(), encodePng(), validateAvatar(), validateIco(), validatePng() (+14 more)
 
 ### Community 26 - "What You Must Do When Invoked"
 Cohesion: 0.08
 Nodes (24): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands, Part A - Structural extraction for code files (+16 more)
 
 ### Community 27 - "[slug]/+page.svelte"
-Cohesion: 0.08
-Nodes (19): ensureTurnstileScript(), executeTurnstile(), executionResolvers, resetTurnstile(), turnstileSiteKey, turnstileWidget(), collapseNode(), expandNode() (+11 more)
+Cohesion: 0.05
+Nodes (29): commentAuthorName(), handlePopState(), emailError(), Field, FieldValidation, requiredText(), Result, snapshot() (+21 more)
 
 ### Community 28 - "Button.svelte"
-Cohesion: 0.08
-Nodes (14): resolvedAriaLabel, resolvedTitle, responsiveSizeStyles, sizeStyles, splitLabel, string, styleKey, {
+Cohesion: 0.06
+Nodes (15): resolvedAriaLabel, resolvedTitle, responsiveSizeStyles, sizeStyles, splitLabel, string, styleKey, {
     type = 'primary',
     tone = 'neutral',
     htmlType = 'button',
@@ -466,19 +462,19 @@ Nodes (14): resolvedAriaLabel, resolvedTitle, responsiveSizeStyles, sizeStyles, 
     'aria-label': ariaLabel,
     children,
     ...restProps
-  } (+6 more)
+  } (+7 more)
 
 ### Community 29 - "blogBanner.ts"
-Cohesion: 0.09
-Nodes (41): /src/lib/processBanner.ts, db, directory, download(), manifestPath, objects(), project, r2() (+33 more)
+Cohesion: 0.06
+Nodes (60): /src/lib/processBanner.ts, @aws-sdk/client-s3, avatar, bucket, client, data, digest(), keys (+52 more)
 
 ### Community 30 - "Privacy Policy"
 Cohesion: 0.10
 Nodes (20): 10. Recipients and Sub-Processors, 11. International Transfers, 12. Retention, 13. Your Rights, 14. Removing a Comment, 15. Security Measures, 16. Children, 17. Public Files and Checksums (+12 more)
 
 ### Community 31 - "consentStore.svelte.ts"
-Cohesion: 0.12
-Nodes (14): ConsentSignals, ConsentStatus, consentStore, createConsentStore(), acceptAll(), acceptAnalyticsOnly(), applyGtagUpdate(), closeBanner() (+6 more)
+Cohesion: 0.13
+Nodes (13): ConsentSignals, ConsentStatus, consentStore, createConsentStore(), acceptAll(), acceptAnalyticsOnly(), applyGtagUpdate(), rejectAll() (+5 more)
 
 ### Community 32 - "mcp.json"
 Cohesion: 0.11
@@ -510,11 +506,11 @@ Nodes (16): Claude environment notes, Compatibility, Contributing, Further readi
 
 ### Community 39 - "package.json"
 Cohesion: 0.03
-Nodes (59): exports, files, keywords, license, name, private, sideEffects, svelte (+51 more)
+Nodes (60): exports, files, keywords, license, name, private, sideEffects, svelte (+52 more)
 
-### Community 40 - "[slug]/+page.server.ts"
-Cohesion: 0.18
-Nodes (20): extractHeadings(), injectHeadingIds(), buildTranslationDisclaimerMarkdown(), getTranslationDisclaimer(), englishFallback(), isTranslationLocale(), ResolvedTranslation, resolveTranslation() (+12 more)
+### Community 40 - "blog/+server.ts"
+Cohesion: 0.24
+Nodes (14): buildTranslationDisclaimerMarkdown(), getTranslationDisclaimer(), englishFallback(), isTranslationLocale(), resolveTranslation(), resolveTranslationsBulk(), escapePostgrestFilter(), TRANSLATION_LOCALES (+6 more)
 
 ### Community 41 - "createCodeBlockPrefsStore"
 Cohesion: 0.22
@@ -556,21 +552,31 @@ Nodes (13): Acting on Observations, Archival on Write, How to Log, Log Structure
 Cohesion: 0.14
 Nodes (14): scripts, build, build:preview, check, check:watch, dev, dev:preview, dev:production (+6 more)
 
-### Community 51 - "routes/+page.server.ts"
+### Community 51 - "[slug]/+page.server.ts"
+Cohesion: 0.31
+Nodes (7): injectHeadingIds(), countReadingMinutes(), estimateReadTime(), BlogComment, getRelatedWindow(), load(), RelatedPost
+
+### Community 52 - "IconButton.svelte"
 Cohesion: 0.13
-Nodes (22): fetchActiveCvDocument(), fetchAuthorProfileWithSocials(), fetchProjectRepoRules(), formatMonthAbbrev(), formatPeriod(), normalizeSkillGroups(), SkillGroup, countReadingMinutes() (+14 more)
+Nodes (5): autoResize(), portal(), staggerChildren(), popoverPosition(), PopoverPositionOptions
 
-### Community 52 - "shortcuts.ts"
-Cohesion: 0.08
-Nodes (18): ArgCommand, ChordGroupSpec, KEY_TOKENS, KeyIcon, MAC_KEYS, META_BY_PLATFORM, MODIFIER_ORDER, NON_TEXT_INPUT_TYPES (+10 more)
+### Community 53 - "admin/+page.svelte"
+Cohesion: 0.09
+Nodes (13): actions(), children(), {
+    title,
+    href = '',
+    description = '',
+    interactive = true,
+    class: className = '',
+    meta,
+    tags,
+    actions,
+    children
+  }, text(), formatCommentCount(), formatRelativeTime(), formatViewCount(), getRelativeTimeNextUpdateMs() (+5 more)
 
-### Community 53 - "formatters.ts"
-Cohesion: 0.13
-Nodes (9): formatCommentCount(), formatRelativeTime(), formatViewCount(), getRelativeTimeNextUpdateMs(), matchRelativeUnit(), RELATIVE_UNITS, RelativeUnit, toDate() (+1 more)
-
-### Community 54 - "@electric-sql/pglite"
-Cohesion: 0.11
-Nodes (8): @electric-sql/pglite, db, db, initial, assets, db, initial, db
+### Community 54 - "admin-workspace.test.ts"
+Cohesion: 0.05
+Nodes (30): @electric-sql/pglite, analyticsPeriod(), shiftDay(), zonedDate(), zonedMidnight(), ADMIN_WORKSPACE_PAGE_SIZE, hash, hash (+22 more)
 
 ### Community 55 - "createA11yStore"
 Cohesion: 0.31
@@ -580,9 +586,9 @@ Nodes (13): createA11yStore(), apply(), init(), parseStored(), persist(), reset(
 Cohesion: 0.06
 Nodes (16): value(), formatCount(), VIEWS_RANGES, ViewsBucketRow, ViewsRange, cell(), adminChartRangeStore, createAdminChartRangeStore() (+8 more)
 
-### Community 57 - "codeBlocks.ts"
-Cohesion: 0.06
-Nodes (66): mermaid, if(), argKey(), CodeBlockPrefs, codeBlockPrefsStore, defaults, cn(), familyOf() (+58 more)
+### Community 57 - "markdownTabs.ts"
+Cohesion: 0.26
+Nodes (10): EXTENSIONS, getDownloadFilename(), isShellScript(), registerPrefsListener(), enhanceMarkdownTabs(), selectTab(), getTabPreference(), setTabPreference() (+2 more)
 
 ### Community 58 - "Documentation Lookup"
 Cohesion: 0.17
@@ -604,9 +610,9 @@ Nodes (11): Author Attribution Template, Confidentiality layers, Editing skills 
 Cohesion: 0.17
 Nodes (11): Authentication, Common Mistakes, Documentation Lookup, Error Handling, Result fields, Selection process, Step 1: Resolve a Library, Step 2: Query Documentation (+3 more)
 
-### Community 63 - "pdfGenerator.ts"
-Cohesion: 0.25
-Nodes (10): pdf-lib, AuthorCvData, AuthorProfileData, EducationData, ExperienceData, formatDateRange(), generateCvPdfBuffer(), sanitizePdfText() (+2 more)
+### Community 63 - "toastStore.svelte.ts"
+Cohesion: 0.16
+Nodes (11): error(), formatToastMessage(), info(), message, show(), success(), toastStore, ToastType (+3 more)
 
 ### Community 64 - "admin/index.ts"
 Cohesion: 0.24
@@ -636,9 +642,9 @@ Nodes (8): Hunting methodology — include in every Phase 2 agent prompt, Phase 
 Cohesion: 0.20
 Nodes (9): 1. Query Performance (query), 2. Connection Management (conn), 3. Security & RLS (security), 4. Schema Design (schema), 5. Concurrency & Locking (lock), 6. Data Access Patterns (data), 7. Monitoring & Diagnostics (monitor), 8. Advanced Features (advanced) (+1 more)
 
-### Community 71 - "apiError"
-Cohesion: 0.15
-Nodes (30): @sveltejs/kit, fetchGlossaryTerms(), createApiRegistry(), validateDefineForSave(), extractPostConfig(), bumpSemver(), decodeHtmlEntities(), fail() (+22 more)
+### Community 71 - "adminCv.ts"
+Cohesion: 0.19
+Nodes (20): pdf-lib, bumpSemver(), decodeHtmlEntities(), fail(), formatAuthorSlug(), getAdminDb(), getR2Credentials(), jsonResponse() (+12 more)
 
 ### Community 72 - "Architecture"
 Cohesion: 0.22
@@ -654,7 +660,7 @@ Nodes (9): Client-Side and Browser Hunting, Client-side trust and messaging atta
 
 ### Community 75 - "dependencies"
 Cohesion: 0.05
-Nodes (37): dependencies, @aws-sdk/client-s3, bootstrap-icons, d3-array, d3-scale, d3-shape, d3-time, d3-time-format (+29 more)
+Nodes (39): dependencies, @aws-sdk/client-s3, blobatar, @blobatar/svelte, bootstrap-icons, d3-array, d3-scale, d3-shape (+31 more)
 
 ### Community 76 - "Architecture"
 Cohesion: 0.22
@@ -673,16 +679,16 @@ Cohesion: 0.22
 Nodes (8): graphify reference: extra exports and benchmark, Step 6b - Wiki (only if --wiki flag), Step 7 - Neo4j export (only if --neo4j or --neo4j-push flag), Step 7a - FalkorDB export (only if --falkordb or --falkordb-push flag), Step 7b - SVG export (only if --svg flag), Step 7c - GraphML export (only if --graphml flag), Step 7d - MCP server (only if --mcp flag), Step 8 - Token reduction benchmark (only if total_words > 5000)
 
 ### Community 80 - "Get Started"
-Cohesion: 0.22
-Nodes (9): Build for Production, Code Quality Checks, Configure Environment Variables, Get Started, Install Dependencies, Prerequisites, Preview Production Build, Production cutover and asset cleanup (+1 more)
+Cohesion: 0.20
+Nodes (10): Build for Production, Code Quality Checks, Configure Environment Variables, Get Started, Install Dependencies, Mailing commands, Prerequisites, Preview Production Build (+2 more)
 
 ### Community 81 - "searchHistoryStore.svelte.ts"
 Cohesion: 0.38
 Nodes (6): createSearchHistoryStore(), persist(), record(), syncEntry(), SearchHistoryEntry, searchHistoryStore
 
-### Community 82 - "subscribe/+server.ts"
+### Community 82 - "subscribers.ts"
 Cohesion: 0.17
-Nodes (25): BroadcastOutcome, notifyNewPost(), activeSubscribers(), confirmEmail(), createToken(), escapeHtml(), hashIp(), hashToken() (+17 more)
+Nodes (28): fetchAuthorProfile(), BroadcastOutcome, notifyNewPost(), activeSubscribers(), confirmEmail(), createToken(), escapeHtml(), hashIp() (+20 more)
 
 ### Community 83 - "README.md"
 Cohesion: 0.25
@@ -735,6 +741,10 @@ Nodes (6): Compaction behaviour, Environments, Activation Setup, and Handoff-Doc
 ### Community 96 - "Committing in a repository that uses commitlint"
 Cohesion: 0.29
 Nodes (6): 1. Detect whether the repository uses commitlint, 2. Read the enforced rules, 3. Write the message, 4. Validate before committing, 5. Self-correct when the commit-msg hook rejects, Committing in a repository that uses commitlint
+
+### Community 97 - "createCodeActionControls"
+Cohesion: 0.18
+Nodes (17): if(), cn(), familyOf(), applyCodeThemeVariables(), buildMenuCheckboxRow(), sync(), createCodeActionControls(), applyPrefs() (+9 more)
 
 ### Community 99 - "20260910120000_admin_notifications_inbox.sql"
 Cohesion: 0.29
@@ -789,8 +799,8 @@ Cohesion: 0.25
 Nodes (6): public.db_admin_top_pages(), public.db_comments, public.db_feedback_events, public.db_legals, public.db_posts, public.db_views
 
 ### Community 114 - "translationLocales.ts"
-Cohesion: 0.21
-Nodes (8): LANGUAGE_LABELS, OG_LOCALES, TRANSLATION_LOCALE_NAMES, assert(), checkLocale(), fakeAi(), isLabelPass(), Runner
+Cohesion: 0.19
+Nodes (10): ResolvedTranslation, LANGUAGE_LABELS, OG_LOCALES, TRANSLATION_LOCALE_NAMES, TranslationLocale, assert(), checkLocale(), fakeAi() (+2 more)
 
 ### Community 115 - "public.db_record_page_feedback"
 Cohesion: 0.40
@@ -812,9 +822,9 @@ Nodes (6): db_subscribers_active_idx, db_subscribers_confirm_token_key, db_subsc
 Cohesion: 0.40
 Nodes (3): public.db_post_feedback, public, public.db_posts
 
-### Community 120 - "admin-workspace.test.ts"
-Cohesion: 0.27
-Nodes (7): analyticsPeriod(), shiftDay(), zonedDate(), zonedMidnight(), endpoint, now, options
+### Community 120 - "Parser"
+Cohesion: 0.31
+Nodes (3): DefineError, evaluateInterpolationToken(), Parser
 
 ### Community 121 - "API contract check"
 Cohesion: 0.50
@@ -884,25 +894,25 @@ Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphif
 Cohesion: 0.50
 Nodes (3): public.db_post_translations, public, public.db_posts
 
-### Community 160 - "vite.config.ts"
-Cohesion: 0.47
-Nodes (4): @sveltejs/adapter-cloudflare, @tailwindcss/vite, vite, webpWasmPlugin()
+### Community 160 - "@sentry/sveltekit"
+Cohesion: 0.28
+Nodes (6): @sentry/sveltekit, @sveltejs/adapter-cloudflare, @tailwindcss/vite, vite, handleError, webpWasmPlugin()
 
 ### Community 200 - "hooks.server.ts"
-Cohesion: 0.09
-Nodes (23): @supabase/ssr, App, Error, Locals, PageState, Platform, R2Bucket, R2Object (+15 more)
+Cohesion: 0.20
+Nodes (14): @supabase/ssr, getCdnBaseUrl(), getClientIp(), getStaticMimeType(), handle, handleError, rateLimitMap, RateLimitRecord (+6 more)
 
 ### Community 213 - "markdownCharts.ts"
 Cohesion: 0.50
 Nodes (3): js-yaml, svelte, ChartSpec
 
-### Community 215 - "server/adminWorkspace.ts"
-Cohesion: 0.40
-Nodes (8): ActivityInputError, activityJson(), adminWorkspace(), option(), timestamp(), workspaceOptions(), GET(), POST
+### Community 215 - "getSupabaseAdminClient"
+Cohesion: 0.22
+Nodes (10): getSupabaseAdminClient(), getSupabaseUrl(), PlatformEnv, GET(), POST, POST(), GET(), POST (+2 more)
 
-### Community 216 - "handleKeydown"
-Cohesion: 0.25
-Nodes (11): chordKeyFromEvent(), armFor(), armGroup(), disarm(), groupHasMembers(), handleBlur(), handleKeydown(), popScope() (+3 more)
+### Community 216 - "openapi.ts"
+Cohesion: 0.13
+Nodes (13): authorProfileSchema, authorSubResourceSchema, blogPostDetailSchema, blogPostSummarySchema, commentSchema, errorResponses, errorSchema, fetchFailures (+5 more)
 
 ### Community 217 - "eslint.config.ts"
 Cohesion: 0.29
@@ -917,37 +927,32 @@ Cohesion: 0.25
 Nodes (7): public.db_admin_top_pages(), public.db_comment_reports, public.db_comments, public.db_feedback_events, public.db_legals, public.db_posts, public.db_views
 
 ### Community 220 - "normalizeKey"
-Cohesion: 0.24
-Nodes (8): actionSection(), commandSections, SHORTCUT_SECTIONS, ShortcutSection, buttonKey(), findShortcutCollisions(), normalizeKey(), runCommand()
+Cohesion: 0.22
+Nodes (9): actionSection(), commandSections, SHORTCUT_SECTIONS, ShortcutSection, buttonKey(), findShortcutCollisions(), groupForKey(), normalizeKey() (+1 more)
 
-### Community 221 - "cleanup-legacy-identity.ts"
-Cohesion: 0.17
-Nodes (10): avatar, bucket, client, data, digest(), keys, manifest, origin (+2 more)
+### Community 221 - "profile/+server.ts"
+Cohesion: 0.19
+Nodes (15): assetNames, assetStorage(), cleanupAssets(), removeAssets(), serveIdentityAsset(), writeAssets(), hasControlChars(), profileFields (+7 more)
 
 ### Community 222 - "reportReasons.ts"
 Cohesion: 0.18
 Nodes (11): @lucide/svelte, activityTone, activityToneStyles, isReportReasonId(), REPORT_REASON_COLORS, REPORT_REASON_ICONS, REPORT_REASON_IDS, REPORT_REASONS (+3 more)
 
-### Community 223 - "entryInScope"
-Cohesion: 0.32
-Nodes (8): shortcutLabelAt(), chordAssignments, compareDomOrder(), entryInScope(), hintFor(), isVisible(), matchEntry(), matchEntryInForm()
+### Community 223 - "app.d.ts"
+Cohesion: 0.15
+Nodes (8): App, Error, Locals, PageState, Platform, R2Bucket, R2Object, RateLimit
 
-### Community 225 - "a11yStore.svelte.ts"
-Cohesion: 0.12
-Nodes (13): {
-    title,
-    excerpt = '',
-    banner = '',
-    bannerAlt,
-    class: className = '',
-    titleClass = 'text-text-secondary',
-    titleViewTransitionName = '',
-    meta
-  }, titleParts, A11Y_TOGGLES, A11ySettings, a11yStore, defaults, FontScale, ContentFont (+5 more)
-
-### Community 226 - "LegalPageLayout.svelte"
+### Community 224 - "markdownEnhancer.ts"
 Cohesion: 0.23
-Nodes (7): createThemeStore(), apply(), checkIsDark(), cycle(), init(), toggle(), handleArticleScroll()
+Nodes (11): mermaid, nextCodeScope(), focusScope(), enhanceMarkdownCharts(), enhanceMarkdownContent(), enhanceMarkdownDetails(), MarkdownEnhanceOptions, attachDiagramToolbar() (+3 more)
+
+### Community 225 - "supabase.ts"
+Cohesion: 0.23
+Nodes (11): LegalPageData, prepareMarkdownPage(), getLegalPage(), supabase, GET(), LEGAL_SLUGS, GET(), GET() (+3 more)
+
+### Community 226 - "themeColors.ts"
+Cohesion: 0.27
+Nodes (5): processAvatar(), backgrounds, EffectiveTheme, themeColors(), GET()
 
 ### Community 228 - "postSaveClient.ts"
 Cohesion: 0.31
@@ -973,17 +978,42 @@ Nodes (7): public.db_admin_top_pages(), public.db_comment_reports, public.db_com
 Cohesion: 0.38
 Nodes (5): detectPlatform(), NavigatorLike, Platform, current, platformStore
 
-### Community 239 - "link-category-limits.test.ts"
-Cohesion: 0.47
-Nodes (4): createDatabase(), items(), migration(), save()
+### Community 239 - "routes/+page.server.ts"
+Cohesion: 0.19
+Nodes (17): fetchActiveCvDocument(), fetchAuthorProfileWithSocials(), fetchProjectRepoRules(), cachedProjects, extractGitHubUsername(), fetchProjects(), fetchRepoExtras(), fetchRepoOpenGraphImages() (+9 more)
 
-### Community 241 - "supabase.ts"
-Cohesion: 0.18
-Nodes (14): LegalPageData, prepareMarkdownPage(), getLegalPage(), supabase, decodeHtmlEntities(), markdownToPlainText(), GET(), LEGAL_SLUGS (+6 more)
+### Community 241 - "sanitizePublicApiData"
+Cohesion: 0.20
+Nodes (16): fetchContactInfo(), fetchFundingLinks(), fetchGroupedSkills(), fetchSkills(), fetchSocials(), fetchSponsorship(), generateAuthorMarkdown(), sanitizePublicApiData() (+8 more)
 
-### Community 243 - "pageFeedback.ts"
-Cohesion: 0.25
-Nodes (10): ACTIVITY_UUID, activityTarget(), activityUuid(), recordPageFeedback(), POST(), POST(), feedback(), request() (+2 more)
+### Community 242 - "routes/+page.svelte"
+Cohesion: 0.10
+Nodes (10): themeStore, BlogPost, Comment, FormFieldContext, NavItem, Post, Project, SearchResult (+2 more)
+
+### Community 243 - "a11yStore.svelte.ts"
+Cohesion: 0.13
+Nodes (13): {
+    title,
+    excerpt = '',
+    banner = '',
+    bannerAlt,
+    class: className = '',
+    titleClass = 'text-text-secondary',
+    titleViewTransitionName = '',
+    meta
+  }, titleParts, A11Y_TOGGLES, A11ySettings, a11yStore, defaults, FontScale, ContentFont (+5 more)
+
+### Community 248 - "mailing.ts"
+Cohesion: 0.38
+Nodes (7): MailingAction, MailingCommand, mailingEmailError(), parseMailingCommand(), submitMailing(), requestUnsubscribe(), fixture()
+
+### Community 249 - "apiDiscovery.ts"
+Cohesion: 0.44
+Nodes (6): contentDigest(), discoveryOperations(), skillDocument(), GET(), GET(), GET()
+
+### Community 251 - "codeBlockPrefsStore.svelte.ts"
+Cohesion: 0.50
+Nodes (4): CodeBlockPrefs, codeBlockPrefsStore, defaults, CodeColorScheme
 
 ### Community 264 - "20260913144335_scalable_admin_workspace.sql"
 Cohesion: 0.11
@@ -994,24 +1024,24 @@ Cohesion: 0.15
 Nodes (14): public.db_categories, public.db_documents, public.db_items, public.db_links, db_documents_active_idx, db_profiles_email_idx, db_profiles_username_idx, db_views_post_ip_idx (+6 more)
 
 ## Knowledge Gaps
-- **1090 isolated node(s):** `fs`, `path`, `schemaPath`, `block-bad-commit.sh script`, `block-sensitive-file-edits.sh script` (+1085 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1536 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **1097 isolated node(s):** `fs`, `path`, `schemaPath`, `block-bad-commit.sh script`, `block-sensitive-file-edits.sh script` (+1092 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1543 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **101 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `@sveltejs/kit` connect `apiError` to `blogAi.ts`, `package.json`, `hooks.server.ts`, `internal/blog/comments/+server.ts`, `getSupabaseAdminClient`, `[slug]/+page.server.ts`, `author.ts`, `supabase.ts`, `subscribe/+server.ts`, `login/+server.ts`, `publicResponse`?**
-  _High betweenness centrality (0.030) - this node is a cross-community bridge._
-- **Why does `@supabase/supabase-js` connect `getSupabaseAdminClient` to `package.json`, `[slug]/+page.server.ts`, `server/adminActivity.ts`, `supabase.ts`, `subscribe/+server.ts`, `pageFeedback.ts`, `server/adminWorkspace.ts`, `admin-workspace.test.ts`, `blogBanner.ts`?**
-  _High betweenness centrality (0.015) - this node is a cross-community bridge._
-- **Why does `highlight.js` connect `package.json` to `codeBlocks.ts`?**
-  _High betweenness centrality (0.014) - this node is a cross-community bridge._
+- **Why does `@sveltejs/kit` connect `apiError` to `publicResponse`, `supabase.ts`, `blogAi.ts`, `apiDiscovery.ts`, `package.json`, `hooks.server.ts`, `internal/blog/comments/+server.ts`, `blog/+server.ts`, `author.ts`, `sanitizePublicApiData`, `subscribers.ts`, `[slug]/+page.server.ts`, `getSupabaseAdminClient`, `mailing.ts`, `profile/+server.ts`, `blogBanner.ts`?**
+  _High betweenness centrality (0.023) - this node is a cross-community bridge._
+- **Why does `@supabase/supabase-js` connect `@supabase/supabase-js` to `supabase.ts`, `package.json`, `blog/+server.ts`, `server/adminWorkspace.ts`, `subscribers.ts`, `admin-workspace.test.ts`, `getSupabaseAdminClient`, `mailing.ts`, `blogBanner.ts`?**
+  _High betweenness centrality (0.017) - this node is a cross-community bridge._
+- **Why does `highlight.js` connect `codeBlocks.ts` to `package.json`?**
+  _High betweenness centrality (0.016) - this node is a cross-community bridge._
 - **What connects `fs`, `path`, `schemaPath` to the rest of the system?**
-  _1090 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `routes/+page.svelte` be split into smaller, more focused modules?**
-  _Cohesion score 0.1323529411764706 - nodes in this community are weakly interconnected._
+  _1097 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `define.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.05399625768511093 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05336538461538461 - nodes in this community are weakly interconnected._
 - **Should `lib/index.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.055905220288781934 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.0578386605783866 - nodes in this community are weakly interconnected._
+- **Should `lib/adminActivity.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.10846560846560846 - nodes in this community are weakly interconnected._

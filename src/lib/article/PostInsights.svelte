@@ -2,12 +2,7 @@
   import {shortcut} from '../utils/shortcut.svelte';
   import {buttonKey} from '$lib/shortcuts';
   import {onDestroy} from 'svelte';
-  import {
-    Sparkles,
-    ListCollapse,
-    ChevronsUpDown,
-    ChevronsDownUp
-  } from '@lucide/svelte';
+  import {Sparkles, List, ChevronsUpDown, ChevronsDownUp} from '@lucide/svelte';
   import {cn} from '../utils/cn';
   import {contentFontStore} from '../stores/contentFontStore.svelte';
 
@@ -121,7 +116,7 @@
         }}
         class="markdown-details-summary relative flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 text-sm font-medium text-text-primary transition-colors select-none group-open:border-border-subtle hover:bg-surface-hover/50 dark:group-open:border-white/10 [&::-webkit-details-marker]:hidden">
         <span class="inline-flex items-center gap-2">
-          <ListCollapse class="size-4 shrink-0 text-text-primary" />
+          <List class="size-4 shrink-0 text-text-primary" />
           <span
             class="translate-y-px text-sm leading-none font-medium text-text-primary"
             >TL;DR</span>

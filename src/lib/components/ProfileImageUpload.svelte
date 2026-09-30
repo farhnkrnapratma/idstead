@@ -10,12 +10,14 @@
     avatar,
     name,
     disabled = false,
+    validationError = '',
     onprepared,
     onbusy
   }: {
     avatar: string;
     name: string;
     disabled?: boolean;
+    validationError?: string;
     onprepared: (value: ImagePackage | null) => void;
     onbusy: (busy: boolean) => void;
   } = $props();
@@ -103,7 +105,7 @@
   <h3
     id="profile-image-title"
     class="text-xxs font-bold tracking-widest text-text-secondary uppercase">
-    Profile image
+    Profile image <span class="font-normal text-text-muted">(required)</span>
   </h3>
   <div
     class="grid min-w-0 grid-cols-1 items-stretch gap-4 sm:grid-cols-[auto_1fr]"
@@ -135,6 +137,7 @@
     </div>
     <FileUploadField
       id="profile-image-file"
+      required
       class="min-w-0"
       accept="image/png,image/jpeg,image/webp,image/avif,image/gif,image/bmp"
       hint="PNG, JPEG, WebP, AVIF, GIF, BMP · up to 10 MB · at least 512 × 512"
@@ -143,7 +146,7 @@
       uploadingLabel="Preparing avatar and icons…"
       selectedFileName={filename}
       fileSize={size}
-      {error}
+      error={error || validationError}
       onFileSelect={select} />
   </div>
   {#if loadError}<FieldMessage

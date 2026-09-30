@@ -1,5 +1,4 @@
 <script lang="ts">
-  import SubmitShortcutHint from '$lib/components/SubmitShortcutHint.svelte';
   import Tag from '$lib/components/Tag.svelte';
   import {COMMENTS_PAGE_SIZE, commentAuthorName} from '$lib/commentAuthor';
   import {blogBannerAlt} from '$lib/blogBanner';
@@ -19,15 +18,15 @@
   import {avatarSource} from '$lib/siteIdentity';
   import {resolve} from '$app/paths';
   import ProfileImageUpload from '$lib/components/ProfileImageUpload.svelte';
-  import type {ImagePackage, ManifestSettings} from '$lib/siteIdentity';
+  import type {ImagePackage} from '$lib/siteIdentity';
   import {page} from '$app/state';
   import {invalidateAll} from '$app/navigation';
   import {supabase} from '$lib/supabase';
   import {
     PanelLeftClose,
     PanelLeftOpen,
+    GripVertical,
     Settings,
-    ChevronRight,
     FileText,
     BookA,
     Quote,
@@ -75,8 +74,10 @@
     ChevronUp,
     ChevronDown,
     Bell,
-    ChartPie,
-    RefreshCw
+    LayoutDashboard,
+    RefreshCw,
+    Logs,
+    Upload
   } from '@lucide/svelte';
   import hljs from 'highlight.js';
   import {a11yStore} from '$lib/stores/a11yStore.svelte';
@@ -91,6 +92,7 @@
   import type {AdminNotificationRow} from '$lib/adminActivity';
   import AdminHome from '$lib/components/admin/AdminHome.svelte';
   import ActivityWorkspace from '$lib/components/admin/ActivityWorkspace.svelte';
+  import ActivityLogWorkspace from '$lib/components/admin/ActivityLogWorkspace.svelte';
   import AccountSettings from '$lib/components/admin/AccountSettings.svelte';
   import ActivityTimestamp from '$lib/components/admin/ActivityTimestamp.svelte';
   import SessionTimeoutDialog from '$lib/components/admin/SessionTimeoutDialog.svelte';
@@ -109,6 +111,7 @@
     type WorkspacePage
   } from '$lib/adminWorkspace';
   import {shortcut} from '$lib/utils/shortcut.svelte';
+  import {lockScroll} from '$lib/utils/scroll';
   import {adminNotificationsStore} from '$lib/stores/adminNotificationsStore.svelte';
   import {estimateReadTime} from '$lib/readTime';
   import {formatBadgeCount} from '$lib/utils/formatters';
@@ -143,6 +146,7 @@
     toastStore,
     createFilterSortStore,
     ThemeSelect,
+    Tooltip,
     StatusBanner,
     formatReadTime,
     formatViewCount,
@@ -230,7 +234,10 @@
   let postToDelete = $state<AdminPost | null>(null);
   let showDeleteCommentDialog = $state(false);
   let commentIdToDelete = $state<string | null>(null);
-  let showClearAuthorDialog = $state(false);
+  let showDeleteAllDialog = $state(false);
+  let deleteAllPassword = $state('');
+  let hasExportedAllData = $state(false);
+  let isExportingAllData = $state(false);
   let showDeleteCvDocDialog = $state(false);
   let showAvatarPreviewDialog = $state(false);
   let showLogoutDialog = $state(false);
@@ -359,6 +366,7 @@
     'reports',
     'feedback',
     'notifications',
+    'logs',
     'posts',
     'projects',
     'profile',
@@ -387,6 +395,88 @@
   );
   let sidebarMobileOpen = $state(false);
   let sidebarCollapsed = $state(false);
+  let sidebarWidth = $state(224);
+  let sidebarResizing = $state(false);
+
+  async function closeMobileSidebar() {
+    sidebarMobileOpen = false;
+    await tick();
+    document.getElementById('admin-sidebar-toggle')?.focus();
+  }
+
+  function manageSidebar(element: HTMLElement) {
+    const open = sidebarMobileOpen;
+    const desktop = window.matchMedia('(min-width: 768px)');
+    const updateInert = () => {
+      element.inert = !desktop.matches && !open;
+    };
+    updateInert();
+    desktop.addEventListener('change', updateInert);
+    const release = open ? manageMobileSidebar(element) : undefined;
+    return () => {
+      desktop.removeEventListener('change', updateInert);
+      element.inert = false;
+      release?.();
+    };
+  }
+
+  function manageMobileSidebar(element: HTMLElement) {
+    const desktop = window.matchMedia('(min-width: 768px)');
+    if (desktop.matches) return;
+    const background = [
+      document.getElementById('main-content'),
+      document.getElementById('admin-mobile-header')
+    ];
+    const previousInert = background.map(node => node?.inert ?? false);
+    const unlock = lockScroll();
+    for (const node of background) if (node) node.inert = true;
+    const focusable = () =>
+      Array.from(
+        element.querySelectorAll<HTMLElement>(
+          'button:not(:disabled), a[href], [tabindex="0"]'
+        )
+      ).filter(node => node.getClientRects().length > 0);
+    let closed = false;
+    void tick().then(() => {
+      if (!closed) focusable()[0]?.focus();
+    });
+    const onKeydown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        void closeMobileSidebar();
+      } else if (event.key === 'Tab') {
+        const nodes = focusable();
+        const first = nodes[0];
+        const last = nodes.at(-1);
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first?.focus();
+        }
+      }
+    };
+    const onDesktop = () => {
+      if (desktop.matches) {
+        sidebarMobileOpen = false;
+        void tick().then(() =>
+          document.getElementById('main-content')?.focus({preventScroll: true})
+        );
+      }
+    };
+    element.addEventListener('keydown', onKeydown);
+    desktop.addEventListener('change', onDesktop);
+    return () => {
+      closed = true;
+      unlock();
+      background.forEach((node, index) => {
+        if (node) node.inert = previousInert[index];
+      });
+      element.removeEventListener('keydown', onKeydown);
+      desktop.removeEventListener('change', onDesktop);
+    };
+  }
 
   function toggleSidebarCollapsed() {
     sidebarCollapsed = !sidebarCollapsed;
@@ -398,12 +488,56 @@
     } catch {}
   }
 
+  function startSidebarResize(event: PointerEvent) {
+    event.preventDefault();
+    const startX = event.clientX;
+    const min = window.innerWidth * 0.15;
+    const max = window.innerWidth * 0.2;
+    const startWidth = sidebarCollapsed ? min : sidebarWidth;
+    document.body.classList.add('select-none');
+    sidebarResizing = true;
+    let rafId = 0;
+    let pendingClientX = event.clientX;
+    const applyWidth = () => {
+      rafId = 0;
+      const next = startWidth + (pendingClientX - startX);
+      if (next < min) {
+        sidebarCollapsed = true;
+        return;
+      }
+      sidebarCollapsed = false;
+      sidebarWidth = Math.min(max, next);
+    };
+    const onMove = (moveEvent: PointerEvent) => {
+      pendingClientX = moveEvent.clientX;
+      if (!rafId) rafId = requestAnimationFrame(applyWidth);
+    };
+    const onUp = () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      document.body.classList.remove('select-none');
+      sidebarResizing = false;
+      try {
+        localStorage.setItem(
+          'admin-sidebar-collapsed',
+          sidebarCollapsed ? '1' : '0'
+        );
+        if (!sidebarCollapsed)
+          localStorage.setItem('admin-sidebar-width', String(sidebarWidth));
+      } catch {}
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  }
+
   function selectTab(id: AdminTab) {
     sidebarMobileOpen = false;
     const url = adminUrl();
     if (id === 'home') url.searchParams.delete('tab');
     else url.searchParams.set('tab', id);
     for (const key of [
+      'settings',
       'selected',
       'notificationId',
       'cursor',
@@ -424,6 +558,9 @@
     ])
       url.searchParams.delete(key);
     navigateAdmin(url);
+    void tick().then(() =>
+      document.getElementById('main-content')?.focus({preventScroll: true})
+    );
     void ensureTabData(id);
     if (id === 'privacy' || id === 'security' || id === 'terms') {
       checkLegalDrafts();
@@ -505,6 +642,7 @@
   }
   let authorState = $state<AuthorProfile>({
     name: '',
+    pronunciation: '',
     username: '',
     headline: '',
     jobTitle: '',
@@ -697,8 +835,6 @@
   let isSavingAuthor = $state(false);
   let preparedImage = $state.raw<ImagePackage | null>(null);
   let preparingImage = $state(false);
-  let manifestSettings = $state<ManifestSettings | null>(null);
-  let initialManifest = $state('');
   let authorSaveSuccess = $state(false);
   let authorSaveError = $state('');
 
@@ -734,10 +870,10 @@
 
   const authorIsDirty = $derived(
     preparedImage !== null
-      || JSON.stringify(manifestSettings) !== initialManifest
       || (authorInitial !== null
         && JSON.stringify({
           name: authorState.name,
+          pronunciation: authorState.pronunciation,
           username: authorState.username,
           jobTitle: authorState.jobTitle,
           headline: authorState.headline,
@@ -751,6 +887,7 @@
         })
           !== JSON.stringify({
             name: authorInitial.name,
+            pronunciation: authorInitial.pronunciation,
             username: authorInitial.username,
             jobTitle: authorInitial.jobTitle,
             headline: authorInitial.headline,
@@ -787,7 +924,7 @@
     authorValidation.register(field, {
       value: () =>
         field === 'avatar' && preparedImage ? 'prepared' : authorState[field],
-      baseline: () => authorInitial?.[field],
+      baseline: () => (field === 'avatar' ? undefined : authorInitial?.[field]),
       validate: value => {
         const required = requiredText(authorLabels[field])(String(value || ''));
         if (required) return required;
@@ -1242,7 +1379,7 @@
   function validateAllContact() {
     return validateList('contact');
   }
-  let isClearingAuthor = $state(false);
+  let isDeletingAllData = $state(false);
 
   let pdfUploadError = $state('');
   let pdfGeneratedFilename = $state('');
@@ -1619,6 +1756,11 @@
     try {
       sidebarCollapsed =
         localStorage.getItem('admin-sidebar-collapsed') === '1';
+      const min = window.innerWidth * 0.15;
+      const max = window.innerWidth * 0.2;
+      const savedWidth = Number(localStorage.getItem('admin-sidebar-width'));
+      sidebarWidth =
+        savedWidth ? Math.min(max, Math.max(min, savedWidth)) : min;
     } catch {}
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (isLegalDirty) {
@@ -1710,23 +1852,7 @@
         fetchActiveCvDocument(supabase),
         fetchProjectRepoRules(supabase)
       ]);
-      if (p) {
-        authorState = p;
-        manifestSettings = p.manifestSettings ?? null;
-      }
-      if (!manifestSettings) {
-        const {
-          data: {session}
-        } = await supabase.auth.getSession();
-        if (session) {
-          const response = await fetch('/api/internal/admin/profile', {
-            headers: {Authorization: `Bearer ${session.access_token}`}
-          });
-          if (response.ok)
-            manifestSettings = (await response.json()).manifestSettings;
-        }
-      }
-      initialManifest = JSON.stringify(manifestSettings);
+      if (p) authorState = p;
       authorInitial = {...authorState};
       if (cv) cvState = cv;
       cvInitial = $state.snapshot(cvState);
@@ -1886,7 +2012,8 @@
   let postsLoaded = false;
   const tabRequests: Partial<Record<string, Promise<void>>> = {};
   async function ensureTabData(tab: AdminTab) {
-    if (['home', 'reports', 'feedback', 'notifications'].includes(tab)) return;
+    if (['home', 'reports', 'feedback', 'notifications', 'logs'].includes(tab))
+      return;
     const group =
       tab === 'posts' ? 'posts'
       : ['privacy', 'security', 'terms'].includes(tab) ? 'legal'
@@ -1930,13 +2057,21 @@
     navigateAdmin(url, true);
   }
 
-  function requestLogout() {
+  async function requestLogout() {
+    if (sidebarMobileOpen) await closeMobileSidebar();
     showLogoutDialog = true;
   }
 
   async function handleLogout() {
     isLoggingOut = true;
     try {
+      const {data: sessionData} = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (token)
+        await fetch('/api/internal/admin/logout', {
+          method: 'POST',
+          headers: {Authorization: `Bearer ${token}`}
+        }).catch(() => {});
       await supabase.auth.signOut();
       adminNotificationsStore.unsubscribe();
       window.location.href = '/admin/login';
@@ -2183,6 +2318,7 @@
 
       const payload: Record<string, unknown> = {
         name: sanitizeInput(authorState.name.trim()),
+        pronunciation: authorState.pronunciation || '',
         username: sanitizeInput(cleanUsername),
         headline: sanitizeInput(authorState.headline.trim()),
         job_title: sanitizeInput(authorState.jobTitle.trim()),
@@ -2196,6 +2332,7 @@
 
       const fieldNames: Record<string, keyof typeof authorState> = {
         name: 'name',
+        pronunciation: 'pronunciation',
         username: 'username',
         headline: 'headline',
         job_title: 'jobTitle',
@@ -2210,10 +2347,6 @@
         for (const [key, field] of Object.entries(fieldNames)) {
           if (authorState[field] === authorInitial[field]) delete payload[key];
         }
-      if (!manifestSettings)
-        throw new Error(
-          'App appearance settings are unavailable. Reload the page.'
-        );
       const {
         data: {session}
       } = await supabase.auth.getSession();
@@ -2224,13 +2357,7 @@
         JSON.stringify({
           ...payload,
           id: authorState.id || null,
-          revision: authorState.revision ?? 0,
-          ...((
-            JSON.stringify(manifestSettings) !== initialManifest
-            || !authorState.id
-          ) ?
-            {manifest_settings: {display: manifestSettings.display}}
-          : {})
+          revision: authorState.revision ?? 0
         })
       );
       if (preparedImage) {
@@ -2266,14 +2393,15 @@
       for (const [key, field] of Object.entries(fieldNames)) {
         if (typeof result.profile[key] === 'string')
           (authorState as unknown as Record<string, unknown>)[field] =
-            decodeHtmlEntities(result.profile[key]);
+            key === 'pronunciation' ?
+              result.profile[key]
+            : decodeHtmlEntities(result.profile[key]);
       }
       authorState.id = result.profile.id;
       authorState.avatar = result.profile.avatar;
       authorState.revision = result.profile.profile_revision;
       authorState.avatarVersion = result.profile.avatar_version;
       preparedImage = null;
-      initialManifest = JSON.stringify(manifestSettings);
 
       authorState.username = cleanUsername;
       authorSaveSuccess = true;
@@ -2281,7 +2409,9 @@
       authorValidation.reset();
       setTimeout(() => (authorSaveSuccess = false), 2500);
       toastStore.success('Author profile saved.');
+      const currentAdminUrl = adminUrl();
       await invalidateAll();
+      navigateAdmin(currentAdminUrl, true);
       executeGenerateCvPdf('patch');
     } catch (err: any) {
       console.error('Error saving author profile:', err);
@@ -2292,58 +2422,132 @@
     }
   }
 
-  function confirmClearAuthor() {
-    if (!authorState.id) return;
-    showClearAuthorDialog = true;
+  let profileImportInput = $state<HTMLInputElement | null>(null);
+  let isImportingProfile = $state(false);
+
+  async function handleImportProfileFile(e: Event) {
+    const input = e.currentTarget as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    if (isImportingProfile || isDeletingAllData) return;
+    isImportingProfile = true;
+    try {
+      const text = await file.text();
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(text);
+      } catch {
+        throw new Error('That file is not valid JSON.');
+      }
+      const {data: sessionData} = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token)
+        throw new Error('Your admin session has expired. Please log in again.');
+      const res = await fetch('/api/internal/admin/profile/import', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(parsed)
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body?.error?.message || 'Import failed.');
+      const {applied, errors} = body as {
+        applied: string[];
+        errors: Record<string, string>;
+      };
+      supplementaryLoaded = false;
+      await loadAdminData();
+      if (applied.length)
+        toastStore.success(`Imported: ${applied.join(', ')}.`);
+      if (errors && Object.keys(errors).length)
+        toastStore.error(
+          `Some sections failed: ${Object.entries(errors)
+            .map(([k, v]) => `${k} (${v})`)
+            .join(', ')}`
+        );
+    } catch (err: any) {
+      console.error('Profile import failed:', err);
+      toastStore.error(err?.message || 'Import failed.');
+    } finally {
+      isImportingProfile = false;
+    }
   }
 
-  async function executeClearAuthor() {
-    showClearAuthorDialog = false;
-    isClearingAuthor = true;
+  function confirmDeleteAllData() {
+    if (!hasExportedAllData) return;
+    showDeleteAllDialog = true;
+  }
+
+  async function exportAllData() {
+    if (isExportingAllData) return;
+    isExportingAllData = true;
     try {
-      const {
-        data: {user},
-        error: userError
-      } = await supabase.auth.getUser();
-      if (userError || !user) {
+      const {data: sessionData} = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token)
         throw new Error('Your admin session has expired. Please log in again.');
-      }
 
-      if (authorState.id) {
-        const {error} = await supabase
-          .from('db_profiles')
-          .delete()
-          .eq('id', authorState.id);
-        if (error) throw error;
-      } else {
-        const {error} = await supabase
-          .from('db_profiles')
-          .delete()
-          .neq('id', '00000000-0000-0000-0000-000000000000');
-        if (error) throw error;
+      const res = await fetch('/api/internal/admin/data/export', {
+        headers: {Authorization: `Bearer ${token}`}
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error?.message || 'Export failed.');
       }
-
-      authorState = {
-        id: '',
-        name: '',
-        username: '',
-        headline: '',
-        jobTitle: '',
-        bio: '',
-        avatar: '',
-        email: '',
-        city: '',
-        postalCode: '',
-        country: '',
-        siteUrl: ''
-      };
-      authorInitial = {...authorState};
-      toastStore.success('Author profile cleared.');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `site-data-${new Date().toISOString().slice(0, 10)}.zip`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      hasExportedAllData = true;
     } catch (err: any) {
-      console.error('Failed to clear author profile:', err);
-      toastStore.error(err?.message || 'Failed to clear author profile.');
+      toastStore.error(err?.message || 'Export failed.');
     } finally {
-      isClearingAuthor = false;
+      isExportingAllData = false;
+    }
+  }
+
+  async function executeDeleteAllData() {
+    if (isDeletingAllData) return;
+    if (!deleteAllPassword) {
+      toastStore.error('Enter your password to confirm.');
+      return;
+    }
+    isDeletingAllData = true;
+    try {
+      const {data: sessionData} = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token)
+        throw new Error('Your admin session has expired. Please log in again.');
+
+      const res = await fetch('/api/internal/admin/data/delete-all', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({password: deleteAllPassword})
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error?.message || 'Failed to delete site data.');
+      }
+
+      deleteAllPassword = '';
+      supplementaryLoaded = false;
+      await loadAdminData();
+      showDeleteAllDialog = false;
+      toastStore.success('All site data deleted.');
+    } catch (err: any) {
+      console.error('Failed to delete all data:', err);
+      toastStore.error(err?.message || 'Failed to delete all data.');
+    } finally {
+      isDeletingAllData = false;
     }
   }
 
@@ -2433,12 +2637,19 @@
         sort_order: idx + 1
       }));
 
-      const {error} = await supabase.rpc('db_save_cv', {
-        p_author_id: authorId,
-        p_experiences: experiences,
-        p_education: education
+      const {data: sessionData} = await supabase.auth.getSession();
+      const res = await fetch('/api/internal/admin/cv', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${sessionData?.session?.access_token}`
+        },
+        body: JSON.stringify({authorId, experiences, education})
       });
-      if (error) throw error;
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error?.message || 'Failed to save CV entries.');
+      }
 
       cvInitial = $state.snapshot(cvState);
       listValidation.reset();
@@ -2477,11 +2688,19 @@
           : []
       }));
 
-      const {error} = await supabase.rpc('db_save_skills', {
-        p_author_id: authorId,
-        p_categories: categories
+      const {data: sessionData} = await supabase.auth.getSession();
+      const res = await fetch('/api/internal/admin/skills', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${sessionData?.session?.access_token}`
+        },
+        body: JSON.stringify({authorId, categories})
       });
-      if (error) throw error;
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error?.message || 'Failed to save skills.');
+      }
 
       skillsInitial = $state.snapshot(skillsState);
       listValidation.reset();
@@ -2600,12 +2819,19 @@
         sort_order: idx + 1
       }));
 
-      const {error} = await supabase.rpc('db_save_links', {
-        p_author_id: authorId,
-        p_category: 'social',
-        p_items: items
+      const {data: sessionData} = await supabase.auth.getSession();
+      const res = await fetch('/api/internal/admin/links', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${sessionData?.session?.access_token}`
+        },
+        body: JSON.stringify({authorId, category: 'social', items})
       });
-      if (error) throw error;
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error?.message || 'Failed to save social links.');
+      }
 
       socialInitial = $state.snapshot(socialState);
       listValidation.reset();
@@ -2643,12 +2869,21 @@
         sort_order: idx + 1
       }));
 
-      const {error} = await supabase.rpc('db_save_links', {
-        p_author_id: authorId,
-        p_category: 'funding',
-        p_items: items
+      const {data: sessionData} = await supabase.auth.getSession();
+      const res = await fetch('/api/internal/admin/links', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${sessionData?.session?.access_token}`
+        },
+        body: JSON.stringify({authorId, category: 'funding', items})
       });
-      if (error) throw error;
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(
+          body?.error?.message || 'Failed to save funding links.'
+        );
+      }
 
       sponsorshipInitial = $state.snapshot(sponsorshipState);
       listValidation.reset();
@@ -2686,12 +2921,19 @@
         sort_order: idx + 1
       }));
 
-      const {error} = await supabase.rpc('db_save_links', {
-        p_author_id: authorId,
-        p_category: 'contact',
-        p_items: items
+      const {data: sessionData} = await supabase.auth.getSession();
+      const res = await fetch('/api/internal/admin/links', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${sessionData?.session?.access_token}`
+        },
+        body: JSON.stringify({authorId, category: 'contact', items})
       });
-      if (error) throw error;
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error?.message || 'Failed to save contact info.');
+      }
 
       contactInitial = $state.snapshot(contactState);
       listValidation.reset();
@@ -2999,29 +3241,44 @@
   }
 
   const adminNavSections: {
-    id: 'overview' | 'content' | 'profile' | 'legal';
+    id:
+      | 'overview'
+      | 'content'
+      | 'community'
+      | 'profile'
+      | 'legal'
+      | 'administration';
     title: string;
   }[] = [
     {id: 'overview', title: ''},
-    {id: 'content', title: 'Content Management'},
+    {id: 'content', title: 'Content'},
+    {id: 'community', title: 'Community'},
     {id: 'profile', title: 'Profile & Resume'},
-    {id: 'legal', title: 'Legal & Policy'}
+    {id: 'legal', title: 'Legal & Policy'},
+    {id: 'administration', title: 'Administration'}
   ];
 
   const adminNavLinks: {
     id: AdminTab;
     label: string;
     icon: any;
-    section: 'overview' | 'content' | 'profile' | 'legal';
+    section: (typeof adminNavSections)[number]['id'];
   }[] = [
-    {id: 'home', label: 'Overview', icon: ChartPie, section: 'overview'},
-    {id: 'reports', label: 'Reports', icon: Flag, section: 'overview'},
-    {id: 'feedback', label: 'Feedback', icon: Users, section: 'overview'},
+    {id: 'home', label: 'Overview', icon: LayoutDashboard, section: 'overview'},
+    {id: 'reports', label: 'Reports', icon: Flag, section: 'community'},
+    {id: 'feedback', label: 'Feedback', icon: Users, section: 'community'},
     {
       id: 'notifications',
       label: 'Notifications',
       icon: Bell,
       section: 'overview'
+    },
+    {id: 'logs', label: 'Activity Log', icon: Logs, section: 'administration'},
+    {
+      id: 'account',
+      label: 'Settings',
+      icon: Settings,
+      section: 'administration'
     },
     {id: 'posts', label: 'Posts', icon: Quote, section: 'content'},
     {id: 'glossary', label: 'Glossary', icon: BookA, section: 'content'},
@@ -3058,14 +3315,17 @@
   onSignOut={handleLogout} />
 
 <div
+  id="admin-mobile-header"
   class="fixed top-0 z-40 flex h-10 w-full items-center justify-between border-b border-border-subtle bg-surface-card px-4 md:hidden">
   <div class="flex items-center gap-2">
     <Button
+      id="admin-sidebar-toggle"
       type="secondary"
       size="2xs"
       class="size-7 shrink-0 p-0"
       onclick={() => (sidebarMobileOpen = !sidebarMobileOpen)}
       aria-expanded={sidebarMobileOpen}
+      aria-controls="admin-sidebar"
       aria-label={sidebarMobileOpen ? 'Close sidebar' : 'Open sidebar'}
       title={sidebarMobileOpen ? 'Close sidebar' : 'Open sidebar'}>
       {#if sidebarMobileOpen}
@@ -3088,13 +3348,35 @@
 
 <div class="flex min-h-screen pt-10 md:pt-0">
   <aside
-    class="fixed inset-y-0 left-0 z-50 flex w-56 shrink-0 flex-col justify-between overflow-y-auto border-r border-border-subtle bg-surface-card transition-transform duration-200 ease-in-out md:sticky md:top-0 md:h-screen md:translate-x-0 {(
+    id="admin-sidebar"
+    aria-label="Admin sidebar"
+    {@attach manageSidebar}
+    style="--sidebar-width: {sidebarWidth}px"
+    class="fixed inset-y-0 left-0 z-50 flex w-56 shrink-0 flex-col justify-between overflow-hidden border-r border-border-subtle bg-surface-card md:sticky md:top-0 md:h-dvh md:translate-x-0 {(
+      sidebarResizing
+    ) ?
+      'transition-none will-change-[width]'
+    : 'transition-[width,transform] duration-200 ease-linear'} {(
       sidebarMobileOpen
     ) ?
       'translate-x-0 shadow-2xl'
-    : '-translate-x-full'} {sidebarCollapsed ? 'md:w-11' : 'md:w-56'}">
+    : '-translate-x-full'} {sidebarCollapsed ? 'md:w-11' : (
+      'md:w-[var(--sidebar-width)]'
+    )}">
     <div
-      class="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border-subtle bg-surface-card {(
+      role="separator"
+      aria-orientation="vertical"
+      aria-label="Resize sidebar"
+      tabindex="-1"
+      onpointerdown={startSidebarResize}
+      class="group absolute inset-y-0 right-0 z-10 hidden w-3 -translate-x-1/2 cursor-col-resize items-center justify-center md:flex">
+      <span
+        class="pointer-events-none flex h-10 w-3.5 items-center justify-center rounded-sm text-text-muted/60 opacity-0 transition-opacity group-hover:opacity-100">
+        <GripVertical class="size-3" />
+      </span>
+    </div>
+    <div
+      class="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-border-subtle bg-surface-card {(
         sidebarCollapsed
       ) ?
         'px-3 md:justify-center md:px-0'
@@ -3104,7 +3386,7 @@
           type="secondary"
           size="2xs"
           class="size-7 shrink-0 p-0 md:hidden"
-          onclick={() => (sidebarMobileOpen = false)}
+          onclick={closeMobileSidebar}
           aria-label="Close sidebar"
           title="Close sidebar">
           <X class="size-4" />
@@ -3114,9 +3396,9 @@
           alt={`Profile picture of ${adminUserName || 'the account owner'}`}
           variant="avatar"
           rounded="rounded-full"
-          class="size-8 shrink-0" />
+          class="size-7 shrink-0" />
         <span
-          class="flex min-w-0 flex-col transition-opacity duration-150 starting:opacity-0 {(
+          class="flex min-w-0 flex-col transition-opacity duration-150 ease-linear starting:opacity-0 {(
             sidebarCollapsed
           ) ?
             'md:hidden'
@@ -3139,28 +3421,19 @@
           {/if}
         </span>
       </div>
-      <div
-        class="flex items-center gap-1.5 transition-opacity duration-150 starting:opacity-0 {(
-          sidebarCollapsed
-        ) ?
-          'md:hidden'
-        : ''}">
-        <ThemeSelect
-          variant="ghost"
-          size="2xs"
-          theme={themeStore.current}
-          onThemeChange={themeStore.apply}
-          class="inline-flex" />
-      </div>
     </div>
 
     <nav
-      class="flex min-h-0 flex-1 flex-col overflow-y-auto px-2 py-1.5 font-sans"
+      class="flex min-h-0 flex-1 flex-col overflow-y-auto px-2 py-1.5 font-sans {(
+        sidebarCollapsed
+      ) ?
+        'md:overflow-y-hidden'
+      : ''}"
       aria-label="Admin Navigation">
       {#each adminNavSections as section, sectionIndex (section.id)}
         {#if section.title}
           <div
-            class="px-2 pt-1 pb-1 text-xxs font-bold whitespace-nowrap text-text-muted transition-opacity duration-150 select-none starting:opacity-0 {(
+            class="px-2 pt-1 pb-1 text-xxs font-bold whitespace-nowrap text-text-muted transition-opacity duration-150 ease-linear select-none starting:opacity-0 {(
               sectionIndex > 0
             ) ?
               'mt-1.5'
@@ -3169,103 +3442,72 @@
           </div>
         {/if}
         <div
-          class="flex flex-col gap-0.5 {sidebarCollapsed ? 'md:min-h-0' : ''} {(
-            sectionIndex > 0 && sidebarCollapsed
-          ) ?
+          class="flex shrink-0 flex-col gap-0.5 {sidebarCollapsed ?
+            'md:min-h-0 md:shrink'
+          : ''} {sectionIndex > 0 && sidebarCollapsed ?
             'md:mt-1 md:border-t md:border-border-subtle md:pt-1'
           : ''}">
           {#each adminNavLinks.filter(l => l.section === section.id) as link (link.id)}
-            <button
-              type="button"
-              aria-current={activeAdminTab === link.id ? 'page' : undefined}
-              onclick={() => selectTab(link.id)}
-              title={link.label}
-              use:shortcut={{
-                group: 'sidebar',
-                placement: 'inline',
-                label: link.label
-              }}
-              class="group relative flex h-7 w-full items-center rounded-sm text-left text-xs font-semibold transition-colors duration-150 ease-in-out {(
-                sidebarCollapsed
-              ) ?
-                'gap-2 px-2 md:min-h-0 md:justify-center md:gap-0 md:px-0'
-              : 'gap-2 px-2'} {activeAdminTab === link.id ?
-                'bg-accent-subtle font-bold text-accent shadow-2xs'
-              : 'text-text-primary hover:bg-surface-hover hover:text-accent'}">
-              <link.icon
-                class="size-3.5 shrink-0 transition-colors {(
-                  activeAdminTab === link.id
-                ) ?
-                  'text-accent'
-                : 'text-text-muted group-hover:text-accent'}" />
-              <span
-                class="truncate transition-opacity duration-150 starting:opacity-0 {(
+            <Tooltip
+              content={link.label}
+              placement="right"
+              disabled={!sidebarCollapsed}
+              wrapperClass="flex w-full {sidebarCollapsed ?
+                'md:min-h-0 md:shrink md:basis-7'
+              : ''}">
+              <button
+                type="button"
+                aria-label={link.label}
+                aria-current={activeAdminTab === link.id ? 'page' : undefined}
+                onclick={() => selectTab(link.id)}
+                use:shortcut={{
+                  group: 'sidebar',
+                  placement: 'inline',
+                  label: link.label
+                }}
+                class="group relative flex min-h-11 w-full shrink-0 items-center rounded-sm text-left text-xs font-semibold transition-colors duration-150 ease-in-out focus-visible:outline-2 focus-visible:outline-focus-ring {(
                   sidebarCollapsed
                 ) ?
-                  'md:hidden'
-                : ''}">{link.label}</span>
-              {#if link.id === 'notifications' && adminNotificationsStore.unreadCount > 0}
-                <Badge
-                  variant="accent"
-                  circle
-                  class={sidebarCollapsed ?
-                    'ml-auto md:absolute md:top-0 md:right-0 md:ml-0'
-                  : 'ml-auto'}
-                  >{formatBadgeCount(adminNotificationsStore.unreadCount)}<span
-                    class="sr-only">
-                    unread</span
-                  ></Badge>
-              {/if}
-            </button>
+                  'gap-2 px-2 md:h-full md:min-h-0 md:justify-center md:gap-0 md:px-0'
+                : 'gap-2 px-2 md:min-h-7'} {activeAdminTab === link.id ?
+                  'bg-accent-subtle font-bold text-accent shadow-2xs'
+                : 'text-text-primary hover:bg-surface-hover hover:text-accent'}">
+                <link.icon
+                  class="size-3.5 max-h-full shrink-0 transition-colors {(
+                    activeAdminTab === link.id
+                  ) ?
+                    'text-accent'
+                  : 'text-text-muted group-hover:text-accent'}" />
+                <span
+                  class="truncate transition-opacity duration-150 ease-linear starting:opacity-0 {(
+                    sidebarCollapsed
+                  ) ?
+                    'md:hidden'
+                  : ''}">{link.label}</span>
+                {#if link.id === 'notifications' && adminNotificationsStore.unreadCount > 0}
+                  <Badge
+                    variant="accent"
+                    circle
+                    class={sidebarCollapsed ?
+                      'ml-auto md:absolute md:top-0 md:right-0 md:ml-0'
+                    : 'ml-auto'}
+                    >{formatBadgeCount(
+                      adminNotificationsStore.unreadCount
+                    )}<span class="sr-only"> unread</span></Badge>
+                {/if}
+              </button>
+            </Tooltip>
           {/each}
         </div>
       {/each}
-      <div
-        class="mt-1.5 flex flex-col gap-0.5 border-t border-border-subtle pt-1.5 {(
-          sidebarCollapsed
-        ) ?
-          'md:mt-1 md:min-h-0 md:pt-1'
-        : ''}">
-        <button
-          type="button"
-          aria-current={activeAdminTab === 'account' ? 'page' : undefined}
-          onclick={() => selectTab('account')}
-          title="Manage account"
-          class="group flex h-7 w-full items-center rounded-sm text-left text-xs font-semibold transition-colors duration-150 ease-in-out {(
-            sidebarCollapsed
-          ) ?
-            'gap-2 px-2 md:min-h-0 md:justify-center md:gap-0 md:px-0'
-          : 'gap-2 px-2'} {activeAdminTab === 'account' ?
-            'bg-accent-subtle font-bold text-accent shadow-2xs'
-          : 'text-text-primary hover:bg-surface-hover hover:text-accent'}">
-          <Settings
-            class="size-3.5 shrink-0 transition-colors {(
-              activeAdminTab === 'account'
-            ) ?
-              'text-accent'
-            : 'text-text-muted group-hover:text-accent'}" />
-          <span
-            class="truncate transition-opacity duration-150 starting:opacity-0 {(
-              sidebarCollapsed
-            ) ?
-              'md:hidden'
-            : ''}">Manage account</span>
-          <ChevronRight
-            class="ml-auto size-3 shrink-0 text-text-muted transition-opacity duration-150 starting:opacity-0 {(
-              sidebarCollapsed
-            ) ?
-              'md:hidden'
-            : ''}" />
-        </button>
-      </div>
     </nav>
 
     <div
-      class="shrink-0 border-t border-border-subtle bg-surface-card px-2 py-2">
+      class="shrink-0 border-t border-border-subtle bg-surface-card px-2 py-1.5">
       <div
-        class="flex items-center gap-2 {sidebarCollapsed ?
-          'justify-between md:flex-col-reverse md:justify-center'
-        : 'justify-between'}">
+        class="flex items-center justify-between {sidebarCollapsed ?
+          'md:justify-center'
+        : ''}">
         <Button
           type="ghost"
           size="2xs"
@@ -3284,16 +3526,17 @@
         <Button
           type="ghost"
           size="2xs"
-          class="ml-auto size-7 shrink-0 p-0 transition-opacity duration-150 md:ml-0 starting:opacity-0 {(
+          disabled={isLoggingOut}
+          class="size-7 shrink-0 p-0 transition-opacity duration-150 ease-linear starting:opacity-0 {(
             sidebarCollapsed
           ) ?
             'md:hidden'
           : ''}"
-          aria-label="Sign out"
           onclick={requestLogout}
-          disabled={isLoggingOut}
-          isLoading={isLoggingOut}
-          title="Sign out"><LogOut class="size-4" /></Button>
+          aria-label="Sign out"
+          title="Sign out">
+          <LogOut class="size-4" />
+        </Button>
       </div>
     </div>
   </aside>
@@ -3302,12 +3545,14 @@
     <button
       type="button"
       class="fixed inset-0 z-40 bg-overlay md:hidden"
-      onclick={() => (sidebarMobileOpen = false)}
+      onclick={closeMobileSidebar}
+      tabindex="-1"
       aria-label="Close sidebar"></button>
   {/if}
 
   <main
     id="main-content"
+    tabindex="-1"
     {@attach element => {
       const tab = activeAdminTab;
       const scroll = page.state.adminScroll;
@@ -3340,6 +3585,8 @@
           onOpenComment={focusComment}
           onSelectNotification={selectNotification} />
       {/key}
+    {:else if activeAdminTab === 'logs'}
+      <ActivityLogWorkspace />
     {:else if activeAdminTab === 'posts'}
       {#if editPostParam}
         <PostEditor
@@ -3353,7 +3600,7 @@
               Posts
             </h1>
             <p class="mt-1 text-xs text-text-secondary">
-              Manage articles and post comments
+              Write, edit, and moderate your blog posts.
             </p>
           </div>
 
@@ -3833,7 +4080,6 @@
                                     onclick={() => (replyTo = null)}>
                                     Cancel
                                   </Button>
-                                  <SubmitShortcutHint class="max-sm:hidden" />
                                   <Button
                                     htmlType="submit"
                                     type="primary"
@@ -3867,7 +4113,7 @@
       <FormSection
         onsubmit={handleSaveProjects}
         title="Projects"
-        description="Manage pinned and excluded GitHub repositories displayed in your portfolio projects section."
+        description="Pin or hide the GitHub repositories shown in your portfolio."
         class="gap-4! p-4! sm:p-5!">
         <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
           <FormField
@@ -3966,9 +4212,11 @@
           <ProfileImageUpload
             name={authorState.name || adminUserName}
             avatar={avatarSource(authorState)}
-            disabled={isSavingAuthor || !manifestSettings}
+            validationError={authorErrors.avatar}
+            disabled={isSavingAuthor}
             onprepared={value => {
               preparedImage = value;
+              onAuthorInput('avatar');
             }}
             onbusy={value => {
               preparingImage = value;
@@ -3999,6 +4247,17 @@
                   onblur={() => {
                     void authorValidation.check('name');
                   }} />
+              </FormField>
+
+              <FormField
+                id="author-pronunciation"
+                label="Pronunciation"
+                variant="floating"
+                hint="Optional. e.g. /ˈælbərt ˈaɪnstaɪn/">
+                <Input
+                  id="author-pronunciation"
+                  bind:value={authorState.pronunciation}
+                  maxlength={250} />
               </FormField>
 
               <FormField
@@ -4045,6 +4304,7 @@
 
               <FormField
                 id="author-headline"
+                class="sm:col-span-2"
                 label="Headline"
                 variant="floating"
                 required
@@ -4054,7 +4314,7 @@
                 <Textarea
                   id="author-headline"
                   bind:value={authorState.headline}
-                  rows={2}
+                  rows={1}
                   maxlength={100}
                   aria-required="true"
                   error={!!authorErrors.headline}
@@ -4066,36 +4326,6 @@
               </FormField>
             </div>
           </section>
-
-          {#if manifestSettings}
-            <section
-              aria-labelledby="profile-app-appearance"
-              class="flex flex-col gap-3">
-              <h3
-                id="profile-app-appearance"
-                class="text-xxs font-bold tracking-widest text-text-secondary uppercase">
-                App appearance
-              </h3>
-              <FormField
-                id="app-display"
-                label="Display"
-                variant="floating"
-                hint="Colors follow the site theme automatically."
-                hideFeedbackSlot>
-                <Dropdown
-                  fullWidth
-                  id="app-display"
-                  bind:value={manifestSettings.display}
-                  options={[
-                    {value: 'standalone', label: 'Standalone'},
-                    {value: 'minimal-ui', label: 'Minimal UI'},
-                    {value: 'browser', label: 'Browser'},
-                    {value: 'fullscreen', label: 'Fullscreen'}
-                  ]}
-                  disabled={isSavingAuthor} />
-              </FormField>
-            </section>
-          {/if}
 
           <section aria-labelledby="section-contact">
             <h3
@@ -4263,27 +4493,13 @@
             <div
               class="flex w-full flex-col-reverse gap-2.5 sm:w-auto sm:flex-row sm:items-center sm:gap-3">
               <Button
-                htmlType="button"
-                type="danger"
-                tone="critical"
-                size="md"
-                class="w-full sm:w-auto"
-                disabled={!authorState.id}
-                onclick={confirmClearAuthor}
-                isLoading={isClearingAuthor}>
-                {#snippet leading()}
-                  <Trash class="size-3.5" />
-                {/snippet}
-                <span>Delete Profile</span>
-              </Button>
-              <Button
                 htmlType="submit"
                 type="primary"
                 size="md"
                 class="w-full sm:w-auto"
                 aria-label="Save Profile"
                 title="Save Profile"
-                disabled={!authorIsDirty || preparingImage || !manifestSettings}
+                disabled={!authorIsDirty || preparingImage}
                 isLoading={isSavingAuthor}>
                 {#snippet leading()}
                   <Save class="size-3.5" />
@@ -4320,8 +4536,8 @@
             <div class="min-w-0 flex-1 select-none">
               <h2 class="text-xl font-bold text-text-primary">Experiences</h2>
               <p class="mt-1 text-xs text-text-secondary">
-                List your work history in reverse chronological order. All
-                fields are required unless marked (optional).
+                List your work history, most recent first. Fields are required
+                unless marked optional.
               </p>
             </div>
             <Button
@@ -4690,8 +4906,8 @@
             <div class="min-w-0 flex-1 select-none">
               <h2 class="text-xl font-bold text-text-primary">Education</h2>
               <p class="mt-1 text-xs text-text-secondary">
-                List your degrees, certifications, and academic background. All
-                fields are required unless marked (optional).
+                List your degrees and certifications, most recent first. Fields
+                are required unless marked optional.
               </p>
             </div>
             <Button
@@ -5032,7 +5248,8 @@
             CV Document
           </h2>
           <p class="mt-1 text-xs text-text-secondary">
-            The PDF resume served across your portfolio and public API.
+            The PDF resume shown on your CV page and available through the
+            public API.
           </p>
         </div>
 
@@ -5211,7 +5428,7 @@
       <FormSection
         onsubmit={handleSaveSkills}
         title="Skills"
-        description="Manage skill categories and the skills within each one.">
+        description="Group your skills into categories.">
         {#snippet headerActions()}
           <Button
             htmlType="button"
@@ -5362,7 +5579,7 @@
       <FormSection
         onsubmit={handleSaveGlossary}
         title="Glossary"
-        description="Protect names, project titles, and brand terms from being translated by AI in blog posts."
+        description="Exclude names, project titles, and brand terms from AI translation."
         class="gap-4! p-4! sm:p-5!">
         {#if glossarySaveSuccess}<StatusBanner
             variant="success"
@@ -5619,7 +5836,7 @@
       <FormSection
         onsubmit={handleSaveSponsorship}
         title="Funding"
-        description="Manage funding and donation platforms.">
+        description="Manage the funding and donation platforms shown on your site.">
         {#snippet headerActions()}
           <Button
             htmlType="button"
@@ -5857,7 +6074,7 @@
       <FormSection
         onsubmit={handleSaveContact}
         title="Contact"
-        description="Manage public contact channels.">
+        description="Manage the contact channels shown on your public Contact page.">
         {#snippet headerActions()}
           <Button
             htmlType="button"
@@ -6283,7 +6500,85 @@
           stickyTopClass="top-14 md:top-0" />
       </FormSection>
     {:else if activeAdminTab === 'account'}
-      <AccountSettings />
+      <AccountSettings>
+        <Card
+          variant="bordered"
+          class="border-border-subtle! bg-surface-card!">
+          <FormSection
+            title="Import profile & resume"
+            description="Restore profile and resume data from a previously exported JSON file."
+            bare>
+            <input
+              bind:this={profileImportInput}
+              type="file"
+              accept="application/json,.json"
+              class="hidden"
+              onchange={handleImportProfileFile} />
+            <div>
+              <Button
+                type="secondary"
+                size="md"
+                isLoading={isImportingProfile}
+                disabled={isImportingProfile || isDeletingAllData}
+                onclick={() => profileImportInput?.click()}>
+                {#snippet leading()}<Upload class="size-3.5" />{/snippet}
+                Import data
+              </Button>
+            </div>
+          </FormSection>
+        </Card>
+        <Card
+          variant="bordered"
+          class="border-border-subtle! bg-surface-card!">
+          <FormSection
+            title="Export data"
+            description="Download all your content (posts, glossary terms, projects, profile & resume, legal pages, and logs) as one archive."
+            bare>
+            <div>
+              <Button
+                type="secondary"
+                size="md"
+                isLoading={isExportingAllData}
+                disabled={isExportingAllData}
+                onclick={exportAllData}>
+                {#snippet leading()}<Download class="size-3.5" />{/snippet}
+                Export data
+              </Button>
+            </div>
+          </FormSection>
+        </Card>
+        <Card
+          variant="bordered"
+          class="border-danger/40 bg-danger-subtle/40">
+          <FormSection
+            title="Danger zone"
+            description="Permanently delete all your content (posts, glossary terms, projects, profile & resume, legal pages, and logs). This can't be undone."
+            bare>
+            <div>
+              <Button
+                type="danger"
+                tone="critical"
+                size="md"
+                disabled={!hasExportedAllData
+                  || isImportingProfile
+                  || isDeletingAllData}
+                title={hasExportedAllData ? undefined : (
+                  'Export your data first.'
+                )}
+                onclick={confirmDeleteAllData}
+                isLoading={isDeletingAllData}>
+                {#snippet leading()}<Trash class="size-3.5" />{/snippet}
+                Delete all data
+              </Button>
+              {#if !hasExportedAllData}
+                <p class="mt-2 text-xs text-text-muted">
+                  Export your data first before deleting it.
+                </p>
+              {/if}
+            </div>
+          </FormSection>
+        </Card>
+      </AccountSettings>
     {/if}
   </main>
 </div>
@@ -6318,13 +6613,27 @@
   onConfirm={executeDeleteComment} />
 
 <ConfirmationDialog
-  bind:isOpen={showClearAuthorDialog}
-  title="Delete Profile"
-  message="Are you sure you want to delete/clear all author profile data from the database?"
-  confirmLabel="Delete Profile"
+  bind:isOpen={showDeleteAllDialog}
+  title="Delete all site data?"
+  message="Permanently delete every post, glossary term, project note, profile & resume field, legal page, and log. This cannot be undone."
+  confirmLabel="Delete everything"
+  requiredKeyword="DELETE"
   isDestructive
-  isLoading={isClearingAuthor}
-  onConfirm={executeClearAuthor} />
+  isLoading={isDeletingAllData}
+  onConfirm={executeDeleteAllData}
+  onCancel={() => (deleteAllPassword = '')}>
+  <div class="mt-3 flex flex-col gap-1.5 font-sans">
+    <label
+      for="delete-all-password"
+      class="text-xs font-semibold text-text-primary">Password</label>
+    <Input
+      id="delete-all-password"
+      type="password"
+      autocomplete="current-password"
+      bind:value={deleteAllPassword}
+      disabled={isDeletingAllData} />
+  </div>
+</ConfirmationDialog>
 
 <ConfirmationDialog
   bind:isOpen={showDeleteCvDocDialog}
@@ -6360,7 +6669,7 @@
       {#key authorState.avatar}
         <img
           src={avatarSource(authorState)}
-          alt={`Profile picture of ${authorState.name || adminUserName} — enlarged preview`}
+          alt={`Profile picture of ${authorState.name || adminUserName} (enlarged preview)`}
           class="relative z-10 h-full w-full object-cover"
           onerror={e =>
             ((e.currentTarget as HTMLImageElement).style.display = 'none')}

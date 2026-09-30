@@ -221,8 +221,7 @@
   onkeydown={e => {
     if (e.key === 'Enter' || e.key === ' ') handleClick();
   }}
-  role="button"
-  tabindex="-1">
+  role="presentation">
   {@render children?.()}
 </div>
 

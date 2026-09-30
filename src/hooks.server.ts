@@ -6,6 +6,7 @@ import {dev} from '$app/environment';
 import {assetNames, serveIdentityAsset} from '$lib/server/profileAssets';
 import {publicResponse} from '$lib/server/publicResponse';
 import {createAuthClient, safeGetSession} from '$lib/server/supabaseAuth';
+import {privateRequestIntegrations} from '$lib/server/sentryPrivacy';
 
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const MAX_REQUESTS_PER_WINDOW = 60;
@@ -63,7 +64,8 @@ export const handle: Handle = sequence(
     dsn: publicEnv.PUBLIC_SENTRY_DSN || '',
     environment: publicEnv.PUBLIC_SENTRY_ENVIRONMENT || import.meta.env.MODE,
     tracesSampleRate: dev ? 0 : 1.0,
-    enableLogs: !dev
+    enableLogs: !dev,
+    integrations: privateRequestIntegrations()
   }),
   Sentry.sentryHandle(),
   async ({event, resolve}) => {

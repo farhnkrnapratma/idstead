@@ -51,7 +51,8 @@ test('every time preset renders padded and unpadded clocks', () => {
     'hh:mm a': '09:44 AM',
     'h:mm a': '9:44 AM',
     'HH:mm:ss': '09:44:12',
-    'hh:mm:ss a': '09:44:12 AM'
+    'hh:mm:ss a': '09:44:12 AM',
+    'h[:mm]a': '9:44am'
   };
   for (const format of ADMIN_TIME_FORMATS)
     expect(formatAdminTime(morning, 'UTC', format)).toBe(expected[format]);
@@ -100,4 +101,27 @@ test('stored preferences keep only whitelisted values', () => {
       JSON.stringify({mode: 'smart', dateFormat: 'iso', timeFormat: 'bogus'})
     )
   ).toEqual({mode: 'smart', dateFormat: 'iso'});
+});
+
+test('compact time uses lowercase periods and omits only zero minutes', () => {
+  const examples = [
+    ['01:00', '1am'],
+    ['16:00', '4pm'],
+    ['01:30', '1:30am'],
+    ['23:00', '11pm'],
+    ['11:59', '11:59am'],
+    ['00:00', '12am'],
+    ['12:00', '12pm'],
+    ['14:05', '2:05pm']
+  ];
+  for (const [time, expected] of examples)
+    expect(formatAdminTime(`2026-09-29T${time}:00Z`, 'UTC', 'h[:mm]a')).toBe(
+      expected
+    );
+  expect(
+    formatAdminTime('2026-09-29T06:30:00Z', 'Asia/Jakarta', 'h[:mm]a')
+  ).toBe('1:30pm');
+  expect(
+    parseAdminDisplayPrefs(JSON.stringify({timeFormat: 'h[:mm]a'}))
+  ).toEqual({timeFormat: 'h[:mm]a'});
 });

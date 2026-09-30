@@ -3,8 +3,6 @@
   import Dialog from './Dialog.svelte';
   import Button from './Button.svelte';
 
-  import {tick} from 'svelte';
-
   interface Props {
     isOpen: boolean;
     title: string;
@@ -37,20 +35,18 @@
     class: className = ''
   }: Props = $props();
 
-  let inputEl = $state<HTMLInputElement | null>(null);
   let inputKeyword = $state('');
   let isCopied = $state(false);
   let copyTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  $effect(() => {
-    if (!isOpen) {
-      inputKeyword = '';
-      isCopied = false;
+  function initializeConfirmation(input: HTMLInputElement) {
+    inputKeyword = '';
+    isCopied = false;
+    input.focus();
+    return () => {
       if (copyTimeout) clearTimeout(copyTimeout);
-    } else if (requiredKeyword) {
-      void tick().then(() => inputEl?.focus());
-    }
-  });
+    };
+  }
 
   const isConfirmDisabled = $derived(
     isLoading || (Boolean(requiredKeyword) && inputKeyword !== requiredKeyword)
@@ -69,6 +65,7 @@
   }
 
   function close() {
+    if (isLoading) return;
     isOpen = false;
     onCancel();
   }
@@ -91,6 +88,9 @@
   {title}
   description={message}
   size="sm"
+  closeOnBackdrop={!isLoading}
+  closeOnEscape={!isLoading}
+  showCloseButton={!isLoading}
   compact
   class={className}
   onClose={close}>
@@ -99,7 +99,7 @@
       <p class="text-xs text-text-secondary">
         Type in
         <span
-          class="inline-flex items-center gap-1 rounded-md border border-border-subtle bg-surface-subtle px-1.5 py-0.5 font-mono text-xs font-bold text-text-primary select-all">
+          class="inline-flex items-center gap-1 rounded-md border border-border-subtle bg-transparent py-0.5 pr-1 pl-1.5 font-mono text-xs font-bold text-text-primary select-all">
           <span>{requiredKeyword}</span>
           <button
             type="button"
@@ -117,12 +117,16 @@
         to confirm.
       </p>
       <input
-        bind:this={inputEl}
+        {@attach initializeConfirmation}
         type="text"
         bind:value={inputKeyword}
         onkeydown={handleKeydown}
+        aria-label="Confirmation keyword"
+        autocomplete="off"
+        spellcheck={false}
+        disabled={isLoading}
         placeholder={requiredKeyword}
-        class="w-full rounded-md border border-border-subtle bg-surface-base px-3 py-2 text-xs text-text-primary transition-colors outline-none placeholder:text-text-muted focus:border-accent focus:ring-1 focus:ring-accent" />
+        class="w-full rounded-md border border-border-subtle/50 bg-surface-card/85 px-3 py-2 text-xs text-text-primary shadow-2xs backdrop-blur-xs transition-colors outline-none placeholder:text-text-secondary/70 focus:border-accent focus:bg-surface-card focus:ring-2 focus:ring-accent/20 focus:outline-none disabled:cursor-not-allowed disabled:border-border-subtle/30 disabled:bg-surface-card/20 disabled:opacity-50 disabled:backdrop-blur-none dark:border-white/10 dark:bg-surface-card/70 dark:focus:bg-surface-card/90" />
     </div>
   {/if}
 

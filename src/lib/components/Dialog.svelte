@@ -23,6 +23,7 @@
     returnFocusToTrigger?: boolean;
     trapShortcuts?: boolean;
     onClose: () => void;
+    header?: Snippet;
     children?: Snippet;
     footer?: Snippet;
     class?: string;
@@ -43,6 +44,7 @@
     returnFocusToTrigger = true,
     trapShortcuts = true,
     onClose,
+    header,
     children,
     footer,
     class: className = ''
@@ -186,7 +188,10 @@
         </button>
       {/if}
 
-      <div class="flex shrink-0 flex-col gap-1 pr-7 text-left">
+      <div
+        class={header ? 'sr-only' : (
+          'flex shrink-0 flex-col gap-1 pr-7 text-left'
+        )}>
         <h2
           id="dialog-title"
           class={cn(
@@ -206,6 +211,12 @@
           </p>
         {/if}
       </div>
+
+      {#if header}
+        <div class="shrink-0">
+          {@render header()}
+        </div>
+      {/if}
 
       {#if children}
         <div

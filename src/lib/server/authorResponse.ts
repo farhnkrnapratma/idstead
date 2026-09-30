@@ -97,6 +97,7 @@ export async function handleAuthorJsonRequest(
 
     const orderedProfile: Record<string, any> = {};
     if ('name' in p) orderedProfile.name = p.name;
+    if ('pronunciation' in p) orderedProfile.pronunciation = p.pronunciation;
     if ('username' in p) orderedProfile.username = p.username;
     if (email) orderedProfile.email = email;
     if ('headline' in p) orderedProfile.headline = p.headline;

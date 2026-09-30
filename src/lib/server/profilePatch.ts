@@ -8,7 +8,8 @@ export const profileFields = [
   'city',
   'postal_code',
   'country',
-  'site_url'
+  'site_url',
+  'pronunciation'
 ] as const;
 
 export class ProfileInputError extends Error {
@@ -52,13 +53,14 @@ export function profilePatch(
   const errors: Record<string, string> = {};
   for (const field of profileFields) {
     if (current && !(field in payload)) continue;
-    const rawValue = payload[field];
+    const rawValue =
+      field === 'pronunciation' ? (payload[field] ?? '') : payload[field];
     if (current && rawValue === current[field]) continue;
     if (typeof rawValue !== 'string') {
       errors[field] = `Invalid ${field.replaceAll('_', ' ')}.`;
       continue;
     }
-    let value = rawValue.trim();
+    let value = field === 'pronunciation' ? rawValue : rawValue.trim();
     if (field === 'username')
       value = value.replace(/^@+/, '').replace(/\s+/g, '');
     const max =
@@ -66,7 +68,11 @@ export function profilePatch(
       : field === 'site_url' ? 2048
       : 250;
 
-    if (!value || value.length > max || hasControlChars(value))
+    if (
+      (!value && field !== 'pronunciation')
+      || value.length > max
+      || hasControlChars(value)
+    )
       errors[field] = `Invalid ${field.replaceAll('_', ' ')}.`;
     if (field === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
       errors[field] = 'Please enter a valid email address.';
@@ -89,7 +95,7 @@ export function profilePatch(
     }
     if (value !== current?.[field]) patch[field] = value;
   }
-  if ('manifest_settings' in payload || !current) {
+  if ('manifest_settings' in payload) {
     const settings = payload.manifest_settings;
     if (
       !settings
@@ -103,16 +109,13 @@ export function profilePatch(
       )
     ) {
       errors.manifest_settings = 'Invalid display setting.';
-    } else {
-      const display = (settings as Record<string, unknown>).display;
-      if (
-        display
-        !== (current?.manifest_settings as Record<string, unknown> | undefined)
-          ?.display
-      )
-        patch.manifest_settings = {display};
     }
   }
+  if (
+    (current?.manifest_settings as Record<string, unknown> | undefined)?.display
+    !== 'standalone'
+  )
+    patch.manifest_settings = {display: 'standalone'};
   if (Object.keys(errors).length) throw new ProfileInputError(errors);
   return patch;
 }

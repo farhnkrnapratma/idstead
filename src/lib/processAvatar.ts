@@ -1,3 +1,4 @@
+import {isSupportedRasterImage} from './imageFormat';
 import {UPLOAD_LIMIT, buildSvg, type ImagePackage} from './siteIdentity';
 import {themeColors} from './themeColors';
 
@@ -13,15 +14,7 @@ export async function processAvatar(
   if (file.size > UPLOAD_LIMIT)
     throw new Error('Choose an image no larger than 10 MB.');
   const bytes = new Uint8Array(await file.slice(0, 32).arrayBuffer());
-  const ascii = new TextDecoder().decode(bytes);
-  const supported =
-    (bytes[0] === 137 && ascii.slice(1, 4) === 'PNG')
-    || (bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255)
-    || (ascii.startsWith('RIFF') && ascii.slice(8, 12) === 'WEBP')
-    || /^GIF8[79]a/.test(ascii)
-    || ascii.startsWith('BM')
-    || (ascii.slice(4, 8) === 'ftyp' && /avif|avis/.test(ascii.slice(8)));
-  if (!supported)
+  if (!isSupportedRasterImage(bytes))
     throw new Error('Choose a PNG, JPEG, WebP, AVIF, GIF, or BMP image.');
   let bitmap: ImageBitmap;
   try {

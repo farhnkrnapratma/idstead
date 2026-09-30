@@ -4,14 +4,25 @@ import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
 import {apiError} from '$lib/server/apiError';
 import {blogAdmin} from '$lib/server/blogPostAuth';
 import {parsePostInput} from '$lib/server/blogPostInput';
-import {savePostOperation, type PostOperation} from '$lib/server/blogPostSave';
+import {
+  savePostOperation,
+  BannerRequiredError,
+  type PostOperation
+} from '$lib/server/blogPostSave';
 import {cleanupBlogAssets, putBanner} from '$lib/server/blogBannerStorage';
 import {UUID_PATTERN} from '$lib/blogBanner';
 import {extractPostConfig} from '$lib/markdown';
 import {createApiRegistry, validateDefineForSave} from '$lib/define';
 import {notifyNewPost} from '$lib/server/subscriberBroadcast';
+import {logActivity} from '$lib/server/activityLog';
+import {env as privateEnv} from '$env/dynamic/private';
 
-export const POST: RequestHandler = async ({request, url, platform}) => {
+export const POST: RequestHandler = async ({
+  request,
+  url,
+  platform,
+  getClientAddress
+}) => {
   const db = getSupabaseAdminClient(platform);
   if (!db)
     return apiError(
@@ -82,6 +93,32 @@ export const POST: RequestHandler = async ({request, url, platform}) => {
     } catch {
       cleanupPending = true;
     }
+    const action =
+      input.kind === 'delete' ? 'blog.delete'
+      : operation.result?.published ? 'blog.publish'
+      : 'blog.update';
+    await logActivity(
+      {
+        actor: auth.actor,
+        action,
+        category: 'blog',
+        entityId: operation.result?.id ?? input.id,
+        summary: `${action.replace('blog.', '')} post${operation.result?.slug ? ` "${operation.result.slug}"` : ''}.`,
+        ip: (() => {
+          try {
+            return getClientAddress();
+          } catch {
+            return null;
+          }
+        })(),
+        ipSalt:
+          (platform as {env?: {IP_SALT?: string}} | undefined)?.env?.IP_SALT
+          ?? privateEnv.IP_SALT
+          ?? '',
+        userAgent: request.headers.get('user-agent') ?? undefined
+      },
+      db
+    );
     return json(
       {
         success: true,
@@ -92,6 +129,8 @@ export const POST: RequestHandler = async ({request, url, platform}) => {
       {headers: {'Cache-Control': 'no-store'}}
     );
   } catch (error) {
+    if (error instanceof BannerRequiredError)
+      return apiError(400, 'BLOG_SAVE_INVALID_INPUT', error.message);
     if ((error as {code?: string})?.code === '22023')
       return apiError(
         409,
