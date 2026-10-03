@@ -72,7 +72,11 @@ Both tiers share the same Supabase project and `wrangler.jsonc` bindings (`AI`, 
 
 ### `src/hooks.server.ts`
 
-Single `sequence()`-composed `Handle` doing, in order: Sentry init/handle, `www.` → apex redirect, favicon/static-asset reverse-proxies to `PUBLIC_CDN_BASE_URL`, section-path → hash-anchor redirects, CORS preflight handling for `/api/*`, then rate limiting for non-admin API routes. Read this file before changing any cross-cutting request behavior (redirects, CORS, rate limits) — don't duplicate this logic in individual routes.
+Single `sequence()`-composed `Handle` doing, in order: Sentry init/handle, `www.` → apex redirect, favicon/static-asset reverse-proxies to `PUBLIC_CDN_BASE_URL`, section-path → hash-anchor redirects, CORS preflight handling for `/api/*`, then rate limiting for non-admin API routes, and finally the `Content-Security-Policy` header for HTML responses (built by `src/lib/server/csp.ts`; Cloudflare Pages `_headers` only reaches static assets, never SSR pages, so security headers for pages must live here). Read this file before changing any cross-cutting request behavior (redirects, CORS, rate limits) — don't duplicate this logic in individual routes.
+
+### Markdown engine
+
+`src/lib/markdown.ts` renders posts and legal pages. Syntax reference is in README (`Markdown syntax`). `renderMarkdown` always ends with `sanitizeHtml` (`src/lib/sanitizeHtml.ts`, an allowlist that also covers the engine's own markup), so any new tag, attribute or class the engine emits must be added to that allowlist; `tests/sanitizeHtml.test.ts` fails if engine output changes under sanitizing. Stored content is migrated between syntaxes with `scripts/migrate-markdown-syntax.ts` (dry-run by default) built on `src/lib/legacyMarkdown.ts`.
 
 ### Components (`src/lib`)
 
@@ -118,3 +122,14 @@ Use `git-flow overview` to see current branch structure and `git-flow <topic> li
 **Always sign commits with `-s`/`--signoff`** (`git commit -s ...`, including on `git-flow` `feature`/`release`/`hotfix` finish operations).
 
 Commit messages must follow [Conventional Commits](https://www.conventionalcommits.org), enforced by commitlint (`commitlint.config.ts`, extending `@commitlint/config-conventional`) and gated in CI on every PR. Read the resolved rules with `bunx commitlint --print-config json`; validate a candidate message before committing with `printf '%s' "<message>" | bunx commitlint`. The `.claude/skills/committing-with-commitlint` skill covers this in detail — follow it when writing a commit message.
+
+## graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+Rules:
+
+- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).

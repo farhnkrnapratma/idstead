@@ -7,7 +7,6 @@ export const load: PageServerLoad = async () => {
   const pageData = await getLegalPage('security');
   const {html, headings} = await prepareMarkdownPage(
     pageData.content,
-    undefined,
     supabase
   );
 

@@ -1,5 +1,6 @@
 import {browser} from '$app/environment';
 import type {ViewsRange} from '$lib/components/admin/viewsRange';
+import {DEFAULT_CHART_RANGE} from '$lib/adminSettings';
 
 const STORAGE_KEY = 'admin-chart-range';
 
@@ -14,7 +15,7 @@ function isViewsRange(value: string | null): value is ViewsRange {
 }
 
 function createAdminChartRangeStore() {
-  let range = $state<ViewsRange>('30d');
+  let range = $state<ViewsRange>(DEFAULT_CHART_RANGE);
   let initialized = false;
 
   function init() {

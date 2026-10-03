@@ -1,7 +1,7 @@
 import hljs from 'highlight.js';
 import {codeBlockPrefsStore} from '../stores/codeBlockPrefsStore.svelte';
 import {readingModeStore} from '../stores/readingModeStore.svelte';
-import {getDownloadFilename} from './codeBlockExtensions';
+import {getDownloadFilename, sanitizeFilename} from './codeBlockExtensions';
 import {cn} from './cn';
 import {shortcut, type ShortcutParams} from './shortcut.svelte';
 import {focusScope} from './focusScope';
@@ -356,7 +356,7 @@ export function createCodeActionControls(
     shortcutScope
   } = options;
   const controls = document.createElement('div');
-  controls.className = 'code-action-controls flex items-center gap-1';
+  controls.className = 'code-action-controls flex shrink-0 items-center gap-1';
 
   const copyBtn = document.createElement('button');
   copyBtn.type = 'button';
@@ -646,6 +646,7 @@ export function enhanceCodeBlocks(
     const codeElement = pre.querySelector('code');
     const rawLang = getRawLanguage(codeElement?.className || '');
     const prettyLang = getPrettyLanguage(codeElement?.className || '');
+    const customFilename = sanitizeFilename(pre.dataset.filename);
     const rawCodeText =
       codeElement?.innerText || codeElement?.textContent || '';
     const isCommandBlock =
@@ -669,16 +670,29 @@ export function enhanceCodeBlocks(
       headerBar.className = HEADER_BAR_CLASS;
 
       leftSpan = document.createElement('span');
-      leftSpan.className =
-        'text-[11px] font-bold uppercase tracking-wider text-text-secondary leading-none';
-      leftSpan.innerText = prettyLang;
+      leftSpan.className = 'flex min-w-0 items-center gap-2 leading-none';
+
+      const langLabel = document.createElement('span');
+      langLabel.className =
+        'shrink-0 text-[11px] font-bold uppercase tracking-wider leading-none';
+      langLabel.textContent = prettyLang;
+      leftSpan.appendChild(langLabel);
+
+      if (customFilename) {
+        const fileLabel = document.createElement('span');
+        fileLabel.className =
+          'min-w-0 truncate text-[11px] font-medium opacity-70 leading-none';
+        fileLabel.textContent = customFilename;
+        fileLabel.title = customFilename;
+        leftSpan.appendChild(fileLabel);
+      }
       headerBar.appendChild(leftSpan);
 
       headerControlsResult = createCodeActionControls({
         getCodeText: () =>
           codeElement?.innerText || codeElement?.textContent || '',
         getDownloadFilename: () =>
-          getDownloadFilename(codeElement?.className || ''),
+          getDownloadFilename(codeElement?.className || '', customFilename),
         shouldHideLineNumbers: () => isCommandBlock,
         triggerToast,
         shortcutScope: blockScope ?? undefined
@@ -695,8 +709,10 @@ export function enhanceCodeBlocks(
     if (isInsideTabs && rawLang) {
       const langBadge = document.createElement('span');
       langBadge.className =
-        'pointer-events-none absolute top-1.5 right-3.5 z-10 text-[11px] font-mono lowercase text-text-muted/70 select-none';
-      langBadge.textContent = rawLang;
+        'pointer-events-none absolute top-1.5 right-3.5 z-10 max-w-[60%] truncate whitespace-nowrap text-[11px] font-mono lowercase text-text-muted/70 select-none';
+      langBadge.textContent =
+        customFilename ? `${customFilename} \u00b7 ${rawLang}` : rawLang;
+      langBadge.title = langBadge.textContent;
       codeContainer.appendChild(langBadge);
     }
 

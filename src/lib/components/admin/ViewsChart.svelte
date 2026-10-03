@@ -9,7 +9,9 @@
   import Chip from '../Chip.svelte';
   import LoadingState from '../LoadingState.svelte';
   import ErrorState from '../ErrorState.svelte';
+  import EmptyState from '../EmptyState.svelte';
   import {cn} from '$lib/utils/cn';
+  import {hasChartActivity} from '$lib/adminWorkspace';
   import {activityDate, activityTimestamp} from '$lib/adminActivity';
   import {adminDisplayStore} from '$lib/stores/adminDisplayStore.svelte';
   import {
@@ -64,6 +66,7 @@
   const axisLabels = $derived(
     new Map(series.map(row => [row.label, row.axisLabel]))
   );
+  const hasActivity = $derived(hasChartActivity(series.map(row => row.views)));
   const maxViews = $derived(Math.max(ceiling, ...series.map(d => d.views)));
   const tickCount = $derived(Math.min(6, series.length));
   let chartType = $state<'spline' | 'bar'>('spline');
@@ -95,41 +98,45 @@
       </p>
     </div>
     <div class="flex items-center gap-2">
-      <div
-        class="flex items-center gap-1"
-        role="group"
-        aria-label="Chart type">
-        <Chip
-          size="sm"
-          active={chartType === 'spline'}
-          onclick={() => setChartType('spline')}
-          ariaLabel="Spline chart"
-          title="Spline chart">
-          <ChartSpline class="size-3.5" />
-        </Chip>
-        <Chip
-          size="sm"
-          active={chartType === 'bar'}
-          onclick={() => setChartType('bar')}
-          ariaLabel="Bar chart"
-          title="Bar chart">
-          <ChartColumnBig class="size-3.5" />
-        </Chip>
-      </div>
-
-      {#if range && onRangeChange}
+      {#if hasActivity || isLoading || error}
         <div
-          class="flex items-center gap-1.5"
+          class="flex items-center gap-1"
           role="group"
-          aria-label="Views range">
-          {#each Object.entries(VIEWS_RANGES) as [id, config] (id)}
-            <Chip
-              size="sm"
-              active={range === id}
-              onclick={() => onRangeChange?.(id as ViewsRange)}
-              >{config.label}</Chip>
-          {/each}
+          aria-label="Chart type">
+          <Chip
+            size="sm"
+            active={chartType === 'spline'}
+            onclick={() => setChartType('spline')}
+            ariaLabel="Spline chart"
+            title="Spline chart">
+            <ChartSpline class="size-3.5" />
+          </Chip>
+          <Chip
+            size="sm"
+            active={chartType === 'bar'}
+            onclick={() => setChartType('bar')}
+            ariaLabel="Bar chart"
+            title="Bar chart">
+            <ChartColumnBig class="size-3.5" />
+          </Chip>
         </div>
+      {/if}
+
+      {#if hasActivity}
+        {#if range && onRangeChange}
+          <div
+            class="flex items-center gap-1.5"
+            role="group"
+            aria-label="Views range">
+            {#each Object.entries(VIEWS_RANGES) as [id, config] (id)}
+              <Chip
+                size="sm"
+                active={range === id}
+                onclick={() => onRangeChange?.(id as ViewsRange)}
+                >{config.label}</Chip>
+            {/each}
+          </div>
+        {/if}
       {/if}
     </div>
   </div>
@@ -143,6 +150,10 @@
       code={error}
       size="inline"
       {onRetry} />
+  {:else if !hasActivity}
+    <EmptyState
+      title="No views in this period"
+      description="There are no article views to display for the selected range." />
   {:else}
     <div
       class="h-65 w-full"

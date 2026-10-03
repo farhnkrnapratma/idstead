@@ -1,33 +1,71 @@
-import {PDFDocument, StandardFonts, rgb, PDFFont} from 'pdf-lib';
-import {env as publicEnv} from '$env/dynamic/public';
+import {
+  PDFDocument,
+  PDFHexString,
+  appendBezierCurve,
+  clip,
+  closePath,
+  endPath,
+  moveTo,
+  popGraphicsState,
+  pushGraphicsState,
+  rgb,
+  type PDFFont,
+  type PDFImage,
+  type PDFPage
+} from 'pdf-lib';
+import fontkit from '@pdf-lib/fontkit';
+
+export interface CvFontBytes {
+  sans: Uint8Array;
+  sansBold: Uint8Array;
+  sansItalic: Uint8Array;
+  serif: Uint8Array;
+  serifBold: Uint8Array;
+  mono: Uint8Array;
+}
 
 export interface AuthorProfileData {
   name: string;
-  title?: string;
-  bio?: string;
-  avatar?: string;
-  email?: string;
-  website?: string;
-  location?: string;
+  title?: string | null;
+  bio?: string | null;
+  email?: string | null;
+  website?: string | null;
+  location?: string | null;
+  avatarBytes?: Uint8Array | null;
+}
+
+export interface LinkData {
+  url: string;
 }
 
 export interface ExperienceData {
-  role: string;
+  title: string;
   company: string;
-  location?: string;
-  start_date?: string;
-  end_date?: string;
-  is_current?: boolean;
-  description?: string;
+  type?: string | null;
+  location?: string | null;
+  loc_type?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  currently_in?: boolean | null;
+  description?: string | null;
 }
 
 export interface EducationData {
   institution: string;
-  degree?: string;
-  field_of_study?: string;
-  start_date?: string;
-  end_date?: string;
-  description?: string;
+  degree?: string | null;
+  field?: string | null;
+  grade?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  currently_in?: boolean | null;
+  description?: string | null;
+}
+
+export interface ProjectData {
+  name: string;
+  url: string;
+  desc?: string | null;
+  lang?: string | null;
 }
 
 export interface SkillCategoryData {
@@ -37,503 +75,531 @@ export interface SkillCategoryData {
 
 export interface AuthorCvData {
   profile: AuthorProfileData;
+  links: LinkData[];
   experiences: ExperienceData[];
+  projects: ProjectData[];
   educations: EducationData[];
   skills: SkillCategoryData[];
 }
 
-export function sanitizePdfText(str?: string): string {
+interface Face {
+  font: PDFFont;
+  chars: Set<number>;
+}
+
+const PAGE_WIDTH = 595.28;
+const PAGE_HEIGHT = 841.89;
+const MARGIN_X = 48;
+const MARGIN_TOP = 44;
+const MARGIN_BOTTOM = 56;
+const CONTENT_WIDTH = PAGE_WIDTH - MARGIN_X * 2;
+const AVATAR_SIZE = 64;
+const AVATAR_GAP = 18;
+const GPA_THRESHOLD = 3.5;
+const PLACEHOLDER_DESCRIPTION = 'No description provided.';
+
+const INK = rgb(0.07, 0.09, 0.14);
+const BODY = rgb(0.17, 0.2, 0.26);
+const MUTED = rgb(0.4, 0.44, 0.51);
+const ACCENT = rgb(0.1, 0.2, 0.45);
+const RULE = rgb(0.83, 0.86, 0.91);
+
+const MONTHS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec'
+];
+
+const charClass = (...codes: number[]) =>
+  new RegExp(`[${String.fromCharCode(...codes)}]`, 'g');
+const DASHES = charClass(0x2013, 0x2014);
+const SINGLE_QUOTES = charClass(0x2018, 0x2019);
+const DOUBLE_QUOTES = charClass(0x201c, 0x201d);
+
+const NAMED_ENTITIES: Record<string, string> = {
+  quot: '"',
+  amp: '&',
+  lt: '<',
+  gt: '>',
+  apos: "'"
+};
+
+function decodeEntity(match: string, body: string): string {
+  if (body[0] !== '#') return NAMED_ENTITIES[body.toLowerCase()] ?? match;
+  const code =
+    body[1].toLowerCase() === 'x' ?
+      parseInt(body.slice(2), 16)
+    : parseInt(body.slice(1), 10);
+  return code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : match;
+}
+
+export function sanitizePdfText(str?: string | null): string {
   if (!str) return '';
   return str
-    .replace(/&#x2F;/gi, '/')
-    .replace(/&#39;/g, "'")
-    .replace(/&quot;/g, '"')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/[\u2013\u2014]/g, '-')
-    .replace(/\u2022/g, '*')
-    .replace(/[\u2018\u2019]/g, "'")
-    .replace(/[\u201C\u201D]/g, '"')
-    .replace(/\u00A0/g, ' ')
-    .replace(/[^\x20-\x7E\xA0-\xFF\n\r\t]/g, '');
+    .replace(/&(#x[0-9a-f]+|#\d+|quot|amp|lt|gt|apos);/gi, decodeEntity)
+    .replace(DASHES, '-')
+    .replace(SINGLE_QUOTES, "'")
+    .replace(DOUBLE_QUOTES, '"');
 }
 
-function formatDateRange(
-  start?: string,
-  end?: string,
-  isCurrent?: boolean
+function formatMonthYear(value?: string | null): string {
+  const match = value?.match(/^(\d{4})-(\d{2})/);
+  if (!match) return '';
+  return `${MONTHS[Number(match[2]) - 1] ?? ''} ${match[1]}`.trim();
+}
+
+export function formatDateRange(
+  start?: string | null,
+  end?: string | null,
+  current?: boolean | null
 ): string {
-  const formatMonthYear = (val?: string) => {
-    if (!val) return '';
-    const d = new Date(val);
-    if (isNaN(d.getTime())) return val;
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
-    ];
-    return `${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
-  };
-
-  const sStr = formatMonthYear(start);
-  const eStr = isCurrent ? 'Present' : formatMonthYear(end);
-
-  if (sStr && eStr) return `${sStr} - ${eStr}`;
-  if (sStr) return `${sStr} - Present`;
-  if (eStr) return eStr;
-  return '';
+  const from = formatMonthYear(start);
+  const to = current ? 'Present' : formatMonthYear(end);
+  if (from && to) return `${from} - ${to}`;
+  if (from) return `${from} - Present`;
+  return to;
 }
 
-function wrapText(
-  text: string,
-  font: PDFFont,
-  fontSize: number,
+export function gpaDisplay(grade?: string | null): string | null {
+  const text = sanitizePdfText(grade).trim();
+  if (!text) return null;
+  const match = text.match(/^(\d+(?:[.,]\d+)?)\s*(?:\/\s*(\d+(?:[.,]\d+)?))?$/);
+  if (!match) return text;
+  const score = parseFloat(match[1].replace(',', '.'));
+  const scale = match[2] ? parseFloat(match[2].replace(',', '.')) : 4;
+  if (!(scale > 0)) return null;
+  return (score / scale) * 4 >= GPA_THRESHOLD - 1e-9 ? text : null;
+}
+
+function displayUrl(url: string): string {
+  return url
+    .replace(/^https?:\/\/(www\.)?/i, '')
+    .replace(/^mailto:/i, '')
+    .replace(/\/+$/, '');
+}
+
+function isSafeLink(url: string): boolean {
+  return (
+    /^(https?:\/\/|mailto:)[^\s()<>\\]+$/i.test(url)
+    && ![...url].some(char => {
+      const code = char.charCodeAt(0);
+      return code < 32 || code === 127;
+    })
+  );
+}
+
+function fit(face: Face, value?: string | null): string {
+  let out = '';
+  for (const char of sanitizePdfText(value)) {
+    if (/\s/.test(char)) out += ' ';
+    else if (face.chars.has(char.codePointAt(0) as number)) out += char;
+  }
+  return out.replace(/ {2,}/g, ' ').trim();
+}
+
+function wrap(
+  face: Face,
+  value: string | null | undefined,
+  size: number,
   maxWidth: number
 ): string[] {
-  const cleanText = sanitizePdfText(text);
-  const words = cleanText.replace(/\r\n/g, '\n').split(/\s+/);
+  const words = fit(face, value).split(' ').filter(Boolean);
   const lines: string[] = [];
-  let currentLine = '';
-
+  let current = '';
   for (const word of words) {
-    const testLine = currentLine ? `${currentLine} ${word}` : word;
-    const width = font.widthOfTextAtSize(testLine, fontSize);
-    if (width <= maxWidth) {
-      currentLine = testLine;
+    const test = current ? `${current} ${word}` : word;
+    if (face.font.widthOfTextAtSize(test, size) <= maxWidth || !current) {
+      current = test;
     } else {
-      if (currentLine) lines.push(currentLine);
-      currentLine = word;
+      lines.push(current);
+      current = word;
     }
   }
-  if (currentLine) lines.push(currentLine);
+  if (current) lines.push(current);
   return lines;
+}
+
+function bulletItems(description?: string | null): string[] {
+  return (description ?? '')
+    .split(/\r?\n/)
+    .map(item => item.replace(/^\s*[-•*]\s*/, '').trim())
+    .filter(Boolean);
+}
+
+function clipCircle(page: PDFPage, cx: number, cy: number, r: number) {
+  const k = 0.5523 * r;
+  page.pushOperators(
+    pushGraphicsState(),
+    moveTo(cx + r, cy),
+    appendBezierCurve(cx + r, cy + k, cx + k, cy + r, cx, cy + r),
+    appendBezierCurve(cx - k, cy + r, cx - r, cy + k, cx - r, cy),
+    appendBezierCurve(cx - r, cy - k, cx - k, cy - r, cx, cy - r),
+    appendBezierCurve(cx + k, cy - r, cx + r, cy - k, cx + r, cy),
+    closePath(),
+    clip(),
+    endPath()
+  );
+}
+
+async function embedAvatar(
+  pdfDoc: PDFDocument,
+  bytes?: Uint8Array | null
+): Promise<PDFImage | null> {
+  if (!bytes?.length) return null;
+  try {
+    return bytes[0] === 0xff ?
+        await pdfDoc.embedJpg(bytes)
+      : await pdfDoc.embedPng(bytes);
+  } catch (error) {
+    console.warn('CV avatar could not be embedded:', error);
+    return null;
+  }
 }
 
 export async function generateCvPdfBuffer(
   data: AuthorCvData,
-  cdnBaseUrl?: string
+  fonts: CvFontBytes
 ): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.create();
-  const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-  const fontOblique = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
+  pdfDoc.registerFontkit(fontkit);
 
-  let avatarImage: any = null;
-  if (data.profile.avatar) {
-    try {
-      const avatar = data.profile.avatar.trim();
-      const isAbsolute =
-        avatar.startsWith('http://') || avatar.startsWith('https://');
-      const resolvedCdn = (
-        cdnBaseUrl
-        || publicEnv.PUBLIC_CDN_BASE_URL
-        || process.env.PUBLIC_CDN_BASE_URL
-        || ''
-      ).replace(/\/+$/, '');
+  const face = async (bytes: Uint8Array): Promise<Face> => {
+    const font = await pdfDoc.embedFont(bytes, {subset: true});
+    return {font, chars: new Set(font.getCharacterSet())};
+  };
+  const [sans, sansBold, sansItalic, serif, serifBold, mono] =
+    await Promise.all([
+      face(fonts.sans),
+      face(fonts.sansBold),
+      face(fonts.sansItalic),
+      face(fonts.serif),
+      face(fonts.serifBold),
+      face(fonts.mono)
+    ]);
+  const avatar = await embedAvatar(pdfDoc, data.profile.avatarBytes);
 
-      const avatarUrl =
-        isAbsolute ? avatar
-        : resolvedCdn ?
-          `${resolvedCdn}${avatar.startsWith('/') ? '' : '/'}${avatar}`
-        : '';
+  const name = fit(serifBold, data.profile.name) || 'Curriculum Vitae';
+  pdfDoc.setTitle(`${name} - Curriculum Vitae`);
+  pdfDoc.setAuthor(name);
+  pdfDoc.setSubject('Curriculum Vitae');
+  pdfDoc.setLanguage('en-US');
 
-      if (avatarUrl) {
-        const resp = await fetch(avatarUrl);
-        if (resp.ok) {
-          const imageBytes = await resp.arrayBuffer();
-          const uint8 = new Uint8Array(imageBytes);
-          if (uint8[0] === 0x89 && uint8[1] === 0x50) {
-            avatarImage = await pdfDoc.embedPng(imageBytes);
-          } else if (uint8[0] === 0xff && uint8[1] === 0xd8) {
-            avatarImage = await pdfDoc.embedJpg(imageBytes);
-          } else {
-            try {
-              avatarImage = await pdfDoc.embedPng(imageBytes);
-            } catch {
-              avatarImage = await pdfDoc.embedJpg(imageBytes);
-            }
-          }
-        }
-      }
-    } catch {
-      avatarImage = null;
-    }
-  }
-
-  const PAGE_WIDTH = 595.28;
-  const PAGE_HEIGHT = 841.89;
-  const MARGIN_LEFT = 45;
-  const MARGIN_RIGHT = 45;
-  const MARGIN_TOP = 45;
-  const MARGIN_BOTTOM = 45;
-  const CONTENT_WIDTH = PAGE_WIDTH - MARGIN_LEFT - MARGIN_RIGHT;
-
-  const pages: any[] = [];
+  const pages: PDFPage[] = [];
   let page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
   pages.push(page);
   let y = PAGE_HEIGHT - MARGIN_TOP;
 
-  const checkPageOverflow = (neededHeight: number) => {
-    if (y - neededHeight < MARGIN_BOTTOM) {
-      page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
-      pages.push(page);
-      y = PAGE_HEIGHT - MARGIN_TOP;
+  const ensure = (height: number) => {
+    if (y - height >= MARGIN_BOTTOM) return;
+    page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+    pages.push(page);
+    y = PAGE_HEIGHT - MARGIN_TOP;
+  };
+
+  const put = (
+    target: Face,
+    text: string,
+    x: number,
+    size: number,
+    color = BODY
+  ) => {
+    if (!text) return;
+    page.drawText(text, {x, y: y - size, size, font: target.font, color});
+  };
+
+  const putRight = (
+    target: Face,
+    text: string,
+    size: number,
+    color = MUTED
+  ) => {
+    const clean = fit(target, text);
+    if (!clean) return 0;
+    const width = target.font.widthOfTextAtSize(clean, size);
+    put(target, clean, PAGE_WIDTH - MARGIN_X - width, size, color);
+    return width;
+  };
+
+  const link = (x: number, width: number, height: number, url: string) => {
+    if (!isSafeLink(url)) return;
+    const annotation = pdfDoc.context.register(
+      pdfDoc.context.obj({
+        Type: 'Annot',
+        Subtype: 'Link',
+        Rect: [x, y - height, x + width, y + 2],
+        Border: [0, 0, 0],
+        A: {Type: 'Action', S: 'URI', URI: PDFHexString.fromText(url)}
+      })
+    );
+    page.node.addAnnot(annotation);
+  };
+
+  const paragraph = (
+    target: Face,
+    text: string | null | undefined,
+    size: number,
+    leading: number,
+    color = BODY,
+    x = MARGIN_X,
+    width = CONTENT_WIDTH
+  ) => {
+    for (const line of wrap(target, text, size, width)) {
+      ensure(leading);
+      put(target, line, x, size, color);
+      y -= leading;
     }
   };
 
-  const AVATAR_SIZE = 54;
-  const headerLeftWidth =
-    avatarImage ? CONTENT_WIDTH - AVATAR_SIZE - 18 : CONTENT_WIDTH;
+  const sectionHeader = (title: string) => {
+    ensure(48);
+    y -= 6;
+    put(sansBold, title.toUpperCase(), MARGIN_X, 9.5, ACCENT);
+    y -= 15;
+    page.drawLine({
+      start: {x: MARGIN_X, y},
+      end: {x: PAGE_WIDTH - MARGIN_X, y},
+      thickness: 0.75,
+      color: RULE
+    });
+    y -= 9;
+  };
 
-  if (avatarImage) {
-    const avatarY = y - AVATAR_SIZE;
-    page.drawImage(avatarImage, {
-      x: PAGE_WIDTH - MARGIN_RIGHT - AVATAR_SIZE,
-      y: avatarY,
+  const entryHeader = (title: string, right: string) => {
+    const rightText = fit(mono, right);
+    const rightWidth =
+      rightText ? mono.font.widthOfTextAtSize(rightText, 8.5) + 14 : 0;
+    const lines = wrap(sansBold, title, 10.5, CONTENT_WIDTH - rightWidth);
+    ensure(lines.length * 14 + 28);
+    lines.forEach((line, index) => {
+      if (index === 0) putRight(mono, rightText, 8.5);
+      put(sansBold, line, MARGIN_X, 10.5, INK);
+      y -= 14;
+    });
+  };
+
+  const bullets = (items: string[]) => {
+    for (const item of items) {
+      const lines = wrap(sans, item, 9, CONTENT_WIDTH - 14);
+      lines.forEach((line, index) => {
+        ensure(12.5);
+        if (index === 0) put(sans, fit(sans, '•'), MARGIN_X + 3, 9, MUTED);
+        put(sans, line, MARGIN_X + 14, 9);
+        y -= 12.5;
+      });
+    }
+  };
+
+  const headerWidth =
+    avatar ? CONTENT_WIDTH - AVATAR_SIZE - AVATAR_GAP : CONTENT_WIDTH;
+  const headerTop = y;
+
+  for (const line of wrap(serifBold, name, 24, headerWidth)) {
+    put(serifBold, line, MARGIN_X, 24, INK);
+    y -= 29;
+  }
+
+  const title = data.profile.title;
+  for (const line of wrap(sans, title, 11.5, headerWidth)) {
+    put(sans, line, MARGIN_X, 11.5, ACCENT);
+    y -= 16;
+  }
+  y -= 2;
+
+  const segments: {text: string; url?: string}[] = [];
+  const email = data.profile.email?.trim();
+  if (email) segments.push({text: email, url: `mailto:${email}`});
+  if (data.profile.location)
+    segments.push({text: fit(mono, data.profile.location)});
+  const website = data.profile.website?.trim();
+  if (website) segments.push({text: displayUrl(website), url: website});
+  for (const item of data.links)
+    segments.push({text: displayUrl(item.url), url: item.url});
+
+  const separator = fit(mono, ' · ');
+  const separatorWidth = mono.font.widthOfTextAtSize(`${separator}`, 8) + 6;
+  let x = MARGIN_X;
+  let firstOnLine = true;
+  for (const segment of segments) {
+    const text = fit(mono, segment.text);
+    if (!text) continue;
+    const width = mono.font.widthOfTextAtSize(text, 8);
+    if (!firstOnLine && x + separatorWidth + width > MARGIN_X + headerWidth) {
+      y -= 13;
+      x = MARGIN_X;
+      firstOnLine = true;
+    }
+    if (!firstOnLine) {
+      put(mono, '·', x + 3, 8, MUTED);
+      x += separatorWidth;
+    }
+    put(mono, text, x, 8, MUTED);
+    if (segment.url) link(x, width, 10, segment.url);
+    x += width;
+    firstOnLine = false;
+  }
+  y -= 13;
+
+  if (avatar) {
+    const cx = PAGE_WIDTH - MARGIN_X - AVATAR_SIZE / 2;
+    const cy = headerTop - AVATAR_SIZE / 2;
+    clipCircle(page, cx, cy, AVATAR_SIZE / 2);
+    page.drawImage(avatar, {
+      x: cx - AVATAR_SIZE / 2,
+      y: cy - AVATAR_SIZE / 2,
       width: AVATAR_SIZE,
       height: AVATAR_SIZE
     });
-    page.drawRectangle({
-      x: PAGE_WIDTH - MARGIN_RIGHT - AVATAR_SIZE,
-      y: avatarY,
-      width: AVATAR_SIZE,
-      height: AVATAR_SIZE,
-      borderColor: rgb(0.82, 0.85, 0.9),
-      borderWidth: 0.75
+    page.pushOperators(popGraphicsState());
+    page.drawCircle({
+      x: cx,
+      y: cy,
+      size: AVATAR_SIZE / 2,
+      borderColor: RULE,
+      borderWidth: 1
     });
+    y = Math.min(y, headerTop - AVATAR_SIZE - 6);
   }
 
-  const nameText = sanitizePdfText(data.profile.name || 'Curriculum Vitae');
-  page.drawText(nameText, {
-    x: MARGIN_LEFT,
-    y: y - 20,
-    size: 20,
-    font: fontBold,
-    color: rgb(0.09, 0.13, 0.22)
-  });
-  y -= 26;
-
-  if (data.profile.title) {
-    const titleLines = wrapText(
-      data.profile.title,
-      fontRegular,
-      11,
-      headerLeftWidth
-    );
-    for (const tl of titleLines) {
-      page.drawText(tl, {
-        x: MARGIN_LEFT,
-        y: y - 10,
-        size: 11,
-        font: fontRegular,
-        color: rgb(0.25, 0.32, 0.44)
-      });
-      y -= 14;
-    }
-  }
-
-  const contactParts: string[] = [];
-  if (data.profile.email)
-    contactParts.push(sanitizePdfText(data.profile.email));
-  if (data.profile.location)
-    contactParts.push(sanitizePdfText(data.profile.location));
-  if (data.profile.website)
-    contactParts.push(
-      sanitizePdfText(data.profile.website.replace(/^https?:\/\//, ''))
-    );
-
-  if (contactParts.length > 0) {
-    const contactLine = contactParts.join('  ·  ');
-    const contactLines = wrapText(contactLine, fontRegular, 9, headerLeftWidth);
-    for (const cl of contactLines) {
-      page.drawText(cl, {
-        x: MARGIN_LEFT,
-        y: y - 9,
-        size: 9,
-        font: fontRegular,
-        color: rgb(0.42, 0.48, 0.56)
-      });
-      y -= 13;
-    }
-  }
-
-  if (avatarImage && y > PAGE_HEIGHT - MARGIN_TOP - AVATAR_SIZE - 6) {
-    y = PAGE_HEIGHT - MARGIN_TOP - AVATAR_SIZE - 6;
-  }
-
-  y -= 6;
   page.drawLine({
-    start: {x: MARGIN_LEFT, y},
-    end: {x: PAGE_WIDTH - MARGIN_RIGHT, y},
+    start: {x: MARGIN_X, y: y - 4},
+    end: {x: PAGE_WIDTH - MARGIN_X, y: y - 4},
     thickness: 1,
-    color: rgb(0.85, 0.88, 0.93)
+    color: INK
   });
-  y -= 16;
+  y -= 14;
 
-  const drawSectionHeader = (title: string) => {
-    checkPageOverflow(32);
-    page.drawText(title.toUpperCase(), {
-      x: MARGIN_LEFT,
-      y: y - 11,
-      size: 10.5,
-      font: fontBold,
-      color: rgb(0.09, 0.13, 0.22)
-    });
-    y -= 15;
-    page.drawLine({
-      start: {x: MARGIN_LEFT, y},
-      end: {x: PAGE_WIDTH - MARGIN_RIGHT, y},
-      thickness: 0.75,
-      color: rgb(0.88, 0.9, 0.94)
-    });
-    y -= 12;
-  };
-
-  if (data.profile.bio && data.profile.bio.trim()) {
-    drawSectionHeader('Summary');
-    const bioLines = wrapText(
-      data.profile.bio.trim(),
-      fontRegular,
-      9.5,
-      CONTENT_WIDTH
-    );
-    for (const line of bioLines) {
-      checkPageOverflow(14);
-      page.drawText(line, {
-        x: MARGIN_LEFT,
-        y: y - 10,
-        size: 9.5,
-        font: fontRegular,
-        color: rgb(0.2, 0.24, 0.3)
-      });
-      y -= 13.5;
-    }
-    y -= 8;
+  if (data.profile.bio?.trim()) {
+    sectionHeader('Summary');
+    paragraph(sans, data.profile.bio, 9.5, 13.5);
+    y -= 4;
   }
 
-  if (data.experiences && data.experiences.length > 0) {
-    drawSectionHeader('Work Experience');
-
+  if (data.experiences.length > 0) {
+    sectionHeader('Experience');
     for (const exp of data.experiences) {
-      const dateStr = formatDateRange(
-        exp.start_date,
-        exp.end_date,
-        exp.is_current
+      entryHeader(
+        exp.title,
+        formatDateRange(exp.start_date, exp.end_date, exp.currently_in)
       );
-      checkPageOverflow(34);
-
-      page.drawText(sanitizePdfText(exp.role), {
-        x: MARGIN_LEFT,
-        y: y - 11,
-        size: 10.5,
-        font: fontBold,
-        color: rgb(0.1, 0.14, 0.22)
-      });
-
-      if (dateStr) {
-        const dateWidth = fontRegular.widthOfTextAtSize(dateStr, 9);
-        page.drawText(dateStr, {
-          x: PAGE_WIDTH - MARGIN_RIGHT - dateWidth,
-          y: y - 11,
-          size: 9,
-          font: fontRegular,
-          color: rgb(0.45, 0.5, 0.58)
-        });
-      }
-      y -= 15;
-
-      const compLoc = [
-        sanitizePdfText(exp.company),
-        sanitizePdfText(exp.location)
-      ]
+      const meta = [exp.company, exp.type, exp.location, exp.loc_type]
+        .map(part => fit(sansItalic, part))
         .filter(Boolean)
-        .join('  ·  ');
-      page.drawText(compLoc, {
-        x: MARGIN_LEFT,
-        y: y - 10,
-        size: 9.5,
-        font: fontOblique,
-        color: rgb(0.3, 0.38, 0.48)
-      });
-      y -= 13;
-
-      if (exp.description && exp.description.trim()) {
-        const descParagraphs = exp.description
-          .trim()
-          .split('\n')
-          .filter(Boolean);
-        for (const para of descParagraphs) {
-          const cleanPara = para.replace(/^[-•*]\s*/, '').trim();
-          const pLines = wrapText(
-            cleanPara,
-            fontRegular,
-            9,
-            CONTENT_WIDTH - 12
-          );
-          for (let i = 0; i < pLines.length; i++) {
-            checkPageOverflow(13);
-            const prefix = i === 0 ? '· ' : '  ';
-            page.drawText(`${prefix}${pLines[i]}`, {
-              x: MARGIN_LEFT + 4,
-              y: y - 9,
-              size: 9,
-              font: fontRegular,
-              color: rgb(0.22, 0.26, 0.32)
-            });
-            y -= 12.5;
-          }
-        }
-      }
+        .join(' · ');
+      paragraph(sansItalic, meta, 9.5, 13.5, MUTED);
+      y -= 2;
+      const items = bulletItems(exp.description);
+      if (items.length > 1) bullets(items);
+      else paragraph(sans, items[0], 9, 12.5);
       y -= 8;
     }
-    y -= 4;
   }
 
-  if (data.educations && data.educations.length > 0) {
-    drawSectionHeader('Education');
-
-    for (const edu of data.educations) {
-      const dateStr = formatDateRange(edu.start_date, edu.end_date);
-      checkPageOverflow(30);
-
-      const headerText = [
-        sanitizePdfText(edu.institution),
-        sanitizePdfText(edu.degree)
-      ]
-        .filter(Boolean)
-        .join('  ·  ');
-      page.drawText(headerText, {
-        x: MARGIN_LEFT,
-        y: y - 11,
-        size: 10.5,
-        font: fontBold,
-        color: rgb(0.1, 0.14, 0.22)
-      });
-
-      if (dateStr) {
-        const dateWidth = fontRegular.widthOfTextAtSize(dateStr, 9);
-        page.drawText(dateStr, {
-          x: PAGE_WIDTH - MARGIN_RIGHT - dateWidth,
-          y: y - 11,
-          size: 9,
-          font: fontRegular,
-          color: rgb(0.45, 0.5, 0.58)
-        });
-      }
-      y -= 15;
-
-      if (edu.field_of_study) {
-        page.drawText(sanitizePdfText(edu.field_of_study), {
-          x: MARGIN_LEFT,
-          y: y - 10,
-          size: 9.5,
-          font: fontOblique,
-          color: rgb(0.3, 0.38, 0.48)
-        });
-        y -= 13;
-      }
-
-      if (edu.description && edu.description.trim()) {
-        const eLines = wrapText(
-          edu.description.trim(),
-          fontRegular,
-          9,
-          CONTENT_WIDTH
+  if (data.projects.length > 0) {
+    sectionHeader('Projects');
+    for (const project of data.projects) {
+      entryHeader(project.name, project.lang ?? '');
+      const address = fit(mono, displayUrl(project.url));
+      if (address) {
+        ensure(12);
+        put(mono, address, MARGIN_X, 8, MUTED);
+        link(
+          MARGIN_X,
+          mono.font.widthOfTextAtSize(address, 8),
+          10,
+          project.url
         );
-        for (const line of eLines) {
-          checkPageOverflow(13);
-          page.drawText(line, {
-            x: MARGIN_LEFT,
-            y: y - 9,
-            size: 9,
-            font: fontRegular,
-            color: rgb(0.24, 0.28, 0.34)
-          });
-          y -= 12.5;
-        }
+        y -= 12;
       }
-      y -= 8;
+      if (project.desc && project.desc !== PLACEHOLDER_DESCRIPTION)
+        paragraph(sans, project.desc, 9, 12.5);
+      y -= 7;
     }
-    y -= 4;
   }
 
-  if (data.skills && data.skills.length > 0) {
-    drawSectionHeader('Skills & Expertise');
-
-    for (const cat of data.skills) {
-      if (!cat.items || cat.items.length === 0) continue;
-      checkPageOverflow(18);
-
-      const categoryLabel = `${sanitizePdfText(cat.category)}: `;
-      const catWidth = fontBold.widthOfTextAtSize(categoryLabel, 9.5);
-
-      page.drawText(categoryLabel, {
-        x: MARGIN_LEFT,
-        y: y - 10,
-        size: 9.5,
-        font: fontBold,
-        color: rgb(0.12, 0.18, 0.28)
-      });
-
-      const itemsStr = cat.items.map(sanitizePdfText).join(', ');
-      const itemLines = wrapText(
-        itemsStr,
-        fontRegular,
-        9.5,
-        CONTENT_WIDTH - catWidth
+  if (data.educations.length > 0) {
+    sectionHeader('Education');
+    for (const edu of data.educations) {
+      entryHeader(
+        edu.institution,
+        formatDateRange(edu.start_date, edu.end_date, edu.currently_in)
       );
+      const gpa = gpaDisplay(edu.grade);
+      const fieldRedundant =
+        !!edu.field
+        && !!edu.degree
+        && edu.degree.toLowerCase().includes(edu.field.toLowerCase());
+      const meta = [
+        edu.degree,
+        fieldRedundant ? '' : edu.field,
+        gpa ? `GPA ${gpa}` : ''
+      ]
+        .map(part => fit(sansItalic, part))
+        .filter(Boolean)
+        .join(' · ');
+      paragraph(sansItalic, meta, 9.5, 13.5, MUTED);
+      y -= 2;
+      paragraph(sans, edu.description, 9, 12.5);
+      y -= 8;
+    }
+  }
 
-      if (itemLines.length > 0) {
-        page.drawText(itemLines[0], {
-          x: MARGIN_LEFT + catWidth,
-          y: y - 10,
-          size: 9.5,
-          font: fontRegular,
-          color: rgb(0.22, 0.26, 0.32)
-        });
-        y -= 13.5;
-
-        for (let i = 1; i < itemLines.length; i++) {
-          checkPageOverflow(14);
-          page.drawText(itemLines[i], {
-            x: MARGIN_LEFT + catWidth,
-            y: y - 10,
-            size: 9.5,
-            font: fontRegular,
-            color: rgb(0.22, 0.26, 0.32)
-          });
-          y -= 13.5;
-        }
-      } else {
-        y -= 13.5;
+  const skills = data.skills.filter(category => category.items.length > 0);
+  if (skills.length > 0) {
+    sectionHeader('Skills');
+    const labelWidth = Math.min(
+      Math.max(
+        ...skills.map(category =>
+          sansBold.font.widthOfTextAtSize(
+            `${fit(sansBold, category.category)}`,
+            9
+          )
+        )
+      ) + 14,
+      CONTENT_WIDTH * 0.35
+    );
+    for (const category of skills) {
+      const labels = wrap(sansBold, category.category, 9, labelWidth - 10);
+      const items = wrap(
+        sans,
+        category.items.join(', '),
+        9,
+        CONTENT_WIDTH - labelWidth
+      );
+      const rows = Math.max(labels.length, items.length);
+      ensure(rows * 13);
+      for (let row = 0; row < rows; row++) {
+        if (labels[row]) put(sansBold, labels[row], MARGIN_X, 9, INK);
+        if (items[row]) put(sans, items[row], MARGIN_X + labelWidth, 9);
+        y -= 13;
+        if (row < rows - 1) ensure(13);
       }
       y -= 3;
     }
   }
 
-  const totalPages = pages.length;
-  for (let idx = 0; idx < totalPages; idx++) {
-    const p = pages[idx];
-    const footerText = `${nameText}  ·  Curriculum Vitae  ·  Page ${idx + 1} of ${totalPages}`;
-    const footerWidth = fontRegular.widthOfTextAtSize(footerText, 8);
-    p.drawText(footerText, {
-      x: (PAGE_WIDTH - footerWidth) / 2,
-      y: MARGIN_BOTTOM - 20,
-      size: 8,
-      font: fontRegular,
-      color: rgb(0.55, 0.6, 0.68)
+  pages.forEach((target, index) => {
+    const footer = fit(
+      sans,
+      `${name} · Curriculum Vitae · Page ${index + 1} of ${pages.length}`
+    );
+    const width = sans.font.widthOfTextAtSize(footer, 7.5);
+    target.drawText(footer, {
+      x: (PAGE_WIDTH - width) / 2,
+      y: MARGIN_BOTTOM - 26,
+      size: 7.5,
+      font: sans.font,
+      color: MUTED
     });
-  }
+  });
 
   return await pdfDoc.save();
 }

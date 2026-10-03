@@ -3,7 +3,6 @@ import type {RequestHandler} from './$types';
 import {apiError} from '$lib/server/apiError';
 import {isSameOriginRequest} from '$lib/server/sameOrigin';
 import {requireAdminAuth} from '$lib/server/adminCv';
-import {extractPostConfig} from '$lib/markdown';
 import {extractDefineBlock} from '$lib/define';
 import {
   isAiBindingAvailable,
@@ -50,8 +49,7 @@ export const POST: RequestHandler = async ({request, url, platform}) => {
     );
   }
 
-  const {body: markdown} = extractPostConfig(rawMarkdown);
-  const {body: markdownForSummary} = extractDefineBlock(markdown);
+  const {body: markdownForSummary} = extractDefineBlock(rawMarkdown);
 
   const ai = (platform as unknown as {env?: {AI?: unknown}})?.env?.AI;
   if (!isAiBindingAvailable(ai)) {

@@ -84,13 +84,20 @@ export function formatCount(value: number) {
   return new Intl.NumberFormat('en-US').format(value);
 }
 export function helpfulPercent(yes: number, no: number) {
-  return yes + no ? `${Math.round((yes / (yes + no)) * 100)}%` : 'No feedback';
+  return yes + no ? `${Math.round((yes / (yes + no)) * 100)}%` : '0%';
 }
 export function majorityPercent(yes: number, no: number) {
-  if (!(yes + no)) return 'No feedback';
+  if (!(yes + no)) return '0%';
   const helpfulMajority = yes >= no;
   const percent = Math.round(((helpfulMajority ? yes : no) / (yes + no)) * 100);
   return `${percent}% ${helpfulMajority ? 'helpful' : 'unhelpful'}`;
+}
+
+export function hasChartActivity(values: readonly number[]) {
+  return values.some(value => value > 0);
+}
+export function shouldShowDataControls(total: number, filtersActive: boolean) {
+  return total > 0 || filtersActive;
 }
 
 export interface WorkspaceCalendar {

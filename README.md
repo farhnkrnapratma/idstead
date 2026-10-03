@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://fkp.my.id/">
-    <img src="https://cdn.fkp.my.id/android-chrome-512x512.png" alt="Farhan Kurnia Pratama" width="200" height="200">
+    <img src="https://fkp.my.id/android-chrome-512x512.png" alt="Farhan Kurnia Pratama" width="200" height="200">
   </a>
 </p>
 <h1 align="center">Farhan Kurnia Pratama</h1>
@@ -109,64 +109,14 @@ bun run preview
 
 ### Code Quality Checks
 
-If you want to make sure your code is clean and that no line is unused or violates the linting rules, run these three commands:
+If you want to make sure your code is clean, properly formatted, and passes all checks:
 
 ```sh
 bun run format
 bun run lint
 bun run check
+bun run test
 ```
-
-Run `bun run test` for regression tests covering identity, banners, post saves, feedback, notifications, validation, translations, reading time, shortcuts, and API contracts. Database tests use disposable in-memory PGlite databases and never connect to Supabase. CI runs tests, type checking, linting, and a production build.
-
-The admin dashboard uses Overview plus dedicated Reports, Feedback, and Notifications workspaces. Apply `supabase/migrations/20260913144335_scalable_admin_workspace.sql` after the existing activity migrations before deploying this UI. It adds service-role-only read/group-action RPCs and indexes; the public API and view-recording policy remain unchanged. Test migrations against an isolated database first. Index creation on populated tables can block writes, so schedule the production migration accordingly.
-
-Workspace lists and event histories load 20 records at a time using cursors tied to the filter and arrival cutoff. The bell previews five groups. Reports aggregate per comment; feedback aggregates per page before pagination; notifications group by category, target, response, and calendar day in the selected time zone. New activity updates the unread summary and offers a refresh without moving the current results. Group deletion affects the displayed period and cutoff; clearing notifications preserves reports and feedback. Comments in Posts also load in pages, and deleting a parent removes its unloaded descendants.
-
-Analytics default to seven calendar days and support up to one calendar year, including custom dates. Cards and zero-filled hourly/daily charts share the same half-open time interval. Current open-report and published-post counts are labeled separately. “Recorded reads” preserves the existing article/IP-hash deduplication policy and does not represent unique people. Chart data remains available in a table. Browser navigation retains workspace filters and selection. The interaction follows NN/g guidance on [progressive disclosure](https://www.nngroup.com/articles/progressive-disclosure/), [complex applications](https://www.nngroup.com/articles/complex-application-design/), and [explicit empty states](https://www.nngroup.com/articles/empty-state-interface-design/).
-
-`tests/admin-workspace.test.ts` covers aggregation, cursor boundaries, Unicode, authorization, time zones/DST, group-action scope, resolved notification context, and deletion of unloaded comment descendants. Browser and scale-test artifacts belong in ignored local development archives. Local benchmark timing is diagnostic; validate latency against the deployed database and representative traffic before setting an operational latency target.
-
-The optional concurrency suite uses PostgreSQL 17 in a disposable Docker container named `www-admin-activity-test`, with database and user `postgres`. Start a fresh container with `docker run --rm -d --name www-admin-activity-test -e POSTGRES_PASSWORD=fixture postgres:17-alpine`, wait for `docker exec www-admin-activity-test pg_isready -U postgres`, then run `ACTIVITY_POSTGRES_TEST=1 bun test tests/admin-activity-concurrency.test.ts`. Override the container name with `ACTIVITY_POSTGRES_CONTAINER` when running simultaneous isolated suites. Stop the container afterwards. These tests create their own roles and schema; never point them at a shared database.
-
-Build tooling lives in `tooling/vite`; the WebP plugin emits the decoder WASM required by the Cloudflare worker. `tooling/git-hooks` contains the secret-scan hook installed by `bun install`. Operational migration scripts remain in `scripts` until Production cutover is complete.
-
-Generated knowledge graphs, agent observations, and local development archives are ignored by Git. Keep permanent regression tests and their fixtures under `tests`; keep session reports and manual browser harnesses local. Graphify can still query and update the local graph.
-
-### Admin passwords
-
-New admin passwords accept 15–64 Unicode code points without required character classes. Spaces, paste, autofill, and password managers are supported; passwords are never trimmed or silently truncated. Supabase Auth also imposes a 72-byte UTF-8 limit, reported explicitly for multi-byte input. The form uses one column with a maximum width of 32rem. Current and New password have independent Show/Hide controls. Validation appears only after blur or submission when input does not meet the policy, with no persistent checklist or strength indicator. Correcting a field clears its error immediately. Clearing New password clears its confirmation, which always stays masked.
-
-The Generate password button below New password supports random passwords (15–64 characters, default 24) and English passphrases (8–10 words, default 8). Random passwords always contain lowercase letters and each enabled uppercase, number, or symbol group. Passphrases use all 1,296 entries of EFF Short Wordlist #1, with optional capitalization, spaces/hyphens/periods, and an independently random digit after each word. See [word-list attribution](src/lib/data/password-words.LICENSE.md). Generation uses cryptographic randomness with rejection sampling; all results meet the password policy. Candidates exceeding the maximum length are regenerated as a whole, never truncated. Previewing and regenerating do not overwrite the form. Copy and close copies the selected password, fills both new-password fields, masks them, and closes the dialog. Clipboard failures keep the dialog open and preserve the form. No generated password is persisted.
-
-`POST /api/internal/admin/password` requires an authenticated admin, the appropriate MFA assurance level, a same-origin request, bounded input, and rate limiting. Accepted requests reach Supabase Auth using the user's access token and current password. Passwords are excluded from activity logs and request bodies are excluded from server error telemetry. Breach/blocklist checks are intentionally disabled, so this policy does not claim full NIST compliance.
-
-The shared Supabase Auth settings are minimum length **15**, required character classes **none**, current-password verification **enabled**, reauthentication **enabled**, and leaked-password protection **disabled**. Verify these hosted settings separately when configuring another deployment; source changes do not apply them. Existing passwords remain valid for sign-in. The application imposes its own maximum length; direct Auth requests are governed by the provider's limits.
-
-### Mailing commands
-
-The command palette accepts `/mailing subscribe <email>` and `/mailing unsubscribe <email>`. Omitting the email opens an email form. Both actions require Turnstile verification and email confirmation; an unsubscribe request sends a confirmation link without changing the subscription. Mailing commands containing email addresses are excluded from search history.
-
-The Subscribe button also supports `Ctrl+Space`, then `Shift+H`. An empty or invalid email focuses the field and shows its validation message. `POST /api/internal/subscribe/unsubscribe-request` is a first-party endpoint using the existing Supabase subscribers and Resend configuration; no new migration or public API change is required.
-
-### Production cutover and asset cleanup
-
-Application deployment and legacy source deletion are deferred. Preview and Production share Supabase and the R2 bucket, so writes from either tier affect the same data. Required server configuration includes `SUPABASE_SERVICE_ROLE_KEY`, private `IP_SALT`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, and `R2_BUCKET_NAME`, alongside the public Supabase settings. Retain `PUBLIC_CDN_BASE_URL` while the legacy identity fallback is needed. Never commit credentials.
-
-The additive identity, banner, dashboard, and feedback migrations are retained in `supabase/migrations`. Identity assets, banner versions, and both page-feedback migrations have been applied to the shared project. Before rollout, compare the recorded migration history with the intended changes, including the partial-profile migration; older local and remote timestamps differ. Apply only verified missing migrations, preserving previously applied SQL and history. Do not use a bulk push or history repair to reconcile unrelated differences.
-
-Keep the legacy `record_post_feedback` RPC available while older Production callers use it. Its article writes feed the same event ledger and rolling 24-hour quota as the server handler. Revoke browser-role execution only in a separate cutover migration after all callers have moved to the server endpoint. Feedback requires the private IP secret; it has no public-salt fallback.
-
-Preserve `.local/blog-banner-migration/` with its resumable manifest, original sources, checksums, and reference inventory. The shared environment already has staged and activated banner versions; legacy source objects are retained. The operational script supports these steps for a new environment or a verified pending migration:
-
-1. Run `bun scripts/migrate-blog-banners.ts inventory` to save the source/reference snapshot. Start a local server and run its `prepare` mode with `PLAYWRIGHT_MODULE` pointing to an installed Playwright module and `BANNER_TEST_ORIGIN` pointing to that server. Preparation uses the application's image worker and permits legacy-image upscaling only during migration.
-2. Run `verify`, then `stage` and `activate` after the additive schema is available. Activation verifies staged objects and commits banner references atomically while retaining legacy paths. Reconcile content changes before proceeding; do not overwrite an activated manifest.
-3. After authorized deployment, verify the editor, admin list, articles, related posts, social metadata, avatar, and manifest/icon aliases. Run `BANNER_PRODUCTION_ORIGIN=https://<production-origin> bun scripts/migrate-blog-banners.ts verify-production`.
-4. Only after Production verification, use the same command with `cleanup-sources`. It verifies again and removes only migrated source objects recorded in the manifest, checking references and checksums. Unrelated Markdown, inline images, CVs, and identity assets remain excluded.
-
-For legacy identity assets, `bun scripts/cleanup-legacy-identity.ts` is an offline dry run. After Production verification, its `--delete --origin=https://<production-origin>` mode verifies the application aliases and deletes only the explicit legacy root-key list. It never deletes prefixes, CVs, or versioned identity objects.
-
-Rollback the application while retaining the additive schema, active objects, feedback history, and legacy sources. Do not restore the old lifetime feedback uniqueness constraint or delete current asset versions. Legacy source cleanup is a separate post-deployment operation; retain its scripts until that operation is complete.
 
 ## Public API
 
@@ -193,20 +143,90 @@ Found a security issue? Please don't open a public issue — see [`SECURITY.md`]
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
-## Article references
+## Markdown syntax
+
+Posts and legal pages share one Markdown engine (`src/lib/markdown.ts`) built on `marked`, with MDX-flavoured directives. Directives open with `:::name`, close with a bare `:::`, take `key="value"` attributes separated by spaces (no braces), and can be nested. Attribute values are always HTML-escaped. Anything the engine does not recognise is left as literal text.
+
+```text
+[Link](https://example.com "Optional title")
+![Alt text](/blog/content/<hash>.webp "Optional title")
+![Clip](/blog/content/<hash>.mp4 "Optional title")
+```
+
+`.mp4` and `.webm` sources render as `<video>`, every other source as `<img>`.
+
+````text
+```python filename="main.py" mark=3,5,6..8
+print("Hello, World!")
+```
+````
+
+`filename` and `mark` are optional. `filename` is shown next to the language name and becomes the downloaded file name. `mark` highlights lines; ranges use `..`.
+
+```text
+:::note
+:::tip
+:::important
+:::warning
+:::caution
+
+:::callout title="Changelog" icon="rocket"
+Custom callout. `title` is required, `icon` is optional.
+:::
+
+:::details summary="Click to expand"
+Collapsible content.
+:::
+
+:::tabs
+::tab label="One" icon="zap"
+Any Markdown.
+::
+::tab label="Two"
+More Markdown.
+::
+:::
+
+:::snippets key="pm"
+::tab label="bun" icon="terminal"
+Code blocks. The optional `key` keeps every snippet group with the same key on the same tab.
+::
+:::
+
+:::steps
+1. First
+2. Second
+:::
+
+:::embed url="https://youtu.be/VIDEO_ID"
+```
+
+Icons accept Lucide and Bootstrap Icons names. Without a prefix Lucide is tried first, then Bootstrap Icons; use `icon="lucide-rocket"` or `icon="bi-facebook"` to pick a library. Unknown names render no icon. `:::embed` supports YouTube and CodePen and falls back to a plain link.
+
+```text
+Inline math: $$ e^{i\pi} + 1 = 0 $$
+
+:::math
+\int_{-\infty}^{\infty} e^{-x^2} \, dx = \sqrt{\pi}
+:::
+```
+
+Math is rendered with KaTeX on the server. A single `$` is plain text.
+
+Containers and `:::math` also work inside list items (`-`, `*`, `1.` with the content indented under the marker, up to three spaces) and blockquotes (`> :::note`). Nested lists are not supported.
+
+All rendered HTML passes through an allowlist sanitizer (`src/lib/sanitizeHtml.ts`): scripts, event handlers, unknown tags, foreign iframes and `javascript:` URLs are removed, whether they come from an author or from an AI translation. Raw `kbd`, `sub`, `sup`, `u`, `mark`, `details` and `br` still work.
+
+### Article references
 
 Use a single references directive to place a bibliography and automatically add a visible `References` heading to the article and its table of contents:
 
-```markdown
+```text
 A statement with a source[^source].
 
 :::references
-
-[^source]: Source description with a [link](https://example.com). :::
+[^source]: Source description with a [link](https://example.com).
+:::
 ```
 
-Footnote numbering and links back to each citation work across the document. Existing Markdown footnotes remain supported; their hidden accessibility heading is excluded from the table of contents. Unclosed or duplicate references blocks display a validation message in the editor preview.
-
-The admin Overview calendar shows daily article views for the current calendar year in the selected time zone, independently of the Period selector. Feedback details show the selected period's helpful/unhelpful distribution. Notifications display individual events, with a blue background and unread marker until read. Admin activity lists and comment sections paginate at up to 20 items.
-
-Apply `20260914062855_admin_calendar_notification_events.sql` after the preceding workspace migrations before deploying these admin changes. It replaces the internal workspace query, adds daily calendar aggregation, and retains service-role-only execution permissions.
+Footnote numbering and links back to each citation work across the document. Existing Markdown footnotes remain supported; their hidden accessibility heading is excluded from the table of contents. Unclosed or duplicate references blocks display a validation message in the editor preview. Put a blank line before the closing `:::`, otherwise Markdown formatters treat it as part of the last footnote.

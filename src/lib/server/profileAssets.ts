@@ -108,6 +108,26 @@ export async function cleanupAssets(platform?: Pick<App.Platform, 'env'>) {
   return data?.length ?? 0;
 }
 
+export async function readAvatarBytes(
+  platform: Pick<App.Platform, 'env'> | undefined,
+  version?: string | null
+): Promise<Uint8Array | null> {
+  if (!version || !/^[0-9a-f-]{36}$/i.test(version)) return null;
+  try {
+    const {bucket, client} = assetStorage(platform);
+    const object = await client.send(
+      new GetObjectCommand({
+        Bucket: bucket,
+        Key: `identity/${version}/avatar.png`
+      })
+    );
+    return object.Body ? await object.Body.transformToByteArray() : null;
+  } catch (error) {
+    console.warn('Avatar could not be read for CV generation:', error);
+    return null;
+  }
+}
+
 export async function serveIdentityAsset(
   request: Request,
   url: URL,

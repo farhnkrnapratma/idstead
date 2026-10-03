@@ -17,7 +17,13 @@
   import {onMount, onDestroy, tick, untrack} from 'svelte';
   import {fade} from 'svelte/transition';
   import {SvelteSet} from 'svelte/reactivity';
-  import {Mail, Image as ImageIcon, BookOpenText} from '@lucide/svelte';
+  import {
+    Mail,
+    Image as ImageIcon,
+    BookOpenText,
+    Pin,
+    Sparkles
+  } from '@lucide/svelte';
   import type {PageProps} from './$types';
   import type {BlogComment} from './+page.server';
   import hljs from 'highlight.js';
@@ -26,6 +32,7 @@
     extractAuthorNameTokens
   } from '$lib/utils/nameValidator';
   import {enhanceMarkdownContent} from '$lib/utils/markdownEnhancer';
+  import {enhanceHeadingAnchors} from '$lib/utils/headingAnchors';
   import {refreshCodeBlockPrefs} from '$lib/utils/codeBlocks';
   import {cn} from '$lib/utils/cn';
   import 'katex/dist/katex.min.css';
@@ -39,6 +46,8 @@
     TopNav,
     Button,
     Card,
+    Tag,
+    decodeHtmlEntities,
     Checkbox,
     ImageWithSkeleton,
     CommentThread,
@@ -96,6 +105,14 @@
     return lang === 'en' ?
         `/blog/${post.slug}`
       : `/blog/${post.slug}?lang=${lang}`;
+  }
+
+  const NEW_ITEM_WINDOW_MS = 24 * 60 * 60 * 1000;
+  function isPostNew(postItem: {created_at?: string | null}) {
+    if (!postItem.created_at) return false;
+    return (
+      Date.now() - new Date(postItem.created_at).getTime() < NEW_ITEM_WINDOW_MS
+    );
   }
 
   function copyToClipboard() {
@@ -327,100 +344,16 @@
           hljs.highlightElement(block as HTMLElement);
         });
         enhanceMarkdownContent({container, isDark, onCodeCopy: triggerToast});
-        const elements = Array.from(
-          container.querySelectorAll('h1, h2, h3, h4, h5, h6')
-        ).filter(
-          el =>
-            !el.closest('.markdown-chart-container')
-            && !el.closest('.mermaid-block')
-        ) as HTMLElement[];
-        if (elements.length === 0) return;
-
-        elements.forEach(el => {
-          el.classList.add('group', 'scroll-mt-20', 'cursor-pointer');
-
-          const existingAnchor = el.querySelector('.anchor-link');
-          if (existingAnchor) {
-            existingAnchor.remove();
+        enhanceHeadingAnchors(container, async el => {
+          const url = `${window.location.origin}${window.location.pathname}#${el.id}`;
+          try {
+            await navigator.clipboard.writeText(url);
+            triggerToast('Link copied to clipboard');
+          } catch (err) {
+            void err;
           }
-
-          let headingText = el.querySelector(
-            '.heading-text'
-          ) as HTMLElement | null;
-          if (!headingText) {
-            headingText = document.createElement('span');
-            headingText.className = 'heading-text';
-            while (el.firstChild) {
-              headingText.appendChild(el.firstChild);
-            }
-            el.appendChild(headingText);
-          }
-
-          const anchor = document.createElement('a');
-          anchor.href = `#${el.id}`;
-          anchor.className = 'anchor-link select-none';
-          anchor.tabIndex = -1;
-          anchor.innerHTML =
-            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link-2 size-[0.75em] leading-none inline-block align-middle select-none opacity-0" aria-hidden="true"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" x2="16" y1="12" y2="12"/></svg>';
-
-          const walker = document.createTreeWalker(
-            headingText,
-            NodeFilter.SHOW_TEXT
-          );
-          let lastTextNode: Text | null = null;
-          let node: Node | null;
-          while ((node = walker.nextNode())) {
-            if (node.nodeValue && node.nodeValue.trim().length > 0) {
-              lastTextNode = node as Text;
-            }
-          }
-
-          if (lastTextNode && lastTextNode.nodeValue) {
-            const val = lastTextNode.nodeValue;
-            const match = val.match(/^(.*?)(\s+)?(\S+)(\s*)$/);
-            if (match) {
-              const [, before, space, lastWord, trailingSpace] = match;
-              const wrapSpan = document.createElement('span');
-              wrapSpan.className = 'whitespace-nowrap';
-              wrapSpan.textContent = lastWord;
-              wrapSpan.appendChild(anchor);
-
-              const parent = lastTextNode.parentNode;
-              if (parent) {
-                if (before) {
-                  parent.insertBefore(
-                    document.createTextNode(before + (space || '')),
-                    lastTextNode
-                  );
-                }
-                parent.insertBefore(wrapSpan, lastTextNode);
-                if (trailingSpace) {
-                  parent.insertBefore(
-                    document.createTextNode(trailingSpace),
-                    lastTextNode
-                  );
-                }
-                parent.removeChild(lastTextNode);
-              }
-            } else {
-              headingText.appendChild(anchor);
-            }
-          } else {
-            headingText.appendChild(anchor);
-          }
-
-          el.onclick = async e => {
-            e.preventDefault();
-            const url = `${window.location.origin}${window.location.pathname}#${el.id}`;
-            try {
-              await navigator.clipboard.writeText(url);
-              triggerToast('Link copied to clipboard');
-            } catch (err) {
-              void err;
-            }
-            pushState(`#${el.id}`, {});
-            scrollToTarget(el.id, true);
-          };
+          pushState(`#${el.id}`, {});
+          scrollToTarget(el.id, true);
         });
       }
     });
@@ -1067,33 +1000,57 @@
                 {@const relatedScope = `related-${related.id}`}
                 <div use:focusScope={relatedScope}>
                   <Card
-                    class="relative flex flex-col gap-3.5 p-4 text-left sm:flex-row sm:gap-4">
+                    density="none"
+                    class="relative flex flex-col border-0! text-left dark:border-0!">
                     <div
-                      class="aspect-video w-full shrink-0 overflow-hidden rounded-md border border-border-subtle sm:w-48 md:w-56">
+                      class="relative aspect-2/1 w-full shrink-0 overflow-hidden rounded-t-md">
                       {#if related.bannerPublicUrl && !failedRelatedBanners.has(related.id)}
                         <ImageWithSkeleton
                           src={related.bannerPublicUrl}
                           alt={blogBannerAlt(related.title, related.excerpt)}
-                          aspectRatio="aspect-video"
+                          rounded=""
                           onerror={() => markRelatedBannerFailed(related.id)}
                           class="h-full w-full object-cover" />
                       {:else}
                         <div
                           class="relative flex h-full w-full items-center justify-center overflow-hidden bg-linear-to-br from-accent/15 to-accent/5 select-none">
-                          <ImageIcon class="size-8 text-text-muted" />
+                          <ImageIcon class="size-10 text-text-muted" />
                         </div>
                       {/if}
                     </div>
 
                     <div
-                      class="flex min-w-0 flex-1 flex-col justify-between gap-2.5 font-sans">
-                      <div class="flex flex-col gap-1">
+                      class="flex min-w-0 flex-1 flex-col justify-between gap-2 p-3 font-sans sm:gap-2.5 sm:p-4">
+                      <div class="flex flex-col gap-1.5 sm:gap-2">
                         <div>
                           <h4
-                            class="line-clamp-2 text-lg leading-snug font-bold text-text-primary">
+                            style="view-transition-name: post-title-{related.slug}"
+                            class="line-clamp-2 text-xl leading-snug font-bold text-text-primary">
                             {related.title}
+                            {#if related.pinned || isPostNew(related)}
+                              <span
+                                class="inline-flex items-center gap-1 align-middle select-none">
+                                {#if related.pinned}
+                                  <span
+                                    class="inline-flex size-4.5 items-center justify-center rounded-full bg-success-subtle text-success"
+                                    title="Pinned post"
+                                    aria-label="Pinned post">
+                                    <Pin class="size-3 shrink-0" />
+                                  </span>
+                                {/if}
+                                {#if isPostNew(related)}
+                                  <span
+                                    class="inline-flex size-4.5 items-center justify-center rounded-full bg-security-subtle text-security"
+                                    title="New post"
+                                    aria-label="New post">
+                                    <Sparkles class="size-3 shrink-0" />
+                                  </span>
+                                {/if}
+                              </span>
+                            {/if}
                           </h4>
                         </div>
+
                         <ArticleMeta
                           size="xs"
                           layout="single"
@@ -1103,6 +1060,7 @@
                           readingTime={formatReadTime(related.read_time)}
                           commentsCount={related.comment_count}
                           views={related.views_count} />
+
                         {#if related.excerpt}
                           {@const isExpanded = expandedExcerptIds.has(
                             related.id
@@ -1114,46 +1072,56 @@
                             <p
                               {@attach !isExpanded
                                 && observeExcerptOverflow(related.id)}
-                              class="text-xs leading-relaxed text-text-secondary {(
+                              class="text-xs leading-relaxed text-text-secondary sm:text-sm {(
                                 isExpanded
                               ) ?
                                 ''
                               : 'line-clamp-2'}">
                               {related.excerpt}
                               {#if isOverflowing && isExpanded}
-                                <button
-                                  type="button"
+                                <Button
+                                  type="ghost"
+                                  size="2xs"
+                                  htmlType="button"
                                   onclick={() => toggleExcerpt(related.id)}
-                                  use:shortcut={{
-                                    combo: 'E',
-                                    scope: relatedScope,
-                                    label: 'Show less'
-                                  }}
-                                  class="relative ml-1 inline cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none sm:text-sm">
+                                  keyboardShortcut="E"
+                                  shortcutLabel="Show less"
+                                  class="relative inline-flex h-auto! min-h-0! p-0! text-xs font-normal whitespace-nowrap text-security! underline hover:opacity-80 focus-visible:outline-none">
                                   Show less
-                                </button>
+                                </Button>
                               {/if}
                             </p>
                             {#if isOverflowing && !isExpanded}
-                              <button
-                                type="button"
+                              <Button
+                                type="ghost"
+                                size="2xs"
+                                htmlType="button"
                                 onclick={() => toggleExcerpt(related.id)}
-                                use:shortcut={{
-                                  combo: 'E',
-                                  scope: relatedScope,
-                                  label: 'Show more'
-                                }}
-                                class="relative inline-flex cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
+                                keyboardShortcut="E"
+                                shortcutLabel="Show more"
+                                class="relative inline-flex h-auto! min-h-0! p-0! text-xs font-normal whitespace-nowrap text-security! underline hover:opacity-80 focus-visible:outline-none">
                                 Show more
-                              </button>
+                              </Button>
                             {/if}
+                          </div>
+                        {/if}
+
+                        {#if related.tags && related.tags.length > 0}
+                          <div
+                            class="relative z-20 flex flex-wrap items-center gap-1.5 pt-0.5">
+                            {#each related.tags as tag (tag)}
+                              <Tag
+                                variant="accent"
+                                class="font-mono"
+                                >{decodeHtmlEntities(tag)}</Tag>
+                            {/each}
                           </div>
                         {/if}
                       </div>
 
                       <div
                         class="relative z-20 mt-auto flex flex-col gap-2 pt-1">
-                        <hr class="border-border-subtle/50" />
+                        <hr class="border-border-subtle/25" />
                         <Button
                           href="/blog/{related.slug}"
                           type="primary"

@@ -7,6 +7,7 @@ import {assetNames, serveIdentityAsset} from '$lib/server/profileAssets';
 import {publicResponse} from '$lib/server/publicResponse';
 import {createAuthClient, safeGetSession} from '$lib/server/supabaseAuth';
 import {privateRequestIntegrations} from '$lib/server/sentryPrivacy';
+import {buildContentSecurityPolicy} from '$lib/server/csp';
 
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const MAX_REQUESTS_PER_WINDOW = 60;
@@ -308,6 +309,17 @@ export const handle: Handle = sequence(
     const preview =
       publicEnv.PUBLIC_SENTRY_ENVIRONMENT === 'preview'
       || event.url.hostname.endsWith('.pages.dev');
+    if (contentType.includes('text/html')) {
+      response.headers.set(
+        'Content-Security-Policy',
+        buildContentSecurityPolicy({
+          supabaseUrl: publicEnv.PUBLIC_SUPABASE_URL,
+          sentryDsn: publicEnv.PUBLIC_SENTRY_DSN,
+          cdnBaseUrl: publicEnv.PUBLIC_CDN_BASE_URL,
+          dev
+        })
+      );
+    }
     if (privatePage || preview)
       response.headers.set('X-Robots-Tag', 'noindex, nofollow');
     if (privatePage || response.status >= 400)

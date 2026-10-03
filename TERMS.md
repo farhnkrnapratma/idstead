@@ -63,7 +63,7 @@ Comments and replies are subject to the following controls before publication:
 - Comment bodies may not contain hyperlinks of any form.
 - The display name and body are evaluated by an automated content-safety model, Llama Guard 3, operated on Cloudflare Workers AI.
 
-> [!IMPORTANT] Publication decisions for comments are **fully automated**. A comment is published if, and only if, the automated safety evaluation returns a favourable verdict; there is no human review queue before publication. A comment held back by that evaluation is stored but is never displayed and is never returned by the Public API.
+:::important Publication decisions for comments are **fully automated**. A comment is published if, and only if, the automated safety evaluation returns a favourable verdict; there is no human review queue before publication. A comment held back by that evaluation is stored but is never displayed and is never returned by the Public API. :::
 
 If the automated moderation service is unavailable, the Submission is rejected with the error code `BLOG_COMMENT_MODERATION_UNAVAILABLE`. We do not fall back to publishing unmoderated material.
 

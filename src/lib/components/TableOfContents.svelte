@@ -1,5 +1,6 @@
 <script lang="ts">
   import {pushState} from '$app/navigation';
+  import {sanitizeHtml} from '$lib/sanitizeHtml';
   import {onMount} from 'svelte';
   import {
     TableOfContents as TableOfContentsIcon,
@@ -228,7 +229,7 @@
 
     result = result.replace(/\*([^*]+)\*/g, '<em>$1</em>');
 
-    return result;
+    return sanitizeHtml(result);
   }
 </script>
 

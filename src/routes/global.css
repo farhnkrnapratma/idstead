@@ -790,6 +790,14 @@ select {
     @apply my-8 h-px border-0 bg-border-subtle;
   }
 
+  .prose-custom img {
+    @apply h-auto max-w-full rounded-md;
+  }
+
+  .prose-custom video {
+    @apply my-6 h-auto w-full max-w-full rounded-md;
+  }
+
   .prose-custom .markdown-alert {
     @apply my-6 rounded-md border p-4 text-xs transition-colors duration-200 sm:text-sm;
   }

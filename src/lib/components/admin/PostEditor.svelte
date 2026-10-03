@@ -560,7 +560,7 @@
             const translation = await response.json();
             if (
               !response.ok
-              || (!translation.stored && !translation.skipped)
+              || !translation.stored
               || (translation.stored
                 && (!translation.bodyTranslated
                   || !translation.titleTranslated

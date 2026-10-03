@@ -78,7 +78,9 @@ Rules, in order of priority:
 export function prepareSummaryInput(markdown: string): string {
   return markdown
     .replace(/^---[\s\S]*?---/, '')
-    .replace(/```[\s\S]*?```/g, '')
+    .replace(/(`{3,}|~{3,})[\s\S]*?\1/g, '')
+    .replace(/^[ \t]*:::math[ \t]*\n[\s\S]*?\n[ \t]*:::[ \t]*$/gim, '')
+    .replace(/^[ \t]*:{2,}(?:[a-zA-Z][^\n]*)?$/gm, '')
     .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
     .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
     .replace(/\s+/g, ' ')

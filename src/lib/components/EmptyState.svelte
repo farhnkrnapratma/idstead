@@ -1,6 +1,6 @@
 <script lang="ts">
   import type {Snippet} from 'svelte';
-  import {Inbox} from '@lucide/svelte';
+  import {Ghost} from '@lucide/svelte';
   import {cn} from '../utils/cn';
 
   interface Props {
@@ -29,7 +29,7 @@
     {#if icon}
       {@render icon()}
     {:else}
-      <Inbox class="size-7" />
+      <Ghost class="size-7" />
     {/if}
   </div>
   <h3 class="text-sm font-bold text-text-primary">{title}</h3>

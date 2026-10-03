@@ -30,6 +30,8 @@ export interface RelatedPost {
   read_time: string;
   comment_count: number;
   views_count: number;
+  tags?: string[];
+  pinned?: boolean;
 }
 
 function getRelatedWindow<T extends {id: string}>(
@@ -85,11 +87,7 @@ export const load: PageServerLoad = async ({params, url, fetch, locals}) => {
     }
     const markdown = await fileRes.text();
     readTime = estimateReadTime(markdown);
-    const rawHtml = await renderMarkdown(
-      markdown,
-      translation.language,
-      supabase
-    );
+    const rawHtml = await renderMarkdown(markdown, supabase);
     html = injectHeadingIds(rawHtml);
   } catch (err) {
     console.error('Error fetching/rendering markdown file:', err);
@@ -147,7 +145,7 @@ export const load: PageServerLoad = async ({params, url, fetch, locals}) => {
     const {data, error: relatedError} = await supabase
       .from('db_posts')
       .select(
-        'id, title, slug, excerpt, created_at, updated_at, banner_version, storage_path'
+        'id, title, slug, excerpt, created_at, updated_at, banner_version, storage_path, tags, pinned'
       )
       .eq('published', true)
       .order('created_at', {ascending: false});
@@ -156,7 +154,7 @@ export const load: PageServerLoad = async ({params, url, fetch, locals}) => {
       console.error('Error fetching related posts:', relatedError);
     } else if (data) {
       relatedPosts = await Promise.all(
-        getRelatedWindow(data, post.id).map(async p => {
+        getRelatedWindow(data, post.id).map(async (p: any) => {
           const relatedBannerUrl = bannerUrl(p);
 
           let readTime = '1 min read';
@@ -207,7 +205,9 @@ export const load: PageServerLoad = async ({params, url, fetch, locals}) => {
             bannerPublicUrl: relatedBannerUrl,
             read_time: readTime,
             comment_count: commentCount,
-            views_count: viewsCount
+            views_count: viewsCount,
+            tags: p.tags ?? [],
+            pinned: p.pinned ?? false
           };
         })
       );
@@ -220,7 +220,6 @@ export const load: PageServerLoad = async ({params, url, fetch, locals}) => {
     translation.machineTranslated ?
       await renderMarkdown(
         buildTranslationDisclaimerMarkdown(translation.language),
-        translation.language,
         supabase
       )
     : null;

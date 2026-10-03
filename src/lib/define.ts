@@ -987,16 +987,16 @@ function maskFencedCodeBlocks(markdown: string): string {
     .join('');
 }
 
-export function extractDefineBlock(markdownAfterConfig: string): {
+export function extractDefineBlock(markdown: string): {
   raw: string | null;
   body: string;
   errors: DefineErrorInfo[];
 } {
   const errors: DefineErrorInfo[] = [];
-  const trimmed = markdownAfterConfig.replace(LEADING_WS_RE, '');
+  const trimmed = markdown.replace(LEADING_WS_RE, '');
   const match = trimmed.match(DEFINE_BLOCK_RE);
   let raw: string | null = null;
-  let body = markdownAfterConfig;
+  let body = markdown;
 
   if (match) {
     raw = match[1];
@@ -1007,7 +1007,7 @@ export function extractDefineBlock(markdownAfterConfig: string): {
   if (STRAY_DEFINE_BLOCK_RE.test(maskFencedCodeBlocks(body))) {
     errors.push({
       message:
-        'Only one :::define block is allowed, and it must be the first thing in the document (immediately after an optional :::config block).'
+        'Only one :::define block is allowed, and it must be the first thing in the document.'
     });
   }
 
@@ -1341,14 +1341,14 @@ async function resolveBlogPath(
 }
 
 export async function validateDefineForSave(
-  bodyAfterConfig: string,
+  markdown: string,
   apiRegistry: ApiRegistry
 ): Promise<{ok: boolean; errors: DefineErrorInfo[]}> {
   const {
     raw: defineRaw,
     body: bodyAfterDefine,
     errors: placementErrors
-  } = extractDefineBlock(bodyAfterConfig);
+  } = extractDefineBlock(markdown);
   const {scope, errors: defineErrors} = await evaluateDefineBlock(
     defineRaw,
     apiRegistry

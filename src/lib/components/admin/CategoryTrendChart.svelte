@@ -7,10 +7,11 @@
   import Chip from '../Chip.svelte';
   import LoadingState from '../LoadingState.svelte';
   import ErrorState from '../ErrorState.svelte';
+  import EmptyState from '../EmptyState.svelte';
   import {cn} from '$lib/utils/cn';
   import {activityDate} from '$lib/adminActivity';
+  import {formatCount, hasChartActivity} from '$lib/adminWorkspace';
   import {adminDisplayStore} from '$lib/stores/adminDisplayStore.svelte';
-  import {formatCount} from '$lib/adminWorkspace';
   import {VIEWS_RANGES, type ViewsRange} from './viewsRange';
   import {
     ADMIN_CHART_AXIS_CLASSES,
@@ -72,6 +73,9 @@
     }))
   );
 
+  const hasActivity = $derived(
+    hasChartActivity(donutSegments.map(segment => segment.value))
+  );
   const rows = $derived(
     data.map(row => ({
       ...row,
@@ -123,50 +127,54 @@
       {/if}
     </div>
     <div class="flex items-center gap-2">
-      <div
-        class="flex items-center gap-1"
-        role="group"
-        aria-label="Chart type">
-        <Chip
-          size="sm"
-          active={chartType === 'spline'}
-          onclick={() => setChartType('spline')}
-          ariaLabel="Spline chart"
-          title="Spline chart">
-          <ChartSpline class="size-3.5" />
-        </Chip>
-        <Chip
-          size="sm"
-          active={chartType === 'bar'}
-          onclick={() => setChartType('bar')}
-          ariaLabel="Bar chart"
-          title="Bar chart">
-          <ChartColumnBig class="size-3.5" />
-        </Chip>
-        {#if allowDonut}
+      {#if hasActivity || isLoading || error}
+        <div
+          class="flex items-center gap-1"
+          role="group"
+          aria-label="Chart type">
           <Chip
             size="sm"
-            active={chartType === 'donut'}
-            onclick={() => setChartType('donut')}
-            ariaLabel="Donut chart"
-            title="Donut chart">
-            <ChartPie class="size-3.5" />
+            active={chartType === 'spline'}
+            onclick={() => setChartType('spline')}
+            ariaLabel="Spline chart"
+            title="Spline chart">
+            <ChartSpline class="size-3.5" />
           </Chip>
-        {/if}
-      </div>
-      {#if range && onRangeChange}
-        <div
-          class="flex items-center gap-1.5"
-          role="group"
-          aria-label="Trend range">
-          {#each Object.entries(VIEWS_RANGES) as [id, config] (id)}
+          <Chip
+            size="sm"
+            active={chartType === 'bar'}
+            onclick={() => setChartType('bar')}
+            ariaLabel="Bar chart"
+            title="Bar chart">
+            <ChartColumnBig class="size-3.5" />
+          </Chip>
+          {#if allowDonut}
             <Chip
               size="sm"
-              active={range === id}
-              onclick={() => onRangeChange?.(id as ViewsRange)}
-              >{config.label}</Chip>
-          {/each}
+              active={chartType === 'donut'}
+              onclick={() => setChartType('donut')}
+              ariaLabel="Donut chart"
+              title="Donut chart">
+              <ChartPie class="size-3.5" />
+            </Chip>
+          {/if}
         </div>
+      {/if}
+      {#if hasActivity}
+        {#if range && onRangeChange}
+          <div
+            class="flex items-center gap-1.5"
+            role="group"
+            aria-label="Trend range">
+            {#each Object.entries(VIEWS_RANGES) as [id, config] (id)}
+              <Chip
+                size="sm"
+                active={range === id}
+                onclick={() => onRangeChange?.(id as ViewsRange)}
+                >{config.label}</Chip>
+            {/each}
+          </div>
+        {/if}
       {/if}
     </div>
   </div>
@@ -179,6 +187,10 @@
       description={error}
       size="inline"
       {onRetry} />
+  {:else if !hasActivity}
+    <EmptyState
+      title={`No ${donutUnit} in this period`}
+      description="Nothing to show for the selected range." />
   {:else if chartType === 'donut'}
     <CategoryDonut
       segments={donutSegments}

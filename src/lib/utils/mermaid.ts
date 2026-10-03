@@ -13,7 +13,7 @@ export async function getMermaid(isDark = true) {
 
   mermaidInstance.initialize({
     startOnLoad: false,
-    securityLevel: 'loose',
+    securityLevel: 'strict',
     theme: 'base',
     themeVariables:
       isDark ?

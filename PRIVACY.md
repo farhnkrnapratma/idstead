@@ -41,7 +41,7 @@ We cannot recover your IP address from these hashes, but the second and third ar
 
 ## 4. Local Storage and Cookies
 
-> [!IMPORTANT] **The Website sets no first-party cookie for Visitors.** Your preferences are kept in your browser's `localStorage`, which is never transmitted to us. A first-party session cookie is set on one path only, the administrator area at `/admin`, and only after the administrator signs in; it is never issued to Visitors browsing the public Website. The other cookies you may encounter are set by third parties, as listed at the end of this section.
+:::important **The Website sets no first-party cookie for Visitors.** Your preferences are kept in your browser's `localStorage`, which is never transmitted to us. A first-party session cookie is set on one path only, the administrator area at `/admin`, and only after the administrator signs in; it is never issued to Visitors browsing the public Website. The other cookies you may encounter are set by third parties, as listed at the end of this section. :::
 
 The following entries are written to `localStorage` on your device. They remain on your device, are readable only by this Website, and can be erased at any time by clearing site data in your browser.
 
@@ -70,7 +70,7 @@ Analytics measurement therefore does not begin until you grant consent through t
 
 Analytics data associated with the property is retained by Google for fourteen months before automated deletion.
 
-> [!NOTE] The consent dialog presents a data-retention selector. In the current implementation that selector records your preference in `localStorage` only; it does not reconfigure the retention period held by Google. We state this plainly rather than let the control imply an assurance it does not provide. If you wish the retention period changed, please contact us.
+:::note The consent dialog presents a data-retention selector. In the current implementation that selector records your preference in `localStorage` only; it does not reconfigure the retention period held by Google. We state this plainly rather than let the control imply an assurance it does not provide. If you wish the retention period changed, please contact us. :::
 
 **Legal basis:** consent, under Article 20(1) of the PDP Law and Article 6(1)(a) GDPR.
 
@@ -83,7 +83,7 @@ The Website uses [Sentry](https://sentry.io/) for error monitoring, performance 
 - **Session replay is enabled.** Approximately ten percent of all sessions are recorded, and one hundred percent of sessions in which an error occurs are recorded. A replay reconstructs page structure, navigation, clicks, scrolling, and network timing.
 - Replay recording runs with the vendor's default privacy settings, under which **text content and form input values are masked and media elements are blocked** before the recording leaves your browser. Sentry additionally observes the IP address from which a report is sent.
 
-> [!WARNING] Sentry, including session replay, initialises independently of the cookie banner. The banner governs the Google Consent Mode signals described in Section 5; it does not switch Sentry off. If you object to session replay, please contact us at [contact@fkp.my.id](mailto:contact@fkp.my.id).
+:::warning Sentry, including session replay, initialises independently of the cookie banner. The banner governs the Google Consent Mode signals described in Section 5; it does not switch Sentry off. If you object to session replay, please contact us at [contact@fkp.my.id](mailto:contact@fkp.my.id). :::
 
 **Legal basis:** legitimate interests in maintaining the security, stability, and correct operation of the Website, under Article 20(2) of the PDP Law and Article 6(1)(f) GDPR.
 
@@ -97,7 +97,7 @@ The contact form on the home page and the form at [Feedback](https://fkp.my.id/f
 
 These messages are delivered to us as email. **They are not stored in the Website's database.** Their retention is therefore governed by our mailbox, as described in Section 12.
 
-> [!NOTE] An anti-abuse challenge is displayed on these two forms, but in the current implementation its result is not verified on the server before the message is relayed. It should not be relied upon as a security control. The challenge is verified for comments, comment reports, newsletter subscription requests, and administrator sign-in, as described in Section 8.
+:::note An anti-abuse challenge is displayed on these two forms, but in the current implementation its result is not verified on the server before the message is relayed. It should not be relied upon as a security control. The challenge is verified for comments, comment reports, newsletter subscription requests, and administrator sign-in, as described in Section 8. :::
 
 **Legal basis:** consent, and the taking of steps at your request prior to contact, under Article 20(2)(a) of the PDP Law and Articles 6(1)(a) and 6(1)(b) GDPR.
 
@@ -113,7 +113,7 @@ When you submit a comment or reply, **your display name and the full text of you
 
 The outcome of that evaluation determines, on its own, whether your comment is published. There is no human review step before publication.
 
-> [!IMPORTANT] This is a decision taken by automated means. If your comment is withheld and you consider the decision wrong, you may contest it and obtain human review by reporting the comment through the kebab menu (⋮) or by writing to [contact@fkp.my.id](mailto:contact@fkp.my.id). This reflects your right under Article 22(3) GDPR and the corresponding provisions of the PDP Law.
+:::important This is a decision taken by automated means. If your comment is withheld and you consider the decision wrong, you may contest it and obtain human review by reporting the comment through the kebab menu (⋮) or by writing to [contact@fkp.my.id](mailto:contact@fkp.my.id). This reflects your right under Article 22(3) GDPR and the corresponding provisions of the PDP Law. :::
 
 **Legal basis:** legitimate interests in preventing the publication of unlawful or abusive material, under Article 20(2) of the PDP Law and Article 6(1)(f) GDPR.
 

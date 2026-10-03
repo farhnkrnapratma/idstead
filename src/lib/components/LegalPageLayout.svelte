@@ -25,6 +25,7 @@
   import {formatReadTime} from '$lib/utils/formatters';
   import {countReadingMinutes} from '$lib/readTime';
   import {enhanceMarkdownContent} from '$lib/utils/markdownEnhancer';
+  import {enhanceHeadingAnchors} from '$lib/utils/headingAnchors';
   import hljs from 'highlight.js';
   import 'katex/dist/katex.min.css';
   import {contentFontStore} from '$lib/stores/contentFontStore.svelte';
@@ -204,100 +205,16 @@
           hljs.highlightElement(block as HTMLElement);
         });
         enhanceMarkdownContent({container, isDark, onCodeCopy: triggerToast});
-        const elements = Array.from(
-          container.querySelectorAll('h1, h2, h3, h4, h5, h6')
-        ).filter(
-          el =>
-            !el.closest('.markdown-chart-container')
-            && !el.closest('.mermaid-block')
-        ) as HTMLElement[];
-        if (elements.length === 0) return;
-
-        elements.forEach(el => {
-          el.classList.add('group', 'scroll-mt-20', 'cursor-pointer');
-
-          const existingAnchor = el.querySelector('.anchor-link');
-          if (existingAnchor) {
-            existingAnchor.remove();
+        enhanceHeadingAnchors(container, async el => {
+          const url = `${window.location.origin}${window.location.pathname}#${el.id}`;
+          try {
+            await navigator.clipboard.writeText(url);
+            triggerToast('Link copied to clipboard');
+          } catch (err) {
+            void err;
           }
-
-          let headingText = el.querySelector(
-            '.heading-text'
-          ) as HTMLElement | null;
-          if (!headingText) {
-            headingText = document.createElement('span');
-            headingText.className = 'heading-text';
-            while (el.firstChild) {
-              headingText.appendChild(el.firstChild);
-            }
-            el.appendChild(headingText);
-          }
-
-          const anchor = document.createElement('a');
-          anchor.href = `#${el.id}`;
-          anchor.className = 'anchor-link select-none';
-          anchor.tabIndex = -1;
-          anchor.innerHTML =
-            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link-2 size-[0.75em] leading-none inline-block align-middle select-none opacity-0" aria-hidden="true"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" x2="16" y1="12" y2="12"/></svg>';
-
-          const walker = document.createTreeWalker(
-            headingText,
-            NodeFilter.SHOW_TEXT
-          );
-          let lastTextNode: Text | null = null;
-          let node: Node | null;
-          while ((node = walker.nextNode())) {
-            if (node.nodeValue && node.nodeValue.trim().length > 0) {
-              lastTextNode = node as Text;
-            }
-          }
-
-          if (lastTextNode && lastTextNode.nodeValue) {
-            const val = lastTextNode.nodeValue;
-            const match = val.match(/^(.*?)(\s+)?(\S+)(\s*)$/);
-            if (match) {
-              const [, before, space, lastWord, trailingSpace] = match;
-              const wrapSpan = document.createElement('span');
-              wrapSpan.className = 'whitespace-nowrap';
-              wrapSpan.textContent = lastWord;
-              wrapSpan.appendChild(anchor);
-
-              const parent = lastTextNode.parentNode;
-              if (parent) {
-                if (before) {
-                  parent.insertBefore(
-                    document.createTextNode(before + (space || '')),
-                    lastTextNode
-                  );
-                }
-                parent.insertBefore(wrapSpan, lastTextNode);
-                if (trailingSpace) {
-                  parent.insertBefore(
-                    document.createTextNode(trailingSpace),
-                    lastTextNode
-                  );
-                }
-                parent.removeChild(lastTextNode);
-              }
-            } else {
-              headingText.appendChild(anchor);
-            }
-          } else {
-            headingText.appendChild(anchor);
-          }
-
-          el.onclick = async e => {
-            e.preventDefault();
-            const url = `${window.location.origin}${window.location.pathname}#${el.id}`;
-            try {
-              await navigator.clipboard.writeText(url);
-              triggerToast('Link copied to clipboard');
-            } catch (err) {
-              void err;
-            }
-            pushState(`#${el.id}`, {});
-            scrollToTarget(el.id, true);
-          };
+          pushState(`#${el.id}`, {});
+          scrollToTarget(el.id, true);
         });
       }
     });

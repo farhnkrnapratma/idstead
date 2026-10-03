@@ -1092,7 +1092,7 @@
                     onclick={() => toggleExcerpt(post.id)}
                     keyboardShortcut="E"
                     shortcutLabel="Show less"
-                    class="relative inline-flex h-auto! min-h-0! p-0! text-xs font-normal whitespace-nowrap text-security! underline hover:opacity-80 focus-visible:outline-none sm:text-sm">
+                    class="relative inline-flex h-auto! min-h-0! p-0! text-xs font-normal whitespace-nowrap text-security! underline hover:opacity-80 focus-visible:outline-none">
                     Show less
                   </Button>
                 {/if}
@@ -1105,7 +1105,7 @@
                   onclick={() => toggleExcerpt(post.id)}
                   keyboardShortcut="E"
                   shortcutLabel="Show more"
-                  class="relative inline-flex h-auto! min-h-0! p-0! text-xs font-normal whitespace-nowrap text-security! underline hover:opacity-80 focus-visible:outline-none sm:text-sm">
+                  class="relative inline-flex h-auto! min-h-0! p-0! text-xs font-normal whitespace-nowrap text-security! underline hover:opacity-80 focus-visible:outline-none">
                   Show more
                 </Button>
               {/if}

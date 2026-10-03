@@ -9,37 +9,61 @@ import {
   resolveProtectedInterpolationTokens,
   createApiRegistry
 } from '$lib/define';
+import {loadIcons} from '$lib/markdownIcons';
+import {sanitizeHtml, sanitizeUrl} from '$lib/sanitizeHtml';
 
-const HIGHLIGHT_META_RE = /\{([\d,\s-]+)\}/;
+export {sanitizeUrl};
 
-function parseHighlightedLines(
-  infostring: string,
-  totalLines: number
-): number[] {
-  const match = infostring.match(HIGHLIGHT_META_RE);
-  if (!match) return [];
+const ATTR_RE = /([a-zA-Z][\w-]*)="((?:[^"\\]|\\.)*)"/g;
+const FENCE_MARK_RE = /(?:^|\s)mark=([\d.,]+)/;
+const VIDEO_EXT_RE = /^[^?#]*\.(?:mp4|webm)(?:[?#].*)?$/i;
 
+export function parseAttrs(source: string): Record<string, string> {
+  const attrs: Record<string, string> = Object.create(null);
+  for (const match of source.matchAll(ATTR_RE)) {
+    attrs[match[1].toLowerCase()] = match[2].replace(/\\(["\\])/g, '$1');
+  }
+  return attrs;
+}
+
+export function escapeAttr(value: string): string {
+  return value
+    .replace(/&(?!#?\w+;)/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+export function escapeUrl(value: string): string {
+  return escapeAttr(value.replace(/&/g, '&amp;'));
+}
+
+function parseFenceInfo(info: string): {
+  lang: string;
+  filename: string;
+  mark: string;
+} {
+  const trimmed = info.trim();
+  const lang = (trimmed.match(/^\S*/)?.[0] ?? '').toLowerCase();
+  const rest = trimmed.slice(lang.length);
+  const filename = parseAttrs(rest).filename?.trim() ?? '';
+  const mark = rest.replace(ATTR_RE, '').match(FENCE_MARK_RE)?.[1] ?? '';
+  return {lang, filename, mark};
+}
+
+function parseHighlightedLines(spec: string, totalLines: number): number[] {
   const lines = new Set<number>();
-  for (const rawPart of match[1].split(',')) {
+  for (const rawPart of spec.split(',')) {
     const part = rawPart.trim();
-    if (!part) continue;
-
-    if (part.includes('-')) {
-      const [startStr, endStr] = part.split('-').map(s => s.trim());
-      const start = Number(startStr);
-      const end = Number(endStr);
-      if (Number.isInteger(start) && Number.isInteger(end) && start <= end) {
-        const boundedStart = Math.max(1, start);
-        const boundedEnd = Math.min(totalLines, end);
-        for (let i = boundedStart; i <= boundedEnd; i++) {
-          lines.add(i);
-        }
-      }
-    } else {
+    const range = part.match(/^(\d+)\.\.(\d+)$/);
+    if (range) {
+      const start = Math.max(1, Number(range[1]));
+      const end = Math.min(totalLines, Number(range[2]));
+      for (let i = start; i <= end; i++) lines.add(i);
+    } else if (/^\d+$/.test(part)) {
       const line = Number(part);
-      if (Number.isInteger(line) && line >= 1 && line <= totalLines) {
-        lines.add(line);
-      }
+      if (line >= 1 && line <= totalLines) lines.add(line);
     }
   }
   return [...lines].sort((a, b) => a - b);
@@ -62,11 +86,7 @@ export const markdownParser = new Marked();
 markdownParser.use({
   renderer: {
     code(token) {
-      const infostring = token.lang || '';
-      const lang = infostring
-        .replace(HIGHLIGHT_META_RE, '')
-        .trim()
-        .toLowerCase();
+      const {lang, filename, mark} = parseFenceInfo(token.lang || '');
 
       if (lang === 'mermaid') {
         const encoded = encodeURIComponent(token.text);
@@ -97,13 +117,14 @@ markdownParser.use({
       });
 
       const totalLines = token.text.replace(/\n$/, '').split('\n').length;
-      const highlightedLines = parseHighlightedLines(infostring, totalLines);
-      if (!highlightedLines.length) return html;
+      const highlightedLines = parseHighlightedLines(mark, totalLines);
+      const preAttrs =
+        (highlightedLines.length ?
+          ` data-highlight-lines="${highlightedLines.join(',')}"`
+        : '') + (filename ? ` data-filename="${escapeAttr(filename)}"` : '');
+      if (!preAttrs) return html;
 
-      return html.replace(
-        /^<pre>/,
-        `<pre data-highlight-lines="${highlightedLines.join(',')}">`
-      );
+      return html.replace(/^<pre>/, () => `<pre${preAttrs}>`);
     },
     table(token) {
       const tableHtml = (Renderer.prototype.table as any).call(this, token);
@@ -185,19 +206,34 @@ markdownParser.use({
       return `<${type}${startAttr} class="${listClass}">\n${body}</${type}>\n`;
     },
     link(token) {
-      const href = (token.href || '').trim();
-      const title = token.title ? ` title="${token.title}"` : '';
+      const href = sanitizeUrl(token.href || '') ?? '#';
+      const title = token.title ? ` title="${escapeAttr(token.title)}"` : '';
       const text = this.parser.parseInline(token.tokens);
-      const isSafe = !/^(?:javascript|data|vbscript):/i.test(href);
-      const safeHref = isSafe ? href : '#';
       const isOwnDomain = /^https?:\/\/(?:www\.)?fkp\.my\.id(?:\/|$)/i.test(
-        safeHref
+        href
       );
-      const isExternal = /^https?:\/\//i.test(safeHref) && !isOwnDomain;
+      const isExternal = /^https?:\/\//i.test(href) && !isOwnDomain;
+      const safeHref = escapeUrl(href);
       if (!isExternal) {
         return `<a href="${safeHref}"${title}>${text}</a>`;
       }
-      return `<a href="${safeHref}"${title} target="_blank" rel="noopener noreferrer" class="markdown-external-link inline">${text}${LUCIDE_ICON_SVGS['external-link']}</a>`;
+      return `<a href="${safeHref}"${title} target="_blank" rel="noopener noreferrer" class="markdown-external-link inline">${text}${EXTERNAL_LINK_SVG}</a>`;
+    },
+    image(token) {
+      const alt = escapeAttr(
+        token.tokens ?
+          this.parser.parseInline(token.tokens, this.parser.textRenderer)
+        : token.text || ''
+      );
+      const href = sanitizeUrl(token.href || '');
+      if (!href) return alt;
+      const src = escapeUrl(href);
+      const title = token.title ? ` title="${escapeAttr(token.title)}"` : '';
+      if (VIDEO_EXT_RE.test(href)) {
+        const label = alt ? ` aria-label="${alt}"` : '';
+        return `<video controls preload="metadata" playsinline src="${src}"${title}${label}></video>`;
+      }
+      return `<img src="${src}" alt="${alt}"${title} loading="lazy" decoding="async">`;
     }
   }
 });
@@ -223,37 +259,38 @@ export const FENCED_CODE_RE =
 
 export const INLINE_CODE_RE = /(`+)(?:[^\n`]|`(?!\1))+\1/g;
 
-export const MATH_BLOCK_RE = /(?:\\\[([\s\S]+?)\\\]|\$\$([\s\S]+?)\$\$)/g;
+export const MATH_BLOCK_RE =
+  /^((?: {0,3}>[ ]?)* {0,3}):::math[ \t]*\r?\n([\s\S]*?)\r?\n(?: {0,3}>[ ]?)* {0,3}:::[ \t]*$/gim;
 
-export const MATH_INLINE_RE =
-  /(?:\\\(([\s\S]+?)\\\)|(?<!\\)\$((?!\s)[^$\n]+?(?!\s))\$)/g;
+export const MATH_INLINE_RE = /(?<!\\)\$\$(\s*[^\s$][^\n]*?)\$\$/g;
 
 export const DIRECTIVE_OPEN_RE =
-  /^[ \t]*:{2,}[a-zA-Z][a-zA-Z-]*(?:\{[^}\n]*\})?[ \t]*$/gm;
+  /^[ \t]*:{2,}[a-zA-Z][a-zA-Z-]*(?:[ \t]+[^\n]*)?[ \t]*$/gm;
 
 export const DIRECTIVE_CLOSE_RE = /^[ \t]*:{2,}[ \t]*$/gm;
 
-export const ALERT_MARKER_RE = /\[!(?:NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/gi;
-
 export const PLACEHOLDER_RE = /@@[A-Z_]+_\d+@@/g;
 
-const MAX_RESTORE_PASSES = 10;
+const PLACEHOLDER_TOKEN_RE = /@@@[A-Z_]+_\d+@@@|@@[A-Z_]+_\d+@@/g;
+const MAX_PLACEHOLDER_EXPANSIONS = 5000;
 
 export function restoreAllPlaceholders(
   text: string,
   store: Map<string, string>
 ): string {
-  let result = text;
-  for (let pass = 0; pass < MAX_RESTORE_PASSES; pass++) {
-    let changed = false;
-    for (const [key, value] of store.entries()) {
-      if (!result.includes(key)) continue;
-      result = result.replaceAll(key, () => value);
-      changed = true;
-    }
-    if (!changed) break;
-  }
-  return result;
+  let budget = MAX_PLACEHOLDER_EXPANSIONS;
+  const active = new Set<string>();
+  const expand = (input: string): string =>
+    input.replace(PLACEHOLDER_TOKEN_RE, token => {
+      const value = store.get(token);
+      if (value === undefined || active.has(token) || budget <= 0) return token;
+      budget--;
+      active.add(token);
+      const expanded = expand(value);
+      active.delete(token);
+      return expanded;
+    });
+  return expand(text);
 }
 
 function escapeHtml(str: string): string {
@@ -274,85 +311,6 @@ export function extractIgnoreRenderBlocks(
   });
 }
 
-const POST_CONFIG_RE =
-  /^:::config[^\n]*\r?\n([\s\S]*?)\r?\n:::[ \t]*(?=\r?\n|$)/i;
-
-export function extractPostConfig(markdown: string): {
-  config: Record<string, string>;
-  body: string;
-} {
-  const match = markdown.match(POST_CONFIG_RE);
-  if (!match) return {config: {}, body: markdown};
-
-  const config: Record<string, string> = {};
-  for (const line of match[1].split(/\r?\n/)) {
-    const separatorIndex = line.indexOf(':');
-    if (separatorIndex === -1) continue;
-    const key = line.slice(0, separatorIndex).trim().toLowerCase();
-    const value = line.slice(separatorIndex + 1).trim();
-    if (key) config[key] = value;
-  }
-
-  return {config, body: markdown.slice(match[0].length).replace(/^\r?\n/, '')};
-}
-
-export const IGNORE_TRANSLATE_RE =
-  /^[ \t]*:::ignore-translate[^\n]*\r?\n([\s\S]*?)\r?\n[ \t]*:::[ \t]*$/gim;
-
-const LOCALE_BLOCK_RE =
-  /^[ \t]*:::locale\{only="([^"]+)"\}[^\n]*\r?\n([\s\S]*?)\r?\n[ \t]*:::[ \t]*$/gim;
-
-export function filterLocaleBlocks(markdown: string, locale?: string): string {
-  if (!markdown) return '';
-
-  const placeholders = new Map<string, string>();
-  let text = protectWithPlaceholders(
-    markdown,
-    FENCED_CODE_RE,
-    'FENCED_CODE',
-    placeholders
-  );
-  text = protectWithPlaceholders(
-    text,
-    INLINE_CODE_RE,
-    'INLINE_CODE',
-    placeholders
-  );
-
-  text = text.replace(LOCALE_BLOCK_RE, (_, only: string, content: string) => {
-    const allowedLocales = only.split(',').map(l => l.trim().toLowerCase());
-    const matches = !locale || allowedLocales.includes(locale.toLowerCase());
-    return matches ? content.trim() : '';
-  });
-
-  return restoreAllPlaceholders(text, placeholders);
-}
-
-const TRANSLATE_OVERRIDE_OUTER_RE =
-  /^[ \t]*:::translate-override[^\n]*\r?\n([\s\S]*?)\r?\n[ \t]*:::[ \t]*$/gim;
-const TRANSLATE_OVERRIDE_ENTRY_RE =
-  /^[ \t]*::override\{locale="([^"]+)"\}[^\n]*\r?\n([\s\S]*?)(?=\r?\n[ \t]*::override|(?![\s\S]))/gim;
-
-export function replaceTranslateOverrideBlocks(
-  markdown: string,
-  transform: (defaultText: string, overrides: Record<string, string>) => string
-): string {
-  return markdown.replace(TRANSLATE_OVERRIDE_OUTER_RE, (_, content: string) => {
-    const firstEntryMatch = content.match(/^[ \t]*::override\{locale="/im);
-    const defaultText =
-      firstEntryMatch ? content.slice(0, firstEntryMatch.index) : content;
-
-    const overrides: Record<string, string> = {};
-    let entryMatch;
-    TRANSLATE_OVERRIDE_ENTRY_RE.lastIndex = 0;
-    while ((entryMatch = TRANSLATE_OVERRIDE_ENTRY_RE.exec(content)) !== null) {
-      overrides[entryMatch[1].trim().toLowerCase()] = entryMatch[2].trim();
-    }
-
-    return transform(defaultText.trim(), overrides);
-  });
-}
-
 function decodeMathEntities(str: string): string {
   return str
     .replace(/&amp;/g, '&')
@@ -362,9 +320,14 @@ function decodeMathEntities(str: string): string {
     .replace(/&#39;/g, "'");
 }
 
-export function extractAndRenderMath(
+interface MathSource {
+  source: string;
+  display: boolean;
+}
+
+export function extractMath(
   markdown: string,
-  mathStore: Map<string, string>
+  sources: Map<string, MathSource>
 ): string {
   if (!markdown) return '';
 
@@ -383,138 +346,310 @@ export function extractAndRenderMath(
   );
 
   let mathIndex = 0;
+  const readSource = (source: string) =>
+    decodeMathEntities(restoreAllPlaceholders(source, codePlaceholders).trim());
 
-  text = text.replace(MATH_BLOCK_RE, (_, p1, p2) => {
-    const math = decodeMathEntities((p1 || p2 || '').trim());
-    let rendered: string;
-    try {
-      const html = katex.renderToString(math, {
-        displayMode: true,
-        throwOnError: false
-      });
-      rendered = `<div class="katex-block my-4 flex items-center justify-center overflow-x-auto py-2">${html}</div>`;
-    } catch {
-      rendered = `<div class="katex-error text-danger font-mono text-xs">${math}</div>`;
-    }
+  text = text.replace(MATH_BLOCK_RE, (_, prefix: string, source: string) => {
     const key = `@@@MATH_BLOCK_${mathIndex++}@@@`;
-    mathStore.set(key, rendered);
-    return `\n\n${key}\n\n`;
+    const quote = (prefix.match(/>/g) ?? []).length;
+    const indent = prefix.length - prefix.replace(/ +$/, '').length;
+    const body = source
+      .split('\n')
+      .map(line => {
+        let rest = line.replace(/\r$/, '');
+        for (let depth = 0; depth < quote; depth++) {
+          rest = rest.replace(QUOTE_MARKER_RE, '');
+        }
+        let strip = 0;
+        while (strip < indent && rest[strip] === ' ') strip++;
+        return rest.slice(strip);
+      })
+      .join('\n');
+    sources.set(key, {source: readSource(body), display: true});
+    const lead = '> '.repeat(quote).trimEnd();
+    return quote ? `${lead}\n${prefix}${key}\n${lead}` : `\n${prefix}${key}\n`;
   });
 
-  text = text.replace(MATH_INLINE_RE, (_, p1, p2) => {
-    const math = decodeMathEntities((p1 || p2 || '').trim());
-    let rendered: string;
-    try {
-      rendered = katex.renderToString(math, {
-        displayMode: false,
-        throwOnError: false
-      });
-    } catch {
-      rendered = `$${math}$`;
-    }
+  text = text.replace(MATH_INLINE_RE, (_, source: string) => {
     const key = `@@@MATH_INLINE_${mathIndex++}@@@`;
-    mathStore.set(key, rendered);
+    sources.set(key, {source: readSource(source), display: false});
     return key;
   });
 
-  text = restoreAllPlaceholders(text, codePlaceholders);
-  return text;
+  return restoreAllPlaceholders(text, codePlaceholders);
 }
 
-export function parseMathFormulas(text: string): string {
-  if (!text) return '';
-
-  const placeholders = new Map<string, string>();
-  let output = protectWithPlaceholders(
-    text,
-    /<pre[\s\S]*?<\/pre>/gi,
-    'HTML_PRE',
-    placeholders
-  );
-  output = protectWithPlaceholders(
-    output,
-    /<code[\s\S]*?<\/code>/gi,
-    'HTML_CODE',
-    placeholders
-  );
-  output = protectWithPlaceholders(
-    output,
-    /<svg[\s\S]*?<\/svg>/gi,
-    'HTML_SVG',
-    placeholders
-  );
-  output = protectWithPlaceholders(
-    output,
-    /<div class="mermaid-raw-code"[\s\S]*?<\/div>/gi,
-    'MERMAID_RAW',
-    placeholders
-  );
-
-  output = output.replace(MATH_BLOCK_RE, (_, p1, p2) => {
-    const math = decodeMathEntities((p1 || p2 || '').trim());
-    try {
-      const rendered = katex.renderToString(math, {
-        displayMode: true,
-        throwOnError: false
-      });
-      return `<div class="katex-block my-4 flex items-center justify-center overflow-x-auto py-2">${rendered}</div>`;
-    } catch {
-      return `<div class="katex-error text-danger font-mono text-xs">${math}</div>`;
-    }
-  });
-
-  output = output.replace(MATH_INLINE_RE, (_, p1, p2) => {
-    const math = decodeMathEntities((p1 || p2 || '').trim());
-    try {
-      return katex.renderToString(math, {
-        displayMode: false,
-        throwOnError: false
-      });
-    } catch {
-      return `$${math}$`;
-    }
-  });
-
-  return restoreAllPlaceholders(output, placeholders);
+function renderMathSource({source, display}: MathSource): string {
+  try {
+    const html = katex.renderToString(source, {
+      displayMode: display,
+      throwOnError: false
+    });
+    return display ?
+        `<div class="katex-block my-4 flex items-center justify-center overflow-x-auto py-2">${html}</div>`
+      : html;
+  } catch {
+    return display ?
+        `<div class="katex-error text-danger font-mono text-xs">${escapeAttr(source)}</div>`
+      : `$$${escapeAttr(source)}$$`;
+  }
 }
 
-const LUCIDE_ICON_SVGS: Record<string, string> = {
-  package:
-    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-package size-3.5 shrink-0"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/><path d="M12 22V12"/><polyline points="3.29 7 12 12 20.71 7"/><path d="m7.5 4.27 9 5.15"/></svg>',
-  terminal:
-    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-terminal size-3.5 shrink-0"><path d="M12 19h8"/><path d="m4 17 6-6-6-6"/></svg>',
-  code: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-code size-3.5 shrink-0"><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></svg>',
-  database:
-    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-database size-3.5 shrink-0"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>',
-  rocket:
-    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rocket size-3.5 shrink-0"><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09"/><path d="M9 12a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.4 22.4 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 .05 5 .05"/></svg>',
-  settings:
-    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings size-3.5 shrink-0"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg>',
-  'git-branch':
-    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-git-branch size-3.5 shrink-0"><path d="M15 6a9 9 0 0 0-9 9V3"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/></svg>',
-  cloud:
-    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cloud size-3.5 shrink-0"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>',
-  layers:
-    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layers size-3.5 shrink-0"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg>',
-  zap: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-zap size-3.5 shrink-0"><path d="M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z"/></svg>',
-  'book-open':
-    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book-open size-3.5 shrink-0"><path d="M12 5v16"/><path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z"/></svg>',
-  info: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-info size-3.5 shrink-0"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>',
-  star: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-3.5 shrink-0"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>',
-  'square-arrow-out-up-right':
-    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-arrow-out-up-right size-3.5 shrink-0"><path d="M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"/><path d="m21 3-9 9"/><path d="M15 3h6v6"/></svg>',
-  'external-link':
-    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link inline-block ml-0.5 size-2.5 align-baseline shrink-0"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>'
+export async function renderMathSources(
+  sources: Map<string, MathSource>,
+  resolveSource: (source: string) => Promise<string>
+): Promise<Map<string, string>> {
+  const rendered = new Map<string, string>();
+  for (const [key, entry] of sources) {
+    rendered.set(
+      key,
+      renderMathSource({...entry, source: await resolveSource(entry.source)})
+    );
+  }
+  return rendered;
+}
+
+const EXTERNAL_LINK_SVG =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link inline-block ml-0.5 size-2.5 align-baseline shrink-0"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>';
+
+type NoteType = 'note' | 'tip' | 'important' | 'warning' | 'caution';
+
+const NOTE_ICON_ATTRS =
+  'xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+
+const NOTE_CALLOUTS: Record<NoteType, {title: string; svg: string}> = {
+  note: {
+    title: 'Note',
+    svg: `<svg ${NOTE_ICON_ATTRS} class="lucide lucide-info size-4 shrink-0 -translate-y-[6%]"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>`
+  },
+  tip: {
+    title: 'Tip',
+    svg: `<svg ${NOTE_ICON_ATTRS} class="lucide lucide-lightbulb size-4 shrink-0 -translate-y-[6%]"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>`
+  },
+  important: {
+    title: 'Important',
+    svg: `<svg ${NOTE_ICON_ATTRS} class="lucide lucide-message-square-warning size-4 shrink-0 -translate-y-[6%]"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 7v2"/><path d="M12 13h.01"/></svg>`
+  },
+  warning: {
+    title: 'Warning',
+    svg: `<svg ${NOTE_ICON_ATTRS} class="lucide lucide-alert-triangle size-4 shrink-0 -translate-y-[6%]"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>`
+  },
+  caution: {
+    title: 'Caution',
+    svg: `<svg ${NOTE_ICON_ATTRS} class="lucide lucide-circle-alert size-4 shrink-0 -translate-y-[6%]"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>`
+  }
 };
 
-function resolveDirectiveIcon(name: string): string {
-  const key = name.trim().toLowerCase();
-  const lucideSvg = LUCIDE_ICON_SVGS[key];
-  if (lucideSvg) return lucideSvg;
-  return `<i class="bi bi-${key} shrink-0" aria-hidden="true"></i>`;
+const CONTAINER_OPEN_RE = /^:::([a-zA-Z][a-zA-Z-]*)(?:[ \t]+([^\n]*))?$/;
+const CONTAINER_CLOSE_RE = /^:::[ \t]*$/;
+const TAB_OPEN_RE = /^::tab(?:[ \t]+([^\n]*))?$/i;
+const TAB_CLOSE_RE = /^::[ \t]*$/;
+const LINE_PREFIX_RE = /^((?: {0,3}>[ ]?)*)( {0,3})/;
+const QUOTE_MARKER_RE = /^ {0,3}>[ ]?/;
+const MAX_CONTAINER_DEPTH = 16;
+
+const TAB_CONTAINERS = new Set(['tabs', 'snippets']);
+const BLOCK_CONTAINERS = new Set([
+  'callout',
+  'details',
+  'steps',
+  'step',
+  ...TAB_CONTAINERS,
+  ...Object.keys(NOTE_CALLOUTS)
+]);
+
+interface TabEntry {
+  attrs: Record<string, string>;
+  openLine: string;
+  lines: string[];
 }
 
-export function parseContainers(markdown: string): string {
+interface ContainerFrame {
+  name: string;
+  attrs: Record<string, string>;
+  openLine: string;
+  quote: number;
+  indent: number;
+  lines: string[];
+  tabs: TabEntry[];
+  tab: TabEntry | null;
+}
+
+function splitLinePrefix(line: string): {
+  quote: number;
+  indent: number;
+  rest: string;
+} {
+  const match = LINE_PREFIX_RE.exec(line)!;
+  return {
+    quote: (match[1].match(/>/g) ?? []).length,
+    indent: match[2].length,
+    rest: line.slice(match[0].length)
+  };
+}
+
+function stripFramePrefix(line: string, frame: ContainerFrame): string | null {
+  let rest = line;
+  for (let depth = 0; depth < frame.quote; depth++) {
+    const marker = QUOTE_MARKER_RE.exec(rest);
+    if (!marker) return rest.trim() === '' ? '' : null;
+    rest = rest.slice(marker[0].length);
+  }
+  let strip = 0;
+  while (strip < frame.indent && rest[strip] === ' ') strip++;
+  return rest.slice(strip);
+}
+
+function applyFramePrefix(lines: string[], frame: ContainerFrame): string[] {
+  const quote = '> '.repeat(frame.quote);
+  const padding = ' '.repeat(frame.indent);
+  return lines.map(line =>
+    line === '' ? quote.trimEnd() : `${quote}${padding}${line}`
+  );
+}
+
+function directiveError(message: string): string {
+  return `<span class="markdown-define-error">${escapeAttr(message)}</span>`;
+}
+
+function frameTarget(frame: ContainerFrame): string[] {
+  return frame.tab ? frame.tab.lines : frame.lines;
+}
+
+function trimBlock(lines: string[]): string {
+  return lines.join('\n').replace(/^(?:[ \t]*\n)+|\s+$/g, '');
+}
+
+function renderTabs(frame: ContainerFrame, icons: Map<string, string>): string {
+  if (frame.tabs.length === 0) {
+    return directiveError(`:::${frame.name} requires at least one ::tab`);
+  }
+  if (frame.tabs.some(tab => !tab.attrs.label?.trim())) {
+    return directiveError(
+      `Every ::tab in :::${frame.name} requires label="..."`
+    );
+  }
+  const isSnippets = frame.name === 'snippets';
+  const buttons = frame.tabs
+    .map((tab, index) => {
+      const selected = index === 0;
+      const label = escapeAttr(tab.attrs.label);
+      const icon = (tab.attrs.icon && icons.get(tab.attrs.icon)) || '';
+      return `<button type="button" role="tab" class="markdown-tab-button relative -mb-px inline-flex shrink-0 items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium border-b-[2.5px] transition-all cursor-pointer select-none ${
+        selected ?
+          'active-tab text-accent border-b-accent font-bold'
+        : 'text-text-muted border-b-transparent hover:text-text-primary'
+      }" data-tab-label="${label}" aria-selected="${selected ? 'true' : 'false'}">${icon}${label}</button>`;
+    })
+    .join('');
+
+  const panels = frame.tabs
+    .map((tab, index) => {
+      const selected = index === 0;
+      return `<div role="tabpanel" class="markdown-tab-panel ${selected ? 'block' : 'hidden'}" ${selected ? '' : 'hidden'}>\n\n${trimBlock(tab.lines)}\n\n</div>`;
+    })
+    .join('');
+
+  if (isSnippets) {
+    const key = frame.attrs.key;
+    const keyAttr = key ? ` data-tab-group-key="${escapeAttr(key)}"` : '';
+    return `<div class="markdown-tabs-container group/codemin my-6 rounded-md border border-border-subtle shadow-2xs"${keyAttr}>
+  <div class="markdown-tabs-header hljs relative flex min-h-8 items-end justify-between rounded-t-md border-b border-border-subtle px-3 pt-0 pb-0 select-none" role="tablist">
+    <div class="markdown-tabs-nav flex min-w-0 flex-1 items-end gap-1.5 m-0 p-0 overflow-x-auto scrollbar-none [-ms-overflow-style:none]">
+      ${buttons}
+    </div>
+    <div class="markdown-tabs-actions flex shrink-0 items-center gap-1 ml-2 self-center"></div>
+  </div>
+  <div class="markdown-tabs-body rounded-b-md">
+    ${panels}
+  </div>
+</div>`;
+  }
+
+  return `<div class="markdown-tab-group my-6">
+  <div class="markdown-tab-group-header relative flex min-h-[2rem] items-end border-b border-border-subtle select-none" role="tablist">
+    <div class="markdown-tab-group-nav flex min-w-0 flex-1 items-end gap-1.5 m-0 p-0 overflow-x-auto scrollbar-none [-ms-overflow-style:none]">
+      ${buttons}
+    </div>
+  </div>
+  <div class="markdown-tab-group-body pt-2">
+    ${panels}
+  </div>
+</div>`;
+}
+
+function renderContainer(
+  frame: ContainerFrame,
+  icons: Map<string, string>
+): string {
+  const content = trimBlock(frame.lines);
+
+  if (frame.name in NOTE_CALLOUTS) {
+    const type = frame.name as NoteType;
+    const {title, svg} = NOTE_CALLOUTS[type];
+    return `<div class="markdown-alert markdown-alert-${type}">
+  <div class="markdown-alert-title leading-none">
+    ${svg}
+    <span>${title}</span>
+  </div>
+  <div class="markdown-alert-content">\n\n${content}\n\n</div>
+</div>`;
+  }
+
+  if (frame.name === 'callout') {
+    const title = frame.attrs.title?.trim();
+    if (!title) return directiveError(':::callout requires title="..."');
+    const icon = (frame.attrs.icon && icons.get(frame.attrs.icon)) || '';
+    return `<div class="markdown-callout">
+  <div class="markdown-callout-title leading-none">
+    ${icon}<span>${escapeAttr(title)}</span>
+  </div>
+  <div class="markdown-callout-content">\n\n${content}\n\n</div>
+</div>`;
+  }
+
+  if (frame.name === 'details') {
+    const summary = frame.attrs.summary?.trim();
+    if (!summary) return directiveError(':::details requires summary="..."');
+    return `<details>\n<summary>${escapeAttr(summary)}</summary>\n\n${content}\n\n</details>`;
+  }
+
+  if (frame.name === 'steps' || frame.name === 'step') {
+    return `<div class="markdown-steps-container my-6 ml-0 space-y-0">\n\n${content}\n\n</div>`;
+  }
+
+  return renderTabs(frame, icons);
+}
+
+const YOUTUBE_EMBED_RE =
+  /^https?:\/\/(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?(?:[^\s#]*&)?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]+)/i;
+const CODEPEN_EMBED_RE = /^https?:\/\/codepen\.io\/([\w-]+)\/pen\/([\w-]+)/i;
+
+function renderEmbed(attrs: Record<string, string>): string {
+  const url = attrs.url?.trim();
+  if (!url) return directiveError(':::embed requires url="..."');
+
+  const youtube = url.match(YOUTUBE_EMBED_RE);
+  const codepen = url.match(CODEPEN_EMBED_RE);
+  const embedUrl =
+    youtube ? `https://www.youtube.com/embed/${youtube[1]}`
+    : codepen ?
+      `https://codepen.io/${codepen[1]}/embed/${codepen[2]}?default-tab=result`
+    : null;
+
+  if (!embedUrl) {
+    const href = sanitizeUrl(url);
+    if (!href || !/^https?:\/\//i.test(href)) return escapeAttr(url);
+    return `<a href="${escapeUrl(href)}" target="_blank" rel="noopener noreferrer">${escapeAttr(url)}</a>`;
+  }
+
+  return `<div class="markdown-embed-container my-6 aspect-video w-full overflow-hidden rounded-md glass-card border border-border-subtle/60 shadow-md backdrop-blur-md"><iframe src="${embedUrl}" loading="lazy" allowfullscreen class="h-full w-full" title="Embedded content"></iframe></div>`;
+}
+
+export function parseContainers(
+  markdown: string,
+  icons: Map<string, string> = new Map()
+): string {
   if (!markdown) return '';
 
   const placeholders = new Map<string, string>();
@@ -531,245 +666,140 @@ export function parseContainers(markdown: string): string {
     placeholders
   );
 
-  text = text.replace(
-    /^[ \t]*:::(?:steps|step)[^\n]*\r?\n([\s\S]*?)\r?\n[ \t]*:::[ \t]*$/gim,
-    (_, content) => {
-      return `<div class="markdown-steps-container my-6 ml-0 space-y-0">\n\n${content.trim()}\n\n</div>`;
-    }
-  );
+  const attrSource = (value: string) =>
+    restoreAllPlaceholders(value, placeholders).replace(
+      PLACEHOLDER_TOKEN_RE,
+      ''
+    );
 
-  text = text.replace(
-    /^[ \t]*:::tabs(?:\{key="([^"]+)"\})?[^\n]*\r?\n([\s\S]*?)\r?\n[ \t]*:::[ \t]*$/gim,
-    (_, groupKey, content) => {
-      const tabs: Array<{label: string; icon?: string; content: string}> = [];
-      const tabRegex =
-        /^[ \t]*::tab\{label="([^"]+)"(?:[,\s]+icon="([^"]+)")?\}[^\n]*\r?\n([\s\S]*?)(?=\r?\n[ \t]*::tab|\r?\n[ \t]*::[ \t]*$|(?![\s\S]))/gim;
-      let match;
-      while ((match = tabRegex.exec(content)) !== null) {
-        const rawTabContent = (match[3] || '')
-          .replace(/\r?\n[ \t]*::[ \t]*$/g, '')
-          .trim();
-        tabs.push({label: match[1], icon: match[2], content: rawTabContent});
-      }
+  const root: ContainerFrame = {
+    name: '',
+    attrs: {},
+    openLine: '',
+    quote: 0,
+    indent: 0,
+    lines: [],
+    tabs: [],
+    tab: null
+  };
+  const stack: ContainerFrame[] = [root];
+  const top = () => stack[stack.length - 1];
 
-      if (tabs.length === 0) {
-        const fallbackRegex =
-          /::tab\{label="([^"]+)"(?:[,\s]+icon="([^"]+)")?\}\s*([\s\S]*?)(?=(?:::tab|::|\s*$))/gi;
-        while ((match = fallbackRegex.exec(content)) !== null) {
-          const rawTabContent = (match[3] || '')
-            .replace(/\r?\n[ \t]*::[ \t]*$/g, '')
-            .trim();
-          tabs.push({label: match[1], icon: match[2], content: rawTabContent});
+  const closeFrame = () => {
+    const frame = stack.pop()!;
+    frameTarget(top()).push(
+      ...applyFramePrefix(
+        ['', ...renderContainer(frame, icons).split('\n'), ''],
+        frame
+      )
+    );
+  };
+
+  const closeLiteral = () => {
+    const frame = stack.pop()!;
+    frameTarget(top()).push(
+      ...applyFramePrefix(
+        [
+          frame.openLine,
+          ...frame.lines,
+          ...frame.tabs.flatMap(tab => [tab.openLine, ...tab.lines])
+        ],
+        frame
+      )
+    );
+  };
+
+  const resolveLine = (raw: string): string => {
+    for (;;) {
+      let line = raw;
+      let broken = -1;
+      for (let depth = 1; depth < stack.length; depth++) {
+        const next = stripFramePrefix(line, stack[depth]);
+        if (next === null) {
+          broken = depth;
+          break;
         }
+        line = next;
       }
-
-      if (tabs.length === 0) return content;
-
-      const headerButtons = tabs
-        .map((tab, idx) => {
-          const isSelected = idx === 0;
-          const iconMarkup = tab.icon ? resolveDirectiveIcon(tab.icon) : '';
-          return `<button type="button" role="tab" class="markdown-tab-button relative -mb-px inline-flex shrink-0 items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium border-b-[2.5px] transition-all cursor-pointer select-none ${
-            isSelected ?
-              'active-tab text-accent border-b-accent font-bold'
-            : 'text-text-muted border-b-transparent hover:text-text-primary'
-          }" data-tab-label="${tab.label}" aria-selected="${isSelected ? 'true' : 'false'}">${iconMarkup}${tab.label}</button>`;
-        })
-        .join('');
-
-      const panels = tabs
-        .map((tab, idx) => {
-          const isSelected = idx === 0;
-          return `<div role="tabpanel" class="markdown-tab-panel ${isSelected ? 'block' : 'hidden'}" ${isSelected ? '' : 'hidden'}>\n\n${tab.content}\n\n</div>`;
-        })
-        .join('');
-
-      const groupAttr = groupKey ? ` data-tab-group-key="${groupKey}"` : '';
-
-      return `<div class="markdown-tabs-container group/codemin my-6 rounded-md border border-border-subtle shadow-2xs"${groupAttr}>
-  <div class="markdown-tabs-header hljs relative flex min-h-8 items-end justify-between rounded-t-md border-b border-border-subtle px-3 pt-0 pb-0 select-none" role="tablist">
-    <div class="markdown-tabs-nav flex min-w-0 flex-1 items-end gap-1.5 m-0 p-0 overflow-x-auto scrollbar-none [-ms-overflow-style:none]">
-      ${headerButtons}
-    </div>
-    <div class="markdown-tabs-actions flex shrink-0 items-center gap-1 ml-2 self-center"></div>
-  </div>
-  <div class="markdown-tabs-body rounded-b-md">
-    ${panels}
-  </div>
-</div>`;
+      if (broken === -1) return line;
+      while (stack.length > broken) closeLiteral();
     }
-  );
+  };
 
-  text = text.replace(
-    /^[ \t]*(:{3,})tab-group(?:\{key="([^"]+)"\})?[^\n]*\r?\n([\s\S]*?)\r?\n[ \t]*\1[ \t]*$/gim,
-    (_, _colons, groupKey, content) => {
-      const tabs: Array<{label: string; icon?: string; content: string}> = [];
-      const tabRegex =
-        /^[ \t]*::tab\{label="([^"]+)"(?:[,\s]+icon="([^"]+)")?\}[^\n]*\r?\n([\s\S]*?)(?=\r?\n[ \t]*::tab|\r?\n[ \t]*::[ \t]*$|(?![\s\S]))/gim;
-      let match;
-      while ((match = tabRegex.exec(content)) !== null) {
-        const rawTabContent = (match[3] || '')
-          .replace(/\r?\n[ \t]*::[ \t]*$/g, '')
-          .trim();
-        tabs.push({label: match[1], icon: match[2], content: rawTabContent});
+  for (const raw of text.split('\n')) {
+    const line = resolveLine(raw);
+    const bare = line.replace(/\r$/, '');
+    const {quote, indent, rest} = splitLinePrefix(bare);
+    const current = top();
+
+    if (
+      quote === 0
+      && TAB_CONTAINERS.has(current.name)
+      && (TAB_OPEN_RE.test(rest) || (current.tab && TAB_CLOSE_RE.test(rest)))
+    ) {
+      current.tab = null;
+      const tabMatch = rest.match(TAB_OPEN_RE);
+      if (tabMatch) {
+        const tab = {
+          attrs: parseAttrs(attrSource(tabMatch[1] || '')),
+          openLine: line,
+          lines: []
+        };
+        current.tabs.push(tab);
+        current.tab = tab;
       }
-
-      if (tabs.length === 0) {
-        const fallbackRegex =
-          /::tab\{label="([^"]+)"(?:[,\s]+icon="([^"]+)")?\}\s*([\s\S]*?)(?=(?:::tab|::|\s*$))/gi;
-        while ((match = fallbackRegex.exec(content)) !== null) {
-          const rawTabContent = (match[3] || '')
-            .replace(/\r?\n[ \t]*::[ \t]*$/g, '')
-            .trim();
-          tabs.push({label: match[1], icon: match[2], content: rawTabContent});
-        }
-      }
-
-      if (tabs.length === 0) return content;
-
-      const headerButtons = tabs
-        .map((tab, idx) => {
-          const isSelected = idx === 0;
-          const iconMarkup = tab.icon ? resolveDirectiveIcon(tab.icon) : '';
-          return `<button type="button" role="tab" class="markdown-tab-button relative -mb-px inline-flex shrink-0 items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium border-b-[2.5px] transition-all cursor-pointer select-none ${
-            isSelected ?
-              'active-tab text-accent border-b-accent font-bold'
-            : 'text-text-muted border-b-transparent hover:text-text-primary'
-          }" data-tab-label="${tab.label}" aria-selected="${isSelected ? 'true' : 'false'}">${iconMarkup}${tab.label}</button>`;
-        })
-        .join('');
-
-      const panels = tabs
-        .map((tab, idx) => {
-          const isSelected = idx === 0;
-          return `<div role="tabpanel" class="markdown-tab-panel ${isSelected ? 'block' : 'hidden'}" ${isSelected ? '' : 'hidden'}>\n\n${tab.content}\n\n</div>`;
-        })
-        .join('');
-
-      const groupAttr = groupKey ? ` data-tab-group-key="${groupKey}"` : '';
-
-      return `<div class="markdown-tab-group my-6"${groupAttr}>
-  <div class="markdown-tab-group-header relative flex min-h-[2rem] items-end border-b border-border-subtle select-none" role="tablist">
-    <div class="markdown-tab-group-nav flex min-w-0 flex-1 items-end gap-1.5 m-0 p-0 overflow-x-auto scrollbar-none [-ms-overflow-style:none]">
-      ${headerButtons}
-    </div>
-  </div>
-  <div class="markdown-tab-group-body pt-2">
-    ${panels}
-  </div>
-</div>`;
+      continue;
     }
-  );
 
-  text = text.replace(IGNORE_TRANSLATE_RE, (_, content: string) => content);
-
-  text = replaceTranslateOverrideBlocks(text, defaultText => defaultText);
-
-  text = text.replace(
-    /^[ \t]*:::embed\{url="([^"]+)"\}[ \t]*$/gim,
-    (_, url: string) => {
-      const youtubeMatch = url.match(
-        /(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/i
-      );
-      const codepenMatch = url.match(/codepen\.io\/([\w-]+)\/pen\/([\w-]+)/i);
-
-      let embedUrl: string | null = null;
-      if (youtubeMatch) {
-        embedUrl = `https://www.youtube.com/embed/${youtubeMatch[1]}`;
-      } else if (codepenMatch) {
-        embedUrl = `https://codepen.io/${codepenMatch[1]}/embed/${codepenMatch[2]}?default-tab=result`;
+    if (quote === 0 && CONTAINER_CLOSE_RE.test(rest)) {
+      if (stack.length === 1) {
+        root.lines.push(line);
+      } else if (BLOCK_CONTAINERS.has(current.name)) {
+        closeFrame();
+      } else {
+        closeLiteral();
+        frameTarget(top()).push(line);
       }
-
-      if (!embedUrl) {
-        return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
-      }
-
-      return `<div class="markdown-embed-container my-6 aspect-video w-full overflow-hidden rounded-md glass-card border border-border-subtle/60 shadow-md backdrop-blur-md"><iframe src="${embedUrl}" loading="lazy" allowfullscreen class="h-full w-full" title="Embedded content"></iframe></div>`;
+      continue;
     }
-  );
 
-  text = text.replace(
-    /^[ \t]*:::callout\{title="([^"]+)"(?:[,\s]+icon="([^"]+)")?\}[^\n]*\r?\n([\s\S]*?)\r?\n[ \t]*:::[ \t]*$/gim,
-    (_, title: string, icon: string | undefined, content: string) => {
-      const iconMarkup = icon ? resolveDirectiveIcon(icon) : '';
-      const titleSpan = `<span>${title}</span>`;
-      return `<div class="markdown-callout">
-  <div class="markdown-callout-title leading-none">
-    ${iconMarkup}${titleSpan}
-  </div>
-  <div class="markdown-callout-content">\n\n${content.trim()}\n\n</div>
-</div>`;
-    }
-  );
-
-  text = text.replace(/^[ \t]*\d+\.[ \t]+(\[\^[\w-]+\]:.*)$/gm, '$1');
-
-  return restoreAllPlaceholders(text, placeholders);
-}
-
-export function parseMarkdownAlerts(html: string): string {
-  if (!html) return '';
-
-  return html.replace(
-    /<blockquote[^>]*>([\s\S]*?)<\/blockquote>/gi,
-    (match, innerContent: string) => {
-      const alertMatch = innerContent.match(
-        /^\s*(?:<p\b[^>]*>)?\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\](?:\s*<\/p>|\s*<br\s*\/?>)?/i
-      );
-      if (!alertMatch) return match;
-
-      const type = alertMatch[1].toLowerCase() as
-        'note' | 'tip' | 'important' | 'warning' | 'caution';
-
-      const config: Record<string, {title: string; svg: string}> = {
-        note: {
-          title: 'Note',
-          svg: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-info size-4 shrink-0 -translate-y-[6%]"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>'
-        },
-        tip: {
-          title: 'Tip',
-          svg: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lightbulb size-4 shrink-0 -translate-y-[6%]"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>'
-        },
-        important: {
-          title: 'Important',
-          svg: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-square-warning size-4 shrink-0 -translate-y-[6%]"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 7v2"/><path d="M12 13h.01"/></svg>'
-        },
-        warning: {
-          title: 'Warning',
-          svg: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-alert-triangle size-4 shrink-0 -translate-y-[6%]"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>'
-        },
-        caution: {
-          title: 'Caution',
-          svg: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-alert size-4 shrink-0 -translate-y-[6%]"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>'
-        }
+    const open =
+      stack.length <= MAX_CONTAINER_DEPTH ?
+        rest.match(CONTAINER_OPEN_RE)
+      : null;
+    if (open) {
+      const name = open[1].toLowerCase();
+      const attrs = parseAttrs(attrSource(open[2] || ''));
+      const frame: ContainerFrame = {
+        name,
+        attrs,
+        openLine: line,
+        quote,
+        indent,
+        lines: [],
+        tabs: [],
+        tab: null
       };
-
-      const alertConfig = config[type];
-      let content = innerContent.slice(alertMatch[0].length).trim();
-      content = content.replace(/^(?:<br\s*\/?>|&gt;|>|\s)+/gi, '').trim();
-
-      const matchedText = alertMatch[0];
-      const hadOpenP = /<p\b/i.test(matchedText);
-      const hadCloseP = /<\/p>/i.test(matchedText);
-      if (hadOpenP && !hadCloseP) {
-        content = `<p>${content}`;
+      if (name === 'embed') {
+        frameTarget(current).push(
+          ...applyFramePrefix(['', renderEmbed(attrs), ''], frame)
+        );
+      } else {
+        stack.push(frame);
       }
-
-      if (content && !/^<[a-z0-9]+/i.test(content)) {
-        content = `<p>${content}</p>`;
-      }
-
-      return `<div class="markdown-alert markdown-alert-${type}">
-  <div class="markdown-alert-title leading-none">
-    ${alertConfig.svg}
-    <span>${alertConfig.title}</span>
-  </div>
-  <div class="markdown-alert-content">
-    ${content}
-  </div>
-</div>`;
+      continue;
     }
-  );
+
+    frameTarget(current).push(line);
+  }
+
+  while (stack.length > 1) closeLiteral();
+
+  const output = root.lines
+    .join('\n')
+    .replace(/^[ \t]*\d+\.[ \t]+(\[\^[\w-]+\]:.*)$/gm, '$1');
+
+  return restoreAllPlaceholders(output, placeholders);
 }
 
 export function parseDetailsBlocks(html: string): string {
@@ -828,7 +858,6 @@ export function parseDetailsBlocks(html: string): string {
           result += `<details${detailsAttrs} class="group markdown-details my-4 overflow-hidden rounded-md glass-card border border-border-subtle text-text-primary shadow-md backdrop-blur-md">
  <summary${summaryAttrs} class="markdown-details-summary flex min-h-[2.25rem] cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent group-open:border-border-subtle dark:group-open:border-white/10 px-3.5 py-1.5 font-medium text-sm text-text-primary hover:bg-surface-hover/50 transition-colors select-none [&::-webkit-details-marker]:hidden">
  <span class="inline-flex items-center gap-2">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-collapse size-4 shrink-0 text-text-primary"><path d="M10 5h11"/><path d="M10 12h11"/><path d="M10 19h11"/><path d="m3 10 3-3-3-3"/><path d="m3 20 3-3-3-3"/></svg>
  <span class="markdown-details-title translate-y-[1px] font-medium text-sm text-text-primary leading-none">${summaryTitle}</span>
  </span>
  <span class="markdown-details-icon shrink-0 inline-flex items-center justify-center text-text-muted" aria-hidden="true">
@@ -1027,13 +1056,16 @@ export function formatFootnoteReferences(html: string): string {
   );
 }
 
-export async function renderMarkdown(
+const MAX_MARKDOWN_LENGTH = 500_000;
+
+export async function renderMarkdownUnsafe(
   markdown: string,
-  locale?: string,
   supabaseClient?: any
 ): Promise<string> {
-  const {body} = extractPostConfig(markdown);
-  const {raw: defineRaw, body: bodyAfterDefine} = extractDefineBlock(body);
+  if (markdown.length > MAX_MARKDOWN_LENGTH) {
+    throw new Error('Markdown document is too large to render.');
+  }
+  const {raw: defineRaw, body: bodyAfterDefine} = extractDefineBlock(markdown);
   const apiRegistry = createApiRegistry(supabaseClient);
   const {scope} = await evaluateDefineBlock(defineRaw, apiRegistry);
   const ignoreRenderPlaceholders = new Map<string, string>();
@@ -1041,16 +1073,15 @@ export async function renderMarkdown(
     bodyAfterDefine,
     ignoreRenderPlaceholders
   );
-  const withLocaleFiltered = filterLocaleBlocks(withRawBlocksExtracted, locale);
   const interpolationPlaceholders = new Map<string, string>();
   const withInterpolationProtected = protectInterpolationTokens(
-    withLocaleFiltered,
+    withRawBlocksExtracted,
     interpolationPlaceholders
   );
-  const mathPlaceholders = new Map<string, string>();
-  const withMathExtracted = extractAndRenderMath(
+  const mathSources = new Map<string, MathSource>();
+  const withMathExtracted = extractMath(
     withInterpolationProtected,
-    mathPlaceholders
+    mathSources
   );
   const {output: withInterpolated} = await resolveProtectedInterpolationTokens(
     withMathExtracted,
@@ -1058,11 +1089,23 @@ export async function renderMarkdown(
     scope,
     apiRegistry
   );
+  const mathPlaceholders = await renderMathSources(mathSources, async source =>
+    source.includes('@@INTERPOLATION_') ?
+      (
+        await resolveProtectedInterpolationTokens(
+          source,
+          interpolationPlaceholders,
+          scope,
+          apiRegistry
+        )
+      ).output
+    : source
+  );
   const references = extractReferences(withInterpolated);
-  const withContainers = parseContainers(references.markdown);
+  const icons = await loadIcons(references.markdown);
+  const withContainers = parseContainers(references.markdown, icons);
   const rawHtml = await markdownParser.parse(withContainers);
-  const withAlerts = parseMarkdownAlerts(rawHtml);
-  const withDetails = parseDetailsBlocks(withAlerts);
+  const withDetails = parseDetailsBlocks(rawHtml);
   const withSteps = parseSteps(withDetails);
   const withFootnotes = placeReferences(
     formatFootnoteReferences(withSteps),
@@ -1078,7 +1121,42 @@ export async function renderMarkdown(
   return restoreAllPlaceholders(withUnwrappedBlocks, ignoreRenderPlaceholders);
 }
 
+export async function renderMarkdown(
+  markdown: string,
+  supabaseClient?: any
+): Promise<string> {
+  return sanitizeHtml(await renderMarkdownUnsafe(markdown, supabaseClient));
+}
+
 export const marked = markdownParser;
+
+function replaceKatexWithSource(html: string): string {
+  const opening = '<span class="katex">';
+  const spanTag = /<(\/?)span\b[^>]*>/g;
+  let output = '';
+  let position = 0;
+  for (;;) {
+    const start = html.indexOf(opening, position);
+    if (start === -1) return output + html.slice(position);
+    output += html.slice(position, start);
+    let depth = 0;
+    let end = -1;
+    spanTag.lastIndex = start;
+    for (let tag = spanTag.exec(html); tag; tag = spanTag.exec(html)) {
+      depth += tag[1] ? -1 : 1;
+      if (depth === 0) {
+        end = spanTag.lastIndex;
+        break;
+      }
+    }
+    if (end === -1) return output + html.slice(start);
+    const source = html
+      .slice(start, end)
+      .match(/<annotation[^>]*>([\s\S]*?)<\/annotation>/);
+    output += source?.[1] ?? '';
+    position = end;
+  }
+}
 
 export function injectHeadingIds(html: string): string {
   let index = 0;
@@ -1095,7 +1173,7 @@ export function injectHeadingIds(html: string): string {
         return match;
       }
 
-      const text = content.replace(/<[^>]*>/g, '');
+      const text = replaceKatexWithSource(content).replace(/<[^>]*>/g, '');
       const baseId =
         text ?
           text
@@ -1148,7 +1226,7 @@ export function extractHeadings(html: string): HeadingItem[] {
       continue;
     const level = parseInt(match[1], 10);
     const id = match[2];
-    let content = match[3]
+    let content = replaceKatexWithSource(match[3])
       .replace(
         /<a\b[^>]*class="[^"]*anchor-link[^"]*"[^>]*>[\s\S]*?<\/a>/gi,
         ''
@@ -1166,10 +1244,9 @@ export function extractHeadings(html: string): HeadingItem[] {
 
 export async function prepareMarkdownPage(
   markdown: string,
-  locale?: string,
   supabaseClient?: any
 ): Promise<{html: string; headings: HeadingItem[]}> {
-  const rawHtml = await renderMarkdown(markdown, locale, supabaseClient);
+  const rawHtml = await renderMarkdown(markdown, supabaseClient);
   const html = injectHeadingIds(rawHtml);
   const headings = extractHeadings(html);
   return {html, headings};

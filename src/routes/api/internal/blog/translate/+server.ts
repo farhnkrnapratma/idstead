@@ -6,17 +6,12 @@ import {requireAdminAuth} from '$lib/server/adminCv';
 import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
 import {supabase as publicSupabase} from '$lib/supabase';
 import {fetchGlossaryTerms} from '$lib/author';
-import {extractPostConfig} from '$lib/markdown';
 import {isAiBindingAvailable} from '$lib/server/blogAi';
 import {
   translatePost,
   TRANSLATION_LOCALES,
   type TranslationLocale
 } from '$lib/server/blogTranslate';
-
-function isTranslationDisabled(config: Record<string, string>): boolean {
-  return (config.translate ?? '').trim().toLowerCase() === 'false';
-}
 
 export const POST: RequestHandler = async ({request, url, platform}) => {
   if (!isSameOriginRequest(request, url)) {
@@ -119,10 +114,7 @@ export const POST: RequestHandler = async ({request, url, platform}) => {
     );
   }
 
-  const {config, body: markdown} = extractPostConfig(rawMarkdown);
-  if (isTranslationDisabled(config)) {
-    return json({locale, stored: false, skipped: true});
-  }
+  const markdown = rawMarkdown;
 
   const ai = (platform as unknown as {env?: {AI?: unknown}})?.env?.AI;
   if (!isAiBindingAvailable(ai)) {

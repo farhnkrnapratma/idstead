@@ -1,16 +1,13 @@
 import {isAiBindingAvailable} from '$lib/server/blogAi';
 import {
-  ALERT_MARKER_RE,
   DIRECTIVE_CLOSE_RE,
   DIRECTIVE_OPEN_RE,
   FENCED_CODE_RE,
-  IGNORE_TRANSLATE_RE,
   INLINE_CODE_RE,
   MATH_BLOCK_RE,
   MATH_INLINE_RE,
   PLACEHOLDER_RE,
   protectWithPlaceholders,
-  replaceTranslateOverrideBlocks,
   restoreAllPlaceholders
 } from '$lib/markdown';
 import {
@@ -55,7 +52,7 @@ export function getTranslationDisclaimer(
 export function buildTranslationDisclaimerMarkdown(
   locale: TranslationLocale | 'en'
 ): string {
-  return `> [!NOTE]\n> ${getTranslationDisclaimer(locale)}`;
+  return `:::note\n${getTranslationDisclaimer(locale)}\n:::`;
 }
 
 interface AiRunner {
@@ -451,8 +448,15 @@ function protectGlossaryTerms(
 
 const HEADING_RE = /^#{1,6}\s/gm;
 const PRESERVED_TAG_RE = /<\/?(?:kbd|sub|sup)\b/gi;
+const HTML_TAG_NAME_RE = /<\/?([a-zA-Z][\w:-]*)/g;
+
+function htmlTagNames(text: string): Set<string> {
+  return new Set(
+    [...text.matchAll(HTML_TAG_NAME_RE)].map(match => match[1].toLowerCase())
+  );
+}
 const LINE_PLACEHOLDER_RE =
-  /@@(?:DEFINE_BLOCK|IGNORE_TRANSLATE|FENCED_CODE|MATH_BLOCK|DIRECTIVE_OPEN|DIRECTIVE_CLOSE)_\d+@@/g;
+  /@@(?:DEFINE_BLOCK|FENCED_CODE|MATH_BLOCK|DIRECTIVE_OPEN|DIRECTIVE_CLOSE)_\d+@@/g;
 
 function isOwnLine(text: string, token: string): boolean {
   return text.split('\n').some(line => line.trim() === token);
@@ -466,7 +470,7 @@ function placeholderCounts(text: string): Map<string, number> {
   return counts;
 }
 
-function chunkQualityFailure(
+export function chunkQualityFailure(
   translated: string,
   source: string
 ): string | null {
@@ -487,6 +491,10 @@ function chunkQualityFailure(
   }
   for (const token of source.match(LINE_PLACEHOLDER_RE) ?? []) {
     if (!isOwnLine(translated, token)) return 'line_placeholder_moved';
+  }
+  const sourceTags = htmlTagNames(source);
+  for (const tag of htmlTagNames(translated)) {
+    if (!sourceTags.has(tag)) return 'unexpected_html_tag';
   }
   return (
       countMatches(source, PRESERVED_TAG_RE)
@@ -514,7 +522,7 @@ export function splitMarkdownChunks(markdown: string): string[] {
   return chunks;
 }
 
-const MARKER_LABEL_RE = /\b(title|label)="([^"\n]+)"/g;
+const MARKER_LABEL_RE = /\b(title|label|summary)="([^"\n]+)"/g;
 
 async function translateMarkerLabels(
   runner: AiRunner,
@@ -646,31 +654,14 @@ export async function translatePost(
           markdown,
           markdownPlaceholders
         );
-        result = protectWithPlaceholders(
-          result,
-          IGNORE_TRANSLATE_RE,
-          'IGNORE_TRANSLATE',
-          markdownPlaceholders
-        );
         result = protectInterpolationTokens(result, markdownPlaceholders);
-        result = replaceTranslateOverrideBlocks(
-          result,
-          (defaultText, overrides) => {
-            const override = overrides[locale];
-            if (override === undefined) return defaultText;
-            const key = `@@TRANSLATE_OVERRIDE_${markdownPlaceholders.size}@@`;
-            markdownPlaceholders.set(key, override);
-            return key;
-          }
-        );
         for (const [regex, prefix] of [
           [FENCED_CODE_RE, 'FENCED_CODE'],
           [INLINE_CODE_RE, 'INLINE_CODE'],
           [MATH_BLOCK_RE, 'MATH_BLOCK'],
           [MATH_INLINE_RE, 'MATH_INLINE'],
           [DIRECTIVE_OPEN_RE, 'DIRECTIVE_OPEN'],
-          [DIRECTIVE_CLOSE_RE, 'DIRECTIVE_CLOSE'],
-          [ALERT_MARKER_RE, 'ALERT_MARKER']
+          [DIRECTIVE_CLOSE_RE, 'DIRECTIVE_CLOSE']
         ] as const) {
           result = protectWithPlaceholders(
             result,

@@ -13,6 +13,14 @@ export interface ChartSpec {
   height?: number;
 }
 
+function showChartError(chartEl: HTMLElement, message: string) {
+  const box = document.createElement('div');
+  box.className =
+    'rounded-md border border-danger/30 bg-danger-subtle/20 p-3 text-xs text-danger font-mono';
+  box.textContent = message;
+  chartEl.replaceChildren(box);
+}
+
 export function enhanceMarkdownCharts(container: HTMLElement = document.body) {
   const chartContainers = container.querySelectorAll<HTMLElement>(
     '.markdown-chart-container:not([data-chart-initialized])'
@@ -32,12 +40,15 @@ export function enhanceMarkdownCharts(container: HTMLElement = document.body) {
         spec = yamlLoad(rawContent) as ChartSpec;
       }
     } catch (err) {
-      chartEl.innerHTML = `<div class="rounded-md border border-danger/30 bg-danger-subtle/20 p-3 text-xs text-danger font-mono">Invalid chart specification: ${(err as Error).message}</div>`;
+      showChartError(
+        chartEl,
+        `Invalid chart specification: ${(err as Error).message}`
+      );
       return;
     }
 
     if (!spec || typeof spec !== 'object') {
-      chartEl.innerHTML = `<div class="rounded-md border border-danger/30 bg-danger-subtle/20 p-3 text-xs text-danger font-mono">Chart data is empty or malformed.</div>`;
+      showChartError(chartEl, 'Chart data is empty or malformed.');
       return;
     }
 

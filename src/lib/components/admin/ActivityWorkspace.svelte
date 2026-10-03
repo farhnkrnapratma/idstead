@@ -24,6 +24,7 @@
   import {
     notificationTypes,
     formatCount,
+    shouldShowDataControls,
     majorityPercent,
     type WorkspaceArea,
     type WorkspaceRow,
@@ -472,6 +473,31 @@
       (list.loading && !list.data) || (list.data && !list.data.items.length)
     )
   );
+  const listFiltersActive = $derived(
+    Boolean(search.trim())
+      || (area === 'reports' && Boolean(params.get('reason')))
+      || (area === 'feedback'
+        && Boolean(params.get('type') && params.get('type') !== 'all'))
+      || (area === 'notifications'
+        && Boolean(
+          (params.get('type') && params.get('type') !== 'all')
+          || (params.get('read') && params.get('read') !== 'all')
+        ))
+  );
+  const showListControls = $derived(
+    Boolean(list.loading && !list.data)
+      || shouldShowDataControls(list.data?.total ?? 0, listFiltersActive)
+  );
+  const detailFiltersActive = $derived(
+    (area === 'reports'
+      && Boolean(detailSearch.trim() || params.get('detailReason')))
+      || (area === 'feedback'
+        && Boolean(params.get('vote') && params.get('vote') !== 'all'))
+  );
+  const showDetailControls = $derived(
+    Boolean(detail.loading && !detail.data)
+      || shouldShowDataControls(detail.data?.total ?? 0, detailFiltersActive)
+  );
   const historyTitle = $derived(
     area === 'reports' ? 'Report history'
     : area === 'feedback' ? 'Response history'
@@ -626,12 +652,12 @@
       {#if area === 'notifications'}
         <DataTable
           title={`All ${title.toLowerCase()}`}
-          meta={listCount}
-          toolbar={listToolbar}
+          meta={showListControls ? listCount : undefined}
+          toolbar={showListControls ? listToolbar : undefined}
           state={listBlocked ? listStateView : undefined}
           footer={listBlocked ? undefined : listPagination}
           caption={title}
-          header={notificationActions}
+          header={notificationRows.length ? notificationActions : undefined}
           columns={listColumns}
           data={notificationRows}
           rowClass={row =>
@@ -706,8 +732,8 @@
       {:else}
         <DataTable
           title={`All ${title.toLowerCase()}`}
-          meta={listCount}
-          toolbar={listToolbar}
+          meta={showListControls ? listCount : undefined}
+          toolbar={showListControls ? listToolbar : undefined}
           state={listBlocked ? listStateView : undefined}
           footer={listBlocked ? undefined : listPagination}
           caption={title}
@@ -1027,8 +1053,16 @@
     {:else}
       <DataTable
         title={historyTitle}
-        meta={area === 'reports' ? reportsCount : feedbackCount}
-        toolbar={area === 'reports' ? reportsToolbar : feedbackToolbar}
+        meta={showDetailControls ?
+          area === 'reports' ?
+            reportsCount
+          : feedbackCount
+        : undefined}
+        toolbar={showDetailControls ?
+          area === 'reports' ?
+            reportsToolbar
+          : feedbackToolbar
+        : undefined}
         state={empty ? historyEmpty : undefined}
         footer={empty ? undefined : detailPagination}
         caption={`${title} history`}
@@ -1137,13 +1171,15 @@
 {/snippet}
 
 {#snippet listCount()}
-  <SearchResultCount
-    count={list.data?.items.length ?? 0}
-    total={list.data?.total ?? 0}
-    loading={list.loading}
-    itemLabel={area === 'reports' ? 'reported comments'
-    : area === 'feedback' ? 'pages'
-    : 'notifications'} />
+  {#if list.loading || (list.data?.total ?? 0) > 0}
+    <SearchResultCount
+      count={list.data?.items.length ?? 0}
+      total={list.data?.total ?? 0}
+      loading={list.loading}
+      itemLabel={area === 'reports' ? 'reported comments'
+      : area === 'feedback' ? 'pages'
+      : 'notifications'} />
+  {/if}
 {/snippet}
 
 {#snippet reportsToolbar()}
@@ -1199,11 +1235,13 @@
 {/snippet}
 
 {#snippet reportsCount()}
-  <SearchResultCount
-    count={detail.data?.items.length ?? 0}
-    total={detail.data?.total ?? 0}
-    loading={detail.loading}
-    itemLabel="reports" />
+  {#if detail.loading || (detail.data?.total ?? 0) > 0}
+    <SearchResultCount
+      count={detail.data?.items.length ?? 0}
+      total={detail.data?.total ?? 0}
+      loading={detail.loading}
+      itemLabel="reports" />
+  {/if}
 {/snippet}
 
 {#snippet feedbackToolbar()}
@@ -1243,11 +1281,13 @@
 {/snippet}
 
 {#snippet feedbackCount()}
-  <SearchResultCount
-    count={detail.data?.items.length ?? 0}
-    total={detail.data?.total ?? 0}
-    loading={detail.loading}
-    itemLabel="events" />
+  {#if detail.loading || (detail.data?.total ?? 0) > 0}
+    <SearchResultCount
+      count={detail.data?.items.length ?? 0}
+      total={detail.data?.total ?? 0}
+      loading={detail.loading}
+      itemLabel="events" />
+  {/if}
 {/snippet}
 
 {#snippet listStateView()}
@@ -1255,15 +1295,19 @@
     <LoadingState label="Loading results…" />
   {:else}
     <EmptyState
-      title="No matching activity"
-      description="Try another period or filter." />
+      title={listFiltersActive ? 'No matching activity' : `No ${area} yet`}
+      description={listFiltersActive ?
+        'Try another period or filter.'
+      : 'Activity will appear here when it becomes available.'} />
   {/if}
 {/snippet}
 
 {#snippet historyEmpty()}
   <EmptyState
-    title="Nothing here"
-    description="It may have been resolved, removed, or fall outside the selected period." />
+    title={detailFiltersActive ? 'No matching activity' : 'Nothing here'}
+    description={detailFiltersActive ?
+      'Try another filter.'
+    : 'It may have been resolved, removed, or fall outside the selected period.'} />
 {/snippet}
 
 {#snippet listPagination()}{@render pagination(false)}{/snippet}

@@ -42,12 +42,13 @@ export function enhanceMarkdownTabs(
 
     const isContentGroup = tabsEl.classList.contains('markdown-tab-group');
     const syncKey = tabsEl.getAttribute('data-tab-group-key');
-    const tabButtons = tabsEl.querySelectorAll<HTMLElement>(
-      '.markdown-tab-button'
-    );
-    const tabPanels = tabsEl.querySelectorAll<HTMLElement>(
-      '.markdown-tab-panel'
-    );
+    const ownedBy = (selector: string) =>
+      Array.from(tabsEl.querySelectorAll<HTMLElement>(selector)).filter(
+        el =>
+          el.closest('.markdown-tabs-container, .markdown-tab-group') === tabsEl
+      );
+    const tabButtons = ownedBy('.markdown-tab-button');
+    const tabPanels = ownedBy('.markdown-tab-panel');
 
     let codeControls: ReturnType<typeof createCodeActionControls> | null = null;
     const tabsScope = nextCodeScope('tabs');
@@ -82,7 +83,10 @@ export function enhanceMarkdownTabs(
               '.markdown-tab-panel:not([hidden])'
             );
             const codeEl = activePanel?.querySelector('code');
-            return getDownloadFilename(codeEl?.className || '');
+            return getDownloadFilename(
+              codeEl?.className || '',
+              codeEl?.closest('pre')?.dataset.filename
+            );
           },
           shouldHideLineNumbers: () => {
             const activePanel = tabsEl.querySelector<HTMLElement>(

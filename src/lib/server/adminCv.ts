@@ -14,8 +14,15 @@ import {
   type AuthorCvData,
   type ExperienceData,
   type EducationData,
+  type ProjectData,
   type SkillCategoryData
 } from '$lib/server/pdfGenerator';
+import {loadCvFonts} from '$lib/server/cvFonts';
+import {readAvatarBytes} from '$lib/server/profileAssets';
+import {fetchProjects, extractGitHubUsername} from '$lib/server/githubProjects';
+import {fetchSocials, fetchProjectRepoRules} from '$lib/author';
+
+const CV_PROJECT_LIMIT = 4;
 
 function getAdminDb(platform?: unknown) {
   return getSupabaseAdminClient(platform) || publicSupabase;
@@ -282,68 +289,97 @@ export async function processCvGenerate(
       );
     }
 
-    const {data: experiences} = await db
-      .from('db_experiences')
-      .select(
-        'role, company, location, start_date, end_date, is_current, description'
-      )
-      .order('sort_order', {ascending: true});
+    const [
+      {data: experiences, error: experiencesError},
+      {data: educations, error: educationsError},
+      {data: categories, error: categoriesError},
+      socials,
+      repoRules
+    ] = await Promise.all([
+      db
+        .from('db_experiences')
+        .select(
+          'title, company, type, location, loc_type, start_date, end_date, currently_in, description'
+        )
+        .order('sort_order', {ascending: true}),
+      db
+        .from('db_educations')
+        .select(
+          'institution, degree, field, grade, start_date, end_date, currently_in, description'
+        )
+        .order('sort_order', {ascending: true}),
+      db
+        .from('db_categories')
+        .select('id, category, sort_order, db_items(id, name, sort_order)')
+        .order('sort_order', {ascending: true}),
+      fetchSocials(db),
+      fetchProjectRepoRules(db)
+    ]);
 
-    const {data: educations} = await db
-      .from('db_educations')
-      .select(
-        'institution, degree, field_of_study, start_date, end_date, description'
-      )
-      .order('sort_order', {ascending: true});
-
-    const {data: categories} = await db
-      .from('db_categories')
-      .select('id, category, sort_order, db_items(id, name, sort_order)')
-      .order('sort_order', {ascending: true});
+    const loadError = experiencesError || educationsError || categoriesError;
+    if (loadError) {
+      console.error('CV data query failed:', loadError);
+      return fail('Failed to load CV data.');
+    }
 
     const skillCategories: SkillCategoryData[] = (categories || []).map(
       (cat: any) => ({
-        category: decodeHtmlEntities(cat.category),
+        category: cat.category,
         items: (cat.db_items || [])
           .sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
-          .map((item: any) => decodeHtmlEntities(item.name))
+          .map((item: any) => item.name)
       })
     );
 
-    const locationStr = [profile.city, profile.country]
-      .filter(Boolean)
-      .map(decodeHtmlEntities)
-      .join(', ');
+    const githubUsername = extractGitHubUsername({
+      ...profile,
+      socialLinks: socials
+    });
+    const repositories =
+      githubUsername ?
+        await fetchProjects(githubUsername, fetch, platform, repoRules.excluded)
+      : [];
+    const pinned = new Set(repoRules.pinned.map(name => name.toLowerCase()));
+    const projects: ProjectData[] = [...repositories]
+      .sort(
+        (a, b) =>
+          Number(pinned.has(b.name.toLowerCase()))
+            - Number(pinned.has(a.name.toLowerCase()))
+          || b.stars - a.stars
+          || (b.pushedAt ?? '').localeCompare(a.pushedAt ?? '')
+      )
+      .slice(0, CV_PROJECT_LIMIT)
+      .map(repo => ({
+        name: repo.name,
+        url: repo.url,
+        desc: repo.desc,
+        lang: repo.lang
+      }));
 
     const cvData: AuthorCvData = {
       profile: {
-        name: decodeHtmlEntities(profile.name || ''),
-        title: decodeHtmlEntities(profile.job_title || profile.headline || ''),
-        bio: decodeHtmlEntities(profile.bio || ''),
-        avatar: profile.avatar || '',
+        name: profile.name || '',
+        title: profile.job_title || profile.headline || '',
+        bio: profile.bio || '',
         email: profile.email || '',
         website: profile.site_url || '',
-        location: locationStr
+        location: [profile.city, profile.country].filter(Boolean).join(', '),
+        avatarBytes: await readAvatarBytes(
+          platform as Pick<App.Platform, 'env'> | undefined,
+          profile.avatar_version
+        )
       },
-      experiences: ((experiences || []) as ExperienceData[]).map(e => ({
-        ...e,
-        role: decodeHtmlEntities(e.role),
-        company: decodeHtmlEntities(e.company),
-        location: decodeHtmlEntities(e.location || ''),
-        description: decodeHtmlEntities(e.description || '')
-      })),
-      educations: ((educations || []) as EducationData[]).map(ed => ({
-        ...ed,
-        institution: decodeHtmlEntities(ed.institution),
-        degree: decodeHtmlEntities(ed.degree || ''),
-        field_of_study: decodeHtmlEntities(ed.field_of_study || ''),
-        description: decodeHtmlEntities(ed.description || '')
-      })),
+      links: socials
+        .filter(item => /github|linkedin/i.test(item.platform))
+        .map(item => ({url: item.url})),
+      experiences: (experiences || []) as ExperienceData[],
+      projects,
+      educations: (educations || []) as EducationData[],
       skills: skillCategories
     };
 
     const r2Creds = getR2Credentials(platform);
-    const pdfBytes = await generateCvPdfBuffer(cvData, r2Creds?.cdnUrl);
+    const pdfBytes = await generateCvPdfBuffer(cvData, loadCvFonts());
 
     const digestBuffer = await crypto.subtle.digest(
       'SHA-256',

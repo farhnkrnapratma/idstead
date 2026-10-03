@@ -30,7 +30,7 @@ export function extractReferences(markdown: string) {
       found = true;
       inside = true;
       output.push('', marker, '');
-    } else if (inside && /^ {0,3}:::\s*$/.test(line)) {
+    } else if (inside && /^\s*:::\s*$/.test(line)) {
       inside = false;
     } else {
       (inside ? definitions : output).push(line);

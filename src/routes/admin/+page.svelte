@@ -81,7 +81,6 @@
   } from '@lucide/svelte';
   import hljs from 'highlight.js';
   import {a11yStore} from '$lib/stores/a11yStore.svelte';
-  import {renderMarkdown} from '$lib/markdown';
   import {
     enhanceCodeBlocks,
     splitHighlightedHtmlLines
@@ -103,6 +102,7 @@
   import {formatAdminDateTime} from '$lib/adminDateFormat';
   import {cleanAdminParams} from '$lib/adminUrl';
   import {adminDisplayStore} from '$lib/stores/adminDisplayStore.svelte';
+  import {startAdminSettingsSync} from '$lib/stores/adminSettingsSync.svelte';
   import PostEditor from '$lib/components/admin/PostEditor.svelte';
   import {adminActivityRequest} from '$lib/adminActivityClient';
   import {
@@ -1821,11 +1821,13 @@
     )
       navigateAdmin(legacyUrl, true);
     const stopDisplaySync = adminDisplayStore.init();
+    const stopSettingsSync = startAdminSettingsSync();
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       active = false;
       stopDisplaySync?.();
+      stopSettingsSync();
       clearTimeout(idleWarnTimer);
       clearTimeout(signOutTimer);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
@@ -2137,7 +2139,6 @@
           continue;
         }
         const result = await res.json();
-        if (result.skipped) continue;
         if (!result.stored) failed.push(locale);
         else if (!result.bodyTranslated) partial.push(locale);
       }
@@ -2490,9 +2491,13 @@
       if (!token)
         throw new Error('Your admin session has expired. Please log in again.');
 
-      const res = await fetch('/api/internal/admin/data/export', {
-        headers: {Authorization: `Bearer ${token}`}
-      });
+      const now = new Date();
+      const pad = (value: number) => String(value).padStart(2, '0');
+      const stamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+      const res = await fetch(
+        `/api/internal/admin/data/export?stamp=${stamp}`,
+        {headers: {Authorization: `Bearer ${token}`}}
+      );
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body?.error?.message || 'Export failed.');
@@ -2501,10 +2506,15 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `site-data-${new Date().toISOString().slice(0, 10)}.zip`;
+      a.download = `data-export_${stamp}.zip`;
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
-      hasExportedAllData = true;
+      const warnings = Number(res.headers.get('X-Export-Warnings') ?? 0);
+      if (warnings > 0)
+        toastStore.error(
+          `Export incomplete: ${warnings} item${warnings === 1 ? '' : 's'} could not be read. See manifest.json in the archive.`
+        );
+      else hasExportedAllData = true;
     } catch (err: any) {
       toastStore.error(err?.message || 'Export failed.');
     } finally {
@@ -3253,8 +3263,8 @@
     {id: 'overview', title: ''},
     {id: 'content', title: 'Content'},
     {id: 'community', title: 'Community'},
-    {id: 'profile', title: 'Profile & Resume'},
-    {id: 'legal', title: 'Legal & Policy'},
+    {id: 'profile', title: 'Identity'},
+    {id: 'legal', title: 'Legal'},
     {id: 'administration', title: 'Administration'}
   ];
 
@@ -3286,7 +3296,7 @@
     {id: 'profile', label: 'Profile', icon: User, section: 'profile'},
     {id: 'resume', label: 'Resume', icon: FileUser, section: 'profile'},
     {id: 'skills', label: 'Skills', icon: Layers, section: 'profile'},
-    {id: 'socials', label: 'Social Links', icon: Share2, section: 'profile'},
+    {id: 'socials', label: 'Socials', icon: Share2, section: 'profile'},
     {id: 'funding', label: 'Funding', icon: HeartHandshake, section: 'profile'},
     {id: 'contact', label: 'Contact', icon: AtSign, section: 'profile'},
     {
@@ -3618,73 +3628,77 @@
           </Button>
         </div>
 
-        <FilterToolbar
-          title="Posts filter"
-          class="mb-6">
-          {#snippet searchSlot()}
-            <Input
-              type="search"
-              placeholder="Search posts..."
-              value={filterStore.search}
-              oninput={e =>
-                filterStore.setSearch((e.target as HTMLInputElement).value)}
-              aria-label="Search blog posts" />
-          {/snippet}
-          {#snippet countSlot()}
-            <SearchResultCount
-              count={filteredPosts.length}
-              total={posts.length}
-              itemLabel="posts" />
-          {/snippet}
-          {#snippet filterControlsSlot()}
-            <div
-              class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-              <Dropdown
-                label="Status"
-                value={statusFilter}
-                options={[
-                  {value: 'all', label: 'All'},
-                  {value: 'published', label: 'Published'},
-                  {value: 'draft', label: 'Draft'}
-                ]}
-                onChange={val => filterStore.setSingleFilter('status', val)} />
-              {#if allPostTags.length > 0}
+        {#if posts.length > 0}
+          <FilterToolbar
+            title="Posts filter"
+            class="mb-6">
+            {#snippet searchSlot()}
+              <Input
+                type="search"
+                placeholder="Search posts..."
+                value={filterStore.search}
+                oninput={e =>
+                  filterStore.setSearch((e.target as HTMLInputElement).value)}
+                aria-label="Search blog posts" />
+            {/snippet}
+            {#snippet countSlot()}
+              <SearchResultCount
+                count={filteredPosts.length}
+                total={posts.length}
+                itemLabel="posts" />
+            {/snippet}
+            {#snippet filterControlsSlot()}
+              <div
+                class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
                 <Dropdown
-                  multiple
-                  searchable
-                  label="Tag"
-                  options={allPostTags.map(t => ({value: t, label: t}))}
-                  value={filterStore.filters['tag'] || []}
-                  onChange={val => filterStore.toggleMultiFilter('tag', val)} />
-              {/if}
-            </div>
-          {/snippet}
-          {#snippet sortSlot()}
-            <SortControl
-              currentField={filterStore.sort.field}
-              currentDirection={filterStore.sort.direction}
-              fields={[
-                {value: 'date', label: 'Date'},
-                {value: 'title', label: 'Title'},
-                {value: 'status', label: 'Status'},
-                {value: 'views', label: 'Views'},
-                {value: 'comments', label: 'Comments'}
-              ]}
-              onFieldChange={val =>
-                filterStore.setSort(val, filterStore.sort.direction)}
-              onDirectionToggle={() =>
-                filterStore.setSort(
-                  filterStore.sort.field,
-                  filterStore.sort.direction === 'asc' ? 'desc' : 'asc'
-                )} />
-          {/snippet}
-        </FilterToolbar>
+                  label="Status"
+                  value={statusFilter}
+                  options={[
+                    {value: 'all', label: 'All'},
+                    {value: 'published', label: 'Published'},
+                    {value: 'draft', label: 'Draft'}
+                  ]}
+                  onChange={val =>
+                    filterStore.setSingleFilter('status', val)} />
+                {#if allPostTags.length > 0}
+                  <Dropdown
+                    multiple
+                    searchable
+                    label="Tag"
+                    options={allPostTags.map(t => ({value: t, label: t}))}
+                    value={filterStore.filters['tag'] || []}
+                    onChange={val =>
+                      filterStore.toggleMultiFilter('tag', val)} />
+                {/if}
+              </div>
+            {/snippet}
+            {#snippet sortSlot()}
+              <SortControl
+                currentField={filterStore.sort.field}
+                currentDirection={filterStore.sort.direction}
+                fields={[
+                  {value: 'date', label: 'Date'},
+                  {value: 'title', label: 'Title'},
+                  {value: 'status', label: 'Status'},
+                  {value: 'views', label: 'Views'},
+                  {value: 'comments', label: 'Comments'}
+                ]}
+                onFieldChange={val =>
+                  filterStore.setSort(val, filterStore.sort.direction)}
+                onDirectionToggle={() =>
+                  filterStore.setSort(
+                    filterStore.sort.field,
+                    filterStore.sort.direction === 'asc' ? 'desc' : 'asc'
+                  )} />
+            {/snippet}
+          </FilterToolbar>
 
-        <FilterChipGroup
-          chips={filterStore.activeChips}
-          onRemove={filterStore.removeFilter}
-          onClearAll={filterStore.clearAllFilters}
-          class="mb-6" />
+          <FilterChipGroup
+            chips={filterStore.activeChips}
+            onRemove={filterStore.removeFilter}
+            onClearAll={filterStore.clearAllFilters}
+            class="mb-6" />
+        {/if}
 
         {#if postsLoading}
           <LoadingState
@@ -3697,12 +3711,12 @@
             description={postsLoadError}
             onRetry={() => fetchPosts()} />
         {:else if filteredPosts.length === 0}
-          {#if filterStore.isFiltered}
+          {#if posts.length > 0 && filterStore.isFiltered}
             <FilterEmptyState onClearFilters={filterStore.clearAllFilters} />
           {:else}
             <EmptyState
-              title="No posts found"
-              description="Try adjusting your filter or search query." />
+              title="No posts yet"
+              description="Create a post to get started." />
           {/if}
         {:else}
           <div class="grid grid-cols-1 items-start gap-4">
@@ -3810,7 +3824,7 @@
                             <button
                               type="button"
                               onclick={() => toggleExcerpt(post.id)}
-                              class="ml-1 inline cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none sm:text-sm">
+                              class="ml-1 inline cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
                               Show less
                             </button>
                           {/if}
@@ -6505,8 +6519,8 @@
           variant="bordered"
           class="border-border-subtle! bg-surface-card!">
           <FormSection
-            title="Import profile & resume"
-            description="Restore profile and resume data from a previously exported JSON file."
+            title="Import profile"
+            description="Import profile data from a JSON file."
             bare>
             <input
               bind:this={profileImportInput}
@@ -6532,7 +6546,7 @@
           class="border-border-subtle! bg-surface-card!">
           <FormSection
             title="Export data"
-            description="Download all your content (posts, glossary terms, projects, profile & resume, legal pages, and logs) as one archive."
+            description="Download all your content as one archive."
             bare>
             <div>
               <Button
@@ -6552,7 +6566,7 @@
           class="border-danger/40 bg-danger-subtle/40">
           <FormSection
             title="Danger zone"
-            description="Permanently delete all your content (posts, glossary terms, projects, profile & resume, legal pages, and logs). This can't be undone."
+            description="Permanently delete all your data including post and profile. This can't be undone."
             bare>
             <div>
               <Button
@@ -6572,7 +6586,7 @@
               </Button>
               {#if !hasExportedAllData}
                 <p class="mt-2 text-xs text-text-muted">
-                  Export your data first before deleting it.
+                  Export your data first before deleting.
                 </p>
               {/if}
             </div>
@@ -6615,7 +6629,7 @@
 <ConfirmationDialog
   bind:isOpen={showDeleteAllDialog}
   title="Delete all site data?"
-  message="Permanently delete every post, glossary term, project note, profile & resume field, legal page, and log. This cannot be undone."
+  message="Permanently delete all your data including post and profile. This can't be undone."
   confirmLabel="Delete everything"
   requiredKeyword="DELETE"
   isDestructive

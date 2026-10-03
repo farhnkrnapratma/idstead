@@ -282,6 +282,12 @@
   });
 </script>
 
+{#snippet pageStatsEmpty()}
+  <EmptyState
+    title="No page statistics yet"
+    description="Page views will appear here once your pages receive visits." />
+{/snippet}
+
 <Section
   spacing="none"
   class="flex min-w-0 flex-col gap-4">
@@ -328,10 +334,11 @@
         {range}
         onRangeChange={setRange} />{/if}
   </Card>
-  {#if data?.topPages.length}
+  {#if data}
     <DataTable
       title="Page statistics"
       caption="Page statistics"
+      state={data.topPages.length ? undefined : pageStatsEmpty}
       columns={[
         {key: 'metric', header: 'Metric', width: '30%'},
         {key: 'page', header: 'Page', width: '32%'},
@@ -395,7 +402,6 @@
             state={listState}
             columns={area === 'reports' ? reportColumns : feedbackColumns}
             data={[]} />
-          <div class="mt-3 flex justify-end">{@render viewAll()}</div>
         {:else}
           <DataTable
             caption={title}

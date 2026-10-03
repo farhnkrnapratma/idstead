@@ -25,3 +25,4 @@ supabase/.temp/
 .playwright-mcp/
 .local/
 docs/
+graphify-out/

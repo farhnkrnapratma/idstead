@@ -1,5 +1,10 @@
 <script lang="ts">
-  import {ChevronLeft, ChevronRight} from '@lucide/svelte';
+  import {
+    ChevronFirst,
+    ChevronLast,
+    ChevronLeft,
+    ChevronRight
+  } from '@lucide/svelte';
   import {cn} from '../utils/cn';
   import {buttonKey} from '$lib/shortcuts';
   import Button from './Button.svelte';
@@ -20,6 +25,7 @@
     class: className = ''
   }: Props = $props();
 
+  const showJump = $derived(totalPages > 5);
   const compact = $derived(size === 'sm');
   const controlClass = $derived(
     compact ? 'size-6 shrink-0 p-0' : 'size-9 shrink-0 p-0'
@@ -66,17 +72,30 @@
     'flex w-full items-center justify-between gap-1.5 select-none',
     className
   )}>
-  <Button
-    type="outline"
-    size={compact ? '3xs' : 'md'}
-    class={controlClass}
-    onclick={() => goTo(page - 1)}
-    disabled={page <= 1}
-    keyboardShortcut={buttonKey('pagePrev')}
-    shortcutLabel="Previous page"
-    aria-label="Previous page">
-    <ChevronLeft class="size-3" />
-  </Button>
+  <div class="flex items-center gap-1.5">
+    {#if showJump}
+      <Button
+        type="outline"
+        size={compact ? '3xs' : 'md'}
+        class={controlClass}
+        onclick={() => goTo(1)}
+        disabled={page <= 1}
+        aria-label="First page">
+        <ChevronFirst class="size-3" />
+      </Button>
+    {/if}
+    <Button
+      type="outline"
+      size={compact ? '3xs' : 'md'}
+      class={controlClass}
+      onclick={() => goTo(page - 1)}
+      disabled={page <= 1}
+      keyboardShortcut={buttonKey('pagePrev')}
+      shortcutLabel="Previous page"
+      aria-label="Previous page">
+      <ChevronLeft class="size-3" />
+    </Button>
+  </div>
 
   <div
     class="flex scrollbar-none items-center justify-center gap-1 overflow-x-auto">
@@ -104,15 +123,28 @@
     {/each}
   </div>
 
-  <Button
-    type="outline"
-    size={compact ? '3xs' : 'md'}
-    class={controlClass}
-    onclick={() => goTo(page + 1)}
-    disabled={page >= totalPages}
-    keyboardShortcut={buttonKey('pageNext')}
-    shortcutLabel="Next page"
-    aria-label="Next page">
-    <ChevronRight class="size-3" />
-  </Button>
+  <div class="flex items-center gap-1.5">
+    <Button
+      type="outline"
+      size={compact ? '3xs' : 'md'}
+      class={controlClass}
+      onclick={() => goTo(page + 1)}
+      disabled={page >= totalPages}
+      keyboardShortcut={buttonKey('pageNext')}
+      shortcutLabel="Next page"
+      aria-label="Next page">
+      <ChevronRight class="size-3" />
+    </Button>
+    {#if showJump}
+      <Button
+        type="outline"
+        size={compact ? '3xs' : 'md'}
+        class={controlClass}
+        onclick={() => goTo(totalPages)}
+        disabled={page >= totalPages}
+        aria-label="Last page">
+        <ChevronLast class="size-3" />
+      </Button>
+    {/if}
+  </div>
 </nav>

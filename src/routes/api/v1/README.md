@@ -96,7 +96,7 @@ Every response (list items and the detail endpoint) includes:
 - `machine_translated` — `true` when `language` isn't `en`.
 - `translation_disclaimer` — present only when `machine_translated` is `true`: a warning that the content was translated by AI and may contain errors, in the same language as `language`.
 
-If a translation hasn't been generated yet for the requested language, the response falls back to English (`language: "en"`, `machine_translated: false`) — **this is a `200`, never a `404`**. An unrecognized `lang` value (not `id`, `ja`, `zh` or `ko`) returns `400 BLOG_INVALID_LANG`. The disclaimer is also prepended to `?format=md`/`?format=text` output when the response is a translation — on `?format=md` it's a real `[!NOTE]` GitHub-style alert block, matching how alerts render elsewhere in the article.
+If a translation hasn't been generated yet for the requested language, the response falls back to English (`language: "en"`, `machine_translated: false`) — **this is a `200`, never a `404`**. An unrecognized `lang` value (not `id`, `ja`, `zh` or `ko`) returns `400 BLOG_INVALID_LANG`. The disclaimer is also prepended to `?format=md`/`?format=text` output when the response is a translation — on `?format=md` it's a real `:::note` callout block, matching how callouts render elsewhere in the article.
 
 #### Comments
 

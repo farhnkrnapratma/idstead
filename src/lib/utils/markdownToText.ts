@@ -12,15 +12,34 @@ export function markdownToPlainText(markdown: string): string {
   if (!markdown) return '';
 
   let text = markdown;
+  const kept: string[] = [];
+  const keep = (value: string) => `${kept.push(value) - 1}`;
 
   text = text.replace(/<!--[\s\S]*?-->/g, '');
   text = text.replace(/^---[\s\S]*?---\n*/m, '');
-  text = text.replace(/```[a-zA-Z0-9_-]*\n([\s\S]*?)```/g, '$1');
+  text = text.replace(
+    /(`{3,}|~{3,})[^\n]*\n([\s\S]*?)\1/g,
+    (_, __, body: string) => keep(body)
+  );
+  text = text.replace(
+    /^[ \t]*:::math[ \t]*\n([\s\S]*?)\n[ \t]*:::[ \t]*$/gim,
+    (_, body: string) => keep(body)
+  );
+  text = text.replace(/\$\$([^\n]+?)\$\$/g, (_, formula: string) =>
+    keep(formula.trim())
+  );
   text = text.replace(/`([^`]+)`/g, '$1');
   text = text.replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1');
   text = text.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
   text = text.replace(/\[([^\]]+)\]\[[^\]]*\]/g, '$1');
-  text = text.replace(/\[!(?:NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/gi, '');
+  text = text.replace(
+    /^[ \t]*:{2,3}(?:callout|details|tab)\b[^\n]*?\b(?:title|summary|label)="([^"]*)"[^\n]*$/gm,
+    '$1'
+  );
+  text = text.replace(
+    /^[ \t]*:{2,}(?:[a-zA-Z][a-zA-Z-]*(?:[ \t][^\n]*)?)?[ \t]*$/gm,
+    ''
+  );
   text = text.replace(/^#{1,6}\s+(.+)$/gm, '$1');
   text = text.replace(/^>\s?(.*)$/gm, '$1');
   text = text.replace(/^[-*_]{3,}\s*$/gm, '');
@@ -30,6 +49,7 @@ export function markdownToPlainText(markdown: string): string {
   text = text.replace(/~~(.*?)~~/g, '$1');
   text = text.replace(/<[^>]*>/g, '');
   text = decodeHtmlEntities(text);
+  text = text.replace(/(\d+)/g, (_, index: string) => kept[+index]);
   text = text.replace(/\n{3,}/g, '\n\n');
 
   return text.trim();

@@ -98,14 +98,10 @@
               stroke-width="2"
               stroke-linecap="round"
               stroke-linejoin="round"
-              class="lucide lucide-link-2 inline-block size-[0.75em] align-middle leading-none text-inherit no-underline opacity-0 select-none group-hover:text-accent group-hover:opacity-100 dark:group-hover:text-accent"
+              class="lucide lucide-pilcrow inline-block size-[0.75em] align-middle leading-none text-inherit no-underline opacity-0 select-none group-hover:text-accent group-hover:opacity-100 dark:group-hover:text-accent"
               aria-hidden="true"
-              ><path d="M9 17H7A5 5 0 0 1 7 7h2" /><path
-                d="M15 7h2a5 5 0 1 1 0 10h-2" /><line
-                x1="8"
-                x2="16"
-                y1="12"
-                y2="12" /></svg>
+              ><path d="M13 4v16" /><path d="M17 4v16" /><path
+                d="M19 4H9.5a4.5 4.5 0 0 0 0 9H13" /></svg>
           </a></span
         ></span>
     {:else}
@@ -129,14 +125,10 @@
             stroke-width="2"
             stroke-linecap="round"
             stroke-linejoin="round"
-            class="lucide lucide-link-2 inline-block size-[0.75em] align-middle leading-none text-inherit no-underline opacity-0 select-none group-hover:text-accent group-hover:opacity-100 dark:group-hover:text-accent"
+            class="lucide lucide-pilcrow inline-block size-[0.75em] align-middle leading-none text-inherit no-underline opacity-0 select-none group-hover:text-accent group-hover:opacity-100 dark:group-hover:text-accent"
             aria-hidden="true"
-            ><path d="M9 17H7A5 5 0 0 1 7 7h2" /><path
-              d="M15 7h2a5 5 0 1 1 0 10h-2" /><line
-              x1="8"
-              x2="16"
-              y1="12"
-              y2="12" /></svg>
+            ><path d="M13 4v16" /><path d="M17 4v16" /><path
+              d="M19 4H9.5a4.5 4.5 0 0 0 0 9H13" /></svg>
         </a></span>
     {/if}
   </h1>

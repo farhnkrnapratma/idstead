@@ -11,7 +11,6 @@ import {
 } from '$lib/server/blogPostSave';
 import {cleanupBlogAssets, putBanner} from '$lib/server/blogBannerStorage';
 import {UUID_PATTERN} from '$lib/blogBanner';
-import {extractPostConfig} from '$lib/markdown';
 import {createApiRegistry, validateDefineForSave} from '$lib/define';
 import {notifyNewPost} from '$lib/server/subscriberBroadcast';
 import {logActivity} from '$lib/server/activityLog';
@@ -47,7 +46,7 @@ export const POST: RequestHandler = async ({
   try {
     if (input.kind === 'save') {
       const validation = await validateDefineForSave(
-        extractPostConfig(input.markdown).body,
+        input.markdown,
         createApiRegistry(db)
       );
       if (!validation.ok)

@@ -12,6 +12,7 @@
     type ActivityLogEntry,
     type ActivityLogSortField
   } from '$lib/activityLog';
+  import {shouldShowDataControls} from '$lib/adminWorkspace';
   import Section from '$lib/layout/Section.svelte';
   import DataTable from '../DataTable.svelte';
   import Pagination from '../Pagination.svelte';
@@ -46,6 +47,7 @@
   );
   const blocked = $derived(loading || Boolean(error) || !rows.length);
   const filtered = $derived(Boolean(category || search.trim()));
+  const showDataControls = $derived(shouldShowDataControls(total, filtered));
 
   async function authHeaders(): Promise<Record<string, string>> {
     const {data} = await supabase.auth.getSession();
@@ -170,38 +172,42 @@
         Admin activity from the last 30 days.
       </p>
     </div>
-    <div class="flex shrink-0 flex-col gap-2 sm:items-end">
-      <div class="flex flex-wrap items-center gap-2">
-        <Button
-          type="secondary"
-          size="sm"
-          isLoading={exporting === 'txt'}
-          disabled={exporting !== null
-            || loading
-            || Boolean(error)
-            || total === 0}
-          onclick={() => exportLog('txt')}>
-          {#snippet leading()}<FileText class="size-3.5" />{/snippet}Export TXT
-        </Button>
-        <Button
-          type="secondary"
-          size="sm"
-          isLoading={exporting === 'pdf'}
-          disabled={exporting !== null
-            || loading
-            || Boolean(error)
-            || total === 0}
-          onclick={() => exportLog('pdf')}>
-          {#snippet leading()}<Download class="size-3.5" />{/snippet}Export PDF
-        </Button>
+    {#if total > 0}
+      <div class="flex shrink-0 flex-col gap-2 sm:items-end">
+        <div class="flex flex-wrap items-center gap-2">
+          <Button
+            type="secondary"
+            size="sm"
+            isLoading={exporting === 'txt'}
+            disabled={exporting !== null
+              || loading
+              || Boolean(error)
+              || total === 0}
+            onclick={() => exportLog('txt')}>
+            {#snippet leading()}<FileText class="size-3.5" />{/snippet}Export
+            TXT
+          </Button>
+          <Button
+            type="secondary"
+            size="sm"
+            isLoading={exporting === 'pdf'}
+            disabled={exporting !== null
+              || loading
+              || Boolean(error)
+              || total === 0}
+            onclick={() => exportLog('pdf')}>
+            {#snippet leading()}<Download class="size-3.5" />{/snippet}Export
+            PDF
+          </Button>
+        </div>
+        {#if total > ACTIVITY_LOG_EXPORT_LIMIT && !loading && !error}
+          <p class="max-w-sm text-xs text-text-muted sm:text-right">
+            Exports include the first 5,000 matching activities in the selected
+            order.
+          </p>
+        {/if}
       </div>
-      {#if total > ACTIVITY_LOG_EXPORT_LIMIT && !loading && !error}
-        <p class="max-w-sm text-xs text-text-muted sm:text-right">
-          Exports include the first 5,000 matching activities in the selected
-          order.
-        </p>
-      {/if}
-    </div>
+    {/if}
   </div>
   <DataTable
     title="All activity"
@@ -219,55 +225,57 @@
       {key: 'created_at', header: 'Time', width: '18%'}
     ]}>
     {#snippet meta()}
-      {#if !error}<SearchResultCount
+      {#if showDataControls && (loading || total > 0) && !error}<SearchResultCount
           count={rows.length}
           {total}
           {loading}
           itemLabel="activities" />{/if}
     {/snippet}
     {#snippet toolbar()}
-      <FilterToolbar
-        embedded
-        title="Activity filters">
-        {#snippet searchSlot()}
-          <Input
-            type="search"
-            aria-label="Search activity log"
-            placeholder="Search actions, actors, or details…"
-            value={search}
-            maxlength={250}
-            oninput={event => searchChanged(event.currentTarget.value)} />
-        {/snippet}
-        {#snippet filterControlsSlot()}
-          <Dropdown
-            label="Category"
-            value={category}
-            options={[{value: '', label: 'All'}, ...activityCategories]}
-            onChange={value => {
-              category = value;
-              filter();
-            }} />
-        {/snippet}
-        {#snippet sortSlot()}
-          <SortControl
-            fields={[...activityLogSortFields]}
-            currentField={sort}
-            currentDirection={direction}
-            onFieldChange={value => {
-              const selected = activityLogSortFields.find(
-                field => field.value === value
-              );
-              if (!selected) return;
-              sort = selected.value;
-              direction = sort === 'created_at' ? 'desc' : 'asc';
-              filter();
-            }}
-            onDirectionToggle={() => {
-              direction = direction === 'desc' ? 'asc' : 'desc';
-              filter();
-            }} />
-        {/snippet}
-      </FilterToolbar>
+      {#if showDataControls}
+        <FilterToolbar
+          embedded
+          title="Activity filters">
+          {#snippet searchSlot()}
+            <Input
+              type="search"
+              aria-label="Search activity log"
+              placeholder="Search actions, actors, or details…"
+              value={search}
+              maxlength={250}
+              oninput={event => searchChanged(event.currentTarget.value)} />
+          {/snippet}
+          {#snippet filterControlsSlot()}
+            <Dropdown
+              label="Category"
+              value={category}
+              options={[{value: '', label: 'All'}, ...activityCategories]}
+              onChange={value => {
+                category = value;
+                filter();
+              }} />
+          {/snippet}
+          {#snippet sortSlot()}
+            <SortControl
+              fields={[...activityLogSortFields]}
+              currentField={sort}
+              currentDirection={direction}
+              onFieldChange={value => {
+                const selected = activityLogSortFields.find(
+                  field => field.value === value
+                );
+                if (!selected) return;
+                sort = selected.value;
+                direction = sort === 'created_at' ? 'desc' : 'asc';
+                filter();
+              }}
+              onDirectionToggle={() => {
+                direction = direction === 'desc' ? 'asc' : 'desc';
+                filter();
+              }} />
+          {/snippet}
+        </FilterToolbar>
+      {/if}
     {/snippet}
     {#snippet cell(row, key)}
       {#if key === 'category'}
