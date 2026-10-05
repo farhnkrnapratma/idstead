@@ -1,0 +1,14 @@
+{
+  "name": "www",
+  "compatibility_date": "2025-06-28",
+  "compatibility_flags": ["nodejs_compat"],
+  "pages_build_output_dir": ".svelte-kit/cloudflare",
+  "ai": {"binding": "AI", "remote": true},
+  "ratelimits": [
+    {
+      "name": "API_RATE_LIMITER",
+      "namespace_id": "1001",
+      "simple": {"limit": 60, "period": 60}
+    }
+  ]
+}

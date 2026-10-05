@@ -1,0 +1,64 @@
+<script lang="ts">
+  import type {Snippet} from 'svelte';
+  import {
+    Info,
+    CheckCircle2,
+    AlertTriangle,
+    AlertOctagon
+  } from '@lucide/svelte';
+  import {cn} from '../utils/cn';
+
+  interface Props {
+    variant?: 'info' | 'success' | 'warning' | 'error';
+    title?: string;
+    message?: string;
+    class?: string;
+    children?: Snippet;
+  }
+
+  let {
+    variant = 'info',
+    title = '',
+    message = '',
+    class: className = '',
+    children
+  }: Props = $props();
+
+  const variantStyles = {
+    info: 'border-border-subtle/50 bg-surface/70 text-text-primary',
+    success: 'border-success/30 bg-success-subtle/20 text-text-primary',
+    warning: 'border-warning/30 bg-warning/10 text-text-primary',
+    error: 'border-danger/30 bg-danger-subtle/20 text-text-primary'
+  };
+</script>
+
+<div
+  role={variant === 'error' ? 'alert' : 'status'}
+  aria-live={variant === 'error' ? 'assertive' : 'polite'}
+  class={cn(
+    'flex items-start gap-3 rounded-md glass-card p-4 text-xs select-none',
+    variantStyles[variant],
+    className
+  )}>
+  {#if variant === 'success'}
+    <CheckCircle2 class="mt-0.5 size-4 shrink-0 self-start text-success" />
+  {:else if variant === 'warning'}
+    <AlertTriangle class="mt-0.5 size-4 shrink-0 self-start text-warning" />
+  {:else if variant === 'error'}
+    <AlertOctagon class="mt-0.5 size-4 shrink-0 self-start text-danger" />
+  {:else}
+    <Info class="mt-0.5 size-4 shrink-0 self-start text-text-muted" />
+  {/if}
+  <div class="flex min-w-0 flex-1 flex-col gap-0.5">
+    {#if title}
+      <span class="leading-snug font-bold">{title}</span>
+    {/if}
+    {#if children}
+      <div class="leading-relaxed font-medium wrap-break-word">
+        {@render children()}
+      </div>
+    {:else if message}
+      <span class="leading-relaxed font-medium wrap-break-word">{message}</span>
+    {/if}
+  </div>
+</div>
