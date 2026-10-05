@@ -1,0 +1,170 @@
+<script lang="ts">
+  import {onDestroy, untrack} from 'svelte';
+  import FileUploadField from './FileUploadField.svelte';
+  import FieldMessage from './FieldMessage.svelte';
+  import Button from './Button.svelte';
+  import ImageWithSkeleton from './ImageWithSkeleton.svelte';
+  import {processBanner} from '$lib/processBanner';
+  import {blogBannerAlt} from '$lib/blogBanner';
+  import type {BannerChange} from '$lib/blogBanner';
+
+  let {
+    savedUrl,
+    title,
+    savedRevision,
+    disabled = false,
+    validationError = '',
+    onprepared,
+    onblocked
+  }: {
+    savedUrl: string | null;
+    title: string;
+    savedRevision: number;
+    disabled?: boolean;
+    validationError?: string;
+    onprepared: (change: BannerChange) => void;
+    onblocked: (blocked: boolean) => void;
+  } = $props();
+  let busy = $state(false);
+  let error = $state('');
+  let loadError = $state('');
+  let filename = $state('');
+  let preview = $state('');
+  let size = $state('');
+  let loadedSource = $state('');
+  let controller: AbortController | undefined;
+  let generation = 0;
+  let previousRevision: number | undefined;
+
+  function clearPreview() {
+    if (preview) URL.revokeObjectURL(preview);
+    preview = '';
+    filename = '';
+    size = '';
+  }
+
+  function watchSaved(source: string | null, revision: number) {
+    return () =>
+      untrack(() => {
+        const committed =
+          previousRevision !== undefined && previousRevision !== revision;
+        previousRevision = revision;
+        const current = generation;
+        loadError = '';
+        if (!source) {
+          loadedSource = '';
+          if (committed) {
+            clearPreview();
+          }
+          return;
+        }
+        const image = new Image();
+        image.onload = () => {
+          loadedSource = source;
+          if (committed && current === generation) {
+            clearPreview();
+          }
+        };
+        image.onerror = () => {
+          loadError =
+            'Saved banner could not be loaded. Your local preview is retained.';
+        };
+        image.src = source;
+        return () => {
+          image.onload = null;
+          image.onerror = null;
+        };
+      });
+  }
+
+  async function select(file: File | null) {
+    if (disabled) return;
+    const current = ++generation;
+    controller?.abort();
+    clearPreview();
+    error = '';
+    onprepared({operation: 'keep'});
+    busy = !!file;
+    onblocked(busy);
+    if (!file) return;
+    filename = file.name;
+    controller = new AbortController();
+    try {
+      const {blob} = await processBanner(file, controller.signal);
+      if (current !== generation) return;
+      preview = URL.createObjectURL(blob);
+      size = `${Math.ceil(blob.size / 1024)} KiB · WebP · 1280 × 640`;
+      onprepared({operation: 'replace', file: blob});
+    } catch (failure) {
+      if (current !== generation) return;
+      error =
+        failure instanceof Error ? failure.message : 'Image processing failed.';
+    } finally {
+      if (current === generation) {
+        busy = false;
+        onblocked(!!error);
+      }
+    }
+  }
+
+  onDestroy(() => {
+    generation++;
+    controller?.abort();
+    clearPreview();
+  });
+</script>
+
+<section
+  aria-labelledby="banner-image-title"
+  class="flex min-w-0 flex-col gap-3">
+  <h3
+    id="banner-image-title"
+    class="text-xxs font-bold tracking-widest text-text-secondary uppercase">
+    Banner image <span class="font-normal text-text-muted">(required)</span>
+  </h3>
+  <div
+    class="grid min-w-0 grid-cols-1 items-stretch gap-4 sm:grid-cols-[auto_1fr]"
+    {@attach watchSaved(savedUrl, savedRevision)}>
+    <div
+      data-banner-preview
+      class="relative aspect-2/1 w-full max-w-80 overflow-hidden rounded-md border border-border-subtle bg-surface-subtle [background-image:conic-gradient(var(--color-surface)_25%,transparent_0_50%,var(--color-surface)_0_75%,transparent_0)] [background-size:1rem_1rem] sm:w-64 sm:max-w-none">
+      <ImageWithSkeleton
+        src={preview || (loadedSource === savedUrl ? savedUrl : null)}
+        alt={`${blogBannerAlt(title || 'untitled post')} — preview`}
+        loading="eager"
+        class="absolute inset-0 size-full bg-transparent!"
+        imgClass="object-contain" />
+    </div>
+    <FileUploadField
+      id="post-banner"
+      class="min-w-0"
+      required
+      accept="image/png,image/jpeg,image/webp,image/avif,image/gif,image/bmp"
+      hint="PNG, JPEG, WebP, AVIF, GIF, BMP · up to 10 MB / 40 MP · at least 1280 × 640"
+      {disabled}
+      isUploading={busy}
+      allowReselectWhileUploading
+      uploadingLabel="Preparing banner…"
+      selectedFileName={filename}
+      fileSize={size}
+      error={error || validationError}
+      onFileSelect={select} />
+  </div>
+  {#if loadError}<FieldMessage
+      variant="error"
+      message={loadError} />{/if}
+  {#if preview}<p
+      class="text-xs text-text-muted"
+      aria-live="polite">
+      Banner is ready. Save draft or Publish post to apply it.
+    </p>{/if}
+  <div class="flex flex-wrap gap-2">
+    {#if busy || error || filename}<Button
+        type="ghost"
+        size="xs"
+        {disabled}
+        onclick={() => select(null)}
+        >{busy ? 'Cancel processing' : 'Discard banner change'}</Button
+      >{/if}
+  </div>
+</section>
