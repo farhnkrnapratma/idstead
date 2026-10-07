@@ -2,7 +2,7 @@ import {defineConfig} from 'vite';
 import tailwindcss from '@tailwindcss/vite';
 import adapter from '@sveltejs/adapter-cloudflare';
 import {sveltekit} from '@sveltejs/kit/vite';
-import {sentrySvelteKit} from '@sentry/sveltekit';
+import {sentrySvelteKit} from '@sentry/sveltekit/vite';
 import {webpWasmPlugin} from './tooling/vite/webp-wasm-plugin.ts';
 
 export default defineConfig({
@@ -21,7 +21,7 @@ export default defineConfig({
           filename.split(/[/\\]/).includes('node_modules') ? undefined : true
       },
       adapter: adapter(),
-      experimental: {instrumentation: {server: true}, tracing: {server: true}}
+      tracing: {server: true}
     })
   ],
   ssr: {noExternal: ['@lucide/svelte']}
