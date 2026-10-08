@@ -1,7 +1,7 @@
 <script lang="ts">
   import {resolve} from '$app/paths';
-  import type {AdminNotificationRow} from '$lib/adminActivity';
-  import {activityPageTitle} from '$lib/adminActivity';
+  import type {AdminNotificationRow} from '#lib/adminActivity.ts';
+  import {activityPageTitle} from '#lib/adminActivity.ts';
 
   let {
     item,

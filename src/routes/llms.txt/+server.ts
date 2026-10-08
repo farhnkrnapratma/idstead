@@ -5,7 +5,7 @@ import {
   markdownText,
   validDate,
   publicResponse
-} from '$lib/server/publicMetadata';
+} from '#lib/server/publicMetadata.ts';
 
 export const GET: RequestHandler = async ({request}) => {
   const [author, posts] = await Promise.all([

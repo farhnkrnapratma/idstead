@@ -1,12 +1,12 @@
 import UPNG from 'upng-js';
 import {Inflate} from 'pako';
-import {crc32} from '$lib/png';
+import {crc32} from '#lib/png.ts';
 import {
   IMAGE_LIMIT,
   iconSizes,
   buildSvg,
   type SvgPath
-} from '$lib/siteIdentity';
+} from '#lib/siteIdentity.ts';
 
 export function validatePng(buffer: ArrayBuffer, size: number) {
   const bytes = new Uint8Array(buffer);

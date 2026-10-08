@@ -1,10 +1,10 @@
 import * as Sentry from '@sentry/sveltekit';
 import {json} from '@sveltejs/kit';
 import type {RequestHandler} from './$types';
-import {requireAdminAuth} from '$lib/server/adminCv';
-import {cleanupAssets} from '$lib/server/profileAssets';
-import {isSameOriginRequest} from '$lib/server/sameOrigin';
-import {apiError} from '$lib/server/apiError';
+import {requireAdminAuth} from '#lib/server/adminCv.ts';
+import {cleanupAssets} from '#lib/server/profileAssets.ts';
+import {isSameOriginRequest} from '#lib/server/sameOrigin.ts';
+import {apiError} from '#lib/server/apiError.ts';
 
 export const POST: RequestHandler = async ({request, platform, url}) => {
   if (!isSameOriginRequest(request, url))

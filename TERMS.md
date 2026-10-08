@@ -30,7 +30,7 @@ You agree to use the Service only for lawful purposes and in accordance with the
 - Circumvent, or attempt to circumvent, published rate limits, the directives published at `/robots.txt`, or any technical measure that restricts access to the Service.
 - Submit or transmit malware, phishing links, spam, or any material that is unlawful, defamatory, harassing, or infringing.
 - Impersonate any person or entity, or misrepresent your affiliation with any person or entity.
-- Use the automated content-generation, translation, or moderation capabilities of the Service in a manner intended to overload them, extract the underlying models, or generate unlawful material.
+- Use the automated content-generation or moderation capabilities of the Service in a manner intended to overload them, extract the underlying models, or generate unlawful material.
 - Scrape, harvest, or systematically retrieve Content by any means other than the Public API, or in excess of the limits described in Section 5.
 
 ## 4. Intellectual Property
@@ -77,11 +77,11 @@ The report form accepts one of the following grounds: spam, harassment, violence
 
 If you wish to request removal of a comment on grounds of privacy, copyright, or factual inaccuracy, you may either submit a report using the **removal request** ground, or copy the Comment ID and send it, together with your reasons, through our [Feedback](https://fkp.my.id/feedback) form or by email to [contact@fkp.my.id](mailto:contact@fkp.my.id).
 
-## 8. Automatically Generated and Machine-Translated Content
+## 8. Automatically Generated Content
 
-Parts of the Service produce or transform Content automatically. Translated Content requested through the `lang` query parameter is machine-generated and is flagged as such in API responses and accompanied by a disclaimer. Certain editorial drafts and document summaries are likewise produced with automated assistance.
+Parts of the Service produce or transform Content automatically. Certain editorial drafts and document summaries are generated with automated assistance.
 
-Automatically generated and machine-translated Content is provided for convenience only. It may contain errors, omissions, or mistranslations, and it does not carry the same assurance of accuracy as the original text. Where a translation and the original conflict, the original prevails.
+Automatically generated Content is provided for convenience only. It may contain errors or omissions and does not carry the same assurance of accuracy as manually written Content.
 
 ## 9. Document Integrity
 

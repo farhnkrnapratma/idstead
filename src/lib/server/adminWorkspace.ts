@@ -2,8 +2,8 @@ import type {SupabaseClient} from '@supabase/supabase-js';
 import {apiError} from './apiError';
 import {blogAdmin} from './blogPostAuth';
 import {ActivityInputError, activityJson, activityUuid} from './activityInput';
-import {REPORT_REASON_IDS} from '$lib/reportReasons';
-import {ADMIN_WORKSPACE_PAGE_SIZE} from '$lib/adminWorkspace';
+import {REPORT_REASON_IDS} from '#lib/reportReasons.ts';
+import {ADMIN_WORKSPACE_PAGE_SIZE} from '#lib/adminWorkspace.ts';
 
 function option(
   params: URLSearchParams,

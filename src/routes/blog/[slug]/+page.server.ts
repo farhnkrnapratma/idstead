@@ -1,10 +1,12 @@
-import {bannerUrl} from '$lib/blogBanner';
-import {supabase} from '$lib/supabase';
+import {bannerUrl} from '#lib/blogBanner.ts';
+import {supabase} from '#lib/supabase.ts';
 import {error} from '@sveltejs/kit';
-import {renderMarkdown, injectHeadingIds, extractHeadings} from '$lib/markdown';
-import {resolveTranslation} from '$lib/server/blogTranslations';
-import {estimateReadTime} from '$lib/readTime';
-import {buildTranslationDisclaimerMarkdown} from '$lib/server/blogTranslate';
+import {
+  renderMarkdown,
+  injectHeadingIds,
+  extractHeadings
+} from '#lib/markdown.ts';
+import {estimateReadTime} from '#lib/readTime.ts';
 import type {PageServerLoad} from './$types';
 
 export interface BlogComment {
@@ -45,9 +47,10 @@ function getRelatedWindow<T extends {id: string}>(
   return [posts[idx - 1], posts[idx + 1]];
 }
 
-export const load: PageServerLoad = async ({params, url, fetch, locals}) => {
+export const load: PageServerLoad = async ({params, url, fetch}) => {
   const {slug} = params;
-  const lang = url.searchParams.get('lang')?.trim() || null;
+  if (url.searchParams.has('lang'))
+    throw error(400, 'The lang query parameter is no longer supported.');
 
   let post;
   try {
@@ -70,15 +73,12 @@ export const load: PageServerLoad = async ({params, url, fetch, locals}) => {
     throw error(500, 'Internal Server Error: Could not retrieve post.');
   }
 
-  const translation = await resolveTranslation(supabase, post.id, lang);
-  const effectiveStoragePath = translation.storagePath ?? post.storage_path;
-
   let html: string;
   let readTime = '1 min read';
   try {
     const {data} = supabase.storage
       .from('blog-posts')
-      .getPublicUrl(effectiveStoragePath);
+      .getPublicUrl(post.storage_path);
     const fileRes = await fetch(data.publicUrl, {
       signal: AbortSignal.timeout(5000)
     });
@@ -95,19 +95,6 @@ export const load: PageServerLoad = async ({params, url, fetch, locals}) => {
   }
 
   const headings = extractHeadings(html);
-
-  let availableLocales: string[] = [];
-  try {
-    const {data} = await supabase
-      .from('db_post_translations')
-      .select('locale')
-      .eq('post_id', post.id);
-    availableLocales = (data ?? []).map(row => row.locale as string);
-  } catch (err) {
-    console.error('Error fetching available translation locales:', err);
-  }
-
-  locals.pageLanguage = translation.language;
 
   let comments: BlogComment[] = [];
   try {
@@ -216,32 +203,20 @@ export const load: PageServerLoad = async ({params, url, fetch, locals}) => {
     console.error('Database error fetching related posts:', err);
   }
 
-  const translationDisclaimerHtml =
-    translation.machineTranslated ?
-      await renderMarkdown(
-        buildTranslationDisclaimerMarkdown(translation.language),
-        supabase
-      )
-    : null;
-
   return {
     post: {
       ...post,
       read_time: readTime,
-      title: translation.title ?? post.title,
-      excerpt: translation.excerpt ?? post.excerpt,
-      summary: translation.summary ?? post.summary,
-      tldr: translation.tldr ?? post.tldr
+      title: post.title,
+      excerpt: post.excerpt,
+      summary: post.summary,
+      tldr: post.tldr
     },
     bannerPublicUrl,
     html,
     headings,
     comments,
     relatedPosts,
-    initialViewsCount,
-    language: translation.language,
-    machineTranslated: translation.machineTranslated,
-    translationDisclaimerHtml,
-    availableLocales
+    initialViewsCount
   };
 };

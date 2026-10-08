@@ -8,14 +8,14 @@
     FieldMessage,
     IconButton,
     toastStore
-  } from '$lib';
+  } from '#lib/index.ts';
   import {
     DEFAULT_RANDOM_PASSWORD,
     DEFAULT_MEMORABLE_PASSWORD,
     generatePassword,
     type PasswordGeneratorOptions,
     type MemorablePasswordOptions
-  } from '$lib/passwordGenerator';
+  } from '#lib/passwordGenerator.ts';
 
   let {
     disabled = false,

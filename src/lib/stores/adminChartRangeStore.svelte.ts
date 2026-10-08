@@ -1,6 +1,6 @@
-import {browser} from '$app/environment';
-import type {ViewsRange} from '$lib/components/admin/viewsRange';
-import {DEFAULT_CHART_RANGE} from '$lib/adminSettings';
+import {browser} from '$app/env';
+import type {ViewsRange} from '#lib/components/admin/viewsRange.ts';
+import {DEFAULT_CHART_RANGE} from '#lib/adminSettings.ts';
 
 const STORAGE_KEY = 'admin-chart-range';
 

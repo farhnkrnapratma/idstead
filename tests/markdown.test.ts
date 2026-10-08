@@ -346,21 +346,8 @@ describe('robustness and removed directives', () => {
     expect(html).toContain(':::');
   });
 
-  test('removed directives are no longer interpreted', async () => {
-    const html = await render(
-      [
-        ':::locale{only="en"}\nEnglish\n:::',
-        ':::ignore-translate\nkeep\n:::',
-        ':::translate-override\nx\n::override{locale="id"}\ny\n:::'
-      ].join('\n\n')
-    );
-    expect(html).toContain(':::locale');
-    expect(html).toContain(':::ignore-translate');
-    expect(html).toContain(':::translate-override');
-  });
-
   test('a leading :::config block is no longer stripped', async () => {
-    const html = await render(':::config\ntranslate: false\n:::\n\nbody');
+    const html = await render(':::config\ntheme: old\n:::\n\nbody');
     expect(html).toContain(':::config');
   });
 

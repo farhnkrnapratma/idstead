@@ -1,7 +1,7 @@
 <script lang="ts">
   import {cn} from '../utils/cn';
   import {consentStore} from '../stores/consentStore.svelte';
-  import {buttonKey} from '$lib/shortcuts';
+  import {buttonKey} from '#lib/shortcuts.ts';
   import {shortcut} from '../utils/shortcut.svelte';
 
   interface Props {

@@ -1,6 +1,6 @@
-import {env as privateEnv} from '$env/dynamic/private';
-import type {Project} from '$lib/types';
-import {getLanguageColor} from '$lib/utils/githubLanguageColors';
+import * as privateEnv from '$app/env/private';
+import type {Project} from '#lib/types.ts';
+import {getLanguageColor} from '#lib/utils/githubLanguageColors.ts';
 
 interface GitHubRepo {
   name: string;

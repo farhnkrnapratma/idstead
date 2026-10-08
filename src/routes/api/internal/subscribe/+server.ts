@@ -1,12 +1,12 @@
 import {json} from '@sveltejs/kit';
 import type {RequestHandler} from './$types';
-import {env as privateEnv} from '$env/dynamic/private';
-import {apiError} from '$lib/server/apiError';
-import {isSameOriginRequest} from '$lib/server/sameOrigin';
-import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
-import {verifyTurnstileToken} from '$lib/server/turnstile';
-import {fetchAuthorProfile} from '$lib/author';
-import {supabase as publicSupabase} from '$lib/supabase';
+import * as privateEnv from '$app/env/private';
+import {apiError} from '#lib/server/apiError.ts';
+import {isSameOriginRequest} from '#lib/server/sameOrigin.ts';
+import {getSupabaseAdminClient} from '#lib/server/supabaseAdmin.ts';
+import {verifyTurnstileToken} from '#lib/server/turnstile.ts';
+import {fetchAuthorProfile} from '#lib/author.ts';
+import {supabase as publicSupabase} from '#lib/supabase.ts';
 import {
   SUBSCRIBER_TABLE,
   confirmEmail,
@@ -18,7 +18,7 @@ import {
   resendApiKey,
   sendEmail,
   senderAddress
-} from '$lib/server/subscribers';
+} from '#lib/server/subscribers.ts';
 
 const CONFIRM_RESEND_COOLDOWN_MS = 5 * 60 * 1000;
 
@@ -114,6 +114,9 @@ export const POST: RequestHandler = async ({
     confirm_sent_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     user_agent: (request.headers.get('user-agent') ?? '').slice(0, 300),
+    ...(existing?.status === 'unsubscribed' ?
+      {unsubscribe_token: createToken()}
+    : {}),
     ...(ipSalt ? {ip_hash: await hashIp(getClientAddress(), ipSalt)} : {})
   };
 

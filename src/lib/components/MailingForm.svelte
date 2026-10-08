@@ -8,15 +8,15 @@
     mailingEmailError,
     submitMailing,
     type MailingAction
-  } from '$lib/mailing';
-  import {buttonKey} from '$lib/shortcuts';
-  import {toastStore} from '$lib/stores/toastStore.svelte';
+  } from '#lib/mailing.ts';
+  import {buttonKey} from '#lib/shortcuts.ts';
+  import {toastStore} from '#lib/stores/toastStore.svelte.ts';
   import {
     turnstileWidget,
     executeTurnstile,
     resetTurnstile,
     turnstileSiteKey
-  } from '$lib/utils/turnstile';
+  } from '#lib/utils/turnstile.ts';
 
   let {
     action = 'subscribe',

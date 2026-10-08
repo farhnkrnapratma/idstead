@@ -8,10 +8,10 @@
     formatAdminDateTime,
     formatAdminTime,
     isRelativeTimestamp
-  } from '$lib/adminDateFormat';
-  import {adminDisplayStore} from '$lib/stores/adminDisplayStore.svelte';
-  import {themeStore} from '$lib/stores/themeStore.svelte';
-  import {formatRelativeTime} from '$lib/utils/formatters';
+  } from '#lib/adminDateFormat.ts';
+  import {adminDisplayStore} from '#lib/stores/adminDisplayStore.svelte.ts';
+  import {themeStore} from '#lib/stores/themeStore.svelte.ts';
+  import {formatRelativeTime} from '#lib/utils/formatters.ts';
   import {
     CalendarClock,
     Moon,
@@ -23,7 +23,7 @@
   import Button from '../Button.svelte';
   import Card from '../Card.svelte';
   import Dropdown from '../Dropdown.svelte';
-  import FormSection from '$lib/layout/FormSection.svelte';
+  import FormSection from '#lib/layout/FormSection.svelte';
 
   const HOUR_MS = 60 * 60 * 1000;
   const themes = [

@@ -6,7 +6,7 @@
     remainingSeconds,
     shouldAnnounce,
     type CountdownTone
-  } from '$lib/sessionTimeout';
+  } from '#lib/sessionTimeout.ts';
   import Button from '../Button.svelte';
   import Dialog from '../Dialog.svelte';
 

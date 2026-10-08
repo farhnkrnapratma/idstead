@@ -4,14 +4,15 @@
   translate="no"
   class="scroll-pt-17 scroll-pb-21 overflow-x-clip scroll-smooth font-sans text-[122%]">
   <head>
+    <meta charset="utf-8" />
     <script>
       document.documentElement.classList.add('dark');
     </script>
     <script>
       window.dataLayer = window.dataLayer || [];
 
-      function gtag(...args) {
-        dataLayer.push(args);
+      function gtag() {
+        window.dataLayer.push(arguments);
       }
 
       let savedConsent = null;
@@ -40,33 +41,22 @@
 
       gtag('consent', 'default', defaultConsent);
       gtag('set', 'url_passthrough', true);
-
-      (function (w, d, s, l, i) {
-        w[l] = w[l] || [];
-        w[l].push({'gtm.start': new Date().getTime(), event: 'gtm.js'});
-        var f = d.getElementsByTagName(s)[0],
-          j = d.createElement(s),
-          dl = l != 'dataLayer' ? '&l=' + l : '';
-        j.async = true;
-        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
-        f.parentNode.insertBefore(j, f);
-      })(window, document, 'script', 'dataLayer', 'GTM-TSBRHB6V');
+      gtag('js', new Date());
+      gtag('config', 'G-6HR3DKWZLF');
     </script>
-    <meta charset="utf-8" />
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-6HR3DKWZLF"></script>
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1" />
+    <link
+      rel="ard"
+      href="/.well-known/ard.json" />
     %sveltekit.head%
   </head>
   <body
     class="m-0 min-h-screen w-full overflow-x-clip bg-background p-0 font-sans text-text-primary">
-    <noscript
-      ><iframe
-        src="https://www.googletagmanager.com/ns.html?id=GTM-TSBRHB6V"
-        height="0"
-        width="0"
-        style="display: none; visibility: hidden"></iframe
-    ></noscript>
     <div style="display: contents">%sveltekit.body%</div>
   </body>
 </html>

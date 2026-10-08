@@ -4,7 +4,7 @@ import {resolve} from '$app/paths';
 import {cleanAdminParams} from './adminUrl';
 
 export function adminUrl() {
-  const url = new URL(page.url);
+  const url = new URL(page.url.href);
   if (typeof page.state.adminSearch === 'string')
     url.search = page.state.adminSearch;
   return url;

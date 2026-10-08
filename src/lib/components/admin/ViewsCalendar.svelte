@@ -6,10 +6,10 @@
     formatCount,
     hasChartActivity,
     type WorkspaceCalendar
-  } from '$lib/adminWorkspace';
-  import {formatAdminDate} from '$lib/adminDateFormat';
-  import {adminDisplayStore} from '$lib/stores/adminDisplayStore.svelte';
-  import {pluralize} from '$lib/utils/pluralize';
+  } from '#lib/adminWorkspace.ts';
+  import {formatAdminDate} from '#lib/adminDateFormat.ts';
+  import {adminDisplayStore} from '#lib/stores/adminDisplayStore.svelte.ts';
+  import {pluralize} from '#lib/utils/pluralize.ts';
   import IconButton from '../IconButton.svelte';
   import EmptyState from '../EmptyState.svelte';
   let {
@@ -137,7 +137,7 @@
                     rx={4}
                     fill={cell.color ?? 'rgb(0 0 0 / 5%)'}
                     onpointermove={e => context.tooltip?.show(e, cell.data)}
-                    onpointerleave={e => context.tooltip?.hide()} />
+                    onpointerleave={() => context.tooltip?.hide()} />
                 {/each}
               {/snippet}
             </Calendar>

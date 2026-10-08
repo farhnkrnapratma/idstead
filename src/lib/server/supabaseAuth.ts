@@ -1,6 +1,7 @@
 import {createServerClient} from '@supabase/ssr';
 import type {RequestEvent} from '@sveltejs/kit';
-import {env as publicEnv} from '$env/dynamic/public';
+import * as publicEnv from '$app/env/public';
+import {requiresAdminMfa} from '#lib/adminAuthState.ts';
 
 export type AuthClient = ReturnType<typeof createAuthClient>;
 
@@ -71,6 +72,6 @@ async function resolveSession(
     email: user.email ?? '',
     role: (user.app_metadata as {role?: string} | null)?.role ?? '',
     aal: levels.currentLevel ?? '',
-    mfaSatisfied: levels.nextLevel !== 'aal2' || levels.currentLevel === 'aal2'
+    mfaSatisfied: !requiresAdminMfa(levels)
   };
 }

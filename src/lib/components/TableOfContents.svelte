@@ -1,6 +1,6 @@
 <script lang="ts">
   import {pushState} from '$app/navigation';
-  import {sanitizeHtml} from '$lib/sanitizeHtml';
+  import {sanitizeHtml} from '#lib/sanitizeHtml.ts';
   import {onMount} from 'svelte';
   import {
     TableOfContents as TableOfContentsIcon,
@@ -236,7 +236,7 @@
 {#snippet tocList()}
   <div
     bind:this={scrollContainerEl}
-    class="relative min-h-0 flex-1 scrollbar-none overflow-y-auto pr-1 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+    class="relative min-h-0 flex-1 scrollbar-none overflow-y-auto px-2 py-2 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
     <ul
       id="toc-list"
       bind:this={tocListEl}

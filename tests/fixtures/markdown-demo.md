@@ -204,11 +204,11 @@ print("Hello, World!")
 
 Lines starting with `+` are additions, `-` are removals, with full-width colored backgrounds, just like a pull request:
 
-```diff filename="blogTranslate.diff"
---- a/src/lib/server/blogTranslate.ts
-+++ b/src/lib/server/blogTranslate.ts
+```diff filename="example.diff"
+--- a/src/lib/example.ts
++++ b/src/lib/example.ts
 @@ -1,5 +1,8 @@
- import {isAiBindingAvailable} from '$lib/server/blogAi'
+ import {isAiBindingAvailable} from '$lib/server/ai'
 -const MAX_ATTEMPTS = 2
 +const MAX_ATTEMPTS = 3
 +

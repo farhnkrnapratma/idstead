@@ -9,12 +9,22 @@ export type SavedPost = {
 export type SaveResult = {post: SavedPost; cleanupPending?: boolean};
 
 export class PostSaveError extends Error {
-  constructor(
-    message: string,
-    public definitive = false
-  ) {
+  public definitive: boolean;
+
+  constructor(message: string, definitive = false) {
     super(message);
+    this.definitive = definitive;
   }
+}
+
+export function postSaveButtonLabel(
+  isSubmitting: boolean,
+  isRetrying: boolean,
+  action: 'publish' | 'draft' | null
+): string {
+  if (!isSubmitting) return 'Retry Save';
+  if (isRetrying) return 'Retrying…';
+  return action === 'publish' ? 'Publishing…' : 'Saving draft…';
 }
 
 export async function submitPost(

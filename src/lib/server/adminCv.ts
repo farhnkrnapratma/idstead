@@ -4,11 +4,11 @@ import {
   DeleteObjectCommand
 } from '@aws-sdk/client-s3';
 import {verifyAdminToken, bearerToken} from './adminAuth';
-import {env as privateEnv} from '$env/dynamic/private';
-import {env as publicEnv} from '$env/dynamic/public';
-import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
-import {supabase as publicSupabase} from '$lib/supabase';
-import {logActivity, type ActivityCategory} from '$lib/server/activityLog';
+import * as privateEnv from '$app/env/private';
+import * as publicEnv from '$app/env/public';
+import {getSupabaseAdminClient} from '#lib/server/supabaseAdmin.ts';
+import {supabase as publicSupabase} from '#lib/supabase.ts';
+import {logActivity, type ActivityCategory} from '#lib/server/activityLog.ts';
 import {
   generateCvPdfBuffer,
   type AuthorCvData,
@@ -16,11 +16,14 @@ import {
   type EducationData,
   type ProjectData,
   type SkillCategoryData
-} from '$lib/server/pdfGenerator';
-import {loadCvFonts} from '$lib/server/cvFonts';
-import {readAvatarBytes} from '$lib/server/profileAssets';
-import {fetchProjects, extractGitHubUsername} from '$lib/server/githubProjects';
-import {fetchSocials, fetchProjectRepoRules} from '$lib/author';
+} from '#lib/server/pdfGenerator.ts';
+import {loadCvFonts} from '#lib/server/cvFonts.ts';
+import {readAvatarBytes} from '#lib/server/profileAssets.ts';
+import {
+  fetchProjects,
+  extractGitHubUsername
+} from '#lib/server/githubProjects.ts';
+import {fetchSocials, fetchProjectRepoRules} from '#lib/author.ts';
 
 const CV_PROJECT_LIMIT = 4;
 

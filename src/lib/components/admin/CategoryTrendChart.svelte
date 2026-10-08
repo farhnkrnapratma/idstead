@@ -8,10 +8,10 @@
   import LoadingState from '../LoadingState.svelte';
   import ErrorState from '../ErrorState.svelte';
   import EmptyState from '../EmptyState.svelte';
-  import {cn} from '$lib/utils/cn';
-  import {activityDate} from '$lib/adminActivity';
-  import {formatCount, hasChartActivity} from '$lib/adminWorkspace';
-  import {adminDisplayStore} from '$lib/stores/adminDisplayStore.svelte';
+  import {cn} from '#lib/utils/cn.ts';
+  import {activityDate} from '#lib/adminActivity.ts';
+  import {formatCount, hasChartActivity} from '#lib/adminWorkspace.ts';
+  import {adminDisplayStore} from '#lib/stores/adminDisplayStore.svelte.ts';
   import {VIEWS_RANGES, type ViewsRange} from './viewsRange';
   import {
     ADMIN_CHART_AXIS_CLASSES,
@@ -19,9 +19,9 @@
     ADMIN_CHART_X_TICK_LABEL_PROPS,
     ADMIN_CHART_Y_TICK_LABEL_PROPS,
     ADMIN_CHART_TICK_LENGTH
-  } from '$lib/utils/chartAxisStyles';
+  } from '#lib/utils/chartAxisStyles.ts';
   import CategoryDonut from './CategoryDonut.svelte';
-  import {segmentRounding} from '$lib/chartRounding';
+  import {segmentRounding} from '#lib/chartRounding.ts';
 
   interface SeriesConfig {
     key: string;

@@ -1,16 +1,14 @@
 import {json} from '@sveltejs/kit';
 import type {RequestHandler} from './$types';
-import {apiError} from '$lib/server/apiError';
-import {isSameOriginRequest} from '$lib/server/sameOrigin';
-import {requireAdminAuth} from '$lib/server/adminCv';
-import {extractDefineBlock} from '$lib/define';
+import {apiError} from '#lib/server/apiError.ts';
+import {isSameOriginRequest} from '#lib/server/sameOrigin.ts';
+import {requireAdminAuth} from '#lib/server/adminCv.ts';
+import {extractDefineBlock} from '#lib/define.ts';
 import {
   isAiBindingAvailable,
-  generateExcerpt,
   generateSummary,
-  generateTldr,
-  isRedundant
-} from '$lib/server/blogAi';
+  generateTldr
+} from '#lib/server/blogAi.ts';
 
 export const POST: RequestHandler = async ({request, url, platform}) => {
   if (!isSameOriginRequest(request, url)) {
@@ -24,12 +22,7 @@ export const POST: RequestHandler = async ({request, url, platform}) => {
   const authError = await requireAdminAuth(request, platform);
   if (authError) return authError;
 
-  let body: {
-    markdown?: string;
-    needsExcerpt?: boolean;
-    title?: string;
-    excerpt?: string | null;
-  };
+  let body: {markdown?: string};
   try {
     body = await request.json();
   } catch {
@@ -60,28 +53,14 @@ export const POST: RequestHandler = async ({request, url, platform}) => {
     );
   }
 
-  const [excerptResult, summaryResult, tldrResult] = await Promise.allSettled([
-    body.needsExcerpt ?
-      generateExcerpt(markdownForSummary, ai)
-    : Promise.resolve(null),
+  const [summaryResult, tldrResult] = await Promise.allSettled([
     generateSummary(markdownForSummary, ai),
     generateTldr(markdownForSummary, ai)
   ]);
 
-  const excerpt =
-    excerptResult.status === 'fulfilled' ? excerptResult.value : null;
-  let summary =
+  const summary =
     summaryResult.status === 'fulfilled' ? summaryResult.value : null;
   const tldr = tldrResult.status === 'fulfilled' ? tldrResult.value : null;
 
-  if (
-    body.needsExcerpt
-    && excerpt
-    && summary
-    && isRedundant(excerpt, summary)
-  ) {
-    summary = null;
-  }
-
-  return json({excerpt, summary, tldr});
+  return json({summary, tldr});
 };

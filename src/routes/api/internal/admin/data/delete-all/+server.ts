@@ -1,15 +1,15 @@
 import {json} from '@sveltejs/kit';
 import type {RequestHandler} from './$types';
-import {isSameOriginRequest} from '$lib/server/sameOrigin';
-import {apiError} from '$lib/server/apiError';
-import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
-import {requireAdminAuth, deleteCvFile} from '$lib/server/adminCv';
-import {removeAssets} from '$lib/server/profileAssets';
-import {cleanupBlogAssets} from '$lib/server/blogBannerStorage';
-import {bearerToken} from '$lib/server/adminAuth';
-import {logActivity} from '$lib/server/activityLog';
-import {supabase} from '$lib/supabase';
-import {env as privateEnv} from '$env/dynamic/private';
+import {isSameOriginRequest} from '#lib/server/sameOrigin.ts';
+import {apiError} from '#lib/server/apiError.ts';
+import {getSupabaseAdminClient} from '#lib/server/supabaseAdmin.ts';
+import {requireAdminAuth, deleteCvFile} from '#lib/server/adminCv.ts';
+import {removeAssets} from '#lib/server/profileAssets.ts';
+import {cleanupBlogAssets} from '#lib/server/blogBannerStorage.ts';
+import {bearerToken} from '#lib/server/adminAuth.ts';
+import {logActivity} from '#lib/server/activityLog.ts';
+import {supabase} from '#lib/supabase.ts';
+import * as privateEnv from '$app/env/private';
 
 export const POST: RequestHandler = async ({
   request,

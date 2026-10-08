@@ -1,5 +1,5 @@
 import type {RequestHandler} from './$types';
-import {getContentAsset} from '$lib/server/blogContentStorage';
+import {getContentAsset} from '#lib/server/blogContentStorage.ts';
 
 const CONTENT_TYPES: Record<string, string> = {
   webp: 'image/webp',

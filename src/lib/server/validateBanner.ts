@@ -1,5 +1,5 @@
 import decode, {init} from '@jsquash/webp/decode.js';
-import {inspectWebp} from '$lib/webp';
+import {inspectWebp} from '#lib/webp.ts';
 
 let initialized: Promise<void> | undefined;
 

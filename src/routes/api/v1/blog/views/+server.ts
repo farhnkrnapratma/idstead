@@ -1,7 +1,7 @@
-import {supabase} from '$lib/supabase';
+import {supabase} from '#lib/supabase.ts';
 import {json} from '@sveltejs/kit';
 import type {RequestHandler} from './$types';
-import {apiError} from '$lib/server/apiError';
+import {apiError} from '#lib/server/apiError.ts';
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

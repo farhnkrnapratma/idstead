@@ -3,8 +3,8 @@
   import {UserRound} from '@lucide/svelte';
   import FieldMessage from './FieldMessage.svelte';
   import FileUploadField from './FileUploadField.svelte';
-  import {processAvatar} from '$lib/processAvatar';
-  import type {ImagePackage} from '$lib/siteIdentity';
+  import {processAvatar} from '#lib/processAvatar.ts';
+  import type {ImagePackage} from '#lib/siteIdentity.ts';
 
   let {
     avatar,

@@ -378,25 +378,6 @@ export async function fetchSocials(
   }
 }
 
-export async function fetchGlossaryTerms(
-  supabaseClient?: any
-): Promise<string[]> {
-  if (!supabaseClient) return [];
-
-  try {
-    const {data, error} = await supabaseClient
-      .from('db_glossary_terms')
-      .select('term')
-      .order('sort_order', {ascending: true});
-
-    if (error || !data) return [];
-
-    return data.map((item: any) => item.term);
-  } catch (e) {
-    return [];
-  }
-}
-
 export interface ProjectRepoRules {
   excluded: string[];
   pinned: string[];
@@ -554,8 +535,10 @@ export async function fetchCvEntries(
   supabaseClient?: any,
   options?: {strict?: boolean}
 ): Promise<{experience: ExperienceItem[]; education: EducationItem[]}> {
-  const experience = await fetchExperiences(supabaseClient, options);
-  const education = await fetchEducation(supabaseClient, options);
+  const [experience, education] = await Promise.all([
+    fetchExperiences(supabaseClient, options),
+    fetchEducation(supabaseClient, options)
+  ]);
   return {experience, education};
 }
 

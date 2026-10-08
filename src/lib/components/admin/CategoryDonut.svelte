@@ -1,7 +1,7 @@
 <script lang="ts">
   import {Chart, Svg, Pie, Arc, Tooltip} from 'layerchart';
   import {scaleOrdinal} from 'd3-scale';
-  import {formatCount} from '$lib/adminWorkspace';
+  import {formatCount} from '#lib/adminWorkspace.ts';
   import EmptyState from '../EmptyState.svelte';
   interface Segment {
     label: string;

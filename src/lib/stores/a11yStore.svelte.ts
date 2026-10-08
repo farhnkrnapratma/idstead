@@ -1,4 +1,4 @@
-import {browser} from '$app/environment';
+import {browser} from '$app/env';
 
 export type FontScale = 100 | 110 | 120 | 130 | 140 | 150;
 

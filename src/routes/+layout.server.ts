@@ -1,8 +1,11 @@
 import type {LayoutServerLoad} from './$types';
-import {supabase} from '$lib/supabase';
-import {fetchAuthorProfileWithSocials} from '$lib/author';
-import {avatarSource} from '$lib/siteIdentity';
-import {fetchProjects, extractGitHubUsername} from '$lib/server/githubProjects';
+import {supabase} from '#lib/supabase.ts';
+import {fetchAuthorProfileWithSocials} from '#lib/author.ts';
+import {avatarSource} from '#lib/siteIdentity.ts';
+import {
+  fetchProjects,
+  extractGitHubUsername
+} from '#lib/server/githubProjects.ts';
 
 export const load: LayoutServerLoad = async ({fetch, platform, setHeaders}) => {
   const author = await fetchAuthorProfileWithSocials(supabase);

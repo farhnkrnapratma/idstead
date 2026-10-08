@@ -1,11 +1,11 @@
 import {json} from '@sveltejs/kit';
-import {env as privateEnv} from '$env/dynamic/private';
+import * as privateEnv from '$app/env/private';
 import type {RequestHandler} from './$types';
-import {apiError} from '$lib/server/apiError';
-import {isSameOriginRequest} from '$lib/server/sameOrigin';
-import {verifyTurnstileToken} from '$lib/server/turnstile';
-import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
-import {REPORT_REASON_IDS} from '$lib/reportReasons';
+import {apiError} from '#lib/server/apiError.ts';
+import {isSameOriginRequest} from '#lib/server/sameOrigin.ts';
+import {verifyTurnstileToken} from '#lib/server/turnstile.ts';
+import {getSupabaseAdminClient} from '#lib/server/supabaseAdmin.ts';
+import {REPORT_REASON_IDS} from '#lib/reportReasons.ts';
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

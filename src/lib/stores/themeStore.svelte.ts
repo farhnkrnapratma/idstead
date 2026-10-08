@@ -1,5 +1,5 @@
-import type {Theme} from '$lib/types';
-import {browser} from '$app/environment';
+import type {Theme} from '#lib/types.ts';
+import {browser} from '$app/env';
 
 function createThemeStore() {
   let theme = $state<Theme>('auto');

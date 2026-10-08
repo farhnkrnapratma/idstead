@@ -5,7 +5,7 @@ import {getDownloadFilename, sanitizeFilename} from './codeBlockExtensions';
 import {cn} from './cn';
 import {shortcut, type ShortcutParams} from './shortcut.svelte';
 import {focusScope} from './focusScope';
-import {argKey} from '$lib/shortcuts';
+import {argKey} from '#lib/shortcuts.ts';
 
 let codeScopeSeq = 0;
 

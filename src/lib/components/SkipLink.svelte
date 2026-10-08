@@ -2,7 +2,7 @@
   import {SkipForward} from '@lucide/svelte';
   import {cn} from '../utils/cn';
   import Button from './Button.svelte';
-  import {buttonKey} from '$lib/shortcuts';
+  import {buttonKey} from '#lib/shortcuts.ts';
 
   interface Props {
     targetId?: string;

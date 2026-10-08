@@ -53,16 +53,12 @@
   --color-report-other: #475569;
 
   --font-sans:
-    'iA Writer Quattro', 'Noto Sans Variable', 'Noto Sans JP Variable',
-    'Noto Sans SC Variable', 'Noto Sans KR Variable', ui-sans-serif, system-ui,
+    'iA Writer Quattro', 'Noto Sans Variable', ui-sans-serif, system-ui,
     sans-serif;
   --font-serif:
-    'IBM Plex Serif', 'Noto Serif Variable', 'Noto Serif JP Variable',
-    'Noto Serif SC Variable', 'Noto Serif KR Variable', Georgia, Cambria,
+    'IBM Plex Serif', 'Noto Serif Variable', Georgia, Cambria,
     'Times New Roman', Times, serif;
-  --font-mono:
-    'Lilex Variable', 'Noto Sans JP Variable', 'Noto Sans SC Variable',
-    'Noto Sans KR Variable', ui-monospace, monospace;
+  --font-mono: 'Lilex Variable', ui-monospace, monospace;
 
   --text-3xs: 0.5625rem;
   --text-2xs: 0.625rem;
@@ -123,6 +119,7 @@
   --color-surface-card: #ffffff;
   --color-surface-subtle: #e4ebe6;
   --color-surface-elevated: #ffffff;
+  --color-button-tertiary: #f0f0f0;
   --color-surface-hover: rgba(16, 20, 17, 0.04);
   --color-surface-switcher: rgba(228, 235, 230, 0.5);
   --color-surface-switcher-active: #ffffff;
@@ -139,7 +136,7 @@
   --color-accent-hover: #1a61fe;
   --color-accent-active: #0527fc;
   --color-accent-subtle: rgba(48, 148, 255, 0.08);
-  --color-accent-contrast-bg: #3094ff;
+  --color-accent-contrast-bg: #0065d1;
   --color-copilot: #8534f3;
   --color-copilot-hover: #43179e;
   --color-copilot-active: #26115f;
@@ -248,6 +245,7 @@
   --color-surface-card: #101411;
   --color-surface-subtle: #0a241b;
   --color-surface-elevated: #101411;
+  --color-button-tertiary: #2f2f2f;
   --color-surface-hover: rgba(242, 245, 243, 0.05);
   --color-surface-switcher: rgba(16, 20, 17, 0.5);
   --color-surface-switcher-active: #101411;

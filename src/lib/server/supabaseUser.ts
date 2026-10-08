@@ -1,5 +1,5 @@
 import {createClient} from '@supabase/supabase-js';
-import {env} from '$env/dynamic/public';
+import * as env from '$app/env/public';
 import {bearerToken} from './adminAuth';
 
 export function getSupabaseUserClient(request: Request, platform: unknown) {

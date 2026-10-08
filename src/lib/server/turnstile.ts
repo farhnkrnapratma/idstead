@@ -1,4 +1,4 @@
-import {env as privateEnv} from '$env/dynamic/private';
+import * as privateEnv from '$app/env/private';
 
 type PlatformEnv = {env?: {TURNSTILE_SECRET?: string}};
 

@@ -10,10 +10,10 @@
   import LoadingState from '../LoadingState.svelte';
   import ErrorState from '../ErrorState.svelte';
   import EmptyState from '../EmptyState.svelte';
-  import {cn} from '$lib/utils/cn';
-  import {hasChartActivity} from '$lib/adminWorkspace';
-  import {activityDate, activityTimestamp} from '$lib/adminActivity';
-  import {adminDisplayStore} from '$lib/stores/adminDisplayStore.svelte';
+  import {cn} from '#lib/utils/cn.ts';
+  import {hasChartActivity} from '#lib/adminWorkspace.ts';
+  import {activityDate, activityTimestamp} from '#lib/adminActivity.ts';
+  import {adminDisplayStore} from '#lib/stores/adminDisplayStore.svelte.ts';
   import {
     VIEWS_RANGES,
     type ViewsRange,
@@ -25,7 +25,7 @@
     ADMIN_CHART_X_TICK_LABEL_PROPS,
     ADMIN_CHART_Y_TICK_LABEL_PROPS,
     ADMIN_CHART_TICK_LENGTH
-  } from '$lib/utils/chartAxisStyles';
+  } from '#lib/utils/chartAxisStyles.ts';
 
   interface Props {
     ceiling?: number;

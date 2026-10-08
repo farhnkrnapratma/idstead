@@ -1,5 +1,5 @@
-import {supabase} from '$lib/supabase';
-import {parseAdminSettings} from '$lib/adminSettings';
+import {supabase} from '#lib/supabase.ts';
+import {parseAdminSettings} from '#lib/adminSettings.ts';
 import {adminDisplayStore} from './adminDisplayStore.svelte';
 import {adminChartRangeStore} from './adminChartRangeStore.svelte';
 

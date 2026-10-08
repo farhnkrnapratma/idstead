@@ -1,6 +1,6 @@
 <script lang="ts">
   import Badge from '../Badge.svelte';
-  import {isFeedbackActivity} from '$lib/adminActivity';
+  import {isFeedbackActivity} from '#lib/adminActivity.ts';
   import {activityTone, activityToneStyles} from './activityTone';
 
   let {

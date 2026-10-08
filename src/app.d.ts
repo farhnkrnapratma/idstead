@@ -42,10 +42,9 @@ declare global {
       adminScroll?: number;
     }
     interface Locals {
-      pageLanguage?: string;
-      supabase: import('$lib/server/supabaseAuth').AuthClient;
+      supabase: import('#lib/server/supabaseAuth.ts').AuthClient;
       getAdminSession: () => Promise<
-        import('$lib/server/supabaseAuth').AdminSession | null
+        import('#lib/server/supabaseAuth.ts').AdminSession | null
       >;
     }
     interface Platform {

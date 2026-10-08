@@ -1,25 +1,25 @@
 import {json} from '@sveltejs/kit';
 import type {RequestHandler} from './$types';
-import {verifyTurnstileToken} from '$lib/server/turnstile';
-import {apiError} from '$lib/server/apiError';
+import {verifyTurnstileToken} from '#lib/server/turnstile.ts';
+import {apiError} from '#lib/server/apiError.ts';
 import {
   checkLoginLockout,
   recordFailedLogin,
   clearLoginAttempts
-} from '$lib/server/loginRateLimit';
-import {isSameOriginRequest} from '$lib/server/sameOrigin';
-import {env as privateEnv} from '$env/dynamic/private';
-import {fetchAuthorProfile} from '$lib/author';
-import {supabase as publicSupabase} from '$lib/supabase';
+} from '#lib/server/loginRateLimit.ts';
+import {isSameOriginRequest} from '#lib/server/sameOrigin.ts';
+import * as privateEnv from '$app/env/private';
+import {fetchAuthorProfile} from '#lib/author.ts';
+import {supabase as publicSupabase} from '#lib/supabase.ts';
 import {
   hashIp,
   loginAlertEmail,
   resendApiKey,
   sendEmail,
   senderAddress
-} from '$lib/server/subscribers';
-import {logActivity} from '$lib/server/activityLog';
-import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
+} from '#lib/server/subscribers.ts';
+import {logActivity} from '#lib/server/activityLog.ts';
+import {getSupabaseAdminClient} from '#lib/server/supabaseAdmin.ts';
 
 function ipSalt(platform: unknown): string {
   return (

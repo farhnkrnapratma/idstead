@@ -1,10 +1,10 @@
 <script lang="ts">
-  import {createFeedbackClient} from '$lib/feedbackClient.svelte';
+  import {createFeedbackClient} from '#lib/feedbackClient.svelte.ts';
   import {tick, onMount, onDestroy} from 'svelte';
   import {fade} from 'svelte/transition';
   import {BookOpenText} from '@lucide/svelte';
-  import {refreshCodeBlockPrefs} from '$lib/utils/codeBlocks';
-  import {codeBlockPrefsStore} from '$lib/stores/codeBlockPrefsStore.svelte';
+  import {refreshCodeBlockPrefs} from '#lib/utils/codeBlocks.ts';
+  import {codeBlockPrefsStore} from '#lib/stores/codeBlockPrefsStore.svelte.ts';
   import {
     TopNav,
     TableOfContents,
@@ -16,19 +16,19 @@
     Tooltip,
     FeedbackButton,
     ScrollToTopButton
-  } from '$lib';
-  import ArticleHeader from '$lib/article/ArticleHeader.svelte';
-  import ArticleMeta from '$lib/article/ArticleMeta.svelte';
-  import {toastStore} from '$lib/stores/toastStore.svelte';
-  import {readingModeStore} from '$lib/stores/readingModeStore.svelte';
-  import type {HeadingItem} from '$lib/markdown';
-  import {formatReadTime} from '$lib/utils/formatters';
-  import {countReadingMinutes} from '$lib/readTime';
-  import {enhanceMarkdownContent} from '$lib/utils/markdownEnhancer';
-  import {enhanceHeadingAnchors} from '$lib/utils/headingAnchors';
+  } from '#lib/index.ts';
+  import ArticleHeader from '#lib/article/ArticleHeader.svelte';
+  import ArticleMeta from '#lib/article/ArticleMeta.svelte';
+  import {toastStore} from '#lib/stores/toastStore.svelte.ts';
+  import {readingModeStore} from '#lib/stores/readingModeStore.svelte.ts';
+  import type {HeadingItem} from '#lib/markdown.ts';
+  import {formatReadTime} from '#lib/utils/formatters.ts';
+  import {countReadingMinutes} from '#lib/readTime.ts';
+  import {enhanceMarkdownContent} from '#lib/utils/markdownEnhancer.ts';
+  import {enhanceHeadingAnchors} from '#lib/utils/headingAnchors.ts';
   import hljs from 'highlight.js';
   import 'katex/dist/katex.min.css';
-  import {contentFontStore} from '$lib/stores/contentFontStore.svelte';
+  import {contentFontStore} from '#lib/stores/contentFontStore.svelte.ts';
   import {pushState, goto} from '$app/navigation';
   import {page} from '$app/state';
 
@@ -41,7 +41,6 @@
     date?: string;
     updatedAt?: string;
     authorName?: string;
-    avatarUrl?: string;
     siteUrl?: string;
   }
 
@@ -54,7 +53,6 @@
     date,
     updatedAt,
     authorName = '',
-    avatarUrl = '',
     siteUrl = ''
   }: Props = $props();
 
@@ -205,17 +203,7 @@
           hljs.highlightElement(block as HTMLElement);
         });
         enhanceMarkdownContent({container, isDark, onCodeCopy: triggerToast});
-        enhanceHeadingAnchors(container, async el => {
-          const url = `${window.location.origin}${window.location.pathname}#${el.id}`;
-          try {
-            await navigator.clipboard.writeText(url);
-            triggerToast('Link copied to clipboard');
-          } catch (err) {
-            void err;
-          }
-          pushState(`#${el.id}`, {});
-          scrollToTarget(el.id, true);
-        });
+        enhanceHeadingAnchors(container);
       }
     });
   });
@@ -339,7 +327,6 @@
                 class="mt-3 w-full"
                 {slug}
                 {title}
-                {avatarUrl}
                 markdownContent={content}
                 showCopyUrl={false}
                 viewMarkdownUrl="/api/internal/raw?type=legal&slug={slug}&format=md"
@@ -405,7 +392,6 @@
           class="w-full shrink-0"
           {slug}
           {title}
-          {avatarUrl}
           markdownContent={content}
           showCopyUrl={false}
           viewMarkdownUrl="/api/internal/raw?type=legal&slug={slug}&format=md"

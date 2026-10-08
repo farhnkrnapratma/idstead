@@ -8,7 +8,8 @@ interface CspEnv {
 const SCRIPT_SOURCES = [
   'https://challenges.cloudflare.com',
   'https://www.googletagmanager.com',
-  'https://api.dashboard.instatus.com'
+  'https://api.dashboard.instatus.com',
+  'https://static.cloudflareinsights.com'
 ];
 
 const IMAGE_SOURCES = [
@@ -17,6 +18,7 @@ const IMAGE_SOURCES = [
   'https://opengraph.githubassets.com',
   'https://repository-images.githubusercontent.com',
   'https://www.googletagmanager.com',
+  'https://www.google.co.id',
   'https://*.google-analytics.com',
   'https://*.g.doubleclick.net'
 ];
@@ -34,6 +36,8 @@ const CONNECT_SOURCES = [
   'https://api.dashboard.instatus.com',
   'https://challenges.cloudflare.com',
   'https://www.googletagmanager.com',
+  'https://www.google.com',
+  'https://analytics.google.com',
   'https://*.google-analytics.com',
   'https://*.analytics.google.com',
   'https://*.g.doubleclick.net'

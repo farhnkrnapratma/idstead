@@ -1,9 +1,9 @@
-import {browser} from '$app/environment';
+import {browser} from '$app/env';
 import {
   DEFAULT_ADMIN_DISPLAY,
   parseAdminDisplayPrefs,
   type AdminDisplayPrefs
-} from '$lib/adminDateFormat';
+} from '#lib/adminDateFormat.ts';
 
 const STORAGE_KEY = 'admin-display';
 

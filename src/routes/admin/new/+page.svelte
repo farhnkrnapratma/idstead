@@ -1,7 +1,7 @@
 <script lang="ts">
   import {onMount} from 'svelte';
   import {goto} from '$app/navigation';
-  import {LoadingState} from '$lib';
+  import {LoadingState} from '#lib/index.ts';
 
   onMount(() => {
     const params = new URLSearchParams(window.location.search);

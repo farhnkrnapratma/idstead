@@ -1,16 +1,14 @@
 <script lang="ts">
-  import Tag from '$lib/components/Tag.svelte';
-  import {blogBannerAlt} from '$lib/blogBanner';
-  import {bannerUrl} from '$lib/blogBanner';
+  import Tag from '#lib/components/Tag.svelte';
+  import {blogBannerAlt} from '#lib/blogBanner.ts';
+  import {bannerUrl} from '#lib/blogBanner.ts';
   import {
     FieldValidation,
     requiredText,
     emailError
-  } from '$lib/fieldValidation';
-  import {publicAvatarUrl} from '$lib/siteIdentity';
-  import {ogLocale, TRANSLATION_LOCALES} from '$lib/translationLocales';
-  import {env as publicEnv} from '$env/dynamic/public';
-  import {onDestroy, onMount, tick, untrack} from 'svelte';
+  } from '#lib/fieldValidation.ts';
+  import {publicAvatarUrl} from '#lib/siteIdentity.ts';
+  import {onDestroy, onMount, untrack} from 'svelte';
   import type {Snippet} from 'svelte';
   import {
     CircleDollarSign,
@@ -18,7 +16,6 @@
     Dot,
     ChevronRight,
     Image as ImageIcon,
-    ArrowRight,
     HeartHandshake,
     Rss,
     Star,
@@ -32,9 +29,8 @@
   import {
     isNameReserved,
     extractAuthorNameTokens
-  } from '$lib/utils/nameValidator';
+  } from '#lib/utils/nameValidator.ts';
   import {
-    LinkListSection,
     LinkGridSection,
     Card,
     ShinyText,
@@ -47,7 +43,6 @@
     Input,
     Textarea,
     Button,
-    Badge,
     EmptyState,
     Tooltip,
     CvEntryCard,
@@ -58,15 +53,12 @@
     SearchResultCount,
     FilterEmptyState,
     Pagination,
-    RelativeTime,
     toastStore,
     createFilterSortStore,
     FooterSection,
     ThemeSelect,
     SkillGroup,
     formatReadTime,
-    formatCommentCount,
-    formatViewCount,
     decodeHtmlEntities,
     Section,
     SubscribeForm,
@@ -75,29 +67,27 @@
     ArticleMeta,
     staggerChildren,
     withViewTransition
-  } from '$lib';
-  import {buttonKey, argKey, sectionCommandKey} from '$lib/shortcuts';
+  } from '#lib/index.ts';
+  import {buttonKey, argKey, sectionCommandKey} from '#lib/shortcuts.ts';
   import {goto} from '$app/navigation';
   import {resolve} from '$app/paths';
   import {page} from '$app/state';
-  import {supabase} from '$lib/supabase';
   import {SvelteSet} from 'svelte/reactivity';
   import {
     formatPeriod,
     normalizeSkillGroups,
     type SkillGroup as SkillGroupData
-  } from '$lib/profilePageHelpers';
-  import {themeStore} from '$lib/stores/themeStore.svelte';
-  import {pluralize} from '$lib/utils/pluralize';
-  import {a11yStore} from '$lib/stores/a11yStore.svelte';
-  import AccessibilitySelect from '$lib/components/filter/AccessibilitySelect.svelte';
+  } from '#lib/profilePageHelpers.ts';
+  import {themeStore} from '#lib/stores/themeStore.svelte.ts';
+  import {pluralize} from '#lib/utils/pluralize.ts';
+  import AccessibilitySelect from '#lib/components/filter/AccessibilitySelect.svelte';
   import {
     turnstileWidget,
     executeTurnstile,
     resetTurnstile,
     turnstileSiteKey
-  } from '$lib/utils/turnstile';
-  import type {Theme, Project} from '$lib/types';
+  } from '#lib/utils/turnstile.ts';
+  import type {Project} from '#lib/types.ts';
   import type {BlogPost} from './+page.server';
 
   let {data} = $props();
@@ -107,32 +97,6 @@
   interface NavItem {
     id: Section;
     label: string;
-  }
-
-  interface Contact {
-    label: string;
-    value: string;
-    shortValue?: string;
-    href: string;
-    icon: string;
-    description?: string;
-  }
-
-  interface Experience {
-    role: string;
-    company: string;
-    period: string;
-    desc: string;
-  }
-
-  interface Education {
-    degree: string;
-    major: string;
-    faculty: string;
-    university: string;
-    url?: string;
-    period: string;
-    gpa?: string;
   }
 
   let author = $derived(data.author);
@@ -150,22 +114,6 @@
   let siteUrl = $derived(author?.siteUrl || '');
   let avatar = $derived(author?.avatar || '');
   let socials = $derived(author?.socialLinks || []);
-  let skillBadges = $derived(
-    (headline || '')
-      .split(/[|,\n]/)
-      .map(s => s.trim())
-      .filter(Boolean)
-  );
-
-  let isDarkTheme = $derived.by(() => {
-    if (themeStore.current === 'dark') return true;
-    if (themeStore.current === 'light') return false;
-    if (typeof window !== 'undefined') {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-    return true;
-  });
-
   const navItems: NavItem[] = [
     {id: 'home', label: 'Home'},
     {id: 'projects', label: 'Projects'},
@@ -239,7 +187,6 @@
 
   let experiences = $derived(cvData.experience || []);
   let education = $derived(cvData.education || []);
-  let contact = $derived(contactData || []);
 
   let rawSkills = $derived(data.skills || author?.skills || []);
   let skills = $derived<SkillGroupData[]>(normalizeSkillGroups(rawSkills));
@@ -345,7 +292,6 @@
   let formErrors = $state({name: '', email: '', message: ''});
   let formValid = $state({name: false, email: false, message: false});
   let isSubmittingMessage = $state(false);
-  let contactFormElement = $state<HTMLFormElement | null>(null);
   let turnstileContactEl = $state<HTMLDivElement | null>(null);
 
   const canClearContactForm = $derived(
@@ -494,7 +440,7 @@
     withViewTransition(
       () =>
         goto(section === 'home' ? resolve('/') : `${resolve('/')}#${section}`, {
-          noScroll: true
+          reset: false
         }),
       'context'
     );
@@ -729,11 +675,6 @@
   <meta
     property="og:locale"
     content="en_US" />
-  {#each TRANSLATION_LOCALES as locale (locale)}
-    <meta
-      property="og:locale:alternate"
-      content={ogLocale(locale)} />
-  {/each}
   <meta
     property="profile:username"
     content={username} />
@@ -788,7 +729,7 @@
       {/snippet}
       <span
         class="truncate text-sm font-semibold text-text-primary {avatar ?
-          'hidden sm:inline'
+          'hidden lg:inline'
         : 'inline'}">
         {name}
       </span>
@@ -842,25 +783,24 @@
   {/snippet}
 
   {#snippet filterableTag(tag: string)}
+    {@const isSelected =
+      projectFilterStore.filters['tag']?.includes(tag) ?? false}
     <Tag
-      variant="accent"
+      variant={isSelected ? 'accent-active' : 'accent'}
       onclick={() => projectFilterStore.toggleMultiFilter('tag', tag)}
-      aria-pressed={projectFilterStore.filters['tag']?.includes(tag) ?? false}
-      class={projectFilterStore.filters['tag']?.includes(tag) ?
-        'bg-accent font-mono text-text-on-accent'
-      : 'font-mono hover:bg-accent/15'}>
+      aria-pressed={isSelected}
+      class={isSelected ? 'font-mono' : 'font-mono hover:bg-accent/15'}>
       {decodeHtmlEntities(tag)}
     </Tag>
   {/snippet}
 
   {#snippet blogFilterableTag(tag: string)}
+    {@const isSelected = blogFilterStore.filters['tag']?.includes(tag) ?? false}
     <Tag
-      variant="accent"
+      variant={isSelected ? 'accent-active' : 'accent'}
       onclick={() => blogFilterStore.toggleMultiFilter('tag', tag)}
-      aria-pressed={blogFilterStore.filters['tag']?.includes(tag) ?? false}
-      class={blogFilterStore.filters['tag']?.includes(tag) ?
-        'bg-accent font-mono text-text-on-accent'
-      : 'font-mono hover:bg-accent/15'}>
+      aria-pressed={isSelected}
+      class={isSelected ? 'font-mono' : 'font-mono hover:bg-accent/15'}>
       {decodeHtmlEntities(tag)}
     </Tag>
   {/snippet}
@@ -907,6 +847,7 @@
                     <span
                       class="inline-flex size-4.5 items-center justify-center rounded-full bg-success-subtle text-success"
                       title="Pinned repository"
+                      role="img"
                       aria-label="Pinned repository">
                       <Pin class="size-3 shrink-0" />
                     </span>
@@ -915,6 +856,7 @@
                     <span
                       class="inline-flex size-4.5 items-center justify-center rounded-full bg-security-subtle text-security"
                       title="New repository"
+                      role="img"
                       aria-label="New repository">
                       <Sparkles class="size-3 shrink-0" />
                     </span>
@@ -1010,7 +952,11 @@
     </div>
   {/snippet}
 
-  {#snippet blogPostCard(post: BlogPost, tagItem: Snippet<[string]>)}
+  {#snippet blogPostCard(
+    post: BlogPost,
+    tagItem: Snippet<[string]>,
+    headingTag: 'h2' | 'h3'
+  )}
     <div
       class="relative flex flex-col rounded-md glass-card border-0! text-left dark:border-0!">
       <div
@@ -1034,7 +980,8 @@
         class="flex min-w-0 flex-1 flex-col justify-between gap-2 p-3 font-sans sm:gap-2.5 sm:p-4">
         <div class="flex flex-col gap-1.5 sm:gap-2">
           <div>
-            <h4
+            <svelte:element
+              this={headingTag}
               style="view-transition-name: post-title-{post.slug}"
               class="line-clamp-2 text-xl leading-snug font-bold text-text-primary">
               {post.title}
@@ -1045,6 +992,7 @@
                     <span
                       class="inline-flex size-4.5 items-center justify-center rounded-full bg-success-subtle text-success"
                       title="Pinned post"
+                      role="img"
                       aria-label="Pinned post">
                       <Pin class="size-3 shrink-0" />
                     </span>
@@ -1053,13 +1001,14 @@
                     <span
                       class="inline-flex size-4.5 items-center justify-center rounded-full bg-security-subtle text-security"
                       title="New post"
+                      role="img"
                       aria-label="New post">
                       <Sparkles class="size-3 shrink-0" />
                     </span>
                   {/if}
                 </span>
               {/if}
-            </h4>
+            </svelte:element>
           </div>
 
           <ArticleMeta
@@ -1270,10 +1219,10 @@
         </div>
 
         <div>
-          <h3
+          <h2
             class="mb-3 text-lg font-bold tracking-tight text-text-primary sm:mb-4">
             Recent Posts
-          </h3>
+          </h2>
           {#if posts.length === 0}
             <EmptyState
               title="No posts yet"
@@ -1281,7 +1230,7 @@
           {:else}
             <div class="mt-2 grid grid-cols-1 gap-3 sm:gap-4">
               {#each recentPosts as post (post.id)}
-                {@render blogPostCard(post, staticTag)}
+                {@render blogPostCard(post, staticTag, 'h3')}
               {/each}
             </div>
           {/if}
@@ -1303,10 +1252,10 @@
         </div>
 
         <div>
-          <h3
+          <h2
             class="mb-3 text-lg font-bold tracking-tight text-text-primary sm:mb-4">
             Top Projects
-          </h3>
+          </h2>
           {#if recentProjects.length === 0}
             <EmptyState
               title="No projects yet"
@@ -1314,7 +1263,7 @@
           {:else}
             <div class="mt-2 grid grid-cols-1 gap-3 sm:gap-4">
               {#each recentProjects as project (project.name)}
-                {@render projectCard(project, 'h4', staticTag)}
+                {@render projectCard(project, 'h3', staticTag)}
               {/each}
             </div>
           {/if}
@@ -1326,7 +1275,6 @@
                 htmlType="button"
                 onclick={() => navigate('projects')}
                 keyboardShortcut={buttonKey('viewAllProjects')}
-                aria-label="View all available posts"
                 shortcutLabel="View all projects">
                 View all projects
                 {#snippet trailing()}<ChevronRight class="size-3" />{/snippet}
@@ -1336,9 +1284,9 @@
         </div>
 
         <div>
-          <h3 class="mb-4 text-lg font-bold tracking-tight text-text-primary">
+          <h2 class="mb-4 text-lg font-bold tracking-tight text-text-primary">
             Skills
-          </h3>
+          </h2>
           {#if skillsSnapshot.length === 0}
             <EmptyState
               title="No skills listed yet"
@@ -1360,9 +1308,9 @@
         </div>
 
         <div>
-          <h3 class="mb-4 text-lg font-bold tracking-tight text-text-primary">
+          <h2 class="mb-4 text-lg font-bold tracking-tight text-text-primary">
             Experience
-          </h3>
+          </h2>
           {#if experiences.length === 0}
             <EmptyState
               title="No experience listed yet"
@@ -1458,7 +1406,6 @@
         </Card>
 
         <form
-          bind:this={contactFormElement}
           novalidate
           action={contactEmail ? `https://formsubmit.co/${contactEmail}` : '#'}
           method="POST"
@@ -1467,18 +1414,22 @@
           autocomplete="off">
           <input
             type="hidden"
+            id="contact-subject"
             name="_subject"
             value="New message from portfolio website!" />
           <input
             type="hidden"
+            id="contact-template"
             name="_template"
             value="table" />
           <input
             type="hidden"
+            id="contact-captcha"
             name="_captcha"
             value="true" />
           <input
             type="hidden"
+            id="contact-url"
             name="_url"
             value={siteUrl ? `${siteUrl}/` : '/'} />
 
@@ -1888,7 +1839,7 @@
             use:staggerChildren
             class="stagger-children relative z-0 mt-2 grid grid-cols-1 gap-4">
             {#each paginatedBlogPosts as post (post.id)}
-              {@render blogPostCard(post, blogFilterableTag)}
+              {@render blogPostCard(post, blogFilterableTag, 'h2')}
             {/each}
           </div>
           <div class="mt-6">

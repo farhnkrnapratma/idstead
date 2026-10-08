@@ -1,16 +1,16 @@
-import {getSupabaseUserClient} from '$lib/server/supabaseUser';
+import {getSupabaseUserClient} from '#lib/server/supabaseUser.ts';
 import {json} from '@sveltejs/kit';
 import type {RequestHandler} from './$types';
-import {isSameOriginRequest} from '$lib/server/sameOrigin';
-import {apiError} from '$lib/server/apiError';
-import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
-import {requireAdminAuth} from '$lib/server/adminCv';
-import {bearerToken} from '$lib/server/adminAuth';
-import {profilePatch, ProfileInputError} from '$lib/server/profilePatch';
-import {fetchExperiences, fetchEducation} from '$lib/author';
-import {sanitizeInput} from '$lib/utils/sanitizeInput';
-import {logActivity} from '$lib/server/activityLog';
-import {env as privateEnv} from '$env/dynamic/private';
+import {isSameOriginRequest} from '#lib/server/sameOrigin.ts';
+import {apiError} from '#lib/server/apiError.ts';
+import {getSupabaseAdminClient} from '#lib/server/supabaseAdmin.ts';
+import {requireAdminAuth} from '#lib/server/adminCv.ts';
+import {bearerToken} from '#lib/server/adminAuth.ts';
+import {profilePatch, ProfileInputError} from '#lib/server/profilePatch.ts';
+import {fetchExperiences, fetchEducation} from '#lib/author.ts';
+import {sanitizeInput} from '#lib/utils/sanitizeInput.ts';
+import {logActivity} from '#lib/server/activityLog.ts';
+import * as privateEnv from '$app/env/private';
 
 function s(value: unknown): string {
   return typeof value === 'string' ? sanitizeInput(value.trim()) : '';

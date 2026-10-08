@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {buttonKey} from '$lib/shortcuts';
+  import {buttonKey} from '#lib/shortcuts.ts';
   import {
     View,
     Circle,
@@ -7,7 +7,6 @@
     ToggleLeft,
     ToggleRight,
     CaseSensitive,
-    Languages,
     PersonStanding,
     X
   } from '@lucide/svelte';
@@ -15,34 +14,26 @@
   import {portal} from '../../utils/actions';
   import {lockScroll} from '../../utils/scroll';
   import IconButton from '../IconButton.svelte';
-  import FlagIcon from '../FlagIcon.svelte';
   import {
     contentFontStore,
     type ContentFont
   } from '../../stores/contentFontStore.svelte';
-  import {languageLabel} from '$lib/translationLocales';
   import {
     a11yStore,
     A11Y_TOGGLES,
     type FontScale
   } from '../../stores/a11yStore.svelte';
 
-  type TabId = 'font' | 'language' | 'accessibility';
+  type TabId = 'font' | 'accessibility';
 
   interface Props {
     showFontSelect?: boolean;
-    languageSwitcher?: {
-      slug: string;
-      currentLanguage: string;
-      availableLocales: string[];
-    };
     class?: string;
     dropdownDirection?: 'up' | 'down';
   }
 
   let {
     showFontSelect = false,
-    languageSwitcher,
     class: className = '',
     dropdownDirection = 'down'
   }: Props = $props();
@@ -59,17 +50,10 @@
   let panelRef: HTMLDivElement | undefined = $state();
   let hoveredFont = $state<ContentFont | null>(null);
 
-  const languageOptions = $derived(
-    languageSwitcher ? ['en', ...languageSwitcher.availableLocales] : []
-  );
-
   const availableTabs = $derived.by(() => {
     const tabs: {id: TabId; label: string; icon: typeof CaseSensitive}[] = [];
     if (showFontSelect) {
       tabs.push({id: 'font', label: 'Font', icon: CaseSensitive});
-    }
-    if (languageSwitcher && languageOptions.length > 1) {
-      tabs.push({id: 'language', label: 'Language', icon: Languages});
     }
     tabs.push({id: 'accessibility', label: 'A11y', icon: PersonStanding});
     return tabs;
@@ -88,13 +72,6 @@
     fontOptions.find(f => f.value === activePreviewFont)?.fontClass
       ?? 'font-sans'
   );
-
-  function hrefForLang(lang: string): string {
-    if (!languageSwitcher) return '';
-    return lang === 'en' ?
-        `/blog/${languageSwitcher.slug}`
-      : `/blog/${languageSwitcher.slug}?lang=${lang}`;
-  }
 
   function open() {
     isOpen = true;
@@ -371,74 +348,6 @@
                     religion.
                   </span>
                 </div>
-              </div>
-            </div>
-          {/if}
-
-          {#if languageSwitcher && languageOptions.length > 1}
-            <div
-              id="panel-language"
-              role="tabpanel"
-              aria-labelledby="tab-language"
-              aria-hidden={activeTab !== 'language'}
-              class={cn(
-                'col-start-1 row-start-1 flex flex-col gap-2.5 transition-opacity duration-150',
-                activeTab === 'language' ? 'z-10 opacity-100' : (
-                  'pointer-events-none invisible z-0 opacity-0'
-                )
-              )}>
-              <div class="flex items-center justify-between gap-2">
-                <span
-                  class="text-2xs font-semibold tracking-wider text-text-muted uppercase">
-                  Language
-                </span>
-                <a
-                  href={hrefForLang('en')}
-                  onclick={close}
-                  class="cursor-pointer text-2xs font-semibold text-text-muted underline-offset-2 hover:text-accent hover:underline">
-                  Reset to default
-                </a>
-              </div>
-
-              <div class="flex flex-col gap-1">
-                {#each languageOptions as loc (loc)}
-                  {@const selected = loc === languageSwitcher.currentLanguage}
-                  <a
-                    href={hrefForLang(loc)}
-                    onclick={close}
-                    role="radio"
-                    aria-checked={selected}
-                    class={cn(
-                      'group flex items-center justify-between rounded-md border px-2.5 py-1.5 text-xs transition-colors',
-                      selected ?
-                        'border-accent bg-accent/10 text-accent'
-                      : 'border-border-subtle bg-surface text-text-secondary hover:border-accent/50 hover:text-text-primary'
-                    )}>
-                    <div class="flex min-w-0 items-center gap-2">
-                      <FlagIcon
-                        lang={loc}
-                        class="size-3.5" />
-                      <span>{languageLabel(loc)}</span>
-                    </div>
-                    <span
-                      class="relative flex size-3.5 shrink-0 items-center justify-center">
-                      <Circle
-                        class={cn(
-                          'absolute size-3.5 transition-all duration-200',
-                          selected ? 'scale-0 opacity-0' : (
-                            'scale-100 text-text-muted opacity-100 group-hover:text-text-secondary'
-                          )
-                        )} />
-                      <CircleDot
-                        class={cn(
-                          'absolute size-3.5 transition-all duration-200',
-                          selected ?
-                            'scale-100 text-accent opacity-100'
-                          : 'scale-0 opacity-0'
-                        )} />
-                    </span>
-                  </a>
-                {/each}
               </div>
             </div>
           {/if}

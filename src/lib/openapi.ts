@@ -40,29 +40,7 @@ const blogPostSummarySchema = {
     tldr: {type: 'array', items: {type: 'string'}, nullable: true},
     collaborators: {type: 'array', items: {type: 'string'}},
     created_at: {type: 'string', format: 'date-time'},
-    updated_at: {type: 'string', format: 'date-time'},
-    language: {
-      type: 'string',
-      enum: ['en', 'id', 'ja', 'zh', 'ko'],
-      description:
-        'Language actually returned. May differ from `requested_language` if that translation is not yet available (falls back to English).'
-    },
-    requested_language: {
-      type: 'string',
-      enum: ['id', 'ja', 'zh', 'ko'],
-      nullable: true,
-      description: 'The `lang` query param that was requested, if any.'
-    },
-    machine_translated: {
-      type: 'boolean',
-      description:
-        'True when `language` is not "en" -- this content was produced by AI translation and may contain errors.'
-    },
-    translation_disclaimer: {
-      type: 'string',
-      nullable: true,
-      description: 'Present only when machine_translated is true.'
-    }
+    updated_at: {type: 'string', format: 'date-time'}
   }
 };
 
@@ -150,14 +128,6 @@ const formatParam = {
   description:
     'Overrides the Accept header. "md"/"markdown" returns text/markdown instead of JSON.'
 };
-const langParam = {
-  name: 'lang',
-  in: 'query',
-  schema: {type: 'string', enum: ['id', 'ja', 'zh', 'ko']},
-  description:
-    'Return an AI-translated version of the post (`id` Indonesian, `ja` Japanese, `zh` Simplified Chinese, `ko` Korean). Falls back to English (with `language: "en"` in the response) if that translation is not yet available -- never a 404. An unrecognized value returns 400 BLOG_INVALID_LANG.'
-};
-
 const errorResponses = {
   '400': {
     description: 'Bad Request',
@@ -254,8 +224,7 @@ export const openapiSpec = {
           },
           pageParam,
           limitParam(20, 100),
-          formatParam,
-          langParam
+          formatParam
         ],
         responses: {
           '200': {
@@ -299,8 +268,7 @@ export const openapiSpec = {
             },
             description:
               'Overrides the Accept header. "md"/"markdown" returns text/markdown; "text"/"txt" returns text/plain.'
-          },
-          langParam
+          }
         ],
         responses: {
           '200': {

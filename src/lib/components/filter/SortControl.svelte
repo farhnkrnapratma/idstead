@@ -2,7 +2,7 @@
   import {getContext} from 'svelte';
   import {ArrowUpNarrowWide, ArrowDownWideNarrow} from '@lucide/svelte';
   import {cn} from '../../utils/cn';
-  import {buttonKey} from '$lib/shortcuts';
+  import {buttonKey} from '#lib/shortcuts.ts';
   import Dropdown from '../Dropdown.svelte';
   import IconButton from '../IconButton.svelte';
   import {

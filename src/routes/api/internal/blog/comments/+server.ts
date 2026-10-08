@@ -1,15 +1,15 @@
 import {json} from '@sveltejs/kit';
 import type {RequestHandler} from './$types';
-import {supabase} from '$lib/supabase';
+import {supabase} from '#lib/supabase.ts';
 import {
   isNameReserved,
   extractAuthorNameTokens
-} from '$lib/utils/nameValidator';
-import {fetchAuthorProfile} from '$lib/author';
-import {verifyTurnstileToken} from '$lib/server/turnstile';
-import {apiError} from '$lib/server/apiError';
-import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
-import {isSameOriginRequest} from '$lib/server/sameOrigin';
+} from '#lib/utils/nameValidator.ts';
+import {fetchAuthorProfile} from '#lib/author.ts';
+import {verifyTurnstileToken} from '#lib/server/turnstile.ts';
+import {apiError} from '#lib/server/apiError.ts';
+import {getSupabaseAdminClient} from '#lib/server/supabaseAdmin.ts';
+import {isSameOriginRequest} from '#lib/server/sameOrigin.ts';
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -95,7 +95,6 @@ export const POST: RequestHandler = async ({
     typeof body?.parentId === 'string' && body.parentId.trim() ?
       body.parentId.trim()
     : null;
-  const isAnonymous = Boolean(body?.isAnonymous);
   const authorName =
     typeof body?.authorName === 'string' ? body.authorName.trim() : '';
   const content = typeof body?.content === 'string' ? body.content.trim() : '';
