@@ -1,11 +1,11 @@
 import {json} from '@sveltejs/kit';
 import type {RequestHandler} from './$types';
-import {isSameOriginRequest} from '$lib/server/sameOrigin';
-import {apiError} from '$lib/server/apiError';
-import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
-import {logActivity} from '$lib/server/activityLog';
-import {bearerToken} from '$lib/server/adminAuth';
-import {env as privateEnv} from '$env/dynamic/private';
+import {isSameOriginRequest} from '#lib/server/sameOrigin.ts';
+import {apiError} from '#lib/server/apiError.ts';
+import {getSupabaseAdminClient} from '#lib/server/supabaseAdmin.ts';
+import {logActivity} from '#lib/server/activityLog.ts';
+import {bearerToken} from '#lib/server/adminAuth.ts';
+import * as privateEnv from '$app/env/private';
 
 export const POST: RequestHandler = async ({
   request,

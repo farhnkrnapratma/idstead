@@ -1,13 +1,13 @@
-import {getSupabaseUserClient} from '$lib/server/supabaseUser';
+import {getSupabaseUserClient} from '#lib/server/supabaseUser.ts';
 import {json} from '@sveltejs/kit';
 import type {RequestHandler} from './$types';
-import {isSameOriginRequest} from '$lib/server/sameOrigin';
-import {apiError} from '$lib/server/apiError';
-import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
-import {requireAdminAuth} from '$lib/server/adminCv';
-import {bearerToken} from '$lib/server/adminAuth';
-import {logActivity} from '$lib/server/activityLog';
-import {env as privateEnv} from '$env/dynamic/private';
+import {isSameOriginRequest} from '#lib/server/sameOrigin.ts';
+import {apiError} from '#lib/server/apiError.ts';
+import {getSupabaseAdminClient} from '#lib/server/supabaseAdmin.ts';
+import {requireAdminAuth} from '#lib/server/adminCv.ts';
+import {bearerToken} from '#lib/server/adminAuth.ts';
+import {logActivity} from '#lib/server/activityLog.ts';
+import * as privateEnv from '$app/env/private';
 
 const CATEGORIES = ['social', 'funding', 'contact'] as const;
 

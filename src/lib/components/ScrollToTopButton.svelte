@@ -1,10 +1,10 @@
 <script lang="ts">
   import {shortcut} from '../utils/shortcut.svelte';
-  import {buttonKey} from '$lib/shortcuts';
+  import {buttonKey} from '#lib/shortcuts.ts';
   import {fade} from 'svelte/transition';
   import {page} from '$app/state';
   import {MoveUp} from '@lucide/svelte';
-  import {scrollToTop} from '$lib/utils/scroll';
+  import {scrollToTop} from '#lib/utils/scroll.ts';
   import {scrollStore} from '../stores/scrollStore.svelte';
   import Tooltip from './Tooltip.svelte';
 

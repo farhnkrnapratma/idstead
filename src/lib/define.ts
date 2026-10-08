@@ -5,8 +5,8 @@ import {
   fetchContactInfo,
   fetchGroupedSkills,
   fetchSocials
-} from '$lib/author';
-import {sanitizePublicApiData} from '$lib/authorApi';
+} from '#lib/author.ts';
+import {sanitizePublicApiData} from '#lib/authorApi.ts';
 
 export class DefineError extends Error {
   key?: string;

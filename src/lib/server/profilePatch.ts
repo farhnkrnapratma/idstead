@@ -13,8 +13,11 @@ export const profileFields = [
 ] as const;
 
 export class ProfileInputError extends Error {
-  constructor(public fields: Record<string, string>) {
+  public fields: Record<string, string>;
+
+  constructor(fields: Record<string, string>) {
     super(Object.values(fields)[0]);
+    this.fields = fields;
   }
 }
 

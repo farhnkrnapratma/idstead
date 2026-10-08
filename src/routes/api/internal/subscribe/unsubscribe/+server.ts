@@ -1,6 +1,6 @@
 import type {RequestHandler} from './$types';
-import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
-import {SUBSCRIBER_TABLE} from '$lib/server/subscribers';
+import {getSupabaseAdminClient} from '#lib/server/supabaseAdmin.ts';
+import {SUBSCRIBER_TABLE} from '#lib/server/subscribers.ts';
 
 export const POST: RequestHandler = async ({url, platform}) => {
   const token = url.searchParams.get('token') ?? '';

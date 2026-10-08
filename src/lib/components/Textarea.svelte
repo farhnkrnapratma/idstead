@@ -1,7 +1,7 @@
 <script lang="ts">
   import {getContext} from 'svelte';
   import type {HTMLTextareaAttributes} from 'svelte/elements';
-  import {autoResize} from '$lib/utils/actions';
+  import {autoResize} from '#lib/utils/actions.ts';
   import type {FormFieldContext} from '../types';
   import {cn} from '../utils/cn';
 

@@ -1,20 +1,20 @@
 import {json} from '@sveltejs/kit';
 import type {RequestHandler} from './$types';
-import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
-import {apiError} from '$lib/server/apiError';
-import {blogAdmin} from '$lib/server/blogPostAuth';
-import {parsePostInput} from '$lib/server/blogPostInput';
+import {getSupabaseAdminClient} from '#lib/server/supabaseAdmin.ts';
+import {apiError} from '#lib/server/apiError.ts';
+import {blogAdmin} from '#lib/server/blogPostAuth.ts';
+import {parsePostInput} from '#lib/server/blogPostInput.ts';
 import {
   savePostOperation,
   BannerRequiredError,
   type PostOperation
-} from '$lib/server/blogPostSave';
-import {cleanupBlogAssets, putBanner} from '$lib/server/blogBannerStorage';
-import {UUID_PATTERN} from '$lib/blogBanner';
-import {createApiRegistry, validateDefineForSave} from '$lib/define';
-import {notifyNewPost} from '$lib/server/subscriberBroadcast';
-import {logActivity} from '$lib/server/activityLog';
-import {env as privateEnv} from '$env/dynamic/private';
+} from '#lib/server/blogPostSave.ts';
+import {cleanupBlogAssets, putBanner} from '#lib/server/blogBannerStorage.ts';
+import {UUID_PATTERN} from '#lib/blogBanner.ts';
+import {createApiRegistry, validateDefineForSave} from '#lib/define.ts';
+import {notifyNewPost} from '#lib/server/subscriberBroadcast.ts';
+import {logActivity} from '#lib/server/activityLog.ts';
+import * as privateEnv from '$app/env/private';
 
 export const POST: RequestHandler = async ({
   request,

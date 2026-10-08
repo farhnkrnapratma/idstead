@@ -1,8 +1,8 @@
 <script lang="ts">
   import {MailCheck, MailX, TriangleAlert} from '@lucide/svelte';
-  import Button from '$lib/components/Button.svelte';
-  import EmptyState from '$lib/components/EmptyState.svelte';
-  import PageContainer from '$lib/layout/PageContainer.svelte';
+  import Button from '#lib/components/Button.svelte';
+  import EmptyState from '#lib/components/EmptyState.svelte';
+  import PageContainer from '#lib/layout/PageContainer.svelte';
   import type {PageData} from './$types';
 
   let {data}: {data: PageData} = $props();

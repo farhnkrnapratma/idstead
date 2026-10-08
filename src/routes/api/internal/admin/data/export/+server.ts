@@ -1,9 +1,9 @@
 import type {RequestHandler} from './$types';
-import {apiError} from '$lib/server/apiError';
-import {isSameOriginRequest} from '$lib/server/sameOrigin';
-import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
-import {requireAdminAuth} from '$lib/server/adminCv';
-import {buildDataExport} from '$lib/server/dataExport';
+import {apiError} from '#lib/server/apiError.ts';
+import {isSameOriginRequest} from '#lib/server/sameOrigin.ts';
+import {getSupabaseAdminClient} from '#lib/server/supabaseAdmin.ts';
+import {requireAdminAuth} from '#lib/server/adminCv.ts';
+import {buildDataExport} from '#lib/server/dataExport.ts';
 
 export const GET: RequestHandler = async ({request, url, platform}) => {
   if (!isSameOriginRequest(request, url))

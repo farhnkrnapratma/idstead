@@ -16,7 +16,7 @@
   import {cn} from '../utils/cn';
   import Button from './Button.svelte';
   import {shortcut} from '../utils/shortcut.svelte';
-  import {buttonKey, argKey, VIEW_FORMAT_KEYS} from '$lib/shortcuts';
+  import {buttonKey, argKey, VIEW_FORMAT_KEYS} from '#lib/shortcuts.ts';
 
   interface Props {
     variant?: 'inline' | 'sidebar' | 'toolbar';
@@ -27,8 +27,6 @@
     viewMarkdownUrl: string;
     viewTextUrl: string;
     pageUrl?: string;
-    avatarUrl?: string;
-    showToolbar?: boolean;
     showCopyUrl?: boolean;
     class?: string;
   }
@@ -42,8 +40,6 @@
     viewMarkdownUrl,
     viewTextUrl,
     pageUrl,
-    avatarUrl = '',
-    showToolbar = true,
     showCopyUrl = true,
     class: className = ''
   }: Props = $props();

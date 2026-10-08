@@ -1,7 +1,7 @@
 import type {RequestHandler} from './$types';
-import {UUID_PATTERN} from '$lib/blogBanner';
-import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
-import {getBannerObject} from '$lib/server/blogBannerStorage';
+import {UUID_PATTERN} from '#lib/blogBanner.ts';
+import {getSupabaseAdminClient} from '#lib/server/supabaseAdmin.ts';
+import {getBannerObject} from '#lib/server/blogBannerStorage.ts';
 
 export const GET: RequestHandler = async ({request, params, platform}) => {
   const version = params.file.endsWith('.webp') ? params.file.slice(0, -5) : '';

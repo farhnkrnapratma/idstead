@@ -1,10 +1,10 @@
 import {json} from '@sveltejs/kit';
 import type {RequestHandler} from './$types';
-import {apiError} from '$lib/server/apiError';
-import {isSameOriginRequest} from '$lib/server/sameOrigin';
-import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
-import {verifyAdminToken} from '$lib/server/adminAuth';
-import {parseAdminSettings} from '$lib/adminSettings';
+import {apiError} from '#lib/server/apiError.ts';
+import {isSameOriginRequest} from '#lib/server/sameOrigin.ts';
+import {getSupabaseAdminClient} from '#lib/server/supabaseAdmin.ts';
+import {verifyAdminToken} from '#lib/server/adminAuth.ts';
+import {parseAdminSettings} from '#lib/adminSettings.ts';
 
 const MAX_BODY_BYTES = 2048;
 

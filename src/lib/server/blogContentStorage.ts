@@ -1,6 +1,6 @@
 import {PutObjectCommand, GetObjectCommand} from '@aws-sdk/client-s3';
 import {assetStorage} from './profileAssets';
-import {sha256} from '$lib/blogBanner';
+import {sha256} from '#lib/blogBanner.ts';
 
 export async function putContentAsset(
   platform: App.Platform | undefined,

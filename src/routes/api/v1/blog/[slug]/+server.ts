@@ -1,17 +1,8 @@
 import {json} from '@sveltejs/kit';
 import type {RequestHandler} from './$types';
-import {supabase} from '$lib/supabase';
-import {apiError} from '$lib/server/apiError';
-import {markdownToPlainText} from '$lib/utils/markdownToText';
-import {
-  resolveTranslation,
-  isTranslationLocale
-} from '$lib/server/blogTranslations';
-import {TRANSLATION_LOCALES} from '$lib/translationLocales';
-import {
-  getTranslationDisclaimer,
-  buildTranslationDisclaimerMarkdown
-} from '$lib/server/blogTranslate';
+import {supabase} from '#lib/supabase.ts';
+import {apiError} from '#lib/server/apiError.ts';
+import {markdownToPlainText} from '#lib/utils/markdownToText.ts';
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -20,12 +11,11 @@ export const GET: RequestHandler = async ({params, url, request, fetch}) => {
   const {slug: idOrSlug} = params;
   const isUuid = UUID_REGEX.test(idOrSlug);
 
-  const lang = url.searchParams.get('lang')?.trim() || null;
-  if (lang && !isTranslationLocale(lang)) {
+  if (url.searchParams.has('lang')) {
     return apiError(
       400,
       'BLOG_INVALID_LANG',
-      `The 'lang' query parameter must be one of: ${TRANSLATION_LOCALES.join(', ')}.`
+      'The lang query parameter is no longer supported.'
     );
   }
 
@@ -55,8 +45,6 @@ export const GET: RequestHandler = async ({params, url, request, fetch}) => {
     );
   }
 
-  const translation = await resolveTranslation(supabase, post.id, lang);
-
   let commentCount: number;
   let viewsCount: number;
   try {
@@ -82,20 +70,18 @@ export const GET: RequestHandler = async ({params, url, request, fetch}) => {
     );
   }
 
-  const effectiveStoragePath = translation.storagePath ?? post.storage_path;
-
-  if (!effectiveStoragePath)
+  if (!post.storage_path)
     return apiError(
       502,
       'BLOG_CONTENT_FETCH_FAILED',
       'Could not fetch blog content.'
     );
   let rawMarkdown = '';
-  if (effectiveStoragePath) {
+  if (post.storage_path) {
     try {
       const {data: urlData} = supabase.storage
         .from('blog-posts')
-        .getPublicUrl(effectiveStoragePath);
+        .getPublicUrl(post.storage_path);
       const fileRes = await fetch(urlData.publicUrl);
       if (!fileRes.ok)
         return apiError(
@@ -115,11 +101,6 @@ export const GET: RequestHandler = async ({params, url, request, fetch}) => {
     }
   }
 
-  const effectiveTitle = translation.title ?? post.title;
-  const effectiveExcerpt = translation.excerpt ?? post.excerpt;
-  const effectiveSummary = translation.summary ?? post.summary;
-  const effectiveTldr = translation.tldr ?? post.tldr;
-
   const format = url.searchParams.get('format')?.toLowerCase();
   const acceptHeader = request.headers.get('accept')?.toLowerCase() || '';
   const wantsMarkdown =
@@ -132,27 +113,22 @@ export const GET: RequestHandler = async ({params, url, request, fetch}) => {
     || acceptHeader.includes('text/plain');
 
   const tldrMarkdown =
-    effectiveTldr?.length ?
-      `\n**TL;DR**\n${effectiveTldr.map((point: string) => `- ${point}`).join('\n')}\n`
+    post.tldr?.length ?
+      `\n**TL;DR**\n${post.tldr.map((point: string) => `- ${point}`).join('\n')}\n`
     : '';
-  const disclaimerMarkdown =
-    translation.machineTranslated ?
-      `\n${buildTranslationDisclaimerMarkdown(translation.language)}\n`
-    : '';
-
   if (wantsMarkdown) {
-    const markdownOutput = `# ${effectiveTitle}
+    const markdownOutput = `# ${post.title}
 
 - **ID**: \`${post.id}\`
 - **Slug**: \`${post.slug}\`
 - **Date**: ${new Date(post.created_at).toISOString().split('T')[0]}
 - **Views**: ${viewsCount} | **Comments**: ${commentCount}
-${disclaimerMarkdown}
-> ${effectiveExcerpt || ''}
-${effectiveSummary ? `\n${effectiveSummary}\n` : ''}${tldrMarkdown}
+
+> ${post.excerpt || ''}
+${post.summary ? `\n${post.summary}\n` : ''}${tldrMarkdown}
 ---
 
-${rawMarkdown || effectiveExcerpt || ''}
+${rawMarkdown || post.excerpt || ''}
 `;
     return new Response(markdownOutput, {
       headers: {
@@ -165,24 +141,20 @@ ${rawMarkdown || effectiveExcerpt || ''}
 
   if (wantsText) {
     const plainTextBody = markdownToPlainText(
-      rawMarkdown || effectiveExcerpt || ''
+      rawMarkdown || post.excerpt || ''
     );
     const tldrText =
-      effectiveTldr?.length ?
-        `TL;DR:\n${effectiveTldr.map((point: string) => `- ${point}`).join('\n')}\n\n`
+      post.tldr?.length ?
+        `TL;DR:\n${post.tldr.map((point: string) => `- ${point}`).join('\n')}\n\n`
       : '';
-    const disclaimerText =
-      translation.machineTranslated ?
-        `${getTranslationDisclaimer(translation.language)}\n\n`
-      : '';
-    const textOutput = `${effectiveTitle}
+    const textOutput = `${post.title}
 
 ID: ${post.id}
 Slug: ${post.slug}
 Date: ${new Date(post.created_at).toISOString().split('T')[0]}
 Views: ${viewsCount} | Comments: ${commentCount}
 
-${disclaimerText}${effectiveExcerpt ? `${effectiveExcerpt}\n\n` : ''}${effectiveSummary ? `${effectiveSummary}\n\n` : ''}${tldrText}${plainTextBody}`;
+${post.excerpt ? `${post.excerpt}\n\n` : ''}${post.summary ? `${post.summary}\n\n` : ''}${tldrText}${plainTextBody}`;
 
     return new Response(textOutput, {
       headers: {
@@ -196,24 +168,18 @@ ${disclaimerText}${effectiveExcerpt ? `${effectiveExcerpt}\n\n` : ''}${effective
   return json(
     {
       id: post.id,
-      title: effectiveTitle,
+      title: post.title,
       slug: post.slug,
-      excerpt: effectiveExcerpt,
-      summary: effectiveSummary,
-      tldr: effectiveTldr || [],
+      excerpt: post.excerpt,
+      summary: post.summary,
+      tldr: post.tldr || [],
       collaborators: post.collaborators || [],
       published: post.published,
       created_at: post.created_at,
       updated_at: post.updated_at || post.created_at,
       comment_count: commentCount,
       views_count: viewsCount,
-      content: rawMarkdown,
-      language: translation.language,
-      requested_language: translation.requestedLanguage,
-      machine_translated: translation.machineTranslated,
-      ...(translation.machineTranslated ?
-        {translation_disclaimer: getTranslationDisclaimer(translation.language)}
-      : {})
+      content: rawMarkdown
     },
     {
       headers: {

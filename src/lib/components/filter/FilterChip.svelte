@@ -19,16 +19,18 @@
 
 <div
   class={cn(
-    'inline-flex items-center gap-1.5 rounded-md border border-border-subtle/50 bg-surface-card/85 px-3 py-1 text-xs font-semibold text-text-primary shadow-2xs select-none',
+    'inline-flex max-w-full items-center gap-1 rounded-full border border-accent/30 bg-accent/10 px-2 py-1 text-xs font-medium text-accent shadow-2xs select-none',
     className
   )}>
-  <span class="text-text-secondary">{label}:</span>
-  <span>{value}</span>
+  {#if label !== 'tag'}
+    <span class="text-accent/75">{label}:</span>
+  {/if}
+  <span class="min-w-0 break-words">{value}</span>
   <button
     type="button"
     onclick={onRemove}
     aria-label="Remove filter: {label} {value}"
-    class="ml-0.5 inline-flex h-4 w-4 cursor-pointer items-center justify-center rounded-md text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring">
-    <X class="size-3.5 leading-none" />
+    class="inline-flex size-3.5 shrink-0 cursor-pointer items-center justify-center rounded-full p-0 text-accent/60 transition-colors hover:bg-accent/20 hover:text-accent focus:outline-none active:text-accent">
+    <X class="size-2.5 -translate-y-[0.5px]" />
   </button>
 </div>

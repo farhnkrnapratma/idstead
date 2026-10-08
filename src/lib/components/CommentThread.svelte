@@ -25,8 +25,13 @@
   lang="ts"
   generics="T extends CommentItem">
   import Avatar from './Avatar.svelte';
-  import {commentAuthorName} from '$lib/commentAuthor';
-  import {clampPage, pageCount, pageOfIndex, pageSlice} from '$lib/pagination';
+  import {commentAuthorName} from '#lib/commentAuthor.ts';
+  import {
+    clampPage,
+    pageCount,
+    pageOfIndex,
+    pageSlice
+  } from '#lib/pagination.ts';
   import {
     arrangeThreads,
     commentMatchesQuery,
@@ -34,7 +39,7 @@
     type CommentFilter,
     type CommentSort,
     type CommentSortDirection
-  } from '$lib/commentFilter';
+  } from '#lib/commentFilter.ts';
   import Pagination from './Pagination.svelte';
   import Input from './Input.svelte';
   import FilterToolbar from './filter/FilterToolbar.svelte';

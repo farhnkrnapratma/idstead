@@ -1,6 +1,6 @@
 <script lang="ts">
   import {onDestroy} from 'svelte';
-  import {FieldValidation} from '$lib/fieldValidation';
+  import {FieldValidation} from '#lib/fieldValidation.ts';
   import {Circle, CircleDot} from '@lucide/svelte';
   import Dialog from './Dialog.svelte';
   import Button from './Button.svelte';
@@ -11,16 +11,16 @@
     executeTurnstile,
     resetTurnstile,
     turnstileSiteKey
-  } from '$lib/utils/turnstile';
-  import {toastStore} from '$lib/stores/toastStore.svelte';
-  import {cn} from '$lib/utils/cn';
-  import {shortcut} from '$lib/utils/shortcut.svelte';
+  } from '#lib/utils/turnstile.ts';
+  import {toastStore} from '#lib/stores/toastStore.svelte.ts';
+  import {cn} from '#lib/utils/cn.ts';
+  import {shortcut} from '#lib/utils/shortcut.svelte.ts';
   import {
     REPORT_REASONS,
     reportReasonColor,
     reportReasonIcon,
     type ReportReasonId
-  } from '$lib/reportReasons';
+  } from '#lib/reportReasons.ts';
 
   interface CommentInfo {
     id: string;

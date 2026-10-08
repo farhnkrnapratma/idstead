@@ -1,11 +1,11 @@
 <script lang="ts">
-  import {adminUrl, navigateAdmin} from '$lib/adminNavigation';
+  import {adminUrl, navigateAdmin} from '#lib/adminNavigation.ts';
   import {onMount} from 'svelte';
   import {
     analyticsPeriod,
     browserTimeZone,
     zonedMidnight
-  } from '$lib/adminAnalytics';
+  } from '#lib/adminAnalytics.ts';
   import {
     Eye,
     Flag,
@@ -15,11 +15,11 @@
     ArrowRight,
     SquareArrowOutUpRight
   } from '@lucide/svelte';
-  import {adminActivityRequest} from '$lib/adminActivityClient';
-  import {adminNotificationsStore} from '$lib/stores/adminNotificationsStore.svelte';
-  import {adminChartRangeStore} from '$lib/stores/adminChartRangeStore.svelte';
-  import {WorkspaceFeed} from '$lib/stores/workspaceFeed.svelte';
-  import {pluralize} from '$lib/utils/pluralize';
+  import {adminActivityRequest} from '#lib/adminActivityClient.ts';
+  import {adminNotificationsStore} from '#lib/stores/adminNotificationsStore.svelte.ts';
+  import {adminChartRangeStore} from '#lib/stores/adminChartRangeStore.svelte.ts';
+  import {WorkspaceFeed} from '#lib/stores/workspaceFeed.svelte.ts';
+  import {pluralize} from '#lib/utils/pluralize.ts';
   import {
     formatCount,
     helpfulPercent,
@@ -28,19 +28,18 @@
     type WorkspaceOverview,
     type WorkspaceArea,
     type WorkspaceRow
-  } from '$lib/adminWorkspace';
-  import {supabase} from '$lib/supabase';
+  } from '#lib/adminWorkspace.ts';
+  import {supabase} from '#lib/supabase.ts';
   import Card from '../Card.svelte';
   import StatsGrid from '../StatsGrid.svelte';
   import Button from '../Button.svelte';
-  import {reportReasonLabel} from '$lib/reportReasons';
+  import {reportReasonLabel} from '#lib/reportReasons.ts';
   import DataTable, {type DataTableColumn} from '../DataTable.svelte';
   import ActivityTimestamp from './ActivityTimestamp.svelte';
   import ErrorState from '../ErrorState.svelte';
   import LoadingState from '../LoadingState.svelte';
   import EmptyState from '../EmptyState.svelte';
-  import Section from '$lib/layout/Section.svelte';
-  import ActivityIcon from './ActivityIcon.svelte';
+  import Section from '#lib/layout/Section.svelte';
   import ViewsCalendar from './ViewsCalendar.svelte';
   import ViewsChart from './ViewsChart.svelte';
   import type {ViewsRange} from './viewsRange';

@@ -1,10 +1,10 @@
 <script lang="ts">
-  import {activityTimestamp, activityTimeZone} from '$lib/adminActivity';
-  import {isRelativeTimestamp} from '$lib/adminDateFormat';
-  import {adminDisplayStore} from '$lib/stores/adminDisplayStore.svelte';
-  import {formatRelativeTime} from '$lib/utils/formatters';
+  import {activityTimestamp, activityTimeZone} from '#lib/adminActivity.ts';
+  import {isRelativeTimestamp} from '#lib/adminDateFormat.ts';
+  import {adminDisplayStore} from '#lib/stores/adminDisplayStore.svelte.ts';
+  import {formatRelativeTime} from '#lib/utils/formatters.ts';
   import RelativeTime from '../RelativeTime.svelte';
-  import {cn} from '$lib/utils/cn';
+  import {cn} from '#lib/utils/cn.ts';
   let {
     date,
     timeZone,

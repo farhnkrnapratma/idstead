@@ -1,4 +1,3 @@
-import {codeBlockPrefsStore} from '../stores/codeBlockPrefsStore.svelte';
 import {
   createCodeActionControls,
   getRawLanguage,

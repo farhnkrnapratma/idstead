@@ -28,6 +28,18 @@ describe('content security policy', () => {
     expect(directive('frame-src')).toContain('https://codepen.io');
   });
 
+  test('Cloudflare Insights is allowed to load its beacon script', () => {
+    expect(directive('script-src')).toContain(
+      'https://static.cloudflareinsights.com'
+    );
+  });
+
+  test('Google Analytics regional image and collection hosts are allowed', () => {
+    expect(directive('img-src')).toContain('https://www.google.co.id');
+    expect(directive('connect-src')).toContain('https://www.google.com');
+    expect(directive('connect-src')).toContain('https://analytics.google.com');
+  });
+
   test('supabase is allowed over https and wss, derived from the env', () => {
     expect(directive('connect-src')).toContain('https://abc.supabase.co');
     expect(directive('connect-src')).toContain('wss://abc.supabase.co');

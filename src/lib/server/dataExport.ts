@@ -8,9 +8,9 @@ import {
   fetchFundingLinks,
   fetchGroupedSkills,
   fetchSocials
-} from '$lib/author';
-import {DEFAULT_ADMIN_DISPLAY} from '$lib/adminDateFormat';
-import {DEFAULT_CHART_RANGE, parseAdminSettings} from '$lib/adminSettings';
+} from '#lib/author.ts';
+import {DEFAULT_ADMIN_DISPLAY} from '#lib/adminDateFormat.ts';
+import {DEFAULT_CHART_RANGE, parseAdminSettings} from '#lib/adminSettings.ts';
 import {assetStorage} from './profileAssets';
 import {
   compact,
@@ -128,12 +128,10 @@ export async function buildDataExport(
 
   const [
     posts,
-    translations,
     comments,
     reports,
     feedback,
     legals,
-    glossary,
     rules,
     banners,
     documents,
@@ -148,15 +146,6 @@ export async function buildDataExport(
           'id, slug, title, excerpt, published, pinned, storage_path, read_time, tags, collaborators, summary, tldr, helpful_yes, helpful_no, created_at, updated_at'
         )
         .order('created_at', {ascending: true})
-    ),
-    rows<any>(
-      'translations',
-      db
-        .from('db_post_translations')
-        .select(
-          'post_id, locale, title, excerpt, summary, tldr, storage_path, created_at, updated_at'
-        )
-        .order('locale', {ascending: true})
     ),
     rows<CommentRow & {post_id: string}>(
       'comments',
@@ -185,13 +174,6 @@ export async function buildDataExport(
       db
         .from('db_legals')
         .select('slug, title, content, created_at, updated_at')
-    ),
-    rows<any>(
-      'glossary',
-      db
-        .from('db_glossary_terms')
-        .select('term')
-        .order('sort_order', {ascending: true})
     ),
     rows<any>(
       'project rules',
@@ -231,8 +213,6 @@ export async function buildDataExport(
     const slug = postById.get(post.id)!.slug;
     const dir = `content/posts/${slug}`;
     const collector = createMediaCollector();
-    const postTranslations = translations.filter(t => t.post_id === post.id);
-
     await guard(
       `${dir}/${slug}.md`,
       async () => {
@@ -242,19 +222,6 @@ export async function buildDataExport(
       },
       undefined
     );
-    for (const translation of postTranslations) {
-      const name = `${slug}.${safeSegment(translation.locale)}.md`;
-      await guard(
-        `${dir}/${name}`,
-        async () => {
-          const markdown = await readMarkdown(translation.storage_path);
-          if (markdown !== null)
-            putText(`${dir}/${name}`, collector.rewrite(markdown));
-        },
-        undefined
-      );
-    }
-
     const banner = banners.find(item => item.post_id === post.id);
     if (banner)
       await fetchBinary(`${dir}/assets/banner/${slug}.webp`, banner.object_key);
@@ -283,20 +250,10 @@ export async function buildDataExport(
         views: count ?? 0,
         helpfulYes: post.helpful_yes ?? 0,
         helpfulNo: post.helpful_no ?? 0
-      },
-      translations: postTranslations.map(t => ({
-        locale: t.locale,
-        title: t.title,
-        excerpt: t.excerpt,
-        summary: t.summary,
-        tldr: t.tldr,
-        createdAt: t.created_at,
-        updatedAt: t.updated_at
-      }))
+      }
     });
   });
   counts.posts = posts.length;
-  counts.translations = translations.length;
 
   for (const post of posts) {
     const slug = postById.get(post.id)!.slug;
@@ -353,15 +310,10 @@ export async function buildDataExport(
   }
   counts.legalPages = legals.length;
 
-  putJson(
-    'content/glossary.json',
-    glossary.map(item => item.term)
-  );
   putJson('content/projects.json', {
     pin: rules.filter(r => r.rule_type === 'pin').map(r => r.repo_name),
     exclude: rules.filter(r => r.rule_type === 'exclude').map(r => r.repo_name)
   });
-  counts.glossaryTerms = glossary.length;
 
   const profile = await guard(
     'identity/profile.json',

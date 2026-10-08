@@ -1,4 +1,5 @@
 import type {SupabaseClient} from '@supabase/supabase-js';
+import {requiresAdminMfa} from '#lib/adminAuthState.ts';
 
 export type AdminAuth =
   | {actor: string; status?: never; message?: never}
@@ -19,7 +20,7 @@ export async function isMfaSatisfied(
   const {data, error} =
     await client.auth.mfa.getAuthenticatorAssuranceLevel(accessToken);
   if (error || !data) return false;
-  return data.nextLevel !== 'aal2' || data.currentLevel === 'aal2';
+  return !requiresAdminMfa(data);
 }
 
 export function bearerToken(request: Request): string {

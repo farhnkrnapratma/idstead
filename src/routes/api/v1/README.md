@@ -36,7 +36,7 @@ This shape is enforced by one shared handler for the whole API, so it's the same
 | --- | --- | --- |
 | `BLOG_LIST_FETCH_FAILED` | 500 | `/api/v1/blog` couldn't query the database. |
 | `BLOG_POST_NOT_FOUND` | 404 | No published post matches the given ID/slug. |
-| `BLOG_INVALID_LANG` | 400 | `lang` was given but isn't one of `id`, `ja`, `zh`, `ko`. |
+| `BLOG_INVALID_LANG` | 400 | An invalid blog query parameter was supplied. |
 | `BLOG_COMMENT_INVALID_POST_ID` | 400 | `postId` was given but isn't a valid UUID. |
 | `BLOG_COMMENTS_FETCH_FAILED` | 500 | `/api/v1/blog/comments` couldn't query the database. |
 | `BLOG_VIEW_POST_ID_REQUIRED` | 400 | `postId` query parameter is missing. |
@@ -76,27 +76,14 @@ This shape is enforced by one shared handler for the whole API, so it's the same
 
 | Method | Path | Description |
 | --- | --- | --- |
-| GET | `/api/v1/blog` | List published posts. Query: `q`, `id`, `slug`, `page`, `limit` (max 100, default 20), `format=md`, `lang`. |
-| GET | `/api/v1/blog/{id_or_slug}` | Single post by UUID or slug. Query: `format=md`\|`text`, `lang`. `404` if no matching published post. |
+| GET | `/api/v1/blog` | List published posts. Query: `q`, `id`, `slug`, `page`, `limit` (max 100, default 20), `format=md`. |
+| GET | `/api/v1/blog/{id_or_slug}` | Single post by UUID or slug. Query: `format=md`\|`text`. `404` if no matching published post. |
 | GET | `/api/v1/blog/comments` | Approved comments. Query: `postId` (UUID; alias `post_id` also accepted — omit for recent site-wide), `limit` (max 100, default 50). `400` if `postId` is present but not a valid UUID. |
 | GET | `/api/v1/blog/views` | View count for a post. Query: `postId` (required). |
 
 Both `/api/v1/blog` list items and the `/api/v1/blog/{id_or_slug}` detail response include a `collaborators` field (array of collaborator names/handles).
 
-Both also include `excerpt` (short teaser, nullable string), `summary` (longer AI-generated recap, nullable string), and `tldr` (AI-generated key points, nullable array of up to 4 strings). All three are generated automatically at publish/edit time — a post may have `null`/`[]` for `summary`/`tldr` if it predates this feature or generation failed; this is expected, not an error. These fields are also included in `?format=md`/`?format=text` output alongside the raw excerpt blockquote.
-
-#### Translations (`lang`)
-
-Add `?lang=` with one of `id` (Indonesian), `ja` (Japanese), `zh` (Simplified Chinese) or `ko` (Korean) to get an AI-translated version of `title`, `excerpt`, `summary`, `tldr`, and (on the detail endpoint) `content`. Translations are generated automatically when a post is published — there is no on-demand translation endpoint.
-
-Every response (list items and the detail endpoint) includes:
-
-- `language` — the language actually returned (`en`, `id`, `ja`, `zh` or `ko`). May differ from the requested `lang`.
-- `requested_language` — the `lang` value that was requested, or `null` if none was given.
-- `machine_translated` — `true` when `language` isn't `en`.
-- `translation_disclaimer` — present only when `machine_translated` is `true`: a warning that the content was translated by AI and may contain errors, in the same language as `language`.
-
-If a translation hasn't been generated yet for the requested language, the response falls back to English (`language: "en"`, `machine_translated: false`) — **this is a `200`, never a `404`**. An unrecognized `lang` value (not `id`, `ja`, `zh` or `ko`) returns `400 BLOG_INVALID_LANG`. The disclaimer is also prepended to `?format=md`/`?format=text` output when the response is a translation — on `?format=md` it's a real `:::note` callout block, matching how callouts render elsewhere in the article.
+Both also include `excerpt` (short teaser, nullable string), `summary` (longer AI-generated recap, nullable string), and `tldr` (AI-generated key points, nullable array of up to 4 strings). Excerpts are written manually; Summary and TL;DR remain generated automatically at publish/edit time. A post may have `null`/`[]` for `summary`/`tldr` if it predates this feature or generation failed; this is expected, not an error. These fields are also included in `?format=md`/`?format=text` output alongside the raw excerpt blockquote.
 
 #### Comments
 

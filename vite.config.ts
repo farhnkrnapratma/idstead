@@ -6,13 +6,13 @@ import {sentrySvelteKit} from '@sentry/sveltekit/vite';
 import {webpWasmPlugin} from './tooling/vite/webp-wasm-plugin.ts';
 
 export default defineConfig({
-  server: {allowedHosts: ['rc.fkp.my.id']},
   plugins: [
     webpWasmPlugin(),
     sentrySvelteKit({
       org: 'farhnkrnapratma',
       project: 'www',
-      authToken: process.env.SENTRY_AUTH_TOKEN
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      telemetry: false
     }),
     tailwindcss(),
     sveltekit({

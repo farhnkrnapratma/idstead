@@ -1,8 +1,11 @@
 <script lang="ts">
   import {onMount, type Snippet} from 'svelte';
   import {resolve} from '$app/paths';
-  import {adminUrl, navigateAdmin} from '$lib/adminNavigation';
-  import {resolveAdminSettings, type AdminSettingsSection} from '$lib/adminUrl';
+  import {adminUrl, navigateAdmin} from '#lib/adminNavigation.ts';
+  import {
+    resolveAdminSettings,
+    type AdminSettingsSection
+  } from '#lib/adminUrl.ts';
   import {
     Database,
     Eye,
@@ -13,8 +16,8 @@
     Smartphone,
     Trash
   } from '@lucide/svelte';
-  import {supabase} from '$lib/supabase';
-  import {passwordPolicyError} from '$lib/passwordPolicy';
+  import {supabase} from '#lib/supabase.ts';
+  import {passwordPolicyError} from '#lib/passwordPolicy.ts';
   import PasswordGenerator from './PasswordGenerator.svelte';
   import {
     Badge,
@@ -28,9 +31,9 @@
     Input,
     LoadingState,
     toastStore
-  } from '$lib';
-  import FormSection from '$lib/layout/FormSection.svelte';
-  import Section from '$lib/layout/Section.svelte';
+  } from '#lib/index.ts';
+  import FormSection from '#lib/layout/FormSection.svelte';
+  import Section from '#lib/layout/Section.svelte';
   import ActivityTimestamp from './ActivityTimestamp.svelte';
   import DisplaySettings from './DisplaySettings.svelte';
   import type {Factor, PasskeyListItem} from '@supabase/supabase-js';

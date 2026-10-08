@@ -1,20 +1,18 @@
 import {json} from '@sveltejs/kit';
 import type {RequestHandler} from './$types';
-import {supabase} from '$lib/supabase';
-import {apiError} from '$lib/server/apiError';
-import {
-  resolveTranslationsBulk,
-  isTranslationLocale
-} from '$lib/server/blogTranslations';
-import {TRANSLATION_LOCALES} from '$lib/translationLocales';
-import {
-  getTranslationDisclaimer,
-  buildTranslationDisclaimerMarkdown
-} from '$lib/server/blogTranslate';
-
-import {escapePostgrestFilter} from '$lib/server/postgrestSanitize';
+import {supabase} from '#lib/supabase.ts';
+import {apiError} from '#lib/server/apiError.ts';
+import {escapePostgrestFilter} from '#lib/server/postgrestSanitize.ts';
 
 export const GET: RequestHandler = async ({url, request}) => {
+  if (url.searchParams.has('lang')) {
+    return apiError(
+      400,
+      'BLOG_INVALID_LANG',
+      'The lang query parameter is no longer supported.'
+    );
+  }
+
   const id = url.searchParams.get('id')?.trim();
   const slug = url.searchParams.get('slug')?.trim();
   const search = url.searchParams.get('q')?.trim();
@@ -27,15 +25,6 @@ export const GET: RequestHandler = async ({url, request}) => {
   const page =
     !Number.isSafeInteger(pageParam) || pageParam < 1 ? 1 : pageParam;
   const offset = (page - 1) * limit;
-
-  const lang = url.searchParams.get('lang')?.trim() || null;
-  if (lang && !isTranslationLocale(lang)) {
-    return apiError(
-      400,
-      'BLOG_INVALID_LANG',
-      `The 'lang' query parameter must be one of: ${TRANSLATION_LOCALES.join(', ')}.`
-    );
-  }
 
   const format = url.searchParams.get('format')?.toLowerCase();
   const acceptHeader = request.headers.get('accept')?.toLowerCase() || '';
@@ -80,38 +69,9 @@ export const GET: RequestHandler = async ({url, request}) => {
     );
   }
 
-  const rawList = posts || [];
-  const total = count ?? rawList.length;
+  const list = posts || [];
+  const total = count ?? list.length;
   const totalPages = Math.max(1, Math.ceil(total / limit));
-
-  const translationsByPostId = await resolveTranslationsBulk(
-    supabase,
-    rawList.map(p => p.id),
-    lang
-  );
-
-  const list = rawList.map(p => {
-    const translation = translationsByPostId.get(p.id);
-    if (!translation) {
-      return {
-        ...p,
-        language: 'en' as const,
-        requested_language: isTranslationLocale(lang ?? '') ? lang : null,
-        machine_translated: false
-      };
-    }
-    return {
-      ...p,
-      title: translation.title ?? p.title,
-      excerpt: translation.excerpt ?? p.excerpt,
-      summary: translation.summary ?? p.summary,
-      tldr: translation.tldr ?? p.tldr,
-      language: translation.language,
-      requested_language: translation.requestedLanguage,
-      machine_translated: true,
-      translation_disclaimer: getTranslationDisclaimer(translation.language)
-    };
-  });
 
   if (wantsMarkdown) {
     let md = `# Posts Catalog\n\nPage: ${page}/${totalPages}\nTotal posts: ${total}\n\n`;
@@ -122,9 +82,6 @@ export const GET: RequestHandler = async ({url, request}) => {
       md += `- **Date**: ${new Date(p.created_at).toISOString().split('T')[0]}\n`;
       md += `- **JSON Endpoint**: \`/api/v1/blog/${p.slug}\`\n`;
       md += `- **Markdown Endpoint**: \`/api/v1/blog/${p.slug}?format=md\`\n`;
-      if (p.machine_translated) {
-        md += `\n${buildTranslationDisclaimerMarkdown(p.language)}\n`;
-      }
       if (p.excerpt) md += `\n> ${p.excerpt}\n`;
       if (p.summary) md += `\n${p.summary}\n`;
       if (p.tldr?.length) {

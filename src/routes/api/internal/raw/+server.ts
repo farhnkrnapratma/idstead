@@ -1,9 +1,9 @@
 import type {RequestHandler} from './$types';
-import {getLegalPage} from '$lib/server/legalPages';
-import {supabase} from '$lib/supabase';
-import {markdownToPlainText} from '$lib/utils/markdownToText';
-import {apiError} from '$lib/server/apiError';
-import {isSameOriginRequest} from '$lib/server/sameOrigin';
+import {getLegalPage} from '#lib/server/legalPages.ts';
+import {supabase} from '#lib/supabase.ts';
+import {markdownToPlainText} from '#lib/utils/markdownToText.ts';
+import {apiError} from '#lib/server/apiError.ts';
+import {isSameOriginRequest} from '#lib/server/sameOrigin.ts';
 
 const LEGAL_SLUGS = new Set(['privacy', 'terms', 'security']);
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {buttonKey} from '$lib/shortcuts';
+  import {buttonKey} from '#lib/shortcuts.ts';
   import {PersonStanding, ToggleLeft, ToggleRight} from '@lucide/svelte';
   import {cn} from '../../utils/cn';
   import {popoverPosition} from '../../utils/popoverPosition';

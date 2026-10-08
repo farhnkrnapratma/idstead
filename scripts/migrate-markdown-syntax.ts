@@ -30,13 +30,12 @@ const db = createClient(project, value('SUPABASE_SERVICE_ROLE_KEY'), {
 });
 const BUCKET = 'blog-posts';
 
-type Kind = 'post' | 'translation' | 'legal';
+type Kind = 'post' | 'legal';
 
 interface Entry {
   kind: Kind;
   key: string;
   path: string;
-  locale: string;
   before: string;
   after: string;
   sha256Before: string;
@@ -71,12 +70,10 @@ async function download(path: string): Promise<string | null> {
 }
 
 function buildEntry(
-  base: Pick<Entry, 'kind' | 'key' | 'path' | 'locale'> & Partial<Entry>,
+  base: Pick<Entry, 'kind' | 'key' | 'path'> & Partial<Entry>,
   before: string
 ): Entry {
-  const {markdown, notes} = convertLegacyMarkdownWithNotes(before, {
-    locale: base.locale
-  });
+  const {markdown, notes} = convertLegacyMarkdownWithNotes(before);
   return {
     ...base,
     before,
@@ -90,14 +87,7 @@ function buildEntry(
 
 async function collect(): Promise<{entries: Entry[]; missing: string[]}> {
   const posts = await rows('db_posts', 'id, slug, storage_path, published');
-  const translations = await rows(
-    'db_post_translations',
-    'post_id, locale, storage_path, updated_at'
-  );
   const legals = await rows('db_legals', 'slug, content, updated_at');
-  const slugById = new Map<string, string>(
-    posts.map(post => [post.id, post.slug])
-  );
   const entries: Entry[] = [];
   const missing: string[] = [];
 
@@ -114,32 +104,8 @@ async function collect(): Promise<{entries: Entry[]; missing: string[]}> {
           kind: 'post',
           key: post.slug,
           path: post.storage_path,
-          locale: 'en',
           postId: post.id,
           slug: post.slug
-        },
-        text
-      )
-    );
-  }
-
-  for (const row of translations) {
-    if (!row.storage_path) continue;
-    const text = await download(row.storage_path);
-    if (text === null) {
-      missing.push(row.storage_path);
-      continue;
-    }
-    entries.push(
-      buildEntry(
-        {
-          kind: 'translation',
-          key: `${slugById.get(row.post_id) ?? row.post_id}.${row.locale}`,
-          path: row.storage_path,
-          locale: row.locale,
-          postId: row.post_id,
-          slug: slugById.get(row.post_id),
-          updatedAt: row.updated_at
         },
         text
       )
@@ -153,7 +119,6 @@ async function collect(): Promise<{entries: Entry[]; missing: string[]}> {
           kind: 'legal',
           key: legal.slug,
           path: `db_legals/${legal.slug}`,
-          locale: 'en',
           slug: legal.slug,
           updatedAt: legal.updated_at
         },
@@ -308,27 +273,6 @@ async function applyPost(entry: Entry) {
   }
 }
 
-async function applyTranslation(entry: Entry) {
-  const upload = await db.storage
-    .from(BUCKET)
-    .upload(
-      entry.path,
-      new Blob([entry.after], {type: 'text/markdown; charset=utf-8'}),
-      {
-        upsert: true,
-        cacheControl: '3600',
-        contentType: 'text/markdown; charset=utf-8'
-      }
-    );
-  if (upload.error) throw new Error(`Upload failed: ${upload.error.message}`);
-  const touch = await db
-    .from('db_post_translations')
-    .update({updated_at: new Date().toISOString()})
-    .eq('post_id', entry.postId!)
-    .eq('locale', entry.locale);
-  if (touch.error) throw new Error(touch.error.message);
-}
-
 async function applyLegal(entry: Entry) {
   let query = db
     .from('db_legals')
@@ -365,7 +309,6 @@ async function apply() {
     }
     try {
       if (entry.kind === 'post') await applyPost(entry);
-      else if (entry.kind === 'translation') await applyTranslation(entry);
       else await applyLegal(entry);
       results[id] = 'migrated';
     } catch (error) {

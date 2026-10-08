@@ -1,7 +1,7 @@
 import type {RequestHandler} from './$types';
-import {supabase} from '$lib/supabase';
-import {fetchActiveCvDocument} from '$lib/author';
-import {apiError} from '$lib/server/apiError';
+import {supabase} from '#lib/supabase.ts';
+import {fetchActiveCvDocument} from '#lib/author.ts';
+import {apiError} from '#lib/server/apiError.ts';
 
 export const GET: RequestHandler = async ({fetch, locals, url}) => {
   const supabaseClient = (locals as any)?.supabase || supabase;

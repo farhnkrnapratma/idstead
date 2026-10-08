@@ -57,12 +57,23 @@
         {@render searchSlot()}
       </div>
     {/if}
-    {#if filterControlsSlot}
-      {@render filterControlsSlot()}
-    {/if}
-    {#if sortSlot}
-      {@render sortSlot()}
-    {/if}
+    <div
+      class="flex min-w-0 items-center justify-between gap-2 overflow-x-auto sm:contents">
+      {#if filterControlsSlot}
+        <div
+          class={cn(
+            'flex min-w-0 items-center gap-2 sm:contents',
+            sortSlot ? 'flex-initial' : 'flex-1'
+          )}>
+          {@render filterControlsSlot()}
+        </div>
+      {/if}
+      {#if sortSlot}
+        <div class="min-w-0 flex-1 sm:contents">
+          {@render sortSlot()}
+        </div>
+      {/if}
+    </div>
   </div>
 
   {#if countSlot}

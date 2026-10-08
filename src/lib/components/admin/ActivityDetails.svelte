@@ -1,13 +1,13 @@
 <script lang="ts">
-  import type {AdminNotificationRow} from '$lib/adminActivity';
+  import type {AdminNotificationRow} from '#lib/adminActivity.ts';
   import {
     activityAuthor,
     activityMetadata,
     activityPageKind,
     isFeedbackActivity
-  } from '$lib/adminActivity';
-  import {reportReasonLabel} from '$lib/reportReasons';
-  import {cn} from '$lib/utils/cn';
+  } from '#lib/adminActivity.ts';
+  import {reportReasonLabel} from '#lib/reportReasons.ts';
+  import {cn} from '#lib/utils/cn.ts';
 
   let {
     item,

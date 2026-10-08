@@ -4,11 +4,10 @@
   import ThemeSelect from './filter/ThemeSelect.svelte';
   import ContentFontSelect from './filter/ContentFontSelect.svelte';
   import AccessibilitySelect from './filter/AccessibilitySelect.svelte';
-  import LanguageSelect from './filter/LanguageSelect.svelte';
   import ReadingOptionsMenu from './filter/ReadingOptionsMenu.svelte';
   import IconButton from './IconButton.svelte';
   import {shortcut} from '../utils/shortcut.svelte';
-  import {buttonKey} from '$lib/shortcuts';
+  import {buttonKey} from '#lib/shortcuts.ts';
   import {themeStore} from '../stores/themeStore.svelte';
   import {ArrowLeft, BookOpenText} from '@lucide/svelte';
   import type {Project} from '../types';
@@ -19,11 +18,6 @@
     backLabel: string;
     showFontSelect?: boolean;
     projects?: Project[];
-    languageSwitcher?: {
-      slug: string;
-      currentLanguage: string;
-      availableLocales: string[];
-    };
     readingMode?: boolean;
     onToggleReadingMode?: () => void;
   }
@@ -34,7 +28,6 @@
     backLabel,
     showFontSelect = false,
     projects = [],
-    languageSwitcher,
     readingMode = false,
     onToggleReadingMode
   }: Props = $props();
@@ -55,9 +48,7 @@
 
   <div class="flex items-center gap-1 sm:gap-1.5">
     {#if !readingMode}
-      <SpotlightSearch
-        {projects}
-        {languageSwitcher} />
+      <SpotlightSearch {projects} />
     {/if}
     {#if onToggleReadingMode}
       <IconButton
@@ -80,23 +71,13 @@
     <ThemeSelect
       theme={themeStore.current}
       onThemeChange={themeStore.apply} />
-    {#if !readingMode && (showFontSelect || languageSwitcher)}
+    {#if !readingMode && showFontSelect}
       <div class="sm:hidden">
-        <ReadingOptionsMenu
-          {showFontSelect}
-          {languageSwitcher} />
+        <ReadingOptionsMenu {showFontSelect} />
       </div>
       {#if showFontSelect}
         <div class="hidden sm:inline-flex">
           <ContentFontSelect />
-        </div>
-      {/if}
-      {#if languageSwitcher}
-        <div class="hidden sm:inline-flex">
-          <LanguageSelect
-            slug={languageSwitcher.slug}
-            currentLanguage={languageSwitcher.currentLanguage}
-            availableLocales={languageSwitcher.availableLocales} />
         </div>
       {/if}
       <div class="hidden sm:inline-flex">

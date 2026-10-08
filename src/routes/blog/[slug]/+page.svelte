@@ -1,24 +1,16 @@
 <script lang="ts">
-  import Avatar from '$lib/components/Avatar.svelte';
-  import {COMMENTS_PAGE_SIZE, commentAuthorName} from '$lib/commentAuthor';
-  import {blogBannerAlt} from '$lib/blogBanner';
-  import {createFeedbackClient} from '$lib/feedbackClient.svelte';
-  import {shortcut} from '$lib/utils/shortcut.svelte';
-  import {buttonKey} from '$lib/shortcuts';
-  import {focusScope} from '$lib/utils/focusScope';
-  import {FieldValidation, requiredText} from '$lib/fieldValidation';
-  import {ogLocale} from '$lib/translationLocales';
-  import '@fontsource-variable/noto-sans-jp';
-  import '@fontsource-variable/noto-sans-sc';
-  import '@fontsource-variable/noto-sans-kr';
-  import '@fontsource-variable/noto-serif-jp';
-  import '@fontsource-variable/noto-serif-sc';
-  import '@fontsource-variable/noto-serif-kr';
+  import Avatar from '#lib/components/Avatar.svelte';
+  import {COMMENTS_PAGE_SIZE, commentAuthorName} from '#lib/commentAuthor.ts';
+  import {blogBannerAlt} from '#lib/blogBanner.ts';
+  import {createFeedbackClient} from '#lib/feedbackClient.svelte.ts';
+  import {shortcut} from '#lib/utils/shortcut.svelte.ts';
+  import {buttonKey} from '#lib/shortcuts.ts';
+  import {focusScope} from '#lib/utils/focusScope.ts';
+  import {FieldValidation, requiredText} from '#lib/fieldValidation.ts';
   import {onMount, onDestroy, tick, untrack} from 'svelte';
   import {fade} from 'svelte/transition';
   import {SvelteSet} from 'svelte/reactivity';
   import {
-    Mail,
     Image as ImageIcon,
     BookOpenText,
     Pin,
@@ -30,25 +22,23 @@
   import {
     isNameReserved,
     extractAuthorNameTokens
-  } from '$lib/utils/nameValidator';
-  import {enhanceMarkdownContent} from '$lib/utils/markdownEnhancer';
-  import {enhanceHeadingAnchors} from '$lib/utils/headingAnchors';
-  import {refreshCodeBlockPrefs} from '$lib/utils/codeBlocks';
-  import {cn} from '$lib/utils/cn';
+  } from '#lib/utils/nameValidator.ts';
+  import {enhanceMarkdownContent} from '#lib/utils/markdownEnhancer.ts';
+  import {enhanceHeadingAnchors} from '#lib/utils/headingAnchors.ts';
+  import {refreshCodeBlockPrefs} from '#lib/utils/codeBlocks.ts';
   import 'katex/dist/katex.min.css';
   import {
     turnstileWidget,
     executeTurnstile,
     resetTurnstile,
     turnstileSiteKey
-  } from '$lib/utils/turnstile';
+  } from '#lib/utils/turnstile.ts';
   import {
     TopNav,
     Button,
     Card,
     Tag,
     decodeHtmlEntities,
-    Checkbox,
     ImageWithSkeleton,
     CommentThread,
     EmptyState,
@@ -62,8 +52,6 @@
     ContentActions,
     toastStore,
     formatReadTime,
-    formatCommentCount,
-    formatViewCount,
     Dialog,
     ReportCommentDialog,
     ArticleHeader,
@@ -78,14 +66,11 @@
     Tooltip,
     ScrollToTopButton,
     FeedbackButton
-  } from '$lib';
+  } from '#lib/index.ts';
   import {pushState} from '$app/navigation';
   import {page, navigating} from '$app/state';
-  import {supabase} from '$lib/supabase';
-  import {themeStore} from '$lib/stores/themeStore.svelte';
-  import {a11yStore} from '$lib/stores/a11yStore.svelte';
-  import {contentFontStore} from '$lib/stores/contentFontStore.svelte';
-  import {codeBlockPrefsStore} from '$lib/stores/codeBlockPrefsStore.svelte';
+  import {contentFontStore} from '#lib/stores/contentFontStore.svelte.ts';
+  import {codeBlockPrefsStore} from '#lib/stores/codeBlockPrefsStore.svelte.ts';
 
   let {data}: PageProps = $props();
   const post = $derived(data.post);
@@ -96,35 +81,12 @@
   const author = $derived(data.author);
   const authorTokens = $derived(extractAuthorNameTokens(author));
 
-  const language = $derived(data.language);
-  const machineTranslated = $derived(data.machineTranslated);
-  const translationDisclaimerHtml = $derived(data.translationDisclaimerHtml);
-  const availableLocales = $derived(data.availableLocales);
-  const langSwitcherOptions = $derived(['en', ...availableLocales]);
-  function hrefForLang(lang: string): string {
-    return lang === 'en' ?
-        `/blog/${post.slug}`
-      : `/blog/${post.slug}?lang=${lang}`;
-  }
-
   const NEW_ITEM_WINDOW_MS = 24 * 60 * 60 * 1000;
   function isPostNew(postItem: {created_at?: string | null}) {
     if (!postItem.created_at) return false;
     return (
       Date.now() - new Date(postItem.created_at).getTime() < NEW_ITEM_WINDOW_MS
     );
-  }
-
-  function copyToClipboard() {
-    if (typeof window === 'undefined') return;
-    navigator.clipboard
-      .writeText(window.location.href)
-      .then(() => {
-        toastStore.success('Copied!');
-      })
-      .catch(err => {
-        console.error(err);
-      });
   }
 
   function triggerToast(message: string) {
@@ -344,17 +306,7 @@
           hljs.highlightElement(block as HTMLElement);
         });
         enhanceMarkdownContent({container, isDark, onCodeCopy: triggerToast});
-        enhanceHeadingAnchors(container, async el => {
-          const url = `${window.location.origin}${window.location.pathname}#${el.id}`;
-          try {
-            await navigator.clipboard.writeText(url);
-            triggerToast('Link copied to clipboard');
-          } catch (err) {
-            void err;
-          }
-          pushState(`#${el.id}`, {});
-          scrollToTarget(el.id, true);
-        });
+        enhanceHeadingAnchors(container);
       }
     });
   });
@@ -633,17 +585,7 @@
   {/if}
   <link
     rel="canonical"
-    href={siteUrl + hrefForLang(language)} />
-  <link
-    rel="alternate"
-    hreflang="x-default"
-    href={siteUrl + hrefForLang('en')} />
-  {#each langSwitcherOptions as loc (loc)}
-    <link
-      rel="alternate"
-      hreflang={loc}
-      href={siteUrl + hrefForLang(loc)} />
-  {/each}
+    href={siteUrl + '/blog/' + post.slug} />
   {@html jsonLdScript}
 
   <meta
@@ -651,15 +593,10 @@
     content="article" />
   <meta
     property="og:locale"
-    content={ogLocale(language)} />
-  {#each langSwitcherOptions.filter(loc => loc !== language) as loc (loc)}
-    <meta
-      property="og:locale:alternate"
-      content={ogLocale(loc)} />
-  {/each}
+    content="en_US" />
   <meta
     property="og:url"
-    content={siteUrl + hrefForLang(language)} />
+    content={siteUrl + '/blog/' + post.slug} />
   <meta
     property="og:title"
     content={post.title} />
@@ -714,11 +651,6 @@
     backLabel="Blog"
     showFontSelect={true}
     projects={data.projects}
-    languageSwitcher={{
-      slug: post.slug,
-      currentLanguage: language,
-      availableLocales
-    }}
     readingMode={readingModeStore.active}
     onToggleReadingMode={readingModeStore.toggle} />
 {/if}
@@ -929,24 +861,12 @@
                 slug={post.slug}
                 pageId={post.id}
                 title={post.title}
-                avatarUrl={author?.avatar}
                 viewMarkdownUrl="/api/v1/blog/{post.slug}?format=md"
                 viewTextUrl="/api/v1/blog/{post.slug}?format=text" />
             </div>
           {/if}
         {/snippet}
       </ArticleHeader>
-
-      {#if machineTranslated && translationDisclaimerHtml}
-        <div
-          transition:fade={{duration: 150}}
-          class="mt-3">
-          <div
-            class="translation-disclaimer prose-custom font-content-{contentFontStore.current} my-0 [&>.markdown-alert]:my-0!">
-            {@html translationDisclaimerHtml}
-          </div>
-        </div>
-      {/if}
 
       {#if !readingModeStore.active && ((post.tldr && post.tldr.length > 0) || post.summary)}
         <div
@@ -1440,11 +1360,6 @@
           <FooterSection
             width="full"
             showFontSelect={true}
-            languageSwitcher={{
-              slug: post.slug,
-              currentLanguage: language,
-              availableLocales
-            }}
             readingMode={readingModeStore.active}
             onToggleReadingMode={readingModeStore.toggle}
             class="mt-0 w-full pb-0 md:pb-0 lg:pb-20" />
@@ -1477,7 +1392,6 @@
           slug={post.slug}
           pageId={post.id}
           title={post.title}
-          avatarUrl={author?.avatar}
           viewMarkdownUrl="/api/v1/blog/{post.slug}?format=md"
           viewTextUrl="/api/v1/blog/{post.slug}?format=text" />
       </aside>

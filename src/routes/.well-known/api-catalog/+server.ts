@@ -1,6 +1,6 @@
 import type {RequestHandler} from './$types';
-import {readSiteProfile, publicResponse} from '$lib/server/publicMetadata';
-import {discoveryOperations} from '$lib/server/apiDiscovery';
+import {readSiteProfile, publicResponse} from '#lib/server/publicMetadata.ts';
+import {discoveryOperations} from '#lib/server/apiDiscovery.ts';
 
 export const GET: RequestHandler = async ({request}) => {
   const {siteUrl: base} = await readSiteProfile();

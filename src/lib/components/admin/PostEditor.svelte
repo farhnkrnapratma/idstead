@@ -1,9 +1,8 @@
 <script lang="ts">
-  import {FieldValidation, requiredText} from '$lib/fieldValidation';
-  import {supabase} from '$lib/supabase';
-  import {processContentImage} from '$lib/processContentImage';
+  import {FieldValidation, requiredText} from '#lib/fieldValidation.ts';
+  import {supabase} from '#lib/supabase.ts';
+  import {processContentImage} from '#lib/processContentImage.ts';
   import {onDestroy, onMount} from 'svelte';
-  import {TRANSLATION_LOCALES} from '$lib/translationLocales';
   import {
     LoadingState,
     StatusBanner,
@@ -18,16 +17,17 @@
     toastStore,
     PillInput,
     decodeHtmlEntities
-  } from '$lib';
+  } from '#lib/index.ts';
   import {Mail} from '@lucide/svelte';
-  import BannerImageUpload from '$lib/components/BannerImageUpload.svelte';
-  import {bannerUrl, type BannerChange} from '$lib/blogBanner';
+  import BannerImageUpload from '#lib/components/BannerImageUpload.svelte';
+  import {bannerUrl, type BannerChange} from '#lib/blogBanner.ts';
   import {
     submitPost,
     rememberPostSave,
     recallPostSave,
-    PostSaveError
-  } from '$lib/postSaveClient';
+    PostSaveError,
+    postSaveButtonLabel
+  } from '#lib/postSaveClient.ts';
 
   let {
     postId,
@@ -50,6 +50,7 @@
   );
 
   let isSubmitting = $state(false);
+  let isRetryingSave = $state(false);
   let errorMessage = $state<string | null>(null);
 
   let isEditMode = $state(false);
@@ -385,7 +386,12 @@
       tagsValid = result.valid;
     }
   });
-  function validate() {
+  function validate(requireExcerpt = false) {
+    if (requireExcerpt && !excerpt.trim()) {
+      excerptError = 'Excerpt is required to publish.';
+      excerptValid = false;
+      return false;
+    }
     return validation.submit(undefined, !isEditMode);
   }
 
@@ -450,7 +456,7 @@
 
   async function handleSaveClick(toBePublished: boolean) {
     if (isSubmitting || bannerBlocked || loadFailed) return;
-    if (!pendingSave && !(await validate())) return;
+    if (!pendingSave && !(await validate(toBePublished))) return;
 
     await executeSave(toBePublished);
   }
@@ -458,6 +464,7 @@
   async function executeSave(toBePublished: boolean) {
     if (isSubmitting || bannerBlocked || loadFailed) return;
     isSubmitting = true;
+    isRetryingSave = !!pendingSave;
     submittingAction = toBePublished ? 'publish' : 'draft';
     errorMessage = null;
     try {
@@ -480,17 +487,10 @@
                 Authorization: `Bearer ${accessToken}`,
                 'Content-Type': 'application/json'
               },
-              body: JSON.stringify({
-                markdown: markdownContent,
-                needsExcerpt: excerpt.trim() === '',
-                title: title.trim(),
-                excerpt: excerpt.trim() || null
-              })
+              body: JSON.stringify({markdown: markdownContent})
             });
             if (response.ok) {
               const generated = await response.json();
-              if (!excerpt.trim() && generated.excerpt)
-                excerpt = generated.excerpt;
               aiSummary = generated.summary ?? null;
               aiTldr = generated.tldr ?? null;
             }
@@ -536,43 +536,6 @@
       tags = submitted.tags;
       collaborators = submitted.collaborators;
       markdownContent = String(form.get('markdown'));
-      const missing: string[] = [];
-      if (submitted.published) {
-        for (const locale of TRANSLATION_LOCALES) {
-          try {
-            const response = await fetch('/api/internal/blog/translate', {
-              method: 'POST',
-              headers: {
-                Authorization: `Bearer ${accessToken}`,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                postId: editId,
-                slug: submitted.slug,
-                locale,
-                title: submitted.title,
-                excerpt: submitted.excerpt,
-                summary: submitted.summary ?? null,
-                tldr: submitted.tldr ?? null,
-                markdown: markdownContent
-              })
-            });
-            const translation = await response.json();
-            if (
-              !response.ok
-              || !translation.stored
-              || (translation.stored
-                && (!translation.bodyTranslated
-                  || !translation.titleTranslated
-                  || !translation.summaryTranslated
-                  || !translation.tldrTranslated))
-            )
-              missing.push(locale);
-          } catch {
-            missing.push(locale);
-          }
-        }
-      }
       await rememberPostSave(operationKey, null);
       pendingSave = null;
       localStorage.removeItem(
@@ -588,10 +551,6 @@
       toastStore.success(
         submitted.published ? 'Post published.' : 'Post saved as draft.'
       );
-      if (missing.length)
-        toastStore.error(
-          `Post saved. Translations incomplete for: ${missing.join(', ')}.`
-        );
       onSaved?.(editId);
     } catch (error) {
       if (error instanceof PostSaveError && error.definitive) {
@@ -603,6 +562,7 @@
       toastStore.error(errorMessage);
     } finally {
       isSubmitting = false;
+      isRetryingSave = false;
       submittingAction = null;
     }
   }
@@ -638,11 +598,11 @@
             savedRevision={postRevision ?? 0}
             validationError={bannerError}
             disabled={isSubmitting || !!pendingSave}
-            onprepared={change => {
+            onprepared={(change: BannerChange) => {
               bannerChange = change;
               validation.input('banner');
             }}
-            onblocked={blocked => {
+            onblocked={(blocked: boolean) => {
               bannerBlocked = blocked;
             }} />
           <div class="flex flex-col gap-4">
@@ -680,6 +640,7 @@
               id="post-excerpt"
               label="Excerpt"
               variant="floating"
+              hint="Required to publish; optional for drafts."
               maxlength={250}
               currentLength={excerpt.length}
               error={excerptError}
@@ -801,7 +762,11 @@
             onclick={() => handleSaveClick(true)}
             disabled={isSubmitting || bannerBlocked || loadFailed}
             isLoading={isSubmitting}>
-            {isSubmitting ? 'Retrying…' : 'Retry Save'}
+            {postSaveButtonLabel(
+              isSubmitting,
+              isRetryingSave,
+              submittingAction
+            )}
           </Button>
         {:else}
           <Button

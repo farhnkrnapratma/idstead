@@ -9,6 +9,7 @@ type Field = {
 const snapshot = (value: unknown) => JSON.stringify(value);
 
 export class FieldValidation {
+  private delay: number;
   private fields = new Map<string, Field>();
   private timers = new Map<string, ReturnType<typeof setTimeout>>();
   private generations = new Map<string, number>();
@@ -17,7 +18,9 @@ export class FieldValidation {
     {snapshot: string | undefined; error: string}
   >();
 
-  constructor(private delay = 400) {}
+  constructor(delay = 400) {
+    this.delay = delay;
+  }
 
   register(key: string, field: Field) {
     this.fields.set(key, field);

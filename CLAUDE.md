@@ -11,17 +11,19 @@ Personal website/blog for Farhan Kurnia Pratama (fkp.my.id) — SvelteKit 5 + Ty
 Package manager is **bun** — never use npm/npx/yarn/pnpm in this repo (`bun.lock` is the lockfile; use `bun`/`bunx` for everything, including one-off tool invocations).
 
 ```sh
-bun install          # install deps
+bun install           # install deps
 bun run dev [--host]  # start Vite dev server (mode: development)
-bun run dev:preview    # start Vite dev server against Preview-tier config (mode: preview)
+bun run dev:preview   # start Vite dev server against Preview-tier config (mode: preview)
 bun run build         # production build -> .svelte-kit/cloudflare (mode: production)
-bun run build:preview  # build against Preview-tier config (mode: preview)
+bun run build:preview # build against Preview-tier config (mode: preview)
 bun run preview       # preview the production build
-bun run test           # Bun regression tests with isolated database fixtures
-bun run check          # svelte-kit sync + svelte-check (type checking)
-bun run check:watch    # same, in watch mode
-bun run lint            # prettier --check . && eslint .
-bun run format           # prettier --write .
+bun run test          # Bun regression tests with isolated database fixtures
+bun run check         # svelte-kit sync + svelte-check (type checking)
+bun run check:watch   # same, in watch mode
+bun run lint          # prettier --write . && eslint .
+bun run lint:fix      # eslint . --fix
+bun run fmt           # prettier --write .
+bun run fmt:check     # prettier --check .
 ```
 
 `bun run test` runs permanent Bun regression tests in `tests/`, including isolated PGlite database tests. Run tests, `bun run check`, and `bun run lint` after non-trivial changes; CI also builds the Cloudflare application. The optional PostgreSQL concurrency suite requires its own disposable Docker container, as documented in README. Keep manual browser harnesses and session reports in ignored local archives, not application source. Build plugins and Git hooks live in `tooling/`; `scripts/` retains operational migration and cleanup commands until Production cutover is complete.
@@ -102,7 +104,7 @@ Claude Code can use the Svelte MCP server, which provides comprehensive Svelte 5
 
 ## Code style
 
-Enforced by `prettier.config.ts` + `eslint.config.ts` — run `bun run format` before committing. Notable non-defaults: no semicolons, single quotes, no trailing commas, no bracket spacing (`{foo}` not `{ foo }`), `arrowParens: 'avoid'`, 2-space indent. Svelte 5 runes syntax (`$state`, `$derived`, etc.) is used throughout — this is not Svelte 4/Options API.
+Enforced by `prettier.config.ts` + `eslint.config.ts` — run `bun run fmt` before committing. Notable non-defaults: no semicolons, single quotes, no trailing commas, no bracket spacing (`{foo}` not `{ foo }`), `arrowParens: 'avoid'`, 2-space indent. Svelte 5 runes syntax (`$state`, `$derived`, etc.) is used throughout — this is not Svelte 4/Options API.
 
 - **No comments in code.** Don't add comments describing what code does or why, even for non-obvious logic — prefer clear naming/structure instead.
 - **Prefer Tailwind utility classes over hand-written CSS** wherever Tailwind can express it. Only drop into a `<style>` block for things Tailwind genuinely can't do (e.g. complex selectors, animations Tailwind doesn't cover).

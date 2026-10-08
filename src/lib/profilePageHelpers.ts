@@ -1,5 +1,5 @@
-import {formatMonthAbbrev} from '$lib/author';
-import {decodeHtmlEntities} from '$lib/utils/formatters';
+import {formatMonthAbbrev} from '#lib/author.ts';
+import {decodeHtmlEntities} from '#lib/utils/formatters.ts';
 
 export interface SkillGroup {
   category: string;

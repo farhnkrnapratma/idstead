@@ -4,11 +4,11 @@ import {
   DeleteObjectCommand,
   GetObjectCommand
 } from '@aws-sdk/client-s3';
-import {env} from '$env/dynamic/private';
-import {env as publicEnv} from '$env/dynamic/public';
+import * as env from '$app/env/private';
+import * as publicEnv from '$app/env/public';
 import {getSupabaseAdminClient} from './supabaseAdmin';
-import {supabase} from '$lib/supabase';
-import {iconSizes, type IdentityAsset} from '$lib/siteIdentity';
+import {supabase} from '#lib/supabase.ts';
+import {iconSizes, type IdentityAsset} from '#lib/siteIdentity.ts';
 
 export const assetNames = [
   ...Object.keys(iconSizes),
@@ -16,8 +16,15 @@ export const assetNames = [
   'favicon.svg'
 ];
 
+type StorageEnvKey =
+  | 'R2_ACCOUNT_ID'
+  | 'R2_BUCKET_NAME'
+  | 'R2_ACCESS_KEY_ID'
+  | 'R2_SECRET_ACCESS_KEY';
+
 export function assetStorage(platform?: Pick<App.Platform, 'env'>) {
-  const value = (key: string) => String(platform?.env?.[key] ?? env[key] ?? '');
+  const value = (key: StorageEnvKey) =>
+    String(platform?.env?.[key] ?? env[key] ?? '');
   const account = value('R2_ACCOUNT_ID');
   const bucket = value('R2_BUCKET_NAME');
   const accessKeyId = value('R2_ACCESS_KEY_ID');

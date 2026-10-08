@@ -1,11 +1,11 @@
 import {json} from '@sveltejs/kit';
 import type {RequestHandler} from './$types';
-import {apiError} from '$lib/server/apiError';
-import {isSameOriginRequest} from '$lib/server/sameOrigin';
-import {verifyTurnstileToken} from '$lib/server/turnstile';
-import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
-import {supabase} from '$lib/supabase';
-import {fetchAuthorProfile, fetchContactInfo} from '$lib/author';
+import {apiError} from '#lib/server/apiError.ts';
+import {isSameOriginRequest} from '#lib/server/sameOrigin.ts';
+import {verifyTurnstileToken} from '#lib/server/turnstile.ts';
+import {getSupabaseAdminClient} from '#lib/server/supabaseAdmin.ts';
+import {supabase} from '#lib/supabase.ts';
+import {fetchAuthorProfile, fetchContactInfo} from '#lib/author.ts';
 
 const MAX_NAME = 120;
 const MAX_EMAIL = 254;

@@ -1,34 +1,32 @@
 <script lang="ts">
-  import Tag from '$lib/components/Tag.svelte';
-  import {COMMENTS_PAGE_SIZE, commentAuthorName} from '$lib/commentAuthor';
-  import {blogBannerAlt} from '$lib/blogBanner';
-  import {adminUrl, navigateAdmin} from '$lib/adminNavigation';
-  import {bannerUrl} from '$lib/blogBanner';
+  import Tag from '#lib/components/Tag.svelte';
+  import {COMMENTS_PAGE_SIZE, commentAuthorName} from '#lib/commentAuthor.ts';
+  import {blogBannerAlt} from '#lib/blogBanner.ts';
+  import {adminUrl, navigateAdmin} from '#lib/adminNavigation.ts';
+  import {bannerUrl} from '#lib/blogBanner.ts';
   import {
     submitPost,
     rememberPostSave,
     recallPostSave,
     PostSaveError
-  } from '$lib/postSaveClient';
+  } from '#lib/postSaveClient.ts';
   import {
     FieldValidation,
     requiredText,
     emailError
-  } from '$lib/fieldValidation';
-  import {avatarSource} from '$lib/siteIdentity';
+  } from '#lib/fieldValidation.ts';
+  import {avatarSource} from '#lib/siteIdentity.ts';
   import {resolve} from '$app/paths';
-  import ProfileImageUpload from '$lib/components/ProfileImageUpload.svelte';
-  import type {ImagePackage} from '$lib/siteIdentity';
+  import ProfileImageUpload from '#lib/components/ProfileImageUpload.svelte';
+  import type {ImagePackage} from '#lib/siteIdentity.ts';
   import {page} from '$app/state';
   import {invalidateAll} from '$app/navigation';
-  import {supabase} from '$lib/supabase';
+  import {supabase} from '#lib/supabase.ts';
   import {
     PanelLeftClose,
     PanelLeftOpen,
     GripVertical,
     Settings,
-    FileText,
-    BookA,
     Quote,
     User,
     FileUser,
@@ -41,21 +39,16 @@
     ShieldUser,
     ScrollText,
     Image as ImageIcon,
-    ZoomIn,
     Trash,
     ArrowUp,
     ArrowDown,
     Save,
-    Copy,
-    CopyCheck,
     SquareArrowOutUpRight,
     Download,
     Hash,
     X,
     Plus,
-    Pencil,
     LogOut,
-    Eye,
     EyeOff,
     Menu,
     PenLine,
@@ -66,57 +59,46 @@
     AlertTriangle,
     Flag,
     Users,
-    Languages,
     Pin,
     PinOff,
     FolderOpen,
     Sparkles,
-    ChevronUp,
-    ChevronDown,
     Bell,
     LayoutDashboard,
     RefreshCw,
     Logs,
     Upload
   } from '@lucide/svelte';
-  import hljs from 'highlight.js';
-  import {a11yStore} from '$lib/stores/a11yStore.svelte';
-  import {
-    enhanceCodeBlocks,
-    splitHighlightedHtmlLines
-  } from '$lib/utils/codeBlocks';
   import {onDestroy, onMount, tick, untrack} from 'svelte';
   import {SvelteSet} from 'svelte/reactivity';
-  import {TRANSLATION_LOCALES} from '$lib/translationLocales';
-  import type {AdminNotificationRow} from '$lib/adminActivity';
-  import AdminHome from '$lib/components/admin/AdminHome.svelte';
-  import ActivityWorkspace from '$lib/components/admin/ActivityWorkspace.svelte';
-  import ActivityLogWorkspace from '$lib/components/admin/ActivityLogWorkspace.svelte';
-  import AccountSettings from '$lib/components/admin/AccountSettings.svelte';
-  import ActivityTimestamp from '$lib/components/admin/ActivityTimestamp.svelte';
-  import SessionTimeoutDialog from '$lib/components/admin/SessionTimeoutDialog.svelte';
+  import type {AdminNotificationRow} from '#lib/adminActivity.ts';
+  import AdminHome from '#lib/components/admin/AdminHome.svelte';
+  import ActivityWorkspace from '#lib/components/admin/ActivityWorkspace.svelte';
+  import ActivityLogWorkspace from '#lib/components/admin/ActivityLogWorkspace.svelte';
+  import AccountSettings from '#lib/components/admin/AccountSettings.svelte';
+  import ActivityTimestamp from '#lib/components/admin/ActivityTimestamp.svelte';
+  import SessionTimeoutDialog from '#lib/components/admin/SessionTimeoutDialog.svelte';
   import {
     SESSION_WARNING_SECONDS,
     extendedTimeoutMinutes
-  } from '$lib/sessionTimeout';
-  import {formatAdminDateTime} from '$lib/adminDateFormat';
-  import {cleanAdminParams} from '$lib/adminUrl';
-  import {adminDisplayStore} from '$lib/stores/adminDisplayStore.svelte';
-  import {startAdminSettingsSync} from '$lib/stores/adminSettingsSync.svelte';
-  import PostEditor from '$lib/components/admin/PostEditor.svelte';
-  import {adminActivityRequest} from '$lib/adminActivityClient';
+  } from '#lib/sessionTimeout.ts';
+  import {formatAdminDateTime} from '#lib/adminDateFormat.ts';
+  import {cleanAdminParams} from '#lib/adminUrl.ts';
+  import {adminDisplayStore} from '#lib/stores/adminDisplayStore.svelte.ts';
+  import {startAdminSettingsSync} from '#lib/stores/adminSettingsSync.svelte.ts';
+  import PostEditor from '#lib/components/admin/PostEditor.svelte';
+  import {adminActivityRequest} from '#lib/adminActivityClient.ts';
   import {
     ADMIN_WORKSPACE_PAGE_SIZE,
     type WorkspaceArea,
     type WorkspacePage
-  } from '$lib/adminWorkspace';
-  import {shortcut} from '$lib/utils/shortcut.svelte';
-  import {lockScroll} from '$lib/utils/scroll';
-  import {adminNotificationsStore} from '$lib/stores/adminNotificationsStore.svelte';
-  import {estimateReadTime} from '$lib/readTime';
-  import {formatBadgeCount} from '$lib/utils/formatters';
+  } from '#lib/adminWorkspace.ts';
+  import {shortcut} from '#lib/utils/shortcut.svelte.ts';
+  import {lockScroll} from '#lib/utils/scroll.ts';
+  import {adminNotificationsStore} from '#lib/stores/adminNotificationsStore.svelte.ts';
+  import {estimateReadTime} from '#lib/readTime.ts';
+  import {formatBadgeCount} from '#lib/utils/formatters.ts';
   import {
-    cn,
     Button,
     IconButton,
     Badge,
@@ -149,7 +131,6 @@
     Tooltip,
     StatusBanner,
     formatReadTime,
-    formatViewCount,
     FormSection,
     FormActions,
     MarkdownEditor,
@@ -157,10 +138,10 @@
     sanitizeInput,
     decodeHtmlEntities,
     splitEscapedCommas
-  } from '$lib';
-  import ArticleMeta from '$lib/article/ArticleMeta.svelte';
+  } from '#lib/index.ts';
+  import ArticleMeta from '#lib/article/ArticleMeta.svelte';
 
-  import {themeStore} from '$lib/stores/themeStore.svelte';
+  import {themeStore} from '#lib/stores/themeStore.svelte.ts';
   import {
     fetchAuthorProfile,
     fetchCvEntries,
@@ -168,7 +149,6 @@
     fetchContactInfo,
     fetchSocials,
     fetchSkills,
-    fetchGlossaryTerms,
     fetchActiveCvDocument,
     fetchProjectRepoRules,
     normalizeIconInput,
@@ -180,7 +160,7 @@
     type SocialLink,
     type SkillItem,
     type CvDocument
-  } from '$lib/author';
+  } from '#lib/author.ts';
 
   interface AdminPost {
     id: string;
@@ -372,7 +352,6 @@
     'profile',
     'resume',
     'skills',
-    'glossary',
     'socials',
     'funding',
     'contact',
@@ -584,8 +563,6 @@
     await fetchPosts();
   }
 
-  type Theme = 'auto' | 'dark' | 'light';
-
   const MONTHS = [
     'January',
     'February',
@@ -672,7 +649,6 @@
     Record<string, {content: string; timestamp?: number} | null>
   >({privacy: null, security: null, terms: null});
   let isSavingLegal = $state(false);
-  let legalSaveSuccess = $state(false);
   let legalSaveError = $state('');
   let legalFieldErrors = $state<Record<string, string>>({});
   const legalValidation = new FieldValidation();
@@ -787,7 +763,6 @@
 
     isSavingLegal = true;
     legalSaveError = '';
-    legalSaveSuccess = false;
 
     const pageToSave = legalPagesData[slugToSave];
     try {
@@ -822,9 +797,7 @@
       initialLegalPagesContent[slugToSave] = pageToSave.content;
       legalValidation.clear(slugToSave);
 
-      legalSaveSuccess = true;
       toastStore.success(`${pageToSave.title} saved successfully`);
-      setTimeout(() => (legalSaveSuccess = false), 3000);
     } catch (err: any) {
       legalSaveError = err?.message || 'Failed to save legal page';
       toastStore.error(`Error: ${legalSaveError}`);
@@ -901,7 +874,6 @@
           }))
   );
 
-  const avatarPreviewUrl = $derived(avatarSource(authorState));
   const adminAvatarUrl = $derived(avatarSource(authorState) || '/avatar.png');
 
   const authorValidation = new FieldValidation();
@@ -967,7 +939,6 @@
   }>({experience: [], education: []});
 
   let skillsState = $state<SkillItem[]>([]);
-  let glossaryState = $state<string[]>([]);
   let socialState = $state<SocialLink[]>([]);
   let sponsorshipState = $state<SponsorshipLink[]>([]);
   let contactState = $state<ContactInfo[]>([]);
@@ -976,7 +947,6 @@
 
   let cvInitial = $state<typeof cvState | null>(null);
   let skillsInitial = $state<SkillItem[] | null>(null);
-  let glossaryInitial = $state<string[] | null>(null);
   let socialInitial = $state<SocialLink[] | null>(null);
   let sponsorshipInitial = $state<SponsorshipLink[] | null>(null);
   let contactInitial = $state<ContactInfo[] | null>(null);
@@ -999,12 +969,6 @@
       baseline: () => excludedReposInitial,
       max: 50,
       length: 100
-    },
-    glossary: {
-      value: () => glossaryState,
-      baseline: () => glossaryInitial,
-      max: 50,
-      length: 80
     }
   };
   for (const [key, field] of Object.entries(termFields))
@@ -1032,10 +996,6 @@
   const skillsIsDirty = $derived(
     skillsInitial !== null
       && JSON.stringify(skillsState) !== JSON.stringify(skillsInitial)
-  );
-  const glossaryIsDirty = $derived(
-    glossaryInitial !== null
-      && JSON.stringify(glossaryState) !== JSON.stringify(glossaryInitial)
   );
   const socialIsDirty = $derived(
     socialInitial !== null
@@ -1389,8 +1349,6 @@
   let cvSaveSuccess = $state(false);
   let isSavingSkills = $state(false);
   let skillsSaveSuccess = $state(false);
-  let isSavingGlossary = $state(false);
-  let glossarySaveSuccess = $state(false);
   let isSavingSocials = $state(false);
   let socialsSaveSuccess = $state(false);
   let isSavingSponsorship = $state(false);
@@ -1585,7 +1543,6 @@
   });
 
   const expandedPostIds = new SvelteSet<string>();
-  const translatingPostIds = new SvelteSet<string>();
   const expandedExcerptIds = new SvelteSet<string>();
   const overflowingExcerptIds = new SvelteSet<string>();
 
@@ -1843,14 +1800,13 @@
 
   async function loadAdminData() {
     try {
-      const [p, cv, sp, ct, soc, sk, gl, doc, rules] = await Promise.all([
+      const [p, cv, sp, ct, soc, sk, doc, rules] = await Promise.all([
         fetchAuthorProfile(supabase, {includeEmail: true}),
         fetchCvEntries(supabase),
         fetchSponsorship(supabase),
         fetchContactInfo(supabase),
         fetchSocials(supabase),
         fetchSkills(supabase),
-        fetchGlossaryTerms(supabase),
         fetchActiveCvDocument(supabase),
         fetchProjectRepoRules(supabase)
       ]);
@@ -1871,8 +1827,6 @@
       if (sk) skillsState = sk;
       skillsInitial = $state.snapshot(skillsState);
       listValidation.reset();
-      if (gl) glossaryState = gl;
-      glossaryInitial = $state.snapshot(glossaryState);
       if (rules) {
         pinnedReposState = [...rules.pinned];
         excludedReposState = [...rules.excluded];
@@ -2086,6 +2040,10 @@
   async function handleTogglePublished(post: AdminPost) {
     try {
       const nextPublished = !post.published;
+      if (nextPublished && !post.excerpt?.trim()) {
+        toastStore.error('Add a manual excerpt before publishing this post.');
+        return;
+      }
       const {data: updatedPost, error} = await supabase
         .from('db_posts')
         .update({published: nextPublished})
@@ -2109,54 +2067,6 @@
     } catch (err) {
       console.error('Error updating post published status:', err);
       toastStore.error('Failed to update post status.');
-    }
-  }
-
-  async function handleTranslatePost(post: AdminPost) {
-    if (translatingPostIds.has(post.id)) return;
-    translatingPostIds.add(post.id);
-    try {
-      const {data: sessionData} = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
-      if (!token) {
-        toastStore.error('Admin session expired. Please log in again.');
-        return;
-      }
-
-      const failed: string[] = [];
-      const partial: string[] = [];
-      for (const locale of TRANSLATION_LOCALES) {
-        const res = await fetch('/api/internal/blog/translate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({postId: post.id, locale})
-        });
-        if (!res.ok) {
-          failed.push(locale);
-          continue;
-        }
-        const result = await res.json();
-        if (!result.stored) failed.push(locale);
-        else if (!result.bodyTranslated) partial.push(locale);
-      }
-
-      if (failed.length > 0) {
-        toastStore.error(`Translation failed for: ${failed.join(',')}.`);
-      } else if (partial.length > 0) {
-        toastStore.error(
-          `Body left untranslated for: ${partial.join(',')}. Try again.`
-        );
-      } else {
-        toastStore.success('Translations regenerated.');
-      }
-    } catch (err: any) {
-      console.error('Error translating post:', err);
-      toastStore.error(err?.message || 'Failed to translate post.');
-    } finally {
-      translatingPostIds.delete(post.id);
     }
   }
 
@@ -2574,7 +2484,7 @@
         return data.id;
       }
 
-      const {data: created, error} = await supabase
+      const {data: created} = await supabase
         .from('db_profiles')
         .insert({
           name: authorState.name ? authorState.name.trim() : '',
@@ -2770,40 +2680,6 @@
       toastStore.error(msg);
     } finally {
       isSavingProjects = false;
-    }
-  }
-
-  async function handleSaveGlossary(e: SubmitEvent) {
-    e.preventDefault();
-    if (isSavingGlossary) return;
-    if (!(await termValidation.submit(['glossary']))) return;
-    isSavingGlossary = true;
-    glossarySaveSuccess = false;
-    try {
-      const authorId = await getAuthorId();
-      if (!authorId) throw new Error('Could not resolve author ID.');
-
-      const terms = glossaryState
-        .map(term => sanitizeInput(term.trim()))
-        .filter(Boolean);
-
-      const {error} = await supabase.rpc('db_save_glossary_terms', {
-        p_author_id: authorId,
-        p_terms: terms
-      });
-      if (error) throw error;
-
-      glossaryInitial = $state.snapshot(glossaryState);
-      termValidation.clear('glossary');
-      glossarySaveSuccess = true;
-      setTimeout(() => (glossarySaveSuccess = false), 2500);
-      toastStore.success('Glossary saved.');
-    } catch (err: any) {
-      console.error('Error saving glossary:', err);
-      const msg = err?.message || err?.error || 'Failed to save glossary.';
-      toastStore.error(msg);
-    } finally {
-      isSavingGlossary = false;
     }
   }
 
@@ -3291,7 +3167,6 @@
       section: 'administration'
     },
     {id: 'posts', label: 'Posts', icon: Quote, section: 'content'},
-    {id: 'glossary', label: 'Glossary', icon: BookA, section: 'content'},
     {id: 'projects', label: 'Projects', icon: FolderOpen, section: 'content'},
     {id: 'profile', label: 'Profile', icon: User, section: 'profile'},
     {id: 'resume', label: 'Resume', icon: FileUser, section: 'profile'},
@@ -3326,7 +3201,7 @@
 
 <div
   id="admin-mobile-header"
-  class="fixed top-0 z-40 flex h-10 w-full items-center justify-between border-b border-border-subtle bg-surface-card px-4 md:hidden">
+  class="fixed top-0 z-40 flex h-12 w-full items-center justify-between border-b border-border-subtle bg-surface-card px-4 md:hidden">
   <div class="flex items-center gap-2">
     <Button
       id="admin-sidebar-toggle"
@@ -3356,7 +3231,7 @@
   </div>
 </div>
 
-<div class="flex min-h-screen pt-10 md:pt-0">
+<div class="flex min-h-screen pt-12 md:pt-0">
   <aside
     id="admin-sidebar"
     aria-label="Admin sidebar"
@@ -3592,7 +3467,6 @@
       {#key activeAdminTab}
         <ActivityWorkspace
           area={activeAdminTab}
-          onOpenComment={focusComment}
           onSelectNotification={selectNotification} />
       {/key}
     {:else if activeAdminTab === 'logs'}
@@ -3649,7 +3523,7 @@
             {/snippet}
             {#snippet filterControlsSlot()}
               <div
-                class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+                class="flex w-max flex-nowrap items-center gap-2 sm:w-auto sm:flex-wrap">
                 <Dropdown
                   label="Status"
                   value={statusFilter}
@@ -3844,16 +3718,16 @@
                       <div class="flex flex-wrap items-center gap-1.5 pt-1">
                         {#each post.tags as tag (tag)}
                           {@const cleanTag = decodeHtmlEntities(tag)}
+                          {@const isSelected =
+                            filterStore.filters['tag']?.includes(tag) ?? false}
                           <Tag
-                            variant="accent"
+                            variant={isSelected ? 'accent-active' : 'accent'}
                             onclick={() =>
                               filterStore.toggleMultiFilter('tag', tag)}
-                            aria-pressed={filterStore.filters['tag']?.includes(
-                              tag
-                            ) ?? false}
-                            class={filterStore.filters['tag']?.includes(tag) ?
-                              'bg-accent font-mono text-text-on-accent'
-                            : 'font-mono hover:bg-accent/15'}>
+                            aria-pressed={isSelected}
+                            class={isSelected ? 'font-mono' : (
+                              'font-mono hover:bg-accent/15'
+                            )}>
                             {cleanTag}
                           </Tag>
                         {/each}
@@ -3897,23 +3771,6 @@
                           {/if}
                         {/snippet}
                         {post.published ? 'Unpublish' : 'Publish'}
-                      </Button>
-
-                      <Button
-                        htmlType="button"
-                        type="secondary"
-                        size="sm"
-                        responsiveIconOnly
-                        disabled={translatingPostIds.has(post.id)}
-                        aria-label="Regenerate translations"
-                        title="Regenerate translations"
-                        onclick={() => handleTranslatePost(post)}>
-                        {#snippet leading()}
-                          <Languages class="size-3.5" />
-                        {/snippet}
-                        {translatingPostIds.has(post.id) ? 'Translating...' : (
-                          'Translate'
-                        )}
                       </Button>
 
                       <Button
@@ -4228,11 +4085,11 @@
             avatar={avatarSource(authorState)}
             validationError={authorErrors.avatar}
             disabled={isSavingAuthor}
-            onprepared={value => {
+            onprepared={(value: ImagePackage | null) => {
               preparedImage = value;
               onAuthorInput('avatar');
             }}
-            onbusy={value => {
+            onbusy={(value: boolean) => {
               preparingImage = value;
             }} />
           <section aria-labelledby="section-identity">
@@ -5585,66 +5442,6 @@
                 <Save class="size-3.5" />
               {/snippet}
               Save Skills
-            </Button>
-          </FormActions>
-        {/snippet}
-      </FormSection>
-    {:else if activeAdminTab === 'glossary'}
-      <FormSection
-        onsubmit={handleSaveGlossary}
-        title="Glossary"
-        description="Exclude names, project titles, and brand terms from AI translation."
-        class="gap-4! p-4! sm:p-5!">
-        {#if glossarySaveSuccess}<StatusBanner
-            variant="success"
-            message="Glossary saved successfully!" />{/if}
-
-        <FormField
-          id="glossary-terms"
-          label="Protected Terms"
-          variant="floating"
-          error={termFeedback.glossary?.error}
-          valid={termFeedback.glossary?.valid}
-          counter={`${glossaryState.length}/50`}
-          hideFeedbackSlot>
-          <PillInput
-            id="glossary-terms"
-            bind:value={
-              () => glossaryState,
-              value => {
-                glossaryState = value;
-                termValidation.input('glossary');
-              }
-            }
-            onblur={() => {
-              void termValidation.check('glossary');
-            }}
-            itemLabel="Term"
-            placeholderEmpty="Type a term and press comma..."
-            placeholderFilled="Add term..."
-            maxItems={50}
-            maxItemLength={80} />
-        </FormField>
-
-        {#snippet actions()}
-          <FormActions class="mt-0!">
-            {#if glossaryIsDirty}
-              <p class="text-xs text-text-secondary select-none">
-                You have unsaved changes.
-              </p>
-            {/if}
-            <Button
-              htmlType="submit"
-              type="primary"
-              size="md"
-              aria-label="Save Glossary"
-              title="Save Glossary"
-              disabled={!glossaryIsDirty}
-              isLoading={isSavingGlossary}>
-              {#snippet leading()}
-                <Save class="size-3.5" />
-              {/snippet}
-              Save Glossary
             </Button>
           </FormActions>
         {/snippet}

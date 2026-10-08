@@ -1,6 +1,6 @@
 import type {PageServerLoad} from './$types';
-import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
-import {SUBSCRIBER_TABLE, hashToken} from '$lib/server/subscribers';
+import {getSupabaseAdminClient} from '#lib/server/supabaseAdmin.ts';
+import {SUBSCRIBER_TABLE, hashToken} from '#lib/server/subscribers.ts';
 
 export const load: PageServerLoad = async ({url, platform}) => {
   const token = url.searchParams.get('token') ?? '';

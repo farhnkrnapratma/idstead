@@ -2,7 +2,7 @@
   import {Mail, Paperclip, MailCheck} from '@lucide/svelte';
   import Card from './Card.svelte';
   import MailingForm from './MailingForm.svelte';
-  import {ShinyText} from '$lib';
+  import {ShinyText} from '#lib/index.ts';
 
   let {
     title = 'Subscribe to Stay Updated',

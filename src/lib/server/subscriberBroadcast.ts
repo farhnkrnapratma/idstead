@@ -1,6 +1,6 @@
 import type {SupabaseClient} from '@supabase/supabase-js';
-import {fetchAuthorProfile} from '$lib/author';
-import {supabase as publicSupabase} from '$lib/supabase';
+import {fetchAuthorProfile} from '#lib/author.ts';
+import {supabase as publicSupabase} from '#lib/supabase.ts';
 import {
   activeSubscribers,
   newPostEmail,

@@ -1,10 +1,10 @@
 import {json} from '@sveltejs/kit';
 import type {RequestHandler} from './$types';
-import {apiError} from '$lib/server/apiError';
-import {isSameOriginRequest} from '$lib/server/sameOrigin';
-import {requireAdminAuth} from '$lib/server/adminCv';
-import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
-import {validateDefineForSave, createApiRegistry} from '$lib/define';
+import {apiError} from '#lib/server/apiError.ts';
+import {isSameOriginRequest} from '#lib/server/sameOrigin.ts';
+import {requireAdminAuth} from '#lib/server/adminCv.ts';
+import {getSupabaseAdminClient} from '#lib/server/supabaseAdmin.ts';
+import {validateDefineForSave, createApiRegistry} from '#lib/define.ts';
 
 export const POST: RequestHandler = async ({request, url, platform}) => {
   if (!isSameOriginRequest(request, url)) {

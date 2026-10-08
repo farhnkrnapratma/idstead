@@ -1,4 +1,4 @@
-import {env as publicEnv} from '$env/dynamic/public';
+import * as publicEnv from '$app/env/public';
 
 function getSupabaseBaseUrl() {
   const urlRaw = publicEnv.PUBLIC_SUPABASE_URL;

@@ -112,7 +112,7 @@ bun run preview
 If you want to make sure your code is clean, properly formatted, and passes all checks:
 
 ```sh
-bun run format
+bun run fmt
 bun run lint
 bun run check
 bun run test
@@ -132,16 +132,6 @@ The site deploys to [Cloudflare Pages](https://pages.cloudflare.com/) via [`@sve
 Both tiers share the same Supabase project. Bindings (rate limiter, Workers AI) are declared in `wrangler.jsonc` and are shared across tiers too.
 
 For local development against a given tier's config, copy the matching template on top of `.env` or use `.env.development` / `.env.production` — Vite layers `.env` → `.env.[mode]` automatically. This is a local-only convenience; it has no effect on what Cloudflare Pages deploys.
-
-## Contributing
-
-This repo uses [git-flow-next](https://git-flow.sh/) (classic preset: `main` for production, `develop` for integration, `feature/*`/`bugfix/*`/`release/*`/`hotfix/*` topic branches). See [`CLAUDE.md`](CLAUDE.md) for the full workflow, code style conventions, and architecture notes before opening a PR.
-
-Found a security issue? Please don't open a public issue — see [`SECURITY.md`](SECURITY.md) for how to report it privately.
-
-## License
-
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ## Markdown syntax
 
@@ -215,7 +205,7 @@ Math is rendered with KaTeX on the server. A single `$` is plain text.
 
 Containers and `:::math` also work inside list items (`-`, `*`, `1.` with the content indented under the marker, up to three spaces) and blockquotes (`> :::note`). Nested lists are not supported.
 
-All rendered HTML passes through an allowlist sanitizer (`src/lib/sanitizeHtml.ts`): scripts, event handlers, unknown tags, foreign iframes and `javascript:` URLs are removed, whether they come from an author or from an AI translation. Raw `kbd`, `sub`, `sup`, `u`, `mark`, `details` and `br` still work.
+All rendered HTML passes through an allowlist sanitizer (`src/lib/sanitizeHtml.ts`): scripts, event handlers, unknown tags, foreign iframes and `javascript:` URLs are removed, whether they come from an author or generated content. Raw `kbd`, `sub`, `sup`, `u`, `mark`, `details` and `br` still work.
 
 ### Article references
 
@@ -230,3 +220,13 @@ A statement with a source[^source].
 ```
 
 Footnote numbering and links back to each citation work across the document. Existing Markdown footnotes remain supported; their hidden accessibility heading is excluded from the table of contents. Unclosed or duplicate references blocks display a validation message in the editor preview. Put a blank line before the closing `:::`, otherwise Markdown formatters treat it as part of the last footnote.
+
+## Contributing
+
+This repo uses [git-flow-next](https://git-flow.sh/) (classic preset: `main` for production, `develop` for integration, `feature/*`/`bugfix/*`/`release/*`/`hotfix/*` topic branches). See [`CLAUDE.md`](CLAUDE.md) for the full workflow, code style conventions, and architecture notes before opening a PR.
+
+Found a security issue? Please don't open a public issue — see [`SECURITY.md`](SECURITY.md) for how to report it privately.
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.

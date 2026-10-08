@@ -3,11 +3,21 @@
     FieldValidation,
     requiredText,
     emailError
-  } from '$lib/fieldValidation';
+  } from '#lib/fieldValidation.ts';
   import {page} from '$app/state';
-  import {supabase} from '$lib/supabase';
+  import {
+    clearLocalAdminSession,
+    inspectAdminAuth
+  } from '#lib/adminAuthState.ts';
+  import {supabase} from '#lib/supabase.ts';
   import {onDestroy, onMount} from 'svelte';
-  import {ShieldUser, ArrowLeft, Eye, EyeOff, KeyRound} from '@lucide/svelte';
+  import {
+    ShieldUser,
+    ArrowLeft,
+    Eye,
+    EyeOff,
+    FingerprintPattern
+  } from '@lucide/svelte';
   import {
     Card,
     FormField,
@@ -17,15 +27,15 @@
     SkipLink,
     ThemeSelect,
     getSafeRedirectUrl
-  } from '$lib';
-  import {themeStore} from '$lib/stores/themeStore.svelte';
-  import {toastStore} from '$lib/stores/toastStore.svelte';
+  } from '#lib/index.ts';
+  import {themeStore} from '#lib/stores/themeStore.svelte.ts';
+  import {toastStore} from '#lib/stores/toastStore.svelte.ts';
   import {
     turnstileWidget,
     executeTurnstile,
     resetTurnstile,
     turnstileSiteKey
-  } from '$lib/utils/turnstile';
+  } from '#lib/utils/turnstile.ts';
 
   let email = $state('');
   let password = $state('');
@@ -36,26 +46,6 @@
   let turnstileEl = $state<HTMLDivElement | null>(null);
   let pageAuthor = $derived((page?.data as any)?.author);
   let authorName = $derived(pageAuthor?.name || '');
-
-  onMount(async () => {
-    const {data} = await supabase.auth.getSession();
-    if (data.session) {
-      const redirectTo = getSafeRedirectUrl(
-        page.url.searchParams.get('redirectTo')
-      );
-      window.location.href = redirectTo;
-    }
-  });
-
-  function sanitizeInput(text: string): string {
-    return text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#x27;')
-      .replace(/\//g, '&#x2F;');
-  }
 
   const validation = new FieldValidation();
   onDestroy(() => validation.destroy());
@@ -86,12 +76,73 @@
   let mfaCode = $state('');
   let mfaError = $state('');
   let verifyingMfa = $state(false);
+  let mfaInputFocused = $state(false);
+  const mfaDigits = Array.from({length: 6}, (_, index) => index);
 
   function completeLogin() {
     window.location.href = getSafeRedirectUrl(
       page.url.searchParams.get('redirectTo')
     );
   }
+
+  async function startMfa() {
+    const {data: factorData, error} = await supabase.auth.mfa.listFactors();
+    if (error) throw error;
+    const factor = factorData?.totp?.[0];
+    if (!factor) throw new Error('No verified authenticator is available.');
+    mfaFactorId = factor.id;
+    mfaCode = '';
+    mfaError = '';
+    mfaInputFocused = false;
+    needsMfa = true;
+  }
+
+  async function continueAfterSignIn() {
+    const auth = await inspectAdminAuth(supabase);
+    if (auth.status === 'authenticated') {
+      completeLogin();
+      return;
+    }
+    if (auth.status === 'mfa-required') {
+      try {
+        await startMfa();
+      } catch (error) {
+        void clearLocalAdminSession(supabase);
+        throw error;
+      }
+      return;
+    }
+    if (auth.status === 'invalid') {
+      console.error('Admin session check failed:', auth.error);
+      void clearLocalAdminSession(supabase);
+      throw new Error(
+        'Your sign-in session could not be verified. Please try again.'
+      );
+    }
+    if (auth.status === 'unauthorized') {
+      void clearLocalAdminSession(supabase);
+      throw new Error(
+        'This account is not authorized to access the admin portal.'
+      );
+    }
+    throw new Error('The sign-in session was not created. Please try again.');
+  }
+
+  onMount(() => {
+    const {
+      data: {subscription}
+    } = supabase.auth.onAuthStateChange(event => {
+      if (event === 'SIGNED_OUT') {
+        needsMfa = false;
+        mfaCode = '';
+        mfaError = '';
+        verifyingMfa = false;
+        mfaInputFocused = false;
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  });
 
   async function submitMfaCode(event: SubmitEvent) {
     event.preventDefault();
@@ -106,10 +157,37 @@
       if (error) throw error;
       completeLogin();
     } catch (err) {
-      mfaError =
-        err instanceof Error ? err.message : 'That code was not accepted.';
+      let auth: Awaited<ReturnType<typeof inspectAdminAuth>>;
+      try {
+        auth = await inspectAdminAuth(supabase);
+      } catch (error) {
+        console.error('Admin session check failed:', error);
+        auth = {status: 'invalid', error};
+      }
+      if (auth.status === 'mfa-required') {
+        mfaError =
+          err instanceof Error ? err.message : 'That code was not accepted.';
+      } else {
+        if (auth.status === 'invalid')
+          console.error('Admin session check failed:', auth.error);
+        void clearLocalAdminSession(supabase);
+        needsMfa = false;
+        mfaCode = '';
+        mfaError = '';
+        toastStore.error('Your sign-in session expired. Please sign in again.');
+      }
+    } finally {
       verifyingMfa = false;
     }
+  }
+
+  function updateMfaCode(event: Event) {
+    const input = event.currentTarget;
+    if (!(input instanceof HTMLInputElement)) return;
+    const code = input.value.replace(/[^0-9]/g, '').slice(0, 6);
+    input.value = code;
+    mfaCode = code;
+    mfaError = '';
   }
 
   let passkeyBusy = $state(false);
@@ -118,22 +196,30 @@
     if (passkeyBusy) return;
     passkeyBusy = true;
     try {
+      if (needsMfa) {
+        await clearLocalAdminSession(supabase);
+        needsMfa = false;
+        mfaCode = '';
+        mfaError = '';
+      }
       const {error} = await supabase.auth.signInWithPasskey();
       if (error) throw error;
-      completeLogin();
+      await continueAfterSignIn();
     } catch (err) {
       const text = err instanceof Error ? err.message : '';
       if (!/cancel|abort|NotAllowed/i.test(text))
         toastStore.error(text || 'Passkey sign-in failed.');
+    } finally {
       passkeyBusy = false;
     }
   }
 
-  async function cancelMfa() {
+  function cancelMfa() {
     needsMfa = false;
     mfaCode = '';
     mfaError = '';
-    await supabase.auth.signOut();
+    mfaInputFocused = false;
+    void clearLocalAdminSession(supabase);
   }
   async function handleLogin(e: SubmitEvent) {
     e.preventDefault();
@@ -166,16 +252,7 @@
         throw new Error(result.error?.message || 'Invalid email or password.');
       }
 
-      if (result.mfaRequired) {
-        const {data: factorData} = await supabase.auth.mfa.listFactors();
-        const factor = factorData?.totp?.[0] ?? factorData?.all?.[0];
-        if (!factor) throw new Error('No verification method is available.');
-        mfaFactorId = factor.id;
-        needsMfa = true;
-        return;
-      }
-
-      completeLogin();
+      await continueAfterSignIn();
     } catch (err: unknown) {
       console.error('Login failed:', err);
       const message =
@@ -218,6 +295,14 @@
     onThemeChange={themeStore.apply} />
 </header>
 
+{#snippet authMethodDivider()}
+  <div class="my-1 flex items-center gap-3 text-xs text-text-muted">
+    <span class="h-px flex-1 bg-border-subtle"></span>
+    <span>or</span>
+    <span class="h-px flex-1 bg-border-subtle"></span>
+  </div>
+{/snippet}
+
 <main
   id="main-content"
   class="relative flex min-h-dvh flex-col items-center justify-center font-sans">
@@ -232,7 +317,9 @@
         </div>
         <h1 class="text-xl font-bold text-text-primary">Admin Portal</h1>
         <p class="mt-1 text-xs text-text-secondary">
-          Sign in to access the administration dashboard
+          {needsMfa ?
+            'Two-step verification'
+          : 'Sign in to access your admin dashboard.'}
         </p>
       </div>
 
@@ -242,36 +329,73 @@
           onsubmit={submitMfaCode}
           class="flex w-full flex-col gap-2.5">
           <p class="text-xs text-text-secondary">
-            Enter the six-digit code from your authenticator app.
+            Enter the 6-digit code from your authenticator app.
           </p>
           <FormField
             id="login-mfa"
             label="Verification code"
-            variant="floating"
             error={mfaError}>
-            <Input
-              id="login-mfa"
-              variant="floating"
-              label="Verification code"
-              inputmode="numeric"
-              autocomplete="one-time-code"
-              maxlength={6}
-              bind:value={mfaCode}
-              error={Boolean(mfaError)}
-              disabled={verifyingMfa} />
+            <div class="group relative">
+              <Input
+                id="login-mfa"
+                type="text"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                maxlength={6}
+                value={mfaCode}
+                oninput={updateMfaCode}
+                onfocus={() => {
+                  mfaInputFocused = true;
+                  mfaError = '';
+                }}
+                onblur={() => (mfaInputFocused = false)}
+                aria-label="Verification code"
+                aria-invalid={Boolean(mfaError)}
+                aria-describedby={mfaError ? 'login-mfa-error' : undefined}
+                class="h-12 border-0! bg-transparent px-0 text-transparent caret-transparent shadow-none ring-0 ring-offset-0 outline-none selection:text-transparent focus:border-0! focus:bg-transparent focus:shadow-none! focus:ring-0! focus:ring-transparent! focus:outline-none! focus-visible:border-0! focus-visible:shadow-none! focus-visible:ring-0! focus-visible:ring-transparent! focus-visible:outline-none!"
+                error={Boolean(mfaError)}
+                disabled={verifyingMfa || passkeyBusy} />
+              <div
+                class="pointer-events-none absolute inset-0 flex gap-2"
+                aria-hidden="true">
+                {#each mfaDigits as index (index)}
+                  <span
+                    class={`flex h-full min-w-0 flex-1 items-center justify-center rounded-md border bg-surface-card/85 text-xl font-medium text-text-primary tabular-nums shadow-2xs transition-colors dark:bg-surface-card/70 ${
+                      mfaError ? 'border-danger ring-1 ring-danger/20'
+                      : (
+                        mfaInputFocused && index === Math.min(mfaCode.length, 5)
+                      ) ?
+                        'border-accent ring-2 ring-accent/20'
+                      : 'border-border-subtle/50 dark:border-white/10'
+                    }`}>{mfaCode[index] ?? ''}</span>
+                {/each}
+              </div>
+            </div>
           </FormField>
           <Button
             htmlType="submit"
             size="md"
             fullWidth
             isLoading={verifyingMfa}
-            disabled={verifyingMfa}>Verify and continue</Button>
+            disabled={verifyingMfa || passkeyBusy}>Verify and continue</Button>
+          {@render authMethodDivider()}
+          <Button
+            type="tertiary"
+            size="md"
+            fullWidth
+            onclick={signInWithPasskey}
+            isLoading={passkeyBusy}
+            disabled={verifyingMfa || passkeyBusy}>
+            {#snippet leading()}<FingerprintPattern class="size-4" />{/snippet}
+            Passkey
+          </Button>
           <Button
             type="ghost"
-            size="sm"
+            size="md"
             fullWidth
             onclick={cancelMfa}
-            disabled={verifyingMfa}>Use a different account</Button>
+            disabled={verifyingMfa || passkeyBusy}
+            >Use a different account</Button>
         </form>
       {:else}
         <form
@@ -370,21 +494,22 @@
           <Button
             htmlType="submit"
             type="primary"
-            size="lg"
+            size="md"
             isLoading={isSubmitting}
             class="mt-2 w-full">
             {isSubmitting ? 'Signing in…' : 'Sign in'}
           </Button>
 
+          {@render authMethodDivider()}
           <Button
-            type="ghost"
+            type="tertiary"
             size="md"
             class="w-full"
             onclick={signInWithPasskey}
             isLoading={passkeyBusy}
             disabled={isSubmitting || passkeyBusy}>
-            {#snippet leading()}<KeyRound class="size-4" />{/snippet}
-            Sign in with a passkey
+            {#snippet leading()}<FingerprintPattern class="size-4" />{/snippet}
+            Passkey
           </Button>
         </form>
       {/if}

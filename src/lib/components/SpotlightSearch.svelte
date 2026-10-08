@@ -4,17 +4,12 @@
     parseMailingCommand,
     type MailingCommand,
     type MailingAction
-  } from '$lib/mailing';
+  } from '#lib/mailing.ts';
   let mailingRequest = $state<MailingCommand | null>(null);
   import {SvelteMap, SvelteSet} from 'svelte/reactivity';
   import {tick, untrack} from 'svelte';
   import {goto} from '$app/navigation';
   import {page} from '$app/state';
-  import {
-    LANGUAGE_LABELS,
-    TRANSLATION_LOCALE_NAMES,
-    TRANSLATION_LOCALES
-  } from '$lib/translationLocales';
   import {
     Search,
     Mail,
@@ -48,7 +43,6 @@
     X,
     Accessibility,
     Type,
-    Languages,
     Rss,
     Code,
     CodeXml,
@@ -97,19 +91,18 @@
     PersonStanding,
     Rocket
   } from '@lucide/svelte';
-  import type {Project} from '$lib/types';
+  import type {Project} from '#lib/types.ts';
   import {portal} from '../utils/actions';
   import {cn} from '../utils/cn';
   import ShortcutBadge from './ShortcutBadge.svelte';
   import CommandSectionHeading from './CommandSectionHeading.svelte';
-  import {SHORTCUT_SECTIONS, commandSection} from '$lib/shortcutCatalog';
+  import {SHORTCUT_SECTIONS, commandSection} from '#lib/shortcutCatalog.ts';
   import {shortcutStore} from '../stores/shortcutStore.svelte';
   import {
     CATALOG_KEY,
     COMMAND_SHORTCUTS,
     isTextEntryTarget
-  } from '$lib/shortcuts';
-  import {decodeHtmlEntities} from '../utils/formatters';
+  } from '#lib/shortcuts.ts';
   import {lockScroll, scrollToTop, scrollToBottom} from '../utils/scroll';
   import Tooltip from './Tooltip.svelte';
   import ShareDialog from './ShareDialog.svelte';
@@ -132,7 +125,6 @@
     type CodeColorScheme
   } from '../utils/codeBlocks';
   import {consentStore} from '../stores/consentStore.svelte';
-  import {sanitizeInput} from '../utils/sanitizeInput';
   import {readingModeStore} from '../stores/readingModeStore.svelte';
 
   export type ItemCategory =
@@ -169,15 +161,8 @@
     meta?: Record<string, unknown>;
   }
 
-  interface LanguageSwitcher {
-    slug: string;
-    currentLanguage: string;
-    availableLocales: string[];
-  }
-
   interface Props {
     projects?: Project[];
-    languageSwitcher?: LanguageSwitcher;
     class?: string;
     wrapperClass?: string;
     variant?: 'default' | 'expanded' | 'responsive' | 'icon';
@@ -185,7 +170,6 @@
 
   let {
     projects = [],
-    languageSwitcher,
     class: className = '',
     wrapperClass = '',
     variant = 'default'
@@ -268,7 +252,6 @@
     X,
     Accessibility,
     Type,
-    Languages,
     Rss,
     Code,
     CodeXml,
@@ -559,14 +542,6 @@
           ],
           actionQuery: '/a11y ',
           icon: PersonStanding
-        },
-        {
-          command: '/lang',
-          argHint: '[lang]',
-          description: 'Translate article content to another language.',
-          validArgs: ['default', 'en', 'id'],
-          actionQuery: '/lang ',
-          icon: Languages
         },
         {
           command: '/copy',
@@ -1074,16 +1049,6 @@
       },
       icon: QrCode,
       badge: 'Share'
-    },
-    {
-      id: 'cmd-lang',
-      category: 'actions',
-      title: '/lang',
-      subtitle: 'Translate article content to another language.',
-      requiresArgs: true,
-      autocompleteQuery: '/lang ',
-      icon: Languages,
-      badge: 'Language'
     },
     {
       id: 'cmd-exit',
@@ -1857,62 +1822,6 @@
           icon: Save,
           badge: 'File'
         });
-      }
-    }
-
-    if (
-      q.startsWith('/lang')
-      || q.startsWith('/translate')
-      || (root.length > 2
-        && ('/lang'.startsWith(root) || '/translate'.startsWith(root)))
-    ) {
-      const parts = q.split(/\s+/);
-      const cmdPrefix =
-        parts[0].startsWith('/translate') ? '/translate' : '/lang';
-      const arg = (parts[1] || '').toLowerCase();
-      const pathname = page?.url?.pathname || '';
-      const isBlogPage = pathname.startsWith('/blog/') && pathname.length > 6;
-      const currentSlug =
-        isBlogPage ?
-          pathname.replace('/blog/', '').split('/')[0]
-        : languageSwitcher?.slug || '';
-
-      const langOptions: {key: string; label: string; urlParam: string}[] = [
-        {key: 'default', label: 'English (Default)', urlParam: ''},
-        {key: 'en', label: 'English (Default)', urlParam: ''},
-        ...TRANSLATION_LOCALES.map(locale => ({
-          key: locale,
-          label: `${TRANSLATION_LOCALE_NAMES[locale]} (${LANGUAGE_LABELS[locale]})`,
-          urlParam: locale
-        }))
-      ];
-
-      for (const opt of langOptions) {
-        if (!arg || opt.key.startsWith(arg)) {
-          items.push({
-            id: `dyn-lang-${opt.key}`,
-            category: 'actions',
-            title: `${cmdPrefix} ${opt.key}`,
-            subtitle: 'Translate article to another language.',
-            action: () => {
-              if (!isBlogPage || !currentSlug) {
-                toastStore.show(
-                  "Command '/lang' is only available on blog post pages.",
-                  'warning'
-                );
-                return;
-              }
-              const targetUrl =
-                opt.urlParam ?
-                  `/blog/${currentSlug}?lang=${opt.urlParam}`
-                : `/blog/${currentSlug}`;
-              goto(targetUrl);
-              toastStore.show(`Language switched to ${opt.label}`, 'success');
-            },
-            icon: Languages,
-            badge: 'Language'
-          });
-        }
       }
     }
 
@@ -3036,27 +2945,6 @@
       tick().then(() => helpDialogEl?.focus());
     }
   });
-
-  function escapeHtml(unsafe: string) {
-    return unsafe
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  }
-
-  function highlight(text: string, q: string): string {
-    const safeText = escapeHtml(text || '');
-    const cleanQ = q.trim().replace(/^[/]+/, '');
-    if (!cleanQ || cleanQ.length < 1) return safeText;
-    const safeQ = escapeHtml(cleanQ);
-    const escaped = safeQ.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return safeText.replace(
-      new RegExp(`(${escaped})`, 'gi'),
-      '<mark class="bg-accent/20 text-accent rounded-[2px] px-[1px] not-italic font-semibold">$1</mark>'
-    );
-  }
 
   let filteredHistory = $derived.by(() => {
     const allHistory = searchHistoryStore.current;

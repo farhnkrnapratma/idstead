@@ -1,6 +1,6 @@
-import {browser} from '$app/environment';
+import {browser} from '$app/env';
 import {SvelteSet} from 'svelte/reactivity';
-import type {CodeColorScheme} from '$lib/utils/codeBlocks';
+import type {CodeColorScheme} from '#lib/utils/codeBlocks.ts';
 
 interface CodeBlockPrefs {
   colorScheme: CodeColorScheme;
