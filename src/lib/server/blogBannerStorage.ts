@@ -4,7 +4,7 @@ import {
   DeleteObjectCommand
 } from '@aws-sdk/client-s3';
 import {assetStorage} from './profileAssets';
-import {bannerKey, sha256} from '$lib/blogBanner';
+import {bannerKey, sha256} from '#lib/blogBanner.ts';
 import type {SupabaseClient} from '@supabase/supabase-js';
 
 export async function putBanner(
@@ -84,23 +84,18 @@ export async function cleanupBlogAssets(
   if (markdownError) throw markdownError;
   for (const item of markdown ?? []) {
     try {
-      const [
-        {count: posts, error: postError},
-        {count: translations, error: translationError}
-      ] = await Promise.all([
-        db
-          .from('db_posts')
-          .select('id', {count: 'exact', head: true})
-          .eq('storage_path', item.storage_path),
-        db
-          .from('db_post_translations')
-          .select('id', {count: 'exact', head: true})
-          .eq('storage_path', item.storage_path)
-      ]);
-      if (postError || translationError)
-        throw new Error('Reference check failed.');
-      if (posts || translations) continue;
-      if (!/^posts\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.md$/.test(item.storage_path))
+      const {count: posts, error: postError} = await db
+        .from('db_posts')
+        .select('id', {count: 'exact', head: true})
+        .eq('storage_path', item.storage_path);
+      if (postError) throw new Error('Reference check failed.');
+      if (posts) continue;
+      if (
+        !/^posts\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.md$/.test(item.storage_path)
+        && !/^[a-z0-9]+(?:-[a-z0-9]+)*\.(?:id|ja|zh|ko)\.md$/.test(
+          item.storage_path
+        )
+      )
         continue;
       const {error: failure} = await db.storage
         .from('blog-posts')

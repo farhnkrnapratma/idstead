@@ -1,13 +1,13 @@
 import {json} from '@sveltejs/kit';
 import type {RequestHandler} from './$types';
-import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
-import {apiError} from '$lib/server/apiError';
-import {blogAdmin} from '$lib/server/blogPostAuth';
-import {boundedBody} from '$lib/server/blogPostInput';
-import {sha256} from '$lib/blogBanner';
-import {CONTENT_IMAGE_LIMIT, contentImageKey} from '$lib/blogContentImage';
-import {validateContentImage} from '$lib/server/validateContentImage';
-import {putContentAsset} from '$lib/server/blogContentStorage';
+import {getSupabaseAdminClient} from '#lib/server/supabaseAdmin.ts';
+import {apiError} from '#lib/server/apiError.ts';
+import {blogAdmin} from '#lib/server/blogPostAuth.ts';
+import {boundedBody} from '#lib/server/blogPostInput.ts';
+import {sha256} from '#lib/blogBanner.ts';
+import {CONTENT_IMAGE_LIMIT, contentImageKey} from '#lib/blogContentImage.ts';
+import {validateContentImage} from '#lib/server/validateContentImage.ts';
+import {putContentAsset} from '#lib/server/blogContentStorage.ts';
 
 export const POST: RequestHandler = async ({request, url, platform}) => {
   const db = getSupabaseAdminClient(platform);

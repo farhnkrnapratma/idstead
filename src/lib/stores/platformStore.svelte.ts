@@ -1,4 +1,4 @@
-import {detectPlatform, type Platform} from '$lib/platform';
+import {detectPlatform, type Platform} from '#lib/platform.ts';
 
 let current = $state<Platform>('other');
 

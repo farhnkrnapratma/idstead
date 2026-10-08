@@ -1,10 +1,10 @@
 import {json} from '@sveltejs/kit';
 import type {RequestHandler} from './$types';
-import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
-import {blogAdmin} from '$lib/server/blogPostAuth';
-import {apiError} from '$lib/server/apiError';
+import {getSupabaseAdminClient} from '#lib/server/supabaseAdmin.ts';
+import {blogAdmin} from '#lib/server/blogPostAuth.ts';
+import {apiError} from '#lib/server/apiError.ts';
 
-import {activityLogQuery} from '$lib/server/activityLogQuery';
+import {activityLogQuery} from '#lib/server/activityLogQuery.ts';
 export const GET: RequestHandler = async ({request, url, platform}) => {
   const db = getSupabaseAdminClient(platform);
   if (!db)

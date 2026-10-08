@@ -1,15 +1,15 @@
-import type {NotificationSummary} from '$lib/adminWorkspace';
-import {supabase} from '$lib/supabase';
-import {adminActivityRequest} from '$lib/adminActivityClient';
+import type {NotificationSummary} from '#lib/adminWorkspace.ts';
+import {supabase} from '#lib/supabase.ts';
+import {adminActivityRequest} from '#lib/adminActivityClient.ts';
 import type {
   AdminNotificationRow,
   ClearOperation,
   InboxCursor,
   InboxPreferences,
   InboxResult
-} from '$lib/adminActivity';
+} from '#lib/adminActivity.ts';
 import {toastStore} from './toastStore.svelte';
-export type {AdminNotificationRow} from '$lib/adminActivity';
+export type {AdminNotificationRow} from '#lib/adminActivity.ts';
 
 const defaults: InboxPreferences = {
   query: '',

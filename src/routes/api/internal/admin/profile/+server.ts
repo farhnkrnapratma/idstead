@@ -1,19 +1,19 @@
 import {json} from '@sveltejs/kit';
 import * as Sentry from '@sentry/sveltekit';
 import type {RequestHandler} from './$types';
-import {requireAdminAuth} from '$lib/server/adminCv';
-import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
-import {isSameOriginRequest} from '$lib/server/sameOrigin';
-import {apiError} from '$lib/server/apiError';
-import {validateAvatar} from '$lib/server/validateAvatar';
+import {requireAdminAuth} from '#lib/server/adminCv.ts';
+import {getSupabaseAdminClient} from '#lib/server/supabaseAdmin.ts';
+import {isSameOriginRequest} from '#lib/server/sameOrigin.ts';
+import {apiError} from '#lib/server/apiError.ts';
+import {validateAvatar} from '#lib/server/validateAvatar.ts';
 import {
   writeAssets,
   removeAssets,
   cleanupAssets
-} from '$lib/server/profileAssets';
-import {profilePatch, ProfileInputError} from '$lib/server/profilePatch';
-import type {IdentityAsset} from '$lib/siteIdentity';
-import {logActivity} from '$lib/server/activityLog';
+} from '#lib/server/profileAssets.ts';
+import {profilePatch, ProfileInputError} from '#lib/server/profilePatch.ts';
+import type {IdentityAsset} from '#lib/siteIdentity.ts';
+import {logActivity} from '#lib/server/activityLog.ts';
 
 const attempts = new Map<string, number>();
 

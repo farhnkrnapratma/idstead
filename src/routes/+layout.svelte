@@ -1,21 +1,26 @@
 <script lang="ts">
-  import {themeColors} from '$lib/themeColors';
+  import {themeColors} from '#lib/themeColors.ts';
   import './global.css';
   import {onMount} from 'svelte';
-  import {installSubmitShortcut} from '$lib/utils/submitShortcut';
+  import {installSubmitShortcut} from '#lib/utils/submitShortcut.ts';
   import {onNavigate} from '$app/navigation';
   import {page} from '$app/state';
-  import {ConsentBanner, Toast, ScrollToTopButton, FeedbackButton} from '$lib';
-  import ShortcutCatalogDialog from '$lib/components/ShortcutCatalogDialog.svelte';
-  import ShortcutModeIndicator from '$lib/components/ShortcutModeIndicator.svelte';
-  import {platformStore} from '$lib/stores/platformStore.svelte';
+  import {
+    ConsentBanner,
+    Toast,
+    ScrollToTopButton,
+    FeedbackButton
+  } from '#lib/index.ts';
+  import ShortcutCatalogDialog from '#lib/components/ShortcutCatalogDialog.svelte';
+  import ShortcutModeIndicator from '#lib/components/ShortcutModeIndicator.svelte';
+  import {platformStore} from '#lib/stores/platformStore.svelte.ts';
 
-  import {themeStore} from '$lib/stores/themeStore.svelte';
-  import {a11yStore} from '$lib/stores/a11yStore.svelte';
-  import {codeBlockPrefsStore} from '$lib/stores/codeBlockPrefsStore.svelte';
-  import {scrollStore} from '$lib/stores/scrollStore.svelte';
-  import {readingModeStore} from '$lib/stores/readingModeStore.svelte';
-  import {refreshCodeBlockPrefs} from '$lib/utils/codeBlocks';
+  import {themeStore} from '#lib/stores/themeStore.svelte.ts';
+  import {a11yStore} from '#lib/stores/a11yStore.svelte.ts';
+  import {codeBlockPrefsStore} from '#lib/stores/codeBlockPrefsStore.svelte.ts';
+  import {scrollStore} from '#lib/stores/scrollStore.svelte.ts';
+  import {readingModeStore} from '#lib/stores/readingModeStore.svelte.ts';
+  import {refreshCodeBlockPrefs} from '#lib/utils/codeBlocks.ts';
 
   const {data, children} = $props();
 
@@ -43,6 +48,11 @@
   );
 
   onMount(() => {
+    if (isAdminPage) {
+      document.documentElement.dataset.adminPage = 'true';
+    } else {
+      delete document.documentElement.dataset.adminPage;
+    }
     platformStore.detect();
     const cleanupTheme = themeStore.init();
     const cleanupA11y = a11yStore.init();
@@ -75,6 +85,15 @@
   const BLOG_POST_ROUTE_ID = '/blog/[slug]';
 
   onNavigate(navigation => {
+    const destinationPath = navigation.to?.url.pathname;
+    if (destinationPath) {
+      if (destinationPath.startsWith('/admin')) {
+        document.documentElement.dataset.adminPage = 'true';
+      } else {
+        delete document.documentElement.dataset.adminPage;
+      }
+    }
+
     if (!document.startViewTransition || a11yStore.current.reduceMotion) return;
 
     const isBlogPostTransition =

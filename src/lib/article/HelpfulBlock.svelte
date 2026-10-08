@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {buttonKey, COMMAND_SHORTCUTS} from '$lib/shortcuts';
+  import {buttonKey, COMMAND_SHORTCUTS} from '#lib/shortcuts.ts';
   import {shortcutStore} from '../stores/shortcutStore.svelte';
   import {onMount} from 'svelte';
   import {
@@ -118,7 +118,7 @@
           <Button
             type="ghost"
             size="sm"
-            class="h-auto! w-fit justify-start! rounded-none p-0! leading-(--text-xs--line-height)! font-medium whitespace-normal! text-accent! hover:underline focus-visible:underline focus-visible:outline-none"
+            class="h-auto! w-fit justify-start! rounded-none p-0! leading-(--text-xs--line-height)! font-medium whitespace-normal! text-accent! focus-visible:outline-none"
             keyboardShortcut={buttonKey('shareFeedback')}
             shortcutLabel="Share your feedback"
             shortcutPlacement="after"
@@ -130,7 +130,7 @@
         <Button
           type="ghost"
           size="sm"
-          class="h-auto! w-fit justify-start! rounded-none p-0! leading-(--text-xs--line-height)! font-medium whitespace-normal! text-accent! hover:underline focus-visible:underline focus-visible:outline-none"
+          class="h-auto! w-fit justify-start! rounded-none p-0! leading-(--text-xs--line-height)! font-medium whitespace-normal! text-accent! focus-visible:outline-none"
           keyboardShortcut={buttonKey('share')}
           shortcutLabel={shareLabel}
           shortcutPlacement="after"

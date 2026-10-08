@@ -1,16 +1,32 @@
 import {sequence} from '@sveltejs/kit/hooks';
 import * as Sentry from '@sentry/sveltekit';
-import {redirect, type Handle} from '@sveltejs/kit';
-import {env as publicEnv} from '$env/dynamic/public';
-import {dev} from '$app/environment';
-import {assetNames, serveIdentityAsset} from '$lib/server/profileAssets';
-import {publicResponse} from '$lib/server/publicResponse';
-import {createAuthClient, safeGetSession} from '$lib/server/supabaseAuth';
-import {privateRequestIntegrations} from '$lib/server/sentryPrivacy';
-import {buildContentSecurityPolicy} from '$lib/server/csp';
+import {redirect} from '@sveltejs/kit';
+import type {Handle} from '@sveltejs/kit/hooks';
+import * as publicEnv from '$app/env/public';
+import {dev} from '$app/env';
+import {assetNames, serveIdentityAsset} from '#lib/server/profileAssets.ts';
+import {publicResponse} from '#lib/server/publicResponse.ts';
+import {createAuthClient, safeGetSession} from '#lib/server/supabaseAuth.ts';
+import {privateRequestIntegrations} from '#lib/server/sentryPrivacy.ts';
+import {buildContentSecurityPolicy} from '#lib/server/csp.ts';
 
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const MAX_REQUESTS_PER_WINDOW = 60;
+
+const sentryInitHandle: Handle =
+  import.meta.hot?.data.sentryInitHandle
+  ?? (Sentry.getClient() ?
+    ({event, resolve}) => resolve(event)
+  : Sentry.initCloudflareSentryHandle({
+      dsn: publicEnv.PUBLIC_SENTRY_DSN || '',
+      environment: publicEnv.PUBLIC_SENTRY_ENVIRONMENT || import.meta.env.MODE,
+      tracesSampleRate: dev ? 0 : 1.0,
+      integrations: privateRequestIntegrations()
+    }));
+
+if (import.meta.hot) {
+  import.meta.hot.data.sentryInitHandle = sentryInitHandle;
+}
 
 function getCdnBaseUrl(): string {
   const base = (publicEnv.PUBLIC_CDN_BASE_URL ?? '').trim();
@@ -61,13 +77,7 @@ function getStaticMimeType(
 }
 
 export const handle: Handle = sequence(
-  Sentry.initCloudflareSentryHandle({
-    dsn: publicEnv.PUBLIC_SENTRY_DSN || '',
-    environment: publicEnv.PUBLIC_SENTRY_ENVIRONMENT || import.meta.env.MODE,
-    tracesSampleRate: dev ? 0 : 1.0,
-    enableLogs: !dev,
-    integrations: privateRequestIntegrations()
-  }),
+  sentryInitHandle,
   Sentry.sentryHandle(),
   async ({event, resolve}) => {
     event.locals.supabase = createAuthClient(event);
@@ -199,6 +209,15 @@ export const handle: Handle = sequence(
     const isAdminApi =
       event.url.pathname.startsWith('/api/internal/admin/')
       && event.url.pathname !== '/api/internal/admin/login';
+    const isArdRequest =
+      event.url.pathname === '/api/ard'
+      || event.url.pathname.startsWith('/api/ard/');
+    const isArdSearchRequest =
+      event.url.pathname.replace(/\/$/, '') === '/api/ard/search';
+    const isArdExploreRequest =
+      event.url.pathname.replace(/\/$/, '') === '/api/ard/explore';
+    const isArdAgentsRequest =
+      event.url.pathname.replace(/\/$/, '') === '/api/ard/agents';
 
     if (isApiRequest && event.request.method === 'OPTIONS') {
       const origin = event.request.headers.get('origin');
@@ -212,7 +231,10 @@ export const handle: Handle = sequence(
         headers: {
           ...(isInternalApi ? {} : {'Access-Control-Allow-Origin': '*'}),
           'Access-Control-Allow-Methods':
-            isInternalApi ? 'GET, HEAD, POST, OPTIONS' : 'GET, HEAD, OPTIONS',
+            isInternalApi ? 'GET, HEAD, POST, OPTIONS'
+            : isArdSearchRequest || isArdExploreRequest ? 'POST, OPTIONS'
+            : isArdAgentsRequest ? 'GET, HEAD, OPTIONS'
+            : 'GET, HEAD, OPTIONS',
           'Access-Control-Allow-Headers':
             'Content-Type, Authorization, If-None-Match',
           'Access-Control-Max-Age': '86400',
@@ -252,10 +274,17 @@ export const handle: Handle = sequence(
         );
         return new Response(
           JSON.stringify({
-            error: {
-              code: 'RATE_LIMITED',
-              message: 'Rate limit exceeded. Please wait before retrying.'
-            }
+            ...(isArdRequest ?
+              {
+                errorCode: 'RATE_LIMIT_EXCEEDED',
+                message: 'Rate limit exceeded. Please wait before retrying.'
+              }
+            : {
+                error: {
+                  code: 'RATE_LIMITED',
+                  message: 'Rate limit exceeded. Please wait before retrying.'
+                }
+              })
           }),
           {
             status: 429,
@@ -293,12 +322,7 @@ export const handle: Handle = sequence(
     let response = await resolve(event, {
       transformPageChunk: ({html}) => {
         const cdn = getCdnBaseUrl();
-        let out = cdn ? html.replaceAll(`${cdn}//`, `${cdn}/`) : html;
-        const pageLanguage = event.locals.pageLanguage;
-        if (pageLanguage && pageLanguage !== 'en') {
-          out = out.replace('lang="en"', `lang="${pageLanguage}"`);
-        }
-        return out;
+        return cdn ? html.replaceAll(`${cdn}//`, `${cdn}/`) : html;
       }
     });
     const contentType = response.headers.get('content-type') ?? '';
@@ -366,10 +390,23 @@ export const handle: Handle = sequence(
         429: 'Rate limit exceeded. Please wait before retrying.'
       };
 
-      let errorCode = DEFAULT_CODES[httpStatus] ?? 'INTERNAL_ERROR';
+      const ARD_DEFAULT_CODES: Record<number, string> = {
+        400: 'INVALID_ARGUMENT',
+        401: 'UNAUTHENTICATED',
+        403: 'UNAUTHENTICATED',
+        404: 'NOT_FOUND',
+        405: 'INVALID_ARGUMENT',
+        429: 'RATE_LIMIT_EXCEEDED'
+      };
+      let errorCode =
+        isArdRequest ?
+          (ARD_DEFAULT_CODES[httpStatus] ?? 'INTERNAL_ERROR')
+        : (DEFAULT_CODES[httpStatus] ?? 'INTERNAL_ERROR');
       let errorMessage =
-        DEFAULT_MESSAGES[httpStatus]
-        ?? 'An unexpected error occurred while processing the request.';
+        isArdRequest && httpStatus === 405 ?
+          'This HTTP method is not supported for this endpoint.'
+        : (DEFAULT_MESSAGES[httpStatus]
+          ?? 'An unexpected error occurred while processing the request.');
       let errorDetails: string | undefined;
 
       if (contentType.includes('application/json')) {
@@ -381,7 +418,17 @@ export const handle: Handle = sequence(
                 text
               );
 
-            if (typeof jsonBody.code === 'string' && jsonBody.code) {
+            if (
+              isArdRequest
+              && typeof jsonBody.errorCode === 'string'
+              && jsonBody.errorCode
+            ) {
+              errorCode = jsonBody.errorCode;
+            } else if (
+              !isArdRequest
+              && typeof jsonBody.code === 'string'
+              && jsonBody.code
+            ) {
               errorCode = jsonBody.code;
             }
 
@@ -407,6 +454,14 @@ export const handle: Handle = sequence(
         ...(privatePage || preview ?
           {'X-Robots-Tag': 'noindex, nofollow'}
         : {}),
+        ...(isArdRequest && httpStatus === 405 ?
+          {
+            Allow:
+              isArdSearchRequest || isArdExploreRequest ? 'POST, OPTIONS'
+              : isArdAgentsRequest ? 'GET, HEAD, OPTIONS'
+              : 'GET, HEAD, POST, OPTIONS'
+          }
+        : {}),
         ...(isInternalApi ?
           {}
         : {
@@ -417,13 +472,17 @@ export const handle: Handle = sequence(
       };
 
       return new Response(
-        JSON.stringify({
-          error: {
-            code: errorCode,
-            message: errorMessage,
-            ...(errorDetails ? {details: errorDetails} : {})
-          }
-        }),
+        JSON.stringify(
+          isArdRequest ?
+            {errorCode, message: errorMessage}
+          : {
+              error: {
+                code: errorCode,
+                message: errorMessage,
+                ...(errorDetails ? {details: errorDetails} : {})
+              }
+            }
+        ),
         {status: httpStatus, headers: errHeaders}
       );
     }
@@ -436,6 +495,10 @@ export const handle: Handle = sequence(
       response.headers.append(
         'Link',
         '</.well-known/agent-skills/index.json>; rel="describedby"; type="application/json"'
+      );
+      response.headers.append(
+        'Link',
+        '</.well-known/ard.json>; rel="ard"; type="application/json"'
       );
       response.headers.append(
         'Link',

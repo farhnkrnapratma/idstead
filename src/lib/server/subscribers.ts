@@ -1,5 +1,5 @@
 import type {SupabaseClient} from '@supabase/supabase-js';
-import {env as privateEnv} from '$env/dynamic/private';
+import * as privateEnv from '$app/env/private';
 
 export const SUBSCRIBER_TABLE = 'db_subscribers';
 

@@ -1,18 +1,18 @@
 <script lang="ts">
   import {X} from '@lucide/svelte';
   import ActivityIcon from './ActivityIcon.svelte';
-  import type {AdminNotificationRow} from '$lib/adminActivity';
+  import type {AdminNotificationRow} from '#lib/adminActivity.ts';
   import {
     activityMetadata,
     activitySentence,
     activityTimestamp,
     activityTimeZone
-  } from '$lib/adminActivity';
-  import {adminDisplayStore} from '$lib/stores/adminDisplayStore.svelte';
+  } from '#lib/adminActivity.ts';
+  import {adminDisplayStore} from '#lib/stores/adminDisplayStore.svelte.ts';
   import ActivityTimestamp from './ActivityTimestamp.svelte';
   import ActivitySentence from './ActivitySentence.svelte';
   import ActivityDetails from './ActivityDetails.svelte';
-  import {cn} from '$lib/utils/cn';
+  import {cn} from '#lib/utils/cn.ts';
 
   let {
     item,

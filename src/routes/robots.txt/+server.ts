@@ -1,6 +1,6 @@
 import type {RequestHandler} from './$types';
-import {env} from '$env/dynamic/public';
-import {readSiteProfile, publicResponse} from '$lib/server/publicMetadata';
+import * as env from '$app/env/public';
+import {readSiteProfile, publicResponse} from '#lib/server/publicMetadata.ts';
 
 export const GET: RequestHandler = async ({request, url}) => {
   if (

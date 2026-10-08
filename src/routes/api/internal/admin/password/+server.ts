@@ -1,18 +1,18 @@
 import {json} from '@sveltejs/kit';
 import type {RequestHandler} from './$types';
-import {env} from '$env/dynamic/public';
-import {apiError} from '$lib/server/apiError';
-import {blogAdmin} from '$lib/server/blogPostAuth';
-import {bearerToken} from '$lib/server/adminAuth';
-import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
-import {boundedBody} from '$lib/server/blogPostInput';
-import {passwordPolicyError} from '$lib/passwordPolicy';
-import {logActivity} from '$lib/server/activityLog';
+import * as env from '$app/env/public';
+import {apiError} from '#lib/server/apiError.ts';
+import {blogAdmin} from '#lib/server/blogPostAuth.ts';
+import {bearerToken} from '#lib/server/adminAuth.ts';
+import {getSupabaseAdminClient} from '#lib/server/supabaseAdmin.ts';
+import {boundedBody} from '#lib/server/blogPostInput.ts';
+import {passwordPolicyError} from '#lib/passwordPolicy.ts';
+import {logActivity} from '#lib/server/activityLog.ts';
 import {
   checkLoginLockout,
   recordFailedLogin,
   clearLoginAttempts
-} from '$lib/server/loginRateLimit';
+} from '#lib/server/loginRateLimit.ts';
 
 export const POST: RequestHandler = async ({request, url, platform, fetch}) => {
   const db = getSupabaseAdminClient(platform);

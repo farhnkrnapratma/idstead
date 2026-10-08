@@ -3,10 +3,6 @@ export interface LegacyConversion {
   notes: string[];
 }
 
-interface ConversionOptions {
-  locale?: string;
-}
-
 const TOKEN_RE = /(\d+)/g;
 const FENCE_RE =
   /^[ \t]*(`{3,}|~{3,})[^\n]*\r?\n[\s\S]*?\r?\n[ \t]*\1[ \t]*$/gm;
@@ -16,13 +12,6 @@ const IGNORE_RENDER_RE =
 const INLINE_CODE_RE = /(`+)(?:[^\n`]|`(?!\1))+\1/g;
 const INTERPOLATION_RE = /\$\{[^}\n]*\}/g;
 const CONFIG_RE = /^\s*:::config[^\n]*\r?\n[\s\S]*?\r?\n:::[ \t]*(?:\r?\n)*/i;
-const LOCALE_RE =
-  /^[ \t]*:::locale\{only="([^"]+)"\}[^\n]*\r?\n([\s\S]*?)\r?\n[ \t]*:::[ \t]*$/gim;
-const IGNORE_TRANSLATE_RE =
-  /^[ \t]*:::ignore-translate[^\n]*\r?\n([\s\S]*?)\r?\n[ \t]*:::[ \t]*$/gim;
-const TRANSLATE_OVERRIDE_RE =
-  /^[ \t]*:::translate-override[^\n]*\r?\n([\s\S]*?)\r?\n[ \t]*:::[ \t]*$/gim;
-const OVERRIDE_ENTRY_RE = /^[ \t]*::override\{/im;
 const ALERT_START_RE =
   /^([ \t]*)>[ \t]?\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\][ \t]*(.*)$/i;
 const DIRECTIVE_LINE_RE =
@@ -116,10 +105,8 @@ function convertDirectives(text: string): string {
 }
 
 export function convertLegacyMarkdownWithNotes(
-  markdown: string,
-  options: ConversionOptions = {}
+  markdown: string
 ): LegacyConversion {
-  const locale = (options.locale ?? 'en').toLowerCase();
   const notes: string[] = [];
   const store: string[] = [];
   const keep = (value: string) => `${store.push(value) - 1}`;
@@ -142,21 +129,6 @@ export function convertLegacyMarkdownWithNotes(
   text = protect(text, INLINE_CODE_RE);
   text = protect(text, INTERPOLATION_RE);
   const modern = MODERN_SYNTAX_RE.test(text);
-
-  text = text.replace(LOCALE_RE, (_, only: string, content: string) => {
-    const allowed = only.split(',').map(entry => entry.trim().toLowerCase());
-    if (allowed.includes(locale)) return content.trim();
-    notes.push(
-      `dropped :::locale only="${only}" block (content locale ${locale})`
-    );
-    return '';
-  });
-  text = text.replace(TRANSLATE_OVERRIDE_RE, (_, content: string) => {
-    const cut = content.search(OVERRIDE_ENTRY_RE);
-    notes.push('replaced :::translate-override with its default text');
-    return (cut === -1 ? content : content.slice(0, cut)).trim();
-  });
-  text = text.replace(IGNORE_TRANSLATE_RE, (_, content: string) => content);
 
   text = convertAlerts(text);
   text = convertDirectives(text);
@@ -223,9 +195,6 @@ export function convertLegacyMarkdownWithNotes(
   return {markdown: crlf ? text.replace(/\n/g, '\r\n') : text, notes};
 }
 
-export function convertLegacyMarkdown(
-  markdown: string,
-  options: ConversionOptions = {}
-): string {
-  return convertLegacyMarkdownWithNotes(markdown, options).markdown;
+export function convertLegacyMarkdown(markdown: string): string {
+  return convertLegacyMarkdownWithNotes(markdown).markdown;
 }

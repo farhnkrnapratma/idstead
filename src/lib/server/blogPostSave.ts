@@ -1,5 +1,5 @@
 import type {SupabaseClient} from '@supabase/supabase-js';
-import {sha256} from '$lib/blogBanner';
+import {sha256} from '#lib/blogBanner.ts';
 import type {parsePostInput} from './blogPostInput';
 
 type Input = Awaited<ReturnType<typeof parsePostInput>>;

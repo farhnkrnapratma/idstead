@@ -1,7 +1,7 @@
 import {error} from '@sveltejs/kit';
 import type {RequestHandler} from './$types';
-import {readSiteProfile, publicResponse} from '$lib/server/publicMetadata';
-import {skillDocument} from '$lib/server/apiDiscovery';
+import {readSiteProfile, publicResponse} from '#lib/server/publicMetadata.ts';
+import {skillDocument} from '#lib/server/apiDiscovery.ts';
 
 export const GET: RequestHandler = async ({params, request}) => {
   const profile = await readSiteProfile();

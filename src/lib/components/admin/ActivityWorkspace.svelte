@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {adminUrl, navigateAdmin} from '$lib/adminNavigation';
+  import {adminUrl, navigateAdmin} from '#lib/adminNavigation.ts';
   import {onMount, tick} from 'svelte';
   import {
     ArrowLeft,
@@ -8,19 +8,18 @@
     ChevronRight,
     Pin,
     PinOff,
-    SquareArrowOutUpRight,
     Trash,
     Flag,
     Calendar,
     Hash
   } from '@lucide/svelte';
-  import {analyticsPeriod, browserTimeZone} from '$lib/adminAnalytics';
-  import {adminActivityRequest} from '$lib/adminActivityClient';
-  import {WorkspaceFeed} from '$lib/stores/workspaceFeed.svelte';
-  import {adminNotificationsStore as inbox} from '$lib/stores/adminNotificationsStore.svelte';
-  import {adminChartRangeStore} from '$lib/stores/adminChartRangeStore.svelte';
-  import {adminDisplayStore} from '$lib/stores/adminDisplayStore.svelte';
-  import {pluralize} from '$lib/utils/pluralize';
+  import {analyticsPeriod, browserTimeZone} from '#lib/adminAnalytics.ts';
+  import {adminActivityRequest} from '#lib/adminActivityClient.ts';
+  import {WorkspaceFeed} from '#lib/stores/workspaceFeed.svelte.ts';
+  import {adminNotificationsStore as inbox} from '#lib/stores/adminNotificationsStore.svelte.ts';
+  import {adminChartRangeStore} from '#lib/stores/adminChartRangeStore.svelte.ts';
+  import {adminDisplayStore} from '#lib/stores/adminDisplayStore.svelte.ts';
+  import {pluralize} from '#lib/utils/pluralize.ts';
   import {
     notificationTypes,
     formatCount,
@@ -32,20 +31,19 @@
     type WorkspacePage,
     type AnalyticsBucket,
     ADMIN_WORKSPACE_PAGE_SIZE
-  } from '$lib/adminWorkspace';
+  } from '#lib/adminWorkspace.ts';
   import {
     REPORT_REASONS,
     reportReasonLabel,
-    reportReasonColor,
-    reportReasonIcon
-  } from '$lib/reportReasons';
+    reportReasonColor
+  } from '#lib/reportReasons.ts';
   import {
     activitySentence,
     activityTimestamp,
     type AdminNotificationRow,
     type ClearOperation
-  } from '$lib/adminActivity';
-  import Section from '$lib/layout/Section.svelte';
+  } from '#lib/adminActivity.ts';
+  import Section from '#lib/layout/Section.svelte';
   import Avatar from '../Avatar.svelte';
   import Card from '../Card.svelte';
   import Button from '../Button.svelte';
@@ -72,11 +70,9 @@
   import type {ViewsRange} from './viewsRange';
   let {
     area,
-    onOpenComment,
     onSelectNotification
   }: {
     area: WorkspaceArea;
-    onOpenComment: (postId: string, commentId: string) => void;
     onSelectNotification: (item: AdminNotificationRow) => void;
   } = $props();
   const PAGE_SIZE = ADMIN_WORKSPACE_PAGE_SIZE;

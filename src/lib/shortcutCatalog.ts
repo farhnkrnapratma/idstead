@@ -65,7 +65,6 @@ const commandSections: Record<string, ShortcutSection> = {
   '/font': 'appearance',
   '/a11y': 'appearance',
   '/read': 'blog',
-  '/lang': 'blog',
   '/code': 'code',
   '/copy': 'sharing',
   '/save': 'sharing',

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {buttonKey} from '$lib/shortcuts';
+  import {buttonKey} from '#lib/shortcuts.ts';
   import {Sun, Moon, SunMoon} from '@lucide/svelte';
   import {cn} from '../../utils/cn';
   import IconButton from '../IconButton.svelte';

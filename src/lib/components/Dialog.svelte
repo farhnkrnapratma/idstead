@@ -1,6 +1,6 @@
 <script lang="ts">
   import {shortcut} from '../utils/shortcut.svelte';
-  import {buttonKey} from '$lib/shortcuts';
+  import {buttonKey} from '#lib/shortcuts.ts';
   import {shortcutStore} from '../stores/shortcutStore.svelte';
   import {untrack, type Snippet} from 'svelte';
   import {AlertTriangle, X} from '@lucide/svelte';

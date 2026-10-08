@@ -170,36 +170,17 @@ describe('code fences', () => {
 describe('removed directives', () => {
   test('a leading config block is stripped', () => {
     const result = convertLegacyMarkdownWithNotes(
-      ':::config\ntranslate: false\n:::\n\n:::define\na: 1\n:::\n\nbody'
+      ':::config\ntheme: old\n:::\n\n:::define\na: 1\n:::\n\nbody'
     );
     expect(result.markdown).toBe(':::define\na: 1\n:::\n\nbody');
     expect(result.notes.join()).toContain('config');
-  });
-
-  test('locale blocks are kept for the content locale and dropped otherwise', () => {
-    const doc =
-      ':::locale{only="en"}\nEnglish\n:::\n\n:::locale{only="id"}\nIndonesia\n:::';
-    expect(convert(doc, {locale: 'en'})).toBe('English\n\n');
-    expect(convert(doc, {locale: 'id'})).toBe('\n\nIndonesia');
-    expect(convertLegacyMarkdownWithNotes(doc).notes.join()).toContain(
-      'dropped'
-    );
-  });
-
-  test('ignore-translate is unwrapped and overrides use their default text', () => {
-    expect(convert(':::ignore-translate\nKeep me\n:::')).toBe('Keep me');
-    expect(
-      convert(
-        ':::translate-override\nDefault text\n::override{locale="id"}\nTeks\n:::'
-      )
-    ).toBe('Default text');
   });
 });
 
 describe('whole documents', () => {
   const legacy = [
     ':::config',
-    'translate: false',
+    'theme: old',
     ':::',
     '',
     '# Title',

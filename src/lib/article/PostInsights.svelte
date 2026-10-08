@@ -1,6 +1,6 @@
 <script lang="ts">
   import {shortcut} from '../utils/shortcut.svelte';
-  import {buttonKey} from '$lib/shortcuts';
+  import {buttonKey} from '#lib/shortcuts.ts';
   import {onDestroy} from 'svelte';
   import {Sparkles, List, ChevronsUpDown, ChevronsDownUp} from '@lucide/svelte';
   import {cn} from '../utils/cn';

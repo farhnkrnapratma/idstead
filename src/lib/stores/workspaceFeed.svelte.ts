@@ -1,5 +1,5 @@
-import {adminActivityRequest} from '$lib/adminActivityClient';
-import type {WorkspacePage} from '$lib/adminWorkspace';
+import {adminActivityRequest} from '#lib/adminActivityClient.ts';
+import type {WorkspacePage} from '#lib/adminWorkspace.ts';
 
 export class WorkspaceFeed {
   data = $state.raw<WorkspacePage | null>(null);

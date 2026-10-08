@@ -8,9 +8,9 @@ import {
   protectInterpolationTokens,
   resolveProtectedInterpolationTokens,
   createApiRegistry
-} from '$lib/define';
-import {loadIcons} from '$lib/markdownIcons';
-import {sanitizeHtml, sanitizeUrl} from '$lib/sanitizeHtml';
+} from '#lib/define.ts';
+import {loadIcons} from '#lib/markdownIcons.ts';
+import {sanitizeHtml, sanitizeUrl} from '#lib/sanitizeHtml.ts';
 
 export {sanitizeUrl};
 

@@ -1,6 +1,6 @@
-import {env} from '$env/dynamic/private';
-import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
-import {recordPageFeedback} from '$lib/server/pageFeedback';
+import * as env from '$app/env/private';
+import {getSupabaseAdminClient} from '#lib/server/supabaseAdmin.ts';
+import {recordPageFeedback} from '#lib/server/pageFeedback.ts';
 import type {RequestHandler} from './$types';
 
 export const POST: RequestHandler = ({

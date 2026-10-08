@@ -1,4 +1,4 @@
-import {env} from '$env/dynamic/public';
+import * as env from '$app/env/public';
 
 export const turnstileSiteKey = env.PUBLIC_TURNSTILE_SITE_KEY || '';
 
@@ -51,20 +51,65 @@ export interface TurnstileWidgetOptions {
 }
 
 const executionResolvers = new WeakMap<HTMLElement, (token: string) => void>();
+let turnstileScriptPromise: Promise<void> | undefined;
 
 export function ensureTurnstileScript() {
-  if (typeof document === 'undefined') return;
-  const existing = document.querySelector(
+  if (typeof document === 'undefined' || typeof window === 'undefined') {
+    return Promise.reject(new Error('Turnstile can only load in a browser.'));
+  }
+  if (window.turnstile) return Promise.resolve();
+  if (turnstileScriptPromise) return turnstileScriptPromise;
+
+  const existing = document.querySelector<HTMLScriptElement>(
     'script[src*="challenges.cloudflare.com/turnstile"]'
   );
-  if (!existing) {
-    const script = document.createElement('script');
-    script.src =
-      'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
-    script.async = true;
-    script.defer = true;
-    document.head.appendChild(script);
-  }
+  const script = existing ?? document.createElement('script');
+
+  turnstileScriptPromise = new Promise<void>((resolve, reject) => {
+    const cleanup = () => {
+      window.clearTimeout(timeoutId);
+      script.removeEventListener('load', onLoad);
+      script.removeEventListener('error', onError);
+    };
+
+    const fail = (error: Error) => {
+      cleanup();
+      script.remove();
+      reject(error);
+    };
+
+    const onLoad = () => {
+      if (window.turnstile) {
+        cleanup();
+        resolve();
+      } else {
+        fail(new Error('Turnstile loaded without exposing its API.'));
+      }
+    };
+
+    const onError = () => {
+      fail(new Error('Failed to load the Turnstile script.'));
+    };
+
+    const timeoutId = window.setTimeout(() => {
+      fail(new Error('Timed out while loading the Turnstile script.'));
+    }, 15000);
+    script.addEventListener('load', onLoad, {once: true});
+    script.addEventListener('error', onError, {once: true});
+
+    if (!existing) {
+      script.src =
+        'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+  }).catch(error => {
+    turnstileScriptPromise = undefined;
+    throw error;
+  });
+
+  return turnstileScriptPromise;
 }
 
 export function turnstileWidget(
@@ -103,7 +148,6 @@ export function turnstileWidget(
   }
 
   collapseNode();
-  ensureTurnstileScript();
 
   function render() {
     if (destroyed) return;
@@ -168,11 +212,23 @@ export function turnstileWidget(
         console.error('Turnstile render error:', err);
       }
     } else {
-      setTimeout(render, 50);
+      throw new Error('Turnstile API was unavailable after loading.');
     }
   }
 
-  render();
+  void ensureTurnstileScript()
+    .then(render)
+    .catch(error => {
+      if (destroyed) return;
+      collapseNode();
+      const resolver = executionResolvers.get(node);
+      if (resolver) {
+        executionResolvers.delete(node);
+        resolver('');
+      }
+      console.error('Turnstile script failed to load:', error);
+      options['error-callback']?.(error);
+    });
 
   return {
     destroy() {
@@ -205,13 +261,12 @@ export async function executeTurnstile(
   }
 
   if (!window.turnstile) {
-    ensureTurnstileScript();
-    let attempts = 0;
-    while (!window.turnstile && attempts < 40) {
-      await new Promise(r => setTimeout(r, 50));
-      attempts++;
+    try {
+      await ensureTurnstileScript();
+    } catch (error) {
+      console.error('Turnstile script failed to load:', error);
+      return '';
     }
-    if (!window.turnstile) return '';
   }
 
   return new Promise(resolve => {

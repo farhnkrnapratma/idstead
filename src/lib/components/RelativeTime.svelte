@@ -4,7 +4,7 @@
     formatRelativeTime,
     getRelativeTimeNextUpdateMs,
     formatExactDateTime
-  } from '$lib/utils/formatters';
+  } from '#lib/utils/formatters.ts';
 
   interface Props {
     date: string | Date | null | undefined;

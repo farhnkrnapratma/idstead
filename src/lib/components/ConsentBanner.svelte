@@ -7,7 +7,7 @@
     type ConsentStatus
   } from '../stores/consentStore.svelte';
   import {focusScope} from '../utils/focusScope';
-  import {buttonKey} from '$lib/shortcuts';
+  import {buttonKey} from '#lib/shortcuts.ts';
   import Button from './Button.svelte';
   import Dialog from './Dialog.svelte';
   import Dropdown from './Dropdown.svelte';

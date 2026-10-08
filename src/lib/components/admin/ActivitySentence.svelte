@@ -1,13 +1,12 @@
 <script lang="ts">
-  import type {AdminNotificationRow} from '$lib/adminActivity';
+  import type {AdminNotificationRow} from '#lib/adminActivity.ts';
   import {
     activityAuthor,
     activityPageKind,
-    activityPageTitle,
     activitySentence,
     isFeedbackActivity
-  } from '$lib/adminActivity';
-  import {cn} from '$lib/utils/cn';
+  } from '#lib/adminActivity.ts';
+  import {cn} from '#lib/utils/cn.ts';
   import ActivityPageLink from './ActivityPageLink.svelte';
 
   let {
@@ -18,7 +17,6 @@
   const feedback = $derived(isFeedbackActivity(item));
   const helpful = $derived(item.meta?.vote === 'yes');
   const author = $derived(activityAuthor(item));
-  const title = $derived(activityPageTitle(item));
   const pageKind = $derived(activityPageKind(item));
   const sentence = $derived(activitySentence(item));
 </script>

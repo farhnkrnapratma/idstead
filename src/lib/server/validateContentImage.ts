@@ -1,9 +1,9 @@
 import decode, {init} from '@jsquash/webp/decode.js';
-import {inspectWebp} from '$lib/webp';
+import {inspectWebp} from '#lib/webp.ts';
 import {
   CONTENT_IMAGE_LIMIT,
   CONTENT_IMAGE_PIXEL_LIMIT
-} from '$lib/blogContentImage';
+} from '#lib/blogContentImage.ts';
 
 let initialized: Promise<void> | undefined;
 

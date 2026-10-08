@@ -1,9 +1,9 @@
-import {supabase} from '$lib/supabase';
+import {supabase} from '#lib/supabase.ts';
 import {json} from '@sveltejs/kit';
 import type {RequestHandler} from './$types';
 
-import {apiError} from '$lib/server/apiError';
-import {escapePostgrestFilter} from '$lib/server/postgrestSanitize';
+import {apiError} from '#lib/server/apiError.ts';
+import {escapePostgrestFilter} from '#lib/server/postgrestSanitize.ts';
 
 export interface SearchResult {
   type: 'post' | 'project';

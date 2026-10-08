@@ -9,25 +9,19 @@
     "@fontsource-variable/lexend": "^5.3.0",
     "@fontsource-variable/lilex": "^5.3.0",
     "@fontsource-variable/noto-sans": "^5.3.0",
-    "@fontsource-variable/noto-sans-jp": "^5.3.0",
-    "@fontsource-variable/noto-sans-kr": "^5.3.0",
-    "@fontsource-variable/noto-sans-sc": "^5.3.0",
     "@fontsource-variable/noto-serif": "^5.3.0",
-    "@fontsource-variable/noto-serif-jp": "^5.3.0",
-    "@fontsource-variable/noto-serif-kr": "^5.3.0",
-    "@fontsource-variable/noto-serif-sc": "^5.3.0",
     "@fontsource/ia-writer-quattro": "^5.3.0",
     "@fontsource/ibm-plex-serif": "^5.3.0",
     "@fontsource/lilex": "^5.3.0",
     "@jsquash/webp": "1.5.0",
-    "@lucide/svelte": "^1.52.0",
+    "@lucide/svelte": "^1.53.0",
     "@pdf-lib/fontkit": "^1.1.1",
-    "@sentry/cloudflare": "11.5.0",
-    "@sentry/sveltekit": "^11.5.0",
+    "@sentry/cloudflare": "11.6.0",
+    "@sentry/sveltekit": "^11.6.0",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.3",
     "blobatar": "^2.7.0",
-    "bootstrap-icons": "^1.13.1",
+    "bootstrap-icons": "^1.13.2",
     "d3-scale": "^4.0.2",
     "d3-shape": "^3.2.0",
     "fflate": "^0.8.3",
@@ -35,8 +29,8 @@
     "imagetracerjs": "1.2.6",
     "js-yaml": "^5.4.3",
     "katex": "^0.19.0",
-    "layerchart": "^2.5.2",
-    "lucide-static": "^1.52.0",
+    "layerchart": "^2.6.0",
+    "lucide-static": "^1.53.0",
     "marked": "^18.1.0",
     "marked-footnote": "^1.4.0",
     "mermaid": "^12.1.0",
@@ -75,11 +69,15 @@
     "tailwindcss": "^4.3.3",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "typescript-eslint": "^8.71.1",
-    "vite": "^8.3.3"
+    "vite": "^8.3.4"
   },
   "peerDependencies": {
     "@sveltejs/kit": "^3.0.1",
     "svelte": "^5.0.0"
+  },
+  "imports": {
+    "#lib": "./src/lib/index.ts",
+    "#lib/*": "./src/lib/*"
   },
   "exports": {
     ".": {
@@ -91,15 +89,6 @@
     "dist",
     "!dist/**/*.test.*",
     "!dist/**/*.spec.*"
-  ],
-  "keywords": [
-    "svelte",
-    "sveltekit",
-    "tailwindcss",
-    "farhan kurnia pratama",
-    "farhan",
-    "kurnia",
-    "pratama"
   ],
   "scripts": {
     "dev": "vite dev",
@@ -113,8 +102,10 @@
     "test": "bun test tests",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --diagnostic-sources \"js,svelte\"",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --diagnostic-sources \"js,svelte\" --watch",
-    "lint": "prettier --check . && eslint .",
-    "format": "prettier --write ."
+    "lint": "prettier --write . && eslint .",
+    "lint:fix": "eslint . --fix",
+    "fmt": "prettier --write .",
+    "fmt:check": "prettier --check ."
   },
   "sideEffects": [
     "**/*.css"

@@ -2,7 +2,7 @@
   import {House, FolderOpen, Quote, FileUser, AtSign} from '@lucide/svelte';
   import {cn} from '../utils/cn';
   import {shortcut} from '../utils/shortcut.svelte';
-  import {sectionCommandKey} from '$lib/shortcuts';
+  import {sectionCommandKey} from '#lib/shortcuts.ts';
   import type {Section} from '../types';
 
   interface NavItem {

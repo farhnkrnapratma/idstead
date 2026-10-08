@@ -1,9 +1,9 @@
 import {json} from '@sveltejs/kit';
-import {apiError} from '$lib/server/apiError';
+import {apiError} from '#lib/server/apiError.ts';
 import type {RequestHandler} from './$types';
-import {supabase} from '$lib/supabase';
-import {fetchContactInfo} from '$lib/author';
-import {sanitizePublicApiData} from '$lib/authorApi';
+import {supabase} from '#lib/supabase.ts';
+import {fetchContactInfo} from '#lib/author.ts';
+import {sanitizePublicApiData} from '#lib/authorApi.ts';
 
 export const GET: RequestHandler = async ({locals}) => {
   const supabaseClient = (locals as any)?.supabase || supabase;

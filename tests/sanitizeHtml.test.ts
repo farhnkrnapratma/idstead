@@ -192,26 +192,3 @@ describe('sanitizeHtml: engine output', () => {
     expect(html).toContain('<kbd>Ctrl</kbd>');
   });
 });
-
-describe('translation gate', () => {
-  test('rejects chunks that introduce html the source did not have', async () => {
-    const {chunkQualityFailure} =
-      await import('../src/lib/server/blogTranslate');
-    const source = 'Press <kbd>Ctrl</kbd> to continue.';
-    expect(
-      chunkQualityFailure('Tekan <kbd>Ctrl</kbd> untuk lanjut.', source)
-    ).toBeNull();
-    expect(
-      chunkQualityFailure(
-        'Tekan <kbd>Ctrl</kbd> <img src=x onerror=alert(1)>',
-        source
-      )
-    ).toBe('unexpected_html_tag');
-    expect(
-      chunkQualityFailure(
-        '<script>alert(1)</script> Tekan <kbd>Ctrl</kbd>',
-        source
-      )
-    ).toBe('unexpected_html_tag');
-  });
-});

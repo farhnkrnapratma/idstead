@@ -2,8 +2,8 @@
   import {onMount} from 'svelte';
   import {Download, FileText} from '@lucide/svelte';
   import {SvelteURLSearchParams} from 'svelte/reactivity';
-  import {supabase} from '$lib/supabase';
-  import {toastStore} from '$lib';
+  import {supabase} from '#lib/supabase.ts';
+  import {toastStore} from '#lib/index.ts';
   import {
     activityCategories,
     activityLogSortFields,
@@ -11,9 +11,9 @@
     ACTIVITY_LOG_EXPORT_LIMIT,
     type ActivityLogEntry,
     type ActivityLogSortField
-  } from '$lib/activityLog';
-  import {shouldShowDataControls} from '$lib/adminWorkspace';
-  import Section from '$lib/layout/Section.svelte';
+  } from '#lib/activityLog.ts';
+  import {shouldShowDataControls} from '#lib/adminWorkspace.ts';
+  import Section from '#lib/layout/Section.svelte';
   import DataTable from '../DataTable.svelte';
   import Pagination from '../Pagination.svelte';
   import Button from '../Button.svelte';

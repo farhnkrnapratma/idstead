@@ -1,5 +1,4 @@
 let mermaidInstance: typeof import('mermaid').default | null = null;
-let currentMermaidTheme: 'dark' | 'light' | null = null;
 let themeObserverInitialized = false;
 
 export async function getMermaid(isDark = true) {
@@ -7,9 +6,6 @@ export async function getMermaid(isDark = true) {
     const mod = await import('mermaid');
     mermaidInstance = mod.default;
   }
-
-  const nextTheme = isDark ? 'dark' : 'light';
-  currentMermaidTheme = nextTheme;
 
   mermaidInstance.initialize({
     startOnLoad: false,

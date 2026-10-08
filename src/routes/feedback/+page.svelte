@@ -3,12 +3,12 @@
     FieldValidation,
     requiredText,
     emailError
-  } from '$lib/fieldValidation';
-  import {publicAvatarUrl} from '$lib/siteIdentity';
+  } from '#lib/fieldValidation.ts';
+  import {publicAvatarUrl} from '#lib/siteIdentity.ts';
   import {page} from '$app/state';
-  import {shortcut} from '$lib/utils/shortcut.svelte';
-  import {buttonKey} from '$lib/shortcuts';
-  import {onDestroy, onMount} from 'svelte';
+  import {shortcut} from '#lib/utils/shortcut.svelte.ts';
+  import {buttonKey} from '#lib/shortcuts.ts';
+  import {onDestroy} from 'svelte';
   import {
     PenLine,
     Code2,
@@ -21,7 +21,7 @@
   import {
     isNameReserved,
     extractAuthorNameTokens
-  } from '$lib/utils/nameValidator';
+  } from '#lib/utils/nameValidator.ts';
   import {
     Card,
     FormField,
@@ -35,13 +35,13 @@
     ConsentNotice,
     Badge,
     toastStore
-  } from '$lib';
+  } from '#lib/index.ts';
   import {
     turnstileWidget,
     executeTurnstile,
     resetTurnstile,
     turnstileSiteKey
-  } from '$lib/utils/turnstile';
+  } from '#lib/utils/turnstile.ts';
 
   let pageAuthor = $derived((page?.data as any)?.author);
   let pageProjects = $derived((page?.data as any)?.projects ?? []);

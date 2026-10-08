@@ -4,7 +4,7 @@
   import {cn} from '../utils/cn';
 
   interface Props extends Omit<HTMLButtonAttributes, 'children' | 'class'> {
-    variant?: 'neutral' | 'subtle' | 'accent';
+    variant?: 'neutral' | 'subtle' | 'accent' | 'accent-active';
     size?: 'sm' | 'md';
     children?: Snippet;
     class?: string;
@@ -23,7 +23,8 @@
   const variantStyles = {
     neutral: 'text-text-muted border border-text-muted/20',
     subtle: 'bg-text-muted/10 text-text-muted',
-    accent: 'bg-accent-subtle text-accent border border-accent/20'
+    accent: 'bg-accent-subtle text-accent border border-accent/20',
+    'accent-active': 'bg-accent text-text-on-accent border border-accent/20'
   };
 
   const sizeStyles = {

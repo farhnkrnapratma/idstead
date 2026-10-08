@@ -1,6 +1,6 @@
 import type {RequestHandler} from './$types';
-import {readSiteProfile, publicResponse} from '$lib/server/publicMetadata';
-import {themeColors} from '$lib/themeColors';
+import {readSiteProfile, publicResponse} from '#lib/server/publicMetadata.ts';
+import {themeColors} from '#lib/themeColors.ts';
 
 export const GET: RequestHandler = async ({request, url}) => {
   const profile = await readSiteProfile();

@@ -1,4 +1,4 @@
-import {browser} from '$app/environment';
+import {browser} from '$app/env';
 import {a11yStore} from './a11yStore.svelte';
 
 export type ContentFont = 'sans' | 'serif' | 'mono';

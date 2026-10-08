@@ -1,7 +1,7 @@
 <script lang="ts">
   import Dialog from './Dialog.svelte';
   import MailingForm from './MailingForm.svelte';
-  import type {MailingCommand} from '$lib/mailing';
+  import type {MailingCommand} from '#lib/mailing.ts';
 
   let {
     request,

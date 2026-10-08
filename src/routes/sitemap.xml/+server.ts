@@ -1,13 +1,13 @@
 import type {RequestHandler} from './$types';
 import {error} from '@sveltejs/kit';
-import {supabase} from '$lib/supabase';
+import {supabase} from '#lib/supabase.ts';
 import {
   readSiteProfile,
   readPublishedPosts,
   validDate,
   publicResponse
-} from '$lib/server/publicMetadata';
-import {escapeXml as xml} from '$lib/utils/xml';
+} from '#lib/server/publicMetadata.ts';
+import {escapeXml as xml} from '#lib/utils/xml.ts';
 
 export const GET: RequestHandler = async ({request}) => {
   const [profile, posts, {data: legal, error: failure}] = await Promise.all([

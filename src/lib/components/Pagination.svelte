@@ -6,7 +6,7 @@
     ChevronRight
   } from '@lucide/svelte';
   import {cn} from '../utils/cn';
-  import {buttonKey} from '$lib/shortcuts';
+  import {buttonKey} from '#lib/shortcuts.ts';
   import Button from './Button.svelte';
 
   interface Props {

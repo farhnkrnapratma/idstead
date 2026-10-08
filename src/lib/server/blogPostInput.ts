@@ -1,4 +1,4 @@
-import {UUID_PATTERN, BANNER_LIMIT, sha256} from '$lib/blogBanner';
+import {UUID_PATTERN, BANNER_LIMIT, sha256} from '#lib/blogBanner.ts';
 import {validateBanner} from './validateBanner';
 
 export const POST_PAYLOAD_LIMIT = 3 * 1024 * 1024;
@@ -100,6 +100,8 @@ export async function parsePostInput(
       collaborators: list(input.collaborators, 20, 39),
       published: input.published
     };
+    if (input.published && !post.excerpt)
+      throw new Error('Excerpt is required to publish a post.');
     if ('summary' in input) post.summary = text(input.summary, 5000);
     if ('tldr' in input)
       post.tldr = input.tldr === null ? null : list(input.tldr, 4, 200);

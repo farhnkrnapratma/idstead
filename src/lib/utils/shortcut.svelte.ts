@@ -1,6 +1,6 @@
-import {shortcutStore} from '$lib/stores/shortcutStore.svelte';
-import {platformStore} from '$lib/stores/platformStore.svelte';
-import {keyLabel} from '$lib/shortcuts';
+import {shortcutStore} from '#lib/stores/shortcutStore.svelte.ts';
+import {platformStore} from '#lib/stores/platformStore.svelte.ts';
+import {keyLabel} from '#lib/shortcuts.ts';
 
 export interface ShortcutParams {
   combo?: string;
@@ -210,9 +210,9 @@ export function shortcut(node: HTMLElement, params: ShortcutParams = {}) {
   };
 
   const renderHint = () => {
-    const _alt = shortcutStore.altHeld;
-    const _leader = shortcutStore.leaderArmed;
-    const _group = shortcutStore.pendingGroup;
+    void shortcutStore.altHeld;
+    void shortcutStore.leaderArmed;
+    void shortcutStore.pendingGroup;
     const platform = platformStore.current;
     const parts = (id ? shortcutStore.hintFor(id) : []).map(token =>
       badgeText(token, platform)

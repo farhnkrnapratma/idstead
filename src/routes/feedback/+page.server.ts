@@ -1,6 +1,6 @@
 import type {PageServerLoad} from './$types';
-import {supabase} from '$lib/supabase';
-import {fetchAuthorProfile, fetchContactInfo} from '$lib/author';
+import {supabase} from '#lib/supabase.ts';
+import {fetchAuthorProfile, fetchContactInfo} from '#lib/author.ts';
 
 export const load: PageServerLoad = async () => {
   const [contactInfo, authorProfile] = await Promise.all([

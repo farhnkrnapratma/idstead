@@ -1,7 +1,11 @@
 <script lang="ts">
-  import {supabase} from '$lib/supabase';
-  import {getSafeRedirectUrl} from '$lib/utils/safeRedirect';
-  import {LoadingState} from '$lib';
+  import {supabase} from '#lib/supabase.ts';
+  import {getSafeRedirectUrl} from '#lib/utils/safeRedirect.ts';
+  import {
+    clearLocalAdminSession,
+    inspectAdminAuth
+  } from '#lib/adminAuthState.ts';
+  import {LoadingState} from '#lib/index.ts';
   import {page} from '$app/state';
   import {onMount} from 'svelte';
   import type {Snippet} from 'svelte';
@@ -17,38 +21,48 @@
 
   const isLoginPage = $derived(page.url.pathname === '/admin/login');
 
+  function redirectToLogin() {
+    const target = page.url.pathname + page.url.search;
+    window.location.replace(
+      `/admin/login?redirectTo=${encodeURIComponent(target)}`
+    );
+  }
+
+  async function inspectSession() {
+    const auth = await inspectAdminAuth(supabase);
+    if (auth.status === 'invalid')
+      console.error('Admin session check failed:', auth.error);
+    return auth.status;
+  }
+
   async function checkSession() {
     try {
-      const {data, error} = await supabase.auth.getSession();
-      const hasSession = !error && !!data?.session;
+      const status = await inspectSession();
 
       if (isLoginPage) {
-        if (hasSession) {
+        if (status === 'authenticated') {
           const target = getSafeRedirectUrl(
             page.url.searchParams.get('redirectTo')
           );
           window.location.replace(target);
           return;
         }
+        if (status !== 'signed-out') void clearLocalAdminSession(supabase);
         isAuthenticated = false;
         isChecking = false;
       } else {
-        if (!hasSession) {
-          const target = page.url.pathname + page.url.search;
-          const redirectUrl = `/admin/login?redirectTo=${encodeURIComponent(target)}`;
-          window.location.replace(redirectUrl);
-          return;
-        }
-        isAuthenticated = true;
-        isChecking = false;
+        if (status === 'authenticated') {
+          isAuthenticated = true;
+          isChecking = false;
+        } else redirectToLogin();
       }
-    } catch {
+    } catch (error) {
+      console.error('Admin session check failed:', error);
       if (!isLoginPage) {
-        const target = page.url.pathname + page.url.search;
-        const redirectUrl = `/admin/login?redirectTo=${encodeURIComponent(target)}`;
-        window.location.replace(redirectUrl);
+        redirectToLogin();
         return;
       }
+      void clearLocalAdminSession(supabase);
       isAuthenticated = false;
       isChecking = false;
     }
@@ -60,25 +74,46 @@
     const {
       data: {subscription}
     } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT' || !session) {
+      if (event === 'SIGNED_OUT') {
         isAuthenticated = false;
         if (page.url.pathname !== '/admin/login') {
-          const target = page.url.pathname + page.url.search;
-          const redirectUrl = `/admin/login?redirectTo=${encodeURIComponent(target)}`;
-          window.location.replace(redirectUrl);
+          redirectToLogin();
         } else {
           isChecking = false;
         }
       } else if (event === 'SIGNED_IN' && session) {
-        isAuthenticated = true;
-        if (page.url.pathname === '/admin/login') {
-          const target = getSafeRedirectUrl(
-            page.url.searchParams.get('redirectTo')
-          );
-          window.location.replace(target);
-        } else {
-          isChecking = false;
-        }
+        queueMicrotask(() => {
+          void (async () => {
+            try {
+              const status = await inspectSession();
+              if (status === 'authenticated') {
+                isAuthenticated = true;
+                isChecking = false;
+                if (page.url.pathname === '/admin/login') {
+                  const target = getSafeRedirectUrl(
+                    page.url.searchParams.get('redirectTo')
+                  );
+                  window.location.replace(target);
+                }
+              } else if (page.url.pathname !== '/admin/login') {
+                redirectToLogin();
+              } else {
+                isAuthenticated = false;
+                isChecking = false;
+                if (status === 'invalid' || status === 'unauthorized')
+                  void clearLocalAdminSession(supabase);
+              }
+            } catch (error) {
+              console.error('Admin session check failed:', error);
+              if (page.url.pathname !== '/admin/login') redirectToLogin();
+              else {
+                isAuthenticated = false;
+                isChecking = false;
+                void clearLocalAdminSession(supabase);
+              }
+            }
+          })();
+        });
       }
     });
 

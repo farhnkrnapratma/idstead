@@ -10,7 +10,7 @@
     ArrowBigUpDash
   } from '@lucide/svelte';
   import {cn} from '../utils/cn';
-  import {shortcutKeyParts, keyLabel, type KeyIcon} from '$lib/shortcuts';
+  import {shortcutKeyParts, keyLabel, type KeyIcon} from '#lib/shortcuts.ts';
   import {platformStore} from '../stores/platformStore.svelte';
   import {KEY_GROUP_CLASS, KEY_SEGMENT_CLASS} from '../utils/shortcut.svelte';
 

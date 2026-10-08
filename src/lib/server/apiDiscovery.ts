@@ -1,9 +1,27 @@
-import {openapiSpec} from '$lib/openapi';
+import {openapiSpec} from '#lib/openapi.ts';
+
+export interface DiscoveryOperation {
+  name: string;
+  path: string;
+  description: string;
+  mediaType: string;
+}
 
 export function discoveryOperations() {
   return Object.entries(openapiSpec.paths).flatMap(([path, methods]) => {
     if (!('get' in methods)) return [];
-    const operation = methods.get as {summary?: string; description?: string};
+    const operation = methods.get as {
+      summary?: string;
+      description?: string;
+      responses?: Record<
+        string,
+        {content?: Record<string, unknown>} | undefined
+      >;
+    };
+    if (!operation.responses?.['200']) return [];
+    const mediaType = Object.keys(
+      operation.responses?.['200']?.content ?? {}
+    )[0];
     const name =
       path
         .replace(/^\/api\/v1\/?/, '')
@@ -16,8 +34,9 @@ export function discoveryOperations() {
         name,
         path,
         description:
-          operation.summary || operation.description || `Read ${name}.`
-      }
+          operation.summary || operation.description || `Read ${name}.`,
+        mediaType: mediaType ?? 'application/json'
+      } satisfies DiscoveryOperation
     ];
   });
 }

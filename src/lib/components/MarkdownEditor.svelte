@@ -47,23 +47,23 @@
     injectHeadingIds,
     MATH_BLOCK_RE,
     MATH_INLINE_RE
-  } from '$lib/markdown';
-  import {supabase} from '$lib/supabase';
-  import {splitHighlightedHtmlLines} from '$lib/utils/codeBlocks';
-  import {enhanceMarkdownContent} from '$lib/utils/markdownEnhancer';
-  import {enhanceHeadingAnchors} from '$lib/utils/headingAnchors';
-  import {contentFontStore} from '$lib/stores/contentFontStore.svelte';
+  } from '#lib/markdown.ts';
+  import {supabase} from '#lib/supabase.ts';
+  import {splitHighlightedHtmlLines} from '#lib/utils/codeBlocks.ts';
+  import {enhanceMarkdownContent} from '#lib/utils/markdownEnhancer.ts';
+  import {enhanceHeadingAnchors} from '#lib/utils/headingAnchors.ts';
+  import {contentFontStore} from '#lib/stores/contentFontStore.svelte.ts';
   import 'katex/dist/katex.min.css';
   import hljs from 'highlight.js';
   import {
     applyCodeThemeVariables,
     ensureHljsThemeStylesheet
-  } from '$lib/utils/codeBlocks';
-  import {cn} from '$lib/utils/cn';
+  } from '#lib/utils/codeBlocks.ts';
+  import {cn} from '#lib/utils/cn.ts';
   import IconButton from './IconButton.svelte';
   import Dropdown from './Dropdown.svelte';
   import Tooltip from './Tooltip.svelte';
-  import {themeStore} from '$lib/stores/themeStore.svelte';
+  import {themeStore} from '#lib/stores/themeStore.svelte.ts';
 
   interface Props {
     value?: string;
@@ -347,9 +347,7 @@
           isDark: editorTheme === 'dark',
           onCodeCopy: () => {}
         });
-        enhanceHeadingAnchors(previewContainerEl, el =>
-          el.scrollIntoView({behavior: 'smooth', block: 'start'})
-        );
+        enhanceHeadingAnchors(previewContainerEl);
       });
     }
   });

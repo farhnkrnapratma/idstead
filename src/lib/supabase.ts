@@ -1,6 +1,6 @@
 import {createBrowserClient, isBrowser} from '@supabase/ssr';
 import {createClient} from '@supabase/supabase-js';
-import {env as publicEnv} from '$env/dynamic/public';
+import * as publicEnv from '$app/env/public';
 
 const supabaseUrlRaw =
   publicEnv.PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';

@@ -1,11 +1,10 @@
 <script lang="ts">
-  import {buttonKey, sectionCommandKey} from '$lib/shortcuts';
+  import {buttonKey, sectionCommandKey} from '#lib/shortcuts.ts';
   import {shortcut} from '../utils/shortcut.svelte';
   import {cn} from '../utils/cn';
   import SpotlightSearch from '../components/SpotlightSearch.svelte';
   import ThemeSelect from '../components/filter/ThemeSelect.svelte';
   import ContentFontSelect from '../components/filter/ContentFontSelect.svelte';
-  import LanguageSelect from '../components/filter/LanguageSelect.svelte';
   import AccessibilitySelect from '../components/filter/AccessibilitySelect.svelte';
   import IconButton from '../components/IconButton.svelte';
   import {themeStore} from '../stores/themeStore.svelte';
@@ -30,11 +29,6 @@
     socials?: SocialLink[];
     onNavClick?: (url: string) => void;
     showFontSelect?: boolean;
-    languageSwitcher?: {
-      slug: string;
-      currentLanguage: string;
-      availableLocales: string[];
-    };
     readingMode?: boolean;
     onToggleReadingMode?: () => void;
     width?: 'standard' | 'full' | 'reading';
@@ -58,7 +52,6 @@
     socials = [],
     onNavClick,
     showFontSelect = false,
-    languageSwitcher,
     readingMode = false,
     onToggleReadingMode,
     width = 'standard',
@@ -208,13 +201,6 @@
               dropdownDirection="up" />
             {#if showFontSelect}
               <ContentFontSelect dropdownDirection="up" />
-            {/if}
-            {#if languageSwitcher}
-              <LanguageSelect
-                slug={languageSwitcher.slug}
-                currentLanguage={languageSwitcher.currentLanguage}
-                availableLocales={languageSwitcher.availableLocales}
-                dropdownDirection="up" />
             {/if}
             <AccessibilitySelect dropdownDirection="up" />
           </div>

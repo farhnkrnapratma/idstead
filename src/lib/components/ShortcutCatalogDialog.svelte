@@ -7,7 +7,7 @@
     SHORTCUT_SECTIONS,
     commandSection,
     actionSection
-  } from '$lib/shortcutCatalog';
+  } from '#lib/shortcutCatalog.ts';
   import {shortcutStore} from '../stores/shortcutStore.svelte';
   import {
     CHORD_GROUPS,
@@ -17,7 +17,7 @@
     COMMAND_SHORTCUTS,
     COMMAND_LABELS,
     normalizeKey
-  } from '$lib/shortcuts';
+  } from '#lib/shortcuts.ts';
 
   const commandRows = Object.entries(COMMAND_SHORTCUTS)
     .filter(([command]) => COMMAND_LABELS[command])

@@ -1,15 +1,15 @@
 import type {RequestHandler} from './$types';
-import {getSupabaseAdminClient} from '$lib/server/supabaseAdmin';
-import {verifyTurnstileToken} from '$lib/server/turnstile';
-import {requestUnsubscribe} from '$lib/server/unsubscribeRequest';
+import {getSupabaseAdminClient} from '#lib/server/supabaseAdmin.ts';
+import {verifyTurnstileToken} from '#lib/server/turnstile.ts';
+import {requestUnsubscribe} from '#lib/server/unsubscribeRequest.ts';
 import {
   resendApiKey,
   senderAddress,
   sendEmail,
   unsubscribeEmail
-} from '$lib/server/subscribers';
-import {fetchAuthorProfile} from '$lib/author';
-import {supabase} from '$lib/supabase';
+} from '#lib/server/subscribers.ts';
+import {fetchAuthorProfile} from '#lib/author.ts';
+import {supabase} from '#lib/supabase.ts';
 
 export const POST: RequestHandler = ({
   request,

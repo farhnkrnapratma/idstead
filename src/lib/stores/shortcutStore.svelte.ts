@@ -8,7 +8,7 @@ import {
   TEXT_ENTRY_SELECTOR,
   resolveShortcutAction,
   chordKeyFromEvent
-} from '$lib/shortcuts';
+} from '#lib/shortcuts.ts';
 import {platformStore} from './platformStore.svelte';
 
 export interface ShortcutEntry {

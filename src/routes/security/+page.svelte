@@ -1,10 +1,9 @@
 <script lang="ts">
-  import LegalPageLayout from '$lib/components/LegalPageLayout.svelte';
+  import LegalPageLayout from '#lib/components/LegalPageLayout.svelte';
 
   let {data} = $props();
 
   let authorName = $derived((data as any)?.author?.name || '');
-  let avatarUrl = $derived((data as any)?.author?.avatar || '');
   let siteUrl = $derived(
     (data as any)?.author?.siteUrl || (data as any)?.siteUrl || ''
   );
@@ -18,5 +17,4 @@
   headings={data.headings}
   updatedAt={data.pageData.updated_at}
   {authorName}
-  {avatarUrl}
   {siteUrl} />

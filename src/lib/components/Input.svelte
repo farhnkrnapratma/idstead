@@ -55,7 +55,7 @@
   const filterToolbar = getContext<FilterToolbarContext | undefined>(
     FILTER_TOOLBAR_CONTROL_SIZE
   );
-  const resolvedSize = $derived(filterToolbar?.controlSize ?? size ?? 'md');
+  const resolvedSize = $derived(size ?? filterToolbar?.controlSize ?? 'md');
 
   const sizeStyles = {
     sm: 'box-border h-8 text-xs rounded-md px-2.5',

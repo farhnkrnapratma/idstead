@@ -276,15 +276,13 @@ export async function generateCvPdfBuffer(
     const font = await pdfDoc.embedFont(bytes, {subset: true});
     return {font, chars: new Set(font.getCharacterSet())};
   };
-  const [sans, sansBold, sansItalic, serif, serifBold, mono] =
-    await Promise.all([
-      face(fonts.sans),
-      face(fonts.sansBold),
-      face(fonts.sansItalic),
-      face(fonts.serif),
-      face(fonts.serifBold),
-      face(fonts.mono)
-    ]);
+  const [sans, sansBold, sansItalic, serifBold, mono] = await Promise.all([
+    face(fonts.sans),
+    face(fonts.sansBold),
+    face(fonts.sansItalic),
+    face(fonts.serifBold),
+    face(fonts.mono)
+  ]);
   const avatar = await embedAvatar(pdfDoc, data.profile.avatarBytes);
 
   const name = fit(serifBold, data.profile.name) || 'Curriculum Vitae';

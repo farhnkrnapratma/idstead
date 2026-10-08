@@ -1,6 +1,6 @@
 import {json} from '@sveltejs/kit';
 import {apiError} from './apiError';
-import {supabase} from '$lib/supabase';
+import {supabase} from '#lib/supabase.ts';
 import {
   fetchAuthorProfile,
   fetchCvEntries,
@@ -8,9 +8,9 @@ import {
   fetchContactInfo,
   fetchGroupedSkills,
   fetchSocials
-} from '$lib/author';
+} from '#lib/author.ts';
 
-import {sanitizePublicApiData, generateAuthorMarkdown} from '$lib/authorApi';
+import {sanitizePublicApiData, generateAuthorMarkdown} from '#lib/authorApi.ts';
 
 export async function handleAuthorJsonRequest(
   url: URL,

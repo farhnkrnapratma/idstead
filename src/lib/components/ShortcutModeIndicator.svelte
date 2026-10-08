@@ -1,7 +1,7 @@
 <script lang="ts">
   import {fade} from 'svelte/transition';
   import {KeyRound} from '@lucide/svelte';
-  import {CHORD_GROUPS, CATALOG_KEY, ARM_TIMEOUT_MS} from '$lib/shortcuts';
+  import {CHORD_GROUPS, CATALOG_KEY, ARM_TIMEOUT_MS} from '#lib/shortcuts.ts';
   import {shortcutStore} from '../stores/shortcutStore.svelte';
   import ShortcutBadge from './ShortcutBadge.svelte';
 

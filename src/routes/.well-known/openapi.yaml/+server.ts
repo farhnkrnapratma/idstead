@@ -1,6 +1,6 @@
 import type {RequestHandler} from './$types';
-import {openapiSpec} from '$lib/openapi';
-import {readSiteProfile, publicResponse} from '$lib/server/publicMetadata';
+import {openapiSpec} from '#lib/openapi.ts';
+import {readSiteProfile, publicResponse} from '#lib/server/publicMetadata.ts';
 import {stringify} from 'yaml';
 
 export const GET: RequestHandler = async ({request}) => {

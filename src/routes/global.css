@@ -2,13 +2,7 @@
 @import '@fontsource-variable/lexend';
 @import '@fontsource-variable/lilex';
 @import '@fontsource-variable/noto-sans';
-@import '@fontsource-variable/noto-sans-jp';
-@import '@fontsource-variable/noto-sans-kr';
-@import '@fontsource-variable/noto-sans-sc';
 @import '@fontsource-variable/noto-serif';
-@import '@fontsource-variable/noto-serif-jp';
-@import '@fontsource-variable/noto-serif-kr';
-@import '@fontsource-variable/noto-serif-sc';
 @import '@fontsource/ia-writer-quattro';
 @import '@fontsource/ibm-plex-serif';
 @import '@fontsource/ibm-plex-serif/400-italic.css';
@@ -336,24 +330,23 @@ summary:focus-visible,
   @apply rounded-md outline-2! outline-offset-2! outline-focus-ring!;
 }
 
-:root[data-focus-highlight='true']
-  :is(
-    a,
-    button,
-    [role='button'],
-    [role='link'],
-    [role='menuitem'],
-    [role='tab'],
-    [role='option'],
-    [role='combobox'],
-    [role='switch'],
-    [role='radio'],
-    select,
-    details,
-    summary,
-    [tabindex='0']
-  ):focus-visible {
-  @apply rounded-md outline-4! outline-offset-4! outline-a11y-focus!;
+:root[data-focus-highlight='true']:not([data-admin-page='true']) :focus {
+  @apply rounded-md ring-0! ring-offset-0! outline-4! outline-offset-4! outline-a11y-focus! outline-solid!;
+  scroll-margin: 0.5rem;
+}
+
+:root[data-focus-highlight='true']:not([data-admin-page='true'])
+  details:has(:focus) {
+  overflow: visible !important;
+}
+
+:root[data-focus-highlight='true']:not([data-admin-page='true'])
+  nav[aria-label='Table of contents']
+  > div:has(:focus),
+:root[data-focus-highlight='true']:not([data-admin-page='true'])
+  details.markdown-details:has(:focus)
+  .overflow-y-auto {
+  scroll-padding: 0.5rem;
 }
 
 input:focus-visible,
@@ -437,12 +430,8 @@ select {
 }
 
 :root[data-dyslexic-font='true'] {
-  --font-sans:
-    'Lexend Variable', 'Noto Sans JP Variable', 'Noto Sans SC Variable',
-    'Noto Sans KR Variable', ui-sans-serif, system-ui, sans-serif;
-  --font-serif:
-    'Lexend Variable', 'Noto Serif JP Variable', 'Noto Serif SC Variable',
-    'Noto Serif KR Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Lexend Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Lexend Variable', ui-sans-serif, system-ui, sans-serif;
 }
 
 :root[data-dyslexic-font='true'] article,
@@ -530,7 +519,7 @@ select {
   .prose-custom h4,
   .prose-custom h5,
   .prose-custom h6 {
-    @apply font-serif text-(--color-heading);
+    @apply text-(--color-heading);
   }
 
   .prose-custom h1 {
@@ -555,10 +544,6 @@ select {
 
   .prose-custom h6 {
     @apply mt-4 mb-2 text-xs font-semibold sm:text-sm;
-  }
-
-  .prose-custom :is(h1, h2, h3, h4, h5, h6) {
-    @apply font-serif font-normal italic;
   }
 
   .prose-custom h1 + *,
@@ -688,67 +673,38 @@ select {
   }
 
   .prose-custom .heading-text {
-    @apply inline! font-serif transition-none!;
+    @apply inline! transition-none!;
   }
 
-  .prose-custom a.anchor-link {
-    @apply ml-[0.35rem]! inline-flex! items-center! justify-center! align-middle! leading-none! whitespace-nowrap! text-text-primary! no-underline! transition-none!;
+  .heading-anchor a.anchor-link {
+    @apply relative ml-[0.35rem]! inline-flex! cursor-pointer! items-center! justify-center! align-middle! leading-none! whitespace-nowrap! text-text-muted! no-underline! opacity-0 transition-colors;
   }
 
-  :root.dark .prose-custom a.anchor-link {
-    @apply text-gh-gray-4!;
-  }
-
-  .prose-custom a.anchor-link svg {
+  .heading-anchor a.anchor-link svg {
     @apply inline-block! size-[0.85em]! align-middle! leading-none! text-inherit! no-underline!;
   }
 
-  .prose-custom h1:hover .heading-text,
-  .prose-custom h2:hover .heading-text,
-  .prose-custom h3:hover .heading-text,
-  .prose-custom h4:hover .heading-text,
-  .prose-custom h5:hover .heading-text,
-  .prose-custom h6:hover .heading-text,
-  .prose-custom .heading-text:hover,
-  :root.dark .prose-custom h1:hover .heading-text,
-  :root.dark .prose-custom h2:hover .heading-text,
-  :root.dark .prose-custom h3:hover .heading-text,
-  :root.dark .prose-custom h4:hover .heading-text,
-  :root.dark .prose-custom h5:hover .heading-text,
-  :root.dark .prose-custom h6:hover .heading-text,
-  :root.dark .prose-custom .heading-text:hover {
-    @apply text-accent underline underline-offset-4;
+  .heading-anchor:hover a.anchor-link,
+  .heading-anchor:focus-within a.anchor-link,
+  .heading-anchor:target a.anchor-link {
+    @apply opacity-100!;
   }
 
-  .prose-custom h1:hover a.anchor-link,
-  .prose-custom h2:hover a.anchor-link,
-  .prose-custom h3:hover a.anchor-link,
-  .prose-custom h4:hover a.anchor-link,
-  .prose-custom h5:hover a.anchor-link,
-  .prose-custom h6:hover a.anchor-link,
-  .prose-custom a.anchor-link:hover,
-  :root.dark .prose-custom h1:hover a.anchor-link,
-  :root.dark .prose-custom h2:hover a.anchor-link,
-  :root.dark .prose-custom h3:hover a.anchor-link,
-  :root.dark .prose-custom h4:hover a.anchor-link,
-  :root.dark .prose-custom h5:hover a.anchor-link,
-  :root.dark .prose-custom h6:hover a.anchor-link,
-  :root.dark .prose-custom a.anchor-link:hover,
-  .prose-custom h1:hover a.anchor-link svg,
-  .prose-custom h2:hover a.anchor-link svg,
-  .prose-custom h3:hover a.anchor-link svg,
-  .prose-custom h4:hover a.anchor-link svg,
-  .prose-custom h5:hover a.anchor-link svg,
-  .prose-custom h6:hover a.anchor-link svg,
-  .prose-custom a.anchor-link:hover svg,
-  :root.dark .prose-custom h1:hover a.anchor-link svg,
-  :root.dark .prose-custom h2:hover a.anchor-link svg,
-  :root.dark .prose-custom h3:hover a.anchor-link svg,
-  :root.dark .prose-custom h4:hover a.anchor-link svg,
-  :root.dark .prose-custom h5:hover a.anchor-link svg,
-  :root.dark .prose-custom h6:hover a.anchor-link svg,
-  :root.dark .prose-custom a.anchor-link:hover svg {
-    @apply text-accent! no-underline! opacity-100!;
+  .heading-anchor a.anchor-link:hover,
+  .heading-anchor a.anchor-link:focus-visible,
+  .heading-anchor a.anchor-link.active,
+  .heading-anchor:target a.anchor-link {
+    @apply text-accent! opacity-100!;
+  }
+
+  .heading-anchor a.anchor-link::after {
+    content: attr(data-tooltip);
+    @apply pointer-events-none absolute top-[calc(100%+0.5rem)] left-1/2 z-70 -translate-x-1/2 rounded-md border border-border-subtle bg-surface-card px-2 py-1 font-sans text-3xs leading-normal font-medium whitespace-nowrap text-text-primary opacity-0 shadow-lg transition-opacity;
+  }
+
+  .heading-anchor a.anchor-link:hover::after,
+  .heading-anchor a.anchor-link:focus-visible::after {
+    @apply opacity-100;
   }
 
   .prose-custom table {
@@ -986,9 +942,7 @@ select {
       .markdown-tabs-actions
     ):not(.markdown-tabs-actions *):not(.markdown-tab-button):not(
       .mermaid-block *
-    ):not(.katex):not(.katex *):not(.katex-block):not(.katex-block *):not(
-      :where(h1, h2, h3, h4, h5, h6, h1 *, h2 *, h3 *, h4 *, h5 *, h6 *)
-    ) {
+    ):not(.katex):not(.katex *):not(.katex-block):not(.katex-block *) {
     @apply font-sans!;
   }
 
@@ -1004,9 +958,7 @@ select {
       .markdown-tabs-actions
     ):not(.markdown-tabs-actions *):not(.markdown-tab-button):not(
       .mermaid-block *
-    ):not(.katex):not(.katex *):not(.katex-block):not(.katex-block *):not(
-      :where(h1, h2, h3, h4, h5, h6, h1 *, h2 *, h3 *, h4 *, h5 *, h6 *)
-    ) {
+    ):not(.katex):not(.katex *):not(.katex-block):not(.katex-block *) {
     @apply font-serif!;
   }
 
@@ -1022,9 +974,7 @@ select {
       .markdown-tabs-actions
     ):not(.markdown-tabs-actions *):not(.markdown-tab-button):not(
       .mermaid-block *
-    ):not(.katex):not(.katex *):not(.katex-block):not(.katex-block *):not(
-      :where(h1, h2, h3, h4, h5, h6, h1 *, h2 *, h3 *, h4 *, h5 *, h6 *)
-    ) {
+    ):not(.katex):not(.katex *):not(.katex-block):not(.katex-block *) {
     @apply font-mono!;
   }
 
@@ -1392,10 +1342,6 @@ select {
   .prose-custom .markdown-details-body li,
   .prose-custom details li {
     @apply text-sm leading-relaxed;
-  }
-
-  .translation-disclaimer .markdown-alert {
-    @apply mb-2;
   }
 
   .footnote-target-highlight {

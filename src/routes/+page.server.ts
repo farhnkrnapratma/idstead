@@ -1,9 +1,12 @@
-import {supabase} from '$lib/supabase';
+import {supabase} from '#lib/supabase.ts';
 import type {PageServerLoad} from './$types';
-import {avatarSource} from '$lib/siteIdentity';
-import type {Project} from '$lib/types';
-import {decodeHtmlEntities} from '$lib/utils/formatters';
-import {fetchProjects, extractGitHubUsername} from '$lib/server/githubProjects';
+import {avatarSource} from '#lib/siteIdentity.ts';
+import type {Project} from '#lib/types.ts';
+import {decodeHtmlEntities} from '#lib/utils/formatters.ts';
+import {
+  fetchProjects,
+  extractGitHubUsername
+} from '#lib/server/githubProjects.ts';
 import {
   fetchAuthorProfileWithSocials,
   fetchCvEntries,
@@ -12,8 +15,8 @@ import {
   fetchGroupedSkills,
   fetchActiveCvDocument,
   fetchProjectRepoRules
-} from '$lib/author';
-import {estimateReadTime} from '$lib/readTime';
+} from '#lib/author.ts';
+import {estimateReadTime} from '#lib/readTime.ts';
 
 export interface BlogPost {
   id: string;
@@ -34,9 +37,6 @@ export interface BlogPost {
 }
 
 export const load: PageServerLoad = async ({fetch, platform, locals}) => {
-  let projects: Project[] = [];
-  let dbPosts: BlogPost[] = [];
-
   const supabaseClient = (locals as any)?.supabase || supabase;
 
   const [author, cv, funding, contact, skillsGrouped, cvDocument, repoRules] =
@@ -51,62 +51,66 @@ export const load: PageServerLoad = async ({fetch, platform, locals}) => {
     ]);
 
   const githubUsername = extractGitHubUsername(author);
-  if (githubUsername) {
-    projects = await fetchProjects(
-      githubUsername,
-      fetch,
-      platform,
-      repoRules.excluded
-    );
-  }
+  const projectsPromise =
+    githubUsername ?
+      fetchProjects(githubUsername, fetch, platform, repoRules.excluded)
+    : Promise.resolve<Project[]>([]);
+  const postsPromise = (async () => {
+    try {
+      const {data, error} = await supabase
+        .from('db_posts')
+        .select('*')
+        .eq('published', true)
+        .order('created_at', {ascending: false});
+      if (error || !data) return [];
 
-  try {
-    const {data, error} = await supabase
-      .from('db_posts')
-      .select('*')
-      .eq('published', true)
-      .order('created_at', {ascending: false});
-    if (!error && data) {
-      dbPosts = await Promise.all(
+      return await Promise.all(
         data.map(async post => {
-          let readTime = '1 min read';
-          let commentCount = 0;
-          try {
-            const {data: urlData} = supabase.storage
-              .from('blog-posts')
-              .getPublicUrl(post.storage_path);
-            const fileRes = await fetch(urlData.publicUrl, {
-              signal: AbortSignal.timeout(3000)
-            }).catch(() => null);
-            if (fileRes?.ok) {
-              const text = await fileRes.text();
-              readTime = estimateReadTime(text);
+          const readTimePromise = (async () => {
+            try {
+              const {data: urlData} = supabase.storage
+                .from('blog-posts')
+                .getPublicUrl(post.storage_path);
+              const fileRes = await fetch(urlData.publicUrl, {
+                signal: AbortSignal.timeout(3000)
+              }).catch(() => null);
+              if (!fileRes?.ok) return '1 min read';
+              return estimateReadTime(await fileRes.text());
+            } catch (err) {
+              console.error(err);
+              return '1 min read';
             }
-          } catch (err) {
-            console.error(err);
-          }
-
-          try {
-            const {count} = await supabase
-              .from('db_comments')
-              .select('*', {count: 'exact', head: true})
-              .eq('post_id', post.id)
-              .eq('is_approved', true);
-            commentCount = count ?? 0;
-          } catch (err) {
-            console.error(err);
-          }
-
-          let viewsCount = 0;
-          try {
-            const {count} = await supabase
-              .from('db_views')
-              .select('*', {count: 'exact', head: true})
-              .eq('post_id', post.id);
-            viewsCount = count ?? 0;
-          } catch (err) {
-            console.error(err);
-          }
+          })();
+          const commentCountPromise = (async () => {
+            try {
+              const {count} = await supabase
+                .from('db_comments')
+                .select('*', {count: 'exact', head: true})
+                .eq('post_id', post.id)
+                .eq('is_approved', true);
+              return count ?? 0;
+            } catch (err) {
+              console.error(err);
+              return 0;
+            }
+          })();
+          const viewsCountPromise = (async () => {
+            try {
+              const {count} = await supabase
+                .from('db_views')
+                .select('*', {count: 'exact', head: true})
+                .eq('post_id', post.id);
+              return count ?? 0;
+            } catch (err) {
+              console.error(err);
+              return 0;
+            }
+          })();
+          const [readTime, commentCount, viewsCount] = await Promise.all([
+            readTimePromise,
+            commentCountPromise,
+            viewsCountPromise
+          ]);
 
           return {
             ...post,
@@ -120,10 +124,15 @@ export const load: PageServerLoad = async ({fetch, platform, locals}) => {
           };
         })
       );
+    } catch (err) {
+      console.error(err);
+      return [];
     }
-  } catch (err) {
-    console.error(err);
-  }
+  })();
+  const [projects, dbPosts] = await Promise.all([
+    projectsPromise,
+    postsPromise
+  ]);
 
   return {
     projects,

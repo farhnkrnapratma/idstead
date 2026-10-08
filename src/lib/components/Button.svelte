@@ -65,7 +65,7 @@
 
   const typeToneStyles: Record<string, string> = {
     'primary:neutral':
-      'font-semibold bg-accent text-text-on-accent hover:bg-accent-hover hover:text-(--color-text-on-accent-hover) active:bg-accent-active active:text-text-on-accent disabled:hover:bg-accent disabled:hover:text-text-on-accent disabled:active:bg-accent shadow-xs',
+      'font-semibold bg-accent-contrast-bg text-text-on-accent hover:bg-accent-hover hover:text-(--color-text-on-accent-hover) active:bg-accent-active active:text-text-on-accent disabled:hover:bg-accent-contrast-bg disabled:hover:text-text-on-accent disabled:active:bg-accent-contrast-bg shadow-xs',
     'primary:critical':
       'bg-danger font-semibold text-text-on-accent hover:bg-danger-hover hover:text-text-on-accent active:bg-danger-hover active:text-text-on-accent disabled:hover:bg-danger shadow-xs',
     'secondary:neutral':
@@ -73,7 +73,7 @@
     'secondary:critical':
       'border border-danger/30 bg-surface-card/55 text-danger shadow-xs backdrop-blur-sm hover:bg-danger-subtle/40 hover:border-danger/50 disabled:hover:bg-surface-card/55 dark:bg-surface-card/40 dark:hover:bg-danger-subtle/30',
     'tertiary:neutral':
-      'border border-border-subtle/50 bg-surface-subtle text-text-secondary shadow-2xs hover:bg-surface-hover hover:text-text-primary hover:border-border-subtle/80 disabled:hover:bg-surface-subtle font-bold dark:bg-surface-subtle/40 dark:hover:bg-surface-hover',
+      'border border-border-subtle/50 bg-button-tertiary text-text-secondary shadow-2xs hover:bg-surface-hover hover:text-text-primary hover:border-border-subtle/80 disabled:hover:bg-button-tertiary font-bold',
     'tertiary:critical':
       'border border-danger/30 bg-danger-subtle/70 text-danger shadow-2xs hover:bg-danger-subtle disabled:hover:bg-danger-subtle/70 dark:bg-danger-subtle/40',
     'outline:neutral':

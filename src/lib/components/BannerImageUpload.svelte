@@ -4,9 +4,9 @@
   import FieldMessage from './FieldMessage.svelte';
   import Button from './Button.svelte';
   import ImageWithSkeleton from './ImageWithSkeleton.svelte';
-  import {processBanner} from '$lib/processBanner';
-  import {blogBannerAlt} from '$lib/blogBanner';
-  import type {BannerChange} from '$lib/blogBanner';
+  import {processBanner} from '#lib/processBanner.ts';
+  import {blogBannerAlt} from '#lib/blogBanner.ts';
+  import type {BannerChange} from '#lib/blogBanner.ts';
 
   let {
     savedUrl,

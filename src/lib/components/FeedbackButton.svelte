@@ -1,6 +1,6 @@
 <script lang="ts">
   import {shortcut} from '../utils/shortcut.svelte';
-  import {buttonKey} from '$lib/shortcuts';
+  import {buttonKey} from '#lib/shortcuts.ts';
   import {fade} from 'svelte/transition';
   import {goto} from '$app/navigation';
   import {page} from '$app/state';
