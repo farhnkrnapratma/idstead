@@ -107,10 +107,12 @@ export const handle: Handle = sequence(
 
     if (event.url.hostname.startsWith('www.')) {
       const apex = event.url.hostname.replace(/^www\./, '');
-      throw redirect(
-        301,
-        `${event.url.protocol}//${apex}${event.url.pathname}${event.url.search}`
-      );
+      return new Response(null, {
+        status: 301,
+        headers: {
+          Location: `${event.url.protocol}//${apex}${event.url.pathname}${event.url.search}`
+        }
+      });
     }
 
     if (
