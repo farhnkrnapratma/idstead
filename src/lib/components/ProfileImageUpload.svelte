@@ -110,7 +110,7 @@
         class="grid min-w-0 grid-cols-1 items-stretch gap-4 sm:grid-cols-[auto_1fr]"
         {@attach loadSavedImage}>
         <div
-            class="relative aspect-square size-40 overflow-hidden rounded-md border border-border-subtle bg-surface-subtle [background-image:conic-gradient(var(--color-surface)_25%,transparent_0_50%,var(--color-surface)_0_75%,transparent_0)] [background-size:1rem_1rem] sm:size-auto sm:h-full">
+            class="relative aspect-square size-40 overflow-hidden rounded-md border border-border-subtle bg-surface-subtle bg-[conic-gradient(var(--color-surface)_25%,transparent_0_50%,var(--color-surface)_0_75%,transparent_0)] bg-size-[1rem_1rem] sm:size-auto sm:h-full">
             {#if preview || (avatar && loadedSource === avatar)}
                 <img
                     src={preview || avatar}

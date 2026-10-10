@@ -152,20 +152,20 @@ markdownParser.use({
                         let textDecorationClass = '';
 
                         if (statusChar === 'x') {
-                            checkboxSvg = `<span class="task-checkbox status-done flex h-[1.375rem] w-4 shrink-0 items-center justify-center text-success translate-y-[0.5px]" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-check size-4 shrink-0 text-success"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/></svg></span>`;
+                            checkboxSvg = `<span class="task-checkbox status-done flex h-5.5 w-4 shrink-0 items-center justify-center text-success translate-y-[0.5px]" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-check size-4 shrink-0 text-success"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/></svg></span>`;
                         } else if (statusChar === '*') {
-                            checkboxSvg = `<span class="task-checkbox status-wip flex h-[1.375rem] w-4 shrink-0 items-center justify-center text-warning-strong translate-y-[0.5px]" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-asterisk size-4 shrink-0 text-warning-strong"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 8v8"/><path d="m8.5 14 7-4"/><path d="m8.5 10 7 4"/></svg></span>`;
+                            checkboxSvg = `<span class="task-checkbox status-wip flex h-5.5 w-4 shrink-0 items-center justify-center text-warning-strong translate-y-[0.5px]" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-asterisk size-4 shrink-0 text-warning-strong"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 8v8"/><path d="m8.5 14 7-4"/><path d="m8.5 10 7 4"/></svg></span>`;
                         } else if (statusChar === '/') {
-                            checkboxSvg = `<span class="task-checkbox status-failed flex h-[1.375rem] w-4 shrink-0 items-center justify-center text-danger translate-y-[0.5px]" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-x size-4 shrink-0 text-danger"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg></span>`;
+                            checkboxSvg = `<span class="task-checkbox status-failed flex h-5.5 w-4 shrink-0 items-center justify-center text-danger translate-y-[0.5px]" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-x size-4 shrink-0 text-danger"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg></span>`;
                         } else if (statusChar === '-') {
-                            checkboxSvg = `<span class="task-checkbox status-skipped flex h-[1.375rem] w-4 shrink-0 items-center justify-center text-text-muted translate-y-[0.5px]" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-minus size-4 shrink-0 text-text-muted"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="8" x2="16" y1="12" y2="12"/></svg></span>`;
+                            checkboxSvg = `<span class="task-checkbox status-skipped flex h-5.5 w-4 shrink-0 items-center justify-center text-text-muted translate-y-[0.5px]" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-minus size-4 shrink-0 text-text-muted"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="8" x2="16" y1="12" y2="12"/></svg></span>`;
                             textDecorationClass = ' line-through opacity-75';
                         } else if (statusChar === '!') {
-                            checkboxSvg = `<span class="task-checkbox status-important flex h-[1.375rem] w-4 shrink-0 items-center justify-center text-copilot translate-y-[0.5px]" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-alert size-4 shrink-0 text-copilot"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg></span>`;
+                            checkboxSvg = `<span class="task-checkbox status-important flex h-5.5 w-4 shrink-0 items-center justify-center text-copilot translate-y-[0.5px]" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-alert size-4 shrink-0 text-copilot"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg></span>`;
                         } else if (statusChar === '?') {
-                            checkboxSvg = `<span class="task-checkbox status-question flex h-[1.375rem] w-4 shrink-0 items-center justify-center text-a11y-focus translate-y-[0.5px]" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-square size-4 shrink-0 text-a11y-focus"><rect width="18" height="18" x="3" y="3" rx="2"/><rect width="8" height="8" x="8" y="8" rx="1"/></svg></span>`;
+                            checkboxSvg = `<span class="task-checkbox status-question flex h-5.5 w-4 shrink-0 items-center justify-center text-a11y-focus translate-y-[0.5px]" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-square size-4 shrink-0 text-a11y-focus"><rect width="18" height="18" x="3" y="3" rx="2"/><rect width="8" height="8" x="8" y="8" rx="1"/></svg></span>`;
                         } else {
-                            checkboxSvg = `<span class="task-checkbox status-pending flex h-[1.375rem] w-4 shrink-0 items-center justify-center text-text-muted translate-y-[0.5px]" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square size-4 shrink-0 text-text-muted"><rect width="18" height="18" x="3" y="3" rx="2"/></svg></span>`;
+                            checkboxSvg = `<span class="task-checkbox status-pending flex h-5.5 w-4 shrink-0 items-center justify-center text-text-muted translate-y-[0.5px]" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square size-4 shrink-0 text-text-muted"><rect width="18" height="18" x="3" y="3" rx="2"/></svg></span>`;
                         }
 
                         const rawText = this.parser
@@ -182,7 +182,7 @@ markdownParser.use({
                     } else {
                         const rawText = this.parser.parse(item.tokens).trim();
                         const text = cleanListItemHtml(rawText);
-                        const dotSvg = `<span class="ul-dot flex h-[1.375rem] w-2.5 shrink-0 items-center justify-center text-text-secondary translate-y-[0.5px]" aria-hidden="true"><span class="size-1.5 rounded-full bg-text-secondary"></span></span>`;
+                        const dotSvg = `<span class="ul-dot flex h-5.5 w-2.5 shrink-0 items-center justify-center text-text-secondary translate-y-[0.5px]" aria-hidden="true"><span class="size-1.5 rounded-full bg-text-secondary"></span></span>`;
                         body += `<li class="ul-list-item my-1 flex items-start gap-1.5 leading-normal">${dotSvg}<div class="ul-content min-w-0 flex-1 leading-normal">${text}</div></li>\n`;
                     }
                 }
@@ -383,23 +383,23 @@ const NOTE_ICON_ATTRS =
 const NOTE_CALLOUTS: Record<NoteType, { title: string; svg: string }> = {
     note: {
         title: 'Note',
-        svg: `<svg ${NOTE_ICON_ATTRS} class="lucide lucide-info size-4 shrink-0 -translate-y-[6%]"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>`
+        svg: `<svg ${NOTE_ICON_ATTRS} class="lucide lucide-info size-4 shrink-0 translate-y-[-6%]"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>`
     },
     tip: {
         title: 'Tip',
-        svg: `<svg ${NOTE_ICON_ATTRS} class="lucide lucide-lightbulb size-4 shrink-0 -translate-y-[6%]"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>`
+        svg: `<svg ${NOTE_ICON_ATTRS} class="lucide lucide-lightbulb size-4 shrink-0 translate-y-[-6%]"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>`
     },
     important: {
         title: 'Important',
-        svg: `<svg ${NOTE_ICON_ATTRS} class="lucide lucide-message-square-warning size-4 shrink-0 -translate-y-[6%]"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 7v2"/><path d="M12 13h.01"/></svg>`
+        svg: `<svg ${NOTE_ICON_ATTRS} class="lucide lucide-message-square-warning size-4 shrink-0 translate-y-[-6%]"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 7v2"/><path d="M12 13h.01"/></svg>`
     },
     warning: {
         title: 'Warning',
-        svg: `<svg ${NOTE_ICON_ATTRS} class="lucide lucide-alert-triangle size-4 shrink-0 -translate-y-[6%]"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>`
+        svg: `<svg ${NOTE_ICON_ATTRS} class="lucide lucide-alert-triangle size-4 shrink-0 translate-y-[-6%]"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>`
     },
     caution: {
         title: 'Caution',
-        svg: `<svg ${NOTE_ICON_ATTRS} class="lucide lucide-circle-alert size-4 shrink-0 -translate-y-[6%]"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>`
+        svg: `<svg ${NOTE_ICON_ATTRS} class="lucide lucide-circle-alert size-4 shrink-0 translate-y-[-6%]"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>`
     }
 };
 
@@ -522,7 +522,7 @@ function renderTabs(frame: ContainerFrame, icons: Map<string, string>): string {
     }
 
     return `<div class="markdown-tab-group my-6">
-  <div class="markdown-tab-group-header relative flex min-h-[2rem] items-end border-b border-border-subtle select-none" role="tablist">
+  <div class="markdown-tab-group-header relative flex min-h-8 items-end border-b border-border-subtle select-none" role="tablist">
     <div class="markdown-tab-group-nav flex min-w-0 flex-1 items-end gap-1.5 m-0 p-0 overflow-x-auto scrollbar-none [-ms-overflow-style:none]">
       ${buttons}
     </div>
@@ -779,9 +779,9 @@ export function parseDetailsBlocks(html: string): string {
                     const processedBody = parseDetailsBlocks(innerBody);
 
                     result += `<details${detailsAttrs} class="group markdown-details my-4 overflow-hidden rounded-md glass-card border border-border-subtle text-text-primary shadow-md backdrop-blur-md">
- <summary${summaryAttrs} class="markdown-details-summary flex min-h-[2.25rem] cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent group-open:border-border-subtle dark:group-open:border-white/10 px-3.5 py-1.5 font-medium text-sm text-text-primary hover:bg-surface-hover/50 transition-colors select-none [&::-webkit-details-marker]:hidden">
+ <summary${summaryAttrs} class="markdown-details-summary flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent group-open:border-border-subtle dark:group-open:border-white/10 px-3.5 py-1.5 font-medium text-sm text-text-primary hover:bg-surface-hover/50 transition-colors select-none [&::-webkit-details-marker]:hidden">
  <span class="inline-flex items-center gap-2">
- <span class="markdown-details-title translate-y-[1px] font-medium text-sm text-text-primary leading-none">${summaryTitle}</span>
+ <span class="markdown-details-title translate-y-px font-medium text-sm text-text-primary leading-none">${summaryTitle}</span>
  </span>
  <span class="markdown-details-icon shrink-0 inline-flex items-center justify-center text-text-muted" aria-hidden="true">
  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevrons-up-down size-3.5 group-open:hidden"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>

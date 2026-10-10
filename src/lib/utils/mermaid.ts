@@ -190,7 +190,7 @@ function attachDiagramToolbar(block: HTMLElement, svgString: string, rawCode: st
 
     const dropdown = document.createElement('div');
     dropdown.className =
-        'absolute top-full right-0 z-20 mt-1.5 hidden min-w-[9rem] flex-col rounded-md border border-border-subtle bg-surface-card p-1 shadow-lg backdrop-blur-md';
+        'absolute top-full right-0 z-20 mt-1.5 hidden min-w-36 flex-col rounded-md border border-border-subtle bg-surface-card p-1 shadow-lg backdrop-blur-md';
 
     const copySvgItem = document.createElement('button');
     copySvgItem.type = 'button';

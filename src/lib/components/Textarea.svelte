@@ -94,10 +94,10 @@
                 'pointer-events-none absolute left-3 z-10 font-medium transition-all duration-200 select-none',
                 'top-3 text-sm text-text-secondary/70 peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-placeholder-shown:text-text-secondary/70',
                 'peer-focus:top-1.5 peer-focus:text-2xs peer-focus:leading-none peer-focus:font-semibold peer-focus:text-accent',
-                'peer-[:not(:placeholder-shown)]:top-1.5 peer-[:not(:placeholder-shown)]:text-2xs peer-[:not(:placeholder-shown)]:leading-none peer-[:not(:placeholder-shown)]:font-semibold peer-[:not(:placeholder-shown)]:text-text-muted',
+                'peer-not-placeholder-shown:top-1.5 peer-not-placeholder-shown:text-2xs peer-not-placeholder-shown:leading-none peer-not-placeholder-shown:font-semibold peer-not-placeholder-shown:text-text-muted',
                 hasValue ? 'top-1.5 text-2xs leading-none font-semibold text-text-muted' : '',
                 error ?
-                    'text-danger! peer-focus:text-danger! peer-[:not(:placeholder-shown)]:text-danger!'
+                    'text-danger! peer-not-placeholder-shown:text-danger! peer-focus:text-danger!'
                 :   ''
             )}>
             {resolvedLabel}
