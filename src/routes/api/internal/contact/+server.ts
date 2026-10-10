@@ -128,6 +128,16 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         const data: any = await res.json().catch(() => null);
         if (!res.ok || data?.success === 'false' || data?.success === false) {
             console.error('FormSubmit rejected the submission:', data);
+            if (
+                res.status === 429
+                || (typeof data?.message === 'string' && /rate limit/i.test(data.message))
+            ) {
+                return apiError(
+                    503,
+                    'CONTACT_DELIVERY_RATE_LIMITED',
+                    'Message delivery is temporarily rate limited. Please try again later.'
+                );
+            }
             return apiError(502, 'CONTACT_DELIVERY_FAILED', 'The message could not be delivered.');
         }
     } catch (err) {

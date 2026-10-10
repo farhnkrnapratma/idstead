@@ -21,6 +21,7 @@
             "command": "bunx",
             "args": ["chrome-devtools-mcp@latest"]
         },
+        "cloudflare-api": { "url": "https://mcp.cloudflare.com/mcp" },
         "cloudflare-observability": {
             "type": "http",
             "url": "https://observability.mcp.cloudflare.com/sse",

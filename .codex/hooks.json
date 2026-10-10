@@ -3,7 +3,12 @@
         "PreToolUse": [
             {
                 "matcher": "Bash",
-                "hooks": [{ "type": "command", "command": "graphify hook-check" }]
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "/home/fkp/.local/share/../bin/graphify hook-check"
+                    }
+                ]
             }
         ]
     }
