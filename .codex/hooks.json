@@ -1,10 +1,10 @@
 {
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [{"type": "command", "command": "graphify hook-check"}]
-      }
-    ]
-  }
+    "hooks": {
+        "PreToolUse": [
+            {
+                "matcher": "Bash",
+                "hooks": [{ "type": "command", "command": "graphify hook-check" }]
+            }
+        ]
+    }
 }

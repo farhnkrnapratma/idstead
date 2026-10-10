@@ -14,9 +14,9 @@ description: Verify src/routes/api/v1 routes follow this repo's API conventions 
 2. **Error envelope**: grep each handler for any JSON error response that does NOT go through `apiError()` (from `src/lib/server/apiError.ts`). Flag any hand-rolled `json({...}, {status: ...})` used for an error case — it must use `apiError(status, code, message, details?)` instead.
 
 3. **Error codes**: extract every `apiError(...)` call's `code` argument across all routes, then cross-check each one appears in the error-codes table in `src/routes/api/v1/README.md`. Flag:
-   - Codes used in code but missing from the README table.
-   - Codes in the README table no longer used anywhere (dead documentation).
-   - Reused generic codes (`BAD_REQUEST`, `INTERNAL_ERROR`, etc.) where a specific per-endpoint code would be expected instead — per `CLAUDE.md`, generic codes are fallback-only.
+    - Codes used in code but missing from the README table.
+    - Codes in the README table no longer used anywhere (dead documentation).
+    - Reused generic codes (`BAD_REQUEST`, `INTERNAL_ERROR`, etc.) where a specific per-endpoint code would be expected instead — per `CLAUDE.md`, generic codes are fallback-only.
 
 4. **Endpoint coverage**: for any new or changed route path/method, confirm it's listed in the "Endpoints" table in the README with an accurate description (query params, body shape, status codes).
 

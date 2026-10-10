@@ -4,10 +4,10 @@ Load this when the user asks a question against an existing graph, or runs `/gra
 
 Two traversal modes - choose based on the question:
 
-| Mode | Flag | Best for |
-| --- | --- | --- |
+| Mode          | Flag     | Best for                                                           |
+| ------------- | -------- | ------------------------------------------------------------------ |
 | BFS (default) | _(none)_ | "What is X connected to?" - broad context, nearest neighbors first |
-| DFS | `--dfs` | "How does X reach Y?" - trace a specific chain or dependency path |
+| DFS           | `--dfs`  | "How does X reach Y?" - trace a specific chain or dependency path  |
 
 First check the graph exists:
 
@@ -49,11 +49,11 @@ print(f'vocab: {len(vocab)} tokens')
 ```
 
 2. Read `graphify-out/.vocab.txt`. Then for the user's question, select **up to 12 tokens from this exact list** that semantically match the query intent. Hard constraints:
-   - You MUST pick only tokens present in the vocabulary file. Do NOT invent tokens.
-   - If a query concept has no plausible token in the vocab, skip it — do not substitute a near-synonym from training memory.
-   - If **no** vocab tokens match the query at all, output an empty list and tell the user the corpus has no relevant vocabulary for this question. Do not fabricate a search.
-   - Translate cross-language: Russian "аутентификация" → look for `auth`, `credential`, `token`, `security` IFF present in vocab.
-   - Morphology: "handlers" maps to `handler` IFF present; "todos" maps to `todo` IFF present.
+    - You MUST pick only tokens present in the vocabulary file. Do NOT invent tokens.
+    - If a query concept has no plausible token in the vocab, skip it — do not substitute a near-synonym from training memory.
+    - If **no** vocab tokens match the query at all, output an empty list and tell the user the corpus has no relevant vocabulary for this question. Do not fabricate a search.
+    - Translate cross-language: Russian "аутентификация" → look for `auth`, `credential`, `token`, `security` IFF present in vocab.
+    - Morphology: "handlers" maps to `handler` IFF present; "todos" maps to `todo` IFF present.
 
 3. Print the selection explicitly to the user before running the query, so the expansion is auditable:
 

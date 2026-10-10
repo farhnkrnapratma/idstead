@@ -16,11 +16,11 @@ The HTTP status code is authoritative and isn't repeated in the body. Every erro
 
 ```json
 {
-  "error": {
-    "code": "BLOG_POST_NOT_FOUND",
-    "message": "Blog post not found",
-    "details": "No blog post exists with slug 'this-slug-does-not-exist-12345'."
-  }
+    "error": {
+        "code": "BLOG_POST_NOT_FOUND",
+        "message": "Blog post not found",
+        "details": "No blog post exists with slug 'this-slug-does-not-exist-12345'."
+    }
 }
 ```
 
@@ -102,7 +102,7 @@ curl "https://fkp.my.id/api/v1/blog/views?postId=<uuid>"
 ```
 
 ```json
-{"postId": "<uuid>", "views": 42}
+{ "postId": "<uuid>", "views": 42 }
 ```
 
 ### Author

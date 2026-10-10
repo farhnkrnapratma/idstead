@@ -1,7 +1,7 @@
 ---
 name: task-observer
 description: >
-  Monitors task execution for skill improvement opportunities. Use this skill during ANY multi-step task, agentic workflow, or substantive work session where the agent is using tools and producing deliverables. It captures patterns, user corrections, workflow insights, and methodology worth preserving as reusable skills. Also triggers during post-task feedback discussions and when the user explicitly mentions skill observations, improvements, the observation log, skill taxonomy, or asks the agent to watch for skill opportunities. Also known as "One Skill to Rule Them All" — trigger on this phrase too. IMPORTANT: this skill should be invoked at the start of every task-oriented session — if you are about to use tools to produce deliverables, invoke this skill first. For reliable activation, pair this description with a CLAUDE.md instruction or harness-level session-start hook (see Recommended Activation Setup) — description-level matching alone is not enforceable.
+    Monitors task execution for skill improvement opportunities. Use this skill during ANY multi-step task, agentic workflow, or substantive work session where the agent is using tools and producing deliverables. It captures patterns, user corrections, workflow insights, and methodology worth preserving as reusable skills. Also triggers during post-task feedback discussions and when the user explicitly mentions skill observations, improvements, the observation log, skill taxonomy, or asks the agent to watch for skill opportunities. Also known as "One Skill to Rule Them All" — trigger on this phrase too. IMPORTANT: this skill should be invoked at the start of every task-oriented session — if you are about to use tools to produce deliverables, invoke this skill first. For reliable activation, pair this description with a CLAUDE.md instruction or harness-level session-start hook (see Recommended Activation Setup) — description-level matching alone is not enforceable.
 ---
 
 # Task Observer — Continuous Skill Discovery & Improvement
@@ -56,22 +56,22 @@ Append to the log **silently, within the same turn or the next** — never batch
 
 1. _Pre-check:_ read the actual log and find the highest existing number — never trust session memory:
 
-   ```bash
-   # GNU grep:
-   grep -oP '### Observation \K\d+' log.md | sort -n | tail -1
-   # macOS / POSIX:
-   grep -o '### Observation [0-9]*' log.md | grep -o '[0-9]*' | sort -n | tail -1
-   ```
+    ```bash
+    # GNU grep:
+    grep -oP '### Observation \K\d+' log.md | sort -n | tail -1
+    # macOS / POSIX:
+    grep -o '### Observation [0-9]*' log.md | grep -o '[0-9]*' | sort -n | tail -1
+    ```
 
 2. _Pre-write assertion:_ immediately before appending, confirm the proposed number doesn't already exist:
 
-   ```bash
-   PROPOSED=$(( $(grep -oP '### Observation \K\d+' log.md | sort -n | tail -1) + 1 ))
-   grep -qE "^### Observation ${PROPOSED}:" log.md && {
-     echo "COLLISION on #${PROPOSED}"; exit 1; }
-   ```
+    ```bash
+    PROPOSED=$(( $(grep -oP '### Observation \K\d+' log.md | sort -n | tail -1) + 1 ))
+    grep -qE "^### Observation ${PROPOSED}:" log.md && {
+      echo "COLLISION on #${PROPOSED}"; exit 1; }
+    ```
 
-   If it fires, increment past all existing numbers and re-check (and log a meta-observation — it signals a parallel-session collision).
+    If it fires, increment past all existing numbers and re-check (and log a meta-observation — it signals a parallel-session collision).
 
 3. _Post-write verification:_ after appending, count occurrences of the number; if >1, a parallel writer collided between check and write — renumber YOUR entry to max+1. Identify your entry from your own append operation (capture the file's line count immediately before and after your `>>`; your entry starts at the old line count + 1) — do NOT re-grep and take the last occurrence, which may be a colliding writer's entry appended after yours. After any `sed` renumber, re-read the affected line to confirm the substitution actually took effect — a line-addressed `s///` whose target shifted finds no match and still exits 0. Pre-write catches stale reads; only a post-write check catches the race. The pattern for shared logs written by parallel agents is check-then-act-then-verify.
 

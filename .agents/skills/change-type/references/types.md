@@ -773,18 +773,18 @@ Tujuan         : Menyiapkan dan menerbitkan versi resmi software: versioning,
 
 ### Kelompok Perfective
 
-| Dimensi | FEATURE | ENHANCEMENT | OPTIMIZATION | MODERNIZATION | REWRITE | REWORK |
-| :-- | :-: | :-: | :-: | :-: | :-: | :-: |
-| Boleh tambah fitur | ✅ | ⚠️ minor | ❌ | ❌ | ❌ | ❌ |
-| Behavior boleh berubah | ✅ | ⚠️ minor | ❌ | ❌ | ❌ | ✅ |
-| Test baru diperlukan | ✅ | ⚠️ | ✅ benchmark | ⚠️ | ✅ | ✅ |
-| Rollback required | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ |
+| Dimensi                | FEATURE | ENHANCEMENT | OPTIMIZATION | MODERNIZATION | REWRITE | REWORK |
+| :--------------------- | :-----: | :---------: | :----------: | :-----------: | :-----: | :----: |
+| Boleh tambah fitur     |   ✅    |  ⚠️ minor   |      ❌      |      ❌       |   ❌    |   ❌   |
+| Behavior boleh berubah |   ✅    |  ⚠️ minor   |      ❌      |      ❌       |   ❌    |   ✅   |
+| Test baru diperlukan   |   ✅    |     ⚠️      | ✅ benchmark |      ⚠️       |   ✅    |   ✅   |
+| Rollback required      |   ❌    |     ❌      |      ❌      |      ✅       |   ✅    |   ❌   |
 
 ### Kelompok Preventive
 
-| Dimensi | REFACTOR | HARDENING | MAINTENANCE | INTEGRATION |
-| :-- | :-: | :-: | :-: | :-: |
-| Behavior boleh berubah | ❌ | ⚠️ security | ❌ | ⚠️ |
-| Boleh ubah public API | ❌ | ❌ | ❌ | ⚠️ |
-| Fitur baru diperbolehkan | ❌ | ❌ | ❌ | ❌ |
-| Benchmark diperlukan | ❌ | ❌ | ❌ | ✅ |
+| Dimensi                  | REFACTOR |  HARDENING  | MAINTENANCE | INTEGRATION |
+| :----------------------- | :------: | :---------: | :---------: | :---------: |
+| Behavior boleh berubah   |    ❌    | ⚠️ security |     ❌      |     ⚠️      |
+| Boleh ubah public API    |    ❌    |     ❌      |     ❌      |     ⚠️      |
+| Fitur baru diperbolehkan |    ❌    |     ❌      |     ❌      |     ❌      |
+| Benchmark diperlukan     |    ❌    |     ❌      |     ❌      |     ✅      |

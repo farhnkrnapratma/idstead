@@ -1,8 +1,5 @@
-import type {RequestHandler} from './$types';
+import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async () => {
-  return new Response(null, {
-    status: 301,
-    headers: {Location: '/.well-known/openapi.yaml'}
-  });
+    return new Response(null, { status: 301, headers: { Location: '/.well-known/openapi.yaml' } });
 };

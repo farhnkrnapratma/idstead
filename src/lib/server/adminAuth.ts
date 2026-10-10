@@ -1,9 +1,9 @@
-import type {SupabaseClient} from '@supabase/supabase-js';
-import {requiresAdminMfa} from '#lib/adminAuthState.ts';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { requiresAdminMfa } from '#lib/adminAuthState.ts';
 
 export type AdminAuth =
-  | {actor: string; status?: never; message?: never}
-  | {actor?: never; status: 401 | 403; message: string};
+    | { actor: string; status?: never; message?: never }
+    | { actor?: never; status: 401 | 403; message: string };
 
 const ADMIN_ROLES = ['admin', 'service_role'];
 
@@ -14,41 +14,31 @@ const ADMIN_ROLES = ['admin', 'service_role'];
  * cookie the caller controls.
  */
 export async function isMfaSatisfied(
-  client: SupabaseClient,
-  accessToken: string
+    client: SupabaseClient,
+    accessToken: string
 ): Promise<boolean> {
-  const {data, error} =
-    await client.auth.mfa.getAuthenticatorAssuranceLevel(accessToken);
-  if (error || !data) return false;
-  return !requiresAdminMfa(data);
+    const { data, error } = await client.auth.mfa.getAuthenticatorAssuranceLevel(accessToken);
+    if (error || !data) return false;
+    return !requiresAdminMfa(data);
 }
 
 export function bearerToken(request: Request): string {
-  return (
-    request.headers.get('authorization')?.match(/^Bearer\s+(\S+)$/i)?.[1] ?? ''
-  );
+    return request.headers.get('authorization')?.match(/^Bearer\s+(\S+)$/i)?.[1] ?? '';
 }
 
-export async function verifyAdminToken(
-  request: Request,
-  db: SupabaseClient
-): Promise<AdminAuth> {
-  const token = bearerToken(request);
-  if (!token)
-    return {status: 401, message: 'Admin authentication is required.'};
+export async function verifyAdminToken(request: Request, db: SupabaseClient): Promise<AdminAuth> {
+    const token = bearerToken(request);
+    if (!token) return { status: 401, message: 'Admin authentication is required.' };
 
-  const {data, error} = await db.auth.getUser(token);
-  if (error || !data.user)
-    return {status: 401, message: 'Your session has expired. Log in again.'};
+    const { data, error } = await db.auth.getUser(token);
+    if (error || !data.user)
+        return { status: 401, message: 'Your session has expired. Log in again.' };
 
-  if (!ADMIN_ROLES.includes(data.user.app_metadata?.role))
-    return {status: 403, message: 'Admin privileges are required.'};
+    if (!ADMIN_ROLES.includes(data.user.app_metadata?.role))
+        return { status: 403, message: 'Admin privileges are required.' };
 
-  if (!(await isMfaSatisfied(db, token)))
-    return {
-      status: 403,
-      message: 'Complete two-factor verification before continuing.'
-    };
+    if (!(await isMfaSatisfied(db, token)))
+        return { status: 403, message: 'Complete two-factor verification before continuing.' };
 
-  return {actor: data.user.id};
+    return { actor: data.user.id };
 }

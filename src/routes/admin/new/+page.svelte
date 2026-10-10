@@ -1,23 +1,23 @@
 <script lang="ts">
-  import {onMount} from 'svelte';
-  import {goto} from '$app/navigation';
-  import {LoadingState} from '#lib/index.ts';
+    import { onMount } from 'svelte';
+    import { goto } from '$app/navigation';
+    import { LoadingState } from '#lib/index.ts';
 
-  onMount(() => {
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get('id');
-    const target = new URL('/admin', window.location.origin);
-    target.searchParams.set('tab', 'posts');
-    target.searchParams.set('editPost', id || 'new');
-    goto(`${target.pathname}${target.search}`, {replaceState: true});
-  });
+    onMount(() => {
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+        const target = new URL('/admin', window.location.origin);
+        target.searchParams.set('tab', 'posts');
+        target.searchParams.set('editPost', id || 'new');
+        goto(`${target.pathname}${target.search}`, { replaceState: true });
+    });
 </script>
 
 <main
-  id="main-content"
-  class="flex min-h-screen w-full items-center justify-center bg-surface-base">
-  <LoadingState
-    variant="spinner"
-    size="lg"
-    label="Redirecting…" />
+    id="main-content"
+    class="flex min-h-screen w-full items-center justify-center bg-surface-base">
+    <LoadingState
+        variant="spinner"
+        size="lg"
+        label="Redirecting…" />
 </main>

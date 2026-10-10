@@ -1,7 +1,7 @@
 ---
 name: svelte-core-bestpractices
 description: >-
-  Guidance on writing fast, robust, modern Svelte code. Load this skill whenever in a Svelte project and asked to write/edit or analyze a Svelte component or module. Covers reactivity, event handling, styling, integration with libraries and more.
+    Guidance on writing fast, robust, modern Svelte code. Load this skill whenever in a Svelte project and asked to write/edit or analyze a Svelte component or module. Covers reactivity, event handling, styling, integration with libraries and more.
 ---
 
 # svelte-core-bestpractices
@@ -26,7 +26,7 @@ let square = $derived(num * num);
 let square;
 
 $effect(() => {
-  square = num * num;
+    square = num * num;
 });
 ```
 
@@ -52,7 +52,7 @@ Never wrap the contents of an effect in `if (browser) {...}` or similar — effe
 Treat props as though they will change. For example, values that depend on props should usually use `$derived`:
 
 ```js
-let {type} = $props();
+let { type } = $props();
 
 // do this
 let color = $derived(type === 'danger' ? 'red' : 'green');
@@ -94,7 +94,7 @@ Snippets are a way to define reusable chunks of markup that can be instantiated 
 
 ```svelte
 {#snippet greeting(name)}
-  <p>hello {name}!</p>
+    <p>hello {name}!</p>
 {/snippet}
 
 {@render greeting('world')}
@@ -130,9 +130,9 @@ The CSS in a component's `<style>` is scoped to that component. If a parent comp
 <h1>Hello</h1>
 
 <style>
-  h1 {
-    color: var(--color);
-  }
+    h1 {
+        color: var(--color);
+    }
 </style>
 ```
 
@@ -140,15 +140,15 @@ If this is impossible (for example, the child component comes from a library) yo
 
 ```svelte
 <div>
-  <Child />
+    <Child />
 </div>
 
 <style>
-  div :global {
-    h1 {
-      color: red;
+    div :global {
+        h1 {
+            color: red;
+        }
     }
-  }
 </style>
 ```
 

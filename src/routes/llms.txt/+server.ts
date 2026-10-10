@@ -1,23 +1,20 @@
-import type {RequestHandler} from './$types';
+import type { RequestHandler } from './$types';
 import {
-  readSiteProfile,
-  readPublishedPosts,
-  markdownText,
-  validDate,
-  publicResponse
+    readSiteProfile,
+    readPublishedPosts,
+    markdownText,
+    validDate,
+    publicResponse
 } from '#lib/server/publicMetadata.ts';
 
-export const GET: RequestHandler = async ({request}) => {
-  const [author, posts] = await Promise.all([
-    readSiteProfile(),
-    readPublishedPosts()
-  ]);
-  const authorName = markdownText(author.name);
-  const authorHeadline = markdownText(author.headline);
-  const authorBio = markdownText(author.bio);
-  const SITE_URL = author.siteUrl;
+export const GET: RequestHandler = async ({ request }) => {
+    const [author, posts] = await Promise.all([readSiteProfile(), readPublishedPosts()]);
+    const authorName = markdownText(author.name);
+    const authorHeadline = markdownText(author.headline);
+    const authorBio = markdownText(author.bio);
+    const SITE_URL = author.siteUrl;
 
-  let md = `# ${authorName} — ${authorHeadline}
+    let md = `# ${authorName} — ${authorHeadline}
 
 > ${authorBio}
 
@@ -39,18 +36,18 @@ Welcome to the LLM & AI Agent directory for ${authorName}'s developer portfolio.
 
 `;
 
-  if (posts && posts.length > 0) {
-    posts.forEach(post => {
-      const dateStr = validDate(post.created_at)?.split('T')[0] ?? 'unknown';
-      md += `- [${markdownText(post.title)}](${SITE_URL}/api/v1/blog/${encodeURIComponent(post.slug)}?format=md): Published on ${dateStr}. ID: \`${post.id}\`. ${post.excerpt ? `— ${markdownText(post.excerpt)}` : ''}\n`;
-    });
-  } else {
-    md += `*No published posts available.*\n`;
-  }
+    if (posts && posts.length > 0) {
+        posts.forEach(post => {
+            const dateStr = validDate(post.created_at)?.split('T')[0] ?? 'unknown';
+            md += `- [${markdownText(post.title)}](${SITE_URL}/api/v1/blog/${encodeURIComponent(post.slug)}?format=md): Published on ${dateStr}. ID: \`${post.id}\`. ${post.excerpt ? `— ${markdownText(post.excerpt)}` : ''}\n`;
+        });
+    } else {
+        md += `*No published posts available.*\n`;
+    }
 
-  md += `\n## Optional\n\n`;
-  md += `- [JSON Author API](${SITE_URL}/api/v1/author): Full author dataset in JSON format.\n`;
-  md += `- [JSON Blog Catalog](${SITE_URL}/api/v1/blog): Catalog of published blog posts in JSON format.\n`;
+    md += `\n## Optional\n\n`;
+    md += `- [JSON Author API](${SITE_URL}/api/v1/author): Full author dataset in JSON format.\n`;
+    md += `- [JSON Blog Catalog](${SITE_URL}/api/v1/blog): Catalog of published blog posts in JSON format.\n`;
 
-  return publicResponse(request, md, 'text/markdown; charset=utf-8', 300);
+    return publicResponse(request, md, 'text/markdown; charset=utf-8', 300);
 };

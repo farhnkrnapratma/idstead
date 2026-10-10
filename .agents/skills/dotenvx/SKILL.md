@@ -3,10 +3,10 @@ name: dotenvx
 description: Use dotenvx to run commands with environment variables, manage multiple .env files, expand variables, and encrypt env files for safe commits and CI/CD.
 license: BSD-3-Clause
 metadata:
-  author: motdotla
-  version: 1.0.0
-  homepage: https://dotenvx.com
-  source: https://github.com/dotenvx/dotenvx
+    author: motdotla
+    version: 1.0.0
+    homepage: https://dotenvx.com
+    source: https://github.com/dotenvx/dotenvx
 ---
 
 # dotenvx

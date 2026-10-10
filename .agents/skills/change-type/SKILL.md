@@ -1,7 +1,7 @@
 ---
 name: change-type
 description: >-
-  Framework operasional untuk mendefinisikan Change Type sebelum agent melakukan perubahan kode. Aktifkan skill ini ketika user menyebutkan kata kunci seperti PATCH, HOTFIX, BUG-FIX, ENHANCEMENT, FEATURE, REFACTOR, MIGRATION, UPDATE, UPGRADE, OPTIMIZATION, ROLLBACK, HARDENING, REWRITE, REWORK, PORTING, INTEGRATION, MODERNIZATION, MAINTENANCE, DEPLOYMENT, atau RELEASE — atau ketika user meminta perbaikan bug, fitur baru, refactoring, migrasi, deployment, atau aktivitas pemeliharaan sistem. Skill ini memastikan agent beroperasi dengan batasan yang jelas, mengurangi over-engineering dan perubahan di luar scope.
+    Framework operasional untuk mendefinisikan Change Type sebelum agent melakukan perubahan kode. Aktifkan skill ini ketika user menyebutkan kata kunci seperti PATCH, HOTFIX, BUG-FIX, ENHANCEMENT, FEATURE, REFACTOR, MIGRATION, UPDATE, UPGRADE, OPTIMIZATION, ROLLBACK, HARDENING, REWRITE, REWORK, PORTING, INTEGRATION, MODERNIZATION, MAINTENANCE, DEPLOYMENT, atau RELEASE — atau ketika user meminta perbaikan bug, fitur baru, refactoring, migrasi, deployment, atau aktivitas pemeliharaan sistem. Skill ini memastikan agent beroperasi dengan batasan yang jelas, mengurangi over-engineering dan perubahan di luar scope.
 ---
 
 # Change Type Framework
@@ -32,28 +32,28 @@ SUCCESS     : <kriteria keberhasilan yang terukur>
 
 ## Tabel Risk Level
 
-| Change Type | Kategori | Default Risk | Alasan |
-| :-- | :-- | :-- | :-- |
-| PATCH | Corrective | LOW | Perubahan minimal, terisolasi |
-| BUG-FIX | Corrective | LOW–MEDIUM | Bisa multi-file jika bug kompleks |
-| HOTFIX | Corrective | MEDIUM | Speed-first, solusi temporer mungkin ada |
-| ROLLBACK | Corrective | HIGH | State reversion, data integrity kritis |
-| UPDATE | Adaptive | LOW–MEDIUM | Dependency bump, breaking change mungkin ada |
-| DEPLOYMENT | Adaptive | MEDIUM–HIGH | Environment change, rollback perlu disiapkan |
-| RELEASE | Adaptive | MEDIUM | Versioning & packaging, no code change |
-| PORTING | Adaptive | HIGH | Platform-specific path, test coverage luas |
-| UPGRADE | Adaptive | HIGH | Major version, kemungkinan breaking change besar |
-| MIGRATION | Adaptive | HIGH | Data & arsitektur, rollback wajib |
-| MAINTENANCE | Preventive | LOW | Cleanup rutin, fungsionalitas tidak berubah |
-| HARDENING | Preventive | MEDIUM | Security change, false-positive risk ada |
-| INTEGRATION | Preventive | MEDIUM–HIGH | Multi-komponen, interface contract kritis |
-| REFACTOR | Preventive | HIGH | Perubahan struktural luas, risiko perilaku |
-| ENHANCEMENT | Perfective | MEDIUM | Modifikasi fitur yang ada, regresi mungkin |
-| OPTIMIZATION | Perfective | MEDIUM | Performa change, correctness harus terjaga |
-| REWORK | Perfective | MEDIUM–HIGH | Implementasi ulang, scope creep risk |
-| FEATURE | Perfective | MEDIUM–HIGH | Kode baru, integrasi sistem dibutuhkan |
-| MODERNIZATION | Perfective | HIGH | Stack change luas, behavior harus terjaga |
-| REWRITE | Perfective | VERY HIGH | Kode baru dari awal, parity validation kritis |
+| Change Type   | Kategori   | Default Risk | Alasan                                           |
+| :------------ | :--------- | :----------- | :----------------------------------------------- |
+| PATCH         | Corrective | LOW          | Perubahan minimal, terisolasi                    |
+| BUG-FIX       | Corrective | LOW–MEDIUM   | Bisa multi-file jika bug kompleks                |
+| HOTFIX        | Corrective | MEDIUM       | Speed-first, solusi temporer mungkin ada         |
+| ROLLBACK      | Corrective | HIGH         | State reversion, data integrity kritis           |
+| UPDATE        | Adaptive   | LOW–MEDIUM   | Dependency bump, breaking change mungkin ada     |
+| DEPLOYMENT    | Adaptive   | MEDIUM–HIGH  | Environment change, rollback perlu disiapkan     |
+| RELEASE       | Adaptive   | MEDIUM       | Versioning & packaging, no code change           |
+| PORTING       | Adaptive   | HIGH         | Platform-specific path, test coverage luas       |
+| UPGRADE       | Adaptive   | HIGH         | Major version, kemungkinan breaking change besar |
+| MIGRATION     | Adaptive   | HIGH         | Data & arsitektur, rollback wajib                |
+| MAINTENANCE   | Preventive | LOW          | Cleanup rutin, fungsionalitas tidak berubah      |
+| HARDENING     | Preventive | MEDIUM       | Security change, false-positive risk ada         |
+| INTEGRATION   | Preventive | MEDIUM–HIGH  | Multi-komponen, interface contract kritis        |
+| REFACTOR      | Preventive | HIGH         | Perubahan struktural luas, risiko perilaku       |
+| ENHANCEMENT   | Perfective | MEDIUM       | Modifikasi fitur yang ada, regresi mungkin       |
+| OPTIMIZATION  | Perfective | MEDIUM       | Performa change, correctness harus terjaga       |
+| REWORK        | Perfective | MEDIUM–HIGH  | Implementasi ulang, scope creep risk             |
+| FEATURE       | Perfective | MEDIUM–HIGH  | Kode baru, integrasi sistem dibutuhkan           |
+| MODERNIZATION | Perfective | HIGH         | Stack change luas, behavior harus terjaga        |
+| REWRITE       | Perfective | VERY HIGH    | Kode baru dari awal, parity validation kritis    |
 
 ## Eskalasi dan Interupsi
 

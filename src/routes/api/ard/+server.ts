@@ -1,5 +1,5 @@
-import type {RequestHandler} from './$types';
-import {publicResponse} from '#lib/server/publicMetadata.ts';
+import type { RequestHandler } from './$types';
+import { publicResponse } from '#lib/server/publicMetadata.ts';
 
 const documentation = `# Agentic Resource Discovery
 
@@ -50,12 +50,8 @@ GET /api/ard/agents?pageSize=10&orderBy=displayName%20ASC
 \`\`\`
 `;
 
-export const GET: RequestHandler = async ({request}) => {
-  const response = await publicResponse(
-    request,
-    documentation,
-    'text/markdown; charset=utf-8'
-  );
-  response.headers.set('Access-Control-Allow-Origin', '*');
-  return response;
+export const GET: RequestHandler = async ({ request }) => {
+    const response = await publicResponse(request, documentation, 'text/markdown; charset=utf-8');
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    return response;
 };

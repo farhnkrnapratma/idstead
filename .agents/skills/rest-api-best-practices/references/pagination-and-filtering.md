@@ -10,13 +10,8 @@ GET /products?page=3&per_page=20
 
 ```json
 {
-  "data": [],
-  "pagination": {
-    "current_page": 3,
-    "total_pages": 15,
-    "total_items": 287,
-    "per_page": 20
-  }
+    "data": [],
+    "pagination": { "current_page": 3, "total_pages": 15, "total_items": 287, "per_page": 20 }
 }
 ```
 
@@ -33,7 +28,7 @@ GET /products?limit=20&cursor=eyJpZCI6MTIzfQ
 ```
 
 ```json
-{"data": [], "pagination": {"next_cursor": "eyJpZCI6MTQzfQ", "has_more": true}}
+{ "data": [], "pagination": { "next_cursor": "eyJpZCI6MTQzfQ", "has_more": true } }
 ```
 
 Always include pagination metadata in the response — don't make clients guess whether more pages exist.
