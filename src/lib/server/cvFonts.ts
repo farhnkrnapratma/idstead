@@ -4,23 +4,23 @@ import sansItalic from '@fontsource/ia-writer-quattro/files/ia-writer-quattro-la
 import serif from '@fontsource/ibm-plex-serif/files/ibm-plex-serif-latin-400-normal.woff?inline';
 import serifBold from '@fontsource/ibm-plex-serif/files/ibm-plex-serif-latin-700-normal.woff?inline';
 import mono from '@fontsource/lilex/files/lilex-latin-400-normal.woff?inline';
-import type {CvFontBytes} from './pdfGenerator';
+import type { CvFontBytes } from './pdfGenerator';
 
 function decode(dataUri: string): Uint8Array {
-  const binary = atob(dataUri.slice(dataUri.indexOf(',') + 1));
-  return Uint8Array.from(binary, char => char.charCodeAt(0));
+    const binary = atob(dataUri.slice(dataUri.indexOf(',') + 1));
+    return Uint8Array.from(binary, char => char.charCodeAt(0));
 }
 
 let cached: CvFontBytes | null = null;
 
 export function loadCvFonts(): CvFontBytes {
-  cached ??= {
-    sans: decode(sans),
-    sansBold: decode(sansBold),
-    sansItalic: decode(sansItalic),
-    serif: decode(serif),
-    serifBold: decode(serifBold),
-    mono: decode(mono)
-  };
-  return cached;
+    cached ??= {
+        sans: decode(sans),
+        sansBold: decode(sansBold),
+        sansItalic: decode(sansItalic),
+        serif: decode(serif),
+        serifBold: decode(serifBold),
+        mono: decode(mono)
+    };
+    return cached;
 }

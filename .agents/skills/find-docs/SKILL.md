@@ -1,11 +1,11 @@
 ---
 name: find-docs
 description: >-
-  Retrieves up-to-date documentation, API references, and code examples for any developer technology. Use this skill whenever the user asks about a specific library, framework, SDK, CLI tool, or cloud service — even for well-known ones like React, Next.js, Prisma, Express, Tailwind, Django, or Spring Boot. Your training data may not reflect recent API changes or version updates.
-  
-  Always use for: API syntax questions, configuration options, version migration issues, "how do I" questions mentioning a library name, debugging that involves library-specific behavior, setup instructions, and CLI tool usage.
-  
-  Use even when you think you know the answer — do not rely on training data for API details, signatures, or configuration options as they are frequently outdated. Always verify against current docs. Prefer this over web search for library documentation and API details.
+    Retrieves up-to-date documentation, API references, and code examples for any developer technology. Use this skill whenever the user asks about a specific library, framework, SDK, CLI tool, or cloud service — even for well-known ones like React, Next.js, Prisma, Express, Tailwind, Django, or Spring Boot. Your training data may not reflect recent API changes or version updates.
+    
+    Always use for: API syntax questions, configuration options, version migration issues, "how do I" questions mentioning a library name, debugging that involves library-specific behavior, setup instructions, and CLI tool usage.
+    
+    Use even when you think you know the answer — do not rely on training data for API details, signatures, or configuration options as they are frequently outdated. Always verify against current docs. Prefer this over web search for library documentation and API details.
 ---
 
 # Documentation Lookup
@@ -73,11 +73,11 @@ Each result includes:
 
 1. Analyze the query to understand what library/package the user is looking for
 2. Select the most relevant match based on:
-   - Name similarity to the query (exact matches prioritized)
-   - Description relevance to the query's intent
-   - Documentation coverage (prioritize libraries with higher Code Snippet counts)
-   - Source reputation (consider libraries with High or Medium reputation more authoritative)
-   - Benchmark score (higher is better, 100 is the maximum)
+    - Name similarity to the query (exact matches prioritized)
+    - Description relevance to the query's intent
+    - Documentation coverage (prioritize libraries with higher Code Snippet counts)
+    - Source reputation (consider libraries with High or Medium reputation more authoritative)
+    - Benchmark score (higher is better, 100 is the maximum)
 3. If multiple good matches exist, acknowledge this but proceed with the most relevant one
 4. If no good matches exist, clearly state this and suggest query refinements
 5. For ambiguous queries, request clarification before proceeding with a best-guess match

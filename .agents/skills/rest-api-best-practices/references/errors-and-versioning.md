@@ -6,12 +6,12 @@ Use one shape for every error response across the API. Machine-readable `code`, 
 
 ```json
 {
-  "error": {
-    "code": "INVALID_EMAIL",
-    "message": "The email address format is invalid",
-    "details": "Email must contain an @ symbol and valid domain",
-    "field": "email"
-  }
+    "error": {
+        "code": "INVALID_EMAIL",
+        "message": "The email address format is invalid",
+        "details": "Email must contain an @ symbol and valid domain",
+        "field": "email"
+    }
 }
 ```
 
@@ -21,14 +21,14 @@ Don't make clients fix errors one at a time — report every failing field in a 
 
 ```json
 {
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Request validation failed",
-    "details": [
-      {"field": "email", "message": "Email address is required"},
-      {"field": "password", "message": "Password must be at least 8 characters"}
-    ]
-  }
+    "error": {
+        "code": "VALIDATION_ERROR",
+        "message": "Request validation failed",
+        "details": [
+            { "field": "email", "message": "Email address is required" },
+            { "field": "password", "message": "Password must be at least 8 characters" }
+        ]
+    }
 }
 ```
 

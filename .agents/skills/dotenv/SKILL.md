@@ -3,10 +3,10 @@ name: dotenv
 description: Load environment variables from a .env file into process.env for Node.js applications. Use when configuring apps with secrets, setting up local development environments, managing API keys and database uRLs, parsing .env file contents, or populating environment variables programmatically. Always use this skill when the user mentions .env, even for simple tasks like "set up dotenv" — the skill contains critical gotchas (encrypted keys, variable expansion, command substitution) that prevent common production issues.
 license: BSD-2-Clause
 metadata:
-  author: motdotla
-  version: 1.0.0
-  homepage: https://dotenvx.com
-  source: https://github.com/motdotla/dotenv
+    author: motdotla
+    version: 1.0.0
+    homepage: https://dotenvx.com
+    source: https://github.com/motdotla/dotenv
 ---
 
 # dotenv
@@ -79,25 +79,25 @@ Git policy baseline:
 Specify a custom path if your file containing environment variables is located elsewhere.
 
 ```js
-require('dotenv').config({path: '/custom/path/to/.env'});
+require('dotenv').config({ path: '/custom/path/to/.env' });
 ```
 
 Suppress runtime logging message.
 
 ```js
-require('dotenv').config({quiet: false}); // change to true to suppress
+require('dotenv').config({ quiet: false }); // change to true to suppress
 ```
 
 Turn on logging to help debug why certain keys or values are not being set as you expect.
 
 ```js
-require('dotenv').config({debug: true});
+require('dotenv').config({ debug: true });
 ```
 
 Override any environment variables that have already been set on your machine with values from your .env file(s). If multiple files have been provided in `option.path` the override will also be used as each file is combined with the next. Without `override` being set, the first value wins. With `override` set the last value wins.
 
 ```js
-require('dotenv').config({override: true});
+require('dotenv').config({ override: true });
 ```
 
 Parse and validate content:
@@ -107,8 +107,7 @@ const dotenv = require('dotenv');
 const parsed = dotenv.parse(Buffer.from('BASIC=basic'));
 const required = ['DATABASE_URL', 'SECRET_KEY'];
 for (const key of required) {
-  if (!parsed[key] || parsed[key].trim() === '')
-    throw new Error(`Missing ${key}`);
+    if (!parsed[key] || parsed[key].trim() === '') throw new Error(`Missing ${key}`);
 }
 ```
 
@@ -116,11 +115,8 @@ Startup validation should fail fast during boot, not later at first usage:
 
 ```js
 const required = ['DATABASE_URL', 'SECRET_KEY'];
-const missing = required.filter(
-  key => !process.env[key] || process.env[key].trim() === ''
-);
-if (missing.length)
-  throw new Error(`Missing required env vars: ${missing.join(', ')}`);
+const missing = required.filter(key => !process.env[key] || process.env[key].trim() === '');
+if (missing.length) throw new Error(`Missing required env vars: ${missing.join(', ')}`);
 ```
 
 Type parsing reminder:
@@ -132,9 +128,9 @@ Boolean parsing pattern:
 
 ```js
 const isDebug = ['1', 'true', 'yes', 'on'].includes(
-  String(process.env.DEBUG || '')
-    .trim()
-    .toLowerCase()
+    String(process.env.DEBUG || '')
+        .trim()
+        .toLowerCase()
 );
 ```
 

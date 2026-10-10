@@ -1,17 +1,12 @@
-import type {RequestHandler} from './$types';
-import {processCvDelete} from '#lib/server/adminCv.ts';
-import {apiError} from '#lib/server/apiError.ts';
-import {isSameOriginRequest} from '#lib/server/sameOrigin.ts';
+import type { RequestHandler } from './$types';
+import { processCvDelete } from '#lib/server/adminCv.ts';
+import { apiError } from '#lib/server/apiError.ts';
+import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 
-export const POST: RequestHandler = async ({
-  request,
-  platform,
-  url,
-  getClientAddress
-}) => {
-  if (!isSameOriginRequest(request, url)) {
-    return apiError(403, 'FORBIDDEN', 'Cross-origin requests are forbidden.');
-  }
+export const POST: RequestHandler = async ({ request, platform, url, getClientAddress }) => {
+    if (!isSameOriginRequest(request, url)) {
+        return apiError(403, 'FORBIDDEN', 'Cross-origin requests are forbidden.');
+    }
 
-  return processCvDelete(request, platform, getClientAddress);
+    return processCvDelete(request, platform, getClientAddress);
 };

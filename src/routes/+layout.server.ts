@@ -1,26 +1,17 @@
-import type {LayoutServerLoad} from './$types';
-import {supabase} from '#lib/supabase.ts';
-import {fetchAuthorProfileWithSocials} from '#lib/author.ts';
-import {avatarSource} from '#lib/siteIdentity.ts';
-import {
-  fetchProjects,
-  extractGitHubUsername
-} from '#lib/server/githubProjects.ts';
+import type { LayoutServerLoad } from './$types';
+import { supabase } from '#lib/supabase.ts';
+import { fetchAuthorProfileWithSocials } from '#lib/author.ts';
+import { avatarSource } from '#lib/siteIdentity.ts';
+import { fetchProjects, extractGitHubUsername } from '#lib/server/githubProjects.ts';
 
-export const load: LayoutServerLoad = async ({fetch, platform, setHeaders}) => {
-  const author = await fetchAuthorProfileWithSocials(supabase);
+export const load: LayoutServerLoad = async ({ fetch, platform, setHeaders }) => {
+    const author = await fetchAuthorProfileWithSocials(supabase);
 
-  const githubUsername = extractGitHubUsername(author);
-  const projects =
-    githubUsername ? await fetchProjects(githubUsername, fetch, platform) : [];
+    const githubUsername = extractGitHubUsername(author);
+    const projects = githubUsername ? await fetchProjects(githubUsername, fetch, platform) : [];
 
-  try {
-    setHeaders({
-      'cache-control': 'public, max-age=0, s-maxage=60, must-revalidate'
-    });
-  } catch {}
-  return {
-    author: author ? {...author, avatar: avatarSource(author)} : author,
-    projects
-  };
+    try {
+        setHeaders({ 'cache-control': 'public, max-age=0, s-maxage=60, must-revalidate' });
+    } catch {}
+    return { author: author ? { ...author, avatar: avatarSource(author) } : author, projects };
 };

@@ -1,27 +1,27 @@
 {
-  "extends": "$app/tsconfig",
-  "include": ["src", "test", "*"],
-  "exclude": ["src/service-worker"],
-  "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
-    "lib": ["ESNext", "DOM"],
-    "types": ["vite/client", "$app/types"],
-    "allowArbitraryExtensions": true,
-    "skipLibCheck": true,
+    "extends": "$app/tsconfig",
+    "include": ["src", "test", "*"],
+    "exclude": ["src/service-worker"],
+    "compilerOptions": {
+        "target": "esnext",
+        "module": "esnext",
+        "lib": ["ESNext", "DOM"],
+        "types": ["vite/client", "$app/types"],
+        "allowArbitraryExtensions": true,
+        "skipLibCheck": true,
 
-    /* Bundler mode */
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true,
-    "moduleDetection": "force",
-    "noEmit": true,
+        /* Bundler mode */
+        "moduleResolution": "bundler",
+        "allowImportingTsExtensions": true,
+        "verbatimModuleSyntax": true,
+        "moduleDetection": "force",
+        "noEmit": true,
 
-    /* Linting */
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true,
-    "paths": {"$app/types": ["./.svelte-kit/types/index.d.ts"]}
-  }
+        /* Linting */
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "erasableSyntaxOnly": true,
+        "noFallthroughCasesInSwitch": true,
+        "paths": { "$app/types": ["./.svelte-kit/types/index.d.ts"] }
+    }
 }

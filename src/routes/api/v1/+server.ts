@@ -1,5 +1,5 @@
-import type {RequestHandler} from './$types';
+import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async () => {
-  return new Response(null, {status: 301, headers: {Location: '/api/v1/docs'}});
+    return new Response(null, { status: 301, headers: { Location: '/api/v1/docs' } });
 };

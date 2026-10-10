@@ -37,18 +37,18 @@ Write the report to the output directory established in Setup.
 **Output files:**
 
 1. `REPORT.md` -- Main report with:
-   - One-paragraph executive summary (honest assessment of security posture)
-   - Identified baseline and how this application compares
-   - Findings table (severity, title, one-line description)
-   - Each finding with: file path, concrete attack scenario, impact, recommended fix
-   - Hardening notes section (defense-in-depth suggestions, NOT findings)
-   - Positive patterns section (what the codebase does well -- this calibrates trust in the audit)
+    - One-paragraph executive summary (honest assessment of security posture)
+    - Identified baseline and how this application compares
+    - Findings table (severity, title, one-line description)
+    - Each finding with: file path, concrete attack scenario, impact, recommended fix
+    - Hardening notes section (defense-in-depth suggestions, NOT findings)
+    - Positive patterns section (what the codebase does well -- this calibrates trust in the audit)
 
 2. `FINDINGS-DETAIL.md` -- For each finding rated MEDIUM or above:
-   - Complete data flow from input to sink with file:line references
-   - Exact HTTP request(s) to trigger
-   - What the attacker gets
-   - How the baseline comparable handles the same scenario
+    - Complete data flow from input to sink with file:line references
+    - Exact HTTP request(s) to trigger
+    - What the attacker gets
+    - How the baseline comparable handles the same scenario
 
 Keep it short. If the report is longer than the codebase deserves, you're padding.
 

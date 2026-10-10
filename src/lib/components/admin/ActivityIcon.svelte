@@ -1,23 +1,23 @@
 <script lang="ts">
-  import {cn} from '#lib/utils/cn.ts';
-  import {activityTone, activityToneStyles} from './activityTone';
+    import { cn } from '#lib/utils/cn.ts';
+    import { activityTone, activityToneStyles } from './activityTone';
 
-  let {
-    kind,
-    vote,
-    class: className = ''
-  }: {kind: string; vote?: string | null; class?: string} = $props();
+    let {
+        kind,
+        vote,
+        class: className = ''
+    }: { kind: string; vote?: string | null; class?: string } = $props();
 
-  const style = $derived(activityToneStyles[activityTone(kind, vote)]);
-  const Icon = $derived(style.icon);
+    const style = $derived(activityToneStyles[activityTone(kind, vote)]);
+    const Icon = $derived(style.icon);
 </script>
 
 <span
-  aria-hidden="true"
-  class={cn(
-    'flex size-10 shrink-0 items-center justify-center rounded-md border',
-    style.class,
-    className
-  )}>
-  <Icon class="size-[1.125rem]" />
+    aria-hidden="true"
+    class={cn(
+        'flex size-10 shrink-0 items-center justify-center rounded-md border',
+        style.class,
+        className
+    )}>
+    <Icon class="size-[1.125rem]" />
 </span>

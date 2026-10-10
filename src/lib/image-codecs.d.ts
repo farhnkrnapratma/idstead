@@ -1,19 +1,12 @@
 declare module 'upng-js' {
-  const codec: {
-    encode(
-      images: ArrayBuffer[],
-      width: number,
-      height: number,
-      colors: number
-    ): ArrayBuffer;
-    decode(data: ArrayBuffer): {width: number; height: number};
-    toRGBA8(image: unknown): ArrayBuffer[];
-  };
-  export default codec;
+    const codec: {
+        encode(images: ArrayBuffer[], width: number, height: number, colors: number): ArrayBuffer;
+        decode(data: ArrayBuffer): { width: number; height: number };
+        toRGBA8(image: unknown): ArrayBuffer[];
+    };
+    export default codec;
 }
 declare module 'imagetracerjs' {
-  const tracer: {
-    imagedataToSVG(image: ImageData, options: Record<string, unknown>): string;
-  };
-  export default tracer;
+    const tracer: { imagedataToSVG(image: ImageData, options: Record<string, unknown>): string };
+    export default tracer;
 }

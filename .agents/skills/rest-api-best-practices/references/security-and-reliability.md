@@ -75,9 +75,9 @@ Good:
 
 ```json
 {
-  "user": {"id": "123", "name": "Phil Ostman"},
-  "organization_id": "org-456",
-  "organization_name": "Tech Corp"
+    "user": { "id": "123", "name": "Phil Ostman" },
+    "organization_id": "org-456",
+    "organization_name": "Tech Corp"
 }
 ```
 
@@ -85,15 +85,15 @@ Bad (leaks internal model depth):
 
 ```json
 {
-  "user": {
-    "id": "123",
-    "name": "Phil Ostman",
-    "organization": {
-      "id": "org-456",
-      "name": "Tech Corp",
-      "details": {"industry": "Technology", "settings": {"timezone": "UTC"}}
+    "user": {
+        "id": "123",
+        "name": "Phil Ostman",
+        "organization": {
+            "id": "org-456",
+            "name": "Tech Corp",
+            "details": { "industry": "Technology", "settings": { "timezone": "UTC" } }
+        }
     }
-  }
 }
 ```
 
