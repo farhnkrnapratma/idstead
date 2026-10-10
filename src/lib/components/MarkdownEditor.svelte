@@ -981,12 +981,12 @@
                         <pre
                             bind:this={preElement}
                             data-code-theme={editorTheme}
-                            class="editor-pre pointer-events-none m-0! box-border! min-h-full! w-full! scrollbar-none overflow-x-auto! overflow-y-hidden! border-0! bg-transparent pt-0! pr-5! pb-5! pl-2! break-normal! [overflow-wrap:normal]! [word-break:normal]! whitespace-pre! select-none [-ms-overflow-style:none] [grid-area:editor] [&::-webkit-scrollbar]:hidden"><code
-                                class="hljs language-markdown m-0! block! w-max! min-w-full! overflow-x-visible! p-0! [overflow-wrap:normal]! [word-break:normal]! [white-space:pre]!"
+                            class="editor-pre pointer-events-none m-0! box-border! min-h-full! w-full! scrollbar-none overflow-x-auto! overflow-y-hidden! border-0! bg-transparent pt-0! pr-5! pb-5! pl-2! break-normal! wrap-normal! [word-break:normal]! whitespace-pre! select-none [-ms-overflow-style:none] [grid-area:editor] [&::-webkit-scrollbar]:hidden"><code
+                                class="hljs language-markdown m-0! block! w-max! min-w-full! overflow-x-visible! p-0! wrap-normal! [word-break:normal]! whitespace-pre!"
                                 data-code-theme={editorTheme}
                                 >{#each splitHighlightedHtmlLines(highlightedMarkdown) as lineHtml, i (i)}<div
                                         class={cn(
-                                            'editor-code-line m-0! block! w-max! min-w-full! leading-6! [overflow-wrap:normal]! [word-break:normal]! [white-space:pre]!',
+                                            'editor-code-line m-0! block! w-max! min-w-full! leading-6! wrap-normal! [word-break:normal]! whitespace-pre!',
                                             currentLine === i + 1 && 'editor-code-line-active'
                                         )}>{@html lineHtml || '&nbsp;'}</div>{/each}</code></pre>
 
@@ -1007,7 +1007,7 @@
                             onfocus={updateCursorPosition}
                             {onblur}
                             onkeydown={handleTextareaKeyDown}
-                            class="editor-textarea m-0! box-border! h-full! min-h-full! w-full! resize-none! overflow-x-auto! overflow-y-hidden! border-0! bg-transparent! pt-0! pr-5! pb-5! pl-2! break-normal! [overflow-wrap:normal]! [word-break:normal]! whitespace-pre! text-transparent caret-text-primary outline-hidden! [grid-area:editor] placeholder:text-text-muted/60 focus:border-transparent! focus:shadow-none! focus:ring-0 focus:outline-none focus-visible:border-transparent! focus-visible:shadow-none! focus-visible:ring-0! focus-visible:outline-hidden!"
+                            class="editor-textarea m-0! box-border! h-full! min-h-full! w-full! resize-none! overflow-x-auto! overflow-y-hidden! border-0! bg-transparent! pt-0! pr-5! pb-5! pl-2! break-normal! wrap-normal! [word-break:normal]! whitespace-pre! text-transparent caret-text-primary outline-hidden! [grid-area:editor] placeholder:text-text-muted/60 focus:border-transparent! focus:shadow-none! focus:ring-0 focus:outline-none focus-visible:border-transparent! focus-visible:shadow-none! focus-visible:ring-0! focus-visible:outline-hidden!"
                         ></textarea>
                     </div>
                 </div>

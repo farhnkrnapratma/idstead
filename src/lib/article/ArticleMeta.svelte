@@ -105,8 +105,8 @@
     const textClass = $derived(size === 'xxs' ? 'text-2xs' : 'text-xs');
     const iconClass = $derived(
         size === 'xxs' ?
-            'size-3 shrink-0 text-text-muted transition-colors -translate-y-[0.5px]'
-        :   'size-3.5 shrink-0 text-text-muted transition-colors -translate-y-[0.5px]'
+            'size-3 shrink-0 text-text-muted transition-colors translate-y-[-0.5px]'
+        :   'size-3.5 shrink-0 text-text-muted transition-colors translate-y-[-0.5px]'
     );
 </script>
 

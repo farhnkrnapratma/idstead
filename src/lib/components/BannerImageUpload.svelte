@@ -124,7 +124,7 @@
         {@attach watchSaved(savedUrl, savedRevision)}>
         <div
             data-banner-preview
-            class="relative aspect-2/1 w-full max-w-80 overflow-hidden rounded-md border border-border-subtle bg-surface-subtle [background-image:conic-gradient(var(--color-surface)_25%,transparent_0_50%,var(--color-surface)_0_75%,transparent_0)] [background-size:1rem_1rem] sm:w-64 sm:max-w-none">
+            class="relative aspect-2/1 w-full max-w-80 overflow-hidden rounded-md border border-border-subtle bg-surface-subtle bg-[conic-gradient(var(--color-surface)_25%,transparent_0_50%,var(--color-surface)_0_75%,transparent_0)] bg-size-[1rem_1rem] sm:w-64 sm:max-w-none">
             <ImageWithSkeleton
                 src={preview || (loadedSource === savedUrl ? savedUrl : null)}
                 alt={`${blogBannerAlt(title || 'untitled post')} — preview`}

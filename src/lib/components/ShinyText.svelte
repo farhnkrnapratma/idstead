@@ -31,8 +31,8 @@
 <span
     class={[
         'inline-block',
-        '[background-image:linear-gradient(var(--spread),var(--color)_0%,var(--color)_35%,var(--shine-color)_50%,var(--color)_65%,var(--color)_100%)]',
-        '[background-size:200%_100%]',
+        'bg-[linear-gradient(var(--spread),var(--color)_0%,var(--color)_35%,var(--shine-color)_50%,var(--color)_65%,var(--color)_100%)]',
+        'bg-size-[200%_100%]',
         'bg-clip-text',
         '[-webkit-background-clip:text]',
         'text-transparent',
@@ -44,7 +44,7 @@
         '[animation-delay:var(--delay)]',
         className,
         disabled
-            && '[animation:none]! text-[var(--color)]! [-webkit-text-fill-color:var(--color)]! [background:none]!',
+            && 'animate-none! text-(--color)! [-webkit-text-fill-color:var(--color)]! [background:none]!',
         pauseOnHover && 'hover:[animation-play-state:paused]',
         direction === 'left' && '[animation-name:shiny-text-left]',
         direction === 'right' && '[animation-name:shiny-text-right]'

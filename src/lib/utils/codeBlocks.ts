@@ -194,7 +194,7 @@ const ICON_BUTTON_CLASS =
     'relative flex h-5 w-5 items-center justify-center rounded-md border-0 bg-transparent text-text-secondary transition-colors cursor-pointer hover:bg-surface-hover hover:text-text-primary leading-none';
 
 const HEADER_BAR_CLASS =
-    'code-header-bar hljs m-0 flex min-h-[1.75rem] items-center justify-between rounded-t-md border border-border-subtle px-3 py-0.5 text-xs font-semibold text-text-secondary select-none';
+    'code-header-bar hljs m-0 flex min-h-7 items-center justify-between rounded-t-md border border-border-subtle px-3 py-0.5 text-xs font-semibold text-text-secondary select-none';
 
 const HEADER_BAR_MINIMAL_CLASS =
     'code-header-bar hljs absolute right-1 top-1 z-20 m-0 flex items-center justify-end gap-1 border-0 bg-transparent p-0 text-xs font-semibold text-text-secondary select-none';

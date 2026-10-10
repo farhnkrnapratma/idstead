@@ -3040,7 +3040,7 @@
             'transition-none will-change-[width]'
         :   'transition-[width,transform] duration-200 ease-linear'} {sidebarMobileOpen ?
             'translate-x-0 shadow-2xl'
-        :   '-translate-x-full'} {sidebarCollapsed ? 'md:w-11' : 'md:w-[var(--sidebar-width)]'}">
+        :   '-translate-x-full'} {sidebarCollapsed ? 'md:w-11' : 'md:w-(--sidebar-width)'}">
         <div
             role="separator"
             aria-orientation="vertical"

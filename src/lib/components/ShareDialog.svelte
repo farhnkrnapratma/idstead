@@ -102,7 +102,7 @@
                     aria-label="Share on X (opens in a new tab)">
                     {#snippet leading()}
                         <i
-                            class="bi bi-twitter-x inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:[vertical-align:0] [&::before]:leading-none"
+                            class="bi bi-twitter-x inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
                             aria-hidden="true"></i>
                     {/snippet}
                     <span class="hidden truncate sm:inline">X</span>
@@ -119,7 +119,7 @@
                     aria-label="Share on LinkedIn (opens in a new tab)">
                     {#snippet leading()}
                         <i
-                            class="bi bi-linkedin inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:[vertical-align:0] [&::before]:leading-none"
+                            class="bi bi-linkedin inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
                             aria-hidden="true"></i>
                     {/snippet}
                     <span class="hidden truncate sm:inline">LinkedIn</span>
@@ -136,7 +136,7 @@
                     aria-label="Share on WhatsApp (opens in a new tab)">
                     {#snippet leading()}
                         <i
-                            class="bi bi-whatsapp inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:[vertical-align:0] [&::before]:leading-none"
+                            class="bi bi-whatsapp inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
                             aria-hidden="true"></i>
                     {/snippet}
                     <span class="hidden truncate sm:inline">WhatsApp</span>
@@ -153,7 +153,7 @@
                     aria-label="Share on Facebook (opens in a new tab)">
                     {#snippet leading()}
                         <i
-                            class="bi bi-facebook inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:[vertical-align:0] [&::before]:leading-none"
+                            class="bi bi-facebook inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
                             aria-hidden="true"></i>
                     {/snippet}
                     <span class="hidden truncate sm:inline">Facebook</span>
@@ -170,7 +170,7 @@
                     aria-label="Share on Reddit (opens in a new tab)">
                     {#snippet leading()}
                         <i
-                            class="bi bi-reddit inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:[vertical-align:0] [&::before]:leading-none"
+                            class="bi bi-reddit inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
                             aria-hidden="true"></i>
                     {/snippet}
                     <span class="hidden truncate sm:inline">Reddit</span>
@@ -186,7 +186,7 @@
                         aria-label="Share via email">
                         {#snippet leading()}
                             <i
-                                class="bi bi-envelope-fill inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:[vertical-align:0] [&::before]:leading-none"
+                                class="bi bi-envelope-fill inline-flex size-4 shrink-0 items-center justify-center text-sm leading-none [&::before]:align-[0] [&::before]:leading-none"
                                 aria-hidden="true"></i>
                         {/snippet}
                         <span class="hidden truncate sm:inline">Email</span>

@@ -71,7 +71,7 @@
                                     </div>
                                 {/if}
                                 <SquareArrowOutUpRight
-                                    class="order-last size-3 shrink-0 text-text-muted/60 transition-colors duration-200 group-hover:text-accent sm:order-none" />
+                                    class="order-last size-3 shrink-0 text-text-muted/60 transition-colors duration-200 group-hover:text-accent sm:order-0" />
                             </div>
                             <div class="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-none">
                                 <span

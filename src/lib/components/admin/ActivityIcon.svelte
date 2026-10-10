@@ -19,5 +19,5 @@
         style.class,
         className
     )}>
-    <Icon class="size-[1.125rem]" />
+    <Icon class="size-4.5" />
 </span>
