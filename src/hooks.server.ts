@@ -98,12 +98,10 @@ export const handle: Handle = sequence(
     async ({ event, resolve }) => {
         const requestId = event.request.headers.get('x-request-id') || crypto.randomUUID();
 
-        if (event.url.hostname.startsWith('www.')) {
-            const apex = event.url.hostname.replace(/^www\./, '');
-            throw redirect(
-                301,
-                `${event.url.protocol}//${apex}${event.url.pathname}${event.url.search}`
-            );
+        if (event.url.hostname === 'www.fkp.my.id') {
+            throw redirect(301, `https://fkp.my.id${event.url.pathname}${event.url.search}`, {
+                external: ['https://fkp.my.id']
+            });
         }
 
         if (
