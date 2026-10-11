@@ -1352,32 +1352,9 @@
 
                 <form
                     novalidate
-                    action={contactEmail ? `https://formsubmit.co/${contactEmail}` : '#'}
-                    method="POST"
                     onsubmit={validateForm}
                     class="flex w-full flex-col gap-2.5 rounded-md glass-card p-4 text-left sm:gap-3 sm:p-6"
                     autocomplete="off">
-                    <input
-                        type="hidden"
-                        id="contact-subject"
-                        name="_subject"
-                        value="New message from portfolio website!" />
-                    <input
-                        type="hidden"
-                        id="contact-template"
-                        name="_template"
-                        value="table" />
-                    <input
-                        type="hidden"
-                        id="contact-captcha"
-                        name="_captcha"
-                        value="true" />
-                    <input
-                        type="hidden"
-                        id="contact-url"
-                        name="_url"
-                        value={siteUrl ? `${siteUrl}/` : '/'} />
-
                     <div class="mb-2 select-none">
                         <h2 class="text-sm font-bold text-text-primary">Send a Message</h2>
                         <p class="mt-0.5 text-xs text-text-muted">

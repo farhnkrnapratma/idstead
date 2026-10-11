@@ -53,6 +53,7 @@ export interface OutgoingEmail {
     html: string;
     text: string;
     unsubscribeUrl?: string;
+    replyTo?: string;
 }
 
 function payload(from: string, mail: OutgoingEmail) {
@@ -62,6 +63,7 @@ function payload(from: string, mail: OutgoingEmail) {
         subject: mail.subject,
         html: mail.html,
         text: mail.text,
+        ...(mail.replyTo ? { reply_to: mail.replyTo } : {}),
         ...(mail.unsubscribeUrl ?
             {
                 headers: {
@@ -226,6 +228,33 @@ export function loginAlertEmail(
         text: `A password sign-in to the ${siteName} admin just succeeded.\n\n${rows
             .map(([label, value]) => `${label}: ${value}`)
             .join('\n')}\n\nIf this was not you, change the admin password immediately.`
+    };
+}
+
+export function contactMessageEmail(
+    subject: string,
+    details: { name: string; email: string; message: string; pageUrl?: string }
+): Pick<OutgoingEmail, 'subject' | 'html' | 'text' | 'replyTo'> {
+    const rows = [
+        ['Name', details.name],
+        ['Email', details.email],
+        ...(details.pageUrl ? [['Page', details.pageUrl]] : [])
+    ];
+    return {
+        subject,
+        replyTo: details.email,
+        html: shell(
+            `<h1 style="margin:0 0 12px;font-size:20px">${escapeHtml(subject)}</h1>
+<table style="width:100%;border-collapse:collapse;font-size:13px;margin:0 0 20px">${rows
+                .map(
+                    ([label, value]) =>
+                        `<tr><td style="padding:6px 0;color:#6b736d;width:30%">${escapeHtml(label)}</td><td style="padding:6px 0;color:#101411">${escapeHtml(value)}</td></tr>`
+                )
+                .join('')}</table>
+<p style="margin:0;font-size:15px;line-height:1.6;color:#101411;white-space:pre-wrap">${escapeHtml(details.message)}</p>`,
+            'Reply to this email to answer the sender directly.'
+        ),
+        text: `${rows.map(([label, value]) => `${label}: ${value}`).join('\n')}\n\n${details.message}`
     };
 }
 
