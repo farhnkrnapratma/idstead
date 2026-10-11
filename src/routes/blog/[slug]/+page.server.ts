@@ -40,10 +40,8 @@ function getRelatedWindow<T extends { id: string }>(posts: T[], currentId: strin
     return [posts[idx - 1], posts[idx + 1]];
 }
 
-export const load: PageServerLoad = async ({ params, url, fetch }) => {
+export const load: PageServerLoad = async ({ params, fetch }) => {
     const { slug } = params;
-    if (url.searchParams.has('lang'))
-        throw error(400, 'The lang query parameter is no longer supported.');
 
     let post;
     try {

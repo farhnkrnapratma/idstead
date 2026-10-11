@@ -10,14 +10,6 @@ export const GET: RequestHandler = async ({ params, url, request, fetch }) => {
     const { slug: idOrSlug } = params;
     const isUuid = UUID_REGEX.test(idOrSlug);
 
-    if (url.searchParams.has('lang')) {
-        return apiError(
-            400,
-            'BLOG_INVALID_LANG',
-            'The lang query parameter is no longer supported.'
-        );
-    }
-
     let query = supabase.from('db_posts').select('*').eq('published', true);
 
     if (isUuid) {
