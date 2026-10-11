@@ -6,13 +6,19 @@ import { verifyTurnstileToken } from '#lib/server/turnstile.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { supabase } from '#lib/supabase.ts';
 import { fetchAuthorProfile, fetchContactInfo } from '#lib/author.ts';
+import {
+    contactMessageEmail,
+    resendApiKey,
+    sendEmail,
+    senderAddress
+} from '#lib/server/subscribers.ts';
 
 const MAX_NAME = 120;
 const MAX_EMAIL = 254;
 const MAX_URL = 2048;
 const MAX_MESSAGE = 5000;
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const EMAIL_RE = /^[^\s@,;<>"'()]+@[^\s@,;<>"'()]+\.[^\s@,;<>"'()]+$/;
 
 type ContactKind = 'message' | 'feedback';
 
@@ -105,43 +111,21 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         return apiError(503, 'CONTACT_UNAVAILABLE', 'Message submission is currently unavailable.');
     }
 
-    const referer = request.headers.get('referer') || request.headers.get('origin') || url.origin;
+    const apiKey = resendApiKey(platform);
+    const from = senderAddress(platform);
+    if (!apiKey || !from) {
+        return apiError(
+            503,
+            'CONTACT_DELIVERY_UNAVAILABLE',
+            'Message delivery is not configured. Please try again later.'
+        );
+    }
 
-    try {
-        const res = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(contactEmail)}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
-                Referer: referer
-            },
-            body: JSON.stringify({
-                name,
-                email,
-                ...(pageUrl ? { url: pageUrl } : {}),
-                message,
-                _subject: SUBJECTS[kind],
-                _captcha: 'false'
-            })
-        });
-
-        const data: any = await res.json().catch(() => null);
-        if (!res.ok || data?.success === 'false' || data?.success === false) {
-            console.error('FormSubmit rejected the submission:', data);
-            if (
-                res.status === 429
-                || (typeof data?.message === 'string' && /rate limit/i.test(data.message))
-            ) {
-                return apiError(
-                    503,
-                    'CONTACT_DELIVERY_RATE_LIMITED',
-                    'Message delivery is temporarily rate limited. Please try again later.'
-                );
-            }
-            return apiError(502, 'CONTACT_DELIVERY_FAILED', 'The message could not be delivered.');
-        }
-    } catch (err) {
-        console.error('FormSubmit request failed:', err);
+    const delivered = await sendEmail(apiKey, from, {
+        to: contactEmail,
+        ...contactMessageEmail(SUBJECTS[kind], { name, email, message, pageUrl })
+    });
+    if (!delivered) {
         return apiError(502, 'CONTACT_DELIVERY_FAILED', 'The message could not be delivered.');
     }
 

@@ -81,7 +81,7 @@ export function buildContentSecurityPolicy(env: CspEnv = {}): string {
         ],
         'worker-src': ["'self'", 'blob:'],
         'manifest-src': ["'self'"],
-        'form-action': ["'self'", 'https://formsubmit.co'],
+        'form-action': ["'self'"],
         'frame-ancestors': ["'none'"],
         'base-uri': ["'self'"],
         'object-src': ["'none'"]
