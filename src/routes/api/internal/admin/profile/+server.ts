@@ -10,6 +10,7 @@ import { writeAssets, removeAssets, cleanupAssets } from '#lib/server/profileAss
 import { profilePatch, ProfileInputError } from '#lib/server/profilePatch.ts';
 import type { IdentityAsset } from '#lib/siteIdentity.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
+import { workerBinding, type RateLimit } from '#lib/server/workerEnv.ts';
 
 const attempts = new Map<string, number>();
 
@@ -42,7 +43,7 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
     if (!user) return apiError(401, 'PROFILE_SESSION_EXPIRED', 'Please sign in again.');
     const now = Date.now();
     for (const [key, expiry] of attempts) if (expiry < now) attempts.delete(key);
-    const limiter = platform?.env?.API_RATE_LIMITER;
+    const limiter = await workerBinding<RateLimit>('API_RATE_LIMITER');
     if (
         (limiter && !(await limiter.limit({ key: `profile-upload:${user.id}` })).success)
         || (attempts.get(user.id) ?? 0) > now

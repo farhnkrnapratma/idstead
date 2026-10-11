@@ -1,4 +1,6 @@
-const MODEL = '@cf/meta/llama-3.1-8b-instruct-fast';
+import * as Sentry from '@sentry/sveltekit';
+import { TEXT_GENERATION_MODEL } from '#lib/server/aiModels.ts';
+
 const UNSUMMARIZABLE = 'UNSUMMARIZABLE';
 const MAX_ATTEMPTS = 2;
 
@@ -135,7 +137,7 @@ function passesQualityBarList(lines: string[]): boolean {
 
 async function runModel(ai: AiRunner, systemPrompt: string, input: string): Promise<string | null> {
     try {
-        const result = await ai.run(MODEL, {
+        const result = await ai.run(TEXT_GENERATION_MODEL, {
             messages: [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: input }
@@ -147,6 +149,7 @@ async function runModel(ai: AiRunner, systemPrompt: string, input: string): Prom
         return text || null;
     } catch (err) {
         console.error('blogAi generation call failed:', err);
+        Sentry.captureException(err);
         return null;
     }
 }

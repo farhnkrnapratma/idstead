@@ -1,10 +1,11 @@
 import { discoveryOperations, type DiscoveryOperation } from '#lib/server/apiDiscovery.ts';
+import { workerBinding } from '#lib/server/workerEnv.ts';
+import { EMBEDDING_MODEL } from '#lib/server/aiModels.ts';
 
 const ARD_CONTEXT = 'https://agenticresourcediscovery.org/context/v1';
 const ARD_SEARCH_PATH = '/api/ard/search';
 const MAX_PAGE_SIZE = 100;
 const MIN_RELEVANCE_SCORE = 35;
-const EMBEDDING_MODEL = '@cf/qwen/qwen3-embedding-0.6b';
 const STOP_WORDS = new Set([
     'a',
     'an',
@@ -90,8 +91,7 @@ export class ArdRequestError extends Error {
 
 export async function resolveArdAiBinding(platformAi: unknown): Promise<unknown> {
     if (platformAi !== undefined && platformAi !== null) return platformAi;
-    if (!import.meta.env.DEV) return undefined;
-    return (await import('cloudflare:workers')).env.AI;
+    return workerBinding('AI');
 }
 
 function slug(value: string): string {

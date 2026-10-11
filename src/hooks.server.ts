@@ -9,6 +9,7 @@ import { publicResponse } from '#lib/server/publicResponse.ts';
 import { createAuthClient, safeGetSession } from '#lib/server/supabaseAuth.ts';
 import { privateRequestIntegrations } from '#lib/server/sentryPrivacy.ts';
 import { buildContentSecurityPolicy } from '#lib/server/csp.ts';
+import { workerBinding, type RateLimit } from '#lib/server/workerEnv.ts';
 
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const MAX_REQUESTS_PER_WINDOW = 60;
@@ -231,7 +232,7 @@ export const handle: Handle = sequence(
 
             record.timestamps = record.timestamps.filter(t => now - t < RATE_LIMIT_WINDOW_MS);
 
-            const limiter = event.platform?.env?.API_RATE_LIMITER;
+            const limiter = await workerBinding<RateLimit>('API_RATE_LIMITER');
             const isLimited =
                 limiter ?
                     !(await limiter.limit({ key: clientIp })).success

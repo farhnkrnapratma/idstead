@@ -13,6 +13,7 @@ import {
     recordFailedLogin,
     clearLoginAttempts
 } from '#lib/server/loginRateLimit.ts';
+import { workerBinding, type RateLimit } from '#lib/server/workerEnv.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform, fetch }) => {
     const db = getSupabaseAdminClient(platform);
@@ -27,7 +28,7 @@ export const POST: RequestHandler = async ({ request, url, platform, fetch }) =>
             'PASSWORD_RATE_LIMITED',
             'Too many attempts. Try again in 15 minutes.'
         );
-    const limiter = platform?.env?.API_RATE_LIMITER;
+    const limiter = await workerBinding<RateLimit>('API_RATE_LIMITER');
     if (limiter && !(await limiter.limit({ key })).success)
         return apiError(429, 'PASSWORD_RATE_LIMITED', 'Too many attempts. Try again shortly.');
 

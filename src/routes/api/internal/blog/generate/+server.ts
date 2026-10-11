@@ -5,6 +5,7 @@ import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { requireAdminAuth } from '#lib/server/adminCv.ts';
 import { extractDefineBlock } from '#lib/define.ts';
 import { isAiBindingAvailable, generateSummary, generateTldr } from '#lib/server/blogAi.ts';
+import { workerBinding } from '#lib/server/workerEnv.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform }) => {
     if (!isSameOriginRequest(request, url)) {
@@ -32,7 +33,7 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
 
     const { body: markdownForSummary } = extractDefineBlock(rawMarkdown);
 
-    const ai = (platform as unknown as { env?: { AI?: unknown } })?.env?.AI;
+    const ai = await workerBinding('AI');
     if (!isAiBindingAvailable(ai)) {
         return apiError(
             503,
