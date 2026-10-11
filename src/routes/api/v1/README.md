@@ -36,7 +36,6 @@ This shape is enforced by one shared handler for the whole API, so it's the same
 | --- | --- | --- |
 | `BLOG_LIST_FETCH_FAILED` | 500 | `/api/v1/blog` couldn't query the database. |
 | `BLOG_POST_NOT_FOUND` | 404 | No published post matches the given ID/slug. |
-| `BLOG_INVALID_LANG` | 400 | An invalid blog query parameter was supplied. |
 | `BLOG_COMMENT_INVALID_POST_ID` | 400 | `postId` was given but isn't a valid UUID. |
 | `BLOG_COMMENTS_FETCH_FAILED` | 500 | `/api/v1/blog/comments` couldn't query the database. |
 | `BLOG_VIEW_POST_ID_REQUIRED` | 400 | `postId` query parameter is missing. |
@@ -58,6 +57,7 @@ This shape is enforced by one shared handler for the whole API, so it's the same
 | `CV_METADATA_FETCH_FAILED` | 500 | CV document metadata could not be read from the data source. |
 | `RATE_LIMITED` | 429 | Over the rate limit — see below. |
 | `NOT_FOUND` | 404 | Generic fallback — hit a path that doesn't correspond to any endpoint. |
+| `METHOD_NOT_ALLOWED` | 405 | The API is read-only: any method other than `GET`, `HEAD` or `OPTIONS` is rejected. The `Allow` header lists the accepted methods. |
 | `BAD_REQUEST` / `UNAUTHORIZED` / `FORBIDDEN` / `INTERNAL_ERROR` | 400 / 401 / 403 / 500 | Generic fallback codes used only if an unexpected framework-level error bypasses one of the specific codes above — every endpoint documented here returns a specific code instead. |
 
 ## Rate limits
@@ -125,7 +125,7 @@ The per-field sub-routes (`contact`, `socials`, `skills`, `funding`, `cv`) don't
 | --- | --- | --- |
 | GET | `/api/v1/search` | Search blog posts by title/excerpt. Query: `q` (min 2 chars, returns an empty result below that — not a `400`), `limit` (max 20, default 6), `offset` (non-negative integer, default 0; `400 SEARCH_INVALID_OFFSET` otherwise). |
 
-Response shape is `{query, data, pagination: {limit, returned}}` — lighter than the `/api/v1/blog` pagination object below, and no separate `page` param (single page of up to `limit` results).
+Response shape is `{query, data, pagination: {limit, offset, returned, hasMore}}` — lighter than the `/api/v1/blog` pagination object below. There is no `page` param: page with `offset` and stop when `hasMore` is `false`.
 
 ### Discovery & machine-readable docs
 

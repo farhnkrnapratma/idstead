@@ -122,6 +122,13 @@ bun run test
 
 This site also publishes a public, read-only REST API under `/api/v1` (blog posts, author profile, search, comments, and more) — no authentication required. Full reference, error codes, and examples: [`src/routes/api/v1/README.md`](src/routes/api/v1/README.md), also served live at [`GET /api/v1`](https://fkp.my.id/api/v1). Machine-readable OpenAPI spec: [`/.well-known/openapi.json`](https://fkp.my.id/.well-known/openapi.json) / [`/.well-known/openapi.yaml`](https://fkp.my.id/.well-known/openapi.yaml).
 
+`tests/apiV1.test.ts` checks every documented request shape against a running deployment. It is skipped unless `API_TEST_BASE_URL` is set, and sends about 50 requests, so leave a minute between runs to stay under the rate limit:
+
+```sh
+API_TEST_BASE_URL=http://localhost:5173 bun test tests/apiV1.test.ts
+API_TEST_BASE_URL=https://fkp.my.id bun test tests/apiV1.test.ts
+```
+
 ## Deployment
 
 The site deploys to [Cloudflare Pages](https://pages.cloudflare.com/) via [`@sveltejs/adapter-cloudflare`](https://kit.svelte.dev/docs/adapter-cloudflare), building to `.svelte-kit/cloudflare`. Cloudflare Pages is connected directly to this repository — there's no separate manual deploy step or GitHub Actions deploy job, and both tiers below build with the same `bun run build` command (Cloudflare Pages doesn't support a per-environment build command). Two tiers are configured in the Cloudflare Pages dashboard, each with its own environment variable set:

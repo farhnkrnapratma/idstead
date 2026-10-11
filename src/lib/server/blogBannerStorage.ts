@@ -80,11 +80,7 @@ export async function cleanupBlogAssets(db: SupabaseClient, platform?: App.Platf
                 .eq('storage_path', item.storage_path);
             if (postError) throw new Error('Reference check failed.');
             if (posts) continue;
-            if (
-                !/^posts\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.md$/.test(item.storage_path)
-                && !/^[a-z0-9]+(?:-[a-z0-9]+)*\.(?:id|ja|zh|ko)\.md$/.test(item.storage_path)
-            )
-                continue;
+            if (!/^posts\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.md$/.test(item.storage_path)) continue;
             const { error: failure } = await db.storage
                 .from('blog-posts')
                 .remove([item.storage_path]);

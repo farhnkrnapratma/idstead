@@ -935,13 +935,6 @@ export function extractDefineBlock(markdown: string): {
     return { raw, body, errors };
 }
 
-export function protectDefineBlockForTranslation(
-    markdown: string,
-    store: Map<string, string>
-): string {
-    return protectWithPlaceholders(markdown, DEFINE_BLOCK_RE, 'DEFINE_BLOCK', store);
-}
-
 export interface InterpolationToken {
     start: number;
     end: number;

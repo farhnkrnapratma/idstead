@@ -320,8 +320,7 @@
                                 </span>
                             </div>
                             <p class="text-xs leading-relaxed text-text-secondary">
-                                Grammatical mistakes, typos, spelling, poor phrasing, or error
-                                translating.
+                                Grammatical mistakes, typos, spelling, or poor phrasing.
                             </p>
                         </button>
 

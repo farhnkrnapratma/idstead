@@ -5,14 +5,6 @@ import { apiError } from '#lib/server/apiError.ts';
 import { escapePostgrestFilter } from '#lib/server/postgrestSanitize.ts';
 
 export const GET: RequestHandler = async ({ url, request }) => {
-    if (url.searchParams.has('lang')) {
-        return apiError(
-            400,
-            'BLOG_INVALID_LANG',
-            'The lang query parameter is no longer supported.'
-        );
-    }
-
     const id = url.searchParams.get('id')?.trim();
     const slug = url.searchParams.get('slug')?.trim();
     const search = url.searchParams.get('q')?.trim();

@@ -347,6 +347,7 @@ export const handle: Handle = sequence(
                 401: 'UNAUTHORIZED',
                 403: 'FORBIDDEN',
                 404: 'NOT_FOUND',
+                405: 'METHOD_NOT_ALLOWED',
                 429: 'RATE_LIMITED'
             };
             const DEFAULT_MESSAGES: Record<number, string> = {
@@ -354,6 +355,7 @@ export const handle: Handle = sequence(
                 401: 'Authentication is required to access this privileged endpoint.',
                 403: 'You do not have permission to access this privileged resource.',
                 404: 'Requested API endpoint or resource does not exist.',
+                405: 'This HTTP method is not supported for this endpoint.',
                 429: 'Rate limit exceeded. Please wait before retrying.'
             };
 
@@ -370,10 +372,8 @@ export const handle: Handle = sequence(
                     (ARD_DEFAULT_CODES[httpStatus] ?? 'INTERNAL_ERROR')
                 :   (DEFAULT_CODES[httpStatus] ?? 'INTERNAL_ERROR');
             let errorMessage =
-                isArdRequest && httpStatus === 405 ?
-                    'This HTTP method is not supported for this endpoint.'
-                :   (DEFAULT_MESSAGES[httpStatus]
-                    ?? 'An unexpected error occurred while processing the request.');
+                DEFAULT_MESSAGES[httpStatus]
+                ?? 'An unexpected error occurred while processing the request.';
             let errorDetails: string | undefined;
 
             if (contentType.includes('application/json')) {
@@ -417,12 +417,14 @@ export const handle: Handle = sequence(
                 'Cache-Control': 'no-store',
                 'X-Request-ID': requestId,
                 ...(privatePage || preview ? { 'X-Robots-Tag': 'noindex, nofollow' } : {}),
-                ...(isArdRequest && httpStatus === 405 ?
+                ...(httpStatus === 405 ?
                     {
                         Allow:
                             isArdSearchRequest || isArdExploreRequest ? 'POST, OPTIONS'
                             : isArdAgentsRequest ? 'GET, HEAD, OPTIONS'
-                            : 'GET, HEAD, POST, OPTIONS'
+                            : isArdRequest ? 'GET, HEAD, POST, OPTIONS'
+                            : isInternalApi ? (response.headers.get('allow') ?? 'GET, HEAD, POST')
+                            : 'GET, HEAD, OPTIONS'
                     }
                 :   {}),
                 ...(isInternalApi ?
