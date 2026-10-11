@@ -1,7 +1,11 @@
 export type AdminAuthStatus =
     'signed-out' | 'invalid' | 'unauthorized' | 'mfa-required' | 'authenticated';
 
-type AssuranceLevels = { currentLevel: string | null; nextLevel: string | null };
+type AssuranceLevels = {
+    currentLevel: string | null;
+    nextLevel: string | null;
+    currentAuthenticationMethods?: ReadonlyArray<{ method: string } | string>;
+};
 
 type AdminAuthClient = {
     auth: {
@@ -29,7 +33,14 @@ type AdminAuthClient = {
 type AdminAuthInspection =
     { status: 'invalid'; error: unknown } | { status: Exclude<AdminAuthStatus, 'invalid'> };
 
+export function isPasskeySession(assurance: AssuranceLevels | null | undefined): boolean {
+    return !!assurance?.currentAuthenticationMethods?.some(
+        entry => (typeof entry === 'string' ? entry : entry.method) === 'passkey'
+    );
+}
+
 export function requiresAdminMfa(assurance: AssuranceLevels | null | undefined): boolean {
+    if (isPasskeySession(assurance)) return false;
     return assurance?.nextLevel === 'aal2' && assurance.currentLevel !== 'aal2';
 }
 

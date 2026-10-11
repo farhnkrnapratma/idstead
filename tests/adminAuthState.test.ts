@@ -64,6 +64,28 @@ describe('admin authentication state', () => {
         );
     });
 
+    test('accepts a passkey sign-in as satisfying MFA without a TOTP code', () => {
+        const assurance = {
+            currentLevel: 'aal1',
+            nextLevel: 'aal2',
+            currentAuthenticationMethods: [{ method: 'passkey', timestamp: 1 }]
+        };
+
+        expect(requiresAdminMfa(assurance)).toBe(false);
+        expect(resolveAdminAuthStatus('admin', assurance)).toBe('authenticated');
+        expect(resolveAdminAuthStatus('user', assurance)).toBe('unauthorized');
+    });
+
+    test('still requires TOTP after a password sign-in', () => {
+        const assurance = {
+            currentLevel: 'aal1',
+            nextLevel: 'aal2',
+            currentAuthenticationMethods: [{ method: 'password', timestamp: 1 }]
+        };
+
+        expect(requiresAdminMfa(assurance)).toBe(true);
+    });
+
     test('rejects non-admin users and missing assurance data', () => {
         const assurance = { currentLevel: 'aal2', nextLevel: 'aal2' };
 
