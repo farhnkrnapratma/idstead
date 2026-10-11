@@ -7,43 +7,10 @@ import { verifyTurnstileToken } from '#lib/server/turnstile.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
+import { workerBinding } from '#lib/server/workerEnv.ts';
+import { moderateContent } from '#lib/server/moderation.ts';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-interface ModerationResult {
-    safe: boolean;
-    categories: string[];
-    engine: 'llama-guard-3';
-}
-
-async function moderateContent(content: string, ai: unknown): Promise<ModerationResult | null> {
-    if (!ai || typeof (ai as { run?: unknown }).run !== 'function') {
-        return null;
-    }
-
-    try {
-        const runner = ai as { run: (model: string, input: unknown) => Promise<unknown> };
-        const result = await runner.run('@cf/meta/llama-guard-3-8b', {
-            messages: [{ role: 'user', content }],
-            max_tokens: 128,
-            temperature: 0
-        });
-        const text = String((result as { response?: string })?.response ?? '').trim();
-        const isSafe = text.toLowerCase().startsWith('safe');
-        const categories =
-            isSafe ?
-                []
-            :   (text
-                    .split('\n')[1]
-                    ?.split(',')
-                    .map(s => s.trim())
-                    .filter(Boolean) ?? []);
-        return { safe: isSafe, categories, engine: 'llama-guard-3' };
-    } catch (err) {
-        console.error('Llama Guard moderation failed:', err);
-        return null;
-    }
-}
 
 export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
     if (!isSameOriginRequest(request, url)) {
@@ -132,7 +99,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
 
     const moderation = await moderateContent(
         `Author: ${authorName}\nComment: ${content}`,
-        (platform as unknown as { env?: { AI?: unknown } })?.env?.AI
+        await workerBinding('AI')
     );
     if (!moderation) {
         return apiError(

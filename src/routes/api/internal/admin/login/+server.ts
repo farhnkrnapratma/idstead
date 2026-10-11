@@ -20,6 +20,7 @@ import {
 } from '#lib/server/subscribers.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
+import { runInBackground } from '#lib/server/workerEnv.ts';
 
 function ipSalt(platform: unknown): string {
     return (
@@ -197,9 +198,7 @@ export const POST: RequestHandler = async ({
         url,
         mfaRequired
     ).catch(error => console.error('Login alert failed:', error));
-    const context = (platform as { context?: { waitUntil?: (p: Promise<unknown>) => void } })
-        ?.context;
-    context?.waitUntil?.(alert);
+    await runInBackground(alert);
 
     return json({ ok: true, mfaRequired }, { headers: { 'Cache-Control': 'no-store' } });
 };

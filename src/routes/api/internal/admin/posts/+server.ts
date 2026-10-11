@@ -15,6 +15,7 @@ import { createApiRegistry, validateDefineForSave } from '#lib/define.ts';
 import { notifyNewPost } from '#lib/server/subscriberBroadcast.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import * as privateEnv from '$app/env/private';
+import { runInBackground } from '#lib/server/workerEnv.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
     const db = getSupabaseAdminClient(platform);
@@ -63,11 +64,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
                     console.error('Subscriber broadcast failed:', error);
                 }
             );
-            const waitUntil = (
-                platform as { context?: { waitUntil?: (p: Promise<unknown>) => void } }
-            )?.context?.waitUntil;
-            if (waitUntil) waitUntil(broadcast);
-            else await broadcast;
+            await runInBackground(broadcast);
         }
         let cleanupPending = false;
         try {
