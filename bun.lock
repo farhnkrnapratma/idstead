@@ -66,6 +66,20 @@
         "wrangler": "^4.149.0",
       },
     },
+    "apps/jobs": {
+      "name": "@fkp/jobs",
+      "version": "0.0.1",
+      "dependencies": {
+        "@fkp/lib": "workspace:*",
+        "@sentry/cloudflare": "11.6.0",
+        "@supabase/supabase-js": "^2.117.3",
+      },
+      "devDependencies": {
+        "@cloudflare/workers-types": "^5.20261011.1",
+        "typescript": "npm:@typescript/typescript6@^6.0.2",
+        "wrangler": "^4.149.0",
+      },
+    },
     "apps/web": {
       "name": "@fkp/web",
       "version": "0.0.1",
@@ -339,6 +353,8 @@
     "@fkp/admin": ["@fkp/admin@workspace:apps/admin"],
 
     "@fkp/api": ["@fkp/api@workspace:apps/api"],
+
+    "@fkp/jobs": ["@fkp/jobs@workspace:apps/jobs"],
 
     "@fkp/lib": ["@fkp/lib@workspace:packages/lib"],
 

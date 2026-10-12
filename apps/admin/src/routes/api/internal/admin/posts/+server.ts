@@ -16,6 +16,7 @@ import { notifyNewPost } from '#lib/server/subscriberBroadcast.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import * as privateEnv from '$app/env/private';
 import { runInBackground } from '#lib/server/workerEnv.ts';
+import { enqueueNewsletter } from '#lib/server/newsletterQueue.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
     const db = getSupabaseAdminClient(platform);
@@ -59,12 +60,17 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
                 'Post fields could not be committed. Check that the slug is unique.'
             );
         if (operation.result?.published && operation.result.id) {
-            const broadcast = notifyNewPost(db, platform, url.origin, operation.result.id).catch(
-                error => {
-                    console.error('Subscriber broadcast failed:', error);
-                }
-            );
-            await runInBackground(broadcast);
+            const postId = operation.result.id;
+            const queued = await enqueueNewsletter({ postId }).catch(error => {
+                console.error('Could not queue the subscriber broadcast:', error);
+                return false;
+            });
+            if (!queued)
+                await runInBackground(
+                    notifyNewPost(db, platform, url.origin, postId).catch(error => {
+                        console.error('Subscriber broadcast failed:', error);
+                    })
+                );
         }
         let cleanupPending = false;
         try {

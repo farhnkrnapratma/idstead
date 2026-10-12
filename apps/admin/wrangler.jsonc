@@ -6,5 +6,6 @@
     "assets": { "binding": "ASSETS", "directory": ".svelte-kit/cloudflare" },
     "routes": [{ "pattern": "admin.fkp.my.id", "custom_domain": true }],
     "observability": { "enabled": true },
-    "ai": { "binding": "AI", "remote": true }
+    "ai": { "binding": "AI", "remote": true },
+    "queues": { "producers": [{ "binding": "NEWSLETTER_QUEUE", "queue": "fkp-newsletter" }] }
 }
