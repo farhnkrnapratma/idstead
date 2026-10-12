@@ -14,7 +14,7 @@
 
 <div
     class={cn(
-        'inline-flex max-w-full items-center gap-1 rounded-full border border-accent/30 bg-accent/10 px-2 py-1 text-xs font-medium text-accent shadow-2xs select-none',
+        'inline-flex max-w-full items-center gap-1 rounded-full border border-accent/30 bg-accent/10 py-1 pr-1 pl-2 text-xs font-medium text-accent shadow-2xs select-none',
         className
     )}>
     {#if label !== 'tag'}

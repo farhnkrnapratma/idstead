@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Trash } from '@lucide/svelte';
+    import { FunnelX } from '@lucide/svelte';
     import FilterChip from './FilterChip.svelte';
     import Button from '../Button.svelte';
     import { cn } from '../../utils/cn';
@@ -48,9 +48,10 @@
             onclick={onClearAll}
             keyboardShortcut={buttonKey('clearFilters')}
             shortcutLabel="Clear filters"
-            class="h-auto shrink-0 gap-1 rounded-full px-2 py-1 text-xs whitespace-nowrap">
-            {#snippet leading()}<Trash class="size-3" />{/snippet}
-            {clearAllLabel}
+            aria-label={clearAllLabel}
+            title={clearAllLabel}
+            class="h-auto shrink-0 rounded-full border-transparent! p-1.5">
+            <FunnelX class="size-3" />
         </Button>
     </div>
 {/if}
