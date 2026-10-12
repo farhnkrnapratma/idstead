@@ -824,12 +824,12 @@ select {
     }
 
     .prose-custom .footnotes li {
-        @apply relative scroll-mt-20 pl-5! [counter-increment:footnotes];
+        @apply relative grid scroll-mt-20 grid-cols-[2.75em_1fr] pl-0! [counter-increment:footnotes];
     }
 
     .prose-custom .footnotes li::before {
         content: counter(footnotes) '.';
-        @apply absolute top-0 left-0 font-mono text-text-secondary tabular-nums select-none;
+        @apply font-mono text-text-secondary tabular-nums select-none;
     }
 
     .prose-custom .footnotes li p {
@@ -845,7 +845,7 @@ select {
     }
 
     .prose-custom .footnote-backref {
-        @apply inline-flex items-center justify-center px-0.5 py-0.5 font-mono text-security no-underline hover:underline;
+        @apply inline-flex items-center justify-center rounded-sm px-1.5 py-1 font-mono text-security no-underline transition-colors hover:bg-security/15 hover:no-underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-security active:bg-security/25;
         vertical-align: baseline;
         line-height: 1;
     }
@@ -857,7 +857,7 @@ select {
     }
 
     .prose-custom .footnote-sub-backref {
-        @apply inline-flex items-center justify-center px-0.5 py-0.5 font-mono text-security italic no-underline hover:underline;
+        @apply inline-flex items-center justify-center rounded-sm px-1.5 py-1 font-mono text-security italic no-underline transition-colors hover:bg-security/15 hover:no-underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-security active:bg-security/25;
         font-size: 0.75rem !important;
         line-height: 1 !important;
         vertical-align: 0.32em;
@@ -866,6 +866,11 @@ select {
 
     .prose-custom .footnotes li:target a {
         @apply underline;
+    }
+
+    .prose-custom .footnotes li:target .footnote-backref,
+    .prose-custom .footnotes li:target .footnote-sub-backref {
+        @apply bg-security/20 no-underline;
     }
 
     @keyframes code-icon-out {
