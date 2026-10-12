@@ -185,6 +185,14 @@
             const { error } = await supabase.auth.signInWithPasskey();
             if (error) throw error;
             await continueAfterSignIn();
+            if (needsMfa) {
+                const { data: assurance } =
+                    await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+                console.error(
+                    'Passkey session was not accepted as MFA:',
+                    assurance?.currentAuthenticationMethods
+                );
+            }
         } catch (err) {
             const text = err instanceof Error ? err.message : '';
             if (!/cancel|abort|NotAllowed/i.test(text))
