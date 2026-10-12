@@ -73,7 +73,7 @@
                 } else {
                     isChecking = false;
                 }
-            } else if (event === 'SIGNED_IN' && session) {
+            } else if (event === 'SIGNED_IN' && session && page.url.pathname !== '/login') {
                 queueMicrotask(() => {
                     void (async () => {
                         try {
@@ -81,28 +81,10 @@
                             if (status === 'authenticated') {
                                 isAuthenticated = true;
                                 isChecking = false;
-                                if (page.url.pathname === '/login') {
-                                    const target = getSafeRedirectUrl(
-                                        page.url.searchParams.get('redirectTo')
-                                    );
-                                    window.location.replace(target);
-                                }
-                            } else if (page.url.pathname !== '/login') {
-                                redirectToLogin();
-                            } else {
-                                isAuthenticated = false;
-                                isChecking = false;
-                                if (status === 'invalid' || status === 'unauthorized')
-                                    void clearLocalAdminSession(supabase);
-                            }
+                            } else redirectToLogin();
                         } catch (error) {
                             console.error('Admin session check failed:', error);
-                            if (page.url.pathname !== '/login') redirectToLogin();
-                            else {
-                                isAuthenticated = false;
-                                isChecking = false;
-                                void clearLocalAdminSession(supabase);
-                            }
+                            redirectToLogin();
                         }
                     })();
                 });
