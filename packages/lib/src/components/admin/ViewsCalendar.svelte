@@ -2,7 +2,12 @@
     import { Calendar, Chart, Rect, Layer, Tooltip } from 'layerchart';
     import { scaleThreshold } from 'd3-scale';
     import { ChevronLeft, ChevronRight } from '@lucide/svelte';
-    import { formatCount, hasChartActivity, type WorkspaceCalendar } from '#lib/adminWorkspace.ts';
+    import {
+        calendarWeekColumns,
+        formatCount,
+        hasChartActivity,
+        type WorkspaceCalendar
+    } from '#lib/adminWorkspace.ts';
     import { formatAdminDate } from '#lib/adminDateFormat.ts';
     import { adminDisplayStore } from '#lib/stores/adminDisplayStore.svelte.ts';
     import { pluralize } from '#lib/utils/pluralize.ts';
@@ -51,6 +56,15 @@
         'var(--color-calendar-4)'
     ];
     const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const chartPadding = { top: 20, left: 48 };
+    const fallbackHeight = 160;
+    let width = $state(0);
+    const cellSize = $derived(
+        width > chartPadding.left ? (width - chartPadding.left) / calendarWeekColumns(data.year) : 0
+    );
+    const chartHeight = $derived(
+        cellSize > 0 ? Math.round(cellSize * 7 + chartPadding.top) : fallbackHeight
+    );
 </script>
 
 <div class="flex min-w-0 flex-col gap-3">
@@ -91,6 +105,7 @@
     {#if hasActivity}
         <div
             class="views-calendar-chart"
+            bind:clientWidth={width}
             role="img"
             aria-label={`Daily article views for ${data.year}. Hover a day for its exact value.`}>
             <Chart
@@ -100,8 +115,8 @@
                 cScale={scaleThreshold<number, string>().unknown('var(--color-calendar-0)')}
                 cDomain={thresholds}
                 cRange={colors}
-                padding={{ top: 20, left: 48 }}
-                height={160}>
+                padding={chartPadding}
+                height={chartHeight}>
                 {#snippet children({ context })}
                     <Layer>
                         <Calendar
