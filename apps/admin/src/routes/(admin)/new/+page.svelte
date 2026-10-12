@@ -6,7 +6,7 @@
     onMount(() => {
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
-        const target = new URL('/admin', window.location.origin);
+        const target = new URL('/', window.location.origin);
         target.searchParams.set('tab', 'posts');
         target.searchParams.set('editPost', id || 'new');
         goto(`${target.pathname}${target.search}`, { replaceState: true });

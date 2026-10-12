@@ -28,9 +28,14 @@ describe('A11y focus highlight', () => {
         expect(globalCss).toContain('scroll-margin: 0.5rem;');
     });
 
-    test('excludes admin pages as routes change', () => {
-        expect(appLayout).toContain("document.documentElement.dataset.adminPage = 'true'");
-        expect(appLayout).toContain('delete document.documentElement.dataset.adminPage');
-        expect(appLayout).toContain("destinationPath.startsWith('/admin')");
+    test('excludes admin pages, which live in their own app', () => {
+        const adminHtml = readFileSync(
+            new URL('../apps/admin/src/app.html', import.meta.url),
+            'utf8'
+        );
+        const webHtml = readFileSync(new URL('../apps/web/src/app.html', import.meta.url), 'utf8');
+        expect(adminHtml).toContain('data-admin-page="true"');
+        expect(webHtml).not.toContain('data-admin-page');
+        expect(appLayout).not.toContain('dataset.adminPage');
     });
 });

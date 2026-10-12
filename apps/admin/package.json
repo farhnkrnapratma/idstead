@@ -1,0 +1,43 @@
+{
+    "name": "@fkp/admin",
+    "version": "0.0.1",
+    "private": true,
+    "license": "MIT",
+    "type": "module",
+    "imports": {
+        "#lib": "@fkp/lib",
+        "#lib/*": "@fkp/lib/*"
+    },
+    "scripts": {
+        "dev": "vite dev --port 5174",
+        "dev:production": "vite dev --mode production --port 5174",
+        "build": "vite build",
+        "preview": "vite preview",
+        "deploy": "wrangler deploy",
+        "prepare": "svelte-kit sync || echo ''",
+        "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --diagnostic-sources \"js,svelte\""
+    },
+    "dependencies": {
+        "@fkp/lib": "workspace:*",
+        "@lucide/svelte": "^1.55.0",
+        "@sentry/cloudflare": "11.6.0",
+        "@sentry/sveltekit": "^11.6.0",
+        "@supabase/ssr": "^0.12.7",
+        "@supabase/supabase-js": "^2.117.3"
+    },
+    "devDependencies": {
+        "@sveltejs/adapter-cloudflare": "^8.0.0",
+        "@sveltejs/kit": "^3.0.1",
+        "@sveltejs/vite-plugin-svelte": "^7.3.1",
+        "@tailwindcss/vite": "^4.3.3",
+        "svelte": "^5.57.2",
+        "svelte-check": "^4.7.6",
+        "tailwindcss": "^4.3.3",
+        "typescript": "npm:@typescript/typescript6@^6.0.2",
+        "vite": "^8.3.4",
+        "wrangler": "^4.149.0"
+    },
+    "sideEffects": [
+        "**/*.css"
+    ]
+}

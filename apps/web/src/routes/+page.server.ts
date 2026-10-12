@@ -18,8 +18,8 @@ export type { BlogPost } from '#lib/server/blogPosts.ts';
 
 const HOME_POST_LIMIT = 5;
 
-export const load: PageServerLoad = async ({ fetch, platform, locals }) => {
-    const supabaseClient = (locals as any)?.supabase || supabase;
+export const load: PageServerLoad = async ({ fetch, platform }) => {
+    const supabaseClient = supabase;
 
     const [author, cv, funding, contact, skillsGrouped, cvDocument, repoRules] = await Promise.all([
         fetchAuthorProfileWithSocials(supabaseClient, { includeEmail: true }),

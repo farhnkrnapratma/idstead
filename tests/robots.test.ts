@@ -19,7 +19,8 @@ describe('robots.txt', () => {
         expect(response.headers.get('content-type')).toContain('text/plain');
         expect(body).toContain('User-agent: *');
         expect(body).toContain('Allow: /');
-        expect(body).toContain('Disallow: /admin/');
+        expect(body).toContain('Disallow: /api/internal/');
+        expect(body).not.toContain('/admin');
         expect(body).toContain('Sitemap: https://fkp.my.id/sitemap.xml');
         expect(body.split('\n').filter(line => line.startsWith('Sitemap:'))).toHaveLength(1);
         expect(body).not.toContain('Agentmap:');

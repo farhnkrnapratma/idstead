@@ -1,6 +1,5 @@
 <script lang="ts">
     import { onMount, type Snippet } from 'svelte';
-    import { resolve } from '$app/paths';
     import { adminUrl, navigateAdmin } from '#lib/adminNavigation.ts';
     import { resolveAdminSettings, type AdminSettingsSection } from '#lib/adminUrl.ts';
     import {
@@ -307,7 +306,7 @@
                 }).catch(() => {});
             const { error } = await supabase.auth.signOut({ scope: 'global' });
             if (error) throw error;
-            window.location.href = '/admin/login';
+            window.location.href = '/login';
         } catch (error) {
             toastStore.error(message(error, 'Could not sign out everywhere.'));
             signingOutEverywhere = false;
@@ -332,7 +331,7 @@
         class="flex flex-wrap gap-1 border-b border-border-subtle">
         {#each tabs as tab (tab.id)}
             <a
-                href={resolve(`/admin?tab=account&settings=${tab.id}`)}
+                href={`/?tab=account&settings=${tab.id}`}
                 aria-current={activeTab === tab.id ? 'page' : undefined}
                 class={[
                     'flex min-h-11 items-center gap-1.5 border-b-2 px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-focus-ring',

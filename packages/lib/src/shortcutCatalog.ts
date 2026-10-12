@@ -105,7 +105,8 @@ export function actionSection(
     if (combo === normalizeKey(buttonKey('skipLink'))) return 'navigation';
     if (['formClear', 'formSubmit'].some(id => normalizeKey(buttonKey(id)) === combo))
         return 'forms';
-    if (pathname.startsWith('/admin')) return 'admin';
+    if (typeof document !== 'undefined' && document.documentElement.dataset.adminPage === 'true')
+        return 'admin';
     if (
         pathname.startsWith('/blog/')
         && [
