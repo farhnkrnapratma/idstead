@@ -76,6 +76,19 @@ describe('admin authentication state', () => {
         expect(resolveAdminAuthStatus('user', assurance)).toBe('unauthorized');
     });
 
+    test.each(['webauthn', 'WebAuthn', 'mfa/webauthn'])(
+        'accepts the %s authentication method as a passkey sign-in',
+        method => {
+            expect(
+                requiresAdminMfa({
+                    currentLevel: 'aal1',
+                    nextLevel: 'aal2',
+                    currentAuthenticationMethods: [{ method, timestamp: 1 }, 'password']
+                })
+            ).toBe(false);
+        }
+    );
+
     test('still requires TOTP after a password sign-in', () => {
         const assurance = {
             currentLevel: 'aal1',

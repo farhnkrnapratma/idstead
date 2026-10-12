@@ -33,9 +33,11 @@ type AdminAuthClient = {
 type AdminAuthInspection =
     { status: 'invalid'; error: unknown } | { status: Exclude<AdminAuthStatus, 'invalid'> };
 
+const PASSKEY_METHODS = new Set(['passkey', 'webauthn', 'mfa/webauthn']);
+
 export function isPasskeySession(assurance: AssuranceLevels | null | undefined): boolean {
-    return !!assurance?.currentAuthenticationMethods?.some(
-        entry => (typeof entry === 'string' ? entry : entry.method) === 'passkey'
+    return !!assurance?.currentAuthenticationMethods?.some(entry =>
+        PASSKEY_METHODS.has((typeof entry === 'string' ? entry : entry.method).toLowerCase())
     );
 }
 
