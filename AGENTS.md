@@ -4,90 +4,112 @@ This file provides guidance to Codex CLI, Claude Code, Antigravity, and other AI
 
 ## Project
 
-Personal website/blog for Farhan Kurnia Pratama (fkp.my.id) — SvelteKit 5 + TypeScript + Tailwind CSS 4, backed by Supabase (Postgres + RLS), deployed to Cloudflare Pages via `@sveltejs/adapter-cloudflare`. Also publishes a public read-only REST API under `/api/v1`.
+Personal website/blog for Farhan Kurnia Pratama (fkp.my.id) — SvelteKit 5 + TypeScript + Tailwind CSS 4, backed by Supabase (Postgres + RLS), deployed as Cloudflare Workers. A Bun-workspaces monorepo with four deployables that share one library:
+
+| Workspace | Worker | Host | Role |
+| --- | --- | --- | --- |
+| `apps/web` | `fkp-web` | `fkp.my.id` (+ `www.`) | Public site: homepage, `/blog`, posts, legal pages, feeds, `.well-known`, first-party `/api/internal/**` and `/api/ard/**`. |
+| `apps/admin` | `fkp-admin` | `admin.fkp.my.id` | Admin portal at the host root plus `/api/internal/admin/**`. |
+| `apps/api` | `fkp-api` | `api.fkp.my.id/v1` | Public read-only REST API (Hono). |
+| `apps/jobs` | `fkp-jobs` | none | Queue consumer (`fkp-newsletter`) and daily cron cleanups. |
+| `packages/lib` | — | — | `@fkp/lib`: components, layout, stores, markdown engine, server helpers, API handlers. |
 
 ## Commands
 
-Package manager is **bun** — never use npm/npx/yarn/pnpm in this repo (`bun.lock` is the lockfile; use `bun`/`bunx` for everything, including one-off tool invocations).
+Package manager is **bun** — never use npm/npx/yarn/pnpm in this repo (`bun.lock` is the lockfile; use `bun`/`bunx` for everything, including one-off tool invocations). Bun uses the hoisted linker (`bunfig.toml`).
 
 ```sh
-bun install           # install deps
-bun run dev [--host]  # start Vite dev server (mode: development)
-bun run dev:preview   # start Vite dev server against Preview-tier config (mode: preview)
-bun run build         # production build -> .svelte-kit/cloudflare (mode: production)
-bun run build:preview # build against Preview-tier config (mode: preview)
-bun run preview       # preview the production build
-bun run test          # Bun regression tests with isolated database fixtures
-bun run check         # svelte-kit sync + svelte-check (type checking)
-bun run check:watch   # same, in watch mode
-bun run lint          # prettier --write . && eslint .
-bun run lint:fix      # eslint . --fix
-bun run fmt           # prettier --write .
-bun run fmt:check     # prettier --check .
+bun install              # install every workspace
+bun run dev [--host]     # web dev server (apps/web, mode: development)
+bun run dev:admin        # admin dev server on :5174
+bun run --filter @fkp/api dev   # API worker via wrangler dev on :8787
+bun run --filter @fkp/jobs dev  # jobs worker via wrangler dev --test-scheduled on :8788
+bun run build            # build every app (SvelteKit builds + wrangler dry-run bundles)
+bun run test             # Bun regression tests in tests/
+bun run check            # svelte-check for web/admin, tsc for api/jobs
+bun run lint             # prettier --write . && eslint .
+bun run fmt / fmt:check  # prettier
 ```
 
-`bun run test` runs permanent Bun regression tests in `tests/`, including isolated PGlite database tests. Run tests, `bun run check`, and `bun run lint` after non-trivial changes; CI also builds the Cloudflare application. The optional PostgreSQL concurrency suite requires its own disposable Docker container, as documented in README. Keep manual browser harnesses and session reports in ignored local archives, not application source. Build plugins and Git hooks live in `tooling/`; `scripts/` retains operational migration and cleanup commands until Production cutover is complete.
+Run tests, `bun run check`, and `bun run lint` after non-trivial changes; CI also builds every app. `tests/` stays at the repository root and imports from `packages/lib/src` and `apps/*/src`. Build plugins and Git hooks live in `tooling/`; `scripts/` holds operational migration commands (`migrate-markdown-syntax.ts`, `regenerate-post-slugs.ts`, both dry-run by default).
 
-Requires a `.env` (copy from `.env.development.example` or `.env.production.example`) with at least `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY` for the dev server to start. Other vars: Cloudflare R2 (CV file storage), Sentry, Turnstile (bot protection), `IP_SALT` (salts the `ip_hash` column on `db_activity_log`; the admin logs table and its exports also show the raw client IP), `SUPABASE_SERVICE_ROLE_KEY` (server-only, bypasses RLS), `CLOUDFLARE_API_TOKEN` (wrangler CLI auth — needed for the `AI` binding's `remote: true` mode in `wrangler.jsonc` to reach Cloudflare; without it comment moderation returns `BLOG_COMMENT_MODERATION_UNAVAILABLE`). Tier templates are `.env.production.example` / `.env.development.example` — copy to `.env.production` / `.env.development` (and optionally `.env`) for the tier you're targeting locally (see [Environments](#environments) below).
+Env files stay at the repository root (`apps/*/vite.config.ts` set `envDir` and SvelteKit's `env.dir` to `../..`). Copy `.env.development.example` or `.env.production.example`. At minimum `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Other vars: `PUBLIC_API_BASE_URL` (defaults to `https://api.fkp.my.id`), Cloudflare R2 (CV and image storage), Sentry, Turnstile, Resend (`RESEND_API_KEY`, `SUBSCRIBER_FROM_EMAIL` — newsletter and contact form), `IP_SALT`, `SUPABASE_SERVICE_ROLE_KEY` (server-only, bypasses RLS), `CLOUDFLARE_API_TOKEN` (wrangler auth, needed for the `AI` binding's `remote: true` mode in local dev). The wrangler workers (`api`, `jobs`) read env from `--env-file ../../.env.production` locally and from Worker variables/secrets in production.
 
 ## Architecture
 
-### Routing (`src/routes`)
+### Shared library (`packages/lib`)
 
-- `/` is a single-page app — sections (`blog`, `projects`, `contact`, `cv`, `funding`, `home`) are anchors (`/#section`); `src/hooks.server.ts` 307-redirects bare `/blog`, `/projects`, etc. to their hash-anchor form.
-- `/blog/[slug]` — individual blog post pages.
-- `/admin`, `/admin/login`, `/admin/new` — admin UI for authoring blog posts (backed by Supabase auth, not a custom session system).
-- `/api/v1/**` — the public REST API (see below).
-- `/.well-known/**` — serves canonical `openapi.json`/`openapi.yaml`, `llms.txt`, `agent-skills`, `api-catalog`.
-- Root also serves `sitemap.xml`, `robots.txt`, `atom.xml`, `llms.txt` as `+server.ts` endpoints.
+Every app imports shared code as `#lib/...`. Each app's `package.json` maps `#lib/*` to `@fkp/lib/*`, and `@fkp/lib` exports `./*` from `src/*`, so the import paths are identical everywhere. Svelte apps type-check `packages/lib/src` through their own `tsconfig.json`; lib code must therefore type-check in both web and admin (no app-specific typed `resolve()` routes in lib).
 
-### Public API (`src/routes/api/v1`)
+- `src/components/`, `src/layout/`, `src/article/`, `src/stores/` — UI primitives, page layout, article rendering, rune stores.
+- `src/global.css` (Tailwind entry, fonts, `@source './'`) and `src/tokens.css` (design tokens). Apps import `#lib/global.css` in their root layout; component `<style>` blocks `@reference` it relatively.
+- `src/server/` — server-only helpers: `apiError`, `apiEnvelope` (public `{error:{...}}` wrapping), `rateLimit`, `workerEnv` (Cloudflare bindings through `cloudflare:workers`; `event.platform` is always undefined with adapter-cloudflare 8), `csp`, `postLookup`, `subscriberBroadcast`, `newsletterQueue`, and `api/` (API handlers).
+- `src/apiConfig.ts` — `apiUrl()`/`apiBaseUrl()` for links to the API host from web pages.
 
-Full endpoint reference and error-code table: [src/routes/api/v1/README.md](src/routes/api/v1/README.md) — this is also served live at `GET /api/v1`. Read it before adding/changing any API route. Key conventions to preserve when touching API code:
+### Public API (`apps/api`)
 
-- **Error envelope**: route handlers return a flat `{code, message, details?}` body via `apiError()` (`src/lib/server/apiError.ts`); `src/hooks.server.ts` is the single place that wraps this into the public `{error: {...}}` shape. Never hand-roll error JSON in a route — always go through `apiError`.
-- **Error codes** are stable and per-endpoint (e.g. `BLOG_POST_NOT_FOUND`, `BLOG_COMMENT_TURNSTILE_FAILED`) — add new codes to both the handler and the README table, don't reuse generic ones.
-- **Versioning**: breaking changes ship under a new `/api/v2/`, never in place under `/api/v1`. The one exception was the October 2026 v1 reshape (query-parameter lookups, public post IDs); don't treat it as precedent.
-- **`/api/v1` is strictly read-only (`GET` only)** — no route under it may export a mutating method (`POST`/`PUT`/`PATCH`/`DELETE`). Anything that needs to write data (comment submission, view counting, admin login/CV upload/delete) lives under `/api/internal/**` instead — unversioned, undocumented, first-party-only (no `Access-Control-Allow-Origin` wildcard, gated by `isSameOriginRequest()` from `src/lib/server/sameOrigin.ts` where there's no other auth). Never add a mutating handler under `/api/v1`.
-- **CORS + rate limiting** are handled centrally in `src/hooks.server.ts` (60 req/min/IP via Cloudflare's `API_RATE_LIMITER` binding, with an in-memory-per-isolate fallback for local dev) — `/api/internal/admin/*` is exempted from the general limiter but has its own lockout (`src/lib/server/loginRateLimit.ts`, 5 failed attempts / 15 min).
-- **Handlers**: endpoint logic lives in framework-agnostic modules under `src/lib/server/api/` (`blog.ts`, `author.ts`, `root.ts`); the `+server.ts` files only wrap them in `runApi()`. Throw `ApiRequestError` for client errors.
-- **Parameters**: parse every query string with `parseApiParams(url, allowed)` from `src/lib/server/api/params.ts`. Each parameter has a full name and a one-letter alias (`field`/`f`, `output`/`o`, `query`/`q`, `page`/`p`, `limit`/`n`, `checksum`/`c`; `id` has none). Unknown parameters are `400 UNKNOWN_PARAMETER`; name+alias together is `400 PARAM_CONFLICT`. Single resources are addressed with `?id=`, never a path segment.
-- **Representations**: JSON is the default except `GET /api/v1` and `/api/v1/blog/content` (markdown). `output` (resolved by `resolveOutput`) overrides `Accept`; each endpoint declares which of `json`, `md`, `txt`, `pdf` it supports. `/api/v1/cv` must stay byte-identical to `/api/v1/author?field=cv`.
-- **No database IDs in public output**: posts are identified by `db_posts.public_id` (64 hex, immutable), resolved with `findPost()` from `src/lib/server/postLookup.ts` (full ID, slug, or unique ≥7-char prefix). Never return UUIDs or `*_id` columns from `/api/v1`, page data, feeds, or banner URLs.
-- **Web documents**: site pages expose `.md`/`.txt` variants as routes (`/blog/{slug}.md`, `/privacy.txt`, …) via the `legal` and `textformat` matchers in `src/params.ts` — not as query parameters.
-- Keep `src/lib/openapi.ts` and `/.well-known/openapi.{json,yaml}` in sync with any route/schema changes.
+Full endpoint reference and error-code table: [apps/api/src/README.md](apps/api/src/README.md) — served live at `GET https://api.fkp.my.id/v1`. Read it before adding/changing any API route. `apps/api/src/index.ts` is a Hono app; endpoint logic lives in `packages/lib/src/server/api/` (`blog.ts`, `author.ts`, `root.ts`) and routes only wrap it in `runApi()`. Key conventions:
+
+- **Error envelope**: handlers return a flat `{code, message, details?}` body via `apiError()` or throw `ApiRequestError`; the worker middleware wraps it with `apiErrorEnvelope()` into the public `{error: {...}}` shape. Never hand-roll error JSON.
+- **Error codes** are stable and per-endpoint (e.g. `BLOG_POST_NOT_FOUND`) — add new codes to both the handler and the README table.
+- **Versioning**: breaking changes ship under a new `/v2/`, never in place under `/v1`. The October 2026 v1 reshape and move to `api.fkp.my.id` were one-time exceptions; don't treat them as precedent.
+- **Read-only**: the API worker answers `GET`/`HEAD`/`OPTIONS` only (`405` otherwise). Anything that writes data lives under `/api/internal/**` on web or admin — unversioned, undocumented, first-party-only, gated by `isSameOriginRequest()` where there's no other auth.
+- **CORS, rate limiting (60 req/min/IP via `API_RATE_LIMITER`, in-memory fallback), ETags and `Vary: Accept`** are handled centrally in the worker middleware.
+- **Parameters**: parse every query string with `parseApiParams(url, allowed)` (`server/api/params.ts`). Full names and one-letter aliases: `field`/`f`, `output`/`o`, `query`/`q`, `page`/`p`, `limit`/`n`, `checksum`/`c`; `id` has none. Unknown parameters → `400 UNKNOWN_PARAMETER`; name+alias together → `400 PARAM_CONFLICT`. Single resources use `?id=`, never a path segment.
+- **Representations**: JSON by default except `GET /v1` and `/v1/blog/content` (markdown). `output` (via `resolveOutput`) overrides `Accept`. `/v1/cv` must stay byte-identical to `/v1/author?field=cv`.
+- **No database IDs in public output**: posts are identified by `db_posts.public_id` (64 hex, immutable), resolved with `findPost()` (full ID, slug, or unique ≥7-char prefix). Never return UUIDs or `*_id` columns from the API, page data, feeds, or banner URLs.
+- Keep `packages/lib/src/openapi.ts` (paths are `/v1/...`) in sync with any route/schema change; the worker serves it at `/v1/openapi.{json,yaml}` and web mirrors it at `/.well-known/openapi.{json,yaml}`.
+
+### Public site (`apps/web`)
+
+- `/` is a single-page app — sections (`projects`, `contact`, `cv`, `funding`, `home`) are anchors (`/#section`); `src/hooks.server.ts` 307-redirects the bare paths. The homepage shows the five newest posts; `/blog` is the full index (search, tag filter, sort, pagination) and `/blog/[slug]` a post.
+- Pages expose `.md`/`.txt` variants as routes (`/blog/{slug}.md`, `/privacy.txt`, …) via the `legal` and `textformat` matchers in `src/params.ts`.
+- `/.well-known/**` serves `openapi.json`/`openapi.yaml`, `llms.txt`, `agent-skills`, `api-catalog`, `ard.json`; the root serves `sitemap.xml`, `robots.txt`, `atom.xml`, `llms.txt`.
+- There is no `/admin` on this host and no session handling.
+- `src/hooks.server.ts` — `sequence()` of: Sentry, `www.` → apex redirect, identity assets and static reverse-proxy to `PUBLIC_CDN_BASE_URL`, section redirects, CORS preflight for `/api/*`, rate limiting for `/api/*`, the CSP header for HTML (from `server/csp.ts`, including the API origin in `connect-src`), the shared error envelope, and ETags for `.well-known`. Read it before changing cross-cutting behavior.
+
+### Admin (`apps/admin`)
+
+- Pages live in the `(admin)` route group at the host root: `/` (dashboard), `/login`, `/new`. The group layout and `src/hooks.server.ts` both enforce an admin session with MFA; a passkey sign-in (`amr` method `passkey`) satisfies MFA.
+- Supabase auth cookies are host-only on `admin.fkp.my.id`. Every response is `noindex` and `no-store`; `robots.txt` disallows everything; `app.html` sets `data-admin-page="true"`.
+- `/api/internal/admin/**` keeps its paths; login has its own lockout (`server/loginRateLimit.ts`). Links to public pages use the author profile's `siteUrl`.
+- Publishing a post enqueues an `fkp-newsletter` message (`NEWSLETTER_QUEUE` binding); without the binding it delivers in the request. Manual re-sends stay synchronous.
+
+### Jobs (`apps/jobs`)
+
+Consumes `fkp-newsletter` (retries, dead-letter queue `fkp-newsletter-dlq`) and runs `cleanupBlogAssets`/`cleanupAssets` daily. `wrangler.jsonc` aliases `$app/env/private`/`$app/env/public` to `src/appEnv.ts`, which reads `cloudflare:workers` env, so shared server code runs unchanged.
 
 ### Data layer
 
-- `src/lib/supabase.ts` — public (anon key) Supabase client, safe for server _and_ client use.
-- `src/lib/server/supabaseAdmin.ts` — service-role client that bypasses RLS. **Server-only** — never import from a `.svelte` file or anything bundled for the browser. Used where RLS deliberately blocks the public role (e.g. comment inserts must go through Turnstile + AI moderation first, not a direct anon-key insert).
-- `src/lib/authorApi.ts` / `src/lib/author.ts` — fetch/shape the author profile (CV, funding, contact, skills, socials) consumed by both the root layout and `/api/v1/author*`.
-- `src/lib/supabaseFunctions.ts` — Supabase Edge Function calls from the app.
-- `supabase/functions/` — Supabase Edge Functions (`admin`, `admin-cv-upload`, `admin-cv-delete`) deployed separately from the SvelteKit app.
-- Comment moderation: submissions are checked by Llama Guard 3 (via the Cloudflare `AI` binding declared in `wrangler.jsonc`). If that binding is unavailable or the model call fails, the request is rejected with `BLOG_COMMENT_MODERATION_UNAVAILABLE` (503) — there is no heuristic fallback. `is_approved: false` means the AI held the comment back, not published.
-- **No hardcoded/raw content data in application code.** Author name, bio, contact info, CV entries, funding links, skills, etc. must always be fetched from Supabase via `author.ts`/`authorApi.ts` — never inline a literal value (e.g. the author's name or bio) directly in a component or route as a stand-in for real data. This doesn't apply to files that are inherently static by format/platform convention (`.github/FUNDING.yml`, `SECURITY.md`, `package.json` metadata, etc.) — those aren't rendered app content.
+- `packages/lib/src/supabase.ts` — public (anon key) Supabase client, safe for server _and_ client use.
+- `packages/lib/src/server/supabaseAdmin.ts` — service-role client that bypasses RLS. **Server-only** — never import from a `.svelte` file or anything bundled for the browser.
+- `packages/lib/src/authorApi.ts` / `author.ts` — fetch/shape the author profile (CV, funding, contact, skills, socials).
+- `supabase/functions/` — Supabase Edge Functions deployed separately. `supabase/migrations/` — schema history; production has been migrated through the MCP tool, so its recorded versions differ from file names — compare before assuming a migration is applied.
+- Comment moderation uses Llama Guard 3 through the web worker's `AI` binding. If the binding or the model call fails, the request is rejected with `BLOG_COMMENT_MODERATION_UNAVAILABLE` (503). `is_approved: false` means the AI held the comment back.
+- RPCs run under PostgREST's `safeupdate`: every `DELETE`/`UPDATE` in a database function needs a `WHERE` clause (`tests/safeupdate.test.ts` enforces this).
+- **No hardcoded/raw content data in application code.** Author name, bio, contact info, CV entries, funding links, skills, etc. must always be fetched from Supabase — never inline a literal stand-in. This doesn't apply to files that are inherently static by convention (`.github/FUNDING.yml`, `SECURITY.md`, `package.json` metadata, etc.).
 
 ### Environments
 
-Two Cloudflare Pages tiers, each with its own dashboard-configured environment variable set (Cloudflare Pages always builds with the single `bun run build` command for both tiers — there's no per-environment build command — so the variable set is what differentiates a deployment, never a committed `.env.*` file, which is for local dev only):
+Each app is a Worker connected to Workers Builds with the root directory set to its workspace (`apps/web`, `apps/admin`, `apps/api`, `apps/jobs`):
 
-- **Production** — `main` branch, deploys to `fkp.my.id`. Real Turnstile keys, `PUBLIC_SENTRY_ENVIRONMENT=production`.
-- **Preview** — `develop` branch (and PRs), deploys to a `*.pages.dev` URL. Cloudflare's [dummy Turnstile testing keys](https://developers.cloudflare.com/turnstile/troubleshooting/testing/) instead of real ones (preview URLs aren't a verified Turnstile domain), `PUBLIC_SENTRY_ENVIRONMENT=preview`.
+- **Production** — `main` branch, `wrangler deploy` to the custom domains in each `wrangler.jsonc`. Real Turnstile keys, `PUBLIC_SENTRY_ENVIRONMENT=production`.
+- **Preview** — `develop` and PR branches build Worker Previews with Preview-scoped variables: Cloudflare's [dummy Turnstile keys](https://developers.cloudflare.com/turnstile/troubleshooting/testing/), `PUBLIC_SENTRY_ENVIRONMENT=preview`. `*.workers.dev` hosts are treated as preview (noindex, robots disallow).
 
-Both tiers share the same Supabase project and `wrangler.jsonc` bindings (`AI`, `API_RATE_LIMITER`) — no per-tier split there. `src/hooks.server.ts` and `src/hooks.client.ts` tag Sentry events with `PUBLIC_SENTRY_ENVIRONMENT`, falling back to `import.meta.env.MODE` when that var is unset (local dev), so `production`/`preview`/`development` events never mix in Sentry. Canonical templates are `.env.production.example` / `.env.development.example` (full variable sets per tier, including Turnstile and `PUBLIC_SENTRY_ENVIRONMENT`). `bun run dev` (Vite mode `development`) automatically layers `.env` → `.env.development`, while `bun run build` layers `.env` → `.env.production`.
+All apps share one Supabase project. Sentry events are tagged with `PUBLIC_SENTRY_ENVIRONMENT`, falling back to `import.meta.env.MODE` locally.
 
-### `src/hooks.server.ts`
+### Markdown engine
 
-Single `sequence()`-composed `Handle` doing, in order: Sentry init/handle, `www.` → apex redirect, favicon/static-asset reverse-proxies to `PUBLIC_CDN_BASE_URL`, section-path → hash-anchor redirects, CORS preflight handling for `/api/*`, then rate limiting for non-admin API routes. Read this file before changing any cross-cutting request behavior (redirects, CORS, rate limits) — don't duplicate this logic in individual routes.
+`packages/lib/src/markdown.ts` renders posts and legal pages. Syntax reference is in README (`Markdown syntax`). `renderMarkdown` always ends with `sanitizeHtml` (`packages/lib/src/sanitizeHtml.ts`, an allowlist that also covers the engine's own markup), so any new tag, attribute or class the engine emits must be added to that allowlist; `tests/sanitizeHtml.test.ts` fails if engine output changes under sanitizing. Stored content is migrated between syntaxes with `scripts/migrate-markdown-syntax.ts` built on `packages/lib/src/legacyMarkdown.ts`.
 
-### Components (`src/lib`)
+### Components
 
-- `src/lib/components/` — flat directory of reusable UI primitives (Button, Dialog family, form fields, Toast, DataTable, Pagination, etc.) plus one `filter/` subfolder.
-- `src/lib/layout/` — page-structure components (AppShell, PageContainer, Section, FormSection, etc.), separate from generic UI components.
-- `src/lib/article/` — blog-post-specific rendering (ArticleHeader, ArticleMeta, HelpfulBlock).
-- `src/lib/stores/` — Svelte 5 runes-based stores (`.svelte.ts` files): theme, toast, consent, filter/sort state.
-- Styling: Tailwind CSS 4 (via `@tailwindcss/vite`, no separate config file) plus `src/lib/tokens.css` for design tokens and `src/routes/global.css` for the irreducible global reset/Tailwind entry point — component- and page-specific styling lives in each component/page's own `<style>` block or inline Tailwind classes instead.
-- **Every page must reuse the existing shared components/layout primitives consistently** (`src/lib/components/`, `src/lib/layout/`, `src/lib/article/`) — never build a page-local one-off replacement for something that already exists (e.g. a custom footer instead of `src/lib/layout/FooterSection.svelte`). Run the `ui-consistency-check` skill (or the `ui-consistency-reviewer` agent) after touching any page or component to catch drift.
+- `packages/lib/src/components/` — flat directory of reusable UI primitives (Button, Dialog family, form fields, Toast, DataTable, Pagination, BlogPostCard, etc.) plus `filter/` and `admin/` subfolders.
+- `packages/lib/src/layout/` — page-structure components (AppShell, PageContainer, Section, FormSection, FooterSection, etc.).
+- `packages/lib/src/article/` — blog-post-specific rendering (ArticleHeader, ArticleMeta, HelpfulBlock).
+- `packages/lib/src/stores/` — Svelte 5 runes-based stores (`.svelte.ts` files): theme, toast, consent, filter/sort state.
+- Styling: Tailwind CSS 4 (via `@tailwindcss/vite`, no separate config file) plus `tokens.css` and `global.css` in the lib — component- and page-specific styling lives in each component/page's own `<style>` block or inline Tailwind classes.
+- **Every page must reuse the existing shared components/layout primitives consistently** — never build a page-local one-off replacement for something that already exists. Run the `ui-consistency-check` skill (or the `ui-consistency-reviewer` agent) after touching any page or component to catch drift.
 
 ### Agent/skills tooling
 
@@ -104,7 +126,7 @@ The agent can use the Svelte MCP server, which provides comprehensive Svelte 5 a
 
 ## Code style
 
-Enforced by `prettier.config.ts` + `eslint.config.ts` — run `bun run fmt` before committing. Notable non-defaults: no semicolons, single quotes, no trailing commas, no bracket spacing (`{foo}` not `{ foo }`), `arrowParens: 'avoid'`, 2-space indent. Svelte 5 runes syntax (`$state`, `$derived`, etc.) is used throughout — this is not Svelte 4/Options API.
+Enforced by `prettier.config.ts` + `eslint.config.ts` — run `bun run fmt` before committing. Svelte 5 runes syntax (`$state`, `$derived`, etc.) is used throughout — this is not Svelte 4/Options API.
 
 - **No comments in code.** Don't add comments describing what code does or why, even for non-obvious logic — prefer clear naming/structure instead.
 - **Prefer Tailwind utility classes over hand-written CSS** wherever Tailwind can express it. Only drop into a `<style>` block for things Tailwind genuinely can't do (e.g. complex selectors, animations Tailwind doesn't cover).
@@ -114,8 +136,8 @@ Enforced by `prettier.config.ts` + `eslint.config.ts` — run `bun run fmt` befo
 
 This repo uses **git-flow-next** (classic preset — https://git-flow.sh/), initialized via `git-flow init --preset=classic --defaults --main main`. Config lives in local `.git/config` (`gitflow.*` keys), not committed — re-run that command on a fresh clone.
 
-- `main` — production/release only. Never commit directly; only `release/*` and `hotfix/*` branches merge into it (and get tagged). Deploys to Cloudflare Pages **Production** (see [Environments](#environments)).
-- `develop` — integration branch. `feature/*` and `bugfix/*` branch from and merge back into it. Deploys to Cloudflare Pages **Preview**.
+- `main` — production/release only. Never commit directly; only `release/*` and `hotfix/*` branches merge into it (and get tagged). Deploys every Worker to **Production** (see [Environments](#environments)).
+- `develop` — integration branch. `feature/*` and `bugfix/*` branch from and merge back into it. Builds Worker **Previews**.
 - `feature/<name>`, `bugfix/<name>` — parent `develop`. `git-flow feature start <name>` / `git-flow feature finish <name>`.
 - `release/<name>`, `hotfix/<name>` — parent `main`, started from `develop`/`main` respectively, merge into `main`, tagged on finish.
 
@@ -129,12 +151,9 @@ Commit messages must follow [Conventional Commits](https://www.conventionalcommi
 
 This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
 
-When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
-
 Rules:
 
 - For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
-- Dirty graphify-out/ files are expected after hooks or incremental updates; dirty graph files are not a reason to skip graphify. Only skip graphify if the task is about stale or incorrect graph output, or the user explicitly says not to use it.
 - If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
 - Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
 - After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
