@@ -9,10 +9,10 @@ export const GET: RequestHandler = async ({ request }) => {
         readSiteProfile(),
         supabase
             .from('db_posts')
-            .select('id,title,slug,excerpt,summary,created_at,updated_at')
+            .select('public_id,title,slug,excerpt,summary,created_at,updated_at')
             .eq('published', true)
             .order('created_at', { ascending: false })
-            .order('id')
+            .order('public_id')
             .limit(20)
     ]);
     if (failure) error(503, 'Feed is temporarily unavailable.');
@@ -45,7 +45,7 @@ ${posts
         post => `<entry><title>${xml(post.title)}</title>
 <link href="${xml(base + '/blog/' + encodeURIComponent(post.slug))}" rel="alternate" type="text/html"/>
 <link href="${xml(base + '/api/v1/blog/' + encodeURIComponent(post.slug) + '?format=md')}" rel="alternate" type="text/markdown"/>
-<id>urn:uuid:${xml(post.id)}</id><published>${post.published}</published><updated>${post.updated}</updated>
+<id>tag:${xml(new URL(base).hostname)},2026:post:${xml(post.public_id)}</id><published>${post.published}</published><updated>${post.updated}</updated>
 <summary type="text">${xml(post.excerpt || post.summary || '')}</summary></entry>`
     )
     .join('\n')}

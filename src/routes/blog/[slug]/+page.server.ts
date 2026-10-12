@@ -1,4 +1,4 @@
-import { bannerUrl } from '#lib/blogBanner.ts';
+import { publicBannerUrl } from '#lib/blogBanner.ts';
 import { supabase } from '#lib/supabase.ts';
 import { error } from '@sveltejs/kit';
 import { renderMarkdown, injectHeadingIds, extractHeadings } from '#lib/markdown.ts';
@@ -7,7 +7,6 @@ import type { PageServerLoad } from './$types';
 
 export interface BlogComment {
     id: string;
-    post_id: string;
     parent_id: string | null;
     author_name: string;
     content: string;
@@ -87,7 +86,9 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
     try {
         const { data, error: commentsError } = await supabase
             .from('db_comments')
-            .select('*')
+            .select(
+                'id, parent_id, author_name, content, is_anonymous, is_admin, is_approved, created_at'
+            )
             .eq('post_id', post.id)
             .eq('is_approved', true)
             .order('created_at', { ascending: true });
@@ -112,14 +113,14 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
         console.error('Error counting post views:', err);
     }
 
-    const bannerPublicUrl = bannerUrl(post);
+    const bannerPublicUrl = publicBannerUrl(post);
 
     let relatedPosts: RelatedPost[] = [];
     try {
         const { data, error: relatedError } = await supabase
             .from('db_posts')
             .select(
-                'id, title, slug, excerpt, created_at, updated_at, banner_version, storage_path, tags, pinned'
+                'id, public_id, title, slug, excerpt, created_at, updated_at, banner_version, storage_path, tags, pinned'
             )
             .eq('published', true)
             .order('created_at', { ascending: false });
@@ -129,7 +130,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
         } else if (data) {
             relatedPosts = await Promise.all(
                 getRelatedWindow(data, post.id).map(async (p: any) => {
-                    const relatedBannerUrl = bannerUrl(p);
+                    const relatedBannerUrl = publicBannerUrl(p);
 
                     let readTime = '1 min read';
                     try {
@@ -170,7 +171,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
                     }
 
                     return {
-                        id: p.id,
+                        id: p.public_id,
                         title: p.title,
                         slug: p.slug,
                         excerpt: p.excerpt ?? null,
@@ -190,9 +191,12 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
         console.error('Database error fetching related posts:', err);
     }
 
+    const { id: _internalId, public_id: publicId, ...publicPost } = post;
+
     return {
         post: {
-            ...post,
+            ...publicPost,
+            id: publicId as string,
             read_time: readTime,
             title: post.title,
             excerpt: post.excerpt,

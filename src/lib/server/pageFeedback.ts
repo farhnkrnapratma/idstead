@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { ActivityInputError, activityJson, activityTarget, activityUuid } from './activityInput';
 import { isSameOriginRequest } from './sameOrigin';
+import { resolvePostUuid } from './postLookup';
 
 export async function recordPageFeedback(input: {
     request: Request;
@@ -23,10 +24,8 @@ export async function recordPageFeedback(input: {
         const operationId = activityUuid(
             legacy && body.operationId == null ? crypto.randomUUID() : body.operationId
         );
-        const target = activityTarget(
-            legacy ? 'article' : body.targetType,
-            legacy ? body.postId : body.targetId
-        );
+        const targetType = legacy ? 'article' : body.targetType;
+        const targetId = legacy ? body.postId : body.targetId;
         if (body.vote !== 'yes' && body.vote !== 'no')
             throw new ActivityInputError('Choose Yes or No.');
         if (!db || !secret?.trim())
@@ -35,6 +34,10 @@ export async function recordPageFeedback(input: {
                 'FEEDBACK_UNAVAILABLE',
                 'Feedback is temporarily unavailable. Please try again.'
             );
+        const articleId = targetType === 'article' ? await resolvePostUuid(db, targetId) : null;
+        if (targetType === 'article' && !articleId)
+            return fail(404, 'FEEDBACK_TARGET_NOT_FOUND', 'This page is not available.');
+        const target = activityTarget(targetType, articleId ?? targetId);
         const ip = input.ip();
         if (!ip)
             return fail(

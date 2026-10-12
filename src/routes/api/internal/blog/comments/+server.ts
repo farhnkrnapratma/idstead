@@ -9,6 +9,7 @@ import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { workerBinding } from '#lib/server/workerEnv.ts';
 import { moderateContent } from '#lib/server/moderation.ts';
+import { PUBLIC_ID_PATTERN, resolvePostUuid } from '#lib/server/postLookup.ts';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -34,17 +35,17 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         return apiError(403, 'BLOG_COMMENT_TURNSTILE_FAILED', 'Turnstile verification failed.');
     }
 
-    const postId = typeof body?.postId === 'string' ? body.postId.trim() : '';
+    const publicId = typeof body?.postId === 'string' ? body.postId.trim() : '';
     const parentId =
         typeof body?.parentId === 'string' && body.parentId.trim() ? body.parentId.trim() : null;
     const authorName = typeof body?.authorName === 'string' ? body.authorName.trim() : '';
     const content = typeof body?.content === 'string' ? body.content.trim() : '';
 
-    if (!postId || !UUID_RE.test(postId)) {
+    if (!publicId || !PUBLIC_ID_PATTERN.test(publicId)) {
         return apiError(
             400,
             'BLOG_COMMENT_INVALID_POST_ID',
-            'postId is required and must be a valid UUID.'
+            'postId is required and must be a post ID.'
         );
     }
     if (parentId && !UUID_RE.test(parentId)) {
@@ -118,6 +119,27 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         );
     }
 
+    const postId = await resolvePostUuid(adminClient, publicId);
+    if (!postId) {
+        return apiError(404, 'BLOG_POST_NOT_FOUND', 'No published post matches postId.');
+    }
+    if (parentId) {
+        const { data: parent } = await adminClient
+            .from('db_comments')
+            .select('id')
+            .eq('id', parentId)
+            .eq('post_id', postId)
+            .eq('is_approved', true)
+            .maybeSingle();
+        if (!parent) {
+            return apiError(
+                400,
+                'BLOG_COMMENT_INVALID_PARENT_ID',
+                'parentId must refer to a published comment on this post.'
+            );
+        }
+    }
+
     const { data, error: dbErr } = await adminClient
         .from('db_comments')
         .insert({
@@ -130,7 +152,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             is_approved: moderation.safe
         })
         .select(
-            'id, post_id, parent_id, author_name, content, is_anonymous, is_admin, is_approved, created_at'
+            'id, parent_id, author_name, content, is_anonymous, is_admin, is_approved, created_at'
         )
         .single();
 

@@ -3,7 +3,7 @@
     module>
     export interface CommentItem {
         id: string;
-        post_id: string;
+        post_id?: string;
         parent_id: string | null;
         author_name: string | null;
         is_admin?: boolean;

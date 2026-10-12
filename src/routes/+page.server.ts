@@ -14,6 +14,7 @@ import {
     fetchProjectRepoRules
 } from '#lib/author.ts';
 import { estimateReadTime } from '#lib/readTime.ts';
+import { publicBannerUrl } from '#lib/blogBanner.ts';
 
 export interface BlogPost {
     id: string;
@@ -23,6 +24,7 @@ export interface BlogPost {
     pinned: boolean;
     storage_path: string;
     banner_version?: string | null;
+    bannerPublicUrl?: string | null;
     created_at: string;
     updated_at?: string | null;
     excerpt?: string | null;
@@ -108,8 +110,11 @@ export const load: PageServerLoad = async ({ fetch, platform, locals }) => {
                         viewsCountPromise
                     ]);
 
+                    const { id: _internalId, public_id: publicId, ...publicPost } = post;
                     return {
-                        ...post,
+                        ...publicPost,
+                        id: publicId as string,
+                        bannerPublicUrl: publicBannerUrl(post),
                         tags:
                             Array.isArray(post.tags) ?
                                 post.tags.map(decodeHtmlEntities)
