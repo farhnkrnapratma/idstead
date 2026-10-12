@@ -61,6 +61,8 @@
     import { goto } from '$app/navigation';
     import { resolve } from '$app/paths';
     import { page } from '$app/state';
+    import * as publicEnv from '$app/env/public';
+    import { apiUrl } from '#lib/apiConfig.ts';
     import { SvelteSet } from 'svelte/reactivity';
     import {
         formatPeriod,
@@ -79,6 +81,8 @@
     import type { Project } from '#lib/types.ts';
 
     let { data } = $props();
+
+    const cvPdfUrl = apiUrl('/cv?output=pdf', publicEnv.PUBLIC_API_BASE_URL);
 
     type Section = 'home' | 'blog' | 'contact' | 'cv' | 'projects' | 'funding';
 
@@ -127,7 +131,7 @@
     async function handleCvDownload(e: MouseEvent) {
         e.preventDefault();
         try {
-            const response = await fetch('/api/v1/cv?output=pdf');
+            const response = await fetch(cvPdfUrl);
             if (!response.ok) throw new Error(`CV download failed with ${response.status}`);
             const filename =
                 response.headers
@@ -879,7 +883,7 @@
                                         type="primary"
                                         tone="neutral"
                                         size="sm"
-                                        href="/api/v1/cv?output=pdf"
+                                        href={cvPdfUrl}
                                         download
                                         shortcutGroup="save"
                                         shortcutChordKey={argKey('/save', 'cv')}
@@ -1284,7 +1288,7 @@
                             type="primary"
                             tone="neutral"
                             size="md"
-                            href="/api/v1/cv?output=pdf"
+                            href={cvPdfUrl}
                             download
                             shortcutGroup="save"
                             shortcutChordKey={argKey('/save', 'cv')}

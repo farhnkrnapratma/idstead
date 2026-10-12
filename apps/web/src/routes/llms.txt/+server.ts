@@ -1,4 +1,6 @@
 import type { RequestHandler } from './$types';
+import * as publicEnv from '$app/env/public';
+import { apiUrl } from '#lib/apiConfig.ts';
 import {
     readSiteProfile,
     readPublishedPosts,
@@ -13,6 +15,7 @@ export const GET: RequestHandler = async ({ request }) => {
     const authorHeadline = markdownText(author.headline);
     const authorBio = markdownText(author.bio);
     const SITE_URL = author.siteUrl;
+    const API_URL = apiUrl('', publicEnv.PUBLIC_API_BASE_URL);
 
     let md = `# ${authorName} — ${authorHeadline}
 
@@ -22,15 +25,15 @@ Welcome to the LLM & AI Agent directory for ${authorName}'s developer portfolio.
 
 ## Core Information & APIs
 
-- [Profile Markdown](${SITE_URL}/api/v1/author?output=md): Full author profile, technical skills, experiences, and contact channels in Markdown.
-- [Public API Documentation](${SITE_URL}/api/v1): Human-friendly documentation for REST & Markdown API endpoints.
-- [OpenAPI (JSON)](${SITE_URL}/.well-known/openapi.json): Machine-readable OpenAPI v3 JSON specification for all public APIs.
-- [OpenAPI (YAML)](${SITE_URL}/.well-known/openapi.yaml): Same spec in YAML format.
+- [Profile Markdown](${API_URL}/author?output=md): Full author profile, technical skills, experiences, and contact channels in Markdown.
+- [Public API Documentation](${API_URL}): Human-friendly documentation for REST & Markdown API endpoints.
+- [OpenAPI (JSON)](${API_URL}/openapi.json): Machine-readable OpenAPI v3 JSON specification for all public APIs.
+- [OpenAPI (YAML)](${API_URL}/openapi.yaml): Same spec in YAML format.
 - [Agent Skills Discovery](${SITE_URL}/.well-known/agent-skills/index.json): Per-endpoint agent skill descriptors with content digests for automated agent integration.
 - [API Catalog (RFC 9727)](${SITE_URL}/.well-known/api-catalog): Linkset of all public API endpoints for service discovery.
 - [Atom Feed](${SITE_URL}/atom.xml): Atom feed containing recent blog post summaries.
 - [XML Sitemap](${SITE_URL}/sitemap.xml): Complete URL index for web crawlers.
-- [CV Download PDF](${SITE_URL}/api/v1/cv?output=pdf): Official curriculum vitae PDF file.
+- [CV Download PDF](${API_URL}/cv?output=pdf): Official curriculum vitae PDF file.
 
 ## Posts (Markdown API)
 
@@ -46,8 +49,8 @@ Welcome to the LLM & AI Agent directory for ${authorName}'s developer portfolio.
     }
 
     md += `\n## Optional\n\n`;
-    md += `- [JSON Author API](${SITE_URL}/api/v1/author): Full author dataset in JSON format.\n`;
-    md += `- [JSON Blog Catalog](${SITE_URL}/api/v1/blog): Catalog of published blog posts in JSON format.\n`;
+    md += `- [JSON Author API](${API_URL}/author): Full author dataset in JSON format.\n`;
+    md += `- [JSON Blog Catalog](${API_URL}/blog): Catalog of published blog posts in JSON format.\n`;
 
     return publicResponse(request, md, 'text/markdown; charset=utf-8', 300);
 };

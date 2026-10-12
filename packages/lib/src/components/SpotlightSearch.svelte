@@ -6,6 +6,8 @@
     import { tick, untrack } from 'svelte';
     import { goto } from '$app/navigation';
     import { page } from '$app/state';
+    import * as publicEnv from '$app/env/public';
+    import { apiUrl } from '#lib/apiConfig.ts';
     import {
         Search,
         Mail,
@@ -992,7 +994,7 @@
             category: 'pages',
             title: '/api',
             subtitle: 'Open developer REST API documentation.',
-            url: '/api/v1',
+            url: apiUrl('', publicEnv.PUBLIC_API_BASE_URL),
             icon: Braces,
             badge: 'API'
         },
@@ -1527,7 +1529,7 @@
                     name: 'api',
                     title: '/goto api',
                     subtitle: 'Open developer API documentation.',
-                    url: '/api/v1',
+                    url: apiUrl('', publicEnv.PUBLIC_API_BASE_URL),
                     icon: Braces,
                     badge: 'Developer'
                 }
@@ -1683,7 +1685,7 @@
                     category: 'actions',
                     title: '/save cv',
                     subtitle: 'Download resume document as PDF.',
-                    url: '/api/v1/cv?output=pdf',
+                    url: apiUrl('/cv?output=pdf', publicEnv.PUBLIC_API_BASE_URL),
                     icon: Save,
                     badge: 'File'
                 });
@@ -1911,7 +1913,9 @@
         const lists = await Promise.all(
             sources.map(async source => {
                 try {
-                    const res = await fetch(`/api/v1/author?field=${source.path}`);
+                    const res = await fetch(
+                        apiUrl(`/author?field=${source.path}`, publicEnv.PUBLIC_API_BASE_URL)
+                    );
                     if (!res.ok) return [];
                     const data = (await res.json())?.[source.path];
                     return (Array.isArray(data) ? data : []).flatMap((link: any) => {
@@ -1950,7 +1954,10 @@
 
     async function fetchPostsPage(query: string, page: number) {
         const res = await fetch(
-            `/api/v1/search?q=${encodeURIComponent(query)}&limit=${SECTION_PAGE_SIZE}&page=${page}`,
+            apiUrl(
+                `/search?q=${encodeURIComponent(query)}&limit=${SECTION_PAGE_SIZE}&page=${page}`,
+                publicEnv.PUBLIC_API_BASE_URL
+            ),
             { signal: searchAbortController?.signal }
         );
         const data = await res.json();
@@ -2184,7 +2191,10 @@
             const blogSubQuery = trimmed.replace('/goto blog', '').trim();
             try {
                 const res = await fetch(
-                    `/api/v1/search?q=${encodeURIComponent(blogSubQuery || 'a')}`,
+                    apiUrl(
+                        `/search?q=${encodeURIComponent(blogSubQuery || 'a')}`,
+                        publicEnv.PUBLIC_API_BASE_URL
+                    ),
                     { signal: controller.signal }
                 );
                 const data = await res.json();

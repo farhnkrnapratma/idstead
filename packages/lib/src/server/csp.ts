@@ -2,6 +2,7 @@ interface CspEnv {
     supabaseUrl?: string;
     sentryDsn?: string;
     cdnBaseUrl?: string;
+    apiBaseUrl?: string;
     dev?: boolean;
 }
 
@@ -61,6 +62,7 @@ export function buildContentSecurityPolicy(env: CspEnv = {}): string {
     const supabase = originOf(env.supabaseUrl);
     const sentry = originOf(env.sentryDsn);
     const cdn = originOf(env.cdnBaseUrl);
+    const api = originOf(env.apiBaseUrl);
 
     const directives: Record<string, string[]> = {
         'default-src': ["'self'"],
@@ -76,6 +78,7 @@ export function buildContentSecurityPolicy(env: CspEnv = {}): string {
             websocketOf(supabase),
             sentry,
             cdn,
+            api,
             ...CONNECT_SOURCES,
             ...(env.dev ? ['ws://localhost:*', 'http://localhost:*'] : [])
         ],

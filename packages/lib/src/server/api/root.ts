@@ -9,8 +9,8 @@ export function apiIndex() {
     return {
         name: openapiSpec.info.title,
         version: openapiSpec.info.version,
-        docs: '/api/v1',
-        openapi: '/.well-known/openapi.json',
+        docs: '/v1',
+        openapi: '/v1/openapi.json',
         endpoints: Object.entries(openapiSpec.paths).flatMap(([path, methods]) => {
             const operation = (methods as { get?: Operation }).get;
             if (!operation) return [];

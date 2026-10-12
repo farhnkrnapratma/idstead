@@ -5,6 +5,8 @@
     import { installSubmitShortcut } from '#lib/utils/submitShortcut.ts';
     import { onNavigate } from '$app/navigation';
     import { page } from '$app/state';
+    import * as publicEnv from '$app/env/public';
+    import { apiUrl } from '#lib/apiConfig.ts';
     import { ConsentBanner, Toast, ScrollToTopButton, FeedbackButton } from '#lib/index.ts';
     import ShortcutCatalogDialog from '#lib/components/ShortcutCatalogDialog.svelte';
     import ShortcutModeIndicator from '#lib/components/ShortcutModeIndicator.svelte';
@@ -133,7 +135,7 @@
         rel="describedby"
         type="text/markdown"
         title="Public API documentation"
-        href="/api/v1" />
+        href={apiUrl('', publicEnv.PUBLIC_API_BASE_URL)} />
 </svelte:head>
 
 {@render children()}

@@ -129,7 +129,7 @@ async function postMarkdown(ctx: ApiContext, row: PostRow) {
 }
 
 function contentPath(id: string) {
-    return `/api/v1/blog/content?id=${id}`;
+    return `/v1/blog/content?id=${id}`;
 }
 
 function day(value: string) {
