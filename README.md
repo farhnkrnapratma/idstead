@@ -11,7 +11,7 @@
   ·
   <a href="https://fkp.my.id/#projects">Projects</a>
   ·
-  <a href="https://fkp.my.id/#blog">Blog</a>
+  <a href="https://fkp.my.id/blog">Blog</a>
   ·
   <a href="https://fkp.my.id/#cv">CV</a>
   ·
@@ -71,7 +71,7 @@ cp .env.production.example .env.production
 cp .env.production.example .env
 ```
 
-`bun run dev` (Vite mode `development`) automatically loads `.env.development`, and `bun run build` loads `.env.production`.
+Env files live at the repository root for every app. `bun run dev` (Vite mode `development`) automatically loads `.env.development`, and `bun run build` loads `.env.production`.
 
 The dev server will not start correctly without a valid `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY` at minimum.
 
@@ -79,33 +79,36 @@ The dev server will not start correctly without a valid `PUBLIC_SUPABASE_URL` an
 
 And that's it, you're ready to start hacking!
 
-### Start Development Server
+### Repository Layout
 
-I use [Vite](https://vite.dev/) as the build tool and development server. You can start the development server by running this command:
+This is a Bun workspaces monorepo. Each app is its own Cloudflare Worker, and all of them share `packages/lib`:
+
+| Path | Deploys to | What it is |
+| --- | --- | --- |
+| `apps/web` | `fkp.my.id` | Public site (SvelteKit): homepage, blog, legal pages, feeds, discovery. |
+| `apps/admin` | `admin.fkp.my.id` | Admin portal (SvelteKit). |
+| `apps/api` | `api.fkp.my.id/v1` | Public read-only REST API (Hono). |
+| `apps/jobs` | — (queue and cron only) | Newsletter delivery and daily storage cleanup. |
+| `packages/lib` | — | Shared components, styles, markdown engine and server code. |
+
+### Start Development Servers
 
 ```sh
-bun run dev [--host]
+bun run dev [--host]              # public site (Vite)
+bun run dev:admin                 # admin portal on http://localhost:5174
+bun run --filter @fkp/api dev     # API worker on http://localhost:8787
+bun run --filter @fkp/jobs dev    # jobs worker on http://localhost:8788
 ```
 
-You can omit `--host` if you don't need to preview the website on another device on the same network (e.g., a smartphone or tablet).
+The wrangler-based workers read their variables from the repository root: add `--env-file ../../.env.production` (or `.env.development`) to the `wrangler dev` command, or create `apps/api/.dev.vars`. Point the site at a local API by setting `PUBLIC_API_BASE_URL=http://localhost:8787` in `.env`.
 
-### Build for Production
-
-You can build this project with [Vite](https://vite.dev/) by running this command:
+### Build
 
 ```sh
 bun run build
 ```
 
-This command will generate a `.svelte-kit` folder in the project root.
-
-### Preview Production Build
-
-If you want to preview your website before deploying it, run this command:
-
-```sh
-bun run preview
-```
+This builds both SvelteKit apps into their `.svelte-kit/cloudflare` folders and bundles the API and jobs workers with `wrangler deploy --dry-run`.
 
 ### Code Quality Checks
 
@@ -120,29 +123,41 @@ bun run test
 
 ## Public API
 
-This site also publishes a public, read-only REST API under `/api/v1` (blog posts, author profile, search, comments, and more) — no authentication required. Full reference, error codes, and examples: [`src/routes/api/v1/README.md`](src/routes/api/v1/README.md), also served live at [`GET /api/v1`](https://fkp.my.id/api/v1). Machine-readable OpenAPI spec: [`/.well-known/openapi.json`](https://fkp.my.id/.well-known/openapi.json) / [`/.well-known/openapi.yaml`](https://fkp.my.id/.well-known/openapi.yaml).
+The public, read-only REST API lives at [`https://api.fkp.my.id/v1`](https://api.fkp.my.id/v1) (blog posts, author profile, CV, search, comments and more) — no authentication required. Full reference, error codes, and examples: [`apps/api/src/README.md`](apps/api/src/README.md), also served live at `GET /v1`. OpenAPI: [`/v1/openapi.json`](https://api.fkp.my.id/v1/openapi.json) / [`/v1/openapi.yaml`](https://api.fkp.my.id/v1/openapi.yaml).
 
-`tests/apiV1.test.ts` checks every documented request shape against a running deployment. It is skipped unless `API_TEST_BASE_URL` is set, and sends about 50 requests, so leave a minute between runs to stay under the rate limit:
+`tests/apiV1.test.ts` checks every documented request shape against a running API worker. It is skipped unless `API_TEST_BASE_URL` is set, and sends about 50 requests, so leave a minute between runs to stay under the rate limit:
 
 ```sh
-API_TEST_BASE_URL=http://localhost:5173 bun test tests/apiV1.test.ts
-API_TEST_BASE_URL=https://fkp.my.id bun test tests/apiV1.test.ts
+API_TEST_BASE_URL=http://localhost:8787 bun test tests/apiV1.test.ts
+API_TEST_BASE_URL=https://api.fkp.my.id bun test tests/apiV1.test.ts
 ```
 
 ## Deployment
 
-The site deploys to [Cloudflare Pages](https://pages.cloudflare.com/) via [`@sveltejs/adapter-cloudflare`](https://kit.svelte.dev/docs/adapter-cloudflare), building to `.svelte-kit/cloudflare`. Cloudflare Pages is connected directly to this repository — there's no separate manual deploy step or GitHub Actions deploy job, and both tiers below build with the same `bun run build` command (Cloudflare Pages doesn't support a per-environment build command). Two tiers are configured in the Cloudflare Pages dashboard, each with its own environment variable set:
+Every app deploys as a Cloudflare Worker through [Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/). Connect one Worker per app to this repository with:
 
-- **Production** — pushes to `main` deploy to `fkp.my.id`. Needs the variables in `.env.production.example`, including real `PUBLIC_TURNSTILE_SITE_KEY`/`TURNSTILE_SECRET` and `PUBLIC_SENTRY_ENVIRONMENT=production`.
-- **Preview** — pushes to `develop` (and PRs) deploy to a `*.pages.dev` preview URL. Uses Cloudflare's [dummy Turnstile testing keys](https://developers.cloudflare.com/turnstile/troubleshooting/testing/) instead of real ones and `PUBLIC_SENTRY_ENVIRONMENT=preview`, so preview builds don't need a verified domain and don't pollute production error tracking.
+| Worker      | Root directory | Build command   | Deploy command         |
+| ----------- | -------------- | --------------- | ---------------------- |
+| `fkp-web`   | `apps/web`     | `bun run build` | `bunx wrangler deploy` |
+| `fkp-admin` | `apps/admin`   | `bun run build` | `bunx wrangler deploy` |
+| `fkp-api`   | `apps/api`     | —               | `bunx wrangler deploy` |
+| `fkp-jobs`  | `apps/jobs`    | —               | `bunx wrangler deploy` |
 
-Both tiers share the same Supabase project. Bindings (rate limiter, Workers AI) are declared in `wrangler.jsonc` and are shared across tiers too.
+- **Production** — pushes to `main` deploy to the custom domains declared in each `wrangler.jsonc`. Set the variables from `.env.production.example` as Worker variables/secrets, including real Turnstile keys and `PUBLIC_SENTRY_ENVIRONMENT=production`.
+- **Preview** — pushes to `develop` (and PRs) build Worker Previews. Give previews their own variables: Cloudflare's [dummy Turnstile testing keys](https://developers.cloudflare.com/turnstile/troubleshooting/testing/) and `PUBLIC_SENTRY_ENVIRONMENT=preview`.
 
-For local development against a given tier's config, copy the matching template on top of `.env` or use `.env.development` / `.env.production` — Vite layers `.env` → `.env.[mode]` automatically. This is a local-only convenience; it has no effect on what Cloudflare Pages deploys.
+One-time Cloudflare and Supabase setup:
+
+1. Create the queues `fkp-newsletter` and `fkp-newsletter-dlq` (`bunx wrangler queues create <name>`).
+2. Remove `fkp.my.id` and `www.fkp.my.id` from the old Pages project before the first `fkp-web` deploy, so the Worker can claim the custom domains.
+3. In Supabase Auth, add `https://admin.fkp.my.id` to the redirect URLs, and add it to the Passkeys **Relying Party Origins** so passkeys keep working on the admin host.
+4. Apply the pending database migrations in `supabase/migrations/` before deploying code that depends on them (`db_posts.public_id` in particular).
+
+All apps share the same Supabase project. Local `.env*` files are for development only and have no effect on what Cloudflare deploys.
 
 ## Markdown syntax
 
-Posts and legal pages share one Markdown engine (`src/lib/markdown.ts`) built on `marked`, with MDX-flavoured directives. Directives open with `:::name`, close with a bare `:::`, take `key="value"` attributes separated by spaces (no braces), and can be nested. Attribute values are always HTML-escaped. Anything the engine does not recognise is left as literal text.
+Posts and legal pages share one Markdown engine (`packages/lib/src/markdown.ts`) built on `marked`, with MDX-flavoured directives. Directives open with `:::name`, close with a bare `:::`, take `key="value"` attributes separated by spaces (no braces), and can be nested. Attribute values are always HTML-escaped. Anything the engine does not recognise is left as literal text.
 
 ```text
 [Link](https://example.com "Optional title")
@@ -212,7 +227,7 @@ Math is rendered with KaTeX on the server. A single `$` is plain text.
 
 Containers and `:::math` also work inside list items (`-`, `*`, `1.` with the content indented under the marker, up to three spaces) and blockquotes (`> :::note`). Nested lists are not supported.
 
-All rendered HTML passes through an allowlist sanitizer (`src/lib/sanitizeHtml.ts`): scripts, event handlers, unknown tags, foreign iframes and `javascript:` URLs are removed, whether they come from an author or generated content. Raw `kbd`, `sub`, `sup`, `u`, `mark`, `details` and `br` still work.
+All rendered HTML passes through an allowlist sanitizer (`packages/lib/src/sanitizeHtml.ts`): scripts, event handlers, unknown tags, foreign iframes and `javascript:` URLs are removed, whether they come from an author or generated content. Raw `kbd`, `sub`, `sup`, `u`, `mark`, `details` and `br` still work.
 
 ### Article references
 
