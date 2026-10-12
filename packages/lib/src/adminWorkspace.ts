@@ -96,6 +96,15 @@ export function majorityPercent(yes: number, no: number) {
 export function hasChartActivity(values: readonly number[]) {
     return values.some(value => value > 0);
 }
+
+export function calendarWeekColumns(year: number) {
+    const start = new Date(year, 0, 1);
+    const days = Math.round((new Date(year + 1, 0, 1).getTime() - start.getTime()) / 86_400_000);
+    const firstBoundary = start.getDay() === 0 ? 7 : 7 - start.getDay();
+    const boundaries = days >= firstBoundary ? Math.floor((days - firstBoundary) / 7) + 1 : 0;
+    return boundaries + 1;
+}
+
 export function shouldShowDataControls(total: number, filtersActive: boolean) {
     return total > 0 || filtersActive;
 }
