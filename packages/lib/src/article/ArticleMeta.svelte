@@ -105,8 +105,8 @@
     const textClass = $derived(size === 'xxs' ? 'text-2xs' : 'text-xs');
     const iconClass = $derived(
         size === 'xxs' ?
-            'size-3 shrink-0 text-text-muted transition-colors translate-y-[-0.5px]'
-        :   'size-3.5 shrink-0 text-text-muted transition-colors translate-y-[-0.5px]'
+            'size-3 shrink-0 text-text-muted transition-colors'
+        :   'size-3.5 shrink-0 text-text-muted transition-colors'
     );
 </script>
 
@@ -120,7 +120,7 @@
                 aria-label="Published"
                 class="inline-flex items-center gap-1.5 rounded-full border border-success/30 bg-success-subtle/80 p-1 text-2xs leading-none font-medium whitespace-nowrap text-success sm:px-2 sm:py-0.5">
                 <CircleCheck
-                    class="size-3 shrink-0 text-success sm:translate-y-[-0.5px]"
+                    class="size-3 shrink-0 text-success"
                     strokeWidth={1.75}
                     absoluteStrokeWidth={true} />
                 <span class="hidden leading-none sm:inline">Published</span>
@@ -131,7 +131,7 @@
                 aria-label="Draft"
                 class="inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning-subtle/80 p-1 text-2xs leading-none font-medium whitespace-nowrap text-warning-strong sm:px-2 sm:py-0.5">
                 <CircleDotDashed
-                    class="size-3 shrink-0 text-warning-strong sm:translate-y-[-0.5px]"
+                    class="size-3 shrink-0 text-warning-strong"
                     strokeWidth={1.75}
                     absoluteStrokeWidth={true} />
                 <span class="hidden leading-none sm:inline">Draft</span>
@@ -139,7 +139,7 @@
         {/if}
     {:else if part === 'author'}
         <span
-            class="hidden items-center gap-1 font-normal whitespace-nowrap text-text-secondary sm:inline-flex">
+            class="hidden items-center gap-1 leading-none font-normal whitespace-nowrap text-text-secondary sm:inline-flex">
             <User
                 class={iconClass}
                 strokeWidth={1.75}
@@ -149,7 +149,7 @@
     {:else if part === 'date'}
         <span
             title={publishedTooltip}
-            class="inline-flex items-center gap-1 font-normal whitespace-nowrap text-text-secondary">
+            class="inline-flex items-center gap-1 leading-none font-normal whitespace-nowrap text-text-secondary">
             <CalendarCheck2
                 class={iconClass}
                 strokeWidth={1.75}
@@ -165,7 +165,7 @@
     {:else if part === 'updatedAt'}
         <span
             title={updatedTooltip}
-            class="inline-flex items-center gap-1 font-normal whitespace-nowrap text-text-secondary">
+            class="inline-flex items-center gap-1 leading-none font-normal whitespace-nowrap text-text-secondary">
             <RotateCcwClock
                 class={iconClass}
                 strokeWidth={1.75}
@@ -180,7 +180,7 @@
         </span>
     {:else if part === 'readingTime'}
         <span
-            class="inline-flex items-center gap-1 font-normal whitespace-nowrap text-text-secondary">
+            class="inline-flex items-center gap-1 leading-none font-normal whitespace-nowrap text-text-secondary">
             <BookOpen
                 class={iconClass}
                 strokeWidth={1.75}
@@ -189,7 +189,7 @@
         </span>
     {:else if part === 'views'}
         <span
-            class="hidden items-center gap-1 font-normal whitespace-nowrap text-text-secondary sm:inline-flex">
+            class="hidden items-center gap-1 leading-none font-normal whitespace-nowrap text-text-secondary sm:inline-flex">
             <Eye
                 class={iconClass}
                 strokeWidth={1.75}
@@ -198,7 +198,7 @@
         </span>
     {:else if part === 'comments'}
         <span
-            class="hidden items-center gap-1 font-normal whitespace-nowrap text-text-secondary sm:inline-flex">
+            class="hidden items-center gap-1 leading-none font-normal whitespace-nowrap text-text-secondary sm:inline-flex">
             <MessageCircle
                 class={iconClass}
                 strokeWidth={1.75}
