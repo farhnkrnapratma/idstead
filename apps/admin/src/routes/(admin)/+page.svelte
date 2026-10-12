@@ -12,7 +12,6 @@
     } from '#lib/postSaveClient.ts';
     import { FieldValidation, requiredText, emailError } from '#lib/fieldValidation.ts';
     import { avatarSource } from '#lib/siteIdentity.ts';
-    import { resolve } from '$app/paths';
     import ProfileImageUpload from '#lib/components/ProfileImageUpload.svelte';
     import type { ImagePackage } from '#lib/siteIdentity.ts';
     import { page } from '$app/state';
@@ -154,6 +153,10 @@
         type SkillItem,
         type CvDocument
     } from '#lib/author.ts';
+
+    const publicSiteUrl = $derived(
+        ((page.data as { author?: { siteUrl?: string } })?.author?.siteUrl ?? '').replace(/\/$/, '')
+    );
 
     interface AdminPost {
         id: string;
@@ -1615,7 +1618,7 @@
             if (!active) return;
             if (!sessionData.session) {
                 const target = window.location.pathname + window.location.search;
-                window.location.href = `/admin/login?redirectTo=${encodeURIComponent(target)}`;
+                window.location.href = `/login?redirectTo=${encodeURIComponent(target)}`;
                 return;
             }
 
@@ -1901,7 +1904,7 @@
                 }).catch(() => {});
             await supabase.auth.signOut();
             adminNotificationsStore.unsubscribe();
-            window.location.href = '/admin/login';
+            window.location.href = '/login';
         } catch (err) {
             console.error('Error signing out:', err);
             isLoggingOut = false;
@@ -3409,9 +3412,7 @@
                                             <h3
                                                 class="text-lg leading-snug font-bold text-text-primary transition-colors hover:text-accent">
                                                 <a
-                                                    href={resolve('/blog/[slug]', {
-                                                        slug: post.slug
-                                                    })}
+                                                    href="{publicSiteUrl}/blog/{post.slug}"
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     class="rounded-sm outline-none hover:underline focus-visible:ring-2 focus-visible:ring-accent">

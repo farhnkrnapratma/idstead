@@ -15,8 +15,6 @@ export const GET: RequestHandler = async ({ request, url }) => {
         request,
         `User-agent: *
 Allow: /
-Disallow: /admin$
-Disallow: /admin/
 Disallow: /api/internal$
 Disallow: /api/internal/
 

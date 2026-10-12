@@ -1,6 +1,5 @@
 import { page } from '$app/state';
 import { pushState, replaceState } from '$app/navigation';
-import { resolve } from '$app/paths';
 import { cleanAdminParams } from './adminUrl';
 
 export function adminUrl() {
@@ -18,8 +17,5 @@ export function navigateAdmin(url: URL, replace = false) {
         adminSearch: query ? `?${query}` : '',
         adminScroll: replace ? scroll : 0
     };
-    (replace ? replaceState : pushState)(
-        query ? resolve(`/admin?${query}`) : resolve('/admin'),
-        state
-    );
+    (replace ? replaceState : pushState)(query ? `/?${query}` : '/', state);
 }

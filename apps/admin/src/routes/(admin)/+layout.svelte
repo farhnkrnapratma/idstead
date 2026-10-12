@@ -16,11 +16,11 @@
     let isChecking = $state(true);
     let isAuthenticated = $state(false);
 
-    const isLoginPage = $derived(page.url.pathname === '/admin/login');
+    const isLoginPage = $derived(page.url.pathname === '/login');
 
     function redirectToLogin() {
         const target = page.url.pathname + page.url.search;
-        window.location.replace(`/admin/login?redirectTo=${encodeURIComponent(target)}`);
+        window.location.replace(`/login?redirectTo=${encodeURIComponent(target)}`);
     }
 
     async function inspectSession() {
@@ -68,7 +68,7 @@
         } = supabase.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_OUT') {
                 isAuthenticated = false;
-                if (page.url.pathname !== '/admin/login') {
+                if (page.url.pathname !== '/login') {
                     redirectToLogin();
                 } else {
                     isChecking = false;
@@ -81,13 +81,13 @@
                             if (status === 'authenticated') {
                                 isAuthenticated = true;
                                 isChecking = false;
-                                if (page.url.pathname === '/admin/login') {
+                                if (page.url.pathname === '/login') {
                                     const target = getSafeRedirectUrl(
                                         page.url.searchParams.get('redirectTo')
                                     );
                                     window.location.replace(target);
                                 }
-                            } else if (page.url.pathname !== '/admin/login') {
+                            } else if (page.url.pathname !== '/login') {
                                 redirectToLogin();
                             } else {
                                 isAuthenticated = false;
@@ -97,7 +97,7 @@
                             }
                         } catch (error) {
                             console.error('Admin session check failed:', error);
-                            if (page.url.pathname !== '/admin/login') redirectToLogin();
+                            if (page.url.pathname !== '/login') redirectToLogin();
                             else {
                                 isAuthenticated = false;
                                 isChecking = false;

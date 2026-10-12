@@ -50,11 +50,12 @@ export async function notifyNewPost(
     if (!recipients.length) return { sent: 0, reason: 'no-subscribers' };
 
     const profile = await fetchAuthorProfile(publicSupabase);
-    const siteName = profile?.name?.trim() || new URL(origin).hostname;
-    const postUrl = `${origin}/blog/${post.slug}`;
+    const siteUrl = profile?.siteUrl?.trim().replace(/\/+$/, '') || origin;
+    const siteName = profile?.name?.trim() || new URL(siteUrl).hostname;
+    const postUrl = `${siteUrl}/blog/${post.slug}`;
 
     const mails = recipients.map(row => {
-        const unsubscribeUrl = `${origin}/unsubscribe?token=${row.unsubscribe_token}`;
+        const unsubscribeUrl = `${siteUrl}/unsubscribe?token=${row.unsubscribe_token}`;
         return {
             to: row.email,
             unsubscribeUrl,

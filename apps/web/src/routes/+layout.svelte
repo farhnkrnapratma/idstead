@@ -28,22 +28,14 @@
         :   `${siteUrl ? siteUrl.replace(/^https?:\/\//, '') + '/blog' : 'Blog'} — RSS Feed`
     );
 
-    const isAdminPage = $derived(page.url.pathname.startsWith('/admin'));
     const isBlogPost = $derived(page.route.id === '/blog/[slug]');
     const isLegalPage = $derived(
         page.route.id === '/terms' || page.route.id === '/privacy' || page.route.id === '/security'
     );
     const isArticleLikePage = $derived(isBlogPost || isLegalPage);
-    const isPageWithFeedback = $derived(
-        !page.error && page.url.pathname !== '/feedback' && !page.url.pathname.startsWith('/admin')
-    );
+    const isPageWithFeedback = $derived(!page.error && page.url.pathname !== '/feedback');
 
     onMount(() => {
-        if (isAdminPage) {
-            document.documentElement.dataset.adminPage = 'true';
-        } else {
-            delete document.documentElement.dataset.adminPage;
-        }
         platformStore.detect();
         const cleanupTheme = themeStore.init();
         const cleanupA11y = a11yStore.init();
@@ -74,15 +66,6 @@
     const BLOG_POST_ROUTE_ID = '/blog/[slug]';
 
     onNavigate(navigation => {
-        const destinationPath = navigation.to?.url.pathname;
-        if (destinationPath) {
-            if (destinationPath.startsWith('/admin')) {
-                document.documentElement.dataset.adminPage = 'true';
-            } else {
-                delete document.documentElement.dataset.adminPage;
-            }
-        }
-
         if (!document.startViewTransition || a11yStore.current.reduceMotion) return;
 
         const isBlogPostTransition =
@@ -156,7 +139,7 @@
 {@render children()}
 
 <ScrollToTopButton
-    show={scrollStore.pastThreshold && !isAdminPage && !readingModeStore.active}
+    show={scrollStore.pastThreshold && !readingModeStore.active}
     class={isArticleLikePage ? 'lg:hidden' : ''} />
 <FeedbackButton
     show={isPageWithFeedback && !readingModeStore.active}

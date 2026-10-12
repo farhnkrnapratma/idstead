@@ -6,13 +6,10 @@ import * as publicEnv from '$app/env/public';
 import { dev } from '$app/env';
 import { assetNames, serveIdentityAsset } from '#lib/server/profileAssets.ts';
 import { publicResponse } from '#lib/server/publicResponse.ts';
-import { createAuthClient, safeGetSession } from '#lib/server/supabaseAuth.ts';
 import { privateRequestIntegrations } from '#lib/server/sentryPrivacy.ts';
 import { buildContentSecurityPolicy } from '#lib/server/csp.ts';
-import { workerBinding, type RateLimit } from '#lib/server/workerEnv.ts';
-
-const RATE_LIMIT_WINDOW_MS = 60 * 1000;
-const MAX_REQUESTS_PER_WINDOW = 60;
+import { apiErrorEnvelope, needsApiEnvelope } from '#lib/server/apiEnvelope.ts';
+import { checkRateLimit, clientIp } from '#lib/server/rateLimit.ts';
 
 const sentryInitHandle: Handle =
     import.meta.hot?.data.sentryInitHandle
@@ -32,25 +29,6 @@ if (import.meta.hot) {
 function getCdnBaseUrl(): string {
     const base = (publicEnv.PUBLIC_CDN_BASE_URL ?? '').trim();
     return base.replace(/\/+$/, '');
-}
-
-interface RateLimitRecord {
-    timestamps: number[];
-}
-
-const rateLimitMap = new Map<string, RateLimitRecord>();
-
-function getClientIp(event: any): string {
-    try {
-        return (
-            event.request.headers.get('cf-connecting-ip')
-            || event.request.headers.get('x-forwarded-for')?.split(',')[0].trim()
-            || event.getClientAddress?.()
-            || '127.0.0.1'
-        );
-    } catch {
-        return '127.0.0.1';
-    }
 }
 
 function getStaticMimeType(pathname: string, defaultType: string | null): string {
@@ -74,28 +52,12 @@ function getStaticMimeType(pathname: string, defaultType: string | null): string
     }
 }
 
+const PUBLIC_API_EXPOSED_HEADERS =
+    'ETag, Link, X-Request-ID, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, Retry-After, X-Checksum-SHA256, Repr-Digest, Content-Disposition';
+
 export const handle: Handle = sequence(
     sentryInitHandle,
     Sentry.sentryHandle(),
-    async ({ event, resolve }) => {
-        event.locals.supabase = createAuthClient(event);
-        event.locals.getAdminSession = safeGetSession(event.locals.supabase);
-
-        const path = event.url.pathname;
-        if ((path === '/admin' || path.startsWith('/admin/')) && path !== '/admin/login') {
-            const session = await event.locals.getAdminSession();
-            if (session?.role !== 'admin' || !session.mfaSatisfied)
-                redirect(
-                    303,
-                    `/admin/login?redirectTo=${encodeURIComponent(path + event.url.search)}`
-                );
-        }
-
-        return resolve(event, {
-            filterSerializedResponseHeaders: name =>
-                name === 'content-range' || name === 'x-supabase-api-version'
-        });
-    },
     async ({ event, resolve }) => {
         const requestId = event.request.headers.get('x-request-id') || crypto.randomUUID();
 
@@ -185,14 +147,16 @@ export const handle: Handle = sequence(
         const isInternalApi =
             event.url.pathname === '/api/internal'
             || event.url.pathname.startsWith('/api/internal/');
-        const isAdminApi =
-            event.url.pathname.startsWith('/api/internal/admin/')
-            && event.url.pathname !== '/api/internal/admin/login';
         const isArdRequest =
             event.url.pathname === '/api/ard' || event.url.pathname.startsWith('/api/ard/');
-        const isArdSearchRequest = event.url.pathname.replace(/\/$/, '') === '/api/ard/search';
-        const isArdExploreRequest = event.url.pathname.replace(/\/$/, '') === '/api/ard/explore';
-        const isArdAgentsRequest = event.url.pathname.replace(/\/$/, '') === '/api/ard/agents';
+        const ardPath = event.url.pathname.replace(/\/$/, '');
+        const isArdPostRequest = ardPath === '/api/ard/search' || ardPath === '/api/ard/explore';
+        const isArdAgentsRequest = ardPath === '/api/ard/agents';
+        const publicAllow =
+            isArdPostRequest ? 'POST, OPTIONS'
+            : isArdAgentsRequest ? 'GET, HEAD, OPTIONS'
+            : isArdRequest ? 'GET, HEAD, POST, OPTIONS'
+            : 'GET, HEAD, OPTIONS';
 
         if (isApiRequest && event.request.method === 'OPTIONS') {
             const origin = event.request.headers.get('origin');
@@ -207,9 +171,9 @@ export const handle: Handle = sequence(
                     ...(isInternalApi ? {} : { 'Access-Control-Allow-Origin': '*' }),
                     'Access-Control-Allow-Methods':
                         isInternalApi ? 'GET, HEAD, POST, OPTIONS'
-                        : isArdSearchRequest || isArdExploreRequest ? 'POST, OPTIONS'
-                        : isArdAgentsRequest ? 'GET, HEAD, OPTIONS'
-                        : 'GET, HEAD, OPTIONS',
+                        : isArdRequest && !isArdPostRequest && !isArdAgentsRequest ?
+                            'GET, HEAD, OPTIONS'
+                        :   publicAllow,
                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, If-None-Match',
                     'Access-Control-Max-Age': '86400',
                     'X-Request-ID': requestId
@@ -219,34 +183,13 @@ export const handle: Handle = sequence(
 
         let rateLimitHeaders: Record<string, string> = {};
 
-        if (isApiRequest && !isAdminApi) {
-            const clientIp = getClientIp(event);
-            const now = Date.now();
-            for (const [key, value] of rateLimitMap) {
-                if (!value.timestamps.some(time => time > now - RATE_LIMIT_WINDOW_MS))
-                    rateLimitMap.delete(key);
-            }
-            if (rateLimitMap.size >= 10000 && !rateLimitMap.has(clientIp))
-                rateLimitMap.delete(rateLimitMap.keys().next().value!);
-            const record = rateLimitMap.get(clientIp) || { timestamps: [] };
-
-            record.timestamps = record.timestamps.filter(t => now - t < RATE_LIMIT_WINDOW_MS);
-
-            const limiter = await workerBinding<RateLimit>('API_RATE_LIMITER');
-            const isLimited =
-                limiter ?
-                    !(await limiter.limit({ key: clientIp })).success
-                :   record.timestamps.length >= MAX_REQUESTS_PER_WINDOW;
-
-            if (isLimited) {
-                const oldest = record.timestamps[0] ?? now;
-                const resetSeconds = Math.max(
-                    1,
-                    Math.ceil((oldest + RATE_LIMIT_WINDOW_MS - now) / 1000)
-                );
+        if (isApiRequest) {
+            const limit = await checkRateLimit(clientIp(event.request, event.getClientAddress));
+            rateLimitHeaders = limit.headers;
+            if (limit.limited)
                 return new Response(
-                    JSON.stringify({
-                        ...(isArdRequest ?
+                    JSON.stringify(
+                        isArdRequest ?
                             {
                                 errorCode: 'RATE_LIMIT_EXCEEDED',
                                 message: 'Rate limit exceeded. Please wait before retrying.'
@@ -256,8 +199,8 @@ export const handle: Handle = sequence(
                                     code: 'RATE_LIMITED',
                                     message: 'Rate limit exceeded. Please wait before retrying.'
                                 }
-                            })
-                    }),
+                            }
+                    ),
                     {
                         status: 429,
                         headers: {
@@ -265,30 +208,10 @@ export const handle: Handle = sequence(
                             'Cache-Control': 'no-store',
                             'X-Request-ID': requestId,
                             ...(isInternalApi ? {} : { 'Access-Control-Allow-Origin': '*' }),
-                            'Retry-After': String(resetSeconds > 0 ? resetSeconds : 60),
-                            'X-RateLimit-Limit': String(MAX_REQUESTS_PER_WINDOW),
-                            'X-RateLimit-Remaining': '0',
-                            'X-RateLimit-Reset': String(
-                                Math.floor(
-                                    (now + (resetSeconds > 0 ? resetSeconds : 60) * 1000) / 1000
-                                )
-                            )
+                            ...limit.headers
                         }
                     }
                 );
-            }
-
-            record.timestamps.push(now);
-            rateLimitMap.set(clientIp, record);
-
-            const remaining = MAX_REQUESTS_PER_WINDOW - record.timestamps.length;
-            const resetTime = Math.floor((now + RATE_LIMIT_WINDOW_MS) / 1000);
-
-            rateLimitHeaders = {
-                'X-RateLimit-Limit': String(MAX_REQUESTS_PER_WINDOW),
-                'X-RateLimit-Remaining': String(remaining),
-                'X-RateLimit-Reset': String(resetTime)
-            };
         }
 
         let response = await resolve(event, {
@@ -298,10 +221,6 @@ export const handle: Handle = sequence(
             }
         });
         const contentType = response.headers.get('content-type') ?? '';
-        const privatePage =
-            event.url.pathname === '/admin'
-            || event.url.pathname.startsWith('/admin/')
-            || isInternalApi;
         const preview =
             publicEnv.PUBLIC_SENTRY_ENVIRONMENT === 'preview'
             || event.url.hostname.endsWith('.pages.dev')
@@ -317,142 +236,31 @@ export const handle: Handle = sequence(
                 })
             );
         }
-        if (privatePage || preview) response.headers.set('X-Robots-Tag', 'noindex, nofollow');
-        if (privatePage || response.status >= 400)
+        if (isInternalApi || preview) response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+        if (isInternalApi || response.status >= 400)
             response.headers.set('Cache-Control', 'no-store');
         if (isApiRequest && !isInternalApi) {
             response.headers.append('Vary', 'Accept');
-            response.headers.set(
-                'Access-Control-Expose-Headers',
-                'ETag, Link, X-Request-ID, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, Retry-After, X-Checksum-SHA256, Repr-Digest, Content-Disposition'
-            );
+            response.headers.set('Access-Control-Expose-Headers', PUBLIC_API_EXPOSED_HEADERS);
         }
 
         if (isApiRequest) {
             response.headers.set('X-Request-ID', requestId);
-            if (!isInternalApi) {
-                response.headers.set('Access-Control-Allow-Origin', '*');
-            }
+            if (!isInternalApi) response.headers.set('Access-Control-Allow-Origin', '*');
+            for (const [key, value] of Object.entries(rateLimitHeaders))
+                response.headers.set(key, value);
         }
 
-        if (isApiRequest && !isAdminApi) {
-            for (const [hKey, hVal] of Object.entries(rateLimitHeaders)) {
-                response.headers.set(hKey, hVal);
-            }
-        }
-
-        if (isApiRequest && (response.status >= 400 || contentType.includes('text/html'))) {
-            const httpStatus = response.status >= 400 ? response.status : 404;
-
-            const DEFAULT_CODES: Record<number, string> = {
-                400: 'BAD_REQUEST',
-                401: 'UNAUTHORIZED',
-                403: 'FORBIDDEN',
-                404: 'NOT_FOUND',
-                405: 'METHOD_NOT_ALLOWED',
-                429: 'RATE_LIMITED'
-            };
-            const DEFAULT_MESSAGES: Record<number, string> = {
-                400: 'The request was invalid.',
-                401: 'Authentication is required to access this privileged endpoint.',
-                403: 'You do not have permission to access this privileged resource.',
-                404: 'Requested API endpoint or resource does not exist.',
-                405: 'This HTTP method is not supported for this endpoint.',
-                429: 'Rate limit exceeded. Please wait before retrying.'
-            };
-
-            const ARD_DEFAULT_CODES: Record<number, string> = {
-                400: 'INVALID_ARGUMENT',
-                401: 'UNAUTHENTICATED',
-                403: 'UNAUTHENTICATED',
-                404: 'NOT_FOUND',
-                405: 'INVALID_ARGUMENT',
-                429: 'RATE_LIMIT_EXCEEDED'
-            };
-            let errorCode =
-                isArdRequest ?
-                    (ARD_DEFAULT_CODES[httpStatus] ?? 'INTERNAL_ERROR')
-                :   (DEFAULT_CODES[httpStatus] ?? 'INTERNAL_ERROR');
-            let errorMessage =
-                DEFAULT_MESSAGES[httpStatus]
-                ?? 'An unexpected error occurred while processing the request.';
-            let errorDetails: string | undefined;
-
-            if (contentType.includes('application/json')) {
-                try {
-                    const jsonBody = await response.clone().json();
-                    if (jsonBody && typeof jsonBody === 'object') {
-                        const isSensitive = (text: string) =>
-                            /row-level security|violates|postgres|supabase|column|relation|syntax error|duplicate key|PGRST|permission denied/i.test(
-                                text
-                            );
-
-                        if (
-                            isArdRequest
-                            && typeof jsonBody.errorCode === 'string'
-                            && jsonBody.errorCode
-                        ) {
-                            errorCode = jsonBody.errorCode;
-                        } else if (
-                            !isArdRequest
-                            && typeof jsonBody.code === 'string'
-                            && jsonBody.code
-                        ) {
-                            errorCode = jsonBody.code;
-                        }
-
-                        const rawMessage = String(jsonBody.message ?? jsonBody.error ?? '').trim();
-                        if (rawMessage && !isSensitive(rawMessage)) {
-                            errorMessage = rawMessage.replace(/^\d{3}\s+[^:]+:\s*/, '');
-                        }
-
-                        const rawDetails = String(jsonBody.details ?? '').trim();
-                        if (rawDetails && !isSensitive(rawDetails)) {
-                            errorDetails = rawDetails;
-                        }
-                    }
-                } catch (err) {}
-            }
-
-            const errHeaders: Record<string, string> = {
-                'Content-Type': 'application/json; charset=utf-8',
-                'Cache-Control': 'no-store',
-                'X-Request-ID': requestId,
-                ...(privatePage || preview ? { 'X-Robots-Tag': 'noindex, nofollow' } : {}),
-                ...(httpStatus === 405 ?
-                    {
-                        Allow:
-                            isArdSearchRequest || isArdExploreRequest ? 'POST, OPTIONS'
-                            : isArdAgentsRequest ? 'GET, HEAD, OPTIONS'
-                            : isArdRequest ? 'GET, HEAD, POST, OPTIONS'
-                            : isInternalApi ? (response.headers.get('allow') ?? 'GET, HEAD, POST')
-                            : 'GET, HEAD, OPTIONS'
-                    }
-                :   {}),
-                ...(isInternalApi ?
-                    {}
-                :   {
-                        'Access-Control-Allow-Origin': '*',
-                        'Access-Control-Expose-Headers': 'X-Request-ID, Retry-After'
-                    }),
-                ...rateLimitHeaders
-            };
-
-            return new Response(
-                JSON.stringify(
-                    isArdRequest ?
-                        { errorCode, message: errorMessage }
-                    :   {
-                            error: {
-                                code: errorCode,
-                                message: errorMessage,
-                                ...(errorDetails ? { details: errorDetails } : {})
-                            }
-                        }
-                ),
-                { status: httpStatus, headers: errHeaders }
-            );
-        }
+        if (isApiRequest && needsApiEnvelope(response))
+            return apiErrorEnvelope(response, {
+                requestId,
+                ard: isArdRequest,
+                publicCors: !isInternalApi,
+                allow: isInternalApi ? undefined : publicAllow,
+                fallbackAllow: isInternalApi ? 'GET, HEAD, POST' : undefined,
+                noindex: isInternalApi || preview,
+                headers: rateLimitHeaders
+            });
 
         if (contentType.includes('text/html')) {
             response.headers.append('Link', '</.well-known/api-catalog>; rel="api-catalog"');

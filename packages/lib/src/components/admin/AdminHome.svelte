@@ -1,6 +1,7 @@
 <script lang="ts">
     import { adminUrl, navigateAdmin } from '#lib/adminNavigation.ts';
     import { onMount } from 'svelte';
+    import { page } from '$app/state';
     import { analyticsPeriod, browserTimeZone, zonedMidnight } from '#lib/adminAnalytics.ts';
     import {
         Eye,
@@ -39,6 +40,14 @@
     import ViewsCalendar from './ViewsCalendar.svelte';
     import ViewsChart from './ViewsChart.svelte';
     import type { ViewsRange } from './viewsRange';
+
+    const publicSiteUrl = $derived(
+        ((page.data as { author?: { siteUrl?: string } })?.author?.siteUrl ?? '').replace(/\/$/, '')
+    );
+
+    function publicHref(href: string) {
+        return href.startsWith('/') ? `${publicSiteUrl}${href}` : href;
+    }
     let {
         onNavigate,
         onPublished
@@ -324,7 +333,7 @@
                         <Button
                             type="ghost"
                             size="xs"
-                            href={String(row.href)}
+                            href={publicHref(String(row.href))}
                             target="_blank"
                             rel="noopener noreferrer">
                             View {String(row.href).startsWith('/blog/') ? 'article' : 'page'}
