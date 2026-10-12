@@ -117,24 +117,42 @@
 
     const posts = $derived(data.posts || []);
 
-    function handleCvDownload(e: MouseEvent) {
+    function saveFile(blob: Blob, filename: string) {
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = filename;
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    async function handleCvDownload(e: MouseEvent) {
         e.preventDefault();
-
-        const pdfAnchor = document.createElement('a');
-        pdfAnchor.href = '/api/v1/cv?download=1';
-        pdfAnchor.download = '';
-        document.body.appendChild(pdfAnchor);
-        pdfAnchor.click();
-        document.body.removeChild(pdfAnchor);
-
-        setTimeout(() => {
-            const checksumAnchor = document.createElement('a');
-            checksumAnchor.href = '/api/v1/cv?checksum=1';
-            checksumAnchor.download = '';
-            document.body.appendChild(checksumAnchor);
-            checksumAnchor.click();
-            document.body.removeChild(checksumAnchor);
-        }, 250);
+        try {
+            const response = await fetch('/api/v1/cv?output=pdf');
+            if (!response.ok) throw new Error(`CV download failed with ${response.status}`);
+            const filename =
+                response.headers
+                    .get('content-disposition')
+                    ?.match(/filename="([^"]+)"/)?.[1]
+                    ?.replace(/[\\/]/g, '') || 'cv.pdf';
+            const checksum = response.headers.get('x-checksum-sha256');
+            saveFile(await response.blob(), filename);
+            if (checksum && /^[0-9a-f]{64}$/.test(checksum))
+                setTimeout(
+                    () =>
+                        saveFile(
+                            new Blob([`${checksum}  ${filename}\n`], { type: 'text/plain' }),
+                            `${filename}.sha256`
+                        ),
+                    250
+                );
+        } catch (err) {
+            console.error(err);
+            toastStore.error('The CV could not be downloaded. Please try again.');
+        }
     }
 
     const failedBanners = new SvelteSet<string>();
@@ -1121,7 +1139,7 @@
                                         type="primary"
                                         tone="neutral"
                                         size="sm"
-                                        href="/api/v1/cv?download=1"
+                                        href="/api/v1/cv?output=pdf"
                                         download
                                         shortcutGroup="save"
                                         shortcutChordKey={argKey('/save', 'cv')}
@@ -1527,7 +1545,7 @@
                             type="primary"
                             tone="neutral"
                             size="md"
-                            href="/api/v1/cv?download=1"
+                            href="/api/v1/cv?output=pdf"
                             download
                             shortcutGroup="save"
                             shortcutChordKey={argKey('/save', 'cv')}

@@ -44,7 +44,7 @@ ${posts
     .map(
         post => `<entry><title>${xml(post.title)}</title>
 <link href="${xml(base + '/blog/' + encodeURIComponent(post.slug))}" rel="alternate" type="text/html"/>
-<link href="${xml(base + '/api/v1/blog/' + encodeURIComponent(post.slug) + '?format=md')}" rel="alternate" type="text/markdown"/>
+<link href="${xml(base + '/blog/' + encodeURIComponent(post.slug) + '.md')}" rel="alternate" type="text/markdown"/>
 <id>tag:${xml(new URL(base).hostname)},2026:post:${xml(post.public_id)}</id><published>${post.published}</published><updated>${post.updated}</updated>
 <summary type="text">${xml(post.excerpt || post.summary || '')}</summary></entry>`
     )
