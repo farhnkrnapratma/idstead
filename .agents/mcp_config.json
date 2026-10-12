@@ -33,18 +33,9 @@
             "serverUrl": "https://bindings.mcp.cloudflare.com/mcp"
         },
         "graphify": {
-            "type": "stdio",
-            "command": "uv",
-            "args": [
-                "run",
-                "--with",
-                "graphifyy",
-                "--with",
-                "mcp",
-                "-m",
-                "graphify.serve",
-                "/home/hanz/Projects/www/graphify-out/graph.json"
-            ]
+            "type": "http",
+            "url": "https://api.graphify.com/mcp",
+            "serverUrl": "https://api.graphify.com/mcp"
         }
     }
 }
