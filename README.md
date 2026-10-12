@@ -134,14 +134,16 @@ API_TEST_BASE_URL=https://api.fkp.my.id bun test tests/apiV1.test.ts
 
 ## Deployment
 
-Every app deploys as a Cloudflare Worker through [Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/). Connect one Worker per app to this repository with:
+Every app deploys as a Cloudflare Worker through [Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/); there is no GitHub Actions pipeline, so run `bun run check`, `bun run lint` and `bun run test` locally before pushing. Each Worker is connected to this repository with the root directory `/`, so Workers Builds installs the whole Bun workspace from the root lockfile, and its commands change into the app before building and deploying (`wrangler deploy` refuses to run from a workspace root):
 
-| Worker      | Root directory | Build command   | Deploy command         |
-| ----------- | -------------- | --------------- | ---------------------- |
-| `fkp-web`   | `apps/web`     | `bun run build` | `bunx wrangler deploy` |
-| `fkp-admin` | `apps/admin`   | `bun run build` | `bunx wrangler deploy` |
-| `fkp-api`   | `apps/api`     | —               | `bunx wrangler deploy` |
-| `fkp-jobs`  | `apps/jobs`    | —               | `bunx wrangler deploy` |
+| Worker | Build command | Deploy command | Build watch paths |
+| --- | --- | --- | --- |
+| `fkp-web` | `cd apps/web && bun run build` | `cd apps/web && bunx wrangler deploy` | `apps/web/*`, `packages/*`, `package.json`, `bun.lock`, `bunfig.toml` |
+| `fkp-admin` | `cd apps/admin && bun run build` | `cd apps/admin && bunx wrangler deploy` | `apps/admin/*`, `packages/*`, `package.json`, `bun.lock`, `bunfig.toml` |
+| `fkp-api` | `cd apps/api && bun run build` | `cd apps/api && bunx wrangler deploy` | `apps/api/*`, `packages/*`, `package.json`, `bun.lock`, `bunfig.toml` |
+| `fkp-jobs` | `cd apps/jobs && bun run build` | `cd apps/jobs && bunx wrangler deploy` | `apps/jobs/*`, `packages/*`, `package.json`, `bun.lock`, `bunfig.toml` |
+
+Environment variables are read at runtime, never baked in at build time, so they live as Worker secrets rather than build variables.
 
 - **Production** — pushes to `main` deploy to the custom domains declared in each `wrangler.jsonc`. Set the variables from `.env.production.example` as Worker variables/secrets, including real Turnstile keys and `PUBLIC_SENTRY_ENVIRONMENT=production`.
 - **Preview** — pushes to `develop` (and PRs) build Worker Previews. Give previews their own variables: Cloudflare's [dummy Turnstile testing keys](https://developers.cloudflare.com/turnstile/troubleshooting/testing/) and `PUBLIC_SENTRY_ENVIRONMENT=preview`.

@@ -31,7 +31,7 @@ bun run lint             # prettier --write . && eslint .
 bun run fmt / fmt:check  # prettier
 ```
 
-Run tests, `bun run check`, and `bun run lint` after non-trivial changes; CI also builds every app. `tests/` stays at the repository root and imports from `packages/lib/src` and `apps/*/src`. Build plugins and Git hooks live in `tooling/`; `scripts/` holds operational migration commands (`migrate-markdown-syntax.ts`, `regenerate-post-slugs.ts`, both dry-run by default).
+Run tests, `bun run check`, and `bun run lint` after non-trivial changes; there is no CI, so these local runs are the only gate before Workers Builds deploys. `tests/` stays at the repository root and imports from `packages/lib/src` and `apps/*/src`. Build plugins and Git hooks live in `tooling/`; `scripts/` holds operational migration commands (`migrate-markdown-syntax.ts`, `regenerate-post-slugs.ts`, both dry-run by default).
 
 Env files stay at the repository root (`apps/*/vite.config.ts` set `envDir` and SvelteKit's `env.dir` to `../..`). Copy `.env.development.example` or `.env.production.example`. At minimum `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Other vars: `PUBLIC_API_BASE_URL` (defaults to `https://api.fkp.my.id`), Cloudflare R2 (CV and image storage), Sentry, Turnstile, Resend (`RESEND_API_KEY`, `SUBSCRIBER_FROM_EMAIL` — newsletter and contact form), `IP_SALT`, `SUPABASE_SERVICE_ROLE_KEY` (server-only, bypasses RLS), `CLOUDFLARE_API_TOKEN` (wrangler auth, needed for the `AI` binding's `remote: true` mode in local dev). The wrangler workers (`api`, `jobs`) read env from `--env-file ../../.env.production` locally and from Worker variables/secrets in production.
 
@@ -145,7 +145,7 @@ Use `git-flow overview` to see current branch structure and `git-flow <topic> li
 
 **Always sign commits with `-s`/`--signoff`** (`git commit -s ...`, including on `git-flow` `feature`/`release`/`hotfix` finish operations).
 
-Commit messages must follow [Conventional Commits](https://www.conventionalcommits.org), enforced by commitlint (`commitlint.config.ts`, extending `@commitlint/config-conventional`) and gated in CI on every PR. Read the resolved rules with `bunx commitlint --print-config json`; validate a candidate message before committing with `printf '%s' "<message>" | bunx commitlint`. The `.claude/skills/committing-with-commitlint` skill covers this in detail — follow it when writing a commit message.
+Commit messages must follow [Conventional Commits](https://www.conventionalcommits.org), enforced by commitlint (`commitlint.config.ts`, extending `@commitlint/config-conventional`); there is no CI gate, so validate locally. Read the resolved rules with `bunx commitlint --print-config json`; validate a candidate message before committing with `printf '%s' "<message>" | bunx commitlint`. The `.claude/skills/committing-with-commitlint` skill covers this in detail — follow it when writing a commit message.
 
 ## graphify
 
