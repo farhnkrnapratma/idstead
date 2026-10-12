@@ -21,7 +21,7 @@
         PanelLeftClose,
         PanelLeftOpen,
         GripVertical,
-        Settings,
+        Bolt,
         Quote,
         User,
         FileUser,
@@ -62,7 +62,9 @@
         LayoutDashboard,
         RefreshCw,
         Logs,
-        Upload
+        DatabaseArrowUp,
+        DatabaseArrowDown,
+        DatabaseX
     } from '@lucide/svelte';
     import { onDestroy, onMount, tick, untrack } from 'svelte';
     import { SvelteSet } from 'svelte/reactivity';
@@ -2971,7 +2973,7 @@
         { id: 'feedback', label: 'Feedback', icon: Users, section: 'community' },
         { id: 'notifications', label: 'Notifications', icon: Bell, section: 'overview' },
         { id: 'logs', label: 'Activity Log', icon: Logs, section: 'administration' },
-        { id: 'account', label: 'Settings', icon: Settings, section: 'administration' },
+        { id: 'account', label: 'Settings', icon: Bolt, section: 'administration' },
         { id: 'posts', label: 'Posts', icon: Quote, section: 'content' },
         { id: 'projects', label: 'Projects', icon: FolderOpen, section: 'content' },
         { id: 'profile', label: 'Profile', icon: User, section: 'profile' },
@@ -6177,7 +6179,7 @@
                                 isLoading={isImportingProfile}
                                 disabled={isImportingProfile || isDeletingAllData}
                                 onclick={() => profileImportInput?.click()}>
-                                {#snippet leading()}<Upload class="size-3.5" />{/snippet}
+                                {#snippet leading()}<DatabaseArrowUp class="size-3.5" />{/snippet}
                                 Import data
                             </Button>
                         </div>
@@ -6197,7 +6199,7 @@
                                 isLoading={isExportingAllData}
                                 disabled={isExportingAllData}
                                 onclick={exportAllData}>
-                                {#snippet leading()}<Download class="size-3.5" />{/snippet}
+                                {#snippet leading()}<DatabaseArrowDown class="size-3.5" />{/snippet}
                                 Export data
                             </Button>
                         </div>
@@ -6221,7 +6223,7 @@
                                 title={hasExportedAllData ? undefined : 'Export your data first.'}
                                 onclick={confirmDeleteAllData}
                                 isLoading={isDeletingAllData}>
-                                {#snippet leading()}<Trash class="size-3.5" />{/snippet}
+                                {#snippet leading()}<DatabaseX class="size-3.5" />{/snippet}
                                 Delete all data
                             </Button>
                             {#if !hasExportedAllData}

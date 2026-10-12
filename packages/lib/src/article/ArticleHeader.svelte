@@ -71,7 +71,6 @@
                             activateHeadingAnchor(event.currentTarget as HTMLAnchorElement)}
                         tabindex="0">
                         <Pilcrow
-                            strokeWidth={1.25}
                             class="inline-block size-[0.75em] align-middle leading-none text-inherit no-underline select-none"
                             aria-hidden="true" />
                     </a></span
@@ -87,7 +86,6 @@
                         activateHeadingAnchor(event.currentTarget as HTMLAnchorElement)}
                     tabindex="0">
                     <Pilcrow
-                        strokeWidth={1.25}
                         class="inline-block size-[0.75em] align-middle leading-none text-inherit no-underline select-none"
                         aria-hidden="true" />
                 </a></span>
