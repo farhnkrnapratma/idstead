@@ -7,7 +7,7 @@ mock.module('$app/env/public', () => ({
     PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'test-key'
 }));
 
-const { cleanupBlogAssets } = await import('../src/lib/server/blogBannerStorage');
+const { cleanupBlogAssets } = await import('../packages/lib/src/server/blogBannerStorage');
 
 describe('queued blog Markdown cleanup', () => {
     test('deletes orphaned post files and keeps files still in use or outside posts/', async () => {

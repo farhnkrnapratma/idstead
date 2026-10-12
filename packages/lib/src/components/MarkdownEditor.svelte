@@ -1101,7 +1101,7 @@
 </div>
 
 <style>
-    @reference "../../routes/global.css";
+    @reference "../global.css";
 
     .editor-shell {
         background-color: var(--code-theme-bg);

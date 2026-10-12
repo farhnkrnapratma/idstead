@@ -10,9 +10,9 @@ import {
     searchArdEntries,
     searchArdEntriesWithAI,
     validateArdExploreRequest
-} from '../src/lib/server/ard';
-import type { ArdEntry } from '../src/lib/server/ard';
-import { discoveryOperations } from '../src/lib/server/apiDiscovery';
+} from '../packages/lib/src/server/ard';
+import type { ArdEntry } from '../packages/lib/src/server/ard';
+import { discoveryOperations } from '../packages/lib/src/server/apiDiscovery';
 
 const base = 'https://fkp.my.id';
 

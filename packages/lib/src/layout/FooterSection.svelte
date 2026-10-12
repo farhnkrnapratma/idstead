@@ -207,7 +207,7 @@
 </footer>
 
 <style>
-    @reference '../../routes/global.css';
+    @reference '../global.css';
 
     footer {
         @apply font-sans text-xs leading-normal font-normal not-italic;

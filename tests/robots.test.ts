@@ -8,7 +8,7 @@ mock.module('#lib/server/publicMetadata.ts', () => ({
         new Response(body, { headers: { 'Content-Type': type } })
 }));
 
-const { GET } = await import('../src/routes/robots.txt/+server');
+const { GET } = await import('../apps/web/src/routes/robots.txt/+server');
 
 describe('robots.txt', () => {
     test('uses standard crawl directives and keeps the sitemap', async () => {

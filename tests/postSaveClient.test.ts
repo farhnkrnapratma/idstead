@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { postSaveButtonLabel } from '../src/lib/postSaveClient';
+import { postSaveButtonLabel } from '../packages/lib/src/postSaveClient';
 
 describe('post save button label', () => {
     test('shows the initial publish and draft progress labels', () => {

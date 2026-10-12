@@ -2,7 +2,8 @@ import { describe, expect, mock, test } from 'bun:test';
 
 mock.module('@sentry/sveltekit', () => ({ captureException: () => {} }));
 
-const { moderateContent, parseModeration } = await import('../src/lib/server/moderation.ts');
+const { moderateContent, parseModeration } =
+    await import('../packages/lib/src/server/moderation.ts');
 
 describe('Llama Guard moderation', () => {
     test('accepts the plain-text safe verdict the model returns', () => {

@@ -3863,7 +3863,7 @@
     onClose={() => (mailingRequest = null)} />
 
 <style>
-    @reference "../../routes/global.css";
+    @reference "../global.css";
 
     .search-input::-webkit-search-cancel-button,
     .search-input::-webkit-search-decoration,

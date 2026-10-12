@@ -8,7 +8,7 @@ import {
     safeSegment,
     slugifyAlt,
     stripKeys
-} from '../src/lib/server/dataExportHelpers';
+} from '../packages/lib/src/server/dataExportHelpers';
 
 const hash = (char: string) => char.repeat(64);
 

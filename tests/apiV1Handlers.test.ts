@@ -17,9 +17,9 @@ mock.module('#lib/author.ts', () => ({
     })
 }));
 
-const { getAuthor } = await import('../src/lib/server/api/author.ts');
-const { buildCommentTree } = await import('../src/lib/server/api/blog.ts');
-const { runApi } = await import('../src/lib/server/api/responses.ts');
+const { getAuthor } = await import('../packages/lib/src/server/api/author.ts');
+const { buildCommentTree } = await import('../packages/lib/src/server/api/blog.ts');
+const { runApi } = await import('../packages/lib/src/server/api/responses.ts');
 
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
 const PDF = new TextEncoder().encode('%PDF-1.7 test');

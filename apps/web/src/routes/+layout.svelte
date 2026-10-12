@@ -1,6 +1,6 @@
 <script lang="ts">
     import { themeColors } from '#lib/themeColors.ts';
-    import './global.css';
+    import '#lib/global.css';
     import { onMount } from 'svelte';
     import { installSubmitShortcut } from '#lib/utils/submitShortcut.ts';
     import { onNavigate } from '$app/navigation';

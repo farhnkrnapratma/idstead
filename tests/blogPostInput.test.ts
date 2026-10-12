@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { parsePostInput } from '../src/lib/server/blogPostInput';
+import { parsePostInput } from '../packages/lib/src/server/blogPostInput';
 
 const WASM_MODULE = new WebAssembly.Module(new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0]));
 

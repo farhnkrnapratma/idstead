@@ -1,10 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'bun:test';
 
-const globalCss = readFileSync(new URL('../src/routes/global.css', import.meta.url), 'utf8');
-const appLayout = readFileSync(new URL('../src/routes/+layout.svelte', import.meta.url), 'utf8');
+const globalCss = readFileSync(new URL('../packages/lib/src/global.css', import.meta.url), 'utf8');
+const appLayout = readFileSync(
+    new URL('../apps/web/src/routes/+layout.svelte', import.meta.url),
+    'utf8'
+);
 const tableOfContents = readFileSync(
-    new URL('../src/lib/components/TableOfContents.svelte', import.meta.url),
+    new URL('../packages/lib/src/components/TableOfContents.svelte', import.meta.url),
     'utf8'
 );
 

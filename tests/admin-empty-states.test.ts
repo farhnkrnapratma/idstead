@@ -4,7 +4,7 @@ import {
     helpfulPercent,
     majorityPercent,
     shouldShowDataControls
-} from '../src/lib/adminWorkspace';
+} from '../packages/lib/src/adminWorkspace';
 
 describe('admin empty-state values', () => {
     test('shows zero feedback scores as percentages', () => {
