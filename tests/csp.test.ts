@@ -4,7 +4,8 @@ import { buildContentSecurityPolicy } from '../packages/lib/src/server/csp';
 const policy = buildContentSecurityPolicy({
     supabaseUrl: 'https://abc.supabase.co/rest/v1',
     sentryDsn: 'https://key@o1.ingest.de.sentry.io/42',
-    cdnBaseUrl: 'https://cdn.example.test/'
+    cdnBaseUrl: 'https://cdn.example.test/',
+    apiBaseUrl: 'https://api.example.test/v1'
 });
 
 function directive(name: string) {
@@ -21,6 +22,10 @@ describe('content security policy', () => {
                 );
             }
         }
+    });
+
+    test('pages may call the public API host', () => {
+        expect(directive('connect-src')).toContain('https://api.example.test');
     });
 
     test('markdown embeds are allowed to frame youtube and codepen', () => {

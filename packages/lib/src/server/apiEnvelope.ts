@@ -59,7 +59,7 @@ export async function apiErrorEnvelope(
 
     if (contentType.includes('application/json')) {
         try {
-            const body = await response.clone().json();
+            const body = (await response.clone().json()) as Record<string, unknown> | null;
             if (body && typeof body === 'object') {
                 if (options.ard && typeof body.errorCode === 'string' && body.errorCode)
                     code = body.errorCode;

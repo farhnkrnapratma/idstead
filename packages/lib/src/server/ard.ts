@@ -137,7 +137,7 @@ export function createArdEntries(
             return createEntry(base, 'api', operation.name, {
                 displayName: `${readableName} API`,
                 type: operation.mediaType,
-                url: `${base}${operation.path}`,
+                url: operation.url,
                 description: operation.description,
                 capabilities: ['read'],
                 tags: ['api', 'read-only'],

@@ -3,6 +3,7 @@ import { defineEnvVars } from '@sveltejs/kit/env';
 const optional = (value: string | undefined) => value;
 
 export const variables = defineEnvVars({
+    PUBLIC_API_BASE_URL: { public: true, schema: optional },
     PUBLIC_CDN_BASE_URL: { public: true, schema: optional },
     PUBLIC_SENTRY_DSN: { public: true, schema: optional },
     PUBLIC_SENTRY_ENVIRONMENT: { public: true, schema: optional },

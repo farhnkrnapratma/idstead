@@ -1,13 +1,13 @@
 # Public REST API (v1)
 
-Public, read-only endpoints under `/api/v1/`. No authentication is required. This document is served live at `GET /api/v1` as `text/markdown`; send `Accept: application/json` (or `?output=json`) for a JSON index of the endpoints instead. The full machine-readable spec is at `/.well-known/openapi.json` and `/.well-known/openapi.yaml`.
+Public, read-only endpoints at `https://api.fkp.my.id/v1/`. No authentication is required. This document is served live at `GET /v1` as `text/markdown`; send `Accept: application/json` (or `?output=json`) for a JSON index of the endpoints instead. The full machine-readable spec is at `/v1/openapi.json` and `/v1/openapi.yaml` (also mirrored at `https://fkp.my.id/.well-known/openapi.json`).
 
-**Base URL**: `https://fkp.my.id`. Every endpoint accepts `GET`, `HEAD` and `OPTIONS` only.
+**Base URL**: `https://api.fkp.my.id`. Every endpoint accepts `GET`, `HEAD` and `OPTIONS` only.
 
 Found a bug or a security issue with this API? See `SECURITY.md` in the repo root for how to report it privately — please don't open a public issue for a suspected vulnerability.
 
 ```sh
-curl https://fkp.my.id/api/v1/blog
+curl https://api.fkp.my.id/v1/blog
 ```
 
 ## Parameters
@@ -97,17 +97,17 @@ The HTTP status code is authoritative and isn't repeated in the body. Every erro
 
 | Path | Parameters | Returns |
 | --- | --- | --- |
-| `/api/v1/blog` | `query`, `page`, `limit` (default 20, max 100), `output=json\|md` | Published posts, newest first, with `pagination`. |
-| `/api/v1/blog?id=…` | `id`, `output=json\|md\|txt` | One post's metadata plus `comment_count` and `views_count`. Not combinable with list parameters. |
-| `/api/v1/blog/content?id=…` | `id`, `output=md\|txt\|json` (default `md`) | The post body. `json` wraps it as `{id, slug, title, content}`. |
-| `/api/v1/blog/comments` | `id` (optional), `limit` (default 50, max 100) | Approved comments. See below. |
-| `/api/v1/blog/views?id=…` | `id` | `{id, slug, views}`. |
+| `/v1/blog` | `query`, `page`, `limit` (default 20, max 100), `output=json\|md` | Published posts, newest first, with `pagination`. |
+| `/v1/blog?id=…` | `id`, `output=json\|md\|txt` | One post's metadata plus `comment_count` and `views_count`. Not combinable with list parameters. |
+| `/v1/blog/content?id=…` | `id`, `output=md\|txt\|json` (default `md`) | The post body. `json` wraps it as `{id, slug, title, content}`. |
+| `/v1/blog/comments` | `id` (optional), `limit` (default 50, max 100) | Approved comments. See below. |
+| `/v1/blog/views?id=…` | `id` | `{id, slug, views}`. |
 
 Post metadata is `{id, slug, title, excerpt, summary, tldr, tags, collaborators, created_at, updated_at}`. `excerpt` is written by hand; `summary` and `tldr` are generated when the post is saved and may be `null`/`[]`.
 
 ```sh
-curl "https://fkp.my.id/api/v1/blog?id=update-gnome-51"
-curl "https://fkp.my.id/api/v1/blog/content?id=3f9a1c2&o=txt"
+curl "https://api.fkp.my.id/v1/blog?id=update-gnome-51"
+curl "https://api.fkp.my.id/v1/blog/content?id=3f9a1c2&o=txt"
 ```
 
 #### Comments
@@ -121,33 +121,33 @@ Read-only — this API does not accept comment submissions, and only approved co
 
 | Path | Parameters | Returns |
 | --- | --- | --- |
-| `/api/v1/author` | `field` (all sections by default), `output=json\|md\|pdf`, `checksum` | One key per requested section. `profile` includes the public `email` and an optional `pronunciation` (preserved as entered; empty when unset). |
-| `/api/v1/cv` | `output=json\|md\|pdf`, `checksum` | Exactly the same response as `/api/v1/author?field=cv`, without a redirect. |
+| `/v1/author` | `field` (all sections by default), `output=json\|md\|pdf`, `checksum` | One key per requested section. `profile` includes the public `email` and an optional `pronunciation` (preserved as entered; empty when unset). |
+| `/v1/cv` | `output=json\|md\|pdf`, `checksum` | Exactly the same response as `/v1/author?field=cv`, without a redirect. |
 
-`output=pdf` is available only when the request is for the CV alone (`/api/v1/cv`, or `/api/v1/author` with `field=cv`). It downloads the PDF as an attachment. `checksum` defaults to `true`, which adds the PDF's SHA-256 as `Repr-Digest: sha-256=:<base64>:` (RFC 9530) and `X-Checksum-SHA256: <hex>` headers; `checksum=false` downloads the PDF without them. `checksum` without `output=pdf` returns `400 CV_CHECKSUM_REQUIRES_PDF`.
+`output=pdf` is available only when the request is for the CV alone (`/v1/cv`, or `/v1/author` with `field=cv`). It downloads the PDF as an attachment. `checksum` defaults to `true`, which adds the PDF's SHA-256 as `Repr-Digest: sha-256=:<base64>:` (RFC 9530) and `X-Checksum-SHA256: <hex>` headers; `checksum=false` downloads the PDF without them. `checksum` without `output=pdf` returns `400 CV_CHECKSUM_REQUIRES_PDF`.
 
 ```sh
-curl "https://fkp.my.id/api/v1/author?f=profile,skills&o=md"
-curl -OJ "https://fkp.my.id/api/v1/cv?o=pdf"
+curl "https://api.fkp.my.id/v1/author?f=profile,skills&o=md"
+curl -OJ "https://api.fkp.my.id/v1/cv?o=pdf"
 ```
 
 ### Search
 
 | Path | Parameters | Returns |
 | --- | --- | --- |
-| `/api/v1/search` | `query` (min 2 chars), `page`, `limit` (default 6, max 20) | `{query, data, pagination: {page, limit, returned, hasMore}}` |
+| `/v1/search` | `query` (min 2 chars), `page`, `limit` (default 6, max 20) | `{query, data, pagination: {page, limit, returned, hasMore}}` |
 
 Each result is `{type: "post", id, title, subtitle, url}`. A query under two characters returns an empty result, not an error. Page until `hasMore` is `false`.
 
 ### Discovery
 
-| Path                   | Returns                                                    |
-| ---------------------- | ---------------------------------------------------------- |
-| `/api/v1`              | This document (`text/markdown`), or a JSON endpoint index. |
-| `/api/v1/openapi.json` | Redirects to `/.well-known/openapi.json`.                  |
-| `/api/v1/openapi.yaml` | Redirects to `/.well-known/openapi.yaml`.                  |
+| Path               | Returns                                                    |
+| ------------------ | ---------------------------------------------------------- |
+| `/v1`              | This document (`text/markdown`), or a JSON endpoint index. |
+| `/v1/openapi.json` | OpenAPI 3 specification, JSON.                             |
+| `/v1/openapi.yaml` | Same specification, YAML.                                  |
 
-Also available for AI/LLM agents: `/llms.txt`, `/.well-known/agent-skills/index.json` (per-endpoint agent skill descriptors with content digests), and `/.well-known/api-catalog` (RFC 9727 linkset).
+Also available for AI/LLM agents on `https://fkp.my.id`: `/llms.txt`, `/.well-known/agent-skills/index.json` (per-endpoint agent skill descriptors with content digests), and `/.well-known/api-catalog` (RFC 9727 linkset).
 
 ---
 

@@ -172,7 +172,7 @@ export const openapiSpec = {
         title: 'Public REST API',
         version: '1.0.0',
         description:
-            'Read-only public API served under /api/v1/. GET /api/v1 returns the human-readable reference. '
+            'Read-only public API served under /v1/. GET /v1 returns the human-readable reference. '
             + 'Every parameter has a one-letter alias; unknown parameters are rejected.'
     },
     servers: [{ url: '/' }],
@@ -189,7 +189,7 @@ export const openapiSpec = {
         }
     },
     paths: {
-        '/api/v1': {
+        '/v1': {
             get: {
                 summary: 'API reference',
                 description:
@@ -207,7 +207,7 @@ export const openapiSpec = {
                 }
             }
         },
-        '/api/v1/blog': {
+        '/v1/blog': {
             get: {
                 summary: 'List blog posts or read one post',
                 description:
@@ -247,7 +247,7 @@ export const openapiSpec = {
                 }
             }
         },
-        '/api/v1/blog/content': {
+        '/v1/blog/content': {
             get: {
                 summary: 'Read the body of a blog post',
                 description: 'Returns the post body. Markdown by default.',
@@ -275,7 +275,7 @@ export const openapiSpec = {
                 }
             }
         },
-        '/api/v1/blog/comments': {
+        '/v1/blog/comments': {
             get: {
                 summary: 'Read approved comments',
                 description:
@@ -312,7 +312,7 @@ export const openapiSpec = {
                 }
             }
         },
-        '/api/v1/blog/views': {
+        '/v1/blog/views': {
             get: {
                 summary: 'Read the view count of a post',
                 parameters: [idParam(true)],
@@ -333,7 +333,7 @@ export const openapiSpec = {
                 }
             }
         },
-        '/api/v1/author': {
+        '/v1/author': {
             get: {
                 summary: 'Read the author profile',
                 description:
@@ -378,11 +378,11 @@ export const openapiSpec = {
                 }
             }
         },
-        '/api/v1/cv': {
+        '/v1/cv': {
             get: {
                 summary: 'Read the CV',
                 description:
-                    'Identical to GET /api/v1/author?field=cv. `output=pdf` downloads the PDF; its SHA-256 is sent in Repr-Digest and X-Checksum-SHA256 unless checksum=false.',
+                    'Identical to GET /v1/author?field=cv. `output=pdf` downloads the PDF; its SHA-256 is sent in Repr-Digest and X-Checksum-SHA256 unless checksum=false.',
                 parameters: [
                     outputParam(['json', 'md', 'pdf'], 'json'),
                     param(
@@ -411,7 +411,7 @@ export const openapiSpec = {
                 }
             }
         },
-        '/api/v1/search': {
+        '/v1/search': {
             get: {
                 summary: 'Search blog posts',
                 description:

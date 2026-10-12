@@ -18,7 +18,7 @@ export async function workerBinding<T = unknown>(name: string): Promise<T | unde
     const module = await loadWorkersModule();
     if (!module) return undefined;
     try {
-        return (module.env[name] ?? undefined) as T | undefined;
+        return ((module.env as Record<string, unknown>)[name] ?? undefined) as T | undefined;
     } catch {
         return undefined;
     }

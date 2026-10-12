@@ -50,6 +50,22 @@
         "wrangler": "^4.149.0",
       },
     },
+    "apps/api": {
+      "name": "@fkp/api",
+      "version": "0.0.1",
+      "dependencies": {
+        "@fkp/lib": "workspace:*",
+        "@sentry/cloudflare": "11.6.0",
+        "@supabase/supabase-js": "^2.117.3",
+        "hono": "^4.12.0",
+        "yaml": "^2.9.1",
+      },
+      "devDependencies": {
+        "@cloudflare/workers-types": "^5.20261011.1",
+        "typescript": "npm:@typescript/typescript6@^6.0.2",
+        "wrangler": "^4.149.0",
+      },
+    },
     "apps/web": {
       "name": "@fkp/web",
       "version": "0.0.1",
@@ -321,6 +337,8 @@
     "@eslint/plugin-kit": ["@eslint/plugin-kit@0.7.3", "", { "dependencies": { "@eslint/core": "^1.2.1", "levn": "^0.4.1" } }, "sha512-IkO+/KEUvwbVpiURZg+P7zF74z5Jxe0UgJxVni+RtoHQ6IZieXaO02kmadomap/q+l6bc/jdPGGqTjhuZnuz1Q=="],
 
     "@fkp/admin": ["@fkp/admin@workspace:apps/admin"],
+
+    "@fkp/api": ["@fkp/api@workspace:apps/api"],
 
     "@fkp/lib": ["@fkp/lib@workspace:packages/lib"],
 
@@ -1047,6 +1065,8 @@
     "hashery": ["hashery@1.5.1", "", { "dependencies": { "hookified": "^1.15.0" } }, "sha512-iZyKG96/JwPz1N55vj2Ie2vXbhu440zfUfJvSwEqEbeLluk7NnapfGqa7LH0mOsnDxTF85Mx8/dyR6HfqcbmbQ=="],
 
     "highlight.js": ["highlight.js@11.12.0", "", {}, "sha512-nbfWpyRMcMrPMmDwJB+dhX/eiaPKtc2RB+0QZskqJ3WjRA/FDS0e9hZrx8EC/lbEv8gXy98FcDbNa/dspAaJMg=="],
+
+    "hono": ["hono@4.13.13", "", {}, "sha512-CQ46U0ZkAGmbT/4UxdzzGJpacP2IeKgY4a5/tOI9AABbpOMfK739wfDXmv1usCk+3RkKj1hQy4/fjhiwa2xlrA=="],
 
     "hookified": ["hookified@1.15.1", "", {}, "sha512-MvG/clsADq1GPM2KGo2nyfaWVyn9naPiXrqIe4jYjXNZQt238kWyOGrsyc/DmRAQ+Re6yeo6yX/yoNCG5KAEVg=="],
 
