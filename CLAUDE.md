@@ -91,10 +91,10 @@ Consumes `fkp-newsletter` (retries, dead-letter queue `fkp-newsletter-dlq`) and 
 
 ### Environments
 
-Each app is a Worker connected to Workers Builds with the root directory set to its workspace (`apps/web`, `apps/admin`, `apps/api`, `apps/jobs`):
+Each app is a Worker connected to Workers Builds with the root directory `/` and commands that `cd apps/<app>` first (README `Deployment` lists them):
 
 - **Production** — `main` branch, `wrangler deploy` to the custom domains in each `wrangler.jsonc`. Real Turnstile keys, `PUBLIC_SENTRY_ENVIRONMENT=production`.
-- **Preview** — `develop` and PR branches build Worker Previews with Preview-scoped variables: Cloudflare's [dummy Turnstile keys](https://developers.cloudflare.com/turnstile/troubleshooting/testing/), `PUBLIC_SENTRY_ENVIRONMENT=preview`. `*.workers.dev` hosts are treated as preview (noindex, robots disallow).
+- **Preview** — not connected yet: the Workers Builds triggers only watch `main`, so `develop` and PRs deploy nothing. Previews need their own variables: Cloudflare's [dummy Turnstile keys](https://developers.cloudflare.com/turnstile/troubleshooting/testing/), `PUBLIC_SENTRY_ENVIRONMENT=preview`. `*.workers.dev` hosts are treated as preview (noindex, robots disallow).
 
 All apps share one Supabase project. Sentry events are tagged with `PUBLIC_SENTRY_ENVIRONMENT`, falling back to `import.meta.env.MODE` locally.
 
