@@ -18,6 +18,7 @@ export const GET: RequestHandler = async ({ request }) => {
     if (failure) error(503, 'Sitemap is temporarily unavailable.');
     const routes = [
         { path: '/', updated: undefined as string | undefined },
+        { path: '/blog', updated: undefined as string | undefined },
         { path: '/feedback', updated: undefined as string | undefined },
         ...(legal ?? [])
             .filter(page => ['privacy', 'terms', 'security'].includes(page.slug))

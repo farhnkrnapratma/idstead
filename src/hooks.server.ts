@@ -175,7 +175,7 @@ export const handle: Handle = sequence(
 
         const pathname = event.url.pathname.toLowerCase().replace(/\/$/, '');
 
-        if (['/blog', '/projects', '/contact', '/cv', '/funding', '/home'].includes(pathname)) {
+        if (['/projects', '/contact', '/cv', '/funding', '/home'].includes(pathname)) {
             const section = pathname.replace('/', '');
             throw redirect(307, `/#${section}`);
         }

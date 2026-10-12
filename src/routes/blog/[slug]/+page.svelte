@@ -616,7 +616,7 @@
 {#if !readingModeStore.active}
     <TopNav
         ariaLabel="Article navigation"
-        backHref="/#blog"
+        backHref="/blog"
         backLabel="Blog"
         showFontSelect={true}
         projects={data.projects}

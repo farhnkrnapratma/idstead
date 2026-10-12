@@ -25,6 +25,7 @@ export { default as Tag } from './components/Tag.svelte';
 export { default as PillInput } from './components/PillInput.svelte';
 export { default as Card } from './components/Card.svelte';
 export { default as Pagination } from './components/Pagination.svelte';
+export { default as BlogPostCard } from './components/BlogPostCard.svelte';
 export { default as Toast } from './components/Toast.svelte';
 export { toastStore } from './stores/toastStore.svelte';
 export { default as RelativeTime } from './components/RelativeTime.svelte';

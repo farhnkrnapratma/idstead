@@ -718,7 +718,7 @@
             category: 'pages',
             title: '/blog',
             subtitle: 'View published blog articles and posts.',
-            url: '/#blog',
+            url: '/blog',
             icon: Quote,
             badge: 'Section'
         },
@@ -1447,7 +1447,7 @@
                     name: 'blog',
                     title: '/goto blog',
                     subtitle: 'Read latest articles and posts.',
-                    url: '/#blog',
+                    url: '/blog',
                     icon: Quote,
                     badge: 'Section'
                 },

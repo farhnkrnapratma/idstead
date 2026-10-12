@@ -1,6 +1,5 @@
 <script lang="ts">
     import Tag from '#lib/components/Tag.svelte';
-    import { blogBannerAlt } from '#lib/blogBanner.ts';
     import { FieldValidation, requiredText, emailError } from '#lib/fieldValidation.ts';
     import { publicAvatarUrl } from '#lib/siteIdentity.ts';
     import { onDestroy, onMount, untrack } from 'svelte';
@@ -10,7 +9,6 @@
         FolderArchive,
         Dot,
         ChevronRight,
-        Image as ImageIcon,
         HeartHandshake,
         Rss,
         Star,
@@ -50,13 +48,12 @@
         FooterSection,
         ThemeSelect,
         SkillGroup,
-        formatReadTime,
         decodeHtmlEntities,
         Section,
         SubscribeForm,
         PageContainer,
         ConsentNotice,
-        ArticleMeta,
+        BlogPostCard,
         staggerChildren,
         withViewTransition
     } from '#lib/index.ts';
@@ -80,7 +77,6 @@
         turnstileSiteKey
     } from '#lib/utils/turnstile.ts';
     import type { Project } from '#lib/types.ts';
-    import type { BlogPost } from './+page.server';
 
     let { data } = $props();
 
@@ -155,40 +151,6 @@
         }
     }
 
-    const failedBanners = new SvelteSet<string>();
-
-    function markBannerFailed(postId: string) {
-        failedBanners.add(postId);
-    }
-
-    const expandedExcerptIds = new SvelteSet<string>();
-    const overflowingExcerptIds = new SvelteSet<string>();
-
-    function observeExcerptOverflow(postId: string) {
-        return (element: HTMLElement) => {
-            const updateOverflow = () => {
-                if (element.scrollHeight > element.clientHeight + 1) {
-                    overflowingExcerptIds.add(postId);
-                } else {
-                    overflowingExcerptIds.delete(postId);
-                }
-            };
-
-            const resizeObserver = new ResizeObserver(updateOverflow);
-            resizeObserver.observe(element);
-
-            return () => resizeObserver.disconnect();
-        };
-    }
-
-    function toggleExcerpt(postId: string) {
-        if (expandedExcerptIds.has(postId)) {
-            expandedExcerptIds.delete(postId);
-        } else {
-            expandedExcerptIds.add(postId);
-        }
-    }
-
     const failedRepoBanners = new SvelteSet<string>();
 
     function markRepoBannerFailed(projectName: string) {
@@ -250,11 +212,6 @@
     function isRepoNew(project: Project) {
         if (!project.createdAt) return false;
         return Date.now() - new Date(project.createdAt).getTime() < NEW_ITEM_WINDOW_MS;
-    }
-
-    function isPostNew(post: BlogPost) {
-        if (!post.created_at) return false;
-        return Date.now() - new Date(post.created_at).getTime() < NEW_ITEM_WINDOW_MS;
     }
 
     const recentProjects = $derived(
@@ -438,69 +395,9 @@
         );
     }
 
-    const blogFilterStore = createFilterSortStore({
-        defaultSortField: 'date',
-        defaultSortDir: 'desc'
-    });
-
     const projectFilterStore = createFilterSortStore({
         defaultSortField: 'date',
         defaultSortDir: 'desc'
-    });
-
-    const allBlogTags = $derived.by(() => {
-        const set = new SvelteSet<string>();
-        for (const post of posts) {
-            if (post.tags) {
-                post.tags.forEach((t: string) => set.add(decodeHtmlEntities(t)));
-            }
-        }
-        return Array.from(set);
-    });
-
-    const filteredBlogPosts = $derived.by(() => {
-        let list = posts;
-
-        const q = blogFilterStore.search.trim().toLowerCase();
-        if (q) {
-            list = list.filter(
-                p =>
-                    p.title.toLowerCase().includes(q)
-                    || (p.excerpt && p.excerpt.toLowerCase().includes(q))
-            );
-        }
-
-        const selectedTags = blogFilterStore.filters['tag'] || [];
-        if (selectedTags.length > 0) {
-            list = list.filter(p => p.tags && p.tags.some((t: string) => selectedTags.includes(t)));
-        }
-
-        const sortField = blogFilterStore.sort.field;
-        const sortDir = blogFilterStore.sort.direction === 'asc' ? 1 : -1;
-
-        return [...list].sort((a, b) => {
-            if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
-
-            if (sortField === 'title') {
-                return a.title.localeCompare(b.title) * sortDir;
-            } else if (sortField === 'readingTime') {
-                const readingA = parseInt(a.read_time || '0', 10);
-                const readingB = parseInt(b.read_time || '0', 10);
-                return (readingA - readingB) * sortDir;
-            } else if (sortField === 'views') {
-                const viewsA = a.views_count ?? 0;
-                const viewsB = b.views_count ?? 0;
-                return (viewsA - viewsB) * sortDir;
-            } else if (sortField === 'comments') {
-                const commentsA = a.comment_count ?? 0;
-                const commentsB = b.comment_count ?? 0;
-                return (commentsA - commentsB) * sortDir;
-            } else {
-                const dateA = new Date(a.created_at || 0).getTime();
-                const dateB = new Date(b.created_at || 0).getTime();
-                return (dateA - dateB) * sortDir;
-            }
-        });
     });
 
     const allProjectTags = $derived.by(() => {
@@ -555,14 +452,7 @@
 
     const PAGE_SIZE = 5;
 
-    let blogPage = $state(1);
     let projectPage = $state(1);
-
-    const blogTotalPages = $derived(Math.max(1, Math.ceil(filteredBlogPosts.length / PAGE_SIZE)));
-    const blogPageClamped = $derived(Math.min(blogPage, blogTotalPages));
-    const paginatedBlogPosts = $derived(
-        filteredBlogPosts.slice((blogPageClamped - 1) * PAGE_SIZE, blogPageClamped * PAGE_SIZE)
-    );
 
     const projectTotalPages = $derived(
         Math.max(1, Math.ceil(filteredProjectList.length / PAGE_SIZE))
@@ -576,15 +466,6 @@
     );
 
     $effect(() => {
-        void blogFilterStore.search;
-        void blogFilterStore.filters;
-        void blogFilterStore.sort;
-        untrack(() => {
-            blogPage = 1;
-        });
-    });
-
-    $effect(() => {
         void projectFilterStore.search;
         void projectFilterStore.filters;
         void projectFilterStore.sort;
@@ -594,7 +475,6 @@
     });
 
     onMount(() => {
-        blogFilterStore.parseFromUrl(new URL(window.location.href));
         projectFilterStore.parseFromUrl(new URL(window.location.href));
     });
 
@@ -774,17 +654,6 @@
         </Tag>
     {/snippet}
 
-    {#snippet blogFilterableTag(tag: string)}
-        {@const isSelected = blogFilterStore.filters['tag']?.includes(tag) ?? false}
-        <Tag
-            variant={isSelected ? 'accent-active' : 'accent'}
-            onclick={() => blogFilterStore.toggleMultiFilter('tag', tag)}
-            aria-pressed={isSelected}
-            class={isSelected ? 'font-mono' : 'font-mono hover:bg-accent/15'}>
-            {decodeHtmlEntities(tag)}
-        </Tag>
-    {/snippet}
-
     {#snippet projectCard(project: Project, headingTag: 'h3' | 'h4', tagItem: Snippet<[string]>)}
         {@const repoBannerUrl =
             project.openGraphImageUrl || `https://opengraph.githubassets.com/1/${project.fullName}`}
@@ -919,135 +788,6 @@
                             <SquareArrowOutUpRight class="size-3.5" />
                         {/snippet}
                         View on GitHub
-                    </Button>
-                </div>
-            </div>
-        </div>
-    {/snippet}
-
-    {#snippet blogPostCard(post: BlogPost, tagItem: Snippet<[string]>, headingTag: 'h2' | 'h3')}
-        <div
-            class="relative flex flex-col rounded-md glass-card border-0! text-left dark:border-0!">
-            <div class="relative aspect-2/1 w-full shrink-0 overflow-hidden rounded-t-md">
-                {#if post.bannerPublicUrl && !failedBanners.has(post.id)}
-                    <ImageWithSkeleton
-                        src={post.bannerPublicUrl}
-                        alt={blogBannerAlt(post.title, post.excerpt)}
-                        rounded=""
-                        onerror={() => markBannerFailed(post.id)}
-                        class="h-full w-full object-cover" />
-                {:else}
-                    <div
-                        class="relative flex h-full w-full items-center justify-center overflow-hidden bg-linear-to-br from-accent/15 to-accent/5 select-none">
-                        <ImageIcon class="size-10 text-text-muted" />
-                    </div>
-                {/if}
-            </div>
-
-            <div
-                class="flex min-w-0 flex-1 flex-col justify-between gap-2 p-3 font-sans sm:gap-2.5 sm:p-4">
-                <div class="flex flex-col gap-1.5 sm:gap-2">
-                    <div>
-                        <svelte:element
-                            this={headingTag}
-                            style="view-transition-name: post-title-{post.slug}"
-                            class="line-clamp-2 text-xl leading-snug font-bold text-text-primary">
-                            {post.title}
-                            {#if post.pinned || isPostNew(post)}
-                                <span
-                                    class="inline-flex items-center gap-1 align-middle select-none">
-                                    {#if post.pinned}
-                                        <span
-                                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-success-subtle text-success"
-                                            title="Pinned post"
-                                            role="img"
-                                            aria-label="Pinned post">
-                                            <Pin class="size-3 shrink-0" />
-                                        </span>
-                                    {/if}
-                                    {#if isPostNew(post)}
-                                        <span
-                                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-security-subtle text-security"
-                                            title="New post"
-                                            role="img"
-                                            aria-label="New post">
-                                            <Sparkles class="size-3 shrink-0" />
-                                        </span>
-                                    {/if}
-                                </span>
-                            {/if}
-                        </svelte:element>
-                    </div>
-
-                    <ArticleMeta
-                        size="xs"
-                        layout="single"
-                        class="min-h-4.5"
-                        date={post.created_at}
-                        updatedAt={post.updated_at}
-                        readingTime={formatReadTime(post.read_time)}
-                        commentsCount={post.comment_count}
-                        views={post.views_count} />
-
-                    {#if post.excerpt}
-                        {@const isExpanded = expandedExcerptIds.has(post.id)}
-                        {@const isOverflowing = overflowingExcerptIds.has(post.id)}
-                        <div class="flex flex-col items-start gap-1">
-                            <p
-                                {@attach !isExpanded && observeExcerptOverflow(post.id)}
-                                class="text-xs leading-relaxed text-text-secondary sm:text-sm {(
-                                    isExpanded
-                                ) ?
-                                    ''
-                                :   'line-clamp-2'}">
-                                {post.excerpt}
-                                {#if isOverflowing && isExpanded}
-                                    <Button
-                                        type="ghost"
-                                        size="2xs"
-                                        htmlType="button"
-                                        onclick={() => toggleExcerpt(post.id)}
-                                        keyboardShortcut="E"
-                                        shortcutLabel="Show less"
-                                        class="relative inline-flex h-auto! min-h-0! p-0! text-xs font-normal whitespace-nowrap text-security! underline hover:opacity-80 focus-visible:outline-none">
-                                        Show less
-                                    </Button>
-                                {/if}
-                            </p>
-                            {#if isOverflowing && !isExpanded}
-                                <Button
-                                    type="ghost"
-                                    size="2xs"
-                                    htmlType="button"
-                                    onclick={() => toggleExcerpt(post.id)}
-                                    keyboardShortcut="E"
-                                    shortcutLabel="Show more"
-                                    class="relative inline-flex h-auto! min-h-0! p-0! text-xs font-normal whitespace-nowrap text-security! underline hover:opacity-80 focus-visible:outline-none">
-                                    Show more
-                                </Button>
-                            {/if}
-                        </div>
-                    {/if}
-
-                    {#if post.tags && post.tags.length > 0}
-                        <div class="relative z-20 flex flex-wrap items-center gap-1.5 pt-0.5">
-                            {#each post.tags as tag (tag)}
-                                {@render tagItem(tag)}
-                            {/each}
-                        </div>
-                    {/if}
-                </div>
-
-                <div class="relative z-20 mt-auto flex flex-col gap-2 pt-1">
-                    <hr class="border-border-subtle/25" />
-                    <Button
-                        href="/blog/{post.slug}"
-                        type="primary"
-                        size="sm"
-                        shortcutGroup="posts"
-                        shortcutLabel={post.title}
-                        fullWidth>
-                        Read post
                     </Button>
                 </div>
             </div>
@@ -1195,17 +935,16 @@
                     {:else}
                         <div class="mt-2 grid grid-cols-1 gap-3 sm:gap-4">
                             {#each recentPosts as post (post.id)}
-                                {@render blogPostCard(post, staticTag, 'h3')}
+                                <BlogPostCard {post} />
                             {/each}
                         </div>
                     {/if}
                     {#if posts.length > 0}
                         <div class="mt-4 flex justify-end">
                             <Button
+                                href="/blog"
                                 type="ghost"
                                 size="sm"
-                                htmlType="button"
-                                onclick={() => navigate('blog')}
                                 keyboardShortcut={buttonKey('viewAllPosts')}
                                 shortcutLabel="View all posts">
                                 View all posts
@@ -1688,95 +1427,30 @@
                     </Tooltip>
                 </div>
 
-                {#if posts.length > 0}
-                    <div class="mb-6">
-                        <FilterToolbar title="Blog posts filter">
-                            {#snippet searchSlot()}
-                                <Input
-                                    type="search"
-                                    placeholder="Search articles..."
-                                    value={blogFilterStore.search}
-                                    oninput={e =>
-                                        blogFilterStore.setSearch(
-                                            (e.target as HTMLInputElement).value
-                                        )}
-                                    keyboardShortcut={buttonKey('filterSearch')}
-                                    shortcutLabel="Search articles"
-                                    aria-label="Search articles" />
-                            {/snippet}
-
-                            {#snippet filterControlsSlot()}
-                                {#if allBlogTags.length > 0}
-                                    <Dropdown
-                                        multiple
-                                        searchable
-                                        label="Tags"
-                                        options={allBlogTags.map(t => ({
-                                            value: t,
-                                            label: decodeHtmlEntities(t)
-                                        }))}
-                                        value={blogFilterStore.filters['tag'] || []}
-                                        onChange={val =>
-                                            blogFilterStore.toggleMultiFilter('tag', val)} />
-                                {/if}
-                            {/snippet}
-
-                            {#snippet countSlot()}
-                                <SearchResultCount
-                                    count={filteredBlogPosts.length}
-                                    total={posts.length}
-                                    itemLabel="articles" />
-                            {/snippet}
-
-                            {#snippet sortSlot()}
-                                <SortControl
-                                    fields={[
-                                        { value: 'date', label: 'Date' },
-                                        { value: 'views', label: 'Views' },
-                                        { value: 'comments', label: 'Comments' },
-                                        { value: 'readingTime', label: 'Reading time' },
-                                        { value: 'title', label: 'Title' }
-                                    ]}
-                                    currentField={blogFilterStore.sort.field}
-                                    currentDirection={blogFilterStore.sort.direction}
-                                    onFieldChange={field => blogFilterStore.setSort(field)}
-                                    onDirectionToggle={() =>
-                                        blogFilterStore.toggleSortDirection()} />
-                            {/snippet}
-
-                            {#snippet chipsSlot()}
-                                <FilterChipGroup
-                                    chips={blogFilterStore.activeChips}
-                                    onRemove={(type, val) =>
-                                        blogFilterStore.removeFilter(type, val)}
-                                    onClearAll={() => blogFilterStore.clearAllFilters()} />
-                            {/snippet}
-                        </FilterToolbar>
-                    </div>
-                {/if}
-
                 {#if posts.length === 0}
                     <EmptyState
                         title="No posts yet"
                         description="Articles will appear here once published." />
-                {:else if filteredBlogPosts.length === 0}
-                    <FilterEmptyState
-                        title="No articles match these filters"
-                        description="Try adjusting your tag filters or search keyword."
-                        onClearFilters={() => blogFilterStore.clearAllFilters()} />
                 {:else}
                     <div
                         use:staggerChildren
                         class="stagger-children relative z-0 mt-2 grid grid-cols-1 gap-4">
-                        {#each paginatedBlogPosts as post (post.id)}
-                            {@render blogPostCard(post, blogFilterableTag, 'h2')}
+                        {#each posts as post (post.id)}
+                            <BlogPostCard
+                                {post}
+                                headingTag="h2" />
                         {/each}
                     </div>
-                    <div class="mt-6">
-                        <Pagination
-                            page={blogPageClamped}
-                            totalPages={blogTotalPages}
-                            onPageChange={p => (blogPage = p)} />
+                    <div class="mt-6 flex justify-end">
+                        <Button
+                            href="/blog"
+                            type="ghost"
+                            size="sm"
+                            keyboardShortcut={buttonKey('viewAllPosts')}
+                            shortcutLabel="View all posts">
+                            View all posts
+                            {#snippet trailing()}<ChevronRight class="size-3" />{/snippet}
+                        </Button>
                     </div>
                 {/if}
             </PageContainer>
