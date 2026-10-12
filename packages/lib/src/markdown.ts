@@ -947,12 +947,12 @@ export function formatFootnoteReferences(html: string): string {
 
                     let prefix: string;
                     if (hrefs.length === 1) {
-                        prefix = `<a href="${hrefs[0]}" class="footnote-backref mr-1.5 inline-flex items-center font-mono text-security no-underline hover:underline select-none" aria-label="Back to reference">^</a>`;
+                        prefix = `<a href="${hrefs[0]}" class="footnote-backref mr-1.5 inline-flex items-center font-mono text-security no-underline select-none" aria-label="Back to reference">^</a>`;
                     } else {
                         const subLinks = hrefs
                             .map(
                                 (href, i) =>
-                                    `<a href="${href}" class="footnote-sub-backref text-security font-mono italic no-underline hover:underline select-none" aria-label="Back to reference ${indexToLetter(i)}">${indexToLetter(i)}</a>`
+                                    `<a href="${href}" class="footnote-sub-backref text-security font-mono italic no-underline select-none" aria-label="Back to reference ${indexToLetter(i)}">${indexToLetter(i)}</a>`
                             )
                             .join('');
                         prefix = `<span class="footnote-backref-static mr-1 inline-flex items-center font-mono text-text-muted select-none" aria-hidden="true">^</span><span class="footnote-sub-backrefs mr-1.5 inline-flex items-center gap-1 font-mono">${subLinks}</span>`;
