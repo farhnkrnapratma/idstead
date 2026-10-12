@@ -26,9 +26,11 @@ describe('robots.txt', () => {
     });
 
     test('keeps preview sites blocked from crawling', async () => {
-        const request = new Request('https://preview.pages.dev/robots.txt');
-        const response = await GET({ request, url: new URL(request.url) } as never);
+        for (const host of ['preview.pages.dev', 'fkp-web.example.workers.dev']) {
+            const request = new Request(`https://${host}/robots.txt`);
+            const response = await GET({ request, url: new URL(request.url) } as never);
 
-        expect(await response.text()).toBe('User-agent: *\nDisallow: /\n');
+            expect(await response.text()).toBe('User-agent: *\nDisallow: /\n');
+        }
     });
 });

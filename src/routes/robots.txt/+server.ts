@@ -3,7 +3,11 @@ import * as env from '$app/env/public';
 import { readSiteProfile, publicResponse } from '#lib/server/publicMetadata.ts';
 
 export const GET: RequestHandler = async ({ request, url }) => {
-    if (env.PUBLIC_SENTRY_ENVIRONMENT === 'preview' || url.hostname.endsWith('.pages.dev')) {
+    if (
+        env.PUBLIC_SENTRY_ENVIRONMENT === 'preview'
+        || url.hostname.endsWith('.pages.dev')
+        || url.hostname.endsWith('.workers.dev')
+    ) {
         return publicResponse(request, 'User-agent: *\nDisallow: /\n', 'text/plain; charset=utf-8');
     }
     const profile = await readSiteProfile();

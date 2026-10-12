@@ -304,7 +304,8 @@ export const handle: Handle = sequence(
             || isInternalApi;
         const preview =
             publicEnv.PUBLIC_SENTRY_ENVIRONMENT === 'preview'
-            || event.url.hostname.endsWith('.pages.dev');
+            || event.url.hostname.endsWith('.pages.dev')
+            || event.url.hostname.endsWith('.workers.dev');
         if (contentType.includes('text/html')) {
             response.headers.set(
                 'Content-Security-Policy',
