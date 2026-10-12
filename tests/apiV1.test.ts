@@ -3,7 +3,8 @@ import { describe, expect, setDefaultTimeout, test } from 'bun:test';
 setDefaultTimeout(20_000);
 
 const baseUrl = process.env.API_TEST_BASE_URL?.replace(/\/+$/, '').replace(/\/api\/v1$/, '');
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+const POST_ID_RE = /^[0-9a-f]{64}$/;
 const SHA256_RE = /^[0-9a-f]{64}$/;
 
 async function request(path: string, init: RequestInit = {}) {
@@ -20,19 +21,39 @@ function api(path: string, init?: RequestInit) {
     return request(`/api/v1${path}`, init);
 }
 
+function expectNoInternalIds(value: unknown, path = '$') {
+    if (Array.isArray(value)) {
+        value.forEach((item, index) => expectNoInternalIds(item, `${path}[${index}]`));
+        return;
+    }
+    if (value && typeof value === 'object') {
+        for (const [key, nested] of Object.entries(value)) {
+            expect(`${path}.${key}`).not.toMatch(/(^|\.)\w+_id$/);
+            if (key === 'id') expect(String(nested)).toMatch(POST_ID_RE);
+            expectNoInternalIds(nested, `${path}.${key}`);
+        }
+        return;
+    }
+    if (typeof value === 'string') expect(value).not.toMatch(UUID_RE);
+}
+
 async function getJson(path: string, init?: RequestInit) {
     const response = await api(path, init);
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toContain('application/json');
     expect(response.headers.get('access-control-allow-origin')).toBe('*');
-    return { response, body: (await response.json()) as any };
+    const body = (await response.json()) as any;
+    expectNoInternalIds(body);
+    return { response, body };
 }
 
 async function getText(path: string, type: string, init?: RequestInit) {
     const response = await api(path, init);
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toContain(type);
-    return response.text();
+    const text = await response.text();
+    expect(text).not.toMatch(UUID_RE);
+    return text;
 }
 
 async function expectApiError(path: string, status: number, code: string, init?: RequestInit) {
@@ -60,338 +81,208 @@ const post = baseUrl ? await discoverPost() : null;
 
 describe.skipIf(!baseUrl)('public API v1', () => {
     describe('discovery', () => {
-        test('GET /api/v1 redirects to the markdown docs', async () => {
+        test('GET /api/v1 serves the README as markdown with an ETag', async () => {
             const response = await api('');
-            expect(response.status).toBe(301);
-            expect(response.headers.get('location')).toBe('/api/v1/docs');
-        });
-
-        test('GET /api/v1/docs serves the README as markdown with an ETag', async () => {
-            const response = await api('/docs');
             expect(response.status).toBe(200);
             expect(response.headers.get('content-type')).toContain('text/markdown');
             expect(await response.text()).toContain('# Public REST API (v1)');
 
             const etag = response.headers.get('etag');
             expect(etag).toBeTruthy();
-            const revalidated = await api('/docs', { headers: { 'If-None-Match': etag! } });
+            const revalidated = await api('', { headers: { 'If-None-Match': etag! } });
             expect(revalidated.status).toBe(304);
-            expect(await revalidated.text()).toBe('');
+        });
+
+        test('GET /api/v1?output=json and Accept: application/json return the endpoint index', async () => {
+            const { body } = await getJson('?o=json');
+            expect(body.endpoints.map((e: any) => e.path)).toContain('/api/v1/blog/content');
+            const viaAccept = await getJson('', { headers: { Accept: 'application/json' } });
+            expect(viaAccept.body).toEqual(body);
+        });
+
+        test('GET /api/v1/docs no longer exists', async () => {
+            await expectApiError('/docs', 404, 'NOT_FOUND');
         });
 
         test('GET /api/v1/openapi.json redirects to the canonical JSON spec', async () => {
             const response = await api('/openapi.json');
             expect(response.status).toBe(301);
             expect(response.headers.get('location')).toBe('/.well-known/openapi.json');
-
-            const spec = await request('/.well-known/openapi.json');
-            expect(spec.status).toBe(200);
-            const body = (await spec.json()) as any;
-            expect(body.openapi).toMatch(/^3\./);
-            expect(body.paths).toHaveProperty('/api/v1/blog');
-        });
-
-        test('GET /api/v1/openapi.yaml redirects to the canonical YAML spec', async () => {
-            const response = await api('/openapi.yaml');
-            expect(response.status).toBe(301);
-            expect(response.headers.get('location')).toBe('/.well-known/openapi.yaml');
-
-            const spec = await request('/.well-known/openapi.yaml');
-            expect(spec.status).toBe(200);
-            expect(await spec.text()).toMatch(/^openapi: /m);
+            const spec = (await (await request('/.well-known/openapi.json')).json()) as any;
+            expect(spec.openapi).toMatch(/^3\./);
+            expect(spec.paths).toHaveProperty('/api/v1/blog/content');
+            expect(spec.paths).not.toHaveProperty('/api/v1/docs');
         });
     });
 
-    describe('blog list', () => {
-        test('GET /api/v1/blog returns posts with default pagination', async () => {
-            const { response, body } = await getJson('/blog');
-            expect(response.headers.get('x-ratelimit-limit')).toBe('60');
-            expect(response.headers.get('vary')).toContain('Accept');
+    describe('parameters', () => {
+        test('unknown parameters are rejected', async () => {
+            await expectApiError('/blog?format=md', 400, 'UNKNOWN_PARAMETER');
+            await expectApiError('/search?offset=1', 400, 'UNKNOWN_PARAMETER');
+        });
+
+        test('a parameter cannot be sent under both its name and its alias', async () => {
+            await expectApiError('/author?f=cv&field=cv', 400, 'PARAM_CONFLICT');
+        });
+
+        test('aliases and full names produce the same response', async () => {
+            const full = await getJson('/author?field=profile,skills');
+            const short = await getJson('/author?f=profile&f=skills');
+            expect(short.body).toEqual(full.body);
+            expect(Object.keys(full.body).sort()).toEqual(['profile', 'skills']);
+        });
+    });
+
+    describe('blog', () => {
+        test('GET /api/v1/blog lists posts with public IDs and pagination', async () => {
+            const { body } = await getJson('/blog');
             expect(Array.isArray(body.data)).toBe(true);
-            expect(body.pagination).toEqual({
-                page: 1,
-                limit: 20,
-                total: body.total,
-                totalPages: Math.max(1, Math.ceil(body.total / 20)),
-                hasNextPage: body.total > 20,
-                hasPrevPage: false
-            });
-            for (const item of body.data) {
-                expect(item).toContainAllKeys([
-                    'id',
-                    'title',
-                    'slug',
-                    'excerpt',
-                    'summary',
-                    'tldr',
-                    'collaborators',
-                    'created_at',
-                    'updated_at'
-                ]);
-            }
+            expect(Object.keys(body.pagination).sort()).toEqual(
+                ['hasNextPage', 'hasPrevPage', 'limit', 'page', 'total', 'totalPages'].sort()
+            );
+            for (const item of body.data) expect(item.id).toMatch(POST_ID_RE);
         });
 
-        test('GET /api/v1/blog?q= matches title or excerpt', async () => {
-            const { body } = await getJson('/blog?q=api');
-            for (const item of body.data) {
-                expect(`${item.title} ${item.excerpt ?? ''}`.toLowerCase()).toContain('api');
-            }
-        });
-
-        test.skipIf(!post)('GET /api/v1/blog?id= filters by ID', async () => {
-            const { body } = await getJson(`/blog?id=${post!.id}`);
-            expect(body.data.map((item: any) => item.id)).toEqual([post!.id]);
-        });
-
-        test.skipIf(!post)('GET /api/v1/blog?slug= filters by slug', async () => {
-            const { body } = await getJson(`/blog?slug=${encodeURIComponent(post!.slug)}`);
-            expect(body.data.map((item: any) => item.slug)).toEqual([post!.slug]);
-        });
-
-        test('GET /api/v1/blog?page=1&limit=2 paginates', async () => {
-            const { body } = await getJson('/blog?page=1&limit=2');
-            expect(body.pagination.limit).toBe(2);
-            expect(body.data.length).toBeLessThanOrEqual(2);
-        });
-
-        test('GET /api/v1/blog clamps limit to 100', async () => {
-            const { body } = await getJson('/blog?limit=1000');
+        test('GET /api/v1/blog clamps limit and accepts n/p aliases', async () => {
+            const { body } = await getJson('/blog?n=500&p=1');
             expect(body.pagination.limit).toBe(100);
         });
 
-        test('GET /api/v1/blog?format=md returns the markdown catalog', async () => {
-            expect(await getText('/blog?format=md', 'text/markdown')).toStartWith(
-                '# Posts Catalog'
+        test('GET /api/v1/blog?o=md returns the markdown catalog', async () => {
+            expect(await getText('/blog?o=md', 'text/markdown')).toContain('# Posts Catalog');
+        });
+
+        test.skipIf(!post)('GET /api/v1/blog?id= resolves by ID, prefix and slug', async () => {
+            const byId = await getJson(`/blog?id=${post!.id}`);
+            const byPrefix = await getJson(`/blog?id=${post!.id.slice(0, 7)}`);
+            const bySlug = await getJson(`/blog?id=${post!.slug}`);
+            expect(byId.body.id).toBe(post!.id);
+            expect(byPrefix.body).toEqual(byId.body);
+            expect(bySlug.body).toEqual(byId.body);
+            expect(typeof byId.body.views_count).toBe('number');
+            expect(typeof byId.body.comment_count).toBe('number');
+            expect(byId.body).not.toHaveProperty('content');
+        });
+
+        test.skipIf(!post)('GET /api/v1/blog?id= offers md and txt', async () => {
+            expect(await getText(`/blog?id=${post!.slug}&o=md`, 'text/markdown')).toContain(
+                `# ${post!.title}`
+            );
+            expect(await getText(`/blog?id=${post!.slug}&o=txt`, 'text/plain')).toContain(
+                post!.title
             );
         });
 
-        test('GET /api/v1/blog with Accept: text/markdown returns markdown', async () => {
-            const body = await getText('/blog', 'text/markdown', {
-                headers: { Accept: 'text/markdown' }
-            });
-            expect(body).toStartWith('# Posts Catalog');
-        });
-    });
-
-    describe.skipIf(!post)('single post', () => {
-        test('GET /api/v1/blog/{slug} returns the post with content and counts', async () => {
-            const { body } = await getJson(`/blog/${encodeURIComponent(post!.slug)}`);
-            expect(body).toMatchObject({ id: post!.id, slug: post!.slug, published: true });
-            expect(typeof body.content).toBe('string');
-            expect(Number.isInteger(body.comment_count)).toBe(true);
-            expect(Number.isInteger(body.views_count)).toBe(true);
-            expect(Array.isArray(body.tldr)).toBe(true);
-            expect(Array.isArray(body.collaborators)).toBe(true);
+        test('GET /api/v1/blog?id= cannot be combined with list parameters', async () => {
+            await expectApiError('/blog?id=abcdefg&page=2', 400, 'PARAM_CONFLICT');
         });
 
-        test('GET /api/v1/blog/{id} resolves the same post by UUID', async () => {
-            const { body } = await getJson(`/blog/${post!.id}`);
-            expect(body.slug).toBe(post!.slug);
-        });
-
-        test('GET /api/v1/blog/{slug}?format=md returns markdown', async () => {
-            const body = await getText(
-                `/blog/${encodeURIComponent(post!.slug)}?format=md`,
-                'text/markdown'
-            );
-            expect(body).toStartWith(`# ${post!.title}`);
-            expect(body).toContain(`- **Slug**: \`${post!.slug}\``);
-        });
-
-        test('GET /api/v1/blog/{slug}?format=text returns plain text', async () => {
-            const body = await getText(
-                `/blog/${encodeURIComponent(post!.slug)}?format=text`,
-                'text/plain'
-            );
-            expect(body).toStartWith(`${post!.title}\n\nID: ${post!.id}\nSlug: ${post!.slug}\n`);
-        });
-    });
-
-    test('GET /api/v1/blog/{unknown-slug} returns BLOG_POST_NOT_FOUND', async () => {
-        const error = await expectApiError(
-            '/blog/this-slug-does-not-exist-12345',
-            404,
-            'BLOG_POST_NOT_FOUND'
-        );
-        expect(error.details).toBe(
-            "No blog post exists with slug 'this-slug-does-not-exist-12345'."
-        );
-    });
-
-    describe('comments', () => {
-        const fields = [
-            'id',
-            'post_id',
-            'parent_id',
-            'author_name',
-            'content',
-            'is_anonymous',
-            'is_admin',
-            'is_approved',
-            'created_at'
-        ];
-
-        test('GET /api/v1/blog/comments returns recent approved comments, newest first', async () => {
-            const { body } = await getJson('/blog/comments');
-            expect(Object.keys(body)).toEqual(['data']);
-            for (const comment of body.data) {
-                expect(comment).toContainAllKeys(fields);
-                expect(comment.is_approved).toBe(true);
-            }
-            const times = body.data.map((comment: any) => Date.parse(comment.created_at));
-            expect(times).toEqual([...times].sort((a, b) => b - a));
-        });
-
-        test.skipIf(!post)(
-            'GET /api/v1/blog/comments?postId= returns one thread, oldest first',
-            async () => {
-                const { body } = await getJson(`/blog/comments?postId=${post!.id}`);
-                for (const comment of body.data) expect(comment.post_id).toBe(post!.id);
-                const times = body.data.map((comment: any) => Date.parse(comment.created_at));
-                expect(times).toEqual([...times].sort((a, b) => a - b));
-
-                const alias = await getJson(`/blog/comments?post_id=${post!.id}`);
-                expect(alias.body).toEqual(body);
-            }
-        );
-
-        test('GET /api/v1/blog/comments?postId=not-a-uuid is rejected', async () => {
+        test('unknown and malformed post references are rejected', async () => {
             await expectApiError(
-                '/blog/comments?postId=not-a-uuid',
-                400,
-                'BLOG_COMMENT_INVALID_POST_ID'
+                '/blog?id=this-slug-does-not-exist-12345',
+                404,
+                'BLOG_POST_NOT_FOUND'
             );
+            await expectApiError('/blog?id=Not%20A%20Slug', 400, 'BLOG_POST_ID_INVALID');
+            await expectApiError('/blog/content', 400, 'BLOG_POST_ID_REQUIRED');
+        });
+
+        test.skipIf(!post)('GET /api/v1/blog/content defaults to markdown', async () => {
+            const markdown = await getText(`/blog/content?id=${post!.id}`, 'text/markdown');
+            const text = await getText(`/blog/content?id=${post!.id}&o=txt`, 'text/plain');
+            const { body } = await getJson(`/blog/content?id=${post!.id}&o=json`);
+            expect(body.content).toBe(markdown);
+            expect(text.length).toBeGreaterThan(0);
+        });
+
+        test('path-style post URLs are gone', async () => {
+            await expectApiError(`/blog/${post?.slug ?? 'any-slug'}`, 404, 'NOT_FOUND');
         });
     });
 
-    describe('views', () => {
-        test.skipIf(!post)('GET /api/v1/blog/views?postId= returns the view count', async () => {
-            const { body } = await getJson(`/blog/views?postId=${post!.id}`);
-            expect(body.postId).toBe(post!.id);
-            expect(Number.isInteger(body.views)).toBe(true);
-        });
-
-        test('GET /api/v1/blog/views without postId is rejected', async () => {
-            await expectApiError('/blog/views', 400, 'BLOG_VIEW_POST_ID_REQUIRED');
-        });
-
-        test('GET /api/v1/blog/views?postId=not-a-uuid is rejected', async () => {
-            await expectApiError('/blog/views?postId=not-a-uuid', 400, 'BLOG_VIEW_INVALID_POST_ID');
-        });
-    });
-
-    describe('author', () => {
-        test('GET /api/v1/author returns the combined profile', async () => {
-            const { body } = await getJson('/author');
-            expect(Object.keys(body).sort()).toEqual(
-                ['contact', 'cv', 'funding', 'profile', 'skills', 'socials'].sort()
-            );
-            expect(typeof body.profile.name).toBe('string');
-        });
-
-        test('GET /api/v1/author?fields= returns only the requested sections', async () => {
-            const { body } = await getJson('/author?fields=profile,skills');
-            expect(Object.keys(body).sort()).toEqual(['profile', 'skills']);
-        });
-
-        test('GET /api/v1/author?profile accepts a bare flag', async () => {
-            const { body } = await getJson('/author?profile');
-            expect(Object.keys(body)).toEqual(['profile']);
-        });
-
-        test('GET /api/v1/author?sponsorship is an alias for funding', async () => {
-            const { body } = await getJson('/author?sponsorship');
-            expect(Object.keys(body)).toEqual(['funding']);
-        });
-
-        test('GET /api/v1/author?format=md returns markdown', async () => {
-            expect((await getText('/author?format=md', 'text/markdown')).trim()).not.toBe('');
-        });
-
-        for (const section of ['contact', 'socials', 'skills', 'funding', 'cv']) {
-            test(`GET /api/v1/author/${section} returns JSON`, async () => {
-                const { body } = await getJson(`/author/${section}`);
-                expect(body).not.toBeNull();
-            });
-        }
-    });
-
-    describe('cv', () => {
-        async function headCv(query = '') {
-            const response = await api(`/cv${query}`, { method: 'HEAD' });
-            if (response.status === 404) return null;
-            expect(response.status).toBe(200);
-            return response;
-        }
-
-        test('HEAD /api/v1/cv serves the PDF inline with a checksum header', async () => {
-            const response = await headCv();
-            if (!response) {
-                await expectApiError('/cv', 404, 'CV_DOCUMENT_NOT_FOUND');
-                return;
+    describe('comments and views', () => {
+        test('GET /api/v1/blog/comments returns recent comments without IDs', async () => {
+            const { body } = await getJson('/blog/comments?n=5');
+            expect(body.data.length).toBeLessThanOrEqual(5);
+            for (const comment of body.data) {
+                expect(comment.post.id).toMatch(POST_ID_RE);
+                expect(typeof comment.is_reply).toBe('boolean');
             }
-            expect(response.headers.get('content-type')).toBe('application/pdf');
-            expect(response.headers.get('content-disposition')).toMatch(/^inline; filename=".+"$/);
-            expect(response.headers.get('x-checksum-sha256')).toMatch(SHA256_RE);
         });
 
-        test('HEAD /api/v1/cv?download=1 forces an attachment', async () => {
-            const response = await headCv('?download=1');
-            if (!response) return;
-            expect(response.headers.get('content-disposition')).toMatch(
-                /^attachment; filename=".+"$/
-            );
+        test.skipIf(!post)('GET /api/v1/blog/comments?id= nests replies', async () => {
+            const { body } = await getJson(`/blog/comments?id=${post!.slug}`);
+            expect(body.id).toBe(post!.id);
+            expect(typeof body.hasMore).toBe('boolean');
+            for (const thread of body.data) expect(Array.isArray(thread.replies)).toBe(true);
         });
 
-        test('GET /api/v1/cv?format=sha256 returns the checksum sidecar', async () => {
-            const response = await api('/cv?format=sha256');
-            if (response.status === 404) return;
+        test.skipIf(!post)('GET /api/v1/blog/views?id= returns the count', async () => {
+            const { body } = await getJson(`/blog/views?id=${post!.slug}`);
+            expect(body).toEqual({ id: post!.id, slug: post!.slug, views: expect.any(Number) });
+        });
+
+        test('GET /api/v1/blog/views requires id', async () => {
+            await expectApiError('/blog/views', 400, 'BLOG_POST_ID_REQUIRED');
+        });
+    });
+
+    describe('author and CV', () => {
+        test('GET /api/v1/author returns every section by default', async () => {
+            const { body } = await getJson('/author');
+            expect(body).toHaveProperty('profile');
+            expect(typeof body.profile.email).toBe('string');
+        });
+
+        test('GET /api/v1/author rejects unknown fields and removed sub-routes', async () => {
+            await expectApiError('/author?f=hobbies', 400, 'AUTHOR_FIELD_INVALID');
+            await expectApiError('/author/skills', 404, 'NOT_FOUND');
+        });
+
+        test('GET /api/v1/cv matches /api/v1/author?field=cv byte for byte', async () => {
+            const cv = await api('/cv');
+            const author = await api('/author?field=cv');
+            expect(cv.status).toBe(200);
+            expect(cv.headers.get('location')).toBeNull();
+            expect(cv.headers.get('etag')).toBe(author.headers.get('etag'));
+            expect(await cv.text()).toBe(await author.text());
+        });
+
+        test('HEAD /api/v1/cv?o=pdf sends checksum headers by default', async () => {
+            const response = await api('/cv?o=pdf', { method: 'HEAD' });
             expect(response.status).toBe(200);
-            expect(response.headers.get('content-type')).toContain('text/plain');
-            const checksum = response.headers.get('x-checksum-sha256')!;
-            expect(checksum).toMatch(SHA256_RE);
-            expect(await response.text()).toMatch(new RegExp(`^${checksum}  .+\\.pdf\\n$`));
+            expect(response.headers.get('content-type')).toContain('application/pdf');
+            expect(response.headers.get('content-disposition')).toMatch(/^attachment;/);
+            expect(response.headers.get('x-checksum-sha256')).toMatch(SHA256_RE);
+            expect(response.headers.get('repr-digest')).toMatch(/^sha-256=:[A-Za-z0-9+/]+=*:$/);
+        });
 
-            const alias = await api('/cv?checksum=1');
-            expect(alias.headers.get('x-checksum-sha256')).toBe(checksum);
+        test('HEAD /api/v1/cv?o=pdf&c=false omits checksum headers', async () => {
+            const response = await api('/cv?o=pdf&c=false', { method: 'HEAD' });
+            expect(response.status).toBe(200);
+            expect(response.headers.get('x-checksum-sha256')).toBeNull();
+            expect(response.headers.get('repr-digest')).toBeNull();
+        });
+
+        test('checksum needs PDF output and PDF needs the CV alone', async () => {
+            await expectApiError('/cv?checksum=true', 400, 'CV_CHECKSUM_REQUIRES_PDF');
+            await expectApiError('/author?f=profile&o=pdf', 400, 'OUTPUT_UNSUPPORTED');
         });
     });
 
     describe('search', () => {
-        test('GET /api/v1/search?q= returns post results', async () => {
-            const { body } = await getJson('/search?q=blog');
-            expect(body.query).toBe('blog');
-            expect(body.pagination).toEqual({
-                limit: 6,
-                offset: 0,
-                returned: body.data.length,
-                hasMore: body.pagination.hasMore
-            });
-            expect(typeof body.pagination.hasMore).toBe('boolean');
-            for (const result of body.data) {
-                expect(result.type).toBe('post');
-                expect(result.url).toStartWith('/blog/');
-            }
+        test('GET /api/v1/search?q= returns post results with public IDs', async () => {
+            const term = post?.title.split(/\s+/).find(word => word.length >= 3) ?? 'linux';
+            const { body } = await getJson(`/search?q=${encodeURIComponent(term)}`);
+            expect(body.query).toBe(term);
+            expect(Object.keys(body.pagination).sort()).toEqual(
+                ['hasMore', 'limit', 'page', 'returned'].sort()
+            );
         });
 
         test('GET /api/v1/search?q=a returns an empty result, not a 400', async () => {
             const { body } = await getJson('/search?q=a');
-            expect(body).toEqual({
-                query: 'a',
-                data: [],
-                pagination: { limit: 6, offset: 0, returned: 0, hasMore: false }
-            });
-        });
-
-        test('GET /api/v1/search?limit=2&offset=1 pages the results', async () => {
-            const { body } = await getJson('/search?q=blog&limit=2&offset=1');
-            expect(body.pagination.limit).toBe(2);
-            expect(body.pagination.offset).toBe(1);
-            expect(body.data.length).toBeLessThanOrEqual(2);
-        });
-
-        test('GET /api/v1/search?offset=-1 is rejected', async () => {
-            await expectApiError('/search?q=blog&offset=-1', 400, 'SEARCH_INVALID_OFFSET');
+            expect(body.data).toEqual([]);
         });
     });
 

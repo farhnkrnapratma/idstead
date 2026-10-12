@@ -832,8 +832,8 @@
                                 slug={post.slug}
                                 pageId={post.id}
                                 title={post.title}
-                                viewMarkdownUrl="/api/v1/blog/{post.slug}?format=md"
-                                viewTextUrl="/api/v1/blog/{post.slug}?format=text" />
+                                viewMarkdownUrl="/blog/{post.slug}.md"
+                                viewTextUrl="/blog/{post.slug}.txt" />
                         </div>
                     {/if}
                 {/snippet}
@@ -1376,8 +1376,8 @@
                     slug={post.slug}
                     pageId={post.id}
                     title={post.title}
-                    viewMarkdownUrl="/api/v1/blog/{post.slug}?format=md"
-                    viewTextUrl="/api/v1/blog/{post.slug}?format=text" />
+                    viewMarkdownUrl="/blog/{post.slug}.md"
+                    viewTextUrl="/blog/{post.slug}.txt" />
             </aside>
         {/if}
     </div>

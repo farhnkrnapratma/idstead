@@ -325,8 +325,8 @@
                                 {title}
                                 markdownContent={content}
                                 showCopyUrl={false}
-                                viewMarkdownUrl="/api/internal/raw?type=legal&slug={slug}&format=md"
-                                viewTextUrl="/api/internal/raw?type=legal&slug={slug}&format=text"
+                                viewMarkdownUrl="/{slug}.md"
+                                viewTextUrl="/{slug}.txt"
                                 pageUrl={siteUrl ? `${siteUrl}/${slug}` : undefined} />
                         </div>
                     {/if}
@@ -390,8 +390,8 @@
                     {title}
                     markdownContent={content}
                     showCopyUrl={false}
-                    viewMarkdownUrl="/api/internal/raw?type=legal&slug={slug}&format=md"
-                    viewTextUrl="/api/internal/raw?type=legal&slug={slug}&format=text"
+                    viewMarkdownUrl="/{slug}.md"
+                    viewTextUrl="/{slug}.txt"
                     pageUrl={siteUrl ? `${siteUrl}/${slug}` : undefined} />
             </aside>
         {/if}

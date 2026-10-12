@@ -323,7 +323,7 @@ export const handle: Handle = sequence(
             response.headers.append('Vary', 'Accept');
             response.headers.set(
                 'Access-Control-Expose-Headers',
-                'ETag, Link, X-Request-ID, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, Retry-After, X-Checksum-SHA256'
+                'ETag, Link, X-Request-ID, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, Retry-After, X-Checksum-SHA256, Repr-Digest, Content-Disposition'
             );
         }
 

@@ -43,12 +43,13 @@ describe('ARD manifest', () => {
                     && entry.url.includes('/.well-known/agent-skills/')
             )
         ).toBe(true);
-        expect(manifest.entries.find(entry => entry.url.endsWith('/api/v1/docs'))?.type).toBe(
+        expect(manifest.entries.find(entry => entry.url.endsWith('/api/v1'))?.type).toBe(
             'text/markdown'
         );
         expect(manifest.entries.find(entry => entry.url.endsWith('/api/v1/cv'))?.type).toBe(
-            'application/pdf'
+            'application/json'
         );
+        expect(manifest.entries.some(entry => entry.url.endsWith('/api/v1/docs'))).toBe(false);
         expect(createArdEntries(base).some(entry => entry.url.includes('{'))).toBe(false);
         expect(operations.length).toBeGreaterThan(0);
     });

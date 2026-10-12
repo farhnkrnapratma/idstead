@@ -992,7 +992,7 @@
             category: 'pages',
             title: '/api',
             subtitle: 'Open developer REST API documentation.',
-            url: '/api/v1/docs',
+            url: '/api/v1',
             icon: Braces,
             badge: 'API'
         },
@@ -1527,7 +1527,7 @@
                     name: 'api',
                     title: '/goto api',
                     subtitle: 'Open developer API documentation.',
-                    url: '/api/v1/docs',
+                    url: '/api/v1',
                     icon: Braces,
                     badge: 'Developer'
                 }
@@ -1596,8 +1596,10 @@
                             return;
                         }
                         if (typeof window !== 'undefined') {
-                            await navigator.clipboard.writeText(currentSlug);
-                            toastStore.show(`Post ID copied: ${currentSlug}`, 'success');
+                            const postId = (page.data as { post?: { id?: string } })?.post?.id;
+                            const value = postId || currentSlug;
+                            await navigator.clipboard.writeText(value);
+                            toastStore.show(`Post ID copied: ${value}`, 'success');
                         }
                     },
                     icon: FileText,
@@ -1620,9 +1622,8 @@
                             return;
                         }
                         try {
-                            const type = isBlogPage ? 'blog' : 'legal';
                             const res = await fetch(
-                                `/api/internal/raw?type=${type}&slug=${currentSlug}&format=md`
+                                isBlogPage ? `/blog/${currentSlug}.md` : `/${currentSlug}.md`
                             );
                             if (!res.ok) throw new Error();
                             const text = await res.text();
@@ -1652,9 +1653,8 @@
                             return;
                         }
                         try {
-                            const type = isBlogPage ? 'blog' : 'legal';
                             const res = await fetch(
-                                `/api/internal/raw?type=${type}&slug=${currentSlug}&format=text`
+                                isBlogPage ? `/blog/${currentSlug}.txt` : `/${currentSlug}.txt`
                             );
                             if (!res.ok) throw new Error();
                             const text = await res.text();
@@ -1683,7 +1683,7 @@
                     category: 'actions',
                     title: '/save cv',
                     subtitle: 'Download resume document as PDF.',
-                    url: '/api/v1/cv',
+                    url: '/api/v1/cv?output=pdf',
                     icon: Save,
                     badge: 'File'
                 });
@@ -1704,9 +1704,7 @@
                             return;
                         }
                         try {
-                            const res = await fetch(
-                                `/api/internal/raw?type=blog&slug=${currentSlug}&format=md`
-                            );
+                            const res = await fetch(`/blog/${currentSlug}.md`);
                             if (!res.ok) throw new Error();
                             const text = await res.text();
                             const blob = new Blob([text], { type: 'text/markdown;charset=utf-8' });
@@ -1742,9 +1740,7 @@
                             return;
                         }
                         try {
-                            const res = await fetch(
-                                `/api/internal/raw?type=blog&slug=${currentSlug}&format=text`
-                            );
+                            const res = await fetch(`/blog/${currentSlug}.txt`);
                             if (!res.ok) throw new Error();
                             const text = await res.text();
                             const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
@@ -1915,9 +1911,9 @@
         const lists = await Promise.all(
             sources.map(async source => {
                 try {
-                    const res = await fetch(`/api/v1/author/${source.path}`);
+                    const res = await fetch(`/api/v1/author?field=${source.path}`);
                     if (!res.ok) return [];
-                    const data = await res.json();
+                    const data = (await res.json())?.[source.path];
                     return (Array.isArray(data) ? data : []).flatMap((link: any) => {
                         const url = link.url || link.href;
                         if (!link.platform || !url) return [];
@@ -1953,9 +1949,8 @@
     }
 
     async function fetchPostsPage(query: string, page: number) {
-        const offset = (page - 1) * SECTION_PAGE_SIZE;
         const res = await fetch(
-            `/api/v1/search?q=${encodeURIComponent(query)}&limit=${SECTION_PAGE_SIZE}&offset=${offset}`,
+            `/api/v1/search?q=${encodeURIComponent(query)}&limit=${SECTION_PAGE_SIZE}&page=${page}`,
             { signal: searchAbortController?.signal }
         );
         const data = await res.json();

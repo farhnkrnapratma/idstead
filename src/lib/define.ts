@@ -1201,12 +1201,20 @@ async function resolveBlogPath(path: PathSegment[], supabaseClient: any): Promis
             } catch {}
         }
 
-        return walkPath(jsToDefineValue({ ...post, content }), rest);
+        const {
+            id: _internalId,
+            public_id: publicId,
+            storage_path: _storagePath,
+            ...fields
+        } = post;
+        return walkPath(jsToDefineValue({ ...fields, id: publicId, content }), rest);
     }
 
     const { data: posts, error } = await supabaseClient
         .from('db_posts')
-        .select('id, title, slug, excerpt, summary, tldr, collaborators, created_at, updated_at')
+        .select(
+            'public_id, title, slug, excerpt, summary, tldr, collaborators, created_at, updated_at'
+        )
         .eq('published', true)
         .order('created_at', { ascending: false })
         .range(0, 19);
@@ -1215,7 +1223,14 @@ async function resolveBlogPath(path: PathSegment[], supabaseClient: any): Promis
         throw new DefineError('Could not fetch the blog post list.');
     }
 
-    return walkPath(arrayVal((posts ?? []).map(jsToDefineValue)), path);
+    return walkPath(
+        arrayVal(
+            ((posts ?? []) as Array<Record<string, unknown>>).map(({ public_id, ...post }) =>
+                jsToDefineValue({ id: public_id, ...post })
+            )
+        ),
+        path
+    );
 }
 
 export async function validateDefineForSave(

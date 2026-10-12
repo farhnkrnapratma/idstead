@@ -1,6 +1,7 @@
 import type { RequestHandler } from './$types';
-import { handleAuthorJsonRequest } from '#lib/server/authorResponse.ts';
+import { supabase } from '#lib/supabase.ts';
+import { getAuthor } from '#lib/server/api/author.ts';
+import { runApi } from '#lib/server/api/responses.ts';
 
-export const GET: RequestHandler = async ({ url, locals, request }) => {
-    return handleAuthorJsonRequest(url, locals, request);
-};
+export const GET: RequestHandler = ({ url, request, fetch }) =>
+    runApi(() => getAuthor({ url, request, fetch, db: supabase }));

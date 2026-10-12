@@ -1,14 +1,37 @@
 # Public REST API (v1)
 
-Public, read-only endpoints documentation served under `/api/v1/`. No authentication required for anything below. This document is also served live at `GET /api/v1/docs` as `text/markdown` (`GET /api/v1` redirects there). Full machine-readable spec: `/.well-known/openapi.json` / `/.well-known/openapi.yaml`.
+Public, read-only endpoints under `/api/v1/`. No authentication is required. This document is served live at `GET /api/v1` as `text/markdown`; send `Accept: application/json` (or `?output=json`) for a JSON index of the endpoints instead. The full machine-readable spec is at `/.well-known/openapi.json` and `/.well-known/openapi.yaml`.
 
-**Base URL**: `https://fkp.my.id`. Versioned by URL path — breaking changes ship under `/api/v2/`, not in place.
+**Base URL**: `https://fkp.my.id`. Every endpoint accepts `GET`, `HEAD` and `OPTIONS` only.
 
 Found a bug or a security issue with this API? See `SECURITY.md` in the repo root for how to report it privately — please don't open a public issue for a suspected vulnerability.
 
 ```sh
 curl https://fkp.my.id/api/v1/blog
 ```
+
+## Parameters
+
+Every parameter has a full name and a one-letter alias. Use either form, never both for the same parameter.
+
+| Parameter  | Alias | Values                                                          |
+| ---------- | ----- | --------------------------------------------------------------- |
+| `id`       | –     | Post ID, unique ID prefix of at least 7 characters, or slug     |
+| `field`    | `f`   | `profile`, `contact`, `cv`, `funding`, `skills`, `socials`      |
+| `output`   | `o`   | `json`, `md`, `txt`, `pdf` (each endpoint lists what it offers) |
+| `query`    | `q`   | Search text                                                     |
+| `page`     | `p`   | 1-based page number                                             |
+| `limit`    | `n`   | Results per page                                                |
+| `checksum` | `c`   | `true` or `false`                                               |
+
+- Multi-value parameters (`field`) accept a comma-separated list or a repeated parameter: `?f=profile,cv` and `?f=profile&f=cv` are the same request.
+- A parameter an endpoint does not accept returns `400 UNKNOWN_PARAMETER`. Passing a full name together with its alias, or a single-value parameter twice, returns `400 PARAM_CONFLICT`.
+- `output` overrides the `Accept` header. Without `output`, `Accept: text/markdown`, `text/plain` or `application/json` picks the representation when the endpoint offers it; otherwise the endpoint default applies.
+- Malformed `page`/`limit` values fall back to the default and are clamped to each endpoint's maximum.
+
+## Post IDs
+
+Every post has a stable public ID: 64 lowercase hex characters that never change, even when the post is edited. Wherever a post is referenced, `id` accepts the full ID, any unique prefix of at least 7 characters (like a git commit hash), or the post slug. An exact slug match wins over a prefix match. A prefix shared by several posts returns `409 BLOG_POST_ID_AMBIGUOUS`. Internal database identifiers are never returned.
 
 ## Errors
 
@@ -18,51 +41,49 @@ The HTTP status code is authoritative and isn't repeated in the body. Every erro
 {
     "error": {
         "code": "BLOG_POST_NOT_FOUND",
-        "message": "Blog post not found",
-        "details": "No blog post exists with slug 'this-slug-does-not-exist-12345'."
+        "message": "Blog post not found.",
+        "details": "No published post matches 'this-slug-does-not-exist'."
     }
 }
 ```
 
-- `code` — stable, machine-readable identifier. Safe to `switch`/`case` on; never changes without a version bump.
-- `message` — fixed, human-readable description of that error type. Same wording for every occurrence of a given `code`.
-- `details` — optional, request-specific context (which field, which value). Omitted when there's nothing beyond `message` to add.
-
-This shape is enforced by one shared handler for the whole API, so it's the same for every endpoint below.
+- `code` — stable, machine-readable identifier. Safe to `switch`/`case` on.
+- `message` — fixed, human-readable description of that error type.
+- `details` — optional, request-specific context. Omitted when there's nothing to add.
 
 ### Error codes
 
 | Code | Status | Meaning |
 | --- | --- | --- |
-| `BLOG_LIST_FETCH_FAILED` | 500 | `/api/v1/blog` couldn't query the database. |
-| `BLOG_POST_NOT_FOUND` | 404 | No published post matches the given ID/slug. |
-| `BLOG_COMMENT_INVALID_POST_ID` | 400 | `postId` was given but isn't a valid UUID. |
-| `BLOG_COMMENTS_FETCH_FAILED` | 500 | `/api/v1/blog/comments` couldn't query the database. |
-| `BLOG_VIEW_POST_ID_REQUIRED` | 400 | `postId` query parameter is missing. |
-| `BLOG_VIEW_INVALID_POST_ID` | 400 | `postId` query parameter is not a valid UUID. |
-| `CV_DOCUMENT_NOT_FOUND` | 404 | `/api/v1/cv` — no active CV document is configured. |
-| `CV_FETCH_FAILED` | 502 | `/api/v1/cv` couldn't fetch the underlying PDF file from storage. |
-| `SEARCH_INVALID_OFFSET` | 400 | `offset` was given but isn't a non-negative integer. |
-| `SEARCH_FETCH_FAILED` | 500 | Search could not be read from the data source. |
-| `BLOG_POST_COUNTS_FETCH_FAILED` | 500 | Post comment/view counts could not be read. |
-| `BLOG_CONTENT_FETCH_FAILED` | 502 | Published post content could not be read from storage. |
-| `BLOG_POST_FETCH_FAILED` | 500 | Blog post could not be read from the data source. |
-| `BLOG_VIEWS_FETCH_FAILED` | 500 | View counts could not be read from the data source. |
-| `AUTHOR_FETCH_FAILED` | 500 | Combined author information could not be read from the data source. |
-| `AUTHOR_CONTACT_FETCH_FAILED` | 500 | Contact could not be read from the data source. |
-| `AUTHOR_CV_FETCH_FAILED` | 500 | Structured CV could not be read from the data source. |
-| `AUTHOR_SKILLS_FETCH_FAILED` | 500 | Skills could not be read from the data source. |
-| `AUTHOR_FUNDING_FETCH_FAILED` | 500 | Funding could not be read from the data source. |
-| `AUTHOR_SOCIALS_FETCH_FAILED` | 500 | Social links could not be read from the data source. |
-| `CV_METADATA_FETCH_FAILED` | 500 | CV document metadata could not be read from the data source. |
+| `UNKNOWN_PARAMETER` | 400 | The endpoint does not accept one of the query parameters. |
+| `PARAM_CONFLICT` | 400 | A parameter was given under its full name and its alias, a single-value parameter was repeated, or `id` was combined with list parameters on `/blog`. |
+| `PARAM_INVALID` | 400 | A parameter has a value outside its allowed set (for example `checksum=yes`). |
+| `OUTPUT_UNSUPPORTED` | 400 | The endpoint cannot produce the requested `output`. |
+| `BLOG_POST_ID_REQUIRED` | 400 | The endpoint needs `id`. |
+| `BLOG_POST_ID_INVALID` | 400 | `id` is neither a post ID nor a valid slug. |
+| `BLOG_POST_NOT_FOUND` | 404 | No published post matches `id`. |
+| `BLOG_POST_ID_AMBIGUOUS` | 409 | The ID prefix matches more than one post. |
+| `BLOG_LIST_FETCH_FAILED` | 500 | The post list could not be read. |
+| `BLOG_POST_FETCH_FAILED` | 500 | The post could not be read. |
+| `BLOG_POST_COUNTS_FETCH_FAILED` | 500 | View or comment counts could not be read. |
+| `BLOG_CONTENT_FETCH_FAILED` | 502 | The post body could not be read from storage. |
+| `BLOG_COMMENTS_FETCH_FAILED` | 500 | Comments could not be read. |
+| `BLOG_VIEWS_FETCH_FAILED` | 500 | View counts could not be read. |
+| `AUTHOR_FIELD_INVALID` | 400 | `field` names a section that does not exist. |
+| `AUTHOR_FETCH_FAILED` | 500 | Author information could not be read. |
+| `CV_CHECKSUM_REQUIRES_PDF` | 400 | `checksum` was given without `output=pdf`. |
+| `CV_METADATA_FETCH_FAILED` | 500 | CV document metadata could not be read. |
+| `CV_DOCUMENT_NOT_FOUND` | 404 | No active CV PDF is configured. |
+| `CV_FETCH_FAILED` | 502 | The CV PDF could not be read from storage. |
+| `SEARCH_FETCH_FAILED` | 500 | Search could not be read. |
 | `RATE_LIMITED` | 429 | Over the rate limit — see below. |
-| `NOT_FOUND` | 404 | Generic fallback — hit a path that doesn't correspond to any endpoint. |
-| `METHOD_NOT_ALLOWED` | 405 | The API is read-only: any method other than `GET`, `HEAD` or `OPTIONS` is rejected. The `Allow` header lists the accepted methods. |
-| `BAD_REQUEST` / `UNAUTHORIZED` / `FORBIDDEN` / `INTERNAL_ERROR` | 400 / 401 / 403 / 500 | Generic fallback codes used only if an unexpected framework-level error bypasses one of the specific codes above — every endpoint documented here returns a specific code instead. |
+| `NOT_FOUND` | 404 | No endpoint exists at that path. |
+| `METHOD_NOT_ALLOWED` | 405 | Any method other than `GET`, `HEAD` or `OPTIONS`. The `Allow` header lists the accepted methods. |
+| `BAD_REQUEST` / `INTERNAL_ERROR` | 400 / 500 | Fallbacks used only if an unexpected framework-level error bypasses the specific codes above. |
 
 ## Rate limits
 
-60 requests/minute per IP, enforced globally. Headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`. Over the limit returns `429` with `Retry-After`.
+60 requests/minute per IP. Headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`. Over the limit returns `429` with `Retry-After`.
 
 ## CORS
 
@@ -74,89 +95,66 @@ This shape is enforced by one shared handler for the whole API, so it's the same
 
 ### Blog
 
-| Method | Path | Description |
+| Path | Parameters | Returns |
 | --- | --- | --- |
-| GET | `/api/v1/blog` | List published posts. Query: `q`, `id`, `slug`, `page`, `limit` (max 100, default 20), `format=md`. |
-| GET | `/api/v1/blog/{id_or_slug}` | Single post by UUID or slug. Query: `format=md`\|`text`. `404` if no matching published post. |
-| GET | `/api/v1/blog/comments` | Approved comments. Query: `postId` (UUID; alias `post_id` also accepted — omit for recent site-wide), `limit` (max 100, default 50). `400` if `postId` is present but not a valid UUID. |
-| GET | `/api/v1/blog/views` | View count for a post. Query: `postId` (required). |
+| `/api/v1/blog` | `query`, `page`, `limit` (default 20, max 100), `output=json\|md` | Published posts, newest first, with `pagination`. |
+| `/api/v1/blog?id=…` | `id`, `output=json\|md\|txt` | One post's metadata plus `comment_count` and `views_count`. Not combinable with list parameters. |
+| `/api/v1/blog/content?id=…` | `id`, `output=md\|txt\|json` (default `md`) | The post body. `json` wraps it as `{id, slug, title, content}`. |
+| `/api/v1/blog/comments` | `id` (optional), `limit` (default 50, max 100) | Approved comments. See below. |
+| `/api/v1/blog/views?id=…` | `id` | `{id, slug, views}`. |
 
-Both `/api/v1/blog` list items and the `/api/v1/blog/{id_or_slug}` detail response include a `collaborators` field (array of collaborator names/handles).
+Post metadata is `{id, slug, title, excerpt, summary, tldr, tags, collaborators, created_at, updated_at}`. `excerpt` is written by hand; `summary` and `tldr` are generated when the post is saved and may be `null`/`[]`.
 
-Both also include `excerpt` (short teaser, nullable string), `summary` (longer AI-generated recap, nullable string), and `tldr` (AI-generated key points, nullable array of up to 4 strings). Excerpts are written manually; Summary and TL;DR remain generated automatically at publish/edit time. A post may have `null`/`[]` for `summary`/`tldr` if it predates this feature or generation failed; this is expected, not an error. These fields are also included in `?format=md`/`?format=text` output alongside the raw excerpt blockquote.
+```sh
+curl "https://fkp.my.id/api/v1/blog?id=update-gnome-51"
+curl "https://fkp.my.id/api/v1/blog/content?id=3f9a1c2&o=txt"
+```
 
 #### Comments
 
-Read-only — this API does not accept comment submissions. `GET` returns `{"data": [...]}`, each comment shaped as `{id, post_id, parent_id, author_name, content, is_anonymous, is_admin, is_approved, created_at}`; only approved comments are ever returned. Site-wide results are newest first; a post thread is oldest first. This endpoint does not paginate — it's capped by `limit`, no `pagination` object.
+Read-only — this API does not accept comment submissions, and only approved comments are returned. Comments carry no identifiers.
 
-```sh
-curl "https://fkp.my.id/api/v1/blog/comments?postId=<uuid>"
-```
-
-#### Views
-
-Read-only — this API does not record views.
-
-```sh
-curl "https://fkp.my.id/api/v1/blog/views?postId=<uuid>"
-```
-
-```json
-{ "postId": "<uuid>", "views": 42 }
-```
+- With `id`: `{id, slug, data, hasMore}`. `data` holds the post's threads oldest first; each comment is `{author_name, content, is_admin, is_anonymous, created_at, replies}` with its replies nested in `replies`. `limit` caps the number of top-level threads.
+- Without `id`: `{data}` with the newest comments across the site, each `{post: {id, slug}, author_name, content, is_admin, is_anonymous, is_reply, created_at}`.
 
 ### Author
 
-| Method | Path | Description |
+| Path | Parameters | Returns |
 | --- | --- | --- |
-| GET | `/api/v1/author` | Combined profile. `profile` includes the public `email` field and an optional `pronunciation` field (preserved as entered, including any slashes or brackets; empty when unset). Query: `fields` (comma-separated subset of `profile,cv,funding,contact,skills,socials`, defaults to all — a bare `?profile`, `?cv`, etc. flag also works, and `?sponsorship` is an alias for `funding`), `format=md`. |
-| GET | `/api/v1/author/contact` | Contact info. |
-| GET | `/api/v1/author/socials` | Social links. |
-| GET | `/api/v1/author/skills` | Skills grouped by category. |
-| GET | `/api/v1/author/funding` | Funding/sponsorship links. |
-| GET | `/api/v1/author/cv` | Structured CV (experience + education) as JSON. |
-| GET | `/api/v1/cv` | CV as `application/pdf`. Query: `download=1` forces `Content-Disposition: attachment` (default `inline`); `format=sha256` (alias `checksum=1`) returns a `text/plain` SHA-256 checksum sidecar instead of the PDF. Response includes an `X-Checksum-SHA256` header either way. |
+| `/api/v1/author` | `field` (all sections by default), `output=json\|md\|pdf`, `checksum` | One key per requested section. `profile` includes the public `email` and an optional `pronunciation` (preserved as entered; empty when unset). |
+| `/api/v1/cv` | `output=json\|md\|pdf`, `checksum` | Exactly the same response as `/api/v1/author?field=cv`, without a redirect. |
 
-The per-field sub-routes (`contact`, `socials`, `skills`, `funding`, `cv`) don't support `format=md` — that's only available on the combined `/api/v1/author` endpoint.
+`output=pdf` is available only when the request is for the CV alone (`/api/v1/cv`, or `/api/v1/author` with `field=cv`). It downloads the PDF as an attachment. `checksum` defaults to `true`, which adds the PDF's SHA-256 as `Repr-Digest: sha-256=:<base64>:` (RFC 9530) and `X-Checksum-SHA256: <hex>` headers; `checksum=false` downloads the PDF without them. `checksum` without `output=pdf` returns `400 CV_CHECKSUM_REQUIRES_PDF`.
+
+```sh
+curl "https://fkp.my.id/api/v1/author?f=profile,skills&o=md"
+curl -OJ "https://fkp.my.id/api/v1/cv?o=pdf"
+```
 
 ### Search
 
-| Method | Path | Description |
+| Path | Parameters | Returns |
 | --- | --- | --- |
-| GET | `/api/v1/search` | Search blog posts by title/excerpt. Query: `q` (min 2 chars, returns an empty result below that — not a `400`), `limit` (max 20, default 6), `offset` (non-negative integer, default 0; `400 SEARCH_INVALID_OFFSET` otherwise). |
+| `/api/v1/search` | `query` (min 2 chars), `page`, `limit` (default 6, max 20) | `{query, data, pagination: {page, limit, returned, hasMore}}` |
 
-Response shape is `{query, data, pagination: {limit, offset, returned, hasMore}}` — lighter than the `/api/v1/blog` pagination object below. There is no `page` param: page with `offset` and stop when `hasMore` is `false`.
+Each result is `{type: "post", id, title, subtitle, url}`. A query under two characters returns an empty result, not an error. Page until `hasMore` is `false`.
 
-### Discovery & machine-readable docs
+### Discovery
 
-| Method | Path                   | Description                     |
-| ------ | ---------------------- | ------------------------------- |
-| GET    | `/api/v1/docs`         | This document, `text/markdown`. |
-| GET    | `/api/v1/openapi.json` | OpenAPI v3 specification, JSON. |
-| GET    | `/api/v1/openapi.yaml` | Same spec, YAML.                |
+| Path                   | Returns                                                    |
+| ---------------------- | ---------------------------------------------------------- |
+| `/api/v1`              | This document (`text/markdown`), or a JSON endpoint index. |
+| `/api/v1/openapi.json` | Redirects to `/.well-known/openapi.json`.                  |
+| `/api/v1/openapi.yaml` | Redirects to `/.well-known/openapi.yaml`.                  |
 
-These mirror the canonical copies at `/.well-known/openapi.json` / `/.well-known/openapi.yaml` — prefer the `.well-known` paths for new integrations. Also available for AI/LLM agents: `/llms.txt` (structured directory of every public doc/API/feed), `/.well-known/agent-skills/index.json` (per-endpoint agent skill descriptors with content digests), and `/.well-known/api-catalog` (RFC 9727 linkset).
+Also available for AI/LLM agents: `/llms.txt`, `/.well-known/agent-skills/index.json` (per-endpoint agent skill descriptors with content digests), and `/.well-known/api-catalog` (RFC 9727 linkset).
 
 ---
 
-## Pagination
+## Caching
 
-`/api/v1/blog` returns `data` plus a `pagination` object: `page`, `limit`, `total`, `totalPages`, `hasNextPage`, `hasPrevPage`. `/api/v1/search` uses the lighter `{limit, offset, returned, hasMore}` shape: page with `offset` and stop when `hasMore` is `false`. `/api/v1/blog/comments` doesn't paginate at all — it's a flat list capped by `limit`.
+Public JSON and text responses provide ETags. Send `If-None-Match` to revalidate; unchanged representations return `304` with no body. Responses include `Vary: Accept`, and query parameters are part of the cache key. Mutable data uses a maximum shared-cache lifetime of 60 seconds. Errors are not cached.
 
-## Markdown responses
+The agent discovery index is a site-specific JSON document containing `skills`. Each entry has `name`, `type: "skill-md"`, `description`, `url`, and `digest`. URLs resolve to Markdown SKILL.md documents. Digests are SHA-256 of the exact UTF-8 document bytes.
 
-Add `?format=md` (or send `Accept: text/markdown`) for a markdown response instead of JSON. Supported on `/api/v1/blog`, `/api/v1/blog/{id_or_slug}`, and `/api/v1/author` only — not on the author sub-routes, `blog/comments`, `blog/views`, or `search`.
-
-`/api/v1/blog/{id_or_slug}` additionally supports `?format=text` (alias `txt`, or `Accept: text/plain`) for a genuine plain-text rendering, distinct from `format=md`. Note `/api/v1/author`'s `?format=text` behaves differently — it's treated as an alias for markdown there, not plain text.
-
-## Caching and discovery
-
-Public JSON and text responses provide ETags. Send `If-None-Match` to revalidate; unchanged representations return `304` with no body. Negotiated responses include `Vary: Accept`, and query parameters remain part of the cache key. Mutable API data uses a maximum shared-cache lifetime of 60 seconds. Errors are not cached. GET routes also support HEAD; public preflight advertises GET, HEAD, and OPTIONS.
-
-Malformed numeric limits fall back to the documented default, and numeric limits are clamped to each endpoint's maximum. Data-source failures return endpoint-specific errors instead of empty successful responses.
-
-The agent discovery index is a site-specific JSON document containing `skills`. Each entry has `name`, `type: "skill-md"`, `description`, `url`, and `digest`. URLs resolve to Markdown SKILL.md documents. Digests are SHA-256 of the exact UTF-8 document bytes. The index does not claim conformance to an unverified external discovery schema.
-
-`/site.webmanifest` is generated from the public profile and app appearance settings. Avatar/icon files are stored in R2, while their metadata and active version are stored in Supabase. Image uploads use authenticated internal endpoints and are not part of this public API.
-
-Production robots policy permits search and AI input while declaring AI training disallowed. These crawler signals express policy, not access control. Preview deployments and admin/internal pages advertise noindex.
+Production robots policy permits search and AI input while declaring AI training disallowed. These crawler signals express policy, not access control. Preview deployments and internal pages advertise noindex.

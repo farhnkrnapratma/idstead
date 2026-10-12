@@ -1332,11 +1332,11 @@
         if (typeof window === 'undefined') return;
         if (postViewsMap.has(postId)) return;
         try {
-            const res = await fetch(`/api/v1/blog/views?postId=${postId}`);
-            if (res.ok) {
-                const data = await res.json();
-                postViewsMap.set(postId, data.views || 0);
-            }
+            const { count, error } = await supabase
+                .from('db_views')
+                .select('id', { count: 'exact', head: true })
+                .eq('post_id', postId);
+            if (!error) postViewsMap.set(postId, count ?? 0);
         } catch (err) {
             console.error('Failed to fetch views for post:', postId, err);
         }
