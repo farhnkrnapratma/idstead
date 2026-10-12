@@ -725,34 +725,34 @@
                             </span>
                         {/if}
                         <span
-                            class="inline-flex items-center gap-1.5 font-normal whitespace-nowrap text-text-secondary">
+                            class="inline-flex items-center gap-1.5 leading-none font-normal whitespace-nowrap text-text-secondary">
                             <Star
-                                class="size-3.5 shrink-0 translate-y-[-0.5px] text-text-muted/70 transition-colors"
+                                class="size-3.5 shrink-0 text-text-muted/70 transition-colors"
                                 strokeWidth={1.75}
                                 absoluteStrokeWidth={true} />
                             <span>{pluralize(project.stars, 'star')}</span>
                         </span>
                         <span
-                            class="hidden items-center gap-1.5 font-normal whitespace-nowrap text-text-secondary sm:inline-flex">
+                            class="hidden items-center gap-1.5 leading-none font-normal whitespace-nowrap text-text-secondary sm:inline-flex">
                             <GitFork
-                                class="size-3.5 shrink-0 translate-y-[-0.5px] text-text-muted/70 transition-colors"
+                                class="size-3.5 shrink-0 text-text-muted/70 transition-colors"
                                 strokeWidth={1.75}
                                 absoluteStrokeWidth={true} />
                             <span>{pluralize(project.forks, 'fork')}</span>
                         </span>
                         <span
-                            class="hidden items-center gap-1.5 font-normal whitespace-nowrap text-text-secondary sm:inline-flex">
+                            class="hidden items-center gap-1.5 leading-none font-normal whitespace-nowrap text-text-secondary sm:inline-flex">
                             <RotateCcwClock
-                                class="size-3.5 shrink-0 translate-y-[-0.5px] text-text-muted/70 transition-colors"
+                                class="size-3.5 shrink-0 text-text-muted/70 transition-colors"
                                 strokeWidth={1.75}
                                 absoluteStrokeWidth={true} />
                             <span>{pluralize(project.commits, 'commit')}</span>
                         </span>
                         {#if project.licenseName}
                             <span
-                                class="inline-flex items-center gap-1.5 font-normal whitespace-nowrap text-text-secondary">
+                                class="inline-flex items-center gap-1.5 leading-none font-normal whitespace-nowrap text-text-secondary">
                                 <Scale
-                                    class="size-3.5 shrink-0 translate-y-[-0.5px] text-text-muted/70 transition-colors"
+                                    class="size-3.5 shrink-0 text-text-muted/70 transition-colors"
                                     strokeWidth={1.75}
                                     absoluteStrokeWidth={true} />
                                 <span>{project.licenseName} License</span>

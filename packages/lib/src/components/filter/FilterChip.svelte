@@ -26,6 +26,6 @@
         onclick={onRemove}
         aria-label="Remove filter: {label} {value}"
         class="inline-flex size-3.5 shrink-0 cursor-pointer items-center justify-center rounded-full p-0 text-accent/60 transition-colors hover:bg-accent/20 hover:text-accent focus:outline-none active:text-accent">
-        <X class="size-2.5 translate-y-[-0.5px]" />
+        <X class="size-2.5" />
     </button>
 </div>
