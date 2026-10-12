@@ -127,7 +127,7 @@
 
     async function submitMfaCode(event: SubmitEvent) {
         event.preventDefault();
-        if (verifyingMfa) return;
+        if (verifyingMfa || passkeyBusy) return;
         mfaError = '';
         verifyingMfa = true;
         try {
@@ -176,23 +176,10 @@
         if (passkeyBusy) return;
         passkeyBusy = true;
         try {
-            if (needsMfa) {
-                await clearLocalAdminSession(supabase);
-                needsMfa = false;
-                mfaCode = '';
-                mfaError = '';
-            }
             const { error } = await supabase.auth.signInWithPasskey();
             if (error) throw error;
+            await supabase.auth.signOut({ scope: 'others' }).catch(() => undefined);
             await continueAfterSignIn();
-            if (needsMfa) {
-                const { data: assurance } =
-                    await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-                console.error(
-                    'Passkey session was not accepted as MFA:',
-                    assurance?.currentAuthenticationMethods
-                );
-            }
         } catch (err) {
             const text = err instanceof Error ? err.message : '';
             if (!/cancel|abort|NotAllowed/i.test(text))
