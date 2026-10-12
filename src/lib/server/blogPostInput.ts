@@ -1,5 +1,6 @@
 import { UUID_PATTERN, BANNER_LIMIT, sha256 } from '#lib/blogBanner.ts';
 import { validateBanner } from './validateBanner';
+import { isValidPostSlug, POST_SLUG_MAX_LENGTH } from '#lib/slug.ts';
 
 export const POST_PAYLOAD_LIMIT = 3 * 1024 * 1024;
 export const MARKDOWN_LIMIT = 2 * 1024 * 1024;
@@ -76,8 +77,8 @@ export async function parsePostInput(request: Request, wasm: WebAssembly.Module)
     let image: Uint8Array<ArrayBuffer> | null = null;
     if (input.kind === 'save') {
         if (typeof input.published !== 'boolean') throw new Error('Invalid publication status.');
-        const slug = text(input.slug, 100, true)!;
-        if (!/^[a-z]+(?:-[a-z]+)*$/.test(slug)) throw new Error('Invalid post slug.');
+        const slug = text(input.slug, POST_SLUG_MAX_LENGTH, true)!;
+        if (!isValidPostSlug(slug)) throw new Error('Invalid post slug.');
         post = {
             title: text(input.title, 60, true),
             slug,

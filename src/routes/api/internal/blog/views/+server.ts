@@ -4,6 +4,7 @@ import type { RequestHandler } from './$types';
 import { apiError } from '#lib/server/apiError.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
+import { resolvePostUuid } from '#lib/server/postLookup.ts';
 
 export const POST: RequestHandler = async ({ request, url, getClientAddress, platform }) => {
     if (!isSameOriginRequest(request, url)) {
@@ -20,9 +21,13 @@ export const POST: RequestHandler = async ({ request, url, getClientAddress, pla
 
     try {
         const body = await request.json();
-        const postId = typeof body?.postId === 'string' ? body.postId.trim() : '';
-        if (!postId) {
+        const publicId = typeof body?.postId === 'string' ? body.postId.trim() : '';
+        if (!publicId) {
             return apiError(400, 'BLOG_VIEW_POST_ID_REQUIRED', 'postId is required.');
+        }
+        const postId = await resolvePostUuid(supabase, publicId);
+        if (!postId) {
+            return apiError(404, 'BLOG_POST_NOT_FOUND', 'No published post matches postId.');
         }
 
         const ip = getClientAddress();
@@ -50,15 +55,22 @@ export const POST: RequestHandler = async ({ request, url, getClientAddress, pla
             .eq('ip_hash', dailyKey)
             .maybeSingle();
 
-        if (existing) {
-            return json({ counted: false });
+        if (!existing) {
+            await supabase
+                .from('db_views')
+                .insert({
+                    post_id: postId,
+                    ip_hash: dailyKey,
+                    viewed_at: new Date().toISOString()
+                });
         }
 
-        await supabase
+        const { count } = await supabase
             .from('db_views')
-            .insert({ post_id: postId, ip_hash: dailyKey, viewed_at: new Date().toISOString() });
+            .select('id', { count: 'exact', head: true })
+            .eq('post_id', postId);
 
-        return json({ counted: true }, { status: 201 });
+        return json({ counted: !existing, views: count ?? 0 }, { status: existing ? 200 : 201 });
     } catch (err) {
         console.error('View tracking error:', err);
         return apiError(

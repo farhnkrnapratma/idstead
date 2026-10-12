@@ -2,25 +2,29 @@ import type { RequestHandler } from './$types';
 import { UUID_PATTERN } from '#lib/blogBanner.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { getBannerObject } from '#lib/server/blogBannerStorage.ts';
+import { PUBLIC_ID_PATTERN, resolvePostUuid } from '#lib/server/postLookup.ts';
 
 export const GET: RequestHandler = async ({ request, params, platform }) => {
     const version = params.file.endsWith('.webp') ? params.file.slice(0, -5) : '';
     const headers = new Headers({ 'Cache-Control': 'no-store' });
-    if (!UUID_PATTERN.test(params.postId) || !UUID_PATTERN.test(version))
+    const isPublicId = PUBLIC_ID_PATTERN.test(params.postId);
+    if ((!isPublicId && !UUID_PATTERN.test(params.postId)) || !UUID_PATTERN.test(version))
         return new Response(null, { status: 404, headers });
     try {
         const db = getSupabaseAdminClient(platform);
         if (!db) return new Response(null, { status: 503, headers });
+        const postId = isPublicId ? await resolvePostUuid(db, params.postId) : params.postId;
+        if (!postId) return new Response(null, { status: 404, headers });
         const { data, error } = await db
             .from('db_blog_banner_versions')
             .select('state')
             .eq('id', version)
-            .eq('post_id', params.postId)
+            .eq('post_id', postId)
             .maybeSingle();
         if (error) throw error;
         if (!data || !['active', 'retired'].includes(data.state))
             return new Response(null, { status: 404, headers });
-        const object = await getBannerObject(platform, params.postId, version);
+        const object = await getBannerObject(platform, postId, version);
         headers.set('Content-Type', 'image/webp');
         headers.set('X-Content-Type-Options', 'nosniff');
         headers.set('Cache-Control', 'public, max-age=31536000, immutable');

@@ -1,6 +1,7 @@
 <script lang="ts">
     import { FieldValidation, requiredText } from '#lib/fieldValidation.ts';
     import { supabase } from '#lib/supabase.ts';
+    import { slugifyTitle } from '#lib/slug.ts';
     import { processContentImage } from '#lib/processContentImage.ts';
     import { onDestroy, onMount } from 'svelte';
     import {
@@ -37,7 +38,7 @@
 
     let isCheckingAuth = $state(true);
     let title = $state('');
-    let slug = $derived(generateSlug(title));
+    let slug = $derived(slugifyTitle(title));
     let excerpt = $state('');
     let tags = $state<string[]>([]);
     let collaborators = $state<string[]>([]);
@@ -227,15 +228,6 @@
             console.error('Failed in loadPostForEdit:', err);
             errorMessage = err?.message || 'Failed to load post for editing';
         }
-    }
-
-    function generateSlug(text: string): string {
-        return text
-            .toLowerCase()
-            .replace(/[^a-z\s-]/g, '')
-            .replace(/\s+/g, '-')
-            .replace(/-+/g, '-')
-            .replace(/^-+|-+$/g, '');
     }
 
     async function handleImageUploadFile(file: File): Promise<string | null> {

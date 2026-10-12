@@ -45,13 +45,13 @@ export async function readPublishedPosts() {
     for (let offset = 0; ; offset += 500) {
         const { data, error: failure } = await supabase
             .from('db_posts')
-            .select('id,slug,title,excerpt,summary,created_at,updated_at')
+            .select('public_id,slug,title,excerpt,summary,created_at,updated_at')
             .eq('published', true)
             .order('created_at', { ascending: false })
-            .order('id')
+            .order('public_id')
             .range(offset, offset + 499);
         if (failure) error(503, 'Published content is temporarily unavailable.');
-        posts.push(...(data ?? []));
+        posts.push(...(data ?? []).map(({ public_id, ...post }) => ({ ...post, id: public_id })));
         if (!data || data.length < 500) break;
     }
     return posts;

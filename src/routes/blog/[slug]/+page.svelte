@@ -318,14 +318,13 @@
 
         (async () => {
             try {
-                await fetch('/api/internal/blog/views', {
+                const res = await fetch('/api/internal/blog/views', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ postId: post.id })
                 });
-                const res = await fetch(`/api/v1/blog/views?postId=${encodeURIComponent(post.id)}`);
                 const data = await res.json();
-                viewCount = data.views ?? null;
+                viewCount = typeof data.views === 'number' ? data.views : null;
             } catch {
                 viewCount = null;
             }

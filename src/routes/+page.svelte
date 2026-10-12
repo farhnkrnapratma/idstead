@@ -1,7 +1,6 @@
 <script lang="ts">
     import Tag from '#lib/components/Tag.svelte';
     import { blogBannerAlt } from '#lib/blogBanner.ts';
-    import { bannerUrl } from '#lib/blogBanner.ts';
     import { FieldValidation, requiredText, emailError } from '#lib/fieldValidation.ts';
     import { publicAvatarUrl } from '#lib/siteIdentity.ts';
     import { onDestroy, onMount, untrack } from 'svelte';
@@ -912,9 +911,9 @@
         <div
             class="relative flex flex-col rounded-md glass-card border-0! text-left dark:border-0!">
             <div class="relative aspect-2/1 w-full shrink-0 overflow-hidden rounded-t-md">
-                {#if post.banner_version && !failedBanners.has(post.id)}
+                {#if post.bannerPublicUrl && !failedBanners.has(post.id)}
                     <ImageWithSkeleton
-                        src={bannerUrl(post)}
+                        src={post.bannerPublicUrl}
                         alt={blogBannerAlt(post.title, post.excerpt)}
                         rounded=""
                         onerror={() => markBannerFailed(post.id)}

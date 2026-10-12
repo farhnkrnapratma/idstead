@@ -23,6 +23,13 @@ export function bannerUrl(post: { id: string; banner_version?: string | null }) 
     return post.banner_version ? `/${bannerKey(post.id, post.banner_version)}` : null;
 }
 
+export function publicBannerUrl(post: { public_id: string; banner_version?: string | null }) {
+    if (!post.banner_version) return null;
+    if (!/^[0-9a-f]{64}$/.test(post.public_id) || !UUID_PATTERN.test(post.banner_version))
+        throw new Error('Invalid banner identity.');
+    return `/blog/banners/${post.public_id}/${post.banner_version}.webp`;
+}
+
 export function bannerCrop(width: number, height: number, allowUpscale = false) {
     if (
         !Number.isSafeInteger(width)
