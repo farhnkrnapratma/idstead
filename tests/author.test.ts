@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { fetchCvEntries } from '../src/lib/author';
+import { fetchCvEntries } from '../packages/lib/src/author';
 
 describe('author data loading', () => {
     test('loads experience and education concurrently', async () => {

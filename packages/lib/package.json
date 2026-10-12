@@ -1,0 +1,68 @@
+{
+    "name": "@fkp/lib",
+    "version": "0.0.1",
+    "private": true,
+    "license": "MIT",
+    "type": "module",
+    "svelte": "./src/index.ts",
+    "exports": {
+        ".": {
+            "types": "./src/index.ts",
+            "svelte": "./src/index.ts",
+            "default": "./src/index.ts"
+        },
+        "./*": "./src/*"
+    },
+    "imports": {
+        "#lib": "./src/index.ts",
+        "#lib/*": "./src/*"
+    },
+    "sideEffects": [
+        "**/*.css"
+    ],
+    "dependencies": {
+        "@aws-sdk/client-s3": "^3.1149.0",
+        "@blobatar/svelte": "^2.7.0",
+        "@fontsource-variable/lexend": "^5.3.0",
+        "@fontsource-variable/lilex": "^5.3.0",
+        "@fontsource-variable/noto-sans": "^5.3.0",
+        "@fontsource-variable/noto-serif": "^5.3.0",
+        "@fontsource/ia-writer-quattro": "^5.3.0",
+        "@fontsource/ibm-plex-serif": "^5.3.0",
+        "@fontsource/lilex": "^5.3.0",
+        "@jsquash/webp": "1.5.0",
+        "@lucide/svelte": "^1.55.0",
+        "@pdf-lib/fontkit": "^1.1.1",
+        "@sentry/sveltekit": "^11.6.0",
+        "@supabase/ssr": "^0.12.7",
+        "@supabase/supabase-js": "^2.117.3",
+        "blobatar": "^2.7.0",
+        "bootstrap-icons": "^1.13.2",
+        "d3-scale": "^4.0.2",
+        "d3-shape": "^3.2.0",
+        "fflate": "^0.8.3",
+        "highlight.js": "^11.12.0",
+        "imagetracerjs": "1.2.6",
+        "js-yaml": "^5.4.3",
+        "katex": "^0.19.0",
+        "layerchart": "^2.6.1",
+        "lucide-static": "^1.55.0",
+        "marked": "^18.1.0",
+        "marked-footnote": "^1.4.0",
+        "mermaid": "^12.1.0",
+        "pako": "^3.0.2",
+        "pdf-lib": "^1.17.1",
+        "qreator": "^10.0.2",
+        "upng-js": "2.1.0"
+    },
+    "devDependencies": {
+        "@types/d3-scale": "^4.0.9",
+        "@types/d3-shape": "^3.2.0",
+        "@types/js-yaml": "^4.0.9",
+        "@types/katex": "^0.16.8"
+    },
+    "peerDependencies": {
+        "@sveltejs/kit": "^3.0.1",
+        "svelte": "^5.0.0"
+    }
+}

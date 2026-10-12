@@ -1,4 +1,7 @@
 telemetry = false
 
+[install]
+linker = "hoisted"
+
 [run]
 shell = "bun"

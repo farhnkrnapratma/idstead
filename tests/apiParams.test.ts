@@ -5,7 +5,7 @@ import {
     parseBoolean,
     parsePositiveInt,
     resolveOutput
-} from '../src/lib/server/api/params.ts';
+} from '../packages/lib/src/server/api/params.ts';
 
 const url = (query: string) => new URL(`https://fkp.my.id/api/v1/author${query}`);
 

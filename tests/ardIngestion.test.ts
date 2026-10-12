@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 import { readFile } from 'node:fs/promises';
-import { createArdIndexCache, loadArdIndex } from '../src/lib/server/ardIndex';
-import { crawlArdSources } from '../src/lib/server/ardIngestion';
-import type { ArdEntry } from '../src/lib/server/ard';
+import { createArdIndexCache, loadArdIndex } from '../packages/lib/src/server/ardIndex';
+import { crawlArdSources } from '../packages/lib/src/server/ardIngestion';
+import type { ArdEntry } from '../packages/lib/src/server/ard';
 
 const siteUrl = 'https://ard.example';
 const context = 'https://agenticresourcediscovery.org/context/v1';

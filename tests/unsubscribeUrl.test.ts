@@ -1,13 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'bun:test';
-import { unsubscribeResultUrl } from '../src/lib/server/unsubscribeUrl';
+import { unsubscribeResultUrl } from '../packages/lib/src/server/unsubscribeUrl';
 
 const unsubscribePageServer = readFileSync(
-    new URL('../src/routes/unsubscribe/+page.server.ts', import.meta.url),
+    new URL('../apps/web/src/routes/unsubscribe/+page.server.ts', import.meta.url),
     'utf8'
 );
 const subscribeHandler = readFileSync(
-    new URL('../src/routes/api/internal/subscribe/+server.ts', import.meta.url),
+    new URL('../apps/web/src/routes/api/internal/subscribe/+server.ts', import.meta.url),
     'utf8'
 );
 

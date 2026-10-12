@@ -416,7 +416,7 @@
 </div>
 
 <style>
-    @reference "../../../routes/global.css";
+    @reference "../../global.css";
 
     :global(.lc-axis-label, .lc-axis-tick-label) {
         @apply stroke-none! [stroke-width:0]!;

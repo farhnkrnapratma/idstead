@@ -330,7 +330,7 @@
 {/if}
 
 <style>
-    @reference "../../routes/global.css";
+    @reference "../global.css";
 
     :global(nav[aria-label='Table of contents'] code),
     :global(details.markdown-details code) {

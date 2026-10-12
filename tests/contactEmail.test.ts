@@ -2,7 +2,7 @@ import { describe, expect, mock, test } from 'bun:test';
 
 mock.module('$app/env/private', () => ({}));
 
-const { contactMessageEmail } = await import('../src/lib/server/subscribers.ts');
+const { contactMessageEmail } = await import('../packages/lib/src/server/subscribers.ts');
 
 describe('contact message email', () => {
     const mail = contactMessageEmail('New feedback report from website!', {

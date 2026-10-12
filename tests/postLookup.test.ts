@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { findPost, resolvePostUuid } from '../src/lib/server/postLookup.ts';
-import { isValidPostSlug, planSlugRegeneration, slugifyTitle } from '../src/lib/slug.ts';
+import { findPost, resolvePostUuid } from '../packages/lib/src/server/postLookup.ts';
+import { isValidPostSlug, planSlugRegeneration, slugifyTitle } from '../packages/lib/src/slug.ts';
 
 type Row = { id: string; public_id: string; slug: string; published: boolean };
 

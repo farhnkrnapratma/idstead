@@ -3,7 +3,7 @@ import {
     inspectAdminAuth,
     requiresAdminMfa,
     resolveAdminAuthStatus
-} from '../src/lib/adminAuthState';
+} from '../packages/lib/src/adminAuthState';
 
 function authClient(
     status:

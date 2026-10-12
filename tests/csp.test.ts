@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { buildContentSecurityPolicy } from '../src/lib/server/csp';
+import { buildContentSecurityPolicy } from '../packages/lib/src/server/csp';
 
 const policy = buildContentSecurityPolicy({
     supabaseUrl: 'https://abc.supabase.co/rest/v1',

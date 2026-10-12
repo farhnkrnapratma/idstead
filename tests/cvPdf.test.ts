@@ -8,7 +8,7 @@ import {
     sanitizePdfText,
     type AuthorCvData,
     type CvFontBytes
-} from '../src/lib/server/pdfGenerator';
+} from '../packages/lib/src/server/pdfGenerator';
 
 const font = (path: string) => new Uint8Array(readFileSync(`node_modules/@fontsource/${path}`));
 

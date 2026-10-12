@@ -4,9 +4,9 @@ let render: (markdown: string) => Promise<string>;
 let getDownloadFilename: (className: string, filename?: string) => string;
 
 beforeAll(async () => {
-    const markdown = await import('../src/lib/markdown');
+    const markdown = await import('../packages/lib/src/markdown');
     render = markdownSource => markdown.renderMarkdown(markdownSource);
-    getDownloadFilename = (await import('../src/lib/utils/codeBlockExtensions'))
+    getDownloadFilename = (await import('../packages/lib/src/utils/codeBlockExtensions'))
         .getDownloadFilename;
 });
 
@@ -351,7 +351,7 @@ describe('icon resolution', () => {
     let resolve: (value: string) => Promise<string>;
 
     beforeAll(async () => {
-        resolve = (await import('../src/lib/markdownIcons')).resolveIconMarkup;
+        resolve = (await import('../packages/lib/src/markdownIcons')).resolveIconMarkup;
     });
 
     test('lucide wins when the name exists in both libraries', async () => {
@@ -497,7 +497,7 @@ describe('plain text export', () => {
     let toText: (markdown: string) => string;
 
     beforeAll(async () => {
-        toText = (await import('../src/lib/utils/markdownToText')).markdownToPlainText;
+        toText = (await import('../packages/lib/src/utils/markdownToText')).markdownToPlainText;
     });
 
     test('fences with the new info string keep their body intact', () => {
@@ -523,7 +523,7 @@ describe('plain text export', () => {
 
 describe('headings with math', () => {
     test('inline math in a heading yields a clean id and toc text', async () => {
-        const { prepareMarkdownPage } = await import('../src/lib/markdown');
+        const { prepareMarkdownPage } = await import('../packages/lib/src/markdown');
         const { html, headings } = await prepareMarkdownPage('## Title $$ x^2 $$\n\ntext');
         expect(html).toContain('id="title-x2"');
         expect(headings).toEqual([{ id: 'title-x2', text: 'Title x^2', level: 2 }]);

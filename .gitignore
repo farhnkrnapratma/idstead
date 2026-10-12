@@ -3,9 +3,9 @@ node_modules
 .vercel
 .netlify
 .wrangler
-/.svelte-kit
-/build
-/dist
+.svelte-kit
+build
+dist
 .DS_Store
 Thumbs.db
 .env
