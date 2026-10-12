@@ -59,11 +59,24 @@ function requestedFields(values: string[]): AuthorField[] {
     return values.length ? (values as AuthorField[]) : [...AUTHOR_FIELDS];
 }
 
+function publicAssetUrl(value: unknown) {
+    if (typeof value !== 'string' || !value) return value;
+    try {
+        const url = new URL(value);
+        url.searchParams.delete('v');
+        return url.toString();
+    } catch {
+        return value;
+    }
+}
+
 function orderProfile(profile: Record<string, unknown>, email: unknown) {
     const ordered: Record<string, unknown> = {};
     for (const key of PROFILE_ORDER) {
         if (key === 'email') {
             if (typeof email === 'string' && email) ordered.email = email;
+        } else if (key === 'avatar') {
+            if (key in profile) ordered.avatar = publicAssetUrl(profile.avatar);
         } else if (key in profile) ordered[key] = profile[key];
     }
     for (const [key, value] of Object.entries(profile)) if (!(key in ordered)) ordered[key] = value;

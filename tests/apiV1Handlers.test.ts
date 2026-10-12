@@ -3,7 +3,11 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 mock.module('$app/env/public', () => ({}));
 mock.module('#lib/author.ts', () => ({
-    fetchAuthorProfile: async () => ({ id: 'a1b2c3d4-0000-4000-8000-000000000000', name: 'A' }),
+    fetchAuthorProfile: async () => ({
+        id: 'a1b2c3d4-0000-4000-8000-000000000000',
+        name: 'A',
+        avatar: 'https://fkp.my.id/avatar.png?v=96888ae8-e194-43ee-9203-45d6c040dc11'
+    }),
     fetchContactInfo: async () => [{ id: 'x', platform: 'Email', href: 'mailto:a@b.c' }],
     fetchCvEntries: async () => ({
         experiences: [{ id: 'f0e1d2c3-0000-4000-8000-000000000000', title: 'Engineer' }]
@@ -50,6 +54,7 @@ describe('author and CV endpoints', () => {
         const body = await response.text();
         expect(body).not.toMatch(UUID);
         expect(JSON.parse(body)).toHaveProperty('profile.name', 'A');
+        expect(JSON.parse(body)).toHaveProperty('profile.avatar', 'https://fkp.my.id/avatar.png');
     });
 
     test('downloads the PDF with checksum headers by default', async () => {
