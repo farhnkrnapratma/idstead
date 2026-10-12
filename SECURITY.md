@@ -58,7 +58,7 @@ Please allow a reasonable period to investigate and patch before any public disc
 Reports that account for the following are more useful than those that do not:
 
 - A pre-commit hook runs a secret scanner over staged files and blocks the commit on a verified finding. It is advisory: it exits without error if the scanner is not installed locally.
-- GitHub secret scanning and push protection are enabled on the repository, as are Dependabot security updates.
+- GitHub secret scanning and push protection are enabled on the repository.
 - Response headers set a content security policy with `frame-ancestors 'none'`, together with `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, and `Referrer-Policy: strict-origin-when-cross-origin`.
 - The public interface is rate limited to 60 requests per minute per IP address, and administrator sign-in is locked out after 5 failed attempts within 15 minutes.
 - Database error text is scrubbed from responses before it leaves the server, so schema details are not disclosed through error messages.
