@@ -38,7 +38,7 @@
     const defaultNavItems: NavItem[] = [
         { label: 'Home', url: '/' },
         { label: 'Projects', url: '/#projects' },
-        { label: 'Blog', url: '/#blog' },
+        { label: 'Blog', url: '/blog' },
         { label: 'CV', url: '/#cv' },
         { label: 'Funding', url: '/#funding' },
         { label: 'Contact', url: '/#contact' }
