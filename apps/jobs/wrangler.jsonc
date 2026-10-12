@@ -1,0 +1,20 @@
+{
+    "name": "fkp-jobs",
+    "main": "src/index.ts",
+    "compatibility_date": "2025-06-28",
+    "compatibility_flags": ["nodejs_compat"],
+    "workers_dev": false,
+    "observability": { "enabled": true },
+    "alias": { "$app/env/private": "./src/appEnv.ts", "$app/env/public": "./src/appEnv.ts" },
+    "queues": {
+        "consumers": [
+            {
+                "queue": "fkp-newsletter",
+                "max_batch_size": 10,
+                "max_retries": 5,
+                "dead_letter_queue": "fkp-newsletter-dlq"
+            }
+        ]
+    },
+    "triggers": { "crons": ["17 3 * * *"] }
+}
