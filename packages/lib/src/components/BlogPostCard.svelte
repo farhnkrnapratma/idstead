@@ -96,7 +96,7 @@
                             {/if}
                             {#if isNew}
                                 <span
-                                    class="inline-flex size-4.5 items-center justify-center rounded-full bg-security-subtle text-security"
+                                    class="inline-flex size-4.5 items-center justify-center rounded-full bg-security-subtle text-accent-text"
                                     title="New post"
                                     role="img"
                                     aria-label="New post">
@@ -133,7 +133,7 @@
                                 onclick={() => (expanded = false)}
                                 keyboardShortcut="E"
                                 shortcutLabel="Show less"
-                                class="relative inline-flex h-auto! min-h-0! p-0! text-xs font-normal whitespace-nowrap text-security! underline hover:opacity-80 focus-visible:outline-none">
+                                class="relative inline-flex h-auto! min-h-0! p-0! text-xs font-normal whitespace-nowrap text-accent-text! underline hover:opacity-80 focus-visible:outline-none">
                                 Show less
                             </Button>
                         {/if}
@@ -146,7 +146,7 @@
                             onclick={() => (expanded = true)}
                             keyboardShortcut="E"
                             shortcutLabel="Show more"
-                            class="relative inline-flex h-auto! min-h-0! p-0! text-xs font-normal whitespace-nowrap text-security! underline hover:opacity-80 focus-visible:outline-none">
+                            class="relative inline-flex h-auto! min-h-0! p-0! text-xs font-normal whitespace-nowrap text-accent-text! underline hover:opacity-80 focus-visible:outline-none">
                             Show more
                         </Button>
                     {/if}

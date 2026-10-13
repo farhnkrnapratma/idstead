@@ -28,7 +28,7 @@
         className
     )}>
     {#if eyebrow}
-        <span class="text-xs font-bold tracking-wider text-accent uppercase select-none">
+        <span class="text-xs font-bold tracking-wider text-accent-text uppercase select-none">
             {eyebrow}
         </span>
     {/if}

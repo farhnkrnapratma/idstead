@@ -38,7 +38,7 @@
                 {#if item.componentIcon}
                     {@const Icon = item.componentIcon}
                     <span
-                        class="flex size-10 shrink-0 items-center justify-center rounded-md border border-accent/25 bg-accent-subtle text-accent"
+                        class="flex size-10 shrink-0 items-center justify-center rounded-md border border-accent/25 bg-accent-subtle text-accent-text"
                         ><Icon class="size-5" /></span>
                 {/if}
                 <span class="min-w-0">
@@ -58,7 +58,7 @@
                 {#if item.componentIcon}
                     {@const Icon = item.componentIcon}
                     <span
-                        class="flex size-8 items-center justify-center rounded-md border border-accent/25 bg-accent-subtle text-accent"
+                        class="flex size-8 items-center justify-center rounded-md border border-accent/25 bg-accent-subtle text-accent-text"
                         ><Icon class="size-4" /></span>
                 {/if}
                 <span class="text-2xl font-extrabold tracking-tight text-text-primary"
@@ -73,7 +73,7 @@
                 class="flex flex-col items-center justify-center rounded-md border border-border-subtle bg-surface/50 p-4 text-center shadow-xs">
                 {#if item.icon}
                     <i
-                        class="bi {item.icon} mb-1 text-lg text-accent"
+                        class="bi {item.icon} mb-1 text-lg text-accent-text"
                         aria-hidden="true"></i>
                 {/if}
                 <span class="font-mono text-2xl font-extrabold tracking-tight text-text-primary"

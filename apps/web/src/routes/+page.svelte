@@ -619,7 +619,7 @@
                             activeSection === item.id
                         ) ?
                             'bg-accent-contrast-bg font-semibold text-white shadow-xs hover:bg-accent-contrast-bg/90 hover:text-white'
-                        :   'text-text-secondary hover:bg-surface-hover hover:text-accent'}">
+                        :   'text-text-secondary hover:bg-surface-hover hover:text-accent-text'}">
                         {item.label}
                     </Button>
                 </li>
@@ -701,7 +701,7 @@
                                     {/if}
                                     {#if isRepoNew(project)}
                                         <span
-                                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-security-subtle text-security"
+                                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-security-subtle text-accent-text"
                                             title="New repository"
                                             role="img"
                                             aria-label="New repository">
@@ -865,7 +865,7 @@
                                         title={item.platform}
                                         shortcutGroup="social"
                                         shortcutLabel={item.platform}
-                                        class="size-7.5! rounded-md! border-0! bg-transparent! p-0! text-text-muted transition-all hover:bg-surface-hover hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:size-8!">
+                                        class="size-7.5! rounded-md! border-0! bg-transparent! p-0! text-text-muted transition-all hover:bg-surface-hover hover:text-accent-text focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:size-8!">
                                         <BrandIcon
                                             icon={item.icon}
                                             class="text-sm leading-none sm:text-base" />
@@ -1068,7 +1068,7 @@
                                 class="absolute inset-0 border-border-subtle/80 bg-surface-elevated/40 sm:rounded-full sm:border sm:border-dashed">
                             </div>
                             <HeartHandshake
-                                class="absolute top-4 left-4 size-9 fill-accent/15 text-accent"
+                                class="absolute top-4 left-4 size-9 fill-accent/15 text-accent-text"
                                 strokeWidth={1.5} />
                             <CircleDollarSign
                                 class="absolute right-3 bottom-3 size-8 rounded-full bg-surface-card p-1 text-gh-orange-1"

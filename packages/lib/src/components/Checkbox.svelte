@@ -37,7 +37,7 @@
         class="flex size-4 h-5 shrink-0 items-center justify-center text-text-muted transition-colors group-hover:text-text-primary"
         aria-hidden="true">
         {#if checked}
-            <SquareCheck class="size-4 text-accent" />
+            <SquareCheck class="size-4 text-accent-text" />
         {:else}
             <Square
                 class="size-4 text-text-muted transition-colors group-hover:text-text-secondary" />

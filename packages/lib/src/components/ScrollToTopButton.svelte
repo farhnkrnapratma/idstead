@@ -40,7 +40,7 @@
                 <button
                     transition:fade={{ duration: 150 }}
                     use:shortcut={{ combo: buttonKey('scrollTop'), label: 'Scroll to top' }}
-                    class="relative inline-flex size-8 cursor-pointer items-center justify-center rounded-full glass-button px-0 text-xs font-semibold text-text-primary shadow-md transition-colors hover:text-accent md:shadow-lg"
+                    class="relative inline-flex size-8 cursor-pointer items-center justify-center rounded-full glass-button px-0 text-xs font-semibold text-text-primary shadow-md transition-colors hover:text-accent-text md:shadow-lg"
                     onclick={onClick || (() => scrollToTop('smooth'))}
                     aria-label="Scroll to top">
                     <MoveUp class="size-4 shrink-0" />

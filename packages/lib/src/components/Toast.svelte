@@ -25,7 +25,7 @@
         {:else if toastStore.type === 'warning'}
             <AlertTriangle class="size-4 text-warning" />
         {:else}
-            <Info class="size-4 text-security" />
+            <Info class="size-4 text-accent-text" />
         {/if}
         {toastStore.message}
     </div>

@@ -323,7 +323,7 @@
                         </span>
                         {#if isAuthorComment(comment)}
                             <span
-                                class="inline-flex shrink-0 items-center text-accent"
+                                class="inline-flex shrink-0 items-center text-accent-text"
                                 title="Verified administrator"
                                 aria-label="Verified administrator">
                                 <BadgeCheck class="size-3" />
@@ -404,7 +404,7 @@
                             && 'text-[0.78125rem]! sm:text-[0.84375rem]!'
                     )}>
                     {#if node.reply_to_author}
-                        <span class="font-normal text-accent select-none">
+                        <span class="font-normal text-accent-text select-none">
                             @{node.reply_to_author}
                         </span>
                     {/if}
@@ -425,7 +425,7 @@
                     <button
                         type="button"
                         use:shortcut={{ combo: 'T', scope: commentScope, label: 'Toggle replies' }}
-                        class="relative inline-flex cursor-pointer items-center gap-0.5 text-2xs leading-none font-semibold text-text-muted transition-colors hover:text-accent hover:underline focus-visible:text-accent focus-visible:underline"
+                        class="relative inline-flex cursor-pointer items-center gap-0.5 text-2xs leading-none font-semibold text-text-muted transition-colors hover:text-accent-text hover:underline focus-visible:text-accent-text focus-visible:underline"
                         aria-expanded={isExpanded}
                         aria-controls={replyContainerId}
                         onclick={() => toggleReplies(comment.id)}>

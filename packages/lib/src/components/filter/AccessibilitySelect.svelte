@@ -82,7 +82,7 @@
             onclick={() => (isOpen = !isOpen)}
             class={cn(
                 'border-border-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9',
-                isOpen && 'border-accent text-accent'
+                isOpen && 'border-accent text-accent-text'
             )}>
             <PersonStanding class="size-4" />
         </IconButton>
@@ -115,7 +115,7 @@
                         <button
                             type="button"
                             onclick={a11yStore.reset}
-                            class="cursor-pointer text-2xs font-medium text-text-secondary transition-colors hover:text-accent">
+                            class="cursor-pointer text-2xs font-medium text-text-secondary transition-colors hover:text-accent-text">
                             Reset to default
                         </button>
                     </div>
@@ -186,7 +186,7 @@
                                         class={cn(
                                             'absolute size-6.5 transition-[transform,opacity] duration-150',
                                             checked ?
-                                                'scale-100 text-accent opacity-100'
+                                                'scale-100 text-accent-text opacity-100'
                                             :   'scale-75 opacity-0'
                                         )} />
                                 </button>

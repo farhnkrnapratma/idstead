@@ -182,7 +182,7 @@
                             </div>
                             <span class="flex min-w-0 flex-1 flex-col gap-0.5">
                                 <span
-                                    class="text-2xs font-semibold text-text-primary transition-colors group-hover:text-accent">
+                                    class="text-2xs font-semibold text-text-primary transition-colors group-hover:text-accent-text">
                                     {r.label}
                                 </span>
                                 <span class="text-3xs leading-relaxed text-text-muted">
@@ -202,7 +202,7 @@
                                     class={cn(
                                         'absolute size-3.5 transition-all duration-200',
                                         selectedReason === r.id ?
-                                            'scale-100 text-accent opacity-100'
+                                            'scale-100 text-accent-text opacity-100'
                                         :   'scale-0 opacity-0'
                                     )} />
                             </span>

@@ -102,7 +102,7 @@
     --color-surface-switcher-active: #ffffff;
     --color-text-primary: #101411;
     --color-text-secondary: #232925;
-    --color-text-muted: #909692;
+    --color-text-muted: #626964;
     --color-text-on-accent: #ffffff;
     --color-text-on-accent-hover: #ffffff;
     --color-border-subtle: #e4ebe6;
@@ -114,6 +114,7 @@
     --color-accent-active: #0527fc;
     --color-accent-subtle: rgba(48, 148, 255, 0.08);
     --color-accent-contrast-bg: #0065d1;
+    --color-accent-text: #0065d1;
     --color-copilot: #8534f3;
     --color-copilot-hover: #43179e;
     --color-copilot-active: #26115f;
@@ -219,6 +220,7 @@
     --color-accent-hover: #9eecff;
     --color-accent-active: #1a61fe;
     --color-accent-subtle: rgba(48, 148, 255, 0.14);
+    --color-accent-text: #3094ff;
     --color-code-chrome: #1c1b1b;
     --color-code-tab-bar: #141313;
     --color-code-fg: #ffffff;

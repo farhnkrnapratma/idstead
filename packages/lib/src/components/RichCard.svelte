@@ -36,7 +36,7 @@
     <div class="flex flex-col gap-2">
         <div class="flex items-start justify-between gap-3">
             <h3
-                class="text-base font-bold tracking-tight text-text-primary transition-colors group-hover:text-accent">
+                class="text-base font-bold tracking-tight text-text-primary transition-colors group-hover:text-accent-text">
                 {#if href}
                     <a
                         {href}
@@ -49,7 +49,7 @@
             </h3>
             {#if href && interactive}
                 <ArrowUpRight
-                    class="mt-1 size-3.5 shrink-0 text-text-muted transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent" />
+                    class="mt-1 size-3.5 shrink-0 text-text-muted transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent-text" />
             {/if}
         </div>
 

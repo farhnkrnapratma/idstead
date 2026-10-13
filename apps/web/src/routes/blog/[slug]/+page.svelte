@@ -684,7 +684,7 @@
                                     href="https://github.com/{allAuthors[0]}"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline">
+                                    class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent-text hover:underline">
                                     {allAuthors[0]}
                                 </a>
                             {:else if allAuthors.length === 2}
@@ -692,7 +692,7 @@
                                     href="https://github.com/{allAuthors[0]}"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline">
+                                    class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent-text hover:underline">
                                     {allAuthors[0]}
                                 </a>
                                 <span>and</span>
@@ -700,7 +700,7 @@
                                     href="https://github.com/{allAuthors[1]}"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline">
+                                    class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent-text hover:underline">
                                     {allAuthors[1]}
                                 </a>
                             {:else if allAuthors.length === 3}
@@ -709,7 +709,7 @@
                                         href="https://github.com/{allAuthors[0]}"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline"
+                                        class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent-text hover:underline"
                                         >{allAuthors[0]}</a
                                     >,
                                 </span>
@@ -718,7 +718,7 @@
                                         href="https://github.com/{allAuthors[1]}"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline"
+                                        class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent-text hover:underline"
                                         >{allAuthors[1]}</a
                                     >,
                                 </span>
@@ -727,7 +727,7 @@
                                     href="https://github.com/{allAuthors[2]}"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline">
+                                    class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent-text hover:underline">
                                     {allAuthors[2]}
                                 </a>
                             {:else}
@@ -736,7 +736,7 @@
                                         href="https://github.com/{allAuthors[0]}"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline"
+                                        class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent-text hover:underline"
                                         >{allAuthors[0]}</a
                                     >,
                                 </span>
@@ -745,7 +745,7 @@
                                         href="https://github.com/{allAuthors[1]}"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline"
+                                        class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent-text hover:underline"
                                         >{allAuthors[1]}</a
                                     >,
                                 </span>
@@ -754,7 +754,7 @@
                                         href="https://github.com/{allAuthors[2]}"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline"
+                                        class="font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent-text hover:underline"
                                         >{allAuthors[2]}</a
                                     >,
                                 </span>
@@ -766,7 +766,7 @@
                                         type="button"
                                         aria-expanded={isCollaboratorsPopoverOpen}
                                         aria-haspopup="dialog"
-                                        class="cursor-pointer font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent hover:underline"
+                                        class="cursor-pointer font-semibold text-text-primary underline-offset-4 transition-colors hover:text-accent-text hover:underline"
                                         onclick={() => {
                                             isCollaboratorsPopoverOpen =
                                                 !isCollaboratorsPopoverOpen;
@@ -796,7 +796,7 @@
                                                     rel="noopener noreferrer"
                                                     onclick={() =>
                                                         (isCollaboratorsPopoverOpen = false)}
-                                                    class="flex items-center gap-2 rounded-md px-1.5 py-1 text-xs transition-colors hover:bg-surface-hover hover:text-accent">
+                                                    class="flex items-center gap-2 rounded-md px-1.5 py-1 text-xs transition-colors hover:bg-surface-hover hover:text-accent-text">
                                                     <Avatar
                                                         name={collab}
                                                         src={`https://github.com/${collab}.png?size=128`}
@@ -936,7 +936,7 @@
                                                                 {/if}
                                                                 {#if isPostNew(related)}
                                                                     <span
-                                                                        class="inline-flex size-4.5 items-center justify-center rounded-full bg-security-subtle text-security"
+                                                                        class="inline-flex size-4.5 items-center justify-center rounded-full bg-security-subtle text-accent-text"
                                                                         title="New post"
                                                                         aria-label="New post">
                                                                         <Sparkles
@@ -985,7 +985,7 @@
                                                                         toggleExcerpt(related.id)}
                                                                     keyboardShortcut="E"
                                                                     shortcutLabel="Show less"
-                                                                    class="relative inline-flex h-auto! min-h-0! p-0! text-xs font-normal whitespace-nowrap text-security! underline hover:opacity-80 focus-visible:outline-none">
+                                                                    class="relative inline-flex h-auto! min-h-0! p-0! text-xs font-normal whitespace-nowrap text-accent-text! underline hover:opacity-80 focus-visible:outline-none">
                                                                     Show less
                                                                 </Button>
                                                             {/if}
@@ -999,7 +999,7 @@
                                                                     toggleExcerpt(related.id)}
                                                                 keyboardShortcut="E"
                                                                 shortcutLabel="Show more"
-                                                                class="relative inline-flex h-auto! min-h-0! p-0! text-xs font-normal whitespace-nowrap text-security! underline hover:opacity-80 focus-visible:outline-none">
+                                                                class="relative inline-flex h-auto! min-h-0! p-0! text-xs font-normal whitespace-nowrap text-accent-text! underline hover:opacity-80 focus-visible:outline-none">
                                                                 Show more
                                                             </Button>
                                                         {/if}
@@ -1208,7 +1208,7 @@
                                         scope: `comment-${comment.id}`,
                                         label: 'Reply'
                                     }}
-                                    class="relative cursor-pointer font-bold text-text-muted transition-colors hover:text-accent focus-visible:outline-none">
+                                    class="relative cursor-pointer font-bold text-text-muted transition-colors hover:text-accent-text focus-visible:outline-none">
                                     Reply
                                 </button>
                             {/snippet}
@@ -1403,7 +1403,7 @@
             align="right">
             <button
                 type="button"
-                class="inline-flex size-8 cursor-pointer items-center justify-center rounded-full glass-button border border-accent/40 bg-surface-card/90 px-0 text-xs font-semibold text-accent shadow-md transition-all hover:scale-105 hover:border-accent hover:bg-surface-hover active:scale-95 md:shadow-lg"
+                class="inline-flex size-8 cursor-pointer items-center justify-center rounded-full glass-button border border-accent/40 bg-surface-card/90 px-0 text-xs font-semibold text-accent-text shadow-md transition-all hover:scale-105 hover:border-accent hover:bg-surface-hover active:scale-95 md:shadow-lg"
                 onclick={readingModeStore.toggle}
                 use:shortcut={{ combo: buttonKey('readingMode'), label: 'Exit reading mode' }}
                 aria-label="Exit reading mode">

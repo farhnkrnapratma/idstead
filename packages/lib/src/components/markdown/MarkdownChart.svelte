@@ -198,7 +198,7 @@
                                 <div
                                     class="rounded-md border border-border-subtle bg-surface-elevated px-2.5 py-1.5 text-xs shadow-md">
                                     <div class="font-medium text-text-primary">{data[xKey]}</div>
-                                    <div class="font-mono font-semibold text-accent">
+                                    <div class="font-mono font-semibold text-accent-text">
                                         {data[yKey]}
                                     </div>
                                 </div>
@@ -264,7 +264,7 @@
                                 <div
                                     class="rounded-md border border-border-subtle bg-surface-elevated px-2.5 py-1.5 text-xs shadow-md">
                                     <div class="font-medium text-text-primary">{data[xKey]}</div>
-                                    <div class="font-mono font-semibold text-accent">
+                                    <div class="font-mono font-semibold text-accent-text">
                                         {data[yKey]}
                                     </div>
                                 </div>
@@ -311,7 +311,7 @@
                                             <div class="font-medium text-text-primary">
                                                 {data.label}
                                             </div>
-                                            <div class="font-mono font-semibold text-accent">
+                                            <div class="font-mono font-semibold text-accent-text">
                                                 {data.value}
                                             </div>
                                         </div>

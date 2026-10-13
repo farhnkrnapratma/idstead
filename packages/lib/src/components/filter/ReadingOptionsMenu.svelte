@@ -162,7 +162,7 @@
             onclick={toggle}
             class={cn(
                 'border-border-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9',
-                isOpen && 'border-accent text-accent'
+                isOpen && 'border-accent text-accent-text'
             )}>
             <View class="size-4" />
         </IconButton>
@@ -213,7 +213,7 @@
                                 class={cn(
                                     'flex items-center justify-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-all',
                                     active ?
-                                        'bg-surface-card font-semibold text-accent shadow-2xs'
+                                        'bg-surface-card font-semibold text-accent-text shadow-2xs'
                                     :   'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
                                 )}>
                                 <tab.icon class="size-3.5 shrink-0" />
@@ -249,7 +249,7 @@
                                         'text-2xs font-semibold text-text-muted underline-offset-2',
                                         contentFontStore.locked ?
                                             'cursor-not-allowed opacity-50'
-                                        :   'cursor-pointer hover:text-accent hover:underline'
+                                        :   'cursor-pointer hover:text-accent-text hover:underline'
                                     )}>
                                     Reset to default
                                 </button>
@@ -282,7 +282,7 @@
                                             contentFontStore.locked
                                                 && 'cursor-not-allowed opacity-50',
                                             selected ?
-                                                'border-accent bg-accent/10 text-accent'
+                                                'border-accent bg-accent/10 text-accent-text'
                                             :   cn(
                                                     'border-border-subtle bg-surface text-text-secondary',
                                                     !contentFontStore.locked
@@ -305,7 +305,7 @@
                                                 class={cn(
                                                     'absolute size-3.5 transition-all duration-200',
                                                     selected ?
-                                                        'scale-100 text-accent opacity-100'
+                                                        'scale-100 text-accent-text opacity-100'
                                                     :   'scale-0 opacity-0'
                                                 )} />
                                         </span>
@@ -352,7 +352,7 @@
                             <button
                                 type="button"
                                 onclick={a11yStore.reset}
-                                class="cursor-pointer text-2xs font-semibold text-text-muted underline-offset-2 hover:text-accent hover:underline">
+                                class="cursor-pointer text-2xs font-semibold text-text-muted underline-offset-2 hover:text-accent-text hover:underline">
                                 Reset to default
                             </button>
                         </div>
@@ -412,7 +412,7 @@
                                             class={cn(
                                                 'absolute size-6.5 transition-[transform,opacity] duration-150',
                                                 checked ?
-                                                    'scale-100 text-accent opacity-100'
+                                                    'scale-100 text-accent-text opacity-100'
                                                 :   'scale-75 opacity-0'
                                             )} />
                                     </button>

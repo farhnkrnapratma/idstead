@@ -80,7 +80,7 @@
         'outline:critical':
             'border border-danger/40 bg-transparent text-danger shadow-2xs hover:bg-danger-subtle disabled:hover:bg-transparent',
         'ghost:neutral':
-            'text-text-secondary hover:text-accent disabled:hover:text-text-secondary disabled:hover:bg-transparent',
+            'text-text-secondary hover:text-accent-text disabled:hover:text-text-secondary disabled:hover:bg-transparent',
         'ghost:critical':
             'text-danger hover:text-danger-hover hover:bg-danger-subtle disabled:hover:text-danger disabled:hover:bg-transparent',
         'danger:critical':

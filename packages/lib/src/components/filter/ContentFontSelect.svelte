@@ -83,7 +83,7 @@
             onclick={() => (isOpen = !isOpen)}
             class={cn(
                 'border-border-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9',
-                isOpen && 'border-accent text-accent'
+                isOpen && 'border-accent text-accent-text'
             )}>
             <CaseSensitive class="size-4" />
         </IconButton>
@@ -119,7 +119,7 @@
                                 'text-2xs font-semibold text-text-muted underline-offset-2',
                                 contentFontStore.locked ?
                                     'cursor-not-allowed opacity-50'
-                                :   'cursor-pointer hover:text-accent hover:underline'
+                                :   'cursor-pointer hover:text-accent-text hover:underline'
                             )}>
                             Reset to default
                         </button>
@@ -159,7 +159,7 @@
                                         'cursor-not-allowed opacity-50'
                                     :   'cursor-pointer',
                                     selected ?
-                                        'border-accent bg-accent/10 text-accent'
+                                        'border-accent bg-accent/10 text-accent-text'
                                     :   cn(
                                             'border-border-subtle bg-surface text-text-secondary',
                                             !contentFontStore.locked
@@ -188,7 +188,7 @@
                                         class={cn(
                                             'absolute size-4 transition-all duration-200',
                                             selected ?
-                                                'scale-100 text-accent opacity-100'
+                                                'scale-100 text-accent-text opacity-100'
                                             :   'scale-0 opacity-0'
                                         )} />
                                 </span>

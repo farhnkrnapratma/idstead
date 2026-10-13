@@ -29,7 +29,7 @@
                     class="absolute inset-0 border-border-subtle/80 bg-surface-elevated/40 sm:rounded-full sm:border sm:border-dashed">
                 </div>
                 <Mail
-                    class="absolute top-4 left-4 size-9 fill-accent/15 text-accent"
+                    class="absolute top-4 left-4 size-9 fill-accent/15 text-accent-text"
                     strokeWidth={1.5} />
                 <Paperclip
                     class="absolute right-3 bottom-3 size-8 rounded-full bg-surface-card p-1 text-gh-green-3"

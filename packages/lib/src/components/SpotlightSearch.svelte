@@ -3057,10 +3057,10 @@
             onclick={() => open()}
             class={cn(
                 variant === 'expanded' ?
-                    'flex h-8 w-full cursor-pointer items-center justify-between gap-2 rounded-md glass-button px-2.5 text-xs font-medium text-text-secondary hover:border-accent/50 hover:text-accent sm:h-9 sm:px-3'
+                    'flex h-8 w-full cursor-pointer items-center justify-between gap-2 rounded-md glass-button px-2.5 text-xs font-medium text-text-secondary hover:border-accent/50 hover:text-accent-text sm:h-9 sm:px-3'
                 : variant === 'icon' ?
-                    'flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-border-subtle bg-surface p-0 text-xs font-semibold text-text-secondary backdrop-blur-none transition-colors hover:border-accent hover:bg-surface-hover hover:text-accent sm:h-9 sm:w-9'
-                :   'flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-border-subtle bg-surface p-0 text-xs font-semibold text-text-secondary backdrop-blur-none transition-colors hover:border-accent hover:bg-surface-hover hover:text-accent sm:h-9 sm:w-9 lg:h-9 lg:w-auto lg:justify-between lg:gap-2 lg:px-3',
+                    'flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-border-subtle bg-surface p-0 text-xs font-semibold text-text-secondary backdrop-blur-none transition-colors hover:border-accent hover:bg-surface-hover hover:text-accent-text sm:h-9 sm:w-9'
+                :   'flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-border-subtle bg-surface p-0 text-xs font-semibold text-text-secondary backdrop-blur-none transition-colors hover:border-accent hover:bg-surface-hover hover:text-accent-text sm:h-9 sm:w-9 lg:h-9 lg:w-auto lg:justify-between lg:gap-2 lg:px-3',
                 className
             )}
             aria-label="Open spotlight search (Ctrl+K or /)">
@@ -3173,7 +3173,7 @@
                         <CaseSensitive
                             class={cn(
                                 'size-3 transition-colors sm:size-3.5',
-                                isCaseSensitive ? 'text-accent' : (
+                                isCaseSensitive ? 'text-accent-text' : (
                                     'text-text-muted hover:text-text-primary'
                                 )
                             )} />
@@ -3194,7 +3194,7 @@
                         <WholeWord
                             class={cn(
                                 'size-3 transition-colors sm:size-3.5',
-                                isWholeWord ? 'text-accent' : (
+                                isWholeWord ? 'text-accent-text' : (
                                     'text-text-muted hover:text-text-primary'
                                 )
                             )} />
@@ -3215,7 +3215,9 @@
                         <Regex
                             class={cn(
                                 'size-3 transition-colors sm:size-3.5',
-                                isRegex ? 'text-accent' : 'text-text-muted hover:text-text-primary'
+                                isRegex ? 'text-accent-text' : (
+                                    'text-text-muted hover:text-text-primary'
+                                )
                             )} />
                     </Button>
                 </div>
@@ -3259,8 +3261,8 @@
                                         <div
                                             class={cn(
                                                 'flex size-6 shrink-0 items-center justify-center transition-colors select-none',
-                                                activeIndex === idx ? 'text-accent' : (
-                                                    'text-text-secondary group-hover:text-accent'
+                                                activeIndex === idx ? 'text-accent-text' : (
+                                                    'text-text-secondary group-hover:text-accent-text'
                                                 )
                                             )}>
                                             <EntryIcon class="size-3.5" />
@@ -3280,12 +3282,12 @@
                                                 <span class="shrink-0 font-mono text-xs">
                                                     {#each getHighlightChunks(verb, rawQuery) as chunk, cIdx (cIdx)}<span
                                                             class={chunk.match ?
-                                                                'font-semibold text-accent'
+                                                                'font-semibold text-accent-text'
                                                             :   'font-medium text-text-primary'}
                                                             >{chunk.text}</span
                                                         >{/each}{#if args}{#each getHighlightChunks(args, rawQuery) as chunk, cIdx (cIdx)}<span
                                                                 class={chunk.match ?
-                                                                    'font-semibold text-accent'
+                                                                    'font-semibold text-accent-text'
                                                                 :   'font-normal text-text-muted/60'}
                                                                 >{chunk.text}</span
                                                             >{/each}{/if}
@@ -3299,7 +3301,7 @@
                                                         {#each getHighlightChunks(historyDisplay.subtitle, rawQuery) as chunk, cIdx (cIdx)}
                                                             {#if chunk.match}
                                                                 <span
-                                                                    class="font-semibold text-accent"
+                                                                    class="font-semibold text-accent-text"
                                                                     >{chunk.text}</span>
                                                             {:else}
                                                                 <span>{chunk.text}</span>
@@ -3315,7 +3317,7 @@
                                                     {#each getHighlightChunks(historyDisplay.title, rawQuery) as chunk, cIdx (cIdx)}
                                                         <span
                                                             class={chunk.match ?
-                                                                'font-semibold text-accent'
+                                                                'font-semibold text-accent-text'
                                                             :   ''}>{chunk.text}</span>
                                                     {/each}
                                                 </span>
@@ -3328,7 +3330,7 @@
                                                         {#each getHighlightChunks(historyDisplay.subtitle, rawQuery) as chunk, cIdx (cIdx)}
                                                             {#if chunk.match}
                                                                 <span
-                                                                    class="font-semibold text-accent"
+                                                                    class="font-semibold text-accent-text"
                                                                     >{chunk.text}</span>
                                                             {:else}
                                                                 <span>{chunk.text}</span>
@@ -3353,7 +3355,7 @@
                                             <CornerDownLeft
                                                 strokeWidth={1.5}
                                                 class={cn(
-                                                    'size-3 text-accent transition-opacity group-hover:opacity-100',
+                                                    'size-3 text-accent-text transition-opacity group-hover:opacity-100',
                                                     activeIndex === idx ? 'opacity-100' : (
                                                         'opacity-0'
                                                     )
@@ -3387,8 +3389,9 @@
                                 Search or run any commands
                             </p>
                             <p class="text-2xs text-text-muted">
-                                Type <span class="font-mono text-accent">/</span> for commands, or
-                                <span class="font-mono text-accent">/help</span> for the guide
+                                Type <span class="font-mono text-accent-text">/</span> for commands,
+                                or
+                                <span class="font-mono text-accent-text">/help</span> for the guide
                             </p>
                         </div>
                     {:else}
@@ -3470,9 +3473,8 @@
                                             <div
                                                 class={cn(
                                                     'flex size-6 shrink-0 items-center justify-center transition-colors select-none',
-                                                    activeIndex === globalIdx ? 'text-accent' : (
-                                                        'text-text-secondary group-hover:text-accent'
-                                                    )
+                                                    activeIndex === globalIdx ? 'text-accent-text'
+                                                    :   'text-text-secondary group-hover:text-accent-text'
                                                 )}>
                                                 <ItemIcon class="size-3.5" />
                                             </div>
@@ -3491,12 +3493,12 @@
                                                     <span class="shrink-0 font-mono text-xs">
                                                         {#each getHighlightChunks(verb, rawQuery) as chunk, cIdx (cIdx)}<span
                                                                 class={chunk.match ?
-                                                                    'font-semibold text-accent'
+                                                                    'font-semibold text-accent-text'
                                                                 :   'font-medium text-text-primary'}
                                                                 >{chunk.text}</span
                                                             >{/each}{#if args}{#each getHighlightChunks(args, rawQuery) as chunk, cIdx (cIdx)}<span
                                                                     class={chunk.match ?
-                                                                        'font-semibold text-accent'
+                                                                        'font-semibold text-accent-text'
                                                                     :   'font-normal text-text-muted/60'}
                                                                     >{chunk.text}</span
                                                                 >{/each}{/if}
@@ -3510,7 +3512,7 @@
                                                             {#each getHighlightChunks(item.subtitle, rawQuery) as chunk, cIdx (cIdx)}
                                                                 {#if chunk.match}
                                                                     <span
-                                                                        class="font-semibold text-accent"
+                                                                        class="font-semibold text-accent-text"
                                                                         >{chunk.text}</span>
                                                                 {:else}
                                                                     <span>{chunk.text}</span>
@@ -3526,7 +3528,7 @@
                                                         {#each getHighlightChunks(item.title, rawQuery) as chunk, cIdx (cIdx)}
                                                             <span
                                                                 class={chunk.match ?
-                                                                    'font-semibold text-accent'
+                                                                    'font-semibold text-accent-text'
                                                                 :   ''}>{chunk.text}</span>
                                                         {/each}
                                                     </span>
@@ -3539,7 +3541,7 @@
                                                             {#each getHighlightChunks(item.subtitle, rawQuery) as chunk, cIdx (cIdx)}
                                                                 {#if chunk.match}
                                                                     <span
-                                                                        class="font-semibold text-accent"
+                                                                        class="font-semibold text-accent-text"
                                                                         >{chunk.text}</span>
                                                                 {:else}
                                                                     <span>{chunk.text}</span>
@@ -3564,7 +3566,7 @@
                                                 <CornerDownLeft
                                                     strokeWidth={1.5}
                                                     class={cn(
-                                                        'size-3 text-accent transition-opacity group-hover:opacity-100',
+                                                        'size-3 text-accent-text transition-opacity group-hover:opacity-100',
                                                         activeIndex === globalIdx ? 'opacity-100'
                                                         :   'opacity-0'
                                                     )} />
@@ -3695,8 +3697,8 @@
                                         <div
                                             class={cn(
                                                 'flex size-6 shrink-0 items-center justify-center transition-colors select-none',
-                                                helpActiveIndex === cmdIdx ? 'text-accent' : (
-                                                    'text-text-secondary group-hover:text-accent'
+                                                helpActiveIndex === cmdIdx ? 'text-accent-text' : (
+                                                    'text-text-secondary group-hover:text-accent-text'
                                                 )
                                             )}>
                                             <CmdIcon class="size-3.5" />
@@ -3758,7 +3760,7 @@
                                 <span class="hidden font-sans text-text-muted sm:inline"
                                     >Case-sensitive search toggle</span>
                             </div>
-                            <span class="font-mono text-3xs text-accent">Aa</span>
+                            <span class="font-mono text-3xs text-accent-text">Aa</span>
                         </div>
                         <div
                             class="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 transition-colors hover:bg-surface-hover/70">
@@ -3772,7 +3774,7 @@
                                 <span class="hidden font-sans text-text-muted sm:inline"
                                     >Match exact whole words</span>
                             </div>
-                            <span class="font-mono text-3xs text-accent">ab</span>
+                            <span class="font-mono text-3xs text-accent-text">ab</span>
                         </div>
                         <div
                             class="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 transition-colors hover:bg-surface-hover/70">
@@ -3786,7 +3788,7 @@
                                 <span class="hidden font-sans text-text-muted sm:inline"
                                     >Regular expression pattern matching</span>
                             </div>
-                            <span class="font-mono text-3xs text-accent">.*</span>
+                            <span class="font-mono text-3xs text-accent-text">.*</span>
                         </div>
                     </div>
                 </div>

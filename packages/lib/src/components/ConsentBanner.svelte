@@ -119,7 +119,7 @@
             <div class="flex items-start justify-between gap-3">
                 <div class="flex items-center gap-2.5">
                     <div
-                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-accent/15 text-accent">
+                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-accent/15 text-accent-text">
                         <ShieldCheck class="size-4" />
                     </div>
                     <div>
@@ -145,7 +145,7 @@
                 Choose which data processing signals you wish to allow. You can update your choice
                 at any time. See our <a
                     href="/privacy"
-                    class="font-semibold text-accent underline hover:text-accent-hover"
+                    class="font-semibold text-accent-text underline hover:text-accent-hover"
                     >Privacy Policy</a> for full details.
             </p>
 

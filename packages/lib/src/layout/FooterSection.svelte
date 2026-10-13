@@ -125,7 +125,7 @@
                                                 combo: sectionCommandKey(item.url),
                                                 label: item.label
                                             }}
-                                            class="relative cursor-pointer text-left text-xs font-normal text-text-secondary transition-colors hover:text-accent focus-visible:text-accent focus-visible:outline-none">
+                                            class="relative cursor-pointer text-left text-xs font-normal text-text-secondary transition-colors hover:text-accent-text focus-visible:text-accent-text focus-visible:outline-none">
                                             {item.label}
                                         </button>
                                     {:else}
@@ -135,7 +135,7 @@
                                                 combo: sectionCommandKey(item.url),
                                                 label: item.label
                                             }}
-                                            class="relative cursor-pointer text-left text-xs font-normal text-text-secondary transition-colors hover:text-accent focus-visible:text-accent focus-visible:outline-none">
+                                            class="relative cursor-pointer text-left text-xs font-normal text-text-secondary transition-colors hover:text-accent-text focus-visible:text-accent-text focus-visible:outline-none">
                                             {item.label}
                                         </a>
                                     {/if}
@@ -156,7 +156,7 @@
                                     aria-label={item.platform}
                                     title={item.platform}
                                     use:shortcut={{ group: 'social', label: item.platform }}
-                                    class="relative flex size-8 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-text-muted transition-all hover:bg-surface-hover hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:size-9">
+                                    class="relative flex size-8 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-text-muted transition-all hover:bg-surface-hover hover:text-accent-text focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:size-9">
                                     <BrandIcon
                                         icon={item.icon}
                                         class="size-4 text-base leading-none sm:size-4.5 sm:text-lg" />
@@ -180,7 +180,7 @@
                                 class="border-border-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9 {(
                                     readingMode
                                 ) ?
-                                    'border-accent text-accent'
+                                    'border-accent text-accent-text'
                                 :   ''}">
                                 <BookOpenText class="size-4" />
                             </IconButton>

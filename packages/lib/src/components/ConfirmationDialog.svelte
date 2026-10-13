@@ -104,7 +104,7 @@
                     <button
                         type="button"
                         onclick={copyToClipboard}
-                        class="inline-flex size-4 cursor-pointer items-center justify-center rounded text-text-muted transition-colors hover:text-accent"
+                        class="inline-flex size-4 cursor-pointer items-center justify-center rounded text-text-muted transition-colors hover:text-accent-text"
                         aria-label="Copy keyword"
                         title="Copy keyword">
                         {#if isCopied}

@@ -687,7 +687,7 @@
                                         ariaLabel="Indent mode: {indentMode === 'spaces' ? 'Spaces'
                                         :   'Tabs'}"
                                         size="xs"
-                                        class="text-text-secondary hover:text-accent"
+                                        class="text-text-secondary hover:text-accent-text"
                                         onclick={() =>
                                             setIndentMode(
                                                 indentMode === 'spaces' ? 'tabs' : 'spaces'
@@ -708,9 +708,9 @@
                                                 aria-pressed={indentSize === size}
                                                 onclick={() => setIndentSize(size)}
                                                 class={cn(
-                                                    'inline-flex cursor-pointer items-center justify-center rounded-md px-2.5 py-1 transition-colors hover:bg-surface-hover hover:text-accent',
+                                                    'inline-flex cursor-pointer items-center justify-center rounded-md px-2.5 py-1 transition-colors hover:bg-surface-hover hover:text-accent-text',
                                                     indentSize === size ?
-                                                        'bg-accent/10 font-semibold text-accent'
+                                                        'bg-accent/10 font-semibold text-accent-text'
                                                     :   'text-text-secondary'
                                                 )}>
                                                 {size}
@@ -724,7 +724,7 @@
                                         ariaLabel="Line wrapping: {lineWrapMode === 'soft' ? 'Wrap'
                                         :   'Nowrap'}"
                                         size="xs"
-                                        class="text-text-secondary hover:text-accent"
+                                        class="text-text-secondary hover:text-accent-text"
                                         onclick={() =>
                                             setLineWrapMode(
                                                 lineWrapMode === 'soft' ? 'none' : 'soft'
@@ -741,7 +741,7 @@
                                     <IconButton
                                         ariaLabel="Line numbers: {showLineNumbers ? 'on' : 'off'}"
                                         size="xs"
-                                        class="text-text-secondary hover:text-accent"
+                                        class="text-text-secondary hover:text-accent-text"
                                         onclick={() => setLineNumbers(!showLineNumbers)}>
                                         {#if showLineNumbers}
                                             <ListOrdered class="size-3.5" />
