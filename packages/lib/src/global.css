@@ -12,6 +12,8 @@
 @import 'bootstrap-icons/font/bootstrap-icons.css';
 
 @custom-variant dark (&:where(.dark, .dark *));
+@custom-variant motion-reduce (&:where([data-reduce-motion='true'], [data-reduce-motion='true'] *));
+@custom-variant motion-safe (&:where([data-reduce-motion='false'], [data-reduce-motion='false'] *));
 
 @utility glass-card {
     @apply border-0 bg-surface-card text-text-primary shadow-sm backdrop-blur-md dark:border dark:border-white/5 dark:bg-surface-card/70;
@@ -166,9 +168,9 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-        *,
-        ::before,
-        ::after {
+        :root:not([data-reduce-motion]) *,
+        :root:not([data-reduce-motion]) ::before,
+        :root:not([data-reduce-motion]) ::after {
             @apply scroll-auto! duration-[0.01ms]! [animation-duration:0.01ms]! [animation-iteration-count:1]!;
         }
     }
@@ -1315,7 +1317,7 @@ select {
     }
 
     @media (prefers-reduced-motion: reduce) {
-        .footnote-target-highlight {
+        :root:not([data-reduce-motion]) .footnote-target-highlight {
             animation: none !important;
             background-color: color-mix(in srgb, var(--color-accent) 22%, transparent);
             outline-color: var(--color-accent);
