@@ -254,11 +254,11 @@
                             navigateToHeading(heading.id);
                         }}
                         aria-current={isActive ? 'true' : undefined}
-                        class="relative -ml-3 flex items-center rounded-r-xs py-1.5 pr-2 leading-4 transition-colors duration-150 ease-in-out hover:text-accent {(
+                        class="relative -ml-3 flex items-center rounded-r-xs py-1.5 pr-2 leading-4 transition-colors duration-150 ease-in-out hover:text-accent-text {(
                             isSub
                         ) ?
                             'font-normal'
-                        :   'font-medium'} {isActive ? 'bg-accent/10 text-accent'
+                        :   'font-medium'} {isActive ? 'bg-accent/10 text-accent-text'
                         : isSub ? 'text-text-secondary hover:bg-surface-hover/30'
                         : 'text-text-primary hover:bg-surface-hover/30'}"
                         style="padding-left: {isSub ? `${branchWidth + 8}px` : '10px'};">

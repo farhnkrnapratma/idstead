@@ -202,7 +202,7 @@ function attachDiagramToolbar(block: HTMLElement, svgString: string, rawCode: st
         e.stopPropagation();
         try {
             await navigator.clipboard.writeText(svgString);
-            copySvgItem.innerHTML = `<svg class="size-3.5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span class="font-semibold text-accent">Copied SVG!</span>`;
+            copySvgItem.innerHTML = `<svg class="size-3.5 text-accent-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span class="font-semibold text-accent-text">Copied SVG!</span>`;
             setTimeout(() => {
                 dropdown.classList.add('hidden');
                 copySvgItem.innerHTML = `<svg class="size-3.5 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg><span>Copy SVG</span>`;
@@ -220,7 +220,7 @@ function attachDiagramToolbar(block: HTMLElement, svgString: string, rawCode: st
         e.stopPropagation();
         try {
             await navigator.clipboard.writeText(rawCode);
-            copyCodeItem.innerHTML = `<svg class="size-3.5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span class="font-semibold text-accent">Copied Code!</span>`;
+            copyCodeItem.innerHTML = `<svg class="size-3.5 text-accent-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span class="font-semibold text-accent-text">Copied Code!</span>`;
             setTimeout(() => {
                 dropdown.classList.add('hidden');
                 copyCodeItem.innerHTML = `<svg class="size-3.5 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg><span>Copy code</span>`;

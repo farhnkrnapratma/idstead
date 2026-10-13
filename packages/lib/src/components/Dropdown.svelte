@@ -268,8 +268,8 @@
                 resolvedSize === 'sm' ? 'box-border h-8 px-2' : 'box-border h-9 px-3',
                 (fullWidth || stackOnMobile) && 'w-full',
                 stackOnMobile && 'sm:w-auto',
-                !disabled && 'hover:text-accent',
-                isOpen && 'border-accent/60 bg-surface-card text-accent',
+                !disabled && 'hover:text-accent-text',
+                isOpen && 'border-accent/60 bg-surface-card text-accent-text',
                 isFloating && 'h-12 pt-5 pb-1.5 text-sm leading-5'
             )}>
             <span
@@ -297,7 +297,7 @@
                 class={cn(
                     'inline-flex shrink-0 items-center justify-center transition-transform duration-200 ease-out',
                     slotSize,
-                    isOpen ? 'rotate-180 text-accent' : 'text-text-muted',
+                    isOpen ? 'rotate-180 text-accent-text' : 'text-text-muted',
                     isFloating && !hasValue && !isOpen && 'invisible'
                 )}>
                 <ChevronDown class="size-3" />
@@ -312,7 +312,7 @@
                     hasValue || isOpen ?
                         'top-1.5 text-2xs leading-none font-semibold'
                     :   'top-1/2 -translate-y-1/2 text-sm',
-                    isOpen ? 'text-accent'
+                    isOpen ? 'text-accent-text'
                     : hasValue ? 'text-text-muted'
                     : 'text-text-secondary/70'
                 )}>
@@ -373,7 +373,7 @@
                             rowPadding,
                             action.danger ?
                                 'text-danger hover:bg-danger/10 focus-visible:bg-danger/10'
-                            :   'text-text-primary hover:bg-surface-hover hover:text-accent focus-visible:bg-surface-hover focus-visible:text-accent'
+                            :   'text-text-primary hover:bg-surface-hover hover:text-accent-text focus-visible:bg-surface-hover focus-visible:text-accent-text'
                         )}>
                         {#if action.icon}
                             <action.icon class="size-3.5 shrink-0" />
@@ -405,8 +405,8 @@
                             'flex w-full cursor-pointer items-center justify-between gap-2 text-left text-xs font-medium transition-colors focus-visible:outline-none',
                             rowPadding,
                             selected ?
-                                'bg-accent/10 font-semibold text-accent'
-                            :   'text-text-primary hover:bg-surface-hover hover:text-accent focus-visible:bg-surface-hover focus-visible:text-accent'
+                                'bg-accent/10 font-semibold text-accent-text'
+                            :   'text-text-primary hover:bg-surface-hover hover:text-accent-text focus-visible:bg-surface-hover focus-visible:text-accent-text'
                         )}>
                         <span class="min-w-0 truncate">{option.label}</span>
                         <span
@@ -416,12 +416,12 @@
                             )}>
                             {#if multiple}
                                 {#if selected}
-                                    <SquareCheck class="size-3.5 text-accent" />
+                                    <SquareCheck class="size-3.5 text-accent-text" />
                                 {:else}
                                     <Square class="size-3.5 text-text-muted" />
                                 {/if}
                             {:else if selected}
-                                <Check class="size-3.5 text-accent" />
+                                <Check class="size-3.5 text-accent-text" />
                             {/if}
                         </span>
                     </button>

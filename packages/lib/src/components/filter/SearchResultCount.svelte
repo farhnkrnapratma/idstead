@@ -34,7 +34,7 @@
             width="w-5"
             class="inline-block align-middle" />
     {:else}
-        <span class="font-bold text-accent">{count}</span>
+        <span class="font-bold text-accent-text">{count}</span>
     {/if}
     of
     {#if loading}
@@ -43,7 +43,7 @@
             width="w-5"
             class="inline-block align-middle" />
     {:else}
-        <span class="font-bold text-accent">{total}</span>
+        <span class="font-bold text-accent-text">{total}</span>
     {/if}
     {itemLabel}
 </div>

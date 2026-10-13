@@ -632,8 +632,9 @@ select {
         @apply box-border! w-full! max-w-full! pl-[calc(0.5rem+4ch)]! indent-[-4ch] wrap-anywhere! [word-break:break-word]! whitespace-pre-wrap!;
     }
 
-    .prose-custom a:not(.anchor-link) {
-        @apply text-security no-underline hover:underline;
+    .prose-custom
+        a:not(.anchor-link, [data-footnote-ref], .footnote-backref, .footnote-sub-backref) {
+        @apply text-accent-text underline decoration-1 underline-offset-[0.2em] hover:decoration-2;
     }
 
     .prose-custom .heading-text {
@@ -658,7 +659,7 @@ select {
     .heading-anchor a.anchor-link:focus-visible,
     .heading-anchor a.anchor-link.active,
     .heading-anchor:target a.anchor-link {
-        @apply text-accent! opacity-100!;
+        @apply text-accent-text! opacity-100!;
     }
 
     .heading-anchor a.anchor-link::after {
@@ -750,7 +751,7 @@ select {
         @apply border-security/40 bg-security-subtle text-text-secondary;
     }
     .prose-custom .markdown-alert-note .markdown-alert-title {
-        @apply text-security;
+        @apply text-accent-text;
     }
 
     .prose-custom .markdown-alert-tip {
@@ -841,11 +842,11 @@ select {
     }
 
     .prose-custom [data-footnote-ref] {
-        @apply inline-flex scroll-mt-20 items-center justify-center px-0.5 py-0.5 font-mono text-[0.8em] leading-none font-medium text-security no-underline hover:underline;
+        @apply inline-flex scroll-mt-20 items-center justify-center px-0.5 py-0.5 font-mono text-[0.8em] leading-none font-medium text-accent-text no-underline hover:underline;
     }
 
     .prose-custom .footnote-backref {
-        @apply inline-flex items-center justify-center rounded-sm px-1.5 py-1 font-mono text-security no-underline transition-colors hover:bg-security/15 hover:no-underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-security active:bg-security/25;
+        @apply inline-flex items-center justify-center rounded-sm px-1.5 py-1 font-mono text-accent-text no-underline transition-colors hover:bg-security/15 hover:no-underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-security active:bg-security/25;
         vertical-align: baseline;
         line-height: 1;
     }
@@ -857,7 +858,7 @@ select {
     }
 
     .prose-custom .footnote-sub-backref {
-        @apply inline-flex items-center justify-center rounded-sm px-1.5 py-1 font-mono text-security italic no-underline transition-colors hover:bg-security/15 hover:no-underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-security active:bg-security/25;
+        @apply inline-flex items-center justify-center rounded-sm px-1.5 py-1 font-mono text-accent-text italic no-underline transition-colors hover:bg-security/15 hover:no-underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-security active:bg-security/25;
         font-size: 0.75rem !important;
         line-height: 1 !important;
         vertical-align: 0.32em;
@@ -988,7 +989,7 @@ select {
 
     .prose-custom mark,
     mark {
-        @apply rounded-md bg-security-subtle px-1 py-0.5 font-normal text-security;
+        @apply rounded-md bg-security-subtle px-1 py-0.5 font-normal text-accent-text;
     }
 
     .prose-custom kbd,
@@ -1155,7 +1156,7 @@ select {
     }
 
     .markdown-tab-button.active-tab {
-        @apply border-b-accent font-bold text-accent;
+        @apply border-b-accent font-bold text-accent-text;
     }
 
     .markdown-tab-button:not(.active-tab) {

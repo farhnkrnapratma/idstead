@@ -198,7 +198,7 @@
             class="relative flex size-48 items-center justify-center overflow-hidden rounded-md border border-border-default/80 bg-white p-2 shadow-sm">
             {#if isGenerating}
                 <div class="flex flex-col items-center gap-2 text-xs text-text-muted">
-                    <QrCodeIcon class="size-7 animate-pulse text-accent" />
+                    <QrCodeIcon class="size-7 animate-pulse text-accent-text" />
                     <span>Generating QR Code...</span>
                 </div>
             {:else if svgString}

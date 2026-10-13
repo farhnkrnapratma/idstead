@@ -124,7 +124,7 @@
         )}>
         {#if isUploading}
             <svg
-                class="h-7 w-7 animate-spin text-accent"
+                class="h-7 w-7 animate-spin text-accent-text"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -142,11 +142,11 @@
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
             </svg>
-            <p class="animate-pulse text-xs font-semibold text-accent">
+            <p class="animate-pulse text-xs font-semibold text-accent-text">
                 {uploadingLabel}
             </p>
         {:else if selectedFileName}
-            <FileCheck2 class="size-8 text-accent" />
+            <FileCheck2 class="size-8 text-accent-text" />
             <p class="max-w-full truncate font-mono text-sm font-semibold text-text-primary">
                 {selectedFileName}
             </p>
@@ -166,7 +166,7 @@
             </Button>
         {:else}
             <UploadCloud
-                class="size-8 text-text-secondary transition-colors group-hover:text-accent" />
+                class="size-8 text-text-secondary transition-colors group-hover:text-accent-text" />
             {#if actions}
                 {@render actions({ trigger: () => fileInputRef?.click() })}
             {:else}

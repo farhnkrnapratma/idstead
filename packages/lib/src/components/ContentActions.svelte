@@ -183,7 +183,7 @@
                         }}>
                         {#snippet leading()}
                             {#if copiedUrl}
-                                <CopyCheck class="size-3.5 text-accent" />
+                                <CopyCheck class="size-3.5 text-accent-text" />
                             {:else}
                                 <Link2 class="size-3.5" />
                             {/if}
@@ -206,7 +206,7 @@
                         }}>
                         {#snippet leading()}
                             {#if copiedId}
-                                <CopyCheck class="size-3.5 text-accent" />
+                                <CopyCheck class="size-3.5 text-accent-text" />
                             {:else}
                                 <Hash class="size-3.5" />
                             {/if}
@@ -236,7 +236,7 @@
                     }}>
                     {#snippet leading()}
                         {#if copiedText}
-                            <CopyCheck class="size-3.5 text-accent" />
+                            <CopyCheck class="size-3.5 text-accent-text" />
                         {:else}
                             <ScanText class="size-3.5" />
                         {/if}
@@ -328,7 +328,7 @@
                 truncateMiddle>
                 {#snippet leading()}
                     {#if copiedMarkdown}
-                        <CopyCheck class="size-3.5 text-accent" />
+                        <CopyCheck class="size-3.5 text-accent-text" />
                     {:else}
                         <Copy class="size-3.5 text-text-secondary" />
                     {/if}
@@ -360,10 +360,10 @@
                     label: 'All actions',
                     placement: 'trailing'
                 }}
-                class="group/summary relative flex min-h-0 cursor-pointer list-none items-center justify-between gap-1 border-0! bg-transparent! px-0 py-0.5 text-2xs font-semibold tracking-wider text-text-muted uppercase no-underline! transition-colors select-none group-open:border-b-0! group-open:bg-transparent! hover:bg-transparent! hover:text-security [&::-webkit-details-marker]:hidden">
+                class="group/summary relative flex min-h-0 cursor-pointer list-none items-center justify-between gap-1 border-0! bg-transparent! px-0 py-0.5 text-2xs font-semibold tracking-wider text-text-muted uppercase no-underline! transition-colors select-none group-open:border-b-0! group-open:bg-transparent! hover:bg-transparent! hover:text-accent-text [&::-webkit-details-marker]:hidden">
                 <span>All actions</span>
                 <ChevronDown
-                    class="size-3.5 text-text-secondary transition-transform duration-200 group-open:rotate-180 group-hover/summary:text-security" />
+                    class="size-3.5 text-text-secondary transition-transform duration-200 group-open:rotate-180 group-hover/summary:text-accent-text" />
             </summary>
 
             <div class="flex flex-col gap-2.5 pt-1.5">
@@ -389,7 +389,7 @@
                                     truncateMiddle>
                                     {#snippet leading()}
                                         {#if copiedUrl}
-                                            <CopyCheck class="size-3.5 text-accent" />
+                                            <CopyCheck class="size-3.5 text-accent-text" />
                                         {:else}
                                             <Link2 class="size-3.5 text-text-secondary" />
                                         {/if}
@@ -410,7 +410,7 @@
                                     truncateMiddle>
                                     {#snippet leading()}
                                         {#if copiedId}
-                                            <CopyCheck class="size-3.5 text-accent" />
+                                            <CopyCheck class="size-3.5 text-accent-text" />
                                         {:else}
                                             <Hash class="size-3.5 text-text-secondary" />
                                         {/if}
@@ -438,7 +438,7 @@
                             truncateMiddle>
                             {#snippet leading()}
                                 {#if copiedText}
-                                    <CopyCheck class="size-3.5 text-accent" />
+                                    <CopyCheck class="size-3.5 text-accent-text" />
                                 {:else}
                                     <ScanText class="size-3.5 text-text-secondary" />
                                 {/if}
@@ -513,10 +513,10 @@
             onclick={handleCopyMarkdown}
             label={copiedMarkdown ? 'Copied!' : 'Copy as MD'}
             truncateMiddle
-            class="h-7 min-w-0 flex-1 justify-center gap-1.5 px-2 py-0.5 text-2xs font-normal! text-text-secondary! hover:text-accent">
+            class="h-7 min-w-0 flex-1 justify-center gap-1.5 px-2 py-0.5 text-2xs font-normal! text-text-secondary! hover:text-accent-text">
             {#snippet leading()}
                 {#if copiedMarkdown}
-                    <CopyCheck class="size-3.5 shrink-0 text-accent" />
+                    <CopyCheck class="size-3.5 shrink-0 text-accent-text" />
                 {:else}
                     <Copy class="size-3.5 shrink-0" />
                 {/if}
@@ -532,7 +532,7 @@
             href={viewMarkdownUrl}
             label="View as MD"
             truncateMiddle
-            class="h-7 min-w-0 flex-1 justify-center gap-1.5 px-2 py-0.5 text-2xs font-normal! text-text-secondary! hover:text-accent">
+            class="h-7 min-w-0 flex-1 justify-center gap-1.5 px-2 py-0.5 text-2xs font-normal! text-text-secondary! hover:text-accent-text">
             {#snippet leading()}
                 <i
                     class="bi bi-markdown inline-flex size-3.5 shrink-0 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
@@ -554,8 +554,8 @@
                     aria-expanded={isOpen}
                     aria-haspopup="dialog"
                     class={cn(
-                        'size-7 px-0 text-text-muted hover:text-accent',
-                        isOpen && 'border border-accent text-accent'
+                        'size-7 px-0 text-text-muted hover:text-accent-text',
+                        isOpen && 'border border-accent text-accent-text'
                     )}>
                     <EllipsisVertical class="size-3.5" />
                 </Button>

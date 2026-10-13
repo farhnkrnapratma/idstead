@@ -24,12 +24,12 @@
     <div class="flex min-w-0 flex-col">
         <div class="flex items-center gap-2">
             <span
-                class="truncate text-xs font-bold text-text-primary transition-colors group-hover:text-accent">
+                class="truncate text-xs font-bold text-text-primary transition-colors group-hover:text-accent-text">
                 {platform}
             </span>
             {#if badge}
                 <span
-                    class="rounded-md bg-accent-subtle/40 px-1.5 py-px text-2xs font-bold text-accent">
+                    class="rounded-md bg-accent-subtle/40 px-1.5 py-px text-2xs font-bold text-accent-text">
                     {badge}
                 </span>
             {/if}
@@ -40,7 +40,7 @@
     </div>
 
     <div
-        class="flex shrink-0 items-center gap-1.5 text-xs font-medium text-text-muted transition-colors group-hover:text-accent">
+        class="flex shrink-0 items-center gap-1.5 text-xs font-medium text-text-muted transition-colors group-hover:text-accent-text">
         <span>Sponsor</span>
         <ExternalLink class="size-3.5" />
     </div>

@@ -21,7 +21,7 @@
         <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 px-3 py-2">
             <span class="flex items-center gap-1.5 font-semibold">
                 <KeyRound
-                    class="size-3.5 shrink-0 text-accent"
+                    class="size-3.5 shrink-0 text-accent-text"
                     aria-hidden="true" />
                 {pendingLabel || 'Shortcut mode'}
             </span>

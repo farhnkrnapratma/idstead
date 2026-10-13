@@ -78,7 +78,7 @@
                     onclick={copyUrl}>
                     {#snippet leading()}
                         {#if copied}
-                            <CopyCheck class="size-3.5 text-accent" />
+                            <CopyCheck class="size-3.5 text-accent-text" />
                         {:else}
                             <Copy class="size-3.5" />
                         {/if}

@@ -64,18 +64,18 @@
                             <div class="contents items-start justify-between gap-3 sm:flex">
                                 {#if item.icon}
                                     <div
-                                        class="flex size-10 shrink-0 items-center justify-center rounded-sm bg-black/5 text-text-muted transition-colors duration-200 group-hover:border-accent/40 group-hover:bg-accent/10 group-hover:text-accent dark:bg-white/5">
+                                        class="flex size-10 shrink-0 items-center justify-center rounded-sm bg-black/5 text-text-muted transition-colors duration-200 group-hover:border-accent/40 group-hover:bg-accent/10 group-hover:text-accent-text dark:bg-white/5">
                                         <BrandIcon
                                             icon={item.icon}
                                             class="size-5 text-xl leading-none sm:size-6 sm:text-2xl" />
                                     </div>
                                 {/if}
                                 <SquareArrowOutUpRight
-                                    class="order-last size-3 shrink-0 text-text-muted/60 transition-colors duration-200 group-hover:text-accent sm:order-0" />
+                                    class="order-last size-3 shrink-0 text-text-muted/60 transition-colors duration-200 group-hover:text-accent-text sm:order-0" />
                             </div>
                             <div class="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-none">
                                 <span
-                                    class="truncate text-sm font-semibold text-text-primary transition-colors group-hover:text-accent">
+                                    class="truncate text-sm font-semibold text-text-primary transition-colors group-hover:text-accent-text">
                                     {item.label}
                                 </span>
                                 {#if item.value}

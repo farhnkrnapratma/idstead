@@ -492,7 +492,7 @@ function renderTabs(frame: ContainerFrame, icons: Map<string, string>): string {
             const icon = (tab.attrs.icon && icons.get(tab.attrs.icon)) || '';
             return `<button type="button" role="tab" class="markdown-tab-button relative -mb-px inline-flex shrink-0 items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium border-b-[2.5px] transition-all cursor-pointer select-none ${
                 selected ?
-                    'active-tab text-accent border-b-accent font-bold'
+                    'active-tab text-accent-text border-b-accent font-bold'
                 :   'text-text-muted border-b-transparent hover:text-text-primary'
             }" data-tab-label="${label}" aria-selected="${selected ? 'true' : 'false'}">${icon}${label}</button>`;
         })
@@ -947,12 +947,12 @@ export function formatFootnoteReferences(html: string): string {
 
                     let prefix: string;
                     if (hrefs.length === 1) {
-                        prefix = `<a href="${hrefs[0]}" class="footnote-backref mr-1.5 inline-flex items-center font-mono text-security no-underline select-none" aria-label="Back to reference">^</a>`;
+                        prefix = `<a href="${hrefs[0]}" class="footnote-backref mr-1.5 inline-flex items-center font-mono text-accent-text no-underline select-none" aria-label="Back to reference">^</a>`;
                     } else {
                         const subLinks = hrefs
                             .map(
                                 (href, i) =>
-                                    `<a href="${href}" class="footnote-sub-backref text-security font-mono italic no-underline select-none" aria-label="Back to reference ${indexToLetter(i)}">${indexToLetter(i)}</a>`
+                                    `<a href="${href}" class="footnote-sub-backref text-accent-text font-mono italic no-underline select-none" aria-label="Back to reference ${indexToLetter(i)}">${indexToLetter(i)}</a>`
                             )
                             .join('');
                         prefix = `<span class="footnote-backref-static mr-1 inline-flex items-center font-mono text-text-muted select-none" aria-hidden="true">^</span><span class="footnote-sub-backrefs mr-1.5 inline-flex items-center gap-1 font-mono">${subLinks}</span>`;

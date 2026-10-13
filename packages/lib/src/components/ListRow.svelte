@@ -50,7 +50,7 @@
         <div class="flex min-w-0 items-center justify-end gap-3">
             {@render children?.()}
             <SquareArrowOutUpRight
-                class="size-4 shrink-0 text-text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-accent" />
+                class="size-4 shrink-0 text-text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-accent-text" />
         </div>
     </a>
 {:else}

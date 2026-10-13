@@ -313,9 +313,9 @@
                             aria-label="Select category: Writing errors">
                             <div class="flex items-center gap-2">
                                 <PenLine
-                                    class="size-4 shrink-0 text-accent transition-transform group-hover:scale-105" />
+                                    class="size-4 shrink-0 text-accent-text transition-transform group-hover:scale-105" />
                                 <span
-                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
+                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent-text">
                                     Writing errors
                                 </span>
                             </div>
@@ -332,9 +332,9 @@
                             aria-label="Select category: Technical inaccuracies">
                             <div class="flex items-center gap-2">
                                 <Code2
-                                    class="size-4 shrink-0 text-accent transition-transform group-hover:scale-105" />
+                                    class="size-4 shrink-0 text-accent-text transition-transform group-hover:scale-105" />
                                 <span
-                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
+                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent-text">
                                     Technical inaccuracies
                                 </span>
                             </div>
@@ -352,9 +352,9 @@
                             aria-label="Select category: Outdated information">
                             <div class="flex items-center gap-2">
                                 <ClockFading
-                                    class="size-4 shrink-0 text-accent transition-transform group-hover:scale-105" />
+                                    class="size-4 shrink-0 text-accent-text transition-transform group-hover:scale-105" />
                                 <span
-                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
+                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent-text">
                                     Outdated information
                                 </span>
                             </div>
@@ -372,9 +372,9 @@
                             aria-label="Select category: Broken links">
                             <div class="flex items-center gap-2">
                                 <Link2Off
-                                    class="size-4 shrink-0 text-accent transition-transform group-hover:scale-105" />
+                                    class="size-4 shrink-0 text-accent-text transition-transform group-hover:scale-105" />
                                 <span
-                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
+                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent-text">
                                     Broken links
                                 </span>
                             </div>
@@ -391,9 +391,9 @@
                             aria-label="Select category: Website issues">
                             <div class="flex items-center gap-2">
                                 <Bug
-                                    class="size-4 shrink-0 text-accent transition-transform group-hover:scale-105" />
+                                    class="size-4 shrink-0 text-accent-text transition-transform group-hover:scale-105" />
                                 <span
-                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
+                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent-text">
                                     Website issues
                                 </span>
                             </div>
@@ -411,9 +411,9 @@
                             aria-label="Select category: Other issues">
                             <div class="flex items-center gap-2">
                                 <HelpCircle
-                                    class="size-4 shrink-0 text-accent transition-transform group-hover:scale-105" />
+                                    class="size-4 shrink-0 text-accent-text transition-transform group-hover:scale-105" />
                                 <span
-                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent">
+                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent-text">
                                     Other issues
                                 </span>
                             </div>

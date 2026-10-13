@@ -70,7 +70,7 @@
 
             {#if currentVoted !== null}
                 <div
-                    class="flex items-center justify-center gap-2 text-sm font-semibold text-accent sm:justify-start">
+                    class="flex items-center justify-center gap-2 text-sm font-semibold text-accent-text sm:justify-start">
                     <CheckCircle2 class="size-4 shrink-0" />
                     <span>Thanks for your feedback!</span>
                 </div>
@@ -79,7 +79,7 @@
                     <Button
                         type="ghost"
                         size="sm"
-                        class="h-auto! justify-start! border border-emerald-500/30 bg-emerald-500/5 px-3.5! py-1.5 leading-(--text-xs--line-height)! font-semibold whitespace-normal! text-emerald-600! hover:border-emerald-500/60 hover:bg-emerald-500/15! active:scale-95 disabled:cursor-wait! dark:text-emerald-400!"
+                        class="h-auto! justify-start! border border-emerald-500/30 bg-emerald-500/5 px-3.5! py-1.5 leading-(--text-xs--line-height)! font-semibold whitespace-normal! text-emerald-700! hover:border-emerald-500/60 hover:bg-emerald-500/15! active:scale-95 disabled:cursor-wait! dark:text-emerald-400!"
                         keyboardShortcut={buttonKey('helpfulYes')}
                         shortcutLabel="Helpful: yes"
                         disabled={!ready || pending}
@@ -94,7 +94,7 @@
                     <Button
                         type="ghost"
                         size="sm"
-                        class="h-auto! justify-start! border border-rose-500/30 bg-rose-500/5 px-3.5! py-1.5 leading-(--text-xs--line-height)! font-semibold whitespace-normal! text-rose-600! hover:border-rose-500/60 hover:bg-rose-500/15! active:scale-95 disabled:cursor-wait! dark:text-rose-400!"
+                        class="h-auto! justify-start! border border-rose-500/30 bg-rose-500/5 px-3.5! py-1.5 leading-(--text-xs--line-height)! font-semibold whitespace-normal! text-rose-700! hover:border-rose-500/60 hover:bg-rose-500/15! active:scale-95 disabled:cursor-wait! dark:text-rose-400!"
                         keyboardShortcut={buttonKey('helpfulNo')}
                         shortcutLabel="Helpful: no"
                         disabled={!ready || pending}
@@ -115,7 +115,7 @@
                     <Button
                         type="ghost"
                         size="sm"
-                        class="h-auto! w-fit justify-start! rounded-none p-0! leading-(--text-xs--line-height)! font-medium whitespace-normal! text-accent! focus-visible:outline-none"
+                        class="h-auto! w-fit justify-start! rounded-none p-0! leading-(--text-xs--line-height)! font-medium whitespace-normal! text-accent-text! focus-visible:outline-none"
                         keyboardShortcut={buttonKey('shareFeedback')}
                         shortcutLabel="Share your feedback"
                         shortcutPlacement="after"
@@ -127,7 +127,7 @@
                 <Button
                     type="ghost"
                     size="sm"
-                    class="h-auto! w-fit justify-start! rounded-none p-0! leading-(--text-xs--line-height)! font-medium whitespace-normal! text-accent! focus-visible:outline-none"
+                    class="h-auto! w-fit justify-start! rounded-none p-0! leading-(--text-xs--line-height)! font-medium whitespace-normal! text-accent-text! focus-visible:outline-none"
                     keyboardShortcut={buttonKey('share')}
                     shortcutLabel={shareLabel}
                     shortcutPlacement="after"
@@ -144,7 +144,7 @@
                 class="absolute inset-0 rounded-full border border-dashed border-border-subtle/80 bg-surface-elevated/40">
             </div>
             <MessageSquareQuote
-                class="absolute top-4 left-4 size-9 fill-accent/15 text-accent"
+                class="absolute top-4 left-4 size-9 fill-accent/15 text-accent-text"
                 strokeWidth={1.5} />
             <AtSign
                 class="absolute right-3 bottom-3 size-8 rounded-full bg-surface-card p-1 text-gh-green-3"

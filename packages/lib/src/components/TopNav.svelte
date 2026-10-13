@@ -41,7 +41,7 @@
     <a
         href={backHref}
         use:shortcut={{ combo: buttonKey('back'), label: backLabel }}
-        class="relative inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-border-subtle/50 bg-surface-card px-2.5 text-xs font-semibold whitespace-nowrap text-text-primary shadow-2xs transition-colors hover:bg-surface-hover hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:h-9 sm:px-4">
+        class="relative inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-border-subtle/50 bg-surface-card px-2.5 text-xs font-semibold whitespace-nowrap text-text-primary shadow-2xs transition-colors hover:bg-surface-hover hover:text-accent-text focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:h-9 sm:px-4">
         <ArrowLeft class="size-3.5 shrink-0" />
         {backLabel}
     </a>
@@ -63,7 +63,7 @@
                 class="border-border-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9 {(
                     readingMode
                 ) ?
-                    'border-accent text-accent'
+                    'border-accent text-accent-text'
                 :   ''}">
                 <BookOpenText class="size-4" />
             </IconButton>

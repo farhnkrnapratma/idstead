@@ -44,7 +44,7 @@
                 {href}
                 target={href.startsWith('http') ? '_blank' : undefined}
                 rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                class="truncate text-xs font-bold text-text-primary transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+                class="truncate text-xs font-bold text-text-primary transition-colors hover:text-accent-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
                 {title}
             </a>
         {:else}
@@ -64,13 +64,13 @@
                 aria-label="Copy contact information">
                 {#snippet leading()}
                     {#if copied}
-                        <CopyCheck class="size-3.5 text-accent" />
+                        <CopyCheck class="size-3.5 text-accent-text" />
                     {:else}
                         <Copy class="size-3.5" />
                     {/if}
                 {/snippet}
                 {#if copied}
-                    <span class="text-accent">Copied</span>
+                    <span class="text-accent-text">Copied</span>
                 {:else}
                     <span>Copy</span>
                 {/if}

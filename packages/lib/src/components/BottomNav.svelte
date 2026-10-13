@@ -51,7 +51,7 @@
             use:shortcut={{ combo: sectionCommandKey(item.id), label: item.label }}
             class={cn(
                 'group relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-md px-0.5 py-1 transition-all select-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none',
-                isActive ? 'font-bold text-accent' : 'text-text-muted hover:text-text-primary'
+                isActive ? 'font-bold text-accent-text' : 'text-text-muted hover:text-text-primary'
             )}>
             <span
                 class="flex size-6 items-center justify-center transition-transform duration-150 group-active:scale-90">
@@ -60,7 +60,7 @@
             <span
                 class={cn(
                     'max-w-full truncate text-2xs leading-none tracking-tight transition-colors',
-                    isActive ? 'font-bold text-accent' : 'font-medium'
+                    isActive ? 'font-bold text-accent-text' : 'font-medium'
                 )}>
                 {item.label}
             </span>

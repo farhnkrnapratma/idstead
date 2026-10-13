@@ -104,7 +104,7 @@ export function enhanceMarkdownTabs(
                 const isSelected = idx === targetIndex;
                 btn.setAttribute('aria-selected', isSelected ? 'true' : 'false');
                 btn.classList.toggle('active-tab', isSelected);
-                btn.classList.toggle('text-accent', isSelected);
+                btn.classList.toggle('text-accent-text', isSelected);
                 btn.classList.toggle('border-b-accent', isSelected);
                 btn.classList.toggle('font-bold', isSelected);
 

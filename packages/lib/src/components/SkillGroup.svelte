@@ -23,7 +23,7 @@
            text-xs font-semibold tracking-wider text-text-secondary sm:text-sm">
         {#if icon}
             <i
-                class="bi {icon} text-accent"
+                class="bi {icon} text-accent-text"
                 aria-hidden="true"></i>
         {/if}
 

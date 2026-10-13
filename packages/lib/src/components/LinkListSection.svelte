@@ -60,7 +60,7 @@
                     {#snippet leading()}
                         {#if item.icon}
                             <div
-                                class="flex size-8 shrink-0 items-center justify-center rounded-md text-text-muted transition-colors group-hover:text-accent">
+                                class="flex size-8 shrink-0 items-center justify-center rounded-md text-text-muted transition-colors group-hover:text-accent-text">
                                 <BrandIcon
                                     icon={item.icon}
                                     class="text-base leading-none" />
