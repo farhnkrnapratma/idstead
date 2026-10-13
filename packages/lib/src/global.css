@@ -1328,15 +1328,3 @@ select {
         outline-color: var(--color-accent);
     }
 }
-
-:root:lang(ja) article,
-:root:lang(ja) .prose-custom,
-:root:lang(ja) main,
-:root:lang(zh) article,
-:root:lang(zh) .prose-custom,
-:root:lang(zh) main,
-:root:lang(ko) article,
-:root:lang(ko) .prose-custom,
-:root:lang(ko) main {
-    letter-spacing: normal;
-}
