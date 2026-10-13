@@ -225,7 +225,7 @@
             <span class="truncate">{label}</span>
         {/if}
     {:else if responsiveIconOnly}
-        <span class="hidden sm:inline-flex sm:items-center">
+        <span class="sr-only sm:not-sr-only sm:inline-flex sm:items-center">
             {@render children?.()}
         </span>
     {:else}
