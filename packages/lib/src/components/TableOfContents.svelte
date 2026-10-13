@@ -221,7 +221,7 @@
 {#snippet tocList()}
     <div
         bind:this={scrollContainerEl}
-        class="relative -mx-2 min-h-0 flex-1 scrollbar-none overflow-y-auto px-2 py-2 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        class="relative -mx-2 min-h-0 flex-1 overflow-y-auto px-2 py-2">
         <ul
             id="toc-list"
             bind:this={tocListEl}
