@@ -28,10 +28,10 @@ export function resolveHljsTheme(
     return isDark ? 'dark' : 'light';
 }
 
-const hljsThemeStylesheets = import.meta.glob<string>(
-    '/node_modules/highlight.js/styles/**/*.css',
-    { query: '?url', import: 'default' }
-);
+const hljsThemeStylesheets: Record<string, () => Promise<string>> = {
+    github: () => import('highlight.js/styles/github.css?url').then(m => m.default),
+    'github-dark': () => import('highlight.js/styles/github-dark.css?url').then(m => m.default)
+};
 
 let hljsThemeLink: HTMLLinkElement | null = null;
 let loadedHljsThemeName: string | null = null;
@@ -46,7 +46,7 @@ export function ensureHljsThemeStylesheet(effectiveTheme: 'light' | 'dark'): Pro
         return loadingHljsTheme;
     }
 
-    const loadUrl = hljsThemeStylesheets[`/node_modules/highlight.js/styles/${themeName}.css`];
+    const loadUrl = hljsThemeStylesheets[themeName];
     if (!loadUrl) {
         console.error(`Unknown highlight.js theme: "${themeName}"`);
         return Promise.resolve();
