@@ -821,16 +821,11 @@ select {
     }
 
     .prose-custom .footnotes ol {
-        @apply my-2 list-none! space-y-1.5 pl-0! [counter-reset:footnotes];
+        @apply my-2 list-decimal space-y-1.5 pl-[2.25em];
     }
 
     .prose-custom .footnotes li {
-        @apply relative grid scroll-mt-20 grid-cols-[2.75em_1fr] pl-0! [counter-increment:footnotes];
-    }
-
-    .prose-custom .footnotes li::before {
-        content: counter(footnotes) '.';
-        @apply font-mono text-text-secondary tabular-nums select-none;
+        @apply relative scroll-mt-20 pl-0.5;
     }
 
     .prose-custom .footnotes li p {
@@ -846,7 +841,7 @@ select {
     }
 
     .prose-custom .footnote-backref {
-        @apply inline-flex items-center justify-center rounded-sm px-1.5 py-1 font-mono text-accent-text no-underline transition-colors hover:bg-security/15 hover:no-underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-security active:bg-security/25;
+        @apply -ml-1.5 inline-flex items-center justify-center rounded-sm px-1.5 py-1 font-mono text-accent-text no-underline transition-colors hover:bg-security/15 hover:no-underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-security active:bg-security/25;
         vertical-align: baseline;
         line-height: 1;
     }
