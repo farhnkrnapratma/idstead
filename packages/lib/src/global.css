@@ -167,14 +167,6 @@
         background: transparent !important;
     }
 
-    @media (prefers-reduced-motion: reduce) {
-        :root:not([data-reduce-motion]) *,
-        :root:not([data-reduce-motion]) ::before,
-        :root:not([data-reduce-motion]) ::after {
-            @apply scroll-auto! duration-[0.01ms]! [animation-duration:0.01ms]! [animation-iteration-count:1]!;
-        }
-    }
-
     :root[data-reduce-motion='true'] *,
     :root[data-reduce-motion='true'] ::before,
     :root[data-reduce-motion='true'] ::after {
@@ -1313,14 +1305,6 @@ select {
         100% {
             background-color: transparent;
             outline-color: transparent;
-        }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-        :root:not([data-reduce-motion]) .footnote-target-highlight {
-            animation: none !important;
-            background-color: color-mix(in srgb, var(--color-accent) 22%, transparent);
-            outline-color: var(--color-accent);
         }
     }
 
