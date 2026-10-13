@@ -79,7 +79,7 @@
                     <Button
                         type="ghost"
                         size="sm"
-                        class="h-auto! justify-start! border border-emerald-500/30 bg-emerald-500/5 px-3.5! py-1.5 leading-(--text-xs--line-height)! font-semibold whitespace-normal! text-emerald-700! hover:border-emerald-500/60 hover:bg-emerald-500/15! active:scale-95 disabled:cursor-wait! dark:text-emerald-400!"
+                        class="h-auto! justify-start! border border-success-text/30 bg-success-text/5 px-3.5! py-1.5 leading-(--text-xs--line-height)! font-semibold whitespace-normal! text-success-text! hover:border-success-text/60 hover:bg-success-text/15! active:scale-95 disabled:cursor-wait!"
                         keyboardShortcut={buttonKey('helpfulYes')}
                         shortcutLabel="Helpful: yes"
                         disabled={!ready || pending}
@@ -94,7 +94,7 @@
                     <Button
                         type="ghost"
                         size="sm"
-                        class="h-auto! justify-start! border border-rose-500/30 bg-rose-500/5 px-3.5! py-1.5 leading-(--text-xs--line-height)! font-semibold whitespace-normal! text-rose-700! hover:border-rose-500/60 hover:bg-rose-500/15! active:scale-95 disabled:cursor-wait! dark:text-rose-400!"
+                        class="h-auto! justify-start! border border-danger-text/30 bg-danger-text/5 px-3.5! py-1.5 leading-(--text-xs--line-height)! font-semibold whitespace-normal! text-danger-text! hover:border-danger-text/60 hover:bg-danger-text/15! active:scale-95 disabled:cursor-wait!"
                         keyboardShortcut={buttonKey('helpfulNo')}
                         shortcutLabel="Helpful: no"
                         disabled={!ready || pending}
