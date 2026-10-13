@@ -18,6 +18,7 @@
     import { enhanceMarkdownContent } from '#lib/utils/markdownEnhancer.ts';
     import { enhanceHeadingAnchors } from '#lib/utils/headingAnchors.ts';
     import { refreshCodeBlockPrefs } from '#lib/utils/codeBlocks.ts';
+    import { highlightAfterScroll } from '#lib/utils/scroll.ts';
     import 'katex/dist/katex.min.css';
     import {
         turnstileWidget,
@@ -187,21 +188,7 @@
 
     let articleEl = $state<HTMLElement | null>(null);
     let articleBodyEl: HTMLDivElement | undefined = $state();
-    let highlightTimer: ReturnType<typeof setTimeout> | undefined;
-
-    function highlightTarget(el: HTMLElement) {
-        document
-            .querySelectorAll('.footnote-target-highlight')
-            .forEach(node => node.classList.remove('footnote-target-highlight'));
-
-        const highlightEl = (el.closest('sup') || el) as HTMLElement;
-        highlightEl.classList.add('footnote-target-highlight');
-
-        if (highlightTimer) clearTimeout(highlightTimer);
-        highlightTimer = setTimeout(() => {
-            highlightEl.classList.remove('footnote-target-highlight');
-        }, 1800);
-    }
+    let cancelHighlight: (() => void) | undefined;
 
     function scrollToTarget(targetId: string, smooth = true) {
         const targetEl = document.getElementById(targetId);
@@ -241,7 +228,11 @@
             });
         }
 
-        highlightTarget(targetEl);
+        cancelHighlight?.();
+        cancelHighlight = highlightAfterScroll(
+            targetEl,
+            isDesktop && articleEl ? articleEl : window
+        );
     }
 
     function handleArticleLinkClick(e: MouseEvent) {
@@ -301,7 +292,7 @@
 
     onDestroy(() => {
         readingModeStore.disable();
-        if (highlightTimer) clearTimeout(highlightTimer);
+        cancelHighlight?.();
     });
 
     onMount(() => {

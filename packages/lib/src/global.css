@@ -837,7 +837,7 @@ select {
     }
 
     .prose-custom [data-footnote-ref] {
-        @apply inline-flex scroll-mt-20 items-center justify-center px-0.5 py-0.5 font-mono text-[0.8em] leading-none font-medium text-accent-text no-underline hover:underline;
+        @apply inline-flex scroll-mt-20 items-center justify-center px-0.5 pt-[0.12em] pb-[0.3em] font-mono text-[0.8em] leading-none font-medium text-accent-text no-underline hover:underline;
     }
 
     .prose-custom .footnote-backref {
@@ -1292,23 +1292,40 @@ select {
     }
 
     .footnote-target-highlight {
-        animation: footnote-highlight-pulse 1.8s ease-out forwards;
         border-radius: 0.25rem;
+        outline: 1px solid transparent;
+        outline-offset: 0;
+        animation: footnote-highlight 3.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
 
-    @keyframes footnote-highlight-pulse {
+    @keyframes footnote-highlight {
         0% {
-            background-color: color-mix(in srgb, var(--color-accent) 25%, transparent);
-            box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 40%, transparent);
+            background-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
+            outline-color: var(--color-accent);
         }
-        70% {
-            background-color: color-mix(in srgb, var(--color-accent) 15%, transparent);
-            box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 25%, transparent);
+        12%,
+        65% {
+            background-color: color-mix(in srgb, var(--color-accent) 22%, transparent);
+            outline-color: var(--color-accent);
         }
         100% {
             background-color: transparent;
-            box-shadow: 0 0 0 0 transparent;
+            outline-color: transparent;
         }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .footnote-target-highlight {
+            animation: none !important;
+            background-color: color-mix(in srgb, var(--color-accent) 22%, transparent);
+            outline-color: var(--color-accent);
+        }
+    }
+
+    :root[data-reduce-motion='true'] .footnote-target-highlight {
+        animation: none !important;
+        background-color: color-mix(in srgb, var(--color-accent) 22%, transparent);
+        outline-color: var(--color-accent);
     }
 }
 
