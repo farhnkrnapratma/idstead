@@ -3115,7 +3115,7 @@
         use:portal
         style:top={visualViewportTop !== null ? `${visualViewportTop}px` : undefined}
         style:height={visualViewportHeight !== null ? `${visualViewportHeight}px` : undefined}
-        class="fixed inset-0 z-99999 flex items-center justify-center overscroll-contain p-4 transition-[top,height] duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]">
+        class="fixed inset-0 z-99999 flex items-center justify-center overscroll-contain p-4 transition-[top,height] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
         <button
             type="button"
             class="fixed inset-0 cursor-default touch-none bg-overlay/80 backdrop-blur-xs transition-opacity duration-200"
@@ -3129,7 +3129,7 @@
             style:max-height={visualViewportHeight !== null ?
                 `${Math.min(visualViewportHeight * 0.85, (typeof window !== 'undefined' ? window.innerHeight : 800) * 0.8)}px`
             :   undefined}
-            class="relative z-10 flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-md border-0 bg-surface-card text-text-primary shadow-xl backdrop-blur-md transition-[max-height] duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] outline-none focus:outline-none md:w-[40vw] md:max-w-none dark:border dark:border-white/8"
+            class="relative z-10 flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-md border-0 bg-surface-card text-text-primary shadow-xl backdrop-blur-md transition-[max-height] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] outline-none focus:outline-none md:w-[40vw] md:max-w-none dark:border dark:border-white/8"
             role="dialog"
             tabindex="-1"
             aria-modal="true"
