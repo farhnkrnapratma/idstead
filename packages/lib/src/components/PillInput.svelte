@@ -180,7 +180,7 @@
                 'pointer-events-none absolute left-3 z-10 font-medium transition-all duration-200 select-none',
                 isFloatingActive ?
                     'top-1.5 text-2xs leading-none font-semibold '
-                        + (isFocused ? 'text-accent' : 'text-text-muted')
+                        + (isFocused ? 'text-accent-text' : 'text-text-muted')
                 :   'top-3 text-sm text-text-secondary/70',
                 formCtx?.error ? 'text-danger!' : ''
             )}>
@@ -206,11 +206,11 @@
             ondragstart={e => handleDragStart(idx, e)}
             ondragover={e => e.preventDefault()}
             ondrop={e => handleDrop(idx, e)}
-            class="box-border inline-flex h-auto min-h-5 w-fit max-w-full items-center gap-1 rounded-full border border-accent/30 bg-accent/10 px-1.5 py-0.5 font-sans text-xs leading-tight font-medium text-accent transition-all hover:border-accent/50">
+            class="box-border inline-flex h-auto min-h-5 w-fit max-w-full items-center gap-1 rounded-full border border-accent/30 bg-accent/10 px-1.5 py-0.5 font-sans text-xs leading-tight font-medium text-accent-text transition-all hover:border-accent/50">
             <span
                 data-pill-grip
                 aria-hidden="true"
-                class="inline-flex shrink-0 cursor-grab items-center justify-center text-accent/60 transition-colors hover:text-accent active:cursor-grabbing">
+                class="inline-flex shrink-0 cursor-grab items-center justify-center text-accent/60 transition-colors hover:text-accent-text active:cursor-grabbing">
                 <GripVertical class="size-2.5" />
             </span>
             {#if editingIdx === idx}
@@ -221,7 +221,7 @@
                     bind:value={editingText}
                     maxlength={maxItemLength}
                     style="--sk-w: {Math.max(editingText.length, 3)}ch"
-                    class="m-0 h-3.5 w-(--sk-w) appearance-none border-none bg-transparent p-0 font-sans text-xs leading-none font-medium text-accent shadow-none ring-0 ring-offset-0 outline-none focus:border-none! focus:ring-0! focus:outline-none! focus-visible:border-none! focus-visible:ring-0! focus-visible:outline-none!"
+                    class="m-0 h-3.5 w-(--sk-w) appearance-none border-none bg-transparent p-0 font-sans text-xs leading-none font-medium text-accent-text shadow-none ring-0 ring-offset-0 outline-none focus:border-none! focus:ring-0! focus:outline-none! focus-visible:border-none! focus-visible:ring-0! focus-visible:outline-none!"
                     onkeydown={e => {
                         const target = e.currentTarget as HTMLInputElement;
                         if (e.key === ',') {
@@ -265,7 +265,7 @@
             <button
                 data-pill-remove
                 type="button"
-                class="inline-flex size-3.5 shrink-0 cursor-pointer items-center justify-center rounded-full p-0 text-accent/60 transition-colors hover:bg-accent/20 hover:text-accent focus:outline-none active:text-accent"
+                class="relative inline-flex size-3.5 shrink-0 cursor-pointer items-center justify-center rounded-full p-0 text-accent-text transition-colors after:absolute after:top-1/2 after:left-1/2 after:size-6 after:-translate-1/2 after:rounded-full hover:bg-accent/20 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus-ring pointer-coarse:after:size-9"
                 aria-label="Remove {item}"
                 onclick={() => removeValue(idx)}>
                 <X class="size-2.5" />
