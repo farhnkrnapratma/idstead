@@ -101,10 +101,6 @@
             {referrerpolicy}
             onload={handleLoad}
             onerror={handleError}
-            class={cn(
-                'block h-full w-full object-cover',
-                !isLoaded && 'pointer-events-none invisible absolute inset-0 opacity-0',
-                imgClass
-            )} />
+            class={cn('relative block h-full w-full object-cover', imgClass)} />
     {/if}
 </div>
