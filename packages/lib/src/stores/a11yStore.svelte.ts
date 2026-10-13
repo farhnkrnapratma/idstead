@@ -60,23 +60,8 @@ function createA11yStore() {
     function init() {
         if (!browser) return;
 
-        const stored = parseStored(localStorage.getItem(STORAGE_KEY));
-        const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-        const hasStoredMotionPref = Object.hasOwn(stored, 'reduceMotion');
-
-        settings = {
-            ...defaults,
-            ...stored,
-            reduceMotion:
-                hasStoredMotionPref ? Boolean(stored.reduceMotion) : reduceMotionQuery.matches
-        };
+        settings = { ...defaults, ...parseStored(localStorage.getItem(STORAGE_KEY)) };
         syncDom();
-
-        const onMotionChange = (e: MediaQueryListEvent) => {
-            if (!Object.hasOwn(parseStored(localStorage.getItem(STORAGE_KEY)), 'reduceMotion')) {
-                apply({ reduceMotion: e.matches });
-            }
-        };
 
         const onStorage = (e: StorageEvent) => {
             if (e.key !== STORAGE_KEY) return;
@@ -84,7 +69,6 @@ function createA11yStore() {
             syncDom();
         };
 
-        reduceMotionQuery.addEventListener('change', onMotionChange);
         window.addEventListener('storage', onStorage);
 
         if (typeof document !== 'undefined' && 'fonts' in document) {
@@ -99,7 +83,6 @@ function createA11yStore() {
         }
 
         return () => {
-            reduceMotionQuery.removeEventListener('change', onMotionChange);
             window.removeEventListener('storage', onStorage);
         };
     }
