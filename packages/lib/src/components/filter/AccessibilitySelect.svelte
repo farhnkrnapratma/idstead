@@ -3,6 +3,7 @@
     import { PersonStanding, ToggleLeft, ToggleRight } from '@lucide/svelte';
     import { cn } from '../../utils/cn';
     import { popoverPosition } from '../../utils/popoverPosition';
+    import Badge from '../Badge.svelte';
     import IconButton from '../IconButton.svelte';
     import ShortcutBadge from '../ShortcutBadge.svelte';
     import { a11yStore, A11Y_TOGGLES, type FontScale } from '../../stores/a11yStore.svelte';
@@ -121,7 +122,8 @@
                     </div>
 
                     <p class="text-3xs text-text-muted">
-                        Customize display preferences for improved accessibility.
+                        Customize display preferences for improved accessibility. Settings marked
+                        Device are on because of your system settings; change them anytime.
                     </p>
 
                     <div
@@ -159,10 +161,14 @@
                         aria-labelledby="a11y-settings-heading">
                         {#each A11Y_TOGGLES as item, index (item.key)}
                             {@const checked = a11yStore.current[item.key]}
+                            {@const fromDevice = a11yStore.enabledByDevice(item.key)}
                             <div class="group/item flex items-center justify-between gap-2 py-0.5">
                                 <span
                                     class="flex min-w-0 items-center gap-1.5 truncate text-xs font-normal text-text-secondary transition-colors group-hover/item:text-text-primary">
                                     {item.label}
+                                    {#if fromDevice}
+                                        <Badge class="px-1.5 py-0 text-3xs">Device</Badge>
+                                    {/if}
                                     <ShortcutBadge
                                         combo={String(index + 1)}
                                         class="opacity-0 transition-opacity group-hover/item:opacity-100" />
@@ -172,7 +178,9 @@
                                     role="switch"
                                     aria-checked={checked}
                                     aria-keyshortcuts={String(index + 1)}
-                                    aria-label="{item.label}: {item.description}"
+                                    aria-label="{item.label}: {item.description}{fromDevice ?
+                                        ', turned on by your device settings'
+                                    :   ''}"
                                     onclick={item.toggle}
                                     class="relative flex h-6.5 w-7 shrink-0 cursor-pointer items-center justify-center">
                                     <ToggleLeft
