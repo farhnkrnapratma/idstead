@@ -234,12 +234,13 @@
         errorMessage = null;
         const controller = new AbortController();
         try {
-            const { blob } = await processContentImage(file, controller.signal);
+            const { webp, avif } = await processContentImage(file, controller.signal);
             const { data: sessionData } = await supabase.auth.getSession();
             const accessToken = sessionData.session?.access_token;
             if (!accessToken) throw new Error('Your session has expired. Please log in again.');
             const form = new FormData();
-            form.append('file', blob, 'image.webp');
+            form.append('file', webp, 'image.webp');
+            form.append('fileAvif', avif, 'image.avif');
             const response = await fetch('/api/internal/admin/blog/content-image', {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${accessToken}` },

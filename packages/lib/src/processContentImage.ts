@@ -1,7 +1,7 @@
 export function processContentImage(
     file: Blob,
     signal: AbortSignal
-): Promise<{ blob: Blob; width: number; height: number }> {
+): Promise<{ webp: Blob; avif: Blob; width: number; height: number }> {
     return new Promise((resolve, reject) => {
         if (signal.aborted) return reject(new Error('Image processing cancelled.'));
         const worker = new Worker(new URL('./workers/contentImage.worker.ts', import.meta.url), {

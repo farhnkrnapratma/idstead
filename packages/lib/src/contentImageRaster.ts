@@ -15,7 +15,7 @@ function fitCeiling(width: number, height: number) {
     return { width: Math.round(width * scale), height: Math.round(height * scale) };
 }
 
-export async function encodeContentImage(canvas: Pick<OffscreenCanvas, 'convertToBlob'>) {
+export async function encodeWebpContentImage(canvas: Pick<OffscreenCanvas, 'convertToBlob'>) {
     for (const quality of CONTENT_IMAGE_QUALITIES) {
         const blob = await canvas.convertToBlob({ type: 'image/webp', quality });
         if (blob.type !== 'image/webp')
@@ -32,6 +32,19 @@ export async function encodeContentImage(canvas: Pick<OffscreenCanvas, 'convertT
     }
     throw new Error(
         'This image cannot be compressed under 500 KiB. Choose a simpler image or crop it before uploading.'
+    );
+}
+
+export async function encodeAvifContentImage(canvas: OffscreenCanvas) {
+    const { encode } = await import('@jsquash/avif');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Image processing is unavailable in this browser.');
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const buffer = await encode(imageData);
+    const blob = new Blob([buffer], { type: 'image/avif' });
+    if (blob.size <= CONTENT_IMAGE_LIMIT) return blob;
+    throw new Error(
+        'AVIF encoding exceeded 500 KiB. This image may be too complex; choose a simpler image or crop it.'
     );
 }
 
@@ -59,7 +72,11 @@ export async function rasterContentImage(file: Blob) {
         context.imageSmoothingEnabled = true;
         context.imageSmoothingQuality = 'high';
         context.drawImage(bitmap, 0, 0, width, height);
-        return { blob: await encodeContentImage(canvas), width, height };
+        const [webp, avif] = await Promise.all([
+            encodeWebpContentImage(canvas),
+            encodeAvifContentImage(canvas)
+        ]);
+        return { webp, avif, width, height };
     } finally {
         bitmap.close();
     }
