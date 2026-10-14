@@ -109,12 +109,32 @@ export async function validateAvatar(form: FormData): Promise<Record<string, Arr
     files['favicon.svg'] = new TextEncoder().encode(
         buildSvg(JSON.parse(vector) as SvgPath[])
     ).buffer;
-    // Handle optional avatar.webp and avatar.avif
+    // Handle optional avatar.webp and avatar.avif with validation
     for (const name of optional) {
-        const file = form.get(name);
+        const instances = form.getAll(name);
+        if (instances.length > 1) throw new Error(`Duplicate ${name} file.`);
+        const file = instances[0];
         if (file instanceof File) {
             if (file.size > IMAGE_LIMIT) throw new Error(`${name} must be no larger than 500 KiB.`);
-            files[name] = await file.arrayBuffer();
+            const bytes = new Uint8Array(await file.arrayBuffer());
+            // Validate magic bytes: WebP starts with 'RIFF...WEBP', AVIF has 'ftyp' box
+            if (name === 'avatar.webp') {
+                if (
+                    bytes.length < 12
+                    || String.fromCharCode(...bytes.slice(0, 4)) !== 'RIFF'
+                    || String.fromCharCode(...bytes.slice(8, 12)) !== 'WEBP'
+                )
+                    throw new Error('Invalid WebP format.');
+            } else if (name === 'avatar.avif') {
+                if (
+                    bytes.length < 12
+                    || String.fromCharCode(...bytes.slice(4, 8)) !== 'ftyp'
+                    || (String.fromCharCode(...bytes.slice(8, 12)) !== 'avif'
+                        && String.fromCharCode(...bytes.slice(8, 12)) !== 'avis')
+                )
+                    throw new Error('Invalid AVIF format.');
+            }
+            files[name] = bytes.buffer;
         }
     }
     return files;
