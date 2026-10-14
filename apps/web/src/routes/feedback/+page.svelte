@@ -1,6 +1,6 @@
 <script lang="ts">
     import { FieldValidation, requiredText, emailError } from '#lib/fieldValidation.ts';
-    import { publicAvatarUrl } from '#lib/siteIdentity.ts';
+    import { publicAvatarUrl, siteBannerOgUrl } from '#lib/siteIdentity.ts';
     import { page } from '$app/state';
     import { shortcut } from '#lib/utils/shortcut.svelte.ts';
     import { buttonKey } from '#lib/shortcuts.ts';
@@ -41,6 +41,12 @@
     let authorName = $derived(pageAuthor?.name || '');
     let authorTokens = $derived(extractAuthorNameTokens(pageAuthor));
     let siteUrl = $derived(((page?.data as any)?.author?.siteUrl || '').replace(/\/$/, ''));
+    let ogImage = $derived(
+        pageAuthor?.bannerVersion ? siteBannerOgUrl(pageAuthor) : publicAvatarUrl(pageAuthor)
+    );
+    let ogImageType = $derived(pageAuthor?.bannerVersion ? 'image/webp' : 'image/png');
+    let ogImageWidth = $derived(pageAuthor?.bannerVersion ? '1200' : '512');
+    let ogImageHeight = $derived(pageAuthor?.bannerVersion ? '630' : '512');
     let contactEmail = $derived((page?.data as any)?.contactEmail || pageAuthor?.email || '');
 
     let formName = $state('');
@@ -238,7 +244,19 @@
         content="{siteUrl}/feedback" />
     <meta
         property="og:image"
-        content={publicAvatarUrl(pageAuthor)} />
+        content={ogImage} />
+    <meta
+        property="og:image:secure_url"
+        content={ogImage} />
+    <meta
+        property="og:image:type"
+        content={ogImageType} />
+    <meta
+        property="og:image:width"
+        content={ogImageWidth} />
+    <meta
+        property="og:image:height"
+        content={ogImageHeight} />
     <meta
         name="twitter:card"
         content="summary_large_image" />
@@ -252,7 +270,7 @@
         :   '.'}" />
     <meta
         name="twitter:image"
-        content={publicAvatarUrl(pageAuthor)} />
+        content={ogImage} />
 </svelte:head>
 
 <TopNav
