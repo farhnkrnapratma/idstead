@@ -221,6 +221,11 @@ markdownParser.use({
                 const label = alt ? ` aria-label="${alt}"` : '';
                 return `<video controls preload="metadata" playsinline src="${src}"${title}${label}></video>`;
             }
+            // Use <picture> with AVIF+WebP for content images
+            if (/^\/blog\/content\/[a-f0-9]+\.webp$/.test(src)) {
+                const avifSrc = src.replace('.webp', '.avif');
+                return `<picture><source srcset="${avifSrc}" type="image/avif"><source srcset="${src}" type="image/webp"><img src="${src}" alt="${alt}"${title} loading="lazy" decoding="async"></picture>`;
+            }
             return `<img src="${src}" alt="${alt}"${title} loading="lazy" decoding="async">`;
         }
     }

@@ -21,12 +21,19 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
     if (auth.status) return apiError(auth.status, 'BLOG_CONTENT_IMAGE_AUTH_REQUIRED', auth.message);
 
     let bytes: Uint8Array<ArrayBuffer>;
+    let avifBytes: Uint8Array<ArrayBuffer> | null = null;
     try {
-        const form = await (await boundedBody(request, CONTENT_IMAGE_LIMIT + 8192)).formData();
+        const form = await (await boundedBody(request, CONTENT_IMAGE_LIMIT * 2 + 8192)).formData();
         const file = form.get('file');
+        const avifFile = form.get('fileAvif');
         if (!(file instanceof Blob) || !file.size) throw new Error('An image file is required.');
         if (file.size > CONTENT_IMAGE_LIMIT)
             throw new Error('Image must be no larger than 500 KiB after compression.');
+        if (avifFile && avifFile instanceof Blob) {
+            if (avifFile.size > CONTENT_IMAGE_LIMIT)
+                throw new Error('AVIF image must be no larger than 500 KiB.');
+            avifBytes = new Uint8Array(await avifFile.arrayBuffer());
+        }
         bytes = new Uint8Array(await file.arrayBuffer());
     } catch (error) {
         return apiError(
@@ -40,6 +47,9 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
     try {
         const { default: contentWasm } = await import('virtual:banner-webp-wasm');
         metadata = await validateContentImage(bytes, contentWasm());
+        if (avifBytes) {
+            await validateContentImage(avifBytes, contentWasm());
+        }
     } catch (error) {
         return apiError(
             400,
@@ -52,6 +62,10 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
     const key = contentImageKey(hash);
     try {
         await putContentAsset(platform, key, bytes, 'image/webp');
+        if (avifBytes) {
+            const avifKey = key.replace('.webp', '.avif');
+            await putContentAsset(platform, avifKey, avifBytes, 'image/avif');
+        }
     } catch {
         return apiError(
             502,
