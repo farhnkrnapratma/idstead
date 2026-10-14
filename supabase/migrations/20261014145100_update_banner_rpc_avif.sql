@@ -61,4 +61,5 @@ begin
 end;
 $$;
 
+revoke all on function public.db_prepare_post_operation(uuid, uuid, uuid, text, bigint, text, jsonb, jsonb) from public, anon, authenticated;
 grant execute on function public.db_prepare_post_operation(uuid, uuid, uuid, text, bigint, text, jsonb, jsonb) to service_role;
