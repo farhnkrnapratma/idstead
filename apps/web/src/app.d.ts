@@ -5,6 +5,8 @@ interface R2Object {
     etag: string;
     httpEtag: string;
     uploaded: Date;
+    body?: ReadableStream<Uint8Array>;
+    arrayBuffer?(): Promise<ArrayBuffer>;
 }
 
 interface R2Bucket {
