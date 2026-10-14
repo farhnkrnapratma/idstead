@@ -9,7 +9,7 @@ const publicId = 'a'.repeat(64);
 function routeFor(app: string, path: string) {
     const [, blog, banners, , file] = path.split('/');
     expect(`${blog}/${banners}`).toBe('blog/banners');
-    expect(file).toEndWith('.webp');
+    expect(file).toMatch(/\.(?:webp|avif)$/);
     return new URL(
         `../apps/${app}/src/routes/blog/banners/[postId]/[file]/+server.ts`,
         import.meta.url

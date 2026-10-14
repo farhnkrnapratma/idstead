@@ -206,7 +206,11 @@ export async function buildDataExport(
             undefined
         );
         const banner = banners.find(item => item.post_id === post.id);
-        if (banner) await fetchBinary(`${dir}/assets/banner/${slug}.webp`, banner.object_key);
+        if (banner) {
+            await fetchBinary(`${dir}/assets/banner/${slug}.webp`, banner.object_key);
+            if (banner.avif_object_key)
+                await fetchBinary(`${dir}/assets/banner/${slug}.avif`, banner.avif_object_key);
+        }
         await writeMedia(dir, collector);
 
         const { count, error: viewsError } = await db
