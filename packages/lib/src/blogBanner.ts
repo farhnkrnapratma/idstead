@@ -1,5 +1,10 @@
 export const BANNER_WIDTH = 1280;
 export const BANNER_HEIGHT = 640;
+
+export const SITE_BANNER_WIDTH = 1280;
+export const SITE_BANNER_HEIGHT = 640;
+export const SITE_BANNER_OG_WIDTH = 1200;
+export const SITE_BANNER_OG_HEIGHT = 630;
 export const BANNER_LIMIT = 500 * 1024;
 export const BANNER_SOURCE_LIMIT = 10_000_000;
 export const BANNER_PIXEL_LIMIT = 40_000_000;

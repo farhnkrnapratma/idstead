@@ -24,6 +24,24 @@ export function avatarSources(profile?: { avatarVersion?: string | null } | null
         { srcset: `/avatar.webp?v=${version}`, type: 'image/webp' }
     ];
 }
+
+export function siteBannerWideUrl(profile?: { bannerVersion?: string | null } | null) {
+    if (!profile?.bannerVersion) return null;
+    return `/site/banner/${profile.bannerVersion}/wide.avif`;
+}
+
+export function siteBannerOgUrl(profile?: { bannerVersion?: string | null } | null) {
+    if (!profile?.bannerVersion) return null;
+    return `/site/banner/${profile.bannerVersion}/og.webp`;
+}
+
+export function siteBannerWideSources(profile?: { bannerVersion?: string | null } | null) {
+    if (!profile?.bannerVersion) return [];
+    return [
+        { srcset: `/site/banner/${profile.bannerVersion}/wide.avif`, type: 'image/avif' },
+        { srcset: `/site/banner/${profile.bannerVersion}/wide.webp`, type: 'image/webp' }
+    ];
+}
 export const iconSizes = {
     'avatar.png': 512,
     'favicon-16x16.png': 16,
