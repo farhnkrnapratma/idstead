@@ -55,12 +55,12 @@ self.onmessage = async (event: MessageEvent<{ bitmap: ImageBitmap; background: s
             { size: 48, data: encode(48) }
         ]);
         const svg = tracer.imagedataToSVG(raster(128), {
-            numberofcolors: 32,
-            colorsampling: 2,
-            pathomit: 8,
-            ltres: 1,
-            qtres: 1,
-            roundcoords: 2,
+            numberofcolors: 128,
+            colorsampling: 1,
+            pathomit: 2,
+            ltres: 0.5,
+            qtres: 0.5,
+            roundcoords: 1,
             strokewidth: 0,
             desc: false,
             viewbox: true
