@@ -181,7 +181,7 @@
                 isFloatingActive ?
                     'top-1.5 text-2xs leading-none font-semibold '
                         + (isFocused ? 'text-accent-text' : 'text-text-muted')
-                :   'top-3 text-sm text-text-secondary/70',
+                :   'top-3 text-sm text-text-secondary',
                 formCtx?.error ? 'text-danger!' : ''
             )}>
             {resolvedLabel}

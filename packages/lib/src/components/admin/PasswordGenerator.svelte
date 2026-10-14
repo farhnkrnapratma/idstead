@@ -29,8 +29,6 @@
     let advancedOpen = $state(false);
     let isCopying = $state(false);
     const advancedOptionsId = $props.id();
-    const checkboxFocus =
-        'rounded-sm has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-text-muted';
     const dropdownFocus =
         '[&>button[aria-expanded=true]]:border-border-default [&>button:focus-visible]:ring-text-muted';
     const sliderClass =
@@ -208,7 +206,6 @@
             </label>
             <Checkbox
                 label="Special characters"
-                class={checkboxFocus}
                 bind:checked={
                     () => randomOptions.symbols,
                     value => {
@@ -237,7 +234,6 @@
             </label>
             <Checkbox
                 label="Capitalize words"
-                class={checkboxFocus}
                 bind:checked={
                     () => memorableOptions.capitalize,
                     value => {
@@ -254,7 +250,6 @@
                 {#if mode === 'random'}
                     <Checkbox
                         label="Capital letters (A–Z)"
-                        class={checkboxFocus}
                         bind:checked={
                             () => randomOptions.uppercase,
                             value => {
@@ -264,7 +259,6 @@
                         } />
                     <Checkbox
                         label="Include numbers (0–9)"
-                        class={checkboxFocus}
                         bind:checked={
                             () => randomOptions.numbers,
                             value => {
@@ -292,7 +286,6 @@
                     <Checkbox
                         label="Include numbers"
                         description="Add a random digit after each word."
-                        class={checkboxFocus}
                         bind:checked={
                             () => memorableOptions.numbers,
                             value => {

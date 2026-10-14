@@ -129,6 +129,7 @@
             {:else}
                 <div
                     class="flex size-full min-h-40 items-center justify-center"
+                    role="img"
                     aria-label="Profile image unavailable">
                     <UserRound class="size-12 text-text-muted" />
                 </div>

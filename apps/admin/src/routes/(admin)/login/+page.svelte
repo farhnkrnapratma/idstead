@@ -33,6 +33,11 @@
     let turnstileEl = $state<HTMLDivElement | null>(null);
     let pageAuthor = $derived((page?.data as any)?.author);
     let authorName = $derived(pageAuthor?.name || '');
+    let publicSiteUrl = $derived(
+        typeof pageAuthor?.siteUrl === 'string' && /^https?:\/\//.test(pageAuthor.siteUrl) ?
+            pageAuthor.siteUrl
+        :   ''
+    );
 
     const validation = new FieldValidation();
     onDestroy(() => validation.destroy());
@@ -250,15 +255,19 @@
 
 <header
     class="fixed inset-x-0 top-0 z-40 flex h-14 w-full items-center justify-between px-4 sm:px-6">
-    <Button
-        href="/"
-        type="secondary"
-        size="sm">
-        {#snippet leading()}
-            <ArrowLeft class="size-4" />
-        {/snippet}
-        Home
-    </Button>
+    {#if publicSiteUrl}
+        <Button
+            href={publicSiteUrl}
+            type="secondary"
+            size="sm">
+            {#snippet leading()}
+                <ArrowLeft class="size-4" />
+            {/snippet}
+            Home
+        </Button>
+    {:else}
+        <span></span>
+    {/if}
     <ThemeSelect
         theme={themeStore.current}
         onThemeChange={themeStore.apply} />

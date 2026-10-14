@@ -36,7 +36,12 @@ export function lockScroll(): () => void {
     };
 }
 
-export function scrollToTop(behavior: ScrollBehavior = 'smooth'): void {
+export function preferredScrollBehavior(): ScrollBehavior {
+    if (typeof document === 'undefined') return 'auto';
+    return document.documentElement.dataset.reduceMotion === 'true' ? 'auto' : 'smooth';
+}
+
+export function scrollToTop(behavior: ScrollBehavior = preferredScrollBehavior()): void {
     if (typeof window === 'undefined') return;
 
     const article = document.querySelector<HTMLElement>('article.article-scroll-container');
@@ -58,6 +63,47 @@ const SCROLL_START_GRACE_MS = 120;
 const SCROLL_IDLE_MS = 150;
 const SCROLL_SETTLE_CAP_MS = 4000;
 
+export function whenScrollSettles(scroller: HTMLElement | Window, settled: () => void): () => void {
+    if (typeof window === 'undefined') return () => {};
+
+    let done = false;
+    let scrolled = false;
+    let idleTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const onScroll = () => {
+        scrolled = true;
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(finish, SCROLL_IDLE_MS);
+    };
+
+    const detach = () => {
+        scroller.removeEventListener('scroll', onScroll);
+        scroller.removeEventListener('scrollend', finish);
+        clearTimeout(graceTimer);
+        clearTimeout(idleTimer);
+        clearTimeout(capTimer);
+    };
+
+    function finish() {
+        if (done) return;
+        done = true;
+        detach();
+        settled();
+    }
+
+    scroller.addEventListener('scroll', onScroll, { passive: true });
+    scroller.addEventListener('scrollend', finish, { once: true });
+    const graceTimer = setTimeout(() => {
+        if (!scrolled) finish();
+    }, SCROLL_START_GRACE_MS);
+    const capTimer = setTimeout(finish, SCROLL_SETTLE_CAP_MS);
+
+    return () => {
+        done = true;
+        detach();
+    };
+}
+
 export function highlightAfterScroll(
     target: HTMLElement,
     scroller: HTMLElement | Window = window
@@ -69,29 +115,9 @@ export function highlightAfterScroll(
         .forEach(node => node.classList.remove(TARGET_HIGHLIGHT_CLASS));
 
     const highlightEl = (target.closest('sup') || target) as HTMLElement;
-    let applied = false;
-    let scrolled = false;
     let removeTimer: ReturnType<typeof setTimeout> | undefined;
-    let idleTimer: ReturnType<typeof setTimeout> | undefined;
 
-    const onScroll = () => {
-        scrolled = true;
-        clearTimeout(idleTimer);
-        idleTimer = setTimeout(apply, SCROLL_IDLE_MS);
-    };
-
-    const detach = () => {
-        scroller.removeEventListener('scroll', onScroll);
-        scroller.removeEventListener('scrollend', apply);
-        clearTimeout(graceTimer);
-        clearTimeout(idleTimer);
-        clearTimeout(capTimer);
-    };
-
-    function apply() {
-        if (applied) return;
-        applied = true;
-        detach();
+    const cancelWait = whenScrollSettles(scroller, () => {
         highlightEl.classList.remove(TARGET_HIGHLIGHT_CLASS);
         void highlightEl.offsetWidth;
         highlightEl.classList.add(TARGET_HIGHLIGHT_CLASS);
@@ -99,23 +125,16 @@ export function highlightAfterScroll(
             () => highlightEl.classList.remove(TARGET_HIGHLIGHT_CLASS),
             TARGET_HIGHLIGHT_MS
         );
-    }
-
-    scroller.addEventListener('scroll', onScroll, { passive: true });
-    scroller.addEventListener('scrollend', apply, { once: true });
-    const graceTimer = setTimeout(() => {
-        if (!scrolled) apply();
-    }, SCROLL_START_GRACE_MS);
-    const capTimer = setTimeout(apply, SCROLL_SETTLE_CAP_MS);
+    });
 
     return () => {
-        detach();
+        cancelWait();
         clearTimeout(removeTimer);
         highlightEl.classList.remove(TARGET_HIGHLIGHT_CLASS);
     };
 }
 
-export function scrollToBottom(behavior: ScrollBehavior = 'smooth'): void {
+export function scrollToBottom(behavior: ScrollBehavior = preferredScrollBehavior()): void {
     if (typeof window === 'undefined') return;
 
     const article = document.querySelector<HTMLElement>('article.article-scroll-container');

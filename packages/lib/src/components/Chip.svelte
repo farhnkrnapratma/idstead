@@ -38,9 +38,9 @@
     aria-label={ariaLabel}
     aria-pressed={active}
     class={cn(
-        'inline-flex cursor-pointer items-center justify-center rounded-md border transition-all select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-50',
+        'touch-target relative inline-flex cursor-pointer items-center justify-center rounded-md border transition-all select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-50',
         active ?
-            'border-accent bg-accent font-bold text-text-on-accent shadow-xs'
+            'border-accent-contrast-bg bg-accent-contrast-bg font-bold text-text-on-accent shadow-xs'
         :   'border-border-default bg-surface text-text-secondary hover:border-border-strong hover:bg-surface-hover hover:text-text-primary disabled:hover:border-border-default disabled:hover:bg-surface disabled:hover:text-text-secondary',
         sizeStyles[size],
         className

@@ -31,10 +31,16 @@
     )}>
     {#each stats as item (item.label)}
         {#if variant === 'compact'}
-            <button
-                type="button"
+            <svelte:element
+                this={item.onclick ? 'button' : 'div'}
+                type={item.onclick ? 'button' : undefined}
+                role={item.onclick ? undefined : 'group'}
                 onclick={item.onclick}
-                class="group flex min-w-0 cursor-pointer items-center gap-2 rounded-md border border-border-subtle bg-surface-card p-3 text-left transition-colors hover:border-accent/50 hover:bg-accent-subtle/20 focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-focus-ring">
+                class={cn(
+                    'group flex min-w-0 items-center gap-2 rounded-md border border-border-subtle bg-surface-card p-3 text-left transition-colors',
+                    item.onclick
+                        && 'cursor-pointer hover:border-accent/50 hover:bg-accent-subtle/20 focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-focus-ring'
+                )}>
                 {#if item.componentIcon}
                     {@const Icon = item.componentIcon}
                     <span
@@ -46,10 +52,14 @@
                         class="block text-xl leading-none font-extrabold tracking-tight text-text-primary"
                         >{item.value}</span>
                     <span
-                        class="mt-1.5 block truncate text-2xs leading-tight font-bold text-text-secondary"
+                        class="mt-1.5 block truncate text-xs leading-tight font-bold text-text-secondary"
                         >{item.label}</span>
+                    {#if item.description}<span
+                            class="mt-0.5 block truncate text-xs text-text-muted"
+                            >{item.description}</span
+                        >{/if}
                 </span>
-            </button>
+            </svelte:element>
         {:else if variant === 'funding'}
             <button
                 type="button"

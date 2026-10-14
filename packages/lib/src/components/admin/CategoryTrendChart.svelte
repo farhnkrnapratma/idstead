@@ -115,9 +115,9 @@
 <div class={cn('flex flex-col gap-3', className)}>
     <div class="flex flex-wrap items-center justify-between gap-2">
         <div class="flex flex-col gap-0.5">
-            <h3 class="text-xs font-bold text-text-secondary">{title}</h3>
+            <h2 class="type-card-title">{title}</h2>
             {#if description}
-                <p class="text-2xs text-text-muted">{description}</p>
+                <p class="text-xs text-text-muted">{description}</p>
             {/if}
         </div>
         <div class="flex items-center gap-2">
@@ -277,7 +277,7 @@
             role="group"
             aria-label="Legend">
             {#each series as s (s.key)}
-                <span class="flex items-center gap-1.5 text-2xs text-text-secondary">
+                <span class="flex items-center gap-1.5 text-xs text-text-secondary">
                     <span
                         class="size-2.5 shrink-0 rounded-full"
                         style:background={s.color}

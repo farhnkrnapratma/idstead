@@ -12,7 +12,7 @@
 
     const RING_LENGTH = 125.66;
     const toneStyles: Record<CountdownTone, { track: string; arc: string; text: string }> = {
-        normal: { track: 'stroke-accent-subtle', arc: 'stroke-accent', text: 'text-accent' },
+        normal: { track: 'stroke-accent-subtle', arc: 'stroke-accent', text: 'text-accent-text' },
         warning: { track: 'stroke-warning-subtle', arc: 'stroke-warning', text: 'text-warning' },
         danger: { track: 'stroke-danger-subtle', arc: 'stroke-danger', text: 'text-danger' }
     };

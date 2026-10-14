@@ -86,8 +86,8 @@
 <div class={cn('flex flex-col gap-3', className)}>
     <div class="flex flex-wrap items-center justify-between gap-2">
         <div class="flex flex-col gap-0.5">
-            <h3 class="text-xs font-bold text-text-secondary">{title}</h3>
-            <p class="text-2xs text-text-muted">
+            <h2 class="type-card-title">{title}</h2>
+            <p class="text-xs text-text-muted">
                 {description}
             </p>
         </div>
@@ -141,7 +141,8 @@
             class="h-65" />
     {:else if error}
         <ErrorState
-            code={error}
+            title="Unable to load views"
+            description={error}
             size="inline"
             {onRetry} />
     {:else if !hasActivity}
@@ -211,7 +212,7 @@
                             <div
                                 class="rounded-md border border-border-subtle bg-surface-elevated px-2.5 py-1.5 text-xs shadow-md">
                                 <div class="font-medium text-text-primary">{data.label}</div>
-                                <div class="font-mono font-semibold text-accent">
+                                <div class="font-mono font-semibold text-accent-text">
                                     {data.views}
                                     {title.toLowerCase()}
                                     {data.partial}

@@ -159,8 +159,8 @@
     class="flex min-w-0 flex-col gap-4">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-text-primary">Activity Log</h1>
-            <p class="mt-1 text-sm text-text-secondary">Admin activity from the last 30 days.</p>
+            <h1 class="type-page-title">Activity Log</h1>
+            <p class="mt-1 type-body text-text-secondary">Admin activity from the last 30 days.</p>
         </div>
         {#if total > 0}
             <div class="flex shrink-0 flex-col gap-2 sm:items-end">
@@ -267,9 +267,7 @@
                     >{activityCategories.find(item => item.value === row.category)?.label
                         ?? row.category}</Badge>
             {:else if key === 'created_at'}
-                <ActivityTimestamp
-                    date={row.created_at as string}
-                    class="text-xs" />
+                <ActivityTimestamp date={row.created_at as string} />
             {:else}
                 <span title={String(row[key] ?? '')}>{row[key] ?? '—'}</span>
             {/if}

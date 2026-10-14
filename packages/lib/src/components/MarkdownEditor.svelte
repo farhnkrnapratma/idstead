@@ -518,7 +518,7 @@
                         type="button"
                         onclick={toggleAutosave}
                         aria-pressed={autosaveEnabled}
-                        class="inline-flex cursor-pointer items-center gap-1.5 rounded-md text-inherit focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+                        class="touch-target relative inline-flex cursor-pointer items-center gap-1.5 rounded-md text-inherit focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
                         <span>Autosave</span>
                     </button>
                 </Tooltip>
@@ -532,7 +532,7 @@
                     onclick={toggleAutosave}
                     aria-pressed={autosaveEnabled}
                     aria-label="Autosave: {autosaveState}"
-                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-md text-inherit focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:hidden">
+                    class="touch-target relative inline-flex cursor-pointer items-center gap-1.5 rounded-md text-inherit focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:hidden">
                     {#if autosaveEnabled}
                         <RefreshCw class="size-3" />
                     {:else}
@@ -544,7 +544,7 @@
                 <button
                     type="button"
                     onclick={() => markdownTextareaElement?.focus()}
-                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-md text-inherit focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+                    class="touch-target relative inline-flex cursor-pointer items-center gap-1.5 rounded-md text-inherit focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
                     <i
                         class="bi bi-markdown-fill inline-flex size-3 items-center justify-center text-xs leading-none [&::before]:align-[0] [&::before]:leading-none"
                         aria-hidden="true"></i>
@@ -580,10 +580,10 @@
                         onclick={() => (activeTab = 'editor')}
                         role="tab"
                         aria-selected={activeTab === 'editor'}
-                        class="editor-tab inline-flex h-7 cursor-pointer items-center rounded-sm px-3 font-mono text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none sm:px-4 {(
+                        class="editor-tab touch-target relative inline-flex h-7 cursor-pointer items-center rounded-sm px-3 font-mono text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none sm:px-4 {(
                             activeTab === 'editor'
                         ) ?
-                            'bg-accent text-text-on-accent! shadow-xs'
+                            'bg-accent-contrast-bg text-text-on-accent! shadow-xs'
                         :   'editor-tab-inactive'}">
                         Edit
                     </button>
@@ -592,10 +592,10 @@
                         onclick={() => (activeTab = 'preview')}
                         role="tab"
                         aria-selected={activeTab === 'preview'}
-                        class="editor-tab inline-flex h-7 cursor-pointer items-center rounded-sm px-3 font-mono text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none sm:px-4 {(
+                        class="editor-tab touch-target relative inline-flex h-7 cursor-pointer items-center rounded-sm px-3 font-mono text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none sm:px-4 {(
                             activeTab === 'preview'
                         ) ?
-                            'bg-accent text-text-on-accent! shadow-xs'
+                            'bg-accent-contrast-bg text-text-on-accent! shadow-xs'
                         :   'editor-tab-inactive'}">
                         Preview
                     </button>
@@ -708,7 +708,7 @@
                                                 aria-pressed={indentSize === size}
                                                 onclick={() => setIndentSize(size)}
                                                 class={cn(
-                                                    'inline-flex cursor-pointer items-center justify-center rounded-md px-2.5 py-1 transition-colors hover:bg-surface-hover hover:text-accent-text',
+                                                    'touch-target relative inline-flex cursor-pointer items-center justify-center rounded-md px-2.5 py-1 transition-colors hover:bg-surface-hover hover:text-accent-text',
                                                     indentSize === size ?
                                                         'bg-accent/10 font-semibold text-accent-text'
                                                     :   'text-text-secondary'
@@ -769,7 +769,7 @@
                             type="button"
                             onclick={item.action}
                             aria-label={item.label}
-                            class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
+                            class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
                             <item.icon class="size-4" />
                         </button>
                     {/each}
@@ -800,7 +800,7 @@
                                 aria-label="More headings (H4-H6)"
                                 aria-haspopup="menu"
                                 aria-expanded={isOpen}
-                                class="flex h-7 shrink-0 cursor-pointer items-center justify-center gap-0.5 rounded-md px-1 transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
+                                class="touch-target relative flex h-7 shrink-0 cursor-pointer items-center justify-center gap-0.5 rounded-md px-1 transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
                                 <Heading class="size-4" />
                                 <ChevronDown
                                     class="size-3 transition-transform duration-200 {isOpen ?
@@ -820,7 +820,7 @@
                             type="button"
                             onclick={item.action}
                             aria-label={item.label}
-                            class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
+                            class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
                             <item.icon class="size-4" />
                         </button>
                     {/each}
@@ -834,7 +834,7 @@
                         type="button"
                         onclick={handleImageClick}
                         aria-label="Insert image"
-                        class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
+                        class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
                         <ImageIcon class="size-4" />
                     </button>
                     <input
@@ -848,7 +848,7 @@
                         type="button"
                         onclick={handleVideoClick}
                         aria-label="Insert video"
-                        class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
+                        class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
                         <Video class="size-4" />
                     </button>
                     <input
@@ -863,7 +863,7 @@
                             type="button"
                             onclick={item.action}
                             aria-label={item.label}
-                            class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
+                            class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
                             <item.icon class="size-4" />
                         </button>
                     {/each}
@@ -877,7 +877,7 @@
                         type="button"
                         onclick={() => insertMarkdown('```\n', '\n```')}
                         aria-label="Code block"
-                        class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
+                        class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
                         <SquareCode class="size-4" />
                     </button>
 
@@ -936,7 +936,7 @@
                                 aria-label="More formatting options"
                                 aria-haspopup="menu"
                                 aria-expanded={isOpen}
-                                class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
+                                class="touch-target relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-surface-hover/30 hover:text-text-primary">
                                 <Ellipsis class="size-4" />
                             </button>
                         {/snippet}
@@ -958,7 +958,7 @@
                     style:min-height={minHeight || undefined}>
                     {#if showLineNumbers}
                         <div
-                            class="editor-gutter-track pointer-events-none sticky left-0 z-10 box-border flex shrink-0 flex-col border-r border-border-subtle bg-surface-base font-mono text-[14.5px] select-none"
+                            class="editor-gutter-track pointer-events-none sticky left-0 z-10 box-border flex shrink-0 flex-col border-r border-border-subtle bg-surface-base font-mono text-xs select-none"
                             style:width="var(--editor-gutter-width)"
                             style:min-width="var(--editor-gutter-width)"
                             style:max-width="var(--editor-gutter-width)"
@@ -1017,7 +1017,7 @@
                     style:min-height={minHeight || undefined}>
                     {#if showLineNumbers}
                         <div
-                            class="editor-gutter-track pointer-events-none absolute inset-y-0 left-0 z-10 box-border border-r font-mono text-[14.5px]"
+                            class="editor-gutter-track pointer-events-none absolute inset-y-0 left-0 z-10 box-border border-r font-mono text-xs"
                             style:width="var(--editor-gutter-width)"
                             style:min-width="var(--editor-gutter-width)"
                             style:max-width="var(--editor-gutter-width)"
@@ -1166,7 +1166,7 @@
     .editor-pre,
     .editor-pre code,
     .editor-pre :global(span) {
-        @apply font-mono text-[14.5px]! leading-6! tracking-normal! normal-case!;
+        @apply font-mono text-xs! leading-6! tracking-normal! normal-case!;
     }
 
     .editor-code-line,

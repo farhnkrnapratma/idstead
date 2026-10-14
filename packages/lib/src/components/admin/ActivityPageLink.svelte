@@ -14,6 +14,6 @@
         target="_blank"
         rel="noopener noreferrer"
         {title}
-        class={`pointer-events-auto relative hover:text-accent hover:underline focus-visible:text-accent focus-visible:underline focus-visible:outline-2 focus-visible:outline-focus-ring ${className}`}
+        class={`pointer-events-auto relative underline decoration-text-muted underline-offset-2 hover:text-accent-text hover:decoration-current focus-visible:text-accent-text focus-visible:outline-2 focus-visible:outline-focus-ring ${className}`}
         onclick={event => event.stopPropagation()}>{title}</a>
 {:else}<span class={className}>{title}</span>{/if}

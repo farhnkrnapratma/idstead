@@ -1,5 +1,5 @@
 export const ADMIN_CHART_AXIS_CLASSES = {
-    tickLabel: 'text-[13px] fill-text-muted font-mono',
+    tickLabel: 'text-xxs fill-text-muted font-mono',
     rule: 'stroke-border-subtle'
 };
 
