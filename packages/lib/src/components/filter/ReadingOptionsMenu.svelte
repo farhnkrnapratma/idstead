@@ -13,6 +13,7 @@
     import { cn } from '../../utils/cn';
     import { portal } from '../../utils/actions';
     import { lockScroll } from '../../utils/scroll';
+    import Badge from '../Badge.svelte';
     import IconButton from '../IconButton.svelte';
     import { contentFontStore, type ContentFont } from '../../stores/contentFontStore.svelte';
     import { a11yStore, A11Y_TOGGLES, type FontScale } from '../../stores/a11yStore.svelte';
@@ -388,17 +389,23 @@
                         <div class="flex flex-col gap-1 pt-0.5">
                             {#each A11Y_TOGGLES as item (item.key)}
                                 {@const checked = a11yStore.current[item.key]}
+                                {@const fromDevice = a11yStore.enabledByDevice(item.key)}
                                 <div
                                     class="group/item flex items-center justify-between gap-2 py-0.5">
                                     <span
-                                        class="text-xs font-normal text-text-secondary transition-colors group-hover/item:text-text-primary">
+                                        class="flex min-w-0 items-center gap-1.5 text-xs font-normal text-text-secondary transition-colors group-hover/item:text-text-primary">
                                         {item.label}
+                                        {#if fromDevice}
+                                            <Badge class="px-1.5 py-0 text-3xs">Device</Badge>
+                                        {/if}
                                     </span>
                                     <button
                                         type="button"
                                         role="switch"
                                         aria-checked={checked}
-                                        aria-label={item.label}
+                                        aria-label="{item.label}{fromDevice ?
+                                            ', turned on by your device settings'
+                                        :   ''}"
                                         onclick={item.toggle}
                                         class="relative flex h-6.5 w-7 shrink-0 cursor-pointer items-center justify-center">
                                         <ToggleLeft

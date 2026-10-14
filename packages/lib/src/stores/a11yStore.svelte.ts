@@ -1,29 +1,22 @@
 import { browser } from '$app/env';
+import {
+    A11Y_LEGACY_STORAGE_KEY,
+    A11Y_STORAGE_KEY,
+    A11Y_SYSTEM_QUERIES,
+    migrateLegacySettings,
+    parseOverrides,
+    resolveSettings,
+    type A11ySettings,
+    type A11yToggleKey,
+    type FontScale
+} from '../a11ySettings';
 
-export type FontScale = 100 | 110 | 120 | 130 | 140 | 150;
-
-interface A11ySettings {
-    reduceMotion: boolean;
-    solidSurfaces: boolean;
-    highContrast: boolean;
-    fontScale: FontScale;
-    focusHighlight: boolean;
-    dyslexicFont: boolean;
-}
-
-const STORAGE_KEY = 'a11y_settings';
-
-const defaults: A11ySettings = {
-    reduceMotion: false,
-    solidSurfaces: false,
-    highContrast: false,
-    fontScale: 100,
-    focusHighlight: false,
-    dyslexicFont: false
-};
+export type { FontScale };
 
 function createA11yStore() {
-    let settings = $state<A11ySettings>({ ...defaults });
+    let overrides = $state<Partial<A11ySettings>>({});
+    let system = $state<Partial<A11ySettings>>({});
+    const settings = $derived(resolveSettings(system, overrides));
 
     function syncDom() {
         if (!browser) return;
@@ -38,20 +31,32 @@ function createA11yStore() {
 
     function persist() {
         if (!browser) return;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+        try {
+            if (Object.keys(overrides).length === 0) localStorage.removeItem(A11Y_STORAGE_KEY);
+            else localStorage.setItem(A11Y_STORAGE_KEY, JSON.stringify(overrides));
+        } catch {
+            return;
+        }
     }
 
     function apply(next: Partial<A11ySettings>) {
-        settings = { ...settings, ...next };
+        overrides = { ...overrides, ...next };
         syncDom();
         persist();
     }
 
-    function parseStored(raw: string | null): Partial<A11ySettings> {
-        if (!raw) return {};
+    function readOverrides(): Partial<A11ySettings> {
         try {
-            const parsed = JSON.parse(raw);
-            return typeof parsed === 'object' && parsed !== null ? parsed : {};
+            const stored = localStorage.getItem(A11Y_STORAGE_KEY);
+            if (stored !== null) return parseOverrides(stored);
+            const legacy = localStorage.getItem(A11Y_LEGACY_STORAGE_KEY);
+            if (legacy === null) return {};
+            const migrated = migrateLegacySettings(legacy);
+            localStorage.removeItem(A11Y_LEGACY_STORAGE_KEY);
+            if (Object.keys(migrated).length > 0) {
+                localStorage.setItem(A11Y_STORAGE_KEY, JSON.stringify(migrated));
+            }
+            return migrated;
         } catch {
             return {};
         }
@@ -60,15 +65,25 @@ function createA11yStore() {
     function init() {
         if (!browser) return;
 
-        settings = { ...defaults, ...parseStored(localStorage.getItem(STORAGE_KEY)) };
-        syncDom();
+        const queries = (Object.entries(A11Y_SYSTEM_QUERIES) as [A11yToggleKey, string][])
+            .map(([key, query]) => [key, window.matchMedia(query)] as const)
+            .filter(([, list]) => list.media !== 'not all');
 
-        const onStorage = (e: StorageEvent) => {
-            if (e.key !== STORAGE_KEY) return;
-            settings = { ...defaults, ...parseStored(e.newValue) };
+        const readSystem = () => {
+            system = Object.fromEntries(queries.map(([key, list]) => [key, list.matches]));
             syncDom();
         };
 
+        overrides = readOverrides();
+        readSystem();
+
+        const onStorage = (e: StorageEvent) => {
+            if (e.key !== A11Y_STORAGE_KEY) return;
+            overrides = parseOverrides(e.newValue);
+            syncDom();
+        };
+
+        queries.forEach(([, list]) => list.addEventListener('change', readSystem));
         window.addEventListener('storage', onStorage);
 
         if (typeof document !== 'undefined' && 'fonts' in document) {
@@ -83,8 +98,13 @@ function createA11yStore() {
         }
 
         return () => {
+            queries.forEach(([, list]) => list.removeEventListener('change', readSystem));
             window.removeEventListener('storage', onStorage);
         };
+    }
+
+    function enabledByDevice(key: A11yToggleKey) {
+        return system[key] === true && !(key in overrides);
     }
 
     function toggleReduceMotion() {
@@ -112,13 +132,16 @@ function createA11yStore() {
     }
 
     function reset() {
-        apply({ ...defaults });
+        overrides = {};
+        syncDom();
+        persist();
     }
 
     return {
         get current() {
             return settings;
         },
+        enabledByDevice,
         init,
         toggleReduceMotion,
         toggleSolidSurfaces,
