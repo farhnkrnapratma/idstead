@@ -120,32 +120,34 @@
         Banner image <span class="font-normal text-text-muted">(required)</span>
     </h3>
     <div
-        class="grid min-w-0 grid-cols-1 items-stretch gap-4 sm:grid-cols-[auto_1fr]"
+        class="@container min-w-0"
         {@attach watchSaved(savedUrl, savedRevision)}>
-        <div
-            data-banner-preview
-            class="relative aspect-2/1 w-full max-w-80 overflow-hidden rounded-md border border-border-subtle bg-surface-subtle bg-[conic-gradient(var(--color-surface)_25%,transparent_0_50%,var(--color-surface)_0_75%,transparent_0)] bg-size-[1rem_1rem] sm:w-64 sm:max-w-none">
-            <ImageWithSkeleton
-                src={preview || (loadedSource === savedUrl ? savedUrl : null)}
-                alt={`${blogBannerAlt(title || 'untitled post')} — preview`}
-                loading="eager"
-                class="absolute inset-0 size-full bg-transparent!"
-                imgClass="object-contain" />
+        <div class="grid min-w-0 grid-cols-1 gap-4 @2xl:grid-cols-[auto_1fr]">
+            <div
+                data-banner-preview
+                class="relative aspect-2/1 w-full max-w-120 self-start overflow-hidden rounded-md border border-border-subtle bg-surface-subtle bg-[conic-gradient(var(--color-surface)_25%,transparent_0_50%,var(--color-surface)_0_75%,transparent_0)] bg-size-[1rem_1rem] @2xl:w-80">
+                <ImageWithSkeleton
+                    src={preview || (loadedSource === savedUrl ? savedUrl : null)}
+                    alt={`${blogBannerAlt(title || 'untitled post')} — preview`}
+                    loading="eager"
+                    class="absolute inset-0 size-full bg-transparent!"
+                    imgClass="object-cover" />
+            </div>
+            <FileUploadField
+                id="post-banner"
+                class="min-w-0"
+                required
+                accept="image/png,image/jpeg,image/webp,image/avif,image/gif,image/bmp"
+                hint="PNG, JPEG, WebP, AVIF, GIF, BMP · up to 10 MB / 40 MP · at least 1280 × 640"
+                {disabled}
+                isUploading={busy}
+                allowReselectWhileUploading
+                uploadingLabel="Preparing banner…"
+                selectedFileName={filename}
+                fileSize={size}
+                error={error || validationError}
+                onFileSelect={select} />
         </div>
-        <FileUploadField
-            id="post-banner"
-            class="min-w-0"
-            required
-            accept="image/png,image/jpeg,image/webp,image/avif,image/gif,image/bmp"
-            hint="PNG, JPEG, WebP, AVIF, GIF, BMP · up to 10 MB / 40 MP · at least 1280 × 640"
-            {disabled}
-            isUploading={busy}
-            allowReselectWhileUploading
-            uploadingLabel="Preparing banner…"
-            selectedFileName={filename}
-            fileSize={size}
-            error={error || validationError}
-            onFileSelect={select} />
     </div>
     {#if loadError}<FieldMessage
             variant="error"
