@@ -60,7 +60,7 @@
         {/if}
 
         {#if description}
-            <p class="mt-1 line-clamp-3 text-xs leading-relaxed text-text-secondary">
+            <p class="mt-1 line-clamp-3 type-body text-text-secondary">
                 {description}
             </p>
         {/if}

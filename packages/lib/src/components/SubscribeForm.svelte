@@ -38,15 +38,14 @@
             <div>
                 <h4
                     id="{fieldId}-title"
-                    class="text-base leading-snug font-bold text-balance text-text-primary sm:text-lg">
+                    class="type-card-title text-balance">
                     <ShinyText
                         text={title}
                         color="var(--color-accent)"
                         shineColor="var(--color-text-on-accent)"
                         speed={3} />
                 </h4>
-                <p
-                    class="col-span-2 text-xs leading-relaxed text-pretty text-text-secondary sm:text-sm">
+                <p class="col-span-2 type-body text-pretty text-text-secondary">
                     {description}
                 </p>
             </div>

@@ -39,7 +39,7 @@
                 {title}
             </h1>
             {#if description}
-                <p class="mt-1.5 max-w-xl text-xs leading-relaxed text-text-secondary sm:text-sm">
+                <p class="mt-1.5 max-w-xl type-body text-text-secondary">
                     {description}
                 </p>
             {/if}

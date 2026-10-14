@@ -911,7 +911,7 @@
                                                 <div>
                                                     <h4
                                                         style="view-transition-name: post-title-{related.slug}"
-                                                        class="line-clamp-2 text-xl leading-snug font-bold text-text-primary">
+                                                        class="line-clamp-2 type-card-title">
                                                         {related.title}
                                                         {#if related.pinned || isPostNew(related)}
                                                             <span
@@ -961,7 +961,7 @@
                                                                 && observeExcerptOverflow(
                                                                     related.id
                                                                 )}
-                                                            class="text-xs leading-relaxed text-text-secondary sm:text-sm {(
+                                                            class="type-body text-text-secondary {(
                                                                 isExpanded
                                                             ) ?
                                                                 ''
@@ -1034,8 +1034,7 @@
                 <section
                     class="mt-8 border-t border-border-subtle pt-6 sm:mt-10 sm:pt-8"
                     aria-label="Comments">
-                    <h2
-                        class="mb-5 text-lg font-bold tracking-tight text-text-primary sm:mb-6 sm:text-xl">
+                    <h2 class="mb-5 type-section-title sm:mb-6">
                         Comments ({comments.length})
                     </h2>
 

@@ -26,9 +26,9 @@
             <Ghost class="size-7" />
         {/if}
     </div>
-    <h3 class="text-sm font-bold text-text-primary">{title}</h3>
+    <h3 class="type-card-title">{title}</h3>
     {#if description}
-        <p class="mt-1 max-w-xs text-xs text-text-muted">{description}</p>
+        <p class="mt-1 max-w-xs type-body text-text-muted">{description}</p>
     {/if}
 
     {#if actions}

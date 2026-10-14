@@ -34,8 +34,7 @@
         className
     )}>
     <div class="block sm:inline-flex sm:justify-between">
-        <h3
-            class="mb-1.5 text-base font-semibold text-text-primary sm:mb-0 sm:text-lg sm:leading-none">
+        <h3 class="mb-1.5 type-card-title sm:mb-0 sm:leading-none">
             {role}
         </h3>
         <div
@@ -66,8 +65,7 @@
     </div>
 
     {#if description}
-        <p
-            class="mt-1 border-t border-t-border-subtle/60 pt-2 text-xs leading-relaxed text-text-secondary sm:text-sm">
+        <p class="mt-1 border-t border-t-border-subtle/60 pt-2 type-body text-text-secondary">
             {description}
         </p>
     {/if}

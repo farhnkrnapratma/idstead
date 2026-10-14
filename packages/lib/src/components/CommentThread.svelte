@@ -397,7 +397,7 @@
                 </div>
                 <div
                     class={cn(
-                        'mt-0.5 text-xs leading-relaxed font-normal text-text-secondary sm:text-sm',
+                        'mt-0.5 type-body font-normal text-text-secondary',
                         useContentFont && `font-content-${contentFontStore.current}`,
                         useContentFont
                             && contentFontStore.current === 'mono'

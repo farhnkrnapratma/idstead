@@ -15,6 +15,22 @@
 @custom-variant motion-reduce (&:where([data-reduce-motion='true'], [data-reduce-motion='true'] *));
 @custom-variant motion-safe (&:where([data-reduce-motion='false'], [data-reduce-motion='false'] *));
 
+@utility type-page-title {
+    @apply text-2xl leading-tight font-bold tracking-tight text-balance text-text-primary sm:text-3xl;
+}
+
+@utility type-section-title {
+    @apply text-lg leading-snug font-bold tracking-tight text-text-primary sm:text-xl;
+}
+
+@utility type-card-title {
+    @apply text-base leading-snug font-bold tracking-tight text-text-primary;
+}
+
+@utility type-body {
+    @apply text-sm leading-relaxed;
+}
+
 @utility glass-card {
     @apply border-0 bg-surface-card text-text-primary shadow-sm backdrop-blur-md dark:border dark:border-white/5 dark:bg-surface-card/70;
 }

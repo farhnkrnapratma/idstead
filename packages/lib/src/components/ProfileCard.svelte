@@ -40,7 +40,7 @@
         {/if}
 
         <div class="flex flex-col">
-            <h3 class="text-sm font-bold text-text-primary">{name}</h3>
+            <h3 class="type-card-title">{name}</h3>
             {#if role}
                 <span class="text-xs font-medium text-text-muted">{role}</span>
             {/if}
@@ -48,7 +48,7 @@
     </div>
 
     {#if bio}
-        <p class="text-xs leading-relaxed text-text-secondary">{bio}</p>
+        <p class="type-body text-text-secondary">{bio}</p>
     {/if}
 
     {#if actions}
