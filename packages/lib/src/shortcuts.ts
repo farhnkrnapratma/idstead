@@ -33,7 +33,6 @@ export const CHORD_GROUPS: Record<string, ChordGroupSpec> = {
     funding: { id: 'funding', label: 'Funding platforms', combos: ['Shift+U'], listed: false },
     posts: { id: 'posts', label: 'Blog posts', combos: ['Shift+B'], listed: false },
     projects: { id: 'projects', label: 'Projects', combos: ['Shift+J'], listed: false },
-    sidebar: { id: 'sidebar', label: 'Admin sidebar', combos: ['Shift+A'] },
     copy: { id: 'copy', label: 'Copy', combos: ['C'], shadows: '/copy' },
     save: { id: 'save', label: 'Save', combos: ['S'], shadows: '/save' },
     code: { id: 'code', label: 'Code blocks', combos: ['E'], shadows: '/code' },

@@ -28,11 +28,6 @@ export const SHORTCUT_SECTIONS = [
             'Press Ctrl+Enter (Cmd+Enter on Mac) inside any form to send it; Enter adds a new line in message boxes. The shortcuts below work in the focused form on this page, such as a comment or feedback form.'
     },
     {
-        id: 'admin',
-        label: 'Admin workspace',
-        context: 'These controls are available in the admin workspace.'
-    },
-    {
         id: 'page',
         label: 'Current page',
         context:
@@ -99,14 +94,11 @@ export function actionSection(
     if (entry.scope.startsWith('dialog-')) return 'dialogs';
     if (entry.group === 'code' || /^(code|tabs)-/.test(entry.scope)) return 'code';
     if (['copy', 'save', 'view'].includes(entry.group ?? '')) return 'sharing';
-    if (entry.group === 'sidebar') return 'admin';
     const combo = normalizeKey(entry.combos[0] ?? '');
     if (combo === normalizeKey(buttonKey('dialogClose'))) return 'dialogs';
     if (combo === normalizeKey(buttonKey('skipLink'))) return 'navigation';
     if (['formClear', 'formSubmit'].some(id => normalizeKey(buttonKey(id)) === combo))
         return 'forms';
-    if (typeof document !== 'undefined' && document.documentElement.dataset.adminPage === 'true')
-        return 'admin';
     if (
         pathname.startsWith('/blog/')
         && [
