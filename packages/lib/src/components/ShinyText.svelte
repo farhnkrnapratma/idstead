@@ -42,6 +42,7 @@
         '[animation-iteration-count:infinite]',
         '[animation-direction:var(--anim-direction)]',
         '[animation-delay:var(--delay)]',
+        'motion-reduce:animate-none! motion-reduce:text-inherit! motion-reduce:[-webkit-text-fill-color:currentColor]! motion-reduce:[background:none]!',
         className,
         disabled
             && 'animate-none! text-(--color)! [-webkit-text-fill-color:var(--color)]! [background:none]!',

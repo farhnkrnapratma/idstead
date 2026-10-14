@@ -1081,8 +1081,7 @@
                                     text="Support My Open Source Work"
                                     color="var(--color-accent)"
                                     shineColor="var(--color-text-on-accent)"
-                                    speed={3}
-                                    class="motion-reduce:animate-none!" />
+                                    speed={3} />
                             </h4>
                             <p
                                 class="col-span-2 text-xs leading-relaxed text-pretty text-text-secondary sm:text-sm">
