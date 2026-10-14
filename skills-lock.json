@@ -107,6 +107,12 @@
             "skillPath": "skills/turnstile-spin/SKILL.md",
             "computedHash": "767b0aec38033a8f17f958f85ce559952a70495291f13551bfa8cd28a237a8cf"
         },
+        "web-design-guidelines": {
+            "source": "vercel-labs/agent-skills",
+            "sourceType": "github",
+            "skillPath": "skills/web-design-guidelines/SKILL.md",
+            "computedHash": "a6a44d5498f7e8f68289902f3dedfc6f38ae0cee1e96527c80724cf27f727c2a"
+        },
         "web-perf": {
             "source": "cloudflare/skills",
             "sourceType": "github",

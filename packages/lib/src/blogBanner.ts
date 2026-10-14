@@ -6,17 +6,23 @@ export const BANNER_PIXEL_LIMIT = 40_000_000;
 export const BANNER_QUALITIES = [0.8, 0.7, 0.6, 0.5, 0.4] as const;
 export const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export type BannerChange = { operation: 'keep' | 'remove' } | { operation: 'replace'; file: Blob };
+export type BannerChange =
+    { operation: 'keep' | 'remove' } | { operation: 'replace'; webp: Blob; avif: Blob };
+
+export interface ImageSource {
+    srcset: string;
+    type: string;
+}
 
 export function blogBannerAlt(title: string, excerpt?: string | null) {
     const description = excerpt?.trim();
     return `Banner image for the blog post “${title.trim()}”${description ? ` — ${description}` : ''}`;
 }
 
-export function bannerKey(postId: string, version: string) {
+export function bannerKey(postId: string, version: string, ext: 'webp' | 'avif' = 'webp') {
     if (!UUID_PATTERN.test(postId) || !UUID_PATTERN.test(version))
         throw new Error('Invalid banner identity.');
-    return `blog/banners/${postId}/${version}.webp`;
+    return `blog/banners/${postId}/${version}.${ext}`;
 }
 
 export function bannerUrl(post: { id: string; banner_version?: string | null }) {
@@ -28,6 +34,25 @@ export function publicBannerUrl(post: { public_id: string; banner_version?: stri
     if (!/^[0-9a-f]{64}$/.test(post.public_id) || !UUID_PATTERN.test(post.banner_version))
         throw new Error('Invalid banner identity.');
     return `/blog/banners/${post.public_id}/${post.banner_version}.webp`;
+}
+
+export function bannerSources(post: {
+    public_id: string;
+    banner_version?: string | null;
+}): ImageSource[] {
+    if (!post.banner_version) return [];
+    if (!/^[0-9a-f]{64}$/.test(post.public_id) || !UUID_PATTERN.test(post.banner_version))
+        throw new Error('Invalid banner identity.');
+    return [
+        {
+            srcset: `/blog/banners/${post.public_id}/${post.banner_version}.avif`,
+            type: 'image/avif'
+        },
+        {
+            srcset: `/blog/banners/${post.public_id}/${post.banner_version}.webp`,
+            type: 'image/webp'
+        }
+    ];
 }
 
 export function bannerCrop(width: number, height: number, allowUpscale = false) {

@@ -7,17 +7,19 @@ export async function putBanner(
     platform: App.Platform | undefined,
     postId: string,
     version: string,
-    bytes: Uint8Array<ArrayBuffer>
+    bytes: Uint8Array<ArrayBuffer>,
+    format: 'webp' | 'avif' = 'webp'
 ) {
     const { client, bucket } = assetStorage(platform);
-    const key = bannerKey(postId, version);
+    const key = bannerKey(postId, version, format);
+    const contentType = format === 'avif' ? 'image/avif' : 'image/webp';
     try {
         await client.send(
             new PutObjectCommand({
                 Bucket: bucket,
                 Key: key,
                 Body: bytes,
-                ContentType: 'image/webp',
+                ContentType: contentType,
                 CacheControl: 'public, max-age=31536000, immutable',
                 IfNoneMatch: '*'
             }),
@@ -45,12 +47,19 @@ export async function cleanupBlogAssets(db: SupabaseClient, platform?: App.Platf
     let removed = 0;
     for (const version of data ?? []) {
         try {
-            const key = bannerKey(version.post_id, version.id);
-            if (key !== version.object_key) throw new Error('Invalid cleanup key.');
+            const webpKey = bannerKey(version.post_id, version.id, 'webp');
+            const avifKey = bannerKey(version.post_id, version.id, 'avif');
+            if (webpKey !== version.object_key && avifKey !== version.object_key)
+                throw new Error('Invalid cleanup key.');
             const { client, bucket } = assetStorage(platform);
-            await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }), {
-                abortSignal: AbortSignal.timeout(30_000)
-            });
+            await Promise.all([
+                client.send(new DeleteObjectCommand({ Bucket: bucket, Key: webpKey }), {
+                    abortSignal: AbortSignal.timeout(30_000)
+                }),
+                client.send(new DeleteObjectCommand({ Bucket: bucket, Key: avifKey }), {
+                    abortSignal: AbortSignal.timeout(30_000)
+                })
+            ]);
             const { error: failure } = await db
                 .from('db_blog_banner_versions')
                 .update({ state: 'deleted', cleanup_error: null })
@@ -108,10 +117,12 @@ export async function cleanupBlogAssets(db: SupabaseClient, platform?: App.Platf
 export async function getBannerObject(
     platform: App.Platform | undefined,
     postId: string,
-    version: string
+    version: string,
+    format: 'webp' | 'avif' = 'webp'
 ) {
     const { client, bucket } = assetStorage(platform);
-    return client.send(new GetObjectCommand({ Bucket: bucket, Key: bannerKey(postId, version) }), {
-        abortSignal: AbortSignal.timeout(30_000)
-    });
+    return client.send(
+        new GetObjectCommand({ Bucket: bucket, Key: bannerKey(postId, version, format) }),
+        { abortSignal: AbortSignal.timeout(30_000) }
+    );
 }

@@ -9,7 +9,15 @@ export async function serveBlogBanner(
     file: string,
     platform: App.Platform | undefined
 ) {
-    const version = file.endsWith('.webp') ? file.slice(0, -5) : '';
+    let version = '';
+    let format: 'webp' | 'avif' = 'webp';
+    if (file.endsWith('.webp')) {
+        version = file.slice(0, -5);
+        format = 'webp';
+    } else if (file.endsWith('.avif')) {
+        version = file.slice(0, -5);
+        format = 'avif';
+    }
     const headers = new Headers({ 'Cache-Control': 'no-store' });
     const isPublicId = PUBLIC_ID_PATTERN.test(postIdParam);
     if ((!isPublicId && !UUID_PATTERN.test(postIdParam)) || !UUID_PATTERN.test(version))
@@ -28,8 +36,9 @@ export async function serveBlogBanner(
         if (error) throw error;
         if (!data || !['active', 'retired'].includes(data.state))
             return new Response(null, { status: 404, headers });
-        const object = await getBannerObject(platform, postId, version);
-        headers.set('Content-Type', 'image/webp');
+        const object = await getBannerObject(platform, postId, version, format);
+        const contentType = format === 'avif' ? 'image/avif' : 'image/webp';
+        headers.set('Content-Type', contentType);
         headers.set('X-Content-Type-Options', 'nosniff');
         headers.set('Cache-Control', 'public, max-age=31536000, immutable');
         if (object.ETag) headers.set('ETag', object.ETag);
