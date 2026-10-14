@@ -31,7 +31,7 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "/var/home/fkp/.local/bin/graphify hook-guard search",
+                        "command": "/home/fkp/.local/bin/graphify hook-guard search",
                         "timeout": 10
                     }
                 ]
@@ -41,7 +41,7 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "/var/home/fkp/.local/bin/graphify hook-guard read",
+                        "command": "/home/fkp/.local/bin/graphify hook-guard read",
                         "timeout": 10
                     }
                 ]

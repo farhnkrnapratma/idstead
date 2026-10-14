@@ -143,7 +143,9 @@ export async function parsePostInput(request: Request, wasm: WebAssembly.Module)
         post.banner_references = [
             ...new Set(
                 Array.from(
-                    markdown.matchAll(/\/blog\/banners\/([0-9a-f-]{36})\/([0-9a-f-]{36})\.webp/gi),
+                    markdown.matchAll(
+                        /\/blog\/banners\/([0-9a-f-]{36})\/([0-9a-f-]{36})\.(?:webp|avif)/gi
+                    ),
                     match => match[2].toLowerCase()
                 )
             )
