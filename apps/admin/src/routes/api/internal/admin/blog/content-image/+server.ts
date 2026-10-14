@@ -6,7 +6,10 @@ import { blogAdmin } from '#lib/server/blogPostAuth.ts';
 import { boundedBody } from '#lib/server/blogPostInput.ts';
 import { sha256 } from '#lib/blogBanner.ts';
 import { CONTENT_IMAGE_LIMIT, contentImageKey } from '#lib/blogContentImage.ts';
-import { validateContentImage } from '#lib/server/validateContentImage.ts';
+import {
+    validateContentImage,
+    validateContentImageAvif
+} from '#lib/server/validateContentImage.ts';
 import { putContentAsset } from '#lib/server/blogContentStorage.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform }) => {
@@ -47,9 +50,7 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
     try {
         const { default: contentWasm } = await import('virtual:banner-webp-wasm');
         metadata = await validateContentImage(bytes, contentWasm());
-        if (avifBytes) {
-            await validateContentImage(avifBytes, contentWasm());
-        }
+        if (avifBytes) validateContentImageAvif(avifBytes, metadata);
     } catch (error) {
         return apiError(
             400,

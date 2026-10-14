@@ -1,6 +1,6 @@
 <script lang="ts">
     import { FieldValidation, requiredText, emailError } from '#lib/fieldValidation.ts';
-    import { publicAvatarUrl, siteBannerOgUrl } from '#lib/siteIdentity.ts';
+    import { publicAvatarUrl, publicBannerOgUrl } from '#lib/siteIdentity.ts';
     import { page } from '$app/state';
     import { shortcut } from '#lib/utils/shortcut.svelte.ts';
     import { buttonKey } from '#lib/shortcuts.ts';
@@ -41,12 +41,11 @@
     let authorName = $derived(pageAuthor?.name || '');
     let authorTokens = $derived(extractAuthorNameTokens(pageAuthor));
     let siteUrl = $derived(((page?.data as any)?.author?.siteUrl || '').replace(/\/$/, ''));
-    let ogImage = $derived(
-        pageAuthor?.bannerVersion ? siteBannerOgUrl(pageAuthor) : publicAvatarUrl(pageAuthor)
-    );
-    let ogImageType = $derived(pageAuthor?.bannerVersion ? 'image/webp' : 'image/png');
-    let ogImageWidth = $derived(pageAuthor?.bannerVersion ? '1200' : '512');
-    let ogImageHeight = $derived(pageAuthor?.bannerVersion ? '630' : '512');
+    let ogBanner = $derived(publicBannerOgUrl(pageAuthor));
+    let ogImage = $derived(ogBanner || publicAvatarUrl(pageAuthor));
+    let ogImageType = $derived(ogBanner ? 'image/webp' : 'image/png');
+    let ogImageWidth = $derived(ogBanner ? '1200' : '512');
+    let ogImageHeight = $derived(ogBanner ? '630' : '512');
     let contactEmail = $derived((page?.data as any)?.contactEmail || pageAuthor?.email || '');
 
     let formName = $state('');

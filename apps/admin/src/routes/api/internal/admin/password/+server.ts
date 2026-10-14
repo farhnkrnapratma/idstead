@@ -21,7 +21,7 @@ export const POST: RequestHandler = async ({ request, url, platform, fetch }) =>
     const auth = await blogAdmin(request, url, db);
     if (auth.status) return apiError(auth.status, 'PASSWORD_AUTH_REQUIRED', auth.message);
     const key = `password-change:${auth.actor}`;
-    const lockout = checkLoginLockout(key);
+    const lockout = await checkLoginLockout(db, '', key);
     if (!lockout.allowed)
         return apiError(
             429,
@@ -66,7 +66,7 @@ export const POST: RequestHandler = async ({ request, url, platform, fetch }) =>
         bindings?.PUBLIC_SUPABASE_PUBLISHABLE_KEY || env.PUBLIC_SUPABASE_PUBLISHABLE_KEY;
     if (!authUrl || !publicKey)
         return apiError(503, 'PASSWORD_UNAVAILABLE', 'Password changes are unavailable.');
-    recordFailedLogin(key);
+    await recordFailedLogin(db, '', key);
     try {
         const response = await fetch(
             `${authUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '')}/auth/v1/user`,
@@ -100,7 +100,7 @@ export const POST: RequestHandler = async ({ request, url, platform, fetch }) =>
                     || 'Password could not be changed. Check your current password or sign in again.'
             );
         }
-        clearLoginAttempts(key);
+        await clearLoginAttempts(db, '', key);
         await logActivity(
             {
                 actor: auth.actor,

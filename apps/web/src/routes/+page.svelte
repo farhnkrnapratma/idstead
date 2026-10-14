@@ -1,7 +1,7 @@
 <script lang="ts">
     import Tag from '#lib/components/Tag.svelte';
     import { FieldValidation, requiredText, emailError } from '#lib/fieldValidation.ts';
-    import { publicAvatarUrl, siteBannerOgUrl } from '#lib/siteIdentity.ts';
+    import { publicAvatarUrl, publicBannerOgUrl } from '#lib/siteIdentity.ts';
     import { onDestroy, onMount, untrack } from 'svelte';
     import type { Snippet } from 'svelte';
     import {
@@ -104,12 +104,11 @@
     let headline = $derived(author?.headline || '');
     let jobTitle = $derived(author?.jobTitle || '');
     let siteUrl = $derived(author?.siteUrl || '');
-    let ogImage = $derived(
-        author?.bannerVersion ? siteBannerOgUrl(author) : publicAvatarUrl(author)
-    );
-    let ogImageType = $derived(author?.bannerVersion ? 'image/webp' : 'image/png');
-    let ogImageWidth = $derived(author?.bannerVersion ? '1200' : '512');
-    let ogImageHeight = $derived(author?.bannerVersion ? '630' : '512');
+    let ogBanner = $derived(publicBannerOgUrl(author));
+    let ogImage = $derived(ogBanner || publicAvatarUrl(author));
+    let ogImageType = $derived(ogBanner ? 'image/webp' : 'image/png');
+    let ogImageWidth = $derived(ogBanner ? '1200' : '512');
+    let ogImageHeight = $derived(ogBanner ? '630' : '512');
     let avatar = $derived(author?.avatar || '');
     let socials = $derived(author?.socialLinks || []);
     const navItems: NavItem[] = [

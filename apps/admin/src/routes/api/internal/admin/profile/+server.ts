@@ -6,6 +6,11 @@ import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { validateAvatar } from '#lib/server/validateAvatar.ts';
+import {
+    parseIdentityMeta,
+    validateSiteBanner,
+    type IdentityMeta
+} from '#lib/server/validateSiteBanner.ts';
 import { writeAssets, removeAssets, cleanupAssets } from '#lib/server/profileAssets.ts';
 import { profilePatch, ProfileInputError } from '#lib/server/profilePatch.ts';
 import type { IdentityAsset } from '#lib/siteIdentity.ts';
@@ -13,6 +18,31 @@ import { logActivity } from '#lib/server/activityLog.ts';
 import { workerBinding, type RateLimit } from '#lib/server/workerEnv.ts';
 
 const attempts = new Map<string, number>();
+
+type IdentityKind = 'avatar' | 'banner';
+
+interface StagedVersion {
+    kind: IdentityKind;
+    version: string;
+    files: Record<string, ArrayBuffer>;
+    meta: IdentityMeta;
+    assets: IdentityAsset[];
+}
+
+async function discardVersions(
+    platform: App.Platform | undefined,
+    db: NonNullable<ReturnType<typeof getSupabaseAdminClient>>,
+    staged: StagedVersion[]
+) {
+    for (const { version } of staged) {
+        try {
+            await removeAssets(platform, version);
+            await db.from('db_identity_versions').delete().eq('id', version);
+        } catch (cleanupError) {
+            Sentry.captureException(cleanupError);
+        }
+    }
+}
 
 export const GET: RequestHandler = async ({ request, platform }) => {
     const authFailure = await requireAdminAuth(request, platform);
@@ -53,6 +83,8 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
     let form: FormData;
     let payload: Record<string, unknown>;
     let files: Record<string, ArrayBuffer> | null;
+    let bannerFiles: Record<string, ArrayBuffer> | null;
+    let meta: { avatar: IdentityMeta; banner: IdentityMeta };
     try {
         const reader = request.body?.getReader();
         if (!reader) throw new Error('Missing profile data.');
@@ -63,12 +95,12 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
                 const { value, done } = await reader.read();
                 if (done) break;
                 length += value.byteLength;
-                if (length > 4_100_000) {
+                if (length > 6_000_000) {
                     await reader.cancel();
                     return apiError(
                         413,
                         'PROFILE_UPLOAD_TOO_LARGE',
-                        'The icon package is too large.'
+                        'The image packages are too large.'
                     );
                 }
                 chunks.push(value);
@@ -124,8 +156,12 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
         }
         payload = profilePatch(payload, current);
         files = await validateAvatar(form);
-        if (!files && !current?.avatar?.trim() && !current?.avatar_version)
+        bannerFiles = await validateSiteBanner(form);
+        meta = parseIdentityMeta(form);
+        if (!files && !current?.avatar_version)
             throw new ProfileInputError({ avatar: 'Profile image is required.' });
+        if (!bannerFiles && !current?.banner_version)
+            throw new ProfileInputError({ banner: 'Website banner is required.' });
     } catch (error) {
         return apiError(
             400,
@@ -136,47 +172,71 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
             :   undefined
         );
     }
-    let version: string | null = null;
-    let assets: IdentityAsset[] = [];
-    if (files) {
-        version = crypto.randomUUID();
+    const staged: StagedVersion[] = [];
+    if (files)
+        staged.push({
+            kind: 'avatar',
+            version: crypto.randomUUID(),
+            files,
+            meta: meta.avatar,
+            assets: []
+        });
+    if (bannerFiles)
+        staged.push({
+            kind: 'banner',
+            version: crypto.randomUUID(),
+            files: bannerFiles,
+            meta: meta.banner,
+            assets: []
+        });
+    for (const item of staged) {
         const { error: registerError } = await db
             .from('db_identity_versions')
-            .insert({ id: version, assets: [], retired_at: new Date().toISOString() });
-        if (registerError)
+            .insert({
+                id: item.version,
+                kind: item.kind,
+                source: item.meta.source,
+                fingerprint: item.meta.fingerprint,
+                assets: [],
+                retired_at: new Date().toISOString()
+            });
+        if (registerError) {
+            await discardVersions(platform, db, staged.slice(0, staged.indexOf(item)));
             return apiError(
                 503,
                 'PROFILE_STORAGE_UNAVAILABLE',
                 'Image metadata could not be prepared.'
             );
-        try {
-            assets = await writeAssets(platform, version, files);
-        } catch (error) {
-            Sentry.captureException(error);
-            try {
-                await removeAssets(platform, version);
-                await db.from('db_identity_versions').delete().eq('id', version);
-            } catch (cleanupError) {
-                Sentry.captureException(cleanupError);
-            }
-            return apiError(
-                502,
-                'PROFILE_UPLOAD_FAILED',
-                'Images could not be stored. Your current profile is unchanged.'
-            );
         }
     }
-    const { data, error } = await db.rpc('db_commit_profile_identity', {
+    try {
+        for (const item of staged)
+            item.assets = await writeAssets(platform, item.version, item.files);
+    } catch (error) {
+        Sentry.captureException(error);
+        await discardVersions(platform, db, staged);
+        return apiError(
+            502,
+            'PROFILE_UPLOAD_FAILED',
+            'Images could not be stored. Your current profile is unchanged.'
+        );
+    }
+    const pick = (kind: IdentityKind) => {
+        const item = staged.find(entry => entry.kind === kind);
+        return item ? { version: item.version, assets: item.assets } : null;
+    };
+    const { data, error } = await db.rpc('db_save_profile_identity', {
         p_profile: payload,
-        p_version: version,
-        p_assets: assets
+        p_avatar: pick('avatar'),
+        p_banner: pick('banner')
     });
     if (error) {
-        if (version) {
+        if (staged.length) {
+            const { version: probe, kind } = staged[0];
             const { data: committed, error: verifyError } = await db
                 .from('db_profiles')
                 .select('*')
-                .eq('avatar_version', version)
+                .eq(kind === 'avatar' ? 'avatar_version' : 'banner_version', probe)
                 .maybeSingle();
             if (committed)
                 return json(
@@ -192,14 +252,8 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
                 && ['40001', '23505', '23502', '23503', '23514', '22P02', 'P0001'].includes(
                     error.code
                 )
-            ) {
-                try {
-                    await removeAssets(platform, version);
-                    await db.from('db_identity_versions').delete().eq('id', version);
-                } catch (cleanupError) {
-                    Sentry.captureException(cleanupError);
-                }
-            }
+            )
+                await discardVersions(platform, db, staged);
         }
         if (error.code === '40001')
             return apiError(
@@ -219,13 +273,17 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
     await logActivity(
         {
             actor: user.email ?? user.id,
-            action: version ? 'profile.avatar_update' : 'profile.update',
+            action: staged.length ? 'profile.avatar_update' : 'profile.update',
             category: 'profile',
             summary:
-                version ?
-                    `Updated profile avatar${changedFields.length ? ` and ${changedFields.join(', ')}` : ''}.`
+                staged.length ?
+                    `Updated profile ${staged.map(item => (item.kind === 'avatar' ? 'image' : 'banner')).join(' and ')}${changedFields.length ? ` and ${changedFields.join(', ')}` : ''}.`
                 :   `Updated ${changedFields.join(', ') || 'profile'}.`,
-            details: { fields: changedFields, avatarUpdated: Boolean(version) },
+            details: {
+                fields: changedFields,
+                avatarUpdated: Boolean(files),
+                bannerUpdated: Boolean(bannerFiles)
+            },
             ip: (() => {
                 try {
                     return getClientAddress();

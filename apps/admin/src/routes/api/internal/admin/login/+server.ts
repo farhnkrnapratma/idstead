@@ -83,7 +83,7 @@ export const POST: RequestHandler = async ({
     const activityDb = getSupabaseAdminClient(platform);
     const userAgent = request.headers.get('user-agent') ?? undefined;
 
-    const lockout = checkLoginLockout(`ip:${clientIp}`);
+    const lockout = await checkLoginLockout(activityDb, salt, `ip:${clientIp}`);
     if (!lockout.allowed) {
         await logActivity(
             {
@@ -125,7 +125,7 @@ export const POST: RequestHandler = async ({
     }
 
     const emailKey = `email:${email.toLowerCase()}`;
-    const emailLockout = checkLoginLockout(emailKey);
+    const emailLockout = await checkLoginLockout(activityDb, salt, emailKey);
     if (!emailLockout.allowed)
         return apiError(
             429,
@@ -136,7 +136,7 @@ export const POST: RequestHandler = async ({
 
     const turnstileOk = await verifyTurnstileToken(turnstileToken, clientIp, platform);
     if (!turnstileOk) {
-        recordFailedLogin(`ip:${clientIp}`);
+        await recordFailedLogin(activityDb, salt, `ip:${clientIp}`);
         await logActivity(
             {
                 actor: email,
@@ -157,7 +157,7 @@ export const POST: RequestHandler = async ({
     if (error || !data.session) {
         if (error && error.code !== 'invalid_credentials')
             console.error('Admin login rejected by Supabase:', error.code, error.message);
-        recordFailedLogin(`ip:${clientIp}`, emailKey);
+        await recordFailedLogin(activityDb, salt, `ip:${clientIp}`, emailKey);
         await logActivity(
             {
                 actor: email,
@@ -173,7 +173,7 @@ export const POST: RequestHandler = async ({
         return apiError(401, 'ADMIN_LOGIN_INVALID_CREDENTIALS', 'Invalid email or password.');
     }
 
-    clearLoginAttempts(`ip:${clientIp}`, emailKey);
+    await clearLoginAttempts(activityDb, salt, `ip:${clientIp}`, emailKey);
     await logActivity(
         {
             actor: data.user?.email ?? email,

@@ -107,10 +107,10 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             if (p.country !== undefined) patch.country = s(p.country);
             if (p.siteUrl !== undefined) patch.site_url = s(p.siteUrl);
             const payload = profilePatch(patch, current);
-            const { error } = await db.rpc('db_commit_profile_identity', {
+            const { error } = await db.rpc('db_save_profile_identity', {
                 p_profile: payload,
-                p_version: null,
-                p_assets: []
+                p_avatar: null,
+                p_banner: null
             });
             if (error) throw error;
             applied.push('profile');

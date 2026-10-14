@@ -11,6 +11,7 @@ import {
 
 export type BroadcastOutcome =
     | { sent: number; reason?: undefined }
+    | { sent: number; failed: number; reason: 'send-failed' }
     | { sent: 0; reason: 'unpublished' | 'already-sent' | 'no-subscribers' | 'unavailable' };
 
 export async function notifyNewPost(
@@ -33,9 +34,10 @@ export async function notifyNewPost(
     if (!post.published) return { sent: 0, reason: 'unpublished' };
     if (post.subscribers_notified_at && !force) return { sent: 0, reason: 'already-sent' };
 
+    const claimedAt = new Date().toISOString();
     const claim = db
         .from('db_posts')
-        .update({ subscribers_notified_at: new Date().toISOString() })
+        .update({ subscribers_notified_at: claimedAt })
         .eq('id', postId);
     const { data: claimed, error: claimError } = await (force ?
         claim.select('id')
@@ -46,7 +48,20 @@ export async function notifyNewPost(
     }
     if (!claimed?.length) return { sent: 0, reason: 'already-sent' };
 
+    const release = async () => {
+        const { error: releaseError } = await db
+            .from('db_posts')
+            .update({ subscribers_notified_at: post.subscribers_notified_at ?? null })
+            .eq('id', postId)
+            .eq('subscribers_notified_at', claimedAt);
+        if (releaseError) console.error('Failed to release post notification:', releaseError);
+    };
+
     const recipients = await activeSubscribers(db);
+    if (!recipients) {
+        await release();
+        return { sent: 0, reason: 'unavailable' };
+    }
     if (!recipients.length) return { sent: 0, reason: 'no-subscribers' };
 
     const profile = await fetchAuthorProfile(publicSupabase);
@@ -67,5 +82,15 @@ export async function notifyNewPost(
         };
     });
 
-    return { sent: await sendBatch(apiKey, from, mails) };
+    const { sent, failed } = await sendBatch(
+        apiKey,
+        from,
+        mails,
+        `newsletter/${postId}/${force ? claimedAt : 'auto'}`
+    );
+    if (failed) {
+        await release();
+        return { sent, failed, reason: 'send-failed' };
+    }
+    return { sent };
 }
