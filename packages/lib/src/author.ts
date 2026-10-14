@@ -86,6 +86,7 @@ export interface AuthorProfile {
     revision?: number;
     updatedAt?: string;
     avatarVersion?: string | null;
+    bannerVersion?: string | null;
     manifestSettings?: import('./siteIdentity').ManifestSettings;
     id?: string;
     name: string;
