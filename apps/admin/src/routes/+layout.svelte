@@ -2,11 +2,8 @@
     import '#lib/global.css';
     import { onMount } from 'svelte';
     import { themeColors } from '#lib/themeColors.ts';
-    import { installSubmitShortcut } from '#lib/utils/submitShortcut.ts';
     import { Toast } from '#lib/index.ts';
-    import ShortcutCatalogDialog from '#lib/components/ShortcutCatalogDialog.svelte';
-    import ShortcutModeIndicator from '#lib/components/ShortcutModeIndicator.svelte';
-    import { platformStore } from '#lib/stores/platformStore.svelte.ts';
+    import { shortcutStore } from '#lib/stores/shortcutStore.svelte.ts';
     import { themeStore } from '#lib/stores/themeStore.svelte.ts';
     import { a11yStore } from '#lib/stores/a11yStore.svelte.ts';
     import { codeBlockPrefsStore } from '#lib/stores/codeBlockPrefsStore.svelte.ts';
@@ -14,21 +11,20 @@
 
     const { data, children } = $props();
 
+    shortcutStore.disable();
+
     const iconVersion = $derived(
         data?.author?.avatarVersion ? `?v=${data.author.avatarVersion}` : ''
     );
 
     onMount(() => {
-        platformStore.detect();
         const cleanupTheme = themeStore.init();
         const cleanupA11y = a11yStore.init();
         const cleanupCodeBlockPrefs = codeBlockPrefsStore.init(refreshCodeBlockPrefs);
-        const cleanupSubmitShortcut = installSubmitShortcut();
         return () => {
             cleanupTheme?.();
             cleanupA11y?.();
             cleanupCodeBlockPrefs?.();
-            cleanupSubmitShortcut();
         };
     });
 </script>
@@ -55,5 +51,3 @@
 {@render children()}
 
 <Toast />
-<ShortcutCatalogDialog />
-<ShortcutModeIndicator />

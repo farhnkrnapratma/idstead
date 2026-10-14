@@ -51,6 +51,7 @@ const commands = new SvelteMap<string, CommandEntry>();
 let seq = 0;
 let armTimer: ReturnType<typeof setTimeout> | undefined;
 let listening = false;
+let disabled = false;
 
 const activeScope = $derived(scopeStack[scopeStack.length - 1] ?? 'page');
 const modalActive = $derived(modalScopes.length > 0);
@@ -136,7 +137,7 @@ function groupHasMembers(groupId: string) {
 }
 
 function armGroup(groupId: string) {
-    if (!groupHasMembers(groupId)) return;
+    if (disabled || !groupHasMembers(groupId)) return;
     armFor(groupId);
 }
 
@@ -245,7 +246,7 @@ function handleBlur() {
 }
 
 function ensureListening() {
-    if (listening || typeof window === 'undefined') return;
+    if (disabled || listening || typeof window === 'undefined') return;
     listening = true;
     // Capture phase: the registry is the authoritative dispatcher, so it must see
     // a key before the palette's own window handler decides what to do with it.
@@ -255,6 +256,7 @@ function ensureListening() {
 }
 
 function register(entry: Omit<ShortcutEntry, 'id' | 'order'>): string {
+    if (disabled) return '';
     ensureListening();
     for (const [key, existing] of entries) {
         if (!existing.element.isConnected) entries.delete(key);
@@ -294,6 +296,7 @@ function unregister(id: string) {
  * registry and the palette's own listener.
  */
 function registerCommand(key: string, label: string, run: () => void) {
+    if (disabled) return () => {};
     ensureListening();
     const normalized = normalizeKey(key);
     commands.set(normalized, { key: normalized, label, run });
@@ -307,6 +310,7 @@ function runCommand(key: string) {
 }
 
 function pushScope(scope: string, modal = false) {
+    if (disabled) return;
     scopeStack = [...scopeStack, scope];
     if (!modal) return;
     modalScopes = [...modalScopes, scope];
@@ -314,6 +318,7 @@ function pushScope(scope: string, modal = false) {
 }
 
 function popScope(scope: string) {
+    if (disabled) return;
     const index = scopeStack.lastIndexOf(scope);
     if (index <= 0) return;
     scopeStack = [...scopeStack.slice(0, index), ...scopeStack.slice(index + 1)];
@@ -342,6 +347,20 @@ function hintFor(id: string): string[] {
     return combo ? shortcutKeyParts(combo, platformStore.current) : [];
 }
 
+function disable() {
+    disabled = true;
+    entries.clear();
+    commands.clear();
+    disarm();
+    altHeld = false;
+    catalogOpen = false;
+    if (!listening) return;
+    listening = false;
+    window.removeEventListener('keydown', handleKeydown, true);
+    window.removeEventListener('keyup', handleKeyup);
+    window.removeEventListener('blur', handleBlur);
+}
+
 function catalogEntries(): ResolvedShortcut[] {
     const seen = new SvelteSet<string>();
     return [...entries.values()]
@@ -364,6 +383,9 @@ function catalogEntries(): ResolvedShortcut[] {
 }
 
 export const shortcutStore = {
+    get enabled() {
+        return !disabled;
+    },
     get altHeld() {
         return altHeld;
     },
@@ -395,5 +417,6 @@ export const shortcutStore = {
     armGroup,
     disarm,
     hintFor,
-    catalogEntries
+    catalogEntries,
+    disable
 };

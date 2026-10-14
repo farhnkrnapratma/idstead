@@ -164,7 +164,7 @@ export function shortcut(node: HTMLElement, params: ShortcutParams = {}) {
 
     const attach = (next: ShortcutParams) => {
         const combos = comboList(next.combo);
-        if (next.disabled || (combos.length === 0 && !next.group)) {
+        if (!shortcutStore.enabled || next.disabled || (combos.length === 0 && !next.group)) {
             detach();
             renderHint();
             return;

@@ -87,7 +87,6 @@
         type WorkspaceArea,
         type WorkspacePage
     } from '#lib/adminWorkspace.ts';
-    import { shortcut } from '#lib/utils/shortcut.svelte.ts';
     import { lockScroll } from '#lib/utils/scroll.ts';
     import { adminNotificationsStore } from '#lib/stores/adminNotificationsStore.svelte.ts';
     import { estimateReadTime } from '#lib/readTime.ts';
@@ -3141,11 +3140,6 @@
                                 aria-label={link.label}
                                 aria-current={activeAdminTab === link.id ? 'page' : undefined}
                                 onclick={() => selectTab(link.id)}
-                                use:shortcut={{
-                                    group: 'sidebar',
-                                    placement: 'inline',
-                                    label: link.label
-                                }}
                                 class="group relative flex min-h-11 w-full shrink-0 items-center rounded-sm text-left text-xs font-semibold transition-colors duration-150 ease-in-out focus-visible:outline-2 focus-visible:outline-focus-ring {(
                                     sidebarCollapsed
                                 ) ?
@@ -3769,7 +3763,6 @@
                                                                         htmlType="submit"
                                                                         type="primary"
                                                                         size="xs"
-                                                                        aria-keyshortcuts="Control+Enter Meta+Enter"
                                                                         disabled={isSubmitting
                                                                             || !commentContent.trim()}
                                                                         isLoading={isSubmitting}>
