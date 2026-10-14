@@ -4,6 +4,7 @@
     export interface DataTableColumn {
         key: string;
         header: string;
+        srHeader?: string;
         align?: 'left' | 'center' | 'right';
         width?: string;
         class?: string;
@@ -56,6 +57,13 @@
         if ((event.target as HTMLElement | null)?.closest('a,button,input,label')) return;
         onRowSelect?.(row);
     }
+
+    function selectRowFromKey(row: Record<string, unknown>, event: KeyboardEvent) {
+        if (event.target !== event.currentTarget || (event.key !== 'Enter' && event.key !== ' '))
+            return;
+        event.preventDefault();
+        onRowSelect?.(row);
+    }
 </script>
 
 <div class="w-full overflow-hidden rounded-md glass-card border border-border-subtle shadow-sm">
@@ -66,7 +74,7 @@
                 !toolbar && 'border-b border-border-subtle'
             )}>
             {#if title}
-                <h2 class="min-w-0 truncate text-sm leading-5 font-semibold text-text-primary">
+                <h2 class="min-w-0 truncate type-card-title">
                     {title}
                 </h2>
             {/if}
@@ -108,7 +116,9 @@
                                     alignStyles[col.align || 'left'],
                                     col.class
                                 )}>
-                                {col.header}
+                                {#if col.header}{col.header}{:else if col.srHeader}<span
+                                        class="sr-only">{col.srHeader}</span
+                                    >{/if}
                             </th>
                         {/each}
                     </tr>
@@ -118,10 +128,15 @@
                         <tr
                             class={cn(
                                 'transition-colors hover:bg-surface-hover',
-                                onRowSelect && 'cursor-pointer',
+                                onRowSelect
+                                    && 'cursor-pointer focus-visible:bg-surface-hover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus-ring',
                                 rowClass?.(row)
                             )}
-                            onclick={onRowSelect ? event => selectRow(row, event) : undefined}>
+                            tabindex={onRowSelect ? 0 : undefined}
+                            onclick={onRowSelect ? event => selectRow(row, event) : undefined}
+                            onkeydown={onRowSelect ?
+                                event => selectRowFromKey(row, event)
+                            :   undefined}>
                             {#each columns as col (col.key)}
                                 <td
                                     class={cn(

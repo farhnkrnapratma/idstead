@@ -31,6 +31,10 @@
     @apply text-sm leading-relaxed;
 }
 
+@utility touch-target {
+    @apply pointer-coarse:after:absolute pointer-coarse:after:top-1/2 pointer-coarse:after:left-1/2 pointer-coarse:after:size-[max(100%,--spacing(9))] pointer-coarse:after:-translate-1/2;
+}
+
 @utility glass-card {
     @apply border-0 bg-surface-card text-text-primary shadow-sm backdrop-blur-md dark:border dark:border-white/5 dark:bg-surface-card/70;
 }
@@ -185,6 +189,7 @@
         background-color: var(--color-text-muted);
     }
 
+    :root[data-reduce-motion='true'],
     :root[data-reduce-motion='true'] *,
     :root[data-reduce-motion='true'] ::before,
     :root[data-reduce-motion='true'] ::after {

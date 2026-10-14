@@ -6,6 +6,7 @@
         title?: string;
         description?: string;
         titleClass?: string;
+        titleTag?: 'h1' | 'h2';
         action?: string;
         method?: 'POST' | 'GET' | 'post' | 'get' | 'dialog' | 'DIALOG';
         onsubmit?: (e: SubmitEvent) => void;
@@ -20,6 +21,7 @@
         title = '',
         description = '',
         titleClass = 'type-section-title',
+        titleTag = 'h2',
         action = '',
         method = 'POST',
         onsubmit,
@@ -52,10 +54,12 @@
         <div class="flex items-start justify-between gap-3 sm:items-center sm:gap-4">
             <div class="min-w-0 flex-1 select-none">
                 {#if title}
-                    <h2 class={titleClass}>{title}</h2>
+                    <svelte:element
+                        this={titleTag}
+                        class={titleClass}>{title}</svelte:element>
                 {/if}
                 {#if description}
-                    <p class="mt-1 text-xs text-text-secondary">{description}</p>
+                    <p class="mt-1 type-body text-text-secondary">{description}</p>
                 {/if}
             </div>
             {#if headerActions}

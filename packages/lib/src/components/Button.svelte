@@ -168,7 +168,7 @@
     }}
     class={cn(
         baseStyles,
-        'relative',
+        'touch-target relative',
         typeToneStyles[styleKey],
         responsiveIconOnly ? responsiveSizeStyles[size] : sizeStyles[size],
         fullWidth ? 'w-full' : '',

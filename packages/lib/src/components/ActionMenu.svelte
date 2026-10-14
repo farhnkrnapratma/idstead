@@ -106,7 +106,7 @@
         style:top={position.top === undefined ? undefined : `${position.top}px`}
         style:bottom={position.bottom === undefined ? undefined : `${position.bottom}px`}
         style:right={`${position.right}px`}
-        class="fixed z-50 min-w-36 overflow-hidden rounded-md border border-border-subtle bg-surface-elevated shadow-md">
+        class="fixed z-110 min-w-36 overflow-hidden rounded-md border border-border-subtle bg-surface-elevated shadow-md">
         <div class="flex max-h-[calc(100dvh-1rem)] flex-col overflow-y-auto">
             {#each items as item, index ('divider' in item ? `divider-${index}` : item.label)}
                 {#if 'divider' in item}
@@ -118,7 +118,7 @@
                         aria-checked={item.selected}
                         disabled={item.disabled}
                         class={cn(
-                            'flex w-full cursor-pointer items-center gap-1.5 px-2.5 py-1.5 text-left text-xs whitespace-nowrap transition-colors hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+                            'flex w-full cursor-pointer items-center gap-1.5 px-2.5 py-1.5 text-left text-xs whitespace-nowrap transition-colors hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 pointer-coarse:min-h-11',
                             item.danger ? 'text-danger' : 'text-text-secondary'
                         )}
                         onclick={() => {

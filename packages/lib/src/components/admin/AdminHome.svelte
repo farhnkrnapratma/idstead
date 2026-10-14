@@ -278,8 +278,8 @@
             void load();
             loadLists();
         }}>
-        <h1 class="text-2xl font-bold text-text-primary">Overview</h1>
-        <p class="mt-1 text-sm text-text-secondary">Your site activity at a glance.</p>
+        <h1 class="type-page-title">Overview</h1>
+        <p class="mt-1 type-body text-text-secondary">Your site activity at a glance.</p>
     </div>
     {#if error}<ErrorState
             title="Unable to update overview"
@@ -321,7 +321,13 @@
             columns={[
                 { key: 'metric', header: 'Metric', width: '30%' },
                 { key: 'page', header: 'Page', width: '32%' },
-                { key: 'view', header: '', width: '22%', class: 'overflow-visible' },
+                {
+                    key: 'view',
+                    header: '',
+                    srHeader: 'Views',
+                    width: '22%',
+                    class: 'overflow-visible'
+                },
                 { key: 'value', header: 'Value', align: 'right', width: '16%' }
             ]}
             data={data.topPages as unknown as Record<string, unknown>[]}>
@@ -404,8 +410,7 @@
                             {:else}
                                 <ActivityTimestamp
                                     date={item.latest}
-                                    {timeZone}
-                                    class="text-xs" />
+                                    {timeZone} />
                             {/if}
                         {/snippet}
                     </DataTable>

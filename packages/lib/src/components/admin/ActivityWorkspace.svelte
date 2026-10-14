@@ -408,6 +408,7 @@
                 {
                     key: 'actions',
                     header: '',
+                    srHeader: 'Actions',
                     align: 'right',
                     width: '14%',
                     class: 'overflow-visible'
@@ -423,6 +424,7 @@
                 {
                     key: 'actions',
                     header: '',
+                    srHeader: 'Actions',
                     align: 'right',
                     width: '10%',
                     class: 'overflow-visible'
@@ -436,6 +438,7 @@
                 {
                     key: 'actions',
                     header: '',
+                    srHeader: 'Actions',
                     align: 'right',
                     width: '10%',
                     class: 'overflow-visible'
@@ -482,6 +485,7 @@
                 {
                     key: 'actions',
                     header: '',
+                    srHeader: 'Actions',
                     align: 'right',
                     width: '12%',
                     class: 'overflow-visible'
@@ -559,8 +563,8 @@
             params.toString();
             sync();
         }}>
-        <h1 class="text-2xl font-bold text-text-primary">{title}</h1>
-        <p class="mt-1 text-sm text-text-secondary">
+        <h1 class="type-page-title">{title}</h1>
+        <p class="mt-1 type-body text-text-secondary">
             {area === 'reports' ? 'Review flagged comments and decide what to do.'
             : area === 'feedback' ? 'See how readers rate your articles and pages.'
             : 'Recent activity across your site.'}
@@ -633,8 +637,7 @@
                         {:else if key === 'time'}
                             <ActivityTimestamp
                                 date={event.created_at}
-                                {timeZone}
-                                class="text-xs" />
+                                {timeZone} />
                         {:else}
                             <span class="flex items-center justify-end gap-1">
                                 <Button
@@ -735,16 +738,16 @@
                 {:else if detail.data}
                     {#if detail.data.savedNotification?.report_status === 'resolved'}
                         <Card density="compact"
-                            ><h2 class="mb-2 text-sm font-bold text-text-primary">
-                                Resolved report · Saved context
-                            </h2>
+                            ><h2 class="mb-2 type-card-title">Resolved report · Saved context</h2>
                             <ActivityRow
                                 item={detail.data.savedNotification}
                                 detail />
-                            <p class="mt-2 text-sm wrap-break-word whitespace-pre-wrap">
+                            <p
+                                class="mt-2 type-body wrap-break-word whitespace-pre-wrap text-text-secondary">
                                 {detail.data.savedNotification.meta?.comment}
                             </p>
-                            <p class="mt-2 text-sm wrap-break-word whitespace-pre-wrap">
+                            <p
+                                class="mt-2 type-body wrap-break-word whitespace-pre-wrap text-text-secondary">
                                 {detail.data.savedNotification.meta?.details}
                             </p></Card>
                     {/if}
@@ -764,7 +767,7 @@
                                                 >{commenter}</span>
                                         </div>
                                         <div
-                                            class="mt-0.5 text-xs leading-relaxed wrap-break-word whitespace-pre-wrap text-text-secondary sm:text-sm">
+                                            class="mt-0.5 type-body wrap-break-word whitespace-pre-wrap text-text-secondary">
                                             {detail.data.context.content}
                                         </div>
                                     </div>
@@ -815,11 +818,11 @@
                         {@render eventsHistory()}
                     {:else if area === 'notifications'}
                         <Card density="compact"
-                            ><h2 class="text-base font-bold text-text-primary">
+                            ><h2 class="type-card-title">
                                 {detail.data.items[0]?.title
                                     ?? (detailTitle || 'Notification group')}
                             </h2>
-                            <p class="mt-2 text-sm text-text-secondary">
+                            <p class="mt-2 type-body text-text-secondary">
                                 {pluralize(
                                     detail.data.total ?? groupCount ?? 0,
                                     'event',
@@ -930,7 +933,7 @@
                                 withAuthor />
                             {#if event.meta?.comment || event.meta?.details}
                                 <details>
-                                    <summary class="cursor-pointer text-accent"
+                                    <summary class="cursor-pointer text-accent-text"
                                         >View saved context</summary>
                                     {#if event.meta.comment}<span
                                             class="mt-1 block wrap-break-word whitespace-pre-wrap"
@@ -946,8 +949,7 @@
                     {:else if key === 'time'}
                         <ActivityTimestamp
                             date={event.created_at}
-                            {timeZone}
-                            class="text-xs" />
+                            {timeZone} />
                     {:else}
                         <span class="flex items-center justify-end gap-1">
                             <Button

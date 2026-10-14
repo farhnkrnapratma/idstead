@@ -130,6 +130,7 @@
     --color-success-text: #007a55;
     --color-warning: #f08a3a;
     --color-warning-subtle: rgba(240, 138, 58, 0.08);
+    --color-warning-text: #a14d0b;
     --color-danger: #fe4c25;
     --color-danger-hover: #c53211;
     --color-danger-subtle: rgba(254, 76, 37, 0.08);
@@ -258,6 +259,7 @@
     --color-success-text: oklch(76.5% 0.177 163.223);
     --color-warning: #f08a3a;
     --color-warning-subtle: rgba(240, 138, 58, 0.14);
+    --color-warning-text: #f6a96b;
     --color-danger: #fe4c25;
     --color-danger-hover: #f4a876;
     --color-danger-subtle: rgba(254, 76, 37, 0.14);

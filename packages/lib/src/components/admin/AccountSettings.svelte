@@ -319,8 +319,8 @@
     spacing="none"
     class="flex min-w-0 flex-col gap-4">
     <div>
-        <h1 class="text-2xl font-bold text-text-primary">Settings</h1>
-        <p class="mt-1 text-sm text-text-secondary">
+        <h1 class="type-page-title">Settings</h1>
+        <p class="mt-1 type-body text-text-secondary">
             Manage appearance, account security, and site data.
         </p>
     </div>
@@ -336,7 +336,7 @@
                 class={[
                     'flex min-h-11 items-center gap-1.5 border-b-2 px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-focus-ring',
                     activeTab === tab.id ?
-                        'border-accent text-accent'
+                        'border-accent text-accent-text'
                     :   'border-transparent text-text-secondary hover:text-text-primary'
                 ]}
                 onclick={event => selectSection(event, tab.id)}>
@@ -358,6 +358,7 @@
             class="border-border-subtle! bg-surface-card!">
             <FormSection
                 title="Password"
+                titleClass="type-card-title"
                 description="Change your account password. Other sessions will stay signed in."
                 class="w-full max-w-lg"
                 onsubmit={changePassword}
@@ -490,6 +491,7 @@
             class="border-border-subtle! bg-surface-card!">
             <FormSection
                 title="Two-factor authentication"
+                titleClass="type-card-title"
                 description="Require an authenticator app code in addition to your password."
                 bare>
                 {#if enrollment}
@@ -512,6 +514,7 @@
                                 onsubmit={verifyTotp}>
                                 <FormField
                                     id="totp-code"
+                                    label="Verification code"
                                     class="min-w-0 flex-1">
                                     <Input
                                         id="totp-code"
@@ -544,7 +547,7 @@
                                 <span class="flex min-w-0 items-center gap-2">
                                     <Smartphone class="size-4 shrink-0 text-text-muted" />
                                     <span class="min-w-0">
-                                        <span class="block truncate text-xs font-bold"
+                                        <span class="block truncate text-sm font-bold"
                                             >{factor.friendly_name || 'Authenticator app'}</span>
                                         <ActivityTimestamp
                                             date={factor.created_at}
@@ -587,6 +590,7 @@
             class="border-border-subtle! bg-surface-card!">
             <FormSection
                 title="Passkeys"
+                titleClass="type-card-title"
                 description="Sign in with a fingerprint, face, or security key instead of typing a password."
                 bare>
                 {#if !webauthnSupported}
@@ -599,7 +603,7 @@
                                 <span class="flex min-w-0 items-center gap-2">
                                     <KeyRound class="size-4 shrink-0 text-text-muted" />
                                     <span class="min-w-0">
-                                        <span class="block truncate text-xs font-bold"
+                                        <span class="block truncate text-sm font-bold"
                                             >{factor.friendly_name || 'Passkey'}</span>
                                         <ActivityTimestamp
                                             date={factor.created_at}
@@ -642,6 +646,7 @@
             class="border-border-subtle! bg-surface-card!">
             <FormSection
                 title="Sessions"
+                titleClass="type-card-title"
                 description="Signing out everywhere revokes every other browser and device."
                 bare>
                 <div
@@ -650,7 +655,7 @@
                         {#if lastSignInAt}
                             This session signed in <ActivityTimestamp
                                 date={lastSignInAt}
-                                class="text-xs font-semibold" />.
+                                class="font-semibold" />.
                         {:else}
                             Sign-in time is unavailable for this session.
                         {/if}

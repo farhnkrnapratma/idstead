@@ -71,6 +71,7 @@
     class="border-border-subtle! bg-surface-card!">
     <FormSection
         title="Theme"
+        titleClass="type-card-title"
         description="Choose how the site looks on this device. System follows your device theme."
         bare>
         {#snippet headerActions()}
@@ -84,10 +85,10 @@
                         role="tab"
                         aria-selected={themeStore.current === theme.value}
                         onclick={() => themeStore.apply(theme.value)}
-                        class="inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-sm px-3 text-xs font-semibold transition-colors select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring {(
+                        class="touch-target relative inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-sm px-3 text-xs font-semibold transition-colors select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring {(
                             themeStore.current === theme.value
                         ) ?
-                            'bg-accent text-text-on-accent shadow-xs'
+                            'bg-accent-contrast-bg text-text-on-accent shadow-xs'
                         :   'text-text-secondary hover:bg-surface-hover hover:text-text-primary'}">
                         <theme.icon class="size-3.5" />
                         {theme.label}
@@ -103,6 +104,7 @@
     class="border-border-subtle! bg-surface-card!">
     <FormSection
         title="Dates & times"
+        titleClass="type-card-title"
         description="How dates and times appear across the admin area. Changes apply instantly on this device."
         bare>
         {#snippet headerActions()}
@@ -157,17 +159,17 @@
                         role="tab"
                         aria-selected={prefs.mode === item.value}
                         onclick={() => adminDisplayStore.apply({ mode: item.value })}
-                        class="inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-sm px-3 text-xs font-semibold transition-colors select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring {(
+                        class="touch-target relative inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-sm px-3 text-xs font-semibold transition-colors select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring {(
                             prefs.mode === item.value
                         ) ?
-                            'bg-accent text-text-on-accent shadow-xs'
+                            'bg-accent-contrast-bg text-text-on-accent shadow-xs'
                         :   'text-text-secondary hover:bg-surface-hover hover:text-text-primary'}">
                         <item.icon class="size-3.5" />
                         {item.label}
                     </button>
                 {/each}
             </div>
-            <p class="text-2xs text-text-muted">
+            <p class="type-body text-text-muted">
                 Relative shows “10 hours ago”. Smart is relative for the last 7 days and absolute
                 after that. Charts and the calendar always use absolute dates.
             </p>

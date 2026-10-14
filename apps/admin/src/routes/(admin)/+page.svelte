@@ -51,7 +51,6 @@
         CircleDotDashed,
         CircleCheckBig,
         FileXCorner,
-        AlertTriangle,
         Flag,
         Users,
         Pin,
@@ -70,9 +69,6 @@
     import { SvelteSet } from 'svelte/reactivity';
     import type { AdminNotificationRow } from '#lib/adminActivity.ts';
     import AdminHome from '#lib/components/admin/AdminHome.svelte';
-    import ActivityWorkspace from '#lib/components/admin/ActivityWorkspace.svelte';
-    import ActivityLogWorkspace from '#lib/components/admin/ActivityLogWorkspace.svelte';
-    import AccountSettings from '#lib/components/admin/AccountSettings.svelte';
     import ActivityTimestamp from '#lib/components/admin/ActivityTimestamp.svelte';
     import SessionTimeoutDialog from '#lib/components/admin/SessionTimeoutDialog.svelte';
     import { SESSION_WARNING_SECONDS, extendedTimeoutMinutes } from '#lib/sessionTimeout.ts';
@@ -80,20 +76,25 @@
     import { cleanAdminParams } from '#lib/adminUrl.ts';
     import { adminDisplayStore } from '#lib/stores/adminDisplayStore.svelte.ts';
     import { startAdminSettingsSync } from '#lib/stores/adminSettingsSync.svelte.ts';
-    import PostEditor from '#lib/components/admin/PostEditor.svelte';
     import { adminActivityRequest } from '#lib/adminActivityClient.ts';
     import {
         ADMIN_WORKSPACE_PAGE_SIZE,
         type WorkspaceArea,
         type WorkspacePage
     } from '#lib/adminWorkspace.ts';
-    import { lockScroll } from '#lib/utils/scroll.ts';
+    import { lockScroll, preferredScrollBehavior, whenScrollSettles } from '#lib/utils/scroll.ts';
     import { adminNotificationsStore } from '#lib/stores/adminNotificationsStore.svelte.ts';
+
+    const loadActivityWorkspace = () => import('#lib/components/admin/ActivityWorkspace.svelte');
+    const loadActivityLogWorkspace = () =>
+        import('#lib/components/admin/ActivityLogWorkspace.svelte');
+    const loadAccountSettings = () => import('#lib/components/admin/AccountSettings.svelte');
+    const loadPostEditor = () => import('#lib/components/admin/PostEditor.svelte');
+    const loadMarkdownEditor = () => import('#lib/components/MarkdownEditor.svelte');
     import { estimateReadTime } from '#lib/readTime.ts';
     import { formatBadgeCount } from '#lib/utils/formatters.ts';
     import {
         Button,
-        IconButton,
         Badge,
         Card,
         BrandIcon,
@@ -103,7 +104,6 @@
         Input,
         Checkbox,
         ConfirmationDialog,
-        Dialog,
         CommentThread,
         LoadingState,
         EmptyState,
@@ -126,7 +126,6 @@
         formatReadTime,
         FormSection,
         FormActions,
-        MarkdownEditor,
         PillInput,
         sanitizeInput,
         decodeHtmlEntities,
@@ -211,7 +210,6 @@
     let hasExportedAllData = $state(false);
     let isExportingAllData = $state(false);
     let showDeleteCvDocDialog = $state(false);
-    let showAvatarPreviewDialog = $state(false);
     let showLogoutDialog = $state(false);
 
     interface AdminComment {
@@ -248,6 +246,11 @@
 
     let focusedCommentId = $state<string | null>(null);
     let focusHighlightTimer: ReturnType<typeof setTimeout>;
+    let cancelCommentScrollWait = () => {};
+    onDestroy(() => {
+        cancelCommentScrollWait();
+        clearTimeout(focusHighlightTimer);
+    });
 
     function selectNotification(item: AdminNotificationRow) {
         if (item.kind === 'comment_report' && !item.comment_id) return;
@@ -288,7 +291,7 @@
         await tick();
         document
             .getElementById(`post-${postId}`)
-            ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            ?.scrollIntoView({ behavior: preferredScrollBehavior(), block: 'start' });
     }
 
     function waitForElement(id: string, timeoutMs = 2000) {
@@ -324,12 +327,19 @@
         await tick();
 
         const target = await waitForElement(`comment-${commentId}`);
-        target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        target?.scrollIntoView({ behavior: preferredScrollBehavior(), block: 'center' });
 
         clearTimeout(focusHighlightTimer);
-        focusHighlightTimer = setTimeout(() => {
-            if (focusedCommentId === commentId) focusedCommentId = null;
-        }, 4000);
+        cancelCommentScrollWait();
+        const main = document.getElementById('main-content');
+        cancelCommentScrollWait = whenScrollSettles(
+            main && main.scrollHeight > main.clientHeight ? main : window,
+            () => {
+                focusHighlightTimer = setTimeout(() => {
+                    if (focusedCommentId === commentId) focusedCommentId = null;
+                }, 4000);
+            }
+        );
     }
 
     const ADMIN_TAB_IDS = [
@@ -479,16 +489,42 @@
             if (rafId) cancelAnimationFrame(rafId);
             window.removeEventListener('pointermove', onMove);
             window.removeEventListener('pointerup', onUp);
+            window.removeEventListener('pointercancel', onUp);
+            window.removeEventListener('blur', onUp);
             document.body.classList.remove('select-none');
             sidebarResizing = false;
-            try {
-                localStorage.setItem('admin-sidebar-collapsed', sidebarCollapsed ? '1' : '0');
-                if (!sidebarCollapsed)
-                    localStorage.setItem('admin-sidebar-width', String(sidebarWidth));
-            } catch {}
+            persistSidebarSize();
         };
         window.addEventListener('pointermove', onMove);
         window.addEventListener('pointerup', onUp);
+        window.addEventListener('pointercancel', onUp);
+        window.addEventListener('blur', onUp);
+    }
+
+    function persistSidebarSize() {
+        try {
+            localStorage.setItem('admin-sidebar-collapsed', sidebarCollapsed ? '1' : '0');
+            if (!sidebarCollapsed)
+                localStorage.setItem('admin-sidebar-width', String(sidebarWidth));
+        } catch {}
+    }
+
+    function resizeSidebarFromKey(event: KeyboardEvent) {
+        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+        event.preventDefault();
+        const min = window.innerWidth * 0.15;
+        const max = window.innerWidth * 0.2;
+        const step = event.key === 'ArrowRight' ? 16 : -16;
+        if (sidebarCollapsed) {
+            if (step < 0) return;
+            sidebarCollapsed = false;
+            sidebarWidth = min;
+        } else if (sidebarWidth + step < min) {
+            sidebarCollapsed = true;
+        } else {
+            sidebarWidth = Math.min(max, sidebarWidth + step);
+        }
+        persistSidebarSize();
     }
 
     function selectTab(id: AdminTab) {
@@ -3046,14 +3082,19 @@
             'translate-x-0 shadow-2xl'
         :   '-translate-x-full'} {sidebarCollapsed ? 'md:w-11' : 'md:w-(--sidebar-width)'}">
         <div
-            role="separator"
-            aria-orientation="vertical"
-            aria-label="Resize sidebar"
-            tabindex="-1"
+            role="slider"
+            aria-orientation="horizontal"
+            aria-label="Sidebar width"
+            aria-valuemin={0}
+            aria-valuemax={Math.round(window.innerWidth * 0.2)}
+            aria-valuenow={sidebarCollapsed ? 0 : Math.round(sidebarWidth)}
+            aria-valuetext={sidebarCollapsed ? 'Collapsed' : `${Math.round(sidebarWidth)} pixels`}
+            tabindex="0"
             onpointerdown={startSidebarResize}
-            class="group absolute inset-y-0 right-0 z-10 hidden w-3 -translate-x-1/2 cursor-col-resize items-center justify-center md:flex">
+            onkeydown={resizeSidebarFromKey}
+            class="group absolute inset-y-0 right-0 z-10 hidden w-3 -translate-x-1/2 cursor-col-resize touch-none items-center justify-center focus-visible:outline-2 focus-visible:outline-focus-ring md:flex">
             <span
-                class="pointer-events-none flex h-10 w-3.5 items-center justify-center rounded-sm text-text-muted/60 opacity-0 transition-opacity group-hover:opacity-100">
+                class="pointer-events-none flex h-10 w-3.5 items-center justify-center rounded-sm text-text-muted opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
                 <GripVertical class="size-3" />
             </span>
         </div>
@@ -3144,15 +3185,17 @@
                                     sidebarCollapsed
                                 ) ?
                                     'gap-2 px-2 md:h-full md:min-h-0 md:justify-center md:gap-0 md:px-0'
-                                :   'gap-2 px-2 md:min-h-7'} {activeAdminTab === link.id ?
-                                    'bg-accent-subtle font-bold text-accent shadow-2xs'
-                                :   'text-text-primary hover:bg-surface-hover hover:text-accent'}">
+                                :   'gap-2 px-2 md:min-h-7 md:pointer-coarse:min-h-11'} {(
+                                    activeAdminTab === link.id
+                                ) ?
+                                    'bg-accent-subtle font-bold text-accent-text shadow-2xs'
+                                :   'text-text-primary hover:bg-surface-hover hover:text-accent-text'}">
                                 <link.icon
                                     class="size-3.5 max-h-full shrink-0 transition-colors {(
                                         activeAdminTab === link.id
                                     ) ?
-                                        'text-accent'
-                                    :   'text-text-muted group-hover:text-accent'}" />
+                                        'text-accent-text'
+                                    :   'text-text-muted group-hover:text-accent-text'}" />
                                 <span
                                     class="truncate transition-opacity duration-150 ease-linear starting:opacity-0 {(
                                         sidebarCollapsed
@@ -3236,7 +3279,7 @@
                 });
             if (typeof scroll === 'number') queueMicrotask(() => element.scrollTo({ top: scroll }));
         }}
-        class="flex-1 overflow-y-auto p-4 pb-24 font-sans sm:p-6 md:h-screen {(
+        class="flex-1 p-4 pb-24 font-sans sm:p-6 md:h-dvh md:overflow-y-auto {(
             ['privacy', 'security', 'terms'].includes(activeAdminTab)
             || (activeAdminTab === 'posts' && !!editPostParam)
         ) ?
@@ -3253,23 +3296,41 @@
                 onPublished={showPublishedPosts} />
         {:else if activeAdminTab === 'reports' || activeAdminTab === 'feedback' || activeAdminTab === 'notifications'}
             {#key activeAdminTab}
-                <ActivityWorkspace
-                    area={activeAdminTab}
-                    onSelectNotification={selectNotification} />
+                {#await loadActivityWorkspace()}
+                    <LoadingState
+                        variant="spinner"
+                        label="Loading activity..." />
+                {:then { default: ActivityWorkspace }}
+                    <ActivityWorkspace
+                        area={activeAdminTab}
+                        onSelectNotification={selectNotification} />
+                {/await}
             {/key}
         {:else if activeAdminTab === 'logs'}
-            <ActivityLogWorkspace />
+            {#await loadActivityLogWorkspace()}
+                <LoadingState
+                    variant="spinner"
+                    label="Loading activity log..." />
+            {:then { default: ActivityLogWorkspace }}
+                <ActivityLogWorkspace />
+            {/await}
         {:else if activeAdminTab === 'posts'}
             {#if editPostParam}
-                <PostEditor
-                    postId={editPostParam === 'new' ? undefined : editPostParam}
-                    onCancel={closePostEditor}
-                    onSaved={handlePostSaved} />
+                {#await loadPostEditor()}
+                    <LoadingState
+                        variant="post-editor"
+                        label="Loading post..." />
+                {:then { default: PostEditor }}
+                    <PostEditor
+                        postId={editPostParam === 'new' ? undefined : editPostParam}
+                        onCancel={closePostEditor}
+                        onSaved={handlePostSaved} />
+                {/await}
             {:else}
                 <div class="mb-6 flex items-center justify-between gap-3">
                     <div>
-                        <h1 class="text-2xl font-bold tracking-tight text-text-primary">Posts</h1>
-                        <p class="mt-1 text-xs text-text-secondary">
+                        <h1 class="type-page-title">Posts</h1>
+                        <p class="mt-1 type-body text-text-secondary">
                             Write, edit, and moderate your blog posts.
                         </p>
                     </div>
@@ -3406,7 +3467,7 @@
                                     <div class="flex flex-col gap-1">
                                         <div>
                                             <h3
-                                                class="text-lg leading-snug font-bold text-text-primary transition-colors hover:text-accent">
+                                                class="type-card-title transition-colors hover:text-accent-text">
                                                 <a
                                                     href="{publicSiteUrl}/blog/{post.slug}"
                                                     target="_blank"
@@ -3420,24 +3481,27 @@
                                                         <span
                                                             class="inline-flex size-4.5 items-center justify-center rounded-full bg-copilot-subtle text-copilot"
                                                             title="Published"
-                                                            aria-label="Published">
+                                                            aria-label="Published"
+                                                            role="img">
                                                             <CircleCheckBig
                                                                 class="size-3 shrink-0" />
                                                         </span>
                                                     {:else}
                                                         <span
-                                                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-warning-subtle text-warning"
+                                                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-warning-subtle text-warning-text"
                                                             title="Draft"
-                                                            aria-label="Draft">
+                                                            aria-label="Draft"
+                                                            role="img">
                                                             <CircleDotDashed
                                                                 class="size-3 shrink-0" />
                                                         </span>
                                                     {/if}
                                                     {#if post.pinned}
                                                         <span
-                                                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-success-subtle text-success"
+                                                            class="inline-flex size-4.5 items-center justify-center rounded-full bg-success-subtle text-success-text"
                                                             title="Pinned post"
-                                                            aria-label="Pinned post">
+                                                            aria-label="Pinned post"
+                                                            role="img">
                                                             <Pin class="size-3 shrink-0" />
                                                         </span>
                                                     {/if}
@@ -3445,7 +3509,8 @@
                                                         <span
                                                             class="inline-flex size-4.5 items-center justify-center rounded-full bg-security-subtle text-security"
                                                             title="New post"
-                                                            aria-label="New post">
+                                                            aria-label="New post"
+                                                            role="img">
                                                             <Sparkles class="size-3 shrink-0" />
                                                         </span>
                                                     {/if}
@@ -3475,7 +3540,7 @@
                                                 <p
                                                     {@attach !isExpanded
                                                         && observeExcerptOverflow(post.id)}
-                                                    class="text-xs leading-relaxed text-text-secondary {(
+                                                    class="type-body text-text-secondary {(
                                                         isExpanded
                                                     ) ?
                                                         ''
@@ -3485,7 +3550,7 @@
                                                         <button
                                                             type="button"
                                                             onclick={() => toggleExcerpt(post.id)}
-                                                            class="ml-1 inline cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
+                                                            class="ml-1 inline cursor-pointer text-xs font-normal whitespace-nowrap text-accent-text underline">
                                                             Show less
                                                         </button>
                                                     {/if}
@@ -3494,7 +3559,7 @@
                                                     <button
                                                         type="button"
                                                         onclick={() => toggleExcerpt(post.id)}
-                                                        class="inline-flex cursor-pointer text-xs font-normal whitespace-nowrap text-security underline hover:opacity-80 focus:outline-none">
+                                                        class="inline-flex cursor-pointer text-xs font-normal whitespace-nowrap text-accent-text underline">
                                                         Show more
                                                     </button>
                                                 {/if}
@@ -3626,7 +3691,7 @@
                                             class="mt-4 border-t border-border-subtle pt-4">
                                             <div
                                                 class="mb-3 flex items-center justify-between gap-2">
-                                                <h4 class="text-xs font-bold text-text-secondary">
+                                                <h4 class="type-card-title">
                                                     Comments ({postCommentCounts.get(post.id) ?? 0})
                                                 </h4>
                                             </div>
@@ -3637,9 +3702,10 @@
                                             {#if commentsLoading[post.id] && getPostComments(post.id).length === 0}<LoadingState
                                                     label="Loading comments…" />
                                             {:else if getPostComments(post.id).length === 0}
-                                                <p class="text-xs text-text-muted">
-                                                    No comments yet.
-                                                </p>
+                                                <EmptyState
+                                                    class="p-5"
+                                                    title="No comments yet"
+                                                    description="Comments on this post will appear here." />
                                             {:else}
                                                 <CommentThread
                                                     comments={getPostComments(post.id)}
@@ -3665,15 +3731,14 @@
 
                                                     {#snippet actions(comment)}
                                                         <ActivityTimestamp
-                                                            date={comment.created_at}
-                                                            class="text-xs" />
+                                                            date={comment.created_at} />
                                                         <button
                                                             type="button"
                                                             onclick={() => {
                                                                 replyTo = comment;
                                                                 commentContent = '';
                                                             }}
-                                                            class="cursor-pointer font-bold text-text-muted transition-colors hover:text-accent focus-visible:outline-none">
+                                                            class="cursor-pointer font-bold text-text-muted transition-colors hover:text-accent-text">
                                                             Reply
                                                         </button>
                                                         {#if comment.reports}
@@ -3683,7 +3748,7 @@
                                                                     dismissCommentReports(
                                                                         comment.id
                                                                     )}
-                                                                class="cursor-pointer font-bold text-accent transition-colors hover:underline focus-visible:outline-none">
+                                                                class="cursor-pointer font-bold text-accent-text transition-colors hover:underline">
                                                                 Dismiss Reports
                                                             </button>
                                                         {/if}
@@ -3704,7 +3769,7 @@
                                                                 <p
                                                                     class="text-xs text-text-secondary">
                                                                     Replying to <span
-                                                                        class="font-semibold text-accent"
+                                                                        class="font-semibold text-accent-text"
                                                                         >{commentAuthorName(
                                                                             comment,
                                                                             authorState.name
@@ -3714,7 +3779,7 @@
                                                                 <button
                                                                     type="button"
                                                                     onclick={() => (replyTo = null)}
-                                                                    class="inline-flex size-5 cursor-pointer items-center justify-center rounded-sm text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring"
+                                                                    class="touch-target relative inline-flex size-5 cursor-pointer items-center justify-center rounded-sm text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring"
                                                                     aria-label="Cancel reply">
                                                                     <X class="size-3.5" />
                                                                 </button>
@@ -3740,14 +3805,14 @@
                                                                 }}
                                                                 error={!!replyError}
                                                                 placeholder="Write an admin reply..."
-                                                                class="min-h-15 py-2 text-xs sm:text-sm" />
+                                                                class="min-h-15 py-2 type-body" />
                                                             {#if replyError}<FieldMessage
                                                                     message={replyError} />{/if}
 
                                                             <div
                                                                 class="mt-2 flex items-center justify-between gap-2">
                                                                 <span
-                                                                    class="text-2xs text-text-muted tabular-nums">
+                                                                    class="text-xs text-text-muted tabular-nums">
                                                                     {1000 - commentContent.length} left
                                                                 </span>
                                                                 <div
@@ -3793,6 +3858,8 @@
             <FormSection
                 onsubmit={handleSaveProjects}
                 title="Projects"
+                titleTag="h1"
+                titleClass="type-page-title"
                 description="Pin or hide the GitHub repositories shown in your portfolio."
                 class="gap-4! p-4! sm:p-5!">
                 <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -3879,7 +3946,8 @@
                 onsubmit={handleSaveAuthor}
                 title="Profile"
                 description="Manage your public author profile and contact details."
-                titleClass="text-2xl font-bold tracking-tight text-text-primary"
+                titleTag="h1"
+                titleClass="type-page-title"
                 class="gap-8">
                 {#if authorSaveError}<StatusBanner
                         variant="error"
@@ -4010,7 +4078,7 @@
                     <section aria-labelledby="section-contact">
                         <h3
                             id="section-contact"
-                            class="mb-2.5 text-xxs font-bold tracking-widest text-text-muted uppercase select-none">
+                            class="mb-2.5 text-xxs font-bold tracking-widest text-text-secondary uppercase select-none">
                             Contact
                         </h3>
                         <div class="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
@@ -4192,8 +4260,8 @@
             </FormSection>
         {:else if activeAdminTab === 'resume'}
             <div class="mb-6">
-                <h1 class="text-2xl font-bold tracking-tight text-text-primary">Resume</h1>
-                <p class="mt-1 text-xs text-text-secondary">
+                <h1 class="type-page-title">Resume</h1>
+                <p class="mt-1 type-body text-text-secondary">
                     Manage work experience, education, and the CV document.
                 </p>
             </div>
@@ -4212,8 +4280,8 @@
                     <div
                         class="mb-6 flex items-start justify-between gap-3 sm:items-center sm:gap-4">
                         <div class="min-w-0 flex-1 select-none">
-                            <h2 class="text-xl font-bold text-text-primary">Experiences</h2>
-                            <p class="mt-1 text-xs text-text-secondary">
+                            <h2 class="type-section-title">Experiences</h2>
+                            <p class="mt-1 type-body text-text-secondary">
                                 List your work history, most recent first. Fields are required
                                 unless marked optional.
                             </p>
@@ -4596,8 +4664,8 @@
                     <div
                         class="mb-6 flex items-start justify-between gap-3 sm:items-center sm:gap-4">
                         <div class="min-w-0 flex-1 select-none">
-                            <h2 class="text-xl font-bold text-text-primary">Education</h2>
-                            <p class="mt-1 text-xs text-text-secondary">
+                            <h2 class="type-section-title">Education</h2>
+                            <p class="mt-1 type-body text-text-secondary">
                                 List your degrees and certifications, most recent first. Fields are
                                 required unless marked optional.
                             </p>
@@ -4954,8 +5022,8 @@
                 variant="glass"
                 class="mt-10 flex flex-col gap-3">
                 <div>
-                    <h2 class="text-lg font-bold tracking-tight text-text-primary">CV Document</h2>
-                    <p class="mt-1 text-xs text-text-secondary">
+                    <h2 class="type-section-title">CV Document</h2>
+                    <p class="mt-1 type-body text-text-secondary">
                         The PDF resume shown on your CV page and available through the public API.
                     </p>
                 </div>
@@ -4983,7 +5051,7 @@
 
                 <div
                     class="flex flex-col gap-3.5 rounded-sm border border-border-subtle bg-surface-card p-4">
-                    <p class="text-xxs font-semibold tracking-wide text-text-muted uppercase">
+                    <p class="text-xxs font-bold tracking-widest text-text-secondary uppercase">
                         Filename
                     </p>
 
@@ -5013,9 +5081,10 @@
                                     class="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-text-muted">
                                     {#if isCvAvailable}
                                         <span
-                                            class="inline-flex items-center gap-1 rounded-full bg-copilot-subtle px-2 py-0.5 text-2xs font-semibold text-copilot"
+                                            class="inline-flex items-center gap-1 rounded-full bg-copilot-subtle px-2 py-0.5 text-xs font-semibold text-copilot"
                                             title="Available"
-                                            aria-label="Available">
+                                            aria-label="Available"
+                                            role="img">
                                             <CircleCheckBig class="size-3 shrink-0" />
                                             Available
                                         </span>
@@ -5031,9 +5100,10 @@
                                         {/if}
                                     {:else}
                                         <span
-                                            class="inline-flex items-center gap-1 rounded-full bg-warning-subtle px-2 py-0.5 text-2xs font-semibold text-warning"
+                                            class="inline-flex items-center gap-1 rounded-full bg-warning-subtle px-2 py-0.5 text-xs font-semibold text-warning-text"
                                             title="Unavailable"
-                                            aria-label="Unavailable">
+                                            aria-label="Unavailable"
+                                            role="img">
                                             <CircleDotDashed class="size-3 shrink-0" />
                                             Unavailable
                                         </span>
@@ -5131,6 +5201,8 @@
             <FormSection
                 onsubmit={handleSaveSkills}
                 title="Skills"
+                titleTag="h1"
+                titleClass="type-page-title"
                 description="Group your skills into categories.">
                 {#snippet headerActions()}
                     <Button
@@ -5282,6 +5354,8 @@
             <FormSection
                 onsubmit={handleSaveSocials}
                 title="Social Links"
+                titleTag="h1"
+                titleClass="type-page-title"
                 description="Manage links to your social media profiles.">
                 {#snippet headerActions()}
                     <Button
@@ -5369,7 +5443,7 @@
                                                         item.icon?.trim()
                                                     ) ?
                                                         'text-accent'
-                                                    :   'text-text-muted opacity-50'}" />
+                                                    :   'text-text-muted'}" />
                                             </div>
                                         {/snippet}
                                     </Input>
@@ -5485,6 +5559,8 @@
             <FormSection
                 onsubmit={handleSaveSponsorship}
                 title="Funding"
+                titleTag="h1"
+                titleClass="type-page-title"
                 description="Manage the funding and donation platforms shown on your site.">
                 {#snippet headerActions()}
                     <Button
@@ -5579,7 +5655,7 @@
                                                         item.icon?.trim()
                                                     ) ?
                                                         'text-accent'
-                                                    :   'text-text-muted opacity-50'}" />
+                                                    :   'text-text-muted'}" />
                                             </div>
                                         {/snippet}
                                     </Input>
@@ -5723,6 +5799,8 @@
             <FormSection
                 onsubmit={handleSaveContact}
                 title="Contact"
+                titleTag="h1"
+                titleClass="type-page-title"
                 description="Manage the contact channels shown on your public Contact page.">
                 {#snippet headerActions()}
                     <Button
@@ -5813,7 +5891,7 @@
                                                         item.icon?.trim()
                                                     ) ?
                                                         'text-accent'
-                                                    :   'text-text-muted opacity-50'}" />
+                                                    :   'text-text-muted'}" />
                                             </div>
                                         {/snippet}
                                     </Input>
@@ -5956,6 +6034,8 @@
         {:else if activeAdminTab === 'privacy'}
             <FormSection
                 title="Privacy Policy"
+                titleTag="h1"
+                titleClass="type-page-title"
                 description="Edit and publish your website Privacy Policy in Markdown."
                 onsubmit={e => handleSaveLegalPage('privacy', e)}
                 class="py-4 sm:py-6"
@@ -5977,51 +6057,60 @@
                     </Button>
                 {/snippet}
                 {#if legalDrafts.privacy}
-                    <div
-                        class="mb-4 flex flex-col gap-3 rounded-lg border border-accent/30 bg-accent/10 p-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div class="flex items-center gap-2 text-xs text-accent sm:text-sm">
-                            <AlertTriangle class="size-4 shrink-0 text-accent" />
+                    <StatusBanner
+                        variant="warning"
+                        class="mb-4">
+                        <div
+                            class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <span
                                 >Autosaved local draft found (different from saved database
                                 version).</span>
+                            <div class="flex shrink-0 items-center gap-2">
+                                <Button
+                                    type="secondary"
+                                    size="sm"
+                                    onclick={() => restoreLegalDraft('privacy')}>
+                                    Restore draft
+                                </Button>
+                                <Button
+                                    type="ghost"
+                                    size="sm"
+                                    onclick={() => discardLegalDraft('privacy')}>
+                                    Discard
+                                </Button>
+                            </div>
                         </div>
-                        <div class="flex shrink-0 items-center gap-2">
-                            <Button
-                                type="secondary"
-                                size="sm"
-                                onclick={() => restoreLegalDraft('privacy')}>
-                                Restore draft
-                            </Button>
-                            <Button
-                                type="ghost"
-                                size="sm"
-                                onclick={() => discardLegalDraft('privacy')}>
-                                Discard
-                            </Button>
-                        </div>
-                    </div>
+                    </StatusBanner>
                 {/if}
                 {#if legalFieldErrors.privacy}<FieldMessage
                         message={legalFieldErrors.privacy} />{/if}
-                <MarkdownEditor
-                    bind:value={
-                        () => legalPagesData.privacy.content,
-                        value => {
-                            legalPagesData.privacy.content = value;
-                            legalValidation.input('privacy');
+                {#await loadMarkdownEditor()}
+                    <LoadingState
+                        variant="spinner"
+                        label="Loading editor..." />
+                {:then { default: MarkdownEditor }}
+                    <MarkdownEditor
+                        bind:value={
+                            () => legalPagesData.privacy.content,
+                            value => {
+                                legalPagesData.privacy.content = value;
+                                legalValidation.input('privacy');
+                            }
                         }
-                    }
-                    onblur={() => {
-                        void legalValidation.check('privacy');
-                    }}
-                    autosaveKey="autosave_legal_privacy"
-                    placeholder="Write your Privacy Policy content in markdown..."
-                    minHeight="500px"
-                    stickyTopClass="top-14 md:top-0" />
+                        onblur={() => {
+                            void legalValidation.check('privacy');
+                        }}
+                        autosaveKey="autosave_legal_privacy"
+                        placeholder="Write your Privacy Policy content in markdown..."
+                        minHeight="500px"
+                        stickyTopClass="top-12 md:top-0" />
+                {/await}
             </FormSection>
         {:else if activeAdminTab === 'security'}
             <FormSection
                 title="Security Policy"
+                titleTag="h1"
+                titleClass="type-page-title"
                 description="Edit and publish your website Security Policy & Vulnerability Disclosure Guidelines."
                 onsubmit={e => handleSaveLegalPage('security', e)}
                 class="py-4 sm:py-6"
@@ -6043,51 +6132,60 @@
                     </Button>
                 {/snippet}
                 {#if legalDrafts.security}
-                    <div
-                        class="mb-4 flex flex-col gap-3 rounded-lg border border-accent/30 bg-accent/10 p-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div class="flex items-center gap-2 text-xs text-accent sm:text-sm">
-                            <AlertTriangle class="size-4 shrink-0 text-accent" />
+                    <StatusBanner
+                        variant="warning"
+                        class="mb-4">
+                        <div
+                            class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <span
                                 >Autosaved local draft found (different from saved database
                                 version).</span>
+                            <div class="flex shrink-0 items-center gap-2">
+                                <Button
+                                    type="secondary"
+                                    size="sm"
+                                    onclick={() => restoreLegalDraft('security')}>
+                                    Restore draft
+                                </Button>
+                                <Button
+                                    type="ghost"
+                                    size="sm"
+                                    onclick={() => discardLegalDraft('security')}>
+                                    Discard
+                                </Button>
+                            </div>
                         </div>
-                        <div class="flex shrink-0 items-center gap-2">
-                            <Button
-                                type="secondary"
-                                size="sm"
-                                onclick={() => restoreLegalDraft('security')}>
-                                Restore draft
-                            </Button>
-                            <Button
-                                type="ghost"
-                                size="sm"
-                                onclick={() => discardLegalDraft('security')}>
-                                Discard
-                            </Button>
-                        </div>
-                    </div>
+                    </StatusBanner>
                 {/if}
                 {#if legalFieldErrors.security}<FieldMessage
                         message={legalFieldErrors.security} />{/if}
-                <MarkdownEditor
-                    bind:value={
-                        () => legalPagesData.security.content,
-                        value => {
-                            legalPagesData.security.content = value;
-                            legalValidation.input('security');
+                {#await loadMarkdownEditor()}
+                    <LoadingState
+                        variant="spinner"
+                        label="Loading editor..." />
+                {:then { default: MarkdownEditor }}
+                    <MarkdownEditor
+                        bind:value={
+                            () => legalPagesData.security.content,
+                            value => {
+                                legalPagesData.security.content = value;
+                                legalValidation.input('security');
+                            }
                         }
-                    }
-                    onblur={() => {
-                        void legalValidation.check('security');
-                    }}
-                    autosaveKey="autosave_legal_security"
-                    placeholder="Write your Security Policy content in markdown..."
-                    minHeight="500px"
-                    stickyTopClass="top-14 md:top-0" />
+                        onblur={() => {
+                            void legalValidation.check('security');
+                        }}
+                        autosaveKey="autosave_legal_security"
+                        placeholder="Write your Security Policy content in markdown..."
+                        minHeight="500px"
+                        stickyTopClass="top-12 md:top-0" />
+                {/await}
             </FormSection>
         {:else if activeAdminTab === 'terms'}
             <FormSection
                 title="Terms of Service"
+                titleTag="h1"
+                titleClass="type-page-title"
                 description="Edit and publish your website Terms of Service."
                 onsubmit={e => handleSaveLegalPage('terms', e)}
                 class="py-4 sm:py-6"
@@ -6109,125 +6207,145 @@
                     </Button>
                 {/snippet}
                 {#if legalDrafts.terms}
-                    <div
-                        class="mb-4 flex flex-col gap-3 rounded-lg border border-accent/30 bg-accent/10 p-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div class="flex items-center gap-2 text-xs text-accent sm:text-sm">
-                            <AlertTriangle class="size-4 shrink-0 text-accent" />
+                    <StatusBanner
+                        variant="warning"
+                        class="mb-4">
+                        <div
+                            class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <span
                                 >Autosaved local draft found (different from saved database
                                 version).</span>
+                            <div class="flex shrink-0 items-center gap-2">
+                                <Button
+                                    type="secondary"
+                                    size="sm"
+                                    onclick={() => restoreLegalDraft('terms')}>
+                                    Restore draft
+                                </Button>
+                                <Button
+                                    type="ghost"
+                                    size="sm"
+                                    onclick={() => discardLegalDraft('terms')}>
+                                    Discard
+                                </Button>
+                            </div>
                         </div>
-                        <div class="flex shrink-0 items-center gap-2">
-                            <Button
-                                type="secondary"
-                                size="sm"
-                                onclick={() => restoreLegalDraft('terms')}>
-                                Restore draft
-                            </Button>
-                            <Button
-                                type="ghost"
-                                size="sm"
-                                onclick={() => discardLegalDraft('terms')}>
-                                Discard
-                            </Button>
-                        </div>
-                    </div>
+                    </StatusBanner>
                 {/if}
                 {#if legalFieldErrors.terms}<FieldMessage message={legalFieldErrors.terms} />{/if}
-                <MarkdownEditor
-                    bind:value={
-                        () => legalPagesData.terms.content,
-                        value => {
-                            legalPagesData.terms.content = value;
-                            legalValidation.input('terms');
+                {#await loadMarkdownEditor()}
+                    <LoadingState
+                        variant="spinner"
+                        label="Loading editor..." />
+                {:then { default: MarkdownEditor }}
+                    <MarkdownEditor
+                        bind:value={
+                            () => legalPagesData.terms.content,
+                            value => {
+                                legalPagesData.terms.content = value;
+                                legalValidation.input('terms');
+                            }
                         }
-                    }
-                    onblur={() => {
-                        void legalValidation.check('terms');
-                    }}
-                    autosaveKey="autosave_legal_terms"
-                    placeholder="Write your Terms of Service content in markdown..."
-                    minHeight="500px"
-                    stickyTopClass="top-14 md:top-0" />
+                        onblur={() => {
+                            void legalValidation.check('terms');
+                        }}
+                        autosaveKey="autosave_legal_terms"
+                        placeholder="Write your Terms of Service content in markdown..."
+                        minHeight="500px"
+                        stickyTopClass="top-12 md:top-0" />
+                {/await}
             </FormSection>
         {:else if activeAdminTab === 'account'}
-            <AccountSettings>
-                <Card
-                    variant="bordered"
-                    class="border-border-subtle! bg-surface-card!">
-                    <FormSection
-                        title="Import profile"
-                        description="Import profile data from a JSON file."
-                        bare>
-                        <input
-                            bind:this={profileImportInput}
-                            type="file"
-                            accept="application/json,.json"
-                            class="hidden"
-                            onchange={handleImportProfileFile} />
-                        <div>
-                            <Button
-                                type="secondary"
-                                size="md"
-                                isLoading={isImportingProfile}
-                                disabled={isImportingProfile || isDeletingAllData}
-                                onclick={() => profileImportInput?.click()}>
-                                {#snippet leading()}<DatabaseArrowUp class="size-3.5" />{/snippet}
-                                Import data
-                            </Button>
-                        </div>
-                    </FormSection>
-                </Card>
-                <Card
-                    variant="bordered"
-                    class="border-border-subtle! bg-surface-card!">
-                    <FormSection
-                        title="Export data"
-                        description="Download all your content as one archive."
-                        bare>
-                        <div>
-                            <Button
-                                type="secondary"
-                                size="md"
-                                isLoading={isExportingAllData}
-                                disabled={isExportingAllData}
-                                onclick={exportAllData}>
-                                {#snippet leading()}<DatabaseArrowDown class="size-3.5" />{/snippet}
-                                Export data
-                            </Button>
-                        </div>
-                    </FormSection>
-                </Card>
-                <Card
-                    variant="bordered"
-                    class="border-danger/40 bg-danger-subtle/40">
-                    <FormSection
-                        title="Danger zone"
-                        description="Permanently delete all your data including post and profile. This can't be undone."
-                        bare>
-                        <div>
-                            <Button
-                                type="danger"
-                                tone="critical"
-                                size="md"
-                                disabled={!hasExportedAllData
-                                    || isImportingProfile
-                                    || isDeletingAllData}
-                                title={hasExportedAllData ? undefined : 'Export your data first.'}
-                                onclick={confirmDeleteAllData}
-                                isLoading={isDeletingAllData}>
-                                {#snippet leading()}<DatabaseX class="size-3.5" />{/snippet}
-                                Delete all data
-                            </Button>
-                            {#if !hasExportedAllData}
-                                <p class="mt-2 text-xs text-text-muted">
-                                    Export your data first before deleting.
-                                </p>
-                            {/if}
-                        </div>
-                    </FormSection>
-                </Card>
-            </AccountSettings>
+            {#await loadAccountSettings()}
+                <LoadingState
+                    variant="spinner"
+                    label="Loading settings..." />
+            {:then { default: AccountSettings }}
+                <AccountSettings>
+                    <Card
+                        variant="bordered"
+                        class="border-border-subtle! bg-surface-card!">
+                        <FormSection
+                            title="Import profile"
+                            titleClass="type-card-title"
+                            description="Import profile data from a JSON file."
+                            bare>
+                            <input
+                                bind:this={profileImportInput}
+                                type="file"
+                                accept="application/json,.json"
+                                class="hidden"
+                                onchange={handleImportProfileFile} />
+                            <div>
+                                <Button
+                                    type="secondary"
+                                    size="md"
+                                    isLoading={isImportingProfile}
+                                    disabled={isImportingProfile || isDeletingAllData}
+                                    onclick={() => profileImportInput?.click()}>
+                                    {#snippet leading()}<DatabaseArrowUp
+                                            class="size-3.5" />{/snippet}
+                                    Import data
+                                </Button>
+                            </div>
+                        </FormSection>
+                    </Card>
+                    <Card
+                        variant="bordered"
+                        class="border-border-subtle! bg-surface-card!">
+                        <FormSection
+                            title="Export data"
+                            titleClass="type-card-title"
+                            description="Download all your content as one archive."
+                            bare>
+                            <div>
+                                <Button
+                                    type="secondary"
+                                    size="md"
+                                    isLoading={isExportingAllData}
+                                    disabled={isExportingAllData}
+                                    onclick={exportAllData}>
+                                    {#snippet leading()}<DatabaseArrowDown
+                                            class="size-3.5" />{/snippet}
+                                    Export data
+                                </Button>
+                            </div>
+                        </FormSection>
+                    </Card>
+                    <Card
+                        variant="bordered"
+                        class="border-danger/40 bg-danger-subtle/40">
+                        <FormSection
+                            title="Danger zone"
+                            titleClass="type-card-title"
+                            description="Permanently delete all your data including post and profile. This can't be undone."
+                            bare>
+                            <div>
+                                <Button
+                                    type="danger"
+                                    tone="critical"
+                                    size="md"
+                                    disabled={!hasExportedAllData
+                                        || isImportingProfile
+                                        || isDeletingAllData}
+                                    title={hasExportedAllData ? undefined : (
+                                        'Export your data first.'
+                                    )}
+                                    onclick={confirmDeleteAllData}
+                                    isLoading={isDeletingAllData}>
+                                    {#snippet leading()}<DatabaseX class="size-3.5" />{/snippet}
+                                    Delete all data
+                                </Button>
+                                {#if !hasExportedAllData}
+                                    <p class="mt-2 text-xs text-text-muted">
+                                        Export your data first before deleting.
+                                    </p>
+                                {/if}
+                            </div>
+                        </FormSection>
+                    </Card>
+                </AccountSettings>
+            {/await}
         {/if}
     </main>
 </div>
@@ -6300,63 +6418,3 @@
     isDestructive
     onConfirm={executeRemoveEntry}
     onCancel={() => (pendingRemove = null)} />
-
-<Dialog
-    bind:isOpen={showAvatarPreviewDialog}
-    onClose={() => (showAvatarPreviewDialog = false)}
-    title="Avatar Preview"
-    size="sm">
-    <div
-        class="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-sm border border-border-subtle bg-surface-base">
-        {#if authorState.avatar}
-            <div class="absolute inset-0 z-0 flex items-center justify-center bg-surface-subtle">
-                <User class="size-12 text-text-muted" />
-            </div>
-            {#key authorState.avatar}
-                <img
-                    src={avatarSource(authorState)}
-                    alt={`Profile picture of ${authorState.name || adminUserName} (enlarged preview)`}
-                    class="relative z-10 h-full w-full object-cover"
-                    onerror={e => ((e.currentTarget as HTMLImageElement).style.display = 'none')}
-                    onload={e => ((e.currentTarget as HTMLImageElement).style.display = 'block')} />
-            {/key}
-        {:else}
-            <div class="flex h-full w-full items-center justify-center bg-surface-subtle">
-                <User class="size-12 text-text-muted" />
-            </div>
-        {/if}
-
-        <IconButton
-            ariaLabel="Close dialog"
-            variant="borderless"
-            size="sm"
-            class="absolute top-2 right-2 bg-black/40! text-white! hover:bg-black/60!"
-            onclick={() => (showAvatarPreviewDialog = false)}>
-            <X class="size-4" />
-        </IconButton>
-    </div>
-
-    {#snippet footer()}
-        <div class="flex w-full items-center justify-between">
-            <Button
-                htmlType="button"
-                type="danger"
-                tone="critical"
-                size="md"
-                onclick={() => {
-                    authorState.avatar = '';
-                    showAvatarPreviewDialog = false;
-                    onAuthorInput('avatar');
-                }}>
-                Delete
-            </Button>
-            <Button
-                htmlType="button"
-                type="primary"
-                size="md"
-                onclick={() => (showAvatarPreviewDialog = false)}>
-                Looks good
-            </Button>
-        </div>
-    {/snippet}
-</Dialog>

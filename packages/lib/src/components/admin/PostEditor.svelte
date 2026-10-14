@@ -13,7 +13,6 @@
         Input,
         Textarea,
         MarkdownEditor,
-        Dialog,
         ConfirmationDialog,
         toastStore,
         PillInput,
@@ -537,6 +536,7 @@
         onsubmit={e => e.preventDefault()}
         novalidate
         class="flex flex-col gap-4 py-4 sm:py-6">
+        <h1 class="type-page-title">{isEditMode ? 'Edit post' : 'New post'}</h1>
         {#if errorMessage}
             <StatusBanner
                 variant="error"
@@ -547,9 +547,7 @@
             class="contents">
             <div
                 class="rounded-md border border-border-subtle bg-surface-card p-4 text-left sm:p-5">
-                <h2 class="mb-3 text-base font-bold text-text-primary select-none">
-                    {isEditMode ? 'Edit post details' : 'Post details'}
-                </h2>
+                <h2 class="mb-3 type-card-title select-none">Post details</h2>
 
                 <div class="flex flex-col gap-4">
                     <BannerImageUpload
@@ -687,7 +685,7 @@
                 autosaveKey={editId ? `autosave_edit_${editId}` : 'autosave_new'}
                 placeholder="Write your markdown content here..."
                 minHeight="500px"
-                stickyTopClass="top-14 md:top-0"
+                stickyTopClass="top-12 md:top-0"
                 onImageUpload={handleImageUploadFile}
                 onVideoUpload={handleVideoUploadFile} />
         </fieldset>
@@ -758,22 +756,14 @@
     onConfirm={notifySubscribers}
     onCancel={() => (showNotifyDialog = false)} />
 
-<Dialog
-    bind:isOpen={showCancelDialog}
+<ConfirmationDialog
+    isOpen={showCancelDialog}
     title={isEditMode ? 'Discard unsaved changes?' : 'Discard draft?'}
-    description={isEditMode ?
+    message={isEditMode ?
         'You have unsaved edits. All changes will be lost.'
     :   'You have an unsaved draft. All changes will be lost.'}
-    onClose={() => (showCancelDialog = false)}>
-    {#snippet footer()}
-        <Button
-            type="secondary"
-            size="md"
-            onclick={() => (showCancelDialog = false)}>Keep editing</Button>
-        <Button
-            type="danger"
-            tone="critical"
-            size="md"
-            onclick={discardDraft}>{isEditMode ? 'Discard changes' : 'Discard draft'}</Button>
-    {/snippet}
-</Dialog>
+    confirmLabel={isEditMode ? 'Discard changes' : 'Discard draft'}
+    cancelLabel="Keep editing"
+    isDestructive
+    onConfirm={discardDraft}
+    onCancel={() => (showCancelDialog = false)} />

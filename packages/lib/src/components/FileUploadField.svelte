@@ -94,6 +94,8 @@
         aria-invalid={!!error}
         disabled={isDisabled}
         onchange={handleFileChange}
+        tabindex="-1"
+        aria-hidden="true"
         class="sr-only" />
 
     <div
@@ -153,17 +155,6 @@
             {#if fileSize}
                 <p class="font-mono text-xs text-text-muted">{fileSize}</p>
             {/if}
-            <Button
-                type="ghost"
-                tone="critical"
-                size="xs"
-                disabled={isDisabled}
-                onclick={e => {
-                    e.stopPropagation();
-                    clearFile();
-                }}>
-                Remove
-            </Button>
         {:else}
             <UploadCloud
                 class="size-8 text-text-secondary transition-colors group-hover:text-accent-text" />
@@ -177,6 +168,18 @@
             {/if}
         {/if}
     </div>
+
+    {#if selectedFileName && !isUploading}
+        <Button
+            type="ghost"
+            tone="critical"
+            size="xs"
+            class="self-start"
+            disabled={isDisabled}
+            onclick={clearFile}>
+            Remove file
+        </Button>
+    {/if}
 
     {#if error}
         <FieldMessage
