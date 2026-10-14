@@ -88,11 +88,11 @@
         filename = file.name;
         controller = new AbortController();
         try {
-            const { blob } = await processBanner(file, controller.signal);
+            const { webp, avif } = await processBanner(file, controller.signal);
             if (current !== generation) return;
-            preview = URL.createObjectURL(blob);
-            size = `${Math.ceil(blob.size / 1024)} KiB · WebP · 1280 × 640`;
-            onprepared({ operation: 'replace', file: blob });
+            preview = URL.createObjectURL(webp);
+            size = `WebP ${Math.ceil(webp.size / 1024)} KiB · AVIF ${Math.ceil(avif.size / 1024)} KiB · 1280 × 640`;
+            onprepared({ operation: 'replace', webp, avif });
         } catch (failure) {
             if (current !== generation) return;
             error = failure instanceof Error ? failure.message : 'Image processing failed.';

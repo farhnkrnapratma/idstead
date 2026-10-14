@@ -2,7 +2,7 @@ export function processBanner(
     file: Blob,
     signal: AbortSignal,
     allowUpscale = false
-): Promise<{ blob: Blob; width: number; height: number }> {
+): Promise<{ webp: Blob; avif: Blob; width: number; height: number }> {
     return new Promise((resolve, reject) => {
         if (signal.aborted) return reject(new Error('Image processing cancelled.'));
         const worker = new Worker(new URL('./workers/banner.worker.ts', import.meta.url), {

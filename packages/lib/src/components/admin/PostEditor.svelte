@@ -482,8 +482,10 @@
                 const form = new FormData();
                 form.set('post', JSON.stringify(metadata));
                 form.set('markdown', markdownContent);
-                if (bannerChange.operation === 'replace')
-                    form.set('banner', bannerChange.file, 'banner.webp');
+                if (bannerChange.operation === 'replace') {
+                    form.set('banner', bannerChange.webp, 'banner.webp');
+                    form.set('bannerAvif', bannerChange.avif, 'banner.avif');
+                }
                 await rememberPostSave(operationKey, form);
                 pendingSave = form;
             }

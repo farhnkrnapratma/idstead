@@ -1,11 +1,13 @@
 <script lang="ts">
     import type { HTMLImgAttributes } from 'svelte/elements';
+    import type { ImageSource } from '../blogBanner';
     import { Image as ImageIcon, User as UserIcon } from '@lucide/svelte';
     import { cn } from '../utils/cn';
 
     interface Props {
         src?: string | null;
         alt: string;
+        sources?: ImageSource[];
         class?: string;
         imgClass?: string;
         loading?: 'lazy' | 'eager';
@@ -20,6 +22,7 @@
     let {
         src = '',
         alt,
+        sources,
         class: className = '',
         imgClass = '',
         loading = 'lazy',
@@ -93,14 +96,33 @@
                 aria-hidden="true">
             </div>
         {/if}
-        <img
-            bind:this={imgElement}
-            src={src || ''}
-            {alt}
-            {loading}
-            {referrerpolicy}
-            onload={handleLoad}
-            onerror={handleError}
-            class={cn('relative block h-full w-full object-cover', imgClass)} />
+        {#if sources && sources.length > 0}
+            <picture>
+                {#each sources as source}
+                    <source
+                        srcset={source.srcset}
+                        type={source.type} />
+                {/each}
+                <img
+                    bind:this={imgElement}
+                    src={src || ''}
+                    {alt}
+                    {loading}
+                    {referrerpolicy}
+                    onload={handleLoad}
+                    onerror={handleError}
+                    class={cn('relative block h-full w-full object-cover', imgClass)} />
+            </picture>
+        {:else}
+            <img
+                bind:this={imgElement}
+                src={src || ''}
+                {alt}
+                {loading}
+                {referrerpolicy}
+                onload={handleLoad}
+                onerror={handleError}
+                class={cn('relative block h-full w-full object-cover', imgClass)} />
+        {/if}
     {/if}
 </div>

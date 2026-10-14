@@ -13,6 +13,17 @@ export function publicAvatarUrl(
     if (!source || !profile?.siteUrl) return '';
     return new URL(source, profile.siteUrl).href;
 }
+
+export type { ImageSource } from './blogBanner';
+
+export function avatarSources(profile?: { avatarVersion?: string | null } | null) {
+    if (!profile?.avatarVersion) return [];
+    const version = encodeURIComponent(profile.avatarVersion);
+    return [
+        { srcset: `/avatar.avif?v=${version}`, type: 'image/avif' },
+        { srcset: `/avatar.webp?v=${version}`, type: 'image/webp' }
+    ];
+}
 export const iconSizes = {
     'avatar.png': 512,
     'favicon-16x16.png': 16,

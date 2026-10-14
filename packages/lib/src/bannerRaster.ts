@@ -9,7 +9,7 @@ import {
 import { inspectWebp } from './webp';
 import { isSupportedRasterImage } from './imageFormat';
 
-export async function encodeBanner(canvas: Pick<OffscreenCanvas, 'convertToBlob'>) {
+export async function encodeWebpBanner(canvas: Pick<OffscreenCanvas, 'convertToBlob'>) {
     for (const quality of BANNER_QUALITIES) {
         const blob = await canvas.convertToBlob({ type: 'image/webp', quality });
         if (blob.type !== 'image/webp')
@@ -22,6 +22,18 @@ export async function encodeBanner(canvas: Pick<OffscreenCanvas, 'convertToBlob'
         }
     }
     throw new Error('This image cannot fit within 500 KiB at 1280 × 640. Choose a simpler image.');
+}
+
+export async function encodeAvifBanner(canvas: OffscreenCanvas) {
+    const { encode } = await import('@jsquash/avif');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Image processing is unavailable in this browser.');
+    const imageData = ctx.getImageData(0, 0, BANNER_WIDTH, BANNER_HEIGHT);
+    if (!imageData) throw new Error('Image processing is unavailable in this browser.');
+    const buffer = await encode(imageData);
+    const blob = new Blob([buffer], { type: 'image/avif' });
+    if (blob.size <= BANNER_LIMIT) return blob;
+    throw new Error('AVIF encoding exceeded 500 KiB. Try a simpler image.');
 }
 
 export async function rasterBanner(file: Blob, allowUpscale = false) {
@@ -56,7 +68,11 @@ export async function rasterBanner(file: Blob, allowUpscale = false) {
             BANNER_WIDTH,
             BANNER_HEIGHT
         );
-        return { blob: await encodeBanner(canvas), width: bitmap.width, height: bitmap.height };
+        const [webpBlob, avifBlob] = await Promise.all([
+            encodeWebpBanner(canvas),
+            encodeAvifBanner(canvas)
+        ]);
+        return { webp: webpBlob, avif: avifBlob, width: bitmap.width, height: bitmap.height };
     } finally {
         bitmap.close();
     }

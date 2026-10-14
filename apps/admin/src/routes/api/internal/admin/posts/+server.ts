@@ -44,9 +44,12 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
                     validation.errors.map(error => error.message).join(' | ')
                 );
         }
-        const operation = await savePostOperation(db, auth.actor, input, () =>
-            putBanner(platform, input.id, input.operationId, input.image!)
-        );
+        const operation = await savePostOperation(db, auth.actor, input, async () => {
+            if (input.image)
+                await putBanner(platform, input.id, input.operationId, input.image, 'webp');
+            if (input.avifImage)
+                await putBanner(platform, input.id, input.operationId, input.avifImage, 'avif');
+        });
         if (operation.state === 'conflict')
             return apiError(
                 409,

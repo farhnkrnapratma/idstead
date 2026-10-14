@@ -73,8 +73,15 @@ export async function parsePostInput(request: Request, wasm: WebAssembly.Module)
         throw new Error('Invalid post operation.');
     let post: Record<string, unknown> = {};
     let markdown = '';
-    let banner: { operation: string; sha256?: string; bytes?: number } = { operation: 'keep' };
+    let banner: {
+        operation: string;
+        sha256?: string;
+        bytes?: number;
+        avifSha256?: string;
+        avifBytes?: number;
+    } = { operation: 'keep' };
     let image: Uint8Array<ArrayBuffer> | null = null;
+    let avifImage: Uint8Array<ArrayBuffer> | null = null;
     if (input.kind === 'save') {
         if (typeof input.published !== 'boolean') throw new Error('Invalid publication status.');
         const slug = text(input.slug, POST_SLUG_MAX_LENGTH, true)!;
@@ -115,13 +122,24 @@ export async function parsePostInput(request: Request, wasm: WebAssembly.Module)
             throw new Error('Banner image is required.');
         banner = { operation: input.bannerOperation };
         const file = form.get('banner');
+        const avifFile = form.get('bannerAvif');
         if (banner.operation === 'replace') {
             if (!(file instanceof Blob) || file.size > BANNER_LIMIT)
                 throw new Error('A WebP banner no larger than 500 KiB is required.');
+            if (!(avifFile instanceof Blob) || avifFile.size > BANNER_LIMIT)
+                throw new Error('An AVIF banner no larger than 500 KiB is required.');
             image = new Uint8Array(await file.arrayBuffer());
+            avifImage = new Uint8Array(await avifFile.arrayBuffer());
             await validateBanner(image, wasm);
-            banner = { ...banner, sha256: await sha256(image), bytes: image.byteLength };
-        } else if (file !== null) throw new Error('Unexpected banner upload.');
+            await validateBanner(avifImage, wasm);
+            banner = {
+                ...banner,
+                sha256: await sha256(image),
+                bytes: image.byteLength,
+                avifSha256: await sha256(avifImage),
+                avifBytes: avifImage.byteLength
+            };
+        } else if (file !== null || avifFile !== null) throw new Error('Unexpected banner upload.');
         post.banner_references = [
             ...new Set(
                 Array.from(
@@ -152,6 +170,7 @@ export async function parsePostInput(request: Request, wasm: WebAssembly.Module)
         banner,
         markdown,
         image,
+        avifImage,
         hash
     };
 }
