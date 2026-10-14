@@ -81,11 +81,15 @@ export function validateIco(buffer: ArrayBuffer) {
 }
 
 export async function validateAvatar(form: FormData): Promise<Record<string, ArrayBuffer> | null> {
-    const expected = [...Object.keys(iconSizes), 'favicon.ico', 'vector'];
+    const required = [...Object.keys(iconSizes), 'favicon.ico', 'vector'];
+    const optional = ['avatar.webp', 'avatar.avif'];
     const entries = Array.from(form.keys()).filter(key => key !== 'profile');
     if (!entries.length) return null;
-    if (entries.length !== expected.length || expected.some(key => form.getAll(key).length !== 1))
-        throw new Error('Upload the complete icon package.');
+    // Check that all required fields are present and optional fields don't have duplicates
+    const missingRequired = required.filter(key => form.getAll(key).length !== 1);
+    if (missingRequired.length > 0) throw new Error('Upload the complete icon package.');
+    const extraEntries = entries.filter(key => !required.includes(key) && !optional.includes(key));
+    if (extraEntries.length > 0) throw new Error('Upload the complete icon package.');
     const files: Record<string, ArrayBuffer> = {};
     for (const [name, size] of Object.entries(iconSizes)) {
         const file = form.get(name);
@@ -105,5 +109,13 @@ export async function validateAvatar(form: FormData): Promise<Record<string, Arr
     files['favicon.svg'] = new TextEncoder().encode(
         buildSvg(JSON.parse(vector) as SvgPath[])
     ).buffer;
+    // Handle optional avatar.webp and avatar.avif
+    for (const name of optional) {
+        const file = form.get(name);
+        if (file instanceof File) {
+            if (file.size > IMAGE_LIMIT) throw new Error(`${name} must be no larger than 500 KiB.`);
+            files[name] = await file.arrayBuffer();
+        }
+    }
     return files;
 }

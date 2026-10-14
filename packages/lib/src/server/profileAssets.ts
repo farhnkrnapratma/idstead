@@ -10,7 +10,13 @@ import { getSupabaseAdminClient } from './supabaseAdmin';
 import { supabase } from '#lib/supabase.ts';
 import { iconSizes, type IdentityAsset } from '#lib/siteIdentity.ts';
 
-export const assetNames = [...Object.keys(iconSizes), 'favicon.ico', 'favicon.svg'];
+export const assetNames = [
+    ...Object.keys(iconSizes),
+    'favicon.ico',
+    'favicon.svg',
+    'avatar.avif',
+    'avatar.webp'
+];
 
 type StorageEnvKey =
     'R2_ACCOUNT_ID' | 'R2_BUCKET_NAME' | 'R2_ACCESS_KEY_ID' | 'R2_SECRET_ACCESS_KEY';
