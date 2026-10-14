@@ -3,10 +3,13 @@ import type { RequestHandler } from './$types';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
+import { requireAdminAuth } from '#lib/server/adminCv.ts';
 import { sha256, UUID_PATTERN } from '#lib/blogBanner.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform }) => {
     if (!isSameOriginRequest(request, url)) return apiError(403, 'CORS_BLOCKED', 'CORS blocked');
+    const authError = await requireAdminAuth(request, platform);
+    if (authError) return authError;
 
     try {
         const form = await request.formData();
@@ -15,12 +18,15 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
 
         if (!supabaseAdmin) throw new Error('Database unavailable.');
 
-        if (operation === 'remove') {
-            const { data: profile } = await supabaseAdmin
-                .from('db_profiles')
-                .select('banner_version')
-                .single();
+        const { data: profile, error: profileError } = await supabaseAdmin
+            .from('db_profiles')
+            .select('id, banner_version')
+            .single();
 
+        if (profileError || !profile?.id) throw new Error('Profile not found.');
+        const profileId = profile.id;
+
+        if (operation === 'remove') {
             if (profile?.banner_version) {
                 await supabaseAdmin
                     .from('db_profile_banner_versions')
@@ -72,6 +78,7 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
 
         const { data } = await supabaseAdmin.rpc('db_prepare_profile_banner_version', {
             p_version_id: versionId,
+            p_profile_id: profileId,
             p_wide_webp_object_key: wideWebpKey,
             p_wide_webp_sha256: wideWebpHash,
             p_wide_webp_bytes: wideWebpBuf.byteLength,
