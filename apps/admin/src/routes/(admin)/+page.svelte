@@ -13,6 +13,7 @@
     import { FieldValidation, requiredText, emailError } from '#lib/fieldValidation.ts';
     import { avatarSource } from '#lib/siteIdentity.ts';
     import ProfileImageUpload from '#lib/components/ProfileImageUpload.svelte';
+    import SiteBannerImageUpload from '#lib/components/admin/SiteBannerImageUpload.svelte';
     import type { ImagePackage } from '#lib/siteIdentity.ts';
     import { page } from '$app/state';
     import { invalidateAll } from '$app/navigation';
@@ -3969,6 +3970,7 @@
                         onbusy={(value: boolean) => {
                             preparingImage = value;
                         }} />
+                    <SiteBannerImageUpload bind:currentVersion={authorState.bannerVersion} />
                     <section aria-labelledby="section-identity">
                         <h3
                             id="section-identity"
