@@ -90,17 +90,17 @@
         <div class="flex flex-col gap-5 sm:gap-6">
             <div class="flex min-w-0 flex-col gap-1.5">
                 <div class="flex min-w-0 flex-col gap-0.5">
-                    <h3 class="text-base font-bold tracking-tight text-text-primary sm:text-lg">
+                    <h3 class="type-card-title">
                         {resolvedName}
                     </h3>
                     {#if resolvedHeadline}
-                        <p class="text-xs font-medium text-text-muted sm:text-sm">
+                        <p class="type-body font-medium text-text-muted">
                             {resolvedHeadline}
                         </p>
                     {/if}
                 </div>
                 {#if resolvedDescription}
-                    <p class="max-w-lg text-xs leading-relaxed text-text-secondary">
+                    <p class="max-w-lg type-body text-text-secondary">
                         {resolvedDescription}
                     </p>
                 {/if}
@@ -214,7 +214,7 @@
     }
 
     h3 {
-        @apply text-base font-bold not-italic sm:text-lg;
+        @apply not-italic;
     }
 
     h4 {

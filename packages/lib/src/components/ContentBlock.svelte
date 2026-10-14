@@ -36,10 +36,10 @@
     {#if title || description}
         <div class="flex flex-col gap-1">
             {#if title}
-                <h3 class="text-sm font-bold text-text-primary">{title}</h3>
+                <h3 class="type-card-title">{title}</h3>
             {/if}
             {#if description}
-                <p class="text-xs leading-relaxed text-text-secondary">{description}</p>
+                <p class="type-body text-text-secondary">{description}</p>
             {/if}
         </div>
     {/if}

@@ -56,7 +56,7 @@
         :   undefined}
         class={cn(
             'heading-anchor scroll-mt-20',
-            'text-lg leading-snug font-bold tracking-tight not-italic sm:text-3xl md:text-4xl [&_.heading-text]:font-bold [&_.heading-text]:not-italic',
+            'text-2xl leading-snug font-bold tracking-tight not-italic sm:text-3xl md:text-4xl [&_.heading-text]:font-bold [&_.heading-text]:not-italic',
             titleClass
         )}>
         {#if titleParts.hasMultiple}

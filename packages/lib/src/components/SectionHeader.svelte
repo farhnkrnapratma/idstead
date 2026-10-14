@@ -24,7 +24,7 @@
             {title}
         </h1>
         {#if subtitle}
-            <p class="mt-1 max-w-xl text-xs leading-relaxed text-text-secondary sm:text-sm">
+            <p class="mt-1 max-w-xl type-body text-text-secondary">
                 {subtitle}
             </p>
         {/if}

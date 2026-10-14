@@ -58,7 +58,7 @@
     <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div class="flex flex-col items-center gap-4 text-center sm:items-start sm:text-left">
             <div class="flex flex-col gap-1">
-                <h3 class="text-base font-bold tracking-tight text-text-primary sm:text-lg">
+                <h3 class="type-card-title">
                     {title}
                 </h3>
                 {#if currentVoted === null}

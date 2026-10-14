@@ -81,7 +81,7 @@
                 <svelte:element
                     this={headingTag}
                     style="view-transition-name: post-title-{post.slug}"
-                    class="line-clamp-2 text-xl leading-snug font-bold text-text-primary">
+                    class="line-clamp-2 type-card-title">
                     {post.title}
                     {#if post.pinned || isNew}
                         <span class="inline-flex items-center gap-1 align-middle select-none">
@@ -122,8 +122,7 @@
                 <div class="flex flex-col items-start gap-1">
                     <p
                         {@attach !expanded && observeOverflow}
-                        class="text-xs leading-relaxed text-text-secondary sm:text-sm {expanded ? ''
-                        :   'line-clamp-2'}">
+                        class="type-body text-text-secondary {expanded ? '' : 'line-clamp-2'}">
                         {post.excerpt}
                         {#if overflowing && expanded}
                             <Button

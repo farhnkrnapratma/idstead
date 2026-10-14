@@ -19,7 +19,7 @@
     let {
         title = '',
         description = '',
-        titleClass = 'text-xl font-bold text-text-primary',
+        titleClass = 'type-section-title',
         action = '',
         method = 'POST',
         onsubmit,

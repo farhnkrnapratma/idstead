@@ -282,10 +282,7 @@
                     <MessageSquareWarning class="size-3" />
                     Feedback & Reports
                 </Badge>
-                <h1
-                    class="text-3xl font-bold tracking-tight text-text-primary md:text-4xl lg:text-5xl">
-                    Your feedback matters
-                </h1>
+                <h1 class="type-page-title md:text-4xl">Your feedback matters</h1>
                 <p class="mt-4 max-w-2xl text-base leading-relaxed text-text-secondary">
                     Your valuable feedback helps improve the quality of articles and ensures the
                     website's technical systems run reliably. Please let me know if you spot any
@@ -298,7 +295,7 @@
                 class="relative z-10 p-5 select-none">
                 <div class="flex flex-col gap-3.5">
                     <div class="flex flex-col">
-                        <h2 class="text-sm font-bold text-text-primary">Feedback categories</h2>
+                        <h2 class="type-card-title">Feedback categories</h2>
                         <p class="mt-0.5 text-xs text-text-muted">
                             Click any category to quickly populate your message below.
                         </p>
@@ -319,7 +316,7 @@
                                     Writing errors
                                 </span>
                             </div>
-                            <p class="text-xs leading-relaxed text-text-secondary">
+                            <p class="type-body text-text-secondary">
                                 Grammatical mistakes, typos, spelling, or poor phrasing.
                             </p>
                         </button>
@@ -338,7 +335,7 @@
                                     Technical inaccuracies
                                 </span>
                             </div>
-                            <p class="text-xs leading-relaxed text-text-secondary">
+                            <p class="type-body text-text-secondary">
                                 Code snippets that don't compile, wrong command usages, or faulty
                                 explanation logic.
                             </p>
@@ -358,7 +355,7 @@
                                     Outdated information
                                 </span>
                             </div>
-                            <p class="text-xs leading-relaxed text-text-secondary">
+                            <p class="type-body text-text-secondary">
                                 Deprecated package API calls, tools that are no longer active, or
                                 outdated tutorial steps.
                             </p>
@@ -378,7 +375,7 @@
                                     Broken links
                                 </span>
                             </div>
-                            <p class="text-xs leading-relaxed text-text-secondary">
+                            <p class="type-body text-text-secondary">
                                 404 links, invalid references, or missing static download files.
                             </p>
                         </button>
@@ -397,7 +394,7 @@
                                     Website issues
                                 </span>
                             </div>
-                            <p class="text-xs leading-relaxed text-text-secondary">
+                            <p class="type-body text-text-secondary">
                                 UI layout bugs, visual display mistakes, broken styling, or slow
                                 loading times.
                             </p>
@@ -417,7 +414,7 @@
                                     Other issues
                                 </span>
                             </div>
-                            <p class="text-xs leading-relaxed text-text-secondary">
+                            <p class="type-body text-text-secondary">
                                 General inquiries, suggestions, content ideas, or feedback outside
                                 listed categories.
                             </p>
@@ -432,7 +429,7 @@
                 class="relative z-10 flex w-full flex-col gap-3 rounded-md glass-card p-6 text-left"
                 autocomplete="off">
                 <div class="mb-2 select-none">
-                    <h2 class="text-sm font-bold text-text-primary">Report an issue</h2>
+                    <h2 class="type-card-title">Report an issue</h2>
                     <p class="mt-0.5 text-xs text-text-muted">
                         Complete the fields below to submit your feedback directly.
                     </p>

@@ -158,7 +158,7 @@
         <PageContainer width="standard">
             <div class="mb-6 flex items-end justify-between gap-4">
                 <div>
-                    <h1 class="text-3xl font-bold tracking-tight text-text-primary">Blog</h1>
+                    <h1 class="type-page-title">Blog</h1>
                     <p class="mt-2 text-sm text-text-secondary">
                         Articles on the things I'm building, learning, and thinking about.
                     </p>

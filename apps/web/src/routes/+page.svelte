@@ -685,7 +685,7 @@
                     <div>
                         <svelte:element
                             this={headingTag}
-                            class="line-clamp-2 text-xl leading-snug font-bold text-text-primary">
+                            class="line-clamp-2 type-card-title">
                             {project.name}
                             {#if isRepoPinned(project) || isRepoNew(project)}
                                 <span
@@ -762,7 +762,7 @@
 
                     {#if project.desc}
                         <p
-                            class="line-clamp-2 text-xs leading-relaxed text-text-secondary sm:text-sm"
+                            class="line-clamp-2 type-body text-text-secondary"
                             title={project.desc}>
                             {project.desc}
                         </p>
@@ -826,7 +826,7 @@
 
                         <h1
                             class="relative z-10 max-w-full px-0 sm:px-2 {avatar ? 'mt-1.5 sm:mt-4'
-                            :   'pt-5'} text-xl font-extrabold tracking-tight text-text-primary sm:text-2xl md:text-3xl">
+                            :   'pt-5'} type-page-title font-extrabold">
                             {name}
                         </h1>
 
@@ -839,14 +839,14 @@
 
                         {#if headline}
                             <p
-                                class="relative z-10 mt-1 max-w-lg text-xs leading-relaxed text-text-muted sm:mt-1.5 sm:text-sm">
+                                class="relative z-10 mt-1 max-w-lg type-body text-text-muted sm:mt-1.5">
                                 {headline}
                             </p>
                         {/if}
 
                         {#if desc}
                             <p
-                                class="relative z-10 mt-2 max-w-lg font-sans text-xs leading-relaxed text-text-secondary sm:mt-3 sm:text-sm">
+                                class="relative z-10 mt-2 max-w-lg font-sans type-body text-text-secondary sm:mt-3">
                                 {desc}
                             </p>
                         {/if}
@@ -929,9 +929,7 @@
                 </div>
 
                 <div>
-                    <h2 class="mb-3 text-lg font-bold tracking-tight text-text-primary sm:mb-4">
-                        Recent Posts
-                    </h2>
+                    <h2 class="mb-3 type-section-title sm:mb-4">Recent Posts</h2>
                     {#if posts.length === 0}
                         <EmptyState
                             title="No posts yet"
@@ -960,9 +958,7 @@
                 </div>
 
                 <div>
-                    <h2 class="mb-3 text-lg font-bold tracking-tight text-text-primary sm:mb-4">
-                        Top Projects
-                    </h2>
+                    <h2 class="mb-3 type-section-title sm:mb-4">Top Projects</h2>
                     {#if recentProjects.length === 0}
                         <EmptyState
                             title="No projects yet"
@@ -991,7 +987,7 @@
                 </div>
 
                 <div>
-                    <h2 class="mb-4 text-lg font-bold tracking-tight text-text-primary">Skills</h2>
+                    <h2 class="mb-4 type-section-title">Skills</h2>
                     {#if skillsSnapshot.length === 0}
                         <EmptyState
                             title="No skills listed yet"
@@ -1013,9 +1009,7 @@
                 </div>
 
                 <div>
-                    <h2 class="mb-4 text-lg font-bold tracking-tight text-text-primary">
-                        Experience
-                    </h2>
+                    <h2 class="mb-4 type-section-title">Experience</h2>
                     {#if experiences.length === 0}
                         <EmptyState
                             title="No experience listed yet"
@@ -1075,16 +1069,14 @@
                                 strokeWidth={1.75} />
                         </div>
                         <div>
-                            <h4
-                                class="text-base leading-snug font-bold text-balance text-text-primary sm:text-lg">
+                            <h4 class="type-card-title text-balance">
                                 <ShinyText
                                     text="Support My Open Source Work"
                                     color="var(--color-accent)"
                                     shineColor="var(--color-text-on-accent)"
                                     speed={3} />
                             </h4>
-                            <p
-                                class="col-span-2 text-xs leading-relaxed text-pretty text-text-secondary sm:text-sm">
+                            <p class="col-span-2 type-body text-pretty text-text-secondary">
                                 Your support helps keep my open source projects maintained and
                                 sustainable over time.
                             </p>
@@ -1115,8 +1107,8 @@
                     class="flex w-full flex-col gap-2.5 rounded-md glass-card p-4 text-left sm:gap-3 sm:p-6"
                     autocomplete="off">
                     <div class="mb-2 select-none">
-                        <h2 class="text-sm font-bold text-text-primary">Send a Message</h2>
-                        <p class="mt-0.5 text-xs text-text-muted">
+                        <h2 class="type-card-title">Send a Message</h2>
+                        <p class="mt-0.5 type-body text-text-muted">
                             Feel free to drop me a line. I'll get back to you as soon as possible.
                         </p>
                     </div>
@@ -1277,9 +1269,7 @@
             <PageContainer width="standard">
                 <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                     <div>
-                        <h1 class="text-3xl font-bold tracking-tight text-text-primary">
-                            Curriculum Vitae
-                        </h1>
+                        <h1 class="type-page-title">Curriculum Vitae</h1>
                         <p class="mt-2 text-sm text-text-secondary">View or download my resume.</p>
                     </div>
                     {#if data.cvExists}
@@ -1308,9 +1298,7 @@
                 </div>
 
                 <div class="mt-8">
-                    <h2 class="mb-4 text-lg font-bold tracking-tight text-text-primary">
-                        Experience
-                    </h2>
+                    <h2 class="mb-4 type-section-title">Experience</h2>
                     {#if experiences.length === 0}
                         <div class="mt-4">
                             <EmptyState
@@ -1339,9 +1327,7 @@
                 </div>
 
                 <div class="mt-8">
-                    <h2 class="mb-4 text-lg font-bold tracking-tight text-text-primary">
-                        Education
-                    </h2>
+                    <h2 class="mb-4 type-section-title">Education</h2>
                     {#if education.length === 0}
                         <div class="mt-4">
                             <EmptyState
@@ -1369,7 +1355,7 @@
                 </div>
 
                 <div class="mt-8">
-                    <h2 class="mb-4 text-lg font-bold tracking-tight text-text-primary">Skills</h2>
+                    <h2 class="mb-4 type-section-title">Skills</h2>
                     {#if skills.length === 0}
                         <div class="mt-4">
                             <EmptyState
@@ -1402,7 +1388,7 @@
             <PageContainer width="standard">
                 <div class="mb-6 flex items-end justify-between gap-4">
                     <div>
-                        <h1 class="text-3xl font-bold tracking-tight text-text-primary">Blog</h1>
+                        <h1 class="type-page-title">Blog</h1>
                         <p class="mt-2 text-sm text-text-secondary">
                             Articles on the things I'm building, learning, and thinking about.
                         </p>
@@ -1466,7 +1452,7 @@
             class="relative z-10 pt-5 pb-6 md:pt-8 md:pb-8">
             <PageContainer width="standard">
                 <div class="mb-6">
-                    <h1 class="text-3xl font-bold tracking-tight text-text-primary">Projects</h1>
+                    <h1 class="type-page-title">Projects</h1>
                     <p class="mt-2 text-sm text-text-secondary">Open source work on GitHub.</p>
                 </div>
 
