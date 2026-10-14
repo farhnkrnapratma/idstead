@@ -8,15 +8,38 @@ import * as env from '$app/env/private';
 import * as publicEnv from '$app/env/public';
 import { getSupabaseAdminClient } from './supabaseAdmin';
 import { supabase } from '#lib/supabase.ts';
-import { iconSizes, type IdentityAsset } from '#lib/siteIdentity.ts';
+import { bannerSizes, iconSizes, type IdentityAsset } from '#lib/siteIdentity.ts';
 
 export const assetNames = [
     ...Object.keys(iconSizes),
     'favicon.ico',
     'favicon.svg',
     'avatar.avif',
-    'avatar.webp'
+    'avatar.webp',
+    ...Object.keys(bannerSizes)
 ];
+
+const contentTypes: Record<string, string> = {
+    svg: 'image/svg+xml',
+    ico: 'image/x-icon',
+    webp: 'image/webp',
+    avif: 'image/avif',
+    png: 'image/png'
+};
+
+function versionColumn(name: string) {
+    return name in bannerSizes ? 'banner_version' : 'avatar_version';
+}
+
+function assetDimensions(name: string) {
+    if (name in bannerSizes) return bannerSizes[name as keyof typeof bannerSizes];
+    const size =
+        iconSizes[name as keyof typeof iconSizes]
+        ?? (name.startsWith('avatar.') ? 512
+        : name.endsWith('.svg') ? 128
+        : 48);
+    return { width: size, height: size };
+}
 
 type StorageEnvKey =
     'R2_ACCOUNT_ID' | 'R2_BUCKET_NAME' | 'R2_ACCESS_KEY_ID' | 'R2_SECRET_ACCESS_KEY';
@@ -47,10 +70,7 @@ export async function writeAssets(
     const { bucket, client } = assetStorage(platform);
     const assets: IdentityAsset[] = [];
     for (const [name, bytes] of Object.entries(files)) {
-        const type =
-            name.endsWith('.svg') ? 'image/svg+xml'
-            : name.endsWith('.ico') ? 'image/x-icon'
-            : 'image/png';
+        const type = contentTypes[name.split('.').pop() ?? ''] ?? 'application/octet-stream';
         const key = `identity/${version}/${name}`;
         const sha = await crypto.subtle.digest('SHA-256', bytes);
         await client.send(
@@ -62,14 +82,11 @@ export async function writeAssets(
                 CacheControl: 'public, max-age=31536000, immutable'
             })
         );
-        const size =
-            iconSizes[name as keyof typeof iconSizes] ?? (name.endsWith('.svg') ? 128 : 48);
         assets.push({
             name,
             key,
             type,
-            width: size,
-            height: size,
+            ...assetDimensions(name),
             bytes: bytes.byteLength,
             sha256: Array.from(new Uint8Array(sha), b => b.toString(16).padStart(2, '0')).join('')
         });
@@ -133,10 +150,11 @@ export async function serveIdentityAsset(
     if (!assetNames.includes(name)) return new Response(null, { status: 404 });
     let version = url.searchParams.get('v');
     if (version && !/^[0-9a-f-]{36}$/i.test(version)) return new Response(null, { status: 404 });
+    const column = versionColumn(name);
     if (!version) {
         const { data, error } = await supabase
             .from('db_profiles')
-            .select('avatar_version')
+            .select(column)
             .order('created_at')
             .limit(1)
             .maybeSingle();
@@ -145,7 +163,7 @@ export async function serveIdentityAsset(
                 status: 503,
                 headers: { 'Cache-Control': 'no-store' }
             });
-        version = data?.avatar_version;
+        version = (data as Record<string, string | null> | null)?.[column] ?? null;
     }
     if (!version) {
         const base = String(
@@ -153,6 +171,7 @@ export async function serveIdentityAsset(
         ).replace(/\/+$/, '');
         if (
             !base
+            || column === 'banner_version'
             || name === 'favicon.svg'
             || (name === 'avatar.png' && url.pathname !== '/hero.png')
         )
@@ -197,16 +216,17 @@ export async function serveIdentityAsset(
         if (error instanceof Error && error.name === 'NoSuchKey') {
             const { data, error: lookupError } = await supabase
                 .from('db_profiles')
-                .select('avatar_version')
+                .select(column)
                 .order('created_at')
                 .limit(1)
                 .maybeSingle();
             if (lookupError) throw lookupError;
-            if (data?.avatar_version && data.avatar_version !== version) {
+            const current = (data as Record<string, string | null> | null)?.[column];
+            if (current && current !== version) {
                 return new Response(null, {
                     status: 307,
                     headers: {
-                        Location: `${url.pathname}?v=${data.avatar_version}`,
+                        Location: `${url.pathname}?v=${current}`,
                         'Cache-Control': 'no-store'
                     }
                 });

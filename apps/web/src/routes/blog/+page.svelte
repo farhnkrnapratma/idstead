@@ -26,7 +26,7 @@
         staggerChildren
     } from '#lib/index.ts';
     import { buttonKey } from '#lib/shortcuts.ts';
-    import { publicAvatarUrl, siteBannerOgUrl } from '#lib/siteIdentity.ts';
+    import { publicAvatarUrl, publicBannerOgUrl } from '#lib/siteIdentity.ts';
 
     let { data } = $props();
 
@@ -40,12 +40,11 @@
     const description = $derived(
         `Articles on the things ${authorName || 'I'} ${authorName ? 'is' : 'am'} building, learning, and thinking about.`
     );
-    const ogImage = $derived(
-        pageAuthor?.bannerVersion ? siteBannerOgUrl(pageAuthor) : publicAvatarUrl(pageAuthor)
-    );
-    const ogImageType = $derived(pageAuthor?.bannerVersion ? 'image/webp' : 'image/png');
-    const ogImageWidth = $derived(pageAuthor?.bannerVersion ? '1200' : '512');
-    const ogImageHeight = $derived(pageAuthor?.bannerVersion ? '630' : '512');
+    const ogBanner = $derived(publicBannerOgUrl(pageAuthor));
+    const ogImage = $derived(ogBanner || publicAvatarUrl(pageAuthor));
+    const ogImageType = $derived(ogBanner ? 'image/webp' : 'image/png');
+    const ogImageWidth = $derived(ogBanner ? '1200' : '512');
+    const ogImageHeight = $derived(ogBanner ? '630' : '512');
 
     const filters = createFilterSortStore({ defaultSortField: 'date', defaultSortDir: 'desc' });
 

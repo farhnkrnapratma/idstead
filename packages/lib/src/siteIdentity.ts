@@ -25,23 +25,41 @@ export function avatarSources(profile?: { avatarVersion?: string | null } | null
     ];
 }
 
-export function siteBannerWideUrl(profile?: { bannerVersion?: string | null } | null) {
-    if (!profile?.bannerVersion) return null;
-    return `/site/banner/${profile.bannerVersion}/wide.avif`;
-}
+export const bannerSizes = {
+    'banner.avif': { width: 1280, height: 640 },
+    'banner.webp': { width: 1280, height: 640 },
+    'banner-og.webp': { width: 1200, height: 630 }
+} as const;
+
+export type BannerAssetName = keyof typeof bannerSizes;
 
 export function siteBannerOgUrl(profile?: { bannerVersion?: string | null } | null) {
-    if (!profile?.bannerVersion) return null;
-    return `/site/banner/${profile.bannerVersion}/og.webp`;
+    if (!profile?.bannerVersion) return '';
+    return `/banner-og.webp?v=${encodeURIComponent(profile.bannerVersion)}`;
 }
 
-export function siteBannerWideSources(profile?: { bannerVersion?: string | null } | null) {
+export function siteBannerSource(profile?: { bannerVersion?: string | null } | null) {
+    if (!profile?.bannerVersion) return '';
+    return `/banner.webp?v=${encodeURIComponent(profile.bannerVersion)}`;
+}
+
+export function publicBannerOgUrl(
+    profile?: { bannerVersion?: string | null; siteUrl?: string } | null
+) {
+    const source = siteBannerOgUrl(profile);
+    if (!source || !profile?.siteUrl) return '';
+    return new URL(source, profile.siteUrl).href;
+}
+
+export function siteBannerSources(profile?: { bannerVersion?: string | null } | null) {
     if (!profile?.bannerVersion) return [];
+    const version = encodeURIComponent(profile.bannerVersion);
     return [
-        { srcset: `/site/banner/${profile.bannerVersion}/wide.avif`, type: 'image/avif' },
-        { srcset: `/site/banner/${profile.bannerVersion}/wide.webp`, type: 'image/webp' }
+        { srcset: `/banner.avif?v=${version}`, type: 'image/avif' },
+        { srcset: `/banner.webp?v=${version}`, type: 'image/webp' }
     ];
 }
+
 export const iconSizes = {
     'avatar.png': 512,
     'favicon-16x16.png': 16,
@@ -87,7 +105,7 @@ export function buildSvg(paths: SvgPath[]): string {
             if (
                 typeof path.d !== 'string'
                 || path.d.length > 100_000
-                || !/^[MLQZmlqz0-9.,\s-]+$/.test(path.d)
+                || !/^[MLQZCHVmlqzchv0-9.,\s-]+$/.test(path.d)
                 || !/^#[0-9a-f]{6}$/i.test(path.fill)
                 || !Number.isFinite(path.opacity)
                 || path.opacity < 0

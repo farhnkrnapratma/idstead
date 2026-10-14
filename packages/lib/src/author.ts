@@ -301,6 +301,7 @@ export async function fetchAuthorProfile(
             revision: data.profile_revision ?? 0,
             updatedAt: data.updated_at,
             avatarVersion: data.avatar_version,
+            bannerVersion: data.banner_version ?? null,
             manifestSettings: data.manifest_settings,
             name: rawName,
             pronunciation: data.pronunciation || '',
@@ -324,6 +325,29 @@ export async function fetchAuthorProfile(
         if (options?.strict) throw e;
         return null;
     }
+}
+
+export interface IdentityVersionMeta {
+    source: 'custom' | 'generated';
+    fingerprint: string | null;
+}
+
+export async function fetchIdentityMeta(
+    supabaseClient: any,
+    profile: { avatarVersion?: string | null; bannerVersion?: string | null } | null
+): Promise<{ avatar: IdentityVersionMeta | null; banner: IdentityVersionMeta | null }> {
+    const ids = [profile?.avatarVersion, profile?.bannerVersion].filter(Boolean);
+    if (!supabaseClient || !ids.length) return { avatar: null, banner: null };
+    const { data, error } = await supabaseClient
+        .from('db_identity_versions')
+        .select('id, source, fingerprint')
+        .in('id', ids);
+    if (error) throw error;
+    const find = (id?: string | null) => {
+        const row = (data ?? []).find((entry: { id: string }) => entry.id === id);
+        return row ? { source: row.source, fingerprint: row.fingerprint ?? null } : null;
+    };
+    return { avatar: find(profile?.avatarVersion), banner: find(profile?.bannerVersion) };
 }
 
 export async function fetchAuthorProfileWithSocials(
@@ -630,13 +654,7 @@ export async function fetchActiveCvDocument(
                 if (shaRes.ok) {
                     const shaText = await shaRes.text();
                     const match = shaText.trim().match(/^[a-fA-F0-9]{64}/);
-                    if (match) {
-                        fullHash = match[0];
-                        await supabaseClient
-                            .from('db_documents')
-                            .update({ hash: fullHash })
-                            .eq('id', data.id);
-                    }
+                    if (match) fullHash = match[0];
                 }
             } catch (err) {
                 console.error('Error fetching sha256 file:', err);

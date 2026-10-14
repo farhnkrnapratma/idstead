@@ -2,6 +2,9 @@ import UPNG from 'upng-js';
 import { Inflate } from 'pako';
 import { crc32 } from '#lib/png.ts';
 import { IMAGE_LIMIT, iconSizes, buildSvg, type SvgPath } from '#lib/siteIdentity.ts';
+import { identityFields } from './validateSiteBanner.ts';
+import { inspectAvif } from '#lib/avif.ts';
+import { inspectWebp } from '#lib/webp.ts';
 
 export function validatePng(buffer: ArrayBuffer, size: number) {
     const bytes = new Uint8Array(buffer);
@@ -83,9 +86,8 @@ export function validateIco(buffer: ArrayBuffer) {
 export async function validateAvatar(form: FormData): Promise<Record<string, ArrayBuffer> | null> {
     const required = [...Object.keys(iconSizes), 'favicon.ico', 'vector'];
     const optional = ['avatar.webp', 'avatar.avif'];
-    const entries = Array.from(form.keys()).filter(key => key !== 'profile');
+    const entries = Array.from(new Set(form.keys())).filter(key => !identityFields.has(key));
     if (!entries.length) return null;
-    // Check that all required fields are present and optional fields don't have duplicates
     const missingRequired = required.filter(key => form.getAll(key).length !== 1);
     if (missingRequired.length > 0) throw new Error('Upload the complete icon package.');
     const extraEntries = entries.filter(key => !required.includes(key) && !optional.includes(key));
@@ -109,7 +111,6 @@ export async function validateAvatar(form: FormData): Promise<Record<string, Arr
     files['favicon.svg'] = new TextEncoder().encode(
         buildSvg(JSON.parse(vector) as SvgPath[])
     ).buffer;
-    // Handle optional avatar.webp and avatar.avif with validation
     for (const name of optional) {
         const instances = form.getAll(name);
         if (instances.length > 1) throw new Error(`Duplicate ${name} file.`);
@@ -117,23 +118,9 @@ export async function validateAvatar(form: FormData): Promise<Record<string, Arr
         if (file instanceof File) {
             if (file.size > IMAGE_LIMIT) throw new Error(`${name} must be no larger than 500 KiB.`);
             const bytes = new Uint8Array(await file.arrayBuffer());
-            // Validate magic bytes: WebP starts with 'RIFF...WEBP', AVIF has 'ftyp' box
-            if (name === 'avatar.webp') {
-                if (
-                    bytes.length < 12
-                    || String.fromCharCode(...bytes.slice(0, 4)) !== 'RIFF'
-                    || String.fromCharCode(...bytes.slice(8, 12)) !== 'WEBP'
-                )
-                    throw new Error('Invalid WebP format.');
-            } else if (name === 'avatar.avif') {
-                if (
-                    bytes.length < 12
-                    || String.fromCharCode(...bytes.slice(4, 8)) !== 'ftyp'
-                    || (String.fromCharCode(...bytes.slice(8, 12)) !== 'avif'
-                        && String.fromCharCode(...bytes.slice(8, 12)) !== 'avis')
-                )
-                    throw new Error('Invalid AVIF format.');
-            }
+            if (name === 'avatar.webp')
+                inspectWebp(bytes, { maxBytes: IMAGE_LIMIT, width: 512, height: 512 });
+            else inspectAvif(bytes, { maxBytes: IMAGE_LIMIT, width: 512, height: 512 });
             files[name] = bytes.buffer;
         }
     }

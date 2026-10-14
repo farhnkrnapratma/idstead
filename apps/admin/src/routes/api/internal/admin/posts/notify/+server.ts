@@ -44,6 +44,12 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
             'BLOG_NOTIFY_UNAVAILABLE',
             'Subscriber notifications are not configured.'
         );
+    if (result.reason === 'send-failed')
+        return apiError(
+            502,
+            'BLOG_NOTIFY_SEND_FAILED',
+            `Sent to ${result.sent} of ${result.sent + result.failed} subscribers. Try again to reach the rest.`
+        );
     if (result.reason === 'unpublished')
         return apiError(
             409,

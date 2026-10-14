@@ -104,28 +104,39 @@ export async function sendEmail(
 export async function sendBatch(
     apiKey: string,
     from: string,
-    mails: OutgoingEmail[]
-): Promise<number> {
-    if (!apiKey || !from || !mails.length) return 0;
+    mails: OutgoingEmail[],
+    idempotencyPrefix?: string
+): Promise<{ sent: number; failed: number }> {
+    if (!apiKey || !from || !mails.length) return { sent: 0, failed: 0 };
     let sent = 0;
+    let failed = 0;
     for (let i = 0; i < mails.length; i += 100) {
         const chunk = mails.slice(i, i + 100);
+        const body = JSON.stringify(chunk.map(mail => payload(from, mail)));
+        const headers: Record<string, string> = {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+        };
+        if (idempotencyPrefix)
+            headers['Idempotency-Key'] = `${idempotencyPrefix}/${await hashToken(body)}`;
         try {
             const res = await fetch('https://api.resend.com/emails/batch', {
                 method: 'POST',
-                headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify(chunk.map(mail => payload(from, mail)))
+                headers,
+                body
             });
             if (res.ok) {
                 sent += chunk.length;
             } else {
+                failed += chunk.length;
                 console.error('Resend batch failed:', res.status, await res.text());
             }
         } catch (err) {
+            failed += chunk.length;
             console.error('Resend batch request failed:', err);
         }
     }
-    return sent;
+    return { sent, failed };
 }
 
 function escapeHtml(value: string): string {
@@ -260,14 +271,15 @@ export function contactMessageEmail(
 
 export async function activeSubscribers(
     db: SupabaseClient
-): Promise<{ email: string; unsubscribe_token: string }[]> {
+): Promise<{ email: string; unsubscribe_token: string }[] | null> {
     const { data, error } = await db
         .from(SUBSCRIBER_TABLE)
         .select('email, unsubscribe_token')
-        .eq('status', 'active');
+        .eq('status', 'active')
+        .order('email', { ascending: true });
     if (error) {
         console.error('Failed to load subscribers:', error);
-        return [];
+        return null;
     }
     return data ?? [];
 }

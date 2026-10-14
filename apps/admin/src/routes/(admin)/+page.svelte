@@ -11,10 +11,21 @@
         PostSaveError
     } from '#lib/postSaveClient.ts';
     import { FieldValidation, requiredText, emailError } from '#lib/fieldValidation.ts';
-    import { avatarSource } from '#lib/siteIdentity.ts';
-    import ProfileImageUpload from '#lib/components/ProfileImageUpload.svelte';
-    import SiteBannerImageUpload from '#lib/components/admin/SiteBannerImageUpload.svelte';
+    import { avatarSource, siteBannerSource } from '#lib/siteIdentity.ts';
+    import IdentityImageUpload from '#lib/components/IdentityImageUpload.svelte';
     import type { ImagePackage } from '#lib/siteIdentity.ts';
+    import { processAvatar } from '#lib/processAvatar.ts';
+    import { processSiteBanner, type SiteBannerOutput } from '#lib/processSiteBanner.ts';
+    import {
+        avatarFingerprint,
+        avatarPreview,
+        bannerFingerprint,
+        generateAvatarPackage,
+        generateBannerPackage,
+        renderBanner
+    } from '#lib/identityFallback.ts';
+    import { avatarSeed, type BannerInput } from '#lib/identityFallbackLayout.ts';
+    import * as publicEnv from '$app/env/public';
     import { page } from '$app/state';
     import { invalidateAll } from '$app/navigation';
     import { supabase } from '#lib/supabase.ts';
@@ -137,6 +148,7 @@
     import { themeStore } from '#lib/stores/themeStore.svelte.ts';
     import {
         fetchAuthorProfile,
+        fetchIdentityMeta,
         fetchCvEntries,
         fetchSponsorship,
         fetchContactInfo,
@@ -152,7 +164,8 @@
         type ContactInfo,
         type SocialLink,
         type SkillItem,
-        type CvDocument
+        type CvDocument,
+        type IdentityVersionMeta
     } from '#lib/author.ts';
 
     const publicSiteUrl = $derived(
@@ -815,7 +828,19 @@
     }
     let isSavingAuthor = $state(false);
     let preparedImage = $state.raw<ImagePackage | null>(null);
+    let preparedBanner = $state.raw<SiteBannerOutput | null>(null);
     let preparingImage = $state(false);
+    let preparingBanner = $state(false);
+    let avatarRemoved = $state(false);
+    let bannerRemoved = $state(false);
+    let identityMeta = $state<{
+        avatar: IdentityVersionMeta | null;
+        banner: IdentityVersionMeta | null;
+    }>({ avatar: null, banner: null });
+    let generatedBanner = $state('');
+    let bannerPreviewError = $state('');
+    let renderingBanner = $state(false);
+    let syncingIdentity = false;
     let authorSaveSuccess = $state(false);
     let authorSaveError = $state('');
 
@@ -851,6 +876,9 @@
 
     const authorIsDirty = $derived(
         preparedImage !== null
+            || preparedBanner !== null
+            || avatarRemoved
+            || bannerRemoved
             || (authorInitial !== null
                 && JSON.stringify({
                     name: authorState.name,
@@ -903,6 +931,7 @@
             value: () => (field === 'avatar' && preparedImage ? 'prepared' : authorState[field]),
             baseline: () => (field === 'avatar' ? undefined : authorInitial?.[field]),
             validate: value => {
+                if (field === 'avatar') return '';
                 const required = requiredText(authorLabels[field])(String(value || ''));
                 if (required) return required;
                 if (field === 'email') return emailError(value);
@@ -953,6 +982,226 @@
     let cvInitial = $state<typeof cvState | null>(null);
     let skillsInitial = $state<SkillItem[] | null>(null);
     let socialInitial = $state<SocialLink[] | null>(null);
+
+    type IdentityPlan = {
+        avatar?: { files: ImagePackage; meta: IdentityVersionMeta };
+        banner?: { files: SiteBannerOutput; meta: IdentityVersionMeta };
+    };
+
+    const avatarSeedValue = $derived(avatarSeed(authorState.name, authorState.id));
+    const bannerInput = $derived<BannerInput>({
+        name: authorState.name,
+        siteUrl: authorState.siteUrl.trim() || publicEnv.PUBLIC_SITE_URL || '',
+        social:
+            socialInitial?.[0] ?
+                {
+                    url: socialInitial[0].url,
+                    platform: socialInitial[0].platform,
+                    icon: socialInitial[0].icon
+                }
+            :   null
+    });
+    const avatarGenerated = $derived(
+        !preparedImage
+            && (avatarRemoved
+                || !authorState.avatarVersion
+                || identityMeta.avatar?.source === 'generated')
+    );
+    const bannerGenerated = $derived(
+        !preparedBanner
+            && (bannerRemoved
+                || !authorState.bannerVersion
+                || identityMeta.banner?.source === 'generated')
+    );
+
+    $effect(() => {
+        if (!bannerGenerated) {
+            bannerPreviewError = '';
+            return;
+        }
+        const input = bannerInput;
+        let cancelled = false;
+        const timer = setTimeout(async () => {
+            renderingBanner = true;
+            try {
+                const canvas = await renderBanner(input);
+                if (cancelled) return;
+                generatedBanner = canvas.toDataURL('image/png');
+                bannerPreviewError = '';
+            } catch (error) {
+                if (cancelled) return;
+                generatedBanner = '';
+                bannerPreviewError =
+                    error instanceof Error ?
+                        error.message
+                    :   'Banner preview could not be generated.';
+            } finally {
+                if (!cancelled) renderingBanner = false;
+            }
+        }, 300);
+        return () => {
+            cancelled = true;
+            clearTimeout(timer);
+        };
+    });
+
+    async function processBannerFile(file: File) {
+        const output = await processSiteBanner(file);
+        return {
+            value: output,
+            preview: output.wide.webp,
+            sizeLabel: `${Math.ceil(output.wide.webp.size / 1000)} KB · 1280 × 640`
+        };
+    }
+
+    async function processAvatarFile(file: File, signal: AbortSignal) {
+        const output = await processAvatar(file, signal);
+        return {
+            value: output,
+            preview: new Blob([output.files['avatar.png']], { type: 'image/png' }),
+            sizeLabel: `${Math.ceil(output.files['avatar.png'].byteLength / 1000)} KB · 512 × 512`
+        };
+    }
+
+    async function planIdentity(): Promise<IdentityPlan> {
+        const plan: IdentityPlan = {};
+        try {
+            if (preparedImage)
+                plan.avatar = {
+                    files: preparedImage,
+                    meta: { source: 'custom', fingerprint: null }
+                };
+            else if (avatarGenerated) {
+                const seed = avatarSeedValue;
+                const fingerprint = await avatarFingerprint(seed);
+                if (
+                    avatarRemoved
+                    || !authorState.avatarVersion
+                    || identityMeta.avatar?.fingerprint !== fingerprint
+                )
+                    plan.avatar = {
+                        files: await generateAvatarPackage(seed, new AbortController().signal),
+                        meta: { source: 'generated', fingerprint }
+                    };
+            }
+            if (preparedBanner)
+                plan.banner = {
+                    files: preparedBanner,
+                    meta: { source: 'custom', fingerprint: null }
+                };
+            else if (bannerGenerated) {
+                const input = $state.snapshot(bannerInput);
+                const fingerprint = await bannerFingerprint(input);
+                if (
+                    bannerRemoved
+                    || !authorState.bannerVersion
+                    || identityMeta.banner?.fingerprint !== fingerprint
+                )
+                    plan.banner = {
+                        files: await generateBannerPackage(input),
+                        meta: { source: 'generated', fingerprint }
+                    };
+            }
+        } catch (error) {
+            throw new Error(
+                `Generated images could not be created: ${error instanceof Error ? error.message : 'unknown error'}`,
+                { cause: error }
+            );
+        }
+        return plan;
+    }
+
+    async function submitProfile(profile: Record<string, unknown>, plan: IdentityPlan) {
+        const {
+            data: { session }
+        } = await supabase.auth.getSession();
+        if (!session) throw new Error('Please sign in again.');
+        const form = new FormData();
+        form.set(
+            'profile',
+            JSON.stringify({
+                ...profile,
+                id: authorState.id || null,
+                revision: authorState.revision ?? 0
+            })
+        );
+        if (plan.avatar) {
+            for (const [name, bytes] of Object.entries(plan.avatar.files.files))
+                form.set(name, new Blob([bytes]), name);
+            form.set('vector', JSON.stringify(plan.avatar.files.paths));
+        }
+        if (plan.banner) {
+            form.set('banner.webp', plan.banner.files.wide.webp, 'banner.webp');
+            form.set('banner.avif', plan.banner.files.wide.avif, 'banner.avif');
+            form.set('banner-og.webp', plan.banner.files.og.webp, 'banner-og.webp');
+        }
+        if (plan.avatar || plan.banner)
+            form.set(
+                'identity',
+                JSON.stringify({ avatar: plan.avatar?.meta, banner: plan.banner?.meta })
+            );
+        const response = await fetch('/api/internal/admin/profile', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${session.access_token}` },
+            body: form
+        });
+        return { response, result: await response.json() };
+    }
+
+    function applyIdentity(profile: Record<string, any>, plan: IdentityPlan) {
+        authorState.id = profile.id;
+        authorState.avatar = profile.avatar;
+        authorState.revision = profile.profile_revision;
+        authorState.avatarVersion = profile.avatar_version;
+        authorState.bannerVersion = profile.banner_version;
+        if (plan.avatar) identityMeta.avatar = plan.avatar.meta;
+        if (plan.banner) identityMeta.banner = plan.banner.meta;
+        preparedImage = null;
+        preparedBanner = null;
+        avatarRemoved = false;
+        bannerRemoved = false;
+    }
+
+    async function syncGeneratedIdentity() {
+        if (
+            syncingIdentity
+            || !authorState.id
+            || isSavingAuthor
+            || preparedImage
+            || preparedBanner
+            || avatarRemoved
+            || bannerRemoved
+        )
+            return;
+        syncingIdentity = true;
+        try {
+            const plan = await planIdentity();
+            if (!plan.avatar && !plan.banner) return;
+            const { response, result } = await submitProfile({}, plan);
+            if (!response.ok)
+                throw new Error(
+                    result.error?.message
+                        || result.message
+                        || 'Generated images could not be saved.'
+                );
+            applyIdentity(result.profile, plan);
+            if (authorInitial)
+                authorInitial = {
+                    ...authorInitial,
+                    id: authorState.id,
+                    avatar: authorState.avatar,
+                    revision: authorState.revision,
+                    avatarVersion: authorState.avatarVersion,
+                    bannerVersion: authorState.bannerVersion
+                };
+        } catch (error) {
+            toastStore.error(
+                error instanceof Error ? error.message : 'Generated images could not be saved.'
+            );
+        } finally {
+            syncingIdentity = false;
+        }
+    }
     let sponsorshipInitial = $state<SponsorshipLink[] | null>(null);
     let contactInitial = $state<ContactInfo[] | null>(null);
     let pinnedReposInitial = $state<string[] | null>(null);
@@ -1732,6 +1981,13 @@
                 fetchProjectRepoRules(supabase)
             ]);
             if (p) authorState = p;
+            identityMeta =
+                p ?
+                    await fetchIdentityMeta(supabase, p).catch(() => ({
+                        avatar: null,
+                        banner: null
+                    }))
+                :   { avatar: null, banner: null };
             authorInitial = { ...authorState };
             if (cv) cvState = cv;
             cvInitial = $state.snapshot(cvState);
@@ -1758,6 +2014,7 @@
         } catch (err) {
             console.error('Failed to load admin supplementary data:', err);
         }
+        void syncGeneratedIdentity();
     }
 
     let postsRequest = 0;
@@ -2115,7 +2372,7 @@
 
     async function handleSaveAuthor(e: SubmitEvent) {
         e.preventDefault();
-        if (isSavingAuthor || preparingImage) return;
+        if (isSavingAuthor || preparingImage || preparingBanner) return;
         if (!(await validateAllAuthorFields())) return;
         isSavingAuthor = true;
         authorSaveSuccess = false;
@@ -2158,30 +2415,8 @@
                 for (const [key, field] of Object.entries(fieldNames)) {
                     if (authorState[field] === authorInitial[field]) delete payload[key];
                 }
-            const {
-                data: { session }
-            } = await supabase.auth.getSession();
-            if (!session) throw new Error('Please sign in again.');
-            const form = new FormData();
-            form.set(
-                'profile',
-                JSON.stringify({
-                    ...payload,
-                    id: authorState.id || null,
-                    revision: authorState.revision ?? 0
-                })
-            );
-            if (preparedImage) {
-                for (const [name, bytes] of Object.entries(preparedImage.files))
-                    form.set(name, new Blob([bytes]), name);
-                form.set('vector', JSON.stringify(preparedImage.paths));
-            }
-            const response = await fetch('/api/internal/admin/profile', {
-                method: 'POST',
-                headers: { Authorization: `Bearer ${session.access_token}` },
-                body: form
-            });
-            const result = await response.json();
+            const plan = await planIdentity();
+            const { response, result } = await submitProfile(payload, plan);
             if (!response.ok) {
                 const details = result.error?.details ?? result.details;
                 const fields =
@@ -2206,11 +2441,7 @@
                             result.profile[key]
                         :   decodeHtmlEntities(result.profile[key]);
             }
-            authorState.id = result.profile.id;
-            authorState.avatar = result.profile.avatar;
-            authorState.revision = result.profile.profile_revision;
-            authorState.avatarVersion = result.profile.avatar_version;
-            preparedImage = null;
+            applyIdentity(result.profile, plan);
 
             authorState.username = cleanUsername;
             authorSaveSuccess = true;
@@ -2603,6 +2834,7 @@
 
             socialInitial = $state.snapshot(socialState);
             listValidation.reset();
+            void syncGeneratedIdentity();
             socialsSaveSuccess = true;
             setTimeout(() => (socialsSaveSuccess = false), 2500);
             toastStore.success('Social links saved.');
@@ -3958,19 +4190,70 @@
                         message="Profile saved successfully!" />{/if}
 
                 <div class="flex flex-col gap-6">
-                    <ProfileImageUpload
-                        name={authorState.name || adminUserName}
-                        avatar={avatarSource(authorState)}
-                        validationError={authorErrors.avatar}
-                        disabled={isSavingAuthor}
-                        onprepared={(value: ImagePackage | null) => {
-                            preparedImage = value;
-                            onAuthorInput('avatar');
-                        }}
-                        onbusy={(value: boolean) => {
-                            preparingImage = value;
-                        }} />
-                    <SiteBannerImageUpload bind:currentVersion={authorState.bannerVersion} />
+                    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                        <IdentityImageUpload
+                            id="profile-image-file"
+                            title="Profile image"
+                            alt={`Profile picture of ${authorState.name || adminUserName} — preview`}
+                            aspect="square"
+                            hint="PNG, JPEG, WebP, AVIF, GIF, BMP · up to 10 MB · at least 512 × 512"
+                            uploadingLabel="Preparing avatar and icons…"
+                            note={avatarGenerated ?
+                                'Generated from your name. Upload an image to replace it.'
+                            :   'Images are cropped to a square from the center. Animated images use their first frame.'}
+                            readyNote="Image and icons are ready. Save Profile to publish your changes."
+                            saved={avatarSource(authorState)}
+                            generated={avatarPreview(avatarSeedValue)}
+                            useGenerated={avatarGenerated}
+                            canRemove={!avatarRemoved
+                                && !!authorState.avatarVersion
+                                && identityMeta.avatar?.source !== 'generated'}
+                            validationError={authorErrors.avatar}
+                            disabled={isSavingAuthor}
+                            process={processAvatarFile}
+                            onprepared={(value: ImagePackage | null) => {
+                                preparedImage = value;
+                                if (value) avatarRemoved = false;
+                                onAuthorInput('avatar');
+                            }}
+                            onbusy={(value: boolean) => {
+                                preparingImage = value;
+                            }}
+                            onremove={() => {
+                                avatarRemoved = true;
+                            }} />
+                        <IdentityImageUpload
+                            id="site-banner-file"
+                            title="Website banner"
+                            alt="Website banner preview"
+                            aspect="wide"
+                            hint="PNG, JPEG, WebP, AVIF, GIF, BMP · up to 10 MB / 40 MP · at least 1280 × 640"
+                            uploadingLabel="Preparing banner…"
+                            note={bannerGenerated ?
+                                'Generated from your name, site URL and first social link. Upload an image to replace it.'
+                            :   'Images are cropped to 2:1 from the center. Animated images use their first frame.'}
+                            readyNote="Banner is ready. Save Profile to publish your changes."
+                            saved={siteBannerSource(authorState)}
+                            validationError={bannerPreviewError}
+                            generated={generatedBanner}
+                            useGenerated={bannerGenerated}
+                            generating={renderingBanner}
+                            canRemove={!bannerRemoved
+                                && !!authorState.bannerVersion
+                                && identityMeta.banner?.source !== 'generated'}
+                            disabled={isSavingAuthor}
+                            process={processBannerFile}
+                            onprepared={(value: SiteBannerOutput | null) => {
+                                preparedBanner = value;
+                                if (value) bannerRemoved = false;
+                            }}
+                            onbusy={(value: boolean) => {
+                                preparingBanner = value;
+                            }}
+                            onremove={() => {
+                                bannerRemoved = true;
+                            }} />
+                    </div>
                     <section aria-labelledby="section-identity">
                         <h3
                             id="section-identity"
@@ -4249,7 +4532,7 @@
                                 class="w-full sm:w-auto"
                                 aria-label="Save Profile"
                                 title="Save Profile"
-                                disabled={!authorIsDirty || preparingImage}
+                                disabled={!authorIsDirty || preparingImage || preparingBanner}
                                 isLoading={isSavingAuthor}>
                                 {#snippet leading()}
                                     <Save class="size-3.5" />

@@ -5,8 +5,6 @@ interface R2Object {
     etag: string;
     httpEtag: string;
     uploaded: Date;
-    body?: ReadableStream<Uint8Array>;
-    arrayBuffer?(): Promise<ArrayBuffer>;
 }
 
 interface R2Bucket {
@@ -54,7 +52,6 @@ declare global {
                 GITHUB_TOKEN?: string;
                 AI?: unknown;
                 R2_BUCKET?: R2Bucket;
-                MY_BUCKET?: R2Bucket;
                 API_RATE_LIMITER?: RateLimit;
                 TURNSTILE_SECRET?: string;
                 [key: string]: unknown;

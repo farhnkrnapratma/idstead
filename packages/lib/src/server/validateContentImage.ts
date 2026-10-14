@@ -1,4 +1,5 @@
 import decode, { init } from '@jsquash/webp/decode.js';
+import { inspectAvif } from '#lib/avif.ts';
 import { inspectWebp } from '#lib/webp.ts';
 import { CONTENT_IMAGE_LIMIT, CONTENT_IMAGE_PIXEL_LIMIT } from '#lib/blogContentImage.ts';
 
@@ -28,4 +29,11 @@ export async function validateContentImage(
         throw new Error('The image contains damaged WebP data. Choose the source image again.');
     }
     return metadata;
+}
+
+export function validateContentImageAvif(
+    bytes: Uint8Array,
+    expected: { width: number; height: number }
+) {
+    return inspectAvif(bytes, { maxBytes: CONTENT_IMAGE_LIMIT, ...expected });
 }
