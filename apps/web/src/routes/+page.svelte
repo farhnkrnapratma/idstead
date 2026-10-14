@@ -1,7 +1,7 @@
 <script lang="ts">
     import Tag from '#lib/components/Tag.svelte';
     import { FieldValidation, requiredText, emailError } from '#lib/fieldValidation.ts';
-    import { publicAvatarUrl } from '#lib/siteIdentity.ts';
+    import { publicAvatarUrl, siteBannerOgUrl } from '#lib/siteIdentity.ts';
     import { onDestroy, onMount, untrack } from 'svelte';
     import type { Snippet } from 'svelte';
     import {
@@ -104,6 +104,12 @@
     let headline = $derived(author?.headline || '');
     let jobTitle = $derived(author?.jobTitle || '');
     let siteUrl = $derived(author?.siteUrl || '');
+    let ogImage = $derived(
+        author?.bannerVersion ? siteBannerOgUrl(author) : publicAvatarUrl(author)
+    );
+    let ogImageType = $derived(author?.bannerVersion ? 'image/webp' : 'image/png');
+    let ogImageWidth = $derived(author?.bannerVersion ? '1200' : '512');
+    let ogImageHeight = $derived(author?.bannerVersion ? '630' : '512');
     let avatar = $derived(author?.avatar || '');
     let socials = $derived(author?.socialLinks || []);
     const navItems: NavItem[] = [
@@ -488,6 +494,7 @@
             '@type': 'Person',
             name: name,
             url: siteUrl,
+            image: ogImage,
             sameAs: Object.values(author?.socials || {}).filter(Boolean),
             jobTitle: jobTitle,
             description: desc
@@ -523,19 +530,19 @@
         content={name} />
     <meta
         property="og:image"
-        content={publicAvatarUrl(author)} />
+        content={ogImage} />
     <meta
         property="og:image:secure_url"
-        content={publicAvatarUrl(author)} />
+        content={ogImage} />
     <meta
         property="og:image:type"
-        content="image/png" />
+        content={ogImageType} />
     <meta
         property="og:image:width"
-        content="512" />
+        content={ogImageWidth} />
     <meta
         property="og:image:height"
-        content="512" />
+        content={ogImageHeight} />
     <meta
         property="og:image:alt"
         content="{name} · {desc}" />
@@ -550,7 +557,7 @@
         content="male" />
     <meta
         name="twitter:image"
-        content={publicAvatarUrl(author)} />
+        content={ogImage} />
     <meta
         name="twitter:card"
         content="summary_large_image" />
