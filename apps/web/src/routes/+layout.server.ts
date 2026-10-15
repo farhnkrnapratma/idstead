@@ -2,13 +2,15 @@ import type { LayoutServerLoad } from './$types';
 import { supabase } from '#lib/supabase.ts';
 import { fetchAuthorProfileWithSocials } from '#lib/author.ts';
 import { avatarSource } from '#lib/siteIdentity.ts';
-import { fetchProjects, extractGitHubUsername } from '#lib/server/githubProjects.ts';
+import { extractGitHubUsername } from '#lib/server/githubProjects.ts';
+import { fetchCachedProjects } from '#lib/server/projectsCache.ts';
 
 export const load: LayoutServerLoad = async ({ fetch, platform, setHeaders }) => {
     const author = await fetchAuthorProfileWithSocials(supabase);
 
     const githubUsername = extractGitHubUsername(author);
-    const projects = githubUsername ? await fetchProjects(githubUsername, fetch, platform) : [];
+    const projects =
+        githubUsername ? await fetchCachedProjects(githubUsername, fetch, platform) : [];
 
     try {
         setHeaders({ 'cache-control': 'public, max-age=0, s-maxage=60, must-revalidate' });
