@@ -86,7 +86,7 @@ export async function notifyNewPost(
         apiKey,
         from,
         mails,
-        `newsletter/${postId}/${force ? claimedAt : 'auto'}`
+        `newsletter/${postId}/${post.subscribers_notified_at ?? 'auto'}`
     );
     if (failed) {
         await release();

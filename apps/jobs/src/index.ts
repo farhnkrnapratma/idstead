@@ -13,6 +13,7 @@ export interface Env {
 }
 
 const DEFAULT_SITE_URL = 'https://fkp.my.id';
+const DEAD_LETTER_QUEUE = 'fkp-newsletter-dlq';
 
 async function deliver(message: Message<unknown>, env: Env) {
     if (!isNewsletterMessage(message.body)) {
@@ -33,8 +34,28 @@ async function deliver(message: Message<unknown>, env: Env) {
         body.postId,
         body.force === true
     );
-    if (result.reason === 'unavailable') message.retry({ delaySeconds: 300 });
+    if (result.reason === 'send-failed')
+        Sentry.captureMessage('Newsletter send failed', {
+            level: 'warning',
+            extra: { postId: body.postId, sent: result.sent, failed: result.failed }
+        });
+    if (result.reason === 'unavailable' || result.reason === 'send-failed')
+        message.retry({ delaySeconds: 300 });
     else message.ack();
+}
+
+function deadLetter(message: Message<unknown>) {
+    const body = isNewsletterMessage(message.body) ? message.body : null;
+    Sentry.captureMessage('Newsletter message dead-lettered', {
+        level: 'error',
+        extra: {
+            postId: body?.postId ?? null,
+            force: body?.force === true,
+            messageId: message.id,
+            attempts: message.attempts
+        }
+    });
+    message.ack();
 }
 
 async function cleanup(env: Env) {
@@ -59,6 +80,10 @@ export default Sentry.withSentry<Env>(
             return new Response('Not found', { status: 404 });
         },
         async queue(batch, env) {
+            if (batch.queue === DEAD_LETTER_QUEUE) {
+                batch.messages.forEach(deadLetter);
+                return;
+            }
             await Promise.all(
                 batch.messages.map(message =>
                     deliver(message, env).catch(error => {
