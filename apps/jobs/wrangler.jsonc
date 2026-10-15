@@ -13,7 +13,8 @@
                 "max_batch_size": 10,
                 "max_retries": 5,
                 "dead_letter_queue": "fkp-newsletter-dlq"
-            }
+            },
+            { "queue": "fkp-newsletter-dlq", "max_batch_size": 10, "max_retries": 0 }
         ]
     },
     "triggers": { "crons": ["17 3 * * *"] }
