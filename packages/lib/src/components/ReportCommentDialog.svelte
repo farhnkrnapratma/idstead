@@ -236,13 +236,7 @@
             {#if turnstileSiteKey}
                 <div
                     bind:this={turnstileEl}
-                    class="cf-turnstile select-none"
-                    data-sitekey={turnstileSiteKey}
-                    data-action="report-comment"
-                    data-size="flexible"
-                    data-theme="auto"
-                    data-appearance="interaction-only"
-                    data-execution="execute"
+                    class="turnstile-widget select-none"
                     use:turnstileWidget={{
                         sitekey: turnstileSiteKey,
                         action: 'report-comment',

@@ -49,6 +49,9 @@ export interface TurnstileWidgetOptions {
 }
 
 const executionResolvers = new WeakMap<HTMLElement, (token: string) => void>();
+const pendingRenders = new WeakMap<HTMLElement, () => Promise<void>>();
+const widgetAppearances = new WeakMap<HTMLElement, TurnstileWidgetOptions['appearance']>();
+const LAZY_RENDER_MARGIN = '200px';
 let turnstileScriptPromise: Promise<void> | undefined;
 
 export function ensureTurnstileScript() {
@@ -112,8 +115,13 @@ export function ensureTurnstileScript() {
 export function turnstileWidget(node: HTMLElement, options: TurnstileWidgetOptions) {
     let destroyed = false;
     let widgetId: string | undefined;
+    let renderPromise: Promise<void> | undefined;
+    let observer: IntersectionObserver | undefined;
+    const form = node.closest('form');
 
-    const isInteractionOnly = (options.appearance ?? 'interaction-only') === 'interaction-only';
+    const appearance = options.appearance ?? 'interaction-only';
+    const isInteractionOnly = appearance === 'interaction-only';
+    widgetAppearances.set(node, appearance);
 
     function collapseNode() {
         if (!isInteractionOnly) return;
@@ -209,23 +217,53 @@ export function turnstileWidget(node: HTMLElement, options: TurnstileWidgetOptio
         }
     }
 
-    void ensureTurnstileScript()
-        .then(render)
-        .catch(error => {
-            if (destroyed) return;
-            collapseNode();
-            const resolver = executionResolvers.get(node);
-            if (resolver) {
-                executionResolvers.delete(node);
-                resolver('');
-            }
-            console.error('Turnstile script failed to load:', error);
-            options['error-callback']?.(error);
-        });
+    function failPending(error: unknown) {
+        if (destroyed) return;
+        collapseNode();
+        const resolver = executionResolvers.get(node);
+        if (resolver) {
+            executionResolvers.delete(node);
+            resolver('');
+        }
+        console.error('Turnstile script failed to load:', error);
+        options['error-callback']?.(error);
+    }
+
+    function stopWatching() {
+        observer?.disconnect();
+        observer = undefined;
+        form?.removeEventListener('focusin', renderNow);
+    }
+
+    function renderNow() {
+        stopWatching();
+        pendingRenders.delete(node);
+        renderPromise ??= ensureTurnstileScript().then(render).catch(failPending);
+        return renderPromise;
+    }
+
+    pendingRenders.set(node, renderNow);
+    void ensureTurnstileScript().catch(() => {});
+
+    if (typeof IntersectionObserver === 'undefined') {
+        void renderNow();
+    } else {
+        observer = new IntersectionObserver(
+            entries => {
+                if (entries.some(entry => entry.isIntersecting)) void renderNow();
+            },
+            { rootMargin: LAZY_RENDER_MARGIN }
+        );
+        observer.observe(form ?? node);
+        form?.addEventListener('focusin', renderNow);
+    }
 
     return {
         destroy() {
             destroyed = true;
+            stopWatching();
+            pendingRenders.delete(node);
+            widgetAppearances.delete(node);
             executionResolvers.delete(node);
             if (widgetId && window.turnstile) {
                 try {
@@ -244,6 +282,9 @@ export async function executeTurnstile(node: HTMLElement | null): Promise<string
     if (!node) return '';
     const key = typeof turnstileSiteKey === 'string' ? turnstileSiteKey.trim() : '';
     if (!key) return '';
+
+    const pendingRender = pendingRenders.get(node);
+    if (pendingRender) await pendingRender();
 
     if (window.turnstile) {
         const existing = window.turnstile.getResponse(node);
@@ -287,7 +328,7 @@ export function resetTurnstile(node: HTMLElement | null) {
     if (!node) return;
     executionResolvers.delete(node);
     window.turnstile?.reset(node);
-    if (node.dataset.appearance === 'interaction-only' || !node.dataset.appearance) {
+    if ((widgetAppearances.get(node) ?? 'interaction-only') === 'interaction-only') {
         node.style.position = 'absolute';
         node.style.width = '1px';
         node.style.height = '0';
