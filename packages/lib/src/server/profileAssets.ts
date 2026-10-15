@@ -2,22 +2,23 @@ import {
     S3Client,
     PutObjectCommand,
     DeleteObjectCommand,
-    GetObjectCommand
+    GetObjectCommand,
+    CopyObjectCommand
 } from '@aws-sdk/client-s3';
 import * as env from '$app/env/private';
 import * as publicEnv from '$app/env/public';
 import { getSupabaseAdminClient } from './supabaseAdmin';
 import { supabase } from '#lib/supabase.ts';
-import { bannerSizes, iconSizes, type IdentityAsset } from '#lib/siteIdentity.ts';
+import {
+    bannerSizes,
+    iconSizes,
+    identityAssetNames,
+    type IdentityAsset
+} from '#lib/siteIdentity.ts';
 
-export const assetNames = [
-    ...Object.keys(iconSizes),
-    'favicon.ico',
-    'favicon.svg',
-    'avatar.avif',
-    'avatar.webp',
-    ...Object.keys(bannerSizes)
-];
+export const assetNames = identityAssetNames;
+
+const VERSION_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const contentTypes: Record<string, string> = {
     svg: 'image/svg+xml',
@@ -92,6 +93,32 @@ export async function writeAssets(
         });
     }
     return assets;
+}
+
+export async function copyAssets(
+    platform: Pick<App.Platform, 'env'> | undefined,
+    from: string,
+    to: string,
+    assets: IdentityAsset[]
+): Promise<IdentityAsset[]> {
+    if (!VERSION_PATTERN.test(from) || !VERSION_PATTERN.test(to))
+        throw new Error('Invalid identity version.');
+    const { bucket, client } = assetStorage(platform);
+    const copied: IdentityAsset[] = [];
+    for (const asset of assets) {
+        if (!assetNames.includes(asset.name)) throw new Error('Invalid identity asset.');
+        const key = `identity/${to}/${asset.name}`;
+        await client.send(
+            new CopyObjectCommand({
+                Bucket: bucket,
+                Key: key,
+                CopySource: `${bucket}/identity/${from}/${asset.name}`,
+                MetadataDirective: 'COPY'
+            })
+        );
+        copied.push({ ...asset, key });
+    }
+    return copied;
 }
 
 export async function removeAssets(

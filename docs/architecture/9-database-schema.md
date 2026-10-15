@@ -120,7 +120,7 @@ erDiagram
     db_profiles ||--o{ db_categories : "author_id"
     db_categories ||--o{ db_items : "category_id"
     db_profiles ||--o{ db_project_repo_rules : "author_id"
-    db_identity_versions |o--o{ db_profiles : "avatar_version"
+    db_identity_versions |o--o{ db_profiles : "avatar_version, banner_version"
     db_profiles ||--o{ db_identity_versions : "profile_id"
 
     db_profiles {
@@ -132,12 +132,16 @@ erDiagram
         text bio
         text site_url
         uuid avatar_version FK
+        uuid banner_version FK
         jsonb manifest_settings
         bigint profile_revision
     }
     db_identity_versions {
         uuid id PK
         uuid profile_id FK
+        text kind "identity (legacy: avatar, banner)"
+        text avatar_source "custom, generated"
+        text banner_source "custom, generated"
         jsonb assets
         timestamptz retired_at
         timestamptz cleanup_started_at
@@ -210,7 +214,7 @@ erDiagram
 - **Public:** `db_record_page_feedback`.
 - **Login lockout** (`service_role` only): `db_login_lockout`, `db_login_record_failure`, `db_login_clear`, `db_prune_login_failures`.
 - **Admin dashboard:** `db_admin_*`, `db_views_timeseries`, `db_activity_log_list`, `db_activity_log_export`, `db_clear_all_data`, `db_subscriber_stats()` (a **function**, not a table).
-- **Profile identity commit RPC:** being changed in the uncommitted working tree on 2026-10-15 (`db_commit_profile_identity` becomes `db_save_profile_identity`). Re-check before relying on its signature.
+- **Profile identity save:** `db_save_profile_identity(p_profile, p_identity)` (`service_role` only). `p_identity` is `{version, assets}` for one `kind = 'identity'` row whose assets must match `db_identity_asset_names()` exactly. It points `avatar_version` and `banner_version` at that row and retires the previous rows. The `db_profile_identity_kind` trigger rejects a profile whose two columns differ while either references an `identity` row.
 - **`safeupdate`:** PostgREST runs with `safeupdate`, so every `UPDATE`/`DELETE` inside a function needs a `WHERE` clause. `tests/safeupdate.test.ts` checks this.
 - **`pg_cron`:** `prune-stale-subscriptions` (`17 3 * * *`), `prune-activity-log` (`31 3 * * *`) and `prune-login-failures` (`37 * * * *`).
 

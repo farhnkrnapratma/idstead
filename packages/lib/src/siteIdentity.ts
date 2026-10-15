@@ -69,6 +69,18 @@ export const iconSizes = {
     'android-chrome-512x512.png': 512
 } as const;
 
+export const avatarAssetNames = [
+    ...Object.keys(iconSizes),
+    'favicon.ico',
+    'favicon.svg',
+    'avatar.avif',
+    'avatar.webp'
+];
+
+export const bannerAssetNames = Object.keys(bannerSizes);
+
+export const identityAssetNames = [...avatarAssetNames, ...bannerAssetNames];
+
 export interface ManifestSettings {
     theme_color: string;
     background_color: string;

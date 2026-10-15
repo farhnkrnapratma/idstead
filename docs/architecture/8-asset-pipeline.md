@@ -35,17 +35,19 @@ sequenceDiagram
 
 | Asset | Encoder (packages/lib/src) | Server check | R2 key | Served at |
 | --- | --- | --- | --- | --- |
-| Avatar + icons | `processAvatar.ts` → `workers/avatar.worker.ts`: PNG icon set, `favicon.ico`, SVG, `avatar.webp`, `avatar.avif` | `validateAvatar.ts`: PNG structure/CRC, ICO directory, WebP/AVIF magic bytes (AVIF checks `ftyp` brand), SVG rebuilt | `identity/{version}/{name}` | `/{name}` and `/hero.png`, handled in the web and admin hooks by `serveIdentityAsset()` |
+| Avatar + icons | `processAvatar.ts` → `workers/avatar.worker.ts`: PNG icon set, `favicon.ico`, SVG, `avatar.webp`, `avatar.avif` (both required) | `validateAvatar.ts`: PNG structure/CRC, ICO directory, WebP/AVIF magic bytes (AVIF checks `ftyp` brand), SVG rebuilt | `identity/{version}/{name}`, shared with the website banner | `/{name}` and `/hero.png`, handled in the web and admin hooks by `serveIdentityAsset()` |
 | Blog banner | `processBanner.ts` → `workers/banner.worker.ts`: WebP + AVIF 1280×640, ≤ 500 KiB | `validateBanner.ts` (WebP WASM decode) | `blog/banners/{postUuid}/{version}.{webp,avif}` | `/blog/banners/{public_id}/{version}.{webp,avif}` → `serveBlogBanner()` |
 | Markdown image | `processContentImage.ts` → `workers/contentImage.worker.ts`: WebP + optional AVIF, max edge 2400, ≤ 500 KiB | `validateContentImage.ts`: `inspectWebp` + WebP decode; the AVIF file goes through `validateContentImageAvif` (`inspectAvif` box parse, ≤ 500 KiB, same dimensions as the WebP) | `blog/content/{sha256}.{ext}` | `/blog/content/{sha256}.{ext}` → `getContentAsset()` |
 | Markdown video | uploaded as-is, content type sniffed | `admin/blog/content-video` route | `blog/content/{sha256}.{mp4,webm}` | `/blog/content/{file}` |
-| Website banner | `processSiteBanner.ts` → `workers/siteBanner.worker.ts` | – | – | **In transition.** The uncommitted working tree on 2026-10-15 moves it from the `MY_BUCKET` routes into the identity assets (`banner_version`). Document it once that lands. |
+| Website banner | `processSiteBanner.ts` → `workers/siteBanner.worker.ts`: `banner.avif`, `banner.webp` (1280×640), `banner-og.webp` (1200×630) | `validateSiteBanner.ts`: `inspectAvif` / `inspectWebp` with exact dimensions | `identity/{version}/{name}`, shared with the avatar | `/banner.{avif,webp}`, `/banner-og.webp` → `serveIdentityAsset()` |
 | CV PDF | generated server-side (`pdfGenerator.ts`) | – | `{filename}` at the bucket root (for example `…-v1.2.3.pdf`), plus a `{filename}.sha256` sidecar | `db_documents.file_url` (CDN URL), streamed by `/v1/cv?output=pdf` |
 | Post Markdown | – | – | Supabase Storage `blog-posts`, `posts/{postUuid}/{operationId}.md` | read by page loads and the API |
 
 ## Serving rules
 
 - **Identity assets** (`serveIdentityAsset`, `packages/lib/src/server/profileAssets.ts`):
+    - One folder per identity version holds the avatar package and the banner package (13 files, `identityAssetNames` in `siteIdentity.ts`). `db_profiles.avatar_version` and `banner_version` always hold the same id.
+    - A save that changes only one of them writes the new files into a new folder and copies the unchanged group from the current folder (`copyAssets()`), so every folder is complete.
     - With `?v={uuid}`: served `immutable`.
     - Without `?v`: the current version is read from `db_profiles.avatar_version` (anon client) and served with `s-maxage=60`.
     - When a version object is missing: 307 to the current `?v=`.

@@ -109,8 +109,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             const payload = profilePatch(patch, current);
             const { error } = await db.rpc('db_save_profile_identity', {
                 p_profile: payload,
-                p_avatar: null,
-                p_banner: null
+                p_identity: null
             });
             if (error) throw error;
             applied.push('profile');

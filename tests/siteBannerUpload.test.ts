@@ -5,8 +5,13 @@ import {
     validateSiteBanner
 } from '../packages/lib/src/server/validateSiteBanner.ts';
 import { readFile } from 'node:fs/promises';
+import { validateAvatar } from '../packages/lib/src/server/validateAvatar.ts';
 import {
+    avatarAssetNames,
+    bannerAssetNames,
     bannerSizes,
+    iconSizes,
+    identityAssetNames,
     publicBannerOgUrl,
     siteBannerSources
 } from '../packages/lib/src/siteIdentity.ts';
@@ -146,7 +151,7 @@ describe('banner asset routing', () => {
             new URL('../packages/lib/src/server/profileAssets.ts', import.meta.url),
             'utf8'
         );
-        expect(source).toContain('...Object.keys(bannerSizes)');
+        expect(source).toContain('export const assetNames = identityAssetNames;');
         expect(source).toMatch(/name in bannerSizes \? 'banner_version' : 'avatar_version'/);
     });
 
@@ -175,5 +180,55 @@ describe('inspectAvif', () => {
 
     test('rejects a header-only polyglot', () => {
         expect(() => inspectAvif(fakeAvif(), limits)).toThrow();
+    });
+});
+
+describe('shared identity folder', () => {
+    test('avatar and banner assets partition one 13-file package', () => {
+        expect(identityAssetNames).toHaveLength(13);
+        expect(new Set(identityAssetNames).size).toBe(13);
+        expect(avatarAssetNames.filter(name => bannerAssetNames.includes(name))).toEqual([]);
+        expect([...avatarAssetNames, ...bannerAssetNames].sort()).toEqual(
+            [...identityAssetNames].sort()
+        );
+        expect(avatarAssetNames).toContain('avatar.avif');
+        expect(avatarAssetNames).toContain('avatar.webp');
+    });
+
+    test('the database expects the same asset names', async () => {
+        const migration = await readFile(
+            new URL(
+                '../supabase/migrations/20261015120000_shared_identity_versions.sql',
+                import.meta.url
+            ),
+            'utf8'
+        );
+        const list = migration.match(/unnest\(array\[([\s\S]*?)\]\)/)?.[1] ?? '';
+        const names = [...list.matchAll(/'([^']+)'/g)].map(match => match[1]);
+        expect(names.sort()).toEqual([...identityAssetNames].sort());
+    });
+
+    test('the profile route stages one shared version and copies the unchanged group', async () => {
+        const source = await readFile(
+            new URL(
+                '../apps/admin/src/routes/api/internal/admin/profile/+server.ts',
+                import.meta.url
+            ),
+            'utf8'
+        );
+        expect(source).toContain("kind: 'identity'");
+        expect(source).toContain('copyAssets(platform, group.from, version, group.assets)');
+        expect(source).toContain('p_identity: identity');
+        expect(source).not.toContain('p_avatar');
+        expect(source).not.toContain('p_banner');
+    });
+
+    test('the avatar package requires AVIF and WebP', async () => {
+        const form = new FormData();
+        for (const name of [...Object.keys(iconSizes), 'favicon.ico'])
+            form.set(name, new File([new Uint8Array(8)], name));
+        form.set('vector', '[]');
+        form.set('avatar.webp', new File([webp(512, 512)], 'avatar.webp'));
+        await expect(validateAvatar(form)).rejects.toThrow('Upload the complete icon package.');
     });
 });

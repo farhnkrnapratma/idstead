@@ -3,7 +3,7 @@ import { describe, it, expect } from 'bun:test';
 /**
  * Test avatar AVIF/WebP format validation
  *
- * Ensures that optional avatar.webp and avatar.avif files
+ * Ensures that the required avatar.webp and avatar.avif files
  * are properly validated with magic bytes and size limits
  */
 
