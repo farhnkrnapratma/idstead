@@ -132,16 +132,6 @@
         }
     }
 
-    function sanitizeInput(text: string): string {
-        return text
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#x27;')
-            .replace(/\//g, '&#x2F;');
-    }
-
     async function handleSubmit(e: SubmitEvent) {
         e.preventDefault();
 
@@ -165,20 +155,15 @@
                 turnstileToken = token;
             }
 
-            const sanitizedName = sanitizeInput(formName.trim());
-            const sanitizedEmail = sanitizeInput(formEmail.trim());
-            const sanitizedUrl = sanitizeInput(formUrl.trim());
-            const sanitizedMessage = sanitizeInput(formMessage.trim());
-
             const res = await fetch('/api/internal/contact', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
                 body: JSON.stringify({
                     kind: 'feedback',
-                    name: sanitizedName,
-                    email: sanitizedEmail,
-                    url: sanitizedUrl,
-                    message: sanitizedMessage,
+                    name: formName.trim(),
+                    email: formEmail.trim(),
+                    url: formUrl.trim(),
+                    message: formMessage.trim(),
                     turnstileToken
                 })
             });
@@ -572,13 +557,7 @@
                 {#if turnstileSiteKey}
                     <div
                         bind:this={turnstileFeedbackEl}
-                        class="cf-turnstile select-none"
-                        data-sitekey={turnstileSiteKey}
-                        data-action="feedback"
-                        data-size="flexible"
-                        data-theme="auto"
-                        data-appearance="interaction-only"
-                        data-execution="execute"
+                        class="turnstile-widget select-none"
                         use:turnstileWidget={{
                             sitekey: turnstileSiteKey,
                             action: 'feedback',
