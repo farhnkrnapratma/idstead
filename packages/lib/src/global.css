@@ -32,7 +32,7 @@
 }
 
 @utility touch-target {
-    @apply pointer-coarse:after:absolute pointer-coarse:after:top-1/2 pointer-coarse:after:left-1/2 pointer-coarse:after:size-[max(100%,--spacing(9))] pointer-coarse:after:-translate-1/2;
+    @apply pointer-coarse:after:absolute pointer-coarse:after:top-1/2 pointer-coarse:after:left-1/2 pointer-coarse:after:h-[max(100%,--spacing(11))] pointer-coarse:after:w-[max(100%,--spacing(9))] pointer-coarse:after:-translate-1/2;
 }
 
 @utility glass-card {
