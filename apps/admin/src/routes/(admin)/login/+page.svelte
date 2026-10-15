@@ -20,6 +20,7 @@
     import {
         turnstileWidget,
         executeTurnstile,
+        executeTurnstileTokens,
         resetTurnstile,
         turnstileSiteKey
     } from '#lib/utils/turnstile.ts';
@@ -181,7 +182,12 @@
         if (passkeyBusy) return;
         passkeyBusy = true;
         try {
-            const { error } = await supabase.auth.signInWithPasskey();
+            const captchaToken = await executeTurnstile(turnstileEl);
+            if (!captchaToken) {
+                toastStore.error('Please complete the verification challenge before signing in.');
+                return;
+            }
+            const { error } = await supabase.auth.signInWithPasskey({ options: { captchaToken } });
             if (error) throw error;
             await supabase.auth.signOut({ scope: 'others' }).catch(() => undefined);
             await continueAfterSignIn();
@@ -191,6 +197,7 @@
                 toastStore.error(text || 'Passkey sign-in failed.');
         } finally {
             passkeyBusy = false;
+            resetTurnstile(turnstileEl);
         }
     }
 
@@ -205,8 +212,9 @@
         e.preventDefault();
         if (!(await validate())) return;
 
-        const turnstileToken = await executeTurnstile(turnstileEl);
-        if (!turnstileToken) {
+        const [turnstileToken, captchaToken] = await executeTurnstileTokens(turnstileEl, 2);
+        if (!captchaToken) {
+            resetTurnstile(turnstileEl);
             toastStore.error('Please complete the verification challenge before submitting.');
             return;
         }
@@ -217,7 +225,12 @@
             const res = await fetch('/api/internal/admin/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: email.trim(), password: password, turnstileToken })
+                body: JSON.stringify({
+                    email: email.trim(),
+                    password: password,
+                    turnstileToken,
+                    captchaToken
+                })
             });
 
             const result = await res.json();
@@ -278,6 +291,27 @@
         <span class="h-px flex-1 bg-border-subtle"></span>
         <span>or</span>
         <span class="h-px flex-1 bg-border-subtle"></span>
+    </div>
+{/snippet}
+
+{#snippet turnstileField()}
+    <div
+        bind:this={turnstileEl}
+        class="cf-turnstile select-none"
+        data-sitekey={turnstileSiteKey}
+        data-action="admin-login"
+        data-size="flexible"
+        data-theme="auto"
+        data-appearance="interaction-only"
+        data-execution="execute"
+        use:turnstileWidget={{
+            sitekey: turnstileSiteKey,
+            size: 'flexible',
+            action: 'admin-login',
+            theme: 'auto',
+            appearance: 'interaction-only',
+            execution: 'execute'
+        }}>
     </div>
 {/snippet}
 
@@ -355,6 +389,7 @@
                         fullWidth
                         isLoading={verifyingMfa}
                         disabled={verifyingMfa || passkeyBusy}>Verify and continue</Button>
+                    {@render turnstileField()}
                     {@render authMethodDivider()}
                     <Button
                         type="tertiary"
@@ -448,24 +483,7 @@
                         </Input>
                     </FormField>
 
-                    <div
-                        bind:this={turnstileEl}
-                        class="cf-turnstile select-none"
-                        data-sitekey={turnstileSiteKey}
-                        data-action="admin-login"
-                        data-size="flexible"
-                        data-theme="auto"
-                        data-appearance="interaction-only"
-                        data-execution="execute"
-                        use:turnstileWidget={{
-                            sitekey: turnstileSiteKey,
-                            size: 'flexible',
-                            action: 'admin-login',
-                            theme: 'auto',
-                            appearance: 'interaction-only',
-                            execution: 'execute'
-                        }}>
-                    </div>
+                    {@render turnstileField()}
 
                     <Button
                         htmlType="submit"
