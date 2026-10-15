@@ -115,6 +115,7 @@ export const POST: RequestHandler = async ({
     const email = typeof body?.email === 'string' ? body.email.trim() : '';
     const password = typeof body?.password === 'string' ? body.password : '';
     const turnstileToken = typeof body?.turnstileToken === 'string' ? body.turnstileToken : '';
+    const captchaToken = typeof body?.captchaToken === 'string' ? body.captchaToken : '';
 
     if (!email || !password) {
         return apiError(
@@ -124,7 +125,7 @@ export const POST: RequestHandler = async ({
         );
     }
 
-    const emailKey = `email:${email.toLowerCase()}`;
+    const emailKey = `email-ip:${email.toLowerCase()}|${clientIp}`;
     const emailLockout = await checkLoginLockout(activityDb, salt, emailKey);
     if (!emailLockout.allowed)
         return apiError(
@@ -134,8 +135,7 @@ export const POST: RequestHandler = async ({
             `Retry after ${emailLockout.retryAfterSeconds}s.`
         );
 
-    const turnstileOk = await verifyTurnstileToken(turnstileToken, clientIp, platform);
-    if (!turnstileOk) {
+    const rejectTurnstile = async () => {
         await recordFailedLogin(activityDb, salt, `ip:${clientIp}`);
         await logActivity(
             {
@@ -150,9 +150,16 @@ export const POST: RequestHandler = async ({
             activityDb
         );
         return apiError(403, 'ADMIN_LOGIN_TURNSTILE_FAILED', 'Turnstile verification failed.');
-    }
+    };
 
-    const { data, error } = await locals.supabase.auth.signInWithPassword({ email, password });
+    if (!(await verifyTurnstileToken(turnstileToken, clientIp, platform))) return rejectTurnstile();
+
+    const { data, error } = await locals.supabase.auth.signInWithPassword({
+        email,
+        password,
+        options: { captchaToken: captchaToken || undefined }
+    });
+    if (error?.code === 'captcha_failed') return rejectTurnstile();
 
     if (error || !data.session) {
         if (error && error.code !== 'invalid_credentials')

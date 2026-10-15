@@ -30,6 +30,12 @@
     import { invalidateAll } from '$app/navigation';
     import { supabase } from '#lib/supabase.ts';
     import {
+        turnstileWidget,
+        executeTurnstile,
+        resetTurnstile,
+        turnstileSiteKey
+    } from '#lib/utils/turnstile.ts';
+    import {
         PanelLeftClose,
         PanelLeftOpen,
         GripVertical,
@@ -221,6 +227,7 @@
     let commentIdToDelete = $state<string | null>(null);
     let showDeleteAllDialog = $state(false);
     let deleteAllPassword = $state('');
+    let deleteAllTurnstileEl = $state<HTMLDivElement | null>(null);
     let hasExportedAllData = $state(false);
     let isExportingAllData = $state(false);
     let showDeleteCvDocDialog = $state(false);
@@ -2560,6 +2567,14 @@
             toastStore.error('Enter your password to confirm.');
             return;
         }
+        let captchaToken = '';
+        if (turnstileSiteKey) {
+            captchaToken = await executeTurnstile(deleteAllTurnstileEl);
+            if (!captchaToken) {
+                toastStore.error('Please complete the verification challenge before deleting.');
+                return;
+            }
+        }
         isDeletingAllData = true;
         try {
             const { data: sessionData } = await supabase.auth.getSession();
@@ -2569,7 +2584,7 @@
             const res = await fetch('/api/internal/admin/data/delete-all', {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ password: deleteAllPassword })
+                body: JSON.stringify({ password: deleteAllPassword, captchaToken })
             });
             if (!res.ok) {
                 const body = await res.json().catch(() => ({}));
@@ -2586,6 +2601,7 @@
             toastStore.error(err?.message || 'Failed to delete all data.');
         } finally {
             isDeletingAllData = false;
+            resetTurnstile(deleteAllTurnstileEl);
         }
     }
 
@@ -6685,6 +6701,26 @@
             bind:value={deleteAllPassword}
             disabled={isDeletingAllData} />
     </div>
+    {#if turnstileSiteKey}
+        <div
+            bind:this={deleteAllTurnstileEl}
+            class="cf-turnstile select-none"
+            data-sitekey={turnstileSiteKey}
+            data-action="admin-delete-all"
+            data-size="flexible"
+            data-theme="auto"
+            data-appearance="interaction-only"
+            data-execution="execute"
+            use:turnstileWidget={{
+                sitekey: turnstileSiteKey,
+                action: 'admin-delete-all',
+                size: 'flexible',
+                theme: 'auto',
+                appearance: 'interaction-only',
+                execution: 'execute'
+            }}>
+        </div>
+    {/if}
 </ConfirmationDialog>
 
 <ConfirmationDialog

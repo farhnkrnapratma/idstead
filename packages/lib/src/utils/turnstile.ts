@@ -299,3 +299,17 @@ export function resetTurnstile(node: HTMLElement | null) {
         node.style.pointerEvents = 'none';
     }
 }
+
+export async function executeTurnstileTokens(
+    node: HTMLElement | null,
+    count: number
+): Promise<string[]> {
+    const tokens: string[] = [];
+    for (let i = 0; i < count; i++) {
+        if (i) resetTurnstile(node);
+        const token = await executeTurnstile(node);
+        if (!token) return [];
+        tokens.push(token);
+    }
+    return tokens;
+}
