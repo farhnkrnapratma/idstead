@@ -9,7 +9,12 @@ import {
     BannerRequiredError,
     type PostOperation
 } from '#lib/server/blogPostSave.ts';
-import { cleanupBlogAssets, putBanner } from '#lib/server/blogBannerStorage.ts';
+import {
+    cleanupBlogAssets,
+    promoteBanner,
+    putBanner,
+    removeCanonicalBanner
+} from '#lib/server/blogBannerStorage.ts';
 import { UUID_PATTERN } from '#lib/blogBanner.ts';
 import { createApiRegistry, validateDefineForSave } from '#lib/define.ts';
 import { notifyNewPost } from '#lib/server/subscriberBroadcast.ts';
@@ -77,7 +82,27 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         }
         let cleanupPending = false;
         try {
-            ({ cleanupPending } = await cleanupBlogAssets(db, platform));
+            if (input.kind === 'delete' || operation.result?.deleted)
+                await removeCanonicalBanner(platform, input.id);
+            else if (input.banner.operation === 'remove')
+                await removeCanonicalBanner(platform, input.id);
+            else if (input.banner.operation === 'replace') {
+                const { data: current, error: readError } = await db
+                    .from('db_posts')
+                    .select('banner_version')
+                    .eq('id', input.id)
+                    .maybeSingle();
+                if (readError) throw readError;
+                if (current?.banner_version === input.operationId)
+                    await promoteBanner(platform, input.id, input.operationId);
+            }
+        } catch (error) {
+            console.error('Banner promotion failed:', error);
+            cleanupPending = true;
+        }
+        try {
+            const cleanup = await cleanupBlogAssets(db, platform);
+            if (cleanup.cleanupPending) cleanupPending = true;
         } catch {
             cleanupPending = true;
         }

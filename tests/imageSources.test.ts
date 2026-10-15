@@ -1,22 +1,32 @@
 import { describe, expect, test } from 'bun:test';
-import { avatarSources } from '../packages/lib/src/siteIdentity.ts';
+import {
+    avatarSource,
+    avatarSources,
+    avatarWebpSource,
+    siteBannerOgUrl,
+    siteBannerSources
+} from '../packages/lib/src/siteIdentity.ts';
 import { bannerSources } from '../packages/lib/src/blogBanner.ts';
 
 const publicId = 'a'.repeat(64);
 const version = '7c9e6679-7425-40de-944b-e07fc1f90ae7';
 
 describe('Image sources helpers for <picture> elements', () => {
-    test('avatarSources generates AVIF and WebP sources', () => {
-        const sources = avatarSources({ avatarVersion: version });
-        expect(sources).toHaveLength(2);
-        expect(sources[0]).toEqual({
-            srcset: `/avatar.avif?v=${encodeURIComponent(version)}`,
-            type: 'image/avif'
-        });
-        expect(sources[1]).toEqual({
-            srcset: `/avatar.webp?v=${encodeURIComponent(version)}`,
-            type: 'image/webp'
-        });
+    test('avatar loads only AVIF with a WebP fallback, without versions', () => {
+        const profile = { avatarVersion: version };
+        expect(avatarSources(profile)).toEqual([{ srcset: '/avatar.avif', type: 'image/avif' }]);
+        expect(avatarWebpSource(profile)).toBe('/avatar.webp');
+        expect(avatarWebpSource(null)).toBe('');
+        expect(avatarSource(profile)).toBe('/avatar.png');
+    });
+
+    test('site banner URLs carry no version', () => {
+        const profile = { bannerVersion: version };
+        expect(siteBannerOgUrl(profile)).toBe('/banner-og.webp');
+        expect(siteBannerSources(profile).map(source => source.srcset)).toEqual([
+            '/banner.avif',
+            '/banner.webp'
+        ]);
     });
 
     test('avatarSources returns empty when no version', () => {
@@ -28,11 +38,11 @@ describe('Image sources helpers for <picture> elements', () => {
         const sources = bannerSources({ public_id: publicId, banner_version: version });
         expect(sources).toHaveLength(2);
         expect(sources[0]).toEqual({
-            srcset: `/blog/banners/${publicId}/${version}.avif`,
+            srcset: `/blog/banners/${publicId}.avif`,
             type: 'image/avif'
         });
         expect(sources[1]).toEqual({
-            srcset: `/blog/banners/${publicId}/${version}.webp`,
+            srcset: `/blog/banners/${publicId}.webp`,
             type: 'image/webp'
         });
     });
@@ -45,12 +55,6 @@ describe('Image sources helpers for <picture> elements', () => {
     test('bannerSources validates public_id format', () => {
         expect(() => {
             bannerSources({ public_id: 'invalid', banner_version: version });
-        }).toThrow('Invalid banner identity');
-    });
-
-    test('bannerSources validates version format', () => {
-        expect(() => {
-            bannerSources({ public_id: publicId, banner_version: 'invalid' });
         }).toThrow('Invalid banner identity');
     });
 });

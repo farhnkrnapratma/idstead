@@ -9,13 +9,9 @@
     import { codeBlockPrefsStore } from '#lib/stores/codeBlockPrefsStore.svelte.ts';
     import { refreshCodeBlockPrefs } from '#lib/utils/codeBlocks.ts';
 
-    const { data, children } = $props();
+    const { children } = $props();
 
     shortcutStore.disable();
-
-    const iconVersion = $derived(
-        data?.author?.avatarVersion ? `?v=${data.author.avatarVersion}` : ''
-    );
 
     onMount(() => {
         const cleanupTheme = themeStore.init();
@@ -33,16 +29,16 @@
     <link
         rel="icon"
         type="image/x-icon"
-        href={`/favicon.ico${iconVersion}`} />
+        href="/favicon.ico" />
     <link
         rel="icon"
         type="image/png"
         sizes="32x32"
-        href={`/favicon-32x32.png${iconVersion}`} />
+        href="/favicon-32x32.png" />
     <link
         rel="apple-touch-icon"
         sizes="180x180"
-        href={`/apple-touch-icon.png${iconVersion}`} />
+        href="/apple-touch-icon.png" />
     <meta
         name="theme-color"
         content={themeColors(themeStore.isDark ? 'dark' : 'light').theme_color} />

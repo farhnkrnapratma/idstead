@@ -96,28 +96,28 @@
     <link
         rel="icon"
         type="image/x-icon"
-        href={`/favicon.ico${data?.author?.avatarVersion ? `?v=${data.author.avatarVersion}` : ''}`} />
+        href="/favicon.ico" />
     <link
         rel="icon"
         type="image/png"
         sizes="16x16"
-        href={`/favicon-16x16.png${data?.author?.avatarVersion ? `?v=${data.author.avatarVersion}` : ''}`} />
+        href="/favicon-16x16.png" />
     <link
         rel="icon"
         type="image/png"
         sizes="32x32"
-        href={`/favicon-32x32.png${data?.author?.avatarVersion ? `?v=${data.author.avatarVersion}` : ''}`} />
+        href="/favicon-32x32.png" />
     {#if data?.author?.avatarVersion}
         <link
             rel="icon"
             type="image/svg+xml"
             sizes="any"
-            href={`/favicon.svg?v=${data.author.avatarVersion}`} />
+            href="/favicon.svg" />
     {/if}
     <link
         rel="apple-touch-icon"
         sizes="180x180"
-        href={`/apple-touch-icon.png${data?.author?.avatarVersion ? `?v=${data.author.avatarVersion}` : ''}`} />
+        href="/apple-touch-icon.png" />
     <meta
         name="theme-color"
         content={themeColors(themeStore.isDark ? 'dark' : 'light').theme_color} />

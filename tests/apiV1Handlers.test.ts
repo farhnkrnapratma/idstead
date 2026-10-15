@@ -6,7 +6,7 @@ mock.module('#lib/author.ts', () => ({
     fetchAuthorProfile: async () => ({
         id: 'a1b2c3d4-0000-4000-8000-000000000000',
         name: 'A',
-        avatar: 'https://fkp.my.id/avatar.png?v=96888ae8-e194-43ee-9203-45d6c040dc11'
+        avatar: 'https://fkp.my.id/avatar.png'
     }),
     fetchContactInfo: async () => [{ id: 'x', platform: 'Email', href: 'mailto:a@b.c' }],
     fetchCvEntries: async () => ({

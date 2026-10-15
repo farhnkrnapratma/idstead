@@ -30,33 +30,35 @@ export function bannerKey(postId: string, version: string, ext: 'webp' | 'avif' 
     return `blog/banners/${postId}/${version}.${ext}`;
 }
 
+export function canonicalBannerKey(postId: string, ext: 'webp' | 'avif' = 'webp') {
+    if (!UUID_PATTERN.test(postId)) throw new Error('Invalid banner identity.');
+    return `blog/banners/${postId}.${ext}`;
+}
+
 export function bannerUrl(post: { id: string; banner_version?: string | null }) {
-    return post.banner_version ? `/${bannerKey(post.id, post.banner_version)}` : null;
+    return post.banner_version ? `/${canonicalBannerKey(post.id)}` : null;
+}
+
+function publicBannerPath(post: { public_id: string; banner_version?: string | null }) {
+    if (!post.banner_version) return null;
+    if (!/^[0-9a-f]{64}$/.test(post.public_id)) throw new Error('Invalid banner identity.');
+    return `/blog/banners/${post.public_id}`;
 }
 
 export function publicBannerUrl(post: { public_id: string; banner_version?: string | null }) {
-    if (!post.banner_version) return null;
-    if (!/^[0-9a-f]{64}$/.test(post.public_id) || !UUID_PATTERN.test(post.banner_version))
-        throw new Error('Invalid banner identity.');
-    return `/blog/banners/${post.public_id}/${post.banner_version}.webp`;
+    const path = publicBannerPath(post);
+    return path ? `${path}.webp` : null;
 }
 
 export function bannerSources(post: {
     public_id: string;
     banner_version?: string | null;
 }): ImageSource[] {
-    if (!post.banner_version) return [];
-    if (!/^[0-9a-f]{64}$/.test(post.public_id) || !UUID_PATTERN.test(post.banner_version))
-        throw new Error('Invalid banner identity.');
+    const path = publicBannerPath(post);
+    if (!path) return [];
     return [
-        {
-            srcset: `/blog/banners/${post.public_id}/${post.banner_version}.avif`,
-            type: 'image/avif'
-        },
-        {
-            srcset: `/blog/banners/${post.public_id}/${post.banner_version}.webp`,
-            type: 'image/webp'
-        }
+        { srcset: `${path}.avif`, type: 'image/avif' },
+        { srcset: `${path}.webp`, type: 'image/webp' }
     ];
 }
 

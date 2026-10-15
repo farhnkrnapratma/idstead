@@ -4,7 +4,6 @@ import { themeColors } from '#lib/themeColors.ts';
 
 export const GET: RequestHandler = async ({ request, url }) => {
     const profile = await readSiteProfile();
-    const version = profile.avatar_version ? `?v=${profile.avatar_version}` : '';
     const manifest = {
         id: '/',
         name: profile.name,
@@ -16,7 +15,7 @@ export const GET: RequestHandler = async ({ request, url }) => {
         display: 'standalone',
         ...themeColors(url.searchParams.get('theme') === 'dark' ? 'dark' : 'light'),
         icons: [192, 512].map(size => ({
-            src: `/android-chrome-${size}x${size}.png${version}`,
+            src: `/android-chrome-${size}x${size}.png`,
             sizes: `${size}x${size}`,
             type: 'image/png',
             purpose: 'any'
