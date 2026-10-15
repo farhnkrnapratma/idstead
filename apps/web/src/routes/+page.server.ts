@@ -1,8 +1,7 @@
 import { supabase } from '#lib/supabase.ts';
 import type { PageServerLoad } from './$types';
 import { avatarSource } from '#lib/siteIdentity.ts';
-import type { Project } from '#lib/types.ts';
-import { fetchProjects, extractGitHubUsername } from '#lib/server/githubProjects.ts';
+import { withoutExcludedProjects } from '#lib/server/projectsCache.ts';
 import { loadPublishedPosts } from '#lib/server/blogPosts.ts';
 import {
     fetchAuthorProfileWithSocials,
@@ -18,8 +17,10 @@ export type { BlogPost } from '#lib/server/blogPosts.ts';
 
 const HOME_POST_LIMIT = 5;
 
-export const load: PageServerLoad = async ({ fetch, platform }) => {
+export const load: PageServerLoad = async ({ fetch, parent }) => {
     const supabaseClient = supabase;
+    const layoutData = parent();
+    const postsPromise = loadPublishedPosts(fetch, { limit: HOME_POST_LIMIT });
 
     const [author, cv, funding, contact, skillsGrouped, cvDocument, repoRules] = await Promise.all([
         fetchAuthorProfileWithSocials(supabaseClient, { includeEmail: true }),
@@ -31,13 +32,8 @@ export const load: PageServerLoad = async ({ fetch, platform }) => {
         fetchProjectRepoRules(supabaseClient)
     ]);
 
-    const githubUsername = extractGitHubUsername(author);
-    const projectsPromise =
-        githubUsername ?
-            fetchProjects(githubUsername, fetch, platform, repoRules.excluded)
-        :   Promise.resolve<Project[]>([]);
-    const postsPromise = loadPublishedPosts(fetch, { limit: HOME_POST_LIMIT });
-    const [projects, dbPosts] = await Promise.all([projectsPromise, postsPromise]);
+    const [{ projects: layoutProjects }, dbPosts] = await Promise.all([layoutData, postsPromise]);
+    const projects = withoutExcludedProjects(layoutProjects, repoRules.excluded);
 
     return {
         projects,
