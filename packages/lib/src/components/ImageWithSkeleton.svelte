@@ -98,7 +98,7 @@
         {/if}
         {#if sources && sources.length > 0}
             <picture>
-                {#each sources as source}
+                {#each sources as source (source.type)}
                     <source
                         srcset={source.srcset}
                         type={source.type} />

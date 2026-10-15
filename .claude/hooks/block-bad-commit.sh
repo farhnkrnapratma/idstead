@@ -6,12 +6,12 @@ if [ "$branch" = "main" ]; then
 fi
 
 pre_unstaged=$(git diff --name-only)
-bun run format >/dev/null 2>&1
+bun run fmt >/dev/null 2>&1
 post_unstaged=$(git diff --name-only)
 newly_dirtied=$(comm -13 <(printf '%s\n' "$pre_unstaged" | sort) <(printf '%s\n' "$post_unstaged" | sort))
 
 if [ -n "$newly_dirtied" ]; then
-  jq -n --arg files "$newly_dirtied" '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": ("bun run format rewrote files that are staged but weren'"'"'t re-added, so the commit would miss the formatting:\n" + $files + "\n\nRun `git add` on these and retry the commit.")}}'
+  jq -n --arg files "$newly_dirtied" '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": ("bun run fmt rewrote files that are staged but weren'"'"'t re-added, so the commit would miss the formatting:\n" + $files + "\n\nRun `git add` on these and retry the commit.")}}'
   exit 0
 fi
 

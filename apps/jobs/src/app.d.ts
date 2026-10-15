@@ -52,7 +52,6 @@ declare global {
                 GITHUB_TOKEN?: string;
                 AI?: unknown;
                 R2_BUCKET?: R2Bucket;
-                MY_BUCKET?: R2Bucket;
                 API_RATE_LIMITER?: RateLimit;
                 TURNSTILE_SECRET?: string;
                 [key: string]: unknown;
