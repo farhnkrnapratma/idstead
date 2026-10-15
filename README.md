@@ -59,19 +59,20 @@ bun install
 
 ### Configure Environment Variables
 
-Copy the tier template that matches how you want to run locally, then fill in real values:
+Variables live in [Phase](https://phase.dev) (app `www`, environments Development and Production). Run any command that needs them through `phase run`:
 
 ```sh
-# Development-tier (default for local work) — dummy Turnstile, Sentry=development
-cp .env.development.example .env.development
-cp .env.development.example .env
-
-# Or production-tier locally
-cp .env.production.example .env.production
-cp .env.production.example .env
+phase run --env dev bun run dev
+phase run --env prod bun run build
 ```
 
-Env files live at the repository root for every app. `bun run dev` (Vite mode `development`) automatically loads `.env.development`, and `bun run build` loads `.env.production`.
+Without Phase access, copy the single template and fill in real values:
+
+```sh
+cp .env.example .env
+```
+
+`.env.example` lists every variable once; Development and Production use the same keys with different values. Env files live at the repository root for every app, and Vite loads `.env` in every mode.
 
 The dev server will not start correctly without a valid `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY` at minimum.
 
@@ -100,7 +101,7 @@ bun run --filter @fkp/api dev     # API worker on http://localhost:8787
 bun run --filter @fkp/jobs dev    # jobs worker on http://localhost:8788
 ```
 
-The wrangler-based workers read their variables from the repository root: add `--env-file ../../.env.production` (or `.env.development`) to the `wrangler dev` command, or create `apps/api/.dev.vars`. Point the site at a local API by setting `PUBLIC_API_BASE_URL=http://localhost:8787` in `.env`.
+The wrangler-based workers get their variables from `phase run --env dev`, or from the repository root by adding `--env-file ../../.env` to the `wrangler dev` command. Point the site at a local API by setting `PUBLIC_API_BASE_URL=http://localhost:8787`.
 
 ### Build
 
