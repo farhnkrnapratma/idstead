@@ -2,6 +2,7 @@ import { UUID_PATTERN } from '#lib/blogBanner.ts';
 import { getSupabaseAdminClient } from './supabaseAdmin';
 import { getBannerObject } from './blogBannerStorage';
 import { PUBLIC_ID_PATTERN, resolvePostUuid } from './postLookup';
+import { isObjectNotFound } from './storageErrors';
 
 export async function serveBlogBanner(
     request: Request,
@@ -57,7 +58,7 @@ export async function serveBlogBanner(
         return new Response(new Uint8Array(body), { headers });
     } catch (error) {
         return new Response(null, {
-            status: error instanceof Error && error.name === 'NoSuchKey' ? 404 : 503,
+            status: isObjectNotFound(error) ? 404 : 503,
             headers: { 'Cache-Control': 'no-store' }
         });
     }

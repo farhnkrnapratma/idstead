@@ -1,5 +1,6 @@
 import type { RequestHandler } from './$types';
 import { getContentAsset } from '#lib/server/blogContentStorage.ts';
+import { isObjectNotFound } from '#lib/server/storageErrors.ts';
 
 const CONTENT_TYPES: Record<string, string> = {
     webp: 'image/webp',
@@ -33,7 +34,7 @@ export const GET: RequestHandler = async ({ request, params, platform }) => {
         return new Response(new Uint8Array(body), { headers });
     } catch (error) {
         return new Response(null, {
-            status: error instanceof Error && error.name === 'NoSuchKey' ? 404 : 503,
+            status: isObjectNotFound(error) ? 404 : 503,
             headers: { 'Cache-Control': 'no-store' }
         });
     }

@@ -7,6 +7,7 @@ import {
 import * as env from '$app/env/private';
 import * as publicEnv from '$app/env/public';
 import { getSupabaseAdminClient } from './supabaseAdmin';
+import { isObjectNotFound } from './storageErrors';
 import { supabase } from '#lib/supabase.ts';
 import { bannerSizes, iconSizes, type IdentityAsset } from '#lib/siteIdentity.ts';
 
@@ -213,7 +214,7 @@ export async function serveIdentityAsset(
         const bytes = await object.Body?.transformToByteArray();
         return new Response(bytes ? new Uint8Array(bytes).buffer : null, { headers });
     } catch (error) {
-        if (error instanceof Error && error.name === 'NoSuchKey') {
+        if (isObjectNotFound(error)) {
             const { data, error: lookupError } = await supabase
                 .from('db_profiles')
                 .select(column)
