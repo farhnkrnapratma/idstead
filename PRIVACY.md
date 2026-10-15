@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Effective date:** 19 September 2026
+**Effective date:** 15 October 2026
 
 This **Privacy Policy** explains what personal data is processed when you visit **https://fkp.my.id** (the "**Website**"), why it is processed, who else receives it, and what rights you have over it.
 
@@ -18,7 +18,7 @@ No data protection officer has been appointed, as the scale of processing does n
 
 ## 2. Scope and Legal Framework
 
-This policy covers the Website, its public interface under `/api/v1`, and the forms it presents.
+This policy covers the Website, its public API at `api.fkp.my.id/v1`, and the forms it presents.
 
 Processing is carried out in accordance with **Law of the Republic of Indonesia No. 27 of 2022 on Personal Data Protection** (the "**PDP Law**"). Because the Website is reachable from the European Economic Area and the United Kingdom, this policy also sets out the corresponding rights and legal bases under the **General Data Protection Regulation** ("**GDPR**") for Visitors to whom that regulation applies.
 
@@ -41,7 +41,7 @@ We cannot recover your IP address from these hashes, but the second and third ar
 
 ## 4. Local Storage and Cookies
 
-:::important **The Website sets no first-party cookie for Visitors.** Your preferences are kept in your browser's `localStorage`, which is never transmitted to us. A first-party session cookie is set on one path only, the administrator area at `/admin`, and only after the administrator signs in; it is never issued to Visitors browsing the public Website. The other cookies you may encounter are set by third parties, as listed at the end of this section. :::
+:::important **The Website sets no first-party cookie for Visitors.** Your preferences are kept in your browser's `localStorage`, which is never transmitted to us. The administrator portal runs on a separate host and sets its session cookie only there, after the administrator signs in; that cookie is never issued to Visitors browsing the public Website. The other cookies you may encounter are set by third parties, as listed at the end of this section. :::
 
 The following entries are written to `localStorage` on your device. They remain on your device, are readable only by this Website, and can be erased at any time by clearing site data in your browser.
 
@@ -89,21 +89,21 @@ The Website uses [Sentry](https://sentry.io/) for error monitoring, performance 
 
 ## 7. Contact and Feedback Forms
 
-The contact form on the home page and the form at [Feedback](https://fkp.my.id/feedback) are relayed by **FormSubmit**, a third-party form-to-email service operated from the United States.
+The contact form on the home page and the form at [Feedback](https://fkp.my.id/feedback) are submitted to the Website's own server, which delivers each message to our mailbox as email through **Resend**.
 
 - The contact form transmits the name, email address, and message you enter.
 - The feedback form additionally transmits the page URL you are reporting.
-- The address of the page you submitted from is transmitted to FormSubmit as the referring URL.
+- The email address you enter is set as the reply-to address, so that we can answer you directly.
 
-These messages are delivered to us as email. **They are not stored in the Website's database.** Their retention is therefore governed by our mailbox, as described in Section 12.
+These messages are delivered to us as email. **They are not stored in the Website's database.** Only a content-free notice that a message arrived is recorded for the administrator. Their retention is therefore governed by our mailbox, as described in Section 12.
 
-:::note An anti-abuse challenge is displayed on these two forms, but in the current implementation its result is not verified on the server before the message is relayed. It should not be relied upon as a security control. The challenge is verified for comments, comment reports, newsletter subscription requests, and administrator sign-in, as described in Section 8. :::
+Both forms are protected by the anti-abuse challenge described in Section 8, which is verified on the server before a message is sent.
 
 **Legal basis:** consent, and the taking of steps at your request prior to contact, under Article 20(2)(a) of the PDP Law and Articles 6(1)(a) and 6(1)(b) GDPR.
 
 ## 8. Anti-Abuse Challenge
 
-Comments, comment reports, newsletter subscription requests, and administrator sign-in are protected by [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/). When the challenge is verified, your IP address is transmitted to Cloudflare as part of that verification.
+Comments, comment reports, contact and feedback messages, newsletter subscription requests, and administrator sign-in are protected by [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/). When the challenge is verified, your IP address is transmitted to Cloudflare as part of that verification.
 
 **Legal basis:** legitimate interests in preventing spam and automated abuse, under Article 20(2) of the PDP Law and Article 6(1)(f) GDPR.
 
@@ -125,8 +125,7 @@ Personal data described in this policy may be processed by the following recipie
 - **Supabase, Inc.** — the database in which published Content, comments, reports, view counts, helpfulness votes, and email subscriptions are stored, and the authentication service used for the administrator area.
 - **Google LLC** — tag management and analytics, subject to your consent.
 - **Functional Software, Inc. (Sentry)** — error monitoring, performance tracing, and session replay.
-- **FormSubmit** — relay of contact and feedback messages to our mailbox.
-- **Resend (Plus Five Five, Inc.)** — delivery of the subscription confirmation and new-article emails described in Section 18, and of security notifications sent to the administrator.
+- **Resend (Plus Five Five, Inc.)** — delivery of contact and feedback messages to our mailbox, of the subscription confirmation and new-article emails described in Section 18, and of security notifications sent to the administrator.
 - **GitHub, Inc.** — retrieval of public repository metadata displayed on the Website. This is a server-side request; your data is not sent to GitHub as part of it.
 
 We do not sell personal data, and we do not disclose it to any other party except where required by law or necessary to establish, exercise, or defend a legal claim.
