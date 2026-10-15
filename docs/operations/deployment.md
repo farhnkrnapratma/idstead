@@ -13,7 +13,7 @@ There is no CI. Run `bun run test`, `bun run check` and `bun run lint` locally b
 
 ## Environments
 
-- **Production:** every push to `main` deploys, and `main` only receives `release/*` and `hotfix/*` merges (git-flow-next). The Worker variables and secrets are the Production values from Phase, including real Turnstile keys and `PUBLIC_SENTRY_ENVIRONMENT=production`.
+- **Production:** every push to `main` deploys, and `main` only receives `release/*` and `hotfix/*` merges (git-flow-next). The Worker secrets are synced from Phase (`/workers/<app>` in Production, see [environment.md](../development/environment.md#phase-layout-and-sync-to-cloudflare)), including real Turnstile keys and `PUBLIC_SENTRY_ENVIRONMENT=production`.
 - **Preview:** not connected yet. The triggers watch `main` only, so `develop` and PR branches deploy nothing.
     - To add previews, create a branch trigger per Worker.
     - Give previews their own variables: Cloudflare's dummy Turnstile keys and `PUBLIC_SENTRY_ENVIRONMENT=preview`.
@@ -38,7 +38,7 @@ R2 is **not** bound. Code reaches it through the S3 API with the `R2_*` secrets 
 
 1. Create the queues: `bunx wrangler queues create fkp-newsletter` and `bunx wrangler queues create fkp-newsletter-dlq`.
 2. In Supabase Auth, add `https://admin.fkp.my.id` to the redirect URLs and to the Passkeys **Relying Party Origins**.
-3. Set every Worker's variables and secrets ([environment.md](../development/environment.md)).
+3. In the Phase Console, sync each `/workers/<app>` folder of Production to its Worker ([environment.md](../development/environment.md#phase-layout-and-sync-to-cloudflare)).
 
 ## Database migrations
 

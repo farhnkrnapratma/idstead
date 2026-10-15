@@ -11,7 +11,6 @@ export const variables = defineEnvVars({
     PUBLIC_SUPABASE_URL: { public: true, schema: optional },
     PUBLIC_TURNSTILE_SITE_KEY: { public: true, schema: optional },
     GITHUB_PAT: { schema: optional },
-    GITHUB_TOKEN: { schema: optional },
     IP_SALT: { schema: optional },
     R2_ACCESS_KEY_ID: { schema: optional },
     R2_ACCOUNT_ID: { schema: optional },

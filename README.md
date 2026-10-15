@@ -143,9 +143,9 @@ Every app deploys as a Cloudflare Worker through [Workers Builds](https://develo
 | `fkp-api` | `cd apps/api && bun run build` | `cd apps/api && bunx wrangler deploy` | `apps/api/*`, `packages/*`, `package.json`, `bun.lock`, `bunfig.toml` |
 | `fkp-jobs` | `cd apps/jobs && bun run build` | `cd apps/jobs && bunx wrangler deploy` | `apps/jobs/*`, `packages/*`, `package.json`, `bun.lock`, `bunfig.toml` |
 
-Environment variables are read at runtime, never baked in at build time, so they live as Worker secrets rather than build variables.
+Environment variables are read at runtime, never baked in at build time, so they live as Worker secrets rather than build variables. Phase is the source of truth and syncs them to each Worker (see [docs/development/environment.md](docs/development/environment.md)).
 
-- **Production** — pushes to `main` deploy to the custom domains declared in each `wrangler.jsonc`. Set the variables from `.env.production.example` as Worker variables/secrets, including real Turnstile keys and `PUBLIC_SENTRY_ENVIRONMENT=production`.
+- **Production** — pushes to `main` deploy to the custom domains declared in each `wrangler.jsonc`. The Worker secrets come from the Phase Production sync, including real Turnstile keys and `PUBLIC_SENTRY_ENVIRONMENT=production`.
 - **Preview** — not connected yet: the triggers only watch `main`, so pushes to `develop` deploy nothing. To add previews, add a non-production branch trigger per Worker and give previews their own variables: Cloudflare's [dummy Turnstile testing keys](https://developers.cloudflare.com/turnstile/troubleshooting/testing/) and `PUBLIC_SENTRY_ENVIRONMENT=preview`.
 
 One-time Cloudflare and Supabase setup:
