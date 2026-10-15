@@ -189,17 +189,13 @@
         {@attach loadSavedImage}>
         <div
             class={cn(
-                'grid min-w-0 grid-cols-1 gap-4',
-                aspect === 'square' ?
-                    'items-stretch @md:grid-cols-[auto_1fr]'
-                :   '@2xl:grid-cols-[auto_1fr]'
+                'flex min-w-0 flex-col gap-4',
+                aspect === 'square' ? '@md:flex-row' : '@2xl:flex-row'
             )}>
             <div
                 class={cn(
-                    'relative overflow-hidden rounded-md border border-border-subtle bg-surface-subtle bg-[conic-gradient(var(--color-surface)_25%,transparent_0_50%,var(--color-surface)_0_75%,transparent_0)] bg-size-[1rem_1rem]',
-                    aspect === 'square' ?
-                        'aspect-square size-40 @md:size-auto @md:h-full'
-                    :   'aspect-2/1 w-full max-w-120 self-start @2xl:w-80'
+                    'relative shrink-0 self-start overflow-hidden rounded-md border border-border-subtle bg-surface-subtle bg-[conic-gradient(var(--color-surface)_25%,transparent_0_50%,var(--color-surface)_0_75%,transparent_0)] bg-size-[1rem_1rem]',
+                    aspect === 'square' ? 'aspect-square w-40' : 'aspect-2/1 w-80 max-w-full'
                 )}>
                 {#if source}
                     <ImageWithSkeleton
@@ -217,7 +213,7 @@
                         }} />
                 {:else}
                     <div
-                        class="flex size-full min-h-40 items-center justify-center"
+                        class="absolute inset-0 flex items-center justify-center"
                         role="img"
                         aria-busy={generating}
                         aria-label={generating ?
@@ -237,7 +233,7 @@
             </div>
             <FileUploadField
                 {id}
-                class="min-w-0"
+                class="min-w-0 flex-1"
                 accept="image/png,image/jpeg,image/webp,image/avif,image/gif,image/bmp"
                 {hint}
                 {disabled}
