@@ -1210,13 +1210,13 @@ select {
         @apply my-0! rounded-b-md! border-0!;
     }
 
-    .cf-turnstile {
+    .turnstile-widget {
         @apply block min-h-16.25 w-full max-w-full overflow-hidden select-none;
     }
 
-    .cf-turnstile iframe,
-    .cf-turnstile div,
-    .cf-turnstile > div {
+    .turnstile-widget iframe,
+    .turnstile-widget div,
+    .turnstile-widget > div {
         @apply w-full! max-w-full! min-w-full! border-0!;
     }
 
