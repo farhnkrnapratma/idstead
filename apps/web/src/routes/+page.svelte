@@ -313,15 +313,6 @@
             formValid.message = result.valid;
         }
     });
-    function sanitizeInput(text: string): string {
-        return text
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#x27;')
-            .replace(/\//g, '&#x2F;');
-    }
 
     async function validateForm(e: SubmitEvent) {
         e.preventDefault();
@@ -346,18 +337,14 @@
                 turnstileToken = token;
             }
 
-            const sanitizedName = sanitizeInput(formName.trim());
-            const sanitizedEmail = sanitizeInput(formEmail.trim());
-            const sanitizedMessage = sanitizeInput(formMessage.trim());
-
             const res = await fetch('/api/internal/contact', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
                 body: JSON.stringify({
                     kind: 'message',
-                    name: sanitizedName,
-                    email: sanitizedEmail,
-                    message: sanitizedMessage,
+                    name: formName.trim(),
+                    email: formEmail.trim(),
+                    message: formMessage.trim(),
                     turnstileToken
                 })
             });
@@ -1208,13 +1195,7 @@
 
                     <div
                         bind:this={turnstileContactEl}
-                        class="cf-turnstile select-none"
-                        data-sitekey={turnstileSiteKey}
-                        data-action="contact-message"
-                        data-size="flexible"
-                        data-theme="auto"
-                        data-appearance="interaction-only"
-                        data-execution="execute"
+                        class="turnstile-widget select-none"
                         use:turnstileWidget={{
                             sitekey: turnstileSiteKey,
                             size: 'flexible',

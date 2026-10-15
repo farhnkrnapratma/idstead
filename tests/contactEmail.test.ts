@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, mock, test } from 'bun:test';
 
 mock.module('$app/env/private', () => ({}));
@@ -38,4 +39,33 @@ describe('contact message email', () => {
         });
         expect(plain.text).not.toContain('Page:');
     });
+});
+
+describe('contact form payloads', () => {
+    test('escapes visitor text exactly once', () => {
+        const mail = contactMessageEmail('New feedback report from website!', {
+            name: "Tom's",
+            email: 'tom@example.com',
+            message: 'A&B',
+            pageUrl: 'https://fkp.my.id/blog/x'
+        });
+        expect(mail.html).toContain('A&amp;B');
+        expect(mail.html).toContain('https://fkp.my.id/blog/x');
+        expect(mail.html).not.toContain('&amp;amp;');
+        expect(mail.text).toContain("Name: Tom's");
+        expect(mail.text).toContain('Page: https://fkp.my.id/blog/x');
+    });
+
+    test.each(['+page.svelte', 'feedback/+page.svelte'])(
+        '%s sends raw text and leaves escaping to the server',
+        page => {
+            const source = readFileSync(
+                new URL(`../apps/web/src/routes/${page}`, import.meta.url),
+                'utf8'
+            );
+            expect(source).toContain("fetch('/api/internal/contact'");
+            expect(source).not.toContain('sanitizeInput');
+            expect(source).not.toContain('&#x2F;');
+        }
+    );
 });
