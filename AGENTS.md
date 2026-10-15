@@ -77,14 +77,14 @@ Full endpoint reference and error-code table: [apps/api/src/README.md](apps/api/
 
 ### Jobs (`apps/jobs`)
 
-Consumes `fkp-newsletter` (retries, dead-letter queue `fkp-newsletter-dlq`) and runs `cleanupBlogAssets`/`cleanupAssets` daily. `wrangler.jsonc` aliases `$app/env/private`/`$app/env/public` to `src/appEnv.ts`, which reads `cloudflare:workers` env, so shared server code runs unchanged.
+Consumes `fkp-newsletter` (retries, dead-letter queue `fkp-newsletter-dlq`, which it also consumes to report each dead-lettered message to Sentry) and runs `cleanupBlogAssets`/`cleanupAssets` daily. `wrangler.jsonc` aliases `$app/env/private`/`$app/env/public` to `src/appEnv.ts`, which reads `cloudflare:workers` env, so shared server code runs unchanged.
 
 ### Data layer
 
 - `packages/lib/src/supabase.ts` — public (anon key) Supabase client, safe for server _and_ client use.
 - `packages/lib/src/server/supabaseAdmin.ts` — service-role client that bypasses RLS. **Server-only** — never import from a `.svelte` file or anything bundled for the browser.
 - `packages/lib/src/authorApi.ts` / `author.ts` — fetch/shape the author profile (CV, funding, contact, skills, socials).
-- `supabase/functions/` — Supabase Edge Functions deployed separately. `supabase/migrations/` — schema history; production has been migrated through the MCP tool, so its recorded versions differ from file names — compare before assuming a migration is applied.
+- `supabase/migrations/` — schema history; production has been migrated through the MCP tool, so its recorded versions differ from file names — compare before assuming a migration is applied.
 - Comment moderation uses Llama Guard 3 through the web worker's `AI` binding. If the binding or the model call fails, the request is rejected with `BLOG_COMMENT_MODERATION_UNAVAILABLE` (503). `is_approved: false` means the AI held the comment back.
 - RPCs run under PostgREST's `safeupdate`: every `DELETE`/`UPDATE` in a database function needs a `WHERE` clause (`tests/safeupdate.test.ts` enforces this).
 - **No hardcoded/raw content data in application code.** Author name, bio, contact info, CV entries, funding links, skills, etc. must always be fetched from Supabase — never inline a literal stand-in. This doesn't apply to files that are inherently static by convention (`.github/FUNDING.yml`, `SECURITY.md`, `package.json` metadata, etc.).

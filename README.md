@@ -247,7 +247,7 @@ Footnote numbering and links back to each citation work across the document. Exi
 
 ## Contributing
 
-This repo uses [git-flow-next](https://git-flow.sh/) (classic preset: `main` for production, `develop` for integration, `feature/*`/`bugfix/*`/`release/*`/`hotfix/*` topic branches). See [`CLAUDE.md`](CLAUDE.md) for the full workflow, code style conventions, and architecture notes before opening a PR.
+This repo uses [git-flow-next](https://git-flow.sh/) (classic preset: `main` for production, `develop` for integration, `feature/*`/`bugfix/*`/`release/*`/`hotfix/*` topic branches). See [`CONTRIBUTING.md`](CONTRIBUTING.md) for branches, commits and checks, [`docs/`](docs/README.md) for architecture, API, setup and operations documentation, and [`CLAUDE.md`](CLAUDE.md) for code style conventions before opening a PR.
 
 Found a security issue? Please don't open a public issue — see [`SECURITY.md`](SECURITY.md) for how to report it privately.
 

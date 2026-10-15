@@ -1,31 +1,45 @@
 ---
 name: api-contract-check
-description: Verify src/routes/api/v1 routes follow this repo's API conventions — apiError() usage, error codes documented in README, and openapi.ts/well-known specs in sync. Use after adding or changing any /api/v1 route, or before a release touching the API.
+description: Verify the public API worker (apps/api, handlers in packages/lib/src/server/api) follows this repo's API conventions — apiError() usage, error codes documented, openapi.ts and docs in sync, no breaking change under /v1. Use after adding or changing any /v1 route, parameter, response shape or error code, or before a release touching the API.
 ---
 
 # API contract check
 
-`src/routes/api/v1/README.md` is the source of truth for this repo's public API and is also served live at `GET /api/v1`. Route handlers, the README, and `src/lib/openapi.ts` must all agree. Run this check after touching anything under `src/routes/api/v1`.
+The public API is the Hono worker at `apps/api/src/index.ts` (`api.fkp.my.id/v1`). Routes only wrap handlers from `packages/lib/src/server/api/` (`blog.ts`, `author.ts`, `root.ts`, `params.ts`, `responses.ts`) in `runApi()`. Four descriptions of the contract must agree with the handlers:
+
+- `apps/api/src/README.md`: served live at `GET /v1`, holds the error-code table
+- `packages/lib/src/openapi.ts`: served at `/v1/openapi.{json,yaml}`, mirrored at `fkp.my.id/.well-known/openapi.*`, and drives `llms.txt` / agent skills
+- `docs/api/v1/*.md`: the extended reference
+- `tests/apiV1.test.ts`, `tests/apiV1Handlers.test.ts`, `tests/apiParams.test.ts`
 
 ## Steps
 
-1. **Find all route handlers**: `find src/routes/api/v1 -name '+server.ts'`
+1. **Routes**: `rg -n "^app\.get" apps/api/src/index.ts`. Every `/v1/...` route must appear in the README Endpoints tables, in `openapi.ts` `paths`, and in `docs/api/v1/README.md`.
 
-2. **Error envelope**: grep each handler for any JSON error response that does NOT go through `apiError()` (from `src/lib/server/apiError.ts`). Flag any hand-rolled `json({...}, {status: ...})` used for an error case — it must use `apiError(status, code, message, details?)` instead.
+2. **Error envelope**:
+    - Handlers must return errors through `apiError(status, CODE, message, details?)` or throw `ApiRequestError`.
+    - Flag any hand-rolled `Response.json({...}, {status: 4xx|5xx})` in a handler. The worker's `notFound`/`onError` fallbacks are the only exceptions.
 
-3. **Error codes**: extract every `apiError(...)` call's `code` argument across all routes, then cross-check each one appears in the error-codes table in `src/routes/api/v1/README.md`. Flag:
-    - Codes used in code but missing from the README table.
-    - Codes in the README table no longer used anywhere (dead documentation).
-    - Reused generic codes (`BAD_REQUEST`, `INTERNAL_ERROR`, etc.) where a specific per-endpoint code would be expected instead — per `CLAUDE.md`, generic codes are fallback-only.
+3. **Error codes**:
+    - Collect every code: `rg -o "'[A-Z][A-Z_]{3,}'" packages/lib/src/server/api packages/lib/src/server/postLookup.ts apps/api/src/index.ts`.
+    - Cross-check against the README table **and** `docs/api/v1/errors.md`. Flag codes missing from either, codes documented but no longer produced, and generic codes (`BAD_REQUEST`, `INTERNAL_ERROR`) used where a specific per-endpoint code is expected.
 
-4. **Endpoint coverage**: for any new or changed route path/method, confirm it's listed in the "Endpoints" table in the README with an accurate description (query params, body shape, status codes).
+4. **Parameters**:
+    - Every handler parses its query with `parseApiParams(url, allowed)`. Check that the `allowed` list matches the README and `docs/api/v1/parameters.md`.
+    - Single resources use `?id=`, never a path segment.
 
-5. **OpenAPI sync**: check `src/lib/openapi.ts` for a matching path/schema entry for any new or changed endpoint. If missing or stale, flag it — `/.well-known/openapi.json` and `openapi.yaml` are generated from this file and must stay in sync per `CLAUDE.md`.
+5. **Outputs**:
+    - For each `resolveOutput(params, request, supported, fallback)`, confirm the supported list and default match the docs. For example, `/v1/blog/content` defaults to `md`, and `pdf` is valid only for `field=cv`.
+    - `/v1/cv` must stay byte-identical to `/v1/author?field=cv`.
 
-6. **format=md scope**: if a route was changed to support `?format=md` / `Accept: text/markdown`, confirm it's one of the three endpoints where this is documented as supported (`/api/v1/blog`, `/api/v1/blog/{id_or_slug}`, `/api/v1/author`). Flag if added elsewhere without updating the README's stated scope, or if claimed supported elsewhere without an implementation.
+6. **No database IDs**: responses must expose posts only by `public_id` (as `id`). Flag any UUID or `*_id` column in a response shape.
 
-7. **Versioning**: flag any breaking change (removed field, changed type, removed endpoint) made in place under `/api/v1` — these must ship under a new `/api/v2/` per `CLAUDE.md`.
+7. **OpenAPI sync**: any new or changed path, parameter or schema needs a matching update in `packages/lib/src/openapi.ts`. Paths are written `/v1/...`.
+
+8. **Versioning**:
+    - Flag any breaking change made in place under `/v1`: a removed or renamed field, a changed type or default, a removed endpoint or parameter, or a changed error code.
+    - Breaking changes must ship under a new `/v2` and a new `docs/api/v2/`.
 
 ## Output
 
-List each finding as: file:line, what's inconsistent, and the specific fix (e.g. "add `WIDGET_NOT_FOUND` to the error codes table in README.md" or "replace hand-rolled `json()` call with `apiError()`"). If everything is consistent, say so explicitly — don't invent findings.
+List each finding as: `file:line`, what is inconsistent, and the specific fix. Example: "add `WIDGET_NOT_FOUND` to the README table and `docs/api/v1/errors.md`". If everything is consistent, say so explicitly. Don't invent findings.

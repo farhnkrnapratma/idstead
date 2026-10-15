@@ -4,6 +4,8 @@ Public, read-only endpoints at `https://api.fkp.my.id/v1/`. No authentication is
 
 **Base URL**: `https://api.fkp.my.id`. Every endpoint accepts `GET`, `HEAD` and `OPTIONS` only.
 
+An extended reference (response shapes, limits, headers, every error trigger) lives in `docs/api/v1/` of the source repository at https://github.com/farhnkrnapratma/www.
+
 Found a bug or a security issue with this API? See `SECURITY.md` in the repo root for how to report it privately — please don't open a public issue for a suspected vulnerability.
 
 ```sh
