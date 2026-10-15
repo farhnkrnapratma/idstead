@@ -55,25 +55,20 @@ self.onmessage = async (event: MessageEvent<{ bitmap: ImageBitmap; background: s
             { size: 48, data: encode(48) }
         ]);
 
-        // Generate WebP and AVIF versions of avatar.png for social previews
         const avatarPixels = raster(512);
         const avatarCanvas = new OffscreenCanvas(512, 512);
-        const avatarCtx = avatarCanvas.getContext('2d');
-        if (avatarCtx) {
-            avatarCtx.putImageData(avatarPixels, 0, 0);
-            try {
-                const webpBlob = await avatarCanvas.convertToBlob({
-                    type: 'image/webp',
-                    quality: 0.8
-                });
-                files['avatar.webp'] = await webpBlob.arrayBuffer();
-            } catch {}
-            try {
-                const { encode: encodeAvif } = await import('@jsquash/avif');
-                const avifBuffer = await encodeAvif(avatarPixels);
-                files['avatar.avif'] = avifBuffer;
-            } catch {}
-        }
+        const avatarContext = avatarCanvas.getContext('2d');
+        if (!avatarContext) throw new Error('Image processing is unavailable in this browser.');
+        avatarContext.putImageData(avatarPixels, 0, 0);
+        const webp = await avatarCanvas.convertToBlob({ type: 'image/webp', quality: 0.8 });
+        if (webp.type !== 'image/webp')
+            throw new Error('This browser cannot create the WebP profile image.');
+        if (webp.size > IMAGE_LIMIT) throw new Error('WebP profile image exceeds 500 KB.');
+        files['avatar.webp'] = await webp.arrayBuffer();
+        const { encode: encodeAvif } = await import('@jsquash/avif');
+        const avif = await encodeAvif(avatarPixels);
+        if (avif.byteLength > IMAGE_LIMIT) throw new Error('AVIF profile image exceeds 500 KB.');
+        files['avatar.avif'] = avif;
 
         const svg = tracer.imagedataToSVG(raster(128), {
             numberofcolors: 128,

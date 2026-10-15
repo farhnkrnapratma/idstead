@@ -84,13 +84,13 @@ export function validateIco(buffer: ArrayBuffer) {
 }
 
 export async function validateAvatar(form: FormData): Promise<Record<string, ArrayBuffer> | null> {
-    const required = [...Object.keys(iconSizes), 'favicon.ico', 'vector'];
-    const optional = ['avatar.webp', 'avatar.avif'];
+    const formats = ['avatar.webp', 'avatar.avif'];
+    const required = [...Object.keys(iconSizes), 'favicon.ico', 'vector', ...formats];
     const entries = Array.from(new Set(form.keys())).filter(key => !identityFields.has(key));
     if (!entries.length) return null;
     const missingRequired = required.filter(key => form.getAll(key).length !== 1);
     if (missingRequired.length > 0) throw new Error('Upload the complete icon package.');
-    const extraEntries = entries.filter(key => !required.includes(key) && !optional.includes(key));
+    const extraEntries = entries.filter(key => !required.includes(key));
     if (extraEntries.length > 0) throw new Error('Upload the complete icon package.');
     const files: Record<string, ArrayBuffer> = {};
     for (const [name, size] of Object.entries(iconSizes)) {
@@ -111,18 +111,15 @@ export async function validateAvatar(form: FormData): Promise<Record<string, Arr
     files['favicon.svg'] = new TextEncoder().encode(
         buildSvg(JSON.parse(vector) as SvgPath[])
     ).buffer;
-    for (const name of optional) {
-        const instances = form.getAll(name);
-        if (instances.length > 1) throw new Error(`Duplicate ${name} file.`);
-        const file = instances[0];
-        if (file instanceof File) {
-            if (file.size > IMAGE_LIMIT) throw new Error(`${name} must be no larger than 500 KiB.`);
-            const bytes = new Uint8Array(await file.arrayBuffer());
-            if (name === 'avatar.webp')
-                inspectWebp(bytes, { maxBytes: IMAGE_LIMIT, width: 512, height: 512 });
-            else inspectAvif(bytes, { maxBytes: IMAGE_LIMIT, width: 512, height: 512 });
-            files[name] = bytes.buffer;
-        }
+    for (const name of formats) {
+        const file = form.get(name);
+        if (!(file instanceof File) || file.size > IMAGE_LIMIT)
+            throw new Error(`${name} must be no larger than 500 KiB.`);
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        if (name === 'avatar.webp')
+            inspectWebp(bytes, { maxBytes: IMAGE_LIMIT, width: 512, height: 512 });
+        else inspectAvif(bytes, { maxBytes: IMAGE_LIMIT, width: 512, height: 512 });
+        files[name] = bytes.buffer;
     }
     return files;
 }

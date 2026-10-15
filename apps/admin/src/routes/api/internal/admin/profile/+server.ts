@@ -11,9 +11,9 @@ import {
     validateSiteBanner,
     type IdentityMeta
 } from '#lib/server/validateSiteBanner.ts';
-import { writeAssets, removeAssets, cleanupAssets } from '#lib/server/profileAssets.ts';
+import { writeAssets, copyAssets, removeAssets, cleanupAssets } from '#lib/server/profileAssets.ts';
 import { profilePatch, ProfileInputError } from '#lib/server/profilePatch.ts';
-import type { IdentityAsset } from '#lib/siteIdentity.ts';
+import { avatarAssetNames, bannerAssetNames, type IdentityAsset } from '#lib/siteIdentity.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { workerBinding, type RateLimit } from '#lib/server/workerEnv.ts';
 
@@ -21,26 +21,42 @@ const attempts = new Map<string, number>();
 
 type IdentityKind = 'avatar' | 'banner';
 
-interface StagedVersion {
-    kind: IdentityKind;
-    version: string;
-    files: Record<string, ArrayBuffer>;
-    meta: IdentityMeta;
+interface VersionRow {
+    id: string;
+    kind: IdentityKind | 'identity';
+    source: IdentityMeta['source'];
+    fingerprint: string | null;
+    avatar_source: IdentityMeta['source'] | null;
+    avatar_fingerprint: string | null;
+    banner_source: IdentityMeta['source'] | null;
+    banner_fingerprint: string | null;
     assets: IdentityAsset[];
 }
 
-async function discardVersions(
+interface KeptGroup {
+    kind: IdentityKind;
+    from: string;
+    assets: IdentityAsset[];
+}
+
+function groupMeta(row: VersionRow, kind: IdentityKind): IdentityMeta {
+    if (row.kind !== 'identity') return { source: row.source, fingerprint: row.fingerprint };
+    return {
+        source: row[`${kind}_source`] ?? 'custom',
+        fingerprint: row[`${kind}_fingerprint`] ?? null
+    };
+}
+
+async function discardVersion(
     platform: App.Platform | undefined,
     db: NonNullable<ReturnType<typeof getSupabaseAdminClient>>,
-    staged: StagedVersion[]
+    version: string
 ) {
-    for (const { version } of staged) {
-        try {
-            await removeAssets(platform, version);
-            await db.from('db_identity_versions').delete().eq('id', version);
-        } catch (cleanupError) {
-            Sentry.captureException(cleanupError);
-        }
+    try {
+        await removeAssets(platform, version);
+        await db.from('db_identity_versions').delete().eq('id', version);
+    } catch (cleanupError) {
+        Sentry.captureException(cleanupError);
     }
 }
 
@@ -85,6 +101,7 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
     let files: Record<string, ArrayBuffer> | null;
     let bannerFiles: Record<string, ArrayBuffer> | null;
     let meta: { avatar: IdentityMeta; banner: IdentityMeta };
+    const kept: KeptGroup[] = [];
     try {
         const reader = request.body?.getReader();
         if (!reader) throw new Error('Missing profile data.');
@@ -162,6 +179,35 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
             throw new ProfileInputError({ avatar: 'Profile image is required.' });
         if (!bannerFiles && !current?.banner_version)
             throw new ProfileInputError({ banner: 'Website banner is required.' });
+        if ((files || bannerFiles) && current) {
+            const { data: rows, error: rowsError } = await db
+                .from('db_identity_versions')
+                .select(
+                    'id, kind, source, fingerprint, avatar_source, avatar_fingerprint, banner_source, banner_fingerprint, assets'
+                )
+                .in('id', [current.avatar_version, current.banner_version].filter(Boolean));
+            if (rowsError)
+                return apiError(
+                    503,
+                    'PROFILE_STORAGE_UNAVAILABLE',
+                    'Image metadata could not be prepared.'
+                );
+            const keep = (kind: IdentityKind, version: string, names: string[]) => {
+                const row = (rows as VersionRow[] | null)?.find(entry => entry.id === version);
+                const assets = (row?.assets ?? []).filter(asset => names.includes(asset.name));
+                if (!row || assets.length !== names.length)
+                    throw new ProfileInputError({
+                        [kind]:
+                            kind === 'avatar' ?
+                                'Upload the profile image again to complete its image package.'
+                            :   'Upload the website banner again to complete its image package.'
+                    });
+                meta[kind] = groupMeta(row, kind);
+                kept.push({ kind, from: version, assets });
+            };
+            if (!files) keep('avatar', current.avatar_version, avatarAssetNames);
+            if (!bannerFiles) keep('banner', current.banner_version, bannerAssetNames);
+        }
     } catch (error) {
         return apiError(
             400,
@@ -172,71 +218,57 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
             :   undefined
         );
     }
-    const staged: StagedVersion[] = [];
-    if (files)
-        staged.push({
-            kind: 'avatar',
-            version: crypto.randomUUID(),
-            files,
-            meta: meta.avatar,
-            assets: []
-        });
-    if (bannerFiles)
-        staged.push({
-            kind: 'banner',
-            version: crypto.randomUUID(),
-            files: bannerFiles,
-            meta: meta.banner,
-            assets: []
-        });
-    for (const item of staged) {
+    const version = files || bannerFiles ? crypto.randomUUID() : null;
+    let identity: { version: string; assets: IdentityAsset[] } | null = null;
+    if (version) {
         const { error: registerError } = await db
             .from('db_identity_versions')
             .insert({
-                id: item.version,
-                kind: item.kind,
-                source: item.meta.source,
-                fingerprint: item.meta.fingerprint,
+                id: version,
+                kind: 'identity',
+                source: meta.avatar.source,
+                fingerprint: meta.avatar.fingerprint,
+                avatar_source: meta.avatar.source,
+                avatar_fingerprint: meta.avatar.fingerprint,
+                banner_source: meta.banner.source,
+                banner_fingerprint: meta.banner.fingerprint,
                 assets: [],
                 retired_at: new Date().toISOString()
             });
-        if (registerError) {
-            await discardVersions(platform, db, staged.slice(0, staged.indexOf(item)));
+        if (registerError)
             return apiError(
                 503,
                 'PROFILE_STORAGE_UNAVAILABLE',
                 'Image metadata could not be prepared.'
             );
+        try {
+            const assets = await writeAssets(platform, version, {
+                ...(files ?? {}),
+                ...(bannerFiles ?? {})
+            });
+            for (const group of kept)
+                assets.push(...(await copyAssets(platform, group.from, version, group.assets)));
+            identity = { version, assets };
+        } catch (error) {
+            Sentry.captureException(error);
+            await discardVersion(platform, db, version);
+            return apiError(
+                502,
+                'PROFILE_UPLOAD_FAILED',
+                'Images could not be stored. Your current profile is unchanged.'
+            );
         }
     }
-    try {
-        for (const item of staged)
-            item.assets = await writeAssets(platform, item.version, item.files);
-    } catch (error) {
-        Sentry.captureException(error);
-        await discardVersions(platform, db, staged);
-        return apiError(
-            502,
-            'PROFILE_UPLOAD_FAILED',
-            'Images could not be stored. Your current profile is unchanged.'
-        );
-    }
-    const pick = (kind: IdentityKind) => {
-        const item = staged.find(entry => entry.kind === kind);
-        return item ? { version: item.version, assets: item.assets } : null;
-    };
     const { data, error } = await db.rpc('db_save_profile_identity', {
         p_profile: payload,
-        p_avatar: pick('avatar'),
-        p_banner: pick('banner')
+        p_identity: identity
     });
     if (error) {
-        if (staged.length) {
-            const { version: probe, kind } = staged[0];
+        if (version) {
             const { data: committed, error: verifyError } = await db
                 .from('db_profiles')
                 .select('*')
-                .eq(kind === 'avatar' ? 'avatar_version' : 'banner_version', probe)
+                .eq('avatar_version', version)
                 .maybeSingle();
             if (committed)
                 return json(
@@ -253,7 +285,7 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
                     error.code
                 )
             )
-                await discardVersions(platform, db, staged);
+                await discardVersion(platform, db, version);
         }
         if (error.code === '40001')
             return apiError(
@@ -273,11 +305,11 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
     await logActivity(
         {
             actor: user.email ?? user.id,
-            action: staged.length ? 'profile.avatar_update' : 'profile.update',
+            action: version ? 'profile.avatar_update' : 'profile.update',
             category: 'profile',
             summary:
-                staged.length ?
-                    `Updated profile ${staged.map(item => (item.kind === 'avatar' ? 'image' : 'banner')).join(' and ')}${changedFields.length ? ` and ${changedFields.join(', ')}` : ''}.`
+                version ?
+                    `Updated profile ${[files && 'image', bannerFiles && 'banner'].filter(Boolean).join(' and ')}${changedFields.length ? ` and ${changedFields.join(', ')}` : ''}.`
                 :   `Updated ${changedFields.join(', ') || 'profile'}.`,
             details: {
                 fields: changedFields,

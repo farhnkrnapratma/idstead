@@ -340,14 +340,25 @@ export async function fetchIdentityMeta(
     if (!supabaseClient || !ids.length) return { avatar: null, banner: null };
     const { data, error } = await supabaseClient
         .from('db_identity_versions')
-        .select('id, source, fingerprint')
+        .select(
+            'id, kind, source, fingerprint, avatar_source, avatar_fingerprint, banner_source, banner_fingerprint'
+        )
         .in('id', ids);
     if (error) throw error;
-    const find = (id?: string | null) => {
+    const find = (kind: 'avatar' | 'banner', id?: string | null): IdentityVersionMeta | null => {
         const row = (data ?? []).find((entry: { id: string }) => entry.id === id);
-        return row ? { source: row.source, fingerprint: row.fingerprint ?? null } : null;
+        if (!row) return null;
+        if (row.kind !== 'identity')
+            return { source: row.source, fingerprint: row.fingerprint ?? null };
+        return {
+            source: row[`${kind}_source`] ?? 'custom',
+            fingerprint: row[`${kind}_fingerprint`] ?? null
+        };
     };
-    return { avatar: find(profile?.avatarVersion), banner: find(profile?.bannerVersion) };
+    return {
+        avatar: find('avatar', profile?.avatarVersion),
+        banner: find('banner', profile?.bannerVersion)
+    };
 }
 
 export async function fetchAuthorProfileWithSocials(
