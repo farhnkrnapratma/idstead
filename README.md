@@ -47,7 +47,7 @@ For more information about Bun, visit the official [Bun website](https://bun.com
 Before that, you need to clone or fork this repository (make sure you have [Git](https://git-scm.com/install/linux) installed). Simply run:
 
 ```
-git clone https://github.com/farhnkrnapratma/www.git
+git clone <repository-url> www
 cd <path_to_www>
 ```
 
