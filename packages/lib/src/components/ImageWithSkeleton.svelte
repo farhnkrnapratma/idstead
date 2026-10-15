@@ -11,6 +11,7 @@
         class?: string;
         imgClass?: string;
         loading?: 'lazy' | 'eager';
+        fetchpriority?: 'high' | 'low' | 'auto';
         referrerpolicy?: HTMLImgAttributes['referrerpolicy'];
         aspectRatio?: string;
         rounded?: string;
@@ -26,6 +27,7 @@
         class: className = '',
         imgClass = '',
         loading = 'lazy',
+        fetchpriority,
         referrerpolicy,
         aspectRatio,
         rounded = 'rounded-md',
@@ -37,6 +39,9 @@
     let isLoaded = $state(false);
     let isError = $state(false);
     let imgElement = $state<HTMLImageElement | null>(null);
+    let sourcesFailed = $state(false);
+
+    const useSources = $derived(Boolean(sources?.length) && !sourcesFailed);
 
     let isAvatar = $derived(
         variant === 'avatar' || Boolean(rounded && rounded.includes('rounded-full'))
@@ -63,6 +68,10 @@
     }
 
     function handleError() {
+        if (useSources) {
+            sourcesFailed = true;
+            return;
+        }
         isError = true;
         isLoaded = true;
         onerror?.();
@@ -96,9 +105,9 @@
                 aria-hidden="true">
             </div>
         {/if}
-        {#if sources && sources.length > 0}
+        {#if useSources}
             <picture>
-                {#each sources as source (source.type)}
+                {#each sources ?? [] as source (source.type)}
                     <source
                         srcset={source.srcset}
                         type={source.type} />
@@ -108,6 +117,7 @@
                     src={src || ''}
                     {alt}
                     {loading}
+                    {fetchpriority}
                     {referrerpolicy}
                     onload={handleLoad}
                     onerror={handleError}
@@ -119,6 +129,7 @@
                 src={src || ''}
                 {alt}
                 {loading}
+                {fetchpriority}
                 {referrerpolicy}
                 onload={handleLoad}
                 onerror={handleError}
