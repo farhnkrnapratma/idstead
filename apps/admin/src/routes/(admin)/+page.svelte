@@ -1757,34 +1757,6 @@
     });
 
     const expandedPostIds = new SvelteSet<string>();
-    const expandedExcerptIds = new SvelteSet<string>();
-    const overflowingExcerptIds = new SvelteSet<string>();
-
-    function observeExcerptOverflow(postId: string) {
-        return (element: HTMLElement) => {
-            const updateOverflow = () => {
-                if (element.scrollHeight > element.clientHeight + 1) {
-                    overflowingExcerptIds.add(postId);
-                } else {
-                    overflowingExcerptIds.delete(postId);
-                }
-            };
-
-            const resizeObserver = new ResizeObserver(updateOverflow);
-            resizeObserver.observe(element);
-
-            return () => resizeObserver.disconnect();
-        };
-    }
-
-    function toggleExcerpt(postId: string) {
-        if (expandedExcerptIds.has(postId)) {
-            expandedExcerptIds.delete(postId);
-        } else {
-            expandedExcerptIds.add(postId);
-        }
-    }
-
     function toggleComments(postId: string) {
         if (expandedPostIds.has(postId)) {
             expandedPostIds.delete(postId);
@@ -3705,12 +3677,16 @@
                             description="Create a post to get started." />
                     {/if}
                 {:else}
-                    <div class="grid grid-cols-1 items-start gap-4">
+                    <div class="grid [grid-auto-rows:1fr_auto] grid-cols-1">
                         {#each paginatedPosts as post (post.id)}
                             <Card
                                 id="post-{post.id}"
                                 density="none"
-                                class="relative flex flex-col text-left">
+                                class="relative flex flex-col text-left {(
+                                    expandedPostIds.has(post.id)
+                                ) ?
+                                    'rounded-b-none'
+                                :   ''}">
                                 <div
                                     class="relative aspect-2/1 w-full shrink-0 overflow-hidden border-b border-border-subtle">
                                     {#if post.banner_version && !failedBanners.has(post.id)}
@@ -3798,38 +3774,9 @@
                                                 ?? 0} />
 
                                         {#if post.excerpt}
-                                            {@const isExpanded = expandedExcerptIds.has(post.id)}
-                                            {@const isOverflowing = overflowingExcerptIds.has(
-                                                post.id
-                                            )}
-                                            <div class="flex flex-col items-start gap-1">
-                                                <p
-                                                    {@attach !isExpanded
-                                                        && observeExcerptOverflow(post.id)}
-                                                    class="type-body text-text-secondary {(
-                                                        isExpanded
-                                                    ) ?
-                                                        ''
-                                                    :   'line-clamp-2'}">
-                                                    {post.excerpt}
-                                                    {#if isOverflowing && isExpanded}
-                                                        <button
-                                                            type="button"
-                                                            onclick={() => toggleExcerpt(post.id)}
-                                                            class="ml-1 inline cursor-pointer text-xs font-normal whitespace-nowrap text-accent-text underline">
-                                                            Show less
-                                                        </button>
-                                                    {/if}
-                                                </p>
-                                                {#if isOverflowing && !isExpanded}
-                                                    <button
-                                                        type="button"
-                                                        onclick={() => toggleExcerpt(post.id)}
-                                                        class="inline-flex cursor-pointer text-xs font-normal whitespace-nowrap text-accent-text underline">
-                                                        Show more
-                                                    </button>
-                                                {/if}
-                                            </div>
+                                            <p class="type-body text-text-secondary">
+                                                {post.excerpt}
+                                            </p>
                                         {/if}
 
                                         {#if post.tags && post.tags.length > 0}
@@ -3950,166 +3897,160 @@
                                             Delete post
                                         </Button>
                                     </div>
+                                </div></Card>
+                            <div class="mb-4">
+                                {#if expandedPostIds.has(post.id)}
+                                    <div
+                                        id="comments-{post.id}"
+                                        class="rounded-b-md glass-card border-t border-border-subtle p-4 text-left">
+                                        <div class="mb-3 flex items-center justify-between gap-2">
+                                            <h4 class="type-card-title">
+                                                Comments ({postCommentCounts.get(post.id) ?? 0})
+                                            </h4>
+                                        </div>
+                                        {#if commentsError[post.id]}<ErrorState
+                                                title="Unable to load comments"
+                                                description={commentsError[post.id]}
+                                                onRetry={() => fetchComments(post.id)} />{/if}
+                                        {#if commentsLoading[post.id] && getPostComments(post.id).length === 0}<LoadingState
+                                                label="Loading comments…" />
+                                        {:else if getPostComments(post.id).length === 0}
+                                            <EmptyState
+                                                class="p-5"
+                                                title="No comments yet"
+                                                description="Comments on this post will appear here." />
+                                        {:else}
+                                            <CommentThread
+                                                comments={getPostComments(post.id)}
+                                                authorName={authorState.name || siteAuthorName}
+                                                isAdmin={true}
+                                                controls
+                                                pageSize={COMMENTS_PAGE_SIZE}
+                                                focusCommentId={focusedCommentId}
+                                                onDelete={c => confirmDeleteComment(c.id)}
+                                                {replyTo}>
+                                                {#snippet statusBadge(comment)}
+                                                    {#if comment.reports}<Button
+                                                            type="ghost"
+                                                            size="xs"
+                                                            onclick={() =>
+                                                                openWorkspace(
+                                                                    'reports',
+                                                                    comment.id
+                                                                )}
+                                                            >Reported ({comment.reports})</Button
+                                                        >{/if}
+                                                {/snippet}
 
-                                    {#if expandedPostIds.has(post.id)}
-                                        <div
-                                            id="comments-{post.id}"
-                                            class="mt-4 border-t border-border-subtle pt-4">
-                                            <div
-                                                class="mb-3 flex items-center justify-between gap-2">
-                                                <h4 class="type-card-title">
-                                                    Comments ({postCommentCounts.get(post.id) ?? 0})
-                                                </h4>
-                                            </div>
-                                            {#if commentsError[post.id]}<ErrorState
-                                                    title="Unable to load comments"
-                                                    description={commentsError[post.id]}
-                                                    onRetry={() => fetchComments(post.id)} />{/if}
-                                            {#if commentsLoading[post.id] && getPostComments(post.id).length === 0}<LoadingState
-                                                    label="Loading comments…" />
-                                            {:else if getPostComments(post.id).length === 0}
-                                                <EmptyState
-                                                    class="p-5"
-                                                    title="No comments yet"
-                                                    description="Comments on this post will appear here." />
-                                            {:else}
-                                                <CommentThread
-                                                    comments={getPostComments(post.id)}
-                                                    authorName={authorState.name || siteAuthorName}
-                                                    isAdmin={true}
-                                                    controls
-                                                    pageSize={COMMENTS_PAGE_SIZE}
-                                                    focusCommentId={focusedCommentId}
-                                                    onDelete={c => confirmDeleteComment(c.id)}
-                                                    {replyTo}>
-                                                    {#snippet statusBadge(comment)}
-                                                        {#if comment.reports}<Button
-                                                                type="ghost"
-                                                                size="xs"
-                                                                onclick={() =>
-                                                                    openWorkspace(
-                                                                        'reports',
-                                                                        comment.id
-                                                                    )}
-                                                                >Reported ({comment.reports})</Button
-                                                            >{/if}
-                                                    {/snippet}
-
-                                                    {#snippet actions(comment)}
-                                                        <ActivityTimestamp
-                                                            date={comment.created_at} />
+                                                {#snippet actions(comment)}
+                                                    <ActivityTimestamp date={comment.created_at} />
+                                                    <button
+                                                        type="button"
+                                                        onclick={() => {
+                                                            replyTo = comment;
+                                                            commentContent = '';
+                                                        }}
+                                                        class="cursor-pointer font-bold text-text-muted transition-colors hover:text-accent-text">
+                                                        Reply
+                                                    </button>
+                                                    {#if comment.reports}
                                                         <button
                                                             type="button"
-                                                            onclick={() => {
-                                                                replyTo = comment;
-                                                                commentContent = '';
-                                                            }}
-                                                            class="cursor-pointer font-bold text-text-muted transition-colors hover:text-accent-text">
-                                                            Reply
+                                                            onclick={() =>
+                                                                dismissCommentReports(comment.id)}
+                                                            class="cursor-pointer font-bold text-accent-text transition-colors hover:underline">
+                                                            Dismiss Reports
                                                         </button>
-                                                        {#if comment.reports}
+                                                    {/if}
+                                                {/snippet}
+
+                                                {#snippet replyForm(comment)}
+                                                    <form
+                                                        novalidate
+                                                        onsubmit={e =>
+                                                            handleAdminSubmit(
+                                                                e,
+                                                                comment.id,
+                                                                comment.post_id
+                                                            )}
+                                                        class="max-w-xl rounded-sm border border-border-subtle bg-surface-card p-3 shadow-2xs">
+                                                        <div
+                                                            class="mb-2 flex items-center justify-between gap-2">
+                                                            <p class="text-xs text-text-secondary">
+                                                                Replying to <span
+                                                                    class="font-semibold text-accent-text"
+                                                                    >{commentAuthorName(
+                                                                        comment,
+                                                                        authorState.name
+                                                                            || siteAuthorName
+                                                                    )}</span>
+                                                            </p>
                                                             <button
                                                                 type="button"
-                                                                onclick={() =>
-                                                                    dismissCommentReports(
-                                                                        comment.id
-                                                                    )}
-                                                                class="cursor-pointer font-bold text-accent-text transition-colors hover:underline">
-                                                                Dismiss Reports
+                                                                onclick={() => (replyTo = null)}
+                                                                class="touch-target relative inline-flex size-5 cursor-pointer items-center justify-center rounded-sm text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring"
+                                                                aria-label="Cancel reply">
+                                                                <X class="size-3.5" />
                                                             </button>
-                                                        {/if}
-                                                    {/snippet}
+                                                        </div>
 
-                                                    {#snippet replyForm(comment)}
-                                                        <form
-                                                            novalidate
-                                                            onsubmit={e =>
-                                                                handleAdminSubmit(
-                                                                    e,
-                                                                    comment.id,
-                                                                    comment.post_id
-                                                                )}
-                                                            class="max-w-xl rounded-sm border border-border-subtle bg-surface-card p-3 shadow-2xs">
-                                                            <div
-                                                                class="mb-2 flex items-center justify-between gap-2">
-                                                                <p
-                                                                    class="text-xs text-text-secondary">
-                                                                    Replying to <span
-                                                                        class="font-semibold text-accent-text"
-                                                                        >{commentAuthorName(
-                                                                            comment,
-                                                                            authorState.name
-                                                                                || siteAuthorName
-                                                                        )}</span>
-                                                                </p>
-                                                                <button
-                                                                    type="button"
-                                                                    onclick={() => (replyTo = null)}
-                                                                    class="touch-target relative inline-flex size-5 cursor-pointer items-center justify-center rounded-sm text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring"
-                                                                    aria-label="Cancel reply">
-                                                                    <X class="size-3.5" />
-                                                                </button>
-                                                            </div>
-
-                                                            <Textarea
-                                                                id="admin-reply-msg-{comment.id}"
-                                                                rows={2}
-                                                                maxlength={1000}
-                                                                bind:value={
-                                                                    () => commentContent,
-                                                                    value => {
-                                                                        commentContent = value;
-                                                                        replyValidation.input(
-                                                                            'content'
-                                                                        );
-                                                                    }
-                                                                }
-                                                                onblur={() => {
-                                                                    void replyValidation.check(
+                                                        <Textarea
+                                                            id="admin-reply-msg-{comment.id}"
+                                                            rows={2}
+                                                            maxlength={1000}
+                                                            bind:value={
+                                                                () => commentContent,
+                                                                value => {
+                                                                    commentContent = value;
+                                                                    replyValidation.input(
                                                                         'content'
                                                                     );
-                                                                }}
-                                                                error={!!replyError}
-                                                                placeholder="Write an admin reply..."
-                                                                class="min-h-15 py-2 type-body" />
-                                                            {#if replyError}<FieldMessage
-                                                                    message={replyError} />{/if}
+                                                                }
+                                                            }
+                                                            onblur={() => {
+                                                                void replyValidation.check(
+                                                                    'content'
+                                                                );
+                                                            }}
+                                                            error={!!replyError}
+                                                            placeholder="Write an admin reply..."
+                                                            class="min-h-15 py-2 type-body" />
+                                                        {#if replyError}<FieldMessage
+                                                                message={replyError} />{/if}
 
-                                                            <div
-                                                                class="mt-2 flex items-center justify-between gap-2">
-                                                                <span
-                                                                    class="text-xs text-text-muted tabular-nums">
-                                                                    {1000 - commentContent.length} left
-                                                                </span>
-                                                                <div
-                                                                    class="flex items-center gap-1.5">
-                                                                    <Button
-                                                                        type="ghost"
-                                                                        size="xs"
-                                                                        onclick={() =>
-                                                                            (replyTo = null)}>
-                                                                        Cancel
-                                                                    </Button>
-                                                                    <Button
-                                                                        htmlType="submit"
-                                                                        type="primary"
-                                                                        size="xs"
-                                                                        disabled={isSubmitting
-                                                                            || !commentContent.trim()}
-                                                                        isLoading={isSubmitting}>
-                                                                        {isSubmitting ?
-                                                                            'Replying...'
-                                                                        :   'Reply'}
-                                                                    </Button>
-                                                                </div>
+                                                        <div
+                                                            class="mt-2 flex items-center justify-between gap-2">
+                                                            <span
+                                                                class="text-xs text-text-muted tabular-nums">
+                                                                {1000 - commentContent.length} left
+                                                            </span>
+                                                            <div class="flex items-center gap-1.5">
+                                                                <Button
+                                                                    type="ghost"
+                                                                    size="xs"
+                                                                    onclick={() =>
+                                                                        (replyTo = null)}>
+                                                                    Cancel
+                                                                </Button>
+                                                                <Button
+                                                                    htmlType="submit"
+                                                                    type="primary"
+                                                                    size="xs"
+                                                                    disabled={isSubmitting
+                                                                        || !commentContent.trim()}
+                                                                    isLoading={isSubmitting}>
+                                                                    {isSubmitting ? 'Replying...'
+                                                                    :   'Reply'}
+                                                                </Button>
                                                             </div>
-                                                        </form>
-                                                    {/snippet}
-                                                </CommentThread>
-                                            {/if}
-                                        </div>
-                                    {/if}
-                                </div></Card>
+                                                        </div>
+                                                    </form>
+                                                {/snippet}
+                                            </CommentThread>
+                                        {/if}
+                                    </div>
+                                {/if}
+                            </div>
                         {/each}
                     </div>
                     <div class="mt-6">

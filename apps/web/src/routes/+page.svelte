@@ -1,7 +1,12 @@
 <script lang="ts">
     import Tag from '#lib/components/Tag.svelte';
     import { FieldValidation, requiredText, emailError } from '#lib/fieldValidation.ts';
-    import { avatarSources, publicAvatarUrl, publicBannerOgUrl } from '#lib/siteIdentity.ts';
+    import {
+        avatarSources,
+        avatarWebpSource,
+        publicAvatarUrl,
+        publicBannerOgUrl
+    } from '#lib/siteIdentity.ts';
     import { onDestroy, onMount, untrack } from 'svelte';
     import type { Snippet } from 'svelte';
     import {
@@ -111,6 +116,7 @@
     let ogImageWidth = $derived(ogBanner ? '1200' : '512');
     let ogImageHeight = $derived(ogBanner ? '630' : '512');
     let avatar = $derived(author?.avatar || '');
+    let avatarWebp = $derived(avatarWebpSource(author) || avatar);
     let avatarFormats = $derived(avatarSources(author));
     let socials = $derived(author?.socialLinks || []);
     const navItems: NavItem[] = [
@@ -582,7 +588,7 @@
             {#snippet leading()}
                 {#if avatar}
                     <ImageWithSkeleton
-                        src={avatar}
+                        src={avatarWebp}
                         sources={avatarFormats}
                         alt={`Profile picture of ${name}`}
                         variant="avatar"
@@ -681,7 +687,7 @@
                     <div>
                         <svelte:element
                             this={headingTag}
-                            class="line-clamp-2 type-card-title">
+                            class="type-card-title">
                             {project.name}
                             {#if isRepoPinned(project) || isRepoNew(project)}
                                 <span
@@ -757,11 +763,7 @@
                     </div>
 
                     {#if project.desc}
-                        <p
-                            class="line-clamp-2 type-body text-text-secondary"
-                            title={project.desc}>
-                            {project.desc}
-                        </p>
+                        <p class="type-body text-text-secondary">{project.desc}</p>
                     {/if}
 
                     {#if project.tags && project.tags.length > 0}
@@ -806,7 +808,7 @@
                     {pronunciation}
                     {headline}
                     bio={desc}
-                    avatarUrl={avatar}
+                    avatarUrl={avatarWebp}
                     avatarSources={avatarFormats}
                     {socials}>
                     {#snippet actions()}
@@ -886,7 +888,7 @@
                             title="No posts yet"
                             description="Check back soon for new articles." />
                     {:else}
-                        <div class="mt-2 grid grid-cols-1 gap-3 sm:gap-4">
+                        <div class="mt-2 grid auto-rows-fr grid-cols-1 gap-3 sm:gap-4">
                             {#each recentPosts as post (post.id)}
                                 <BlogPostCard {post} />
                             {/each}
@@ -915,7 +917,7 @@
                             title="No projects yet"
                             description="Check back soon for featured repositories." />
                     {:else}
-                        <div class="mt-2 grid grid-cols-1 gap-3 sm:gap-4">
+                        <div class="mt-2 grid auto-rows-fr grid-cols-1 gap-3 sm:gap-4">
                             {#each recentProjects as project (project.name)}
                                 {@render projectCard(project, 'h3', staticTag)}
                             {/each}
@@ -1228,6 +1230,11 @@
                             shortcutChordKey={argKey('/save', 'cv')}
                             shortcutLabel="Download CV"
                             onclick={handleCvDownload}>
+                            {#snippet leading()}
+                                <Download
+                                    class="size-3.5"
+                                    aria-hidden="true" />
+                            {/snippet}
                             Download CV
                         </Button>
                     {:else}
@@ -1237,6 +1244,11 @@
                             size="md"
                             disabled
                             title="No CV document is available yet.">
+                            {#snippet leading()}
+                                <Download
+                                    class="size-3.5"
+                                    aria-hidden="true" />
+                            {/snippet}
                             Download CV
                         </Button>
                     {/if}
@@ -1368,7 +1380,7 @@
                 {:else}
                     <div
                         use:staggerChildren
-                        class="stagger-children relative z-0 mt-2 grid grid-cols-1 gap-4">
+                        class="stagger-children relative z-0 mt-2 grid auto-rows-fr grid-cols-1 gap-4">
                         {#each posts as post (post.id)}
                             <BlogPostCard
                                 {post}
@@ -1475,7 +1487,7 @@
                 {:else}
                     <div
                         use:staggerChildren
-                        class="stagger-children relative z-0 mt-2 grid grid-cols-1 gap-4">
+                        class="stagger-children relative z-0 mt-2 grid auto-rows-fr grid-cols-1 gap-4">
                         {#each paginatedProjectList as project (project.name)}
                             {@render projectCard(project, 'h3', filterableTag)}
                         {/each}

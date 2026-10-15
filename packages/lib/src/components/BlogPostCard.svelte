@@ -32,24 +32,17 @@
         post,
         headingTag = 'h3',
         tagItem
-    }: { post: BlogPostCardData; headingTag?: 'h2' | 'h3'; tagItem?: Snippet<[string]> } = $props();
+    }: {
+        post: BlogPostCardData;
+        headingTag?: 'h2' | 'h3' | 'h4';
+        tagItem?: Snippet<[string]>;
+    } = $props();
 
     let bannerFailed = $state(false);
-    let expanded = $state(false);
-    let overflowing = $state(false);
 
     const isNew = $derived(
         !!post.created_at && Date.now() - new Date(post.created_at).getTime() < NEW_POST_WINDOW_MS
     );
-
-    function observeOverflow(element: HTMLElement) {
-        const update = () => {
-            overflowing = element.scrollHeight > element.clientHeight + 1;
-        };
-        const observer = new ResizeObserver(update);
-        observer.observe(element);
-        return () => observer.disconnect();
-    }
 </script>
 
 {#snippet staticTag(tag: string)}
@@ -58,7 +51,7 @@
         class="font-mono">{decodeHtmlEntities(tag)}</Tag>
 {/snippet}
 
-<div class="relative flex flex-col rounded-md glass-card border-0! text-left dark:border-0!">
+<div class="relative flex h-full flex-col rounded-md glass-card border-0! text-left dark:border-0!">
     <div class="relative aspect-2/1 w-full shrink-0 overflow-hidden rounded-t-md">
         {#if post.bannerPublicUrl && !bannerFailed}
             <ImageWithSkeleton
@@ -81,7 +74,7 @@
                 <svelte:element
                     this={headingTag}
                     style="view-transition-name: post-title-{post.slug}"
-                    class="line-clamp-2 type-card-title">
+                    class="type-card-title">
                     {post.title}
                     {#if post.pinned || isNew}
                         <span class="inline-flex items-center gap-1 align-middle select-none">
@@ -119,37 +112,7 @@
                 views={post.views_count} />
 
             {#if post.excerpt}
-                <div class="flex flex-col items-start gap-1">
-                    <p
-                        {@attach !expanded && observeOverflow}
-                        class="type-body text-text-secondary {expanded ? '' : 'line-clamp-2'}">
-                        {post.excerpt}
-                        {#if overflowing && expanded}
-                            <Button
-                                type="ghost"
-                                size="2xs"
-                                htmlType="button"
-                                onclick={() => (expanded = false)}
-                                keyboardShortcut="E"
-                                shortcutLabel="Show less"
-                                class="relative inline-flex h-auto! min-h-0! p-0! text-xs font-normal whitespace-nowrap text-accent-text! underline hover:opacity-80 focus-visible:outline-none">
-                                Show less
-                            </Button>
-                        {/if}
-                    </p>
-                    {#if overflowing && !expanded}
-                        <Button
-                            type="ghost"
-                            size="2xs"
-                            htmlType="button"
-                            onclick={() => (expanded = true)}
-                            keyboardShortcut="E"
-                            shortcutLabel="Show more"
-                            class="relative inline-flex h-auto! min-h-0! p-0! text-xs font-normal whitespace-nowrap text-accent-text! underline hover:opacity-80 focus-visible:outline-none">
-                            Show more
-                        </Button>
-                    {/if}
-                </div>
+                <p class="type-body text-text-secondary">{post.excerpt}</p>
             {/if}
 
             {#if post.tags && post.tags.length > 0}
