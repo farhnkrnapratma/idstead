@@ -9,8 +9,7 @@
     import { FieldValidation, requiredText } from '#lib/fieldValidation.ts';
     import { onMount, onDestroy, tick, untrack } from 'svelte';
     import { fade } from 'svelte/transition';
-    import { SvelteSet } from 'svelte/reactivity';
-    import { Image as ImageIcon, BookOpenText, Pin, Sparkles } from '@lucide/svelte';
+    import { BookOpenText } from '@lucide/svelte';
     import type { PageProps } from './$types';
     import type { BlogComment } from './+page.server';
     import hljs from 'highlight.js';
@@ -29,10 +28,7 @@
     import {
         TopNav,
         Button,
-        Card,
-        Tag,
-        decodeHtmlEntities,
-        ImageWithSkeleton,
+        BlogPostCard,
         CommentThread,
         EmptyState,
         StatusBanner,
@@ -72,12 +68,6 @@
     const author = $derived(data.author);
     const authorTokens = $derived(extractAuthorNameTokens(author));
 
-    const NEW_ITEM_WINDOW_MS = 24 * 60 * 60 * 1000;
-    function isPostNew(postItem: { created_at?: string | null }) {
-        if (!postItem.created_at) return false;
-        return Date.now() - new Date(postItem.created_at).getTime() < NEW_ITEM_WINDOW_MS;
-    }
-
     function triggerToast(message: string) {
         toastStore.show(message);
     }
@@ -96,38 +86,6 @@
     });
     const comments = $derived([...data.comments, ...addedComments]);
     const relatedPosts = $derived(data.relatedPosts);
-    const failedRelatedBanners = new SvelteSet<string>();
-    function markRelatedBannerFailed(postId: string) {
-        failedRelatedBanners.add(postId);
-    }
-
-    const expandedExcerptIds = new SvelteSet<string>();
-    const overflowingExcerptIds = new SvelteSet<string>();
-
-    function observeExcerptOverflow(postId: string) {
-        return (element: HTMLElement) => {
-            const updateOverflow = () => {
-                if (element.scrollHeight > element.clientHeight + 1) {
-                    overflowingExcerptIds.add(postId);
-                } else {
-                    overflowingExcerptIds.delete(postId);
-                }
-            };
-
-            const resizeObserver = new ResizeObserver(updateOverflow);
-            resizeObserver.observe(element);
-
-            return () => resizeObserver.disconnect();
-        };
-    }
-
-    function toggleExcerpt(postId: string) {
-        if (expandedExcerptIds.has(postId)) {
-            expandedExcerptIds.delete(postId);
-        } else {
-            expandedExcerptIds.add(postId);
-        }
-    }
 
     let isDark = $state(false);
 
@@ -877,154 +835,13 @@
                         <h3 class="mb-3 text-sm font-bold tracking-tight text-text-primary">
                             Continue reading
                         </h3>
-                        <div class="relative z-0 grid grid-cols-1 gap-3 sm:gap-4">
+                        <div class="relative z-0 grid auto-rows-fr grid-cols-1 gap-3 sm:gap-4">
                             {#each relatedPosts as related (related.id)}
                                 {@const relatedScope = `related-${related.id}`}
                                 <div use:focusScope={relatedScope}>
-                                    <Card
-                                        density="none"
-                                        class="relative flex flex-col border-0! text-left dark:border-0!">
-                                        <div
-                                            class="relative aspect-2/1 w-full shrink-0 overflow-hidden rounded-t-md">
-                                            {#if related.bannerPublicUrl && !failedRelatedBanners.has(related.id)}
-                                                <ImageWithSkeleton
-                                                    src={related.bannerPublicUrl}
-                                                    alt={blogBannerAlt(
-                                                        related.title,
-                                                        related.excerpt
-                                                    )}
-                                                    rounded=""
-                                                    onerror={() =>
-                                                        markRelatedBannerFailed(related.id)}
-                                                    class="h-full w-full object-cover" />
-                                            {:else}
-                                                <div
-                                                    class="relative flex h-full w-full items-center justify-center overflow-hidden bg-linear-to-br from-accent/15 to-accent/5 select-none">
-                                                    <ImageIcon class="size-10 text-text-muted" />
-                                                </div>
-                                            {/if}
-                                        </div>
-
-                                        <div
-                                            class="flex min-w-0 flex-1 flex-col justify-between gap-2 p-3 font-sans sm:gap-2.5 sm:p-4">
-                                            <div class="flex flex-col gap-1.5 sm:gap-2">
-                                                <div>
-                                                    <h4
-                                                        style="view-transition-name: post-title-{related.slug}"
-                                                        class="line-clamp-2 type-card-title">
-                                                        {related.title}
-                                                        {#if related.pinned || isPostNew(related)}
-                                                            <span
-                                                                class="inline-flex items-center gap-1 align-middle select-none">
-                                                                {#if related.pinned}
-                                                                    <span
-                                                                        class="inline-flex size-4.5 items-center justify-center rounded-full bg-success-subtle text-success"
-                                                                        title="Pinned post"
-                                                                        aria-label="Pinned post">
-                                                                        <Pin
-                                                                            class="size-3 shrink-0" />
-                                                                    </span>
-                                                                {/if}
-                                                                {#if isPostNew(related)}
-                                                                    <span
-                                                                        class="inline-flex size-4.5 items-center justify-center rounded-full bg-security-subtle text-accent-text"
-                                                                        title="New post"
-                                                                        aria-label="New post">
-                                                                        <Sparkles
-                                                                            class="size-3 shrink-0" />
-                                                                    </span>
-                                                                {/if}
-                                                            </span>
-                                                        {/if}
-                                                    </h4>
-                                                </div>
-
-                                                <ArticleMeta
-                                                    size="xs"
-                                                    layout="single"
-                                                    class="min-h-4.5"
-                                                    date={related.created_at || ''}
-                                                    updatedAt={related.updated_at || ''}
-                                                    readingTime={formatReadTime(related.read_time)}
-                                                    commentsCount={related.comment_count}
-                                                    views={related.views_count} />
-
-                                                {#if related.excerpt}
-                                                    {@const isExpanded = expandedExcerptIds.has(
-                                                        related.id
-                                                    )}
-                                                    {@const isOverflowing =
-                                                        overflowingExcerptIds.has(related.id)}
-                                                    <div class="flex flex-col items-start gap-1">
-                                                        <p
-                                                            {@attach !isExpanded
-                                                                && observeExcerptOverflow(
-                                                                    related.id
-                                                                )}
-                                                            class="type-body text-text-secondary {(
-                                                                isExpanded
-                                                            ) ?
-                                                                ''
-                                                            :   'line-clamp-2'}">
-                                                            {related.excerpt}
-                                                            {#if isOverflowing && isExpanded}
-                                                                <Button
-                                                                    type="ghost"
-                                                                    size="2xs"
-                                                                    htmlType="button"
-                                                                    onclick={() =>
-                                                                        toggleExcerpt(related.id)}
-                                                                    keyboardShortcut="E"
-                                                                    shortcutLabel="Show less"
-                                                                    class="relative inline-flex h-auto! min-h-0! p-0! text-xs font-normal whitespace-nowrap text-accent-text! underline hover:opacity-80 focus-visible:outline-none">
-                                                                    Show less
-                                                                </Button>
-                                                            {/if}
-                                                        </p>
-                                                        {#if isOverflowing && !isExpanded}
-                                                            <Button
-                                                                type="ghost"
-                                                                size="2xs"
-                                                                htmlType="button"
-                                                                onclick={() =>
-                                                                    toggleExcerpt(related.id)}
-                                                                keyboardShortcut="E"
-                                                                shortcutLabel="Show more"
-                                                                class="relative inline-flex h-auto! min-h-0! p-0! text-xs font-normal whitespace-nowrap text-accent-text! underline hover:opacity-80 focus-visible:outline-none">
-                                                                Show more
-                                                            </Button>
-                                                        {/if}
-                                                    </div>
-                                                {/if}
-
-                                                {#if related.tags && related.tags.length > 0}
-                                                    <div
-                                                        class="relative z-20 flex flex-wrap items-center gap-1.5 pt-0.5">
-                                                        {#each related.tags as tag (tag)}
-                                                            <Tag
-                                                                variant="accent"
-                                                                class="font-mono"
-                                                                >{decodeHtmlEntities(tag)}</Tag>
-                                                        {/each}
-                                                    </div>
-                                                {/if}
-                                            </div>
-
-                                            <div
-                                                class="relative z-20 mt-auto flex flex-col gap-2 pt-1">
-                                                <hr class="border-border-subtle/25" />
-                                                <Button
-                                                    href="/blog/{related.slug}"
-                                                    type="primary"
-                                                    size="sm"
-                                                    shortcutGroup="posts"
-                                                    shortcutLabel={related.title}
-                                                    fullWidth>
-                                                    Read post
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </Card>
+                                    <BlogPostCard
+                                        post={{ ...related, created_at: related.created_at || '' }}
+                                        headingTag="h4" />
                                 </div>
                             {/each}
                         </div>

@@ -6,7 +6,6 @@
     import BrandIcon from './BrandIcon.svelte';
     import Button from './Button.svelte';
     import ImageWithSkeleton from './ImageWithSkeleton.svelte';
-    import Tag from './Tag.svelte';
 
     interface SocialLink {
         url: string;
@@ -39,18 +38,11 @@
         class: className = '',
         actions
     }: Props = $props();
-
-    const headlineParts = $derived(
-        headline
-            .split('|')
-            .map(part => part.trim())
-            .filter(Boolean)
-    );
 </script>
 
 <div
     class={cn(
-        'profile-card relative isolate mt-12 flex w-full flex-col items-center rounded-md glass-card px-3 pb-5 text-center sm:mt-16 sm:px-8 sm:pb-7',
+        'profile-card @container relative isolate mt-10 flex w-full flex-col items-center rounded-md glass-card px-4 pb-5 text-center sm:mt-12 sm:px-6 sm:pb-6',
         className
     )}>
     <div
@@ -58,7 +50,7 @@
         aria-hidden="true">
     </div>
 
-    <div class="profile-avatar -mt-11 rounded-full sm:-mt-16">
+    <div class="profile-avatar -mt-10 rounded-full sm:-mt-12">
         {#if avatarUrl}
             <ImageWithSkeleton
                 src={avatarUrl}
@@ -69,11 +61,11 @@
                 fetchpriority="high"
                 variant="avatar"
                 rounded="rounded-full"
-                class="size-20 shadow-md ring-4 ring-surface-base sm:size-28"
+                class="size-20 shadow-md ring-4 ring-surface-base sm:size-24"
                 imgClass="object-top" />
         {:else}
             <div
-                class="flex size-20 items-center justify-center rounded-full bg-surface-subtle text-2xl font-bold text-accent-text shadow-md ring-4 ring-surface-base sm:size-28 sm:text-4xl"
+                class="flex size-20 items-center justify-center rounded-full bg-surface-subtle text-2xl font-bold text-accent-text shadow-md ring-4 ring-surface-base sm:size-24 sm:text-4xl"
                 aria-hidden="true">
                 {name.charAt(0)}
             </div>
@@ -82,32 +74,31 @@
 
     <svelte:element
         this={headingTag}
-        class="mt-3 max-w-full type-page-title font-extrabold sm:mt-4 sm:text-4xl">
+        class="mt-3 max-w-full type-page-title font-extrabold sm:text-4xl">
         {name}
     </svelte:element>
 
     {#if pronunciation}
-        <p class="mt-1 text-xs text-text-muted sm:text-sm">{pronunciation}</p>
+        <p class="mt-1 text-xs tracking-wide text-text-muted">{pronunciation}</p>
     {/if}
 
-    {#if headlineParts.length > 0}
-        <ul
-            role="list"
-            class="mt-3 flex max-w-xl flex-wrap items-center justify-center gap-1 sm:mt-4 sm:gap-1.5">
-            {#each headlineParts as part, i (i)}
-                <li>
-                    <Tag
-                        variant="subtle"
-                        size="md"
-                        class="font-medium whitespace-nowrap text-text-secondary max-sm:px-2 max-sm:py-0.5 max-sm:text-xs"
-                        >{part}</Tag>
-                </li>
-            {/each}
-        </ul>
+    {#if headline}
+        <p class="mt-2 max-w-2xl type-body text-balance text-text-primary">
+            {headline}
+        </p>
     {/if}
 
     {#if bio}
-        <p class="mt-3 max-w-lg type-body text-pretty text-text-secondary sm:mt-4">{bio}</p>
+        <p
+            class="mt-4 max-w-2xl type-body text-pretty text-text-secondary sm:mt-5 @2xl:text-base @2xl:leading-relaxed">
+            {bio}
+        </p>
+    {/if}
+
+    {#if actions}
+        <div class="mt-5 w-full sm:mt-6">
+            {@render actions()}
+        </div>
     {/if}
 
     {#if socials.length > 0}
@@ -130,12 +121,6 @@
                         class="text-sm leading-none sm:text-base" />
                 </Button>
             {/each}
-        </div>
-    {/if}
-
-    {#if actions}
-        <div class="mt-4 w-full sm:mt-6">
-            {@render actions()}
         </div>
     {/if}
 </div>

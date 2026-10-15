@@ -249,6 +249,7 @@
                     type="ghost"
                     size="2xs"
                     href={viewTextUrl}
+                    data-sveltekit-reload
                     label="View as TXT"
                     truncateMiddle
                     class="w-full justify-start rounded-none! px-3 text-xs font-normal! whitespace-nowrap text-text-secondary!"
@@ -340,6 +341,7 @@
                 shortcutChordKey={VIEW_FORMAT_KEYS.md}
                 shortcutLabel="View as MD"
                 href={viewMarkdownUrl}
+                data-sveltekit-reload
                 type="secondary"
                 size="2xs"
                 class="w-full justify-start gap-1.5 px-2 py-1.5 text-xs font-normal! text-text-secondary!"
@@ -450,6 +452,7 @@
                             shortcutChordKey={VIEW_FORMAT_KEYS.txt}
                             shortcutLabel="View as TXT"
                             href={viewTextUrl}
+                            data-sveltekit-reload
                             type="secondary"
                             size="2xs"
                             class="w-full justify-start gap-1.5 px-2 py-1 text-xs font-normal! text-text-secondary!"
@@ -530,6 +533,7 @@
             type="secondary"
             size="2xs"
             href={viewMarkdownUrl}
+            data-sveltekit-reload
             label="View as MD"
             truncateMiddle
             class="h-7 min-w-0 flex-1 justify-center gap-1.5 px-2 py-0.5 text-2xs font-normal! text-text-secondary! hover:text-accent-text">
