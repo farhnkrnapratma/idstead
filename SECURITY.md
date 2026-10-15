@@ -2,7 +2,7 @@
 
 **Effective date:** 15 October 2026
 
-This is the personal website and public interface of **Farhan Kurnia Pratama**: SvelteKit and Hono applications with a Supabase backend, deployed as Cloudflare Workers — the public site at **https://fkp.my.id**, the admin portal at **https://admin.fkp.my.id**, and a public read-only API at **https://api.fkp.my.id/v1**. The security model is described in [`docs/security.md`](docs/security.md).
+This is the personal website and public interface of **Farhan Kurnia Pratama**: SvelteKit and Hono applications with a Supabase backend, deployed as Cloudflare Workers — the public site at **https://fkp.my.id**, the admin portal at **https://admin.fkp.my.id**, and a public read-only API at **https://api.fkp.my.id/v1**.
 
 ## Scope
 
@@ -29,9 +29,7 @@ Reporting these as vulnerabilities is unlikely to lead to a fix, so they are rec
 
 ## Reporting a Vulnerability
 
-**Preferred: GitHub Private Vulnerability Reporting.** This is enabled on the repository. Open [a private advisory](../../security/advisories/new) from the **Security** tab and click "**Report a vulnerability**". This keeps the report private until a fix is ready and allows disclosure to be coordinated through GitHub's tooling.
-
-**Alternative:** email [contact@fkp.my.id](mailto:contact@fkp.my.id) with the details. Please do not open a public issue for a suspected vulnerability.
+**Report by email:** send the details to [contact@fkp.my.id](mailto:contact@fkp.my.id). Please don't disclose a suspected vulnerability publicly until it has been fixed.
 
 Please include:
 

@@ -9,7 +9,7 @@
 ## Install
 
 ```sh
-git clone https://github.com/farhnkrnapratma/www.git
+git clone <repository-url> www
 cd www
 bun install
 ```
