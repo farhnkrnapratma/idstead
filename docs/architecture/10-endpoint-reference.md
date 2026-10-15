@@ -38,7 +38,7 @@ All routes are `GET`/`HEAD` (`OPTIONS` returns 204), rate-limited to 60 requests
 | --- | --- |
 | `/blog/[slug].md`, `/blog/[slug].txt` | raw post (`textformat` matcher) |
 | `/[legal].md`, `/[legal].txt` | legal pages (`legal` matcher) |
-| `/blog/banners/[postId]/[file]` | `serveBlogBanner` (R2) |
+| `/blog/banners/[file]` | `serveBlogBanner` (R2) |
 | `/blog/content/[file]` | `getContentAsset` (R2, content-addressed) |
 | `/{icon}.png`, `/favicon.ico`, `/favicon.svg`, `/avatar.{webp,avif}`, `/hero.png` | identity assets, served from the hook |
 | `/static/*`, `/fonts/*`, `/logo/*` | proxied to `PUBLIC_CDN_BASE_URL` from the hook |
@@ -74,7 +74,7 @@ Details: [4-public-write-endpoints.md](4-public-write-endpoints.md).
 
 ## fkp-admin: `admin.fkp.my.id`
 
-Pages: `/` (dashboard), `/new`, `/login`. All of them pass the hook's session + MFA guard, except `/login`. Other routes: `/robots.txt` (disallow all), `/blog/banners/[postId]/[file]`, and the identity assets.
+Pages: `/` (dashboard), `/new`, `/login`. All of them pass the hook's session + MFA guard, except `/login`. Other routes: `/robots.txt` (disallow all), `/blog/banners/[file]`, and the identity assets.
 
 API routes authenticate themselves:
 

@@ -1,9 +1,7 @@
 export const IMAGE_LIMIT = 500_000;
 export const UPLOAD_LIMIT = 10_000_000;
 export function avatarSource(profile?: { avatar?: string; avatarVersion?: string | null } | null) {
-    return profile?.avatarVersion ?
-            `/avatar.png?v=${encodeURIComponent(profile.avatarVersion)}`
-        :   profile?.avatar || '';
+    return profile?.avatarVersion ? '/avatar.png' : profile?.avatar || '';
 }
 
 export function publicAvatarUrl(
@@ -16,13 +14,13 @@ export function publicAvatarUrl(
 
 export type { ImageSource } from './blogBanner';
 
+export function avatarWebpSource(profile?: { avatarVersion?: string | null } | null) {
+    return profile?.avatarVersion ? '/avatar.webp' : '';
+}
+
 export function avatarSources(profile?: { avatarVersion?: string | null } | null) {
     if (!profile?.avatarVersion) return [];
-    const version = encodeURIComponent(profile.avatarVersion);
-    return [
-        { srcset: `/avatar.avif?v=${version}`, type: 'image/avif' },
-        { srcset: `/avatar.webp?v=${version}`, type: 'image/webp' }
-    ];
+    return [{ srcset: '/avatar.avif', type: 'image/avif' }];
 }
 
 export const bannerSizes = {
@@ -34,13 +32,11 @@ export const bannerSizes = {
 export type BannerAssetName = keyof typeof bannerSizes;
 
 export function siteBannerOgUrl(profile?: { bannerVersion?: string | null } | null) {
-    if (!profile?.bannerVersion) return '';
-    return `/banner-og.webp?v=${encodeURIComponent(profile.bannerVersion)}`;
+    return profile?.bannerVersion ? '/banner-og.webp' : '';
 }
 
 export function siteBannerSource(profile?: { bannerVersion?: string | null } | null) {
-    if (!profile?.bannerVersion) return '';
-    return `/banner.webp?v=${encodeURIComponent(profile.bannerVersion)}`;
+    return profile?.bannerVersion ? '/banner.webp' : '';
 }
 
 export function publicBannerOgUrl(
@@ -53,10 +49,9 @@ export function publicBannerOgUrl(
 
 export function siteBannerSources(profile?: { bannerVersion?: string | null } | null) {
     if (!profile?.bannerVersion) return [];
-    const version = encodeURIComponent(profile.bannerVersion);
     return [
-        { srcset: `/banner.avif?v=${version}`, type: 'image/avif' },
-        { srcset: `/banner.webp?v=${version}`, type: 'image/webp' }
+        { srcset: '/banner.avif', type: 'image/avif' },
+        { srcset: '/banner.webp', type: 'image/webp' }
     ];
 }
 

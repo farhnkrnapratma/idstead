@@ -157,7 +157,7 @@ describe('banner asset routing', () => {
 
     test('public banner URLs are versioned and absolute for Open Graph', () => {
         const profile = { bannerVersion: 'v1', siteUrl: 'https://example.com' };
-        expect(publicBannerOgUrl(profile)).toBe('https://example.com/banner-og.webp?v=v1');
+        expect(publicBannerOgUrl(profile)).toBe('https://example.com/banner-og.webp');
         expect(publicBannerOgUrl({ bannerVersion: null, siteUrl: 'https://example.com' })).toBe('');
         expect(siteBannerSources(profile).map(source => source.type)).toEqual([
             'image/avif',
@@ -217,7 +217,8 @@ describe('shared identity folder', () => {
             'utf8'
         );
         expect(source).toContain("kind: 'identity'");
-        expect(source).toContain('copyAssets(platform, group.from, version, group.assets)');
+        expect(source).toContain('copyAssets(platform, version, group.assets)');
+        expect(source).toContain('promoteIdentity(platform, version)');
         expect(source).toContain('p_identity: identity');
         expect(source).not.toContain('p_avatar');
         expect(source).not.toContain('p_banner');
@@ -230,5 +231,18 @@ describe('shared identity folder', () => {
         form.set('vector', '[]');
         form.set('avatar.webp', new File([webp(512, 512)], 'avatar.webp'));
         await expect(validateAvatar(form)).rejects.toThrow('Upload the complete icon package.');
+    });
+});
+
+describe('unversioned identity serving', () => {
+    test('identity assets are served from canonical keys and reject version queries', async () => {
+        const source = await readFile(
+            new URL('../packages/lib/src/server/profileAssets.ts', import.meta.url),
+            'utf8'
+        );
+        expect(source).toContain("url.searchParams.has('v')) return missing();");
+        expect(source).toContain('Key: `identity/${name}`');
+        expect(source).toContain("export const IMAGE_CACHE_CONTROL = 'public, max-age=300';");
+        expect(source).not.toContain('immutable');
     });
 });

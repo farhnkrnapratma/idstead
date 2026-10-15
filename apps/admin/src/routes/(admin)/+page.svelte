@@ -917,7 +917,12 @@
                     }))
     );
 
-    const adminAvatarUrl = $derived(avatarSource(authorState) || '/avatar.png');
+    let savedAvatarPreview = $state('');
+    let savedBannerPreview = $state('');
+
+    const adminAvatarUrl = $derived(
+        savedAvatarPreview || avatarSource(authorState) || '/avatar.png'
+    );
 
     const authorValidation = new FieldValidation();
     const authorLabels: Record<string, string> = {
@@ -1155,7 +1160,19 @@
         return { response, result: await response.json() };
     }
 
+    function replacePreview(current: string, blob: Blob) {
+        if (current) URL.revokeObjectURL(current);
+        return URL.createObjectURL(blob);
+    }
+
     function applyIdentity(profile: Record<string, any>, plan: IdentityPlan) {
+        if (plan.avatar)
+            savedAvatarPreview = replacePreview(
+                savedAvatarPreview,
+                new Blob([plan.avatar.files.files['avatar.png']], { type: 'image/png' })
+            );
+        if (plan.banner)
+            savedBannerPreview = replacePreview(savedBannerPreview, plan.banner.files.wide.webp);
         authorState.id = profile.id;
         authorState.avatar = profile.avatar;
         authorState.revision = profile.profile_revision;
@@ -4218,7 +4235,7 @@
                                 'Generated from your name. Upload an image to replace it.'
                             :   'Images are cropped to a square from the center. Animated images use their first frame.'}
                             readyNote="Image and icons are ready. Save Profile to publish your changes."
-                            saved={avatarSource(authorState)}
+                            saved={savedAvatarPreview || avatarSource(authorState)}
                             generated={avatarPreview(avatarSeedValue)}
                             useGenerated={avatarGenerated}
                             canRemove={!avatarRemoved
@@ -4249,7 +4266,7 @@
                                 'Generated from your name, site URL and first social link. Upload an image to replace it.'
                             :   'Images are cropped to 2:1 from the center. Animated images use their first frame.'}
                             readyNote="Banner is ready. Save Profile to publish your changes."
-                            saved={siteBannerSource(authorState)}
+                            saved={savedBannerPreview || siteBannerSource(authorState)}
                             validationError={bannerPreviewError}
                             generated={generatedBanner}
                             useGenerated={bannerGenerated}

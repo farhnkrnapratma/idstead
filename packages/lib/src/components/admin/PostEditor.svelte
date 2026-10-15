@@ -496,7 +496,11 @@
             const result = await submitPost(form, accessToken);
             editId = result.post.id;
             postRevision = result.post.post_revision;
-            savedBannerUrl = bannerUrl(result.post);
+            if (savedBannerUrl?.startsWith('blob:')) URL.revokeObjectURL(savedBannerUrl);
+            savedBannerUrl =
+                bannerChange.operation === 'replace' && result.post.banner_version ?
+                    URL.createObjectURL(bannerChange.webp)
+                :   bannerUrl(result.post);
             bannerChange = { operation: 'keep' };
             title = submitted.title;
             excerpt = submitted.excerpt || '';

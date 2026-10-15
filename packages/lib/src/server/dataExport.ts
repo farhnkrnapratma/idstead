@@ -12,6 +12,8 @@ import {
 import { DEFAULT_ADMIN_DISPLAY } from '#lib/adminDateFormat.ts';
 import { DEFAULT_CHART_RANGE, parseAdminSettings } from '#lib/adminSettings.ts';
 import { assetStorage } from './profileAssets';
+import { canonicalBannerKey } from '#lib/blogBanner.ts';
+import { identityAssetNames } from '#lib/siteIdentity.ts';
 import {
     compact,
     createMediaCollector,
@@ -172,7 +174,10 @@ export async function buildDataExport(
         ),
         rows<any>(
             'banners',
-            db.from('db_blog_banner_versions').select('post_id, object_key').eq('state', 'active')
+            db
+                .from('db_blog_banner_versions')
+                .select('post_id, object_key, avif_object_key')
+                .eq('state', 'active')
         ),
         rows<any>(
             'cv documents',
@@ -207,8 +212,22 @@ export async function buildDataExport(
         );
         const banner = banners.find(item => item.post_id === post.id);
         if (banner) {
-            await fetchBinary(`${dir}/assets/banner/${slug}.webp`, banner.object_key);
-            if (banner.avif_object_key)
+            if (
+                !(await fetchBinary(
+                    `${dir}/assets/banner/${slug}.webp`,
+                    canonicalBannerKey(post.id, 'webp'),
+                    true
+                ))
+            )
+                await fetchBinary(`${dir}/assets/banner/${slug}.webp`, banner.object_key);
+            if (
+                !(await fetchBinary(
+                    `${dir}/assets/banner/${slug}.avif`,
+                    canonicalBannerKey(post.id, 'avif'),
+                    true
+                ))
+                && banner.avif_object_key
+            )
                 await fetchBinary(`${dir}/assets/banner/${slug}.avif`, banner.avif_object_key);
         }
         await writeMedia(dir, collector);
@@ -350,26 +369,13 @@ export async function buildDataExport(
         );
 
     const avatarVersion = profileRow.data?.avatar_version as string | null;
-    if (avatarVersion) {
-        const identity = await guard(
-            'identity assets',
-            async () => {
-                const { data, error } = await db
-                    .from('db_identity_versions')
-                    .select('assets')
-                    .eq('id', avatarVersion)
-                    .maybeSingle();
-                if (error) throw error;
-                return (data?.assets ?? []) as { name: string; key: string }[];
-            },
-            []
-        );
-        for (const asset of identity)
-            await fetchBinary(
-                `files/identity/${safeSegment(avatarVersion)}/${safeSegment(asset.name)}`,
-                asset.key
-            );
-    }
+    if (avatarVersion)
+        for (const name of identityAssetNames)
+            if (!(await fetchBinary(`files/identity/${name}`, `identity/${name}`, true)))
+                await fetchBinary(
+                    `files/identity/${name}`,
+                    `identity/${safeSegment(avatarVersion)}/${name}`
+                );
 
     for (const doc of documents) {
         const name = safeSegment(doc.filename);

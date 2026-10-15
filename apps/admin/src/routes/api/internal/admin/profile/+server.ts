@@ -11,7 +11,13 @@ import {
     validateSiteBanner,
     type IdentityMeta
 } from '#lib/server/validateSiteBanner.ts';
-import { writeAssets, copyAssets, removeAssets, cleanupAssets } from '#lib/server/profileAssets.ts';
+import {
+    writeAssets,
+    copyAssets,
+    removeAssets,
+    cleanupAssets,
+    promoteIdentity
+} from '#lib/server/profileAssets.ts';
 import { profilePatch, ProfileInputError } from '#lib/server/profilePatch.ts';
 import { avatarAssetNames, bannerAssetNames, type IdentityAsset } from '#lib/siteIdentity.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
@@ -35,7 +41,6 @@ interface VersionRow {
 
 interface KeptGroup {
     kind: IdentityKind;
-    from: string;
     assets: IdentityAsset[];
 }
 
@@ -203,7 +208,7 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
                             :   'Upload the website banner again to complete its image package.'
                     });
                 meta[kind] = groupMeta(row, kind);
-                kept.push({ kind, from: version, assets });
+                kept.push({ kind, assets });
             };
             if (!files) keep('avatar', current.avatar_version, avatarAssetNames);
             if (!bannerFiles) keep('banner', current.banner_version, bannerAssetNames);
@@ -247,7 +252,7 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
                 ...(bannerFiles ?? {})
             });
             for (const group of kept)
-                assets.push(...(await copyAssets(platform, group.from, version, group.assets)));
+                assets.push(...(await copyAssets(platform, version, group.assets)));
             identity = { version, assets };
         } catch (error) {
             Sentry.captureException(error);
@@ -275,7 +280,7 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
                     {
                         success: true,
                         profile: committed,
-                        cleanupPending: await cleanupAfterSave(platform)
+                        cleanupPending: await cleanupAfterSave(platform, version)
                     },
                     { headers: { 'Cache-Control': 'no-store' } }
                 );
@@ -300,7 +305,7 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
             'Profile could not be saved. Reload to check its current state before retrying.'
         );
     }
-    const cleanupPending = await cleanupAfterSave(platform);
+    const cleanupPending = await cleanupAfterSave(platform, version);
     const changedFields = Object.keys(payload).filter(key => !['id', 'revision'].includes(key));
     await logActivity(
         {
@@ -334,12 +339,29 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
     );
 };
 
-async function cleanupAfterSave(platform?: App.Platform) {
+async function cleanupAfterSave(platform: App.Platform | undefined, version: string | null) {
+    let pending = false;
+    if (version) {
+        try {
+            const db = getSupabaseAdminClient(platform);
+            if (!db) throw new Error('Database is not configured.');
+            const { data, error } = await db
+                .from('db_profiles')
+                .select('avatar_version')
+                .eq('avatar_version', version)
+                .maybeSingle();
+            if (error) throw error;
+            if (data) await promoteIdentity(platform, version);
+        } catch (error) {
+            Sentry.captureException(error);
+            pending = true;
+        }
+    }
     try {
         await cleanupAssets(platform);
-        return false;
     } catch (error) {
         Sentry.captureException(error);
-        return true;
+        pending = true;
     }
+    return pending;
 }

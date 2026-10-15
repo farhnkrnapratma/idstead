@@ -20,6 +20,8 @@ export const assetNames = identityAssetNames;
 
 const VERSION_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+export const IMAGE_CACHE_CONTROL = 'public, max-age=300';
+
 const contentTypes: Record<string, string> = {
     svg: 'image/svg+xml',
     ico: 'image/x-icon',
@@ -80,7 +82,7 @@ export async function writeAssets(
                 Key: key,
                 Body: new Uint8Array(bytes),
                 ContentType: type,
-                CacheControl: 'public, max-age=31536000, immutable'
+                CacheControl: IMAGE_CACHE_CONTROL
             })
         );
         assets.push({
@@ -97,12 +99,10 @@ export async function writeAssets(
 
 export async function copyAssets(
     platform: Pick<App.Platform, 'env'> | undefined,
-    from: string,
     to: string,
     assets: IdentityAsset[]
 ): Promise<IdentityAsset[]> {
-    if (!VERSION_PATTERN.test(from) || !VERSION_PATTERN.test(to))
-        throw new Error('Invalid identity version.');
+    if (!VERSION_PATTERN.test(to)) throw new Error('Invalid identity version.');
     const { bucket, client } = assetStorage(platform);
     const copied: IdentityAsset[] = [];
     for (const asset of assets) {
@@ -112,13 +112,43 @@ export async function copyAssets(
             new CopyObjectCommand({
                 Bucket: bucket,
                 Key: key,
-                CopySource: `${bucket}/identity/${from}/${asset.name}`,
+                CopySource: `${bucket}/identity/${asset.name}`,
                 MetadataDirective: 'COPY'
             })
         );
         copied.push({ ...asset, key });
     }
     return copied;
+}
+
+export async function promoteIdentity(
+    platform: Pick<App.Platform, 'env'> | undefined,
+    version: string
+) {
+    if (!VERSION_PATTERN.test(version)) throw new Error('Invalid identity version.');
+    const { bucket, client } = assetStorage(platform);
+    for (const name of assetNames)
+        await client.send(
+            new CopyObjectCommand({
+                Bucket: bucket,
+                Key: `identity/${name}`,
+                CopySource: `${bucket}/identity/${version}/${name}`,
+                MetadataDirective: 'REPLACE',
+                ContentType:
+                    contentTypes[name.split('.').pop() ?? ''] ?? 'application/octet-stream',
+                CacheControl: IMAGE_CACHE_CONTROL
+            })
+        );
+    await removeAssets(platform, version);
+}
+
+export async function removeCanonicalIdentity(platform: Pick<App.Platform, 'env'> | undefined) {
+    const { bucket, client } = assetStorage(platform);
+    await Promise.all(
+        assetNames.map(name =>
+            client.send(new DeleteObjectCommand({ Bucket: bucket, Key: `identity/${name}` }))
+        )
+    );
 }
 
 export async function removeAssets(
@@ -155,16 +185,36 @@ export async function readAvatarBytes(
     platform: Pick<App.Platform, 'env'> | undefined,
     version?: string | null
 ): Promise<Uint8Array | null> {
-    if (!version || !/^[0-9a-f-]{36}$/i.test(version)) return null;
+    if (!version || !VERSION_PATTERN.test(version)) return null;
     try {
-        const { bucket, client } = assetStorage(platform);
-        const object = await client.send(
-            new GetObjectCommand({ Bucket: bucket, Key: `identity/${version}/avatar.png` })
-        );
-        return object.Body ? await object.Body.transformToByteArray() : null;
+        const object = await readIdentityObject(platform, version, 'avatar.png');
+        return object?.Body ? await object.Body.transformToByteArray() : null;
     } catch (error) {
         console.warn('Avatar could not be read for CV generation:', error);
         return null;
+    }
+}
+
+export async function readIdentityObject(
+    platform: Pick<App.Platform, 'env'> | undefined,
+    version: string,
+    name: string
+) {
+    if (!VERSION_PATTERN.test(version) || !assetNames.includes(name))
+        throw new Error('Invalid identity asset.');
+    const { bucket, client } = assetStorage(platform);
+    try {
+        return await client.send(new GetObjectCommand({ Bucket: bucket, Key: `identity/${name}` }));
+    } catch (error) {
+        if (!(error instanceof Error) || error.name !== 'NoSuchKey') throw error;
+    }
+    try {
+        return await client.send(
+            new GetObjectCommand({ Bucket: bucket, Key: `identity/${version}/${name}` })
+        );
+    } catch (error) {
+        if (error instanceof Error && error.name === 'NoSuchKey') return null;
+        throw error;
     }
 }
 
@@ -174,24 +224,22 @@ export async function serveIdentityAsset(
     platform?: Pick<App.Platform, 'env'>
 ): Promise<Response> {
     const name = url.pathname === '/hero.png' ? 'avatar.png' : url.pathname.slice(1);
-    if (!assetNames.includes(name)) return new Response(null, { status: 404 });
-    let version = url.searchParams.get('v');
-    if (version && !/^[0-9a-f-]{36}$/i.test(version)) return new Response(null, { status: 404 });
+    const missing = () =>
+        new Response(null, { status: 404, headers: { 'Cache-Control': 'no-store' } });
+    if (!assetNames.includes(name) || url.searchParams.has('v')) return missing();
     const column = versionColumn(name);
-    if (!version) {
-        const { data, error } = await supabase
-            .from('db_profiles')
-            .select(column)
-            .order('created_at')
-            .limit(1)
-            .maybeSingle();
-        if (error)
-            return new Response('Image metadata unavailable.', {
-                status: 503,
-                headers: { 'Cache-Control': 'no-store' }
-            });
-        version = (data as Record<string, string | null> | null)?.[column] ?? null;
-    }
+    const { data, error } = await supabase
+        .from('db_profiles')
+        .select(column)
+        .order('created_at')
+        .limit(1)
+        .maybeSingle();
+    if (error)
+        return new Response('Image metadata unavailable.', {
+            status: 503,
+            headers: { 'Cache-Control': 'no-store' }
+        });
+    const version = (data as Record<string, string | null> | null)?.[column] ?? null;
     if (!version) {
         const base = String(
             platform?.env?.PUBLIC_CDN_BASE_URL ?? publicEnv.PUBLIC_CDN_BASE_URL ?? ''
@@ -202,64 +250,34 @@ export async function serveIdentityAsset(
             || name === 'favicon.svg'
             || (name === 'avatar.png' && url.pathname !== '/hero.png')
         )
-            return new Response(null, { status: 404 });
+            return missing();
         const upstream = await fetch(`${base}/${url.pathname === '/hero.png' ? 'hero.png' : name}`);
         return new Response(request.method === 'HEAD' ? null : upstream.body, {
             status: upstream.status,
             headers: {
                 'Content-Type': upstream.headers.get('content-type') ?? 'application/octet-stream',
-                'Cache-Control': 'public, max-age=0, s-maxage=60, must-revalidate'
+                'Cache-Control': IMAGE_CACHE_CONTROL
             }
         });
     }
-    const { bucket, client } = assetStorage(platform);
-    try {
-        const object = await client.send(
-            new GetObjectCommand({ Bucket: bucket, Key: `identity/${version}/${name}` })
-        );
-        const versioned = url.searchParams.has('v');
-        const headers = new Headers({
-            'Content-Type': object.ContentType ?? 'application/octet-stream',
-            'X-Content-Type-Options': 'nosniff',
-            'Cache-Control':
-                versioned ?
-                    'public, max-age=31536000, immutable'
-                :   'public, max-age=0, s-maxage=60, must-revalidate'
-        });
-        if (object.ETag) headers.set('ETag', object.ETag);
-        if (name.endsWith('.svg'))
-            headers.set('Content-Security-Policy', "default-src 'none'; style-src 'none'; sandbox");
-        const matched =
-            object.ETag
-            && request.headers
-                .get('if-none-match')
-                ?.split(',')
-                .some(v => v.trim().replace(/^W\//, '') === object.ETag || v.trim() === '*');
-        if (matched) return new Response(null, { status: 304, headers });
-        if (request.method === 'HEAD') return new Response(null, { headers });
-        const bytes = await object.Body?.transformToByteArray();
-        return new Response(bytes ? new Uint8Array(bytes).buffer : null, { headers });
-    } catch (error) {
-        if (error instanceof Error && error.name === 'NoSuchKey') {
-            const { data, error: lookupError } = await supabase
-                .from('db_profiles')
-                .select(column)
-                .order('created_at')
-                .limit(1)
-                .maybeSingle();
-            if (lookupError) throw lookupError;
-            const current = (data as Record<string, string | null> | null)?.[column];
-            if (current && current !== version) {
-                return new Response(null, {
-                    status: 307,
-                    headers: {
-                        Location: `${url.pathname}?v=${current}`,
-                        'Cache-Control': 'no-store'
-                    }
-                });
-            }
-            return new Response(null, { status: 404, headers: { 'Cache-Control': 'no-store' } });
-        }
-        throw error;
-    }
+    const object = await readIdentityObject(platform, version, name);
+    if (!object) return missing();
+    const headers = new Headers({
+        'Content-Type': object.ContentType ?? 'application/octet-stream',
+        'X-Content-Type-Options': 'nosniff',
+        'Cache-Control': IMAGE_CACHE_CONTROL
+    });
+    if (object.ETag) headers.set('ETag', object.ETag);
+    if (name.endsWith('.svg'))
+        headers.set('Content-Security-Policy', "default-src 'none'; style-src 'none'; sandbox");
+    const matched =
+        object.ETag
+        && request.headers
+            .get('if-none-match')
+            ?.split(',')
+            .some(v => v.trim().replace(/^W\//, '') === object.ETag || v.trim() === '*');
+    if (matched) return new Response(null, { status: 304, headers });
+    if (request.method === 'HEAD') return new Response(null, { headers });
+    const bytes = await object.Body?.transformToByteArray();
+    return new Response(bytes ? new Uint8Array(bytes).buffer : null, { headers });
 }
