@@ -55,55 +55,56 @@
         class: className = '',
         title,
         'aria-label': ariaLabel,
+        onclick,
         children,
         ...restProps
     }: Props = $props();
 
     const baseStyles =
-        'inline-flex min-w-0 items-center justify-center whitespace-nowrap transition-all cursor-pointer select-none leading-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50 disabled:cursor-not-allowed [&>svg]:shrink-0 [&>i]:shrink-0';
+        'inline-flex min-w-0 items-center justify-center whitespace-nowrap transition cursor-pointer select-none leading-none motion-safe:active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50 disabled:cursor-not-allowed aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>svg]:shrink-0 [&>i]:shrink-0';
 
     const typeToneStyles: Record<string, string> = {
         'primary:neutral':
             'font-semibold bg-accent-contrast-bg text-text-on-accent hover:bg-accent-hover hover:text-(--color-text-on-accent-hover) active:bg-accent-active active:text-text-on-accent disabled:hover:bg-accent-contrast-bg disabled:hover:text-text-on-accent disabled:active:bg-accent-contrast-bg shadow-xs',
         'primary:critical':
-            'bg-danger font-semibold text-text-on-accent hover:bg-danger-hover hover:text-text-on-accent active:bg-danger-hover active:text-text-on-accent disabled:hover:bg-danger shadow-xs',
+            'bg-danger-contrast font-semibold text-text-on-danger hover:bg-danger-contrast-hover disabled:hover:bg-danger-contrast shadow-xs',
         'secondary:neutral':
             'glass-button hover:border-accent disabled:hover:border-border-subtle/70',
         'secondary:critical':
-            'border border-danger/30 bg-surface-card/55 text-danger shadow-xs backdrop-blur-sm hover:bg-danger-subtle/40 hover:border-danger/50 disabled:hover:bg-surface-card/55 dark:bg-surface-card/40 dark:hover:bg-danger-subtle/30',
+            'border border-danger/30 bg-surface-card/55 text-danger-contrast shadow-xs backdrop-blur-sm hover:bg-danger-subtle/40 hover:border-danger/50 disabled:hover:bg-surface-card/55 dark:bg-surface-card/40 dark:hover:bg-danger-subtle/30',
         'tertiary:neutral':
-            'border border-border-subtle/50 bg-button-tertiary text-text-secondary shadow-2xs hover:bg-surface-hover hover:text-text-primary hover:border-border-subtle/80 disabled:hover:bg-button-tertiary font-bold',
+            'border border-border-subtle/50 bg-button-tertiary text-text-secondary shadow-2xs hover:bg-surface-hover hover:text-text-primary hover:border-border-subtle/80 disabled:hover:bg-button-tertiary font-medium',
         'tertiary:critical':
-            'border border-danger/30 bg-danger-subtle/70 text-danger shadow-2xs hover:bg-danger-subtle disabled:hover:bg-danger-subtle/70 dark:bg-danger-subtle/40',
+            'border border-danger/30 bg-danger-subtle/70 text-danger-contrast shadow-2xs hover:bg-danger-subtle disabled:hover:bg-danger-subtle/70 dark:bg-danger-subtle/40',
         'outline:neutral':
-            'border border-border-subtle/60 bg-transparent text-text-primary shadow-2xs hover:bg-surface-hover hover:border-border-default disabled:hover:bg-transparent disabled:hover:border-border-subtle/60 dark:border-white/10 dark:hover:bg-surface-hover',
+            'border border-border-subtle/60 bg-transparent text-text-primary shadow-2xs hover:bg-surface-hover hover:border-border-default disabled:hover:bg-transparent disabled:hover:border-border-subtle/60 dark:border-border-subtle',
         'outline:critical':
-            'border border-danger/40 bg-transparent text-danger shadow-2xs hover:bg-danger-subtle disabled:hover:bg-transparent',
+            'border border-danger/40 bg-transparent text-danger-contrast shadow-2xs hover:bg-danger-subtle disabled:hover:bg-transparent',
         'ghost:neutral':
             'text-text-secondary hover:text-accent-text disabled:hover:text-text-secondary disabled:hover:bg-transparent',
         'ghost:critical':
-            'text-danger hover:text-danger-hover hover:bg-danger-subtle disabled:hover:text-danger disabled:hover:bg-transparent',
+            'text-danger-contrast hover:bg-danger-subtle disabled:hover:bg-transparent',
         'danger:critical':
-            'font-semibold border border-danger/30 bg-danger-subtle/70 text-danger backdrop-blur-sm hover:bg-danger hover:text-text-on-accent disabled:hover:bg-danger-subtle/70 shadow-xs dark:bg-danger-subtle/40 dark:hover:bg-danger'
+            'font-semibold border border-danger/30 bg-danger-subtle/70 text-danger-contrast backdrop-blur-sm hover:border-danger-contrast hover:bg-danger-contrast hover:text-text-on-danger disabled:hover:border-danger/30 disabled:hover:bg-danger-subtle/70 disabled:hover:text-danger-contrast shadow-xs dark:bg-danger-subtle/40'
     };
 
     const styleKey = $derived(type === 'danger' ? 'danger:critical' : `${type}:${tone}`);
 
     const sizeStyles = {
-        '3xs': 'h-6 px-1.5 text-2xs gap-1 rounded-sm',
-        '2xs': 'h-7 px-2 text-xs gap-2 rounded-sm',
-        xs: 'h-7.5 px-2.5 py-1.5 text-2xs gap-1 rounded-md',
+        '3xs': 'h-6 px-1.5 text-xs gap-1 rounded-sm',
+        '2xs': 'h-7 px-2 text-xs gap-1.5 rounded-sm',
+        xs: 'h-7.5 px-2.5 text-xs gap-1.5 rounded-md',
         sm: 'h-8 px-3 text-xs gap-1.5 rounded-md',
         md: 'h-9 px-4 text-xs sm:text-sm gap-2 rounded-md',
         lg: 'h-11 px-5 text-sm gap-2.5 rounded-md'
     };
 
     const responsiveSizeStyles = {
-        '3xs': 'size-6 shrink-0 p-0 text-2xs gap-1 rounded-sm sm:h-6 sm:w-auto sm:px-1.5 sm:text-2xs sm:gap-1',
-        '2xs': 'size-7 shrink-0 p-0 text-xs gap-2 rounded-sm sm:h-7 sm:w-auto sm:px-2 sm:text-xs sm:gap-2',
-        xs: 'size-8 shrink-0 p-0 text-2xs gap-1 rounded-md sm:h-7.5 sm:w-auto sm:px-2.5 sm:py-1.5 sm:text-2xs sm:gap-1',
+        '3xs': 'size-6 shrink-0 p-0 text-xs gap-1 rounded-sm sm:h-6 sm:w-auto sm:px-1.5',
+        '2xs': 'size-7 shrink-0 p-0 text-xs gap-1.5 rounded-sm sm:h-7 sm:w-auto sm:px-2',
+        xs: 'size-8 shrink-0 p-0 text-xs gap-1.5 rounded-md sm:h-7.5 sm:w-auto sm:px-2.5',
         sm: 'size-8 shrink-0 p-0 text-xs gap-1.5 rounded-md sm:h-8 sm:w-auto sm:px-3 sm:text-xs sm:gap-1.5',
-        md: 'size-8 shrink-0 p-0 text-xs gap-1.5 rounded-md sm:h-9 sm:w-auto sm:px-4 sm:text-xs sm:text-sm sm:gap-2',
+        md: 'size-8 shrink-0 p-0 text-xs gap-1.5 rounded-md sm:h-9 sm:w-auto sm:px-4 sm:text-sm sm:gap-2',
         lg: 'size-8 shrink-0 p-0 text-xs gap-1.5 rounded-md sm:h-11 sm:w-auto sm:px-5 sm:text-sm sm:gap-2.5'
     };
 
@@ -137,8 +138,20 @@
         return { prefix: trimmed, suffix: '', hasSpace: false };
     });
 
-    const resolvedTitle = $derived(title || label || undefined);
+    const inactive = $derived(disabled || isLoading);
+    const resolvedTitle = $derived(
+        title || (label && (responsiveIconOnly || truncateMiddle) ? label : undefined)
+    );
     const resolvedAriaLabel = $derived(ariaLabel || label || undefined);
+
+    function handleClick(event: Parameters<NonNullable<typeof onclick>>[0]) {
+        if (inactive) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            return;
+        }
+        onclick?.(event);
+    }
 </script>
 
 <svelte:element
@@ -152,9 +165,10 @@
         :   download
     :   undefined}
     type={href ? undefined : htmlType}
-    disabled={href ? undefined : disabled || isLoading}
-    aria-disabled={href && (disabled || isLoading) ? 'true' : undefined}
-    tabindex={href && (disabled || isLoading) ? -1 : undefined}
+    disabled={href ? undefined : disabled && !isLoading}
+    aria-disabled={(href && inactive) || isLoading ? 'true' : undefined}
+    aria-busy={isLoading || undefined}
+    tabindex={href && inactive ? -1 : undefined}
     title={resolvedTitle}
     aria-label={resolvedAriaLabel}
     use:shortcut={{
@@ -164,7 +178,7 @@
         scope: shortcutScope,
         label: shortcutLabel ?? resolvedAriaLabel ?? label,
         placement: shortcutPlacement,
-        disabled: disabled || isLoading
+        disabled: inactive
     }}
     class={cn(
         baseStyles,
@@ -174,21 +188,22 @@
         fullWidth ? 'w-full' : '',
         className
     )}
-    {...restProps}>
+    {...restProps}
+    onclick={handleClick}>
     {#if isLoading}
         <svg
-            class="h-4 w-4 animate-spin"
+            class="size-[1.15em] shrink-0 animate-spin"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
             aria-hidden="true">
             <circle
-                class="stroke-text-on-accent stroke-3 opacity-25"
+                class="stroke-current stroke-3 opacity-25"
                 cx="12"
                 cy="12"
                 r="10"></circle>
             <path
-                class="fill-text-on-accent opacity-75"
+                class="fill-current opacity-75"
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
         </svg>
