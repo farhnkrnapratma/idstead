@@ -14,7 +14,6 @@ const DRY_RUN = !process.argv.includes('--apply');
 
 const supabaseUrl = process.env.PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-const r2Endpoint = process.env.R2_ENDPOINT || '';
 const r2AccessKey = process.env.R2_ACCESS_KEY_ID || '';
 const r2SecretKey = process.env.R2_SECRET_ACCESS_KEY || '';
 const r2Bucket = process.env.R2_BUCKET_NAME || '';

@@ -174,12 +174,9 @@ export async function fetchProjects(
         };
 
         const token =
-            (platform as any)?.env?.GITHUB_TOKEN
-            ?? (platform as any)?.env?.GITHUB_PAT
+            (platform as any)?.env?.GITHUB_PAT
             ?? privateEnv.GITHUB_PAT
-            ?? privateEnv.GITHUB_TOKEN
             ?? process.env.GITHUB_PAT
-            ?? process.env.GITHUB_TOKEN
             ?? '';
 
         if (token) {
