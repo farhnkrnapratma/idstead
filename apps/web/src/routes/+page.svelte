@@ -1,11 +1,12 @@
 <script lang="ts">
     import Tag from '#lib/components/Tag.svelte';
     import { FieldValidation, requiredText, emailError } from '#lib/fieldValidation.ts';
-    import { publicAvatarUrl, publicBannerOgUrl } from '#lib/siteIdentity.ts';
+    import { avatarSources, publicAvatarUrl, publicBannerOgUrl } from '#lib/siteIdentity.ts';
     import { onDestroy, onMount, untrack } from 'svelte';
     import type { Snippet } from 'svelte';
     import {
         CircleDollarSign,
+        Download,
         FolderArchive,
         Dot,
         ChevronRight,
@@ -28,7 +29,6 @@
         ImageWithSkeleton,
         SpotlightSearch,
         BottomNav,
-        BrandIcon,
         FormField,
         Input,
         Textarea,
@@ -54,6 +54,7 @@
         PageContainer,
         ConsentNotice,
         BlogPostCard,
+        ProfileCard,
         staggerChildren,
         withViewTransition
     } from '#lib/index.ts';
@@ -110,6 +111,7 @@
     let ogImageWidth = $derived(ogBanner ? '1200' : '512');
     let ogImageHeight = $derived(ogBanner ? '630' : '512');
     let avatar = $derived(author?.avatar || '');
+    let avatarFormats = $derived(avatarSources(author));
     let socials = $derived(author?.socialLinks || []);
     const navItems: NavItem[] = [
         { id: 'home', label: 'Home' },
@@ -581,6 +583,7 @@
                 {#if avatar}
                     <ImageWithSkeleton
                         src={avatar}
+                        sources={avatarFormats}
                         alt={`Profile picture of ${name}`}
                         variant="avatar"
                         rounded="rounded-full"
@@ -798,79 +801,19 @@
             <PageContainer
                 width="standard"
                 class="flex flex-col gap-4 sm:gap-5">
-                <div
-                    class="pointer-events-none absolute top-7.5 left-[50%] z-0 h-80 w-[320px] translate-x-[-50%] rounded-full bg-accent/10 blur-[80px] sm:top-9 md:top-10">
-                </div>
-
-                <div class="relative z-10 mx-auto w-full">
-                    <div
-                        use:staggerChildren
-                        class="stagger-children relative mt-12 flex w-full flex-col items-center justify-center rounded-md glass-card px-3 pt-0 pb-4 text-center sm:px-8 sm:pt-0 sm:pb-6">
-                        {#if avatar}
-                            <ImageWithSkeleton
-                                src={avatar}
-                                alt={`Profile picture of ${name || author?.name || 'the author'}`}
-                                referrerpolicy="no-referrer"
-                                variant="avatar"
-                                rounded="rounded-full"
-                                class="relative z-10 -mt-11 h-20 w-20 border border-border-subtle/30 shadow-sm sm:-mt-16 sm:h-28 sm:w-28 dark:border-white/8"
-                                imgClass="object-top" />
-                        {/if}
-
-                        <h1
-                            class="relative z-10 max-w-full px-0 sm:px-2 {avatar ? 'mt-1.5 sm:mt-4'
-                            :   'pt-5'} type-page-title font-extrabold">
-                            {name}
-                        </h1>
-
-                        {#if pronunciation}
-                            <p
-                                class="relative z-10 mt-0.5 font-sans text-xs text-text-muted sm:text-sm">
-                                {pronunciation}
-                            </p>
-                        {/if}
-
-                        {#if headline}
-                            <p
-                                class="relative z-10 mt-1 max-w-lg type-body text-text-muted sm:mt-1.5">
-                                {headline}
-                            </p>
-                        {/if}
-
-                        {#if desc}
-                            <p
-                                class="relative z-10 mt-2 max-w-lg font-sans type-body text-text-secondary sm:mt-3">
-                                {desc}
-                            </p>
-                        {/if}
-
-                        {#if socials.length > 0}
-                            <div
-                                class="relative z-10 mt-3 flex flex-wrap items-center justify-center gap-1 select-none sm:mt-5 sm:gap-1.5">
-                                {#each socials as item (item.url + item.platform)}
-                                    <Button
-                                        type="ghost"
-                                        size="2xs"
-                                        href={item.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        aria-label={item.platform}
-                                        title={item.platform}
-                                        shortcutGroup="social"
-                                        shortcutLabel={item.platform}
-                                        class="size-7.5! rounded-md! border-0! bg-transparent! p-0! text-text-muted transition-all hover:bg-surface-hover hover:text-accent-text focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:size-8!">
-                                        <BrandIcon
-                                            icon={item.icon}
-                                            class="text-sm leading-none sm:text-base" />
-                                    </Button>
-                                {/each}
-                            </div>
-                        {/if}
-
+                <ProfileCard
+                    {name}
+                    {pronunciation}
+                    {headline}
+                    bio={desc}
+                    avatarUrl={avatar}
+                    avatarSources={avatarFormats}
+                    {socials}>
+                    {#snippet actions()}
                         <div
-                            class="relative z-10 mt-3.5 flex w-full flex-col items-center gap-3 sm:mt-6 sm:flex-row sm:flex-wrap sm:justify-center">
+                            class="flex w-full flex-col items-center gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
                             <div
-                                class="grid w-full grid-cols-2 gap-3 sm:flex sm:w-auto sm:items-center">
+                                class="grid w-full grid-cols-[repeat(auto-fit,minmax(calc(7.5rem*var(--a11y-scale)),1fr))] gap-3 sm:flex sm:w-auto sm:items-center">
                                 {#if data.cvExists}
                                     <Button
                                         type="primary"
@@ -883,6 +826,11 @@
                                         shortcutLabel="Download CV"
                                         onclick={handleCvDownload}
                                         class="w-full sm:h-9 sm:w-auto sm:gap-2 sm:px-4 sm:text-sm">
+                                        {#snippet leading()}
+                                            <Download
+                                                class="size-3.5"
+                                                aria-hidden="true" />
+                                        {/snippet}
                                         Download CV
                                     </Button>
                                 {:else}
@@ -893,6 +841,11 @@
                                         disabled
                                         title="No CV document is available yet."
                                         class="w-full sm:h-9 sm:w-auto sm:gap-2 sm:px-4 sm:text-sm">
+                                        {#snippet leading()}
+                                            <Download
+                                                class="size-3.5"
+                                                aria-hidden="true" />
+                                        {/snippet}
                                         Download CV
                                     </Button>
                                 {/if}
@@ -916,10 +869,15 @@
                                 shortcutLabel="Get in touch"
                                 class="w-auto sm:h-9 sm:gap-2 sm:px-4 sm:text-sm">
                                 Get in touch
+                                {#snippet trailing()}
+                                    <ChevronRight
+                                        class="size-3"
+                                        aria-hidden="true" />
+                                {/snippet}
                             </Button>
                         </div>
-                    </div>
-                </div>
+                    {/snippet}
+                </ProfileCard>
 
                 <div>
                     <h2 class="mb-3 type-section-title sm:mb-4">Recent Posts</h2>
