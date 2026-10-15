@@ -1,6 +1,6 @@
 # Environment Variables
 
-All variables live in Phase (app `www`, environments Development and Production), and Phase is the only place to create, change or rotate them. In production each Worker gets its variables as Worker secrets that Phase syncs; the Workers read them at **runtime**, never at build time. The variable names are listed in `.env.production.example` and `.env.development.example`, which have the same keys as the Phase root path.
+All variables live in Phase (app `www`, environments Development and Production), and Phase is the only place to create, change or rotate them. In production each Worker gets its variables as Worker secrets that Phase syncs; the Workers read them at **runtime**, never at build time. The variable names are listed in `.env.example`, which has the same keys as the Phase root path of both environments.
 
 The columns show which apps read each variable, from a code search on 2026-10-15. `lib` means shared code in `packages/lib` that runs inside those apps.
 

@@ -32,7 +32,7 @@ phase run --env dev bun run --filter @fkp/jobs dev    # jobs worker, http://loca
 - At minimum, `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY` must be set, or the dev servers fail at start-up.
 - For what each variable does and which app reads it, see [environment.md](environment.md).
 
-If you have no access to the Phase project, the README's "Configure Environment Variables" section describes the `.env` template alternative.
+If you have no access to the Phase project, copy `.env.example` to `.env` and fill in the values (see the README's "Configure Environment Variables" section).
 
 ### Local tips
 
