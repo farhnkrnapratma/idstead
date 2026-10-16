@@ -20,7 +20,7 @@ sequenceDiagram
     P->>P: parsePostInput() (banner WASM validation), validateDefineForSave()
     P->>DB: rpc db_prepare_post_operation (keyed by operationId)
     opt new banner
-        P->>R2: putBanner webp, then avif<br/>blog/banners/{postId}/{version}.{ext}, IfNoneMatch *, read-back SHA-256 check
+        P->>R2: putBanner webp, then avif<br/>blog/banners/{postId}/{version}.{ext} (staging), read-back SHA-256 check
     end
     P->>ST: upload markdown (read back if it already exists)
     P->>DB: rpc db_ready_post_operation

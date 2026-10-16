@@ -1,5 +1,6 @@
 export const POST_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 export const POST_SLUG_MAX_LENGTH = 100;
+export const RESERVED_POST_SLUGS = new Set(['banners', 'content']);
 
 export function slugifyTitle(title: string): string {
     return title
@@ -11,11 +12,16 @@ export function slugifyTitle(title: string): string {
         .replace(/[\s-]+/g, '-')
         .replace(/^-+|-+$/g, '')
         .slice(0, POST_SLUG_MAX_LENGTH)
-        .replace(/-+$/, '');
+        .replace(/-+$/, '')
+        .replace(/^(banners|content)$/, '$1-post');
 }
 
 export function isValidPostSlug(slug: string): boolean {
-    return slug.length <= POST_SLUG_MAX_LENGTH && POST_SLUG_PATTERN.test(slug);
+    return (
+        slug.length <= POST_SLUG_MAX_LENGTH
+        && POST_SLUG_PATTERN.test(slug)
+        && !RESERVED_POST_SLUGS.has(slug)
+    );
 }
 
 export interface SlugChange {

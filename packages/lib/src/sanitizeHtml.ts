@@ -14,7 +14,7 @@ export function sanitizeUrl(href: string): string | null {
 }
 
 const HTML_TAGS = new Set(
-    'a abbr b blockquote br button code del details div em h1 h2 h3 h4 h5 h6 hr i iframe img ins kbd li mark ol p pre s section span strong sub summary sup table tbody td tfoot th thead tr u ul video'.split(
+    'a abbr b blockquote br button code del details div em h1 h2 h3 h4 h5 h6 hr i iframe img ins kbd li mark ol p picture pre s section source span strong sub summary sup table tbody td tfoot th thead tr u ul video'.split(
         ' '
     )
 );
@@ -25,7 +25,7 @@ const MATH_TAGS = new Set(
         ' '
     )
 );
-const HTML_VOID = new Set(['br', 'hr', 'img']);
+const HTML_VOID = new Set(['br', 'hr', 'img', 'source']);
 const DROP_WITH_CONTENT = new Set(
     'script style textarea title noscript template noembed noframes xmp plaintext object embed applet'.split(
         ' '
@@ -64,6 +64,7 @@ const MATH_ATTRS = new Set(
 const TAG_ATTRS: Record<string, Set<string>> = {
     a: new Set(['href', 'target', 'rel']),
     img: new Set(['src', 'alt', 'loading', 'decoding', 'width', 'height']),
+    source: new Set(['srcset', 'type']),
     video: new Set(['src', 'controls', 'preload', 'playsinline', 'width', 'height']),
     iframe: new Set(['src', 'loading', 'allowfullscreen']),
     button: new Set(['type']),
@@ -74,7 +75,7 @@ const TAG_ATTRS: Record<string, Set<string>> = {
     span: new Set(['style'])
 };
 const BOOLEAN_ATTRS = new Set(['hidden', 'controls', 'playsinline', 'allowfullscreen', 'open']);
-const URL_ATTRS = new Set(['href', 'src']);
+const URL_ATTRS = new Set(['href', 'src', 'srcset']);
 
 const NAMED_ENTITIES: Record<string, string> = {
     amp: '&',

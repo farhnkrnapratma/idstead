@@ -1,11 +1,7 @@
-import {
-    PutObjectCommand,
-    GetObjectCommand,
-    DeleteObjectCommand,
-    CopyObjectCommand
-} from '@aws-sdk/client-s3';
+import { PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { assetStorage, IMAGE_CACHE_CONTROL } from './profileAssets';
-import { bannerKey, canonicalBannerKey, sha256 } from '#lib/blogBanner.ts';
+import { bannerKey, sha256 } from '#lib/blogBanner.ts';
+import { cleanupOrphanedStaging } from './blogPostAssets';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export async function putBanner(
@@ -116,73 +112,17 @@ export async function cleanupBlogAssets(db: SupabaseClient, platform?: App.Platf
                 .eq('storage_path', item.storage_path);
         }
     }
+    try {
+        removed += await cleanupOrphanedStaging(platform, async postId => {
+            const { count, error: lookupError } = await db
+                .from('db_posts')
+                .select('id', { count: 'exact', head: true })
+                .eq('id', postId);
+            if (lookupError) throw lookupError;
+            return Boolean(count);
+        });
+    } catch {
+        failed = true;
+    }
     return { cleanupPending: failed, removed };
-}
-
-export async function promoteBanner(
-    platform: App.Platform | undefined,
-    postId: string,
-    version: string
-) {
-    const { client, bucket } = assetStorage(platform);
-    for (const format of ['webp', 'avif'] as const)
-        try {
-            await client.send(
-                new CopyObjectCommand({
-                    Bucket: bucket,
-                    Key: canonicalBannerKey(postId, format),
-                    CopySource: `${bucket}/${bannerKey(postId, version, format)}`,
-                    MetadataDirective: 'REPLACE',
-                    ContentType: format === 'avif' ? 'image/avif' : 'image/webp',
-                    CacheControl: IMAGE_CACHE_CONTROL
-                }),
-                { abortSignal: AbortSignal.timeout(30_000) }
-            );
-        } catch (error) {
-            if (!(error instanceof Error) || error.name !== 'NoSuchKey') throw error;
-        }
-    await Promise.all(
-        (['webp', 'avif'] as const).map(format =>
-            client.send(
-                new DeleteObjectCommand({
-                    Bucket: bucket,
-                    Key: bannerKey(postId, version, format)
-                }),
-                { abortSignal: AbortSignal.timeout(30_000) }
-            )
-        )
-    );
-}
-
-export async function removeCanonicalBanner(platform: App.Platform | undefined, postId: string) {
-    const { client, bucket } = assetStorage(platform);
-    await Promise.all(
-        (['webp', 'avif'] as const).map(format =>
-            client.send(
-                new DeleteObjectCommand({
-                    Bucket: bucket,
-                    Key: canonicalBannerKey(postId, format)
-                }),
-                { abortSignal: AbortSignal.timeout(30_000) }
-            )
-        )
-    );
-}
-
-export async function getBannerObject(
-    platform: App.Platform | undefined,
-    postId: string,
-    version: string,
-    format: 'webp' | 'avif' = 'webp'
-) {
-    const { client, bucket } = assetStorage(platform);
-    for (const key of [canonicalBannerKey(postId, format), bannerKey(postId, version, format)])
-        try {
-            return await client.send(new GetObjectCommand({ Bucket: bucket, Key: key }), {
-                abortSignal: AbortSignal.timeout(30_000)
-            });
-        } catch (error) {
-            if (!(error instanceof Error) || error.name !== 'NoSuchKey') throw error;
-        }
-    return null;
 }

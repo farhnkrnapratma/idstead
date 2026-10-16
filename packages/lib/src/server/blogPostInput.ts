@@ -1,4 +1,11 @@
-import { UUID_PATTERN, BANNER_LIMIT, sha256 } from '#lib/blogBanner.ts';
+import {
+    UUID_PATTERN,
+    BANNER_LIMIT,
+    BANNER_WIDTH,
+    BANNER_HEIGHT,
+    sha256
+} from '#lib/blogBanner.ts';
+import { inspectAvif } from '#lib/avif.ts';
 import { validateBanner } from './validateBanner';
 import { isValidPostSlug, POST_SLUG_MAX_LENGTH } from '#lib/slug.ts';
 
@@ -131,7 +138,11 @@ export async function parsePostInput(request: Request, wasm: WebAssembly.Module)
             image = new Uint8Array(await file.arrayBuffer());
             avifImage = new Uint8Array(await avifFile.arrayBuffer());
             await validateBanner(image, wasm);
-            await validateBanner(avifImage, wasm);
+            inspectAvif(avifImage, {
+                maxBytes: BANNER_LIMIT,
+                width: BANNER_WIDTH,
+                height: BANNER_HEIGHT
+            });
             banner = {
                 ...banner,
                 sha256: await sha256(image),
@@ -140,16 +151,7 @@ export async function parsePostInput(request: Request, wasm: WebAssembly.Module)
                 avifBytes: avifImage.byteLength
             };
         } else if (file !== null || avifFile !== null) throw new Error('Unexpected banner upload.');
-        post.banner_references = [
-            ...new Set(
-                Array.from(
-                    markdown.matchAll(
-                        /\/blog\/banners\/([0-9a-f-]{36})\/([0-9a-f-]{36})\.(?:webp|avif)/gi
-                    ),
-                    match => match[2].toLowerCase()
-                )
-            )
-        ];
+        post.banner_references = [];
     }
     const hash = await sha256(
         new TextEncoder().encode(
@@ -164,8 +166,8 @@ export async function parsePostInput(request: Request, wasm: WebAssembly.Module)
         )
     );
     return {
-        id: input.id as string,
-        operationId: input.operationId as string,
+        id: (input.id as string).toLowerCase(),
+        operationId: (input.operationId as string).toLowerCase(),
         revision: input.revision as number | null,
         kind: input.kind as 'save' | 'delete',
         post,

@@ -9,12 +9,9 @@ import {
     BannerRequiredError,
     type PostOperation
 } from '#lib/server/blogPostSave.ts';
-import {
-    cleanupBlogAssets,
-    promoteBanner,
-    putBanner,
-    removeCanonicalBanner
-} from '#lib/server/blogBannerStorage.ts';
+import { cleanupBlogAssets, putBanner } from '#lib/server/blogBannerStorage.ts';
+import { relocateMarkdownAssets, syncPostAssets } from '#lib/server/blogPostAssets.ts';
+import { cdnBaseUrl } from '#lib/cdn.ts';
 import { UUID_PATTERN } from '#lib/blogBanner.ts';
 import { createApiRegistry, validateDefineForSave } from '#lib/define.ts';
 import { notifyNewPost } from '#lib/server/subscriberBroadcast.ts';
@@ -49,6 +46,48 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
                     validation.errors.map(error => error.message).join(' | ')
                 );
         }
+        const { data: previous, error: previousError } = await db
+            .from('db_posts')
+            .select('id, slug, published, banner_version')
+            .eq('id', input.id)
+            .maybeSingle();
+        if (previousError) throw previousError;
+        const cdnBase = cdnBaseUrl();
+        if (input.kind === 'save') {
+            const { data: owner, error: ownerError } = await db
+                .from('db_posts')
+                .select('id')
+                .eq('slug', input.post.slug as string)
+                .neq('id', input.id)
+                .limit(1)
+                .maybeSingle();
+            if (ownerError) throw ownerError;
+            if (owner)
+                return apiError(
+                    422,
+                    'BLOG_SAVE_REJECTED',
+                    'Post fields could not be committed. Check that the slug is unique.'
+                );
+            try {
+                input.markdown = await relocateMarkdownAssets({
+                    platform,
+                    cdnBase,
+                    markdown: input.markdown,
+                    post: {
+                        id: input.id,
+                        slug: input.post.slug as string,
+                        published: input.post.published as boolean
+                    },
+                    previous
+                });
+            } catch (error) {
+                return apiError(
+                    422,
+                    'BLOG_SAVE_ASSET_MISSING',
+                    error instanceof Error ? error.message : 'A file used in the post is missing.'
+                );
+            }
+        }
         const operation = await savePostOperation(db, auth.actor, input, async () => {
             if (input.image)
                 await putBanner(platform, input.id, input.operationId, input.image, 'webp');
@@ -82,22 +121,23 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         }
         let cleanupPending = false;
         try {
-            if (input.kind === 'delete' || operation.result?.deleted)
-                await removeCanonicalBanner(platform, input.id);
-            else if (input.banner.operation === 'remove')
-                await removeCanonicalBanner(platform, input.id);
-            else if (input.banner.operation === 'replace') {
-                const { data: current, error: readError } = await db
-                    .from('db_posts')
-                    .select('banner_version')
-                    .eq('id', input.id)
-                    .maybeSingle();
-                if (readError) throw readError;
-                if (current?.banner_version === input.operationId)
-                    await promoteBanner(platform, input.id, input.operationId);
-            }
+            const deleted = input.kind === 'delete' || Boolean(operation.result?.deleted);
+            const { data: current, error: readError } = await db
+                .from('db_posts')
+                .select('id, slug, published, banner_version')
+                .eq('id', input.id)
+                .maybeSingle();
+            if (readError) throw readError;
+            await syncPostAssets({
+                platform,
+                cdnBase,
+                markdown: input.kind === 'save' ? input.markdown : null,
+                post: current ?? { id: input.id },
+                previous,
+                deleted: deleted || !current
+            });
         } catch (error) {
-            console.error('Banner promotion failed:', error);
+            console.error('Post asset sync failed:', error);
             cleanupPending = true;
         }
         try {
@@ -133,7 +173,13 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             db
         );
         return json(
-            { success: true, operationId: operation.id, post: operation.result, cleanupPending },
+            {
+                success: true,
+                operationId: operation.id,
+                post: operation.result,
+                markdown: input.kind === 'save' ? input.markdown : null,
+                cleanupPending
+            },
             { headers: { 'Cache-Control': 'no-store' } }
         );
     } catch (error) {

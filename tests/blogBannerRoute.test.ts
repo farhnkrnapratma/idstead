@@ -1,70 +1,65 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { describe, expect, test } from 'bun:test';
 import {
+    avifSources,
+    bannerObjectKey,
     bannerSources,
     bannerUrl,
-    canonicalBannerKey,
+    postAssetHome,
     publicBannerUrl
 } from '../packages/lib/src/blogBanner.ts';
 
 const postId = '0b6f3c1e-8f5a-4c2b-9d7e-1a2b3c4d5e6f';
 const version = '7c9e6679-7425-40de-944b-e07fc1f90ae7';
-const publicId = 'a'.repeat(64);
+const cdn = 'https://cdn.example.com';
 
-function routeFor(app: string, path: string) {
-    const [, blog, banners, file, extra] = path.split('/');
-    expect(`${blog}/${banners}`).toBe('blog/banners');
-    expect(file).toMatch(/\.(?:webp|avif)$/);
-    expect(extra).toBeUndefined();
-    return new URL(`../apps/${app}/src/routes/blog/banners/[file]/+server.ts`, import.meta.url);
-}
-
-describe('Blog banner routes', () => {
-    test('admin serves the banner path that bannerUrl() builds', () => {
-        const route = routeFor('admin', bannerUrl({ id: postId, banner_version: version })!);
-        expect(existsSync(route)).toBe(true);
-        expect(readFileSync(route, 'utf8')).toContain('serveBlogBanner(');
+describe('Blog banner URLs on the CDN', () => {
+    test('published posts live in blog/{slug}/', () => {
+        const post = { id: postId, slug: 'ubuntu-26-10', published: true, banner_version: version };
+        expect(postAssetHome(post)).toBe('blog/ubuntu-26-10');
+        expect(publicBannerUrl(post, cdn)).toBe(`${cdn}/blog/ubuntu-26-10/banner.webp`);
+        expect(bannerSources(post, cdn)).toEqual([
+            { srcset: `${cdn}/blog/ubuntu-26-10/banner.avif`, type: 'image/avif' }
+        ]);
     });
 
-    test('web serves the banner path that publicBannerUrl() builds', () => {
-        const route = routeFor(
-            'web',
-            publicBannerUrl({ public_id: publicId, banner_version: version })!
+    test('drafts live in the staging folder', () => {
+        const post = { id: postId, slug: 'draft', published: false, banner_version: version };
+        expect(bannerUrl(post, cdn)).toBe(`${cdn}/staging/blog/${postId}/banner.webp`);
+        expect(bannerObjectKey(post, 'avif')).toBe(`staging/blog/${postId}/banner.avif`);
+    });
+
+    test('no banner, no URL', () => {
+        expect(bannerUrl({ id: postId, slug: 'x', published: true }, cdn)).toBeNull();
+        expect(avifSources(null)).toEqual([]);
+    });
+
+    test('invalid ids and slugs never reach a key', () => {
+        expect(() => postAssetHome({ id: '../x' })).toThrow('Invalid banner identity.');
+        expect(postAssetHome({ id: postId, slug: '../etc', published: true })).toBe(
+            `staging/blog/${postId}`
         );
-        expect(existsSync(route)).toBe(true);
-        expect(readFileSync(route, 'utf8')).toContain('serveBlogBanner(');
+    });
+
+    test('the Worker banner and content routes are gone', () => {
+        for (const path of [
+            '../apps/web/src/routes/blog/banners/[file]/+server.ts',
+            '../apps/admin/src/routes/blog/banners/[file]/+server.ts',
+            '../apps/web/src/routes/blog/content/[file]/+server.ts'
+        ])
+            expect(existsSync(new URL(path, import.meta.url))).toBe(false);
     });
 });
 
-describe('Unversioned blog banner URLs', () => {
-    test('URLs carry no version', () => {
-        expect(bannerUrl({ id: postId, banner_version: version })).toBe(
-            `/blog/banners/${postId}.webp`
+describe('Reserved post slugs', () => {
+    test('banners and content never become a post folder', async () => {
+        const { isValidPostSlug, slugifyTitle } = await import('../packages/lib/src/slug.ts');
+        expect(isValidPostSlug('banners')).toBe(false);
+        expect(isValidPostSlug('content')).toBe(false);
+        expect(slugifyTitle('Banners')).toBe('banners-post');
+        expect(slugifyTitle('Content')).toBe('content-post');
+        expect(postAssetHome({ id: postId, slug: 'banners', published: true })).toBe(
+            `staging/blog/${postId}`
         );
-        expect(publicBannerUrl({ public_id: publicId, banner_version: version })).toBe(
-            `/blog/banners/${publicId}.webp`
-        );
-        expect(bannerSources({ public_id: publicId, banner_version: version })).toEqual([
-            { srcset: `/blog/banners/${publicId}.avif`, type: 'image/avif' },
-            { srcset: `/blog/banners/${publicId}.webp`, type: 'image/webp' }
-        ]);
-        expect(bannerUrl({ id: postId, banner_version: null })).toBeNull();
-    });
-
-    test('canonical keys hold one banner per post', () => {
-        expect(canonicalBannerKey(postId, 'avif')).toBe(`blog/banners/${postId}.avif`);
-        expect(() => canonicalBannerKey('../x', 'webp')).toThrow('Invalid banner identity.');
-    });
-
-    test('old versioned routes are gone', () => {
-        for (const app of ['web', 'admin'])
-            expect(
-                existsSync(
-                    new URL(
-                        `../apps/${app}/src/routes/blog/banners/[postId]/[file]/+server.ts`,
-                        import.meta.url
-                    )
-                )
-            ).toBe(false);
     });
 });

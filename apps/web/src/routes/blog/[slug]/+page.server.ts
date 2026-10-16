@@ -1,4 +1,5 @@
 import { publicBannerUrl } from '#lib/blogBanner.ts';
+import { cdnBaseUrl } from '#lib/cdn.ts';
 import { supabase } from '#lib/supabase.ts';
 import { error } from '@sveltejs/kit';
 import { renderMarkdown, injectHeadingIds, extractHeadings } from '#lib/markdown.ts';
@@ -113,7 +114,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
         console.error('Error counting post views:', err);
     }
 
-    const bannerPublicUrl = publicBannerUrl(post);
+    const bannerPublicUrl = publicBannerUrl(post, cdnBaseUrl());
 
     let relatedPosts: RelatedPost[] = [];
     try {
@@ -130,7 +131,10 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
         } else if (data) {
             relatedPosts = await Promise.all(
                 getRelatedWindow(data, post.id).map(async (p: any) => {
-                    const relatedBannerUrl = publicBannerUrl(p);
+                    const relatedBannerUrl = publicBannerUrl(
+                        { ...p, published: true },
+                        cdnBaseUrl()
+                    );
 
                     let readTime = '1 min read';
                     try {

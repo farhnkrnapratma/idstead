@@ -12,7 +12,9 @@ import {
 import { DEFAULT_ADMIN_DISPLAY } from '#lib/adminDateFormat.ts';
 import { DEFAULT_CHART_RANGE, parseAdminSettings } from '#lib/adminSettings.ts';
 import { assetStorage } from './profileAssets';
-import { canonicalBannerKey } from '#lib/blogBanner.ts';
+import { postAssetHome } from '#lib/blogBanner.ts';
+import { cdnBaseUrl } from '#lib/cdn.ts';
+import { listKeys } from './blogPostAssets';
 import { identityAssetNames } from '#lib/siteIdentity.ts';
 import {
     compact,
@@ -118,77 +120,62 @@ export async function buildDataExport(
         for (const [key, relative] of collector.files) await fetchBinary(`${dir}/${relative}`, key);
     }
 
-    const [
-        posts,
-        comments,
-        reports,
-        feedback,
-        legals,
-        rules,
-        banners,
-        documents,
-        settingsRows,
-        profileRow
-    ] = await Promise.all([
-        rows<any>(
-            'posts',
-            db
-                .from('db_posts')
-                .select(
-                    'id, slug, title, excerpt, published, pinned, storage_path, read_time, tags, collaborators, summary, tldr, helpful_yes, helpful_no, created_at, updated_at'
-                )
-                .order('created_at', { ascending: true })
-        ),
-        rows<CommentRow & { post_id: string }>(
-            'comments',
-            db
-                .from('db_comments')
-                .select(
-                    'id, post_id, parent_id, author_name, content, is_anonymous, is_admin, is_approved, created_at'
-                )
-        ),
-        rows<any>(
-            'reports',
-            db
-                .from('db_comment_reports')
-                .select('comment_id, reason, details, created_at')
-                .order('created_at', { ascending: true })
-        ),
-        rows<any>(
-            'feedback',
-            db
-                .from('db_feedback_events')
-                .select('target_type, target_id, post_id, vote, created_at')
-                .order('created_at', { ascending: true })
-        ),
-        rows<any>(
-            'legal pages',
-            db.from('db_legals').select('slug, title, content, created_at, updated_at')
-        ),
-        rows<any>(
-            'project rules',
-            db
-                .from('db_project_repo_rules')
-                .select('rule_type, repo_name')
-                .order('sort_order', { ascending: true })
-        ),
-        rows<any>(
-            'banners',
-            db
-                .from('db_blog_banner_versions')
-                .select('post_id, object_key, avif_object_key')
-                .eq('state', 'active')
-        ),
-        rows<any>(
-            'cv documents',
-            db.from('db_documents').select('filename, hash').eq('is_active', true)
-        ),
-        rows<any>('settings', db.from('db_admin_settings').select('settings')),
-        db.from('db_profiles').select('avatar_version').limit(1).maybeSingle()
-    ]);
+    const [posts, comments, reports, feedback, legals, rules, documents, settingsRows, profileRow] =
+        await Promise.all([
+            rows<any>(
+                'posts',
+                db
+                    .from('db_posts')
+                    .select(
+                        'id, slug, title, excerpt, published, pinned, storage_path, read_time, tags, collaborators, summary, tldr, helpful_yes, helpful_no, created_at, updated_at'
+                    )
+                    .order('created_at', { ascending: true })
+            ),
+            rows<CommentRow & { post_id: string }>(
+                'comments',
+                db
+                    .from('db_comments')
+                    .select(
+                        'id, post_id, parent_id, author_name, content, is_anonymous, is_admin, is_approved, created_at'
+                    )
+            ),
+            rows<any>(
+                'reports',
+                db
+                    .from('db_comment_reports')
+                    .select('comment_id, reason, details, created_at')
+                    .order('created_at', { ascending: true })
+            ),
+            rows<any>(
+                'feedback',
+                db
+                    .from('db_feedback_events')
+                    .select('target_type, target_id, post_id, vote, created_at')
+                    .order('created_at', { ascending: true })
+            ),
+            rows<any>(
+                'legal pages',
+                db.from('db_legals').select('slug, title, content, created_at, updated_at')
+            ),
+            rows<any>(
+                'project rules',
+                db
+                    .from('db_project_repo_rules')
+                    .select('rule_type, repo_name')
+                    .order('sort_order', { ascending: true })
+            ),
+            rows<any>(
+                'cv documents',
+                db.from('db_documents').select('filename, hash').eq('is_active', true)
+            ),
+            rows<any>('settings', db.from('db_admin_settings').select('settings')),
+            db.from('db_profiles').select('avatar_version').limit(1).maybeSingle()
+        ]);
 
-    const postById = new Map<string, { slug: string }>();
-    for (const post of posts) postById.set(post.id, { slug: safeSegment(post.slug) });
+    const cdnBase = cdnBaseUrl();
+    const postById = new Map<string, { slug: string; dir: string }>();
+    for (const post of posts)
+        postById.set(post.id, { slug: safeSegment(post.slug), dir: postAssetHome(post) });
 
     const commentsByPost = new Map<string, (CommentRow & { post_id: string })[]>();
     for (const comment of comments) {
@@ -199,38 +186,23 @@ export async function buildDataExport(
     const commentById = new Map(comments.map(comment => [comment.id, comment]));
 
     await mapLimit(posts, 4, async post => {
-        const slug = postById.get(post.id)!.slug;
-        const dir = `content/posts/${slug}`;
-        const collector = createMediaCollector();
+        const { slug, dir } = postById.get(post.id)!;
         await guard(
             `${dir}/${slug}.md`,
             async () => {
                 const markdown = await readMarkdown(post.storage_path);
-                if (markdown !== null) putText(`${dir}/${slug}.md`, collector.rewrite(markdown));
+                if (markdown !== null)
+                    putText(`${dir}/${slug}.md`, markdown.split(`${cdnBase}/${dir}/`).join(''));
             },
             undefined
         );
-        const banner = banners.find(item => item.post_id === post.id);
-        if (banner) {
-            if (
-                !(await fetchBinary(
-                    `${dir}/assets/banner/${slug}.webp`,
-                    canonicalBannerKey(post.id, 'webp'),
-                    true
-                ))
-            )
-                await fetchBinary(`${dir}/assets/banner/${slug}.webp`, banner.object_key);
-            if (
-                !(await fetchBinary(
-                    `${dir}/assets/banner/${slug}.avif`,
-                    canonicalBannerKey(post.id, 'avif'),
-                    true
-                ))
-                && banner.avif_object_key
-            )
-                await fetchBinary(`${dir}/assets/banner/${slug}.avif`, banner.avif_object_key);
-        }
-        await writeMedia(dir, collector);
+        if (storage)
+            for (const { key } of await guard(
+                `${dir} assets`,
+                () => listKeys(platform, `${dir}/`),
+                []
+            ))
+                await fetchBinary(key, key);
 
         const { count, error: viewsError } = await db
             .from('db_views')
@@ -261,8 +233,7 @@ export async function buildDataExport(
     counts.posts = posts.length;
 
     for (const post of posts) {
-        const slug = postById.get(post.id)!.slug;
-        const dir = `content/posts/${slug}`;
+        const { dir } = postById.get(post.id)!;
         const postComments = commentsByPost.get(post.id) ?? [];
         if (postComments.length) putJson(`${dir}/comments.json`, nestComments(postComments));
         const postReports = reports.flatMap(report => {
@@ -371,19 +342,15 @@ export async function buildDataExport(
     const avatarVersion = profileRow.data?.avatar_version as string | null;
     if (avatarVersion)
         for (const name of identityAssetNames)
-            if (!(await fetchBinary(`files/identity/${name}`, `identity/${name}`, true)))
+            if (!(await fetchBinary(`identity/${name}`, `identity/${name}`, true)))
                 await fetchBinary(
-                    `files/identity/${name}`,
+                    `identity/${name}`,
                     `identity/${safeSegment(avatarVersion)}/${name}`
                 );
 
-    for (const doc of documents) {
-        const name = safeSegment(doc.filename);
-        await fetchBinary(`files/cv/${name}`, doc.filename);
-        const sidecar = `files/cv/${name}.sha256`;
-        const fetched = await fetchBinary(sidecar, `${doc.filename}.sha256`, true);
-        if (!fetched && doc.hash) putText(sidecar, `${doc.hash}  ${doc.filename}\n`);
-    }
+    if (storage && documents.length)
+        for (const { key } of await guard('cv files', () => listKeys(platform, 'cv/'), []))
+            await fetchBinary(key, key);
 
     const logs: Record<string, unknown>[] = [];
     await guard(

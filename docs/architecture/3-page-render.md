@@ -53,7 +53,7 @@ sequenceDiagram
 
 - **Post data:**
     - Posts expose `public_id` as `id`. The UUID never leaves the server.
-    - The banner URL is built by `publicBannerUrl()` (`packages/lib/src/blogBanner.ts`) as `/blog/banners/{public_id}.webp` (no version; one banner per post).
+    - The banner URL is built by `publicBannerUrl()` (`packages/lib/src/blogBanner.ts`) as `{PUBLIC_CDN_BASE_URL}/blog/{slug}/banner.webp`, with `banner.avif` as the preferred source (see [8-asset-pipeline.md](8-asset-pipeline.md#blog-post-assets)).
 - **Markdown** lives in Supabase Storage (`blog-posts`). Images and banners live in R2 (see [8-asset-pipeline.md](8-asset-pipeline.md)).
 - **Supabase admin client:** `/subscribe/confirm` and `/unsubscribe` use it against `db_subscribers`.
 

@@ -21,6 +21,7 @@
     import { Mail } from '@lucide/svelte';
     import BannerImageUpload from '#lib/components/BannerImageUpload.svelte';
     import { bannerUrl, type BannerChange } from '#lib/blogBanner.ts';
+    import { cdnBaseUrl } from '#lib/cdn.ts';
     import {
         submitPost,
         rememberPostSave,
@@ -49,6 +50,8 @@
 
     let isEditMode = $state(false);
     let editId = $state<string | null>(null);
+    let draftPostId = $state(crypto.randomUUID());
+    const assetPostId = $derived(editId ?? draftPostId);
     let postRevision = $state<number | null>(null);
     let savedBannerUrl = $state<string | null>(null);
     let bannerChange = $state.raw<BannerChange>({ operation: 'keep' });
@@ -116,6 +119,11 @@
                         const parsed = JSON.parse(savedDraft);
                         const defaultTemplate = '# New Post\n\nWrite your markdown content here...';
                         if (!id) {
+                            if (
+                                typeof parsed.postId === 'string'
+                                && /^[0-9a-f-]{36}$/i.test(parsed.postId)
+                            )
+                                draftPostId = parsed.postId;
                             title = parsed.title || title;
                             excerpt = parsed.excerpt || excerpt;
                             tags =
@@ -182,7 +190,7 @@
 
             title = post.title;
             postRevision = post.post_revision;
-            savedBannerUrl = bannerUrl(post);
+            savedBannerUrl = bannerUrl(post, cdnBaseUrl());
             excerpt = post.excerpt || '';
             tags =
                 Array.isArray(post.tags) ? post.tags.map((t: string) => decodeHtmlEntities(t)) : [];
@@ -241,6 +249,8 @@
             const form = new FormData();
             form.append('file', webp, 'image.webp');
             form.append('fileAvif', avif, 'image.avif');
+            form.append('postId', assetPostId);
+            form.append('name', file.name);
             const response = await fetch('/api/internal/admin/blog/content-image', {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${accessToken}` },
@@ -258,9 +268,8 @@
     }
 
     async function handleVideoUploadFile(file: File): Promise<string | null> {
-        const allowedTypes = ['video/mp4', 'video/webm'];
-        if (!allowedTypes.includes(file.type)) {
-            errorMessage = 'Supported video formats are MP4 and WebM.';
+        if (file.type !== 'video/webm' && !/\.webm$/i.test(file.name)) {
+            errorMessage = 'Videos must be WebM files.';
             return null;
         }
         if (file.size > 50 * 1024 * 1024) {
@@ -275,6 +284,8 @@
             if (!accessToken) throw new Error('Your session has expired. Please log in again.');
             const form = new FormData();
             form.append('file', file, file.name);
+            form.append('postId', assetPostId);
+            form.append('name', file.name);
             const response = await fetch('/api/internal/admin/blog/content-video', {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${accessToken}` },
@@ -296,6 +307,7 @@
             const timer = setTimeout(() => {
                 const key = editId ? `autosave_edit_${editId}` : 'autosave_new';
                 const data = {
+                    postId: draftPostId,
                     title,
                     excerpt,
                     tags,
@@ -465,7 +477,7 @@
                 }
                 const metadata = {
                     operationId: crypto.randomUUID(),
-                    id: editId || crypto.randomUUID(),
+                    id: assetPostId,
                     revision: postRevision,
                     kind: 'save',
                     title: title.trim(),
@@ -500,13 +512,13 @@
             savedBannerUrl =
                 bannerChange.operation === 'replace' && result.post.banner_version ?
                     URL.createObjectURL(bannerChange.webp)
-                :   bannerUrl(result.post);
+                :   bannerUrl(result.post, cdnBaseUrl());
             bannerChange = { operation: 'keep' };
             title = submitted.title;
             excerpt = submitted.excerpt || '';
             tags = submitted.tags;
             collaborators = submitted.collaborators;
-            markdownContent = String(form.get('markdown'));
+            markdownContent = result.markdown ?? String(form.get('markdown'));
             await rememberPostSave(operationKey, null);
             pendingSave = null;
             localStorage.removeItem(isEditMode ? `autosave_edit_${editId}` : 'autosave_new');
