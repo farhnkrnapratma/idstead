@@ -5,7 +5,7 @@ import { apiError } from '#lib/server/apiError.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { requireAdminAuth, deleteCvFile } from '#lib/server/adminCv.ts';
 import { removeAssets, removeCanonicalIdentity } from '#lib/server/profileAssets.ts';
-import { removeCanonicalBanner } from '#lib/server/blogBannerStorage.ts';
+import { syncPostAssets } from '#lib/server/blogPostAssets.ts';
 import { cleanupBlogAssets } from '#lib/server/blogBannerStorage.ts';
 import { bearerToken } from '#lib/server/adminAuth.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
@@ -85,17 +85,11 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         identityVersions = versionsData ?? [];
     }
 
-    const { data: bannerRows, error: bannerError } = await db
+    const { data: postRows, error: postError } = await db
         .from('db_posts')
-        .select('id')
-        .not('banner_version', 'is', null);
-    if (bannerError)
-        return apiError(
-            503,
-            'DATA_DELETE_FAILED',
-            'Could not load post banners. No data was deleted.'
-        );
-    const bannerPosts = (bannerRows ?? []).map(row => row.id as string);
+        .select('id, slug, published');
+    if (postError)
+        return apiError(503, 'DATA_DELETE_FAILED', 'Could not load posts. No data was deleted.');
 
     const { error } = await db.rpc('db_clear_all_data');
     if (error) return apiError(503, 'DATA_DELETE_FAILED', 'Could not clear site data.');
@@ -111,12 +105,19 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         cleanupFailed = true;
         console.error('Identity asset cleanup failed:', error);
     }
-    for (const postId of bannerPosts) {
+    for (const post of postRows ?? []) {
         try {
-            await removeCanonicalBanner(platform, postId);
+            await syncPostAssets({
+                platform,
+                cdnBase: '',
+                markdown: null,
+                post,
+                previous: post,
+                deleted: true
+            });
         } catch (error) {
             cleanupFailed = true;
-            console.error('Blog banner cleanup failed:', error);
+            console.error('Blog asset cleanup failed:', error);
         }
     }
     for (const version of identityVersions) {

@@ -49,6 +49,7 @@
         MATH_INLINE_RE
     } from '#lib/markdown.ts';
     import { supabase } from '#lib/supabase.ts';
+    import { assetAltText } from '#lib/assetNaming.ts';
     import { splitHighlightedHtmlLines } from '#lib/utils/codeBlocks.ts';
     import { enhanceMarkdownContent } from '#lib/utils/markdownEnhancer.ts';
     import { enhanceHeadingAnchors } from '#lib/utils/headingAnchors.ts';
@@ -450,6 +451,11 @@
         });
     }
 
+    function assetMarkdown(url: string, alt: string) {
+        const text = alt.replace(/[[\]"]/g, '');
+        return `![${text}](${url} "${text}")`;
+    }
+
     function handleImageClick() {
         if (onImageUpload) {
             imageFileInput?.click();
@@ -464,12 +470,7 @@
         if (!file || !onImageUpload) return;
         try {
             const url = await onImageUpload(file);
-            if (url) {
-                const val = value || '';
-                const existingImages = val.match(/!\[.*?\]\(/g) || [];
-                const nextNum = existingImages.length + 1;
-                insertMarkdown(`![Image ${nextNum}](${url})`);
-            }
+            if (url) insertMarkdown(assetMarkdown(url, assetAltText(file.name, 'Image')));
         } catch {
         } finally {
             input.value = '';
@@ -490,7 +491,7 @@
         if (!file || !onVideoUpload) return;
         try {
             const url = await onVideoUpload(file);
-            if (url) insertMarkdown(`![Video](${url})\n`);
+            if (url) insertMarkdown(`${assetMarkdown(url, assetAltText(file.name, 'Video'))}\n`);
         } catch {
         } finally {
             input.value = '';
@@ -840,7 +841,7 @@
                     <input
                         type="file"
                         bind:this={imageFileInput}
-                        accept="image/png, image/webp, image/jpeg, image/jpg"
+                        accept="image/png, image/webp, image/avif, image/jpeg, image/jpg"
                         onchange={handleFileSelected}
                         class="hidden"
                         aria-label="Upload image file" />
@@ -854,7 +855,7 @@
                     <input
                         type="file"
                         bind:this={videoFileInput}
-                        accept="video/mp4, video/webm"
+                        accept="video/webm,.webm"
                         onchange={handleVideoFileSelected}
                         class="hidden"
                         aria-label="Upload video file" />

@@ -37,22 +37,30 @@ sequenceDiagram
 | Asset | Encoder (packages/lib/src) | Server check | R2 key | Served at |
 | --- | --- | --- | --- | --- |
 | Avatar + icons | `processAvatar.ts` → `workers/avatar.worker.ts`: PNG icon set, `favicon.ico`, SVG, `avatar.webp`, `avatar.avif` (both required) | `validateAvatar.ts`: PNG structure/CRC, ICO directory, WebP/AVIF magic bytes (AVIF checks `ftyp` brand), SVG rebuilt | `identity/{name}`, next to the website banner | `/{name}` and `/hero.png`, handled in the web and admin hooks by `serveIdentityAsset()` |
-| Blog banner | `processBanner.ts` → `workers/banner.worker.ts`: WebP + AVIF 1280×640, ≤ 500 KiB | `validateBanner.ts` (WebP WASM decode) | `blog/banners/{postUuid}.{webp,avif}` | `/blog/banners/{public_id}.{webp,avif}` (admin: `{postUuid}`) → `serveBlogBanner()` |
-| Markdown image | `processContentImage.ts` → `workers/contentImage.worker.ts`: WebP + optional AVIF, max edge 2400, ≤ 500 KiB | `validateContentImage.ts`: `inspectWebp` + WebP decode; the AVIF file goes through `validateContentImageAvif` (`inspectAvif` box parse, ≤ 500 KiB, same dimensions as the WebP) | `blog/content/{sha256}.{ext}` | `/blog/content/{sha256}.{ext}` → `getContentAsset()` |
-| Markdown video | uploaded as-is, content type sniffed | `admin/blog/content-video` route | `blog/content/{sha256}.{mp4,webm}` | `/blog/content/{file}` |
+| Blog banner | `processBanner.ts` → `workers/banner.worker.ts`: WebP + AVIF 1280×640, ≤ 500 KiB | WebP: `validateBanner.ts` (WASM decode); AVIF: `inspectAvif` | `{home}/banner.{avif,webp}` | CDN URL, AVIF first with WebP fallback (`bannerSources()`) |
+| Markdown image | `processContentImage.ts` → `workers/contentImage.worker.ts`: WebP + AVIF, max edge 2400, ≤ 500 KiB | `validateContentImage.ts` (`inspectWebp` + WebP decode) and `validateContentImageAvif` | `{home}/images/{name}.{avif,webp}` | CDN URL; markdown links the `.avif`, rendered as `<picture>` with the `.webp` fallback |
+| Markdown video | uploaded as-is, **WebM only** (EBML header with DocType `webm`, `isWebm()`) | `admin/blog/content-video` route | `{home}/videos/{name}.webm` | CDN URL, rendered as `<video>` |
 | Website banner | `processSiteBanner.ts` → `workers/siteBanner.worker.ts`: `banner.avif`, `banner.webp` (1280×640), `banner-og.webp` (1200×630) | `validateSiteBanner.ts`: `inspectAvif` / `inspectWebp` with exact dimensions | `identity/{name}`, next to the avatar | `/banner.{avif,webp}`, `/banner-og.webp` → `serveIdentityAsset()` |
-| CV PDF | generated server-side (`pdfGenerator.ts`) | – | `{filename}` at the bucket root (for example `…-v1.2.3.pdf`), plus a `{filename}.sha256` sidecar | `db_documents.file_url` (CDN URL), streamed by `/v1/cv?output=pdf` |
+| CV PDF | generated server-side (`pdfGenerator.ts`) | – | `cv/{filename}` plus `.sha256`, `.sha512`, `.md5`, `.b2` and an optional `.asc` (see [11-cv-documents.md](11-cv-documents.md)) | `db_documents.file_url` (CDN URL), streamed by `/v1/cv?output=pdf` |
 | Post Markdown | – | – | Supabase Storage `blog-posts`, `posts/{postUuid}/{operationId}.md` | read by page loads and the API |
+
+## Blog post assets
+
+- **Home folder.** A published post keeps its files in `blog/{slug}/` and a draft in `staging/blog/{postUuid}/`, with the same layout: `banner.{avif,webp}`, `images/{name}.{avif,webp}`, `videos/{name}.webm` (`postAssetHome()` in `blogBanner.ts`). Blog assets are served straight from the public CDN (`PUBLIC_CDN_BASE_URL`); there is no Worker route for them.
+- **Reserved slugs.** `banners` and `content` are not valid post slugs (`slugifyTitle()` turns them into `banners-post` / `content-post`), so a post folder never collides with the shared `blog/banners/` staging keys. Publishing with a slug another post already owns is rejected before any file is copied.
+- **Uploads** from the editor always land in `staging/blog/{postUuid}/`. The file name is `assetFileName()` of the original name, with `-2`, `-3`… when the staging or published folder already has that name. The editor creates the post ID before the first save and keeps it in the autosave.
+- **On save** (`relocateMarkdownAssets()`, before the markdown is stored): every CDN URL in the markdown that points to this post's staging folder or its previous home is copied to the post's new home and rewritten, so the stored markdown always has final URLs. The response returns the rewritten markdown to the editor.
+- **After the commit** (`syncPostAssets()`): the new banner moves from its version staging key to `{home}/banner.*` (or the old home's banner moves when the slug or the published state changed), files in the home that the markdown no longer uses are deleted, the old home is deleted, and for a published post the whole staging folder is deleted. Deleting a post deletes its home and staging.
+- **Orphaned staging** (uploads for posts that were never saved) is deleted by the jobs cron after 7 days without changes (`cleanupOrphanedStaging()`).
+- **Export** (`dataExport.ts`) writes every post under the same path as on the CDN, with relative links in its markdown.
 
 ## Serving rules
 
-- **One image per owner, no versions in URLs.** The site keeps one profile image, one website banner and one banner per post, each in several formats. Public URLs never carry a version, and any identity request with `?v` returns 404. Old `/blog/banners/{id}/{version}.{ext}` paths return 404.
-- **Staging and promotion.** Saves still upload to a staging key per version (`identity/{version}/{name}`, `blog/banners/{postUuid}/{operationId}.{ext}`) so a failed or conflicting save never touches the live image. After the DB commit the admin route copies the staged files to the canonical key (`promoteIdentity()`, `promoteBanner()`) and deletes the staging copies. A partial identity save first copies the unchanged group from the canonical keys into the new staging folder (`copyAssets()`).
-- **Fallback.** If promotion failed, serving falls back to the staging key of the current version (`readIdentityObject()`, `getBannerObject()`), which is only deleted after a successful copy.
+- **One image per owner, no versions in URLs.** The site keeps one profile image, one website banner and one banner per post, each in several formats. Public URLs never carry a version, and any identity request with `?v` returns 404.
+- **Staging and promotion.** Saves still upload to a staging key per version (`identity/{version}/{name}`, `blog/banners/{postUuid}/{operationId}.{ext}`) so a failed or conflicting save never touches the live image. After the DB commit the admin route copies the staged files to the canonical key (`promoteIdentity()`, `syncPostAssets()`) and deletes the staging copies. A partial identity save first copies the unchanged group from the canonical keys into the new staging folder (`copyAssets()`).
+- **Fallback.** If promotion failed, serving falls back to the staging key of the current version (`readIdentityObject()`), which is only deleted after a successful copy.
 - **Identity assets** (`serveIdentityAsset`, `packages/lib/src/server/profileAssets.ts`): 13 files (`identityAssetNames` in `siteIdentity.ts`). `db_profiles.avatar_version` and `banner_version` only say that an image exists. When no version exists yet: fallback to `PUBLIC_CDN_BASE_URL/{name}`.
-- **Blog banners** (`serveBlogBanner`, service-role): served when `db_posts.banner_version` is set. Errors are `no-store`.
 - **Cache:** images are `public, max-age=300` (`IMAGE_CACHE_CONTROL`) with the R2 ETag, so a change shows within about 5 minutes and revalidations return 304. The admin editors show the locally prepared image right after a save.
-- **Content assets** are content-addressed (SHA-256), so they are always `immutable`.
 
 ## Cleanup
 
@@ -65,7 +73,7 @@ sequenceDiagram
 ## Source
 
 - `packages/lib/src/process*.ts`, `packages/lib/src/workers/*.worker.ts`
-- `packages/lib/src/server/validate*.ts`, `profileAssets.ts`, `blogBannerStorage.ts`, `blogBannerResponse.ts`, `blogContentStorage.ts`
+- `packages/lib/src/server/validate*.ts`, `profileAssets.ts`, `blogBannerStorage.ts`, `blogContentStorage.ts`
 - `packages/lib/src/blogBanner.ts`, `blogContentImage.ts`, `siteIdentity.ts`
-- `apps/web/src/routes/blog/banners/[file]/+server.ts`, `blog/content/[file]/+server.ts`
+- `packages/lib/src/server/blogPostAssets.ts`, `packages/lib/src/assetNaming.ts`, `packages/lib/src/cdn.ts`
 - `apps/admin/src/routes/api/internal/admin/{profile,blog/content-image,blog/content-video}/+server.ts`

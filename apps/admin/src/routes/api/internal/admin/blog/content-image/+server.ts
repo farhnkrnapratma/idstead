@@ -4,8 +4,11 @@ import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { blogAdmin } from '#lib/server/blogPostAuth.ts';
 import { boundedBody } from '#lib/server/blogPostInput.ts';
-import { sha256 } from '#lib/blogBanner.ts';
-import { CONTENT_IMAGE_LIMIT, contentImageKey } from '#lib/blogContentImage.ts';
+import { UUID_PATTERN, stagingAssetHome } from '#lib/blogBanner.ts';
+import { CONTENT_IMAGE_LIMIT } from '#lib/blogContentImage.ts';
+import { assetFileName } from '#lib/assetNaming.ts';
+import { cdnBaseUrl } from '#lib/cdn.ts';
+import { uniqueAssetName } from '#lib/server/blogPostAssets.ts';
 import {
     validateContentImage,
     validateContentImageAvif
@@ -24,20 +27,30 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
     if (auth.status) return apiError(auth.status, 'BLOG_CONTENT_IMAGE_AUTH_REQUIRED', auth.message);
 
     let bytes: Uint8Array<ArrayBuffer>;
-    let avifBytes: Uint8Array<ArrayBuffer> | null = null;
+    let avifBytes: Uint8Array<ArrayBuffer>;
+    let postId: string;
+    let base: string;
     try {
         const form = await (await boundedBody(request, CONTENT_IMAGE_LIMIT * 2 + 8192)).formData();
         const file = form.get('file');
         const avifFile = form.get('fileAvif');
+        const postValue = form.get('postId');
+        const nameValue = form.get('name');
+        if (typeof postValue !== 'string' || !UUID_PATTERN.test(postValue))
+            throw new Error('A valid post ID is required.');
+        if (typeof nameValue !== 'string' || nameValue.length > 255)
+            throw new Error('A file name is required.');
         if (!(file instanceof Blob) || !file.size) throw new Error('An image file is required.');
         if (file.size > CONTENT_IMAGE_LIMIT)
             throw new Error('Image must be no larger than 500 KiB after compression.');
-        if (avifFile && avifFile instanceof Blob) {
-            if (avifFile.size > CONTENT_IMAGE_LIMIT)
-                throw new Error('AVIF image must be no larger than 500 KiB.');
-            avifBytes = new Uint8Array(await avifFile.arrayBuffer());
-        }
+        if (!(avifFile instanceof Blob) || !avifFile.size)
+            throw new Error('An AVIF image is required.');
+        if (avifFile.size > CONTENT_IMAGE_LIMIT)
+            throw new Error('AVIF image must be no larger than 500 KiB.');
+        postId = postValue.toLowerCase();
+        base = assetFileName(nameValue, 'image');
         bytes = new Uint8Array(await file.arrayBuffer());
+        avifBytes = new Uint8Array(await avifFile.arrayBuffer());
     } catch (error) {
         return apiError(
             400,
@@ -50,7 +63,7 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
     try {
         const { default: contentWasm } = await import('virtual:banner-webp-wasm');
         metadata = await validateContentImage(bytes, contentWasm());
-        if (avifBytes) validateContentImageAvif(avifBytes, metadata);
+        validateContentImageAvif(avifBytes, metadata);
     } catch (error) {
         return apiError(
             400,
@@ -59,14 +72,24 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
         );
     }
 
-    const hash = await sha256(bytes);
-    const key = contentImageKey(hash);
+    const home = stagingAssetHome(postId);
+    let name: string;
     try {
-        await putContentAsset(platform, key, bytes, 'image/webp');
-        if (avifBytes) {
-            const avifKey = key.replace('.webp', '.avif');
-            await putContentAsset(platform, avifKey, avifBytes, 'image/avif');
-        }
+        const { data: post, error: postError } = await db
+            .from('db_posts')
+            .select('slug, published')
+            .eq('id', postId)
+            .maybeSingle();
+        if (postError) throw postError;
+        name = await uniqueAssetName({
+            platform,
+            post: { id: postId, slug: post?.slug, published: post?.published },
+            kind: 'images',
+            base,
+            ext: 'avif'
+        });
+        await putContentAsset(platform, `${home}/images/${name}.webp`, bytes, 'image/webp');
+        await putContentAsset(platform, `${home}/images/${name}.avif`, avifBytes, 'image/avif');
     } catch {
         return apiError(
             502,
@@ -76,7 +99,12 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
     }
 
     return json(
-        { url: `/${key}`, width: metadata.width, height: metadata.height, bytes: metadata.bytes },
+        {
+            url: `${cdnBaseUrl()}/${home}/images/${name}.avif`,
+            width: metadata.width,
+            height: metadata.height,
+            bytes: metadata.bytes
+        },
         { status: 201 }
     );
 };

@@ -17,6 +17,8 @@ export { sanitizeUrl };
 const ATTR_RE = /([a-zA-Z][\w-]*)="((?:[^"\\]|\\.)*)"/g;
 const FENCE_MARK_RE = /(?:^|\s)mark=([\d.,]+)/;
 const VIDEO_EXT_RE = /^[^?#]*\.(?:mp4|webm)(?:[?#].*)?$/i;
+const POST_IMAGE_RE =
+    /^https:\/\/[^/?#]+\/(?:blog\/[a-z0-9-]+|staging\/blog\/[0-9a-f-]{36})\/images\/[a-z0-9-]+\.avif$/;
 
 export function parseAttrs(source: string): Record<string, string> {
     const attrs: Record<string, string> = Object.create(null);
@@ -221,10 +223,9 @@ markdownParser.use({
                 const label = alt ? ` aria-label="${alt}"` : '';
                 return `<video controls preload="metadata" playsinline src="${src}"${title}${label}></video>`;
             }
-            // Use <picture> with AVIF+WebP for content images
-            if (/^\/blog\/content\/[a-f0-9]+\.webp$/.test(src)) {
-                const avifSrc = src.replace('.webp', '.avif');
-                return `<picture><source srcset="${avifSrc}" type="image/avif"><source srcset="${src}" type="image/webp"><img src="${src}" alt="${alt}"${title} loading="lazy" decoding="async"></picture>`;
+            if (POST_IMAGE_RE.test(href)) {
+                const webp = escapeUrl(href.replace(/\.avif$/, '.webp'));
+                return `<picture><source srcset="${src}" type="image/avif"><img src="${webp}" alt="${alt}"${title} loading="lazy" decoding="async"></picture>`;
             }
             return `<img src="${src}" alt="${alt}"${title} loading="lazy" decoding="async">`;
         }

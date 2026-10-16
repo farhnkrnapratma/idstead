@@ -38,8 +38,6 @@ All routes are `GET`/`HEAD` (`OPTIONS` returns 204), rate-limited to 60 requests
 | --- | --- |
 | `/blog/[slug].md`, `/blog/[slug].txt` | raw post (`textformat` matcher) |
 | `/[legal].md`, `/[legal].txt` | legal pages (`legal` matcher) |
-| `/blog/banners/[file]` | `serveBlogBanner` (R2) |
-| `/blog/content/[file]` | `getContentAsset` (R2, content-addressed) |
 | `/{icon}.png`, `/favicon.ico`, `/favicon.svg`, `/avatar.{webp,avif}`, `/hero.png` | identity assets, served from the hook |
 | `/static/*`, `/fonts/*`, `/logo/*` | proxied to `PUBLIC_CDN_BASE_URL` from the hook |
 | `/atom.xml`, `/sitemap.xml`, `/robots.txt`, `/site.webmanifest`, `/llms.txt` | metadata |
@@ -74,7 +72,7 @@ Details: [4-public-write-endpoints.md](4-public-write-endpoints.md).
 
 ## fkp-admin: `admin.fkp.my.id`
 
-Pages: `/` (dashboard), `/new`, `/login`. All of them pass the hook's session + MFA guard, except `/login`. Other routes: `/robots.txt` (disallow all), `/blog/banners/[file]`, and the identity assets.
+Pages: `/` (dashboard), `/new`, `/login`. All of them pass the hook's session + MFA guard, except `/login`. Other routes: `/robots.txt` (disallow all) and the identity assets. Blog banners, images and videos are served from the CDN.
 
 API routes authenticate themselves:
 
@@ -92,7 +90,7 @@ API routes authenticate themselves:
 | `/api/internal/admin/posts/notify` | POST | `blogAdmin` |
 | `/api/internal/admin/posts/cleanup` | POST | `blogAdmin` |
 | `/api/internal/admin/blog/content-image` | POST | `blogAdmin` |
-| `/api/internal/admin/blog/content-video` | POST | `blogAdmin` |
+| `/api/internal/admin/blog/content-video` | POST | `blogAdmin` (WebM only) |
 | `/api/internal/admin/activity-log` | GET | `blogAdmin` |
 | `/api/internal/admin/activity-log/export` | GET | `blogAdmin` |
 | `/api/internal/admin/activity` | GET | `blogAdmin`, called inside `adminActivity()` |
@@ -106,6 +104,7 @@ API routes authenticate themselves:
 | `/api/internal/admin/cv/generate` | POST | same-origin + `requireAdminAuth`, called inside `processCvGenerate()` |
 | `/api/internal/admin/cv/upload` | POST | same as `cv/generate` (it delegates to `processCvGenerate`) |
 | `/api/internal/admin/cv/delete` | POST | same-origin + `requireAdminAuth`, called inside `processCvDelete()` |
+| `/api/internal/admin/cv/signature` | POST, DELETE | same-origin + `requireAdminAuth`, called inside `processCvSignature()` |
 | `/api/internal/admin/skills` | POST | same-origin + `requireAdminAuth` |
 | `/api/internal/admin/links` | POST | same-origin + `requireAdminAuth` |
 | `/api/internal/admin/comments/reply` | POST | same-origin + `requireAdminAuth` |

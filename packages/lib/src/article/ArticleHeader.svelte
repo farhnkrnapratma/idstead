@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { Snippet } from 'svelte';
     import { Pilcrow } from '@lucide/svelte';
-    import { blogBannerAlt } from '../blogBanner';
+    import { avifSources, blogBannerAlt } from '../blogBanner';
     import ImageWithSkeleton from '../components/ImageWithSkeleton.svelte';
     import { activateHeadingAnchor } from '../utils/headingAnchors';
     import { cn } from '../utils/cn';
@@ -45,6 +45,7 @@
 <header class={cn('article-header border-b border-b-border-subtle pb-4', className)}>
     {#if banner}<ImageWithSkeleton
             src={banner}
+            sources={avifSources(banner)}
             alt={bannerAlt ?? blogBannerAlt(title, excerpt)}
             loading="eager"
             aspectRatio="aspect-2/1"

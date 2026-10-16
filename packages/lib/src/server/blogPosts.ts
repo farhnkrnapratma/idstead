@@ -1,5 +1,6 @@
 import { supabase } from '#lib/supabase.ts';
 import { publicBannerUrl } from '#lib/blogBanner.ts';
+import { cdnBaseUrl } from '#lib/cdn.ts';
 import { estimateReadTime } from '#lib/readTime.ts';
 import { decodeHtmlEntities } from '#lib/utils/formatters.ts';
 
@@ -75,7 +76,7 @@ export async function loadPublishedPosts(
                 return {
                     ...publicPost,
                     id: publicId as string,
-                    bannerPublicUrl: publicBannerUrl(post),
+                    bannerPublicUrl: publicBannerUrl(post, cdnBaseUrl()),
                     tags: Array.isArray(post.tags) ? post.tags.map(decodeHtmlEntities) : post.tags,
                     read_time: readTimeValue,
                     comment_count: commentCount,

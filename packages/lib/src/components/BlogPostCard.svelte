@@ -23,7 +23,7 @@
     import ImageWithSkeleton from './ImageWithSkeleton.svelte';
     import Tag from './Tag.svelte';
     import ArticleMeta from '#lib/article/ArticleMeta.svelte';
-    import { blogBannerAlt } from '#lib/blogBanner.ts';
+    import { avifSources, blogBannerAlt } from '#lib/blogBanner.ts';
     import { decodeHtmlEntities, formatReadTime } from '#lib/utils/formatters.ts';
 
     const NEW_POST_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -56,6 +56,7 @@
         {#if post.bannerPublicUrl && !bannerFailed}
             <ImageWithSkeleton
                 src={post.bannerPublicUrl}
+                sources={avifSources(post.bannerPublicUrl)}
                 alt={blogBannerAlt(post.title, post.excerpt)}
                 rounded=""
                 onerror={() => (bannerFailed = true)}

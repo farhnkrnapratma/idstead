@@ -164,11 +164,11 @@ Posts and legal pages share one Markdown engine (`packages/lib/src/markdown.ts`)
 
 ```text
 [Link](https://example.com "Optional title")
-![Alt text](/blog/content/<hash>.webp "Optional title")
-![Clip](/blog/content/<hash>.mp4 "Optional title")
+![Alt text](https://cdn.fkp.my.id/blog/<slug>/images/<name>.avif "Alt text")
+![Clip](https://cdn.fkp.my.id/blog/<slug>/videos/<name>.webm "Clip")
 ```
 
-`.mp4` and `.webm` sources render as `<video>`, every other source as `<img>`.
+`.mp4` and `.webm` sources render as `<video>`, every other source as `<img>`. Post images on the CDN (`…/images/<name>.avif`) render as `<picture>` with the `.webp` sibling as the fallback. Uploads from the editor insert this form automatically: the file name is the slugified original name, and the alt text and title are the same sentence-case text derived from it (acronyms kept). Video uploads must be WebM.
 
 ````text
 ```python filename="main.py" mark=3,5,6..8

@@ -6,7 +6,7 @@ export type SavedPost = {
     published: boolean;
     deleted?: boolean;
 };
-export type SaveResult = { post: SavedPost; cleanupPending?: boolean };
+export type SaveResult = { post: SavedPost; markdown?: string | null; cleanupPending?: boolean };
 
 export class PostSaveError extends Error {
     public definitive: boolean;

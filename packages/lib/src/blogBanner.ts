@@ -30,36 +30,47 @@ export function bannerKey(postId: string, version: string, ext: 'webp' | 'avif' 
     return `blog/banners/${postId}/${version}.${ext}`;
 }
 
-export function canonicalBannerKey(postId: string, ext: 'webp' | 'avif' = 'webp') {
+export interface PostAssetOwner {
+    id: string;
+    slug?: string | null;
+    published?: boolean | null;
+}
+
+const SLUG_PATTERN = /^(?!(?:banners|content)$)[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+export function stagingAssetHome(postId: string) {
     if (!UUID_PATTERN.test(postId)) throw new Error('Invalid banner identity.');
-    return `blog/banners/${postId}.${ext}`;
+    return `staging/blog/${postId}`;
 }
 
-export function bannerUrl(post: { id: string; banner_version?: string | null }) {
-    return post.banner_version ? `/${canonicalBannerKey(post.id)}` : null;
+export function postAssetHome(post: PostAssetOwner) {
+    if (post.published && post.slug && SLUG_PATTERN.test(post.slug)) return `blog/${post.slug}`;
+    return stagingAssetHome(post.id);
 }
 
-function publicBannerPath(post: { public_id: string; banner_version?: string | null }) {
-    if (!post.banner_version) return null;
-    if (!/^[0-9a-f]{64}$/.test(post.public_id)) throw new Error('Invalid banner identity.');
-    return `/blog/banners/${post.public_id}`;
+export function bannerObjectKey(post: PostAssetOwner, ext: 'webp' | 'avif' = 'webp') {
+    return `${postAssetHome(post)}/banner.${ext}`;
 }
 
-export function publicBannerUrl(post: { public_id: string; banner_version?: string | null }) {
-    const path = publicBannerPath(post);
-    return path ? `${path}.webp` : null;
+export function bannerUrl(
+    post: PostAssetOwner & { banner_version?: string | null },
+    cdnBase: string
+) {
+    return post.banner_version ? `${cdnBase}/${bannerObjectKey(post)}` : null;
 }
 
-export function bannerSources(post: {
-    public_id: string;
-    banner_version?: string | null;
-}): ImageSource[] {
-    const path = publicBannerPath(post);
-    if (!path) return [];
-    return [
-        { srcset: `${path}.avif`, type: 'image/avif' },
-        { srcset: `${path}.webp`, type: 'image/webp' }
-    ];
+export const publicBannerUrl = bannerUrl;
+
+export function avifSources(webpUrl?: string | null): ImageSource[] {
+    if (!webpUrl || !/\.webp$/.test(webpUrl)) return [];
+    return [{ srcset: webpUrl.replace(/\.webp$/, '.avif'), type: 'image/avif' }];
+}
+
+export function bannerSources(
+    post: PostAssetOwner & { banner_version?: string | null },
+    cdnBase: string
+): ImageSource[] {
+    return avifSources(bannerUrl(post, cdnBase));
 }
 
 export function bannerCrop(width: number, height: number, allowUpscale = false) {
