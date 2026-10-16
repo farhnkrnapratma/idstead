@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectsCommand } from '@aws-sdk/client-s3';
 import { verifyAdminToken, bearerToken } from './adminAuth';
 import * as privateEnv from '$app/env/private';
 import * as publicEnv from '$app/env/public';
@@ -17,6 +17,23 @@ import { loadCvFonts } from '#lib/server/cvFonts.ts';
 import { readAvatarBytes } from '#lib/server/profileAssets.ts';
 import { fetchProjects, extractGitHubUsername } from '#lib/server/githubProjects.ts';
 import { fetchSocials, fetchProjectRepoRules } from '#lib/author.ts';
+import {
+    cvSnapshot,
+    cvVersionBump,
+    type CvSnapshot,
+    formatCvVersion,
+    nextCvVersion,
+    parseCvVersion
+} from '#lib/cvVersion.ts';
+import {
+    CV_CHECKSUM_EXTENSIONS,
+    CV_SIDECAR_EXTENSIONS,
+    CV_SIGNATURE_LIMIT,
+    cvChecksums,
+    cvKey,
+    isArmoredSignature,
+    normalizeSignature
+} from '#lib/server/cvChecksums.ts';
 
 const CV_PROJECT_LIMIT = 4;
 
@@ -147,30 +164,53 @@ export function formatAuthorSlug(name?: string): string {
     return `CV-${slug}`;
 }
 
-function parseSemver(filename?: string): { major: number; minor: number; patch: number } {
-    if (!filename) return { major: 1, minor: 0, patch: 0 };
-    const match = filename.match(/-v(\d+)\.(\d+)\.(\d+)\.pdf$/i);
-    if (match) {
-        return {
-            major: parseInt(match[1], 10),
-            minor: parseInt(match[2], 10),
-            patch: parseInt(match[3], 10)
-        };
-    }
-    return { major: 1, minor: 0, patch: 0 };
+function r2Client(creds: NonNullable<ReturnType<typeof getR2Credentials>>) {
+    return new S3Client({
+        region: 'auto',
+        endpoint: `https://${creds.accountId}.r2.cloudflarestorage.com`,
+        credentials: { accessKeyId: creds.accessKeyId, secretAccessKey: creds.secretAccessKey }
+    });
 }
 
-function bumpSemver(
-    current: { major: number; minor: number; patch: number },
-    bumpType: 'patch' | 'minor' | 'major' = 'patch'
-): string {
-    if (bumpType === 'major') {
-        return `${current.major + 1}.0.0`;
-    } else if (bumpType === 'minor') {
-        return `${current.major}.${current.minor + 1}.0`;
-    } else {
-        return `${current.major}.${current.minor}.${current.patch + 1}`;
+function cvObjectKeys(filename: string) {
+    return [
+        cvKey(filename),
+        ...CV_SIDECAR_EXTENSIONS.map(ext => cvKey(filename, ext)),
+        filename,
+        `${filename}.sha256`
+    ];
+}
+
+async function removeCvObjects(
+    platform: unknown,
+    db: ReturnType<typeof getAdminDb>,
+    filename: string,
+    strict: boolean
+) {
+    const keys = cvObjectKeys(filename);
+    const creds = getR2Credentials(platform);
+    if (strict && !creds) return false;
+    if (creds) {
+        try {
+            await r2Client(creds).send(
+                new DeleteObjectsCommand({
+                    Bucket: creds.bucketName,
+                    Delete: { Objects: keys.map(Key => ({ Key })) }
+                })
+            );
+        } catch (err) {
+            console.error('R2 deletion warning:', err);
+            if (strict) return false;
+        }
     }
+    try {
+        const { error } = await db.storage.from('cv_documents').remove(keys);
+        if (strict && error) return false;
+    } catch (err) {
+        console.error('Supabase storage removal warning:', err);
+        if (strict) return false;
+    }
+    return true;
 }
 
 export async function deleteCvFile(
@@ -179,42 +219,8 @@ export async function deleteCvFile(
     filename: string,
     strict = false
 ): Promise<boolean> {
-    const sha256Filename = `${filename}.sha256`;
-    const r2Creds = getR2Credentials(platform);
-    if (strict && !r2Creds) return false;
-
-    if (r2Creds) {
-        const r2Client = new S3Client({
-            region: 'auto',
-            endpoint: `https://${r2Creds.accountId}.r2.cloudflarestorage.com`,
-            credentials: {
-                accessKeyId: r2Creds.accessKeyId,
-                secretAccessKey: r2Creds.secretAccessKey
-            }
-        });
-        try {
-            await r2Client.send(
-                new DeleteObjectCommand({ Bucket: r2Creds.bucketName, Key: filename })
-            );
-            await r2Client.send(
-                new DeleteObjectCommand({ Bucket: r2Creds.bucketName, Key: sha256Filename })
-            );
-        } catch (err) {
-            console.error('R2 deletion warning:', err);
-            if (strict) return false;
-        }
-    }
-
-    try {
-        const { error } = await db.storage.from('cv_documents').remove([filename, sha256Filename]);
-        if (strict && error) return false;
-    } catch (err) {
-        console.error('Supabase storage removal warning:', err);
-        if (strict) return false;
-    }
-
+    if (!(await removeCvObjects(platform, db, filename, strict))) return false;
     const { error: deleteError } = await db.from('db_documents').delete().eq('filename', filename);
-
     return !deleteError;
 }
 
@@ -229,18 +235,12 @@ export async function processCvGenerate(
 
         const db = getAdminDb(platform);
 
-        let bumpType: 'patch' | 'minor' | 'major' = 'patch';
+        let force = false;
         try {
             const body = await req.json();
-            if (
-                body?.bumpType === 'major'
-                || body?.bumpType === 'minor'
-                || body?.bumpType === 'patch'
-            ) {
-                bumpType = body.bumpType;
-            }
+            force = body?.force === true;
         } catch {
-            bumpType = 'patch';
+            force = false;
         }
 
         const { data: profile } = await db.from('db_profiles').select('*').limit(1).maybeSingle();
@@ -331,105 +331,104 @@ export async function processCvGenerate(
             skills: skillCategories
         };
 
-        const r2Creds = getR2Credentials(platform);
-        const pdfBytes = await generateCvPdfBuffer(cvData, loadCvFonts());
-
-        const digestBuffer = await crypto.subtle.digest('SHA-256', pdfBytes.buffer as ArrayBuffer);
-        const fullHash = Array.from(new Uint8Array(digestBuffer))
-            .map(b => b.toString(16).padStart(2, '0'))
-            .join('');
-        const shortHash = fullHash.slice(0, 7);
+        const snapshot = cvSnapshot({
+            profile: { ...cvData.profile },
+            avatar: profile.avatar_version ?? null,
+            links: cvData.links.map(link => link.url),
+            experiences: experiences || [],
+            educations: educations || [],
+            skills: skillCategories,
+            projects
+        });
 
         const { data: activeDoc } = await db
             .from('db_documents')
-            .select('filename')
+            .select('id, filename')
             .eq('is_active', true)
             .limit(1)
             .maybeSingle();
+        const { data: previousSnapshot } =
+            activeDoc ?
+                await db
+                    .from('db_document_snapshots')
+                    .select('content')
+                    .eq('document_id', activeDoc.id)
+                    .maybeSingle()
+            :   { data: null };
 
-        let nextVersion = '1.0.0';
-        if (activeDoc?.filename) {
-            const currentVersionObj = parseSemver(activeDoc.filename);
-            nextVersion = bumpSemver(currentVersionObj, bumpType);
-        }
-
-        const authorSlug = formatAuthorSlug(profile.name);
-        const filename = `${authorSlug}-${shortHash}-v${nextVersion}.pdf`;
-        const sha256Filename = `${filename}.sha256`;
-        const sha256Content = `${fullHash}  ${filename}\n`;
-        const sha256Bytes = new TextEncoder().encode(sha256Content);
-
-        let r2Client: S3Client | null = null;
-        if (r2Creds) {
-            r2Client = new S3Client({
-                region: 'auto',
-                endpoint: `https://${r2Creds.accountId}.r2.cloudflarestorage.com`,
-                credentials: {
-                    accessKeyId: r2Creds.accessKeyId,
-                    secretAccessKey: r2Creds.secretAccessKey
-                }
+        let bump =
+            activeDoc ?
+                cvVersionBump(
+                    (previousSnapshot?.content as CvSnapshot | undefined) ?? null,
+                    snapshot
+                )
+            :   null;
+        if (activeDoc && !bump && !force)
+            return jsonResponse({
+                success: true,
+                upToDate: true,
+                filename: activeDoc.filename,
+                version: formatCvVersion(
+                    parseCvVersion(activeDoc.filename) ?? { major: 1, minor: 0 }
+                )
             });
-        }
+        if (activeDoc && !bump) bump = { level: 'minor', reasons: ['Regenerated on request'] };
+        const version =
+            activeDoc ?
+                nextCvVersion(parseCvVersion(activeDoc.filename), bump!.level)
+            :   { major: 1, minor: 0 };
+        const reasons = activeDoc ? bump!.reasons : ['First version'];
+        const versionLabel = formatCvVersion(version);
+
+        const r2Creds = getR2Credentials(platform);
+        const pdfBytes = await generateCvPdfBuffer(cvData, loadCvFonts());
+        const shortHash = Array.from(
+            new Uint8Array(
+                await crypto.subtle.digest('SHA-256', new Uint8Array(pdfBytes))
+            ).subarray(0, 4),
+            byte => byte.toString(16).padStart(2, '0')
+        )
+            .join('')
+            .slice(0, 7);
+        const filename = `${formatAuthorSlug(profile.name)}-${shortHash}-v${versionLabel}.pdf`;
+        const { digests, files: checksumFiles } = await cvChecksums(pdfBytes, filename);
 
         const { data: previousDocs } = await db
             .from('db_documents')
             .select('id, filename')
             .eq('is_active', true);
-
-        if (previousDocs && previousDocs.length > 0) {
-            for (const oldDoc of previousDocs) {
-                if (oldDoc.filename) {
-                    const oldPdfKey = oldDoc.filename;
-                    const oldShaKey = `${oldDoc.filename}.sha256`;
-                    if (r2Client && r2Creds) {
-                        try {
-                            await r2Client.send(
-                                new DeleteObjectCommand({
-                                    Bucket: r2Creds.bucketName,
-                                    Key: oldPdfKey
-                                })
-                            );
-                            await r2Client.send(
-                                new DeleteObjectCommand({
-                                    Bucket: r2Creds.bucketName,
-                                    Key: oldShaKey
-                                })
-                            );
-                        } catch (delErr) {
-                            console.error('R2 deletion warning for old CV file:', delErr);
-                        }
-                    }
-                    try {
-                        await db.storage.from('cv_documents').remove([oldPdfKey, oldShaKey]);
-                    } catch (delStorageErr) {
-                        console.error('Supabase storage removal warning:', delStorageErr);
-                    }
-                }
-            }
-        }
+        for (const oldDoc of previousDocs ?? [])
+            if (oldDoc.filename && oldDoc.filename !== filename)
+                await removeCvObjects(platform, db, oldDoc.filename, false);
 
         let fileUrl = '';
         let storageProvider: 'R2' | 'Supabase Storage' = 'R2';
+        const uploads: [string, Uint8Array, string][] = [
+            [cvKey(filename), pdfBytes, 'application/pdf'],
+            ...CV_CHECKSUM_EXTENSIONS.map(
+                ext =>
+                    [
+                        cvKey(filename, ext),
+                        new TextEncoder().encode(checksumFiles[ext]),
+                        'text/plain; charset=utf-8'
+                    ] as [string, Uint8Array, string]
+            )
+        ];
 
-        if (r2Client && r2Creds) {
+        if (r2Creds) {
             try {
-                await r2Client.send(
-                    new PutObjectCommand({
-                        Bucket: r2Creds.bucketName,
-                        Key: filename,
-                        Body: pdfBytes,
-                        ContentType: 'application/pdf'
-                    })
-                );
-                await r2Client.send(
-                    new PutObjectCommand({
-                        Bucket: r2Creds.bucketName,
-                        Key: sha256Filename,
-                        Body: sha256Bytes,
-                        ContentType: 'text/plain; charset=utf-8'
-                    })
-                );
-                fileUrl = `${r2Creds.cdnUrl}/${filename}`;
+                const client = r2Client(r2Creds);
+                for (const [Key, Body, ContentType] of uploads)
+                    await client.send(
+                        new PutObjectCommand({
+                            Bucket: r2Creds.bucketName,
+                            Key,
+                            Body,
+                            ContentType,
+                            CacheControl: 'public, max-age=300'
+                        })
+                    );
+                fileUrl = `${r2Creds.cdnUrl}/${cvKey(filename)}`;
             } catch (r2Err) {
                 console.error('R2 upload failed, trying Supabase Storage fallback:', r2Err);
             }
@@ -437,40 +436,40 @@ export async function processCvGenerate(
 
         if (!fileUrl) {
             storageProvider = 'Supabase Storage';
-            const { error: storageError } = await db.storage
-                .from('cv_documents')
-                .upload(filename, pdfBytes, { contentType: 'application/pdf', upsert: true });
-
-            if (storageError) {
-                return fail('Failed to upload CV file.');
-            }
-
-            await db.storage
-                .from('cv_documents')
-                .upload(sha256Filename, sha256Bytes, {
-                    contentType: 'text/plain; charset=utf-8',
+            const bucket = db.storage.from('cv_documents');
+            for (const [key, body, contentType] of uploads) {
+                const { error: storageError } = await bucket.upload(key, body, {
+                    contentType,
                     upsert: true
                 });
-
-            const { data: publicUrlData } = db.storage.from('cv_documents').getPublicUrl(filename);
-            fileUrl = publicUrlData.publicUrl;
+                if (storageError) return fail('Failed to upload CV file.');
+            }
+            fileUrl = bucket.getPublicUrl(cvKey(filename)).data.publicUrl;
         }
 
         await db.from('db_documents').update({ is_active: false }).eq('is_active', true);
 
-        const { error: insertError } = await db
+        const { data: inserted, error: insertError } = await db
             .from('db_documents')
             .insert({
                 author_id: profile.id,
                 filename,
                 file_url: fileUrl,
-                hash: fullHash,
+                hash: digests.sha256,
+                version: versionLabel,
                 is_active: true
-            });
+            })
+            .select('id')
+            .single();
 
-        if (insertError) {
+        if (insertError || !inserted) {
             return fail('Failed to save CV record.');
         }
+
+        const { error: snapshotError } = await db
+            .from('db_document_snapshots')
+            .insert({ document_id: inserted.id, content: snapshot });
+        if (snapshotError) console.error('CV snapshot could not be saved:', snapshotError);
 
         await logCvActivity(
             req,
@@ -478,7 +477,7 @@ export async function processCvGenerate(
             db,
             'cv.upload',
             filename,
-            `Generated CV document v${nextVersion}.`,
+            `Generated CV document v${versionLabel} (${reasons.join(', ')}).`,
             getClientAddress
         );
 
@@ -487,8 +486,10 @@ export async function processCvGenerate(
                 success: true,
                 filename,
                 fileUrl,
-                hash: fullHash,
-                version: nextVersion,
+                hash: digests.sha256,
+                version: versionLabel,
+                level: activeDoc ? bump!.level : 'major',
+                reasons,
                 storageProvider
             },
             200
@@ -576,5 +577,100 @@ export async function processCvDelete(
     } catch (err: any) {
         console.error('Unhandled processCvDelete error:', err);
         return fail('Failed to delete CV document.');
+    }
+}
+
+export async function processCvSignature(
+    req: Request,
+    platform?: unknown,
+    getClientAddress?: () => string
+): Promise<Response> {
+    try {
+        const authError = await requireAdminAuth(req, platform);
+        if (authError) return authError;
+        const db = getAdminDb(platform);
+        const { data: doc, error: lookupError } = await db
+            .from('db_documents')
+            .select('id, filename')
+            .eq('is_active', true)
+            .limit(1)
+            .maybeSingle();
+        if (lookupError || !doc?.filename)
+            return jsonResponse({ success: false, message: 'No active CV document.' }, 404);
+        const key = cvKey(doc.filename, 'asc');
+        const creds = getR2Credentials(platform);
+
+        if (req.method === 'DELETE') {
+            if (creds)
+                await r2Client(creds).send(
+                    new DeleteObjectsCommand({
+                        Bucket: creds.bucketName,
+                        Delete: { Objects: [{ Key: key }] }
+                    })
+                );
+            else await db.storage.from('cv_documents').remove([key]);
+            await db.from('db_documents').update({ signed_at: null }).eq('id', doc.id);
+            await logCvActivity(
+                req,
+                platform,
+                db,
+                'cv.signature_delete',
+                doc.filename,
+                'Removed the CV signature.',
+                getClientAddress
+            );
+            return jsonResponse({ success: true, signedAt: null });
+        }
+
+        if (Number(req.headers.get('content-length')) > CV_SIGNATURE_LIMIT * 2)
+            return jsonResponse({ success: false, message: 'Signature is too large.' }, 413);
+        let signature = '';
+        try {
+            const body = await req.json();
+            signature = typeof body?.signature === 'string' ? body.signature : '';
+        } catch {
+            signature = '';
+        }
+        if (!isArmoredSignature(signature))
+            return jsonResponse(
+                {
+                    success: false,
+                    message:
+                        'Upload an ASCII-armored detached signature (gpg --armor --detach-sign).'
+                },
+                400
+            );
+        const body = new TextEncoder().encode(normalizeSignature(signature));
+        if (creds)
+            await r2Client(creds).send(
+                new PutObjectCommand({
+                    Bucket: creds.bucketName,
+                    Key: key,
+                    Body: body,
+                    ContentType: 'application/pgp-signature',
+                    CacheControl: 'public, max-age=300'
+                })
+            );
+        else {
+            const { error } = await db.storage
+                .from('cv_documents')
+                .upload(key, body, { contentType: 'application/pgp-signature', upsert: true });
+            if (error) return fail('Failed to store the signature.');
+        }
+        const signedAt = new Date().toISOString();
+        await db.from('db_documents').update({ signed_at: signedAt }).eq('id', doc.id);
+        await logCvActivity(
+            req,
+            platform,
+            db,
+            'cv.signature_upload',
+            doc.filename,
+            'Uploaded a CV signature.',
+            getClientAddress
+        );
+        return jsonResponse({ success: true, signedAt });
+    } catch (err) {
+        console.error('Unhandled processCvSignature error:', err);
+        return fail('Failed to update the CV signature.');
     }
 }
