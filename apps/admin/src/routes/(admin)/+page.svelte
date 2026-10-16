@@ -4,6 +4,7 @@
     import { blogBannerAlt } from '#lib/blogBanner.ts';
     import { adminUrl, navigateAdmin } from '#lib/adminNavigation.ts';
     import { bannerUrl } from '#lib/blogBanner.ts';
+    import { cdnBaseUrl } from '#lib/cdn.ts';
     import {
         submitPost,
         rememberPostSave,
@@ -81,7 +82,12 @@
         Logs,
         DatabaseArrowUp,
         DatabaseArrowDown,
-        DatabaseX
+        DatabaseX,
+        Newspaper,
+        MessageSquare,
+        Briefcase,
+        GraduationCap,
+        Wrench
     } from '@lucide/svelte';
     import { onDestroy, onMount, tick, untrack } from 'svelte';
     import { SvelteSet } from 'svelte/reactivity';
@@ -147,7 +153,8 @@
         PillInput,
         sanitizeInput,
         decodeHtmlEntities,
-        splitEscapedCommas
+        splitEscapedCommas,
+        FileUploadField
     } from '#lib/index.ts';
     import ArticleMeta from '#lib/article/ArticleMeta.svelte';
 
@@ -1287,7 +1294,6 @@
     let cvDocState = $state<CvDocument>({ filename: '', fileUrl: '', hash: '', isActive: false });
     let isGeneratingPdf = $state(false);
     let isDownloadingCv = $state(false);
-    let isDownloadingChecksum = $state(false);
 
     const isCvAvailable = $derived(Boolean(cvDocState?.filename && cvDocState?.isActive));
 
@@ -1299,17 +1305,9 @@
     });
 
     const cvVersion = $derived.by(() => {
-        if (!cvDocState?.filename) return '';
-        const match =
-            cvDocState.filename.match(/-v(\d+\.\d+\.\d+)\.pdf$/i)
-            || cvDocState.filename.match(/(v\d+\.\d+\.\d+)/i);
-        return (
-            match ?
-                match[1].startsWith('v') ?
-                    match[1]
-                :   `v${match[1]}`
-            :   ''
-        );
+        if (cvDocState?.version) return `v${cvDocState.version}`;
+        const match = cvDocState?.filename?.match(/-v(\d+\.\d+(?:\.\d+)?)\.pdf$/i);
+        return match ? `v${match[1]}` : '';
     });
 
     async function downloadCvDocument() {
@@ -1333,22 +1331,70 @@
         }
     }
 
-    function downloadCvChecksum() {
-        if (!cvDocState.hash || !cvDocState.filename) return;
-        isDownloadingChecksum = true;
+    const cvChecksumFiles = [
+        { ext: 'sha256', label: 'SHA-256' },
+        { ext: 'sha512', label: 'SHA-512' },
+        { ext: 'md5', label: 'MD5' },
+        { ext: 'b2', label: 'BLAKE2b' }
+    ] as const;
+
+    let isSavingSignature = $state(false);
+    let signatureError = $state('');
+
+    async function updateCvSignature(file: File | null) {
+        signatureError = '';
+        if (!file) return;
+        if (file.size > 16 * 1024) {
+            signatureError = 'Signature files are at most 16 KiB.';
+            return;
+        }
+        isSavingSignature = true;
         try {
-            const content = `${cvDocState.hash}  ${cvDocState.filename}\n`;
-            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-            const objectUrl = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = objectUrl;
-            a.download = `${cvDocState.filename}.sha256`;
-            a.click();
-            URL.revokeObjectURL(objectUrl);
-        } catch {
-            toastStore.error('Failed to download checksum');
+            const { data: sessionData } = await supabase.auth.getSession();
+            const accessToken = sessionData.session?.access_token;
+            if (!accessToken)
+                throw new Error('Your admin session has expired. Please log in again.');
+            const response = await fetch('/api/internal/admin/cv/signature', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${accessToken}`
+                },
+                body: JSON.stringify({ signature: await file.text() })
+            });
+            const res = await response.json();
+            if (!response.ok || !res.success)
+                throw new Error(res?.message ?? res?.error?.message ?? 'Upload failed.');
+            cvDocState = { ...cvDocState, signedAt: res.signedAt };
+            toastStore.success('CV signature uploaded.');
+        } catch (err) {
+            signatureError = err instanceof Error ? err.message : 'Upload failed.';
         } finally {
-            isDownloadingChecksum = false;
+            isSavingSignature = false;
+        }
+    }
+
+    async function removeCvSignature() {
+        isSavingSignature = true;
+        signatureError = '';
+        try {
+            const { data: sessionData } = await supabase.auth.getSession();
+            const accessToken = sessionData.session?.access_token;
+            if (!accessToken)
+                throw new Error('Your admin session has expired. Please log in again.');
+            const response = await fetch('/api/internal/admin/cv/signature', {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${accessToken}` }
+            });
+            const res = await response.json();
+            if (!response.ok || !res.success)
+                throw new Error(res?.message ?? res?.error?.message ?? 'Removal failed.');
+            cvDocState = { ...cvDocState, signedAt: null };
+            toastStore.success('CV signature removed.');
+        } catch (err) {
+            signatureError = err instanceof Error ? err.message : 'Removal failed.';
+        } finally {
+            isSavingSignature = false;
         }
     }
 
@@ -2448,7 +2494,7 @@
             const currentAdminUrl = adminUrl();
             await invalidateAll();
             navigateAdmin(currentAdminUrl, true);
-            executeGenerateCvPdf('patch');
+            executeGenerateCvPdf();
         } catch (err: any) {
             console.error('Error saving author profile:', err);
             authorSaveError = err.message || 'Failed to save author profile.';
@@ -2694,7 +2740,7 @@
             cvSaveSuccess = true;
             setTimeout(() => (cvSaveSuccess = false), 2500);
             toastStore.success('CV entries saved.');
-            executeGenerateCvPdf('patch');
+            executeGenerateCvPdf();
         } catch (err: any) {
             console.error('Error saving CV entries:', err);
             const msg = err?.message || err?.error || 'Failed to save CV entries.';
@@ -2745,7 +2791,7 @@
             skillsSaveSuccess = true;
             setTimeout(() => (skillsSaveSuccess = false), 2500);
             toastStore.success('Skills saved.');
-            executeGenerateCvPdf('patch');
+            executeGenerateCvPdf();
         } catch (err: any) {
             console.error('Error saving skills:', err);
             const msg = err?.message || err?.error || 'Failed to save skills.';
@@ -2952,7 +2998,7 @@
         }
     }
 
-    async function executeGenerateCvPdf(bumpType: 'patch' | 'minor' | 'major' = 'patch') {
+    async function executeGenerateCvPdf(options: { force?: boolean; manual?: boolean } = {}) {
         isGeneratingPdf = true;
         pdfUploadError = '';
         pdfGeneratedFilename = '';
@@ -2979,7 +3025,7 @@
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${accessToken}`
                 },
-                body: JSON.stringify({ bumpType })
+                body: JSON.stringify({ force: options.force === true })
             });
 
             const res = await response.json();
@@ -2992,16 +3038,26 @@
                 throw new Error(errorMsg);
             }
 
+            if (res.upToDate) {
+                if (options.manual || options.force)
+                    toastStore.success(`The CV is already up to date (v${res.version}).`);
+                return;
+            }
+
             cvDocState = {
                 filename: res.filename,
                 fileUrl: res.fileUrl,
                 hash: res.hash,
+                version: res.version,
+                signedAt: null,
                 isActive: true,
                 updatedAt: new Date().toISOString()
             };
 
             pdfGeneratedFilename = res.filename;
-            toastStore.success(`CV PDF generated (v${res.version})`);
+            toastStore.success(
+                `CV PDF generated (v${res.version}: ${(res.reasons ?? []).join(', ')})`
+            );
         } catch (err: any) {
             console.error('PDF generation error:', err);
             pdfUploadError =
@@ -3673,6 +3729,7 @@
                         <FilterEmptyState onClearFilters={filterStore.clearAllFilters} />
                     {:else}
                         <EmptyState
+                            icon={Newspaper}
                             title="No posts yet"
                             description="Create a post to get started." />
                     {/if}
@@ -3691,7 +3748,7 @@
                                     class="relative aspect-2/1 w-full shrink-0 overflow-hidden border-b border-border-subtle">
                                     {#if post.banner_version && !failedBanners.has(post.id)}
                                         <ImageWithSkeleton
-                                            src={bannerUrl(post)}
+                                            src={bannerUrl(post, cdnBaseUrl())}
                                             alt={blogBannerAlt(post.title, post.excerpt)}
                                             rounded=""
                                             onerror={() => markBannerFailed(post.id)}
@@ -3916,6 +3973,7 @@
                                                 label="Loading comments…" />
                                         {:else if getPostComments(post.id).length === 0}
                                             <EmptyState
+                                                icon={MessageSquare}
                                                 class="p-5"
                                                 title="No comments yet"
                                                 description="Comments on this post will appear here." />
@@ -4562,6 +4620,7 @@
                     <div class="flex flex-col gap-6">
                         {#if cvState.experience.length === 0}
                             <EmptyState
+                                icon={Briefcase}
                                 title="No experience entries yet"
                                 description="Add your first experience entry below." />
                         {/if}
@@ -4946,6 +5005,7 @@
                     <div class="flex flex-col gap-6">
                         {#if cvState.education.length === 0}
                             <EmptyState
+                                icon={GraduationCap}
                                 title="No education entries yet"
                                 description="Add your first education entry below." />
                         {/if}
@@ -5334,7 +5394,9 @@
                                     ) ?
                                         ''
                                     :   'text-text-muted'}">
-                                    {isCvAvailable ? cvDocState.filename : 'CV-[name]-[patch].pdf'}
+                                    {isCvAvailable ?
+                                        cvDocState.filename
+                                    :   'CV-[name]-[hash]-v[major].[minor].pdf'}
                                 </p>
                                 <div
                                     class="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-text-muted">
@@ -5379,7 +5441,7 @@
                                 class="w-full shrink-0 sm:w-auto"
                                 isLoading={isGeneratingPdf}
                                 disabled={isGeneratingPdf}
-                                onclick={() => executeGenerateCvPdf('patch')}>
+                                onclick={() => executeGenerateCvPdf({ manual: true })}>
                                 {#snippet leading()}
                                     <RefreshCw class="size-3.5" />
                                 {/snippet}
@@ -5427,15 +5489,15 @@
                                     type="secondary"
                                     size="sm"
                                     class="w-full sm:w-auto"
-                                    aria-label="Download Checksum"
-                                    title="Download Checksum"
-                                    disabled={isDownloadingChecksum || !cvDocState.hash}
-                                    isLoading={isDownloadingChecksum}
-                                    onclick={downloadCvChecksum}>
+                                    aria-label="Regenerate CV"
+                                    title="Build a new version even if nothing changed"
+                                    disabled={isGeneratingPdf}
+                                    isLoading={isGeneratingPdf}
+                                    onclick={() => executeGenerateCvPdf({ force: true })}>
                                     {#snippet leading()}
-                                        <Hash class="size-3.5" />
+                                        <RefreshCw class="size-3.5" />
                                     {/snippet}
-                                    <span>Download Checksum</span>
+                                    <span>Regenerate</span>
                                 </Button>
                             </div>
                             <Button
@@ -5452,6 +5514,58 @@
                                 {/snippet}
                                 <span>Delete CV</span>
                             </Button>
+                        </div>
+                        <div class="flex flex-col gap-1.5 border-t border-border-subtle pt-3.5">
+                            <p
+                                class="text-xxs font-bold tracking-widest text-text-secondary uppercase">
+                                Checksums
+                            </p>
+                            <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                                {#each cvChecksumFiles as file (file.ext)}
+                                    <a
+                                        class="inline-flex items-center gap-1 font-mono text-accent-text hover:underline"
+                                        href={`${cvDocState.fileUrl}.${file.ext}`}
+                                        download>
+                                        <Hash class="size-3.5" />{file.label}
+                                    </a>
+                                {/each}
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2 border-t border-border-subtle pt-3.5">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <p
+                                    class="text-xxs font-bold tracking-widest text-text-secondary uppercase">
+                                    GPG signature
+                                </p>
+                                {#if cvDocState.signedAt}
+                                    <div class="flex items-center gap-3 text-sm">
+                                        <a
+                                            class="font-mono text-accent-text hover:underline"
+                                            href={`${cvDocState.fileUrl}.asc`}
+                                            download>{cvDocState.filename}.asc</a>
+                                        <Button
+                                            htmlType="button"
+                                            type="danger"
+                                            tone="critical"
+                                            size="xs"
+                                            disabled={isSavingSignature}
+                                            onclick={removeCvSignature}>
+                                            <span>Remove</span>
+                                        </Button>
+                                    </div>
+                                {:else}
+                                    <span class="text-xs text-text-muted">Not signed yet</span>
+                                {/if}
+                            </div>
+                            <FileUploadField
+                                id="cv-signature-file"
+                                accept=".asc,.sig,application/pgp-signature,text/plain"
+                                hint={`Sign this exact PDF locally: gpg --armor --detach-sign ${cvDocState.filename}`}
+                                disabled={isSavingSignature}
+                                isUploading={isSavingSignature}
+                                uploadingLabel="Uploading signature…"
+                                error={signatureError}
+                                onFileSelect={updateCvSignature} />
                         </div>
                     {/if}
                 </div>
@@ -5486,6 +5600,7 @@
                 <div class="flex flex-col gap-4">
                     {#if skillsState.length === 0}
                         <EmptyState
+                            icon={Wrench}
                             title="No skill groups yet"
                             description="Add your first skill group below." />
                     {/if}
@@ -5639,6 +5754,7 @@
                 <div class="flex flex-col gap-4">
                     {#if socialState.length === 0}
                         <EmptyState
+                            icon={Share2}
                             title="No social links yet"
                             description="Add your first social link below." />
                     {/if}
@@ -5844,6 +5960,7 @@
                 <div class="flex flex-col gap-4">
                     {#if sponsorshipState.length === 0}
                         <EmptyState
+                            icon={HeartHandshake}
                             title="No funding platforms yet"
                             description="Add your first funding platform below." />
                     {/if}
@@ -6084,6 +6201,7 @@
                 <div class="flex flex-col gap-4">
                     {#if contactState.length === 0}
                         <EmptyState
+                            icon={AtSign}
                             title="No contact channels yet"
                             description="Add your first contact channel below." />
                     {/if}

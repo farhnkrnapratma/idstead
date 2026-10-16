@@ -77,6 +77,8 @@ export interface CvDocument {
     filename: string;
     fileUrl: string;
     hash?: string;
+    version?: string | null;
+    signedAt?: string | null;
     isActive: boolean;
     sortOrder?: number;
     updatedAt?: string;
@@ -677,6 +679,8 @@ export async function fetchActiveCvDocument(
             filename: data.filename || '',
             fileUrl: data.file_url || '',
             hash: fullHash,
+            version: data.version ?? null,
+            signedAt: data.signed_at ?? null,
             isActive: data.is_active ?? true,
             sortOrder: data.sort_order,
             updatedAt: data.updated_at
