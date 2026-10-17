@@ -214,7 +214,11 @@
             {/if}
 
             {#if children}
-                <div class={cn('mt-4', scrollBody && 'min-h-0 overflow-y-auto overscroll-contain')}>
+                <div
+                    class={cn(
+                        'mt-4',
+                        scrollBody && '-mx-1 min-h-0 overflow-y-auto overscroll-contain px-1 pb-1'
+                    )}>
                     {@render children()}
                 </div>
             {/if}

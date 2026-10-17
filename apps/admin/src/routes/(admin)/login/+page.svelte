@@ -310,7 +310,7 @@
 {/snippet}
 
 <main
-    id="main-content"
+    id="main"
     class="relative flex min-h-dvh flex-col items-center justify-center font-sans">
     <div class="flex w-full max-w-sm items-center justify-center px-4">
         <Card

@@ -114,17 +114,17 @@
 </script>
 
 <div
-    class="relative my-6 flex flex-col gap-2 rounded-md glass-card border border-border-subtle/60 p-4 shadow-md backdrop-blur-md transition-colors {className}">
-    <div class="flex items-start justify-between gap-2">
+    class="mdrs-chart-card relative my-6 flex flex-col gap-2 rounded-md glass-card border border-border-subtle/60 p-4 shadow-md backdrop-blur-md transition-colors {className}">
+    <div class="mdrs-chart-header flex items-start justify-between gap-2">
         {#if spec.title || spec.subtitle}
             <div class="flex min-w-0 flex-col gap-0.5">
                 {#if spec.title}
-                    <div class="text-sm leading-tight font-bold text-text-primary">
+                    <div class="mdrs-chart-title text-sm leading-tight font-bold text-text-primary">
                         {spec.title}
                     </div>
                 {/if}
                 {#if spec.subtitle}
-                    <div class="text-xs leading-tight text-text-muted">
+                    <div class="mdrs-chart-subtitle text-xs leading-tight text-text-muted">
                         {spec.subtitle}
                     </div>
                 {/if}
@@ -143,7 +143,7 @@
                     aria-label="Chart options"
                     aria-haspopup="menu"
                     aria-expanded={isOpen}
-                    class="flex size-7 cursor-pointer items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring"
+                    class="mdrs-menu-button flex size-7 cursor-pointer items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring"
                     onclick={toggle}>
                     <EllipsisVertical class="size-4" />
                 </button>
@@ -153,12 +153,12 @@
 
     {#if rawData.length === 0}
         <div
-            class="flex h-40 items-center justify-center rounded-md border border-dashed border-border-subtle/50 text-xs text-text-muted">
+            class="mdrs-chart-empty flex h-40 items-center justify-center rounded-md border border-dashed border-border-subtle/50 text-xs text-text-muted">
             No chart data provided
         </div>
     {:else}
         <div
-            class="relative w-full overflow-hidden"
+            class="mdrs-chart-plot relative w-full overflow-hidden"
             style="height: {chartHeight}px;">
             {#if chartType === 'bar'}
                 <Chart
@@ -196,7 +196,7 @@
                         {#snippet children({ data })}
                             {#if data}
                                 <div
-                                    class="rounded-md border border-border-subtle bg-surface-elevated px-2.5 py-1.5 text-xs shadow-md">
+                                    class="mdrs-chart-tooltip rounded-md border border-border-subtle bg-surface-elevated px-2.5 py-1.5 text-xs shadow-md">
                                     <div class="font-medium text-text-primary">{data[xKey]}</div>
                                     <div class="font-mono font-semibold text-accent-text">
                                         {data[yKey]}
@@ -262,7 +262,7 @@
                         {#snippet children({ data })}
                             {#if data}
                                 <div
-                                    class="rounded-md border border-border-subtle bg-surface-elevated px-2.5 py-1.5 text-xs shadow-md">
+                                    class="mdrs-chart-tooltip rounded-md border border-border-subtle bg-surface-elevated px-2.5 py-1.5 text-xs shadow-md">
                                     <div class="font-medium text-text-primary">{data[xKey]}</div>
                                     <div class="font-mono font-semibold text-accent-text">
                                         {data[yKey]}
@@ -307,7 +307,7 @@
                                 {#snippet children({ data })}
                                     {#if data}
                                         <div
-                                            class="rounded-md border border-border-subtle bg-surface-elevated px-2.5 py-1.5 text-xs shadow-md">
+                                            class="mdrs-chart-tooltip rounded-md border border-border-subtle bg-surface-elevated px-2.5 py-1.5 text-xs shadow-md">
                                             <div class="font-medium text-text-primary">
                                                 {data.label}
                                             </div>
@@ -380,7 +380,7 @@
                         {#snippet children({ data })}
                             {#if data}
                                 <div
-                                    class="rounded-md border border-border-subtle bg-surface-elevated px-2.5 py-1.5 text-xs shadow-md">
+                                    class="mdrs-chart-tooltip rounded-md border border-border-subtle bg-surface-elevated px-2.5 py-1.5 text-xs shadow-md">
                                     <div class="font-medium text-text-primary">{data[xKey]}</div>
                                     {#each seriesList as s (s.key)}
                                         <div class="flex items-center gap-1.5 font-mono text-xs">

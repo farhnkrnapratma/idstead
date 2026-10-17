@@ -19,6 +19,7 @@
         selectedFileName?: string;
         fileSize?: string;
         onFileSelect?: (file: File | null) => void;
+        compact?: boolean;
         actions?: Snippet<[{ trigger: () => void }]>;
         class?: string;
     }
@@ -38,6 +39,7 @@
         fileSize = '',
         onFileSelect,
         actions,
+        compact = false,
         class: className = ''
     }: Props = $props();
 
@@ -114,19 +116,19 @@
         ondragover={handleDragOver}
         ondragleave={handleDragLeave}
         class={cn(
-            'group relative flex min-h-40 min-w-0 flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed p-6 text-center transition-all select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring',
-            isDragging ?
-                'border-accent bg-accent-subtle/40'
-            :   cn(
-                    'border-border-default bg-surface/50',
-                    !isDisabled && 'hover:border-border-strong hover:bg-surface-hover'
-                ),
+            'group relative flex min-w-0 flex-1 cursor-pointer dashed-surface transition-colors select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring',
+            compact ?
+                'flex-row items-center gap-3 px-4 py-3 text-left'
+            :   'min-h-40 flex-col items-center justify-center gap-2 p-6 text-center',
+            isDragging ? 'border-accent! bg-accent-subtle/40!'
+            : !isDisabled ? 'hover:border-border-default hover:bg-surface-hover/60'
+            : '',
             error ? 'border-danger! bg-danger-subtle/10!' : '',
             isDisabled ? 'cursor-not-allowed opacity-50' : ''
         )}>
         {#if isUploading}
             <svg
-                class="h-7 w-7 animate-spin text-accent-text"
+                class={cn('animate-spin text-accent-text', compact ? 'size-5 shrink-0' : 'h-7 w-7')}
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -148,13 +150,28 @@
                 {uploadingLabel}
             </p>
         {:else if selectedFileName}
-            <FileCheck2 class="size-8 text-accent-text" />
-            <p class="max-w-full truncate font-mono text-sm font-semibold text-text-primary">
-                {selectedFileName}
-            </p>
-            {#if fileSize}
-                <p class="font-mono text-xs text-text-muted">{fileSize}</p>
-            {/if}
+            <FileCheck2 class={cn('text-accent-text', compact ? 'size-5 shrink-0' : 'size-8')} />
+            <span class={cn('flex min-w-0 flex-col', compact ? 'gap-0.5' : 'items-center gap-2')}>
+                <span class="max-w-full truncate font-mono text-sm font-semibold text-text-primary">
+                    {selectedFileName}
+                </span>
+                {#if fileSize}
+                    <span class="font-mono text-xs text-text-muted">{fileSize}</span>
+                {/if}
+            </span>
+        {:else if compact}
+            <UploadCloud
+                class="size-5 shrink-0 text-text-secondary transition-colors group-hover:text-accent-text" />
+            <span class="flex min-w-0 flex-col gap-0.5">
+                {#if actions}
+                    {@render actions({ trigger: () => fileInputRef?.click() })}
+                {:else}
+                    <span class="text-sm font-medium text-text-primary">{label}</span>
+                {/if}
+                {#if hint}
+                    <span class="text-xs text-text-muted">{hint}</span>
+                {/if}
+            </span>
         {:else}
             <UploadCloud
                 class="size-8 text-text-secondary transition-colors group-hover:text-accent-text" />

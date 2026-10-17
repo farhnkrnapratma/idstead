@@ -401,7 +401,7 @@
                         useContentFont && `font-content-${contentFontStore.current}`,
                         useContentFont
                             && contentFontStore.current === 'mono'
-                            && 'text-[0.78125rem]! sm:text-[0.84375rem]!'
+                            && 'text-[calc(0.78125rem*var(--type-scale)*var(--a11y-scale))]! sm:text-[calc(0.84375rem*var(--type-scale)*var(--a11y-scale))]!'
                     )}>
                     {#if node.reply_to_author}
                         <span class="font-normal text-accent-text select-none">

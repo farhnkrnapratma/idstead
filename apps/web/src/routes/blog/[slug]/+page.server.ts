@@ -2,7 +2,12 @@ import { publicBannerUrl } from '#lib/blogBanner.ts';
 import { cdnBaseUrl } from '#lib/cdn.ts';
 import { supabase } from '#lib/supabase.ts';
 import { error } from '@sveltejs/kit';
-import { renderMarkdown, injectHeadingIds, extractHeadings } from '#lib/markdown.ts';
+import {
+    renderMarkdown,
+    injectHeadingIds,
+    extractHeadings,
+    prefixHashLinks
+} from '#lib/markdown.ts';
 import { estimateReadTime } from '#lib/readTime.ts';
 import type { PageServerLoad } from './$types';
 
@@ -75,7 +80,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
         const markdown = await fileRes.text();
         readTime = estimateReadTime(markdown);
         const rawHtml = await renderMarkdown(markdown, supabase);
-        html = injectHeadingIds(rawHtml);
+        html = prefixHashLinks(injectHeadingIds(rawHtml));
     } catch (err) {
         console.error('Error fetching/rendering markdown file:', err);
         html = '<p class="text-red-500">Error: Could not render post content.</p>';

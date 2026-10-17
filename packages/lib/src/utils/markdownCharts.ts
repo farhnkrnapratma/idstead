@@ -15,22 +15,19 @@ export interface ChartSpec {
 
 function showChartError(chartEl: HTMLElement, message: string) {
     const box = document.createElement('div');
-    box.className =
-        'rounded-md border border-danger/30 bg-danger-subtle/20 p-3 text-xs text-danger font-mono';
+    box.className = 'mdrs-chart-error';
     box.textContent = message;
     chartEl.replaceChildren(box);
 }
 
 export function enhanceMarkdownCharts(container: HTMLElement = document.body) {
     const chartContainers = container.querySelectorAll<HTMLElement>(
-        '.markdown-chart-container:not([data-chart-initialized])'
+        '.mdrs-chart:not([data-mdrs-enhanced])'
     );
 
     chartContainers.forEach(chartEl => {
-        chartEl.setAttribute('data-chart-initialized', 'true');
-        const rawContent = decodeURIComponent(
-            chartEl.getAttribute('data-chart-content') || ''
-        ).trim();
+        chartEl.setAttribute('data-mdrs-enhanced', 'true');
+        const rawContent = decodeURIComponent(chartEl.getAttribute('data-mdrs-chart') || '').trim();
 
         let spec: ChartSpec;
         try {

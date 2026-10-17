@@ -219,12 +219,12 @@ describe('whole documents', () => {
             expect(converted).not.toContain(old);
         }
         const html = await renderMarkdown(converted);
-        expect(html).toContain('markdown-alert-note');
-        expect(html).toContain('markdown-callout');
-        expect(html).toContain('markdown-tabs-container');
-        expect(html).toContain('katex-block');
-        expect(html).toContain('markdown-details');
-        expect(html).toContain('data-highlight-lines="1"');
+        expect(html).toContain('mdrs-alert--note');
+        expect(html).toContain('mdrs-callout');
+        expect(html).toContain('mdrs-snippets');
+        expect(html).toContain('mdrs-math--block');
+        expect(html).toContain('mdrs-details');
+        expect(html).toContain('data-mdrs-highlight-lines="1"');
         expect(html).not.toContain(':::');
     });
 

@@ -1,5 +1,6 @@
 <script lang="ts">
     import { FieldValidation, requiredText } from '#lib/fieldValidation.ts';
+    import { mdrsContent } from '#lib/mdrsValidation.ts';
     import { supabase } from '#lib/supabase.ts';
     import { slugifyTitle } from '#lib/slug.ts';
     import { processContentImage } from '#lib/processContentImage.ts';
@@ -18,7 +19,9 @@
         PillInput,
         decodeHtmlEntities
     } from '#lib/index.ts';
-    import { Mail } from '@lucide/svelte';
+    import { FileUp, Mail } from '@lucide/svelte';
+    import { importPostDocument, type ImportedPost } from '#lib/frontmatter.ts';
+    import { MAX_DOCUMENT_LENGTH } from '#lib/define.ts';
     import BannerImageUpload from '#lib/components/BannerImageUpload.svelte';
     import { bannerUrl, type BannerChange } from '#lib/blogBanner.ts';
     import { cdnBaseUrl } from '#lib/cdn.ts';
@@ -42,7 +45,8 @@
     let excerpt = $state('');
     let tags = $state<string[]>([]);
     let collaborators = $state<string[]>([]);
-    let markdownContent = $state('# New Post\n\nWrite your markdown content here...');
+    const NEW_POST_CONTENT = '# New Post\n\nWrite your markdown content here...';
+    let markdownContent = $state(NEW_POST_CONTENT);
 
     let isSubmitting = $state(false);
     let isRetryingSave = $state(false);
@@ -103,7 +107,7 @@
                     initialTitle = '';
                     initialExcerpt = '';
                     initialTags = [];
-                    initialMarkdownContent = '# New Post\n\nWrite your markdown content here...';
+                    initialMarkdownContent = NEW_POST_CONTENT;
                 }
 
                 operationKey = `post-save:${id || 'new'}`;
@@ -117,7 +121,7 @@
                 if (savedDraft) {
                     try {
                         const parsed = JSON.parse(savedDraft);
-                        const defaultTemplate = '# New Post\n\nWrite your markdown content here...';
+                        const defaultTemplate = NEW_POST_CONTENT;
                         if (!id) {
                             if (
                                 typeof parsed.postId === 'string'
@@ -336,7 +340,7 @@
     validation.register('content', {
         value: () => markdownContent,
         baseline: () => (isEditMode ? initialMarkdownContent : undefined),
-        validate: requiredText('Markdown content'),
+        validate: mdrsContent('Markdown content'),
         report: result => {
             contentError = result.error;
         }
@@ -398,6 +402,52 @@
     }
 
     let showNotifyDialog = $state(false);
+    let importInput: HTMLInputElement | undefined = $state();
+    let pendingImport = $state<ImportedPost | null>(null);
+
+    async function handleImportFile(event: Event) {
+        const input = event.currentTarget as HTMLInputElement;
+        const file = input.files?.[0];
+        input.value = '';
+        if (!file) return;
+        if (!/\.(?:md|mdrs|markdown)$/i.test(file.name)) {
+            toastStore.error('Choose a .md or .mdrs file.');
+            return;
+        }
+        if (file.size > MAX_DOCUMENT_LENGTH * 4) {
+            toastStore.error('That file is too large to import.');
+            return;
+        }
+        const imported = importPostDocument(await file.text());
+        if (imported.body.length > MAX_DOCUMENT_LENGTH) {
+            toastStore.error('That file is too large to import.');
+            return;
+        }
+        if (imported.error) {
+            toastStore.error(imported.error);
+            return;
+        }
+        const hasContent = markdownContent.trim() && markdownContent !== NEW_POST_CONTENT;
+        if (hasContent || title.trim() || excerpt.trim() || tags.length) {
+            pendingImport = imported;
+            return;
+        }
+        applyImport(imported);
+    }
+
+    function applyImport(imported: ImportedPost) {
+        pendingImport = null;
+        if (imported.title !== undefined) title = imported.title;
+        if (imported.excerpt !== undefined) excerpt = imported.excerpt;
+        if (imported.tags !== undefined) tags = imported.tags;
+        markdownContent = imported.body;
+        for (const key of ['title', 'excerpt', 'tags', 'content']) void validation.check(key);
+        toastStore.success(
+            imported.ignored.length ?
+                `File imported. Ignored frontmatter keys: ${imported.ignored.join(', ')}.`
+            :   'File imported.'
+        );
+    }
     let isNotifying = $state(false);
 
     async function notifySubscribers() {
@@ -566,7 +616,23 @@
             class="contents">
             <div
                 class="rounded-md border border-border-subtle bg-surface-card p-4 text-left sm:p-5">
-                <h2 class="mb-3 type-card-title select-none">Post details</h2>
+                <div class="mb-3 flex items-center justify-between gap-2">
+                    <h2 class="type-card-title select-none">Post details</h2>
+                    <Button
+                        type="ghost"
+                        size="sm"
+                        onclick={() => importInput?.click()}>
+                        {#snippet leading()}<FileUp class="size-4" />{/snippet}
+                        Import file
+                    </Button>
+                    <input
+                        bind:this={importInput}
+                        type="file"
+                        accept=".md,.mdrs,.markdown,text/markdown"
+                        class="hidden"
+                        aria-label="Import a Markdown or MDRS file"
+                        onchange={handleImportFile} />
+                </div>
 
                 <div class="flex flex-col gap-4">
                     <BannerImageUpload
@@ -765,6 +831,16 @@
         </div>
     </form>
 {/if}
+
+<ConfirmationDialog
+    isOpen={pendingImport !== null}
+    title="Replace the current post?"
+    message="Importing fills the title, excerpt, tags and content from the file. Anything you typed in those fields is replaced."
+    confirmLabel="Import file"
+    cancelLabel="Keep editing"
+    isDestructive
+    onConfirm={() => pendingImport && applyImport(pendingImport)}
+    onCancel={() => (pendingImport = null)} />
 
 <ConfirmationDialog
     isOpen={showNotifyDialog}

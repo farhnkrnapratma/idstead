@@ -9,7 +9,18 @@ export const API_PARAMS = {
 } as const;
 
 export type ApiParam = keyof typeof API_PARAMS;
-export type ApiOutput = 'json' | 'md' | 'txt' | 'pdf';
+export const CV_FILE_OUTPUTS = [
+    'pdf',
+    'sha256',
+    'sha512',
+    'md5',
+    'b2',
+    'asc',
+    'sig',
+    'zip'
+] as const;
+export type CvFileOutput = (typeof CV_FILE_OUTPUTS)[number];
+export type ApiOutput = 'json' | 'md' | 'txt' | CvFileOutput;
 
 export class ApiRequestError extends Error {
     readonly status: number;

@@ -56,18 +56,18 @@
             `view-transition-name: ${titleViewTransitionName}`
         :   undefined}
         class={cn(
-            'heading-anchor scroll-mt-20',
-            'text-2xl leading-snug font-bold tracking-tight not-italic sm:text-3xl md:text-4xl [&_.heading-text]:font-bold [&_.heading-text]:not-italic',
+            'mdrs-heading',
+            'text-2xl leading-snug font-bold tracking-tight not-italic sm:text-3xl md:text-4xl [&_.mdrs-heading-text]:font-bold [&_.mdrs-heading-text]:not-italic',
             titleClass
         )}>
         {#if titleParts.hasMultiple}
-            <span class="heading-text inline"
+            <span class="mdrs-heading-text inline"
                 >{titleParts.leading}&nbsp;<span class="whitespace-nowrap"
                     >{titleParts.last}<a
                         href="#title"
                         aria-label="Permanent link"
                         data-tooltip="Permanent link"
-                        class="anchor-link"
+                        class="mdrs-anchor"
                         onclick={event =>
                             activateHeadingAnchor(event.currentTarget as HTMLAnchorElement)}
                         tabindex="0">
@@ -77,12 +77,12 @@
                     </a></span
                 ></span>
         {:else}
-            <span class="heading-text inline whitespace-nowrap"
+            <span class="mdrs-heading-text inline whitespace-nowrap"
                 >{titleParts.last}<a
                     href="#title"
                     aria-label="Permanent link"
                     data-tooltip="Permanent link"
-                    class="anchor-link"
+                    class="mdrs-anchor"
                     onclick={event =>
                         activateHeadingAnchor(event.currentTarget as HTMLAnchorElement)}
                     tabindex="0">

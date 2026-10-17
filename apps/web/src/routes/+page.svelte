@@ -5,13 +5,14 @@
         avatarSources,
         avatarWebpSource,
         publicAvatarUrl,
-        publicBannerOgUrl
+        publicBannerOgUrl,
+        siteBannerSource,
+        siteBannerSources
     } from '#lib/siteIdentity.ts';
     import { onDestroy, onMount, untrack } from 'svelte';
     import type { Snippet } from 'svelte';
     import {
         CircleDollarSign,
-        Download,
         FolderArchive,
         Dot,
         ChevronRight,
@@ -23,7 +24,12 @@
         Scale,
         SquareArrowOutUpRight,
         Pin,
-        Sparkles
+        Sparkles,
+        AtSign,
+        Quote,
+        FolderOpen,
+        FileUser,
+        Layers
     } from '@lucide/svelte';
     import { isNameReserved, extractAuthorNameTokens } from '#lib/utils/nameValidator.ts';
     import {
@@ -60,6 +66,8 @@
         ConsentNotice,
         BlogPostCard,
         ProfileCard,
+        QrCodeDialog,
+        CvDownloadMenu,
         staggerChildren,
         withViewTransition
     } from '#lib/index.ts';
@@ -67,8 +75,6 @@
     import { goto } from '$app/navigation';
     import { resolve } from '$app/paths';
     import { page } from '$app/state';
-    import * as publicEnv from '$app/env/public';
-    import { apiUrl } from '#lib/apiConfig.ts';
     import { SvelteSet } from 'svelte/reactivity';
     import {
         formatPeriod,
@@ -87,8 +93,6 @@
     import type { Project } from '#lib/types.ts';
 
     let { data } = $props();
-
-    const cvPdfUrl = apiUrl('/cv?output=pdf', publicEnv.PUBLIC_API_BASE_URL);
 
     type Section = 'home' | 'blog' | 'contact' | 'cv' | 'projects' | 'funding';
 
@@ -119,6 +123,8 @@
     let avatarWebp = $derived(avatarWebpSource(author) || avatar);
     let avatarFormats = $derived(avatarSources(author));
     let socials = $derived(author?.socialLinks || []);
+    let location = $derived([author?.city, author?.country].filter(Boolean).join(', '));
+    let isQrOpen = $state(false);
     const navItems: NavItem[] = [
         { id: 'home', label: 'Home' },
         { id: 'projects', label: 'Projects' },
@@ -129,44 +135,6 @@
     ];
 
     const posts = $derived(data.posts || []);
-
-    function saveFile(blob: Blob, filename: string) {
-        const url = URL.createObjectURL(blob);
-        const anchor = document.createElement('a');
-        anchor.href = url;
-        anchor.download = filename;
-        document.body.appendChild(anchor);
-        anchor.click();
-        document.body.removeChild(anchor);
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-    }
-
-    async function handleCvDownload(e: MouseEvent) {
-        e.preventDefault();
-        try {
-            const response = await fetch(cvPdfUrl);
-            if (!response.ok) throw new Error(`CV download failed with ${response.status}`);
-            const filename =
-                response.headers
-                    .get('content-disposition')
-                    ?.match(/filename="([^"]+)"/)?.[1]
-                    ?.replace(/[\\/]/g, '') || 'cv.pdf';
-            const checksum = response.headers.get('x-checksum-sha256');
-            saveFile(await response.blob(), filename);
-            if (checksum && /^[0-9a-f]{64}$/.test(checksum))
-                setTimeout(
-                    () =>
-                        saveFile(
-                            new Blob([`${checksum}  ${filename}\n`], { type: 'text/plain' }),
-                            `${filename}.sha256`
-                        ),
-                    250
-                );
-        } catch (err) {
-            console.error(err);
-            toastStore.error('The CV could not be downloaded. Please try again.');
-        }
-    }
 
     const failedRepoBanners = new SvelteSet<string>();
 
@@ -575,7 +543,7 @@
 <SkipLink />
 
 <nav
-    class="fixed top-0 z-40 flex h-12 w-full items-center justify-between glass-card border-b border-border-subtle/30 px-3 font-sans shadow-2xs sm:h-14 sm:px-5"
+    class="fixed inset-x-2 top-2 z-40 flex h-12 items-center justify-between rounded-md glass-card border border-border-subtle/30 px-3 font-sans shadow-2xs sm:inset-x-3 sm:top-3 sm:h-14 sm:px-5"
     aria-label="Main navigation">
     <div class="flex shrink-0 items-center lg:w-1/4 lg:flex-none">
         <Button
@@ -641,8 +609,8 @@
 </nav>
 
 <main
-    id="main-content"
-    class="flex min-h-[calc(100vh-3rem)] flex-col pt-12 pb-16 font-sans sm:min-h-[calc(100vh-3.5rem)] sm:pt-14 md:pb-0">
+    id="main"
+    class="flex min-h-[calc(100vh-4rem)] flex-col pt-16 pb-16 font-sans sm:min-h-[calc(100vh-5rem)] sm:pt-20 md:pb-0">
     {#snippet staticTag(tag: string)}
         <Tag
             variant="accent"
@@ -807,69 +775,41 @@
                     {name}
                     {pronunciation}
                     {headline}
+                    {location}
                     bio={desc}
                     avatarUrl={avatarWebp}
                     avatarSources={avatarFormats}
-                    {socials}>
+                    bannerUrl={siteBannerSource(author)}
+                    bannerSources={siteBannerSources(author)}
+                    {socials}
+                    onShowQr={() => (isQrOpen = true)}>
                     {#snippet actions()}
                         <div
-                            class="flex w-full flex-col items-center gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
-                            <div
-                                class="grid w-full grid-cols-[repeat(auto-fit,minmax(calc(7.5rem*var(--a11y-scale)),1fr))] gap-3 sm:flex sm:w-auto sm:items-center">
-                                {#if data.cvExists}
-                                    <Button
-                                        type="primary"
-                                        tone="neutral"
-                                        size="sm"
-                                        href={cvPdfUrl}
-                                        download
-                                        shortcutGroup="save"
-                                        shortcutChordKey={argKey('/save', 'cv')}
-                                        shortcutLabel="Download CV"
-                                        onclick={handleCvDownload}
-                                        class="w-full sm:h-9 sm:w-auto sm:gap-2 sm:px-4 sm:text-sm">
-                                        {#snippet leading()}
-                                            <Download
-                                                class="size-3.5"
-                                                aria-hidden="true" />
-                                        {/snippet}
-                                        Download CV
-                                    </Button>
-                                {:else}
-                                    <Button
-                                        type="primary"
-                                        tone="neutral"
-                                        size="sm"
-                                        disabled
-                                        title="No CV document is available yet."
-                                        class="w-full sm:h-9 sm:w-auto sm:gap-2 sm:px-4 sm:text-sm">
-                                        {#snippet leading()}
-                                            <Download
-                                                class="size-3.5"
-                                                aria-hidden="true" />
-                                        {/snippet}
-                                        Download CV
-                                    </Button>
-                                {/if}
+                            class="grid grid-cols-1 gap-3 sm:grid-cols-[repeat(auto-fit,minmax(calc(10rem*var(--a11y-scale)),1fr))]">
+                            <CvDownloadMenu
+                                document={data.cvDocument}
+                                unavailableId="cv-unavailable-hero"
+                                shortcutGroup="save"
+                                shortcutChordKey={argKey('/save', 'cv')}
+                                class="w-full" />
 
-                                <Button
-                                    type="secondary"
-                                    size="sm"
-                                    onclick={() => navigate('projects')}
-                                    keyboardShortcut={buttonKey('browseProjects')}
-                                    shortcutLabel="Browse projects"
-                                    class="w-full sm:h-9 sm:w-auto sm:gap-2 sm:px-4 sm:text-sm">
-                                    Browse projects
-                                </Button>
-                            </div>
+                            <Button
+                                type="secondary"
+                                size="md"
+                                onclick={() => navigate('projects')}
+                                keyboardShortcut={buttonKey('browseProjects')}
+                                shortcutLabel="Browse projects"
+                                class="w-full justify-center">
+                                Browse projects
+                            </Button>
 
                             <Button
                                 type="ghost"
-                                size="sm"
+                                size="md"
                                 onclick={() => navigate('contact')}
                                 keyboardShortcut={buttonKey('getInTouch')}
                                 shortcutLabel="Get in touch"
-                                class="w-auto sm:h-9 sm:gap-2 sm:px-4 sm:text-sm">
+                                class="w-full justify-center">
                                 Get in touch
                                 {#snippet trailing()}
                                     <ChevronRight
@@ -878,6 +818,13 @@
                                 {/snippet}
                             </Button>
                         </div>
+                        {#if !data.cvDocument}
+                            <p
+                                id="cv-unavailable-hero"
+                                class="mt-3 text-xs text-text-muted">
+                                No CV document is available yet.
+                            </p>
+                        {/if}
                     {/snippet}
                 </ProfileCard>
 
@@ -885,6 +832,7 @@
                     <h2 class="mb-3 type-section-title sm:mb-4">Recent Posts</h2>
                     {#if posts.length === 0}
                         <EmptyState
+                            icon={Quote}
                             title="No posts yet"
                             description="Check back soon for new articles." />
                     {:else}
@@ -914,6 +862,7 @@
                     <h2 class="mb-3 type-section-title sm:mb-4">Top Projects</h2>
                     {#if recentProjects.length === 0}
                         <EmptyState
+                            icon={FolderOpen}
                             title="No projects yet"
                             description="Check back soon for featured repositories." />
                     {:else}
@@ -943,6 +892,7 @@
                     <h2 class="mb-4 type-section-title">Skills</h2>
                     {#if skillsSnapshot.length === 0}
                         <EmptyState
+                            icon={Layers}
                             title="No skills listed yet"
                             description="Check back soon for updated skills." />
                     {:else}
@@ -965,6 +915,7 @@
                     <h2 class="mb-4 type-section-title">Experience</h2>
                     {#if experiences.length === 0}
                         <EmptyState
+                            icon={FileUser}
                             title="No experience listed yet"
                             description="Check back soon for career history." />
                     {:else}
@@ -1205,6 +1156,7 @@
             subtitle="Reach out through any of the channels below."
             items={contactItems}
             shortcutGroup="contact"
+            emptyIcon={AtSign}
             emptyTitle="No contact channels yet"
             emptyDescription="Check back soon for ways to get in touch." />
     {/if}
@@ -1219,39 +1171,21 @@
                         <h1 class="type-page-title">Curriculum Vitae</h1>
                         <p class="mt-2 text-sm text-text-secondary">View or download my resume.</p>
                     </div>
-                    {#if data.cvExists}
-                        <Button
-                            type="primary"
-                            tone="neutral"
-                            size="md"
-                            href={cvPdfUrl}
-                            download
+                    <div class="flex flex-col items-start gap-1.5 sm:items-end">
+                        <CvDownloadMenu
+                            document={data.cvDocument}
+                            unavailableId="cv-unavailable"
+                            placement="bottom-end"
                             shortcutGroup="save"
-                            shortcutChordKey={argKey('/save', 'cv')}
-                            shortcutLabel="Download CV"
-                            onclick={handleCvDownload}>
-                            {#snippet leading()}
-                                <Download
-                                    class="size-3.5"
-                                    aria-hidden="true" />
-                            {/snippet}
-                            Download CV
-                        </Button>
-                    {:else}
-                        <Button
-                            type="primary"
-                            tone="neutral"
-                            size="md"
-                            disabled
-                            title="No CV document is available yet.">
-                            {#snippet leading()}
-                                <Download
-                                    class="size-3.5"
-                                    aria-hidden="true" />
-                            {/snippet}
-                            Download CV
-                        </Button>
-                    {/if}
+                            shortcutChordKey={argKey('/save', 'cv')} />
+                        {#if !data.cvDocument}
+                            <p
+                                id="cv-unavailable"
+                                class="text-xs text-text-muted">
+                                No CV document is available yet.
+                            </p>
+                        {/if}
+                    </div>
                 </div>
 
                 <div class="mt-8">
@@ -1259,6 +1193,7 @@
                     {#if experiences.length === 0}
                         <div class="mt-4">
                             <EmptyState
+                                icon={FileUser}
                                 title="No experience listed yet"
                                 description="Check back soon for career history." />
                         </div>
@@ -1288,6 +1223,7 @@
                     {#if education.length === 0}
                         <div class="mt-4">
                             <EmptyState
+                                icon={FileUser}
                                 title="No education listed yet"
                                 description="Check back soon for academic history." />
                         </div>
@@ -1316,6 +1252,7 @@
                     {#if skills.length === 0}
                         <div class="mt-4">
                             <EmptyState
+                                icon={Layers}
                                 title="No skills listed yet"
                                 description="Check back soon for updated skills." />
                         </div>
@@ -1375,6 +1312,7 @@
 
                 {#if posts.length === 0}
                     <EmptyState
+                        icon={Quote}
                         title="No posts yet"
                         description="Articles will appear here once published." />
                 {:else}
@@ -1477,6 +1415,7 @@
 
                 {#if projects.length === 0}
                     <EmptyState
+                        icon={FolderOpen}
                         title="No projects yet"
                         description="Projects will appear here." />
                 {:else if filteredProjectList.length === 0}
@@ -1509,6 +1448,7 @@
             subtitle="Ways to support my work."
             items={fundingPlatforms}
             shortcutGroup="funding"
+            emptyIcon={HeartHandshake}
             emptyTitle="No funding platforms yet"
             emptyDescription="Check back soon for ways to support this work." />
     {/if}
@@ -1534,6 +1474,14 @@
             }
         }} />
 </main>
+
+<QrCodeDialog
+    bind:isOpen={isQrOpen}
+    title={name}
+    url={siteUrl}
+    slug={username || 'profile'}
+    avatarUrl={avatarWebp}
+    onClose={() => (isQrOpen = false)} />
 
 <BottomNav
     {activeSection}

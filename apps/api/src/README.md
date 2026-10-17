@@ -14,15 +14,15 @@ curl https://api.fkp.my.id/v1/blog
 
 Every parameter has a full name and a one-letter alias. Use either form, never both for the same parameter.
 
-| Parameter  | Alias | Values                                                          |
-| ---------- | ----- | --------------------------------------------------------------- |
-| `id`       | –     | Post ID, unique ID prefix of at least 7 characters, or slug     |
-| `field`    | `f`   | `profile`, `contact`, `cv`, `funding`, `skills`, `socials`      |
-| `output`   | `o`   | `json`, `md`, `txt`, `pdf` (each endpoint lists what it offers) |
-| `query`    | `q`   | Search text                                                     |
-| `page`     | `p`   | 1-based page number                                             |
-| `limit`    | `n`   | Results per page                                                |
-| `checksum` | `c`   | `true` or `false`                                               |
+| Parameter | Alias | Values |
+| --- | --- | --- |
+| `id` | – | Post ID, unique ID prefix of at least 7 characters, or slug |
+| `field` | `f` | `profile`, `contact`, `cv`, `funding`, `skills`, `socials` |
+| `output` | `o` | `json`, `md`, `txt`, or a CV file: `pdf`, `sha256`, `sha512`, `md5`, `b2`, `asc`, `sig`, `zip` (each endpoint lists what it offers) |
+| `query` | `q` | Search text |
+| `page` | `p` | 1-based page number |
+| `limit` | `n` | Results per page |
+| `checksum` | `c` | `true` or `false` |
 
 - Multi-value parameters (`field`) accept a comma-separated list or a repeated parameter: `?f=profile,cv` and `?f=profile&f=cv` are the same request.
 - A parameter an endpoint does not accept returns `400 UNKNOWN_PARAMETER`. Passing a full name together with its alias, or a single-value parameter twice, returns `400 PARAM_CONFLICT`.
@@ -71,10 +71,12 @@ The HTTP status code is authoritative and isn't repeated in the body. Every erro
 | `BLOG_VIEWS_FETCH_FAILED` | 500 | View counts could not be read. |
 | `AUTHOR_FIELD_INVALID` | 400 | `field` names a section that does not exist. |
 | `AUTHOR_FETCH_FAILED` | 500 | Author information could not be read. |
-| `CV_CHECKSUM_REQUIRES_PDF` | 400 | `checksum` was given without `output=pdf`. |
+| `CV_CHECKSUM_REQUIRES_PDF` | 400 | `checksum` was given without `output=pdf` or `output=zip`. |
 | `CV_METADATA_FETCH_FAILED` | 500 | CV document metadata could not be read. |
 | `CV_DOCUMENT_NOT_FOUND` | 404 | No active CV PDF is configured. |
-| `CV_FETCH_FAILED` | 502 | The CV PDF could not be read from storage. |
+| `CV_SIGNATURE_NOT_FOUND` | 404 | `output=asc` or `output=sig` was requested while the active CV is unsigned. |
+| `CV_BUNDLE_NOT_FOUND` | 404 | `output=zip` was requested before the verification bundle was built. |
+| `CV_FETCH_FAILED` | 502 | A CV file could not be read from storage. |
 | `SEARCH_FETCH_FAILED` | 500 | Search could not be read. |
 | `RATE_LIMITED` | 429 | Over the rate limit — see below. |
 | `NOT_FOUND` | 404 | No endpoint exists at that path. |
@@ -121,14 +123,30 @@ Read-only — this API does not accept comment submissions, and only approved co
 
 | Path | Parameters | Returns |
 | --- | --- | --- |
-| `/v1/author` | `field` (all sections by default), `output=json\|md\|pdf`, `checksum` | One key per requested section. `profile` includes the public `email` and an optional `pronunciation` (preserved as entered; empty when unset). |
-| `/v1/cv` | `output=json\|md\|pdf`, `checksum` | Exactly the same response as `/v1/author?field=cv`, without a redirect. |
+| `/v1/author` | `field` (all sections by default), `output=json\|md` (plus the CV file outputs with `field=cv`), `checksum` | One key per requested section. `profile` includes the public `email` and an optional `pronunciation` (preserved as entered; empty when unset). |
+| `/v1/cv` | `output=json\|md\|pdf\|sha256\|sha512\|md5\|b2\|asc\|sig\|zip`, `checksum` | Exactly the same response as `/v1/author?field=cv`, without a redirect. |
 
-`output=pdf` is available only when the request is for the CV alone (`/v1/cv`, or `/v1/author` with `field=cv`). It downloads the PDF as an attachment. `checksum` defaults to `true`, which adds the PDF's SHA-256 as `Repr-Digest: sha-256=:<base64>:` (RFC 9530) and `X-Checksum-SHA256: <hex>` headers; `checksum=false` downloads the PDF without them. `checksum` without `output=pdf` returns `400 CV_CHECKSUM_REQUIRES_PDF`.
+When the CV is requested as JSON or Markdown, `cv.document` describes the active PDF (it is `null` when there is no PDF or its metadata cannot be read): `filename`, `version`, `updatedAt`, `checksums` (`sha256`, `sha512`, `md5`, `b2` hex digests), `signature` (`signedAt`, `fingerprint`, `signer` user IDs, or `null` when unsigned), `files` (the API URL of every file below), and `publicKey` (`fingerprint`, the `url` of the armored key, the `wkd` addresses that `gpg --locate-keys` resolves, and `keyservers`).
+
+The CV file outputs are available only when the request is for the CV alone (`/v1/cv`, or `/v1/author` with `field=cv`). Each downloads one file as an attachment, named so that it sits next to the PDF:
+
+| `output` | File | Content type |
+| --- | --- | --- |
+| `pdf` | `{file}.pdf` | `application/pdf` |
+| `sha256`, `sha512`, `md5`, `b2` | `{file}.pdf.{output}` in coreutils format (`b2` is BLAKE2b-512) | `text/plain` |
+| `asc` | `{file}.pdf.asc`, the ASCII-armored detached OpenPGP signature | `application/pgp-signature` |
+| `sig` | `{file}.pdf.sig`, the same signature in binary form | `application/octet-stream` |
+| `zip` | `{file}-verify.zip`: the PDF, its checksum files, both signatures, `publickey.asc` and `VERIFY.txt` | `application/zip` |
+
+`checksum` applies to `pdf` and `zip` and defaults to `true`, which adds `Repr-Digest: sha-256=:<base64>:, sha-512=:<base64>:` (RFC 9530) and `X-Checksum-SHA256: <hex>`. Send `Want-Repr-Digest` (for example `sha-512=10, sha-256=1`) to narrow or order the algorithms. `checksum=false` downloads the file without these headers, and `checksum` with any other output returns `400 CV_CHECKSUM_REQUIRES_PDF`.
+
+The signature is verified against the active OpenPGP key when it is uploaded. Fetch that key from a source other than the bundle: `https://fkp.my.id/pgp.asc`, WKD (`gpg --locate-keys` with an address listed in `publicKey.wkd`), or a keyserver in `publicKey.keyservers`.
 
 ```sh
 curl "https://api.fkp.my.id/v1/author?f=profile,skills&o=md"
 curl -OJ "https://api.fkp.my.id/v1/cv?o=pdf"
+curl -OJ "https://api.fkp.my.id/v1/cv?o=sha256" && sha256sum -c CV-*.pdf.sha256
+curl -OJ "https://api.fkp.my.id/v1/cv?o=sig" && gpg --verify CV-*.pdf.sig
 ```
 
 ### Search

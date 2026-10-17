@@ -11,7 +11,7 @@
     }
 
     let {
-        targetId = 'main-content',
+        targetId = 'main',
         label = 'Skip to main content',
         class: className = ''
     }: Props = $props();

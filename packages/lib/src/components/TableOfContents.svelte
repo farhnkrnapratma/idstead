@@ -254,7 +254,7 @@
                             navigateToHeading(heading.id);
                         }}
                         aria-current={isActive ? 'true' : undefined}
-                        class="relative -ml-3 flex items-center rounded-r-xs py-1.5 pr-2 leading-4 transition-colors duration-150 ease-in-out hover:text-accent-text {(
+                        class="relative -ml-3 flex items-center rounded-r-xs py-1.5 pr-2 leading-snug transition-colors duration-150 ease-in-out hover:text-accent-text {(
                             isSub
                         ) ?
                             'font-normal'
@@ -287,23 +287,23 @@
     {#if collapsible}
         <details
             class={cn(
-                'group markdown-details my-0 overflow-hidden rounded-md glass-card border border-border-subtle/60 text-text-primary shadow-md backdrop-blur-md select-none',
+                'group mdrs-details my-0 overflow-hidden rounded-md glass-card border border-border-subtle/60 text-text-primary shadow-md backdrop-blur-md select-none',
                 className
             )}
             open={!defaultCollapsed}>
             <summary
-                class="markdown-details-summary flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 text-sm font-medium text-text-primary transition-colors select-none group-open:border-border-subtle hover:bg-surface-hover/50 dark:group-open:border-white/10 [&::-webkit-details-marker]:hidden">
+                class="mdrs-details-summary flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 text-sm font-medium text-text-primary transition-colors select-none group-open:border-border-subtle hover:bg-surface-hover/50 dark:group-open:border-white/10 [&::-webkit-details-marker]:hidden">
                 <span class="inline-flex items-center gap-2">
                     <TableOfContentsIcon class="size-4 shrink-0 text-text-primary" />
 
                     <span
-                        class="markdown-details-title translate-y-px text-sm leading-none font-medium text-text-primary">
+                        class="mdrs-details-title translate-y-px text-sm leading-none font-medium text-text-primary">
                         {title}
                     </span>
                 </span>
 
                 <span
-                    class="markdown-details-icon inline-flex shrink-0 items-center justify-center text-text-muted"
+                    class="mdrs-details-icon inline-flex shrink-0 items-center justify-center text-text-muted"
                     aria-hidden="true">
                     <ChevronsUpDown class="size-3.5 group-open:hidden" />
 
@@ -312,7 +312,7 @@
             </summary>
 
             <div
-                class="markdown-details-body px-3.5 py-3 text-sm leading-relaxed font-normal text-text-secondary">
+                class="mdrs-details-body px-3.5 py-3 text-sm leading-relaxed font-normal text-text-secondary">
                 {@render tocList()}
             </div>
         </details>
@@ -333,12 +333,12 @@
     @reference "../global.css";
 
     :global(nav[aria-label='Table of contents'] code),
-    :global(details.markdown-details code) {
+    :global(details.mdrs-details code) {
         @apply rounded-md bg-code-inline-bg px-1.5 py-0.5 font-mono text-[0.85em] font-normal text-inherit;
     }
 
     :global(nav[aria-label='Table of contents'] kbd),
-    :global(details.markdown-details kbd) {
+    :global(details.mdrs-details kbd) {
         @apply rounded-md border border-border-subtle bg-surface-card px-1 py-0.5 font-mono text-[0.75em];
     }
 </style>

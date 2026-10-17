@@ -11,7 +11,11 @@
         Trash,
         Flag,
         Calendar,
-        Hash
+        Hash,
+        Bell,
+        Search,
+        Users,
+        Logs
     } from '@lucide/svelte';
     import { analyticsPeriod, browserTimeZone } from '#lib/adminAnalytics.ts';
     import { adminActivityRequest } from '#lib/adminActivityClient.ts';
@@ -629,7 +633,7 @@
                         {:else if key === 'page'}
                             <ActivityPageLink item={event} />
                         {:else if key === 'details'}
-                            <span class="flex min-w-0 items-center gap-x-2 leading-4">
+                            <span class="flex min-w-0 items-center gap-x-2 leading-snug">
                                 <ActivityDetails
                                     item={event}
                                     withAuthor />
@@ -1225,6 +1229,10 @@
         <LoadingState label="Loading results…" />
     {:else}
         <EmptyState
+            icon={listFiltersActive ? Search
+            : area === 'reports' ? Flag
+            : area === 'feedback' ? Users
+            : Bell}
             title={listFiltersActive ? 'No matching activity' : `No ${area} yet`}
             description={listFiltersActive ?
                 'Try another period or filter.'
@@ -1234,6 +1242,7 @@
 
 {#snippet historyEmpty()}
     <EmptyState
+        icon={detailFiltersActive ? Search : Logs}
         title={detailFiltersActive ? 'No matching activity' : 'Nothing here'}
         description={detailFiltersActive ? 'Try another filter.' : (
             'It may have been resolved, removed, or fall outside the selected period.'

@@ -38,14 +38,9 @@
 <PageContainer class="py-16">
     <EmptyState
         title={copy.title}
-        description={copy.description}>
-        {#snippet icon()}
-            {#if data.state === 'unavailable'}
-                <TriangleAlert class="size-7 text-warning" />
-            {:else}
-                <MailX class="size-7" />
-            {/if}
-        {/snippet}
+        description={copy.description}
+        icon={data.state === 'unavailable' ? TriangleAlert : MailX}
+        iconClass={data.state === 'unavailable' ? 'text-warning' : ''}>
         {#snippet actions()}
             <Button
                 type="secondary"

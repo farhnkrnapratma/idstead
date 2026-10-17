@@ -21,6 +21,7 @@
         Input,
         Textarea,
         Button,
+        SkipLink,
         TopNav,
         FooterSection,
         Section,
@@ -257,6 +258,8 @@
         content={ogImage} />
 </svelte:head>
 
+<SkipLink />
+
 <TopNav
     ariaLabel="Feedback page navigation"
     backHref="/"
@@ -264,8 +267,8 @@
     projects={pageProjects} />
 
 <main
-    id="main-content"
-    class="flex min-h-[calc(100vh-3rem)] flex-col pt-12 font-sans sm:min-h-[calc(100vh-3.5rem)] sm:pt-14">
+    id="main"
+    class="flex min-h-[calc(100vh-4rem)] flex-col pt-16 font-sans sm:min-h-[calc(100vh-5rem)] sm:pt-20">
     <Section
         spacing="none"
         class="relative z-10 pt-5 pb-6 md:pt-8 md:pb-8">
@@ -273,7 +276,7 @@
             width="standard"
             class="flex flex-col gap-8">
             <div
-                class="pointer-events-none absolute top-12.5 left-[50%] z-0 h-80 w-[320px] translate-x-[-50%] rounded-full bg-accent/10 blur-[80px]">
+                class="pointer-events-none absolute top-16.5 left-[50%] z-0 h-80 w-[320px] translate-x-[-50%] rounded-full bg-accent/10 blur-[80px]">
             </div>
 
             <div class="relative z-10 flex flex-col items-start text-left select-none">

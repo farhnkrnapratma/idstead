@@ -1,35 +1,36 @@
 <script lang="ts">
-    import type { Snippet } from 'svelte';
-    import { Ghost } from '@lucide/svelte';
+    import type { Component, Snippet } from 'svelte';
     import { cn } from '../utils/cn';
 
     interface Props {
+        icon: Component<{ class?: string }>;
+        iconClass?: string;
         title: string;
-        description?: string;
+        description: string;
         class?: string;
-        icon?: Snippet;
         actions?: Snippet;
     }
 
-    let { title, description = '', class: className = '', icon, actions }: Props = $props();
+    let {
+        icon: Icon,
+        iconClass = '',
+        title,
+        description,
+        class: className = '',
+        actions
+    }: Props = $props();
 </script>
 
 <div
     class={cn(
-        'flex flex-col items-center justify-center rounded-md border border-dashed border-border-default bg-surface/30 p-8 text-center select-none',
+        'flex flex-col items-center justify-center dashed-surface p-8 text-center select-none',
         className
     )}>
     <div class="mb-3 flex items-center justify-center text-text-muted">
-        {#if icon}
-            {@render icon()}
-        {:else}
-            <Ghost class="size-7" />
-        {/if}
+        <Icon class={cn('size-7', iconClass)} />
     </div>
     <h3 class="type-card-title">{title}</h3>
-    {#if description}
-        <p class="mt-1 max-w-xs type-body text-text-muted">{description}</p>
-    {/if}
+    <p class="mt-1 max-w-xs type-body text-text-muted">{description}</p>
 
     {#if actions}
         <div class="mt-4 flex items-center gap-2">

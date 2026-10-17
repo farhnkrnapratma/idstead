@@ -2,7 +2,7 @@ const SAFE_URL_SCHEMES = new Set(['http:', 'https:', 'mailto:', 'tel:']);
 
 export function sanitizeUrl(href: string): string | null {
     const value = href.trim();
-    if (value.includes('@@')) return null;
+    if (/[\uE000\uE001]/.test(value)) return null;
     const probe = Array.from(value)
         .filter(char => char.charCodeAt(0) > 32 && char.charCodeAt(0) !== 127)
         .join('');
@@ -14,7 +14,7 @@ export function sanitizeUrl(href: string): string | null {
 }
 
 const HTML_TAGS = new Set(
-    'a abbr b blockquote br button code del details div em h1 h2 h3 h4 h5 h6 hr i iframe img ins kbd li mark ol p picture pre s section source span strong sub summary sup table tbody td tfoot th thead tr u ul video'.split(
+    'a abbr b blockquote br button cite code dd del details dfn div dl dt em figcaption figure h1 h2 h3 h4 h5 h6 hr i iframe img ins kbd li mark ol p picture pre q s samp section small source span strong sub summary sup table tbody td tfoot th thead time tr u ul var video'.split(
         ' '
     )
 );
@@ -40,17 +40,9 @@ const GLOBAL_ATTRS = new Set([
     'aria-hidden',
     'aria-label',
     'aria-selected',
-    'aria-describedby',
-    'data-tab-label',
-    'data-tab-group-key',
-    'data-content',
-    'data-chart-content',
-    'data-highlight-lines',
-    'data-filename',
-    'data-footnote-ref',
-    'data-footnote-backref',
-    'data-footnotes'
+    'aria-describedby'
 ]);
+const DATA_ATTR_RE = /^data-mdrs-[a-z][a-z-]*$/;
 const SVG_ATTRS = new Set(
     'xmlns width height viewbox fill stroke stroke-width stroke-linecap stroke-linejoin preserveaspectratio d cx cy r x y rx ry x1 x2 y1 y2 points'.split(
         ' '
@@ -72,7 +64,8 @@ const TAG_ATTRS: Record<string, Set<string>> = {
     td: new Set(['align', 'colspan', 'rowspan']),
     th: new Set(['align', 'colspan', 'rowspan']),
     details: new Set(['open']),
-    span: new Set(['style'])
+    span: new Set(['style']),
+    time: new Set(['datetime'])
 };
 const BOOLEAN_ATTRS = new Set(['hidden', 'controls', 'playsinline', 'allowfullscreen', 'open']);
 const URL_ATTRS = new Set(['href', 'src', 'srcset']);
@@ -127,21 +120,31 @@ function escapeValue(value: string): string {
         .replace(/'/g, '&#39;');
 }
 
-const CLASS_TOKEN_RE = /^[\w:/[\]&.%()#,*>!+=~@-]+$/;
+const CLASS_TOKEN_RE =
+    /^(?:mdrs(?:-[a-z0-9-]*[a-z0-9])?|katex(?:-[\w-]+)?|hljs(?:-[\w-]+)?|language-[\w+#.-]+|bi(?:-[a-z0-9-]+)?)$/;
+const KATEX_CLASS_TOKEN_RE = /^[\w-]+$/;
 const CLASS_FORBIDDEN_RE =
-    /(?:^|:)(?:fixed|absolute|sticky|-?(?:inset|top|left|right|bottom|start|end)(?:-[\w./[\]%-]+)?|z-[\w[\]-]+)$/;
+    /^(?:fixed|absolute|sticky|-?(?:inset|top|left|right|bottom|start|end)(?:-[\w-]+)?|z-[\w-]+)$/;
 const STYLE_DECLARATION_RE =
     /^(?:position:\s*relative|(?:height|width|min-width|max-width|top|bottom|left|right|margin(?:-(?:left|right|top|bottom))?|padding(?:-(?:left|right|top|bottom))?|vertical-align|border-(?:top|bottom|left|right)-width|color):[-+\w.#%(),\s]+)$/i;
-const ID_RE = /^footnote[\w-]*$/;
+const ID_RE = /^mdrs-[\w%.-]+$/;
 const YOUTUBE_EMBED_SRC_RE = /^https:\/\/www\.youtube\.com\/embed\/[\w-]+$/;
 const CODEPEN_EMBED_SRC_RE =
     /^https:\/\/codepen\.io\/[\w-]+\/embed\/[\w-]+(?:\?default-tab=result)?$/;
 
-function safeClass(value: string): string {
+function safeClass(value: string, inKatex: boolean): string {
     return value
         .split(/\s+/)
-        .filter(token => token && CLASS_TOKEN_RE.test(token) && !CLASS_FORBIDDEN_RE.test(token))
+        .filter(token =>
+            inKatex ?
+                KATEX_CLASS_TOKEN_RE.test(token) && !CLASS_FORBIDDEN_RE.test(token)
+            :   CLASS_TOKEN_RE.test(token)
+        )
         .join(' ');
+}
+
+function isKatexRoot(value: string): boolean {
+    return value.split(/\s+/).some(token => token === 'katex' || token === 'katex-display');
 }
 
 function safeStyle(value: string): string {
@@ -158,15 +161,20 @@ function isMediaUrl(value: string): boolean {
 }
 
 function allowedAttr(tag: string, name: string): boolean {
-    if (GLOBAL_ATTRS.has(name) || name === 'id') return true;
+    if (GLOBAL_ATTRS.has(name) || name === 'id' || DATA_ATTR_RE.test(name)) return true;
     if (TAG_ATTRS[tag]?.has(name)) return true;
     if (SVG_TAGS.has(tag)) return SVG_ATTRS.has(name);
     if (MATH_TAGS.has(tag)) return MATH_ATTRS.has(name);
     return false;
 }
 
-function cleanAttrs(tag: string, source: string): { attrs: string; drop: boolean } {
+function cleanAttrs(
+    tag: string,
+    source: string,
+    inKatex: boolean
+): { attrs: string; drop: boolean; katex: boolean } {
     const seen = new Set<string>();
+    let katex = inKatex;
     let out = '';
     let target = '';
     for (const match of source.matchAll(ATTR_RE)) {
@@ -185,12 +193,13 @@ function cleanAttrs(tag: string, source: string): { attrs: string; drop: boolean
             if (name === 'src' && tag !== 'iframe' && !isMediaUrl(url)) continue;
             if (tag === 'iframe') {
                 if (!YOUTUBE_EMBED_SRC_RE.test(url) && !CODEPEN_EMBED_SRC_RE.test(url)) {
-                    return { attrs: '', drop: true };
+                    return { attrs: '', drop: true, katex };
                 }
             }
             out += ` ${name}="${escapeValue(url)}"`;
         } else if (name === 'class') {
-            const value = safeClass(raw);
+            katex ||= isKatexRoot(raw);
+            const value = safeClass(raw, katex);
             if (value) out += ` class="${escapeValue(value)}"`;
         } else if (name === 'style') {
             const value = safeStyle(raw);
@@ -212,8 +221,8 @@ function cleanAttrs(tag: string, source: string): { attrs: string; drop: boolean
     if (tag === 'a' && target) {
         out += ' target="_blank" rel="noopener noreferrer"';
     }
-    if (tag === 'iframe' && !seen.has('src')) return { attrs: '', drop: true };
-    return { attrs: out, drop: false };
+    if (tag === 'iframe' && !seen.has('src')) return { attrs: '', drop: true, katex };
+    return { attrs: out, drop: false, katex };
 }
 
 const ATTR_RE = /([^\s"'<>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g;
@@ -230,6 +239,7 @@ export function sanitizeHtml(html: string): string {
 
     let out = '';
     const open: string[] = [];
+    const katexScopes: boolean[] = [];
     let index = 0;
 
     const skipElement = (tag: string) => {
@@ -266,7 +276,10 @@ export function sanitizeHtml(html: string): string {
             const tag = closeMatch[1].toLowerCase();
             const position = open.lastIndexOf(tag);
             if (position !== -1) {
-                while (open.length > position) out += `</${open.pop()}>`;
+                while (open.length > position) {
+                    katexScopes.pop();
+                    out += `</${open.pop()}>`;
+                }
             }
             continue;
         }
@@ -289,7 +302,11 @@ export function sanitizeHtml(html: string): string {
         }
         if (!isAllowedTag(tag)) continue;
 
-        const { attrs, drop } = cleanAttrs(tag, openMatch[2]);
+        const { attrs, drop, katex } = cleanAttrs(
+            tag,
+            openMatch[2],
+            katexScopes[katexScopes.length - 1] ?? false
+        );
         if (drop) {
             if (!openMatch[3]) skipElement(tag);
             continue;
@@ -304,6 +321,7 @@ export function sanitizeHtml(html: string): string {
         } else {
             out += `<${tag}${attrs}>`;
             open.push(tag);
+            katexScopes.push(katex);
         }
     }
 

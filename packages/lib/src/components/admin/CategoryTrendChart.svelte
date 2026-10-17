@@ -183,6 +183,9 @@
             {onRetry} />
     {:else if !hasActivity}
         <EmptyState
+            icon={chartType === 'bar' ? ChartColumnBig
+            : chartType === 'donut' ? ChartPie
+            : ChartSpline}
             title={`No ${donutUnit} in this period`}
             description="Nothing to show for the selected range." />
     {:else if chartType === 'donut'}

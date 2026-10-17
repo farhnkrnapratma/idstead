@@ -1,3 +1,6 @@
+import { extractFrontmatter } from '../frontmatter';
+import { stripPlaceholderChars } from '../placeholders';
+
 function decodeHtmlEntities(str: string): string {
     return str
         .replace(/&quot;/g, '"')
@@ -11,12 +14,11 @@ function decodeHtmlEntities(str: string): string {
 export function markdownToPlainText(markdown: string): string {
     if (!markdown) return '';
 
-    let text = markdown;
+    let text = extractFrontmatter(stripPlaceholderChars(markdown)).body;
     const kept: string[] = [];
-    const keep = (value: string) => `${kept.push(value) - 1}`;
+    const keep = (value: string) => `\uE000${kept.push(value) - 1}\uE001`;
 
     text = text.replace(/<!--[\s\S]*?-->/g, '');
-    text = text.replace(/^---[\s\S]*?---\n*/m, '');
     text = text.replace(/(`{3,}|~{3,})[^\n]*\n([\s\S]*?)\1/g, (_, __, body: string) => keep(body));
     text = text.replace(
         /^[ \t]*:::math[ \t]*\n([\s\S]*?)\n[ \t]*:::[ \t]*$/gim,
@@ -41,7 +43,7 @@ export function markdownToPlainText(markdown: string): string {
     text = text.replace(/~~(.*?)~~/g, '$1');
     text = text.replace(/<[^>]*>/g, '');
     text = decodeHtmlEntities(text);
-    text = text.replace(/(\d+)/g, (_, index: string) => kept[+index]);
+    text = text.replace(/\uE000(\d+)\uE001/g, (_, index: string) => kept[+index]);
     text = text.replace(/\n{3,}/g, '\n\n');
 
     return text.trim();

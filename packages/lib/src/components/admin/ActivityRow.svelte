@@ -62,7 +62,7 @@
             class={cn('pr-7', detail ? 'text-xs' : 'text-sm')} />
         <div
             data-activity-line="metadata"
-            class="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 pr-7 text-xs leading-4">
+            class="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 pr-7 text-xs leading-snug">
             <ActivityDetails {item} />
             <ActivityTimestamp
                 date={item.created_at}

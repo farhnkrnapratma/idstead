@@ -9,7 +9,6 @@ import type {
     InboxResult
 } from '#lib/adminActivity.ts';
 import { toastStore } from './toastStore.svelte';
-export type { AdminNotificationRow } from '#lib/adminActivity.ts';
 
 const defaults: InboxPreferences = {
     query: '',

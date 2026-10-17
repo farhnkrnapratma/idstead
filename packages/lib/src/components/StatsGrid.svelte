@@ -1,11 +1,13 @@
 <script lang="ts">
     import type { Component } from 'svelte';
+    import { ChevronRight } from '@lucide/svelte';
     import { cn } from '../utils/cn';
 
     interface StatItem {
         label: string;
         value: string;
         description?: string;
+        ratio?: number;
         icon?: string;
         componentIcon?: Component<{ class?: string }>;
         onclick?: () => void;
@@ -37,28 +39,45 @@
                 role={item.onclick ? undefined : 'group'}
                 onclick={item.onclick}
                 class={cn(
-                    'group flex min-w-0 items-center gap-2 rounded-md border border-border-subtle bg-surface-card p-3 text-left transition-colors',
+                    'group flex h-full min-w-0 flex-col gap-3 rounded-md border border-border-subtle bg-surface-card p-4 text-left transition-colors',
                     item.onclick
                         && 'cursor-pointer hover:border-accent/50 hover:bg-accent-subtle/20 focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-focus-ring'
                 )}>
-                {#if item.componentIcon}
-                    {@const Icon = item.componentIcon}
-                    <span
-                        class="flex size-10 shrink-0 items-center justify-center rounded-md border border-accent/25 bg-accent-subtle text-accent-text"
-                        ><Icon class="size-5" /></span>
-                {/if}
-                <span class="min-w-0">
-                    <span
-                        class="block text-xl leading-none font-extrabold tracking-tight text-text-primary"
-                        >{item.value}</span>
-                    <span
-                        class="mt-1.5 block truncate text-xs leading-tight font-bold text-text-secondary"
+                <span class="flex min-w-0 items-center gap-2.5">
+                    {#if item.componentIcon}
+                        {@const Icon = item.componentIcon}
+                        <span
+                            class="flex size-8 shrink-0 items-center justify-center rounded-md border border-accent/25 bg-accent-subtle text-accent-text"
+                            ><Icon class="size-4" /></span>
+                    {/if}
+                    <span class="min-w-0 truncate text-xs font-bold text-text-secondary"
                         >{item.label}</span>
-                    {#if item.description}<span
-                            class="mt-0.5 block truncate text-xs text-text-muted"
+                    {#if item.onclick}
+                        <ChevronRight
+                            class="ml-auto size-4 shrink-0 text-text-muted transition-[color,translate] group-hover:text-accent-text motion-safe:group-hover:translate-x-0.5"
+                            aria-hidden="true" />
+                    {/if}
+                </span>
+                <span class="flex min-w-0 flex-col gap-1.5">
+                    <span
+                        class="block text-3xl leading-none font-extrabold tracking-tight text-text-primary tabular-nums"
+                        >{item.value}</span>
+                    {#if item.description}<span class="block truncate text-xs text-text-muted"
                             >{item.description}</span
+                        >{:else}<span
+                            class="block text-xs"
+                            aria-hidden="true">&nbsp;</span
                         >{/if}
                 </span>
+                {#if item.ratio !== undefined}
+                    <span
+                        class="mt-auto block h-1 w-full overflow-hidden rounded-full bg-border-subtle"
+                        aria-hidden="true">
+                        <span
+                            class="block h-full rounded-full bg-accent"
+                            style="width: {Math.min(1, Math.max(0, item.ratio)) * 100}%"></span>
+                    </span>
+                {/if}
             </svelte:element>
         {:else if variant === 'funding'}
             <button

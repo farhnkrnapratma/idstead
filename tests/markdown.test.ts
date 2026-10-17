@@ -66,10 +66,14 @@ describe('standard markdown', () => {
         expect(html).toContain('<hr>');
     });
 
-    test('github alert syntax is a plain blockquote now', async () => {
+    test('github alerts render as callouts and unknown kinds stay blockquotes', async () => {
         const html = await render('> [!NOTE]\n> hello');
-        expect(html).toContain('<blockquote>');
-        expect(html).not.toContain('markdown-alert');
+        expect(html).toContain('mdrs-alert mdrs-alert--note');
+        expect(html).toContain('hello');
+        expect(html).not.toContain('<blockquote>');
+        const other = await render('> [!FOO]\n> hello');
+        expect(other).toContain('<blockquote>');
+        expect(other).not.toContain('mdrs-alert');
     });
 });
 
@@ -78,8 +82,8 @@ describe('code fences', () => {
         const html = await render(
             '```python filename="main.py" mark=1,3,5..6\na\nb\nc\nd\ne\nf\ng\n```'
         );
-        expect(html).toContain('data-highlight-lines="1,3,5,6"');
-        expect(html).toContain('data-filename="main.py"');
+        expect(html).toContain('data-mdrs-highlight-lines="1,3,5,6"');
+        expect(html).toContain('data-mdrs-filename="main.py"');
         expect(html).toContain('class="language-python"');
     });
 
@@ -88,14 +92,14 @@ describe('code fences', () => {
         expect(plain).not.toContain('data-filename');
         expect(plain).not.toContain('data-highlight-lines');
         const onlyName = await render('```ts filename="a.ts"\nx\n```');
-        expect(onlyName).toContain('data-filename="a.ts"');
+        expect(onlyName).toContain('data-mdrs-filename="a.ts"');
         const onlyMark = await render('```ts mark=1\nx\n```');
-        expect(onlyMark).toContain('data-highlight-lines="1"');
+        expect(onlyMark).toContain('data-mdrs-highlight-lines="1"');
     });
 
     test('mark ranges are clamped and invalid parts are ignored', async () => {
         const html = await render('```ts mark=2..99,x,5-6,0\na\nb\nc\n```');
-        expect(html).toContain('data-highlight-lines="2,3"');
+        expect(html).toContain('data-mdrs-highlight-lines="2,3"');
     });
 
     test('old brace syntax no longer marks lines', async () => {
@@ -105,7 +109,7 @@ describe('code fences', () => {
 
     test('filename is escaped', async () => {
         const html = await render('```ts filename="a&b.ts"\nx\n```');
-        expect(html).toContain('data-filename="a&amp;b.ts"');
+        expect(html).toContain('data-mdrs-filename="a&amp;b.ts"');
     });
 
     test('mark text inside the filename is not treated as a range', async () => {
@@ -129,7 +133,7 @@ describe('callouts', () => {
         ':::%s renders an alert',
         async type => {
             const html = await render(`:::${type}\nhello **world**\n:::`);
-            expect(html).toContain(`markdown-alert markdown-alert-${type}`);
+            expect(html).toContain(`mdrs-alert mdrs-alert--${type}`);
             expect(html).toContain('<strong>world</strong>');
             expect(html).not.toContain(':::');
         }
@@ -137,9 +141,9 @@ describe('callouts', () => {
 
     test('custom callout with title and icon', async () => {
         const html = await render(':::callout title="Pro <Tip>" icon="rocket"\nbody\n:::');
-        expect(html).toContain('markdown-callout');
+        expect(html).toContain('mdrs-callout');
         expect(html).toContain('<span>Pro &lt;Tip&gt;</span>');
-        expect(html).toContain('lucide-rocket');
+        expect(html).toContain('mdrs-icon-rocket');
     });
 
     test('icon is optional and unknown icons render nothing', async () => {
@@ -157,13 +161,13 @@ describe('callouts', () => {
 
     test('callout without a title is reported', async () => {
         const html = await render(':::callout icon="rocket"\nbody\n:::');
-        expect(html).toContain('markdown-define-error');
-        expect(html).not.toContain('markdown-callout"');
+        expect(html).toContain('mdrs-define-error');
+        expect(html).not.toContain('mdrs-callout"');
     });
 
     test('old brace attribute syntax is not accepted', async () => {
         const html = await render(':::callout{title="T"}\nbody\n:::');
-        expect(html).not.toContain('markdown-callout');
+        expect(html).not.toContain('mdrs-callout');
     });
 });
 
@@ -177,7 +181,7 @@ describe('math', () => {
 
     test(':::math is a display block', async () => {
         const html = await render(':::math\n\\int_0^1 x\\,dx\n:::');
-        expect(html).toContain('katex-block');
+        expect(html).toContain('mdrs-math--block');
         expect(html).toContain('katex-display');
     });
 
@@ -194,7 +198,7 @@ describe('math', () => {
 
     test('math works inside other containers', async () => {
         const html = await render(':::note\nvalue $$ x^2 $$\n:::');
-        expect(html).toContain('markdown-alert-note');
+        expect(html).toContain('mdrs-alert--note');
         expect(html).toContain('class="katex"');
     });
 });
@@ -205,19 +209,19 @@ describe('tabs and snippets', () => {
 
     test(':::tabs renders content tabs without a sync key', async () => {
         const html = await render(tabs('tabs', ' key="x"'));
-        expect(html).toContain('markdown-tab-group');
-        expect(html).not.toContain('markdown-tabs-container');
+        expect(html).toContain('mdrs-tabs');
+        expect(html).not.toContain('mdrs-snippets');
         expect(html).not.toContain('data-tab-group-key');
-        expect(html).toContain('data-tab-label="A"');
-        expect(html).toContain('lucide-zap');
-        expect(html).toContain('data-tab-label="B &lt;b&gt;"');
+        expect(html).toContain('data-mdrs-tab-label="A"');
+        expect(html).toContain('mdrs-icon-zap');
+        expect(html).toContain('data-mdrs-tab-label="B &lt;b&gt;"');
         expect(html).toContain('<p>first</p>');
     });
 
     test(':::snippets renders code tabs with an optional key', async () => {
         const keyed = await render(tabs('snippets', ' key="pm"'));
-        expect(keyed).toContain('markdown-tabs-container');
-        expect(keyed).toContain('data-tab-group-key="pm"');
+        expect(keyed).toContain('mdrs-snippets');
+        expect(keyed).toContain('data-mdrs-tab-key="pm"');
         const plain = await render(tabs('snippets'));
         expect(plain).not.toContain('data-tab-group-key');
     });
@@ -230,7 +234,7 @@ describe('tabs and snippets', () => {
 
     test('a tab without a label is reported', async () => {
         const html = await render(':::tabs\n::tab\nx\n::\n:::');
-        expect(html).toContain('markdown-define-error');
+        expect(html).toContain('mdrs-define-error');
         expect(html).not.toContain('data-tab-label');
     });
 
@@ -256,15 +260,15 @@ describe('tabs and snippets', () => {
             ].join('\n')
         );
         expect(html).toContain('language-bash');
-        expect(html).toContain('markdown-steps-list');
-        expect(html).toContain('markdown-alert-note');
+        expect(html).toContain('mdrs-steps-list');
+        expect(html).toContain('mdrs-alert--note');
         expect(html.match(/role="tabpanel"/g)?.length).toBe(2);
         expect(html).not.toContain(':::');
     });
 
     test('a missing :: before ::: still closes the tab', async () => {
         const html = await render(':::tabs\n::tab label="A"\nx\n:::\n\nafter');
-        expect(html).toContain('data-tab-label="A"');
+        expect(html).toContain('data-mdrs-tab-label="A"');
         expect(html).toContain('<p>after</p>');
     });
 });
@@ -272,9 +276,9 @@ describe('tabs and snippets', () => {
 describe('details', () => {
     test(':::details renders a collapsible card', async () => {
         const html = await render(':::details summary="More <info>"\n- a\n- b\n:::');
-        expect(html).toContain('markdown-details');
+        expect(html).toContain('mdrs-details');
         expect(html).toContain('More &lt;info&gt;');
-        expect(html).toContain('ul-list-item');
+        expect(html).toContain('mdrs-list-item');
     });
 
     test('details can nest', async () => {
@@ -288,7 +292,7 @@ describe('details', () => {
 
     test('summary is required', async () => {
         const html = await render(':::details\nbody\n:::');
-        expect(html).toContain('markdown-define-error');
+        expect(html).toContain('mdrs-define-error');
     });
 });
 
@@ -313,7 +317,7 @@ describe('embed', () => {
     });
 
     test('url is required and old brace syntax is rejected', async () => {
-        expect(await render(':::embed')).toContain('markdown-define-error');
+        expect(await render(':::embed')).toContain('mdrs-define-error');
         expect(await render(':::embed{url="https://youtu.be/abc"}')).not.toContain('<iframe');
     });
 });
@@ -337,7 +341,7 @@ describe('robustness and removed directives', () => {
 
     test('directives inside code fences are left alone', async () => {
         const html = await render('```md\n:::note\nx\n:::\n```');
-        expect(html).not.toContain('markdown-alert');
+        expect(html).not.toContain('mdrs-alert');
         expect(html).toContain(':::note');
     });
 
@@ -355,18 +359,18 @@ describe('icon resolution', () => {
     });
 
     test('lucide wins when the name exists in both libraries', async () => {
-        expect(await resolve('list')).toContain('lucide lucide-list ');
+        expect(await resolve('list')).toContain('mdrs-icon mdrs-icon-list"');
         expect(await resolve('rocket')).toContain('<path');
     });
 
     test('falls back to bootstrap when lucide has no such icon', async () => {
         expect(await resolve('facebook')).toBe(
-            '<i class="bi bi-facebook shrink-0" aria-hidden="true"></i>'
+            '<i class="mdrs-icon bi bi-facebook" aria-hidden="true"></i>'
         );
     });
 
     test('prefixes force the library', async () => {
-        expect(await resolve('lucide-rocket')).toContain('lucide-rocket');
+        expect(await resolve('lucide-rocket')).toContain('mdrs-icon-rocket');
         expect(await resolve('bi-facebook')).toContain('bi bi-facebook');
         expect(await resolve('bi-rocket')).toContain('bi bi-rocket');
         expect(await resolve('lucide-facebook')).toBe('');
@@ -409,7 +413,7 @@ describe('hardening', () => {
 
     test('replacement patterns in filenames stay literal', async () => {
         const html = await render('```js filename="a$&b$\'d.js"\nx\n```');
-        expect(html).toContain('data-filename="a$&amp;b$&#39;d.js"');
+        expect(html).toContain('data-mdrs-filename="a$&amp;b$&#39;d.js"');
         expect(html.match(/<pre/g)?.length).toBe(1);
     });
 
@@ -455,15 +459,15 @@ describe('audit regressions', () => {
 
     test('empty and uppercase tab directives', async () => {
         const empty = await render(':::tabs\n:::');
-        expect(empty).toContain('markdown-define-error');
+        expect(empty).toContain('mdrs-define-error');
         expect(empty).not.toContain('<pre>');
         const upper = await render(':::TABS\n::TAB label="A"\nx\n::\n:::');
-        expect(upper).toContain('data-tab-label="A"');
+        expect(upper).toContain('data-mdrs-tab-label="A"');
     });
 
     test('four-space indented directives are code, not directives', async () => {
         const html = await render('    :::note\n    x\n    :::');
-        expect(html).not.toContain('markdown-alert');
+        expect(html).not.toContain('mdrs-alert');
     });
 
     test('indented code at the start of a container is preserved', async () => {
@@ -489,7 +493,7 @@ describe('audit regressions', () => {
 
     test('icon attribute names are case-insensitive', async () => {
         const html = await render(':::callout title="T" ICON="rocket"\nx\n:::');
-        expect(html).toContain('lucide-rocket');
+        expect(html).toContain('mdrs-icon-rocket');
     });
 });
 
@@ -515,6 +519,11 @@ describe('plain text export', () => {
         expect(text).not.toContain('::tab');
     });
 
+    test('only leading frontmatter is dropped, not text between thematic breaks', () => {
+        expect(toText('---\ntitle: x\n---\n\nBody')).toBe('Body');
+        expect(toText('Intro\n\n---\n\nMiddle\n\n---\n\nEnd')).toBe('Intro\n\nMiddle\n\nEnd');
+    });
+
     test('math keeps its source without delimiters', () => {
         expect(toText('Euler: $$ e^{i_x} $$')).toBe('Euler: e^{i_x}');
         expect(toText(':::math\na_b\n:::')).toBe('a_b');
@@ -525,8 +534,8 @@ describe('headings with math', () => {
     test('inline math in a heading yields a clean id and toc text', async () => {
         const { prepareMarkdownPage } = await import('../packages/lib/src/markdown');
         const { html, headings } = await prepareMarkdownPage('## Title $$ x^2 $$\n\ntext');
-        expect(html).toContain('id="title-x2"');
-        expect(headings).toEqual([{ id: 'title-x2', text: 'Title x^2', level: 2 }]);
+        expect(html).toContain('id="mdrs-title-x2"');
+        expect(headings).toEqual([{ id: 'mdrs-title-x2', text: 'Title x^2', level: 2 }]);
     });
 });
 
@@ -554,34 +563,34 @@ describe('containers inside lists and blockquotes', () => {
 
     test('a note stays inside its list item', async () => {
         const html = await render('- item\n\n  :::note\n  inner **bold**\n  :::\n\n- next');
-        expect(html).toContain('markdown-alert-note');
-        expect(within(html, 'li', 'markdown-alert-note')).toBe(true);
+        expect(html).toContain('mdrs-alert--note');
+        expect(within(html, 'li', 'mdrs-alert--note')).toBe(true);
         expect(html.match(/<li/g)?.length).toBe(2);
         expect(html).not.toContain(':::');
     });
 
     test('numbered list items work without a blank line', async () => {
         const html = await render('1. item\n   :::note\n   inner\n   :::\n2. next');
-        expect(within(html, 'li', 'markdown-alert-note')).toBe(true);
+        expect(within(html, 'li', 'mdrs-alert--note')).toBe(true);
         expect(html.match(/<li/g)?.length).toBe(2);
     });
 
     test('a note inside a blockquote stays in the blockquote', async () => {
         const html = await render('> :::note\n> inner **bold**\n> :::');
-        expect(within(html, 'blockquote', 'markdown-alert-note')).toBe(true);
+        expect(within(html, 'blockquote', 'mdrs-alert--note')).toBe(true);
         expect(html).not.toContain(':::');
     });
 
     test('tabs work inside a blockquote', async () => {
         const html = await render('> :::tabs\n> ::tab label="A"\n> one\n> ::\n> :::');
-        expect(within(html, 'blockquote', 'data-tab-label="A"')).toBe(true);
+        expect(within(html, 'blockquote', 'data-mdrs-tab-label="A"')).toBe(true);
     });
 
     test(':::math works inside list items and blockquotes', async () => {
         const list = await render('- a\n\n  :::math\n  x^2\n  :::\n\n- b');
-        expect(within(list, 'li', 'katex-block')).toBe(true);
+        expect(within(list, 'li', 'mdrs-math--block')).toBe(true);
         const quote = await render('> :::math\n> x^2\n> :::');
-        expect(within(quote, 'blockquote', 'katex-block')).toBe(true);
+        expect(within(quote, 'blockquote', 'mdrs-math--block')).toBe(true);
         expect(quote).not.toContain('@@');
     });
 
@@ -589,6 +598,118 @@ describe('containers inside lists and blockquotes', () => {
         const html = await render('> :::note\n> inner\n\nplain paragraph');
         expect(html).toContain(':::note');
         expect(html).toContain('plain paragraph');
-        expect(html).not.toContain('markdown-alert');
+        expect(html).not.toContain('mdrs-alert');
+    });
+});
+
+describe('drop-in compatibility', () => {
+    test('interpolation stays literal without a :::define block', async () => {
+        const html = await render('Template: ${name} and [a].${b}');
+        expect(html).toContain('Template: ${name} and [a].${b}');
+        expect(html).not.toContain('mdrs-define-error');
+    });
+
+    test('interpolation runs when :::define has entries', async () => {
+        const html = await render(':::define\nn: 3\n:::\n\n${n}');
+        expect(html).toContain('<p>3</p>');
+    });
+
+    test('an empty :::define block does not switch interpolation on', async () => {
+        const html = await render(':::define\n:::\n\n${n}');
+        expect(html).toContain('${n}');
+        expect(html).not.toContain(':::define');
+    });
+
+    test('a backslash keeps ${ literal', async () => {
+        const html = await render(':::define\nn: 3\n:::\n\n\\${n} is ${n}');
+        expect(html).toContain('${n} is 3');
+    });
+
+    test('interpolation inside conditional text is evaluated', async () => {
+        const html = await render(':::define\nn: 3\nok: true\n:::\n\n[Value ${n}].${ok}');
+        expect(html).toContain('Value 3');
+        expect(html).not.toContain('${n}');
+    });
+
+    test('prices with $$ stay text and real inline math still renders', async () => {
+        const prices = await render('Costs $$5 and $$10, but $$x^2$$ is math');
+        expect(prices).toContain('Costs $$5 and $$10, but');
+        expect(prices.match(/class="katex"/g)).toHaveLength(1);
+        expect(await render('$$ x = 3 $$')).toContain('class="katex"');
+    });
+
+    test('numbered task items keep their state', async () => {
+        const html = await render('1. [x] done\n2. [-] skipped');
+        expect(html).toContain('<ol class="mdrs-list mdrs-list--ordered">');
+        expect(html).toContain('mdrs-task--done');
+        expect(html).toContain('mdrs-task--skipped');
+        expect(html).toContain('<span class="mdrs-sr-only">Done: </span>');
+    });
+
+    test('loose lists keep their paragraphs', async () => {
+        const html = await render('- a\n\n- b');
+        expect(html).toContain('mdrs-list--loose');
+        expect(html).toContain('<p>a</p>');
+        expect(await render('- a\n- b')).not.toContain('<p>');
+    });
+
+    test('semantic html tags survive', async () => {
+        const html = await render('<dl><dt>T</dt><dd>D</dd></dl>\n\n<q>quote</q> <small>s</small>');
+        expect(html).toContain('<dl><dt>T</dt><dd>D</dd></dl>');
+        expect(html).toContain('<q>quote</q>');
+        expect(html).toContain('<small>s</small>');
+    });
+
+    test('a numbered footnote-like line is not rewritten', async () => {
+        const html = await render('Text[^a]\n\n1. [^a]: text');
+        expect(html).toContain('<ol class="mdrs-list mdrs-list--ordered">');
+    });
+
+    test('urls containing @@ keep their href and sentinels are stripped', async () => {
+        expect(await render('[l](https://x.test/@@y)')).toContain('href="https://x.test/@@y"');
+        expect(await render('a\uE000IGNORE_RENDER_0\uE001b')).toContain('<p>aIGNORE_RENDER_0b</p>');
+    });
+
+    test('a punctuation-only heading gets a fallback id', async () => {
+        const { prepareMarkdownPage } = await import('../packages/lib/src/markdown');
+        const { html } = await prepareMarkdownPage('## !!!\n\n## Main');
+        expect(html).toContain('id="mdrs-heading-0"');
+        expect(html).toContain('id="mdrs-main"');
+    });
+
+    test('same-document links follow the prefixed heading ids', async () => {
+        const { prepareMarkdownPage } = await import('../packages/lib/src/markdown');
+        const { html } = await prepareMarkdownPage('## Setup\n\nSee [setup](#setup).');
+        expect(html).toContain('href="#mdrs-setup"');
+    });
+
+    test('a longer ignore-render fence can hold a ::: line', async () => {
+        const html = await render('::::ignore-render\n:::note\nx\n:::\n::::');
+        expect(html).toContain('<pre>:::note\nx\n:::</pre>');
+    });
+});
+
+describe('scanner robustness', () => {
+    test('code spans follow CommonMark backtick matching', async () => {
+        const html = await render(':::define\nn: 2\n:::\n\n``a ${n} `` and ```b ${n}`` ${n}');
+        expect(html).toContain('<code>a ${n} </code>');
+        expect(html).not.toContain('<code>b');
+        expect(html).toContain('```b 2`` 2');
+    });
+
+    test('an unclosed fence protects everything after it', async () => {
+        const html = await render(':::define\nn: 2\n:::\n\n```\n${n}\n:::note\nx');
+        expect(html).toContain('${n}');
+        expect(html).not.toContain('mdrs-alert');
+    });
+
+    test('adversarial input renders in bounded time', async () => {
+        const started = performance.now();
+        await render('`'.repeat(200_000));
+        await render('$$ ' + 'a '.repeat(100_000));
+        await render(':::define\nn: 1\n:::\n' + '['.repeat(100_000));
+        await render(':::define\nn: 1\n:::\n' + '${'.repeat(50_000));
+        await render(':::math\n:::ignore-render\nx\n'.repeat(10_000));
+        expect(performance.now() - started).toBeLessThan(5000);
     });
 });

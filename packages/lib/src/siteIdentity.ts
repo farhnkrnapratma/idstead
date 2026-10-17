@@ -12,8 +12,6 @@ export function publicAvatarUrl(
     return new URL(source, profile.siteUrl).href;
 }
 
-export type { ImageSource } from './blogBanner';
-
 export function avatarWebpSource(profile?: { avatarVersion?: string | null } | null) {
     return profile?.avatarVersion ? '/avatar.webp' : '';
 }

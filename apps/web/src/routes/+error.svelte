@@ -65,7 +65,7 @@
 
 <div class="flex min-h-screen flex-col">
     <main
-        id="main-content"
+        id="main"
         class="my-auto grid place-items-center px-6 py-16 font-sans sm:py-24 lg:px-8">
         <ErrorState
             size="page"

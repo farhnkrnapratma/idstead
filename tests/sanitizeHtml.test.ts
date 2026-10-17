@@ -117,28 +117,28 @@ describe('sanitizeHtml: engine output', () => {
     test('the markers the client enhancers rely on survive', async () => {
         const html = await renderMarkdown(markdown);
         for (const marker of [
-            'markdown-alert',
-            'markdown-callout',
-            'markdown-details',
-            'markdown-tabs-container',
-            'markdown-tab-group',
-            'markdown-steps-container',
-            'data-tab-label=',
-            'data-tab-group-key="bundler"',
-            'mermaid-raw-code',
-            'data-content=',
-            'data-chart-content=',
+            'mdrs-alert',
+            'mdrs-callout',
+            'mdrs-details',
+            'mdrs-snippets',
+            'mdrs-tabs',
+            'mdrs-steps',
+            'data-mdrs-tab-label=',
+            'data-mdrs-tab-key="bundler"',
+            'mdrs-mermaid-source',
+            'data-mdrs-source=',
+            'data-mdrs-chart=',
             'katex-mathml',
             'katex-html',
-            'data-filename="auth.svelte.ts"',
-            'data-highlight-lines="2,5,6,7"',
+            'data-mdrs-filename="auth.svelte.ts"',
+            'data-mdrs-highlight-lines="2,5,6,7"',
             'https://www.youtube.com/embed/',
             '<kbd>',
             '<sub>',
             '<sup>',
             '<u>',
             '<mark>',
-            'class="footnotes"'
+            'class="mdrs-footnotes mdrs-references"'
         ]) {
             expect(html).toContain(marker);
         }
@@ -155,7 +155,7 @@ describe('sanitizeHtml: engine output', () => {
         const html = await renderMarkdown(
             '<details><summary>More</summary>\n\nbody\n\n</details>\n\nPress <kbd>Ctrl</kbd>'
         );
-        expect(html).toContain('markdown-details');
+        expect(html).toContain('mdrs-details');
         expect(html).toContain('<kbd>Ctrl</kbd>');
     });
 });

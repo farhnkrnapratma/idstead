@@ -21,7 +21,7 @@
 <div
     data-activity-line="summary"
     title={sentence}
-    class={cn('leading-5 wrap-break-word text-text-primary', className)}>
+    class={cn('leading-snug wrap-break-word text-text-primary', className)}>
     {#if item.kind === 'comment_report'}
         Someone reported a comment by <strong>{author}</strong>
         on the&nbsp;{@render pageLink()}&nbsp;{pageKind}.

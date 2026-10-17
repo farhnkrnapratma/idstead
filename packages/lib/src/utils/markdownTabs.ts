@@ -17,6 +17,13 @@ export function setTabPreference(key: string, value: string) {
     tabListeners.forEach(listener => listener(key, value));
 }
 
+export function onTabPreference(listener: (key: string, value: string) => void) {
+    tabListeners.add(listener);
+    return () => {
+        tabListeners.delete(listener);
+    };
+}
+
 export function getTabPreference(key: string): string | undefined {
     return tabPreferences.get(key);
 }
@@ -26,39 +33,37 @@ export function enhanceMarkdownTabs(
     triggerToast?: (message: string) => void
 ) {
     const root =
-        container.classList.contains('prose-custom') ?
+        container.classList.contains('mdrs') ?
             container
-        :   (container.querySelector('.prose-custom') as HTMLElement) || container;
+        :   (container.querySelector('.mdrs') as HTMLElement) || container;
     if (!root) return;
 
-    const tabContainers = root.querySelectorAll<HTMLElement>(
-        '.markdown-tabs-container, .markdown-tab-group'
-    );
+    const tabContainers = root.querySelectorAll<HTMLElement>('.mdrs-snippets, .mdrs-tabs');
 
     tabContainers.forEach(tabsEl => {
-        if (tabsEl.dataset.tabsEnhanced === 'true') return;
-        tabsEl.dataset.tabsEnhanced = 'true';
+        if (tabsEl.dataset.mdrsEnhanced === 'true') return;
+        tabsEl.dataset.mdrsEnhanced = 'true';
 
-        const isContentGroup = tabsEl.classList.contains('markdown-tab-group');
-        const syncKey = tabsEl.getAttribute('data-tab-group-key');
+        const isContentGroup = tabsEl.classList.contains('mdrs-tabs');
+        const syncKey = tabsEl.getAttribute('data-mdrs-tab-key');
         const ownedBy = (selector: string) =>
             Array.from(tabsEl.querySelectorAll<HTMLElement>(selector)).filter(
-                el => el.closest('.markdown-tabs-container, .markdown-tab-group') === tabsEl
+                el => el.closest('.mdrs-snippets, .mdrs-tabs') === tabsEl
             );
-        const tabButtons = ownedBy('.markdown-tab-button');
-        const tabPanels = ownedBy('.markdown-tab-panel');
+        const tabButtons = ownedBy('.mdrs-tab');
+        const tabPanels = ownedBy('.mdrs-tab-panel');
 
         let codeControls: ReturnType<typeof createCodeActionControls> | null = null;
         const tabsScope = nextCodeScope('tabs');
         focusScope(tabsEl, tabsScope);
 
         if (!isContentGroup) {
-            let actionsWrapper = tabsEl.querySelector<HTMLElement>('.markdown-tabs-actions');
-            const headerEl = tabsEl.querySelector<HTMLElement>('.markdown-tabs-header');
+            let actionsWrapper = tabsEl.querySelector<HTMLElement>('.mdrs-snippets-actions');
+            const headerEl = tabsEl.querySelector<HTMLElement>('.mdrs-snippets-header');
 
             if (!actionsWrapper && headerEl) {
                 actionsWrapper = document.createElement('div');
-                actionsWrapper.className = 'markdown-tabs-actions flex items-center gap-1';
+                actionsWrapper.className = 'mdrs-snippets-actions';
                 headerEl.appendChild(actionsWrapper);
             }
 
@@ -66,24 +71,24 @@ export function enhanceMarkdownTabs(
                 codeControls = createCodeActionControls({
                     getCodeText: () => {
                         const activePanel = tabsEl.querySelector<HTMLElement>(
-                            '.markdown-tab-panel:not([hidden])'
+                            '.mdrs-tab-panel:not([hidden])'
                         );
                         const codeEl = activePanel?.querySelector('code');
                         return codeEl?.innerText || codeEl?.textContent || '';
                     },
                     getDownloadFilename: () => {
                         const activePanel = tabsEl.querySelector<HTMLElement>(
-                            '.markdown-tab-panel:not([hidden])'
+                            '.mdrs-tab-panel:not([hidden])'
                         );
                         const codeEl = activePanel?.querySelector('code');
                         return getDownloadFilename(
                             codeEl?.className || '',
-                            codeEl?.closest('pre')?.dataset.filename
+                            codeEl?.closest('pre')?.dataset.mdrsFilename
                         );
                     },
                     shouldHideLineNumbers: () => {
                         const activePanel = tabsEl.querySelector<HTMLElement>(
-                            '.markdown-tab-panel:not([hidden])'
+                            '.mdrs-tab-panel:not([hidden])'
                         );
                         const codeEl = activePanel?.querySelector('code');
                         const rawLang = getRawLanguage(codeEl?.className || '');
@@ -103,20 +108,12 @@ export function enhanceMarkdownTabs(
             tabButtons.forEach((btn, idx) => {
                 const isSelected = idx === targetIndex;
                 btn.setAttribute('aria-selected', isSelected ? 'true' : 'false');
-                btn.classList.toggle('active-tab', isSelected);
-                btn.classList.toggle('text-accent-text', isSelected);
-                btn.classList.toggle('border-b-accent', isSelected);
-                btn.classList.toggle('font-bold', isSelected);
-
-                btn.classList.toggle('text-text-muted', !isSelected);
-                btn.classList.toggle('border-b-transparent', !isSelected);
+                btn.classList.toggle('mdrs-is-active', isSelected);
             });
 
             tabPanels.forEach((panel, idx) => {
                 const isSelected = idx === targetIndex;
                 panel.hidden = !isSelected;
-                panel.classList.toggle('hidden', !isSelected);
-                panel.classList.toggle('block', isSelected);
             });
 
             if (codeControls) {
@@ -128,7 +125,7 @@ export function enhanceMarkdownTabs(
             }
 
             if (shouldSync && syncKey) {
-                const label = tabButtons[targetIndex]?.getAttribute('data-tab-label') || '';
+                const label = tabButtons[targetIndex]?.getAttribute('data-mdrs-tab-label') || '';
                 if (label) {
                     setTabPreference(syncKey, label);
                 }
@@ -140,7 +137,7 @@ export function enhanceMarkdownTabs(
             if (idx < 9) {
                 shortcut(btn, {
                     combo: String(idx + 1),
-                    label: `Tab: ${btn.getAttribute('data-tab-label') || idx + 1}`,
+                    label: `Tab: ${btn.getAttribute('data-mdrs-tab-label') || idx + 1}`,
                     scope: tabsScope,
                     placement: 'inline'
                 });
@@ -151,7 +148,7 @@ export function enhanceMarkdownTabs(
             const currentPref = getTabPreference(syncKey);
             if (currentPref) {
                 const matchedIdx = Array.from(tabButtons).findIndex(
-                    b => b.getAttribute('data-tab-label') === currentPref
+                    b => b.getAttribute('data-mdrs-tab-label') === currentPref
                 );
                 if (matchedIdx !== -1) {
                     selectTab(matchedIdx, false);
@@ -165,7 +162,7 @@ export function enhanceMarkdownTabs(
                 }
                 if (key === syncKey) {
                     const matchedIdx = Array.from(tabButtons).findIndex(
-                        b => b.getAttribute('data-tab-label') === value
+                        b => b.getAttribute('data-mdrs-tab-label') === value
                     );
                     if (matchedIdx !== -1) {
                         selectTab(matchedIdx, false);

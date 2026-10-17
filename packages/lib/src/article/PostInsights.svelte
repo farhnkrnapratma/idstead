@@ -100,26 +100,26 @@
         <details
             bind:open={isTldrOpen}
             class={cn(
-                'group markdown-details my-0 shrink-0 overflow-hidden rounded-md glass-card border border-border-subtle text-text-primary shadow-md backdrop-blur-md',
+                'group mdrs-details my-0 shrink-0 overflow-hidden rounded-md glass-card border border-border-subtle text-text-primary shadow-md backdrop-blur-md',
                 customClass
             )}>
             <summary
                 use:shortcut={{ combo: buttonKey('tldr'), label: 'TL;DR', placement: 'trailing' }}
-                class="markdown-details-summary relative flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 text-sm font-medium text-text-primary transition-colors select-none group-open:border-border-subtle hover:bg-surface-hover/50 dark:group-open:border-white/10 [&::-webkit-details-marker]:hidden">
+                class="mdrs-details-summary relative flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 text-sm font-medium text-text-primary transition-colors select-none group-open:border-border-subtle hover:bg-surface-hover/50 dark:group-open:border-white/10 [&::-webkit-details-marker]:hidden">
                 <span class="inline-flex items-center gap-2">
                     <List class="size-4 shrink-0 text-text-primary" />
                     <span class="translate-y-px text-sm leading-none font-medium text-text-primary"
                         >TL;DR</span>
                 </span>
                 <span
-                    class="markdown-details-icon inline-flex shrink-0 items-center justify-center text-text-muted"
+                    class="mdrs-details-icon inline-flex shrink-0 items-center justify-center text-text-muted"
                     aria-hidden="true">
                     <ChevronsUpDown class="size-3.5 group-open:hidden" />
                     <ChevronsDownUp class="hidden size-3.5 group-open:block" />
                 </span>
             </summary>
             <div
-                class="markdown-details-body font-content-{contentFontStore.current} px-3.5 py-3 text-sm leading-relaxed text-text-secondary">
+                class="mdrs-details-body font-content-{contentFontStore.current} px-3.5 py-3 text-sm leading-relaxed text-text-secondary">
                 <ul class="flex list-none flex-col gap-1 pl-0">
                     {#each tldr as point (point)}
                         <li class="flex items-start gap-1.5 leading-normal">
@@ -142,7 +142,7 @@
         <details
             bind:this={detailsElement}
             class={cn(
-                'group markdown-details my-0 shrink-0 overflow-hidden rounded-md glass-card border border-border-subtle text-text-primary shadow-md backdrop-blur-md',
+                'group mdrs-details my-0 shrink-0 overflow-hidden rounded-md glass-card border border-border-subtle text-text-primary shadow-md backdrop-blur-md',
                 customClass
             )}
             ontoggle={handleSummaryToggle}>
@@ -152,21 +152,21 @@
                     label: 'Summarize this article',
                     placement: 'trailing'
                 }}
-                class="markdown-details-summary relative flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 text-sm font-medium text-text-primary transition-colors select-none group-open:border-border-subtle hover:bg-surface-hover/50 dark:group-open:border-white/10 [&::-webkit-details-marker]:hidden">
+                class="mdrs-details-summary relative flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 border-b border-transparent px-3.5 py-1.5 text-sm font-medium text-text-primary transition-colors select-none group-open:border-border-subtle hover:bg-surface-hover/50 dark:group-open:border-white/10 [&::-webkit-details-marker]:hidden">
                 <span class="inline-flex items-center gap-2">
                     <Sparkles class="size-4 shrink-0 text-text-primary" />
                     <span class="translate-y-px text-sm leading-none font-medium text-text-primary"
                         >Summarize this article</span>
                 </span>
                 <span
-                    class="markdown-details-icon inline-flex shrink-0 items-center justify-center text-text-muted"
+                    class="mdrs-details-icon inline-flex shrink-0 items-center justify-center text-text-muted"
                     aria-hidden="true">
                     <ChevronsUpDown class="size-3.5 group-open:hidden" />
                     <ChevronsDownUp class="hidden size-3.5 group-open:block" />
                 </span>
             </summary>
             <div
-                class="markdown-details-body font-content-{contentFontStore.current} px-3.5 py-3 text-sm leading-relaxed text-text-secondary">
+                class="mdrs-details-body font-content-{contentFontStore.current} px-3.5 py-3 text-sm leading-relaxed text-text-secondary">
                 {#if loadingDots}
                     <div
                         class="flex items-center gap-1.5 py-1.5"

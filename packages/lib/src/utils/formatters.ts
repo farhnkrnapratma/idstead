@@ -94,14 +94,6 @@ export function formatBadgeCount(count?: number | null, max = 99): string {
     return n > max ? `${max}+` : String(n);
 }
 
-export function formatCompactCount(count?: number | null): string {
-    const n = count || 0;
-    if (n < 1000) return String(n);
-    return new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 })
-        .format(n)
-        .toLowerCase();
-}
-
 export function formatExactDateTime(input: string | Date | null | undefined): string {
     if (!input) return '';
     const date = typeof input === 'string' ? new Date(input) : input;

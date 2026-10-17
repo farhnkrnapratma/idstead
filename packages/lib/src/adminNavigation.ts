@@ -9,7 +9,7 @@ export function adminUrl() {
 }
 
 export function navigateAdmin(url: URL, replace = false) {
-    const scroll = document.getElementById('main-content')?.scrollTop ?? 0;
+    const scroll = document.getElementById('main')?.scrollTop ?? 0;
     if (!replace) replaceState('', { ...page.state, adminScroll: scroll });
     const query = cleanAdminParams(url.searchParams).toString();
     const state = {

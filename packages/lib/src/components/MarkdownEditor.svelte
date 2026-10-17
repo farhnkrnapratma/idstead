@@ -45,7 +45,8 @@
     import {
         renderMarkdown,
         injectHeadingIds,
-        MATH_BLOCK_RE,
+        prefixHashLinks,
+        replaceMathBlocks,
         MATH_INLINE_RE
     } from '#lib/markdown.ts';
     import { supabase } from '#lib/supabase.ts';
@@ -234,7 +235,7 @@
             const escapeFormula = (formula: string) =>
                 formula.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-            let processed = code.replace(MATH_BLOCK_RE, block => {
+            let processed = replaceMathBlocks(code, (_prefix, _source, block) => {
                 const id = `XQZMATHBLOCK${mathCounter++}XQZ`;
                 mathPlaceholders.push({
                     id,
@@ -243,11 +244,11 @@
                 return id;
             });
 
-            processed = processed.replace(MATH_INLINE_RE, (_, formula) => {
+            processed = processed.replace(MATH_INLINE_RE, match => {
                 const id = `XQZMATHINLINE${mathCounter++}XQZ`;
                 mathPlaceholders.push({
                     id,
-                    html: `<span class="hljs-formula">$$${escapeFormula(formula)}$$</span>`
+                    html: `<span class="hljs-formula">${escapeFormula(match)}</span>`
                 });
                 return id;
             });
@@ -287,7 +288,7 @@
             renderMarkdown(value, supabase)
                 .then(html => {
                     if (active) {
-                        previewHtml = injectHeadingIds(html);
+                        previewHtml = prefixHashLinks(injectHeadingIds(html));
                         previewError = '';
                     }
                 })
@@ -1079,7 +1080,7 @@
         {:else}
             <div
                 bind:this={previewContainerEl}
-                class="prose-custom font-content-{contentFontStore.current} editor-surface w-full p-6"
+                class="mdrs font-content-{contentFontStore.current} editor-surface w-full p-6"
                 style:min-height={minHeight || undefined}>
                 {#if previewError}<FieldMessage
                         variant="error"
@@ -1253,7 +1254,7 @@
         background-color: color-mix(in srgb, var(--code-theme-fg) 8%, var(--code-theme-bg));
     }
 
-    .prose-custom > :global(*:first-child) {
+    .mdrs > :global(*:first-child) {
         @apply mt-0!;
     }
 </style>

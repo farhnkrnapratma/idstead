@@ -7,6 +7,16 @@ import {
     fetchSocials
 } from '#lib/author.ts';
 import { sanitizePublicApiData } from '#lib/authorApi.ts';
+import {
+    placeholderKey,
+    protectFencedCode,
+    protectInlineCode,
+    restoreAllPlaceholders
+} from '#lib/placeholders.ts';
+import { extractFrontmatter } from '#lib/frontmatter.ts';
+import { extractReferences } from '#lib/markdownReferences.ts';
+
+export const MAX_DOCUMENT_LENGTH = 500_000;
 
 export class DefineError extends Error {
     key?: string;
@@ -567,12 +577,10 @@ export function walkPath(base: DefineValue, path: PathSegment[]): DefineValue {
 }
 
 export type ApiResolver = (path: PathSegment[]) => Promise<DefineValue>;
-export type DbResolver = ApiResolver;
 export interface ApiRegistry {
     author: ApiResolver;
     blog: ApiResolver;
 }
-export type DbRegistry = ApiRegistry;
 
 export interface EvalContext {
     scope: Map<string, DefineValue>;
@@ -814,28 +822,6 @@ export function isValidIdentifierName(name: string): boolean {
     return IDENTIFIER_RE.test(name) && !RESERVED_WORDS.has(name);
 }
 
-export function protectWithPlaceholders(
-    text: string,
-    regex: RegExp,
-    prefix: string,
-    store: Map<string, string>
-): string {
-    let counter = store.size;
-    return text.replace(regex, match => {
-        const key = `@@${prefix}_${counter++}@@`;
-        store.set(key, match);
-        return key;
-    });
-}
-
-export function restoreAllPlaceholders(text: string, store: Map<string, string>): string {
-    let result = text;
-    for (const [key, value] of store.entries()) {
-        result = result.replaceAll(key, () => value);
-    }
-    return result;
-}
-
 export async function evaluateDefineBlock(
     raw: string | null,
     apiRegistry: ApiRegistry
@@ -879,8 +865,16 @@ export async function evaluateDefineBlock(
 }
 
 const LEADING_WS_RE = /^[\s\uFEFF]*/;
-export const DEFINE_BLOCK_RE = /^:::define[^\n]*\r?\n([\s\S]*?)\r?\n:::[ \t]*(?=\r?\n|$)/i;
-const STRAY_DEFINE_BLOCK_RE = /^[ \t]*:::define[^\n]*\r?\n[\s\S]*?\r?\n[ \t]*:::[ \t]*$/gim;
+export const DEFINE_BLOCK_RE = /^:::define[^\n]*\r?\n(?:([\s\S]*?)\r?\n)?:::[ \t]*(?=\r?\n|$)/i;
+const STRAY_DEFINE_OPEN_RE = /^[ \t]*:::define\b/i;
+const DIRECTIVE_CLOSE_RE = /^[ \t]*:::[ \t]*$/;
+
+function hasStrayDefineBlock(body: string): boolean {
+    const lines = body.split('\n').map(line => line.replace(/\r$/, ''));
+    const open = lines.findIndex(line => STRAY_DEFINE_OPEN_RE.test(line));
+    if (open === -1) return false;
+    return lines.some((line, index) => index > open && DIRECTIVE_CLOSE_RE.test(line));
+}
 
 function maskFencedCodeBlocks(markdown: string): string {
     const lines = markdown.split(/(\r?\n)/);
@@ -908,6 +902,10 @@ function maskFencedCodeBlocks(markdown: string): string {
         .join('');
 }
 
+export function hasDefineEntries(raw: string | null): boolean {
+    return raw !== null && raw.replace(/\/\/[^\n]*/g, '').trim() !== '';
+}
+
 export function extractDefineBlock(markdown: string): {
     raw: string | null;
     body: string;
@@ -920,12 +918,14 @@ export function extractDefineBlock(markdown: string): {
     let body = markdown;
 
     if (match) {
-        raw = match[1];
+        raw = match[1] ?? '';
         body = trimmed.slice(match[0].length).replace(/^\r?\n/, '');
+        if (!hasDefineEntries(raw)) {
+            errors.push({ message: 'A :::define block needs at least one entry.' });
+        }
     }
 
-    STRAY_DEFINE_BLOCK_RE.lastIndex = 0;
-    if (STRAY_DEFINE_BLOCK_RE.test(maskFencedCodeBlocks(body))) {
+    if (hasStrayDefineBlock(maskFencedCodeBlocks(body))) {
         errors.push({
             message:
                 'Only one :::define block is allowed, and it must be the first thing in the document.'
@@ -943,15 +943,29 @@ export interface InterpolationToken {
     exprSource: string;
 }
 
+const MAX_CONDITIONAL_TEXT_LENGTH = 5000;
+const MAX_EXPRESSION_LENGTH = 2000;
+const MAX_SCAN_STEPS = 2_000_000;
+
+interface ScanBudget {
+    left: number;
+}
+
 function findMatchingBracket(
     text: string,
     openPos: number,
     openChar: string,
-    closeChar: string
+    closeChar: string,
+    maxLength: number,
+    budget: ScanBudget
 ): number {
-    const n = text.length;
+    if (budget.left <= 0) return -1;
+    const n = Math.min(text.length, openPos + maxLength, openPos + budget.left);
     let depth = 0;
     let j = openPos;
+    const spend = () => {
+        budget.left -= j - openPos + 1;
+    };
     while (j < n) {
         const c = text[j];
         if (c === '"') {
@@ -966,21 +980,37 @@ function findMatchingBracket(
         if (c === openChar) depth++;
         else if (c === closeChar) {
             depth--;
-            if (depth === 0) return j;
+            if (depth === 0) {
+                spend();
+                return j;
+            }
         }
         j++;
     }
+    spend();
     return -1;
 }
 
 export function scanInterpolationTokens(text: string): InterpolationToken[] {
     const tokens: InterpolationToken[] = [];
+    const budget: ScanBudget = { left: MAX_SCAN_STEPS };
     let i = 0;
     const n = text.length;
 
     while (i < n) {
+        if (text[i] === '\\') {
+            i += 2;
+            continue;
+        }
         if (text[i] === '[') {
-            const closeBracket = findMatchingBracket(text, i, '[', ']');
+            const closeBracket = findMatchingBracket(
+                text,
+                i,
+                '[',
+                ']',
+                MAX_CONDITIONAL_TEXT_LENGTH,
+                budget
+            );
             if (
                 closeBracket !== -1
                 && text[closeBracket + 1] === '.'
@@ -988,7 +1018,14 @@ export function scanInterpolationTokens(text: string): InterpolationToken[] {
                 && text[closeBracket + 3] === '{'
             ) {
                 const openBrace = closeBracket + 3;
-                const closeBrace = findMatchingBracket(text, openBrace, '{', '}');
+                const closeBrace = findMatchingBracket(
+                    text,
+                    openBrace,
+                    '{',
+                    '}',
+                    MAX_EXPRESSION_LENGTH,
+                    budget
+                );
                 if (closeBrace !== -1) {
                     tokens.push({
                         start: i,
@@ -1005,7 +1042,14 @@ export function scanInterpolationTokens(text: string): InterpolationToken[] {
             continue;
         }
         if (text[i] === '$' && text[i + 1] === '{') {
-            const closeBrace = findMatchingBracket(text, i + 1, '{', '}');
+            const closeBrace = findMatchingBracket(
+                text,
+                i + 1,
+                '{',
+                '}',
+                MAX_EXPRESSION_LENGTH,
+                budget
+            );
             if (closeBrace !== -1) {
                 tokens.push({
                     start: i,
@@ -1029,14 +1073,35 @@ function renderDefineErrorMarker(message: string): string {
         .replace(/"/g, '&quot;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
-    return `<span class="markdown-define-error text-danger font-mono text-xs" title="${escaped}">[define error]</span>`;
+    return `<span class="mdrs-define-error" title="${escaped}">[define error]</span>`;
+}
+
+const MAX_INTERPOLATION_DEPTH = 8;
+
+async function interpolateText(
+    text: string,
+    scope: Map<string, DefineValue>,
+    apiRegistry: ApiRegistry,
+    depth: number
+): Promise<{ output: string; errors: DefineErrorInfo[] }> {
+    const tokens = scanInterpolationTokens(text);
+    const errors: DefineErrorInfo[] = [];
+    let output = text;
+    for (let i = tokens.length - 1; i >= 0; i--) {
+        const token = tokens[i];
+        const result = await evaluateInterpolationToken(token, scope, apiRegistry, depth);
+        errors.unshift(...result.errors);
+        output = output.slice(0, token.start) + result.replacement + output.slice(token.end);
+    }
+    return { output, errors };
 }
 
 async function evaluateInterpolationToken(
     token: InterpolationToken,
     scope: Map<string, DefineValue>,
-    apiRegistry: ApiRegistry
-): Promise<{ replacement: string; error?: DefineErrorInfo }> {
+    apiRegistry: ApiRegistry,
+    depth = 0
+): Promise<{ replacement: string; errors: DefineErrorInfo[] }> {
     try {
         const expr = new Parser(tokenize(token.exprSource)).parseExpression();
         const value = await evaluateExpr(expr, { scope, allowThis: false, apiRegistry });
@@ -1044,12 +1109,16 @@ async function evaluateInterpolationToken(
             if (value.type !== 'boolean') {
                 throw new DefineError('Expected a boolean expression inside [...].${...}');
             }
-            return { replacement: value.value ? (token.bracketContent ?? '') : '' };
+            if (!value.value) return { replacement: '', errors: [] };
+            const content = token.bracketContent ?? '';
+            if (depth >= MAX_INTERPOLATION_DEPTH) return { replacement: content, errors: [] };
+            const nested = await interpolateText(content, scope, apiRegistry, depth + 1);
+            return { replacement: nested.output, errors: nested.errors };
         }
-        return { replacement: toDisplayString(value) };
+        return { replacement: toDisplayString(value), errors: [] };
     } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
-        return { replacement: renderDefineErrorMarker(message), error: { message } };
+        return { replacement: renderDefineErrorMarker(message), errors: [{ message }] };
     }
 }
 
@@ -1061,54 +1130,23 @@ export async function interpolateBody(
     if (!bodyMarkdown) return { output: '', errors: [] };
 
     const codePlaceholders = new Map<string, string>();
-    let text = protectWithPlaceholders(
-        bodyMarkdown,
-        /^[ \t]*(`{3,}|~{3,})[^\n]*\r?\n[\s\S]*?\r?\n[ \t]*\1[ \t]*$/gm,
-        'FENCED_CODE',
-        codePlaceholders
-    );
-    text = protectWithPlaceholders(
-        text,
-        /(`+)(?:[^\n`]|`(?!\1))+\1/g,
-        'INLINE_CODE',
-        codePlaceholders
-    );
+    let text = protectFencedCode(bodyMarkdown, 'FENCED_CODE', codePlaceholders);
+    text = protectInlineCode(text, 'INLINE_CODE', codePlaceholders);
 
-    const tokens = scanInterpolationTokens(text);
-    const errors: DefineErrorInfo[] = [];
-    let result = text;
-
-    for (let i = tokens.length - 1; i >= 0; i--) {
-        const token = tokens[i];
-        const { replacement, error } = await evaluateInterpolationToken(token, scope, apiRegistry);
-        if (error) errors.push(error);
-        result = result.slice(0, token.start) + replacement + result.slice(token.end);
-    }
-
-    result = restoreAllPlaceholders(result, codePlaceholders);
-    return { output: result, errors };
+    const { output, errors } = await interpolateText(text, scope, apiRegistry, 0);
+    return { output: restoreAllPlaceholders(output, codePlaceholders), errors };
 }
 
 export function protectInterpolationTokens(markdown: string, store: Map<string, string>): string {
     const codePlaceholders = new Map<string, string>();
-    let text = protectWithPlaceholders(
-        markdown,
-        /^[ \t]*(`{3,}|~{3,})[^\n]*\r?\n[\s\S]*?\r?\n[ \t]*\1[ \t]*$/gm,
-        'FENCED_CODE',
-        codePlaceholders
-    );
-    text = protectWithPlaceholders(
-        text,
-        /(`+)(?:[^\n`]|`(?!\1))+\1/g,
-        'INLINE_CODE',
-        codePlaceholders
-    );
+    let text = protectFencedCode(markdown, 'FENCED_CODE', codePlaceholders);
+    text = protectInlineCode(text, 'INLINE_CODE', codePlaceholders);
 
     const tokens = scanInterpolationTokens(text);
     let result = text;
     for (let i = tokens.length - 1; i >= 0; i--) {
         const token = tokens[i];
-        const key = `@@INTERPOLATION_${store.size}@@`;
+        const key = placeholderKey('INTERPOLATION', store.size);
         store.set(key, text.slice(token.start, token.end));
         result = result.slice(0, token.start) + key + result.slice(token.end);
     }
@@ -1129,13 +1167,9 @@ export async function resolveProtectedInterpolationTokens(
         const tokens = scanInterpolationTokens(originalSpan);
         let replacement = originalSpan;
         if (tokens.length === 1 && tokens[0].start === 0) {
-            const { replacement: r, error } = await evaluateInterpolationToken(
-                tokens[0],
-                scope,
-                apiRegistry
-            );
-            replacement = r;
-            if (error) errors.push(error);
+            const result = await evaluateInterpolationToken(tokens[0], scope, apiRegistry);
+            replacement = result.replacement;
+            errors.push(...result.errors);
         }
         result = result.replaceAll(key, () => replacement);
     }
@@ -1155,8 +1189,6 @@ export function createApiRegistry(supabaseClient: any): ApiRegistry {
         blog: path => resolveBlogPath(path, supabaseClient)
     };
 }
-
-export const createDbRegistry = createApiRegistry;
 
 async function resolveAuthorPath(path: PathSegment[], supabaseClient: any): Promise<DefineValue> {
     const [profile, cv, funding, contact, skills, socials] = await Promise.all([
@@ -1237,18 +1269,35 @@ export async function validateDefineForSave(
     markdown: string,
     apiRegistry: ApiRegistry
 ): Promise<{ ok: boolean; errors: DefineErrorInfo[] }> {
+    if (markdown.length > MAX_DOCUMENT_LENGTH) {
+        return { ok: false, errors: [{ message: 'Markdown document is too large to render.' }] };
+    }
+    const frontmatter = extractFrontmatter(markdown);
+    const frontmatterErrors: DefineErrorInfo[] =
+        frontmatter.error ? [{ message: frontmatter.error }] : [];
     const {
         raw: defineRaw,
         body: bodyAfterDefine,
         errors: placementErrors
-    } = extractDefineBlock(markdown);
+    } = extractDefineBlock(frontmatter.body);
     const { scope, errors: defineErrors } = await evaluateDefineBlock(defineRaw, apiRegistry);
-    const { errors: interpolationErrors } = await interpolateBody(
-        bodyAfterDefine,
-        scope,
-        apiRegistry
-    );
+    const { errors: interpolationErrors } =
+        hasDefineEntries(defineRaw) ?
+            await interpolateBody(bodyAfterDefine, scope, apiRegistry)
+        :   { errors: [] };
+    const structureErrors: DefineErrorInfo[] = [];
+    try {
+        extractReferences(bodyAfterDefine);
+    } catch (err) {
+        structureErrors.push({ message: err instanceof Error ? err.message : String(err) });
+    }
 
-    const errors = [...placementErrors, ...defineErrors, ...interpolationErrors];
+    const errors = [
+        ...frontmatterErrors,
+        ...placementErrors,
+        ...defineErrors,
+        ...interpolationErrors,
+        ...structureErrors
+    ];
     return { ok: errors.length === 0, errors };
 }

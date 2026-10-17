@@ -99,7 +99,7 @@
 
 {#if isChecking}
     <main
-        id="main-content"
+        id="main"
         class="flex min-h-screen w-full items-center justify-center bg-surface-base">
         <LoadingState
             variant="spinner"

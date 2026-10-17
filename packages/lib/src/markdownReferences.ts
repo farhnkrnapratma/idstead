@@ -45,15 +45,18 @@ export function extractReferences(markdown: string) {
 
 export function placeReferences(html: string, marker: string | null) {
     if (!marker) return html;
-    let references = '<section class="footnotes"><h2>References</h2></section>';
+    let references =
+        '<section class="mdrs-footnotes mdrs-references"><h2>References</h2></section>';
     const body = html.replace(
-        /<section\b[^>]*class="[^"]*\bfootnotes\b[^"]*"[^>]*>[\s\S]*?<\/section>/i,
+        /<section\b[^>]*class="[^"]*\bmdrs-footnotes\b[^"]*"[^>]*>[\s\S]*?<\/section>/i,
         section => {
-            references = section.replace(
-                /<h2\b([^>]*)>[\s\S]*?<\/h2>/i,
-                (_heading, attrs: string) =>
-                    `<h2${attrs.replace(/\sclass="[^"]*"/i, '')}>References</h2>`
-            );
+            references = section
+                .replace('class="mdrs-footnotes"', 'class="mdrs-footnotes mdrs-references"')
+                .replace(
+                    /<h2\b([^>]*)>[\s\S]*?<\/h2>/i,
+                    (_heading, attrs: string) =>
+                        `<h2${attrs.replace(/\sclass="[^"]*"/i, '')}>References</h2>`
+                );
             return '';
         }
     );

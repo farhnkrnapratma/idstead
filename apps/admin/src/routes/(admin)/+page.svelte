@@ -12,6 +12,7 @@
         PostSaveError
     } from '#lib/postSaveClient.ts';
     import { FieldValidation, requiredText, emailError } from '#lib/fieldValidation.ts';
+    import { mdrsContent } from '#lib/mdrsValidation.ts';
     import { avatarSource, siteBannerSource } from '#lib/siteIdentity.ts';
     import IdentityImageUpload from '#lib/components/IdentityImageUpload.svelte';
     import type { ImagePackage } from '#lib/siteIdentity.ts';
@@ -59,8 +60,12 @@
         Save,
         SquareArrowOutUpRight,
         Download,
-        Hash,
         X,
+        Copy,
+        KeyRound,
+        ShieldCheck,
+        ShieldAlert,
+        FileArchive,
         Plus,
         LogOut,
         EyeOff,
@@ -69,7 +74,6 @@
         MessageCircle,
         CircleDotDashed,
         CircleCheckBig,
-        FileXCorner,
         Flag,
         Users,
         Pin,
@@ -82,12 +86,7 @@
         Logs,
         DatabaseArrowUp,
         DatabaseArrowDown,
-        DatabaseX,
-        Newspaper,
-        MessageSquare,
-        Briefcase,
-        GraduationCap,
-        Wrench
+        DatabaseX
     } from '@lucide/svelte';
     import { onDestroy, onMount, tick, untrack } from 'svelte';
     import { SvelteSet } from 'svelte/reactivity';
@@ -154,8 +153,11 @@
         sanitizeInput,
         decodeHtmlEntities,
         splitEscapedCommas,
-        FileUploadField
+        FileUploadField,
+        IconButton,
+        CodeTabs
     } from '#lib/index.ts';
+    import ActionMenu from '#lib/components/ActionMenu.svelte';
     import ArticleMeta from '#lib/article/ArticleMeta.svelte';
 
     import { themeStore } from '#lib/stores/themeStore.svelte.ts';
@@ -168,6 +170,7 @@
         fetchSocials,
         fetchSkills,
         fetchActiveCvDocument,
+        fetchActiveOpenPgpKey,
         fetchProjectRepoRules,
         normalizeIconInput,
         type AuthorProfile,
@@ -180,6 +183,16 @@
         type CvDocument,
         type IdentityVersionMeta
     } from '#lib/author.ts';
+    import { CV_CHECKSUM_ALGORITHMS, cvFileUrl } from '#lib/cvVerification.ts';
+    import { copyText, downloadUrl as downloadFrom } from '#lib/utils/fileActions.ts';
+    import {
+        KEYSERVER_PRESETS,
+        formatFingerprint,
+        formatUserId,
+        wkdEmails,
+        type OpenPgpKeyserver,
+        type PublicOpenPgpKey
+    } from '#lib/openpgpKey.ts';
 
     const publicSiteUrl = $derived(
         ((page.data as { author?: { siteUrl?: string } })?.author?.siteUrl ?? '').replace(/\/$/, '')
@@ -359,7 +372,7 @@
 
         clearTimeout(focusHighlightTimer);
         cancelCommentScrollWait();
-        const main = document.getElementById('main-content');
+        const main = document.getElementById('main');
         cancelCommentScrollWait = whenScrollSettles(
             main && main.scrollHeight > main.clientHeight ? main : window,
             () => {
@@ -428,7 +441,7 @@
         const desktop = window.matchMedia('(min-width: 768px)');
         if (desktop.matches) return;
         const background = [
-            document.getElementById('main-content'),
+            document.getElementById('main'),
             document.getElementById('admin-mobile-header')
         ];
         const previousInert = background.map(node => node?.inert ?? false);
@@ -465,7 +478,7 @@
             if (desktop.matches) {
                 sidebarMobileOpen = false;
                 void tick().then(() =>
-                    document.getElementById('main-content')?.focus({ preventScroll: true })
+                    document.getElementById('main')?.focus({ preventScroll: true })
                 );
             }
         };
@@ -582,9 +595,7 @@
         ])
             url.searchParams.delete(key);
         navigateAdmin(url);
-        void tick().then(() =>
-            document.getElementById('main-content')?.focus({ preventScroll: true })
-        );
+        void tick().then(() => document.getElementById('main')?.focus({ preventScroll: true }));
         void ensureTabData(id);
         if (id === 'privacy' || id === 'security' || id === 'terms') {
             checkLegalDrafts();
@@ -701,7 +712,7 @@
         legalValidation.register(slug, {
             value: () => legalPagesData[slug].content,
             baseline: () => initialLegalPagesContent[slug],
-            validate: requiredText('Content'),
+            validate: mdrsContent('Content'),
             report: result => {
                 legalFieldErrors[slug] = result.error;
             }
@@ -1331,15 +1342,115 @@
         }
     }
 
-    const cvChecksumFiles = [
-        { ext: 'sha256', label: 'SHA-256' },
-        { ext: 'sha512', label: 'SHA-512' },
-        { ext: 'md5', label: 'MD5' },
-        { ext: 'b2', label: 'BLAKE2b' }
-    ] as const;
-
     let isSavingSignature = $state(false);
     let signatureError = $state('');
+    let openPgpKey = $state<PublicOpenPgpKey | null>(null);
+    let isSavingKey = $state(false);
+    let keyError = $state('');
+    let keyserverError = $state('');
+    let showRemoveSignatureDialog = $state(false);
+    let keyserverChoice = $state<Record<string, boolean>>({});
+    let customKeyserver = $state('');
+    let showRemoveKeyDialog = $state(false);
+
+    const cvSignedByKey = $derived(
+        Boolean(
+            cvDocState.signedAt
+            && openPgpKey
+            && cvDocState.signerFingerprint === openPgpKey.fingerprint
+        )
+    );
+    const cvChecksumTabs = $derived(
+        cvDocState.checksums ?
+            CV_CHECKSUM_ALGORITHMS.map(algorithm => ({
+                label: algorithm.label,
+                code: cvDocState.checksums![algorithm.ext],
+                copyLabel: `${algorithm.label} checksum`,
+                downloadUrl: cvApiFile(algorithm.ext),
+                downloadLabel: `Download ${cvDocState.filename}.${algorithm.ext}`
+            }))
+        :   []
+    );
+    const cvSignTabs = $derived(
+        openPgpKey ?
+            [
+                {
+                    label: 'Binary (.sig)',
+                    code: `gpg --local-user ${openPgpKey.fingerprint} --detach-sign ${cvDocState.filename}`
+                },
+                {
+                    label: 'Armored (.asc)',
+                    code: `gpg --local-user ${openPgpKey.fingerprint} --armor --detach-sign ${cvDocState.filename}`
+                }
+            ]
+        :   []
+    );
+    const keyExpiresSoon = $derived(
+        Boolean(
+            openPgpKey?.expiresAt
+            && new Date(openPgpKey.expiresAt).getTime() - Date.now() < 30 * 86_400_000
+        )
+    );
+    const keyWkdEmails = $derived(
+        openPgpKey && publicSiteUrl ?
+            wkdEmails(openPgpKey.userIds, new URL(publicSiteUrl).host)
+        :   []
+    );
+
+    const cvSignedAt = $derived(
+        cvDocState.signedAt ?
+            formatAdminDateTime(new Date(cvDocState.signedAt), undefined, adminDisplayStore.current)
+        :   ''
+    );
+    const keyCreated = $derived(
+        openPgpKey?.createdAt ?
+            formatAdminDateTime(
+                new Date(openPgpKey.createdAt),
+                undefined,
+                adminDisplayStore.current
+            )
+        :   ''
+    );
+    const keyExpires = $derived(
+        openPgpKey?.expiresAt ?
+            formatAdminDateTime(
+                new Date(openPgpKey.expiresAt),
+                undefined,
+                adminDisplayStore.current
+            )
+        :   ''
+    );
+
+    function cvApiFile(output: Parameters<typeof cvFileUrl>[0]) {
+        return cvFileUrl(output, publicEnv.PUBLIC_API_BASE_URL);
+    }
+
+    function syncKeyserverChoice(key: PublicOpenPgpKey | null) {
+        const urls = new Set(key?.keyservers.map(server => server.url) ?? []);
+        keyserverChoice = Object.fromEntries(
+            KEYSERVER_PRESETS.map(preset => [
+                preset.id,
+                Boolean(key && urls.has(preset.url(key.fingerprint)))
+            ])
+        );
+        const presetUrls = new Set(
+            key ? KEYSERVER_PRESETS.map(preset => preset.url(key.fingerprint)) : []
+        );
+        customKeyserver = key?.keyservers.find(server => !presetUrls.has(server.url))?.url ?? '';
+    }
+
+    async function adminToken() {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const accessToken = sessionData.session?.access_token;
+        if (!accessToken) throw new Error('Your admin session has expired. Please log in again.');
+        return accessToken;
+    }
+
+    async function responseMessage(response: Response, fallback: string) {
+        const res = await response.json().catch(() => ({}));
+        if (response.ok && res.success) return { res, error: '' };
+        return { res, error: res?.message ?? res?.error?.message ?? fallback };
+    }
 
     async function updateCvSignature(file: File | null) {
         signatureError = '';
@@ -1350,23 +1461,22 @@
         }
         isSavingSignature = true;
         try {
-            const { data: sessionData } = await supabase.auth.getSession();
-            const accessToken = sessionData.session?.access_token;
-            if (!accessToken)
-                throw new Error('Your admin session has expired. Please log in again.');
             const response = await fetch('/api/internal/admin/cv/signature', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${accessToken}`
+                    'Content-Type': 'application/octet-stream',
+                    Authorization: `Bearer ${await adminToken()}`
                 },
-                body: JSON.stringify({ signature: await file.text() })
+                body: await file.arrayBuffer()
             });
-            const res = await response.json();
-            if (!response.ok || !res.success)
-                throw new Error(res?.message ?? res?.error?.message ?? 'Upload failed.');
-            cvDocState = { ...cvDocState, signedAt: res.signedAt };
-            toastStore.success('CV signature uploaded.');
+            const { res, error } = await responseMessage(response, 'Upload failed.');
+            if (error) throw new Error(error);
+            cvDocState = {
+                ...cvDocState,
+                signedAt: res.signedAt,
+                signerFingerprint: res.signerFingerprint
+            };
+            toastStore.success('Signature verified and published.');
         } catch (err) {
             signatureError = err instanceof Error ? err.message : 'Upload failed.';
         } finally {
@@ -1375,26 +1485,109 @@
     }
 
     async function removeCvSignature() {
+        showRemoveSignatureDialog = false;
         isSavingSignature = true;
         signatureError = '';
         try {
-            const { data: sessionData } = await supabase.auth.getSession();
-            const accessToken = sessionData.session?.access_token;
-            if (!accessToken)
-                throw new Error('Your admin session has expired. Please log in again.');
             const response = await fetch('/api/internal/admin/cv/signature', {
                 method: 'DELETE',
-                headers: { Authorization: `Bearer ${accessToken}` }
+                headers: { Authorization: `Bearer ${await adminToken()}` }
             });
-            const res = await response.json();
-            if (!response.ok || !res.success)
-                throw new Error(res?.message ?? res?.error?.message ?? 'Removal failed.');
-            cvDocState = { ...cvDocState, signedAt: null };
-            toastStore.success('CV signature removed.');
+            const { error } = await responseMessage(response, 'Removal failed.');
+            if (error) throw new Error(error);
+            cvDocState = { ...cvDocState, signedAt: null, signerFingerprint: null };
+            toastStore.success('CV signature deleted.');
         } catch (err) {
             signatureError = err instanceof Error ? err.message : 'Removal failed.';
         } finally {
             isSavingSignature = false;
+        }
+    }
+
+    function chosenKeyservers(fingerprint: string): OpenPgpKeyserver[] {
+        const servers: OpenPgpKeyserver[] = KEYSERVER_PRESETS.filter(
+            preset => keyserverChoice[preset.id]
+        ).map(preset => ({ label: preset.label, url: preset.url(fingerprint) }));
+        const custom = customKeyserver.trim();
+        if (custom) servers.push({ label: new URL(custom).host, url: custom });
+        return servers;
+    }
+
+    async function saveOpenPgpKey(file: File | null = null) {
+        keyError = '';
+        keyserverError = '';
+        if (file && file.size > 64 * 1024) {
+            keyError = 'Public keys must be at most 64 KiB.';
+            return;
+        }
+        isSavingKey = true;
+        try {
+            let key: { armored?: string; base64?: string } | undefined;
+            if (file) {
+                const bytes = new Uint8Array(await file.arrayBuffer());
+                const text = new TextDecoder().decode(bytes);
+                key =
+                    text.trimStart().startsWith('-----BEGIN PGP ') ?
+                        { armored: text }
+                    :   {
+                            base64: btoa(
+                                Array.from(bytes, byte => String.fromCharCode(byte)).join('')
+                            )
+                        };
+            }
+            let keyservers: OpenPgpKeyserver[] = [];
+            try {
+                keyservers = openPgpKey && !file ? chosenKeyservers(openPgpKey.fingerprint) : [];
+            } catch {
+                throw new Error('The custom keyserver must be a full https:// URL.');
+            }
+            const response = await fetch('/api/internal/admin/openpgp-key', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${await adminToken()}`
+                },
+                body: JSON.stringify({
+                    key,
+                    keyservers: file ? (openPgpKey?.keyservers ?? []) : keyservers
+                })
+            });
+            const { res, error } = await responseMessage(response, 'Could not save the key.');
+            if (error) throw new Error(error);
+            openPgpKey = { ...res.key, armored: res.key.armored ?? '' };
+            syncKeyserverChoice(openPgpKey);
+            if (res.signatureCleared) {
+                cvDocState = { ...cvDocState, signedAt: null, signerFingerprint: null };
+                toastStore.success('Key saved. Sign the CV again with the new key.');
+            } else toastStore.success(file ? 'OpenPGP key published.' : 'Keyservers saved.');
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Could not save the key.';
+            if (file) keyError = message;
+            else keyserverError = message;
+        } finally {
+            isSavingKey = false;
+        }
+    }
+
+    async function removeOpenPgpKey() {
+        showRemoveKeyDialog = false;
+        isSavingKey = true;
+        keyError = '';
+        try {
+            const response = await fetch('/api/internal/admin/openpgp-key', {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${await adminToken()}` }
+            });
+            const { error } = await responseMessage(response, 'Could not delete the key.');
+            if (error) throw new Error(error);
+            openPgpKey = null;
+            syncKeyserverChoice(null);
+            cvDocState = { ...cvDocState, signedAt: null, signerFingerprint: null };
+            toastStore.success('OpenPGP key deleted.');
+        } catch (err) {
+            toastStore.error(err instanceof Error ? err.message : 'Could not delete the key.');
+        } finally {
+            isSavingKey = false;
         }
     }
 
@@ -2012,7 +2205,7 @@
 
     async function loadAdminData() {
         try {
-            const [p, cv, sp, ct, soc, sk, doc, rules] = await Promise.all([
+            const [p, cv, sp, ct, soc, sk, doc, rules, pgpKey] = await Promise.all([
                 fetchAuthorProfile(supabase, { includeEmail: true }),
                 fetchCvEntries(supabase),
                 fetchSponsorship(supabase),
@@ -2020,7 +2213,8 @@
                 fetchSocials(supabase),
                 fetchSkills(supabase),
                 fetchActiveCvDocument(supabase),
-                fetchProjectRepoRules(supabase)
+                fetchProjectRepoRules(supabase),
+                fetchActiveOpenPgpKey(supabase)
             ]);
             if (p) authorState = p;
             identityMeta =
@@ -2053,6 +2247,8 @@
                 excludedReposInitial = $state.snapshot(excludedReposState);
             }
             cvDocState = doc || { filename: '', fileUrl: '', hash: '', isActive: false };
+            openPgpKey = pgpKey;
+            syncKeyserverChoice(pgpKey);
         } catch (err) {
             console.error('Failed to load admin supplementary data:', err);
         }
@@ -3048,8 +3244,10 @@
                 filename: res.filename,
                 fileUrl: res.fileUrl,
                 hash: res.hash,
+                checksums: res.checksums ?? null,
                 version: res.version,
                 signedAt: null,
+                signerFingerprint: null,
                 isActive: true,
                 updatedAt: new Date().toISOString()
             };
@@ -3562,7 +3760,7 @@
     {/if}
 
     <main
-        id="main-content"
+        id="main"
         tabindex="-1"
         {@attach element => {
             const tab = activeAdminTab;
@@ -3729,7 +3927,7 @@
                         <FilterEmptyState onClearFilters={filterStore.clearAllFilters} />
                     {:else}
                         <EmptyState
-                            icon={Newspaper}
+                            icon={Quote}
                             title="No posts yet"
                             description="Create a post to get started." />
                     {/if}
@@ -3973,7 +4171,7 @@
                                                 label="Loading comments…" />
                                         {:else if getPostComments(post.id).length === 0}
                                             <EmptyState
-                                                icon={MessageSquare}
+                                                icon={MessageCircle}
                                                 class="p-5"
                                                 title="No comments yet"
                                                 description="Comments on this post will appear here." />
@@ -4620,7 +4818,7 @@
                     <div class="flex flex-col gap-6">
                         {#if cvState.experience.length === 0}
                             <EmptyState
-                                icon={Briefcase}
+                                icon={FileUser}
                                 title="No experience entries yet"
                                 description="Add your first experience entry below." />
                         {/if}
@@ -5005,7 +5203,7 @@
                     <div class="flex flex-col gap-6">
                         {#if cvState.education.length === 0}
                             <EmptyState
-                                icon={GraduationCap}
+                                icon={FileUser}
                                 title="No education entries yet"
                                 description="Add your first education entry below." />
                         {/if}
@@ -5337,14 +5535,43 @@
                 </Card>
             </form>
 
+            {#snippet bandLabel(id: string, text: string)}
+                <h3
+                    {id}
+                    class="text-xxs font-bold tracking-widest text-text-secondary uppercase select-none">
+                    {text}
+                </h3>
+            {/snippet}
+
             <Card
                 variant="glass"
-                class="mt-10 flex flex-col gap-3">
-                <div>
-                    <h2 class="type-section-title">CV Document</h2>
-                    <p class="mt-1 type-body text-text-secondary">
-                        The PDF resume shown on your CV page and available through the public API.
-                    </p>
+                class="mt-10 flex flex-col gap-4">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                        <h2 class="type-section-title">CV Document</h2>
+                        <p class="mt-1 type-body text-text-secondary">
+                            The PDF visitors download from your CV section and the public API.
+                        </p>
+                    </div>
+                    {#if isCvAvailable}
+                        <ActionMenu
+                            ariaLabel="More CV actions"
+                            items={[
+                                {
+                                    label: 'Regenerate',
+                                    icon: RefreshCw,
+                                    disabled: isGeneratingPdf,
+                                    onSelect: () => executeGenerateCvPdf({ force: true })
+                                },
+                                { divider: true },
+                                {
+                                    label: 'Delete CV',
+                                    icon: Trash,
+                                    danger: true,
+                                    onSelect: confirmDeleteCvDoc
+                                }
+                            ]} />
+                    {/if}
                 </div>
 
                 {#if pdfUploadError}
@@ -5356,89 +5583,27 @@
                 {#if pdfGeneratedFilename}
                     <StatusBanner variant="success">
                         <span
-                            >Successfully generated <strong class="font-bold"
-                                >{pdfGeneratedFilename}</strong
-                            >!</span>
+                            >Generated <strong class="font-bold">{pdfGeneratedFilename}</strong
+                            >.</span>
                     </StatusBanner>
                 {/if}
 
                 {#if pdfDeleteSuccess}
                     <StatusBanner
                         variant="success"
-                        message="CV deleted successfully." />
+                        message="CV deleted." />
                 {/if}
 
-                <div
-                    class="flex flex-col gap-3.5 rounded-sm border border-border-subtle bg-surface-card p-4">
-                    <p class="text-xxs font-bold tracking-widest text-text-secondary uppercase">
-                        Filename
-                    </p>
-
-                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div class="flex min-w-0 items-center gap-3.5">
-                            {#if isCvAvailable}
-                                <div
-                                    class="flex size-11 shrink-0 items-center justify-center rounded-lg border border-accent/20 bg-accent/10 text-accent dark:border-accent/30 dark:bg-accent/15">
-                                    <FileUser class="size-5.5" />
-                                </div>
-                            {:else}
-                                <div
-                                    class="flex size-11 shrink-0 items-center justify-center rounded-lg border border-danger/30 bg-danger-subtle/70 text-danger dark:bg-danger-subtle/40">
-                                    <FileXCorner class="size-5.5" />
-                                </div>
-                            {/if}
-                            <div class="min-w-0 flex-1">
-                                <p
-                                    class="font-mono text-sm font-semibold break-all text-text-primary {(
-                                        isCvAvailable
-                                    ) ?
-                                        ''
-                                    :   'text-text-muted'}">
-                                    {isCvAvailable ?
-                                        cvDocState.filename
-                                    :   'CV-[name]-[hash]-v[major].[minor].pdf'}
-                                </p>
-                                <div
-                                    class="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-text-muted">
-                                    {#if isCvAvailable}
-                                        <span
-                                            class="inline-flex items-center gap-1 rounded-full bg-copilot-subtle px-2 py-0.5 text-xs font-semibold text-copilot"
-                                            title="Available"
-                                            aria-label="Available"
-                                            role="img">
-                                            <CircleCheckBig class="size-3 shrink-0" />
-                                            Available
-                                        </span>
-                                        {#if cvLastUpdated}
-                                            <span>&middot;</span>
-                                            <span class="text-text-secondary"
-                                                >Last updated: {cvLastUpdated}</span>
-                                        {/if}
-                                        {#if cvVersion}
-                                            <span>&middot;</span>
-                                            <span class="font-mono text-text-secondary"
-                                                >{cvVersion}</span>
-                                        {/if}
-                                    {:else}
-                                        <span
-                                            class="inline-flex items-center gap-1 rounded-full bg-warning-subtle px-2 py-0.5 text-xs font-semibold text-warning-text"
-                                            title="Unavailable"
-                                            aria-label="Unavailable"
-                                            role="img">
-                                            <CircleDotDashed class="size-3 shrink-0" />
-                                            Unavailable
-                                        </span>
-                                    {/if}
-                                </div>
-                            </div>
-                        </div>
-
-                        {#if !isCvAvailable}
+                {#if !isCvAvailable}
+                    <EmptyState
+                        icon={FileUser}
+                        title="No CV generated yet"
+                        description="Build a PDF from your profile, experience, education, skills and pinned projects. Visitors can then download it from the CV section and the API.">
+                        {#snippet actions()}
                             <Button
                                 htmlType="button"
                                 type="primary"
                                 size="sm"
-                                class="w-full shrink-0 sm:w-auto"
                                 isLoading={isGeneratingPdf}
                                 disabled={isGeneratingPdf}
                                 onclick={() => executeGenerateCvPdf({ manual: true })}>
@@ -5447,23 +5612,68 @@
                                 {/snippet}
                                 <span>Generate CV</span>
                             </Button>
-                        {/if}
-                    </div>
-
-                    {#if isCvAvailable}
+                        {/snippet}
+                    </EmptyState>
+                {:else}
+                    <div class="rounded-sm border border-border-subtle bg-surface-card">
                         <div
-                            class="flex flex-col gap-2 pt-1 sm:flex-row sm:items-center sm:justify-between">
-                            <div
-                                class="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:items-center">
+                            class="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
+                            <div class="flex min-w-0 items-center gap-3.5">
+                                <div
+                                    class="flex size-11 shrink-0 items-center justify-center rounded-lg border border-accent/20 bg-accent/10 text-accent dark:border-accent/30 dark:bg-accent/15">
+                                    <FileUser class="size-5.5" />
+                                </div>
+                                <div class="min-w-0">
+                                    <p
+                                        class="font-mono text-sm font-semibold break-all text-text-primary">
+                                        {cvDocState.filename}
+                                    </p>
+                                    <div
+                                        class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-text-muted">
+                                        {#if cvVersion}
+                                            <Badge size="sm">{cvVersion}</Badge>
+                                        {/if}
+                                        {#if cvSignedByKey}
+                                            <Badge
+                                                size="sm"
+                                                variant="success">
+                                                <ShieldCheck
+                                                    class="size-3 shrink-0"
+                                                    aria-hidden="true" />
+                                                Signed
+                                            </Badge>
+                                        {:else if cvDocState.signedAt}
+                                            <Badge
+                                                size="sm"
+                                                variant="warning">
+                                                <ShieldAlert
+                                                    class="size-3 shrink-0"
+                                                    aria-hidden="true" />
+                                                Signed with another key
+                                            </Badge>
+                                        {:else}
+                                            <Badge
+                                                size="sm"
+                                                variant="warning">
+                                                <ShieldAlert
+                                                    class="size-3 shrink-0"
+                                                    aria-hidden="true" />
+                                                Unsigned
+                                            </Badge>
+                                        {/if}
+                                        {#if cvLastUpdated}
+                                            <span>Updated {cvLastUpdated}</span>
+                                        {/if}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="grid shrink-0 grid-cols-2 gap-2 sm:flex">
                                 <Button
                                     htmlType="button"
-                                    type="primary"
+                                    type="secondary"
                                     size="sm"
-                                    class="w-full sm:w-auto"
-                                    aria-label="View PDF"
-                                    title="View PDF"
                                     onclick={() =>
-                                        window.open(cvDocState.fileUrl || '/cv.pdf', '_blank')}>
+                                        window.open(cvDocState.fileUrl, '_blank', 'noopener')}>
                                     {#snippet leading()}
                                         <SquareArrowOutUpRight class="size-3.5" />
                                     {/snippet}
@@ -5473,9 +5683,17 @@
                                     htmlType="button"
                                     type="secondary"
                                     size="sm"
-                                    class="w-full sm:w-auto"
-                                    aria-label="Download PDF"
-                                    title="Download PDF"
+                                    onclick={() => downloadFrom(cvApiFile('zip'))}>
+                                    {#snippet leading()}
+                                        <FileArchive class="size-3.5" />
+                                    {/snippet}
+                                    <span>Download all</span>
+                                </Button>
+                                <Button
+                                    htmlType="button"
+                                    type="primary"
+                                    size="sm"
+                                    class="col-span-2 sm:col-auto"
                                     disabled={isDownloadingCv}
                                     isLoading={isDownloadingCv}
                                     onclick={downloadCvDocument}>
@@ -5484,91 +5702,288 @@
                                     {/snippet}
                                     <span>Download PDF</span>
                                 </Button>
-                                <Button
-                                    htmlType="button"
-                                    type="secondary"
-                                    size="sm"
-                                    class="w-full sm:w-auto"
-                                    aria-label="Regenerate CV"
-                                    title="Build a new version even if nothing changed"
-                                    disabled={isGeneratingPdf}
-                                    isLoading={isGeneratingPdf}
-                                    onclick={() => executeGenerateCvPdf({ force: true })}>
-                                    {#snippet leading()}
-                                        <RefreshCw class="size-3.5" />
-                                    {/snippet}
-                                    <span>Regenerate</span>
-                                </Button>
-                            </div>
-                            <Button
-                                htmlType="button"
-                                type="danger"
-                                tone="critical"
-                                size="sm"
-                                class="w-full sm:w-auto"
-                                aria-label="Delete CV"
-                                title="Delete CV"
-                                onclick={confirmDeleteCvDoc}>
-                                {#snippet leading()}
-                                    <Trash class="size-3.5" />
-                                {/snippet}
-                                <span>Delete CV</span>
-                            </Button>
-                        </div>
-                        <div class="flex flex-col gap-1.5 border-t border-border-subtle pt-3.5">
-                            <p
-                                class="text-xxs font-bold tracking-widest text-text-secondary uppercase">
-                                Checksums
-                            </p>
-                            <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-                                {#each cvChecksumFiles as file (file.ext)}
-                                    <a
-                                        class="inline-flex items-center gap-1 font-mono text-accent-text hover:underline"
-                                        href={`${cvDocState.fileUrl}.${file.ext}`}
-                                        download>
-                                        <Hash class="size-3.5" />{file.label}
-                                    </a>
-                                {/each}
                             </div>
                         </div>
-                        <div class="flex flex-col gap-2 border-t border-border-subtle pt-3.5">
-                            <div class="flex flex-wrap items-center justify-between gap-2">
-                                <p
-                                    class="text-xxs font-bold tracking-widest text-text-secondary uppercase">
-                                    GPG signature
+
+                        <section
+                            aria-labelledby="cv-checksums-heading"
+                            class="border-t border-border-subtle p-4">
+                            {@render bandLabel('cv-checksums-heading', 'Checksums')}
+                            {#if cvChecksumTabs.length}
+                                <CodeTabs
+                                    class="mt-3"
+                                    tabs={cvChecksumTabs}
+                                    ariaLabel="Checksums" />
+                            {:else}
+                                <p class="mt-2 text-xs text-text-muted">
+                                    Checksums are recorded on the next build.
                                 </p>
+                            {/if}
+                        </section>
+
+                        <section
+                            aria-labelledby="cv-signature-heading"
+                            class="flex flex-col gap-3 border-t border-border-subtle p-4">
+                            {@render bandLabel('cv-signature-heading', 'GPG signature')}
+                            {#if !openPgpKey}
+                                <p class="text-sm text-text-secondary">
+                                    Add your OpenPGP public key below first. Visitors use it to
+                                    confirm that you signed this file.
+                                </p>
+                            {:else if cvSignedByKey}
+                                <dl
+                                    class="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5 text-sm">
+                                    {#each openPgpKey.userIds as user (user.email || user.name)}
+                                        <dt class="text-text-muted">Signed by</dt>
+                                        <dd class="min-w-0 break-words text-text-primary">
+                                            {formatUserId(user)}
+                                        </dd>
+                                    {/each}
+                                    <dt class="text-text-muted">Fingerprint</dt>
+                                    <dd
+                                        class="min-w-0 font-mono text-xs leading-5 break-words text-text-primary tabular-nums">
+                                        {formatFingerprint(openPgpKey.fingerprint)}
+                                    </dd>
+                                    {#if cvSignedAt}
+                                        <dt class="text-text-muted">Signed</dt>
+                                        <dd class="text-text-primary">{cvSignedAt}</dd>
+                                    {/if}
+                                </dl>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <Button
+                                        htmlType="button"
+                                        type="secondary"
+                                        size="xs"
+                                        onclick={() => downloadFrom(cvApiFile('sig'))}>
+                                        {#snippet leading()}
+                                            <Download class="size-3.5" />
+                                        {/snippet}
+                                        <span>.sig</span>
+                                    </Button>
+                                    <Button
+                                        htmlType="button"
+                                        type="secondary"
+                                        size="xs"
+                                        onclick={() => downloadFrom(cvApiFile('asc'))}>
+                                        {#snippet leading()}
+                                            <Download class="size-3.5" />
+                                        {/snippet}
+                                        <span>.asc</span>
+                                    </Button>
+                                    <Button
+                                        htmlType="button"
+                                        type="ghost"
+                                        tone="critical"
+                                        size="xs"
+                                        disabled={isSavingSignature}
+                                        onclick={() => (showRemoveSignatureDialog = true)}>
+                                        <span>Delete signature</span>
+                                    </Button>
+                                </div>
+                            {:else}
                                 {#if cvDocState.signedAt}
-                                    <div class="flex items-center gap-3 text-sm">
-                                        <a
-                                            class="font-mono text-accent-text hover:underline"
-                                            href={`${cvDocState.fileUrl}.asc`}
-                                            download>{cvDocState.filename}.asc</a>
-                                        <Button
-                                            htmlType="button"
-                                            type="danger"
-                                            tone="critical"
-                                            size="xs"
-                                            disabled={isSavingSignature}
-                                            onclick={removeCvSignature}>
-                                            <span>Remove</span>
-                                        </Button>
-                                    </div>
-                                {:else}
-                                    <span class="text-xs text-text-muted">Not signed yet</span>
+                                    <StatusBanner
+                                        variant="warning"
+                                        message="The stored signature was made with a different key. Sign this PDF again with your active key." />
                                 {/if}
-                            </div>
-                            <FileUploadField
-                                id="cv-signature-file"
-                                accept=".asc,.sig,application/pgp-signature,text/plain"
-                                hint={`Sign this exact PDF locally: gpg --armor --detach-sign ${cvDocState.filename}`}
-                                disabled={isSavingSignature}
-                                isUploading={isSavingSignature}
-                                uploadingLabel="Uploading signature…"
-                                error={signatureError}
-                                onFileSelect={updateCvSignature} />
-                        </div>
+                                <p class="text-sm text-text-secondary">
+                                    Sign this exact PDF on your machine in either format, then
+                                    upload the file. Both formats are published.
+                                </p>
+                                <CodeTabs
+                                    command
+                                    tabs={cvSignTabs}
+                                    ariaLabel="Signing commands" />
+                            {/if}
+                            {#if openPgpKey}
+                                <FileUploadField
+                                    id="cv-signature-file"
+                                    compact
+                                    label={cvSignedByKey ? 'Replace the signature' : (
+                                        'Upload the signature'
+                                    )}
+                                    hint=".sig, .gpg or .asc · detached signature, at most 16 KiB"
+                                    accept=".asc,.sig,.gpg,application/pgp-signature,application/octet-stream,text/plain"
+                                    disabled={isSavingSignature}
+                                    isUploading={isSavingSignature}
+                                    uploadingLabel="Verifying signature…"
+                                    error={signatureError}
+                                    onFileSelect={updateCvSignature} />
+                            {/if}
+                        </section>
+                    </div>
+                {/if}
+            </Card>
+
+            <Card
+                variant="glass"
+                class="mt-6 flex flex-col gap-4">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                        <h2
+                            id="openpgp-key"
+                            class="type-section-title">
+                            OpenPGP key
+                        </h2>
+                        <p class="mt-1 type-body text-text-secondary">
+                            The public key that signs your CV, published at /pgp.asc and through
+                            WKD.
+                        </p>
+                    </div>
+                    {#if openPgpKey}
+                        <ActionMenu
+                            ariaLabel="More key actions"
+                            disabled={isSavingKey}
+                            items={[
+                                {
+                                    label: 'Delete key',
+                                    icon: Trash,
+                                    danger: true,
+                                    onSelect: () => (showRemoveKeyDialog = true)
+                                }
+                            ]} />
                     {/if}
                 </div>
+
+                {#if !openPgpKey}
+                    <FileUploadField
+                        id="openpgp-key-file"
+                        compact
+                        label="Upload your public key"
+                        hint="Export it with gpg --armor --export {authorState.email
+                            || 'you@example.com'}"
+                        accept=".asc,.gpg,.pgp,.pub,.key,application/pgp-keys,application/octet-stream,text/plain"
+                        disabled={isSavingKey}
+                        isUploading={isSavingKey}
+                        uploadingLabel="Checking key…"
+                        error={keyError}
+                        onFileSelect={file => file && saveOpenPgpKey(file)} />
+                {:else}
+                    <div class="rounded-sm border border-border-subtle bg-surface-card">
+                        <div class="flex min-w-0 items-start gap-3.5 p-4">
+                            <div
+                                class="flex size-11 shrink-0 items-center justify-center rounded-lg border border-accent/20 bg-accent/10 text-accent dark:border-accent/30 dark:bg-accent/15">
+                                <KeyRound class="size-5.5" />
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-start gap-1">
+                                    <p
+                                        class="min-w-0 font-mono text-sm leading-6 font-semibold break-words text-text-primary tabular-nums">
+                                        {formatFingerprint(openPgpKey.fingerprint)}
+                                    </p>
+                                    <IconButton
+                                        ariaLabel="Copy fingerprint"
+                                        variant="ghost"
+                                        size="xs"
+                                        onclick={() =>
+                                            copyText(openPgpKey!.fingerprint, 'Fingerprint')}>
+                                        <Copy class="size-3.5" />
+                                    </IconButton>
+                                </div>
+                                <div
+                                    class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-text-muted">
+                                    <span>{openPgpKey.algorithm}</span>
+                                    {#if keyCreated}
+                                        <span aria-hidden="true">·</span>
+                                        <span>Created {keyCreated}</span>
+                                    {/if}
+                                    <span aria-hidden="true">·</span>
+                                    {#if keyExpiresSoon}
+                                        <Badge
+                                            size="sm"
+                                            variant="warning">Expires {keyExpires}</Badge>
+                                    {:else}
+                                        <span
+                                            >{keyExpires ?
+                                                `Expires ${keyExpires}`
+                                            :   'Never expires'}</span>
+                                    {/if}
+                                </div>
+                            </div>
+                        </div>
+
+                        <section
+                            aria-labelledby="openpgp-identity-heading"
+                            class="border-t border-border-subtle p-4">
+                            {@render bandLabel('openpgp-identity-heading', 'Identity')}
+                            <ul class="mt-2 flex flex-col gap-1 text-sm text-text-primary">
+                                {#each openPgpKey.userIds as user (user.email || user.name)}
+                                    <li class="break-words">{formatUserId(user)}</li>
+                                {/each}
+                            </ul>
+                            <p class="mt-2 text-xs text-text-muted">
+                                {#if keyWkdEmails.length}
+                                    WKD lookup works for {keyWkdEmails.join(', ')}.
+                                {:else}
+                                    No user ID uses your site's domain, so WKD lookups will not find
+                                    this key.
+                                {/if}
+                            </p>
+                        </section>
+
+                        <section
+                            aria-labelledby="openpgp-keyservers-heading"
+                            class="flex flex-col gap-3 border-t border-border-subtle p-4">
+                            <div>
+                                {@render bandLabel('openpgp-keyservers-heading', 'Keyservers')}
+                                <p class="mt-1 text-xs text-text-muted">
+                                    Listed as independent sources on your CV. Each one is checked
+                                    for this exact key when you save.
+                                </p>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                {#each KEYSERVER_PRESETS as preset (preset.id)}
+                                    <Checkbox
+                                        bind:checked={keyserverChoice[preset.id]}
+                                        label={preset.label} />
+                                {/each}
+                            </div>
+                            <FormField
+                                id="openpgp-custom-keyserver"
+                                label="Other keyserver URL"
+                                variant="floating"
+                                hint="Optional. A https:// URL that returns this key."
+                                error={keyserverError}>
+                                <Input
+                                    id="openpgp-custom-keyserver"
+                                    type="url"
+                                    bind:value={customKeyserver}
+                                    maxlength={500} />
+                            </FormField>
+                            <FormActions>
+                                <Button
+                                    htmlType="button"
+                                    type="primary"
+                                    size="sm"
+                                    isLoading={isSavingKey}
+                                    disabled={isSavingKey}
+                                    onclick={() => saveOpenPgpKey()}>
+                                    {#snippet leading()}
+                                        <Save class="size-3.5" />
+                                    {/snippet}
+                                    <span>Save keyservers</span>
+                                </Button>
+                            </FormActions>
+                        </section>
+
+                        <section
+                            aria-labelledby="openpgp-replace-heading"
+                            class="flex flex-col gap-2 border-t border-border-subtle p-4">
+                            {@render bandLabel('openpgp-replace-heading', 'Replace key')}
+                            <FileUploadField
+                                id="openpgp-key-file"
+                                compact
+                                label="Upload a new public key"
+                                hint="A different key removes the current CV signature."
+                                accept=".asc,.gpg,.pgp,.pub,.key,application/pgp-keys,application/octet-stream,text/plain"
+                                disabled={isSavingKey}
+                                isUploading={isSavingKey}
+                                uploadingLabel="Checking key…"
+                                error={keyError}
+                                onFileSelect={file => file && saveOpenPgpKey(file)} />
+                        </section>
+                    </div>
+                {/if}
             </Card>
         {:else if activeAdminTab === 'skills'}
             <FormSection
@@ -5600,7 +6015,7 @@
                 <div class="flex flex-col gap-4">
                     {#if skillsState.length === 0}
                         <EmptyState
-                            icon={Wrench}
+                            icon={Layers}
                             title="No skill groups yet"
                             description="Add your first skill group below." />
                     {/if}
@@ -6795,11 +7210,30 @@
 
 <ConfirmationDialog
     bind:isOpen={showDeleteCvDocDialog}
-    title="Delete CV"
-    message="Are you sure you want to delete this CV? The PDF and checksum will be removed from CDN and database."
+    title="Delete CV?"
+    message="Permanently delete this CV and all its files. This can't be undone."
     confirmLabel="Delete CV"
+    requiredKeyword="DELETE"
     isDestructive
     onConfirm={executeDeleteCvDoc} />
+
+<ConfirmationDialog
+    bind:isOpen={showRemoveSignatureDialog}
+    title="Delete signature?"
+    message="Permanently delete the CV signature. The CV stays available without it."
+    confirmLabel="Delete signature"
+    requiredKeyword="DELETE"
+    isDestructive
+    onConfirm={removeCvSignature} />
+
+<ConfirmationDialog
+    bind:isOpen={showRemoveKeyDialog}
+    title="Delete OpenPGP key?"
+    message="Permanently delete your public key and the CV signature. This can't be undone."
+    confirmLabel="Delete key"
+    requiredKeyword="DELETE"
+    isDestructive
+    onConfirm={removeOpenPgpKey} />
 
 <ConfirmationDialog
     bind:isOpen={showRemoveEntryDialog}

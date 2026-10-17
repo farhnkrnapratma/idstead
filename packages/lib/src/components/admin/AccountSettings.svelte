@@ -570,9 +570,9 @@
                     </ul>
                 {:else}
                     <EmptyState
+                        icon={ShieldCheck}
                         title="Two-factor authentication is off"
                         description="Your password alone can sign in to this admin account.">
-                        {#snippet icon()}<ShieldCheck class="size-7" />{/snippet}
                         {#snippet actions()}
                             <Button
                                 size="sm"
@@ -623,9 +623,9 @@
                     </ul>
                 {:else}
                     <EmptyState
+                        icon={KeyRound}
                         title="No passkeys yet"
                         description="Add one from a device you trust.">
-                        {#snippet icon()}<KeyRound class="size-7" />{/snippet}
                     </EmptyState>
                 {/if}
                 {#if webauthnSupported}

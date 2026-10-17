@@ -1,9 +1,11 @@
 <script lang="ts">
-    import { Download, QrCode as QrCodeIcon } from '@lucide/svelte';
-    import { getSVG } from 'qreator/lib/svg';
+    import { Download } from '@lucide/svelte';
     import Dialog from './Dialog.svelte';
     import Button from './Button.svelte';
+    import ErrorState from './ErrorState.svelte';
+    import LoadingState from './LoadingState.svelte';
     import { toastStore } from '../stores/toastStore.svelte';
+    import { renderQrSvg } from '../qrSvg';
 
     import { page } from '$app/state';
 
@@ -27,54 +29,32 @@
 
     let svgString = $state<string>('');
     let isGenerating = $state<boolean>(false);
+    let failed = $state(false);
 
     const resolvedAvatarUrl = $derived(avatarUrl || (page?.data as any)?.author?.avatar || '');
 
-    async function prepareLogoBuffer(imageUrl: string): Promise<ArrayBuffer | undefined> {
+    async function prepareLogoDataUrl(imageUrl: string): Promise<string | undefined> {
         if (typeof window === 'undefined' || !imageUrl) return undefined;
         return new Promise(resolve => {
             const img = new Image();
             img.crossOrigin = 'anonymous';
-            img.onload = async () => {
+            img.onload = () => {
                 try {
                     const size = 256;
-                    const padding = 16;
-                    const radius = 40;
                     const canvas = document.createElement('canvas');
                     canvas.width = size;
                     canvas.height = size;
                     const ctx = canvas.getContext('2d');
                     if (!ctx) return resolve(undefined);
 
-                    ctx.fillStyle = '#ffffff';
-                    if (typeof ctx.roundRect === 'function') {
-                        ctx.beginPath();
-                        ctx.roundRect(0, 0, size, size, radius);
-                        ctx.fill();
-                    } else {
-                        ctx.fillRect(0, 0, size, size);
-                    }
-
-                    const innerSize = size - padding * 2;
-                    const innerRadius = Math.max(0, radius - padding / 2);
-                    ctx.save();
-                    if (typeof ctx.roundRect === 'function') {
-                        ctx.beginPath();
-                        ctx.roundRect(padding, padding, innerSize, innerSize, innerRadius);
-                        ctx.clip();
-                    }
-                    ctx.drawImage(img, padding, padding, innerSize, innerSize);
-                    ctx.restore();
-
-                    const blob = await new Promise<Blob | null>(res =>
-                        canvas.toBlob(res, 'image/png')
-                    );
-                    if (blob) {
-                        const buffer = await blob.arrayBuffer();
-                        resolve(buffer);
-                    } else {
-                        resolve(undefined);
-                    }
+                    const scale = Math.max(size / img.naturalWidth, size / img.naturalHeight);
+                    const width = img.naturalWidth * scale;
+                    const height = img.naturalHeight * scale;
+                    ctx.beginPath();
+                    ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+                    ctx.clip();
+                    ctx.drawImage(img, (size - width) / 2, 0, width, height);
+                    resolve(canvas.toDataURL('image/png'));
                 } catch {
                     resolve(undefined);
                 }
@@ -92,45 +72,14 @@
         if (!url) return;
 
         isGenerating = true;
-
-        let logoBuffer: ArrayBuffer | undefined = undefined;
-        const targetAvatar = resolvedAvatarUrl;
-
-        if (targetAvatar) {
-            logoBuffer = await prepareLogoBuffer(targetAvatar);
-            if (!logoBuffer) {
-                try {
-                    const res = await fetch(targetAvatar);
-                    if (res.ok) {
-                        logoBuffer = await res.arrayBuffer();
-                    }
-                } catch {}
-            }
-        }
-
+        failed = false;
         try {
-            const options: Parameters<typeof getSVG>[1] = {
-                ec_level: 'H',
-                size: 7,
-                margin: 2,
-                color: '#101411',
-                bgColor: '#ffffff',
-                borderRadius: 2,
-                cornerMode: 'merge',
-                finderOuterShape: 'circle',
-                finderInnerShape: 'circle'
-            };
-
-            if (logoBuffer) {
-                options.logo = logoBuffer;
-                options.logoWidth = 24;
-                options.logoHeight = 24;
-            }
-
-            const svgBytes = getSVG(url, options);
-            svgString = new TextDecoder().decode(svgBytes);
+            const logoDataUrl = await prepareLogoDataUrl(resolvedAvatarUrl);
+            svgString = renderQrSvg(url, { logoDataUrl });
         } catch (err) {
             console.error('QR code generation error:', err);
+            svgString = '';
+            failed = true;
         } finally {
             isGenerating = false;
         }
@@ -169,8 +118,6 @@
             if (ctx) {
                 ctx.imageSmoothingEnabled = true;
                 ctx.imageSmoothingQuality = 'high';
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                 const pngUrl = canvas.toDataURL('image/png');
                 const a = document.createElement('a');
@@ -191,31 +138,35 @@
     bind:isOpen
     title="Scan QR code"
     description="Scan with your smartphone camera to open this page directly."
-    size="sm"
+    size="md"
     {onClose}>
-    <div class="flex flex-col items-center justify-center gap-3.5 pt-1 pb-1">
-        <div
-            class="relative flex size-48 items-center justify-center overflow-hidden rounded-md border border-border-default/80 bg-white p-2 shadow-sm">
-            {#if isGenerating}
-                <div class="flex flex-col items-center gap-2 text-xs text-text-muted">
-                    <QrCodeIcon class="size-7 animate-pulse text-accent-text" />
-                    <span>Generating QR Code...</span>
-                </div>
-            {:else if svgString}
-                <div class="flex size-full items-center justify-center [&>svg]:size-full">
+    <div class="flex flex-col items-center justify-center gap-4 pt-1 pb-1">
+        <div class="relative flex aspect-square w-full max-w-80 items-center justify-center">
+            {#if svgString && !isGenerating}
+                <div
+                    class="flex size-full items-center justify-center drop-shadow-sm [&>svg]:size-full">
                     {@html svgString}
                 </div>
+            {:else if failed}
+                <ErrorState
+                    title="Couldn't generate the QR code"
+                    description="Try again, or copy the link below instead."
+                    onRetry={generateQrCode}
+                    class="size-full" />
             {:else}
-                <div class="text-xs text-text-muted">Failed to generate QR code</div>
+                <LoadingState
+                    variant="spinner"
+                    label="Generating QR code..."
+                    class="size-full rounded-md bg-accent-subtle" />
             {/if}
         </div>
 
         {#if title}
             <div class="w-full text-center">
-                <p class="truncate text-xs font-semibold text-text-primary">
+                <p class="truncate text-sm font-semibold text-text-primary">
                     {title}
                 </p>
-                <p class="truncate text-2xs text-text-muted">
+                <p class="mt-0.5 truncate text-xs text-text-muted">
                     {url}
                 </p>
             </div>
@@ -224,24 +175,28 @@
         <div class="grid w-full grid-cols-2 gap-2 pt-1">
             <Button
                 type="secondary"
-                size="xs"
+                size="sm"
+                fullWidth
                 onclick={downloadSvg}
-                disabled={!svgString}
-                class="w-full justify-center text-2xs">
+                disabled={!svgString}>
                 {#snippet leading()}
-                    <Download class="size-3" />
+                    <Download
+                        class="size-3.5"
+                        aria-hidden="true" />
                 {/snippet}
                 <span>Download SVG</span>
             </Button>
 
             <Button
                 type="secondary"
-                size="xs"
+                size="sm"
+                fullWidth
                 onclick={downloadPng}
-                disabled={!svgString}
-                class="w-full justify-center text-2xs">
+                disabled={!svgString}>
                 {#snippet leading()}
-                    <Download class="size-3" />
+                    <Download
+                        class="size-3.5"
+                        aria-hidden="true" />
                 {/snippet}
                 <span>Download PNG</span>
             </Button>

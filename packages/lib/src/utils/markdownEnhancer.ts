@@ -7,16 +7,15 @@ import { focusScope } from './focusScope';
 import { nextCodeScope } from './codeBlocks';
 
 function enhanceMarkdownDetails(container: ParentNode) {
-    container.querySelectorAll<HTMLDetailsElement>('details.markdown-details').forEach(details => {
-        if (details.dataset.shortcutEnhanced === 'true') return;
+    container.querySelectorAll<HTMLDetailsElement>('details.mdrs-details').forEach(details => {
+        if (details.dataset.mdrsEnhanced === 'true') return;
         const summary = details.querySelector<HTMLElement>('summary');
         if (!summary) return;
-        details.dataset.shortcutEnhanced = 'true';
+        details.dataset.mdrsEnhanced = 'true';
         const scope = nextCodeScope('details');
         focusScope(details, scope);
-        summary.classList.add('relative');
         const title =
-            summary.querySelector('.markdown-details-title')?.textContent?.trim() || 'section';
+            summary.querySelector('.mdrs-details-title')?.textContent?.trim() || 'section';
         shortcut(summary, {
             combo: 'E',
             label: `Expand or collapse ${title}`,

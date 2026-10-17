@@ -1,5 +1,6 @@
 <script lang="ts">
     import type { Snippet } from 'svelte';
+    import { AudioLines, BadgeCheck, MapPin, QrCode } from '@lucide/svelte';
     import type { ImageSource } from '../blogBanner';
     import { cn } from '../utils/cn';
 
@@ -17,12 +18,16 @@
         name: string;
         pronunciation?: string;
         headline?: string;
+        location?: string;
         bio?: string;
         avatarUrl?: string;
         avatarSources?: ImageSource[];
+        bannerUrl?: string;
+        bannerSources?: ImageSource[];
         socials?: SocialLink[];
         headingTag?: 'h1' | 'h2';
         class?: string;
+        onShowQr?: () => void;
         actions?: Snippet;
     }
 
@@ -30,99 +35,148 @@
         name,
         pronunciation = '',
         headline = '',
+        location = '',
         bio = '',
         avatarUrl = '',
         avatarSources,
+        bannerUrl = '',
+        bannerSources,
         socials = [],
         headingTag = 'h1',
         class: className = '',
+        onShowQr,
         actions
     }: Props = $props();
+
+    let bannerFailed = $state(false);
 </script>
 
 <div
     class={cn(
-        'profile-card @container relative isolate mt-10 flex w-full flex-col items-center rounded-md glass-card px-4 pb-5 text-center sm:mt-12 sm:px-6 sm:pb-6',
+        'profile-card relative w-full overflow-hidden rounded-md glass-card text-left',
         className
     )}>
-    <div
-        class="pointer-events-none absolute inset-x-0 top-0 -z-10 h-64 rounded-t-md bg-radial-[at_50%_0%] from-accent/12 to-transparent to-70%"
-        aria-hidden="true">
-    </div>
-
-    <div class="profile-avatar -mt-10 rounded-full sm:-mt-12">
-        {#if avatarUrl}
+    <div class="aspect-2/1 w-full bg-accent-subtle">
+        {#if bannerUrl && !bannerFailed}
             <ImageWithSkeleton
-                src={avatarUrl}
-                sources={avatarSources}
-                alt={`Profile picture of ${name}`}
-                referrerpolicy="no-referrer"
+                src={bannerUrl}
+                sources={bannerSources}
+                alt=""
+                rounded=""
                 loading="eager"
                 fetchpriority="high"
-                variant="avatar"
-                rounded="rounded-full"
-                class="size-20 shadow-md ring-4 ring-surface-base sm:size-24"
-                imgClass="object-top" />
-        {:else}
-            <div
-                class="flex size-20 items-center justify-center rounded-full bg-surface-subtle text-2xl font-bold text-accent-text shadow-md ring-4 ring-surface-base sm:size-24 sm:text-4xl"
-                aria-hidden="true">
-                {name.charAt(0)}
-            </div>
+                onerror={() => (bannerFailed = true)}
+                class="h-full w-full" />
         {/if}
     </div>
 
-    <svelte:element
-        this={headingTag}
-        class="mt-3 max-w-full type-page-title font-extrabold sm:text-4xl">
-        {name}
-    </svelte:element>
+    <div class="px-4 pb-5 sm:px-6 sm:pb-6">
+        <div class="profile-avatar relative -mt-12 w-fit rounded-full sm:-mt-14">
+            {#if avatarUrl}
+                <ImageWithSkeleton
+                    src={avatarUrl}
+                    sources={avatarSources}
+                    alt={`Profile picture of ${name}`}
+                    referrerpolicy="no-referrer"
+                    loading="eager"
+                    variant="avatar"
+                    rounded="rounded-full"
+                    class="size-24 shadow-md ring-4 ring-surface-card sm:size-28"
+                    imgClass="object-top" />
+            {:else}
+                <div
+                    class="flex size-24 items-center justify-center rounded-full bg-surface-subtle text-3xl font-bold text-accent-text shadow-md ring-4 ring-surface-card sm:size-28 sm:text-4xl"
+                    aria-hidden="true">
+                    {name.charAt(0)}
+                </div>
+            {/if}
 
-    {#if pronunciation}
-        <p class="mt-1 text-xs tracking-wide text-text-muted">{pronunciation}</p>
-    {/if}
-
-    {#if headline}
-        <p class="mt-2 max-w-2xl type-body text-balance text-text-primary">
-            {headline}
-        </p>
-    {/if}
-
-    {#if bio}
-        <p
-            class="mt-4 max-w-2xl type-body text-pretty text-text-secondary sm:mt-5 @2xl:text-base @2xl:leading-relaxed">
-            {bio}
-        </p>
-    {/if}
-
-    {#if actions}
-        <div class="mt-5 w-full sm:mt-6">
-            {@render actions()}
-        </div>
-    {/if}
-
-    {#if socials.length > 0}
-        <div
-            class="mt-4 flex flex-wrap items-center justify-center gap-1 select-none sm:mt-5 sm:gap-1.5">
-            {#each socials as item (item.url + item.platform)}
+            {#if onShowQr}
                 <Button
                     type="ghost"
                     size="2xs"
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={item.platform}
-                    title={item.platform}
-                    shortcutGroup="social"
-                    shortcutLabel={item.platform}
-                    class="size-7.5! rounded-md! border-0! bg-transparent! p-0! text-text-muted transition-colors hover:bg-surface-hover hover:text-accent-text focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:size-8!">
-                    <BrandIcon
-                        icon={item.icon}
-                        class="text-sm leading-none sm:text-base" />
+                    htmlType="button"
+                    onclick={onShowQr}
+                    aria-label="Show QR code"
+                    title="Show QR code"
+                    class="touch-target absolute! right-0 bottom-0 size-8! rounded-full! border! border-border-default! bg-surface-card! p-0! text-accent-text! shadow-sm ring-4 ring-surface-card hover:bg-accent! hover:text-text-on-accent! sm:right-0.5 sm:bottom-0.5">
+                    <QrCode
+                        class="size-4"
+                        aria-hidden="true" />
                 </Button>
-            {/each}
+            {/if}
         </div>
-    {/if}
+
+        <svelte:element
+            this={headingTag}
+            class="mt-3 type-page-title font-extrabold sm:text-4xl">
+            {name}
+        </svelte:element>
+
+        {#if headline}
+            <p class="mt-1 type-body text-text-secondary">{headline}</p>
+        {/if}
+
+        {#if pronunciation || location}
+            <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-text-muted">
+                {#if pronunciation}
+                    <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
+                        <AudioLines
+                            class="size-3.5 shrink-0"
+                            aria-hidden="true" />
+                        <span class="tracking-wide">{pronunciation}</span>
+                    </span>
+                {/if}
+                {#if location}
+                    <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
+                        <MapPin
+                            class="size-3.5 shrink-0"
+                            aria-hidden="true" />
+                        {location}
+                    </span>
+                {/if}
+            </div>
+        {/if}
+
+        {#if socials.length > 0}
+            <div
+                class="mt-4 flex flex-wrap items-center gap-1 select-none sm:gap-1.5 pointer-coarse:gap-2">
+                <span
+                    class="mr-0.5 inline-flex h-7.5 items-center gap-2 sm:h-8 pointer-coarse:h-9"
+                    aria-hidden="true">
+                    <BadgeCheck class="size-4.5 fill-accent text-text-on-accent sm:size-5" />
+                    <span class="text-text-muted">—</span>
+                </span>
+                {#each socials as item (item.url + item.platform)}
+                    <Button
+                        type="ghost"
+                        size="2xs"
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={item.platform}
+                        title={item.platform}
+                        shortcutGroup="social"
+                        shortcutLabel={item.platform}
+                        class="touch-target relative size-7.5! rounded-md! border-0! bg-transparent! p-0! text-text-muted transition-colors hover:bg-surface-hover hover:text-accent-text focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:size-8! pointer-coarse:size-9!">
+                        <BrandIcon
+                            icon={item.icon}
+                            class="text-sm leading-none sm:text-base" />
+                    </Button>
+                {/each}
+            </div>
+        {/if}
+
+        {#if bio}
+            <p class="mt-4 type-body text-pretty text-text-secondary">{bio}</p>
+        {/if}
+
+        {#if actions}
+            <div class="mt-5">
+                {@render actions()}
+            </div>
+        {/if}
+    </div>
 </div>
 
 <style>
