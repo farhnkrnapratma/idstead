@@ -24,7 +24,11 @@ function unfilteredStatements(body: string): string[] {
         .replace(/--[^\n]*/g, '')
         .split(';')
         .map(statement => statement.replace(/\s+/g, ' ').trim())
-        .filter(statement => /^(?:delete\s+from|update)\s/i.test(statement))
+        .flatMap(statement =>
+            [...statement.matchAll(/\b(?:delete\s+from|update\s+[\w."]+\s+set)\s[\s\S]*/gi)].map(
+                match => match[0]
+            )
+        )
         .filter(statement => !/\swhere\s/i.test(statement));
 }
 
@@ -36,6 +40,17 @@ describe('safeupdate compatibility', () => {
                 unfilteredStatements(body).map(statement => `${name} (${file}): ${statement}`)
             );
         expect(offenders).toEqual([]);
+    });
+
+    test('finds unguarded statements after begin, then, else and loop', () => {
+        expect(
+            unfilteredStatements(`
+                begin delete from public.a;
+                if found then update public.b set x = 1; else delete from public.c where id = 1; end if;
+                loop update public.d set y = 2 where id = 3; end loop;
+                insert into public.e (id) values (1) on conflict (id) do update set id = 1;
+            `)
+        ).toEqual(['delete from public.a', 'update public.b set x = 1']);
     });
 
     test('clear-all is defined by the safeupdate-compatible migration', () => {
