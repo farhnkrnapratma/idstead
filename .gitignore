@@ -1,7 +1,5 @@
 node_modules
 .output
-.vercel
-.netlify
 .wrangler
 .svelte-kit
 build
@@ -10,7 +8,6 @@ dist
 Thumbs.db
 .env
 .env.*
-!.env.test
 !.env.example
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*

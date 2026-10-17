@@ -16,25 +16,22 @@ import {
 import { cvDocumentInfo } from '#lib/cvVerification.ts';
 import * as publicEnv from '$app/env/public';
 
-export type { BlogPost } from '#lib/server/blogPosts.ts';
-
 const HOME_POST_LIMIT = 5;
 
 export const load: PageServerLoad = async ({ fetch, parent }) => {
-    const supabaseClient = supabase;
     const layoutData = parent();
     const postsPromise = loadPublishedPosts(fetch, { limit: HOME_POST_LIMIT });
 
     const [author, cv, funding, contact, skillsGrouped, cvDocument, repoRules, signingKey] =
         await Promise.all([
-            fetchAuthorProfileWithSocials(supabaseClient, { includeEmail: true }),
-            fetchCvEntries(supabaseClient),
-            fetchFundingLinks(supabaseClient),
-            fetchContactInfo(supabaseClient),
-            fetchGroupedSkills(supabaseClient),
-            fetchActiveCvDocument(supabaseClient, fetch),
-            fetchProjectRepoRules(supabaseClient),
-            fetchActiveOpenPgpKey(supabaseClient)
+            fetchAuthorProfileWithSocials(supabase, { includeEmail: true }),
+            fetchCvEntries(supabase),
+            fetchFundingLinks(supabase),
+            fetchContactInfo(supabase),
+            fetchGroupedSkills(supabase),
+            fetchActiveCvDocument(supabase, fetch),
+            fetchProjectRepoRules(supabase),
+            fetchActiveOpenPgpKey(supabase)
         ]);
 
     const [{ projects: layoutProjects }, dbPosts] = await Promise.all([layoutData, postsPromise]);
@@ -49,7 +46,6 @@ export const load: PageServerLoad = async ({ fetch, parent }) => {
         funding,
         contact,
         skills: skillsGrouped,
-        cvExists: Boolean(cvDocument?.fileUrl),
         cvDocument:
             cvDocument?.fileUrl ?
                 cvDocumentInfo(

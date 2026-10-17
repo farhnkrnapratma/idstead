@@ -21,20 +21,6 @@ export function stripPlaceholderChars(text: string): string {
     return text.replace(PLACEHOLDER_CHAR_RE, '');
 }
 
-export function protectWithPlaceholders(
-    text: string,
-    regex: RegExp,
-    prefix: string,
-    store: Map<string, string>
-): string {
-    let counter = store.size;
-    return text.replace(regex, match => {
-        const key = placeholderKey(prefix, counter++);
-        store.set(key, match);
-        return key;
-    });
-}
-
 export function restoreAllPlaceholders(text: string, store: Map<string, string>): string {
     let budget = MAX_PLACEHOLDER_EXPANSIONS;
     const active = new Set<string>();
