@@ -21,7 +21,6 @@
         "**/*.css"
     ],
     "dependencies": {
-        "@aws-sdk/client-s3": "^3.1149.0",
         "@blobatar/svelte": "^2.7.0",
         "@fontsource-variable/lexend": "^5.3.0",
         "@fontsource-variable/lilex": "^5.3.0",

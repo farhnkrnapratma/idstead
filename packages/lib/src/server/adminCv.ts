@@ -1,6 +1,4 @@
-import { S3Client, PutObjectCommand, DeleteObjectsCommand } from '@aws-sdk/client-s3';
 import { verifyAdminToken, bearerToken } from './adminAuth';
-import * as privateEnv from '$app/env/private';
 import * as publicEnv from '$app/env/public';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { supabase as publicSupabase } from '#lib/supabase.ts';
@@ -47,6 +45,7 @@ import {
     verifyKeyserver
 } from '#lib/server/openpgp.ts';
 import { ipSalt } from './ipSalt';
+import { deleteObjects, findAssetBucket } from './r2';
 
 const CV_PROJECT_LIMIT = 4;
 
@@ -54,31 +53,15 @@ function getAdminDb(platform?: unknown) {
     return getSupabaseAdminClient(platform) || publicSupabase;
 }
 
-function getR2Credentials(platform?: any) {
-    const accountId =
-        platform?.env?.R2_ACCOUNT_ID ?? privateEnv.R2_ACCOUNT_ID ?? process.env.R2_ACCOUNT_ID;
-    const accessKeyId =
-        platform?.env?.R2_ACCESS_KEY_ID
-        ?? privateEnv.R2_ACCESS_KEY_ID
-        ?? process.env.R2_ACCESS_KEY_ID;
-    const secretAccessKey =
-        platform?.env?.R2_SECRET_ACCESS_KEY
-        ?? privateEnv.R2_SECRET_ACCESS_KEY
-        ?? process.env.R2_SECRET_ACCESS_KEY;
-    const bucketName =
-        platform?.env?.R2_BUCKET_NAME ?? privateEnv.R2_BUCKET_NAME ?? process.env.R2_BUCKET_NAME;
+async function cvStorage(platform?: any) {
     const rawCdnUrl =
         platform?.env?.PUBLIC_CDN_BASE_URL
         || publicEnv.PUBLIC_CDN_BASE_URL
         || process.env.PUBLIC_CDN_BASE_URL
         || '';
     const cdnUrl = rawCdnUrl.trim().replace(/\/+$/, '');
-
-    if (!accountId || !accessKeyId || !secretAccessKey || !bucketName || !cdnUrl) {
-        return null;
-    }
-
-    return { accountId, accessKeyId, secretAccessKey, bucketName, cdnUrl };
+    const bucket = await findAssetBucket(platform);
+    return bucket && cdnUrl ? { bucket, cdnUrl } : null;
 }
 
 function jsonResponse(body: unknown, status = 200) {
@@ -169,14 +152,6 @@ export function formatAuthorSlug(name?: string): string {
     return `CV-${slug}`;
 }
 
-function r2Client(creds: NonNullable<ReturnType<typeof getR2Credentials>>) {
-    return new S3Client({
-        region: 'auto',
-        endpoint: `https://${creds.accountId}.r2.cloudflarestorage.com`,
-        credentials: { accessKeyId: creds.accessKeyId, secretAccessKey: creds.secretAccessKey }
-    });
-}
-
 function cvObjectKeys(filename: string) {
     return [
         cvKey(filename),
@@ -195,20 +170,17 @@ async function putCvObject(
     contentType: string,
     downloadName?: string
 ) {
-    const creds = getR2Credentials(platform);
-    if (creds) {
-        await r2Client(creds).send(
-            new PutObjectCommand({
-                Bucket: creds.bucketName,
-                Key: key,
-                Body: body,
-                ContentType: contentType,
-                CacheControl: 'public, max-age=60',
+    const storage = await cvStorage(platform);
+    if (storage) {
+        await storage.bucket.put(key, body, {
+            httpMetadata: {
+                contentType,
+                cacheControl: 'public, max-age=60',
                 ...(downloadName ?
-                    { ContentDisposition: `attachment; filename="${downloadName}"` }
+                    { contentDisposition: `attachment; filename="${downloadName}"` }
                 :   {})
-            })
-        );
+            }
+        });
         return;
     }
     const { error } = await db.storage
@@ -222,14 +194,8 @@ async function deleteCvObjects(
     db: ReturnType<typeof getAdminDb>,
     keys: string[]
 ) {
-    const creds = getR2Credentials(platform);
-    if (creds)
-        await r2Client(creds).send(
-            new DeleteObjectsCommand({
-                Bucket: creds.bucketName,
-                Delete: { Objects: keys.map(Key => ({ Key })) }
-            })
-        );
+    const storage = await cvStorage(platform);
+    if (storage) await deleteObjects(storage.bucket, keys);
     else await db.storage.from('cv_documents').remove(keys);
 }
 
@@ -365,16 +331,11 @@ async function removeCvObjects(
     strict: boolean
 ) {
     const keys = cvObjectKeys(filename);
-    const creds = getR2Credentials(platform);
-    if (strict && !creds) return false;
-    if (creds) {
+    const storage = await cvStorage(platform);
+    if (strict && !storage) return false;
+    if (storage) {
         try {
-            await r2Client(creds).send(
-                new DeleteObjectsCommand({
-                    Bucket: creds.bucketName,
-                    Delete: { Objects: keys.map(Key => ({ Key })) }
-                })
-            );
+            await deleteObjects(storage.bucket, keys);
         } catch (err) {
             console.error('R2 deletion warning:', err);
             if (strict) return false;
@@ -557,7 +518,7 @@ export async function processCvGenerate(
         const reasons = activeDoc ? bump!.reasons : ['First version'];
         const versionLabel = formatCvVersion(version);
 
-        const r2Creds = getR2Credentials(platform);
+        const r2Storage = await cvStorage(platform);
         const pdfBytes = await generateCvPdfBuffer(cvData, loadCvFonts());
         const shortHash = Array.from(
             new Uint8Array(
@@ -592,20 +553,13 @@ export async function processCvGenerate(
             )
         ];
 
-        if (r2Creds) {
+        if (r2Storage) {
             try {
-                const client = r2Client(r2Creds);
-                for (const [Key, Body, ContentType] of uploads)
-                    await client.send(
-                        new PutObjectCommand({
-                            Bucket: r2Creds.bucketName,
-                            Key,
-                            Body,
-                            ContentType,
-                            CacheControl: 'public, max-age=300'
-                        })
-                    );
-                fileUrl = `${r2Creds.cdnUrl}/${cvKey(filename)}`;
+                for (const [key, body, contentType] of uploads)
+                    await r2Storage.bucket.put(key, body, {
+                        httpMetadata: { contentType, cacheControl: 'public, max-age=300' }
+                    });
+                fileUrl = `${r2Storage.cdnUrl}/${cvKey(filename)}`;
             } catch (r2Err) {
                 console.error('R2 upload failed, trying Supabase Storage fallback:', r2Err);
             }

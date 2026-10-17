@@ -1,5 +1,5 @@
-import { PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
-import { assetStorage, IMAGE_CACHE_CONTROL } from './profileAssets';
+import { IMAGE_CACHE_CONTROL } from './profileAssets';
+import { assetBucket, readObjectBytes } from './r2';
 import { sha256 } from '#lib/blogBanner.ts';
 
 export async function putContentAsset(
@@ -8,21 +8,11 @@ export async function putContentAsset(
     bytes: Uint8Array<ArrayBuffer>,
     contentType: string
 ) {
-    const { client, bucket } = assetStorage(platform);
-    await client.send(
-        new PutObjectCommand({
-            Bucket: bucket,
-            Key: key,
-            Body: bytes,
-            ContentType: contentType,
-            CacheControl: IMAGE_CACHE_CONTROL
-        }),
-        { abortSignal: AbortSignal.timeout(30_000) }
-    );
-    const stored = await client.send(new GetObjectCommand({ Bucket: bucket, Key: key }), {
-        abortSignal: AbortSignal.timeout(30_000)
+    const bucket = await assetBucket(platform);
+    await bucket.put(key, bytes, {
+        httpMetadata: { contentType, cacheControl: IMAGE_CACHE_CONTROL }
     });
-    const data = await stored.Body?.transformToByteArray();
-    if (!data || (await sha256(new Uint8Array(data))) !== (await sha256(bytes)))
+    const data = await readObjectBytes(bucket, key);
+    if (!data || (await sha256(data)) !== (await sha256(bytes)))
         throw new Error('Stored content asset verification failed.');
 }
