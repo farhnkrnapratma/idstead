@@ -12,7 +12,6 @@ export interface Env {
     [key: string]: unknown;
 }
 
-const DEFAULT_SITE_URL = 'https://fkp.my.id';
 const DEAD_LETTER_QUEUE = 'fkp-newsletter-dlq';
 
 async function deliver(message: Message<unknown>, env: Env) {
@@ -27,13 +26,7 @@ async function deliver(message: Message<unknown>, env: Env) {
         message.retry({ delaySeconds: 300 });
         return;
     }
-    const result = await notifyNewPost(
-        db,
-        { env },
-        env.PUBLIC_SITE_URL || DEFAULT_SITE_URL,
-        body.postId,
-        body.force === true
-    );
+    const result = await notifyNewPost(db, { env }, body.postId, body.force === true);
     if (result.reason === 'send-failed')
         Sentry.captureMessage('Newsletter send failed', {
             level: 'warning',

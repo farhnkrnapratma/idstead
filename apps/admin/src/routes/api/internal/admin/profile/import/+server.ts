@@ -10,7 +10,7 @@ import { profilePatch, ProfileInputError } from '#lib/server/profilePatch.ts';
 import { fetchExperiences, fetchEducation } from '#lib/author.ts';
 import { sanitizeInput } from '#lib/utils/sanitizeInput.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
-import * as privateEnv from '$app/env/private';
+import { ipSalt } from '#lib/server/ipSalt.ts';
 
 function s(value: unknown): string {
     return typeof value === 'string' ? sanitizeInput(value.trim()) : '';
@@ -212,10 +212,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
                     return null;
                 }
             })(),
-            ipSalt:
-                (platform as { env?: { IP_SALT?: string } } | undefined)?.env?.IP_SALT
-                ?? privateEnv.IP_SALT
-                ?? '',
+            ipSalt: ipSalt(platform),
             userAgent: request.headers.get('user-agent') ?? undefined
         },
         db

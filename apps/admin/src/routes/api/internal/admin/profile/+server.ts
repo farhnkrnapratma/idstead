@@ -22,6 +22,7 @@ import { profilePatch, ProfileInputError } from '#lib/server/profilePatch.ts';
 import { avatarAssetNames, bannerAssetNames, type IdentityAsset } from '#lib/siteIdentity.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { workerBinding, type RateLimit } from '#lib/server/workerEnv.ts';
+import { ipSalt } from '#lib/server/ipSalt.ts';
 
 const attempts = new Map<string, number>();
 
@@ -328,7 +329,7 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
                     return null;
                 }
             })(),
-            ipSalt: (platform as { env?: { IP_SALT?: string } } | undefined)?.env?.IP_SALT ?? '',
+            ipSalt: ipSalt(platform),
             userAgent: request.headers.get('user-agent') ?? undefined
         },
         db

@@ -15,7 +15,7 @@ import {
     clearLoginAttempts,
     recordFailedLogin
 } from '#lib/server/loginRateLimit.ts';
-import * as privateEnv from '$app/env/private';
+import { ipSalt } from '#lib/server/ipSalt.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
     if (!isSameOriginRequest(request, url))
@@ -91,9 +91,6 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     if (postError)
         return apiError(503, 'DATA_DELETE_FAILED', 'Could not load posts. No data was deleted.');
 
-    const { error } = await db.rpc('db_clear_all_data');
-    if (error) return apiError(503, 'DATA_DELETE_FAILED', 'Could not clear site data.');
-
     let cleanupFailed = false;
     for (const doc of documents) {
         if (doc.filename && !(await deleteCvFile(platform, db, doc.filename, true)))
@@ -133,13 +130,23 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             console.error('Identity asset cleanup failed:', error);
         }
     }
-    try {
-        const { cleanupPending } = await cleanupBlogAssets(db, platform);
-        if (cleanupPending) cleanupFailed = true;
-    } catch (error) {
-        cleanupFailed = true;
-        console.error('Blog asset cleanup failed:', error);
-    }
+    if (cleanupFailed)
+        return apiError(
+            503,
+            'DATA_DELETE_CLEANUP_FAILED',
+            'Some uploaded files could not be removed, so site data was not cleared. Try again.'
+        );
+
+    const { error } = await db.rpc('db_clear_all_data');
+    if (error) return apiError(503, 'DATA_DELETE_FAILED', 'Could not clear site data.');
+
+    const sweepPending = await cleanupBlogAssets(db, platform).then(
+        ({ cleanupPending }) => cleanupPending,
+        error => {
+            console.error('Blog asset cleanup failed:', error);
+            return true;
+        }
+    );
 
     await logActivity(
         {
@@ -147,8 +154,8 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             action: 'data.delete_all',
             category: 'security',
             summary:
-                cleanupFailed ?
-                    'Deleted all site data; some uploaded files need retry.'
+                sweepPending ?
+                    'Deleted all site data; some blog files still need cleanup.'
                 :   'Deleted all site data.',
             ip: (() => {
                 try {
@@ -157,21 +164,11 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
                     return null;
                 }
             })(),
-            ipSalt:
-                (platform as { env?: { IP_SALT?: string } } | undefined)?.env?.IP_SALT
-                ?? privateEnv.IP_SALT
-                ?? '',
+            ipSalt: ipSalt(platform),
             userAgent: request.headers.get('user-agent') ?? undefined
         },
         db
     );
-
-    if (cleanupFailed)
-        return apiError(
-            503,
-            'DATA_DELETE_CLEANUP_FAILED',
-            'Site data was cleared, but some uploaded files remain. Try again to finish deleting them.'
-        );
 
     return json({ success: true }, { headers: { 'Cache-Control': 'no-store' } });
 };

@@ -1,4 +1,4 @@
-export type UnsubscribeState = 'invalid' | 'unavailable' | 'unsubscribed';
+export type UnsubscribeState = 'confirm' | 'invalid' | 'unavailable' | 'unsubscribed';
 
 export function unsubscribeResultUrl(url: URL, state: UnsubscribeState): string {
     const cleanUrl = new URL(url);

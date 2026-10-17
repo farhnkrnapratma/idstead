@@ -1,7 +1,7 @@
-import * as env from '$app/env/private';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { recordPageFeedback } from '#lib/server/pageFeedback.ts';
 import type { RequestHandler } from './$types';
+import { ipSalt } from '#lib/server/ipSalt.ts';
 
 export const POST: RequestHandler = ({ request, url, platform, getClientAddress }) =>
     recordPageFeedback({
@@ -9,5 +9,5 @@ export const POST: RequestHandler = ({ request, url, platform, getClientAddress 
         url,
         db: getSupabaseAdminClient(platform),
         ip: getClientAddress,
-        secret: typeof platform?.env?.IP_SALT === 'string' ? platform.env.IP_SALT : env.IP_SALT
+        secret: ipSalt(platform)
     });

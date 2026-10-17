@@ -53,7 +53,7 @@ function fakeDb(subscriberCount: number, notifiedAt: string | null = null) {
 }
 
 const realFetch = globalThis.fetch;
-const batchCalls: { key: string | null; size: number }[] = [];
+const batchCalls: { key: string | null; size: number; body: { text: string }[] }[] = [];
 
 function stubFetch(failingChunks: Set<number>) {
     batchCalls.length = 0;
@@ -62,8 +62,9 @@ function stubFetch(failingChunks: Set<number>) {
         if (url !== 'https://api.resend.com/emails/batch')
             return new Response('{"message":"offline"}', { status: 500 });
         const headers = new Headers(init?.headers);
-        const size = JSON.parse(String(init?.body)).length;
-        const index = batchCalls.push({ key: headers.get('Idempotency-Key'), size }) - 1;
+        const body = JSON.parse(String(init?.body));
+        const index =
+            batchCalls.push({ key: headers.get('Idempotency-Key'), size: body.length, body }) - 1;
         return failingChunks.has(index) ?
                 new Response('{"message":"down"}', { status: 500 })
             :   new Response('{"data":[]}', { status: 200 });
@@ -78,7 +79,7 @@ describe('notifyNewPost', () => {
     test('keeps the claim when every chunk is sent', async () => {
         const { db, post } = fakeDb(150);
         stubFetch(new Set());
-        const result = await notifyNewPost(db, platform, 'https://example.com', POST_ID);
+        const result = await notifyNewPost(db, platform, POST_ID);
         expect(result).toEqual({ sent: 150 });
         expect(post.subscribers_notified_at).toBeString();
         expect(batchCalls.map(call => call.size)).toEqual([100, 50]);
@@ -87,7 +88,7 @@ describe('notifyNewPost', () => {
     test('releases the claim and reports send-failed when a chunk fails', async () => {
         const { db, post } = fakeDb(150);
         stubFetch(new Set([1]));
-        const result = await notifyNewPost(db, platform, 'https://example.com', POST_ID);
+        const result = await notifyNewPost(db, platform, POST_ID);
         expect(result).toEqual({ sent: 100, failed: 50, reason: 'send-failed' });
         expect(post.subscribers_notified_at).toBeNull();
     });
@@ -95,10 +96,10 @@ describe('notifyNewPost', () => {
     test('sends the same idempotency keys when a failed broadcast is retried', async () => {
         const { db } = fakeDb(150);
         stubFetch(new Set([1]));
-        await notifyNewPost(db, platform, 'https://example.com', POST_ID);
+        await notifyNewPost(db, platform, POST_ID);
         const firstKeys = batchCalls.map(call => call.key);
         stubFetch(new Set());
-        await notifyNewPost(db, platform, 'https://example.com', POST_ID);
+        await notifyNewPost(db, platform, POST_ID);
         expect(batchCalls.map(call => call.key)).toEqual(firstKeys);
         expect(firstKeys[0]).toStartWith(`newsletter/${POST_ID}/auto/`);
         expect(new Set(firstKeys).size).toBe(2);
@@ -108,12 +109,26 @@ describe('notifyNewPost', () => {
         const previous = '2026-10-01T00:00:00.000Z';
         const { db, post } = fakeDb(150, previous);
         stubFetch(new Set([1]));
-        await notifyNewPost(db, platform, 'https://example.com', POST_ID, true);
+        await notifyNewPost(db, platform, POST_ID, true);
         expect(post.subscribers_notified_at).toBe(previous);
         const firstKeys = batchCalls.map(call => call.key);
         stubFetch(new Set());
-        await notifyNewPost(db, platform, 'https://example.com', POST_ID, true);
+        await notifyNewPost(db, platform, POST_ID, true);
         expect(batchCalls.map(call => call.key)).toEqual(firstKeys);
         expect(firstKeys[0]).toStartWith(`newsletter/${POST_ID}/${previous}/`);
+    });
+
+    test('links to PUBLIC_SITE_URL, never the calling host, when the profile has no site URL', async () => {
+        const { db } = fakeDb(1);
+        stubFetch(new Set());
+        await notifyNewPost(
+            db,
+            { env: { ...platform.env, PUBLIC_SITE_URL: 'https://site.example/' } },
+            POST_ID
+        );
+        expect(batchCalls[0].body[0].text).toContain('https://site.example/blog/hello');
+        expect(batchCalls[0].body[0].text).toContain(
+            'https://site.example/unsubscribe?token=token-0'
+        );
     });
 });

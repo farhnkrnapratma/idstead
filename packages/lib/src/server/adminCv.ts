@@ -46,6 +46,7 @@ import {
     verifyDetachedSignature,
     verifyKeyserver
 } from '#lib/server/openpgp.ts';
+import { ipSalt } from './ipSalt';
 
 const CV_PROJECT_LIMIT = 4;
 
@@ -111,14 +112,6 @@ function safeClientAddress(getClientAddress?: () => string): string | null {
     }
 }
 
-function ipSaltFromPlatform(platform?: unknown): string {
-    return (
-        (platform as { env?: { IP_SALT?: string } } | undefined)?.env?.IP_SALT
-        ?? privateEnv.IP_SALT
-        ?? ''
-    );
-}
-
 async function resolveActor(
     req: Request,
     db: ReturnType<typeof getAdminDb>
@@ -146,7 +139,7 @@ async function logCvActivity(
             entityId,
             summary,
             ip: safeClientAddress(getClientAddress),
-            ipSalt: ipSaltFromPlatform(platform),
+            ipSalt: ipSalt(platform),
             userAgent: req.headers.get('user-agent') ?? undefined
         },
         db

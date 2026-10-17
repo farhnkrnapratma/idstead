@@ -5,7 +5,7 @@ import { apiError } from '#lib/server/apiError.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { bearerToken } from '#lib/server/adminAuth.ts';
-import * as privateEnv from '$app/env/private';
+import { ipSalt } from '#lib/server/ipSalt.ts';
 
 export const POST: RequestHandler = async ({ request, platform, url, getClientAddress }) => {
     if (!isSameOriginRequest(request, url))
@@ -33,10 +33,7 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
             category: 'auth',
             summary: 'Admin signed out.',
             ip,
-            ipSalt:
-                (platform as { env?: { IP_SALT?: string } } | undefined)?.env?.IP_SALT
-                ?? privateEnv.IP_SALT
-                ?? '',
+            ipSalt: ipSalt(platform),
             userAgent: request.headers.get('user-agent') ?? undefined
         },
         db

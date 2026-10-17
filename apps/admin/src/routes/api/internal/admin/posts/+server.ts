@@ -16,9 +16,9 @@ import { UUID_PATTERN } from '#lib/blogBanner.ts';
 import { createApiRegistry, validateDefineForSave } from '#lib/define.ts';
 import { notifyNewPost } from '#lib/server/subscriberBroadcast.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
-import * as privateEnv from '$app/env/private';
 import { runInBackground } from '#lib/server/workerEnv.ts';
 import { enqueueNewsletter } from '#lib/server/newsletterQueue.ts';
+import { ipSalt } from '#lib/server/ipSalt.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
     const db = getSupabaseAdminClient(platform);
@@ -114,7 +114,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             });
             if (!queued)
                 await runInBackground(
-                    notifyNewPost(db, platform, url.origin, postId).catch(error => {
+                    notifyNewPost(db, platform, postId).catch(error => {
                         console.error('Subscriber broadcast failed:', error);
                     })
                 );
@@ -164,10 +164,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
                         return null;
                     }
                 })(),
-                ipSalt:
-                    (platform as { env?: { IP_SALT?: string } } | undefined)?.env?.IP_SALT
-                    ?? privateEnv.IP_SALT
-                    ?? '',
+                ipSalt: ipSalt(platform),
                 userAgent: request.headers.get('user-agent') ?? undefined
             },
             db

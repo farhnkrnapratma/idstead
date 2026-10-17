@@ -28,6 +28,14 @@ describe('unsubscribe result URL', () => {
         expect(unsubscribePageServer).toContain('redirect(303, unsubscribeResultUrl(url, state))');
     });
 
+    test('only unsubscribes from a form POST, never while loading the page', () => {
+        const [loadSource, actionSource] = unsubscribePageServer.split('export const actions');
+        expect(actionSource).toBeDefined();
+        expect(loadSource).not.toContain('.update(');
+        expect(actionSource).toContain("status: 'unsubscribed'");
+        expect(loadSource).toContain('httpOnly: true');
+    });
+
     test('rotates an old unsubscribe token when an address resubscribes', () => {
         expect(subscribeHandler).toMatch(
             /existing\?\.status === 'unsubscribed'[\s\S]*?unsubscribe_token: createToken\(\)/

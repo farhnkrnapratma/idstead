@@ -61,7 +61,6 @@ See [docs/003-api/002-ard.md](../003-api/002-ard.md).
 | `/api/internal/blog/comments`                 | POST   | same-origin, Turnstile, Llama Guard |
 | `/api/internal/blog/comments/report`          | POST   | same-origin, Turnstile              |
 | `/api/internal/blog/views`                    | POST   | same-origin                         |
-| `/api/internal/blog/feedback`                 | POST   | same-origin (legacy body)           |
 | `/api/internal/feedback`                      | POST   | same-origin                         |
 | `/api/internal/subscribe`                     | POST   | same-origin, Turnstile              |
 | `/api/internal/subscribe/unsubscribe-request` | POST   | same-origin, Turnstile              |

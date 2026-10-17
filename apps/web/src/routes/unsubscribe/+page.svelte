@@ -8,7 +8,13 @@
     let { data }: { data: PageData } = $props();
 
     const copy = $derived(
-        data.state === 'unsubscribed' ?
+        data.state === 'confirm' ?
+            {
+                title: 'Unsubscribe from article emails?',
+                description:
+                    'You will stop receiving an email when a new article is published. You can subscribe again at any time from the site.'
+            }
+        : data.state === 'unsubscribed' ?
             {
                 title: 'You are unsubscribed',
                 description:
@@ -42,6 +48,16 @@
         icon={data.state === 'unavailable' ? TriangleAlert : MailX}
         iconClass={data.state === 'unavailable' ? 'text-warning' : ''}>
         {#snippet actions()}
+            {#if data.state === 'confirm'}
+                <form method="POST">
+                    <Button
+                        type="danger"
+                        size="sm"
+                        htmlType="submit">
+                        Unsubscribe
+                    </Button>
+                </form>
+            {/if}
             <Button
                 type="secondary"
                 size="sm"

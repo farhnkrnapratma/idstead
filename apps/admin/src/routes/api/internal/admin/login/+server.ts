@@ -8,7 +8,6 @@ import {
     clearLoginAttempts
 } from '#lib/server/loginRateLimit.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
-import * as privateEnv from '$app/env/private';
 import { fetchAuthorProfile } from '#lib/author.ts';
 import { supabase as publicSupabase } from '#lib/supabase.ts';
 import {
@@ -21,14 +20,7 @@ import {
 import { logActivity } from '#lib/server/activityLog.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { runInBackground } from '#lib/server/workerEnv.ts';
-
-function ipSalt(platform: unknown): string {
-    return (
-        (platform as { env?: { IP_SALT?: string } } | undefined)?.env?.IP_SALT
-        ?? privateEnv.IP_SALT
-        ?? ''
-    );
-}
+import { ipSalt } from '#lib/server/ipSalt.ts';
 
 function getClientIp(getClientAddress: () => string) {
     try {
@@ -50,10 +42,7 @@ async function sendLoginAlert(
     const from = senderAddress(platform);
     if (!apiKey || !from || !to) return;
 
-    const salt =
-        (platform as { env?: { IP_SALT?: string } } | undefined)?.env?.IP_SALT
-        ?? privateEnv.IP_SALT
-        ?? '';
+    const salt = ipSalt(platform);
 
     const profile = await fetchAuthorProfile(publicSupabase);
     await sendEmail(apiKey, from, {
