@@ -14,7 +14,7 @@ flowchart LR
         RL[["Rate Limiting<br/>API_RATE_LIMITER"]]
         AI[["Workers AI<br/>AI binding"]]
         Q[["Queue fkp-newsletter<br/>DLQ fkp-newsletter-dlq"]]
-        R2[("R2 bucket<br/>via S3 API")]
+        R2[("R2 bucket static<br/>ASSET_BUCKET binding")]
         CDN[("CDN origin<br/>PUBLIC_CDN_BASE_URL")]
     end
 
@@ -50,6 +50,7 @@ flowchart LR
     ADMIN -->|"service-role + user-scoped"| PG
     ADMIN --> ST
     ADMIN --> R2
+    ADMIN -->|"password, profile"| RL
     ADMIN -->|"post summary, TL;DR"| AI
     ADMIN -->|"login"| TS
     ADMIN -->|"login alert, manual re-send"| RS
@@ -80,8 +81,8 @@ flowchart LR
     - `fkp-admin` serves `admin.fkp.my.id`.
     - `fkp-api` serves `api.fkp.my.id`.
     - `fkp-jobs` sets `workers_dev: false` and has no route. Its `fetch` handler returns 404.
-- **R2 is not a Worker binding.** Every R2 read and write goes through the S3-compatible API (`@aws-sdk/client-s3`) using the `R2_*` secrets. No `r2_buckets` entry exists in any `wrangler.jsonc`.
-- **`API_RATE_LIMITER` is the Workers Rate Limiting binding** (`ratelimits`, 60 requests per 60 s). It is namespace `1001` on web and `1002` on api. When the binding is missing, `packages/lib/src/server/rateLimit.ts` falls back to an in-memory window.
+- **R2 is a Worker binding.** web, admin and jobs declare `r2_buckets` binding `ASSET_BUCKET` → bucket `static` (`remote: true`, so local dev reaches the real bucket). `packages/lib/src/server/r2.ts` wraps it. The Workers no longer use `@aws-sdk/client-s3` or the `R2_*` secrets; only `scripts/migrate-cdn-layout.ts`, which runs with bun outside Workers, still uses the S3 API.
+- **`API_RATE_LIMITER` is the Workers Rate Limiting binding** (`ratelimits`, 60 requests per 60 s). It is namespace `1001` on web, `1002` on api and `1003` on admin (password and profile writes). When the binding is missing, `packages/lib/src/server/rateLimit.ts` falls back to an in-memory window.
 - **Queue:** admin publishes to `fkp-newsletter` through the `NEWSLETTER_QUEUE` producer. Jobs consumes it with batch size 10, 5 retries, and DLQ `fkp-newsletter-dlq`, and also consumes the DLQ to report each dead-lettered message to Sentry.
 - **Cron:**
     - Jobs runs `17 3 * * *` (UTC) for asset cleanup.
@@ -91,6 +92,6 @@ flowchart LR
 ## Source
 
 - `apps/web/wrangler.jsonc`, `apps/admin/wrangler.jsonc`, `apps/api/wrangler.jsonc`, `apps/jobs/wrangler.jsonc`
-- `packages/lib/src/server/profileAssets.ts` (`assetStorage`), `rateLimit.ts`, `newsletterQueue.ts`
+- `packages/lib/src/server/r2.ts`, `rateLimit.ts`, `newsletterQueue.ts`
 - `apps/jobs/src/index.ts`
 - `cron.job` in the Supabase project

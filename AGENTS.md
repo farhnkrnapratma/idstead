@@ -20,6 +20,7 @@ Package manager is **bun** — never use npm/npx/yarn/pnpm in this repo (`bun.lo
 
 ```sh
 bun install              # install every workspace
+run dev [dev.web ...]    # dev servers in parallel through phase run; targets live in run.conf (run --list)
 bun run dev [--host]     # web dev server (apps/web, mode: development)
 bun run dev:admin        # admin dev server on :5174
 bun run --filter @fkp/api dev   # API worker via wrangler dev on :8787
@@ -31,9 +32,9 @@ bun run lint             # prettier --write . && eslint .
 bun run fmt / fmt:check  # prettier
 ```
 
-Run tests, `bun run check`, and `bun run lint` after non-trivial changes; there is no CI, so these local runs are the only gate before Workers Builds deploys. `tests/` stays at the repository root and imports from `packages/lib/src` and `apps/*/src`. Build plugins and Git hooks live in `tooling/`; `scripts/` holds operational migration commands (`migrate-markdown-syntax.ts`, `regenerate-post-slugs.ts`, both dry-run by default).
+Run tests, `bun run check`, and `bun run lint` after non-trivial changes; there is no CI, so these local runs are the only gate before Workers Builds deploys. `tests/` stays at the repository root and imports from `packages/lib/src` and `apps/*/src`. Build plugins and Git hooks live in `tooling/`; `scripts/` holds operational migration commands (`migrate-markdown-syntax.ts`, `regenerate-post-slugs.ts`, `migrate-cdn-layout.ts`, all dry-run by default).
 
-Env files stay at the repository root (`apps/*/vite.config.ts` set `envDir` and SvelteKit's `env.dir` to `../..`). Values come from Phase (`phase run --env dev|prod`); `.env.example` lists every key once, with the same keys for both environments. At minimum `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Other vars: `PUBLIC_API_BASE_URL` (defaults to `https://api.fkp.my.id`), Cloudflare R2 (CV and image storage), Sentry, Turnstile, Resend (`RESEND_API_KEY`, `SUBSCRIBER_FROM_EMAIL` — newsletter and contact form), `IP_SALT`, `SUPABASE_SERVICE_ROLE_KEY` (server-only, bypasses RLS), `CLOUDFLARE_API_TOKEN` (wrangler auth, needed for the `AI` binding's `remote: true` mode in local dev). The wrangler workers (`api`, `jobs`) read env from `phase run` (or `--env-file ../../.env`) locally and in production from Worker secrets that Phase syncs from `/workers/<app>` (never edit them in the Cloudflare dashboard).
+Env files stay at the repository root (`apps/*/vite.config.ts` set `envDir` and SvelteKit's `env.dir` to `../..`). Values come from Phase (`phase run --env dev|prod`); `.env.example` lists every key once, with the same keys for both environments. At minimum `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Other vars: `PUBLIC_API_BASE_URL` (defaults to `https://api.fkp.my.id`), `PUBLIC_SITE_URL` (public site origin, used when the profile has no site URL: newsletter links, CV verification-bundle links and the admin's generated website banner), the `R2_*` keys (S3-API access for `scripts/migrate-cdn-layout.ts` only; the web, admin and jobs Workers reach the R2 bucket `static` for CV and image storage through the `ASSET_BUCKET` binding), Sentry, Turnstile, Resend (`RESEND_API_KEY`, `SUBSCRIBER_FROM_EMAIL` — newsletter and contact form), `IP_SALT`, `SUPABASE_SERVICE_ROLE_KEY` (server-only, bypasses RLS), `CLOUDFLARE_API_TOKEN` (wrangler auth, needed for the `AI` binding's `remote: true` mode in local dev). The wrangler workers (`api`, `jobs`) read env from `phase run` (or `--env-file ../../.env`) locally and in production from Worker secrets that Phase syncs from `/workers/<app>` (never edit them in the Cloudflare dashboard).
 
 ## Architecture
 
@@ -43,7 +44,7 @@ Every app imports shared code as `#lib/...`. Each app's `package.json` maps `#li
 
 - `src/components/`, `src/layout/`, `src/article/`, `src/stores/` — UI primitives, page layout, article rendering, rune stores.
 - `src/global.css` (Tailwind entry, fonts, `@source './'`) and `src/tokens.css` (design tokens). Apps import `#lib/global.css` in their root layout; component `<style>` blocks `@reference` it relatively.
-- `src/server/` — server-only helpers: `apiError`, `apiEnvelope` (public `{error:{...}}` wrapping), `rateLimit`, `workerEnv` (Cloudflare bindings through `cloudflare:workers`; `event.platform` is always undefined with adapter-cloudflare 8), `csp`, `postLookup`, `subscriberBroadcast`, `newsletterQueue`, and `api/` (API handlers).
+- `src/server/` — server-only helpers: `apiError`, `apiEnvelope` (public `{error:{...}}` wrapping), `rateLimit`, `r2` (the `ASSET_BUCKET` R2 binding), `workerEnv` (Cloudflare bindings through `cloudflare:workers`; `event.platform` is always undefined with adapter-cloudflare 8), `csp`, `postLookup`, `subscriberBroadcast`, `newsletterQueue`, and `api/` (API handlers).
 - `src/apiConfig.ts` — `apiUrl()`/`apiBaseUrl()` for links to the API host from web pages.
 
 ### Public API (`apps/api`)

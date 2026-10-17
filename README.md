@@ -99,7 +99,7 @@ This is a Bun workspaces monorepo. Each app is its own Cloudflare Worker, and al
 ```sh
 run dev                           # web, admin, api and jobs
 run dev.web dev.admin             # only web and admin
-run dev.web --host                # web, reachable from other devices
+run dev.host                      # web, reachable from other devices
 run -s PHASE_ENV=prod dev.admin   # admin with production values
 run fmt.check                     # bun run fmt:check
 run --list                        # every target

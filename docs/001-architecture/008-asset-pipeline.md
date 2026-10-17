@@ -1,6 +1,6 @@
 # 8. Image Pipeline: Encode, Validate, Store, Serve, Clean Up
 
-Images are encoded **in the browser**, validated again on the server, written to R2 through the S3 API, served by fkp-web routes, and cleaned up by fkp-jobs. Markdown bodies are stored separately in Supabase Storage.
+Images are encoded **in the browser**, validated again on the server, written to R2 through the `ASSET_BUCKET` binding (`packages/lib/src/server/r2.ts`), served by fkp-web routes, and cleaned up by fkp-jobs. Markdown bodies are stored separately in Supabase Storage.
 
 ```mermaid
 sequenceDiagram
@@ -8,7 +8,7 @@ sequenceDiagram
     participant B as Admin browser
     participant WW as Web Worker (OffscreenCanvas)
     participant A as fkp-admin route
-    participant R2 as R2 (S3 API)
+    participant R2 as R2 (ASSET_BUCKET)
     participant DB as Supabase (service-role)
     participant V as Visitor
     participant W as fkp-web route
@@ -68,12 +68,12 @@ sequenceDiagram
     - Banners: claims retired banner versions, deletes the `.webp` and `.avif` objects, and sets `state='deleted'`. On failure it records `cleanup_error`.
     - Markdown: removes orphaned files listed in `db_post_storage_cleanup` that are more than 24 h old and no longer referenced by `db_posts.storage_path`.
 - **`cleanupAssets`** (`profileAssets.ts`): claims retired identity versions, deletes any leftover staging objects in `identity/{id}/`, then deletes the version row. `data/delete-all` also removes the canonical identity files and post banners.
-- **Callers:** the jobs cron, admin `posts` / `posts/cleanup`, `profile` / `profile/cleanup`, and `data/delete-all`.
+- **Callers:** the jobs cron, admin `posts` (`cleanupBlogAssets` after a save), `profile` (`cleanupAssets` after a save), and `data/delete-all`.
 
 ## Source
 
 - `packages/lib/src/process*.ts`, `packages/lib/src/workers/*.worker.ts`
-- `packages/lib/src/server/validate*.ts`, `profileAssets.ts`, `blogBannerStorage.ts`, `blogContentStorage.ts`
+- `packages/lib/src/server/validate*.ts`, `r2.ts`, `profileAssets.ts`, `blogBannerStorage.ts`, `blogContentStorage.ts`
 - `packages/lib/src/blogBanner.ts`, `blogContentImage.ts`, `siteIdentity.ts`
 - `packages/lib/src/server/blogPostAssets.ts`, `packages/lib/src/assetNaming.ts`, `packages/lib/src/cdn.ts`
 - `apps/admin/src/routes/api/internal/admin/{profile,blog/content-image,blog/content-video}/+server.ts`

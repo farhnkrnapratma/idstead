@@ -22,11 +22,11 @@ Underscores inside words don't trigger emphasis (`snake_case_name` stays as it i
 A backslash before any ASCII punctuation character makes it literal.
 
 ```mdrs
-\*not italic\* \# not a heading \[not a link\](../../mdrs/markdown/url) 1\. not a list
+\*not italic\* \# not a heading \[not a link\](url) 1\. not a list
 ```
 
 ```html
-<p>*not italic* # not a heading [not a link](../../mdrs/markdown/url) 1. not a list</p>
+<p>*not italic* # not a heading [not a link](url) 1. not a list</p>
 ```
 
 To write MDRS-specific syntax literally (directives, `$$`, `${…}`), see [Escaping](../002-extensions/015-escaping.md): a backslash doesn't help for every one of them.

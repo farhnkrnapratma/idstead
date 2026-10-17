@@ -27,12 +27,12 @@ Taken from each `wrangler.jsonc` (all of them use `compatibility_date 2025-06-28
 
 | Worker | Routes | Bindings and triggers |
 | --- | --- | --- |
-| `fkp-web` | `fkp.my.id`, `www.fkp.my.id` (custom domains) | `ASSETS` (static assets), `AI` (Workers AI, `remote: true`), `ratelimits` `API_RATE_LIMITER` (namespace `1001`, 60 requests / 60 s), observability |
-| `fkp-admin` | `admin.fkp.my.id` | `ASSETS`, `AI` (`remote: true`), queue producer `NEWSLETTER_QUEUE` → `fkp-newsletter`, observability |
+| `fkp-web` | `fkp.my.id`, `www.fkp.my.id` (custom domains) | `ASSETS` (static assets), `AI` (Workers AI, `remote: true`), `ASSET_BUCKET` (R2 bucket `static`, `remote: true`), `ratelimits` `API_RATE_LIMITER` (namespace `1001`, 60 requests / 60 s), observability |
+| `fkp-admin` | `admin.fkp.my.id` | `ASSETS`, `AI` (`remote: true`), `ASSET_BUCKET` (`remote: true`), `ratelimits` `API_RATE_LIMITER` (namespace `1003`), queue producer `NEWSLETTER_QUEUE` → `fkp-newsletter`, observability |
 | `fkp-api` | `api.fkp.my.id` | `ratelimits` `API_RATE_LIMITER` (namespace `1002`), a `Text` rule for `**/*.md` (bundles `README.md`), observability |
-| `fkp-jobs` | none (`workers_dev: false`) | queue consumers on `fkp-newsletter` (`max_batch_size 10`, `max_retries 5`, `dead_letter_queue fkp-newsletter-dlq`) and `fkp-newsletter-dlq` (`max_retries 0`, reports to Sentry), cron `17 3 * * *`, `$app/env/*` alias to `src/appEnv.ts`, observability |
+| `fkp-jobs` | none (`workers_dev: false`) | `ASSET_BUCKET` (`remote: true`), queue consumers on `fkp-newsletter` (`max_batch_size 10`, `max_retries 5`, `dead_letter_queue fkp-newsletter-dlq`) and `fkp-newsletter-dlq` (`max_retries 0`, reports to Sentry), cron `17 3 * * *`, `$app/env/*` alias to `src/appEnv.ts`, observability |
 
-R2 is **not** bound. Code reaches it through the S3 API with the `R2_*` secrets (see [environment.md](../004-development/002-environment.md)).
+R2 is bound as `ASSET_BUCKET` (bucket `static`) on web, admin and jobs, and `packages/lib/src/server/r2.ts` wraps it. The Workers no longer read the `R2_*` secrets. Once the release with the binding is live, remove the four `R2_*` references from the Workers' Phase folders (only `/workers/jobs` still has them); keep them at the Phase root, because `scripts/migrate-cdn-layout.ts` still uses the S3 API locally (see [environment.md](../004-development/002-environment.md)).
 
 ## One-time setup
 

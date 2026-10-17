@@ -50,7 +50,7 @@ sequenceDiagram
     else
         H->>DB: INSERT or UPDATE pending row<br/>{confirm_token_hash, confirm_sent_at, ip_hash, user_agent, unsubscribe_token on insert}
         H->>RS: confirm mail with /subscribe/confirm?token=...
-        H-->>B: 200 accepted
+        H-->>B: 200 accepted, or 502 SUBSCRIBE_EMAIL_FAILED if the mail fails
     end
     end
 
@@ -80,6 +80,7 @@ sequenceDiagram
 
 ## Notes
 
+- **Origin check:** every endpoint above except `subscribe/unsubscribe` rejects a cross-origin request with `403` and `FORBIDDEN_ORIGIN`.
 - **Clients:** writes use `getSupabaseAdminClient()` (service role, bypasses RLS). It is server-only (`packages/lib/src/server/supabaseAdmin.ts`).
 - **Activity log:** these public endpoints do **not** write `db_activity_log`. Only admin endpoints do.
 - **IP hashing** uses SHA-256 of the IP plus `IP_SALT`. It is used for view de-duplication, report and feedback tracking, and subscriber rows.

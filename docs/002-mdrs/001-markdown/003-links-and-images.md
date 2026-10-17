@@ -41,7 +41,7 @@ and <a href="mailto:foo@bar.com">foo@bar.com</a>
 Only `http:`, `https:`, `mailto:` and `tel:` URLs are kept, plus relative URLs and `#fragments`. Any other scheme (`javascript:`, `data:`, `vbscript:`, …) is replaced with `#`. Whitespace and control characters hidden inside the scheme are ignored by the check, so they can't smuggle a `javascript:` URL through.
 
 ```mdrs
-[Mail me](mailto:hello@example.com) · [Call](tel:+620000) · [Blocked](../../mdrs/markdown/javascript:alert(1))
+[Mail me](mailto:hello@example.com) · [Call](tel:+620000) · [Blocked](javascript:alert(1))
 ```
 
 ```html
@@ -83,7 +83,7 @@ An absolute `http(s)` link to another site opens in a new tab and gets a small e
     decoding="async" />
 ```
 
-- The alt text is plain text: formatting inside it (`![A *b*](../../mdrs/markdown/…)`) is flattened to `A b`.
+- The alt text is plain text: formatting inside it (`![A *b*](…)`) is flattened to `A b`.
 - Every image is lazy-loaded and decoded asynchronously.
 - An image whose URL fails the URL safety check renders as its alt text only.
 - Reference-style images (`![Alt][label]`) work like reference links.

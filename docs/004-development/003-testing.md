@@ -27,22 +27,32 @@ The suite sends about 50 requests. The rate limit is 60 per minute, so wait a mi
 | `apiV1Handlers.test.ts` | Offline v1 handlers: `/cv` equals `/author?field=cv`, no DB IDs, checksum rules, markdown negotiation, comment nesting |
 | `apiParams.test.ts` | `parseApiParams`, aliases, conflicts, `output` vs `Accept`, boolean and number parsing |
 | `postLookup.test.ts` | Post slugs, slug regeneration plan, `findPost()` (ID / prefix / slug) |
+| `publicPost.test.ts` | `publicPostFields` keeps only public columns and swaps the UUID for the public ID |
 | `ard.test.ts`, `ardIngestion.test.ts` | ARD manifest, search, filters, facets, tokens, no lexical fallback; index ingestion and migration privacy |
-| `markdown.test.ts`, `legacyMarkdown.test.ts` | Markdown engine output; legacy syntax migration |
-| `sanitizeHtml.test.ts` | Hostile input, and engine output surviving the allow-list |
+| `markdown.test.ts`, `legacyMarkdown.test.ts`, `frontmatter.test.ts`, `postAssetMarkdown.test.ts` | Markdown engine output; legacy syntax migration; YAML frontmatter and `:::define` validation; post images (AVIF with WebP fallback) and WebM videos |
+| `sanitizeHtml.test.ts`, `decodeHtmlEntities.test.ts` | Hostile input, and engine output surviving the allow-list; single-level entity decoding |
+| `docsLayout.test.ts` | `docs/` folders are numbered `001…n` and every relative link and anchor resolves |
 | `csp.test.ts` | Content-Security-Policy builder |
 | `robots.test.ts` | `robots.txt` directives and preview blocking |
-| `moderation.test.ts` | Llama Guard moderation parsing |
+| `moderation.test.ts`, `inferenceQueue.test.ts` | Llama Guard moderation parsing; Workers AI concurrency limit |
 | `adminAuthState.test.ts` | MFA/passkey session rules (`requiresAdminMfa`) |
+| `authCaptcha.test.ts`, `loginRateLimit.test.ts` | Admin login Turnstile (route token, Supabase Auth `captchaToken`); login lockout (salted hashes, shared counter, in-memory fallback) |
+| `ipSalt.test.ts` | `ipSalt` prefers the Worker binding and never falls back to a hard-coded salt |
 | `safeRedirect.test.ts` | Admin login `redirectTo` safety |
 | `adminNoShortcuts.test.ts`, `adminEmptyStates.test.ts` | Admin UI rules |
 | `safeupdate.test.ts` | Every `UPDATE`/`DELETE` in migrations has a `WHERE` (PostgREST `safeupdate`) |
 | `pageFeedbackDeleteMigration.test.ts`, `blogTranslationRemoval.test.ts` | Specific migrations |
-| `newsletterQueue.test.ts`, `unsubscribeUrl.test.ts`, `contactEmail.test.ts` | Queue message validation, unsubscribe URL, contact email rendering |
-| `blogBannerRoute.test.ts`, `blogStorageCleanup.test.ts`, `blogPostInput.test.ts`, `postSaveClient.test.ts` | Banner routes, Markdown cleanup queue, post input validation, save button label |
-| `avatarFormats.test.ts`, `imageSources.test.ts`, `identityFallback.test.ts`, `siteBannerUpload.test.ts` | Avatar WebP/AVIF validation, `<picture>` sources, identity fallbacks, site banner (the last two are in the working tree as of 2026-10-15) |
-| `cvPdf.test.ts`, `author.test.ts`, `dataExport.test.ts` | CV PDF generation, author loading, data export |
-| `a11ySettings.test.ts`, `focusHighlight.test.ts`, `frameScheduler.test.ts`, `calendarWeekColumns.test.ts`, `analyticsTag.test.ts` | UI helpers |
+| `newsletterQueue.test.ts`, `newsletterBroadcast.test.ts`, `unsubscribeUrl.test.ts`, `contactEmail.test.ts` | Queue message validation; broadcast claims, idempotency keys and the `PUBLIC_SITE_URL` link fallback; unsubscribe URL; contact email rendering |
+| `blogBannerRoute.test.ts` | Banner object keys and CDN URLs, reserved slugs, and that the old Worker banner and content routes no longer exist |
+| `blogStorageCleanup.test.ts`, `blogPostInput.test.ts`, `postSaveClient.test.ts` | Markdown cleanup queue, post input validation, save button label |
+| `r2.test.ts` | `ASSET_BUCKET` binding helpers: missing binding, copy, paginated list and batched delete, create-once put |
+| `assetNaming.test.ts` | Asset file names and alt text |
+| `avatarFormats.test.ts`, `imageSources.test.ts`, `identityFallback.test.ts`, `siteBannerUpload.test.ts`, `contentImageAvif.test.ts` | Avatar WebP/AVIF validation, `<picture>` sources, identity fallbacks, site banner package, content image AVIF variant |
+| `cvPdf.test.ts`, `cvVersion.test.ts`, `cvChecksums.test.ts`, `author.test.ts`, `dataExport.test.ts` | CV PDF generation, CV version bumps, coreutils checksums and storage keys, author loading, data export |
+| `openpgp.test.ts`, `wkdRoute.test.ts` | OpenPGP key parsing, detached CV signatures, key discovery (WKD hashes, keyservers) and the CV verification bundle; WKD direct-method lookup |
+| `a11ySettings.test.ts`, `focusHighlight.test.ts`, `frameScheduler.test.ts`, `calendarWeekColumns.test.ts`, `analyticsTag.test.ts`, `codeScrollbar.test.ts`, `deviceClass.test.ts`, `qrSvg.test.ts`, `skipLink.test.ts` | UI helpers: accessibility settings, focus, frame scheduling, calendar, analytics tag, code block scrollbar, device class, QR SVG, one skip link per page |
+
+`tests/fixtures/` holds the binary and Markdown fixtures (AVIF images, OpenPGP keys, `markdown-demo.md`).
 
 ## Gaps
 
