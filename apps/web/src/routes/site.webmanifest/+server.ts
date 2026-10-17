@@ -2,7 +2,7 @@ import type { RequestHandler } from './$types';
 import { readSiteProfile, publicResponse } from '#lib/server/publicMetadata.ts';
 import { themeColors } from '#lib/themeColors.ts';
 
-export const GET: RequestHandler = async ({ request, url }) => {
+export const GET: RequestHandler = async ({ request }) => {
     const profile = await readSiteProfile();
     const manifest = {
         id: '/',
@@ -13,7 +13,7 @@ export const GET: RequestHandler = async ({ request, url }) => {
         scope: '/',
         ...profile.manifest_settings,
         display: 'standalone',
-        ...themeColors(url.searchParams.get('theme') === 'dark' ? 'dark' : 'light'),
+        ...themeColors(),
         icons: [192, 512].map(size => ({
             src: `/android-chrome-${size}x${size}.png`,
             sizes: `${size}x${size}`,
