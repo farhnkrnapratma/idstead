@@ -61,21 +61,21 @@
     }: Props = $props();
 
     const baseStyles =
-        'inline-flex min-w-0 items-center justify-center whitespace-nowrap transition cursor-pointer select-none leading-none motion-safe:active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50 disabled:cursor-not-allowed aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>svg]:shrink-0 [&>i]:shrink-0';
+        'inline-flex min-w-0 items-center justify-center whitespace-nowrap transition cursor-pointer select-none leading-none motion-safe:active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50 disabled:cursor-not-allowed aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>svg]:block [&>svg]:shrink-0 [&>span>svg]:block [&>span>svg]:shrink-0 [&>i]:inline-flex [&>i]:shrink-0 [&>i]:items-center [&>i]:leading-none [&>span>i]:inline-flex [&>span>i]:items-center [&>span>i]:leading-none';
 
     const typeToneStyles: Record<string, string> = {
         'primary:neutral':
-            'font-semibold bg-accent-contrast-bg text-text-on-accent hover:bg-accent-hover hover:text-(--color-text-on-accent-hover) active:bg-accent-active active:text-text-on-accent disabled:hover:bg-accent-contrast-bg disabled:hover:text-text-on-accent disabled:active:bg-accent-contrast-bg shadow-xs',
+            'font-semibold bg-accent-contrast-bg bg-linear-to-b from-accent-sheen to-accent-contrast-bg text-text-on-accent inset-shadow-button-fill shadow-button-accent hover:from-accent-hover-sheen hover:to-accent-hover hover:text-(--color-text-on-accent-hover) hover:shadow-button-accent-hover active:from-accent-active active:to-accent-active active:text-text-on-accent active:shadow-2xs active:inset-shadow-button-pressed disabled:shadow-none disabled:hover:from-accent-sheen disabled:hover:to-accent-contrast-bg disabled:hover:text-text-on-accent aria-disabled:shadow-none',
         'primary:critical':
-            'bg-danger-contrast font-semibold text-text-on-danger hover:bg-danger-contrast-hover disabled:hover:bg-danger-contrast shadow-xs',
+            'font-semibold bg-danger-contrast bg-linear-to-b from-danger-sheen to-danger-contrast text-text-on-danger inset-shadow-button-fill shadow-button-danger hover:from-danger-hover-sheen hover:to-danger-contrast-hover hover:shadow-button-danger-hover active:from-danger-contrast-hover active:to-danger-contrast-hover active:shadow-2xs active:inset-shadow-button-pressed disabled:shadow-none disabled:hover:from-danger-sheen disabled:hover:to-danger-contrast aria-disabled:shadow-none',
         'secondary:neutral':
-            'glass-button hover:border-accent disabled:hover:border-border-subtle/70',
+            'glass-button hover:border-accent active:inset-shadow-button-pressed disabled:hover:border-border-subtle/70',
         'secondary:critical':
-            'border border-danger/30 bg-surface-card/55 text-danger-contrast shadow-xs backdrop-blur-sm hover:bg-danger-subtle/40 hover:border-danger/50 disabled:hover:bg-surface-card/55 dark:bg-surface-card/40 dark:hover:bg-danger-subtle/30',
+            'border border-danger/30 bg-surface-card/55 text-danger-contrast shadow-button-surface inset-shadow-button-surface backdrop-blur-sm hover:bg-danger-subtle/40 hover:border-danger/50 active:inset-shadow-button-pressed disabled:hover:bg-surface-card/55 dark:bg-surface-card/40 dark:hover:bg-danger-subtle/30',
         'tertiary:neutral':
-            'border border-border-subtle/50 bg-button-tertiary text-text-secondary shadow-2xs hover:bg-surface-hover hover:text-text-primary hover:border-border-subtle/80 disabled:hover:bg-button-tertiary font-medium',
+            'border border-border-subtle/50 bg-button-tertiary text-text-secondary shadow-button-surface inset-shadow-button-surface hover:bg-surface-hover hover:text-text-primary hover:border-border-subtle/80 active:inset-shadow-button-pressed disabled:hover:bg-button-tertiary font-medium',
         'tertiary:critical':
-            'border border-danger/30 bg-danger-subtle/70 text-danger-contrast shadow-2xs hover:bg-danger-subtle disabled:hover:bg-danger-subtle/70 dark:bg-danger-subtle/40',
+            'border border-danger/30 bg-danger-subtle/70 text-danger-contrast shadow-button-surface inset-shadow-button-surface hover:bg-danger-subtle active:inset-shadow-button-pressed disabled:hover:bg-danger-subtle/70 dark:bg-danger-subtle/40',
         'outline:neutral':
             'border border-border-subtle/60 bg-transparent text-text-primary shadow-2xs hover:bg-surface-hover hover:border-border-default disabled:hover:bg-transparent disabled:hover:border-border-subtle/60 dark:border-border-subtle',
         'outline:critical':
@@ -85,28 +85,50 @@
         'ghost:critical':
             'text-danger-contrast hover:bg-danger-subtle disabled:hover:bg-transparent',
         'danger:critical':
-            'font-semibold border border-danger/30 bg-danger-subtle/70 text-danger-contrast backdrop-blur-sm hover:border-danger-contrast hover:bg-danger-contrast hover:text-text-on-danger disabled:hover:border-danger/30 disabled:hover:bg-danger-subtle/70 disabled:hover:text-danger-contrast shadow-xs dark:bg-danger-subtle/40'
+            'font-semibold border border-danger/30 bg-danger-subtle/70 text-danger-contrast shadow-button-surface inset-shadow-button-surface backdrop-blur-sm hover:border-danger-contrast hover:bg-danger-contrast hover:text-text-on-danger hover:inset-shadow-button-fill hover:shadow-button-danger active:shadow-2xs active:inset-shadow-button-pressed disabled:hover:border-danger/30 disabled:hover:bg-danger-subtle/70 disabled:hover:text-danger-contrast disabled:hover:shadow-button-surface disabled:hover:inset-shadow-button-surface dark:bg-danger-subtle/40'
     };
 
     const styleKey = $derived(type === 'danger' ? 'danger:critical' : `${type}:${tone}`);
 
     const sizeStyles = {
-        '3xs': 'h-6 px-1.5 text-xs gap-1 rounded-sm',
-        '2xs': 'h-7 px-2 text-xs gap-1.5 rounded-sm',
-        xs: 'h-7.5 px-2.5 text-xs gap-1.5 rounded-md',
+        '3xs': 'h-6 px-2 text-xs gap-1 rounded-sm',
+        '2xs': 'h-7 px-2.5 text-xs gap-1.5 rounded-sm',
+        xs: 'h-7.5 px-3 text-xs gap-1.5 rounded-md',
         sm: 'h-8 px-3 text-xs gap-1.5 rounded-md',
         md: 'h-9 px-4 text-xs sm:text-sm gap-2 rounded-md',
         lg: 'h-11 px-5 text-sm gap-2.5 rounded-md'
     };
 
     const responsiveSizeStyles = {
-        '3xs': 'size-6 shrink-0 p-0 text-xs gap-1 rounded-sm sm:h-6 sm:w-auto sm:px-1.5',
-        '2xs': 'size-7 shrink-0 p-0 text-xs gap-1.5 rounded-sm sm:h-7 sm:w-auto sm:px-2',
-        xs: 'size-8 shrink-0 p-0 text-xs gap-1.5 rounded-md sm:h-7.5 sm:w-auto sm:px-2.5',
+        '3xs': 'size-6 shrink-0 p-0 text-xs gap-1 rounded-sm sm:h-6 sm:w-auto sm:px-2',
+        '2xs': 'size-7 shrink-0 p-0 text-xs gap-1.5 rounded-sm sm:h-7 sm:w-auto sm:px-2.5',
+        xs: 'size-8 shrink-0 p-0 text-xs gap-1.5 rounded-md sm:h-7.5 sm:w-auto sm:px-3',
         sm: 'size-8 shrink-0 p-0 text-xs gap-1.5 rounded-md sm:h-8 sm:w-auto sm:px-3 sm:text-xs sm:gap-1.5',
         md: 'size-8 shrink-0 p-0 text-xs gap-1.5 rounded-md sm:h-9 sm:w-auto sm:px-4 sm:text-sm sm:gap-2',
         lg: 'size-8 shrink-0 p-0 text-xs gap-1.5 rounded-md sm:h-11 sm:w-auto sm:px-5 sm:text-sm sm:gap-2.5'
     };
+
+    const labelText =
+        'min-w-0 overflow-x-clip text-ellipsis whitespace-nowrap [text-box:trim-both_cap_alphabetic]';
+    const labelSuffix = 'shrink-0 whitespace-nowrap [text-box:trim-both_cap_alphabetic]';
+
+    const iconSlot = 'inline-flex shrink-0 items-center justify-center leading-none';
+    const compactSize = $derived(size === '3xs' || size === '2xs');
+    const leadingNudge = $derived(
+        responsiveIconOnly ?
+            compactSize ? 'sm:-ms-px'
+            :   'sm:-ms-0.5'
+        : compactSize ? '-ms-px'
+        : '-ms-0.5'
+    );
+    const trailingNudge = $derived(
+        responsiveIconOnly ?
+            compactSize ? 'sm:-me-px'
+            :   'sm:-me-0.5'
+        : compactSize ? '-me-px'
+        : '-me-0.5'
+    );
+    const hasText = $derived(Boolean(label || children));
 
     const splitLabel = $derived.by(() => {
         if (!label) return { prefix: '', suffix: '', hasSpace: false };
@@ -208,7 +230,7 @@
             ></path>
         </svg>
     {:else if leading}
-        <span class="inline-flex shrink-0 items-center justify-center leading-none">
+        <span class={cn(iconSlot, hasText && leadingNudge)}>
             {@render leading()}
         </span>
     {/if}
@@ -217,27 +239,27 @@
         {#if responsiveIconOnly}
             <span class="hidden sm:inline-flex sm:max-w-full sm:min-w-0 sm:items-center">
                 {#if truncateMiddle}
-                    <span class="inline-flex max-w-full min-w-0 items-center overflow-hidden">
-                        <span class="min-w-0 shrink truncate">{splitLabel.prefix}</span>
+                    <span class="inline-flex max-w-full min-w-0 items-center overflow-x-clip">
+                        <span class={cn(labelText, 'shrink')}>{splitLabel.prefix}</span>
                         {#if splitLabel.suffix}
-                            <span class="shrink-0"
+                            <span class={labelSuffix}
                                 >{#if splitLabel.hasSpace}&nbsp;{/if}{splitLabel.suffix}</span>
                         {/if}
                     </span>
                 {:else}
-                    <span class="truncate">{label}</span>
+                    <span class={labelText}>{label}</span>
                 {/if}
             </span>
         {:else if truncateMiddle}
-            <span class="inline-flex max-w-full min-w-0 items-center overflow-hidden">
-                <span class="min-w-0 shrink truncate">{splitLabel.prefix}</span>
+            <span class="inline-flex max-w-full min-w-0 items-center overflow-x-clip">
+                <span class={cn(labelText, 'shrink')}>{splitLabel.prefix}</span>
                 {#if splitLabel.suffix}
-                    <span class="shrink-0"
+                    <span class={labelSuffix}
                         >{#if splitLabel.hasSpace}&nbsp;{/if}{splitLabel.suffix}</span>
                 {/if}
             </span>
         {:else}
-            <span class="truncate">{label}</span>
+            <span class={labelText}>{label}</span>
         {/if}
     {:else if responsiveIconOnly}
         <span class="sr-only sm:not-sr-only sm:inline-flex sm:items-center">
@@ -248,7 +270,7 @@
     {/if}
 
     {#if trailing && !isLoading}
-        <span class="inline-flex shrink-0 items-center justify-center leading-none">
+        <span class={cn(iconSlot, hasText && trailingNudge)}>
             {@render trailing()}
         </span>
     {/if}

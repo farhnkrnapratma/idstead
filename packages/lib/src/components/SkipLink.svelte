@@ -77,7 +77,7 @@
         onfocus={() => (isFocused = true)}
         onblur={() => (isFocused = false)}
         onclick={handleActivate}
-        class="font-sans font-semibold shadow-xl">
+        class="font-sans font-semibold shadow-xl!">
         {#snippet trailing()}
             <SkipForward class="size-3.5 shrink-0" />
         {/snippet}

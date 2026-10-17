@@ -1202,7 +1202,7 @@
             align="right">
             <button
                 type="button"
-                class="inline-flex size-8 cursor-pointer items-center justify-center rounded-full glass-button border border-accent/40 bg-surface-card/90 px-0 text-xs font-semibold text-accent-text shadow-md transition-all hover:scale-105 hover:border-accent hover:bg-surface-hover active:scale-95 md:shadow-lg"
+                class="inline-flex size-8 cursor-pointer items-center justify-center rounded-full glass-button border border-accent/40 bg-surface-card/90 px-0 text-xs font-semibold text-accent-text shadow-md transition-all hover:border-accent hover:bg-surface-hover active:inset-shadow-button-pressed motion-safe:active:translate-y-px md:shadow-lg"
                 onclick={readingModeStore.toggle}
                 use:shortcut={{ combo: buttonKey('readingMode'), label: 'Exit reading mode' }}
                 aria-label="Exit reading mode">

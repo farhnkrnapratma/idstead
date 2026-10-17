@@ -18,7 +18,6 @@
 
     interface Props {
         document: CvDocumentInfo | null;
-        unavailableId?: string;
         shortcutGroup?: string;
         shortcutChordKey?: string;
         placement?: 'bottom-start' | 'bottom-end';
@@ -27,7 +26,6 @@
 
     let {
         document: cv,
-        unavailableId,
         shortcutGroup,
         shortcutChordKey,
         placement = 'bottom-start',
@@ -130,7 +128,7 @@
         tone="neutral"
         size="md"
         disabled={!cv}
-        aria-describedby={cv ? undefined : unavailableId}
+        title={cv ? undefined : 'No CV document is available yet'}
         aria-haspopup={cv ? 'menu' : undefined}
         aria-expanded={cv ? isOpen : undefined}
         {shortcutGroup}

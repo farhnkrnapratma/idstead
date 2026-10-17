@@ -45,18 +45,18 @@
 
     const variantStyles = {
         default:
-            'glass-button hover:text-accent-text hover:border-accent disabled:hover:text-text-primary',
-        ghost: 'text-text-secondary hover:text-text-primary hover:bg-surface-hover disabled:hover:bg-transparent disabled:hover:text-text-secondary',
+            'glass-button hover:text-accent-text hover:border-accent active:inset-shadow-button-pressed disabled:hover:text-text-primary',
+        ghost: 'text-text-secondary hover:text-text-primary hover:bg-surface-hover active:inset-shadow-button-pressed disabled:hover:bg-transparent disabled:hover:text-text-secondary',
         borderless:
             'bg-transparent text-text-secondary hover:text-accent-text disabled:hover:text-text-secondary'
     };
 
     const sizeStyles = {
-        '2xs': 'h-7 w-7 text-xs',
-        xs: 'h-6.5 w-6.5 text-2xs',
-        sm: 'h-8 w-8 text-xs',
-        md: 'h-9 w-9 text-sm',
-        lg: 'h-11 w-11 text-base'
+        '2xs': 'size-7 text-xs',
+        xs: 'size-6.5 text-2xs',
+        sm: 'size-8 text-xs',
+        md: 'size-9 text-sm',
+        lg: 'size-11 text-base'
     };
 </script>
 
@@ -74,7 +74,7 @@
             disabled: Boolean(disabled)
         }}
         class={cn(
-            'relative inline-flex shrink-0 cursor-pointer items-center justify-center rounded-md leading-none transition-colors select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-50 pointer-coarse:after:absolute pointer-coarse:after:top-1/2 pointer-coarse:after:left-1/2 pointer-coarse:after:size-[max(100%,--spacing(9))] pointer-coarse:after:-translate-1/2 [&>i]:inline-flex [&>i]:items-center [&>i]:justify-center [&>i]:leading-none [&>svg]:block [&>svg]:shrink-0',
+            'relative inline-flex shrink-0 cursor-pointer items-center justify-center rounded-md leading-none transition select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-50 motion-safe:active:translate-y-px pointer-coarse:after:absolute pointer-coarse:after:top-1/2 pointer-coarse:after:left-1/2 pointer-coarse:after:size-[max(100%,--spacing(9))] pointer-coarse:after:-translate-1/2 [&>i]:inline-flex [&>i]:items-center [&>i]:justify-center [&>i]:leading-none [&>span>i]:inline-flex [&>span>i]:items-center [&>span>i]:leading-none [&>span>svg]:block [&>span>svg]:shrink-0 [&>svg]:block [&>svg]:shrink-0',
             variantStyles[variant],
             sizeStyles[size],
             className

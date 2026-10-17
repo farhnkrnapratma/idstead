@@ -1,9 +1,10 @@
 <script lang="ts">
     import { buttonKey } from '#lib/shortcuts.ts';
-    import { Sun, Moon, SunMoon } from '@lucide/svelte';
+    import { Sun, Moon, Monitor, LaptopMinimal, Tablet, Smartphone } from '@lucide/svelte';
     import { cn } from '../../utils/cn';
     import IconButton from '../IconButton.svelte';
     import { themeStore } from '../../stores/themeStore.svelte';
+    import { deviceClassStore } from '../../stores/deviceClassStore.svelte';
     import { toastStore } from '../../stores/toastStore.svelte';
 
     type Theme = 'auto' | 'dark' | 'light';
@@ -28,7 +29,16 @@
         dropdownDirection = 'down'
     }: Props = $props();
 
+    const AUTO_ICONS = {
+        desktop: Monitor,
+        laptop: LaptopMinimal,
+        tablet: Tablet,
+        phone: Smartphone
+    };
+
     let iconState = $state<'idle' | 'out' | 'in'>('idle');
+
+    $effect(() => deviceClassStore.init());
 
     let currentTheme = $derived(themeStore.current || theme);
 
@@ -40,7 +50,11 @@
                 return { currentLabel: 'Dark', nextTheme: 'auto' as Theme, icon: Moon };
             case 'auto':
             default:
-                return { currentLabel: 'Auto', nextTheme: 'light' as Theme, icon: SunMoon };
+                return {
+                    currentLabel: 'Auto',
+                    nextTheme: 'light' as Theme,
+                    icon: AUTO_ICONS[deviceClassStore.current]
+                };
         }
     });
 
