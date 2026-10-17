@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'bun:test';
-import { classifyDevice } from '../packages/lib/src/deviceClass.ts';
+import {
+    classifyDevice,
+    DESKTOP_MIN_LONG_SIDE,
+    TABLET_MIN_SHORT_SIDE
+} from '../packages/lib/src/deviceClass.ts';
 
 describe('classifyDevice', () => {
     test('touch-primary screens split into phone and tablet by their short side', () => {
@@ -40,5 +44,22 @@ describe('classifyDevice', () => {
         expect(
             classifyDevice({ touchPrimary: true, screenWidth: Number.NaN, screenHeight: 0 })
         ).toBe('phone');
+    });
+
+    test('thresholds are inclusive at their exact boundary', () => {
+        const short = TABLET_MIN_SHORT_SIDE;
+        const long = DESKTOP_MIN_LONG_SIDE;
+        expect(classifyDevice({ touchPrimary: true, screenWidth: short, screenHeight: 960 })).toBe(
+            'tablet'
+        );
+        expect(
+            classifyDevice({ touchPrimary: true, screenWidth: short - 1, screenHeight: 960 })
+        ).toBe('phone');
+        expect(classifyDevice({ touchPrimary: false, screenWidth: long, screenHeight: 900 })).toBe(
+            'desktop'
+        );
+        expect(
+            classifyDevice({ touchPrimary: false, screenWidth: long - 1, screenHeight: 900 })
+        ).toBe('laptop');
     });
 });

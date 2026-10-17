@@ -5,7 +5,7 @@ import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 
 export const POST: RequestHandler = async ({ request, platform, url, getClientAddress }) => {
     if (!isSameOriginRequest(request, url)) {
-        return apiError(403, 'FORBIDDEN', 'Cross-origin requests are forbidden.');
+        return apiError(403, 'FORBIDDEN_ORIGIN', 'Cross-origin requests are forbidden.');
     }
 
     return processCvGenerate(request, platform, getClientAddress);

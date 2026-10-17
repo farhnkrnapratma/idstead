@@ -79,7 +79,7 @@ export const GET: RequestHandler = async ({ request, platform }) => {
 
 export const POST: RequestHandler = async ({ request, platform, url, getClientAddress }) => {
     if (!isSameOriginRequest(request, url))
-        return apiError(403, 'PROFILE_ORIGIN_FORBIDDEN', 'Cross-origin requests are forbidden.');
+        return apiError(403, 'FORBIDDEN_ORIGIN', 'Cross-origin requests are forbidden.');
     const authFailure = await requireAdminAuth(request, platform);
     if (authFailure) return authFailure;
     const db = getSupabaseAdminClient(platform);

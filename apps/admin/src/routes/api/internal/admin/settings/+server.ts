@@ -10,7 +10,7 @@ const MAX_BODY_BYTES = 2048;
 
 async function authorize(request: Request, url: URL, platform: unknown) {
     if (!isSameOriginRequest(request, url))
-        return { error: apiError(403, 'FORBIDDEN', 'Cross-origin requests are forbidden.') };
+        return { error: apiError(403, 'FORBIDDEN_ORIGIN', 'Cross-origin requests are forbidden.') };
     const db = getSupabaseAdminClient(platform as App.Platform | undefined);
     if (!db)
         return {

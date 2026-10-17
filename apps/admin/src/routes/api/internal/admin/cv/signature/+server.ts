@@ -5,7 +5,7 @@ import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 
 const handle: RequestHandler = async ({ request, platform, url, getClientAddress }) => {
     if (!isSameOriginRequest(request, url))
-        return apiError(403, 'FORBIDDEN', 'Cross-origin requests are forbidden.');
+        return apiError(403, 'FORBIDDEN_ORIGIN', 'Cross-origin requests are forbidden.');
     return processCvSignature(request, platform, getClientAddress);
 };
 

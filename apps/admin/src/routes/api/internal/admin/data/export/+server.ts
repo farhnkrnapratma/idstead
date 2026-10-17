@@ -7,7 +7,7 @@ import { buildDataExport } from '#lib/server/dataExport.ts';
 
 export const GET: RequestHandler = async ({ request, url, platform }) => {
     if (!isSameOriginRequest(request, url))
-        return apiError(403, 'FORBIDDEN', 'Cross-origin requests are forbidden.');
+        return apiError(403, 'FORBIDDEN_ORIGIN', 'Cross-origin requests are forbidden.');
     const authError = await requireAdminAuth(request, platform);
     if (authError) return authError;
 
