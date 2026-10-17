@@ -3932,7 +3932,7 @@
                             description="Create a post to get started." />
                     {/if}
                 {:else}
-                    <div class="grid [grid-auto-rows:1fr_auto] grid-cols-1">
+                    <div class="grid auto-rows-[1fr_auto] grid-cols-1">
                         {#each paginatedPosts as post (post.id)}
                             <Card
                                 id="post-{post.id}"
@@ -5735,13 +5735,13 @@
                                     class="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5 text-sm">
                                     {#each openPgpKey.userIds as user (user.email || user.name)}
                                         <dt class="text-text-muted">Signed by</dt>
-                                        <dd class="min-w-0 break-words text-text-primary">
+                                        <dd class="min-w-0 wrap-break-word text-text-primary">
                                             {formatUserId(user)}
                                         </dd>
                                     {/each}
                                     <dt class="text-text-muted">Fingerprint</dt>
                                     <dd
-                                        class="min-w-0 font-mono text-xs leading-5 break-words text-text-primary tabular-nums">
+                                        class="min-w-0 font-mono text-xs leading-5 wrap-break-word text-text-primary tabular-nums">
                                         {formatFingerprint(openPgpKey.fingerprint)}
                                     </dd>
                                     {#if cvSignedAt}
@@ -5868,7 +5868,7 @@
                             <div class="min-w-0 flex-1">
                                 <div class="flex items-start gap-1">
                                     <p
-                                        class="min-w-0 font-mono text-sm leading-6 font-semibold break-words text-text-primary tabular-nums">
+                                        class="min-w-0 font-mono text-sm leading-6 font-semibold wrap-break-word text-text-primary tabular-nums">
                                         {formatFingerprint(openPgpKey.fingerprint)}
                                     </p>
                                     <IconButton
@@ -5908,7 +5908,7 @@
                             {@render bandLabel('openpgp-identity-heading', 'Identity')}
                             <ul class="mt-2 flex flex-col gap-1 text-sm text-text-primary">
                                 {#each openPgpKey.userIds as user (user.email || user.name)}
-                                    <li class="break-words">{formatUserId(user)}</li>
+                                    <li class="wrap-break-word">{formatUserId(user)}</li>
                                 {/each}
                             </ul>
                             <p class="mt-2 text-xs text-text-muted">
