@@ -22,13 +22,10 @@ import {
     placeholderPrefix,
     protectFencedCode,
     protectInlineCode,
-    protectWithPlaceholders,
     replaceLineBlocks,
     restoreAllPlaceholders,
     stripPlaceholderChars
 } from '#lib/placeholders.ts';
-
-export { sanitizeUrl, protectWithPlaceholders, restoreAllPlaceholders };
 
 const ATTR_RE = /([a-zA-Z][\w-]*)="((?:[^"\\]|\\.)*)"/g;
 const FENCE_MARK_RE = /(?:^|\s)mark=([\d.,]+)/;
