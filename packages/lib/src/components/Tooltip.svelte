@@ -1,5 +1,6 @@
 <script lang="ts">
     import type { Snippet } from 'svelte';
+    import type { Attachment } from 'svelte/attachments';
     import { fade } from 'svelte/transition';
     import { portal } from '../utils/actions';
     import { cn } from '../utils/cn';
@@ -11,6 +12,7 @@
         delay?: number;
         offset?: number;
         disabled?: boolean;
+        toggleOnClick?: boolean;
         class?: string;
         wrapperClass?: string;
         children?: Snippet;
@@ -24,6 +26,7 @@
         delay = 150,
         offset = 6,
         disabled = false,
+        toggleOnClick = false,
         class: className = '',
         wrapperClass = '',
         children,
@@ -31,8 +34,8 @@
     }: Props = $props();
 
     let isOpen = $state(false);
-    let triggerEl = $state<HTMLElement | null>(null);
-    let tooltipEl = $state<HTMLElement | null>(null);
+    let triggerEl: HTMLElement | null = null;
+    let tooltipEl: HTMLElement | null = null;
     let coords = $state({ top: 0, left: 0 });
     let timer: ReturnType<typeof setTimeout> | null = null;
     let isPointerTouch = false;
@@ -145,53 +148,42 @@
     }
 
     function handleClick() {
-        hide();
-    }
-
-    function initTooltip(node: HTMLElement) {
-        tooltipEl = node;
-        updatePosition();
-        return {
-            destroy() {
-                if (tooltipEl === node) {
-                    tooltipEl = null;
-                }
-            }
-        };
-    }
-
-    $effect(() => {
-        if (isOpen) {
-            updatePosition();
-            const onKeydown = (e: KeyboardEvent) => {
-                if (e.key === 'Escape') {
-                    hide();
-                }
-            };
-            const onScrollOrResize = () => {
-                updatePosition();
-            };
-            window.addEventListener('keydown', onKeydown);
-            window.addEventListener('scroll', onScrollOrResize, true);
-            window.addEventListener('resize', onScrollOrResize);
-
-            return () => {
-                window.removeEventListener('keydown', onKeydown);
-                window.removeEventListener('scroll', onScrollOrResize, true);
-                window.removeEventListener('resize', onScrollOrResize);
-            };
+        if (!toggleOnClick || isOpen) {
+            hide();
+            return;
         }
-    });
+        if (timer) clearTimeout(timer);
+        if (!disabled && (content || tooltipSnippet)) isOpen = true;
+    }
 
-    $effect(() => {
+    const trackTrigger: Attachment<HTMLElement> = node => {
+        triggerEl = node;
         return () => {
+            if (triggerEl === node) triggerEl = null;
             if (timer) clearTimeout(timer);
         };
-    });
+    };
+
+    const positionTooltip: Attachment<HTMLElement> = node => {
+        tooltipEl = node;
+        updatePosition();
+        const onKeydown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') hide();
+        };
+        window.addEventListener('keydown', onKeydown);
+        window.addEventListener('scroll', updatePosition, true);
+        window.addEventListener('resize', updatePosition);
+        return () => {
+            window.removeEventListener('keydown', onKeydown);
+            window.removeEventListener('scroll', updatePosition, true);
+            window.removeEventListener('resize', updatePosition);
+            if (tooltipEl === node) tooltipEl = null;
+        };
+    };
 </script>
 
 <div
-    bind:this={triggerEl}
+    {@attach trackTrigger}
     class={cn('inline-flex', wrapperClass)}
     onpointerenter={handlePointerEnter}
     onpointerleave={handlePointerLeave}
@@ -208,7 +200,7 @@
 {#if isOpen && !disabled && (content || tooltipSnippet)}
     <div
         use:portal
-        use:initTooltip
+        {@attach positionTooltip}
         role="tooltip"
         style="top: {coords.top}px; left: {coords.left}px;"
         class={cn(

@@ -27,10 +27,9 @@
         onClose
     }: Props = $props();
 
-    let svgString = $state<string>('');
-    let isGenerating = $state<boolean>(false);
-    let failed = $state(false);
+    let attempt = $state(0);
 
+    const targetUrl = $derived(url || (typeof window !== 'undefined' ? window.location.href : ''));
     const resolvedAvatarUrl = $derived(avatarUrl || (page?.data as any)?.author?.avatar || '');
 
     async function prepareLogoDataUrl(imageUrl: string): Promise<string | undefined> {
@@ -64,35 +63,22 @@
         });
     }
 
-    async function generateQrCode() {
-        if (typeof window === 'undefined') return;
-        if (!url) {
-            url = window.location.href;
-        }
-        if (!url) return;
-
-        isGenerating = true;
-        failed = false;
+    async function createQrSvg(target: string, avatar: string): Promise<string> {
         try {
-            const logoDataUrl = await prepareLogoDataUrl(resolvedAvatarUrl);
-            svgString = renderQrSvg(url, { logoDataUrl });
+            const logoDataUrl = await prepareLogoDataUrl(avatar);
+            return renderQrSvg(target, { logoDataUrl });
         } catch (err) {
             console.error('QR code generation error:', err);
-            svgString = '';
-            failed = true;
-        } finally {
-            isGenerating = false;
+            throw err;
         }
     }
 
-    $effect(() => {
-        if (isOpen) {
-            generateQrCode();
-        }
+    const qrSvg = $derived.by(() => {
+        void attempt;
+        return isOpen && targetUrl ? createQrSvg(targetUrl, resolvedAvatarUrl) : null;
     });
 
-    function downloadSvg() {
-        if (!svgString) return;
+    function downloadSvg(svgString: string) {
         const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
         const blobUrl = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -105,8 +91,7 @@
         toastStore.success('SVG QR code downloaded');
     }
 
-    function downloadPng() {
-        if (!svgString) return;
+    function downloadPng(svgString: string) {
         const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
         const blobUrl = URL.createObjectURL(blob);
         const img = new Image();
@@ -134,6 +119,45 @@
     }
 </script>
 
+{#snippet generating()}
+    <LoadingState
+        variant="spinner"
+        label="Generating QR code..."
+        class="size-full rounded-md bg-accent-subtle" />
+{/snippet}
+
+{#snippet downloads(svg: string | null)}
+    <div class="grid w-full grid-cols-2 gap-2 pt-1">
+        <Button
+            type="secondary"
+            size="sm"
+            fullWidth
+            onclick={() => svg && downloadSvg(svg)}
+            disabled={!svg}>
+            {#snippet leading()}
+                <Download
+                    class="size-3.5"
+                    aria-hidden="true" />
+            {/snippet}
+            <span>Download SVG</span>
+        </Button>
+
+        <Button
+            type="secondary"
+            size="sm"
+            fullWidth
+            onclick={() => svg && downloadPng(svg)}
+            disabled={!svg}>
+            {#snippet leading()}
+                <Download
+                    class="size-3.5"
+                    aria-hidden="true" />
+            {/snippet}
+            <span>Download PNG</span>
+        </Button>
+    </div>
+{/snippet}
+
 <Dialog
     bind:isOpen
     title="Scan QR code"
@@ -142,23 +166,24 @@
     {onClose}>
     <div class="flex flex-col items-center justify-center gap-4 pt-1 pb-1">
         <div class="relative flex aspect-square w-full max-w-80 items-center justify-center">
-            {#if svgString && !isGenerating}
-                <div
-                    class="flex size-full items-center justify-center drop-shadow-sm [&>svg]:size-full">
-                    {@html svgString}
-                </div>
-            {:else if failed}
+            {#await qrSvg}
+                {@render generating()}
+            {:then svg}
+                {#if svg}
+                    <div
+                        class="flex size-full items-center justify-center drop-shadow-sm [&>svg]:size-full">
+                        {@html svg}
+                    </div>
+                {:else}
+                    {@render generating()}
+                {/if}
+            {:catch}
                 <ErrorState
                     title="Couldn't generate the QR code"
                     description="Try again, or copy the link below instead."
-                    onRetry={generateQrCode}
+                    onRetry={() => attempt++}
                     class="size-full" />
-            {:else}
-                <LoadingState
-                    variant="spinner"
-                    label="Generating QR code..."
-                    class="size-full rounded-md bg-accent-subtle" />
-            {/if}
+            {/await}
         </div>
 
         {#if title}
@@ -167,39 +192,17 @@
                     {title}
                 </p>
                 <p class="mt-0.5 truncate text-xs text-text-muted">
-                    {url}
+                    {targetUrl}
                 </p>
             </div>
         {/if}
 
-        <div class="grid w-full grid-cols-2 gap-2 pt-1">
-            <Button
-                type="secondary"
-                size="sm"
-                fullWidth
-                onclick={downloadSvg}
-                disabled={!svgString}>
-                {#snippet leading()}
-                    <Download
-                        class="size-3.5"
-                        aria-hidden="true" />
-                {/snippet}
-                <span>Download SVG</span>
-            </Button>
-
-            <Button
-                type="secondary"
-                size="sm"
-                fullWidth
-                onclick={downloadPng}
-                disabled={!svgString}>
-                {#snippet leading()}
-                    <Download
-                        class="size-3.5"
-                        aria-hidden="true" />
-                {/snippet}
-                <span>Download PNG</span>
-            </Button>
-        </div>
+        {#await qrSvg}
+            {@render downloads(null)}
+        {:then svg}
+            {@render downloads(svg)}
+        {:catch}
+            {@render downloads(null)}
+        {/await}
     </div>
 </Dialog>

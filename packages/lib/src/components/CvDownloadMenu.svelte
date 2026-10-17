@@ -12,9 +12,12 @@
     import CodeTabs from './CodeTabs.svelte';
     import Dialog from './Dialog.svelte';
     import Dropdown from './Dropdown.svelte';
+    import Tooltip from './Tooltip.svelte';
     import { downloadUrl as download } from '../utils/fileActions';
     import { CV_CHECKSUM_ALGORITHMS, type CvDocumentInfo } from '../cvVerification';
     import { formatFingerprint, formatUserId } from '../openpgpKey';
+
+    const CV_UNAVAILABLE = 'No CV document is available yet.';
 
     interface Props {
         document: CvDocumentInfo | null;
@@ -127,8 +130,7 @@
         type="primary"
         tone="neutral"
         size="md"
-        disabled={!cv}
-        title={cv ? undefined : 'No CV document is available yet'}
+        aria-disabled={cv ? undefined : 'true'}
         aria-haspopup={cv ? 'menu' : undefined}
         aria-expanded={cv ? isOpen : undefined}
         {shortcutGroup}
@@ -142,6 +144,9 @@
                 aria-hidden="true" />
         {/snippet}
         Download CV
+        {#if !cv}
+            <span class="sr-only">{CV_UNAVAILABLE}</span>
+        {/if}
         {#snippet trailing()}
             <ChevronDown
                 class="size-3.5 transition-transform duration-200 ease-out motion-reduce:transition-none {(
@@ -285,7 +290,10 @@
         {/snippet}
     </Dialog>
 {:else}
-    <div class="inline-flex {className}">
+    <Tooltip
+        content={CV_UNAVAILABLE}
+        toggleOnClick
+        wrapperClass={className}>
         {@render triggerButton()}
-    </div>
+    </Tooltip>
 {/if}

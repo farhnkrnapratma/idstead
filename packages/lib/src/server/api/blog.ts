@@ -111,6 +111,18 @@ async function postCounts(db: SupabaseClient, postId: string) {
     return { comment_count: comments.count ?? 0, views_count: views.count ?? 0 };
 }
 
+async function countPublished(db: SupabaseClient, search: string): Promise<number> {
+    let query = db
+        .from('db_posts')
+        .select('public_id', { count: 'exact', head: true })
+        .eq('published', true);
+    if (search) query = query.or(`title.ilike.%${search}%,excerpt.ilike.%${search}%`);
+    const { count, error } = await query;
+    if (error)
+        throw new ApiRequestError(500, 'BLOG_LIST_FETCH_FAILED', 'Could not fetch blog posts.');
+    return count ?? 0;
+}
+
 async function postMarkdown(ctx: ApiContext, row: PostRow) {
     const failure = new ApiRequestError(
         502,
@@ -206,11 +218,12 @@ export async function getBlog(ctx: ApiContext) {
     if (search) query = query.or(`title.ilike.%${search}%,excerpt.ilike.%${search}%`);
 
     const { data, error, count } = await query.range(offset, offset + limit - 1);
-    if (error)
+    const pastLastPage = error?.code === 'PGRST103';
+    if (error && !pastLastPage)
         throw new ApiRequestError(500, 'BLOG_LIST_FETCH_FAILED', 'Could not fetch blog posts.');
 
-    const posts = ((data ?? []) as unknown as PostRow[]).map(publicPostMeta);
-    const total = count ?? posts.length;
+    const posts = ((pastLastPage ? [] : (data ?? [])) as unknown as PostRow[]).map(publicPostMeta);
+    const total = pastLastPage ? await countPublished(ctx.db, search) : (count ?? posts.length);
     const totalPages = Math.max(1, Math.ceil(total / limit));
 
     if (output === 'md') {
@@ -273,11 +286,15 @@ export interface PublicComment {
     replies: PublicComment[];
 }
 
+function publicAuthorName(row: Pick<CommentRow, 'author_name' | 'is_anonymous'>) {
+    return row.is_anonymous ? 'Anonymous' : row.author_name;
+}
+
 export function buildCommentTree(rows: readonly CommentRow[]): PublicComment[] {
     const nodes = new Map<string, PublicComment>();
     for (const row of rows)
         nodes.set(row.id, {
-            author_name: row.author_name,
+            author_name: publicAuthorName(row),
             content: row.content,
             is_admin: !!row.is_admin,
             is_anonymous: !!row.is_anonymous,
@@ -339,7 +356,7 @@ export async function getBlogComments(ctx: ApiContext) {
     return jsonResponse({
         data: ((data ?? []) as unknown as RecentRow[]).map(row => ({
             post: { id: row.post.public_id, slug: row.post.slug },
-            author_name: row.author_name,
+            author_name: publicAuthorName(row),
             content: row.content,
             is_admin: !!row.is_admin,
             is_anonymous: !!row.is_anonymous,

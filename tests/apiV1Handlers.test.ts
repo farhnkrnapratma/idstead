@@ -283,4 +283,20 @@ describe('comment threads', () => {
         });
         expect(JSON.stringify(tree)).not.toMatch(/"(id|parent_id|post_id)"/);
     });
+
+    test('never reveals the stored name of an anonymous comment', () => {
+        const [comment] = buildCommentTree([
+            {
+                id: 'a',
+                parent_id: null,
+                author_name: 'Real Name',
+                content: 'Hidden author',
+                is_anonymous: true,
+                is_admin: false,
+                created_at: '2026-10-01T00:00:00Z'
+            }
+        ]);
+        expect(comment.author_name).toBe('Anonymous');
+        expect(JSON.stringify(comment)).not.toContain('Real Name');
+    });
 });

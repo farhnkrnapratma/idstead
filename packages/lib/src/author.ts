@@ -1,3 +1,4 @@
+import { decodeHtmlEntities } from '#lib/utils/formatters.ts';
 import { CV_CHECKSUM_ALGORITHMS, type CvChecksums } from '#lib/cvVerification.ts';
 import { isFingerprint, safeKeyserverUrl, type PublicOpenPgpKey } from '#lib/openpgpKey.ts';
 
@@ -116,19 +117,6 @@ export interface AuthorProfile {
 }
 
 export const LINK_LIMITS = { contact: 10, funding: 10, social: 10 } as const;
-
-export function decodeHtmlEntities(str: string | null | undefined): string {
-    if (!str) return '';
-    return str
-        .replace(/&#x2F;/gi, '/')
-        .replace(/&#x27;/gi, "'")
-        .replace(/&#x22;/gi, '"')
-        .replace(/&quot;/g, '"')
-        .replace(/&apos;/g, "'")
-        .replace(/&amp;/g, '&')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>');
-}
 
 export function formatMonthFull(month: string | null | undefined): string {
     if (!month) return '';

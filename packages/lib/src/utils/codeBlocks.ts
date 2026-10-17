@@ -55,30 +55,40 @@ export function ensureHljsThemeStylesheet(effectiveTheme: 'light' | 'dark'): Pro
 
     loadingHljsThemeName = themeName;
     const requestId = ++hljsThemeRequestId;
-    loadingHljsTheme = loadUrl().then(
-        href =>
-            new Promise<void>(resolve => {
-                if (!hljsThemeLink) {
-                    hljsThemeLink = document.createElement('link');
-                    hljsThemeLink.rel = 'stylesheet';
-                    document.head.appendChild(hljsThemeLink);
-                }
-                hljsThemeLink.addEventListener(
-                    'load',
-                    () => {
-                        if (requestId === hljsThemeRequestId) {
-                            loadedHljsThemeName = themeName;
-                            loadingHljsThemeName = null;
-                            loadingHljsTheme = null;
-                            refreshCodeBlockPrefs();
-                        }
-                        resolve();
-                    },
-                    { once: true }
-                );
-                hljsThemeLink.href = href;
-            })
-    );
+    const settle = (loaded: boolean) => {
+        if (requestId !== hljsThemeRequestId) return;
+        if (loaded) loadedHljsThemeName = themeName;
+        loadingHljsThemeName = null;
+        loadingHljsTheme = null;
+        if (loaded) refreshCodeBlockPrefs();
+    };
+    loadingHljsTheme = loadUrl()
+        .then(
+            href =>
+                new Promise<boolean>(resolve => {
+                    if (!hljsThemeLink) {
+                        hljsThemeLink = document.createElement('link');
+                        hljsThemeLink.rel = 'stylesheet';
+                        document.head.appendChild(hljsThemeLink);
+                    }
+                    const link = hljsThemeLink;
+                    const done = (loaded: boolean) => {
+                        link.removeEventListener('load', onLoad);
+                        link.removeEventListener('error', onError);
+                        resolve(loaded);
+                    };
+                    const onLoad = () => done(true);
+                    const onError = () => done(false);
+                    link.addEventListener('load', onLoad);
+                    link.addEventListener('error', onError);
+                    link.href = href;
+                })
+        )
+        .catch(error => {
+            console.error(`Could not load the "${themeName}" highlight.js theme:`, error);
+            return false;
+        })
+        .then(settle);
     return loadingHljsTheme;
 }
 
@@ -447,9 +457,14 @@ export function createCodeActionControls(
     };
     kebabBtn.addEventListener('click', kebabClickHandler);
 
-    document.addEventListener('click', e => {
+    const onDocumentClick = (e: MouseEvent) => {
+        if (!kebabWrapper.isConnected) {
+            document.removeEventListener('click', onDocumentClick);
+            return;
+        }
         if (!kebabWrapper.contains(e.target as Node)) closeKebab();
-    });
+    };
+    document.addEventListener('click', onDocumentClick);
 
     const lineNumbersRow = buildMenuCheckboxRow(
         'Line numbers',

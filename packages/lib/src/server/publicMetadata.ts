@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { supabase } from '#lib/supabase.ts';
-import { decodeHtmlEntities } from '#lib/author.ts';
+import { decodeHtmlEntities } from '#lib/utils/formatters.ts';
 
 export async function readSiteProfile() {
     const { data, error: failure } = await supabase

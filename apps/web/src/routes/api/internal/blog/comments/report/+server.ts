@@ -81,10 +81,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     const ip = getClientAddress();
     const salt = ipSalt(platform);
 
-    const ipHashBuffer = await crypto.subtle.digest(
-        'SHA-256',
-        new TextEncoder().encode(ip + salt)
-    );
+    const ipHashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(ip + salt));
     const ipHash = Array.from(new Uint8Array(ipHashBuffer))
         .map(b => b.toString(16).padStart(2, '0'))
         .join('');

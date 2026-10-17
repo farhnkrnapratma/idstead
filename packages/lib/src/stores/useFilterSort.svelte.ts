@@ -158,7 +158,9 @@ export function createFilterSortStore(options: FilterSortOptions = {}) {
     function parseFromUrl(url: URL) {
         const q = url.searchParams.get('q') || '';
         const sortField = url.searchParams.get('sort') || defaultSort.field;
-        const sortDir = (url.searchParams.get('dir') as 'asc' | 'desc') || defaultSort.direction;
+        const dirParam = url.searchParams.get('dir');
+        const sortDir =
+            dirParam === 'asc' || dirParam === 'desc' ? dirParam : defaultSort.direction;
 
         search = q;
         sort = { field: sortField, direction: sortDir };

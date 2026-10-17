@@ -12,7 +12,11 @@ let lucideNodes: Promise<Record<string, IconNode[]>> | null = null;
 
 function loadLucideNodes(): Promise<Record<string, IconNode[]>> {
     lucideNodes ??= import('lucide-static/icon-nodes.json').then(
-        module => module.default as unknown as Record<string, IconNode[]>
+        module => module.default as unknown as Record<string, IconNode[]>,
+        error => {
+            lucideNodes = null;
+            throw error;
+        }
     );
     return lucideNodes;
 }

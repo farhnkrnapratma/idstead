@@ -1,4 +1,5 @@
 <script lang="ts">
+    import type { Attachment } from 'svelte/attachments';
     import { FieldValidation, requiredText } from '#lib/fieldValidation.ts';
     import { mdrsContent } from '#lib/mdrsValidation.ts';
     import { supabase } from '#lib/supabase.ts';
@@ -319,7 +320,11 @@
                     markdownContent,
                     timestamp: Date.now()
                 };
-                localStorage.setItem(key, JSON.stringify(data));
+                try {
+                    localStorage.setItem(key, JSON.stringify(data));
+                } catch (err) {
+                    console.warn('Could not save the local draft:', err);
+                }
             }, 500);
             return () => clearTimeout(timer);
         }
@@ -402,7 +407,13 @@
     }
 
     let showNotifyDialog = $state(false);
-    let importInput: HTMLInputElement | undefined = $state();
+    let importInput: HTMLInputElement | undefined;
+    const trackImportInput: Attachment<HTMLInputElement> = node => {
+        importInput = node;
+        return () => {
+            if (importInput === node) importInput = undefined;
+        };
+    };
     let pendingImport = $state<ImportedPost | null>(null);
 
     async function handleImportFile(event: Event) {
@@ -626,7 +637,7 @@
                         Import file
                     </Button>
                     <input
-                        bind:this={importInput}
+                        {@attach trackImportInput}
                         type="file"
                         accept=".md,.mdrs,.markdown,text/markdown"
                         class="hidden"

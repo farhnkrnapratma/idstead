@@ -18,6 +18,14 @@ const defaults: CodeBlockPrefs = {
     minimal: false
 };
 
+function readStoredPrefs(): string | null {
+    try {
+        return localStorage.getItem(STORAGE_KEY);
+    } catch {
+        return null;
+    }
+}
+
 function createCodeBlockPrefsStore() {
     let prefs = $state<CodeBlockPrefs>({ ...defaults });
     const listeners = new SvelteSet<() => void>();
@@ -30,7 +38,11 @@ function createCodeBlockPrefsStore() {
 
     function persist() {
         if (!browser) return;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+        } catch (err) {
+            void err;
+        }
     }
 
     function apply(next: Partial<CodeBlockPrefs>) {
@@ -65,10 +77,6 @@ function createCodeBlockPrefsStore() {
         apply({ minimal: enabled });
     }
 
-    function setClean(enabled: boolean) {
-        apply({ minimal: enabled });
-    }
-
     function cycleColorScheme() {
         const order: CodeColorScheme[] = ['auto', 'light', 'dark'];
         const next = order[(order.indexOf(prefs.colorScheme) + 1) % order.length];
@@ -87,10 +95,6 @@ function createCodeBlockPrefsStore() {
         apply({ minimal: !prefs.minimal });
     }
 
-    function toggleClean() {
-        apply({ minimal: !prefs.minimal });
-    }
-
     function subscribe(fn: () => void) {
         listeners.add(fn);
         return () => {
@@ -104,7 +108,7 @@ function createCodeBlockPrefsStore() {
             listeners.add(onChange);
         }
 
-        const stored = parseStored(localStorage.getItem(STORAGE_KEY));
+        const stored = parseStored(readStoredPrefs());
         prefs = { ...defaults, ...stored };
 
         const onStorage = (e: StorageEvent) => {
@@ -134,12 +138,10 @@ function createCodeBlockPrefsStore() {
         setWrap,
         setLineNumbers,
         setMinimal,
-        setClean,
         cycleColorScheme,
         toggleLineNumbers,
         toggleWrap,
-        toggleMinimal,
-        toggleClean
+        toggleMinimal
     };
 }
 

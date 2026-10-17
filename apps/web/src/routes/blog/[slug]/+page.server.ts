@@ -9,6 +9,7 @@ import {
     prefixHashLinks
 } from '#lib/markdown.ts';
 import { estimateReadTime } from '#lib/readTime.ts';
+import { publicPostFields } from '#lib/publicPost.ts';
 import type { PageServerLoad } from './$types';
 
 export interface BlogComment {
@@ -200,18 +201,8 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
         console.error('Database error fetching related posts:', err);
     }
 
-    const { id: _internalId, public_id: publicId, ...publicPost } = post;
-
     return {
-        post: {
-            ...publicPost,
-            id: publicId as string,
-            read_time: readTime,
-            title: post.title,
-            excerpt: post.excerpt,
-            summary: post.summary,
-            tldr: post.tldr
-        },
+        post: { ...publicPostFields(post), read_time: readTime },
         bannerPublicUrl,
         html,
         headings,

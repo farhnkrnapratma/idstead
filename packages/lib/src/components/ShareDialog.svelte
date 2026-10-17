@@ -2,6 +2,7 @@
     import { CopyCheck, Copy, QrCode } from '@lucide/svelte';
     import Dialog from './Dialog.svelte';
     import Button from './Button.svelte';
+    import { toastStore } from '../stores/toastStore.svelte';
 
     interface Props {
         isOpen: boolean;
@@ -39,12 +40,15 @@
 
     function copyUrl() {
         if (typeof window === 'undefined') return;
-        navigator.clipboard.writeText(effectiveUrl).then(() => {
-            copied = true;
-            setTimeout(() => {
-                copied = false;
-            }, 2000);
-        });
+        navigator.clipboard.writeText(effectiveUrl).then(
+            () => {
+                copied = true;
+                setTimeout(() => {
+                    copied = false;
+                }, 2000);
+            },
+            () => toastStore.error('Could not copy the link. Copy it from the address bar instead.')
+        );
     }
 
     function handleOpenQr() {
