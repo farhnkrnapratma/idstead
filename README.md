@@ -94,6 +94,19 @@ This is a Bun workspaces monorepo. Each app is its own Cloudflare Worker, and al
 
 ### Start Development Servers
 
+`run.conf` defines shortcuts for the `run` command runner (installed separately): `run <name>` runs a block's default command and `run <name>.<key>` one of its other commands, from any directory in the repository. Several targets, or a group such as `dev`, run in parallel with labelled output and stop together on Ctrl+C:
+
+```sh
+run dev                           # web, admin, api and jobs
+run dev.web dev.admin             # only web and admin
+run dev.web --host                # web, reachable from other devices
+run -s PHASE_ENV=prod dev.admin   # admin with production values
+run fmt.check                     # bun run fmt:check
+run --list                        # every target
+```
+
+Or start one server directly:
+
 ```sh
 bun run dev [--host]              # public site (Vite)
 bun run dev:admin                 # admin portal on http://localhost:5174

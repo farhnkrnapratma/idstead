@@ -20,6 +20,7 @@ Package manager is **bun** — never use npm/npx/yarn/pnpm in this repo (`bun.lo
 
 ```sh
 bun install              # install every workspace
+run dev [dev.web ...]    # dev servers in parallel through phase run; targets live in run.conf (run --list)
 bun run dev [--host]     # web dev server (apps/web, mode: development)
 bun run dev:admin        # admin dev server on :5174
 bun run --filter @fkp/api dev   # API worker via wrangler dev on :8787
