@@ -8,7 +8,7 @@ sequenceDiagram
     participant B as Admin browser (PostEditor)
     participant P as POST /api/internal/admin/posts
     participant DB as Supabase (service-role)
-    participant R2 as R2 (S3 API)
+    participant R2 as R2 (ASSET_BUCKET)
     participant ST as Storage (blog-posts)
     participant Q as Queue fkp-newsletter
     participant J as fkp-jobs (queue consumer)

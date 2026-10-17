@@ -275,7 +275,7 @@ export const openapiSpec = {
             get: {
                 summary: 'List blog posts or read one post',
                 description:
-                    'Without `id`, lists published posts newest first. With `id`, returns one post with view and comment counts; `id` cannot be combined with query, page or limit.',
+                    'Without `id`, lists published posts newest first; a `page` past the last page returns an empty `data` array with the real `total` and `totalPages`. With `id`, returns one post with view and comment counts; `id` cannot be combined with query, page or limit.',
                 parameters: [
                     idParam(false),
                     queryParam,
@@ -343,7 +343,7 @@ export const openapiSpec = {
             get: {
                 summary: 'Read approved comments',
                 description:
-                    'With `id`, returns the threads of one post oldest first, replies nested under `replies`. Without `id`, returns the newest comments across the site.',
+                    'With `id`, returns the threads of one post oldest first, replies nested under `replies`. Without `id`, returns the newest comments across the site. When `is_anonymous` is true, `author_name` is `Anonymous`.',
                 parameters: [idParam(false), limitParam(50, 100)],
                 responses: {
                     '200': {

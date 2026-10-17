@@ -46,9 +46,11 @@ How it is built:
 | `BLOG_POST_ID_REQUIRED` | 400 | `id` is missing on `/v1/blog/content` or `/v1/blog/views`, or is present but empty (`?id=`) on any blog endpoint. |
 | `BLOG_POST_ID_INVALID` | 400 | `id` is neither a hex post ID nor a valid slug. |
 | `AUTHOR_FIELD_INVALID` | 400 | `field` names an unknown section. |
-| `CV_CHECKSUM_REQUIRES_PDF` | 400 | `checksum` is given without `output=pdf`. |
+| `CV_CHECKSUM_REQUIRES_PDF` | 400 | `checksum` is given with an `output` other than `pdf` or `zip`. |
 | `BLOG_POST_NOT_FOUND` | 404 | No published post matches `id`. |
 | `CV_DOCUMENT_NOT_FOUND` | 404 | No active CV document, or it has no file URL. |
+| `CV_SIGNATURE_NOT_FOUND` | 404 | `output=asc` or `output=sig` while the active CV is not signed by the active OpenPGP key, or the signature file is missing from storage. |
+| `CV_BUNDLE_NOT_FOUND` | 404 | `output=zip` before the verification bundle was built, when it cannot be assembled on the fly. |
 | `NOT_FOUND` | 404 | No endpoint at this path. |
 | `METHOD_NOT_ALLOWED` | 405 | A method other than `GET`, `HEAD` or `OPTIONS`. |
 | `BLOG_POST_ID_AMBIGUOUS` | 409 | The ID prefix matches more than one post. |
@@ -59,10 +61,10 @@ How it is built:
 | `BLOG_COMMENTS_FETCH_FAILED` | 500 | The comments query failed. |
 | `BLOG_VIEWS_FETCH_FAILED` | 500 | The view count failed. |
 | `AUTHOR_FETCH_FAILED` | 500 | An author section failed to load. |
-| `CV_METADATA_FETCH_FAILED` | 500 | Reading the active CV document failed. |
+| `CV_METADATA_FETCH_FAILED` | 500 | Reading the active CV document, or the OpenPGP key a signature or bundle needs, failed. |
 | `SEARCH_FETCH_FAILED` | 500 | The search query failed. |
 | `BLOG_CONTENT_FETCH_FAILED` | 502 | The post body could not be read from storage. |
-| `CV_FETCH_FAILED` | 502 | The CV PDF could not be fetched. |
+| `CV_FETCH_FAILED` | 502 | A CV file could not be fetched from storage. |
 | `BAD_REQUEST` | 400 | Fallback for a `400` without a specific code. It should not occur. |
 | `INTERNAL_ERROR` | 500 | An unhandled error (`app.onError`), also reported to Sentry. |
 

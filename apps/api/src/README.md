@@ -99,7 +99,7 @@ The HTTP status code is authoritative and isn't repeated in the body. Every erro
 
 | Path | Parameters | Returns |
 | --- | --- | --- |
-| `/v1/blog` | `query`, `page`, `limit` (default 20, max 100), `output=json\|md` | Published posts, newest first, with `pagination`. |
+| `/v1/blog` | `query`, `page`, `limit` (default 20, max 100), `output=json\|md` | Published posts, newest first, with `pagination`. A `page` past the last page returns an empty `data` array. |
 | `/v1/blog?id=…` | `id`, `output=json\|md\|txt` | One post's metadata plus `comment_count` and `views_count`. Not combinable with list parameters. |
 | `/v1/blog/content?id=…` | `id`, `output=md\|txt\|json` (default `md`) | The post body. `json` wraps it as `{id, slug, title, content}`. |
 | `/v1/blog/comments` | `id` (optional), `limit` (default 50, max 100) | Approved comments. See below. |
@@ -114,7 +114,7 @@ curl "https://api.fkp.my.id/v1/blog/content?id=3f9a1c2&o=txt"
 
 #### Comments
 
-Read-only — this API does not accept comment submissions, and only approved comments are returned. Comments carry no identifiers.
+Read-only — this API does not accept comment submissions, and only approved comments are returned. Comments carry no identifiers. When `is_anonymous` is `true`, `author_name` is `"Anonymous"`.
 
 - With `id`: `{id, slug, data, hasMore}`. `data` holds the post's threads oldest first; each comment is `{author_name, content, is_admin, is_anonymous, created_at, replies}` with its replies nested in `replies`. `limit` caps the number of top-level threads.
 - Without `id`: `{data}` with the newest comments across the site, each `{post: {id, slug}, author_name, content, is_admin, is_anonymous, is_reply, created_at}`.

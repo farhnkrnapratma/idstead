@@ -2,7 +2,7 @@
 
 ## Video with the image syntax
 
-Images and videos share one syntax: `![alt](../../mdrs/extensions/source "title")`. A source ending in `.mp4` or `.webm` (query strings and fragments allowed) renders a `<video>` with controls; anything else renders an image.
+Images and videos share one syntax: `![alt](source "title")`. A source ending in `.mp4` or `.webm` (query strings and fragments allowed) renders a `<video>` with controls; anything else renders an image.
 
 ```mdrs
 ![Product demo](https://cdn.fkp.my.id/blog/my-post/videos/product-demo.webm "Product demo")

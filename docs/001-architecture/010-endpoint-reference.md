@@ -1,10 +1,10 @@
 # 10. Endpoint Reference
 
-Every route on the three hosts that serve traffic, with its guard. The lists were generated from the route files on 2026-10-15. To regenerate them:
+Every route on the three hosts that serve traffic, with its guard. The lists were checked against the route files on 2026-10-18. To regenerate them:
 
 ```sh
 rg -n "export const (GET|POST|PUT|DELETE|PATCH)" apps/web/src/routes apps/admin/src/routes -g '+server.ts'
-rg --files --hidden apps/web/src/routes/.well-known
+rg --files --hidden apps/web/src/routes apps/admin/src/routes
 rg -n "^app\.get" apps/api/src/index.ts
 ```
 
@@ -30,7 +30,7 @@ All routes are `GET`/`HEAD` (`OPTIONS` returns 204), rate-limited to 60 requests
 
 ### Pages
 
-`/`, `/blog`, `/blog/[slug]`, `/feedback`, `/privacy`, `/terms`, `/security`, `/subscribe/confirm`, `/unsubscribe`. These are server loads with the anon client, except that the subscribe/unsubscribe pages use service-role. `/projects`, `/contact`, `/cv`, `/funding` and `/home` redirect 307 to `/#section`.
+`/`, `/blog`, `/blog/[slug]`, `/feedback`, `/privacy`, `/terms`, `/security`, `/subscribe/confirm`, `/unsubscribe`. These are server loads with the anon client, except that the subscribe/unsubscribe pages use service-role. `GET /unsubscribe?token=` only stores the token in a short-lived httpOnly cookie and shows a confirm button; the page's default form action (`POST /unsubscribe`) unsubscribes. `/projects`, `/contact`, `/cv`, `/funding` and `/home` redirect 307 to `/#section`.
 
 ### Files and feeds (GET)
 
@@ -41,6 +41,8 @@ All routes are `GET`/`HEAD` (`OPTIONS` returns 204), rate-limited to 60 requests
 | `/{icon}.png`, `/favicon.ico`, `/favicon.svg`, `/avatar.{webp,avif}`, `/hero.png` | identity assets, served from the hook |
 | `/static/*`, `/fonts/*`, `/logo/*` | proxied to `PUBLIC_CDN_BASE_URL` from the hook |
 | `/atom.xml`, `/sitemap.xml`, `/robots.txt`, `/site.webmanifest`, `/llms.txt` | metadata |
+| `/pgp.asc` | the active OpenPGP public key, armored (404 when none is published) |
+| `/.well-known/openpgpkey/hu/[hash]`, `/.well-known/openpgpkey/policy` | Web Key Directory (WKD) lookup for the active key, and its empty policy file |
 | `/.well-known/openapi.{json,yaml}`, `/.well-known/llms.txt`, `/.well-known/api-catalog`, `/.well-known/ard.json`, `/.well-known/agent-skills/index.json`, `/.well-known/agent-skills/[name]/SKILL.md` | discovery ([docs/003-api/001-v1/006-discovery.md](../003-api/001-v1/006-discovery.md)) |
 
 ### `/api/ard/**`: public, CORS `*`
@@ -87,7 +89,6 @@ API routes authenticate themselves:
 | `/api/internal/admin/password` | POST | `blogAdmin` + lockout |
 | `/api/internal/admin/posts` | GET, POST | `blogAdmin` |
 | `/api/internal/admin/posts/notify` | POST | `blogAdmin` |
-| `/api/internal/admin/posts/cleanup` | POST | `blogAdmin` |
 | `/api/internal/admin/blog/content-image` | POST | `blogAdmin` |
 | `/api/internal/admin/blog/content-video` | POST | `blogAdmin` (WebM only) |
 | `/api/internal/admin/activity-log` | GET | `blogAdmin` |
@@ -98,12 +99,11 @@ API routes authenticate themselves:
 | `/api/internal/admin/settings` | GET, PUT | same-origin + `verifyAdminToken` |
 | `/api/internal/admin/profile` | GET, POST | same-origin + `requireAdminAuth` |
 | `/api/internal/admin/profile/import` | POST | same-origin + `requireAdminAuth` |
-| `/api/internal/admin/profile/cleanup` | POST | same-origin + `requireAdminAuth` |
 | `/api/internal/admin/cv` | POST | same-origin + `requireAdminAuth` |
 | `/api/internal/admin/cv/generate` | POST | same-origin + `requireAdminAuth`, called inside `processCvGenerate()` |
-| `/api/internal/admin/cv/upload` | POST | same as `cv/generate` (it delegates to `processCvGenerate`) |
 | `/api/internal/admin/cv/delete` | POST | same-origin + `requireAdminAuth`, called inside `processCvDelete()` |
 | `/api/internal/admin/cv/signature` | POST, DELETE | same-origin + `requireAdminAuth`, called inside `processCvSignature()` |
+| `/api/internal/admin/openpgp-key` | POST, DELETE | same-origin + `requireAdminAuth`, called inside `processOpenPgpKey()` |
 | `/api/internal/admin/skills` | POST | same-origin + `requireAdminAuth` |
 | `/api/internal/admin/links` | POST | same-origin + `requireAdminAuth` |
 | `/api/internal/admin/comments/reply` | POST | same-origin + `requireAdminAuth` |

@@ -59,7 +59,7 @@ Posts are ordered newest first (`created_at` desc, then `public_id`).
 }
 ```
 
-`totalPages` is always at least 1. `output=md` returns a Markdown catalog: a `# Posts Catalog` heading, the page and total, then one block per post separated by `---`.
+`totalPages` is always at least 1. A `page` past the last page is not an error: it returns an empty `data` array with the real `total` and `totalPages`, and `hasNextPage: false`. `output=md` returns a Markdown catalog: a `# Posts Catalog` heading, the page and total, then one block per post separated by `---`.
 
 ## `GET /v1/blog?id=…`: one post
 
@@ -95,7 +95,7 @@ curl "https://api.fkp.my.id/v1/blog/content?id=3f9a1c2&o=txt"
 | `id`          | optional | with it: one post's threads; without it: recent comments site-wide |
 | `limit` / `n` | 50       | maximum 100                                                        |
 
-The endpoint has no `output` parameter, and comments carry no identifiers.
+The endpoint has no `output` parameter, and comments carry no identifiers. When `is_anonymous` is `true`, `author_name` is always `"Anonymous"`; the stored name is never returned.
 
 **With `id`:** threads oldest first. `limit` caps the number of **top-level** threads, and `hasMore` tells you whether more exist. A reply whose parent is missing is promoted to a top-level thread. At most 1000 comments per post are read.
 

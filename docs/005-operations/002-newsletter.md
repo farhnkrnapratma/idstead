@@ -9,7 +9,7 @@ How new-post emails reach subscribers, and what to do when they don't. The full 
     - Active addresses, and pending addresses inside the 5-minute resend cooldown, get the same "check your inbox" response, so the endpoint does not reveal who has subscribed.
 2. **Confirm:** `/subscribe/confirm` (service-role) sets the row to `active`.
 3. **Unsubscribe:**
-    - Every email links to `/unsubscribe?token={unsubscribe_token}`.
+    - Every email links to `/unsubscribe?token={unsubscribe_token}`. Opening the link does not unsubscribe: `GET` stores the token in a short-lived httpOnly cookie and shows a confirm button, and the page's form action (`POST /unsubscribe`) sets `unsubscribed`. Link scanners that prefetch the URL therefore cannot unsubscribe anyone.
     - `POST /api/internal/subscribe/unsubscribe-request` emails a fresh link.
     - `POST /api/internal/subscribe/unsubscribe` with the 64-hex token sets `unsubscribed` and always returns `204`.
 4. **Pruning:** `pg_cron` job `prune-stale-subscriptions` runs at `17 3 * * *`.
