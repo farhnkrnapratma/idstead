@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { blogAdmin } from './blogPostAuth';
 import { ActivityInputError, activityJson, activityTarget, activityUuid } from './activityInput';
+import { apiError } from './apiError';
 
 function choice(value: string | null, allowed: string[], fallback: string) {
     const selected = value ?? fallback;
@@ -20,8 +21,7 @@ export async function adminActivity(
     inbox: boolean
 ) {
     const { request, url, db } = input;
-    const fail = (status: number, code: string, message: string) =>
-        Response.json({ code, message }, { status, headers: { 'Cache-Control': 'no-store' } });
+    const fail = apiError;
     if (!db)
         return fail(
             503,

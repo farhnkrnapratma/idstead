@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { ActivityInputError, activityJson, activityTarget, activityUuid } from './activityInput';
 import { isSameOriginRequest } from './sameOrigin';
 import { resolvePostUuid } from './postLookup';
+import { apiError } from './apiError';
 
 export async function recordPageFeedback(input: {
     request: Request;
@@ -11,13 +12,12 @@ export async function recordPageFeedback(input: {
     db: SupabaseClient | null;
 }) {
     const { request, url, secret, db } = input;
-    const fail = (status: number, code: string, message: string) =>
-        Response.json({ code, message }, { status });
+    const fail = apiError;
     if (
         !isSameOriginRequest(request, url)
         || request.headers.get('sec-fetch-site') === 'cross-site'
     )
-        return fail(403, 'FEEDBACK_ORIGIN_FORBIDDEN', 'Cross-origin requests are not allowed.');
+        return fail(403, 'FORBIDDEN_ORIGIN', 'Cross-origin requests are not allowed.');
     try {
         const body = await activityJson(request);
         const operationId = activityUuid(body.operationId);

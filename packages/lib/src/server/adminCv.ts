@@ -45,6 +45,8 @@ import {
     verifyKeyserver
 } from '#lib/server/openpgp.ts';
 import { ipSalt } from './ipSalt';
+import { apiError } from './apiError';
+import { decodeHtmlEntities } from '#lib/utils/formatters.ts';
 import { deleteObjects, findAssetBucket } from './r2';
 
 const CV_PROJECT_LIMIT = 4;
@@ -72,18 +74,7 @@ function jsonResponse(body: unknown, status = 200) {
 }
 
 function fail(message: string, status = 500) {
-    return jsonResponse({ success: false, message }, status);
-}
-
-function decodeHtmlEntities(str: string): string {
-    if (!str) return '';
-    return str
-        .replace(/&#x2F;/gi, '/')
-        .replace(/&#39;/g, "'")
-        .replace(/&quot;/g, '"')
-        .replace(/&amp;/g, '&')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>');
+    return apiError(status, 'CV_REQUEST_FAILED', message);
 }
 
 function safeClientAddress(getClientAddress?: () => string): string | null {
@@ -132,9 +123,10 @@ async function logCvActivity(
 export async function requireAdminAuth(req: Request, platform?: unknown): Promise<Response | null> {
     const auth = await verifyAdminToken(req, getAdminDb(platform));
     if (auth.status)
-        return jsonResponse(
-            { success: false, code: auth.status, message: auth.message },
-            auth.status
+        return apiError(
+            auth.status,
+            auth.status === 401 ? 'ADMIN_AUTH_REQUIRED' : 'ADMIN_FORBIDDEN',
+            auth.message
         );
     return null;
 }
@@ -384,10 +376,7 @@ export async function processCvGenerate(
         const { data: profile } = await db.from('db_profiles').select('*').limit(1).maybeSingle();
 
         if (!profile?.id) {
-            return jsonResponse(
-                { success: false, code: 404, message: 'Author profile not found in database.' },
-                404
-            );
+            return apiError(404, 'CV_NOT_FOUND', 'Author profile not found in database.');
         }
 
         const [
@@ -682,7 +671,7 @@ export async function processCvDelete(
                 .maybeSingle();
 
             if (lookupError || !doc?.filename) {
-                return jsonResponse({ success: false, message: 'CV document not found.' }, 404);
+                return apiError(404, 'CV_NOT_FOUND', 'CV document not found.');
             }
             filename = doc.filename;
         } else {
@@ -694,10 +683,7 @@ export async function processCvDelete(
                 .maybeSingle();
 
             if (lookupError || !activeDoc?.filename) {
-                return jsonResponse(
-                    { success: false, message: 'No active CV document to delete.' },
-                    404
-                );
+                return apiError(404, 'CV_NOT_FOUND', 'No active CV document to delete.');
             }
             filename = activeDoc.filename;
         }
@@ -725,8 +711,7 @@ export async function processCvDelete(
 }
 
 function openPgpFailure(err: unknown, fallback: string) {
-    if (err instanceof OpenPgpError)
-        return jsonResponse({ success: false, message: err.message }, 422);
+    if (err instanceof OpenPgpError) return apiError(422, 'OPENPGP_KEY_INVALID', err.message);
     console.error(fallback, err);
     return fail(fallback);
 }
@@ -741,7 +726,7 @@ export async function processCvSignature(
         if (authError) return authError;
         const db = getAdminDb(platform);
         const doc = await activeCvDocument(db);
-        if (!doc) return jsonResponse({ success: false, message: 'No active CV document.' }, 404);
+        if (!doc) return apiError(404, 'CV_NOT_FOUND', 'No active CV document.');
 
         if (req.method === 'DELETE') {
             await clearCvSignature(platform, db, doc);
@@ -759,27 +744,19 @@ export async function processCvSignature(
         }
 
         if (Number(req.headers.get('content-length')) > CV_SIGNATURE_LIMIT)
-            return jsonResponse(
-                { success: false, message: 'Signature files are at most 16 KiB.' },
-                413
-            );
+            return apiError(413, 'CV_UPLOAD_TOO_LARGE', 'Signature files are at most 16 KiB.');
         let upload: Uint8Array;
         try {
             upload = await readLimited(req.body, CV_SIGNATURE_LIMIT);
         } catch {
-            return jsonResponse(
-                { success: false, message: 'Signature files are at most 16 KiB.' },
-                413
-            );
+            return apiError(413, 'CV_UPLOAD_TOO_LARGE', 'Signature files are at most 16 KiB.');
         }
         const activeKey = await fetchActiveOpenPgpKey(db, { strict: true });
         if (!activeKey)
-            return jsonResponse(
-                {
-                    success: false,
-                    message: 'Add your OpenPGP public key before uploading a signature.'
-                },
-                409
+            return apiError(
+                409,
+                'OPENPGP_KEY_REQUIRED',
+                'Add your OpenPGP public key before uploading a signature.'
             );
         const { key } = await parsePublicKey(new TextEncoder().encode(activeKey.armored));
         const signature = await parseDetachedSignature(upload);
@@ -885,10 +862,7 @@ export async function processOpenPgpKey(
         }
 
         if (Number(req.headers.get('content-length')) > OPENPGP_KEY_LIMIT * 2)
-            return jsonResponse(
-                { success: false, message: 'Public keys must be at most 64 KiB.' },
-                413
-            );
+            return apiError(413, 'CV_UPLOAD_TOO_LARGE', 'Public keys must be at most 64 KiB.');
         let body: any;
         try {
             body = JSON.parse(
@@ -896,22 +870,15 @@ export async function processOpenPgpKey(
             );
         } catch (err) {
             return err instanceof RangeError ?
-                    jsonResponse(
-                        { success: false, message: 'Public keys must be at most 64 KiB.' },
-                        413
-                    )
-                :   jsonResponse({ success: false, message: 'Invalid request body.' }, 400);
+                    apiError(413, 'CV_UPLOAD_TOO_LARGE', 'Public keys must be at most 64 KiB.')
+                :   apiError(400, 'CV_INVALID_REQUEST', 'Invalid request body.');
         }
         const upload =
             typeof body?.key?.armored === 'string' ? new TextEncoder().encode(body.key.armored)
             : typeof body?.key?.base64 === 'string' ? base64Bytes(body.key.base64)
             : existing ? new TextEncoder().encode(existing.armored)
             : null;
-        if (!upload)
-            return jsonResponse(
-                { success: false, message: 'Upload your OpenPGP public key.' },
-                400
-            );
+        if (!upload) return apiError(400, 'CV_INVALID_REQUEST', 'Upload your OpenPGP public key.');
         const parsed = await parsePublicKey(upload);
         const keyservers = requestedKeyservers(body?.keyservers);
         const failures = (
@@ -923,8 +890,7 @@ export async function processOpenPgpKey(
                 [result.reason instanceof Error ? result.reason.message : 'Keyserver check failed.']
             :   []
         );
-        if (failures.length)
-            return jsonResponse({ success: false, message: failures.join(' ') }, 422);
+        if (failures.length) return apiError(422, 'CV_INVALID_INPUT', failures.join(' '));
 
         const { error: deactivateError } = await db
             .from('db_openpgp_keys')

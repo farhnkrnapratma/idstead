@@ -7,7 +7,7 @@ export interface DeviceSignals {
 }
 
 export const TABLET_MIN_SHORT_SIDE = 600;
-export const DESKTOP_MIN_SCREEN_WIDTH = 1680;
+export const DESKTOP_MIN_LONG_SIDE = 1680;
 
 export function classifyDevice(signals: DeviceSignals | null | undefined): DeviceClass {
     if (!signals) return 'desktop';
@@ -16,5 +16,5 @@ export function classifyDevice(signals: DeviceSignals | null | undefined): Devic
     if (touchPrimary) {
         return Math.min(screenWidth, screenHeight) >= TABLET_MIN_SHORT_SIDE ? 'tablet' : 'phone';
     }
-    return Math.max(screenWidth, screenHeight) >= DESKTOP_MIN_SCREEN_WIDTH ? 'desktop' : 'laptop';
+    return Math.max(screenWidth, screenHeight) >= DESKTOP_MIN_LONG_SIDE ? 'desktop' : 'laptop';
 }

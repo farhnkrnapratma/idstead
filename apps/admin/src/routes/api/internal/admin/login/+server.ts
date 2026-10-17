@@ -64,7 +64,7 @@ export const POST: RequestHandler = async ({
     locals
 }) => {
     if (!isSameOriginRequest(request, url)) {
-        return apiError(403, 'FORBIDDEN', 'Cross-origin requests are forbidden.');
+        return apiError(403, 'FORBIDDEN_ORIGIN', 'Cross-origin requests are forbidden.');
     }
 
     const clientIp = getClientIp(getClientAddress);

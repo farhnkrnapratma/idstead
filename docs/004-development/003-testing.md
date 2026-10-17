@@ -35,9 +35,9 @@ The suite sends about 50 requests. The rate limit is 60 per minute, so wait a mi
 | `moderation.test.ts` | Llama Guard moderation parsing |
 | `adminAuthState.test.ts` | MFA/passkey session rules (`requiresAdminMfa`) |
 | `safeRedirect.test.ts` | Admin login `redirectTo` safety |
-| `adminNoShortcuts.test.ts`, `admin-empty-states.test.ts` | Admin UI rules |
+| `adminNoShortcuts.test.ts`, `adminEmptyStates.test.ts` | Admin UI rules |
 | `safeupdate.test.ts` | Every `UPDATE`/`DELETE` in migrations has a `WHERE` (PostgREST `safeupdate`) |
-| `page-feedback-delete-migration.test.ts`, `blogTranslationRemoval.test.ts` | Specific migrations |
+| `pageFeedbackDeleteMigration.test.ts`, `blogTranslationRemoval.test.ts` | Specific migrations |
 | `newsletterQueue.test.ts`, `unsubscribeUrl.test.ts`, `contactEmail.test.ts` | Queue message validation, unsubscribe URL, contact email rendering |
 | `blogBannerRoute.test.ts`, `blogStorageCleanup.test.ts`, `blogPostInput.test.ts`, `postSaveClient.test.ts` | Banner routes, Markdown cleanup queue, post input validation, save button label |
 | `avatarFormats.test.ts`, `imageSources.test.ts`, `identityFallback.test.ts`, `siteBannerUpload.test.ts` | Avatar WebP/AVIF validation, `<picture>` sources, identity fallbacks, site banner (the last two are in the working tree as of 2026-10-15) |
