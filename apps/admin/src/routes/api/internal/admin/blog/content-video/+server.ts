@@ -20,7 +20,8 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
             'Content video storage is not configured.'
         );
     const auth = await blogAdmin(request, url, db);
-    if (auth.status) return apiError(auth.status, 'BLOG_CONTENT_VIDEO_AUTH_REQUIRED', auth.message);
+    if (auth.status)
+        return apiError(auth.status, auth.code ?? 'BLOG_CONTENT_VIDEO_AUTH_REQUIRED', auth.message);
 
     let bytes: Uint8Array<ArrayBuffer>;
     let postId: string;

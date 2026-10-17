@@ -156,7 +156,11 @@ export async function adminWorkspace({
     try {
         const auth = await blogAdmin(request, url, db);
         if (auth.status)
-            return apiError(auth.status, 'ADMIN_WORKSPACE_AUTH_REQUIRED', auth.message);
+            return apiError(
+                auth.status,
+                auth.code ?? 'ADMIN_WORKSPACE_AUTH_REQUIRED',
+                auth.message
+            );
         if (request.method === 'POST') {
             const body = await activityJson(request);
             if (body.action === 'delete_comment') {

@@ -157,11 +157,7 @@ export const handle: Handle = sequence(
             event.url.pathname === '/api/ard' || event.url.pathname.startsWith('/api/ard/');
         const ardPath = event.url.pathname.replace(/\/$/, '');
         const isArdPostRequest = ardPath === '/api/ard/search' || ardPath === '/api/ard/explore';
-        const isArdAgentsRequest = ardPath === '/api/ard/agents';
-        const publicAllow =
-            isArdPostRequest ? 'POST, OPTIONS'
-            : isArdAgentsRequest ? 'GET, HEAD, OPTIONS'
-            : 'GET, HEAD, OPTIONS';
+        const publicAllow = isArdPostRequest ? 'POST, OPTIONS' : 'GET, HEAD, OPTIONS';
 
         if (isApiRequest && event.request.method === 'OPTIONS') {
             const origin = event.request.headers.get('origin');

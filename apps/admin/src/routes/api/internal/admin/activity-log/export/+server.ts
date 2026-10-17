@@ -18,7 +18,8 @@ export const GET: RequestHandler = async ({ request, url, platform }) => {
             'Activity log is temporarily unavailable.'
         );
     const auth = await blogAdmin(request, url, db);
-    if (auth.status) return apiError(auth.status, 'ACTIVITY_LOG_AUTH_REQUIRED', auth.message);
+    if (auth.status)
+        return apiError(auth.status, auth.code ?? 'ACTIVITY_LOG_AUTH_REQUIRED', auth.message);
 
     let query;
     try {

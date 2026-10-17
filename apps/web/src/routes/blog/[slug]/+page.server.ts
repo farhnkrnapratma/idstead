@@ -103,7 +103,9 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
         if (commentsError) {
             console.error('Error fetching comments:', commentsError);
         } else {
-            comments = data || [];
+            comments = (data || []).map(comment =>
+                comment.is_anonymous ? { ...comment, author_name: 'Anonymous' } : comment
+            );
         }
     } catch (err) {
         console.error('Database error fetching comments:', err);

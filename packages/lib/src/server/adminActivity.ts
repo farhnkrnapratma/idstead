@@ -30,7 +30,8 @@ export async function adminActivity(
         );
     try {
         const auth = await blogAdmin(request, url, db);
-        if (auth.status) return fail(auth.status, 'ADMIN_ACTIVITY_AUTH_REQUIRED', auth.message);
+        if (auth.status)
+            return fail(auth.status, auth.code ?? 'ADMIN_ACTIVITY_AUTH_REQUIRED', auth.message);
         let result: { data: unknown; error: { message: string } | null };
         if (request.method === 'POST' && inbox) {
             const body = await activityJson(request);

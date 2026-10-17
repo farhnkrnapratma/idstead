@@ -24,7 +24,8 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     const db = getSupabaseAdminClient(platform);
     if (!db) return apiError(503, 'BLOG_SAVE_UNAVAILABLE', 'Post storage is not configured.');
     const auth = await blogAdmin(request, url, db);
-    if (auth.status) return apiError(auth.status, 'BLOG_SAVE_AUTH_REQUIRED', auth.message);
+    if (auth.status)
+        return apiError(auth.status, auth.code ?? 'BLOG_SAVE_AUTH_REQUIRED', auth.message);
     let input;
     try {
         const { default: bannerWasm } = await import('virtual:banner-webp-wasm');
@@ -201,7 +202,8 @@ export const GET: RequestHandler = async ({ request, url, platform }) => {
     const db = getSupabaseAdminClient(platform);
     if (!db) return apiError(503, 'BLOG_SAVE_UNAVAILABLE', 'Post storage is not configured.');
     const auth = await blogAdmin(request, url, db);
-    if (auth.status) return apiError(auth.status, 'BLOG_SAVE_AUTH_REQUIRED', auth.message);
+    if (auth.status)
+        return apiError(auth.status, auth.code ?? 'BLOG_SAVE_AUTH_REQUIRED', auth.message);
     const id = url.searchParams.get('operationId') || '';
     if (!UUID_PATTERN.test(id))
         return apiError(400, 'BLOG_OPERATION_INVALID', 'A valid operation ID is required.');
