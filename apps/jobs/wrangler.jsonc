@@ -5,6 +5,7 @@
     "compatibility_flags": ["nodejs_compat"],
     "workers_dev": false,
     "observability": { "enabled": true },
+    "r2_buckets": [{ "binding": "ASSET_BUCKET", "bucket_name": "static", "remote": true }],
     "alias": { "$app/env/private": "./src/appEnv.ts", "$app/env/public": "./src/appEnv.ts" },
     "queues": {
         "consumers": [

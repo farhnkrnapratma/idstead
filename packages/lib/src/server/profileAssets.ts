@@ -1,13 +1,6 @@
-import {
-    S3Client,
-    PutObjectCommand,
-    DeleteObjectCommand,
-    GetObjectCommand,
-    CopyObjectCommand
-} from '@aws-sdk/client-s3';
-import * as env from '$app/env/private';
 import * as publicEnv from '$app/env/public';
 import { getSupabaseAdminClient } from './supabaseAdmin';
+import { assetBucket, copyObject } from './r2';
 import { supabase } from '#lib/supabase.ts';
 import {
     bannerSizes,
@@ -44,25 +37,8 @@ function assetDimensions(name: string) {
     return { width: size, height: size };
 }
 
-type StorageEnvKey =
-    'R2_ACCOUNT_ID' | 'R2_BUCKET_NAME' | 'R2_ACCESS_KEY_ID' | 'R2_SECRET_ACCESS_KEY';
-
-export function assetStorage(platform?: Pick<App.Platform, 'env'>) {
-    const value = (key: StorageEnvKey) => String(platform?.env?.[key] ?? env[key] ?? '');
-    const account = value('R2_ACCOUNT_ID');
-    const bucket = value('R2_BUCKET_NAME');
-    const accessKeyId = value('R2_ACCESS_KEY_ID');
-    const secretAccessKey = value('R2_SECRET_ACCESS_KEY');
-    if (!account || !bucket || !accessKeyId || !secretAccessKey)
-        throw new Error('Image storage is not configured.');
-    return {
-        bucket,
-        client: new S3Client({
-            region: 'auto',
-            endpoint: `https://${account}.r2.cloudflarestorage.com`,
-            credentials: { accessKeyId, secretAccessKey }
-        })
-    };
+function contentTypeOf(name: string) {
+    return contentTypes[name.split('.').pop() ?? ''] ?? 'application/octet-stream';
 }
 
 export async function writeAssets(
@@ -70,21 +46,15 @@ export async function writeAssets(
     version: string,
     files: Record<string, ArrayBuffer>
 ): Promise<IdentityAsset[]> {
-    const { bucket, client } = assetStorage(platform);
+    const bucket = await assetBucket(platform);
     const assets: IdentityAsset[] = [];
     for (const [name, bytes] of Object.entries(files)) {
-        const type = contentTypes[name.split('.').pop() ?? ''] ?? 'application/octet-stream';
+        const type = contentTypeOf(name);
         const key = `identity/${version}/${name}`;
         const sha = await crypto.subtle.digest('SHA-256', bytes);
-        await client.send(
-            new PutObjectCommand({
-                Bucket: bucket,
-                Key: key,
-                Body: new Uint8Array(bytes),
-                ContentType: type,
-                CacheControl: IMAGE_CACHE_CONTROL
-            })
-        );
+        await bucket.put(key, bytes, {
+            httpMetadata: { contentType: type, cacheControl: IMAGE_CACHE_CONTROL }
+        });
         assets.push({
             name,
             key,
@@ -103,19 +73,12 @@ export async function copyAssets(
     assets: IdentityAsset[]
 ): Promise<IdentityAsset[]> {
     if (!VERSION_PATTERN.test(to)) throw new Error('Invalid identity version.');
-    const { bucket, client } = assetStorage(platform);
+    const bucket = await assetBucket(platform);
     const copied: IdentityAsset[] = [];
     for (const asset of assets) {
         if (!assetNames.includes(asset.name)) throw new Error('Invalid identity asset.');
         const key = `identity/${to}/${asset.name}`;
-        await client.send(
-            new CopyObjectCommand({
-                Bucket: bucket,
-                Key: key,
-                CopySource: `${bucket}/identity/${asset.name}`,
-                MetadataDirective: 'COPY'
-            })
-        );
+        await copyObject(bucket, `identity/${asset.name}`, key);
         copied.push({ ...asset, key });
     }
     return copied;
@@ -126,43 +89,26 @@ export async function promoteIdentity(
     version: string
 ) {
     if (!VERSION_PATTERN.test(version)) throw new Error('Invalid identity version.');
-    const { bucket, client } = assetStorage(platform);
+    const bucket = await assetBucket(platform);
     for (const name of assetNames)
-        await client.send(
-            new CopyObjectCommand({
-                Bucket: bucket,
-                Key: `identity/${name}`,
-                CopySource: `${bucket}/identity/${version}/${name}`,
-                MetadataDirective: 'REPLACE',
-                ContentType:
-                    contentTypes[name.split('.').pop() ?? ''] ?? 'application/octet-stream',
-                CacheControl: IMAGE_CACHE_CONTROL
-            })
-        );
+        await copyObject(bucket, `identity/${version}/${name}`, `identity/${name}`, {
+            contentType: contentTypeOf(name),
+            cacheControl: IMAGE_CACHE_CONTROL
+        });
     await removeAssets(platform, version);
 }
 
 export async function removeCanonicalIdentity(platform: Pick<App.Platform, 'env'> | undefined) {
-    const { bucket, client } = assetStorage(platform);
-    await Promise.all(
-        assetNames.map(name =>
-            client.send(new DeleteObjectCommand({ Bucket: bucket, Key: `identity/${name}` }))
-        )
-    );
+    const bucket = await assetBucket(platform);
+    await bucket.delete(assetNames.map(name => `identity/${name}`));
 }
 
 export async function removeAssets(
     platform: Pick<App.Platform, 'env'> | undefined,
     version: string
 ) {
-    const { bucket, client } = assetStorage(platform);
-    await Promise.all(
-        assetNames.map(name =>
-            client.send(
-                new DeleteObjectCommand({ Bucket: bucket, Key: `identity/${version}/${name}` })
-            )
-        )
-    );
+    const bucket = await assetBucket(platform);
+    await bucket.delete(assetNames.map(name => `identity/${version}/${name}`));
 }
 
 export async function cleanupAssets(platform?: Pick<App.Platform, 'env'>) {
@@ -188,7 +134,7 @@ export async function readAvatarBytes(
     if (!version || !VERSION_PATTERN.test(version)) return null;
     try {
         const object = await readIdentityObject(platform, version, 'avatar.png');
-        return object?.Body ? await object.Body.transformToByteArray() : null;
+        return object ? new Uint8Array(await object.arrayBuffer()) : null;
     } catch (error) {
         console.warn('Avatar could not be read for CV generation:', error);
         return null;
@@ -202,20 +148,10 @@ export async function readIdentityObject(
 ) {
     if (!VERSION_PATTERN.test(version) || !assetNames.includes(name))
         throw new Error('Invalid identity asset.');
-    const { bucket, client } = assetStorage(platform);
-    try {
-        return await client.send(new GetObjectCommand({ Bucket: bucket, Key: `identity/${name}` }));
-    } catch (error) {
-        if (!(error instanceof Error) || error.name !== 'NoSuchKey') throw error;
-    }
-    try {
-        return await client.send(
-            new GetObjectCommand({ Bucket: bucket, Key: `identity/${version}/${name}` })
-        );
-    } catch (error) {
-        if (error instanceof Error && error.name === 'NoSuchKey') return null;
-        throw error;
-    }
+    const bucket = await assetBucket(platform);
+    return (
+        (await bucket.get(`identity/${name}`)) ?? (await bucket.get(`identity/${version}/${name}`))
+    );
 }
 
 export async function serveIdentityAsset(
@@ -263,21 +199,18 @@ export async function serveIdentityAsset(
     const object = await readIdentityObject(platform, version, name);
     if (!object) return missing();
     const headers = new Headers({
-        'Content-Type': object.ContentType ?? 'application/octet-stream',
+        'Content-Type': object.httpMetadata?.contentType ?? 'application/octet-stream',
         'X-Content-Type-Options': 'nosniff',
-        'Cache-Control': IMAGE_CACHE_CONTROL
+        'Cache-Control': IMAGE_CACHE_CONTROL,
+        ETag: object.httpEtag
     });
-    if (object.ETag) headers.set('ETag', object.ETag);
     if (name.endsWith('.svg'))
         headers.set('Content-Security-Policy', "default-src 'none'; style-src 'none'; sandbox");
-    const matched =
-        object.ETag
-        && request.headers
-            .get('if-none-match')
-            ?.split(',')
-            .some(v => v.trim().replace(/^W\//, '') === object.ETag || v.trim() === '*');
+    const matched = request.headers
+        .get('if-none-match')
+        ?.split(',')
+        .some(v => v.trim().replace(/^W\//, '') === object.httpEtag || v.trim() === '*');
     if (matched) return new Response(null, { status: 304, headers });
     if (request.method === 'HEAD') return new Response(null, { headers });
-    const bytes = await object.Body?.transformToByteArray();
-    return new Response(bytes ? new Uint8Array(bytes).buffer : null, { headers });
+    return new Response(object.body, { headers });
 }

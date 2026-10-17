@@ -7,6 +7,7 @@
     "routes": [{ "pattern": "admin.fkp.my.id", "custom_domain": true }],
     "observability": { "enabled": true },
     "ai": { "binding": "AI", "remote": true },
+    "r2_buckets": [{ "binding": "ASSET_BUCKET", "bucket_name": "static", "remote": true }],
     "queues": { "producers": [{ "binding": "NEWSLETTER_QUEUE", "queue": "fkp-newsletter" }] },
     "ratelimits": [
         {

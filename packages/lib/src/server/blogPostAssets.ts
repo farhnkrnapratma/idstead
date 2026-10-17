@@ -1,10 +1,11 @@
+import { IMAGE_CACHE_CONTROL } from './profileAssets';
 import {
-    CopyObjectCommand,
-    DeleteObjectsCommand,
-    HeadObjectCommand,
-    ListObjectsV2Command
-} from '@aws-sdk/client-s3';
-import { assetStorage, IMAGE_CACHE_CONTROL } from './profileAssets';
+    assetBucket,
+    findAssetBucket,
+    copyObject as copyStoredObject,
+    deleteObjects,
+    listObjects
+} from './r2';
 import {
     bannerKey,
     postAssetHome,
@@ -13,7 +14,6 @@ import {
     type PostAssetOwner
 } from '#lib/blogBanner.ts';
 
-const TIMEOUT = 30_000;
 const STAGING_GRACE_MS = 7 * 86_400_000;
 
 const contentTypes: Record<string, string> = {
@@ -24,79 +24,30 @@ const contentTypes: Record<string, string> = {
 
 export type AssetKind = 'images' | 'videos';
 
-function storage(platform: App.Platform | undefined) {
-    return assetStorage(platform);
-}
-
 export async function objectExists(platform: App.Platform | undefined, key: string) {
-    const { client, bucket } = storage(platform);
-    try {
-        await client.send(new HeadObjectCommand({ Bucket: bucket, Key: key }), {
-            abortSignal: AbortSignal.timeout(TIMEOUT)
-        });
-        return true;
-    } catch (error) {
-        if (error instanceof Error && ['NotFound', 'NoSuchKey'].includes(error.name)) return false;
-        throw error;
-    }
+    return (await objectTag(platform, key)) !== null;
 }
 
 async function objectTag(platform: App.Platform | undefined, key: string) {
-    const { client, bucket } = storage(platform);
-    try {
-        const head = await client.send(new HeadObjectCommand({ Bucket: bucket, Key: key }), {
-            abortSignal: AbortSignal.timeout(TIMEOUT)
-        });
-        return head.ETag ?? '';
-    } catch (error) {
-        if (error instanceof Error && ['NotFound', 'NoSuchKey'].includes(error.name)) return null;
-        throw error;
-    }
+    const object = await (await assetBucket(platform)).head(key);
+    return object ? object.etag : null;
 }
 
 export async function listKeys(platform: App.Platform | undefined, prefix: string) {
-    const { client, bucket } = storage(platform);
-    const objects: { key: string; modified: number }[] = [];
-    let token: string | undefined;
-    do {
-        const page = await client.send(
-            new ListObjectsV2Command({ Bucket: bucket, Prefix: prefix, ContinuationToken: token }),
-            { abortSignal: AbortSignal.timeout(TIMEOUT) }
-        );
-        for (const item of page.Contents ?? [])
-            if (item.Key)
-                objects.push({ key: item.Key, modified: item.LastModified?.getTime() ?? 0 });
-        token = page.IsTruncated ? page.NextContinuationToken : undefined;
-    } while (token);
-    return objects;
+    const objects = await listObjects(await assetBucket(platform), prefix);
+    return objects.map(item => ({ key: item.key, modified: item.uploaded.getTime() }));
 }
 
 export async function copyObject(platform: App.Platform | undefined, from: string, to: string) {
-    const { client, bucket } = storage(platform);
     const ext = to.split('.').pop() ?? '';
-    await client.send(
-        new CopyObjectCommand({
-            Bucket: bucket,
-            Key: to,
-            CopySource: `${bucket}/${from}`,
-            MetadataDirective: 'REPLACE',
-            ContentType: contentTypes[ext] ?? 'application/octet-stream',
-            CacheControl: IMAGE_CACHE_CONTROL
-        }),
-        { abortSignal: AbortSignal.timeout(TIMEOUT) }
-    );
+    await copyStoredObject(await assetBucket(platform), from, to, {
+        contentType: contentTypes[ext] ?? 'application/octet-stream',
+        cacheControl: IMAGE_CACHE_CONTROL
+    });
 }
 
 export async function deleteKeys(platform: App.Platform | undefined, keys: string[]) {
-    const { client, bucket } = storage(platform);
-    for (let index = 0; index < keys.length; index += 1000)
-        await client.send(
-            new DeleteObjectsCommand({
-                Bucket: bucket,
-                Delete: { Objects: keys.slice(index, index + 1000).map(Key => ({ Key })) }
-            }),
-            { abortSignal: AbortSignal.timeout(TIMEOUT) }
-        );
+    await deleteObjects(await assetBucket(platform), keys);
 }
 
 export async function deletePrefix(platform: App.Platform | undefined, prefix: string) {
@@ -226,11 +177,7 @@ export async function cleanupOrphanedStaging(
     platform: App.Platform | undefined,
     postExists: (postId: string) => Promise<boolean>
 ) {
-    try {
-        storage(platform);
-    } catch {
-        return 0;
-    }
+    if (!(await findAssetBucket(platform))) return 0;
     const objects = await listKeys(platform, 'staging/blog/');
     const folders = new Map<string, number>();
     for (const item of objects) {

@@ -1,5 +1,5 @@
-import { PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
-import { assetStorage, IMAGE_CACHE_CONTROL } from './profileAssets';
+import { IMAGE_CACHE_CONTROL } from './profileAssets';
+import { assetBucket, readObjectBytes } from './r2';
 import { bannerKey, sha256 } from '#lib/blogBanner.ts';
 import { cleanupOrphanedStaging } from './blogPostAssets';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -11,33 +11,15 @@ export async function putBanner(
     bytes: Uint8Array<ArrayBuffer>,
     format: 'webp' | 'avif' = 'webp'
 ) {
-    const { client, bucket } = assetStorage(platform);
+    const bucket = await assetBucket(platform);
     const key = bannerKey(postId, version, format);
     const contentType = format === 'avif' ? 'image/avif' : 'image/webp';
-    try {
-        await client.send(
-            new PutObjectCommand({
-                Bucket: bucket,
-                Key: key,
-                Body: bytes,
-                ContentType: contentType,
-                CacheControl: IMAGE_CACHE_CONTROL,
-                IfNoneMatch: '*'
-            }),
-            { abortSignal: AbortSignal.timeout(30_000) }
-        );
-    } catch (error) {
-        if (
-            !(error instanceof Error)
-            || !['PreconditionFailed', 'ConditionalRequestConflict'].includes(error.name)
-        )
-            throw error;
-    }
-    const stored = await client.send(new GetObjectCommand({ Bucket: bucket, Key: key }), {
-        abortSignal: AbortSignal.timeout(30_000)
+    await bucket.put(key, bytes, {
+        httpMetadata: { contentType, cacheControl: IMAGE_CACHE_CONTROL },
+        onlyIf: new Headers({ 'If-None-Match': '*' })
     });
-    const data = await stored.Body?.transformToByteArray();
-    if (!data || (await sha256(new Uint8Array(data))) !== (await sha256(bytes)))
+    const data = await readObjectBytes(bucket, key);
+    if (!data || (await sha256(data)) !== (await sha256(bytes)))
         throw new Error('Stored banner verification failed.');
 }
 
@@ -52,15 +34,7 @@ export async function cleanupBlogAssets(db: SupabaseClient, platform?: App.Platf
             const avifKey = bannerKey(version.post_id, version.id, 'avif');
             if (webpKey !== version.object_key && avifKey !== version.object_key)
                 throw new Error('Invalid cleanup key.');
-            const { client, bucket } = assetStorage(platform);
-            await Promise.all([
-                client.send(new DeleteObjectCommand({ Bucket: bucket, Key: webpKey }), {
-                    abortSignal: AbortSignal.timeout(30_000)
-                }),
-                client.send(new DeleteObjectCommand({ Bucket: bucket, Key: avifKey }), {
-                    abortSignal: AbortSignal.timeout(30_000)
-                })
-            ]);
+            await (await assetBucket(platform)).delete([webpKey, avifKey]);
             const { error: failure } = await db
                 .from('db_blog_banner_versions')
                 .update({ state: 'deleted', cleanup_error: null })

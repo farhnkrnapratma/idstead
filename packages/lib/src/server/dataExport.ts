@@ -1,5 +1,4 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { strToU8, zipSync, type Zippable } from 'fflate';
 import {
     fetchAuthorProfile,
@@ -11,7 +10,7 @@ import {
 } from '#lib/author.ts';
 import { DEFAULT_ADMIN_DISPLAY } from '#lib/adminDateFormat.ts';
 import { DEFAULT_CHART_RANGE, parseAdminSettings } from '#lib/adminSettings.ts';
-import { assetStorage } from './profileAssets';
+import { findAssetBucket, readObjectBytes } from './r2';
 import { postAssetHome } from '#lib/blogBanner.ts';
 import { cdnBaseUrl } from '#lib/cdn.ts';
 import { listKeys } from './blogPostAssets';
@@ -80,22 +79,14 @@ export async function buildDataExport(
         }
     }
 
-    let storage: ReturnType<typeof assetStorage> | null = null;
-    try {
-        storage = assetStorage(platform);
-    } catch (error) {
-        warn('object storage', error);
-    }
+    const storage = await findAssetBucket(platform);
+    if (!storage) warn('object storage', new Error('object storage is not configured'));
 
     async function readObject(key: string) {
         if (!storage) throw new Error('object storage is not configured');
-        const object = await storage.client.send(
-            new GetObjectCommand({ Bucket: storage.bucket, Key: key }),
-            { abortSignal: AbortSignal.timeout(30_000) }
-        );
-        const body = await object.Body?.transformToByteArray();
+        const body = await readObjectBytes(storage, key);
         if (!body) throw new Error('empty object');
-        return new Uint8Array(body);
+        return body;
     }
 
     async function fetchBinary(path: string, key: string, quiet = false) {

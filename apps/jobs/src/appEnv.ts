@@ -13,7 +13,3 @@ export const IP_SALT = read('IP_SALT');
 export const SUPABASE_SERVICE_ROLE_KEY = read('SUPABASE_SERVICE_ROLE_KEY');
 export const RESEND_API_KEY = read('RESEND_API_KEY');
 export const SUBSCRIBER_FROM_EMAIL = read('SUBSCRIBER_FROM_EMAIL');
-export const R2_ACCOUNT_ID = read('R2_ACCOUNT_ID');
-export const R2_BUCKET_NAME = read('R2_BUCKET_NAME');
-export const R2_ACCESS_KEY_ID = read('R2_ACCESS_KEY_ID');
-export const R2_SECRET_ACCESS_KEY = read('R2_SECRET_ACCESS_KEY');

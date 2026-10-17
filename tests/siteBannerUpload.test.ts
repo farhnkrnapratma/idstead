@@ -241,7 +241,7 @@ describe('unversioned identity serving', () => {
             'utf8'
         );
         expect(source).toContain("url.searchParams.has('v')) return missing();");
-        expect(source).toContain('Key: `identity/${name}`');
+        expect(source).toContain('bucket.get(`identity/${name}`)');
         expect(source).toContain("export const IMAGE_CACHE_CONTROL = 'public, max-age=300';");
         expect(source).not.toContain('immutable');
     });
