@@ -9,7 +9,7 @@
         "#lib/*": "@fkp/lib/*"
     },
     "scripts": {
-        "dev": "wrangler dev --test-scheduled --port 8788",
+        "dev": "wrangler dev --test-scheduled --port 8788 --inspector-port 9230",
         "build": "wrangler deploy --dry-run --outdir dist",
         "deploy": "wrangler deploy",
         "check": "tsc --noEmit -p tsconfig.json"
