@@ -178,6 +178,36 @@
     --color-code-line-highlight-fg: var(--color-code-fg, #2f3337);
     --color-code-inline-bg: rgba(16, 20, 17, 0.08);
     --color-blockquote-border: #909692;
+    --color-button-highlight: rgb(255 255 255 / 0.3);
+    --color-button-edge: rgb(0 0 0 / 0.18);
+    --color-button-contact: rgb(16 20 17 / 0.22);
+    --color-button-sheen: rgb(255 255 255 / 0.9);
+    --color-button-rim: rgb(16 20 17 / 0.06);
+    --color-button-pressed: rgb(0 0 0 / 0.22);
+    --color-accent-sheen: color-mix(in oklab, var(--color-accent-contrast-bg), white 14%);
+    --color-accent-hover-sheen: color-mix(in oklab, var(--color-accent-hover), white 14%);
+    --color-danger-sheen: color-mix(in oklab, var(--color-danger-contrast), white 14%);
+    --color-danger-hover-sheen: color-mix(in oklab, var(--color-danger-contrast-hover), white 14%);
+
+    --inset-shadow-button-fill:
+        inset 0 1px 0 var(--color-button-highlight), inset 0 -2px 0 var(--color-button-edge);
+    --inset-shadow-button-surface:
+        inset 0 1px 0 var(--color-button-sheen), inset 0 -1px 0 var(--color-button-rim);
+    --inset-shadow-button-pressed: inset 0 2px 4px var(--color-button-pressed);
+    --shadow-button-surface: 0 1px 2px
+        color-mix(in srgb, var(--color-button-contact) 45%, transparent);
+    --shadow-button-accent:
+        0 1px 2px var(--color-button-contact),
+        0 6px 18px -6px color-mix(in srgb, var(--color-accent-contrast-bg) 50%, transparent);
+    --shadow-button-accent-hover:
+        0 1px 2px var(--color-button-contact),
+        0 8px 22px -6px color-mix(in srgb, var(--color-accent-hover) 60%, transparent);
+    --shadow-button-danger:
+        0 1px 2px var(--color-button-contact),
+        0 6px 18px -6px color-mix(in srgb, var(--color-danger-contrast) 50%, transparent);
+    --shadow-button-danger-hover:
+        0 1px 2px var(--color-button-contact),
+        0 8px 22px -6px color-mix(in srgb, var(--color-danger-contrast-hover) 60%, transparent);
 }
 
 :root.dark {
@@ -291,4 +321,10 @@
     --color-report-privacy: #60a5fa;
     --color-report-misinformation: #22d3ee;
     --color-report-other: #94a3b8;
+    --color-button-highlight: rgb(255 255 255 / 0.2);
+    --color-button-edge: rgb(0 0 0 / 0.3);
+    --color-button-contact: rgb(0 0 0 / 0.6);
+    --color-button-sheen: rgb(255 255 255 / 0.06);
+    --color-button-rim: rgb(0 0 0 / 0.35);
+    --color-button-pressed: rgb(0 0 0 / 0.45);
 }

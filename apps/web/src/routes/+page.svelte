@@ -579,17 +579,16 @@
             {#each navItems as item (item.id)}
                 <li>
                     <Button
-                        type="ghost"
+                        type={activeSection === item.id ? 'primary' : 'ghost'}
                         size="sm"
                         htmlType="button"
+                        aria-current={activeSection === item.id ? 'location' : undefined}
                         onclick={() => navigate(item.id)}
                         keyboardShortcut={sectionCommandKey(item.id)}
                         shortcutLabel={item.label}
-                        class="relative flex h-9 cursor-pointer items-center justify-center rounded-md border-0 px-3 text-sm leading-none font-medium whitespace-nowrap transition-all {(
-                            activeSection === item.id
-                        ) ?
-                            'bg-accent-contrast-bg font-semibold text-white shadow-xs hover:bg-accent-contrast-bg/90 hover:text-white'
-                        :   'text-text-secondary hover:bg-surface-hover hover:text-accent-text'}">
+                        class="h-9 px-3 text-sm {activeSection === item.id ?
+                            ''
+                        :   'font-medium hover:bg-surface-hover'}">
                         {item.label}
                     </Button>
                 </li>
@@ -788,7 +787,6 @@
                             class="grid grid-cols-1 gap-3 sm:grid-cols-[repeat(auto-fit,minmax(calc(10rem*var(--a11y-scale)),1fr))]">
                             <CvDownloadMenu
                                 document={data.cvDocument}
-                                unavailableId="cv-unavailable-hero"
                                 shortcutGroup="save"
                                 shortcutChordKey={argKey('/save', 'cv')}
                                 class="w-full" />
@@ -818,13 +816,6 @@
                                 {/snippet}
                             </Button>
                         </div>
-                        {#if !data.cvDocument}
-                            <p
-                                id="cv-unavailable-hero"
-                                class="mt-3 text-xs text-text-muted">
-                                No CV document is available yet.
-                            </p>
-                        {/if}
                     {/snippet}
                 </ProfileCard>
 
@@ -1174,17 +1165,9 @@
                     <div class="flex flex-col items-start gap-1.5 sm:items-end">
                         <CvDownloadMenu
                             document={data.cvDocument}
-                            unavailableId="cv-unavailable"
                             placement="bottom-end"
                             shortcutGroup="save"
                             shortcutChordKey={argKey('/save', 'cv')} />
-                        {#if !data.cvDocument}
-                            <p
-                                id="cv-unavailable"
-                                class="text-xs text-text-muted">
-                                No CV document is available yet.
-                            </p>
-                        {/if}
                     </div>
                 </div>
 

@@ -36,7 +36,7 @@
 
 <nav
     class={cn(
-        'fixed right-0 bottom-0 left-0 z-50 flex h-14 w-full items-center justify-around border-t border-border-subtle/60 bg-surface-card/90 px-1 pb-[env(safe-area-inset-bottom)] shadow-lg backdrop-blur-md md:hidden dark:border-white/10 dark:bg-surface-card/85',
+        'fixed right-0 bottom-0 left-0 z-50 flex h-14 w-full items-center justify-around gap-1 border-t border-border-subtle/60 bg-surface-card/90 px-1 pb-[env(safe-area-inset-bottom)] shadow-lg backdrop-blur-md md:hidden dark:border-white/10 dark:bg-surface-card/85',
         className
     )}
     aria-label="Mobile bottom navigation">
@@ -50,17 +50,18 @@
             aria-current={isActive ? 'page' : undefined}
             use:shortcut={{ combo: sectionCommandKey(item.id), label: item.label }}
             class={cn(
-                'group relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-md px-0.5 py-1 transition-all select-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none',
-                isActive ? 'font-bold text-accent-text' : 'text-text-muted hover:text-text-primary'
+                'group relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-md px-0.5 py-1 transition select-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none active:inset-shadow-button-pressed motion-safe:active:translate-y-px [&>span>svg]:block',
+                isActive ?
+                    'bg-accent-contrast-bg bg-linear-to-b from-accent-sheen to-accent-contrast-bg font-bold text-text-on-accent shadow-button-accent inset-shadow-button-fill'
+                :   'text-text-muted hover:bg-surface-hover hover:text-text-primary'
             )}>
-            <span
-                class="flex size-6 items-center justify-center transition-transform duration-150 group-active:scale-90">
+            <span class="flex size-6 items-center justify-center">
                 <IconComponent class="size-4.5" />
             </span>
             <span
                 class={cn(
                     'max-w-full truncate text-2xs leading-none tracking-tight transition-colors',
-                    isActive ? 'font-bold text-accent-text' : 'font-medium'
+                    isActive ? 'font-bold' : 'font-medium'
                 )}>
                 {item.label}
             </span>

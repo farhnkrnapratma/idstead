@@ -1,0 +1,20 @@
+export type DeviceClass = 'desktop' | 'laptop' | 'tablet' | 'phone';
+
+export interface DeviceSignals {
+    touchPrimary: boolean;
+    screenWidth: number;
+    screenHeight: number;
+}
+
+export const TABLET_MIN_SHORT_SIDE = 600;
+export const DESKTOP_MIN_SCREEN_WIDTH = 1680;
+
+export function classifyDevice(signals: DeviceSignals | null | undefined): DeviceClass {
+    if (!signals) return 'desktop';
+    const { touchPrimary, screenWidth, screenHeight } = signals;
+    if (!(screenWidth > 0) || !(screenHeight > 0)) return touchPrimary ? 'phone' : 'desktop';
+    if (touchPrimary) {
+        return Math.min(screenWidth, screenHeight) >= TABLET_MIN_SHORT_SIDE ? 'tablet' : 'phone';
+    }
+    return Math.max(screenWidth, screenHeight) >= DESKTOP_MIN_SCREEN_WIDTH ? 'desktop' : 'laptop';
+}
