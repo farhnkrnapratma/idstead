@@ -20,7 +20,7 @@
         className
     )}>
     <code
-        class="min-w-0 flex-1 py-1 font-mono text-xs leading-5 break-words text-text-primary tabular-nums"
+        class="min-w-0 flex-1 py-1 font-mono text-xs leading-5 wrap-break-word text-text-primary tabular-nums"
         >{command}</code>
     <IconButton
         ariaLabel="Copy {label.toLowerCase()}"
