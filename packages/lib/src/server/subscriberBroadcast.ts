@@ -8,6 +8,7 @@ import {
     sendBatch,
     senderAddress
 } from './subscribers';
+import { configuredSiteUrl } from './siteUrl';
 
 export type BroadcastOutcome =
     | { sent: number; reason?: undefined }
@@ -17,7 +18,6 @@ export type BroadcastOutcome =
 export async function notifyNewPost(
     db: SupabaseClient,
     platform: unknown,
-    origin: string,
     postId: string,
     force = false
 ): Promise<BroadcastOutcome> {
@@ -65,7 +65,7 @@ export async function notifyNewPost(
     if (!recipients.length) return { sent: 0, reason: 'no-subscribers' };
 
     const profile = await fetchAuthorProfile(publicSupabase);
-    const siteUrl = profile?.siteUrl?.trim().replace(/\/+$/, '') || origin;
+    const siteUrl = profile?.siteUrl?.trim().replace(/\/+$/, '') || configuredSiteUrl(platform);
     const siteName = profile?.name?.trim() || new URL(siteUrl).hostname;
     const postUrl = `${siteUrl}/blog/${post.slug}`;
 

@@ -1,11 +1,11 @@
 import { json } from '@sveltejs/kit';
-import * as privateEnv from '$app/env/private';
 import type { RequestHandler } from './$types';
 import { apiError } from '#lib/server/apiError.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { verifyTurnstileToken } from '#lib/server/turnstile.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { REPORT_REASON_IDS } from '#lib/reportReasons.ts';
+import { ipSalt } from '#lib/server/ipSalt.ts';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -79,15 +79,11 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     }
 
     const ip = getClientAddress();
-    const ipSalt =
-        (platform as unknown as { env?: { IP_SALT?: string } })?.env?.IP_SALT
-        ?? privateEnv.IP_SALT
-        ?? process.env.IP_SALT
-        ?? 'fkp-reports-salt';
+    const salt = ipSalt(platform);
 
     const ipHashBuffer = await crypto.subtle.digest(
         'SHA-256',
-        new TextEncoder().encode(ip + ipSalt)
+        new TextEncoder().encode(ip + salt)
     );
     const ipHash = Array.from(new Uint8Array(ipHashBuffer))
         .map(b => b.toString(16).padStart(2, '0'))

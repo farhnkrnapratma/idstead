@@ -73,7 +73,6 @@ sequenceDiagram
 | `POST /api/internal/blog/comments/report` | same-origin, Turnstile, reason allow-list | `db_comment_reports` |
 | `POST /api/internal/blog/views` | same-origin | `db_views` |
 | `POST /api/internal/feedback` | same-origin, `sec-fetch-site` not `cross-site` | RPC `db_record_page_feedback`, which writes `db_feedback_operations`, `db_feedback_events` and, for posts, `db_post_feedback` and `db_posts.helpful_*` |
-| `POST /api/internal/blog/feedback` | same as above (legacy body shape) | same RPC |
 | `POST /api/internal/subscribe` | same-origin, Turnstile | `db_subscribers` and a confirm mail |
 | `POST /api/internal/subscribe/unsubscribe-request` | same-origin, Turnstile | none (mails an unsubscribe link without revealing whether the address exists) |
 | `POST /api/internal/subscribe/unsubscribe` | 64-hex token | `db_subscribers.status = 'unsubscribed'` (always 204) |

@@ -9,9 +9,8 @@ export async function recordPageFeedback(input: {
     ip: () => string;
     secret: string | undefined;
     db: SupabaseClient | null;
-    legacy?: boolean;
 }) {
-    const { request, url, secret, db, legacy } = input;
+    const { request, url, secret, db } = input;
     const fail = (status: number, code: string, message: string) =>
         Response.json({ code, message }, { status });
     if (
@@ -21,11 +20,9 @@ export async function recordPageFeedback(input: {
         return fail(403, 'FEEDBACK_ORIGIN_FORBIDDEN', 'Cross-origin requests are not allowed.');
     try {
         const body = await activityJson(request);
-        const operationId = activityUuid(
-            legacy && body.operationId == null ? crypto.randomUUID() : body.operationId
-        );
-        const targetType = legacy ? 'article' : body.targetType;
-        const targetId = legacy ? body.postId : body.targetId;
+        const operationId = activityUuid(body.operationId);
+        const targetType = body.targetType;
+        const targetId = body.targetId;
         if (body.vote !== 'yes' && body.vote !== 'no')
             throw new ActivityInputError('Choose Yes or No.');
         if (!db || !secret?.trim())

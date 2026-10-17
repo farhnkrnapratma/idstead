@@ -1,6 +1,5 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import * as privateEnv from '$app/env/private';
 import { apiError } from '#lib/server/apiError.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
@@ -19,6 +18,7 @@ import {
     sendEmail,
     senderAddress
 } from '#lib/server/subscribers.ts';
+import { ipSalt } from '#lib/server/ipSalt.ts';
 
 const CONFIRM_RESEND_COOLDOWN_MS = 5 * 60 * 1000;
 
@@ -79,10 +79,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     )
         return json(ACCEPTED);
 
-    const ipSalt =
-        (platform as { env?: { IP_SALT?: string } } | undefined)?.env?.IP_SALT
-        ?? privateEnv.IP_SALT
-        ?? '';
+    const salt = ipSalt(platform);
 
     const confirmToken = createToken();
     const row = {
@@ -93,7 +90,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         updated_at: new Date().toISOString(),
         user_agent: (request.headers.get('user-agent') ?? '').slice(0, 300),
         ...(existing?.status === 'unsubscribed' ? { unsubscribe_token: createToken() } : {}),
-        ...(ipSalt ? { ip_hash: await hashIp(getClientAddress(), ipSalt) } : {})
+        ...(salt ? { ip_hash: await hashIp(getClientAddress(), salt) } : {})
     };
 
     const { error } =
@@ -114,7 +111,22 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     const siteName = profile?.name?.trim() || url.hostname;
     const confirmUrl = `${url.origin}/subscribe/confirm?token=${confirmToken}`;
 
-    await sendEmail(apiKey, from, { to: email, ...confirmEmail(siteName, confirmUrl) });
+    const sent = await sendEmail(apiKey, from, {
+        to: email,
+        ...confirmEmail(siteName, confirmUrl)
+    });
+    if (!sent) {
+        await db
+            .from(SUBSCRIBER_TABLE)
+            .update({ confirm_sent_at: null })
+            .eq('email', email)
+            .eq('confirm_token_hash', row.confirm_token_hash);
+        return apiError(
+            502,
+            'SUBSCRIBE_EMAIL_FAILED',
+            'The confirmation email could not be sent. Please try again.'
+        );
+    }
 
     return json(ACCEPTED);
 };

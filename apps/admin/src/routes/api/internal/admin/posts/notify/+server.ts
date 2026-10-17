@@ -33,7 +33,6 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
     const result = await notifyNewPost(
         db,
         platform,
-        url.origin,
         postId,
         (body as { force?: unknown }).force === true
     );
