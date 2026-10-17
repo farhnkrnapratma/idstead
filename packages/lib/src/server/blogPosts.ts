@@ -3,24 +3,13 @@ import { publicBannerUrl } from '#lib/blogBanner.ts';
 import { cdnBaseUrl } from '#lib/cdn.ts';
 import { estimateReadTime } from '#lib/readTime.ts';
 import { decodeHtmlEntities } from '#lib/utils/formatters.ts';
+import { publicPostFields, type PublicPostFields } from '#lib/publicPost.ts';
 
-export interface BlogPost {
-    id: string;
-    title: string;
-    slug: string;
-    published: boolean;
-    pinned: boolean;
-    storage_path: string;
-    banner_version?: string | null;
+export interface BlogPost extends PublicPostFields {
     bannerPublicUrl?: string | null;
-    created_at: string;
-    updated_at?: string | null;
-    excerpt?: string | null;
-    content: string;
     read_time?: string;
     comment_count?: number;
     views_count?: number;
-    tags?: string[];
 }
 
 async function readTime(storagePath: string, fetchFn: typeof fetch) {
@@ -72,16 +61,15 @@ export async function loadPublishedPosts(
                     count('db_comments', post.id),
                     count('db_views', post.id)
                 ]);
-                const { id: _internalId, public_id: publicId, ...publicPost } = post;
+                const fields = publicPostFields(post);
                 return {
-                    ...publicPost,
-                    id: publicId as string,
+                    ...fields,
                     bannerPublicUrl: publicBannerUrl(post, cdnBaseUrl()),
-                    tags: Array.isArray(post.tags) ? post.tags.map(decodeHtmlEntities) : post.tags,
+                    tags: fields.tags.map(decodeHtmlEntities),
                     read_time: readTimeValue,
                     comment_count: commentCount,
                     views_count: viewsCount
-                } as BlogPost;
+                } satisfies BlogPost;
             })
         );
     } catch (err) {

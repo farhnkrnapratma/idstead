@@ -22,9 +22,16 @@ let commandDisposers: (() => void)[] = [];
 
 function load(): Promise<void> {
     if (!loading) {
-        loading = import('../components/SpotlightDialog.svelte').then(module => {
-            dialogComponent = module.default as Component;
-        });
+        loading = import('../components/SpotlightDialog.svelte').then(
+            module => {
+                dialogComponent = module.default as Component;
+            },
+            error => {
+                loading = null;
+                pending = [];
+                console.error('Could not load the search dialog:', error);
+            }
+        );
     }
     return loading;
 }

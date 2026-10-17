@@ -13,6 +13,7 @@ import {
     createApiRegistry
 } from '#lib/define.ts';
 import { loadIcons } from '#lib/markdownIcons.ts';
+import { decodeHtmlEntities } from '#lib/utils/formatters.ts';
 import { sanitizeHtml, sanitizeUrl } from '#lib/sanitizeHtml.ts';
 import {
     PLACEHOLDER_TOKEN_RE,
@@ -1127,15 +1128,6 @@ export interface HeadingItem {
     id: string;
     text: string;
     level: number;
-}
-
-function decodeHtmlEntities(str: string): string {
-    return str
-        .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'")
-        .replace(/&amp;/g, '&')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>');
 }
 
 export function extractHeadings(html: string): HeadingItem[] {

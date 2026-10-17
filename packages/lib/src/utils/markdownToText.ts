@@ -1,15 +1,6 @@
 import { extractFrontmatter } from '../frontmatter';
 import { stripPlaceholderChars } from '../placeholders';
-
-function decodeHtmlEntities(str: string): string {
-    return str
-        .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'")
-        .replace(/&amp;/g, '&')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&nbsp;/g, ' ');
-}
+import { decodeHtmlEntities } from './formatters';
 
 export function markdownToPlainText(markdown: string): string {
     if (!markdown) return '';

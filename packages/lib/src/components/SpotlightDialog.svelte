@@ -1778,8 +1778,8 @@
                     name: 'clean',
                     label: 'Code clean mode',
                     current: () => codeBlockPrefsStore.current.minimal,
-                    toggle: () => codeBlockPrefsStore.toggleClean(),
-                    set: (val: boolean) => codeBlockPrefsStore.setClean(val)
+                    toggle: () => codeBlockPrefsStore.toggleMinimal(),
+                    set: (val: boolean) => codeBlockPrefsStore.setMinimal(val)
                 }
             ];
 

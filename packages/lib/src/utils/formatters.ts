@@ -134,9 +134,6 @@ export function decodeHtmlEntities(str?: string | null): string {
         .replace(/&quot;/gi, '"')
         .replace(/&#34;/g, '"')
         .replace(/&#x22;/gi, '"')
-        .replace(/&amp;/gi, '&')
-        .replace(/&#38;/g, '&')
-        .replace(/&#x26;/gi, '&')
         .replace(/&lt;/gi, '<')
         .replace(/&#60;/g, '<')
         .replace(/&#x3C;/gi, '<')
@@ -148,5 +145,8 @@ export function decodeHtmlEntities(str?: string | null): string {
         .replace(/&ndash;/gi, '-')
         .replace(/&#8211;/g, '-')
         .replace(/&mdash;/gi, '-')
-        .replace(/&#8212;/g, '-');
+        .replace(/&#8212;/g, '-')
+        .replace(/&amp;/gi, '&')
+        .replace(/&#38;/g, '&')
+        .replace(/&#x26;/gi, '&');
 }

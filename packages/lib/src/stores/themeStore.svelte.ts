@@ -1,6 +1,18 @@
 import type { Theme } from '#lib/types.ts';
 import { browser } from '$app/env';
 
+function asTheme(value: string | null): Theme {
+    return value === 'light' || value === 'dark' ? value : 'auto';
+}
+
+function readStoredTheme(): string | null {
+    try {
+        return localStorage.getItem('theme');
+    } catch {
+        return null;
+    }
+}
+
 function createThemeStore() {
     let theme = $state<Theme>('auto');
     let isDark = $state(false);
@@ -15,15 +27,18 @@ function createThemeStore() {
     function apply(newTheme: Theme) {
         theme = newTheme;
         if (!browser) return;
-        localStorage.setItem('theme', newTheme);
+        try {
+            localStorage.setItem('theme', newTheme);
+        } catch (err) {
+            void err;
+        }
         isDark = checkIsDark(newTheme);
         document.documentElement.classList.toggle('dark', isDark);
     }
 
     function init() {
         if (!browser) return;
-        const saved = (localStorage.getItem('theme') as Theme) || 'auto';
-        apply(saved);
+        apply(asTheme(readStoredTheme()));
 
         const media = window.matchMedia('(prefers-color-scheme: dark)');
         const onMedia = () => {
@@ -33,7 +48,7 @@ function createThemeStore() {
             }
         };
         const onStorage = (e: StorageEvent) => {
-            if (e.key === 'theme') apply((e.newValue as Theme) || 'auto');
+            if (e.key === 'theme') apply(asTheme(e.newValue));
         };
 
         media.addEventListener('change', onMedia);
@@ -52,10 +67,6 @@ function createThemeStore() {
         return nextTheme;
     }
 
-    function toggle(): Theme {
-        return cycle();
-    }
-
     return {
         get current() {
             return theme;
@@ -65,7 +76,6 @@ function createThemeStore() {
         },
         apply,
         cycle,
-        toggle,
         init
     };
 }

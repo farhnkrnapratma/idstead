@@ -113,7 +113,9 @@ export function initMermaidThemeObserver() {
 
     const observer = new MutationObserver(() => {
         const isDark = document.documentElement.classList.contains('dark');
-        enhanceMermaidBlocks(document.body, isDark);
+        enhanceMermaidBlocks(document.body, isDark).catch(error =>
+            console.error('Could not re-render Mermaid diagrams:', error)
+        );
     });
 
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
@@ -230,6 +232,10 @@ function attachDiagramToolbar(block: HTMLElement, svgString: string, rawCode: st
     };
 
     const closeMenu = (e: MouseEvent) => {
+        if (!toolbar.isConnected) {
+            window.removeEventListener('click', closeMenu);
+            return;
+        }
         if (!toolbar.contains(e.target as Node)) {
             dropdown.classList.remove('mdrs-is-open');
         }
