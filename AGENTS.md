@@ -100,12 +100,12 @@ All apps share one Supabase project. Sentry events are tagged with `PUBLIC_SENTR
 
 ### Markdown engine
 
-`packages/lib/src/markdown.ts` renders posts and legal pages. Syntax reference is in README (`Markdown syntax`). `renderMarkdown` always ends with `sanitizeHtml` (`packages/lib/src/sanitizeHtml.ts`, an allowlist that also covers the engine's own markup), so any new tag, attribute or class the engine emits must be added to that allowlist; `tests/sanitizeHtml.test.ts` fails if engine output changes under sanitizing. Stored content is migrated between syntaxes with `scripts/migrate-markdown-syntax.ts` built on `packages/lib/src/legacyMarkdown.ts`.
+`packages/lib/src/markdown.ts` renders posts and legal pages. The language is MDRS (Markdown Rich Syntax), fully documented in [docs/002-mdrs/](docs/002-mdrs/README.md); update those pages, including `003-reference/001-compatibility.md`, whenever engine behaviour changes. `renderMarkdown` always ends with `sanitizeHtml` (`packages/lib/src/sanitizeHtml.ts`, an allowlist that also covers the engine's own markup), so any new tag or attribute the engine emits must be added to that allowlist, and every class, ID and `data-` attribute it emits must use the `mdrs` namespace (`mdrs-*`, `data-mdrs-*`) with its default styling in `packages/lib/src/mdrs.css`, never Tailwind utilities in the markup; `tests/sanitizeHtml.test.ts` fails if engine output changes under sanitizing. Stored content is migrated between syntaxes with `scripts/migrate-markdown-syntax.ts` built on `packages/lib/src/legacyMarkdown.ts`.
 
 ### Components
 
 - `packages/lib/src/components/` — flat directory of reusable UI primitives (Button, Dialog family, form fields, Toast, DataTable, Pagination, BlogPostCard, etc.) plus `filter/` and `admin/` subfolders.
-- `packages/lib/src/layout/` — page-structure components (AppShell, PageContainer, Section, FormSection, FooterSection, etc.).
+- `packages/lib/src/layout/` — page-structure components (PageContainer, Section, FormSection, FooterSection, FooterLegalRow).
 - `packages/lib/src/article/` — blog-post-specific rendering (ArticleHeader, ArticleMeta, HelpfulBlock).
 - `packages/lib/src/stores/` — Svelte 5 runes-based stores (`.svelte.ts` files): theme, toast, consent, filter/sort state.
 - Styling: Tailwind CSS 4 (via `@tailwindcss/vite`, no separate config file) plus `tokens.css` and `global.css` in the lib — component- and page-specific styling lives in each component/page's own `<style>` block or inline Tailwind classes.

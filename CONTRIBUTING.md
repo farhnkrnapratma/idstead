@@ -1,6 +1,6 @@
 # Contributing
 
-Read [docs/](docs/README.md) for the architecture and setup, and [CLAUDE.md](CLAUDE.md) for code conventions. Set up locally with [docs/development/local-setup.md](docs/development/local-setup.md).
+Read [docs/](docs/README.md) for the architecture and setup, and [CLAUDE.md](CLAUDE.md) for code conventions. Set up locally with [docs/004-development/001-local-setup.md](docs/004-development/001-local-setup.md).
 
 ## Branches
 
@@ -46,7 +46,7 @@ bun run lint
 - Never hardcode content (name, bio, links, CV, …). It comes from Supabase.
 - **API changes:**
     - Breaking changes go under a new version (`/v2`).
-    - Update `packages/lib/src/openapi.ts`, `apps/api/src/README.md` and `docs/api/v1/` together.
+    - Update `packages/lib/src/openapi.ts`, `apps/api/src/README.md` and `docs/003-api/001-v1/` together.
 - **Database:** every `UPDATE`/`DELETE` in a function needs a `WHERE` clause.
 - **Docs:** when behaviour changes, update the matching page in `docs/`.
 

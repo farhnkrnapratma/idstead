@@ -3,3 +3,5 @@ graphify-out/
 supabase/migrations/*.sql
 
 tests/fixtures/**
+
+docs/**/SHOWCASE.md
