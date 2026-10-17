@@ -106,11 +106,14 @@
         style:top={position.top === undefined ? undefined : `${position.top}px`}
         style:bottom={position.bottom === undefined ? undefined : `${position.bottom}px`}
         style:right={`${position.right}px`}
-        class="fixed z-110 min-w-36 overflow-hidden rounded-md border border-border-subtle bg-surface-elevated shadow-md">
+        class="fixed z-110 min-w-36 overflow-hidden popover-surface p-0">
         <div class="flex max-h-[calc(100dvh-1rem)] flex-col overflow-y-auto">
             {#each items as item, index ('divider' in item ? `divider-${index}` : item.label)}
                 {#if 'divider' in item}
-                    <div class="my-1 border-t border-border-subtle"></div>
+                    <div
+                        role="separator"
+                        class="h-px shrink-0 bg-border-subtle">
+                    </div>
                 {:else}
                     <button
                         type="button"
@@ -118,8 +121,10 @@
                         aria-checked={item.selected}
                         disabled={item.disabled}
                         class={cn(
-                            'flex w-full cursor-pointer items-center gap-1.5 px-2.5 py-1.5 text-left text-xs whitespace-nowrap transition-colors hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 pointer-coarse:min-h-11',
-                            item.danger ? 'text-danger' : 'text-text-secondary'
+                            'flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-xs font-medium whitespace-nowrap transition-colors focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 pointer-coarse:min-h-11',
+                            item.danger ?
+                                'text-danger hover:bg-danger/10 focus-visible:bg-danger/10'
+                            :   'text-text-primary hover:bg-surface-hover hover:text-accent-text focus-visible:bg-surface-hover focus-visible:text-accent-text'
                         )}
                         onclick={() => {
                             open = false;

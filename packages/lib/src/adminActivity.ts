@@ -56,48 +56,6 @@ export interface InboxPreferences {
     sort: 'date' | 'type' | 'page';
     direction: 'asc' | 'desc';
 }
-export interface ActivityPageResult<T> {
-    items: T[];
-    offset: number;
-    total: number;
-    pageSize: number;
-}
-export interface FeedbackGroup extends ActivityPage {
-    target_type: PageType;
-    target_id: string;
-    helpful: number;
-    unhelpful: number;
-    latest: string;
-}
-export interface FeedbackEvent extends ActivityPage {
-    id: string;
-    target_type: PageType;
-    target_id: string;
-    vote: FeedbackVote;
-    created_at: string;
-}
-export interface ReportGroup extends ActivityPage {
-    id: string;
-    post_id: string;
-    author: string | null;
-    content: string | null;
-    reports: number;
-    comments: number;
-    latest: string;
-}
-export interface ReportEvent extends ActivityPage {
-    id: string;
-    comment_id: string;
-    post_id: string;
-    reason: string;
-    details: string | null;
-    created_at: string;
-    author: string;
-    content: string;
-}
-export interface ReportHistory extends ActivityPageResult<ReportEvent> {
-    reasons: { reason: string; count: number; latest: string }[];
-}
 export interface DashboardTotals {
     helpful: number;
     unhelpful: number;
@@ -114,16 +72,6 @@ export interface ClearOperation {
     count: number;
     completed: boolean;
     deletedCount: number | null;
-}
-export interface ActivityFocus {
-    section: 'feedback' | 'reports';
-    pageType: PageType;
-    pageId: string;
-    commentId?: string;
-    eventId?: string;
-    reason?: string;
-    notification?: AdminNotificationRow;
-    requestId: string;
 }
 export function activityDate(
     date: string,

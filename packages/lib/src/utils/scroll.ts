@@ -49,7 +49,7 @@ export function scrollToTop(behavior: ScrollBehavior = preferredScrollBehavior()
         article.scrollTo({ top: 0, behavior });
     }
 
-    const main = document.getElementById('main-content');
+    const main = document.getElementById('main');
     if (main && (main.scrollTop > 0 || main.scrollHeight > main.clientHeight)) {
         main.scrollTo({ top: 0, behavior });
     }
@@ -142,7 +142,7 @@ export function scrollToBottom(behavior: ScrollBehavior = preferredScrollBehavio
         article.scrollTo({ top: article.scrollHeight, behavior });
     }
 
-    const main = document.getElementById('main-content');
+    const main = document.getElementById('main');
     if (main && main.scrollHeight > main.clientHeight) {
         main.scrollTo({ top: main.scrollHeight, behavior });
     }

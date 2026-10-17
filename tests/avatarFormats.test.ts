@@ -8,9 +8,6 @@ import { describe, it, expect } from 'bun:test';
  */
 
 // Magic bytes for format detection
-const WEBP_MAGIC = new Uint8Array([0x52, 0x49, 0x46, 0x46]); // 'RIFF'
-const WEBP_SIGNATURE = new Uint8Array([0x57, 0x45, 0x42, 0x50]); // 'WEBP' at bytes 8-11
-const AVIF_FTYPBOX = new Uint8Array([0x66, 0x74, 0x79, 0x70]); // 'ftyp' at bytes 4-7
 const AVIF_BRANDS = ['avif', 'avis'];
 
 function createValidWebP(size: number = 1000): Uint8Array {

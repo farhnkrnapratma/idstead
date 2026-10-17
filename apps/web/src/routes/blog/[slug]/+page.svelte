@@ -9,13 +9,13 @@
     import { FieldValidation, requiredText } from '#lib/fieldValidation.ts';
     import { onMount, onDestroy, tick, untrack } from 'svelte';
     import { fade } from 'svelte/transition';
-    import { BookOpenText } from '@lucide/svelte';
+    import { BookOpenText, MessageCircle } from '@lucide/svelte';
     import type { PageProps } from './$types';
     import type { BlogComment } from './+page.server';
     import hljs from 'highlight.js';
     import { isNameReserved, extractAuthorNameTokens } from '#lib/utils/nameValidator.ts';
     import { enhanceMarkdownContent } from '#lib/utils/markdownEnhancer.ts';
-    import { enhanceHeadingAnchors } from '#lib/utils/headingAnchors.ts';
+    import { enhanceHeadingAnchors, resolveMdrsHash } from '#lib/utils/headingAnchors.ts';
     import { refreshCodeBlockPrefs } from '#lib/utils/codeBlocks.ts';
     import { highlightAfterScroll } from '#lib/utils/scroll.ts';
     import 'katex/dist/katex.min.css';
@@ -26,6 +26,7 @@
         turnstileSiteKey
     } from '#lib/utils/turnstile.ts';
     import {
+        SkipLink,
         TopNav,
         Button,
         BlogPostCard,
@@ -149,7 +150,7 @@
     let cancelHighlight: (() => void) | undefined;
 
     function scrollToTarget(targetId: string, smooth = true) {
-        const targetEl = document.getElementById(targetId);
+        const targetEl = resolveMdrsHash(targetId, articleBodyEl);
         if (!targetEl) return;
 
         const isDesktop =
@@ -171,7 +172,7 @@
             if (window.scrollY !== 0) {
                 window.scrollTo({ top: 0, behavior: 'instant' });
             }
-            const mainEl = document.getElementById('main-content');
+            const mainEl = document.getElementById('main');
             if (mainEl && mainEl.scrollTop !== 0) {
                 mainEl.scrollTop = 0;
             }
@@ -217,7 +218,7 @@
         if (!href || href === '#' || !href.startsWith('#')) return;
 
         const targetId = href.slice(1);
-        const targetEl = document.getElementById(targetId);
+        const targetEl = resolveMdrsHash(targetId, articleBodyEl);
         if (!targetEl) return;
 
         e.preventDefault();
@@ -562,6 +563,8 @@
     {/if}
 </svelte:head>
 
+<SkipLink />
+
 {#if !readingModeStore.active}
     <TopNav
         ariaLabel="Article navigation"
@@ -574,10 +577,10 @@
 {/if}
 
 <main
-    id="main-content"
+    id="main"
     class="blog-reading-page flex flex-col font-sans {readingModeStore.active ?
         'min-h-screen pt-4 sm:pt-6'
-    :   'min-h-[calc(100vh-3rem)] overscroll-none pt-12 sm:min-h-[calc(100vh-3.5rem)] sm:pt-14 lg:h-dvh lg:min-h-0 lg:overflow-clip'}">
+    :   'min-h-[calc(100vh-4rem)] overscroll-none pt-16 sm:min-h-[calc(100vh-5rem)] sm:pt-20 lg:h-dvh lg:min-h-0 lg:overflow-clip'}">
     <div
         class={readingModeStore.active ?
             'relative mx-auto w-full px-3 pt-3 pb-16 sm:px-6 sm:pt-4 md:w-[80%] lg:w-[50%]'
@@ -813,7 +816,7 @@
 
             <div
                 bind:this={articleBodyEl}
-                class="prose-custom font-content-{contentFontStore.current} mt-3 w-full">
+                class="mdrs font-content-{contentFontStore.current} mt-3 w-full">
                 {@html html}
             </div>
 
@@ -979,6 +982,7 @@
 
                     {#if comments.length === 0}
                         <EmptyState
+                            icon={MessageCircle}
                             title="No comments yet"
                             description="Be the first to share your thoughts on this article." />
                     {:else}

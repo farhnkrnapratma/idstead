@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import tailwindcss from '@tailwindcss/vite';
 import adapter from '@sveltejs/adapter-cloudflare';
@@ -28,5 +29,15 @@ export default defineConfig({
             tracing: { server: true }
         })
     ],
+    resolve: {
+        alias: [
+            {
+                find: /^openpgp$/,
+                replacement: fileURLToPath(
+                    new URL('../../node_modules/openpgp/dist/openpgp.min.mjs', import.meta.url)
+                )
+            }
+        ]
+    },
     ssr: { noExternal: ['@lucide/svelte'] }
 });

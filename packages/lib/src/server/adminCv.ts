@@ -16,7 +16,7 @@ import {
 import { loadCvFonts } from '#lib/server/cvFonts.ts';
 import { readAvatarBytes } from '#lib/server/profileAssets.ts';
 import { fetchProjects, extractGitHubUsername } from '#lib/server/githubProjects.ts';
-import { fetchSocials, fetchProjectRepoRules } from '#lib/author.ts';
+import { fetchSocials, fetchProjectRepoRules, fetchActiveOpenPgpKey } from '#lib/author.ts';
 import {
     cvSnapshot,
     cvVersionBump,
@@ -28,12 +28,24 @@ import {
 import {
     CV_CHECKSUM_EXTENSIONS,
     CV_SIDECAR_EXTENSIONS,
+    CV_SIGNATURE_EXTENSIONS,
     CV_SIGNATURE_LIMIT,
+    cvBundleKey,
     cvChecksums,
-    cvKey,
-    isArmoredSignature,
-    normalizeSignature
+    cvKey
 } from '#lib/server/cvChecksums.ts';
+import { buildCvBundle } from '#lib/server/cvBundle.ts';
+import { cvBundleFilename } from '#lib/cvVerification.ts';
+import { safeKeyserverUrl } from '#lib/openpgpKey.ts';
+import {
+    OPENPGP_KEY_LIMIT,
+    OpenPgpError,
+    parseDetachedSignature,
+    readLimited,
+    parsePublicKey,
+    verifyDetachedSignature,
+    verifyKeyserver
+} from '#lib/server/openpgp.ts';
 
 const CV_PROJECT_LIMIT = 4;
 
@@ -176,9 +188,181 @@ function cvObjectKeys(filename: string) {
     return [
         cvKey(filename),
         ...CV_SIDECAR_EXTENSIONS.map(ext => cvKey(filename, ext)),
+        cvBundleKey(filename),
         filename,
         `${filename}.sha256`
     ];
+}
+
+async function putCvObject(
+    platform: unknown,
+    db: ReturnType<typeof getAdminDb>,
+    key: string,
+    body: Uint8Array,
+    contentType: string,
+    downloadName?: string
+) {
+    const creds = getR2Credentials(platform);
+    if (creds) {
+        await r2Client(creds).send(
+            new PutObjectCommand({
+                Bucket: creds.bucketName,
+                Key: key,
+                Body: body,
+                ContentType: contentType,
+                CacheControl: 'public, max-age=60',
+                ...(downloadName ?
+                    { ContentDisposition: `attachment; filename="${downloadName}"` }
+                :   {})
+            })
+        );
+        return;
+    }
+    const { error } = await db.storage
+        .from('cv_documents')
+        .upload(key, body, { contentType, upsert: true, cacheControl: '60' });
+    if (error) throw error;
+}
+
+async function deleteCvObjects(
+    platform: unknown,
+    db: ReturnType<typeof getAdminDb>,
+    keys: string[]
+) {
+    const creds = getR2Credentials(platform);
+    if (creds)
+        await r2Client(creds).send(
+            new DeleteObjectsCommand({
+                Bucket: creds.bucketName,
+                Delete: { Objects: keys.map(Key => ({ Key })) }
+            })
+        );
+    else await db.storage.from('cv_documents').remove(keys);
+}
+
+interface ActiveCvDocument {
+    id: string;
+    filename: string;
+    file_url: string;
+    signed_at: string | null;
+}
+
+async function activeCvDocument(db: ReturnType<typeof getAdminDb>) {
+    const { data, error } = await db
+        .from('db_documents')
+        .select('id, filename, file_url, signed_at')
+        .eq('is_active', true)
+        .limit(1)
+        .maybeSingle();
+    if (error) throw error;
+    return (data?.filename && data.file_url ? data : null) as ActiveCvDocument | null;
+}
+
+async function fetchBytes(url: string) {
+    const response = await fetch(url, { cache: 'no-store' });
+    if (!response.ok) throw new Error(`CV storage returned ${response.status} for ${url}`);
+    return new Uint8Array(await response.arrayBuffer());
+}
+
+async function storedSignature(fileUrl: string) {
+    for (const ext of CV_SIGNATURE_EXTENSIONS) {
+        try {
+            const parsed = await parseDetachedSignature(await fetchBytes(`${fileUrl}.${ext}`));
+            return { asc: parsed.asc, sig: parsed.sig };
+        } catch {
+            continue;
+        }
+    }
+    return null;
+}
+
+async function siteUrlFor(db: ReturnType<typeof getAdminDb>, platform: unknown) {
+    const { data } = await db.from('db_profiles').select('site_url').limit(1).maybeSingle();
+    return (
+        data?.site_url
+        || (platform as { env?: { PUBLIC_SITE_URL?: string } } | undefined)?.env?.PUBLIC_SITE_URL
+        || (publicEnv as Record<string, string | undefined>).PUBLIC_SITE_URL
+        || ''
+    ).replace(/\/+$/, '');
+}
+
+async function storeCvSignature(
+    platform: unknown,
+    db: ReturnType<typeof getAdminDb>,
+    filename: string,
+    signature: { asc: string; sig: Uint8Array }
+) {
+    await putCvObject(
+        platform,
+        db,
+        cvKey(filename, 'asc'),
+        new TextEncoder().encode(signature.asc),
+        'application/pgp-signature',
+        `${filename}.asc`
+    );
+    await putCvObject(
+        platform,
+        db,
+        cvKey(filename, 'sig'),
+        signature.sig,
+        'application/pgp-signature',
+        `${filename}.sig`
+    );
+}
+
+async function clearCvSignature(
+    platform: unknown,
+    db: ReturnType<typeof getAdminDb>,
+    doc: ActiveCvDocument
+) {
+    await deleteCvObjects(
+        platform,
+        db,
+        CV_SIGNATURE_EXTENSIONS.map(ext => cvKey(doc.filename, ext))
+    );
+    await db
+        .from('db_documents')
+        .update({ signed_at: null, signer_fingerprint: null })
+        .eq('id', doc.id);
+}
+
+async function refreshCvBundle(
+    platform: unknown,
+    db: ReturnType<typeof getAdminDb>,
+    doc: ActiveCvDocument,
+    known: { pdf?: Uint8Array; signature?: { asc: string; sig: Uint8Array } | null } = {}
+) {
+    const pdf = known.pdf ?? (await fetchBytes(doc.file_url));
+    const { digests, files } = await cvChecksums(pdf, doc.filename);
+    const signature =
+        known.signature !== undefined ? known.signature
+        : doc.signed_at ? await storedSignature(doc.file_url)
+        : null;
+    if (signature && known.signature === undefined)
+        await storeCvSignature(platform, db, doc.filename, signature);
+    const key = await fetchActiveOpenPgpKey(db, { strict: true });
+    const bundle = buildCvBundle({
+        filename: doc.filename,
+        pdf,
+        checksumFiles: files,
+        signature,
+        publicKey: key?.armored ?? null,
+        key,
+        siteUrl: await siteUrlFor(db, platform),
+        apiBase:
+            (platform as { env?: { PUBLIC_API_BASE_URL?: string } } | undefined)?.env
+                ?.PUBLIC_API_BASE_URL || publicEnv.PUBLIC_API_BASE_URL,
+        date: new Date()
+    });
+    await putCvObject(
+        platform,
+        db,
+        cvBundleKey(doc.filename),
+        bundle,
+        'application/zip',
+        cvBundleFilename(doc.filename)
+    );
+    await db.from('db_documents').update({ checksums: digests }).eq('id', doc.id);
 }
 
 async function removeCvObjects(
@@ -456,6 +640,7 @@ export async function processCvGenerate(
                 filename,
                 file_url: fileUrl,
                 hash: digests.sha256,
+                checksums: digests,
                 version: versionLabel,
                 is_active: true
             })
@@ -470,6 +655,17 @@ export async function processCvGenerate(
             .from('db_document_snapshots')
             .insert({ document_id: inserted.id, content: snapshot });
         if (snapshotError) console.error('CV snapshot could not be saved:', snapshotError);
+
+        try {
+            await refreshCvBundle(
+                platform,
+                db,
+                { id: inserted.id, filename, file_url: fileUrl, signed_at: null },
+                { pdf: pdfBytes, signature: null }
+            );
+        } catch (bundleError) {
+            console.error('CV verification bundle could not be built:', bundleError);
+        }
 
         await logCvActivity(
             req,
@@ -487,6 +683,7 @@ export async function processCvGenerate(
                 filename,
                 fileUrl,
                 hash: digests.sha256,
+                checksums: digests,
                 version: versionLabel,
                 level: activeDoc ? bump!.level : 'major',
                 reasons,
@@ -580,6 +777,13 @@ export async function processCvDelete(
     }
 }
 
+function openPgpFailure(err: unknown, fallback: string) {
+    if (err instanceof OpenPgpError)
+        return jsonResponse({ success: false, message: err.message }, 422);
+    console.error(fallback, err);
+    return fail(fallback);
+}
+
 export async function processCvSignature(
     req: Request,
     platform?: unknown,
@@ -589,27 +793,12 @@ export async function processCvSignature(
         const authError = await requireAdminAuth(req, platform);
         if (authError) return authError;
         const db = getAdminDb(platform);
-        const { data: doc, error: lookupError } = await db
-            .from('db_documents')
-            .select('id, filename')
-            .eq('is_active', true)
-            .limit(1)
-            .maybeSingle();
-        if (lookupError || !doc?.filename)
-            return jsonResponse({ success: false, message: 'No active CV document.' }, 404);
-        const key = cvKey(doc.filename, 'asc');
-        const creds = getR2Credentials(platform);
+        const doc = await activeCvDocument(db);
+        if (!doc) return jsonResponse({ success: false, message: 'No active CV document.' }, 404);
 
         if (req.method === 'DELETE') {
-            if (creds)
-                await r2Client(creds).send(
-                    new DeleteObjectsCommand({
-                        Bucket: creds.bucketName,
-                        Delete: { Objects: [{ Key: key }] }
-                    })
-                );
-            else await db.storage.from('cv_documents').remove([key]);
-            await db.from('db_documents').update({ signed_at: null }).eq('id', doc.id);
+            await clearCvSignature(platform, db, doc);
+            await refreshCvBundle(platform, db, { ...doc, signed_at: null }, { signature: null });
             await logCvActivity(
                 req,
                 platform,
@@ -619,58 +808,235 @@ export async function processCvSignature(
                 'Removed the CV signature.',
                 getClientAddress
             );
-            return jsonResponse({ success: true, signedAt: null });
+            return jsonResponse({ success: true, signedAt: null, signerFingerprint: null });
         }
 
-        if (Number(req.headers.get('content-length')) > CV_SIGNATURE_LIMIT * 2)
-            return jsonResponse({ success: false, message: 'Signature is too large.' }, 413);
-        let signature = '';
+        if (Number(req.headers.get('content-length')) > CV_SIGNATURE_LIMIT)
+            return jsonResponse(
+                { success: false, message: 'Signature files are at most 16 KiB.' },
+                413
+            );
+        let upload: Uint8Array;
         try {
-            const body = await req.json();
-            signature = typeof body?.signature === 'string' ? body.signature : '';
+            upload = await readLimited(req.body, CV_SIGNATURE_LIMIT);
         } catch {
-            signature = '';
+            return jsonResponse(
+                { success: false, message: 'Signature files are at most 16 KiB.' },
+                413
+            );
         }
-        if (!isArmoredSignature(signature))
+        const activeKey = await fetchActiveOpenPgpKey(db, { strict: true });
+        if (!activeKey)
             return jsonResponse(
                 {
                     success: false,
-                    message:
-                        'Upload an ASCII-armored detached signature (gpg --armor --detach-sign).'
+                    message: 'Add your OpenPGP public key before uploading a signature.'
                 },
-                400
+                409
             );
-        const body = new TextEncoder().encode(normalizeSignature(signature));
-        if (creds)
-            await r2Client(creds).send(
-                new PutObjectCommand({
-                    Bucket: creds.bucketName,
-                    Key: key,
-                    Body: body,
-                    ContentType: 'application/pgp-signature',
-                    CacheControl: 'public, max-age=300'
-                })
-            );
-        else {
-            const { error } = await db.storage
-                .from('cv_documents')
-                .upload(key, body, { contentType: 'application/pgp-signature', upsert: true });
-            if (error) return fail('Failed to store the signature.');
-        }
+        const { key } = await parsePublicKey(new TextEncoder().encode(activeKey.armored));
+        const signature = await parseDetachedSignature(upload);
+        const pdf = await fetchBytes(doc.file_url);
+        await verifyDetachedSignature(pdf, signature.signature, key);
+
+        const files = { asc: signature.asc, sig: signature.sig };
+        await storeCvSignature(platform, db, doc.filename, files);
         const signedAt = new Date().toISOString();
-        await db.from('db_documents').update({ signed_at: signedAt }).eq('id', doc.id);
+        await db
+            .from('db_documents')
+            .update({ signed_at: signedAt, signer_fingerprint: activeKey.fingerprint })
+            .eq('id', doc.id);
+        await refreshCvBundle(
+            platform,
+            db,
+            { ...doc, signed_at: signedAt },
+            { pdf, signature: files }
+        );
         await logCvActivity(
             req,
             platform,
             db,
             'cv.signature_upload',
             doc.filename,
-            'Uploaded a CV signature.',
+            `Uploaded a verified CV signature from ${activeKey.fingerprint}.`,
             getClientAddress
         );
-        return jsonResponse({ success: true, signedAt });
+        return jsonResponse({ success: true, signedAt, signerFingerprint: activeKey.fingerprint });
     } catch (err) {
-        console.error('Unhandled processCvSignature error:', err);
-        return fail('Failed to update the CV signature.');
+        return openPgpFailure(err, 'Failed to update the CV signature.');
+    }
+}
+
+function base64Bytes(value: string) {
+    try {
+        return Uint8Array.from(atob(value), char => char.charCodeAt(0));
+    } catch {
+        throw new OpenPgpError('This file is not an OpenPGP public key.');
+    }
+}
+
+function requestedKeyservers(value: unknown) {
+    if (!Array.isArray(value)) return [];
+    if (value.length > 8) throw new OpenPgpError('Use at most 8 keyservers.');
+    const seen = new Set<string>();
+    return value.flatMap(item => {
+        const raw = typeof item?.url === 'string' ? item.url.trim() : '';
+        if (!raw) return [];
+        const url = safeKeyserverUrl(raw);
+        if (!url)
+            throw new OpenPgpError(
+                `${raw.slice(0, 80)} is not a plain https:// URL without quotes, spaces or credentials.`
+            );
+        if (seen.has(url)) return [];
+        seen.add(url);
+        const label =
+            typeof item?.label === 'string' && item.label.trim() ?
+                item.label.trim().slice(0, 80)
+            :   new URL(url).host;
+        return [{ label, url }];
+    });
+}
+
+export async function processOpenPgpKey(
+    req: Request,
+    platform?: unknown,
+    getClientAddress?: () => string
+): Promise<Response> {
+    try {
+        const authError = await requireAdminAuth(req, platform);
+        if (authError) return authError;
+        const db = getAdminDb(platform);
+        const existing = await fetchActiveOpenPgpKey(db, { strict: true });
+        const doc = await activeCvDocument(db);
+
+        if (req.method === 'DELETE') {
+            const { error } = await db.from('db_openpgp_keys').delete().eq('is_active', true);
+            if (error) return fail('Failed to remove the OpenPGP key.');
+            if (doc) {
+                if (doc.signed_at) await clearCvSignature(platform, db, doc);
+                await refreshCvBundle(
+                    platform,
+                    db,
+                    { ...doc, signed_at: null },
+                    { signature: null }
+                );
+            }
+            await logCvActivity(
+                req,
+                platform,
+                db,
+                'cv.openpgp_key_delete',
+                existing?.fingerprint ?? 'openpgp-key',
+                'Removed the OpenPGP public key.',
+                getClientAddress
+            );
+            return jsonResponse({
+                success: true,
+                key: null,
+                signatureCleared: Boolean(doc?.signed_at)
+            });
+        }
+
+        if (Number(req.headers.get('content-length')) > OPENPGP_KEY_LIMIT * 2)
+            return jsonResponse(
+                { success: false, message: 'Public keys must be at most 64 KiB.' },
+                413
+            );
+        let body: any;
+        try {
+            body = JSON.parse(
+                new TextDecoder().decode(await readLimited(req.body, OPENPGP_KEY_LIMIT * 2))
+            );
+        } catch (err) {
+            return err instanceof RangeError ?
+                    jsonResponse(
+                        { success: false, message: 'Public keys must be at most 64 KiB.' },
+                        413
+                    )
+                :   jsonResponse({ success: false, message: 'Invalid request body.' }, 400);
+        }
+        const upload =
+            typeof body?.key?.armored === 'string' ? new TextEncoder().encode(body.key.armored)
+            : typeof body?.key?.base64 === 'string' ? base64Bytes(body.key.base64)
+            : existing ? new TextEncoder().encode(existing.armored)
+            : null;
+        if (!upload)
+            return jsonResponse(
+                { success: false, message: 'Upload your OpenPGP public key.' },
+                400
+            );
+        const parsed = await parsePublicKey(upload);
+        const keyservers = requestedKeyservers(body?.keyservers);
+        const failures = (
+            await Promise.allSettled(
+                keyservers.map(server => verifyKeyserver(server.url, parsed.fingerprint))
+            )
+        ).flatMap(result =>
+            result.status === 'rejected' ?
+                [result.reason instanceof Error ? result.reason.message : 'Keyserver check failed.']
+            :   []
+        );
+        if (failures.length)
+            return jsonResponse({ success: false, message: failures.join(' ') }, 422);
+
+        const { error: deactivateError } = await db
+            .from('db_openpgp_keys')
+            .update({ is_active: false, updated_at: new Date().toISOString() })
+            .eq('is_active', true)
+            .neq('fingerprint', parsed.fingerprint);
+        if (deactivateError) return fail('Failed to save the OpenPGP key.');
+        const { error: saveError } = await db
+            .from('db_openpgp_keys')
+            .upsert(
+                {
+                    fingerprint: parsed.fingerprint,
+                    armored: parsed.armored,
+                    user_ids: parsed.userIds,
+                    algorithm: parsed.algorithm,
+                    key_created_at: parsed.createdAt,
+                    expires_at: parsed.expiresAt,
+                    keyservers,
+                    is_active: true,
+                    updated_at: new Date().toISOString()
+                },
+                { onConflict: 'fingerprint' }
+            );
+        if (saveError) return fail('Failed to save the OpenPGP key.');
+
+        const { data: signer } =
+            doc ?
+                await db
+                    .from('db_documents')
+                    .select('signer_fingerprint')
+                    .eq('id', doc.id)
+                    .maybeSingle()
+            :   { data: null };
+        const signatureCleared = Boolean(
+            doc?.signed_at && signer?.signer_fingerprint !== parsed.fingerprint
+        );
+        if (doc) {
+            if (signatureCleared) await clearCvSignature(platform, db, doc);
+            await refreshCvBundle(
+                platform,
+                db,
+                { ...doc, signed_at: signatureCleared ? null : doc.signed_at },
+                signatureCleared ? { signature: null } : {}
+            );
+        }
+        await logCvActivity(
+            req,
+            platform,
+            db,
+            'cv.openpgp_key',
+            parsed.fingerprint,
+            existing?.fingerprint === parsed.fingerprint ?
+                'Updated the OpenPGP key keyservers.'
+            :   `Published OpenPGP key ${parsed.fingerprint}.`,
+            getClientAddress
+        );
+        const { key: _key, ...publicKey } = parsed;
+        return jsonResponse({ success: true, key: { ...publicKey, keyservers }, signatureCleared });
+    } catch (err) {
+        return openPgpFailure(err, 'Failed to update the OpenPGP key.');
     }
 }

@@ -1,7 +1,7 @@
 <script lang="ts">
     import { Calendar, Chart, Rect, Layer, Tooltip } from 'layerchart';
     import { scaleThreshold } from 'd3-scale';
-    import { ChevronLeft, ChevronRight } from '@lucide/svelte';
+    import { ChevronLeft, ChevronRight, CalendarDays } from '@lucide/svelte';
     import {
         calendarWeekColumns,
         formatCount,
@@ -168,6 +168,7 @@
         </div>
     {:else}
         <EmptyState
+            icon={CalendarDays}
             title="No views in this period"
             description="There are no article views to display for this year." />
     {/if}

@@ -10,7 +10,8 @@
         CalendarCheck2,
         Mail,
         ArrowRight,
-        SquareArrowOutUpRight
+        SquareArrowOutUpRight,
+        Users
     } from '@lucide/svelte';
     import { adminActivityRequest } from '#lib/adminActivityClient.ts';
     import { adminNotificationsStore } from '#lib/stores/adminNotificationsStore.svelte.ts';
@@ -117,12 +118,16 @@
             area: 'reports' as const,
             title: 'Reported comments',
             empty: 'No reports',
+            emptyIcon: Flag,
+            emptyDescription: 'Comments readers report will appear here.',
             feed: reportsFeed
         },
         {
             area: 'feedback' as const,
             title: 'User feedback',
             empty: 'No feedback yet',
+            emptyIcon: Users,
+            emptyDescription: 'Feedback sent from the site will appear here.',
             feed: feedbackFeed
         }
     ]);
@@ -225,6 +230,10 @@
                         formatCount
                     )
                 :   'Responses',
+            ratio:
+                data && data.allTimeHelpful + data.allTimeUnhelpful > 0 ?
+                    data.allTimeHelpful / (data.allTimeHelpful + data.allTimeUnhelpful)
+                :   undefined,
             componentIcon: ThumbsUp,
             onclick: () => onNavigate('feedback')
         },
@@ -233,6 +242,7 @@
             value: data ? formatCount(data.published) : '—',
             description:
                 data ? `of ${pluralize(data.posts, 'post', undefined, formatCount)}` : 'Posts',
+            ratio: data && data.posts > 0 ? data.published / data.posts : undefined,
             componentIcon: CalendarCheck2,
             onclick: onPublished
         },
@@ -265,6 +275,7 @@
 
 {#snippet pageStatsEmpty()}
     <EmptyState
+        icon={Eye}
         title="No page statistics yet"
         description="Page views will appear here once your pages receive visits." />
 {/snippet}
@@ -357,7 +368,7 @@
         </DataTable>
     {/if}
     <div class="grid min-w-0 gap-4">
-        {#each overviewLists as { area, title, empty, feed } (area)}
+        {#each overviewLists as { area, title, empty, emptyIcon, emptyDescription, feed } (area)}
             {#snippet viewAll()}
                 <Button
                     type="ghost"
@@ -376,7 +387,10 @@
                         size="inline"
                         onRetry={() => loadLists(true)} />
                 {:else}
-                    <EmptyState title={empty} />
+                    <EmptyState
+                        icon={emptyIcon}
+                        title={empty}
+                        description={emptyDescription} />
                 {/if}
             {/snippet}
             <div class="min-w-0">

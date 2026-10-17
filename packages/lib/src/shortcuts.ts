@@ -191,44 +191,6 @@ export const COMMAND_LABELS: Record<string, string> = {
     '/help': 'Help'
 };
 
-/**
- * Every key bound at leader level must be unique, otherwise one binding
- * silently shadows another. Returns the keys claimed more than once.
- */
-export function findShortcutCollisions(): string[] {
-    const seen = new Map<string, number>();
-    const claim = (key: string) => {
-        const normalized = normalizeKey(key);
-        seen.set(normalized, (seen.get(normalized) ?? 0) + 1);
-    };
-
-    claim(CATALOG_KEY);
-    for (const group of Object.values(CHORD_GROUPS)) {
-        for (const combo of group.combos) {
-            const shadowed = group.shadows && COMMAND_SHORTCUTS[group.shadows];
-            if (shadowed && normalizeKey(shadowed) === normalizeKey(combo)) continue;
-            claim(combo);
-        }
-    }
-    for (const [command, key] of Object.entries(COMMAND_SHORTCUTS)) {
-        if (command === '/keyboard' && normalizeKey(key) === normalizeKey(CATALOG_KEY)) {
-            continue;
-        }
-        claim(key);
-    }
-    for (const button of Object.values(BUTTON_SHORTCUTS)) {
-        // A mirrored button shares its command's key on purpose.
-        if (button.mirrors && COMMAND_SHORTCUTS[button.mirrors] === button.combo) {
-            continue;
-        }
-        // Esc never reaches leader dispatch; it is a badge for the dialog handler.
-        if (normalizeKey(button.combo) === 'esc') continue;
-        claim(button.combo);
-    }
-
-    return [...seen.entries()].filter(([, count]) => count > 1).map(([key]) => key);
-}
-
 /** Canonical form so "Shift+D", "shift+d" and " D " all compare predictably. */
 export function normalizeKey(spec: string): string {
     const parts = spec
@@ -349,11 +311,6 @@ export function keyLabel(token: string, platform: Platform = 'other'): KeyLabel 
     if (token === 'Meta') return META_BY_PLATFORM[platform];
     const table = platform === 'mac' ? MAC_KEYS : PC_KEYS;
     return table[token] ?? { text: token, name: token };
-}
-
-export function shortcutText(spec: string, platform: Platform = 'other'): string {
-    const texts = shortcutKeyParts(spec, platform).map(token => keyLabel(token, platform).text);
-    return texts.join(platform === 'mac' ? ' ' : '+');
 }
 
 const PUNCTUATION_CODES: Record<string, string> = {

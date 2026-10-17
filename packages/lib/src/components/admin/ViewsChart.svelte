@@ -147,6 +147,7 @@
             {onRetry} />
     {:else if !hasActivity}
         <EmptyState
+            icon={chartType === 'bar' ? ChartColumnBig : ChartSpline}
             title="No views in this period"
             description="There are no article views to display for the selected range." />
     {:else}

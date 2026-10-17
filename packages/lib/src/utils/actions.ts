@@ -79,5 +79,3 @@ export function portal(node: HTMLElement, target: HTMLElement | string = 'body')
         }
     };
 }
-
-export { popoverPosition, type PopoverPositionOptions } from './popoverPosition';

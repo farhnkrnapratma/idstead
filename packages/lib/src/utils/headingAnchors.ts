@@ -1,29 +1,44 @@
 const ANCHOR_ICON =
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pilcrow size-[0.75em] leading-none inline-block align-middle select-none" aria-hidden="true"><path d="M13 4v16"/><path d="M17 4v16"/><path d="M19 4H9.5a4.5 4.5 0 0 0 0 9H13"/></svg>';
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-pilcrow" aria-hidden="true"><path d="M13 4v16"/><path d="M17 4v16"/><path d="M19 4H9.5a4.5 4.5 0 0 0 0 9H13"/></svg>';
+
+export function resolveMdrsHash(hash: string, container?: HTMLElement | null): HTMLElement | null {
+    let id = hash.replace(/^#/, '');
+    if (!id) return null;
+    try {
+        id = decodeURIComponent(id);
+    } catch {
+        return null;
+    }
+    const exact = document.getElementById(id);
+    if (exact && (!container || !exact.contains(container))) return exact;
+    if (id.startsWith('mdrs-')) return exact;
+    const scope = container ?? document;
+    return scope.querySelector<HTMLElement>(`#mdrs-${CSS.escape(id)}`) ?? exact;
+}
 
 export function activateHeadingAnchor(anchor: HTMLAnchorElement): void {
     document
-        .querySelectorAll('.heading-anchor a.anchor-link.active')
-        .forEach(activeAnchor => activeAnchor.classList.remove('active'));
-    anchor.classList.add('active');
+        .querySelectorAll('.mdrs-heading a.mdrs-anchor.mdrs-is-active')
+        .forEach(activeAnchor => activeAnchor.classList.remove('mdrs-is-active'));
+    anchor.classList.add('mdrs-is-active');
 }
 
 export function enhanceHeadingAnchors(container: HTMLElement): void {
     const headings = Array.from(container.querySelectorAll('h1, h2, h3, h4, h5, h6')).filter(
-        el => !el.closest('.markdown-chart-container') && !el.closest('.mermaid-block')
+        el => !el.closest('.mdrs-chart') && !el.closest('.mdrs-mermaid')
     ) as HTMLElement[];
 
     headings.forEach(el => {
         if (!el.id) return;
 
-        el.classList.add('heading-anchor', 'scroll-mt-20');
+        el.classList.add('mdrs-heading');
 
-        el.querySelector('.anchor-link')?.remove();
+        el.querySelector('.mdrs-anchor')?.remove();
 
-        let headingText = el.querySelector('.heading-text') as HTMLElement | null;
+        let headingText = el.querySelector('.mdrs-heading-text') as HTMLElement | null;
         if (!headingText) {
             headingText = document.createElement('span');
-            headingText.className = 'heading-text';
+            headingText.className = 'mdrs-heading-text';
             while (el.firstChild) {
                 headingText.appendChild(el.firstChild);
             }
@@ -32,12 +47,13 @@ export function enhanceHeadingAnchors(container: HTMLElement): void {
 
         const anchor = document.createElement('a');
         anchor.href = `#${el.id}`;
-        anchor.className = 'anchor-link select-none';
+        anchor.className = 'mdrs-anchor';
         anchor.tabIndex = 0;
         anchor.setAttribute('aria-label', 'Permanent link');
         anchor.dataset.tooltip = 'Permanent link';
         anchor.innerHTML = ANCHOR_ICON;
-        if (window.location.hash === anchor.hash) anchor.classList.add('active');
+        if (resolveMdrsHash(window.location.hash, container)?.id === el.id)
+            anchor.classList.add('mdrs-is-active');
         anchor.addEventListener('click', () => activateHeadingAnchor(anchor));
 
         const walker = document.createTreeWalker(headingText, NodeFilter.SHOW_TEXT);
@@ -53,7 +69,7 @@ export function enhanceHeadingAnchors(container: HTMLElement): void {
         if (lastTextNode && match) {
             const [, before, space, lastWord, trailingSpace] = match;
             const wrapSpan = document.createElement('span');
-            wrapSpan.className = 'whitespace-nowrap';
+            wrapSpan.className = 'mdrs-heading-tail';
             wrapSpan.textContent = lastWord;
             wrapSpan.appendChild(anchor);
 

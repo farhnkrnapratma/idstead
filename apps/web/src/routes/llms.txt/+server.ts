@@ -34,6 +34,8 @@ Welcome to the LLM & AI Agent directory for ${authorName}'s developer portfolio.
 - [Atom Feed](${SITE_URL}/atom.xml): Atom feed containing recent blog post summaries.
 - [XML Sitemap](${SITE_URL}/sitemap.xml): Complete URL index for web crawlers.
 - [CV Download PDF](${API_URL}/cv?output=pdf): Official curriculum vitae PDF file.
+- [CV Verification Bundle](${API_URL}/cv?output=zip): The CV PDF with its checksums, detached OpenPGP signatures, public key and VERIFY.txt.
+- [OpenPGP Public Key](${SITE_URL}/pgp.asc): ASCII-armored key that signs the CV, also discoverable through WKD.
 
 ## Posts (Markdown API)
 

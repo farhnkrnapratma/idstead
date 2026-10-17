@@ -1,5 +1,6 @@
 <script lang="ts">
-    import { SquareArrowOutUpRight } from '@lucide/svelte';
+    import type { Component } from 'svelte';
+    import { SquareArrowOutUpRight, Inbox } from '@lucide/svelte';
     import SectionHeader from './SectionHeader.svelte';
     import EmptyState from './EmptyState.svelte';
     import BrandIcon from './BrandIcon.svelte';
@@ -21,6 +22,7 @@
         title,
         subtitle,
         items,
+        emptyIcon = Inbox,
         emptyTitle = 'Nothing here yet',
         emptyDescription = 'Check back soon.',
         shortcutGroup,
@@ -29,6 +31,7 @@
         title: string;
         subtitle: string;
         items: GridItem[];
+        emptyIcon?: Component<{ class?: string }>;
         emptyTitle?: string;
         emptyDescription?: string;
         shortcutGroup?: string;
@@ -47,6 +50,7 @@
         {#if items.length === 0}
             <div class="mt-8">
                 <EmptyState
+                    icon={emptyIcon}
                     title={emptyTitle}
                     description={emptyDescription} />
             </div>

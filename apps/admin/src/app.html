@@ -3,11 +3,21 @@
     lang="en"
     data-admin-page="true"
     translate="no"
-    class="scroll-pt-17 scroll-pb-21 overflow-x-clip scroll-smooth font-sans text-[122%]">
+    class="scroll-pt-17 scroll-pb-21 overflow-x-clip scroll-smooth font-sans">
     <head>
         <meta charset="utf-8" />
         <script>
-            document.documentElement.classList.add('dark');
+            (() => {
+                let theme = 'auto';
+                try {
+                    theme = localStorage.getItem('theme') || 'auto';
+                } catch {}
+                const dark =
+                    theme === 'dark'
+                    || (theme !== 'light'
+                        && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                document.documentElement.classList.toggle('dark', dark);
+            })();
         </script>
         <script>
             (() => {

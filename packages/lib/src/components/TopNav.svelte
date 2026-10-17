@@ -1,5 +1,4 @@
 <script lang="ts">
-    import SkipLink from './SkipLink.svelte';
     import SpotlightSearch from './SpotlightSearch.svelte';
     import ThemeSelect from './filter/ThemeSelect.svelte';
     import ContentFontSelect from './filter/ContentFontSelect.svelte';
@@ -33,10 +32,8 @@
     }: Props = $props();
 </script>
 
-<SkipLink />
-
 <nav
-    class="fixed top-0 z-60 flex h-12 w-full items-center justify-between glass-card border-b border-border-subtle/30 px-3 font-sans shadow-2xs sm:h-14 sm:px-5"
+    class="fixed inset-x-2 top-2 z-60 flex h-12 items-center justify-between rounded-md glass-card border border-border-subtle/30 px-3 font-sans shadow-2xs sm:inset-x-3 sm:top-3 sm:h-14 sm:px-5"
     aria-label={ariaLabel}>
     <a
         href={backHref}

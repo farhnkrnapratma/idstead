@@ -97,10 +97,74 @@ const searchResultSchema = {
     }
 };
 
+const cvDocumentSchema = {
+    type: ['object', 'null'],
+    description: 'The active CV PDF, or null when none exists or its metadata could not be read.',
+    properties: {
+        filename: { type: 'string' },
+        version: { type: ['string', 'null'] },
+        updatedAt: { type: ['string', 'null'], format: 'date-time' },
+        checksums: {
+            type: ['object', 'null'],
+            properties: {
+                sha256: { type: 'string' },
+                sha512: { type: 'string' },
+                md5: { type: 'string' },
+                b2: { type: 'string' }
+            }
+        },
+        signature: {
+            type: ['object', 'null'],
+            properties: {
+                signedAt: { type: 'string', format: 'date-time' },
+                fingerprint: { type: 'string' },
+                signer: {
+                    type: 'array',
+                    items: {
+                        type: 'object',
+                        properties: { name: { type: 'string' }, email: { type: 'string' } }
+                    }
+                }
+            }
+        },
+        files: {
+            type: 'object',
+            description:
+                'API URL of each file: pdf, sha256, sha512, md5, b2, zip, and asc/sig when signed.',
+            additionalProperties: { type: 'string', format: 'uri' }
+        },
+        publicKey: {
+            type: ['object', 'null'],
+            properties: {
+                fingerprint: { type: 'string' },
+                url: { type: ['string', 'null'], format: 'uri' },
+                wkd: { type: 'array', items: { type: 'string' } },
+                keyservers: {
+                    type: 'array',
+                    items: {
+                        type: 'object',
+                        properties: {
+                            label: { type: 'string' },
+                            url: { type: 'string', format: 'uri' }
+                        }
+                    }
+                }
+            }
+        }
+    }
+};
+
 const authorSchema = {
     type: 'object',
     description:
         'One key per requested field (profile, contact, cv, funding, skills, socials). Internal keys such as IDs and sort orders are removed.',
+    properties: {
+        cv: {
+            type: 'object',
+            additionalProperties: true,
+            properties: { document: cvDocumentSchema }
+        }
+    },
     additionalProperties: true
 };
 
@@ -337,7 +401,7 @@ export const openapiSpec = {
             get: {
                 summary: 'Read the author profile',
                 description:
-                    '`field` selects sections (comma-separated or repeated); all sections by default. `output=pdf` is only available when `field` is exactly `cv`.',
+                    '`field` selects sections (comma-separated or repeated); all sections by default. The file outputs (`pdf`, `sha256`, `sha512`, `md5`, `b2`, `asc`, `sig`, `zip`) are only available when `field` is exactly `cv`. When `cv` is requested, `cv.document` describes the active PDF: checksums, signature, file URLs and where to find the signing key.',
                 parameters: [
                     param(
                         'field',
@@ -351,12 +415,15 @@ export const openapiSpec = {
                         },
                         'Sections to include.'
                     ),
-                    outputParam(['json', 'md', 'pdf'], 'json'),
+                    outputParam(
+                        ['json', 'md', 'pdf', 'sha256', 'sha512', 'md5', 'b2', 'asc', 'sig', 'zip'],
+                        'json'
+                    ),
                     param(
                         'checksum',
                         'c',
                         { type: 'boolean', default: true },
-                        'Only with output=pdf. Adds Repr-Digest and X-Checksum-SHA256 headers.'
+                        'Only with output=pdf or output=zip. Adds Repr-Digest (sha-256 and sha-512, narrowed by Want-Repr-Digest) and X-Checksum-SHA256 headers.'
                     )
                 ],
                 responses: {
@@ -365,16 +432,26 @@ export const openapiSpec = {
                         content: {
                             ...jsonContent(authorSchema),
                             ...textContent('text/markdown'),
-                            'application/pdf': { schema: { type: 'string', format: 'binary' } }
+                            'application/pdf': { schema: { type: 'string', format: 'binary' } },
+                            'application/zip': { schema: { type: 'string', format: 'binary' } },
+                            'application/pgp-signature': { schema: { type: 'string' } },
+                            'application/octet-stream': {
+                                schema: { type: 'string', format: 'binary' }
+                            },
+                            'text/plain': { schema: { type: 'string' } }
                         }
                     },
                     ...commonErrors,
                     '400': errorResponse(
                         'AUTHOR_FIELD_INVALID, CV_CHECKSUM_REQUIRES_PDF, OUTPUT_UNSUPPORTED or a generic parameter error.'
                     ),
-                    '404': errorResponse('CV_DOCUMENT_NOT_FOUND: no active CV PDF.'),
+                    '404': errorResponse(
+                        'CV_DOCUMENT_NOT_FOUND (no active CV PDF), CV_SIGNATURE_NOT_FOUND (asc/sig while the CV is unsigned) or CV_BUNDLE_NOT_FOUND (zip not built yet).'
+                    ),
                     '500': errorResponse('AUTHOR_FETCH_FAILED or CV_METADATA_FETCH_FAILED.'),
-                    '502': errorResponse('CV_FETCH_FAILED: the CV PDF could not be read.')
+                    '502': errorResponse(
+                        'CV_FETCH_FAILED: a CV file could not be read from storage.'
+                    )
                 }
             }
         },
@@ -382,14 +459,17 @@ export const openapiSpec = {
             get: {
                 summary: 'Read the CV',
                 description:
-                    'Identical to GET /v1/author?field=cv. `output=pdf` downloads the PDF; its SHA-256 is sent in Repr-Digest and X-Checksum-SHA256 unless checksum=false.',
+                    'Identical to GET /v1/author?field=cv. `output=pdf` downloads the PDF; `sha256`, `sha512`, `md5` and `b2` download its coreutils checksum files; `asc` and `sig` download its armored and binary detached OpenPGP signature; `zip` downloads everything in one archive (the PDF, checksums, signatures, public key and VERIFY.txt). Every file output is an attachment named for `sha256sum -c` and `gpg --verify`. PDF and bundle digests are sent in Repr-Digest (sha-256, sha-512) and X-Checksum-SHA256 unless checksum=false.',
                 parameters: [
-                    outputParam(['json', 'md', 'pdf'], 'json'),
+                    outputParam(
+                        ['json', 'md', 'pdf', 'sha256', 'sha512', 'md5', 'b2', 'asc', 'sig', 'zip'],
+                        'json'
+                    ),
                     param(
                         'checksum',
                         'c',
                         { type: 'boolean', default: true },
-                        'Only with output=pdf.'
+                        'Only with output=pdf or output=zip.'
                     )
                 ],
                 responses: {
@@ -398,16 +478,26 @@ export const openapiSpec = {
                         content: {
                             ...jsonContent(authorSchema),
                             ...textContent('text/markdown'),
-                            'application/pdf': { schema: { type: 'string', format: 'binary' } }
+                            'application/pdf': { schema: { type: 'string', format: 'binary' } },
+                            'application/zip': { schema: { type: 'string', format: 'binary' } },
+                            'application/pgp-signature': { schema: { type: 'string' } },
+                            'application/octet-stream': {
+                                schema: { type: 'string', format: 'binary' }
+                            },
+                            'text/plain': { schema: { type: 'string' } }
                         }
                     },
                     ...commonErrors,
                     '400': errorResponse(
                         'CV_CHECKSUM_REQUIRES_PDF, OUTPUT_UNSUPPORTED or a generic parameter error.'
                     ),
-                    '404': errorResponse('CV_DOCUMENT_NOT_FOUND: no active CV PDF.'),
+                    '404': errorResponse(
+                        'CV_DOCUMENT_NOT_FOUND (no active CV PDF), CV_SIGNATURE_NOT_FOUND (asc/sig while the CV is unsigned) or CV_BUNDLE_NOT_FOUND (zip not built yet).'
+                    ),
                     '500': errorResponse('AUTHOR_FETCH_FAILED or CV_METADATA_FETCH_FAILED.'),
-                    '502': errorResponse('CV_FETCH_FAILED: the CV PDF could not be read.')
+                    '502': errorResponse(
+                        'CV_FETCH_FAILED: a CV file could not be read from storage.'
+                    )
                 }
             }
         },

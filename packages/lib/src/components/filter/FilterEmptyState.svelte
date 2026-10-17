@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { X } from '@lucide/svelte';
+    import { X, Search } from '@lucide/svelte';
     import EmptyState from '../EmptyState.svelte';
     import Button from '../Button.svelte';
 
@@ -21,6 +21,7 @@
 </script>
 
 <EmptyState
+    icon={Search}
     {title}
     {description}
     class={className}>

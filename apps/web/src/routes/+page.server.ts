@@ -10,8 +10,11 @@ import {
     fetchContactInfo,
     fetchGroupedSkills,
     fetchActiveCvDocument,
+    fetchActiveOpenPgpKey,
     fetchProjectRepoRules
 } from '#lib/author.ts';
+import { cvDocumentInfo } from '#lib/cvVerification.ts';
+import * as publicEnv from '$app/env/public';
 
 export type { BlogPost } from '#lib/server/blogPosts.ts';
 
@@ -22,15 +25,17 @@ export const load: PageServerLoad = async ({ fetch, parent }) => {
     const layoutData = parent();
     const postsPromise = loadPublishedPosts(fetch, { limit: HOME_POST_LIMIT });
 
-    const [author, cv, funding, contact, skillsGrouped, cvDocument, repoRules] = await Promise.all([
-        fetchAuthorProfileWithSocials(supabaseClient, { includeEmail: true }),
-        fetchCvEntries(supabaseClient),
-        fetchFundingLinks(supabaseClient),
-        fetchContactInfo(supabaseClient),
-        fetchGroupedSkills(supabaseClient),
-        fetchActiveCvDocument(supabaseClient, fetch),
-        fetchProjectRepoRules(supabaseClient)
-    ]);
+    const [author, cv, funding, contact, skillsGrouped, cvDocument, repoRules, signingKey] =
+        await Promise.all([
+            fetchAuthorProfileWithSocials(supabaseClient, { includeEmail: true }),
+            fetchCvEntries(supabaseClient),
+            fetchFundingLinks(supabaseClient),
+            fetchContactInfo(supabaseClient),
+            fetchGroupedSkills(supabaseClient),
+            fetchActiveCvDocument(supabaseClient, fetch),
+            fetchProjectRepoRules(supabaseClient),
+            fetchActiveOpenPgpKey(supabaseClient)
+        ]);
 
     const [{ projects: layoutProjects }, dbPosts] = await Promise.all([layoutData, postsPromise]);
     const projects = withoutExcludedProjects(layoutProjects, repoRules.excluded);
@@ -44,6 +49,19 @@ export const load: PageServerLoad = async ({ fetch, parent }) => {
         funding,
         contact,
         skills: skillsGrouped,
-        cvExists: Boolean(cvDocument?.fileUrl)
+        cvExists: Boolean(cvDocument?.fileUrl),
+        cvDocument:
+            cvDocument?.fileUrl ?
+                cvDocumentInfo(
+                    cvDocument,
+                    signingKey && {
+                        fingerprint: signingKey.fingerprint,
+                        userIds: signingKey.userIds,
+                        keyservers: signingKey.keyservers
+                    },
+                    author?.siteUrl || '',
+                    publicEnv.PUBLIC_API_BASE_URL
+                )
+            :   null
     };
 };

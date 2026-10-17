@@ -27,7 +27,7 @@ function toInlineSvg(nodes: IconNode[], name: string): string {
             return `<${tag}${attributes}/>`;
         })
         .join('');
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-${name} size-3.5 shrink-0" aria-hidden="true">${inner}</svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-${name}" aria-hidden="true">${inner}</svg>`;
 }
 
 async function lucideMarkup(name: string): Promise<string> {
@@ -38,7 +38,7 @@ async function lucideMarkup(name: string): Promise<string> {
 
 function bootstrapMarkup(name: string): string {
     if (!bootstrapNames.has(name)) return '';
-    return `<i class="bi bi-${name} shrink-0" aria-hidden="true"></i>`;
+    return `<i class="mdrs-icon bi bi-${name}" aria-hidden="true"></i>`;
 }
 
 export async function resolveIconMarkup(value: string): Promise<string> {

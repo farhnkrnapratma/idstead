@@ -213,5 +213,3 @@ export function createFilterSortStore(options: FilterSortOptions = {}) {
         parseFromUrl
     };
 }
-
-export type FilterSortStore = ReturnType<typeof createFilterSortStore>;

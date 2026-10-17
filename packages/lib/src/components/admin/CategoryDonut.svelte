@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { ChartPie } from '@lucide/svelte';
     import { Chart, Svg, Pie, Arc, Tooltip } from 'layerchart';
     import { scaleOrdinal } from 'd3-scale';
     import { formatCount } from '#lib/adminWorkspace.ts';
@@ -15,6 +16,7 @@
 
 {#if total === 0}
     <EmptyState
+        icon={ChartPie}
         title={`No ${unit} in this period`}
         description="Nothing to show for the selected range." />
 {:else}

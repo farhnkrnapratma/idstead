@@ -89,7 +89,8 @@
                 :   'flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-border-subtle bg-surface p-0 text-xs font-semibold text-text-secondary backdrop-blur-none transition-colors hover:border-accent hover:bg-surface-hover hover:text-accent-text sm:h-9 sm:w-9 lg:h-9 lg:w-auto lg:justify-between lg:gap-2 lg:px-3',
                 className
             )}
-            aria-label="Open spotlight search (Ctrl+K or /)">
+            aria-label={variant === 'icon' ? 'Search' : undefined}
+            aria-keyshortcuts="Control+K Meta+K /">
             {#if variant === 'expanded'}
                 <div class="flex min-w-0 items-center gap-2">
                     <Search class="size-4 shrink-0" />
@@ -104,6 +105,7 @@
             {:else}
                 <div class="flex min-w-0 items-center gap-2">
                     <Search class="size-4 shrink-0 lg:hidden" />
+                    <span class="sr-only lg:hidden">Search</span>
                     <span class="hidden truncate font-sans text-xs text-text-muted lg:inline"
                         >Search...</span>
                 </div>

@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import { Download, FileText } from '@lucide/svelte';
+    import { Download, FileText, Search, Logs } from '@lucide/svelte';
     import { SvelteURLSearchParams } from 'svelte/reactivity';
     import { supabase } from '#lib/supabase.ts';
     import { toastStore } from '#lib/index.ts';
@@ -286,6 +286,7 @@
             onRetry={load} />
     {:else}
         <EmptyState
+            icon={filtered ? Search : Logs}
             title={filtered ? 'No matching activities' : 'No activity yet'}
             description={filtered ?
                 'Try another search or category.'

@@ -2,7 +2,7 @@
     import { onMount } from 'svelte';
     import { SvelteSet } from 'svelte/reactivity';
     import { page } from '$app/state';
-    import { Rss } from '@lucide/svelte';
+    import { Rss, Quote } from '@lucide/svelte';
     import Tag from '#lib/components/Tag.svelte';
     import {
         BlogPostCard,
@@ -20,6 +20,7 @@
         Section,
         SortControl,
         Tooltip,
+        SkipLink,
         TopNav,
         createFilterSortStore,
         decodeHtmlEntities,
@@ -163,6 +164,8 @@
     </Tag>
 {/snippet}
 
+<SkipLink />
+
 <TopNav
     ariaLabel="Blog navigation"
     backHref="/"
@@ -170,8 +173,8 @@
     projects={pageProjects} />
 
 <main
-    id="main-content"
-    class="flex min-h-[calc(100vh-3rem)] flex-col pt-12 font-sans sm:min-h-[calc(100vh-3.5rem)] sm:pt-14">
+    id="main"
+    class="flex min-h-[calc(100vh-4rem)] flex-col pt-16 font-sans sm:min-h-[calc(100vh-5rem)] sm:pt-20">
     <Section
         spacing="none"
         class="relative z-10 pt-5 pb-6 md:pt-8 md:pb-8">
@@ -266,6 +269,7 @@
 
             {#if posts.length === 0}
                 <EmptyState
+                    icon={Quote}
                     title="No posts yet"
                     description="Articles will appear here once published." />
             {:else if filteredPosts.length === 0}

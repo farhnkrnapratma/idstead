@@ -1,3 +1,6 @@
+import { CV_CHECKSUM_ALGORITHMS, type CvChecksums } from '#lib/cvVerification.ts';
+import { isFingerprint, safeKeyserverUrl, type PublicOpenPgpKey } from '#lib/openpgpKey.ts';
+
 export interface ExperienceItem {
     id?: string;
     title: string;
@@ -79,6 +82,8 @@ export interface CvDocument {
     hash?: string;
     version?: string | null;
     signedAt?: string | null;
+    signerFingerprint?: string | null;
+    checksums?: CvChecksums | null;
     isActive: boolean;
     sortOrder?: number;
     updatedAt?: string;
@@ -110,7 +115,7 @@ export interface AuthorProfile {
     education?: EducationItem[];
 }
 
-export const LINK_LIMITS = { contact: 10, funding: 10, social: 6 } as const;
+export const LINK_LIMITS = { contact: 10, funding: 10, social: 10 } as const;
 
 export function decodeHtmlEntities(str: string | null | undefined): string {
     if (!str) return '';
@@ -550,13 +555,6 @@ export async function fetchEducation(
     }
 }
 
-export async function fetchEducations(
-    supabaseClient?: any,
-    options?: { strict?: boolean }
-): Promise<EducationItem[]> {
-    return fetchEducation(supabaseClient, options);
-}
-
 export async function fetchCvEntries(
     supabaseClient?: any,
     options?: { strict?: boolean }
@@ -681,9 +679,71 @@ export async function fetchActiveCvDocument(
             hash: fullHash,
             version: data.version ?? null,
             signedAt: data.signed_at ?? null,
+            signerFingerprint: data.signer_fingerprint ?? null,
+            checksums: cvChecksumsFrom(data.checksums),
             isActive: data.is_active ?? true,
             sortOrder: data.sort_order,
             updatedAt: data.updated_at
+        };
+    } catch (e) {
+        if (options?.strict) throw e;
+        return null;
+    }
+}
+
+function cvChecksumsFrom(value: unknown): CvChecksums | null {
+    if (!value || typeof value !== 'object') return null;
+    const record = value as Record<string, unknown>;
+    const entries = CV_CHECKSUM_ALGORITHMS.map(({ ext }) => [ext, record[ext]] as const);
+    return entries.every(([, digest]) => typeof digest === 'string' && /^[0-9a-f]+$/.test(digest)) ?
+            (Object.fromEntries(entries) as CvChecksums)
+        :   null;
+}
+
+function openPgpList<T>(value: unknown, pick: (item: Record<string, unknown>) => T | null): T[] {
+    if (!Array.isArray(value)) return [];
+    return value.flatMap(item => {
+        if (!item || typeof item !== 'object') return [];
+        const picked = pick(item as Record<string, unknown>);
+        return picked ? [picked] : [];
+    });
+}
+
+export async function fetchActiveOpenPgpKey(
+    supabaseClient?: any,
+    options?: { strict?: boolean }
+): Promise<PublicOpenPgpKey | null> {
+    if (!supabaseClient) return null;
+    try {
+        const { data, error } = await supabaseClient
+            .from('db_openpgp_keys')
+            .select(
+                'fingerprint, armored, user_ids, algorithm, key_created_at, expires_at, keyservers'
+            )
+            .eq('is_active', true)
+            .limit(1)
+            .maybeSingle();
+        if (error && options?.strict) throw error;
+        if (error || !data || !isFingerprint(data.fingerprint)) return null;
+        return {
+            fingerprint: data.fingerprint,
+            armored: data.armored,
+            algorithm: data.algorithm || '',
+            createdAt: data.key_created_at ?? null,
+            expiresAt: data.expires_at ?? null,
+            userIds: openPgpList(data.user_ids, item => ({
+                name: typeof item.name === 'string' ? item.name : '',
+                email: typeof item.email === 'string' ? item.email : ''
+            })),
+            keyservers: openPgpList(data.keyservers, item => {
+                const url = safeKeyserverUrl(item.url);
+                return url ?
+                        {
+                            label: typeof item.label === 'string' ? item.label : new URL(url).host,
+                            url
+                        }
+                    :   null;
+            })
         };
     } catch (e) {
         if (options?.strict) throw e;

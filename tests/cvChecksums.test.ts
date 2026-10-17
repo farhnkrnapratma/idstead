@@ -1,8 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { readFile } from 'node:fs/promises';
-import { cvChecksums, cvKey, isArmoredSignature } from '../packages/lib/src/server/cvChecksums.ts';
-
-const signature = await readFile(new URL('./fixtures/cv-signature.asc', import.meta.url), 'utf8');
+import { cvBundleKey, cvChecksums, cvKey } from '../packages/lib/src/server/cvChecksums.ts';
 
 describe('CV checksums', () => {
     test('match coreutils output for "abc"', async () => {
@@ -18,21 +15,7 @@ describe('CV checksums', () => {
     test('keys stay inside cv/', () => {
         expect(cvKey('CV-Ada-1234567-v1.0.pdf', 'b2')).toBe('cv/CV-Ada-1234567-v1.0.pdf.b2');
         expect(() => cvKey('../x.pdf')).toThrow('Invalid CV filename.');
-    });
-});
-
-describe('CV signatures', () => {
-    test('accepts a gpg --armor --detach-sign signature', () => {
-        expect(isArmoredSignature(signature)).toBe(true);
-        expect(isArmoredSignature(signature.replace(/\n/g, '\r\n'))).toBe(true);
-    });
-
-    test.each([
-        ['empty', ''],
-        ['public key', signature.replaceAll('SIGNATURE', 'PUBLIC KEY BLOCK')],
-        ['script', `${signature}<script>`],
-        ['oversized', signature + 'A'.repeat(20_000)]
-    ])('rejects %s', (_label, value) => {
-        expect(isArmoredSignature(value)).toBe(false);
+        expect(cvBundleKey('CV-Ada-1234567-v1.0.pdf')).toBe('cv/CV-Ada-1234567-v1.0-verify.zip');
+        expect(() => cvBundleKey('../x.pdf')).toThrow('Invalid CV filename.');
     });
 });

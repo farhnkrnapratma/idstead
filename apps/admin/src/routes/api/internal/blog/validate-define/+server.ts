@@ -18,14 +18,16 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
     const authError = await requireAdminAuth(request, platform);
     if (authError) return authError;
 
-    let body: { markdown?: string };
+    let body: unknown;
     try {
         body = await request.json();
     } catch {
         return apiError(400, 'INVALID_JSON_BODY', 'Request body must be valid JSON.');
     }
 
-    const markdown = body.markdown?.trim();
+    const source =
+        body && typeof body === 'object' ? (body as { markdown?: unknown }).markdown : undefined;
+    const markdown = typeof source === 'string' ? source.trim() : '';
     if (!markdown) {
         return apiError(400, 'BLOG_DEFINE_MARKDOWN_REQUIRED', 'Markdown content is required.');
     }
@@ -34,10 +36,12 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
     const { ok, errors } = await validateDefineForSave(markdown, apiRegistry);
 
     if (!ok) {
+        const messages = errors.map(e => (e.key ? `${e.key}: ${e.message}` : e.message));
         return apiError(
             422,
             'BLOG_DEFINE_VALIDATION_FAILED',
-            errors.map(e => (e.key ? `${e.key}: ${e.message}` : e.message)).join(' | ')
+            messages.join(' | '),
+            messages.join('\n')
         );
     }
 

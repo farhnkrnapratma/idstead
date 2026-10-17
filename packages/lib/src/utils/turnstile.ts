@@ -319,11 +319,6 @@ export async function executeTurnstile(node: HTMLElement | null): Promise<string
     });
 }
 
-export function getTurnstileResponse(node: HTMLElement | null): string {
-    if (!node) return '';
-    return window.turnstile?.getResponse(node) ?? '';
-}
-
 export function resetTurnstile(node: HTMLElement | null) {
     if (!node) return;
     executionResolvers.delete(node);
