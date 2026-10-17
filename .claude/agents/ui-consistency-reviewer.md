@@ -9,8 +9,8 @@ You are reviewing changed Svelte 5 files in this SvelteKit repo for UI consisten
 For each changed `.svelte` file, check:
 
 1. **Design tokens**: any raw hex color, arbitrary pixel value, or one-off font stack that duplicates something already defined in `src/lib/tokens.css`'s `@theme` block — should reference the token/Tailwind class instead.
-2. **Reuse over reinvention**: an empty/loading/error state built by hand instead of `EmptyState.svelte`/`LoadingState.svelte`/`ErrorState.svelte`/`SkeletonBlock.svelte`; a modal/confirm flow built by hand instead of `Dialog.svelte` (+`DialogHeader`/`DialogBody`/`DialogFooter`/`DialogCloseButton`) or `ConfirmationDialog.svelte`/`AlertDialog.svelte`; a notification built by hand instead of `Toast.svelte`; page scaffolding that redeclares `max-w-*`/`mx-auto` instead of using `PageContainer`/`ReadingContainer`/`Section`/`FormSection`/`ListSection`.
-3. **Form validation**: reliance on native browser constraint-validation (bare `required`, default popup messages) instead of this repo's `FieldMessage.svelte`/`ErrorSummary.svelte`/`FormActions.svelte` pattern.
+2. **Reuse over reinvention**: an empty/loading/error state built by hand instead of `EmptyState.svelte`/`LoadingState.svelte`/`ErrorState.svelte`/`SkeletonBlock.svelte`; a modal/confirm flow built by hand instead of `Dialog.svelte` or `ConfirmationDialog.svelte`; a notification built by hand instead of `Toast.svelte`; page scaffolding that redeclares `max-w-*`/`mx-auto` instead of using `PageContainer`/`Section`/`FormSection`.
+3. **Form validation**: reliance on native browser constraint-validation (bare `required`, default popup messages) instead of this repo's `FormField.svelte`/`FieldMessage.svelte`/`FormActions.svelte` pattern.
 4. **Hardcoded fallback content**: literal placeholder strings/values standing in for a state that has a dedicated component (per #2).
 5. **Runes**: confirm Svelte 5 runes (`$state`, `$derived`, `$props`, `$effect`) are used, not Svelte 4 Options API or an unnecessary store.
 

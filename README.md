@@ -144,7 +144,7 @@ Every app deploys as a Cloudflare Worker through [Workers Builds](https://develo
 | `fkp-api` | `cd apps/api && bun run build` | `cd apps/api && bunx wrangler deploy` | `apps/api/*`, `packages/*`, `package.json`, `bun.lock`, `bunfig.toml` |
 | `fkp-jobs` | `cd apps/jobs && bun run build` | `cd apps/jobs && bunx wrangler deploy` | `apps/jobs/*`, `packages/*`, `package.json`, `bun.lock`, `bunfig.toml` |
 
-Environment variables are read at runtime, never baked in at build time, so they live as Worker secrets rather than build variables. Phase is the source of truth and syncs them to each Worker (see [docs/development/environment.md](docs/development/environment.md)).
+Environment variables are read at runtime, never baked in at build time, so they live as Worker secrets rather than build variables. Phase is the source of truth and syncs them to each Worker (see [docs/004-development/002-environment.md](docs/004-development/002-environment.md)).
 
 - **Production** — pushes to `main` deploy to the custom domains declared in each `wrangler.jsonc`. The Worker secrets come from the Phase Production sync, including real Turnstile keys and `PUBLIC_SENTRY_ENVIRONMENT=production`.
 - **Preview** — not connected yet: the triggers only watch `main`, so pushes to `develop` deploy nothing. To add previews, add a non-production branch trigger per Worker and give previews their own variables: Cloudflare's [dummy Turnstile testing keys](https://developers.cloudflare.com/turnstile/troubleshooting/testing/) and `PUBLIC_SENTRY_ENVIRONMENT=preview`.
@@ -160,91 +160,15 @@ All apps share the same Supabase project. Local `.env*` files are for developmen
 
 ## Markdown syntax
 
-Posts and legal pages share one Markdown engine (`packages/lib/src/markdown.ts`) built on `marked`, with MDX-flavoured directives. Directives open with `:::name`, close with a bare `:::`, take `key="value"` attributes separated by spaces (no braces), and can be nested. Attribute values are always HTML-escaped. Anything the engine does not recognise is left as literal text.
+Posts and legal pages are written in **MDRS** (Markdown Rich Syntax, `.mdrs`), a superset of CommonMark and GitHub Flavored Markdown rendered by `packages/lib/src/markdown.ts`. On top of standard Markdown it adds directives (`:::note`, `:::callout`, `:::details`, `:::tabs`, `:::snippets`, `:::steps`, `:::embed`, `:::references`), code block options (`filename=`, `mark=`), extended task states, math (`$$ … $$`, `:::math`), Mermaid and chart fences, and document variables (`:::define`, `${…}`) with live site data.
 
-```text
-[Link](https://example.com "Optional title")
-![Alt text](https://cdn.fkp.my.id/blog/<slug>/images/<name>.avif "Alt text")
-![Clip](https://cdn.fkp.my.id/blog/<slug>/videos/<name>.webm "Clip")
-```
-
-`.mp4` and `.webm` sources render as `<video>`, every other source as `<img>`. Post images on the CDN (`…/images/<name>.avif`) render as `<picture>` with the `.webp` sibling as the fallback. Uploads from the editor insert this form automatically: the file name is the slugified original name, and the alt text and title are the same sentence-case text derived from it (acronyms kept). Video uploads must be WebM.
-
-````text
-```python filename="main.py" mark=3,5,6..8
-print("Hello, World!")
-```
-````
-
-`filename` and `mark` are optional. `filename` is shown next to the language name and becomes the downloaded file name. `mark` highlights lines; ranges use `..`.
-
-```text
-:::note
+```mdrs
 :::tip
-:::important
-:::warning
-:::caution
-
-:::callout title="Changelog" icon="rocket"
-Custom callout. `title` is required, `icon` is optional.
-:::
-
-:::details summary="Click to expand"
-Collapsible content.
-:::
-
-:::tabs
-::tab label="One" icon="zap"
-Any Markdown.
-::
-::tab label="Two"
-More Markdown.
-::
-:::
-
-:::snippets key="pm"
-::tab label="bun" icon="terminal"
-Code blocks. The optional `key` keeps every snippet group with the same key on the same tab.
-::
-:::
-
-:::steps
-1. First
-2. Second
-:::
-
-:::embed url="https://youtu.be/VIDEO_ID"
-```
-
-Icons accept Lucide and Bootstrap Icons names. Without a prefix Lucide is tried first, then Bootstrap Icons; use `icon="lucide-rocket"` or `icon="bi-facebook"` to pick a library. Unknown names render no icon. `:::embed` supports YouTube and CodePen and falls back to a plain link.
-
-```text
-Inline math: $$ e^{i\pi} + 1 = 0 $$
-
-:::math
-\int_{-\infty}^{\infty} e^{-x^2} \, dx = \sqrt{\pi}
+Directives open with `:::name` and close with a bare `:::`.
 :::
 ```
 
-Math is rendered with KaTeX on the server. A single `$` is plain text.
-
-Containers and `:::math` also work inside list items (`-`, `*`, `1.` with the content indented under the marker, up to three spaces) and blockquotes (`> :::note`). Nested lists are not supported.
-
-All rendered HTML passes through an allowlist sanitizer (`packages/lib/src/sanitizeHtml.ts`): scripts, event handlers, unknown tags, foreign iframes and `javascript:` URLs are removed, whether they come from an author or generated content. Raw `kbd`, `sub`, `sup`, `u`, `mark`, `details` and `br` still work.
-
-### Article references
-
-Use a single references directive to place a bibliography and automatically add a visible `References` heading to the article and its table of contents:
-
-```text
-A statement with a source[^source].
-
-:::references
-[^source]: Source description with a [link](https://example.com).
-:::
-```
-
-Footnote numbering and links back to each citation work across the document. Existing Markdown footnotes remain supported; their hidden accessibility heading is excluded from the table of contents. Unclosed or duplicate references blocks display a validation message in the editor preview. Put a blank line before the closing `:::`, otherwise Markdown formatters treat it as part of the last footnote.
+The full reference, with examples for every feature, is in [`docs/002-mdrs/`](docs/002-mdrs/README.md).
 
 ## Contributing
 

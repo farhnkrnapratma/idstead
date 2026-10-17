@@ -15,14 +15,14 @@ This repo already has a well-stocked shared component library (`src/lib/componen
 
 3. **Reuse before reinvent**: before any new inline markup for a common pattern, check whether an existing primitive already covers it:
     - Empty/error/loading states → `EmptyState.svelte`, `ErrorState.svelte`, `LoadingState.svelte`, `SkeletonBlock.svelte` (not a hand-rolled "no results" div).
-    - Any modal/confirmation UI → `Dialog.svelte` + `DialogHeader`/`DialogBody`/`DialogFooter`/`DialogCloseButton`, or `ConfirmationDialog.svelte`/`AlertDialog.svelte` for confirm/alert flows — not a bespoke `<div class="fixed inset-0">`.
-    - Form validation messaging → `FieldMessage.svelte`, `ErrorSummary.svelte`, `FormActions.svelte` — flag reliance on native browser validation (`required`, default constraint-validation popups) instead of these, per the design-spec punch list.
-    - Page/section scaffolding → `AppShell.svelte`, `PageContainer.svelte`, `Section.svelte`, `FormSection.svelte`, `ListSection.svelte` rather than ad-hoc `<div>` wrappers with one-off max-width/padding.
+    - Any modal/confirmation UI → `Dialog.svelte`, or `ConfirmationDialog.svelte` for confirm flows — not a bespoke `<div class="fixed inset-0">`.
+    - Form validation messaging → `FormField.svelte`, `FieldMessage.svelte`, `FormActions.svelte` — flag reliance on native browser validation (`required`, default constraint-validation popups) instead of these, per the design-spec punch list.
+    - Page/section scaffolding → `PageContainer.svelte`, `Section.svelte`, `FormSection.svelte` rather than ad-hoc `<div>` wrappers with one-off max-width/padding.
     - Toasts/notifications → `Toast.svelte`, not a custom notification element.
 
 4. **Hardcoded fallbacks**: grep for hardcoded display strings/placeholder data (e.g. a literal fallback name, image, or count) standing in for a loading/empty/error state that already has a dedicated component per step 3.
 
-5. **Layout width consistency**: check that page-level containers use `PageContainer`/`ReadingContainer`/`Section` rather than a locally redeclared `max-w-*` + `mx-auto` combination, so widths stay consistent across pages.
+5. **Layout width consistency**: check that page-level containers use `PageContainer`/`Section` rather than a locally redeclared `max-w-*` + `mx-auto` combination, so widths stay consistent across pages.
 
 6. **Svelte 5 runes**: confirm `$state`/`$derived`/`$props`/`$effect` are used (not Svelte 4 Options API or stores where a rune fits) — this is Svelte 5 throughout.
 

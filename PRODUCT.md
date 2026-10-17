@@ -50,7 +50,7 @@ The site is itself the portfolio piece: a security-focused engineer's blog whose
 - Public output never exposes database IDs; posts are identified by an immutable 64-hex public ID or slug.
 - The public API is read-only and versioned (`/v1`); breaking changes require a new version.
 - Light and dark themes are both supported and visitor-selectable.
-- The CV is downloadable as PDF with a SHA-256 checksum file.
+- The CV is downloadable as PDF with SHA-256, SHA-512, MD5 and BLAKE2b checksum files and a detached OpenPGP signature verified against the published key (`/pgp.asc`, WKD, keyservers), individually or as one verification bundle.
 
 ## Brand Commitments
 
