@@ -40,8 +40,11 @@ function getStaticMimeType(pathname: string, defaultType: string | null): string
         case 'woff2':
             return 'font/woff2';
         case 'webmanifest':
-        case 'json':
             return 'application/manifest+json';
+        case 'json':
+            return pathname.endsWith('/manifest.json') ?
+                    'application/manifest+json'
+                :   'application/json; charset=utf-8';
         case 'ico':
             return 'image/x-icon';
         case 'png':
@@ -92,6 +95,8 @@ export const handle: Handle = sequence(
             || event.url.pathname.startsWith('/fonts/')
             || event.url.pathname.startsWith('/logo/')
         ) {
+            if (!['GET', 'HEAD'].includes(event.request.method))
+                return new Response(null, { status: 405, headers: { Allow: 'GET, HEAD' } });
             if (!cdnBaseUrl) {
                 return new Response('Configuration Error: PUBLIC_CDN_BASE_URL is not configured.', {
                     status: 500,
@@ -156,7 +161,6 @@ export const handle: Handle = sequence(
         const publicAllow =
             isArdPostRequest ? 'POST, OPTIONS'
             : isArdAgentsRequest ? 'GET, HEAD, OPTIONS'
-            : isArdRequest ? 'GET, HEAD, POST, OPTIONS'
             : 'GET, HEAD, OPTIONS';
 
         if (isApiRequest && event.request.method === 'OPTIONS') {
@@ -171,10 +175,7 @@ export const handle: Handle = sequence(
                 headers: {
                     ...(isInternalApi ? {} : { 'Access-Control-Allow-Origin': '*' }),
                     'Access-Control-Allow-Methods':
-                        isInternalApi ? 'GET, HEAD, POST, OPTIONS'
-                        : isArdRequest && !isArdPostRequest && !isArdAgentsRequest ?
-                            'GET, HEAD, OPTIONS'
-                        :   publicAllow,
+                        isInternalApi ? 'GET, HEAD, POST, OPTIONS' : publicAllow,
                     'Access-Control-Allow-Headers': 'Content-Type, Authorization, If-None-Match',
                     'Access-Control-Max-Age': '86400',
                     'X-Request-ID': requestId
@@ -208,7 +209,12 @@ export const handle: Handle = sequence(
                             'Content-Type': 'application/json; charset=utf-8',
                             'Cache-Control': 'no-store',
                             'X-Request-ID': requestId,
-                            ...(isInternalApi ? {} : { 'Access-Control-Allow-Origin': '*' }),
+                            ...(isInternalApi ?
+                                {}
+                            :   {
+                                    'Access-Control-Allow-Origin': '*',
+                                    'Access-Control-Expose-Headers': PUBLIC_API_EXPOSED_HEADERS
+                                }),
                             ...limit.headers
                         }
                     }
@@ -287,6 +293,7 @@ export const handle: Handle = sequence(
             && ((isApiRequest && !isInternalApi) || event.url.pathname.startsWith('/.well-known/'))
             && !response.headers.has('ETag')
             && !contentType.includes('application/pdf')
+            && !contentType.includes('application/octet-stream')
         ) {
             const conditional = await publicResponse(
                 event.request,
