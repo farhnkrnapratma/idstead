@@ -92,7 +92,7 @@
 <svelte:head>
     <link
         rel="manifest"
-        href={`/site.webmanifest?theme=${themeStore.isDark ? 'dark' : 'light'}&v=${data?.author?.revision ?? 0}`} />
+        href="/site.webmanifest" />
     <link
         rel="icon"
         type="image/x-icon"
