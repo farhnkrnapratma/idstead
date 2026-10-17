@@ -3,7 +3,7 @@ import { requiresAdminMfa } from '#lib/adminAuthState.ts';
 
 export type AdminAuth =
     | { actor: string; status?: never; message?: never }
-    | { actor?: never; status: 401 | 403; message: string };
+    | { actor?: never; status: 401 | 403; message: string; code?: string };
 
 const ADMIN_ROLES = ['admin', 'service_role'];
 

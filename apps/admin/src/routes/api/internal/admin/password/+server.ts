@@ -19,7 +19,8 @@ export const POST: RequestHandler = async ({ request, url, platform, fetch }) =>
     const db = getSupabaseAdminClient(platform);
     if (!db) return apiError(503, 'PASSWORD_UNAVAILABLE', 'Password changes are unavailable.');
     const auth = await blogAdmin(request, url, db);
-    if (auth.status) return apiError(auth.status, 'PASSWORD_AUTH_REQUIRED', auth.message);
+    if (auth.status)
+        return apiError(auth.status, auth.code ?? 'PASSWORD_AUTH_REQUIRED', auth.message);
     const key = `password-change:${auth.actor}`;
     const lockout = await checkLoginLockout(db, '', key);
     if (!lockout.allowed)

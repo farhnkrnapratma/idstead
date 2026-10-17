@@ -20,7 +20,7 @@ export async function requestUnsubscribe({
     if (!isSameOriginRequest(request, url))
         return apiError(
             403,
-            'UNSUBSCRIBE_FORBIDDEN_ORIGIN',
+            'FORBIDDEN_ORIGIN',
             'Cross-origin requests are not allowed on this endpoint.'
         );
     let body: unknown;

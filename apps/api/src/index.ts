@@ -69,7 +69,8 @@ app.use('*', async (c, next) => {
             headers: {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': ALLOW,
-                'Access-Control-Allow-Headers': 'Content-Type, Authorization, If-None-Match',
+                'Access-Control-Allow-Headers':
+                    'Content-Type, Authorization, If-None-Match, Want-Repr-Digest',
                 'Access-Control-Max-Age': '86400',
                 'X-Request-ID': requestId
             }

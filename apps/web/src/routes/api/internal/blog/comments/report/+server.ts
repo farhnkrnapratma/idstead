@@ -80,6 +80,12 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
 
     const ip = getClientAddress();
     const salt = ipSalt(platform);
+    if (!salt)
+        return apiError(
+            503,
+            'BLOG_COMMENT_REPORT_UNAVAILABLE',
+            'Reporting is temporarily unavailable.'
+        );
 
     const ipHashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(ip + salt));
     const ipHash = Array.from(new Uint8Array(ipHashBuffer))

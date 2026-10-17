@@ -17,7 +17,8 @@ async function authorize(request: Request, url: URL, platform: unknown) {
             error: apiError(503, 'ADMIN_SETTINGS_UNAVAILABLE', 'Settings storage is unavailable.')
         };
     const auth = await verifyAdminToken(request, db);
-    if (auth.status) return { error: apiError(auth.status, 'ADMIN_AUTH_REQUIRED', auth.message) };
+    if (auth.status)
+        return { error: apiError(auth.status, auth.code ?? 'ADMIN_AUTH_REQUIRED', auth.message) };
     return { db, actor: auth.actor };
 }
 

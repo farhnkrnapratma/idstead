@@ -158,7 +158,9 @@ async function assembleBundle(
     const [key, profile] = await Promise.all([
         fetchActiveOpenPgpKey(ctx.db, { strict: true }),
         fetchAuthorProfile(ctx.db, { strict: true })
-    ]);
+    ]).catch(() => {
+        throw new ApiRequestError(500, 'CV_METADATA_FETCH_FAILED', 'Could not fetch CV metadata.');
+    });
     const signed = Boolean(
         document.signedAt && key && document.signerFingerprint === key.fingerprint
     );
@@ -245,7 +247,13 @@ async function cvFile(ctx: ApiContext, output: CvFileOutput, withChecksum: boole
         type = 'application/zip';
         name = cvBundleFilename(filename);
     } else if (output === 'asc' || output === 'sig') {
-        const key = await fetchActiveOpenPgpKey(ctx.db).catch(() => null);
+        const key = await fetchActiveOpenPgpKey(ctx.db, { strict: true }).catch(() => {
+            throw new ApiRequestError(
+                500,
+                'CV_METADATA_FETCH_FAILED',
+                'Could not fetch CV metadata.'
+            );
+        });
         if (!document.signedAt || !key || document.signerFingerprint !== key.fingerprint)
             throw signatureMissing;
         body = await readStored(ctx, `${document.fileUrl}.${output}`, signatureMissing);

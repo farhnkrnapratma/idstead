@@ -17,7 +17,8 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
         );
 
     const auth = await blogAdmin(request, url, db);
-    if (auth.status) return apiError(auth.status, 'BLOG_NOTIFY_AUTH_REQUIRED', auth.message);
+    if (auth.status)
+        return apiError(auth.status, auth.code ?? 'BLOG_NOTIFY_AUTH_REQUIRED', auth.message);
 
     let body: unknown;
     try {

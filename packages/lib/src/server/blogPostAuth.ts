@@ -8,6 +8,10 @@ export async function blogAdmin(
     db: SupabaseClient
 ): Promise<AdminAuth> {
     if (!isSameOriginRequest(request, url))
-        return { status: 403, message: 'Cross-origin requests are not allowed.' };
+        return {
+            status: 403,
+            code: 'FORBIDDEN_ORIGIN',
+            message: 'Cross-origin requests are not allowed.'
+        };
     return verifyAdminToken(request, db);
 }

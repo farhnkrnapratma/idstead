@@ -33,6 +33,12 @@ export const POST: RequestHandler = async ({ request, url, getClientAddress, pla
         const ip = getClientAddress();
 
         const salt = ipSalt(platform);
+        if (!salt)
+            return apiError(
+                503,
+                'BLOG_VIEW_UNAVAILABLE',
+                'View counting is temporarily unavailable.'
+            );
         const ipHashBuffer = await crypto.subtle.digest(
             'SHA-256',
             new TextEncoder().encode(ip + salt)
