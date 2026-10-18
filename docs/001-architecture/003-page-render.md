@@ -36,8 +36,13 @@ sequenceDiagram
         end
     else GET /blog/[slug]
         W->>DB: db_posts where slug and published (.single(), 404 if missing)
-        W->>ST: GET markdown (5 s timeout)
-        W-->>W: renderMarkdown, injectHeadingIds, extractHeadings
+        W->>ST: GET {operationId}.render.json (3 s timeout)
+        alt render found, current RENDER_VERSION, not live
+            W-->>W: use the stored html, headings and read time
+        else missing, outdated or live
+            W->>ST: GET markdown (5 s timeout)
+            W-->>W: renderMarkdown, injectHeadingIds, extractHeadings<br/>(on failure, fall back to the stored render if any)
+        end
         W->>DB: db_comments where is_approved
         W->>DB: count db_views
         W->>DB: all published db_posts, then previous/next window
@@ -55,6 +60,7 @@ sequenceDiagram
     - Posts expose `public_id` as `id`. The UUID never leaves the server.
     - The banner URL is built by `publicBannerUrl()` (`packages/lib/src/blogBanner.ts`) as `{PUBLIC_CDN_BASE_URL}/blog/{slug}/banner.webp`, with `banner.avif` as the preferred source (see [008-asset-pipeline.md](008-asset-pipeline.md#blog-post-assets)).
 - **Markdown** lives in Supabase Storage (`blog-posts`). Images and banners live in R2 (see [008-asset-pipeline.md](008-asset-pipeline.md)).
+- **Pre-rendered posts:** each saved post has a `.render.json` next to its markdown (see [007-publish-post.md](007-publish-post.md#notes)). The post page serves it without running the MDRS engine. It renders on the request only when the file is missing, was written by another `RENDER_VERSION`, or is flagged `live` (the post reads `api.*` data). Only the service role can write to the bucket, so the stored HTML is trusted as sanitized at save time.
 - **Supabase admin client:** `/subscribe/confirm` and `/unsubscribe` use it against `db_subscribers`.
 
 ## Source
@@ -62,4 +68,4 @@ sequenceDiagram
 - `apps/web/src/routes/+layout.server.ts`, `+page.server.ts`
 - `apps/web/src/routes/blog/+page.server.ts`, `blog/[slug]/+page.server.ts`
 - `packages/lib/src/author.ts`
-- `packages/lib/src/server/blogPosts.ts`, `githubProjects.ts`
+- `packages/lib/src/server/blogPosts.ts`, `githubProjects.ts`, `postRender.ts`

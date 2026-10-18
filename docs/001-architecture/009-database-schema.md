@@ -196,7 +196,7 @@ erDiagram
 | Table | Purpose |
 | --- | --- |
 | `db_post_operations` | Idempotent post saves keyed by `operationId`: `state`, `request_hash`, `expected_revision`, `result`. |
-| `db_post_storage_cleanup` | Markdown files queued for deletion from Storage, with `cleanup_attempts`. |
+| `db_post_storage_cleanup` | Markdown files queued for deletion from Storage (each removed together with its `.render.json`), with `cleanup_attempts`. |
 | `db_subscribers` | Newsletter subscribers: `email`, `status` (pending, active, unsubscribed), `confirm_token_hash`, `unsubscribe_token`, `ip_hash`. |
 | `db_activity_log` | Admin audit log: `actor`, `action`, `category`, `entity_id`, `summary`, `details`, `ip_hash`. Pruned by `pg_cron` `prune-activity-log`. |
 | `db_login_failures` | Shared admin login lockout: `key_hash` (salted SHA-256 of `ip:`, `email-ip:` or `password-change:` keys), `failed_at`. RLS on with no policies; reached only through `service_role` RPCs. Pruned by `pg_cron` `prune-login-failures`. |

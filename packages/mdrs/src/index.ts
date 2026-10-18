@@ -29,3 +29,5 @@ export {
 export { sanitizeHtml, sanitizeUrl } from './sanitize';
 export { markdownToPlainText } from './plainText';
 export { decodeHtmlEntities } from './entities';
+export { usesLiveData } from './liveData';
+export { RENDER_VERSION } from './version';

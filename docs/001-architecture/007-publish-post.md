@@ -18,11 +18,13 @@ sequenceDiagram
     B->>P: multipart: post fields, markdown, banner files, operationId
     P->>P: blogAdmin(): same-origin + verifyAdminToken
     P->>P: parsePostInput() (banner WASM validation), validateDefineForSave()
+    P->>P: buildPostRender(): render MDRS once (failure is logged, the save continues)
     P->>DB: rpc db_prepare_post_operation (keyed by operationId)
     opt new banner
         P->>R2: putBanner webp, then avif<br/>blog/banners/{postId}/{version}.{ext} (staging), read-back SHA-256 check
     end
     P->>ST: upload markdown (read back if it already exists)
+    P->>ST: upload {operationId}.render.json (upsert; a failure is logged, not fatal)
     P->>DB: rpc db_ready_post_operation
     P->>DB: rpc db_commit_post_operation
     alt revision conflict
@@ -69,7 +71,7 @@ sequenceDiagram
 ## Notes
 
 - **MDRS validation before the save:** while the author types, and again before submitting, `PostEditor` (and the legal page editors) call `POST /api/internal/blog/validate-define` through `validateMdrsRemote` (`packages/lib/src/mdrsValidation.ts`). The save route repeats `validateDefineForSave` and answers `422 BLOG_DEFINE_VALIDATION_FAILED` when the document has errors.
-- **MDRS validation before the save:** while the author types, and again before submitting, `PostEditor` (and the legal page editors) call `POST /api/internal/blog/validate-define` through `validateMdrsRemote` (`packages/lib/src/mdrsValidation.ts`). The save route repeats `validateDefineForSave` and answers `422 BLOG_DEFINE_VALIDATION_FAILED` when the document has errors.
+- **Pre-render:** the save route renders the post with `buildPostRender()` (`packages/lib/src/server/postRender.ts`) and stores `posts/{postId}/{operationId}.render.json` next to the markdown file: the sanitized HTML, headings, read time, `RENDER_VERSION` and a `live` flag. `live` is true when a `:::define` block reads `api.*` (`usesLiveData()`), because that output depends on data that changes after the save. The queued storage cleanup removes the render file together with its markdown file.
 - **Every save of a published post enqueues a message.** Duplicates are harmless because of the atomic claim on `subscribers_notified_at`.
 - **Manual re-send:**
     - `POST /api/internal/admin/posts/notify` with `{postId, force}` calls `notifyNewPost` synchronously, without going through the queue.

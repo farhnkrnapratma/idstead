@@ -66,7 +66,7 @@ sequenceDiagram
 
 - **`cleanupBlogAssets`** (`blogBannerStorage.ts`):
     - Banners: claims retired banner versions, deletes the `.webp` and `.avif` objects, and sets `state='deleted'`. On failure it records `cleanup_error`.
-    - Markdown: removes orphaned files listed in `db_post_storage_cleanup` that are more than 24 h old and no longer referenced by `db_posts.storage_path`.
+    - Markdown: removes orphaned files listed in `db_post_storage_cleanup` that are more than 24 h old and no longer referenced by `db_posts.storage_path`. Each file's `.render.json` (the stored MDRS render) is removed with it.
 - **`cleanupAssets`** (`profileAssets.ts`): claims retired identity versions, deletes any leftover staging objects in `identity/{id}/`, then deletes the version row. `data/delete-all` also removes the canonical identity files and post banners.
 - **Callers:** the jobs cron, admin `posts` (`cleanupBlogAssets` after a save), `profile` (`cleanupAssets` after a save), and `data/delete-all`.
 
