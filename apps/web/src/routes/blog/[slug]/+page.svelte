@@ -9,7 +9,7 @@
     import { FieldValidation, requiredText } from '#lib/fieldValidation.ts';
     import { onMount, onDestroy, tick, untrack } from 'svelte';
     import { fade } from 'svelte/transition';
-    import { BookOpenText, MessageCircle } from '@lucide/svelte';
+    import { MessageCircle } from '@lucide/svelte';
     import type { PageProps } from './$types';
     import type { BlogComment } from './+page.server';
     import hljs from 'highlight.js';
@@ -37,6 +37,7 @@
         Input,
         Textarea,
         FooterSection,
+        PageMain,
         TableOfContents,
         RelativeTime,
         ContentActions,
@@ -53,9 +54,9 @@
         PostInsights,
         ConsentNotice,
         readingModeStore,
-        Tooltip,
         ScrollToTopButton,
-        FeedbackButton
+        FeedbackButton,
+        ReadingModeExitButton
     } from '#lib/index.ts';
     import { pushState } from '$app/navigation';
     import { page, navigating } from '$app/state';
@@ -576,11 +577,9 @@
         onToggleReadingMode={readingModeStore.toggle} />
 {/if}
 
-<main
-    id="main"
-    class="blog-reading-page flex flex-col font-sans {readingModeStore.active ?
-        'min-h-screen pt-4 sm:pt-6'
-    :   'min-h-[calc(100vh-4rem)] overscroll-none pt-16 sm:min-h-[calc(100vh-5rem)] sm:pt-20 lg:h-dvh lg:min-h-0 lg:overflow-clip'}">
+<PageMain
+    variant="article"
+    reading={readingModeStore.active}>
     <div
         class={readingModeStore.active ?
             'relative mx-auto w-full px-3 pt-3 pb-16 sm:px-6 sm:pt-4 md:w-[80%] lg:w-[50%]'
@@ -1180,7 +1179,7 @@
             </aside>
         {/if}
     </div>
-</main>
+</PageMain>
 
 <FeedbackButton
     show={!readingModeStore.active}
@@ -1192,25 +1191,7 @@
     progress={articleScrollProgress}
     class="hidden lg:fixed lg:right-[calc(25%+(2.5vw-0.75rem)/2)] lg:bottom-6 lg:z-40 lg:block lg:translate-x-1/2" />
 
-{#if readingModeStore.active}
-    <div
-        transition:fade={{ duration: 150 }}
-        class="fixed right-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 md:right-6 md:bottom-6 lg:right-[calc(25%+(2.5vw-0.75rem)/2)] lg:translate-x-1/2">
-        <Tooltip
-            content="Exit reading mode"
-            placement="top"
-            align="right">
-            <button
-                type="button"
-                class="inline-flex size-8 cursor-pointer items-center justify-center rounded-full glass-button border border-accent/40 bg-surface-card/90 px-0 text-xs font-semibold text-accent-text shadow-md transition-all hover:border-accent hover:bg-surface-hover active:inset-shadow-button-pressed motion-safe:active:translate-y-px md:shadow-lg"
-                onclick={readingModeStore.toggle}
-                use:shortcut={{ combo: buttonKey('readingMode'), label: 'Exit reading mode' }}
-                aria-label="Exit reading mode">
-                <BookOpenText class="size-4 shrink-0" />
-            </button>
-        </Tooltip>
-    </div>
-{/if}
+<ReadingModeExitButton />
 
 <ReportCommentDialog
     bind:isOpen={showReportDialog}

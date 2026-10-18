@@ -1,11 +1,11 @@
 <script lang="ts">
-    import { shortcut } from '../utils/shortcut.svelte';
     import { buttonKey } from '#lib/shortcuts.ts';
     import { fade } from 'svelte/transition';
     import { page } from '$app/state';
     import { MoveUp } from '@lucide/svelte';
     import { scrollToTop } from '#lib/utils/scroll.ts';
     import { scrollStore } from '../stores/scrollStore.svelte';
+    import IconButton from './IconButton.svelte';
     import Tooltip from './Tooltip.svelte';
 
     const RING_RADIUS = 16;
@@ -29,6 +29,7 @@
 
 {#if show}
     <div
+        transition:fade={{ duration: 150 }}
         class="fixed right-3 z-40 md:right-6 md:bottom-6 {isMainPage ?
             'bottom-[calc(4.25rem+env(safe-area-inset-bottom))]'
         :   'bottom-[calc(0.75rem+env(safe-area-inset-bottom))]'} {className}">
@@ -37,14 +38,15 @@
             placement="top"
             align="right">
             <div class="relative inline-flex">
-                <button
-                    transition:fade={{ duration: 150 }}
-                    use:shortcut={{ combo: buttonKey('scrollTop'), label: 'Scroll to top' }}
-                    class="relative inline-flex size-8 cursor-pointer items-center justify-center rounded-full glass-button px-0 text-xs font-semibold text-text-primary shadow-md transition hover:text-accent-text active:inset-shadow-button-pressed motion-safe:active:translate-y-px md:shadow-lg"
-                    onclick={onClick || (() => scrollToTop('smooth'))}
-                    aria-label="Scroll to top">
+                <IconButton
+                    variant="floating"
+                    size="sm"
+                    ariaLabel="Scroll to top"
+                    showTooltip={false}
+                    keyboardShortcut={buttonKey('scrollTop')}
+                    onclick={onClick || (() => scrollToTop('smooth'))}>
                     <MoveUp class="size-4 shrink-0" />
-                </button>
+                </IconButton>
                 <svg
                     class="pointer-events-none absolute inset-0 size-full -rotate-90"
                     viewBox="0 0 36 36"

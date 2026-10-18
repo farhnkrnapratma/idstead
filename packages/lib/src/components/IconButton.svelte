@@ -7,7 +7,7 @@
 
     interface Props extends HTMLButtonAttributes {
         ariaLabel: string;
-        variant?: 'default' | 'ghost' | 'borderless';
+        variant?: 'default' | 'ghost' | 'borderless' | 'overlay' | 'floating' | 'floating-accent';
         size?: '2xs' | 'xs' | 'sm' | 'md' | 'lg';
         tooltip?: string;
         tooltipPlacement?: 'top' | 'bottom' | 'left' | 'right';
@@ -18,6 +18,9 @@
         shortcutChordKey?: string;
         shortcutScope?: string;
         shortcutLabel?: string;
+        href?: string;
+        target?: string;
+        rel?: string;
         children?: Snippet;
     }
 
@@ -35,6 +38,9 @@
         shortcutScope,
         shortcutLabel,
         class: className = '',
+        href,
+        target,
+        rel,
         children,
         type = 'button',
         disabled = false,
@@ -48,7 +54,13 @@
             'glass-button hover:text-accent-text hover:border-accent active:inset-shadow-button-pressed disabled:hover:text-text-primary',
         ghost: 'text-text-secondary hover:text-text-primary hover:bg-surface-hover active:inset-shadow-button-pressed disabled:hover:bg-transparent disabled:hover:text-text-secondary',
         borderless:
-            'bg-transparent text-text-secondary hover:text-accent-text disabled:hover:text-text-secondary'
+            'bg-transparent text-text-secondary hover:text-accent-text disabled:hover:text-text-secondary',
+        overlay:
+            'rounded-full border border-border-default bg-surface-card text-accent-text shadow-sm hover:bg-accent hover:text-text-on-accent',
+        floating:
+            'rounded-full glass-button text-text-primary shadow-md hover:text-accent-text active:inset-shadow-button-pressed md:shadow-lg',
+        'floating-accent':
+            'rounded-full glass-button border-accent/40 bg-surface-card/90 text-accent-text shadow-md hover:border-accent hover:bg-surface-hover active:inset-shadow-button-pressed md:shadow-lg'
     };
 
     const sizeStyles = {
@@ -61,9 +73,13 @@
 </script>
 
 {#snippet buttonNode()}
-    <button
-        {type}
-        {disabled}
+    <svelte:element
+        this={href ? 'a' : 'button'}
+        href={href || undefined}
+        {target}
+        {rel}
+        type={href ? undefined : type}
+        disabled={href ? undefined : disabled}
         aria-label={ariaLabel}
         use:shortcut={{
             combo: keyboardShortcut,
@@ -81,7 +97,7 @@
         )}
         {...restProps}>
         {@render children?.()}
-    </button>
+    </svelte:element>
 {/snippet}
 
 {#if showTooltip && tooltipContent}

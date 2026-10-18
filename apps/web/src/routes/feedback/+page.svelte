@@ -24,6 +24,7 @@
         SkipLink,
         TopNav,
         FooterSection,
+        PageMain,
         Section,
         PageContainer,
         ConsentNotice,
@@ -266,9 +267,7 @@
     backLabel="Home"
     projects={pageProjects} />
 
-<main
-    id="main"
-    class="flex min-h-[calc(100vh-4rem)] flex-col pt-16 font-sans sm:min-h-[calc(100vh-5rem)] sm:pt-20">
+<PageMain>
     <Section
         spacing="none"
         class="relative z-10 pt-5 pb-6 md:pt-8 md:pb-8">
@@ -605,4 +604,4 @@
     </Section>
 
     <FooterSection />
-</main>
+</PageMain>

@@ -106,7 +106,7 @@ All apps share one Supabase project. Sentry events are tagged with `PUBLIC_SENTR
 ### Components
 
 - `packages/lib/src/components/` — flat directory of reusable UI primitives (Button, Dialog family, form fields, Toast, DataTable, Pagination, BlogPostCard, etc.) plus `filter/` and `admin/` subfolders.
-- `packages/lib/src/layout/` — page-structure components (PageContainer, Section, FormSection, FooterSection, FooterLegalRow).
+- `packages/lib/src/layout/` — page-structure components (PageMain, PageContainer, Section, FormSection, FooterSection, FooterLegalRow). `PageMain` is the `<main id="main">` shell that clears the fixed `TopNav` (`variant="article"` and `reading` for posts and legal pages); use it instead of repeating the offsets.
 - `packages/lib/src/article/` — blog-post-specific rendering (ArticleHeader, ArticleMeta, HelpfulBlock).
 - `packages/lib/src/stores/` — Svelte 5 runes-based stores (`.svelte.ts` files): theme, toast, consent, filter/sort state.
 - Styling: Tailwind CSS 4 (via `@tailwindcss/vite`, no separate config file) plus `tokens.css` and `global.css` in the lib — component- and page-specific styling lives in each component/page's own `<style>` block or inline Tailwind classes.

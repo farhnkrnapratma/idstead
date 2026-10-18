@@ -5,7 +5,7 @@
     import { cn } from '../utils/cn';
 
     import BrandIcon from './BrandIcon.svelte';
-    import Button from './Button.svelte';
+    import IconButton from './IconButton.svelte';
     import ImageWithSkeleton from './ImageWithSkeleton.svelte';
 
     interface SocialLink {
@@ -92,18 +92,19 @@
             {/if}
 
             {#if onShowQr}
-                <Button
-                    type="ghost"
-                    size="2xs"
-                    htmlType="button"
-                    onclick={onShowQr}
-                    aria-label="Show QR code"
-                    title="Show QR code"
-                    class="touch-target absolute! right-0 bottom-0 size-8! rounded-full! border! border-border-default! bg-surface-card! p-0! text-accent-text! shadow-sm ring-4 ring-surface-card hover:bg-accent! hover:text-text-on-accent! sm:right-0.5 sm:bottom-0.5">
-                    <QrCode
-                        class="size-4"
-                        aria-hidden="true" />
-                </Button>
+                <div class="absolute right-0 bottom-0 flex sm:right-0.5 sm:bottom-0.5">
+                    <IconButton
+                        variant="overlay"
+                        size="sm"
+                        ariaLabel="Show QR code"
+                        tooltipPlacement="top"
+                        onclick={onShowQr}
+                        class="ring-4 ring-surface-card">
+                        <QrCode
+                            class="size-4"
+                            aria-hidden="true" />
+                    </IconButton>
+                </div>
             {/if}
         </div>
 
@@ -142,27 +143,25 @@
             <div
                 class="mt-4 flex flex-wrap items-center gap-1 select-none sm:gap-1.5 pointer-coarse:gap-2">
                 <span
-                    class="mr-0.5 inline-flex h-7.5 items-center gap-2 sm:h-8 pointer-coarse:h-9"
+                    class="mr-0.5 inline-flex h-8 items-center gap-2"
                     aria-hidden="true">
                     <BadgeCheck class="size-4.5 fill-accent text-text-on-accent sm:size-5" />
                     <span class="text-text-muted">—</span>
                 </span>
                 {#each socials as item (item.url + item.platform)}
-                    <Button
-                        type="ghost"
-                        size="2xs"
+                    <IconButton
+                        variant="ghost"
+                        size="sm"
                         href={item.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        aria-label={item.platform}
-                        title={item.platform}
-                        shortcutGroup="social"
-                        shortcutLabel={item.platform}
-                        class="touch-target relative size-7.5! rounded-md! border-0! bg-transparent! p-0! text-text-muted transition-colors hover:bg-surface-hover hover:text-accent-text focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:size-8! pointer-coarse:size-9!">
+                        ariaLabel={item.platform}
+                        tooltipPlacement="top"
+                        shortcutGroup="social">
                         <BrandIcon
                             icon={item.icon}
                             class="text-sm leading-none sm:text-base" />
-                    </Button>
+                    </IconButton>
                 {/each}
             </div>
         {/if}
