@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { sha256 } from '#lib/blogBanner.ts';
 import type { parsePostInput } from './blogPostInput';
+import { postRenderPath } from './postRenderPath';
 
 type Input = Awaited<ReturnType<typeof parsePostInput>>;
 export type PostOperation = {
@@ -26,7 +27,8 @@ export async function savePostOperation(
     db: SupabaseClient,
     actor: string,
     input: Input,
-    upload: () => Promise<void>
+    upload: () => Promise<void>,
+    render: string | null = null
 ) {
     const { data, error } = await db.rpc('db_prepare_post_operation', {
         p_id: input.operationId,
@@ -75,6 +77,15 @@ export async function savePostOperation(
                         !== (await sha256(new TextEncoder().encode(input.markdown)))
                 )
                     throw new Error('Markdown upload failed. Retry the same Save operation.');
+            }
+            const renderPath = postRenderPath(path);
+            if (render && renderPath) {
+                const { error: renderError } = await storage.upload(
+                    renderPath,
+                    new Blob([render], { type: 'application/json' }),
+                    { contentType: 'application/json', upsert: true }
+                );
+                if (renderError) console.error('Post render upload failed:', renderError.message);
             }
         }
         const { error: readyError } = await db.rpc('db_ready_post_operation', {

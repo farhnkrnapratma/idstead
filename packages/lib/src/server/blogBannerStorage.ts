@@ -2,6 +2,7 @@ import { IMAGE_CACHE_CONTROL } from './profileAssets';
 import { assetBucket, readObjectBytes } from './r2';
 import { bannerKey, sha256 } from '#lib/blogBanner.ts';
 import { cleanupOrphanedStaging } from './blogPostAssets';
+import { postRenderPath } from './postRenderPath';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export async function putBanner(
@@ -65,9 +66,10 @@ export async function cleanupBlogAssets(db: SupabaseClient, platform?: App.Platf
             if (postError) throw new Error('Reference check failed.');
             if (posts) continue;
             if (!/^posts\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.md$/.test(item.storage_path)) continue;
+            const renderPath = postRenderPath(item.storage_path);
             const { error: failure } = await db.storage
                 .from('blog-posts')
-                .remove([item.storage_path]);
+                .remove(renderPath ? [item.storage_path, renderPath] : [item.storage_path]);
             if (failure) throw failure;
             const { error: removeError } = await db
                 .from('db_post_storage_cleanup')

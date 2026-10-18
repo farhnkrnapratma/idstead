@@ -10,7 +10,7 @@ mock.module('$app/env/public', () => ({
 const { cleanupBlogAssets } = await import('../packages/lib/src/server/blogBannerStorage');
 
 describe('queued blog Markdown cleanup', () => {
-    test('deletes orphaned post files and keeps files still in use or outside posts/', async () => {
+    test('deletes orphaned post files with their renders and keeps files still in use or outside posts/', async () => {
         const livePath =
             'posts/11111111-1111-4111-8111-111111111111/22222222-2222-4222-8222-222222222222.md';
         const orphanPaths = [
@@ -65,7 +65,9 @@ describe('queued blog Markdown cleanup', () => {
         const result = await cleanupBlogAssets(db);
 
         expect(result).toEqual({ cleanupPending: false, removed: 2 });
-        expect(removedPaths).toEqual(orphanPaths.map(path => [path]));
+        expect(removedPaths).toEqual(
+            orphanPaths.map(path => [path, path.replace(/\.md$/, '.render.json')])
+        );
         expect(deletedQueuePaths).toEqual(orphanPaths);
     });
 });

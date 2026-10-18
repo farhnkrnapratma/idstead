@@ -76,12 +76,19 @@ Pass resolvers to enable [live data](../002-extensions/014-live-data.md): the si
 
 | Place | Call |
 | --- | --- |
-| Blog post page (`apps/web/src/routes/blog/[slug]`) | `renderMarkdown` + `injectHeadingIds` + `prefixHashLinks` + `extractHeadings` |
+| Admin post save | `buildPostRender` → `prepareMarkdownPage`, stored as `{operationId}.render.json` |
+| Blog post page (`apps/web/src/routes/blog/[slug]`) | The stored render; `renderMarkdown` + `injectHeadingIds` + `prefixHashLinks` + `extractHeadings` only when it is missing, outdated or `live` |
 | Legal pages (`/privacy`, `/terms`, `/security`) | `prepareMarkdownPage` |
 | Admin editor preview (`MarkdownEditor.svelte`) | `renderMarkdown` in the browser, `injectHeadingIds`, `prefixHashLinks` |
 | Admin editors (post, privacy, security, terms) while typing and before saving | `validateMdrsRemote` → `validateDefineForSave` |
-| Admin post save | `validateDefineForSave` |
+| Admin post save (validation) | `validateDefineForSave` |
 | `.md` and `.txt` variants, `GET /v1/blog/content` | The raw source, or `markdownToPlainText` for text output |
+
+## Render version
+
+Saved posts keep their rendered HTML, stamped with `RENDER_VERSION` (`packages/mdrs/src/version.ts`). Pages ignore a stored render with another version and render the post again, so bump `RENDER_VERSION` whenever the engine's output changes. `tests/mdrsRenderVersion.test.ts` enforces this: it pins the hash of the MDRS snapshot file to the current version and fails until both are updated together.
+
+`usesLiveData(markdown)` reports whether a document reads `api.*` inside an active `:::define`; such posts are always rendered on the request.
 
 ## Limits
 

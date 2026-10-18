@@ -15,6 +15,7 @@ import { cdnBaseUrl } from '#lib/cdn.ts';
 import { UUID_PATTERN } from '#lib/blogBanner.ts';
 import { validateDefineForSave } from '@fkp/mdrs';
 import { createMdrsResolvers } from '#lib/mdrsResolvers.ts';
+import { buildPostRender } from '#lib/server/postRender.ts';
 import { notifyNewPost } from '#lib/server/subscriberBroadcast.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { runInBackground } from '#lib/server/workerEnv.ts';
@@ -90,12 +91,28 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
                 );
             }
         }
-        const operation = await savePostOperation(db, auth.actor, input, async () => {
-            if (input.image)
-                await putBanner(platform, input.id, input.operationId, input.image, 'webp');
-            if (input.avifImage)
-                await putBanner(platform, input.id, input.operationId, input.avifImage, 'avif');
-        });
+        let render: string | null = null;
+        if (input.kind === 'save') {
+            try {
+                render = JSON.stringify(
+                    await buildPostRender(input.markdown, createMdrsResolvers(db))
+                );
+            } catch (error) {
+                console.error('Post pre-render failed:', error);
+            }
+        }
+        const operation = await savePostOperation(
+            db,
+            auth.actor,
+            input,
+            async () => {
+                if (input.image)
+                    await putBanner(platform, input.id, input.operationId, input.image, 'webp');
+                if (input.avifImage)
+                    await putBanner(platform, input.id, input.operationId, input.avifImage, 'avif');
+            },
+            render
+        );
         if (operation.state === 'conflict')
             return apiError(
                 409,

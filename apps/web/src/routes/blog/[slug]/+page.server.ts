@@ -2,7 +2,14 @@ import { publicBannerUrl } from '#lib/blogBanner.ts';
 import { cdnBaseUrl } from '#lib/cdn.ts';
 import { supabase } from '#lib/supabase.ts';
 import { error } from '@sveltejs/kit';
-import { renderMarkdown, injectHeadingIds, extractHeadings, prefixHashLinks } from '@fkp/mdrs';
+import {
+    renderMarkdown,
+    injectHeadingIds,
+    extractHeadings,
+    prefixHashLinks,
+    type HeadingItem
+} from '@fkp/mdrs';
+import { fetchPostRender, postRenderPath } from '#lib/server/postRender.ts';
 import { createMdrsResolvers } from '#lib/mdrsResolvers.ts';
 import { estimateReadTime } from '#lib/readTime.ts';
 import { publicPostFields } from '#lib/publicPost.ts';
@@ -66,24 +73,36 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
         throw error(500, 'Internal Server Error: Could not retrieve post.');
     }
 
-    let html: string;
+    let html = '<p class="text-red-500">Error: Could not render post content.</p>';
+    let headings: HeadingItem[] = [];
     let readTime = '1 min read';
-    try {
-        const { data } = supabase.storage.from('blog-posts').getPublicUrl(post.storage_path);
-        const fileRes = await fetch(data.publicUrl, { signal: AbortSignal.timeout(5000) });
-        if (!fileRes.ok) {
-            throw new Error(`Failed to fetch markdown file: ${fileRes.statusText}`);
+    const renderPath = postRenderPath(post.storage_path);
+    const prerendered =
+        renderPath ?
+            await fetchPostRender(
+                supabase.storage.from('blog-posts').getPublicUrl(renderPath).data.publicUrl,
+                fetch
+            )
+        :   null;
+    if (prerendered && !prerendered.live) {
+        ({ html, headings, readTime } = prerendered);
+    } else {
+        try {
+            const { data } = supabase.storage.from('blog-posts').getPublicUrl(post.storage_path);
+            const fileRes = await fetch(data.publicUrl, { signal: AbortSignal.timeout(5000) });
+            if (!fileRes.ok) {
+                throw new Error(`Failed to fetch markdown file: ${fileRes.statusText}`);
+            }
+            const markdown = await fileRes.text();
+            readTime = estimateReadTime(markdown);
+            const rawHtml = await renderMarkdown(markdown, createMdrsResolvers(supabase));
+            html = prefixHashLinks(injectHeadingIds(rawHtml));
+            headings = extractHeadings(html);
+        } catch (err) {
+            console.error('Error fetching/rendering markdown file:', err);
+            if (prerendered) ({ html, headings, readTime } = prerendered);
         }
-        const markdown = await fileRes.text();
-        readTime = estimateReadTime(markdown);
-        const rawHtml = await renderMarkdown(markdown, createMdrsResolvers(supabase));
-        html = prefixHashLinks(injectHeadingIds(rawHtml));
-    } catch (err) {
-        console.error('Error fetching/rendering markdown file:', err);
-        html = '<p class="text-red-500">Error: Could not render post content.</p>';
     }
-
-    const headings = extractHeadings(html);
 
     let comments: BlogComment[] = [];
     try {
