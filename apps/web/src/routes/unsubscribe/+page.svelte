@@ -3,6 +3,7 @@
     import Button from '#lib/components/Button.svelte';
     import EmptyState from '#lib/components/EmptyState.svelte';
     import PageContainer from '#lib/layout/PageContainer.svelte';
+    import SkipLink from '#lib/components/SkipLink.svelte';
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
@@ -41,29 +42,34 @@
         content="noindex, nofollow" />
 </svelte:head>
 
-<PageContainer class="py-16">
-    <EmptyState
-        title={copy.title}
-        description={copy.description}
-        icon={data.state === 'unavailable' ? TriangleAlert : MailX}
-        iconClass={data.state === 'unavailable' ? 'text-warning' : ''}>
-        {#snippet actions()}
-            {#if data.state === 'confirm'}
-                <form method="POST">
-                    <Button
-                        type="danger"
-                        size="sm"
-                        htmlType="submit">
-                        Unsubscribe
-                    </Button>
-                </form>
-            {/if}
-            <Button
-                type="secondary"
-                size="sm"
-                href="/">
-                Back to the site
-            </Button>
-        {/snippet}
-    </EmptyState>
-</PageContainer>
+<SkipLink />
+
+<main id="main">
+    <h1 class="sr-only">Unsubscribe</h1>
+    <PageContainer class="py-16">
+        <EmptyState
+            title={copy.title}
+            description={copy.description}
+            icon={data.state === 'unavailable' ? TriangleAlert : MailX}
+            iconClass={data.state === 'unavailable' ? 'text-warning' : ''}>
+            {#snippet actions()}
+                {#if data.state === 'confirm'}
+                    <form method="POST">
+                        <Button
+                            type="danger"
+                            size="sm"
+                            htmlType="submit">
+                            Unsubscribe
+                        </Button>
+                    </form>
+                {/if}
+                <Button
+                    type="secondary"
+                    size="sm"
+                    href="/">
+                    Back to the site
+                </Button>
+            {/snippet}
+        </EmptyState>
+    </PageContainer>
+</main>

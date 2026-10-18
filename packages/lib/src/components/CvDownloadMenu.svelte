@@ -50,7 +50,10 @@
         const key = cv?.publicKey;
         if (!key) return [];
         return [
-            ...key.wkd.map(email => ({ label: 'WKD', code: `gpg --locate-keys ${email}` })),
+            ...key.wkd.map(email => ({
+                label: key.wkd.length > 1 ? `WKD (${email})` : 'WKD',
+                code: `gpg --locate-keys ${email}`
+            })),
             ...(key.url ?
                 [{ label: new URL(key.url).host, code: `curl -sSf ${key.url} | gpg --import` }]
             :   []),
@@ -148,13 +151,15 @@
             <span class="sr-only">{CV_UNAVAILABLE}</span>
         {/if}
         {#snippet trailing()}
-            <ChevronDown
-                class="size-3.5 transition-transform duration-200 ease-out motion-reduce:transition-none {(
-                    isOpen
-                ) ?
-                    'rotate-180'
-                :   ''}"
-                aria-hidden="true" />
+            {#if cv}
+                <ChevronDown
+                    class="size-3.5 transition-transform duration-200 ease-out motion-reduce:transition-none {(
+                        isOpen
+                    ) ?
+                        'rotate-180'
+                    :   ''}"
+                    aria-hidden="true" />
+            {/if}
         {/snippet}
     </Button>
 {/snippet}

@@ -71,7 +71,7 @@
     }
 
     async function copy() {
-        await copyText(current.code, current.copyLabel ?? 'Code');
+        if (!(await copyText(current.code, current.copyLabel ?? 'Code'))) return;
         copied = true;
         clearTimeout(copyTimer);
         copyTimer = setTimeout(() => (copied = false), 1500);
@@ -105,7 +105,7 @@
             tabindex="-1"
             class="mdrs-snippets-nav"
             onkeydown={onKeydown}>
-            {#each tabs as tab, index (tab.label)}
+            {#each tabs as tab, index (index)}
                 <button
                     type="button"
                     role="tab"

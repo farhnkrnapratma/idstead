@@ -47,10 +47,10 @@
             type="button"
             onclick={() => onNavigate?.(item.id)}
             aria-label={item.label}
-            aria-current={isActive ? 'page' : undefined}
+            aria-current={isActive ? 'location' : undefined}
             use:shortcut={{ combo: sectionCommandKey(item.id), label: item.label }}
             class={cn(
-                'group relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-md px-0.5 py-1 transition select-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none active:inset-shadow-button-pressed motion-safe:active:translate-y-px [&>span>svg]:block',
+                'relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-md px-0.5 py-1 transition select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring active:inset-shadow-button-pressed motion-safe:active:translate-y-px [&>span>svg]:block',
                 isActive ?
                     'bg-accent-contrast-bg bg-linear-to-b from-accent-sheen to-accent-contrast-bg font-bold text-text-on-accent shadow-button-accent inset-shadow-button-fill'
                 :   'text-text-muted hover:bg-surface-hover hover:text-text-primary'

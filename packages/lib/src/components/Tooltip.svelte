@@ -170,11 +170,16 @@
         const onKeydown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') hide();
         };
+        const onPointerDown = (e: PointerEvent) => {
+            if (!triggerEl?.contains(e.target as Node)) hide();
+        };
         window.addEventListener('keydown', onKeydown);
+        document.addEventListener('pointerdown', onPointerDown);
         window.addEventListener('scroll', updatePosition, true);
         window.addEventListener('resize', updatePosition);
         return () => {
             window.removeEventListener('keydown', onKeydown);
+            document.removeEventListener('pointerdown', onPointerDown);
             window.removeEventListener('scroll', updatePosition, true);
             window.removeEventListener('resize', updatePosition);
             if (tooltipEl === node) tooltipEl = null;
@@ -191,7 +196,8 @@
     onfocusout={handleFocusOut}
     onclick={handleClick}
     onkeydown={e => {
-        if (e.key === 'Enter' || e.key === ' ') handleClick();
+        const nativelyActivated = (e.target as HTMLElement).closest('button, a[href]');
+        if ((e.key === 'Enter' || e.key === ' ') && !nativelyActivated) handleClick();
     }}
     role="presentation">
     {@render children?.()}

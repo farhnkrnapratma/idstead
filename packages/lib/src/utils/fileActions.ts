@@ -9,11 +9,13 @@ export function downloadUrl(url: string) {
     anchor.remove();
 }
 
-export async function copyText(text: string, label: string) {
+export async function copyText(text: string, label: string): Promise<boolean> {
     try {
         await navigator.clipboard.writeText(text);
         toastStore.success(`${label} copied.`);
+        return true;
     } catch {
         toastStore.error(`Could not copy the ${label.toLowerCase()}.`);
+        return false;
     }
 }

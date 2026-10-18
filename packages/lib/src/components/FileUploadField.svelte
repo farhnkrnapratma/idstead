@@ -128,7 +128,7 @@
         )}>
         {#if isUploading}
             <svg
-                class={cn('animate-spin text-accent-text', compact ? 'size-5 shrink-0' : 'h-7 w-7')}
+                class={cn('animate-spin text-accent-text', compact ? 'size-5 shrink-0' : 'size-7')}
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"

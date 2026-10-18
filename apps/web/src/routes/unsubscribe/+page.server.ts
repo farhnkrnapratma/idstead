@@ -45,7 +45,7 @@ export const load: PageServerLoad = async ({ url, platform, cookies }) => {
         path: '/unsubscribe',
         httpOnly: true,
         secure: url.protocol === 'https:',
-        sameSite: 'strict',
+        sameSite: 'lax',
         maxAge: 60 * 60
     });
     return redirectToResult('confirm');

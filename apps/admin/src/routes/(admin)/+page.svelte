@@ -1391,11 +1391,10 @@
             && new Date(openPgpKey.expiresAt).getTime() - Date.now() < 30 * 86_400_000
         )
     );
-    const keyWkdEmails = $derived(
-        openPgpKey && publicSiteUrl ?
-            wkdEmails(openPgpKey.userIds, new URL(publicSiteUrl).host)
-        :   []
-    );
+    const keyWkdEmails = $derived.by(() => {
+        if (!openPgpKey || !URL.canParse(publicSiteUrl)) return [];
+        return wkdEmails(openPgpKey.userIds, new URL(publicSiteUrl).host);
+    });
 
     const cvSignedAt = $derived(
         cvDocState.signedAt ?
@@ -1509,7 +1508,11 @@
             preset => keyserverChoice[preset.id]
         ).map(preset => ({ label: preset.label, url: preset.url(fingerprint) }));
         const custom = customKeyserver.trim();
-        if (custom) servers.push({ label: new URL(custom).host, url: custom });
+        if (custom) {
+            const parsed = new URL(custom);
+            if (parsed.protocol !== 'https:') throw new Error('Keyservers must use https.');
+            servers.push({ label: parsed.host, url: custom });
+        }
         return servers;
     }
 
@@ -5733,7 +5736,7 @@
                             {:else if cvSignedByKey}
                                 <dl
                                     class="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5 text-sm">
-                                    {#each openPgpKey.userIds as user (user.email || user.name)}
+                                    {#each openPgpKey.userIds as user, index (index)}
                                         <dt class="text-text-muted">Signed by</dt>
                                         <dd class="min-w-0 wrap-break-word text-text-primary">
                                             {formatUserId(user)}
@@ -5850,8 +5853,9 @@
                         id="openpgp-key-file"
                         compact
                         label="Upload your public key"
-                        hint="Export it with gpg --armor --export {authorState.email
-                            || 'you@example.com'}"
+                        hint={authorState.email ?
+                            `Export it with gpg --armor --export ${authorState.email}`
+                        :   'Export it with gpg --armor --export followed by your key email'}
                         accept=".asc,.gpg,.pgp,.pub,.key,application/pgp-keys,application/octet-stream,text/plain"
                         disabled={isSavingKey}
                         isUploading={isSavingKey}
@@ -5907,7 +5911,7 @@
                             class="border-t border-border-subtle p-4">
                             {@render bandLabel('openpgp-identity-heading', 'Identity')}
                             <ul class="mt-2 flex flex-col gap-1 text-sm text-text-primary">
-                                {#each openPgpKey.userIds as user (user.email || user.name)}
+                                {#each openPgpKey.userIds as user, index (index)}
                                     <li class="wrap-break-word">{formatUserId(user)}</li>
                                 {/each}
                             </ul>

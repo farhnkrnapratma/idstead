@@ -3,6 +3,7 @@
     import Button from '#lib/components/Button.svelte';
     import EmptyState from '#lib/components/EmptyState.svelte';
     import PageContainer from '#lib/layout/PageContainer.svelte';
+    import SkipLink from '#lib/components/SkipLink.svelte';
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
@@ -35,23 +36,28 @@
         content="noindex, nofollow" />
 </svelte:head>
 
-<PageContainer class="py-16">
-    <EmptyState
-        title={copy.title}
-        description={copy.description}
-        icon={data.state === 'confirmed' ? MailCheck
-        : data.state === 'unavailable' ? TriangleAlert
-        : MailX}
-        iconClass={data.state === 'confirmed' ? 'text-success'
-        : data.state === 'unavailable' ? 'text-warning'
-        : ''}>
-        {#snippet actions()}
-            <Button
-                type="secondary"
-                size="sm"
-                href="/">
-                Back to the site
-            </Button>
-        {/snippet}
-    </EmptyState>
-</PageContainer>
+<SkipLink />
+
+<main id="main">
+    <h1 class="sr-only">Confirm subscription</h1>
+    <PageContainer class="py-16">
+        <EmptyState
+            title={copy.title}
+            description={copy.description}
+            icon={data.state === 'confirmed' ? MailCheck
+            : data.state === 'unavailable' ? TriangleAlert
+            : MailX}
+            iconClass={data.state === 'confirmed' ? 'text-success'
+            : data.state === 'unavailable' ? 'text-warning'
+            : ''}>
+            {#snippet actions()}
+                <Button
+                    type="secondary"
+                    size="sm"
+                    href="/">
+                    Back to the site
+                </Button>
+            {/snippet}
+        </EmptyState>
+    </PageContainer>
+</main>

@@ -115,6 +115,10 @@
             }
             URL.revokeObjectURL(blobUrl);
         };
+        img.onerror = () => {
+            URL.revokeObjectURL(blobUrl);
+            toastStore.error('Could not create the PNG QR code.');
+        };
         img.src = blobUrl;
     }
 </script>
@@ -180,7 +184,7 @@
             {:catch}
                 <ErrorState
                     title="Couldn't generate the QR code"
-                    description="Try again, or copy the link below instead."
+                    description="Try again, or share the page link instead."
                     onRetry={() => attempt++}
                     class="size-full" />
             {/await}
