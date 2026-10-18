@@ -87,4 +87,4 @@ A heading may contain inline math. Its ID and its table-of-contents entry use th
 
 `$$` inside code spans and fenced code blocks is left alone.
 
-Source: `packages/mdrs/src/markdown.ts` (`MATH_BLOCK_RE`, `MATH_INLINE_RE`, `extractMath`, `renderMathSource`).
+Source: `packages/mdrs/src/render/math.ts` (`MATH_OPEN_RE`, `MATH_INLINE_RE`, `extractMath`, `renderMathSource`).

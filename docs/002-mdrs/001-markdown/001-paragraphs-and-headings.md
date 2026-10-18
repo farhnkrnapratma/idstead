@@ -105,4 +105,4 @@ Below
 
 Leave a blank line before `---`, otherwise the line above becomes a setext heading.
 
-Source: `packages/mdrs/src/markdown.ts` (`injectHeadingIds`, `prefixHashLinks`, `extractHeadings`, `prepareMarkdownPage`), `packages/lib/src/utils/headingAnchors.ts`.
+Source: `packages/mdrs/src/render/headings.ts` (`injectHeadingIds`, `prefixHashLinks`, `extractHeadings`), `packages/mdrs/src/markdown.ts` (`prepareMarkdownPage`), `packages/lib/src/utils/headingAnchors.ts`.

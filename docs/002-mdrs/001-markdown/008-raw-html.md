@@ -79,4 +79,4 @@ Markdown still works inside when blank lines surround it.
 </details>
 ```
 
-Source: `packages/mdrs/src/sanitize.ts`, `packages/mdrs/src/markdown.ts` (`parseDetailsBlocks`).
+Source: `packages/mdrs/src/sanitize.ts`, `packages/mdrs/src/render/details.ts` (`parseDetailsBlocks`).

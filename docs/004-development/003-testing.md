@@ -2,7 +2,7 @@
 
 ```sh
 phase run --env dev bun run test   # bun test tests
-bun run check                      # svelte-check (web, admin), tsc (api, jobs)
+bun run check                      # svelte-check (web, admin), tsc (api, jobs, mdrs)
 bun run lint                       # prettier --write . && eslint .
 ```
 

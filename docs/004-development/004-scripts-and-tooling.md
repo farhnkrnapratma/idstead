@@ -32,7 +32,7 @@ phase run --env prod bun scripts/regenerate-post-slugs.ts apply     # real run
 `eslint.config.ts` enforces two import boundaries with `@typescript-eslint/no-restricted-imports` (type-only imports stay allowed):
 
 - **Browser code never imports server modules.** `.svelte` and `.svelte.ts` files, plus `packages/lib/src/{components,layout,article,stores,utils}`, fail lint when they import a path containing `server/` (`#lib/server/*`, `$lib/server/*`, `../server/*`).
-- **The MDRS engine stays free of data access.** `markdown.ts`, `define.ts`, `frontmatter.ts`, `markdownReferences.ts`, `markdownIcons.ts`, `placeholders.ts`, `sanitizeHtml.ts`, `legacyMarkdown.ts` and `mdrsValidation.ts` get a warning when they import `@supabase/*`, `#lib/supabase*`, `#lib/authorApi*`, `#lib/server/*`, `#lib/stores/*` or `svelte`. Two warnings remain until the engine moves into its own package with injected resolvers (`define.ts` → `authorApi`, `mdrsValidation.ts` → `supabase`).
+- **The MDRS engine is standalone.** Files under `packages/mdrs/` fail lint when they import `@supabase/*`, `#lib`, `@fkp/*`, `$app/*`, `$lib` or `svelte`. Live data reaches the engine through injected resolvers (`createMdrsResolvers` in `packages/lib/src/mdrsResolvers.ts`).
 
 ## Claude Code hooks (`.claude/`)
 

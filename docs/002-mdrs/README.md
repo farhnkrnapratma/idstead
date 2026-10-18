@@ -6,7 +6,7 @@
 | --- | --- |
 | Language | MDRS, short for Markdown Rich Syntax ("md + rs", in the way MDX is "md + jsx") |
 | File extension | `.mdrs` |
-| Implementation today | `packages/lib` in this repository (`markdown.ts`, `define.ts`, `markdownIcons.ts`, `markdownReferences.ts`, `sanitizeHtml.ts`, and the browser enhancers in `utils/`) |
+| Implementation today | The `@fkp/mdrs` workspace package (`packages/mdrs`: `markdown.ts` runs the pipeline, `render/` holds one module per syntax, `define/` the variable language) plus the browser enhancers in `packages/lib/src/utils/` |
 | Future packages | npm [`@mdrs/core`](https://www.npmjs.com/package/@mdrs/core) and crate [`mdrs`](https://crates.io/crates/mdrs), both reserved at `0.0.0`; see [roadmap](003-reference/004-roadmap.md) |
 
 ## Design goal: a drop-in superset
@@ -158,4 +158,4 @@ print("four")
 ```
 ````
 
-Source: `packages/mdrs/src/markdown.ts`, `packages/mdrs/src/define.ts`.
+Source: `packages/mdrs/src/markdown.ts`, `packages/mdrs/src/define/`.

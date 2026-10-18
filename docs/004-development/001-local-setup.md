@@ -43,7 +43,7 @@ If you have no access to the Phase project, copy `.env.example` to `.env` and fi
 ## Everyday commands
 
 ```sh
-bun run check        # svelte-check (web, admin) + tsc (api, jobs)
+bun run check        # svelte-check (web, admin) + tsc (api, jobs, mdrs)
 bun run lint         # prettier --write . && eslint .
 bun run fmt:check    # prettier --check .
 phase run --env dev bun run test   # bun test tests

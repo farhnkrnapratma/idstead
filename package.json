@@ -13,7 +13,7 @@
         "dev:production": "bun run --filter @fkp/web dev:production",
         "dev:admin": "bun run --filter @fkp/admin dev",
         "build": "bun run --filter './apps/*' build",
-        "check": "bun run --filter './apps/*' check",
+        "check": "bun run --filter './apps/*' --filter './packages/*' check",
         "test": "bun test tests",
         "prepare": "bun run --filter './apps/*' prepare; bash tooling/git-hooks/install.sh || echo ''",
         "lint": "prettier --write . && eslint .",
