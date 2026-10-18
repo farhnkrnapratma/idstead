@@ -20,6 +20,7 @@ export function sanitizePublicApiData(obj: any): any {
                 key === 'updatedAt'
                 || key === 'revision'
                 || key === 'avatarVersion'
+                || key === 'bannerVersion'
                 || key === 'manifestSettings'
                 || key === 'id'
                 || key === 'authorId'

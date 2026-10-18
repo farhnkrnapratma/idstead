@@ -28,6 +28,7 @@ The suite sends about 50 requests. The rate limit is 60 per minute, so wait a mi
 | `apiParams.test.ts` | `parseApiParams`, aliases, conflicts, `output` vs `Accept`, boolean and number parsing |
 | `postLookup.test.ts` | Post slugs, slug regeneration plan, `findPost()` (ID / prefix / slug) |
 | `publicPost.test.ts` | `publicPostFields` keeps only public columns and swaps the UUID for the public ID |
+| `sanitizePublicApiData.test.ts` | `sanitizePublicApiData` drops row IDs and the avatar and banner asset versions from `/v1/author` |
 | `ard.test.ts`, `ardIngestion.test.ts` | ARD manifest, search, filters, facets, tokens, no lexical fallback; index ingestion and migration privacy |
 | `markdown.test.ts`, `legacyMarkdown.test.ts`, `frontmatter.test.ts`, `postAssetMarkdown.test.ts` | Markdown engine output; legacy syntax migration; YAML frontmatter and `:::define` validation; post images (AVIF with WebP fallback) and WebM videos |
 | `sanitizeHtml.test.ts`, `decodeHtmlEntities.test.ts` | Hostile input, and engine output surviving the allow-list; single-level entity decoding |
