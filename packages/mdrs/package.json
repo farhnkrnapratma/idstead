@@ -9,6 +9,9 @@
         "./legacy": "./src/legacy.ts"
     },
     "sideEffects": false,
+    "scripts": {
+        "check": "tsc --noEmit -p tsconfig.json"
+    },
     "dependencies": {
         "bootstrap-icons": "^1.13.2",
         "js-yaml": "^5.4.3",

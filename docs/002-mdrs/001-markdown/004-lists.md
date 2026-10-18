@@ -107,4 +107,4 @@ Directives such as `:::note` and `:::math` also work inside list items, as long 
 2. Start the dev server.
 ```
 
-Source: `packages/mdrs/src/markdown.ts` (`list` renderer, `cleanListItemHtml`, `parseContainers`).
+Source: `packages/mdrs/src/render/parser.ts` (`list` renderer), `packages/mdrs/src/render/tasks.ts` (`cleanListItemHtml`), `packages/mdrs/src/render/containers.ts` (`parseContainers`).

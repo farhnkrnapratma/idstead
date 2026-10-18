@@ -78,4 +78,4 @@ Heading IDs carry the prefix so they can't collide with the page around them. A 
 - Links inside the document (`[setup](#setup)`) are rewritten to `#mdrs-setup` when that heading exists (`prefixHashLinks`).
 - A URL such as `/blog/post#setup` scrolls to `#mdrs-setup`. The post and legal pages resolve hashes with `resolveMdrsHash`, which prefers the prefixed ID inside the article.
 
-Source: `packages/lib/src/mdrs.css`, `packages/mdrs/src/sanitize.ts` (`CLASS_TOKEN_RE`, `ID_RE`), `packages/mdrs/src/markdown.ts` (`injectHeadingIds`, `prefixHashLinks`), `packages/lib/src/utils/headingAnchors.ts` (`resolveMdrsHash`).
+Source: `packages/lib/src/mdrs.css`, `packages/mdrs/src/sanitize.ts` (`CLASS_TOKEN_RE`, `ID_RE`), `packages/mdrs/src/render/headings.ts` (`injectHeadingIds`, `prefixHashLinks`), `packages/lib/src/utils/headingAnchors.ts` (`resolveMdrsHash`).

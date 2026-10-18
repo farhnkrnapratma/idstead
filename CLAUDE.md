@@ -28,7 +28,7 @@ bun run --filter @fkp/api dev   # API worker via wrangler dev on :8787
 bun run --filter @fkp/jobs dev  # jobs worker via wrangler dev --test-scheduled on :8788
 bun run build            # build every app (SvelteKit builds + wrangler dry-run bundles)
 bun run test             # Bun regression tests in tests/
-bun run check            # svelte-check for web/admin, tsc for api/jobs
+bun run check            # svelte-check for web/admin, tsc for api/jobs/mdrs
 bun run lint             # prettier --write . && eslint .
 bun run fmt / fmt:check  # prettier
 ```

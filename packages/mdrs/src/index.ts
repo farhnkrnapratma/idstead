@@ -1,14 +1,11 @@
+export { renderMarkdown, renderMarkdownUnsafe, prepareMarkdownPage } from './markdown';
 export {
-    renderMarkdown,
-    renderMarkdownUnsafe,
-    prepareMarkdownPage,
     injectHeadingIds,
     extractHeadings,
     prefixHashLinks,
-    replaceMathBlocks,
-    MATH_INLINE_RE,
     type HeadingItem
-} from './markdown';
+} from './render/headings';
+export { replaceMathBlocks, MATH_INLINE_RE } from './render/math';
 export {
     MAX_DOCUMENT_LENGTH,
     DefineError,

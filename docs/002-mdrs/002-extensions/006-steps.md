@@ -71,4 +71,4 @@ Step headings are normal headings: they get IDs and appear in the table of conte
 - If the block contains a list, the list form wins and headings are left as they are.
 - Steps work inside tabs, details and callouts.
 
-Source: `packages/mdrs/src/markdown.ts` (`renderContainer`, `parseSteps`).
+Source: `packages/mdrs/src/render/containers.ts` (`renderContainer`), `packages/mdrs/src/render/steps.ts` (`parseSteps`).

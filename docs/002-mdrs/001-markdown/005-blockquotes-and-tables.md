@@ -68,4 +68,4 @@ GFM tables need a header row and a delimiter row. Colons in the delimiter row se
 - The outer pipes are optional, and the columns don't have to line up in the source.
 - Every table is wrapped in a horizontally scrollable `div.mdrs-table`, so wide tables don't break the layout on phones.
 
-Source: `packages/mdrs/src/markdown.ts` (`table` renderer, `convertGithubAlerts`).
+Source: `packages/mdrs/src/render/parser.ts` (`table` renderer), `packages/mdrs/src/render/alerts.ts` (`convertGithubAlerts`).

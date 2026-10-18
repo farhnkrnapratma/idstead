@@ -1,30 +1,32 @@
 # Rendering pipeline
 
-MDRS renders in two phases: a server pass that turns the source into sanitized HTML, and a browser pass that adds interactivity. Knowing the order explains most of the rules on the other pages, for example why code protects directives and why `${…}` works inside math.
+MDRS renders in two phases. File names below are relative to `packages/mdrs/src/`; `markdown.ts` runs the steps in order.
+
+The two phases are a server pass that turns the source into sanitized HTML, and a browser pass that adds interactivity. Knowing the order explains most of the rules on the other pages, for example why code protects directives and why `${…}` works inside math.
 
 ## Server pass
 
 ```mermaid
 flowchart TD
     A[Source] --> A1["Strip U+E000/U+E001,<br/>remove YAML frontmatter<br/>(frontmatter.ts)"]
-    A1 --> B["Extract :::define block<br/>(define.ts)"]
-    B --> C["Evaluate define entries<br/>(only if the block has entries)"]
-    C --> D["Extract :::ignore-render blocks<br/>as escaped pre"]
-    D --> E["Protect ${…} and [text].${…}<br/>(only with :::define; code and \${ skipped)"]
-    E --> F["Extract math<br/>$$ … $$ and :::math"]
+    A1 --> B["Extract :::define block<br/>(define/block.ts)"]
+    B --> C["Evaluate define entries<br/>(define/evaluate.ts, only if the block has entries)"]
+    C --> D["Extract :::ignore-render blocks<br/>as escaped pre (render/ignoreRender.ts)"]
+    D --> E["Protect ${…} and [text].${…}<br/>(define/interpolation.ts; only with :::define;<br/>code and \${ skipped)"]
+    E --> F["Extract math<br/>$$ … $$ and :::math (render/math.ts)"]
     F --> G[Resolve interpolation]
     G --> H["Render math with KaTeX<br/>(interpolation inside formulas resolved first)"]
-    H --> I["Extract :::references<br/>(markdownReferences.ts)"]
-    I --> J["Load icons named in icon=…<br/>(markdownIcons.ts)"]
-    J --> J1["Turn GitHub alerts<br/>> [!NOTE] into :::note"]
-    J1 --> K["Parse directives<br/>:::name … ::: and ::tab … ::"]
-    K --> L["marked: CommonMark + GFM + footnotes,<br/>custom code, table, list, link, image renderers"]
-    L --> M[Style details blocks]
-    M --> N[Build steps]
-    N --> O[Format footnote back-links, place References]
+    H --> I["Extract :::references<br/>(references.ts)"]
+    I --> J["Load icons named in icon=…<br/>(icons.ts)"]
+    J --> J1["Turn GitHub alerts<br/>> [!NOTE] into :::note (render/alerts.ts)"]
+    J1 --> K["Parse directives<br/>:::name … ::: and ::tab … ::<br/>(render/containers.ts)"]
+    K --> L["marked: CommonMark + GFM + footnotes,<br/>custom code, table, list, link, image renderers<br/>(render/parser.ts)"]
+    L --> M["Style details blocks (render/details.ts)"]
+    M --> N["Build steps (render/steps.ts)"]
+    N --> O["Format footnote back-links, place References<br/>(render/footnotes.ts, references.ts)"]
     O --> P[Restore math and ignore-render placeholders]
-    P --> Q["sanitizeHtml allowlist"]
-    Q --> R["injectHeadingIds (mdrs- IDs), prefixHashLinks,<br/>extractHeadings (prepareMarkdownPage)"]
+    P --> Q["sanitizeHtml allowlist (sanitize.ts)"]
+    Q --> R["injectHeadingIds (mdrs- IDs), prefixHashLinks,<br/>extractHeadings (render/headings.ts)"]
 ```
 
 `renderMarkdownUnsafe` runs every step up to restoring placeholders, `renderMarkdown` adds `sanitizeHtml`, and `prepareMarkdownPage` adds heading IDs, rewrites same-document links to them, and builds the table of contents.
