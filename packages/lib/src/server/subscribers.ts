@@ -65,12 +65,7 @@ function payload(from: string, mail: OutgoingEmail) {
         text: mail.text,
         ...(mail.replyTo ? { reply_to: mail.replyTo } : {}),
         ...(mail.unsubscribeUrl ?
-            {
-                headers: {
-                    'List-Unsubscribe': `<${mail.unsubscribeUrl}>`,
-                    'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click'
-                }
-            }
+            { headers: { 'List-Unsubscribe': `<${mail.unsubscribeUrl}>` } }
         :   {})
     };
 }

@@ -66,7 +66,6 @@ See [docs/003-api/002-ard.md](../003-api/002-ard.md).
 | `/api/internal/feedback`                      | POST   | same-origin                         |
 | `/api/internal/subscribe`                     | POST   | same-origin, Turnstile              |
 | `/api/internal/subscribe/unsubscribe-request` | POST   | same-origin, Turnstile              |
-| `/api/internal/subscribe/unsubscribe`         | POST   | 64-hex token                        |
 | `/api/internal/contact`                       | POST   | same-origin, Turnstile              |
 
 Details: [004-public-write-endpoints.md](004-public-write-endpoints.md).

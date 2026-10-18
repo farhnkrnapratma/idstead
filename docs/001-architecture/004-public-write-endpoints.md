@@ -75,12 +75,11 @@ sequenceDiagram
 | `POST /api/internal/feedback` | same-origin, `sec-fetch-site` not `cross-site` | RPC `db_record_page_feedback`, which writes `db_feedback_operations`, `db_feedback_events` and, for posts, `db_post_feedback` and `db_posts.helpful_*` |
 | `POST /api/internal/subscribe` | same-origin, Turnstile | `db_subscribers` and a confirm mail |
 | `POST /api/internal/subscribe/unsubscribe-request` | same-origin, Turnstile | none (mails an unsubscribe link without revealing whether the address exists) |
-| `POST /api/internal/subscribe/unsubscribe` | 64-hex token | `db_subscribers.status = 'unsubscribed'` (always 204) |
 | `POST /api/internal/contact` | same-origin, Turnstile | a mail to the owner, then `db_admin_notifications` |
 
 ## Notes
 
-- **Origin check:** every endpoint above except `subscribe/unsubscribe` rejects a cross-origin request with `403` and `FORBIDDEN_ORIGIN`.
+- **Origin check:** every endpoint above rejects a cross-origin request with `403` and `FORBIDDEN_ORIGIN`.
 - **Clients:** writes use `getSupabaseAdminClient()` (service role, bypasses RLS). It is server-only (`packages/lib/src/server/supabaseAdmin.ts`).
 - **Activity log:** these public endpoints do **not** write `db_activity_log`. Only admin endpoints do.
 - **IP hashing** uses SHA-256 of the IP plus `IP_SALT`. It is used for view de-duplication, report and feedback tracking, and subscriber rows.
