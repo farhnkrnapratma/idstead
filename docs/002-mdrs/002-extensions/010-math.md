@@ -12,7 +12,7 @@ $$ x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a} $$ render inline.
 ```
 
 - Write the formula either tight against both delimiters (`$$x^2$$`) or with spaces on both sides (`$$ x^2 $$`). A mix like `$$5 and $$` is not math.
-- The closing `$$` can't be followed directly by a digit, and a formula can't contain `$$`. Together these rules keep prices such as `$$5 and $$10` as plain text, the way Pandoc treats `$`.
+- The closing `$$` can't be followed directly by a digit, and a formula can't contain `$$`. Together these rules leave a stray `$$` before a number, as in `$$5 and $$10`, as plain text (both dollar signs stay visible), the way Pandoc treats `$`. Write prices with a single `$`.
 - An inline formula can't span lines. `$$ a` on one line and `b $$` on the next stay plain text.
 - A single `$` is always plain text, so prices like $5 and $10 are safe.
 - Write `\$$` to get a literal `$$`.

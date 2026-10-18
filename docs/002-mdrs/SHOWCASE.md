@@ -257,7 +257,7 @@ A link ending in `.mp4` or `.webm`, written as an image (`![Clip](https://…/cl
 
 ## Math
 
-Inline formulas sit in the text, like Euler's identity $$ e^{i\pi} + 1 = 0 $$ or $$x^2$$. Prices stay prices, though: a coffee is $$5 and a book is $$10.
+Inline formulas sit in the text, like Euler's identity $$ e^{i\pi} + 1 = 0 $$ or $$x^2$$. Prices stay prices, though: a single `$` never starts math, so a coffee is $5 and a book is $10.
 
 :::math
 \int_{-\infty}^{\infty} e^{-x^2} \, dx = \sqrt{\pi}
