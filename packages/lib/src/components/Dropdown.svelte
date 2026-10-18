@@ -28,6 +28,7 @@
     import { Check, ChevronDown, Square, SquareCheck } from '@lucide/svelte';
     import type { FormFieldContext } from '../types';
     import { cn } from '../utils/cn';
+    import { MENU_ITEM_TONE_CLASSES } from '../utils/menuItemStyles';
     import { portal } from '../utils/actions';
     import { focusScope } from '../utils/focusScope';
     import { popoverPosition } from '../utils/popoverPosition';
@@ -371,9 +372,7 @@
                         class={cn(
                             'relative flex w-full cursor-pointer items-center gap-2 text-left text-xs font-medium whitespace-nowrap transition-colors focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
                             rowPadding,
-                            action.danger ?
-                                'text-danger hover:bg-danger/10 focus-visible:bg-danger/10'
-                            :   'text-text-primary hover:bg-surface-hover hover:text-accent-text focus-visible:bg-surface-hover focus-visible:text-accent-text'
+                            MENU_ITEM_TONE_CLASSES[action.danger ? 'danger' : 'default']
                         )}>
                         {#if action.icon}
                             <action.icon class="size-3.5 shrink-0" />
