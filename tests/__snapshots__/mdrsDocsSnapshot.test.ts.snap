@@ -1,0 +1,1489 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`MDRS docs examples render unchanged 001-markdown/001-paragraphs-and-headings.md #1 1`] = `
+"<p>This is the first paragraph.
+It continues on this line.</p>
+<p>This is a second paragraph.</p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/001-paragraphs-and-headings.md #2 1`] = `
+"<p>Line one<br>Line two
+Line three</p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/001-paragraphs-and-headings.md #3 1`] = `
+"<h1>Heading 1</h1>
+<h2>Heading 2</h2>
+<h3>Heading 3</h3>
+<h4>Heading 4</h4>
+<h5>Heading 5</h5>
+<h6>Heading 6</h6>
+<h1>Also heading 1</h1>
+<h2>Also heading 2</h2>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/001-paragraphs-and-headings.md #4 1`] = `
+"<h2>Install <code>bun</code></h2>
+<h2>Install <code>bun</code></h2>
+<h3>Math <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>x</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">x^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8141em"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em"><span style="top:-3.063em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></h3>
+<h2>!!!</h2>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/001-paragraphs-and-headings.md #5 1`] = `
+"<p>Above</p>
+<hr>
+<hr>
+<hr>
+<p>Below</p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/002-emphasis-and-inline.md #1 1`] = `
+"<p><strong>bold</strong> or <strong>bold</strong>
+<em>italic</em> or <em>italic</em>
+<em><strong>bold italic</strong></em> or <em><strong>bold italic</strong></em>
+<del>strikethrough</del></p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/002-emphasis-and-inline.md #2 1`] = `
+"<p>*not italic* # not a heading [not a link](url) 1. not a list</p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/002-emphasis-and-inline.md #3 1`] = `
+"<p>&copy; 2026 · 5 &times; 3 &rarr; 15</p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/002-emphasis-and-inline.md #4 1`] = `
+"<p>Press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>.
+H<sub>2</sub>O and 10<sup>6</sup>.
+<u>Underlined</u>, <mark>highlighted</mark>, <ins>inserted</ins>, <del>deleted</del>, <s>struck</s>.
+<abbr title="Markdown Rich Syntax">MDRS</abbr><br>next line</p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/002-emphasis-and-inline.md #5 1`] = `
+"
+<p>Visible text.</p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/003-links-and-images.md #1 1`] = `
+"<p><a href="https://example.com" class="mdrs-external-link" target="_blank" rel="noopener noreferrer">Link text<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>
+<a href="https://example.com" title="Shown as a tooltip" class="mdrs-external-link" target="_blank" rel="noopener noreferrer">With a title<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>
+<a href="/blog">Relative link</a>
+<a href="#images">Section on this page</a></p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/003-links-and-images.md #2 1`] = `
+"<p>Read the <a href="https://spec.commonmark.org" title="CommonMark Spec" class="mdrs-external-link" target="_blank" rel="noopener noreferrer">CommonMark spec<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a> or just <a href="https://spec.commonmark.org" title="CommonMark Spec" class="mdrs-external-link" target="_blank" rel="noopener noreferrer">spec<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>.</p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/003-links-and-images.md #3 1`] = `
+"<p><a href="https://example.com" class="mdrs-external-link" target="_blank" rel="noopener noreferrer">https://example.com<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>, <a href="http://www.example.com" class="mdrs-external-link" target="_blank" rel="noopener noreferrer">www.example.com<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>, <a href="mailto:foo@bar.com">foo@bar.com</a> and <a href="https://commonmark.org" class="mdrs-external-link" target="_blank" rel="noopener noreferrer">https://commonmark.org<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a></p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/003-links-and-images.md #4 1`] = `
+"<p><a href="mailto:hello@example.com">Mail me</a> · <a href="tel:+620000">Call</a> · <a href="#">Blocked</a></p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/003-links-and-images.md #5 1`] = `
+"<p><a href="https://fkp.my.id/blog">Internal</a> and <a href="https://example.com" class="mdrs-external-link" target="_blank" rel="noopener noreferrer">external<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a></p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/003-links-and-images.md #6 1`] = `
+"<p><img src="https://example.com/diagram.png" alt="Alt text" title="Optional title" loading="lazy" decoding="async"></p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/004-lists.md #1 1`] = `
+"<ul class="mdrs-list mdrs-list--unordered">
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">SvelteKit</div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Supabase</div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Cloudflare Workers</div></li>
+</ul>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/004-lists.md #2 1`] = `
+"<ol start="3" class="mdrs-list mdrs-list--ordered">
+<li class="mdrs-list-item">Three</li>
+<li class="mdrs-list-item">Four</li>
+<li class="mdrs-list-item">Five</li>
+</ol>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/004-lists.md #3 1`] = `
+"<ol class="mdrs-list mdrs-list--ordered">
+<li class="mdrs-list-item">Provision the database</li>
+<li class="mdrs-list-item">Configure rendering:<ul class="mdrs-list mdrs-list--unordered">
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">KaTeX on the server</div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Mermaid in the browser</div></li>
+</ul></li>
+<li class="mdrs-list-item">Ship it</li>
+</ol>
+<ul class="mdrs-list mdrs-list--unordered mdrs-list--loose">
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content"><p>An item with two paragraphs.</p>
+<p>The second paragraph, indented under the item.</p></div></li>
+</ul>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/004-lists.md #4 1`] = `
+"<ul class="mdrs-list mdrs-list--unordered mdrs-list--loose">
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content"><p>First</p></div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content"><p>Second</p></div></li>
+</ul>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/004-lists.md #5 1`] = `
+"<ul class="mdrs-list mdrs-list--unordered">
+<li class="mdrs-list-item mdrs-task mdrs-task--done"><span class="mdrs-task-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/></svg></span><span class="mdrs-sr-only">Done: </span><div class="mdrs-task-content">Write the docs</div></li>
+<li class="mdrs-list-item mdrs-task mdrs-task--todo"><span class="mdrs-task-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon"><rect width="18" height="18" x="3" y="3" rx="2"/></svg></span><span class="mdrs-sr-only">To do: </span><div class="mdrs-task-content">Reserve the package names</div></li>
+</ul>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/004-lists.md #6 1`] = `
+"<ol class="mdrs-list mdrs-list--ordered">
+<li class="mdrs-list-item mdrs-task mdrs-task--done"><span class="mdrs-task-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/></svg></span><span class="mdrs-sr-only">Done: </span><div class="mdrs-task-content">Reserve the name</div></li>
+<li class="mdrs-list-item mdrs-task mdrs-task--todo"><span class="mdrs-task-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon"><rect width="18" height="18" x="3" y="3" rx="2"/></svg></span><span class="mdrs-sr-only">To do: </span><div class="mdrs-task-content">Publish the first release</div></li>
+</ol>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/004-lists.md #7 1`] = `
+"<ol class="mdrs-list mdrs-list--ordered mdrs-list--loose">
+<li class="mdrs-list-item"><p>Install the dependencies.</p>
+<div class="mdrs-alert mdrs-alert--tip">
+  <div class="mdrs-alert-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-lightbulb"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+    <span>Tip</span>
+  </div>
+  <div class="mdrs-alert-content"><p>Use <code>bun install</code> at the repository root.</p>
+</div>
+</div></li>
+<li class="mdrs-list-item"><p>Start the dev server.</p></li>
+</ol>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/005-blockquotes-and-tables.md #1 1`] = `
+"<blockquote>
+<p>A greater-than sign opens a blockquote.</p>
+<blockquote>
+<p>Nested quote.</p>
+</blockquote>
+<ul class="mdrs-list mdrs-list--unordered">
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">A list inside the quote</div></li>
+</ul>
+</blockquote>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/005-blockquotes-and-tables.md #2 1`] = `
+"<blockquote>
+<div class="mdrs-alert mdrs-alert--note">
+  <div class="mdrs-alert-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-info"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+    <span>Note</span>
+  </div>
+  <div class="mdrs-alert-content"><p>Callouts render inside the quote.</p>
+</div>
+</div>
+</blockquote>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/005-blockquotes-and-tables.md #3 1`] = `
+"<div class="mdrs-table">
+<table>
+<thead>
+<tr>
+<th align="left">Feature</th>
+<th align="center">Engine</th>
+<th align="right">Output</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">Math</td>
+<td align="center">KaTeX</td>
+<td align="right">HTML + MathML</td>
+</tr>
+<tr>
+<td align="left">Diagrams</td>
+<td align="center">Mermaid</td>
+<td align="right">SVG</td>
+</tr>
+<tr>
+<td align="left">Charts</td>
+<td align="center">LayerChart</td>
+<td align="right">SVG</td>
+</tr>
+</tbody></table>
+</div>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/006-code.md #1 1`] = `
+"<p>Run <code>bun install</code>, then <code>echo \`date\` </code> prints the date.</p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/006-code.md #2 1`] = `
+"<pre><code class="language-ts">const answer: number = 42;
+</code></pre>
+<pre><code class="language-python">print(&quot;Hello, World!&quot;)
+</code></pre>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/006-code.md #3 1`] = `
+"<p>Paragraph.</p>
+<pre><code>indented code
+</code></pre>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/007-footnotes.md #1 1`] = `
+"<p>MDRS renders math on the server<sup><a id="mdrs-fn-ref-katex" href="#mdrs-fn-katex" data-mdrs-fn-ref="" aria-describedby="mdrs-fn-label">[1]</a></sup> and diagrams in the browser<sup><a id="mdrs-fn-ref-mermaid" href="#mdrs-fn-mermaid" data-mdrs-fn-ref="" aria-describedby="mdrs-fn-label">[2]</a></sup>.</p>
+<section class="mdrs-footnotes" data-mdrs-footnotes="">
+<h2 id="mdrs-fn-label" class="mdrs-sr-only">Footnotes</h2>
+<ol>
+<li id="mdrs-fn-katex">
+<p><a href="#mdrs-fn-ref-katex" class="mdrs-footnote-backref" aria-label="Back to reference">^</a>With <a href="https://katex.org" class="mdrs-external-link" target="_blank" rel="noopener noreferrer">KaTeX<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>, so no client JavaScript is needed.</p>
+</li>
+<li id="mdrs-fn-mermaid">
+<p><a href="#mdrs-fn-ref-mermaid" class="mdrs-footnote-backref" aria-label="Back to reference">^</a>Mermaid loads lazily when the diagram is rendered.</p>
+</li>
+</ol>
+</section>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/007-footnotes.md #2 1`] = `
+"<p>Cited once<sup><a id="mdrs-fn-ref-1" href="#mdrs-fn-1" data-mdrs-fn-ref="" aria-describedby="mdrs-fn-label">[1]</a></sup>, then twice<sup><a id="mdrs-fn-ref-2" href="#mdrs-fn-2" data-mdrs-fn-ref="" aria-describedby="mdrs-fn-label">[2]</a></sup> and again<sup><a id="mdrs-fn-ref-2-2" href="#mdrs-fn-2" data-mdrs-fn-ref="" aria-describedby="mdrs-fn-label">[2]</a></sup>.</p>
+<section class="mdrs-footnotes" data-mdrs-footnotes="">
+<h2 id="mdrs-fn-label" class="mdrs-sr-only">Footnotes</h2>
+<ol>
+<li id="mdrs-fn-1">
+<p><a href="#mdrs-fn-ref-1" class="mdrs-footnote-backref" aria-label="Back to reference">^</a>Single back-link.</p>
+</li>
+<li id="mdrs-fn-2">
+<p><span class="mdrs-footnote-backref-static" aria-hidden="true">^</span><span class="mdrs-footnote-backrefs"><a href="#mdrs-fn-ref-2" class="mdrs-footnote-backref mdrs-footnote-backref--sub" aria-label="Back to reference a">a</a><a href="#mdrs-fn-ref-2-2" class="mdrs-footnote-backref mdrs-footnote-backref--sub" aria-label="Back to reference b">b</a></span>Two back-links, a and b.</p>
+</li>
+</ol>
+</section>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/007-footnotes.md #3 1`] = `
+"<p>A long note<sup><a id="mdrs-fn-ref-long" href="#mdrs-fn-long" data-mdrs-fn-ref="" aria-describedby="mdrs-fn-label">[1]</a></sup>.</p>
+<section class="mdrs-footnotes" data-mdrs-footnotes="">
+<h2 id="mdrs-fn-label" class="mdrs-sr-only">Footnotes</h2>
+<ol>
+<li id="mdrs-fn-long">
+<p><a href="#mdrs-fn-ref-long" class="mdrs-footnote-backref" aria-label="Back to reference">^</a>First paragraph of the note.</p>
+<p>Second paragraph, indented four spaces.</p>
+</li>
+</ol>
+</section>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/008-raw-html.md #1 1`] = `
+"<dl><dt>Term</dt><dd>Definition</dd></dl>
+
+Old <kbd>Ctrl</kbd>"
+`;
+
+exports[`MDRS docs examples render unchanged 001-markdown/008-raw-html.md #2 1`] = `
+"<details class="mdrs-details">
+ <summary class="mdrs-details-summary">
+ <span class="mdrs-details-title">Raw HTML details</span>
+ <span class="mdrs-details-icon" aria-hidden="true">
+ <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-chevrons-up-down"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+ <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-chevrons-down-up"><path d="m7 20 5-5 5 5"/><path d="m7 4 5 5 5-5"/></svg>
+ </span>
+ </summary>
+ <div class="mdrs-details-body">
+ <p>Markdown still works inside when blank lines surround it.</p>
+ </div>
+</details>"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/001-frontmatter.md #1 1`] = `
+"<h1>Shipping MDRS</h1>
+<p>The body starts here.</p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/001-frontmatter.md #2 1`] = `
+"<p>There are <span class="mdrs-define-error" title="&#39;posts&#39; is undefined">[define error]</span> published posts.</p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/002-directives.md #1 1`] = `
+"<div class="mdrs-callout">
+  <div class="mdrs-callout-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-rocket" aria-hidden="true"><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09"/><path d="M9 12a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.4 22.4 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 .05 5 .05"/></svg><span>Changelog</span>
+  </div>
+  <div class="mdrs-callout-content"><p>Any <strong>Markdown</strong>, including other directives.</p>
+</div>
+</div>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/002-directives.md #2 1`] = `
+"<details class="mdrs-details">
+ <summary class="mdrs-details-summary">
+ <span class="mdrs-details-title">Troubleshooting</span>
+ <span class="mdrs-details-icon" aria-hidden="true">
+ <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-chevrons-up-down"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+ <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-chevrons-down-up"><path d="m7 20 5-5 5 5"/><path d="m7 4 5 5 5-5"/></svg>
+ </span>
+ </summary>
+ <div class="mdrs-details-body">
+ <div class="mdrs-alert mdrs-alert--warning">
+  <div class="mdrs-alert-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-alert-triangle"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+    <span>Warning</span>
+  </div>
+  <div class="mdrs-alert-content"><p>Restart the dev server after changing environment variables.</p>
+</div>
+</div><p>Still stuck? Open an issue.</p>
+ </div>
+</details>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/002-directives.md #3 1`] = `
+"<ul class="mdrs-list mdrs-list--unordered mdrs-list--loose">
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content"><p>Step one</p>
+<div class="mdrs-alert mdrs-alert--tip">
+  <div class="mdrs-alert-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-lightbulb"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+    <span>Tip</span>
+  </div>
+  <div class="mdrs-alert-content"><p>Indented under the list item.</p>
+</div>
+</div></div></li>
+</ul>
+<blockquote>
+<div class="mdrs-alert mdrs-alert--caution">
+  <div class="mdrs-alert-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-circle-alert"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+    <span>Caution</span>
+  </div>
+  <div class="mdrs-alert-content"><p>Inside a blockquote.</p>
+</div>
+</div>
+</blockquote>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/003-callouts.md #1 1`] = `
+"<div class="mdrs-alert mdrs-alert--note">
+  <div class="mdrs-alert-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-info"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+    <span>Note</span>
+  </div>
+  <div class="mdrs-alert-content"><p>Background information the reader can safely skip.</p>
+</div>
+</div><div class="mdrs-alert mdrs-alert--tip">
+  <div class="mdrs-alert-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-lightbulb"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+    <span>Tip</span>
+  </div>
+  <div class="mdrs-alert-content"><p>A shortcut or best practice that saves time.</p>
+</div>
+</div><div class="mdrs-alert mdrs-alert--important">
+  <div class="mdrs-alert-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-message-square-warning"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 7v2"/><path d="M12 13h.01"/></svg>
+    <span>Important</span>
+  </div>
+  <div class="mdrs-alert-content"><p>A prerequisite or step that must not be skipped.</p>
+</div>
+</div><div class="mdrs-alert mdrs-alert--warning">
+  <div class="mdrs-alert-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-alert-triangle"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+    <span>Warning</span>
+  </div>
+  <div class="mdrs-alert-content"><p>A deprecation, breaking change or surprising behaviour.</p>
+</div>
+</div><div class="mdrs-alert mdrs-alert--caution">
+  <div class="mdrs-alert-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-circle-alert"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+    <span>Caution</span>
+  </div>
+  <div class="mdrs-alert-content"><p>An action that risks data loss, security exposure or irreversible damage.</p>
+</div>
+</div>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/003-callouts.md #2 1`] = `
+"<div class="mdrs-alert mdrs-alert--warning">
+  <div class="mdrs-alert-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-alert-triangle"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+    <span>Warning</span>
+  </div>
+  <div class="mdrs-alert-content"><p>The v1 API reshape broke <code>?id=</code> for drafts.</p>
+</div>
+</div>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/003-callouts.md #3 1`] = `
+"<div class="mdrs-callout">
+  <div class="mdrs-callout-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-list" aria-hidden="true"><path d="M3 5h.01"/><path d="M3 12h.01"/><path d="M3 19h.01"/><path d="M8 5h13"/><path d="M8 12h13"/><path d="M8 19h13"/></svg><span>Changelog</span>
+  </div>
+  <div class="mdrs-callout-content"><p><strong>v2.1</strong>: added variables and live data.</p>
+</div>
+</div><div class="mdrs-callout">
+  <div class="mdrs-callout-title">
+    <span>No icon</span>
+  </div>
+  <div class="mdrs-callout-content"><p>The <code>icon</code> attribute is optional.</p>
+</div>
+</div>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/003-callouts.md #4 1`] = `
+"<div class="mdrs-callout">
+  <div class="mdrs-callout-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-rocket" aria-hidden="true"><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09"/><path d="M9 12a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.4 22.4 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 .05 5 .05"/></svg><span>Forced Lucide icon</span>
+  </div>
+  <div class="mdrs-callout-content"><p>Always the Lucide rocket.</p>
+</div>
+</div><div class="mdrs-callout">
+  <div class="mdrs-callout-title">
+    <i class="mdrs-icon bi bi-github" aria-hidden="true"></i><span>Forced Bootstrap icon</span>
+  </div>
+  <div class="mdrs-callout-content"><p>Always the Bootstrap Icons GitHub logo.</p>
+</div>
+</div>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/004-details.md #1 1`] = `
+"<details class="mdrs-details">
+ <summary class="mdrs-details-summary">
+ <span class="mdrs-details-title">What does server-side rendered math mean?</span>
+ <span class="mdrs-details-icon" aria-hidden="true">
+ <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-chevrons-up-down"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+ <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-chevrons-down-up"><path d="m7 20 5-5 5 5"/><path d="m7 4 5 5 5-5"/></svg>
+ </span>
+ </summary>
+ <div class="mdrs-details-body">
+ <p>KaTeX turns the TeX source into HTML and MathML on the server, so formulas
+appear without any client JavaScript.</p>
+ </div>
+</details>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/004-details.md #2 1`] = `
+"<details class="mdrs-details">
+ <summary class="mdrs-details-summary">
+ <span class="mdrs-details-title">Outer</span>
+ <span class="mdrs-details-icon" aria-hidden="true">
+ <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-chevrons-up-down"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+ <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-chevrons-down-up"><path d="m7 20 5-5 5 5"/><path d="m7 4 5 5 5-5"/></svg>
+ </span>
+ </summary>
+ <div class="mdrs-details-body">
+ <p>Some text.</p>
+<details class="mdrs-details">
+ <summary class="mdrs-details-summary">
+ <span class="mdrs-details-title">Inner</span>
+ <span class="mdrs-details-icon" aria-hidden="true">
+ <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-chevrons-up-down"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+ <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-chevrons-down-up"><path d="m7 20 5-5 5 5"/><path d="m7 4 5 5 5-5"/></svg>
+ </span>
+ </summary>
+ <div class="mdrs-details-body">
+ <ul class="mdrs-list mdrs-list--unordered">
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">A list</div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">inside the nested section</div></li>
+</ul>
+<pre><code class="language-sh">echo &quot;code works too&quot;
+</code></pre>
+ </div>
+</details>
+ </div>
+</details>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/005-tabs-and-snippets.md #1 1`] = `
+"<div class="mdrs-tabs">
+  <div class="mdrs-tabs-header" role="tablist">
+    <div class="mdrs-tabs-nav">
+      <button type="button" role="tab" class="mdrs-tab mdrs-is-active" data-mdrs-tab-label="Server-side rendering" aria-selected="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-server" aria-hidden="true"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>Server-side rendering</button><button type="button" role="tab" class="mdrs-tab" data-mdrs-tab-label="Client-side rendering" aria-selected="false"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-monitor" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>Client-side rendering</button>
+    </div>
+  </div>
+  <div class="mdrs-tabs-body">
+    <div role="tabpanel" class="mdrs-tab-panel"><p>The full HTML is built on the server, so search engines and slow devices see real content.</p>
+</div><div role="tabpanel" class="mdrs-tab-panel" hidden><p>A minimal shell is sent and the page is built in the browser.</p>
+</div>
+  </div>
+</div>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/005-tabs-and-snippets.md #2 1`] = `
+"<div class="mdrs-snippets" data-mdrs-tab-key="pm">
+  <div class="mdrs-snippets-header hljs" role="tablist">
+    <div class="mdrs-snippets-nav">
+      <button type="button" role="tab" class="mdrs-tab mdrs-is-active" data-mdrs-tab-label="bun" aria-selected="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-terminal" aria-hidden="true"><path d="M12 19h8"/><path d="m4 17 6-6-6-6"/></svg>bun</button><button type="button" role="tab" class="mdrs-tab" data-mdrs-tab-label="npm" aria-selected="false"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-package" aria-hidden="true"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/><path d="M12 22V12"/><polyline points="3.29 7 12 12 20.71 7"/><path d="m7.5 4.27 9 5.15"/></svg>npm</button>
+    </div>
+    <div class="mdrs-snippets-actions"></div>
+  </div>
+  <div class="mdrs-snippets-body">
+    <div role="tabpanel" class="mdrs-tab-panel"><pre><code class="language-sh">bun add katex
+</code></pre>
+</div><div role="tabpanel" class="mdrs-tab-panel" hidden><pre><code class="language-sh">npm install katex
+</code></pre>
+</div>
+  </div>
+</div>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/005-tabs-and-snippets.md #3 1`] = `
+"<div class="mdrs-snippets" data-mdrs-tab-key="pm">
+  <div class="mdrs-snippets-header hljs" role="tablist">
+    <div class="mdrs-snippets-nav">
+      <button type="button" role="tab" class="mdrs-tab mdrs-is-active" data-mdrs-tab-label="bun" aria-selected="true">bun</button><button type="button" role="tab" class="mdrs-tab" data-mdrs-tab-label="npm" aria-selected="false">npm</button>
+    </div>
+    <div class="mdrs-snippets-actions"></div>
+  </div>
+  <div class="mdrs-snippets-body">
+    <div role="tabpanel" class="mdrs-tab-panel"><pre><code class="language-sh">bun run dev
+</code></pre>
+</div><div role="tabpanel" class="mdrs-tab-panel" hidden><pre><code class="language-sh">npm run dev
+</code></pre>
+</div>
+  </div>
+</div>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/006-steps.md #1 1`] = `
+"<div class="mdrs-steps">
+<ol class="mdrs-steps-list">
+<li class="mdrs-step">Clone the repository.</li>
+<li class="mdrs-step">Run <code>bun install</code>.</li>
+<li class="mdrs-step">Start the dev server with <code>bun run dev</code>.</li>
+</ol>
+</div>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/006-steps.md #2 1`] = `
+"<div class="mdrs-steps">
+<p>Text before the first heading stays above the timeline.</p>
+<div class="mdrs-step"><h3>Install dependencies</h3>
+<pre><code class="language-sh">bun add katex mermaid
+</code></pre></div>
+<div class="mdrs-step"><h3>Configure rendering</h3>
+<p>Wire KaTeX into the server render.</p></div>
+<div class="mdrs-step"><h3>Verify and ship</h3>
+<pre><code class="language-sh">bun run check &amp;&amp; bun run lint
+</code></pre></div>
+</div>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/007-code-blocks.md #1 1`] = `
+"<pre data-mdrs-highlight-lines="2,5,6,7" data-mdrs-filename="auth.svelte.ts"><code class="language-typescript">import { writable } from &#39;svelte/store&#39;;
+import type { Session } from &#39;$lib/types&#39;;
+
+export function createAuthStore(initial: Session | null) {
+    let session = $state(initial);
+    let isAuthenticated = $derived(session !== null);
+    return { get session() { return session; }, get isAuthenticated() { return isAuthenticated; } };
+}
+</code></pre>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/007-code-blocks.md #2 1`] = `
+"<pre data-mdrs-filename="example.diff"><code class="language-diff">--- a/src/example.ts
++++ b/src/example.ts
+@@ -1,3 +1,3 @@
+ import { ai } from &#39;$lib/server/ai&#39;;
+-const MAX_ATTEMPTS = 2;
++const MAX_ATTEMPTS = 3;
+</code></pre>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/007-code-blocks.md #3 1`] = `
+"<pre><code class="language-sh">bun install
+bun run dev
+</code></pre>
+<pre data-mdrs-filename="deploy.sh"><code class="language-bash">#!/usr/bin/env bash
+for app in web admin api jobs; do
+  (cd &quot;apps/$app&quot; &amp;&amp; bunx wrangler deploy)
+done
+</code></pre>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/008-task-states.md #1 1`] = `
+"<ul class="mdrs-list mdrs-list--unordered">
+<li class="mdrs-list-item mdrs-task mdrs-task--done"><span class="mdrs-task-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/></svg></span><span class="mdrs-sr-only">Done: </span><div class="mdrs-task-content">Ship server-side math rendering</div></li>
+<li class="mdrs-list-item mdrs-task mdrs-task--in-progress"><span class="mdrs-task-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 8v8"/><path d="m8.5 14 7-4"/><path d="m8.5 10 7 4"/></svg></span><span class="mdrs-sr-only">In progress: </span><div class="mdrs-task-content">Chart tooltips (in progress)</div></li>
+<li class="mdrs-list-item mdrs-task mdrs-task--failed"><span class="mdrs-task-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg></span><span class="mdrs-sr-only">Failed: </span><div class="mdrs-task-content">Legacy graph parser (cancelled)</div></li>
+<li class="mdrs-list-item mdrs-task mdrs-task--skipped"><span class="mdrs-task-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="8" x2="16" y1="12" y2="12"/></svg></span><span class="mdrs-sr-only">Skipped: </span><div class="mdrs-task-content">Plugin migration (on hold)</div></li>
+<li class="mdrs-list-item mdrs-task mdrs-task--important"><span class="mdrs-task-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg></span><span class="mdrs-sr-only">Important: </span><div class="mdrs-task-content">Patch the vulnerable dependency (alert)</div></li>
+<li class="mdrs-list-item mdrs-task mdrs-task--question"><span class="mdrs-task-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon"><rect width="18" height="18" x="3" y="3" rx="2"/><rect width="8" height="8" x="8" y="8" rx="1"/></svg></span><span class="mdrs-sr-only">Question: </span><div class="mdrs-task-content">Persist the tab selection? (question)</div></li>
+<li class="mdrs-list-item mdrs-task mdrs-task--todo"><span class="mdrs-task-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon"><rect width="18" height="18" x="3" y="3" rx="2"/></svg></span><span class="mdrs-sr-only">To do: </span><div class="mdrs-task-content">Footnote animations (planned)<ul class="mdrs-list mdrs-list--unordered">
+<li class="mdrs-list-item mdrs-task mdrs-task--done"><span class="mdrs-task-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/></svg></span><span class="mdrs-sr-only">Done: </span><div class="mdrs-task-content">Multi-reference letters</div></li>
+<li class="mdrs-list-item mdrs-task mdrs-task--todo"><span class="mdrs-task-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon"><rect width="18" height="18" x="3" y="3" rx="2"/></svg></span><span class="mdrs-sr-only">To do: </span><div class="mdrs-task-content">Accessibility audit</div></li>
+</ul></div></li>
+</ul>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/009-media-and-embeds.md #1 1`] = `
+"<p><video controls preload="metadata" playsinline src="https://cdn.fkp.my.id/blog/my-post/videos/product-demo.webm" title="Product demo" aria-label="Product demo"></video></p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/009-media-and-embeds.md #2 1`] = `
+"<p><picture><source srcset="https://cdn.fkp.my.id/blog/my-post/images/architecture-overview.avif" type="image/avif"><img src="https://cdn.fkp.my.id/blog/my-post/images/architecture-overview.webp" alt="Architecture overview" title="Architecture overview" loading="lazy" decoding="async"></picture></p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/009-media-and-embeds.md #3 1`] = `
+"<div class="mdrs-embed"><iframe src="https://www.youtube.com/embed/VyPwEZTIpVc" loading="lazy" allowfullscreen title="Embedded content"></iframe></div><div class="mdrs-embed"><iframe src="https://www.youtube.com/embed/VyPwEZTIpVc" loading="lazy" allowfullscreen title="Embedded content"></iframe></div><div class="mdrs-embed"><iframe src="https://codepen.io/user/embed/abcdef?default-tab=result" loading="lazy" allowfullscreen title="Embedded content"></iframe></div>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/009-media-and-embeds.md #4 1`] = `
+"<p><a href="https://example.com/some-video" class="mdrs-external-link" target="_blank" rel="noopener noreferrer">https://example.com/some-video<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a></p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/010-math.md #1 1`] = `
+"<p>Euler&#39;s identity <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>e</mi><mrow><mi>i</mi><mi>π</mi></mrow></msup><mo>+</mo><mn>1</mn><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">e^{i\\pi} + 1 = 0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.908em;vertical-align:-0.0833em"></span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8247em"><span style="top:-3.063em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.0359em">iπ</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2778em"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em"></span><span class="mord">0</span></span></span></span> and the quadratic formula
+<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi><mo>=</mo><mfrac><mrow><mo>−</mo><mi>b</mi><mo>±</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo>−</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.4306em"></span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2778em"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em"></span></span><span class="katex-base"><span class="katex-strut" style="height:1.3845em;vertical-align:-0.345em"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.0395em"><span style="top:-2.655em"><span class="pstrut" style="height:3em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">2</span><span class="mord mathnormal mtight">a</span></span></span></span><span style="top:-3.23em"><span class="pstrut" style="height:3em"></span><span class="frac-line" style="border-bottom-width:0.04em"></span></span><span style="top:-3.394em"><span class="pstrut" style="height:3em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mathnormal mtight">b</span><span class="mbin mtight">±</span><span class="mord sqrt mtight"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.9221em"><span class="svg-align" style="top:-3em"><span class="pstrut" style="height:3em"></span><span class="mord mtight" style="padding-left:0.833em"><span class="mord mtight"><span class="mord mathnormal mtight">b</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7463em"><span style="top:-2.786em;margin-right:0.0714em"><span class="pstrut" style="height:2.5em"></span><span class="katex-sizing reset-size3 size1 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mbin mtight">−</span><span class="mord mtight">4</span><span class="mord mathnormal mtight">a</span><span class="mord mathnormal mtight">c</span></span></span><span style="top:-2.8821em"><span class="pstrut" style="height:3em"></span><span class="hide-tail mtight" style="min-width:0.853em;height:1.08em"><svg xmlns="http://www.w3.org/2000/svg" width="400em" height="1.08em" viewBox="0 0 400000 1080" preserveAspectRatio="xMinYMin slice"><path d="M95,702
+c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14
+c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54
+c44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10
+s173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429
+c69,-144,104.5,-217.7,106.5,-221
+l0 -0
+c5.3,-9.3,12,-14,20,-14
+H400000v40H845.2724
+s-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7
+c-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z
+M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.1179em"><span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span> render inline.</p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/010-math.md #2 1`] = `
+"<div class="mdrs-math mdrs-math--block"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msubsup><mo>∫</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow><mi mathvariant="normal">∞</mi></msubsup><msup><mi>e</mi><mrow><mo>−</mo><msup><mi>x</mi><mn>2</mn></msup></mrow></msup><mtext> </mtext><mi>d</mi><mi>x</mi><mo>=</mo><msqrt><mi>π</mi></msqrt></mrow><annotation encoding="application/x-tex">\\int_{-\\infty}^{\\infty} e^{-x^2} \\, dx = \\sqrt{\\pi}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:2.3846em;vertical-align:-0.9703em"></span><span class="mop"><span class="mop op-symbol large-op" style="margin-right:0.4445em;position:relative;top:-0.0011em">∫</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.4143em"><span style="top:-1.7881em;margin-left:-0.4445em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight">∞</span></span></span></span><span style="top:-3.8129em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">∞</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.9703em"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em"></span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:1.0369em"><span style="top:-3.113em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight"><span class="mord mathnormal mtight">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8913em"><span style="top:-2.931em;margin-right:0.0714em"><span class="pstrut" style="height:2.5em"></span><span class="katex-sizing reset-size3 size1 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em"></span><span class="mord mathnormal">d</span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2778em"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em"></span></span><span class="katex-base"><span class="katex-strut" style="height:1.04em;vertical-align:-0.1908em"></span><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8492em"><span class="svg-align" style="top:-3em"><span class="pstrut" style="height:3em"></span><span class="mord" style="padding-left:0.833em"><span class="mord mathnormal" style="margin-right:0.0359em">π</span></span></span><span style="top:-2.8092em"><span class="pstrut" style="height:3em"></span><span class="hide-tail" style="min-width:0.853em;height:1.08em"><svg xmlns="http://www.w3.org/2000/svg" width="400em" height="1.08em" viewBox="0 0 400000 1080" preserveAspectRatio="xMinYMin slice"><path d="M95,702
+c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14
+c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54
+c44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10
+s173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429
+c69,-144,104.5,-217.7,106.5,-221
+l0 -0
+c5.3,-9.3,12,-14,20,-14
+H400000v40H845.2724
+s-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7
+c-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z
+M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.1908em"><span></span></span></span></span></span></span></span></span></span></div>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/010-math.md #3 1`] = `
+"<ol class="mdrs-list mdrs-list--ordered mdrs-list--loose">
+<li class="mdrs-list-item"><p>The Basel problem:</p>
+<div class="mdrs-math mdrs-math--block"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><munderover><mo>∑</mo><mrow><mi>n</mi><mo>=</mo><mn>1</mn></mrow><mi mathvariant="normal">∞</mi></munderover><mfrac><mn>1</mn><msup><mi>n</mi><mn>2</mn></msup></mfrac><mo>=</mo><mfrac><msup><mi>π</mi><mn>2</mn></msup><mn>6</mn></mfrac></mrow><annotation encoding="application/x-tex">\\sum_{n=1}^{\\infty} \\frac{1}{n^2} = \\frac{\\pi^2}{6}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:2.9185em;vertical-align:-1.2671em"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.6514em"><span style="top:-1.8829em;margin-left:0em"><span class="pstrut" style="height:3.05em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">n</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.05em"><span class="pstrut" style="height:3.05em"></span><span><span class="mop op-symbol large-op">∑</span></span></span><span style="top:-4.3em;margin-left:0em"><span class="pstrut" style="height:3.05em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">∞</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.2671em"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3214em"><span style="top:-2.314em"><span class="pstrut" style="height:3em"></span><span class="mord"><span class="mord"><span class="mord mathnormal">n</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7401em"><span style="top:-2.989em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em"><span class="pstrut" style="height:3em"></span><span class="frac-line" style="border-bottom-width:0.04em"></span></span><span style="top:-3.677em"><span class="pstrut" style="height:3em"></span><span class="mord"><span class="mord">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2778em"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em"></span></span><span class="katex-base"><span class="katex-strut" style="height:2.1771em;vertical-align:-0.686em"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.4911em"><span style="top:-2.314em"><span class="pstrut" style="height:3em"></span><span class="mord"><span class="mord">6</span></span></span><span style="top:-3.23em"><span class="pstrut" style="height:3em"></span><span class="frac-line" style="border-bottom-width:0.04em"></span></span><span style="top:-3.677em"><span class="pstrut" style="height:3em"></span><span class="mord"><span class="mord"><span class="mord mathnormal" style="margin-right:0.0359em">π</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em"><span style="top:-3.063em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></div></li>
+</ol>
+<blockquote>
+<div class="mdrs-math mdrs-math--block"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>E</mi><mo>=</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">E = mc^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6833em"></span><span class="mord mathnormal" style="margin-right:0.0576em">E</span><span class="mspace" style="margin-right:0.2778em"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.8641em"></span><span class="mord mathnormal">m</span><span class="mord"><span class="mord mathnormal">c</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8641em"><span style="top:-3.113em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></span></div>
+</blockquote>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/010-math.md #4 1`] = `
+"<p><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mn>12</mn></msubsup><mi>k</mi><mo>=</mo><mn>78</mn></mrow><annotation encoding="application/x-tex">\\sum_{k=1}^{12} k = 78</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1.2537em;vertical-align:-0.2997em"></span><span class="mop"><span class="mop op-symbol small-op" style="position:relative;top:0em">∑</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.954em"><span style="top:-2.4003em;margin-left:0em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.0315em">k</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.2029em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">12</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2997em"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em"></span><span class="mord mathnormal" style="margin-right:0.0315em">k</span><span class="mspace" style="margin-right:0.2778em"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em"></span><span class="mord">78</span></span></span></span></p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/010-math.md #5 1`] = `
+"<p><span class="katex-error" title="ParseError: KaTeX parse error: Unexpected end of input in a macro argument, expected &#39;}&#39; at end of input: \\frac{1" style="color:#cc0000">\\frac{1</span></p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/011-diagrams-and-charts.md #1 1`] = `
+"<div class="mdrs-mermaid"><div class="mdrs-mermaid-display"><div class="mdrs-mermaid-loading"><span class="mdrs-spinner"></span><span>Rendering diagram…</span></div></div><div class="mdrs-mermaid-source" hidden data-mdrs-source="graph%20TD%0A%20%20User((Browser))%20--%3E%7CHTTPS%7C%20CF%5BCloudflare%20Workers%5D%0A%20%20CF%20--%3E%7CSSR%7C%20SK%5BSvelteKit%5D%0A%20%20SK%20--%3E%7CQuery%7C%20DB%5B(Postgres%20%2B%20RLS)%5D"></div></div>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/011-diagrams-and-charts.md #2 1`] = `
+"<div class="mdrs-chart" data-mdrs-chart="type%3A%20line%0Atitle%3A%20Monthly%20active%20developers%0Asubtitle%3A%202026%0Ax%3A%20month%0Ay%3A%20users%0Adata%3A%0A%20%20-%20%7B%20month%3A%20%22Jan%22%2C%20users%3A%201200%20%7D%0A%20%20-%20%7B%20month%3A%20%22Feb%22%2C%20users%3A%201950%20%7D%0A%20%20-%20%7B%20month%3A%20%22Mar%22%2C%20users%3A%203100%20%7D"><div class="mdrs-chart-loading"><span class="mdrs-spinner"></span>Loading chart visualization…</div></div>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/011-diagrams-and-charts.md #3 1`] = `
+"<div class="mdrs-chart" data-mdrs-chart="type%3A%20line%0Atitle%3A%20Cold-start%20build%20time%0Asubtitle%3A%20ms%2C%20lower%20is%20better%0Ax%3A%20version%0Ay%3A%20%5B%22svelte%22%2C%20%22react%22%2C%20%22vue%22%5D%0Aseries%3A%0A%20%20-%20%7B%20key%3A%20%22svelte%22%2C%20label%3A%20%22SvelteKit%22%2C%20color%3A%20%22%23ff3e00%22%20%7D%0A%20%20-%20%7B%20key%3A%20%22react%22%2C%20label%3A%20%22Next.js%22%2C%20color%3A%20%22%2361dafb%22%20%7D%0A%20%20-%20%7B%20key%3A%20%22vue%22%2C%20label%3A%20%22Nuxt%22%2C%20color%3A%20%22%2342b883%22%20%7D%0Adata%3A%0A%20%20-%20%7B%20version%3A%20%22v1%22%2C%20svelte%3A%20450%2C%20react%3A%201200%2C%20vue%3A%20900%20%7D%0A%20%20-%20%7B%20version%3A%20%22v2%22%2C%20svelte%3A%20310%2C%20react%3A%20820%2C%20vue%3A%20650%20%7D"><div class="mdrs-chart-loading"><span class="mdrs-spinner"></span>Loading chart visualization…</div></div>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/011-diagrams-and-charts.md #4 1`] = `
+"<div class="mdrs-chart" data-mdrs-chart="type%3A%20donut%0Atitle%3A%20Traffic%20by%20channel%0Ax%3A%20channel%0Ay%3A%20visitors%0Adata%3A%0A%20%20-%20%7B%20channel%3A%20%22Search%22%2C%20visitors%3A%204500%20%7D%0A%20%20-%20%7B%20channel%3A%20%22GitHub%22%2C%20visitors%3A%203200%20%7D%0A%20%20-%20%7B%20channel%3A%20%22Direct%22%2C%20visitors%3A%201800%20%7D"><div class="mdrs-chart-loading"><span class="mdrs-spinner"></span>Loading chart visualization…</div></div>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/012-references.md #1 1`] = `
+"<p>A statement with a source<sup><a id="mdrs-fn-ref-source" href="#mdrs-fn-source" data-mdrs-fn-ref="" aria-describedby="mdrs-fn-label">[1]</a></sup> and another one<sup><a id="mdrs-fn-ref-spec" href="#mdrs-fn-spec" data-mdrs-fn-ref="" aria-describedby="mdrs-fn-label">[2]</a></sup>.</p>
+<h2>Further reading</h2>
+<p>Text before the bibliography.</p>
+<section class="mdrs-footnotes mdrs-references" data-mdrs-footnotes="">
+<h2 id="mdrs-fn-label">References</h2>
+<ol>
+<li id="mdrs-fn-source">
+<p><a href="#mdrs-fn-ref-source" class="mdrs-footnote-backref" aria-label="Back to reference">^</a>Source description with a <a href="https://example.com" class="mdrs-external-link" target="_blank" rel="noopener noreferrer">link<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>.</p>
+</li>
+<li id="mdrs-fn-spec">
+<p><a href="#mdrs-fn-ref-spec" class="mdrs-footnote-backref" aria-label="Back to reference">^</a>The <a href="https://spec.commonmark.org" class="mdrs-external-link" target="_blank" rel="noopener noreferrer">CommonMark spec<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>.</p>
+</li>
+</ol>
+</section>
+
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/013-variables.md #1 1`] = `
+"<p><strong>Welcome to fkp.my.id.</strong> Engine v2.1, © 2026.</p>
+<ul class="mdrs-list mdrs-list--unordered">
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">First locale: en of 2</div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Directives: 14</div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">You are viewing the production build.</div></li>
+</ul>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/013-variables.md #2 1`] = `
+"<p>Final price: Rp 102000</p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/013-variables.md #3 1`] = `
+"<p>3 × 2 + 1 = 7, and n ≥ 3 is true.</p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/013-variables.md #4 1`] = `
+"<p>This is a preview build.</p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/013-variables.md #5 1`] = `
+"<p>Value 3 is ready.</p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/014-live-data.md #1 1`] = `
+"<p>Written by <strong><span class="mdrs-define-error" title="&#39;author&#39; is undefined">[define error]</span></strong>. <span class="mdrs-define-error" title="&#39;post_count&#39; is undefined">[define error]</span> posts published so far.</p>
+<p><span class="mdrs-define-error" title="&#39;post_count&#39; is undefined">[define error]</span></p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/014-live-data.md #2 1`] = `
+"<p>Contact me at <span class="mdrs-define-error" title="&#39;profile&#39; is undefined">[define error]</span>.
+I list <span class="mdrs-define-error" title="Database access is unavailable in this context.">[define error]</span> social profiles.</p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/014-live-data.md #3 1`] = `
+"<p>Read <a href="/blog/hello-world"><span class="mdrs-define-error" title="&#39;post&#39; is undefined">[define error]</span></a>, first published <span class="mdrs-define-error" title="&#39;post&#39; is undefined">[define error]</span>.</p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/015-escaping.md #1 1`] = `
+"<p>Write <code>\${name}</code> to insert a variable and <code>$$x^2$$</code> for math.</p>
+<pre><code class="language-mdrs">:::note
+This callout is shown as source.
+:::
+</code></pre>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/015-escaping.md #2 1`] = `
+"<pre>\${not_a_variable} $$not math$$ &lt;b&gt;not bold&lt;/b&gt;</pre>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/015-escaping.md #3 1`] = `
+"<pre>:::note
+A callout shown as source.
+:::</pre>
+"
+`;
+
+exports[`MDRS docs examples render unchanged 002-extensions/015-escaping.md #4 1`] = `
+"<p>Write \${name} to get MDRS, and [shown].\${flag} stays as written.</p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged README.md #1 1`] = `
+"<h1>Hello from MDRS</h1>
+<p>Plain <strong>Markdown</strong> works as usual, with <a href="https://commonmark.org" class="mdrs-external-link" target="_blank" rel="noopener noreferrer">links<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a> and <code>code</code>.</p>
+<div class="mdrs-alert mdrs-alert--tip">
+  <div class="mdrs-alert-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-lightbulb"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+    <span>Tip</span>
+  </div>
+  <div class="mdrs-alert-content"><p>Directives open with <code>:::name</code> and close with a bare <code>:::</code>.</p>
+</div>
+</div><p>This build is a preview.</p>
+<p>Inline math: <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>e</mi><mrow><mi>i</mi><mi>π</mi></mrow></msup><mo>+</mo><mn>1</mn><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">e^{i\\pi} + 1 = 0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.908em;vertical-align:-0.0833em"></span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8247em"><span style="top:-3.063em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.0359em">iπ</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2778em"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em"></span><span class="mord">0</span></span></span></span></p>
+"
+`;
+
+exports[`MDRS docs examples render unchanged README.md #2 1`] = `
+"<div class="mdrs-alert mdrs-alert--note">
+  <div class="mdrs-alert-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-info"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+    <span>Note</span>
+  </div>
+  <div class="mdrs-alert-content"><p>Also :::tip, :::important, :::warning and :::caution.</p>
+</div>
+</div><div class="mdrs-alert mdrs-alert--tip">
+  <div class="mdrs-alert-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-lightbulb"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+    <span>Tip</span>
+  </div>
+  <div class="mdrs-alert-content"><p>GitHub alerts work too.</p>
+</div>
+</div><div class="mdrs-callout">
+  <div class="mdrs-callout-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-rocket" aria-hidden="true"><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09"/><path d="M9 12a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.4 22.4 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 .05 5 .05"/></svg><span>Changelog</span>
+  </div>
+  <div class="mdrs-callout-content"><p>Custom callout. <code>title</code> is required, <code>icon</code> is optional.</p>
+</div>
+</div><details class="mdrs-details">
+ <summary class="mdrs-details-summary">
+ <span class="mdrs-details-title">Click to expand</span>
+ <span class="mdrs-details-icon" aria-hidden="true">
+ <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-chevrons-up-down"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+ <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-chevrons-down-up"><path d="m7 20 5-5 5 5"/><path d="m7 4 5 5 5-5"/></svg>
+ </span>
+ </summary>
+ <div class="mdrs-details-body">
+ <p>Collapsible content.</p>
+ </div>
+</details><div class="mdrs-tabs">
+  <div class="mdrs-tabs-header" role="tablist">
+    <div class="mdrs-tabs-nav">
+      <button type="button" role="tab" class="mdrs-tab mdrs-is-active" data-mdrs-tab-label="One" aria-selected="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-zap" aria-hidden="true"><path d="M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z"/></svg>One</button><button type="button" role="tab" class="mdrs-tab" data-mdrs-tab-label="Two" aria-selected="false">Two</button>
+    </div>
+  </div>
+  <div class="mdrs-tabs-body">
+    <div role="tabpanel" class="mdrs-tab-panel"><p>Any Markdown.</p>
+</div><div role="tabpanel" class="mdrs-tab-panel" hidden><p>More Markdown.</p>
+</div>
+  </div>
+</div><div class="mdrs-snippets" data-mdrs-tab-key="pm">
+  <div class="mdrs-snippets-header hljs" role="tablist">
+    <div class="mdrs-snippets-nav">
+      <button type="button" role="tab" class="mdrs-tab mdrs-is-active" data-mdrs-tab-label="bun" aria-selected="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-terminal" aria-hidden="true"><path d="M12 19h8"/><path d="m4 17 6-6-6-6"/></svg>bun</button>
+    </div>
+    <div class="mdrs-snippets-actions"></div>
+  </div>
+  <div class="mdrs-snippets-body">
+    <div role="tabpanel" class="mdrs-tab-panel"><pre><code class="language-sh">bun add katex
+</code></pre>
+</div>
+  </div>
+</div><div class="mdrs-steps">
+<ol class="mdrs-steps-list">
+<li class="mdrs-step">First</li>
+<li class="mdrs-step">Second</li>
+</ol>
+</div><div class="mdrs-embed"><iframe src="https://www.youtube.com/embed/VIDEO_ID" loading="lazy" allowfullscreen title="Embedded content"></iframe></div><ul class="mdrs-list mdrs-list--unordered">
+<li class="mdrs-list-item mdrs-task mdrs-task--in-progress"><span class="mdrs-task-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 8v8"/><path d="m8.5 14 7-4"/><path d="m8.5 10 7 4"/></svg></span><span class="mdrs-sr-only">In progress: </span><div class="mdrs-task-content">In progress, also [/] [-] [!] [?]</div></li>
+</ul>
+<p>Inline <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup><mo>=</mo><msup><mi>c</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">a^2 + b^2 = c^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8974em;vertical-align:-0.0833em"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em"><span style="top:-3.063em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.8141em"></span><span class="mord"><span class="mord mathnormal">b</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em"><span style="top:-3.063em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.8141em"></span><span class="mord"><span class="mord mathnormal">c</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em"><span style="top:-3.063em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span> and a block:</p>
+<div class="mdrs-math mdrs-math--block"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msubsup><mo>∫</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow><mi mathvariant="normal">∞</mi></msubsup><msup><mi>e</mi><mrow><mo>−</mo><msup><mi>x</mi><mn>2</mn></msup></mrow></msup><mtext> </mtext><mi>d</mi><mi>x</mi><mo>=</mo><msqrt><mi>π</mi></msqrt></mrow><annotation encoding="application/x-tex">\\int_{-\\infty}^{\\infty} e^{-x^2} \\, dx = \\sqrt{\\pi}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:2.3846em;vertical-align:-0.9703em"></span><span class="mop"><span class="mop op-symbol large-op" style="margin-right:0.4445em;position:relative;top:-0.0011em">∫</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.4143em"><span style="top:-1.7881em;margin-left:-0.4445em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight">∞</span></span></span></span><span style="top:-3.8129em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">∞</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.9703em"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em"></span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:1.0369em"><span style="top:-3.113em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight"><span class="mord mathnormal mtight">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8913em"><span style="top:-2.931em;margin-right:0.0714em"><span class="pstrut" style="height:2.5em"></span><span class="katex-sizing reset-size3 size1 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em"></span><span class="mord mathnormal">d</span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2778em"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em"></span></span><span class="katex-base"><span class="katex-strut" style="height:1.04em;vertical-align:-0.1908em"></span><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8492em"><span class="svg-align" style="top:-3em"><span class="pstrut" style="height:3em"></span><span class="mord" style="padding-left:0.833em"><span class="mord mathnormal" style="margin-right:0.0359em">π</span></span></span><span style="top:-2.8092em"><span class="pstrut" style="height:3em"></span><span class="hide-tail" style="min-width:0.853em;height:1.08em"><svg xmlns="http://www.w3.org/2000/svg" width="400em" height="1.08em" viewBox="0 0 400000 1080" preserveAspectRatio="xMinYMin slice"><path d="M95,702
+c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14
+c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54
+c44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10
+s173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429
+c69,-144,104.5,-217.7,106.5,-221
+l0 -0
+c5.3,-9.3,12,-14,20,-14
+H400000v40H845.2724
+s-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7
+c-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z
+M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.1908em"><span></span></span></span></span></span></span></span></span></span></div>
+<p>A claim<sup><a id="mdrs-fn-ref-source" href="#mdrs-fn-source" data-mdrs-fn-ref="" aria-describedby="mdrs-fn-label">[1]</a></sup>.</p>
+<section class="mdrs-footnotes mdrs-references" data-mdrs-footnotes="">
+<h2 id="mdrs-fn-label">References</h2>
+<ol>
+<li id="mdrs-fn-source">
+<p><a href="#mdrs-fn-ref-source" class="mdrs-footnote-backref" aria-label="Back to reference">^</a>Source description.</p>
+</li>
+</ol>
+</section>
+<pre data-mdrs-highlight-lines="1,3,4" data-mdrs-filename="main.py"><code class="language-python">print(&quot;one&quot;)
+print(&quot;two&quot;)
+print(&quot;three&quot;)
+print(&quot;four&quot;)
+</code></pre>
+
+"
+`;
+
+exports[`MDRS docs examples render unchanged markdown-demo fixture 1`] = `
+"<div class="mdrs-alert mdrs-alert--note">
+  <div class="mdrs-alert-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-info"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+    <span>Note</span>
+  </div>
+  <div class="mdrs-alert-content"><p><strong>Welcome to fkp.my.id, where markdown comes alive.</strong> This is not your average markdown renderer. What you are reading right now is a living document: every heading, chart, formula, and data point on this page is processed by our custom-built <strong>Next-Gen Markdown Engine</strong>, compiled at the edge, and delivered in under 100ms. Below is everything it can do.</p>
+</div>
+</div><hr>
+<h2>Typography That Speaks</h2>
+<p>Formatting is the foundation. We support every inline style you would expect, and a few you would not.</p>
+<ul class="mdrs-list mdrs-list--unordered">
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content"><strong>Bold</strong> with <code>**asterisks**</code> or <code>__underscores__</code></div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content"><em>Italic</em> with <code>_underscores_</code> or <code>*asterisks*</code></div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content"><em><strong>Bold italic</strong></em> for when you really mean it</div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content"><del>Strikethrough</del> for deprecated ideas</div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content"><u>Underline</u> for emphasis that stands apart</div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content"><code>Inline code</code> like <code>const x: number = 42</code> rendered in monospace</div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content"><mark>Highlighted text</mark> for search-match style callouts</div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Chemical formulas: H<sub>2</sub>O, and exponents: 10<sup>6</sup></div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Keyboard shortcuts: <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> opens the Command Palette</div></li>
+</ul>
+<p>Every heading level renders with its own typographic scale:</p>
+<h1>Heading 1</h1>
+<h2>Heading 2</h2>
+<h3>Heading 3</h3>
+<h4>Heading 4</h4>
+<h5>Heading 5</h5>
+<h6>Heading 6</h6>
+<hr>
+<h2>Links, Quotes and Breaks</h2>
+<p>Links follow the standard <code>[text](url &quot;title&quot;)</code> form. The optional title becomes a tooltip: <a href="https://google.com" title="Google" class="mdrs-external-link" target="_blank" rel="noopener noreferrer">Google<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>.</p>
+<blockquote>
+<p>A greater than sign opens a blockquote.</p>
+</blockquote>
+<p>A backslash at the end of a line<br>forces a line break.</p>
+<p>Three asterisks or three dashes draw a thematic break:</p>
+<hr>
+<hr>
+<h2>Lists &amp; Task Tracking</h2>
+<h3>Ordered Lists</h3>
+<ol class="mdrs-list mdrs-list--ordered">
+<li class="mdrs-list-item">Provision your edge runtime and database</li>
+<li class="mdrs-list-item">Configure server-side rendering:<ol class="mdrs-list mdrs-list--ordered">
+<li class="mdrs-list-item">Set up KaTeX compilation</li>
+<li class="mdrs-list-item">Wire Mermaid lazy hydration</li>
+</ol></li>
+<li class="mdrs-list-item">Ship it</li>
+</ol>
+<h3>Unordered Lists</h3>
+<ul class="mdrs-list mdrs-list--unordered">
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content"><strong>Frontend</strong>: SvelteKit 5 with Svelte Runes, Tailwind CSS 4, Cloudflare Pages</div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content"><strong>Backend</strong>: Supabase PostgreSQL with Row Level Security, Cloudflare R2 Storage</div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content"><strong>Engine</strong>: Custom directive parser, KaTeX SSR, LayerChart, Mermaid.js</div></li>
+</ul>
+<h3>Task Lists with Seven Status States</h3>
+<p>Every checkbox state gets its own icon and color, not just checked and unchecked:</p>
+<ul class="mdrs-list mdrs-list--unordered">
+<li class="mdrs-list-item mdrs-task mdrs-task--done"><span class="mdrs-task-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/></svg></span><span class="mdrs-sr-only">Done: </span><div class="mdrs-task-content">Ship KaTeX server-side math rendering</div></li>
+<li class="mdrs-list-item mdrs-task mdrs-task--in-progress"><span class="mdrs-task-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 8v8"/><path d="m8.5 14 7-4"/><path d="m8.5 10 7 4"/></svg></span><span class="mdrs-sr-only">In progress: </span><div class="mdrs-task-content">Interactive chart tooltips with accessibility labels (WIP)</div></li>
+<li class="mdrs-list-item mdrs-task mdrs-task--failed"><span class="mdrs-task-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg></span><span class="mdrs-sr-only">Failed: </span><div class="mdrs-task-content">Legacy graph parser removal (Cancelled)</div></li>
+<li class="mdrs-list-item mdrs-task mdrs-task--skipped"><span class="mdrs-task-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="8" x2="16" y1="12" y2="12"/></svg></span><span class="mdrs-sr-only">Skipped: </span><div class="mdrs-task-content">Plugin migration to v3 hooks (On-Hold)</div></li>
+<li class="mdrs-list-item mdrs-task mdrs-task--important"><span class="mdrs-task-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg></span><span class="mdrs-sr-only">Important: </span><div class="mdrs-task-content">Critical: patch CVE-2026-XXXX in dependency tree (Alert)</div></li>
+<li class="mdrs-list-item mdrs-task mdrs-task--question"><span class="mdrs-task-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon"><rect width="18" height="18" x="3" y="3" rx="2"/><rect width="8" height="8" x="8" y="8" rx="1"/></svg></span><span class="mdrs-sr-only">Question: </span><div class="mdrs-task-content">Should code tabs persist selection via <code>localStorage</code>? (Review)</div></li>
+<li class="mdrs-list-item mdrs-task mdrs-task--todo"><span class="mdrs-task-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon"><rect width="18" height="18" x="3" y="3" rx="2"/></svg></span><span class="mdrs-sr-only">To do: </span><div class="mdrs-task-content">Footnote back-reference animations (Planned)<ul class="mdrs-list mdrs-list--unordered">
+<li class="mdrs-list-item mdrs-task mdrs-task--done"><span class="mdrs-task-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/></svg></span><span class="mdrs-sr-only">Done: </span><div class="mdrs-task-content">Sub-task: multi-backref letter indexing</div></li>
+<li class="mdrs-list-item mdrs-task mdrs-task--in-progress"><span class="mdrs-task-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 8v8"/><path d="m8.5 14 7-4"/><path d="m8.5 10 7 4"/></svg></span><span class="mdrs-sr-only">In progress: </span><div class="mdrs-task-content">Sub-task: smooth scroll behavior</div></li>
+<li class="mdrs-list-item mdrs-task mdrs-task--todo"><span class="mdrs-task-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon"><rect width="18" height="18" x="3" y="3" rx="2"/></svg></span><span class="mdrs-sr-only">To do: </span><div class="mdrs-task-content">Sub-task: accessibility audit</div></li>
+</ul></div></li>
+</ul>
+<hr>
+<h2>Callouts</h2>
+<h3>Alerts</h3>
+<p>Five built-in severity levels, each written as <code>:::type</code> and closed with <code>:::</code>. The content is regular Markdown:</p>
+<pre data-mdrs-filename="alerts.md"><code class="language-markdown">:::note
+Background context.
+:::
+</code></pre>
+<div class="mdrs-alert mdrs-alert--note">
+  <div class="mdrs-alert-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-info"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+    <span>Note</span>
+  </div>
+  <div class="mdrs-alert-content"><p>Background context or supplementary information: things the reader should know but can safely skip.</p>
+</div>
+</div><div class="mdrs-alert mdrs-alert--tip">
+  <div class="mdrs-alert-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-lightbulb"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+    <span>Tip</span>
+  </div>
+  <div class="mdrs-alert-content"><p>Performance tricks, shortcuts, or best practices that save time.</p>
+</div>
+</div><div class="mdrs-alert mdrs-alert--important">
+  <div class="mdrs-alert-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-message-square-warning"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 7v2"/><path d="M12 13h.01"/></svg>
+    <span>Important</span>
+  </div>
+  <div class="mdrs-alert-content"><p>Prerequisites, critical configuration, or steps that must not be skipped.</p>
+</div>
+</div><div class="mdrs-alert mdrs-alert--warning">
+  <div class="mdrs-alert-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-alert-triangle"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+    <span>Warning</span>
+  </div>
+  <div class="mdrs-alert-content"><p>Deprecations, breaking changes, or behaviors that might surprise you.</p>
+</div>
+</div><div class="mdrs-alert mdrs-alert--caution">
+  <div class="mdrs-alert-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-circle-alert"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+    <span>Caution</span>
+  </div>
+  <div class="mdrs-alert-content"><p>Actions that risk data loss, security exposure, or irreversible damage.</p>
+</div>
+</div><h3>Custom Callouts</h3>
+<p>Beyond the five fixed types, <code>:::callout</code> takes a required <code>title</code> and an optional <code>icon</code>. Icons resolve to Lucide first and fall back to Bootstrap Icons. Use <code>lucide-</code> or <code>bi-</code> to pick a library explicitly:</p>
+<pre data-mdrs-filename="callout.md"><code class="language-markdown">:::callout title=&quot;Changelog&quot; icon=&quot;list&quot;
+Content with **Markdown**.
+:::
+</code></pre>
+<div class="mdrs-callout">
+  <div class="mdrs-callout-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-list" aria-hidden="true"><path d="M3 5h.01"/><path d="M3 12h.01"/><path d="M3 19h.01"/><path d="M8 5h13"/><path d="M8 12h13"/><path d="M8 19h13"/></svg><span>Changelog</span>
+  </div>
+  <div class="mdrs-callout-content"><p><strong>v2.1.0</strong>: Added <code>:::define</code> variable interpolation with live <code>api.v1.*</code> data binding, rich media embeds, and custom callouts.</p>
+</div>
+</div><div class="mdrs-callout">
+  <div class="mdrs-callout-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-zap" aria-hidden="true"><path d="M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z"/></svg><span>Pro Tip</span>
+  </div>
+  <div class="mdrs-callout-content"><p>Combine <code>:::define</code> variables with <code>[conditional text].\${boolean}</code> syntax to show or hide entire paragraphs based on runtime state, no JavaScript required.</p>
+</div>
+</div><div class="mdrs-callout">
+  <div class="mdrs-callout-title">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-rocket" aria-hidden="true"><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09"/><path d="M9 12a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.4 22.4 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 .05 5 .05"/></svg><span>Forced Lucide icon</span>
+  </div>
+  <div class="mdrs-callout-content"><p><code>icon=&quot;lucide-rocket&quot;</code> always uses the Lucide library.</p>
+</div>
+</div><div class="mdrs-callout">
+  <div class="mdrs-callout-title">
+    <i class="mdrs-icon bi bi-facebook" aria-hidden="true"></i><span>Forced Bootstrap icon</span>
+  </div>
+  <div class="mdrs-callout-content"><p><code>icon=&quot;bi-facebook&quot;</code> always uses Bootstrap Icons.</p>
+</div>
+</div><div class="mdrs-callout">
+  <div class="mdrs-callout-title">
+    <span>No icon</span>
+  </div>
+  <div class="mdrs-callout-content"><p>The <code>icon</code> attribute is optional.</p>
+</div>
+</div><hr>
+<h2>Code Blocks</h2>
+<h3>Filename and Line Markers</h3>
+<p>Add <code>filename=&quot;...&quot;</code> after the language to show a file name next to it. The downloaded file gets the same name. Add <code>mark=...</code> to spotlight lines; ranges use <code>..</code>. Both are optional. Here, lines 2 and 5 to 7 are highlighted:</p>
+<pre data-mdrs-filename="example.md"><code class="language-markdown">\`\`\`typescript filename=&quot;auth.svelte.ts&quot; mark=2,5..7
+\`\`\`
+</code></pre>
+<pre data-mdrs-highlight-lines="2,5,6,7" data-mdrs-filename="auth.svelte.ts"><code class="language-typescript">import {writable, derived} from &#39;svelte/store&#39;
+import type {UserProfile, AuthSession} from &#39;$lib/types&#39;
+
+export function createAuthStore(initialSession: AuthSession | null) {
+  let session = $state&lt;AuthSession | null&gt;(initialSession)
+  let isAuthenticated = $derived(session !== null)
+  let userEmail = $derived(session?.user?.email ?? &#39;&#39;)
+
+  function login(newSession: AuthSession) {
+    session = newSession
+  }
+
+  function logout() {
+    session = null
+  }
+
+  return {
+    get session() { return session },
+    get isAuthenticated() { return isAuthenticated },
+    get userEmail() { return userEmail },
+    login,
+    logout
+  }
+}
+</code></pre>
+<p>Without a filename the language name is shown alone and the download falls back to a generic name:</p>
+<pre data-mdrs-highlight-lines="1"><code class="language-python">print(&quot;Hello, World!&quot;)
+</code></pre>
+<pre data-mdrs-filename="main.py"><code class="language-python">print(&quot;Hello, World!&quot;)
+</code></pre>
+<h3>Diff Highlighting</h3>
+<p>Lines starting with <code>+</code> are additions, <code>-</code> are removals, with full-width colored backgrounds, just like a pull request:</p>
+<pre data-mdrs-filename="example.diff"><code class="language-diff">--- a/src/lib/example.ts
++++ b/src/lib/example.ts
+@@ -1,5 +1,8 @@
+ import {isAiBindingAvailable} from &#39;$lib/server/ai&#39;
+-const MAX_ATTEMPTS = 2
++const MAX_ATTEMPTS = 3
++
++function withinTolerance(a: number, b: number, tolerance: number): boolean {
++  return Math.abs(a - b) &lt;= tolerance
++}
+</code></pre>
+<hr>
+<h2>Mathematical Formulas</h2>
+<p>KaTeX compiles entirely server-side, with zero client JavaScript for math rendering.</p>
+<h3>Inline</h3>
+<p>Wrap a formula in double dollar signs on a single line: <code>$$ formula $$</code>. Euler&#39;s identity <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>e</mi><mrow><mi>i</mi><mi>π</mi></mrow></msup><mo>+</mo><mn>1</mn><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">e^{i\\pi} + 1 = 0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.908em;vertical-align:-0.0833em"></span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8247em"><span style="top:-3.063em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.0359em">iπ</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2778em"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6444em"></span><span class="mord">0</span></span></span></span> is often called the most beautiful equation in mathematics. The Pythagorean theorem <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup><mo>=</mo><msup><mi>c</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">a^2 + b^2 = c^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8974em;vertical-align:-0.0833em"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em"><span style="top:-3.063em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.8141em"></span><span class="mord"><span class="mord mathnormal">b</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em"><span style="top:-3.063em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.8141em"></span><span class="mord"><span class="mord mathnormal">c</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em"><span style="top:-3.063em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span> and the quadratic formula <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi><mo>=</mo><mfrac><mrow><mo>−</mo><mi>b</mi><mo>±</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo>−</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.4306em"></span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2778em"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em"></span></span><span class="katex-base"><span class="katex-strut" style="height:1.3845em;vertical-align:-0.345em"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.0395em"><span style="top:-2.655em"><span class="pstrut" style="height:3em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">2</span><span class="mord mathnormal mtight">a</span></span></span></span><span style="top:-3.23em"><span class="pstrut" style="height:3em"></span><span class="frac-line" style="border-bottom-width:0.04em"></span></span><span style="top:-3.394em"><span class="pstrut" style="height:3em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mathnormal mtight">b</span><span class="mbin mtight">±</span><span class="mord sqrt mtight"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.9221em"><span class="svg-align" style="top:-3em"><span class="pstrut" style="height:3em"></span><span class="mord mtight" style="padding-left:0.833em"><span class="mord mtight"><span class="mord mathnormal mtight">b</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7463em"><span style="top:-2.786em;margin-right:0.0714em"><span class="pstrut" style="height:2.5em"></span><span class="katex-sizing reset-size3 size1 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mbin mtight">−</span><span class="mord mtight">4</span><span class="mord mathnormal mtight">a</span><span class="mord mathnormal mtight">c</span></span></span><span style="top:-2.8821em"><span class="pstrut" style="height:3em"></span><span class="hide-tail mtight" style="min-width:0.853em;height:1.08em"><svg xmlns="http://www.w3.org/2000/svg" width="400em" height="1.08em" viewBox="0 0 400000 1080" preserveAspectRatio="xMinYMin slice"><path d="M95,702
+c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14
+c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54
+c44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10
+s173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429
+c69,-144,104.5,-217.7,106.5,-221
+l0 -0
+c5.3,-9.3,12,-14,20,-14
+H400000v40H845.2724
+s-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7
+c-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z
+M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.1179em"><span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span> render seamlessly inline. A single dollar sign stays plain text, so prices like $5 and $10 are safe.</p>
+<h3>Block Display</h3>
+<p>Use a <code>:::math</code> block for display equations. The Gaussian integral, one of the most important results in probability theory:</p>
+<div class="mdrs-math mdrs-math--block"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msubsup><mo>∫</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow><mi mathvariant="normal">∞</mi></msubsup><msup><mi>e</mi><mrow><mo>−</mo><msup><mi>x</mi><mn>2</mn></msup></mrow></msup><mtext> </mtext><mi>d</mi><mi>x</mi><mo>=</mo><msqrt><mi>π</mi></msqrt></mrow><annotation encoding="application/x-tex">\\int_{-\\infty}^{\\infty} e^{-x^2} \\, dx = \\sqrt{\\pi}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:2.3846em;vertical-align:-0.9703em"></span><span class="mop"><span class="mop op-symbol large-op" style="margin-right:0.4445em;position:relative;top:-0.0011em">∫</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.4143em"><span style="top:-1.7881em;margin-left:-0.4445em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight">∞</span></span></span></span><span style="top:-3.8129em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">∞</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.9703em"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em"></span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:1.0369em"><span style="top:-3.113em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight"><span class="mord mathnormal mtight">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8913em"><span style="top:-2.931em;margin-right:0.0714em"><span class="pstrut" style="height:2.5em"></span><span class="katex-sizing reset-size3 size1 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em"></span><span class="mord mathnormal">d</span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2778em"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em"></span></span><span class="katex-base"><span class="katex-strut" style="height:1.04em;vertical-align:-0.1908em"></span><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8492em"><span class="svg-align" style="top:-3em"><span class="pstrut" style="height:3em"></span><span class="mord" style="padding-left:0.833em"><span class="mord mathnormal" style="margin-right:0.0359em">π</span></span></span><span style="top:-2.8092em"><span class="pstrut" style="height:3em"></span><span class="hide-tail" style="min-width:0.853em;height:1.08em"><svg xmlns="http://www.w3.org/2000/svg" width="400em" height="1.08em" viewBox="0 0 400000 1080" preserveAspectRatio="xMinYMin slice"><path d="M95,702
+c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14
+c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54
+c44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10
+s173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429
+c69,-144,104.5,-217.7,106.5,-221
+l0 -0
+c5.3,-9.3,12,-14,20,-14
+H400000v40H845.2724
+s-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7
+c-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z
+M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.1908em"><span></span></span></span></span></span></span></span></span></span></div>
+<p>The Basel problem, solved by Euler in 1734:</p>
+<div class="mdrs-math mdrs-math--block"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><munderover><mo>∑</mo><mrow><mi>n</mi><mo>=</mo><mn>1</mn></mrow><mi mathvariant="normal">∞</mi></munderover><mfrac><mn>1</mn><msup><mi>n</mi><mn>2</mn></msup></mfrac><mo>=</mo><mfrac><msup><mi>π</mi><mn>2</mn></msup><mn>6</mn></mfrac></mrow><annotation encoding="application/x-tex">\\sum_{n=1}^{\\infty} \\frac{1}{n^2} = \\frac{\\pi^2}{6}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:2.9185em;vertical-align:-1.2671em"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.6514em"><span style="top:-1.8829em;margin-left:0em"><span class="pstrut" style="height:3.05em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">n</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.05em"><span class="pstrut" style="height:3.05em"></span><span><span class="mop op-symbol large-op">∑</span></span></span><span style="top:-4.3em;margin-left:0em"><span class="pstrut" style="height:3.05em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">∞</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.2671em"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3214em"><span style="top:-2.314em"><span class="pstrut" style="height:3em"></span><span class="mord"><span class="mord"><span class="mord mathnormal">n</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7401em"><span style="top:-2.989em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em"><span class="pstrut" style="height:3em"></span><span class="frac-line" style="border-bottom-width:0.04em"></span></span><span style="top:-3.677em"><span class="pstrut" style="height:3em"></span><span class="mord"><span class="mord">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2778em"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em"></span></span><span class="katex-base"><span class="katex-strut" style="height:2.1771em;vertical-align:-0.686em"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.4911em"><span style="top:-2.314em"><span class="pstrut" style="height:3em"></span><span class="mord"><span class="mord">6</span></span></span><span style="top:-3.23em"><span class="pstrut" style="height:3em"></span><span class="frac-line" style="border-bottom-width:0.04em"></span></span><span style="top:-3.677em"><span class="pstrut" style="height:3em"></span><span class="mord"><span class="mord"><span class="mord mathnormal" style="margin-right:0.0359em">π</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em"><span style="top:-3.063em;margin-right:0.05em"><span class="pstrut" style="height:2.7em"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></div>
+<hr>
+<h2>Architecture Diagrams</h2>
+<p>Mermaid.js renders lazily in the browser. The engine injects a loading placeholder at SSR time and hydrates the SVG on scroll.</p>
+<h3>System Architecture</h3>
+<div class="mdrs-mermaid"><div class="mdrs-mermaid-display"><div class="mdrs-mermaid-loading"><span class="mdrs-spinner"></span><span>Rendering diagram…</span></div></div><div class="mdrs-mermaid-source" hidden data-mdrs-source="graph%20TD%0A%20%20User((Client%20Browser))%20--%3E%7CHTTPS%7C%20CF%5BCloudflare%20Pages%20CDN%5D%0A%20%20CF%20--%3E%7CSSR%7C%20SK%5BSvelteKit%205%20Engine%5D%0A%20%20SK%20--%3E%7CQuery%7C%20DB%5B(PostgreSQL%20%2B%20RLS)%5D%0A%20%20SK%20--%3E%7CAuth%7C%20Auth%5BSupabase%20Auth%5D%0A%20%20SK%20--%3E%7CAssets%7C%20R2%5B(Cloudflare%20R2)%5D%0A%20%20SK%20--%3E%7CAI%20Moderation%7C%20AI%5BWorkers%20AI%5D"></div></div>
+<h3>Git Branching Strategy</h3>
+<div class="mdrs-mermaid"><div class="mdrs-mermaid-display"><div class="mdrs-mermaid-loading"><span class="mdrs-spinner"></span><span>Rendering diagram…</span></div></div><div class="mdrs-mermaid-source" hidden data-mdrs-source="gitGraph%0A%20%20commit%20id%3A%20%22Initial%20Commit%22%0A%20%20branch%20develop%0A%20%20checkout%20develop%0A%20%20commit%20id%3A%20%22Setup%20SvelteKit%205%22%0A%20%20branch%20feature%2Fmarkdown-engine%0A%20%20checkout%20feature%2Fmarkdown-engine%0A%20%20commit%20id%3A%20%22Add%20KaTeX%20%2B%20Mermaid%22%0A%20%20commit%20id%3A%20%22Add%20LayerChart%20%2B%20Tabs%22%0A%20%20commit%20id%3A%20%22Add%20%3A%3A%3Adefine%20engine%22%0A%20%20checkout%20develop%0A%20%20merge%20feature%2Fmarkdown-engine%20id%3A%20%22Merge%20Engine%22%0A%20%20checkout%20main%0A%20%20merge%20develop%20id%3A%20%22Release%20v2.1%22%20tag%3A%20%22v2.1.0%22"></div></div>
+<hr>
+<h2>Interactive Data Visualizations</h2>
+<p>Six chart types powered by LayerChart and D3, declared in YAML and rendered as interactive Svelte components with tooltips and hover states.</p>
+<h3>Line Chart</h3>
+<div class="mdrs-chart" data-mdrs-chart="type%3A%20line%0Atitle%3A%20Monthly%20Active%20Developers%0Asubtitle%3A%202026%20Growth%20Trajectory%0Ax%3A%20month%0Ay%3A%20users%0Adata%3A%0A%20%20-%20%7B%20month%3A%20%22Jan%22%2C%20users%3A%201200%20%7D%0A%20%20-%20%7B%20month%3A%20%22Feb%22%2C%20users%3A%201950%20%7D%0A%20%20-%20%7B%20month%3A%20%22Mar%22%2C%20users%3A%203100%20%7D%0A%20%20-%20%7B%20month%3A%20%22Apr%22%2C%20users%3A%204400%20%7D%0A%20%20-%20%7B%20month%3A%20%22May%22%2C%20users%3A%206200%20%7D%0A%20%20-%20%7B%20month%3A%20%22Jun%22%2C%20users%3A%208900%20%7D"><div class="mdrs-chart-loading"><span class="mdrs-spinner"></span>Loading chart visualization…</div></div>
+<h3>Multi-Series Line Chart</h3>
+<p>The <code>series</code> property enables overlaying multiple datasets with custom labels and colors:</p>
+<div class="mdrs-chart" data-mdrs-chart="type%3A%20line%0Atitle%3A%20Build%20Performance%20Over%20Time%0Asubtitle%3A%20Cold-start%20compilation%20speed%20(ms%2C%20lower%20is%20better)%0Ax%3A%20version%0Ay%3A%20%5B%22svelte%22%2C%20%22react%22%2C%20%22vue%22%5D%0Aseries%3A%0A%20%20-%20%7B%20key%3A%20%22svelte%22%2C%20label%3A%20%22SvelteKit%22%2C%20color%3A%20%22%23ff3e00%22%20%7D%0A%20%20-%20%7B%20key%3A%20%22react%22%2C%20label%3A%20%22Next.js%22%2C%20color%3A%20%22%2361dafb%22%20%7D%0A%20%20-%20%7B%20key%3A%20%22vue%22%2C%20label%3A%20%22Nuxt%22%2C%20color%3A%20%22%2342b883%22%20%7D%0Adata%3A%0A%20%20-%20%7B%20version%3A%20%22v1.0%22%2C%20svelte%3A%20450%2C%20react%3A%201200%2C%20vue%3A%20900%20%7D%0A%20%20-%20%7B%20version%3A%20%22v1.5%22%2C%20svelte%3A%20380%2C%20react%3A%20950%2C%20vue%3A%20780%20%7D%0A%20%20-%20%7B%20version%3A%20%22v2.0%22%2C%20svelte%3A%20310%2C%20react%3A%20820%2C%20vue%3A%20650%20%7D%0A%20%20-%20%7B%20version%3A%20%22v2.5%22%2C%20svelte%3A%20260%2C%20react%3A%20740%2C%20vue%3A%20580%20%7D%0A%20%20-%20%7B%20version%3A%20%22v3.0%22%2C%20svelte%3A%20190%2C%20react%3A%20680%2C%20vue%3A%20520%20%7D"><div class="mdrs-chart-loading"><span class="mdrs-spinner"></span>Loading chart visualization…</div></div>
+<h3>Bar Chart</h3>
+<div class="mdrs-chart" data-mdrs-chart="type%3A%20bar%0Atitle%3A%20Lighthouse%20Performance%20Score%0Asubtitle%3A%20Modern%20framework%20benchmark%20(out%20of%20100)%0Ax%3A%20framework%0Ay%3A%20score%0Adata%3A%0A%20%20-%20%7B%20framework%3A%20%22SvelteKit%205%22%2C%20score%3A%2099%20%7D%0A%20%20-%20%7B%20framework%3A%20%22Astro%205%22%2C%20score%3A%2098%20%7D%0A%20%20-%20%7B%20framework%3A%20%22VitePress%22%2C%20score%3A%2096%20%7D%0A%20%20-%20%7B%20framework%3A%20%22Nuxt%203%22%2C%20score%3A%2091%20%7D%0A%20%20-%20%7B%20framework%3A%20%22Next.js%2015%22%2C%20score%3A%2088%20%7D"><div class="mdrs-chart-loading"><span class="mdrs-spinner"></span>Loading chart visualization…</div></div>
+<h3>Area Chart</h3>
+<div class="mdrs-chart" data-mdrs-chart="type%3A%20area%0Atitle%3A%20p95%20Response%20Time%0Asubtitle%3A%20Rolling%207-day%20edge%20latency%20(ms)%0Ax%3A%20day%0Ay%3A%20latency%0Adata%3A%0A%20%20-%20%7B%20day%3A%20%22Mon%22%2C%20latency%3A%20120%20%7D%0A%20%20-%20%7B%20day%3A%20%22Tue%22%2C%20latency%3A%2098%20%7D%0A%20%20-%20%7B%20day%3A%20%22Wed%22%2C%20latency%3A%20145%20%7D%0A%20%20-%20%7B%20day%3A%20%22Thu%22%2C%20latency%3A%20110%20%7D%0A%20%20-%20%7B%20day%3A%20%22Fri%22%2C%20latency%3A%20132%20%7D%0A%20%20-%20%7B%20day%3A%20%22Sat%22%2C%20latency%3A%2087%20%7D%0A%20%20-%20%7B%20day%3A%20%22Sun%22%2C%20latency%3A%2092%20%7D"><div class="mdrs-chart-loading"><span class="mdrs-spinner"></span>Loading chart visualization…</div></div>
+<h3>Donut Chart</h3>
+<div class="mdrs-chart" data-mdrs-chart="type%3A%20donut%0Atitle%3A%20Traffic%20Distribution%0Asubtitle%3A%20Visitor%20breakdown%20by%20channel%0Ax%3A%20channel%0Ay%3A%20visitors%0Adata%3A%0A%20%20-%20%7B%20channel%3A%20%22Organic%20Search%22%2C%20visitors%3A%204500%20%7D%0A%20%20-%20%7B%20channel%3A%20%22GitHub%20Referrals%22%2C%20visitors%3A%203200%20%7D%0A%20%20-%20%7B%20channel%3A%20%22Direct%20%2F%20RSS%22%2C%20visitors%3A%201800%20%7D%0A%20%20-%20%7B%20channel%3A%20%22Social%20Media%22%2C%20visitors%3A%20950%20%7D"><div class="mdrs-chart-loading"><span class="mdrs-spinner"></span>Loading chart visualization…</div></div>
+<h3>Pie Chart</h3>
+<div class="mdrs-chart" data-mdrs-chart="type%3A%20pie%0Atitle%3A%20Repository%20Language%20Breakdown%0Asubtitle%3A%20By%20lines%20of%20code%0Ax%3A%20language%0Ay%3A%20percentage%0Adata%3A%0A%20%20-%20%7B%20language%3A%20%22TypeScript%22%2C%20percentage%3A%2062%20%7D%0A%20%20-%20%7B%20language%3A%20%22Svelte%22%2C%20percentage%3A%2024%20%7D%0A%20%20-%20%7B%20language%3A%20%22SQL%22%2C%20percentage%3A%209%20%7D%0A%20%20-%20%7B%20language%3A%20%22CSS%22%2C%20percentage%3A%205%20%7D"><div class="mdrs-chart-loading"><span class="mdrs-spinner"></span>Loading chart visualization…</div></div>
+<hr>
+<h2>Content Tabs</h2>
+<h3>General Content Tabs (<code>:::tabs</code>)</h3>
+<p><code>:::tabs</code> presents alternative content blocks. Each <code>::tab</code> takes a required <code>label</code> and an optional <code>icon</code> (Lucide or Bootstrap Icons, same rules as callouts), and is closed with <code>::</code>. Here, a comparison of rendering strategies:</p>
+<div class="mdrs-tabs">
+  <div class="mdrs-tabs-header" role="tablist">
+    <div class="mdrs-tabs-nav">
+      <button type="button" role="tab" class="mdrs-tab mdrs-is-active" data-mdrs-tab-label="Server-Side Rendering (SSR)" aria-selected="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-server" aria-hidden="true"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>Server-Side Rendering (SSR)</button><button type="button" role="tab" class="mdrs-tab" data-mdrs-tab-label="Client-Side Rendering (CSR)" aria-selected="false"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-monitor" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>Client-Side Rendering (CSR)</button>
+    </div>
+  </div>
+  <div class="mdrs-tabs-body">
+    <div role="tabpanel" class="mdrs-tab-panel"><p>SSR generates the full HTML on the server before sending it to the browser. The page is immediately readable: search engines index real content, and users on slow connections see meaningful output without waiting for JavaScript to boot.</p>
+<h4>When to use SSR</h4>
+<div class="mdrs-steps">
+<ol class="mdrs-steps-list">
+<li class="mdrs-step">Content-heavy pages where SEO matters (blogs, documentation, landing pages).</li>
+<li class="mdrs-step">Users on low-powered devices or constrained networks.</li>
+<li class="mdrs-step">Pages where time-to-first-byte is more important than interactivity latency.</li>
+</ol>
+</div></div><div role="tabpanel" class="mdrs-tab-panel" hidden><p>CSR ships a minimal HTML shell and builds the page entirely in the browser via JavaScript. The initial load is faster in bytes, but the page is blank until the framework hydrates, making it unsuitable for content that needs to be indexed or immediately visible.</p>
+<h4>When to use CSR</h4>
+<div class="mdrs-steps">
+<ol class="mdrs-steps-list">
+<li class="mdrs-step">Highly interactive dashboards or real-time applications.</li>
+<li class="mdrs-step">Authenticated pages behind a login wall (no SEO needed).</li>
+<li class="mdrs-step">Single-page apps where subsequent navigation speed matters more than first paint.</li>
+</ol>
+</div></div>
+  </div>
+</div><h3>Code Snippets (<code>:::snippets</code>)</h3>
+<p><code>:::snippets</code> is the code-oriented variant: it adds copy and download controls for the active tab. The optional <code>key</code> synchronizes every snippet group that shares it. Pick your package manager once, and every code block updates:</p>
+<div class="mdrs-snippets" data-mdrs-tab-key="bundler">
+  <div class="mdrs-snippets-header hljs" role="tablist">
+    <div class="mdrs-snippets-nav">
+      <button type="button" role="tab" class="mdrs-tab mdrs-is-active" data-mdrs-tab-label="bun" aria-selected="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-terminal" aria-hidden="true"><path d="M12 19h8"/><path d="m4 17 6-6-6-6"/></svg>bun</button><button type="button" role="tab" class="mdrs-tab" data-mdrs-tab-label="npm" aria-selected="false"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-package" aria-hidden="true"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/><path d="M12 22V12"/><polyline points="3.29 7 12 12 20.71 7"/><path d="m7.5 4.27 9 5.15"/></svg>npm</button><button type="button" role="tab" class="mdrs-tab" data-mdrs-tab-label="pnpm" aria-selected="false"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-package" aria-hidden="true"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/><path d="M12 22V12"/><polyline points="3.29 7 12 12 20.71 7"/><path d="m7.5 4.27 9 5.15"/></svg>pnpm</button><button type="button" role="tab" class="mdrs-tab" data-mdrs-tab-label="yarn" aria-selected="false"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-package" aria-hidden="true"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/><path d="M12 22V12"/><polyline points="3.29 7 12 12 20.71 7"/><path d="m7.5 4.27 9 5.15"/></svg>yarn</button>
+    </div>
+    <div class="mdrs-snippets-actions"></div>
+  </div>
+  <div class="mdrs-snippets-body">
+    <div role="tabpanel" class="mdrs-tab-panel"><pre><code class="language-bash">bun add layerchart katex mermaid
+</code></pre>
+</div><div role="tabpanel" class="mdrs-tab-panel" hidden><pre><code class="language-bash">npm install layerchart katex mermaid
+</code></pre>
+</div><div role="tabpanel" class="mdrs-tab-panel" hidden><pre><code class="language-bash">pnpm add layerchart katex mermaid
+</code></pre>
+</div><div role="tabpanel" class="mdrs-tab-panel" hidden><pre><code class="language-bash">yarn add layerchart katex mermaid
+</code></pre>
+</div>
+  </div>
+</div><p>Select a tab above, then notice the selection carries over here:</p>
+<div class="mdrs-snippets" data-mdrs-tab-key="bundler">
+  <div class="mdrs-snippets-header hljs" role="tablist">
+    <div class="mdrs-snippets-nav">
+      <button type="button" role="tab" class="mdrs-tab mdrs-is-active" data-mdrs-tab-label="bun" aria-selected="true">bun</button><button type="button" role="tab" class="mdrs-tab" data-mdrs-tab-label="npm" aria-selected="false">npm</button><button type="button" role="tab" class="mdrs-tab" data-mdrs-tab-label="pnpm" aria-selected="false">pnpm</button><button type="button" role="tab" class="mdrs-tab" data-mdrs-tab-label="yarn" aria-selected="false">yarn</button>
+    </div>
+    <div class="mdrs-snippets-actions"></div>
+  </div>
+  <div class="mdrs-snippets-body">
+    <div role="tabpanel" class="mdrs-tab-panel"><pre><code class="language-bash">bun run dev
+</code></pre>
+</div><div role="tabpanel" class="mdrs-tab-panel" hidden><pre><code class="language-bash">npm run dev
+</code></pre>
+</div><div role="tabpanel" class="mdrs-tab-panel" hidden><pre><code class="language-bash">pnpm dev
+</code></pre>
+</div><div role="tabpanel" class="mdrs-tab-panel" hidden><pre><code class="language-bash">yarn dev
+</code></pre>
+</div>
+  </div>
+</div><hr>
+<h2>Step-by-Step Timelines</h2>
+<p>The <code>:::steps</code> directive transforms lists and headings into a numbered timeline with connecting lines.</p>
+<h3>Heading-Based</h3>
+<div class="mdrs-steps">
+<div class="mdrs-step"><h3>Install Dependencies</h3>
+<pre><code class="language-bash">bun add katex mermaid layerchart d3-scale d3-shape
+</code></pre></div>
+<div class="mdrs-step"><h3>Configure Server-Side Compilation</h3>
+<p>Wire KaTeX and the directive preprocessor into <code>src/lib/markdown.ts</code>. Math formulas compile to HTML+MathML at build time, zero client JS.</p></div>
+<div class="mdrs-step"><h3>Hydrate Client Enhancements</h3>
+<p>Attach <code>enhanceMarkdownContent()</code> in your page effect to lazily activate Mermaid, LayerChart, and Code Tabs on scroll.</p></div>
+<div class="mdrs-step"><h3>Verify and Ship</h3>
+<pre><code class="language-bash">bun run check &amp;&amp; bun run lint
+</code></pre></div>
+</div><h3>Ordered List-Based</h3>
+<div class="mdrs-steps">
+<ol class="mdrs-steps-list">
+<li class="mdrs-step">Clone the repository and create your <code>.env</code> from the example template.</li>
+<li class="mdrs-step">Run <code>bun install</code> to install all workspace dependencies.</li>
+<li class="mdrs-step">Start the dev server with <code>bun run dev</code>, hot module replacement included.</li>
+<li class="mdrs-step">Verify with <code>bun run check</code> and <code>bun run lint</code> before pushing.</li>
+</ol>
+</div><h3>Unordered List-Based</h3>
+<div class="mdrs-steps">
+<ol class="mdrs-steps-list">
+<li class="mdrs-step"><div class="mdrs-list-content">Provision edge functions and R2 storage buckets.</div></li>
+<li class="mdrs-step"><div class="mdrs-list-content">Run the integration smoke test suite.</div></li>
+<li class="mdrs-step"><div class="mdrs-list-content">Promote the preview deployment to production.</div></li>
+</ol>
+</div><hr>
+<h2>Dynamic Variables</h2>
+<p>Every value on this page is alive. The <code>:::define</code> block at the top of this document declares typed variables (strings, numbers, booleans, arrays, and objects) with full expression support: arithmetic (<code>+ - * / %</code>), comparison (<code>== != &gt; &lt; &gt;= &lt;=</code>), logical (<code>&amp;&amp; || !</code>), and cross-references via <code>this.*</code>.</p>
+<h3>What was declared</h3>
+<pre><code class="language-text">:::define
+site_name: &quot;fkp.my.id&quot;
+engine_version: &quot;2.1&quot;
+current_year: 2026
+is_production: true
+visitor_greeting: &quot;Welcome to &quot; + this.site_name + &quot;, where markdown comes alive&quot;
+math_demo: (2 + 3) * 4
+supported_locales: [&quot;en&quot;, &quot;id&quot;]
+engine_stats: { directives: 14, chart_types: 5, since: 2026, stable: true }
+:::
+</code></pre>
+<h3>What you see (live interpolation)</h3>
+<ul class="mdrs-list mdrs-list--unordered">
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Greeting: <strong>Welcome to fkp.my.id, where markdown comes alive</strong></div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Site: <strong>fkp.my.id</strong>, engine v2.1, copyright 2026</div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Expression <code>(2 + 3) * 4</code> evaluates to: <strong>20</strong></div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">First locale: <strong>en</strong> out of 2 supported</div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Directive count from nested object: <strong>14</strong></div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">You are viewing the production build of this page.</div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content"></div></li>
+</ul>
+<hr>
+<h2>Live Data Binding</h2>
+<p>The <code>api.v1.*</code> prefix fetches real data from this site&#39;s own API at render time, with no manual <code>curl</code> and no hardcoded values. The engine resolves paths like <code>api.v1.author.profile.name</code> against the live Supabase database during server-side rendering.</p>
+<ul class="mdrs-list mdrs-list--unordered">
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Author: <strong><span class="mdrs-define-error" title="Database access is unavailable in this context.">[define error]</span></strong></div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Published posts: <strong><span class="mdrs-define-error" title="Database access is unavailable in this context.">[define error]</span></strong></div></li>
+</ul>
+<p>This is the same data you would get from <code>GET /api/v1/author?fields=profile</code> and <code>GET /api/v1/blog</code>, but inlined directly into the markdown body at compile time. No client-side fetch, no loading spinner, no layout shift.</p>
+<hr>
+<h2>Images and Videos</h2>
+<p>Images and videos share one syntax: <code>![alt](source &quot;title&quot;)</code>. The source extension decides the element: <code>.mp4</code> and <code>.webm</code> render a <code>&lt;video&gt;</code> with controls, anything else renders an <code>&lt;img&gt;</code>. The alt text is the accessible label and the optional title is the tooltip.</p>
+<pre data-mdrs-filename="media.md"><code class="language-markdown">![Architecture overview](/blog/content/&lt;hash&gt;.webp &quot;Architecture overview&quot;)
+
+![Product demo](/blog/content/&lt;hash&gt;.mp4 &quot;Product demo&quot;)
+</code></pre>
+<p>Upload media from the editor toolbar: it inserts the correct syntax for you.</p>
+<hr>
+<h2>Media Embeds</h2>
+<p>A single <code>:::embed url=&quot;...&quot;</code> line handles provider detection, responsive aspect-ratio wrapping, and iframe security. No manual HTML needed, and no closing line:</p>
+<div class="mdrs-embed"><iframe src="https://www.youtube.com/embed/Ec08db2hP10" loading="lazy" allowfullscreen title="Embedded content"></iframe></div><div class="mdrs-embed"><iframe src="https://www.youtube.com/embed/VyPwEZTIpVc" loading="lazy" allowfullscreen title="Embedded content"></iframe></div><p>Unrecognized providers fall back to a styled external link instead of a broken iframe:</p>
+<p><a href="https://example.com/some-video" class="mdrs-external-link" target="_blank" rel="noopener noreferrer">https://example.com/some-video<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a></p>
+<hr>
+<h2>Feature Matrix</h2>
+<div class="mdrs-table">
+<table>
+<thead>
+<tr>
+<th align="left">Feature</th>
+<th align="center">Engine</th>
+<th align="center">Rendering</th>
+<th align="left">Output</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>LaTeX Math</strong></td>
+<td align="center">KaTeX</td>
+<td align="center">Server SSR</td>
+<td align="left">HTML + MathML</td>
+</tr>
+<tr>
+<td align="left"><strong>Diagrams</strong></td>
+<td align="center">Mermaid.js</td>
+<td align="center">Lazy Client</td>
+<td align="left">SVG</td>
+</tr>
+<tr>
+<td align="left"><strong>Charts</strong></td>
+<td align="center">LayerChart + D3</td>
+<td align="center">Svelte 5 Mount</td>
+<td align="left">Interactive SVG</td>
+</tr>
+<tr>
+<td align="left"><strong>Content Tabs</strong></td>
+<td align="center">Directive Parser</td>
+<td align="center">Client Enhanced</td>
+<td align="left">ARIA Tabpanels</td>
+</tr>
+<tr>
+<td align="left"><strong>Code Snippets</strong></td>
+<td align="center">Directive Parser</td>
+<td align="center">Client Enhanced</td>
+<td align="left">Synced Tabpanels</td>
+</tr>
+<tr>
+<td align="left"><strong>Callouts</strong></td>
+<td align="center">Directive Parser</td>
+<td align="center">Server HTML</td>
+<td align="left">Alerts and Custom Cards</td>
+</tr>
+<tr>
+<td align="left"><strong>Timelines</strong></td>
+<td align="center">CSS Counters</td>
+<td align="center">Server HTML</td>
+<td align="left">Numbered Cards</td>
+</tr>
+<tr>
+<td align="left"><strong>Variables</strong></td>
+<td align="center">Expression Engine</td>
+<td align="center">Server SSR</td>
+<td align="left">Interpolated Text</td>
+</tr>
+<tr>
+<td align="left"><strong>Data Binding</strong></td>
+<td align="center"><code>api.v1.*</code> Resolver</td>
+<td align="center">Server SSR</td>
+<td align="left">Live Data</td>
+</tr>
+</tbody></table>
+</div>
+<hr>
+<h2>Collapsible Sections</h2>
+<p>Use <code>:::details</code> with a required <code>summary</code>. The content is regular Markdown, and details can be nested:</p>
+<details class="mdrs-details">
+ <summary class="mdrs-details-summary">
+ <span class="mdrs-details-title">What does server-side rendered math actually mean?</span>
+ <span class="mdrs-details-icon" aria-hidden="true">
+ <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-chevrons-up-down"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+ <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-chevrons-down-up"><path d="m7 20 5-5 5 5"/><path d="m7 4 5 5 5-5"/></svg>
+ </span>
+ </summary>
+ <div class="mdrs-details-body">
+ <p>KaTeX compiles LaTeX expressions into HTML and MathML markup during the SSR pass on the server. The browser receives fully-formed math output: no JavaScript bundle, no render flash, no layout shift. This is why formulas on this page appear instantly even with JavaScript disabled.</p>
+ </div>
+</details><details class="mdrs-details">
+ <summary class="mdrs-details-summary">
+ <span class="mdrs-details-title">How are Mermaid diagrams loaded without blocking the page?</span>
+ <span class="mdrs-details-icon" aria-hidden="true">
+ <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-chevrons-up-down"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+ <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-chevrons-down-up"><path d="m7 20 5-5 5 5"/><path d="m7 4 5 5 5-5"/></svg>
+ </span>
+ </summary>
+ <div class="mdrs-details-body">
+ <p>The markdown compiler replaces each mermaid fence with a lightweight placeholder div. A client-side observer watches for viewport intersection, then dynamically imports the Mermaid library and renders the SVG in place. The diagram never blocks initial page load.</p>
+<details class="mdrs-details">
+ <summary class="mdrs-details-summary">
+ <span class="mdrs-details-title">Nested example</span>
+ <span class="mdrs-details-icon" aria-hidden="true">
+ <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-chevrons-up-down"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+ <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-chevrons-down-up"><path d="m7 20 5-5 5 5"/><path d="m7 4 5 5 5-5"/></svg>
+ </span>
+ </summary>
+ <div class="mdrs-details-body">
+ <p>Details can contain any other block, including code and lists:</p>
+<ul class="mdrs-list mdrs-list--unordered">
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">A list item</div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Another list item</div></li>
+</ul>
+<pre data-mdrs-filename="nested.sh"><code class="language-bash">echo &quot;inside a nested details block&quot;
+</code></pre>
+ </div>
+</details>
+ </div>
+</details><hr>
+<h2>Footnotes</h2>
+<p>The engine compiles <code>[^label]</code> markers into superscript links with numbered back-references<sup><a id="mdrs-fn-ref-1" href="#mdrs-fn-1" data-mdrs-fn-ref="" aria-describedby="mdrs-fn-label">[1]</a></sup>. KaTeX math runs entirely at build time<sup><a id="mdrs-fn-ref-math" href="#mdrs-fn-math" data-mdrs-fn-ref="" aria-describedby="mdrs-fn-label">[2]</a></sup>, and the <code>api.v1.*</code> resolver demonstrated above fetches data from the same Supabase instance that powers the REST API<sup><a id="mdrs-fn-ref-api" href="#mdrs-fn-api" data-mdrs-fn-ref="" aria-describedby="mdrs-fn-label">[3]</a></sup>.</p>
+<section class="mdrs-footnotes mdrs-references" data-mdrs-footnotes="">
+<h2 id="mdrs-fn-label">References</h2>
+<ol>
+<li id="mdrs-fn-1">
+<p><a href="#mdrs-fn-ref-1" class="mdrs-footnote-backref" aria-label="Back to reference">^</a>Directives like <code>:::define</code>, <code>:::tabs</code>, and <code>:::callout</code> are parsed in a pre-processing pass over raw markdown before <code>marked.parse()</code> runs.</p>
+</li>
+<li id="mdrs-fn-math">
+<p><a href="#mdrs-fn-ref-math" class="mdrs-footnote-backref" aria-label="Back to reference">^</a>KaTeX renders <strong>server-side during SSR</strong>, so no client JavaScript is required to display formulas. Mermaid diagrams, by contrast, hydrate lazily in the browser.</p>
+</li>
+<li id="mdrs-fn-api">
+<p><a href="#mdrs-fn-ref-api" class="mdrs-footnote-backref" aria-label="Back to reference">^</a>The <code>api.v1.*</code> resolver calls the same Supabase queries as <code>GET /api/v1/author</code> and <code>GET /api/v1/blog</code>, but at compile time rather than via HTTP.</p>
+</li>
+</ol>
+</section>
+
+"
+`;

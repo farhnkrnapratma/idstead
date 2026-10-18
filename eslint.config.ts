@@ -30,6 +30,59 @@ export default defineConfig(
         }
     },
     {
+        files: [
+            '**/*.svelte',
+            '**/*.svelte.ts',
+            'packages/lib/src/components/**',
+            'packages/lib/src/layout/**',
+            'packages/lib/src/article/**',
+            'packages/lib/src/stores/**',
+            'packages/lib/src/utils/**'
+        ],
+        rules: {
+            '@typescript-eslint/no-restricted-imports': [
+                'error',
+                {
+                    patterns: [
+                        {
+                            regex: '(^|/)server/',
+                            allowTypeImports: true,
+                            message: 'Browser code must not import server-only modules.'
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        files: [
+            'packages/lib/src/markdown.ts',
+            'packages/lib/src/define.ts',
+            'packages/lib/src/frontmatter.ts',
+            'packages/lib/src/markdownReferences.ts',
+            'packages/lib/src/markdownIcons.ts',
+            'packages/lib/src/placeholders.ts',
+            'packages/lib/src/sanitizeHtml.ts',
+            'packages/lib/src/legacyMarkdown.ts',
+            'packages/lib/src/mdrsValidation.ts'
+        ],
+        rules: {
+            '@typescript-eslint/no-restricted-imports': [
+                'warn',
+                {
+                    patterns: [
+                        {
+                            regex: '^(@supabase/|#lib/(supabase|authorApi|server/|stores/)|svelte($|/))',
+                            allowTypeImports: true,
+                            message:
+                                'The MDRS engine stays free of data access and UI state; inject resolvers instead.'
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    {
         rules: {
             'svelte/no-at-html-tags': 'off',
             'svelte/no-navigation-without-resolve': 'off',

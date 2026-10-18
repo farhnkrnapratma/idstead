@@ -31,6 +31,7 @@ The suite sends about 50 requests. The rate limit is 60 per minute, so wait a mi
 | `sanitizePublicApiData.test.ts` | `sanitizePublicApiData` drops row IDs and the avatar and banner asset versions from `/v1/author` |
 | `ard.test.ts`, `ardIngestion.test.ts` | ARD manifest, search, filters, facets, tokens, no lexical fallback; index ingestion and migration privacy |
 | `markdown.test.ts`, `legacyMarkdown.test.ts`, `frontmatter.test.ts`, `postAssetMarkdown.test.ts` | Markdown engine output; legacy syntax migration; YAML frontmatter and `:::define` validation; post images (AVIF with WebP fallback) and WebM videos |
+| `mdrsDocsSnapshot.test.ts` | Snapshot of the rendered HTML for every ` ```mdrs ` example in `docs/002-mdrs/` and for `fixtures/markdown-demo.md`. After an intended engine change, review the diff and refresh it with `bun test tests/mdrsDocsSnapshot.test.ts --update-snapshots` |
 | `sanitizeHtml.test.ts`, `decodeHtmlEntities.test.ts` | Hostile input, and engine output surviving the allow-list; single-level entity decoding |
 | `docsLayout.test.ts` | `docs/` folders are numbered `001…n` and every relative link and anchor resolves |
 | `csp.test.ts` | Content-Security-Policy builder |
