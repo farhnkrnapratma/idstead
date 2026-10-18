@@ -91,6 +91,26 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     if (postError)
         return apiError(503, 'DATA_DELETE_FAILED', 'Could not load posts. No data was deleted.');
 
+    const audit = (summary: string) =>
+        logActivity(
+            {
+                actor: actorEmail,
+                action: 'data.delete_all',
+                category: 'security',
+                summary,
+                ip: (() => {
+                    try {
+                        return getClientAddress();
+                    } catch {
+                        return null;
+                    }
+                })(),
+                ipSalt: ipSalt(platform),
+                userAgent: request.headers.get('user-agent') ?? undefined
+            },
+            db
+        );
+
     let cleanupFailed = false;
     for (const doc of documents) {
         if (doc.filename && !(await deleteCvFile(platform, db, doc.filename, true)))
@@ -130,15 +150,26 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             console.error('Identity asset cleanup failed:', error);
         }
     }
-    if (cleanupFailed)
+    if (cleanupFailed) {
+        await audit('Delete all stopped: some uploaded files could not be removed.');
         return apiError(
             503,
             'DATA_DELETE_CLEANUP_FAILED',
-            'Some uploaded files could not be removed, so site data was not cleared. Try again.'
+            'Some uploaded files could not be removed and site data was not cleared yet. Files that were removed stay removed; try again to finish.'
         );
+    }
 
     const { error } = await db.rpc('db_clear_all_data');
-    if (error) return apiError(503, 'DATA_DELETE_FAILED', 'Could not clear site data.');
+    if (error) {
+        await audit(
+            'Delete all stopped: uploaded files were removed but site data was not cleared.'
+        );
+        return apiError(
+            503,
+            'DATA_DELETE_FAILED',
+            'Uploaded files were removed, but site data could not be cleared. Try again to finish.'
+        );
+    }
 
     const sweepPending = await cleanupBlogAssets(db, platform).then(
         ({ cleanupPending }) => cleanupPending,
@@ -148,26 +179,10 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         }
     );
 
-    await logActivity(
-        {
-            actor: actorEmail,
-            action: 'data.delete_all',
-            category: 'security',
-            summary:
-                sweepPending ?
-                    'Deleted all site data; some blog files still need cleanup.'
-                :   'Deleted all site data.',
-            ip: (() => {
-                try {
-                    return getClientAddress();
-                } catch {
-                    return null;
-                }
-            })(),
-            ipSalt: ipSalt(platform),
-            userAgent: request.headers.get('user-agent') ?? undefined
-        },
-        db
+    await audit(
+        sweepPending ?
+            'Deleted all site data; some blog files still need cleanup.'
+        :   'Deleted all site data.'
     );
 
     return json({ success: true }, { headers: { 'Cache-Control': 'no-store' } });

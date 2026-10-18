@@ -2,7 +2,8 @@
     import { CopyCheck, Copy, QrCode } from '@lucide/svelte';
     import Dialog from './Dialog.svelte';
     import Button from './Button.svelte';
-    import { toastStore } from '../stores/toastStore.svelte';
+    import IconButton from './IconButton.svelte';
+    import { copyText } from '../utils/fileActions';
 
     interface Props {
         isOpen: boolean;
@@ -38,17 +39,12 @@
     const encodedUrl = $derived(encodeURIComponent(effectiveUrl));
     const encodedTitle = $derived(encodeURIComponent(articleTitle));
 
-    function copyUrl() {
-        if (typeof window === 'undefined') return;
-        navigator.clipboard.writeText(effectiveUrl).then(
-            () => {
-                copied = true;
-                setTimeout(() => {
-                    copied = false;
-                }, 2000);
-            },
-            () => toastStore.error('Could not copy the link. Copy it from the address bar instead.')
-        );
+    async function copyUrl() {
+        if (!(await copyText(effectiveUrl, 'Link'))) return;
+        copied = true;
+        setTimeout(() => {
+            copied = false;
+        }, 2000);
     }
 
     function handleOpenQr() {
@@ -74,20 +70,17 @@
                     class="min-w-0 flex-1 truncate font-mono text-xs text-text-secondary select-all">
                     {effectiveUrl}
                 </span>
-                <Button
-                    type={copied ? 'tertiary' : 'secondary'}
+                <IconButton
+                    ariaLabel={copied ? 'Copied link' : 'Copy link'}
                     size="xs"
-                    class="size-6.5! shrink-0 px-0!"
-                    aria-label={copied ? 'Copied link' : 'Copy link'}
+                    class="shrink-0"
                     onclick={copyUrl}>
-                    {#snippet leading()}
-                        {#if copied}
-                            <CopyCheck class="size-3.5 text-accent-text" />
-                        {:else}
-                            <Copy class="size-3.5" />
-                        {/if}
-                    {/snippet}
-                </Button>
+                    {#if copied}
+                        <CopyCheck class="size-3.5 text-accent-text" />
+                    {:else}
+                        <Copy class="size-3.5" />
+                    {/if}
+                </IconButton>
             </div>
         </div>
 
