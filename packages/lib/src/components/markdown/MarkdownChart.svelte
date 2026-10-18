@@ -152,10 +152,7 @@
     </div>
 
     {#if rawData.length === 0}
-        <div
-            class="mdrs-chart-empty flex h-40 items-center justify-center rounded-md border border-dashed border-border-subtle/50 text-xs text-text-muted">
-            No chart data provided
-        </div>
+        <div class="mdrs-chart-empty">No chart data provided</div>
     {:else}
         <div
             class="mdrs-chart-plot relative w-full overflow-hidden"
@@ -195,8 +192,7 @@
                     <Tooltip.Root variant="none">
                         {#snippet children({ data })}
                             {#if data}
-                                <div
-                                    class="mdrs-chart-tooltip rounded-md border border-border-subtle bg-surface-elevated px-2.5 py-1.5 text-xs shadow-md">
+                                <div class="mdrs-chart-tooltip">
                                     <div class="font-medium text-text-primary">{data[xKey]}</div>
                                     <div class="font-mono font-semibold text-accent-text">
                                         {data[yKey]}
@@ -261,8 +257,7 @@
                     <Tooltip.Root variant="none">
                         {#snippet children({ data })}
                             {#if data}
-                                <div
-                                    class="mdrs-chart-tooltip rounded-md border border-border-subtle bg-surface-elevated px-2.5 py-1.5 text-xs shadow-md">
+                                <div class="mdrs-chart-tooltip">
                                     <div class="font-medium text-text-primary">{data[xKey]}</div>
                                     <div class="font-mono font-semibold text-accent-text">
                                         {data[yKey]}
@@ -306,8 +301,7 @@
                             <Tooltip.Root variant="none">
                                 {#snippet children({ data })}
                                     {#if data}
-                                        <div
-                                            class="mdrs-chart-tooltip rounded-md border border-border-subtle bg-surface-elevated px-2.5 py-1.5 text-xs shadow-md">
+                                        <div class="mdrs-chart-tooltip">
                                             <div class="font-medium text-text-primary">
                                                 {data.label}
                                             </div>
@@ -379,8 +373,7 @@
                     <Tooltip.Root variant="none">
                         {#snippet children({ data })}
                             {#if data}
-                                <div
-                                    class="mdrs-chart-tooltip rounded-md border border-border-subtle bg-surface-elevated px-2.5 py-1.5 text-xs shadow-md">
+                                <div class="mdrs-chart-tooltip">
                                     <div class="font-medium text-text-primary">{data[xKey]}</div>
                                     {#each seriesList as s (s.key)}
                                         <div class="flex items-center gap-1.5 font-mono text-xs">

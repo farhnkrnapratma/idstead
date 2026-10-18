@@ -557,6 +557,14 @@
         @apply flex h-40 items-center justify-center rounded-md glass-card border border-border-subtle/60 text-xs text-text-muted;
     }
 
+    .mdrs-chart-empty {
+        @apply flex h-40 items-center justify-center dashed-surface text-xs text-text-muted;
+    }
+
+    .mdrs-chart-tooltip {
+        @apply popover-surface px-2.5 py-1.5 text-xs;
+    }
+
     .mdrs-chart-error {
         @apply rounded-md border border-danger/30 bg-danger-subtle/20 p-3 font-mono text-xs text-danger;
     }

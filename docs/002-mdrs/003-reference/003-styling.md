@@ -33,7 +33,7 @@ The sanitizer enforces the contract: on any element, a `class` token survives on
 | Steps | `mdrs-steps`, `mdrs-steps-list`, `mdrs-step` |
 | Code blocks (after enhancement) | `mdrs-code`, `mdrs-code-header`, `mdrs-code-body`, `mdrs-code-gutter`, `mdrs-code-line` (`--marked`, `--command`), `mdrs-code-line-number`, `mdrs-code-menu`, `mdrs-code-scrollbar` |
 | Math | `mdrs-math mdrs-math--block`, `mdrs-math-error` |
-| Diagrams and charts | `mdrs-mermaid`, `mdrs-mermaid-display`, `mdrs-mermaid-source`; `mdrs-chart`, `mdrs-chart-card`, `mdrs-chart-error` |
+| Diagrams and charts | `mdrs-mermaid`, `mdrs-mermaid-display`, `mdrs-mermaid-source`; `mdrs-chart`, `mdrs-chart-card`, `mdrs-chart-empty`, `mdrs-chart-error`, `mdrs-chart-tooltip` |
 | Embeds | `mdrs-embed` |
 | Footnotes | `mdrs-footnotes` (`mdrs-references` for a `:::references` block), `mdrs-footnote-backref` |
 | Headings | `mdrs-heading`, `mdrs-heading-text`, `mdrs-anchor` |
@@ -69,7 +69,7 @@ For small changes, set the custom properties on `:root` or on one `.mdrs` contai
 }
 ```
 
-The chart widget is a Svelte component styled with utilities. It exposes `mdrs-chart-*` hooks (`mdrs-chart-card`, `mdrs-chart-title`, `mdrs-chart-tooltip`, …), which unlayered CSS can still override.
+The chart widget is a Svelte component styled with utilities. It exposes `mdrs-chart-*` hooks (`mdrs-chart-card`, `mdrs-chart-title`, …), which unlayered CSS can still override. The tooltip (`mdrs-chart-tooltip`) and the empty state (`mdrs-chart-empty`) take their default styling from `mdrs.css`, built on the shared `popover-surface` and `dashed-surface` utilities.
 
 ## Heading IDs and links
 
