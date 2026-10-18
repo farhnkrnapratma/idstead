@@ -23,7 +23,7 @@ The response has one key per requested section:
 
 Before a response is sent, `sanitizePublicApiData()` (`packages/lib/src/authorApi.ts`) cleans it:
 
-- **Internal keys removed:** `id`, `authorId`, `author_id`, `sortOrder`, `sort_order`, `revision`, `avatarVersion`, `manifestSettings`, `icon`, `updatedAt`, `firstName`, `lastName`, `email`. The profile `email` is then added back on purpose.
+- **Internal keys removed:** `id`, `authorId`, `author_id`, `sortOrder`, `sort_order`, `revision`, `avatarVersion`, `bannerVersion`, `manifestSettings`, `icon`, `updatedAt`, `firstName`, `lastName`, `email`. The profile `email` is then added back on purpose.
 - **Empty values dropped:** `null`, empty arrays, empty objects and empty `description` values.
 - **Ended entries:** `currentlyIn` is dropped from entries that have an end date.
 
