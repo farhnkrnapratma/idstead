@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Personal website/blog for Farhan Kurnia Pratama (fkp.my.id) — SvelteKit 5 + TypeScript + Tailwind CSS 4, backed by Supabase (Postgres + RLS), deployed as Cloudflare Workers. A Bun-workspaces monorepo with four deployables that share one library:
+Personal website/blog for Farhan Kurnia Pratama (fkp.my.id) — SvelteKit 5 + TypeScript + Tailwind CSS 4, backed by Supabase (Postgres + RLS), deployed as Cloudflare Workers. A Bun-workspaces monorepo with four deployables that share a library and the MDRS engine:
 
 | Workspace | Worker | Host | Role |
 | --- | --- | --- | --- |
@@ -12,7 +12,8 @@ Personal website/blog for Farhan Kurnia Pratama (fkp.my.id) — SvelteKit 5 + Ty
 | `apps/admin` | `fkp-admin` | `admin.fkp.my.id` | Admin portal at the host root plus `/api/internal/admin/**`. |
 | `apps/api` | `fkp-api` | `api.fkp.my.id/v1` | Public read-only REST API (Hono). |
 | `apps/jobs` | `fkp-jobs` | none | Queue consumer (`fkp-newsletter`) and daily cron cleanups. |
-| `packages/lib` | — | — | `@fkp/lib`: components, layout, stores, markdown engine, server helpers, API handlers. |
+| `packages/lib` | — | — | `@fkp/lib`: components, layout, stores, server helpers, API handlers. |
+| `packages/mdrs` | — | — | `@fkp/mdrs`: the standalone MDRS engine (render, `:::define`, frontmatter, sanitizer, legacy migration). |
 
 ## Commands
 
@@ -101,7 +102,7 @@ All apps share one Supabase project. Sentry events are tagged with `PUBLIC_SENTR
 
 ### Markdown engine
 
-`packages/lib/src/markdown.ts` renders posts and legal pages. The language is MDRS (Markdown Rich Syntax), fully documented in [docs/002-mdrs/](docs/002-mdrs/README.md); update those pages, including `003-reference/001-compatibility.md`, whenever engine behaviour changes. `renderMarkdown` always ends with `sanitizeHtml` (`packages/lib/src/sanitizeHtml.ts`, an allowlist that also covers the engine's own markup), so any new tag or attribute the engine emits must be added to that allowlist, and every class, ID and `data-` attribute it emits must use the `mdrs` namespace (`mdrs-*`, `data-mdrs-*`) with its default styling in `packages/lib/src/mdrs.css`, never Tailwind utilities in the markup; `tests/sanitizeHtml.test.ts` fails if engine output changes under sanitizing. `tests/mdrsDocsSnapshot.test.ts` snapshots the HTML of every documented example, so any output change shows up as a snapshot diff to review. Stored content is migrated between syntaxes with `scripts/migrate-markdown-syntax.ts` built on `packages/lib/src/legacyMarkdown.ts`.
+The workspace package `@fkp/mdrs` (`packages/mdrs`) renders posts and legal pages; import it only as `@fkp/mdrs` or `@fkp/mdrs/legacy` (its `exports`), never its `src/` files (tests excepted). It is standalone: no Svelte, SvelteKit, `@fkp/*`, `#lib` or Supabase imports (ESLint enforces this). Live data (`api.v1.*` in `:::define`) comes from resolvers passed to `renderMarkdown`/`prepareMarkdownPage`; the site's are `createMdrsResolvers(supabase)` in `packages/lib/src/mdrsResolvers.ts`. The browser-side enhancers (`packages/lib/src/utils/{codeBlocks,markdownEnhancer,markdownTabs,markdownCharts,mermaid,headingAnchors}.ts`) and `mdrs.css` still live in `@fkp/lib`. The language is MDRS (Markdown Rich Syntax), fully documented in [docs/002-mdrs/](docs/002-mdrs/README.md); update those pages, including `003-reference/001-compatibility.md`, whenever engine behaviour changes. `renderMarkdown` always ends with `sanitizeHtml` (`packages/mdrs/src/sanitize.ts`, an allowlist that also covers the engine's own markup), so any new tag or attribute the engine emits must be added to that allowlist, and every class, ID and `data-` attribute it emits must use the `mdrs` namespace (`mdrs-*`, `data-mdrs-*`) with its default styling in `packages/lib/src/mdrs.css`, never Tailwind utilities in the markup; `tests/sanitizeHtml.test.ts` fails if engine output changes under sanitizing. `tests/mdrsDocsSnapshot.test.ts` snapshots the HTML of every documented example, so any output change shows up as a snapshot diff to review. Stored content is migrated between syntaxes with `scripts/migrate-markdown-syntax.ts` built on `packages/mdrs/src/legacy.ts`.
 
 ### Components
 

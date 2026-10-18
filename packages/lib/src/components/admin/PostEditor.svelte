@@ -21,8 +21,7 @@
         decodeHtmlEntities
     } from '#lib/index.ts';
     import { FileUp, Mail } from '@lucide/svelte';
-    import { importPostDocument, type ImportedPost } from '#lib/frontmatter.ts';
-    import { MAX_DOCUMENT_LENGTH } from '#lib/define.ts';
+    import { importPostDocument, MAX_DOCUMENT_LENGTH, type ImportedPost } from '@fkp/mdrs';
     import BannerImageUpload from '#lib/components/BannerImageUpload.svelte';
     import { bannerUrl, type BannerChange } from '#lib/blogBanner.ts';
     import { cdnBaseUrl } from '#lib/cdn.ts';

@@ -47,24 +47,28 @@ Pages also call `hljs.highlightElement` on code blocks before enhancing them, an
 
 ## Public functions
 
-| Function | Module | Purpose |
-| --- | --- | --- |
-| `renderMarkdown(markdown, supabase?)` | `markdown.ts` | Full server render, sanitized |
-| `renderMarkdownUnsafe(markdown, supabase?)` | `markdown.ts` | The same without `sanitizeHtml`; only for trusted post-processing |
-| `prepareMarkdownPage(markdown, supabase?)` | `markdown.ts` | `renderMarkdown` + `injectHeadingIds` + `prefixHashLinks` + `extractHeadings`, returns `{ html, headings }` |
-| `injectHeadingIds(html)`, `prefixHashLinks(html)`, `extractHeadings(html)` | `markdown.ts` | Heading IDs, same-document links and table of contents |
-| `convertGithubAlerts(markdown)` | `markdown.ts` | `> [!NOTE]` → `:::note` |
-| `extractFrontmatter(markdown)`, `importPostDocument(text)` | `frontmatter.ts` | YAML frontmatter and the admin file import |
-| `parseAttrs`, `escapeAttr`, `escapeUrl`, `sanitizeUrl` | `markdown.ts` | Attribute and URL helpers |
-| `sanitizeHtml(html)` | `sanitizeHtml.ts` | The allowlist sanitizer |
-| `extractDefineBlock`, `hasDefineEntries`, `evaluateDefineBlock`, `validateDefineForSave`, `createApiRegistry` | `define.ts` | Variables, live data and save validation |
-| `validateMdrsRemote(markdown)`, `mdrsContent(label)` | `mdrsValidation.ts` | Editor-side validation through `POST /api/internal/blog/validate-define` |
-| `resolveMdrsHash(hash, container)` | `utils/headingAnchors.ts` | Maps `#setup` to `#mdrs-setup` when the page scrolls to a hash |
-| `markdownToPlainText(markdown)` | `utils/markdownToText.ts` | Plain-text version for `.txt` routes and `?output=txt` |
-| `enhanceMarkdownContent(options)` | `utils/markdownEnhancer.ts` | Browser pass |
-| `enhanceHeadingAnchors(container)` | `utils/headingAnchors.ts` | ¶ anchor links |
+The engine is the workspace package `@fkp/mdrs` (`packages/mdrs`). Import it only through its entry points: `@fkp/mdrs` (`src/index.ts`) and `@fkp/mdrs/legacy`. Everything else in `packages/mdrs/src` is internal. ESLint keeps the package standalone: it may not import Svelte, SvelteKit, `@fkp/*`, `#lib` or Supabase.
 
-Pass a Supabase client to enable [live data](../002-extensions/014-live-data.md); without one, `api.v1.*` renders an error marker.
+| Function | Entry | Purpose |
+| --- | --- | --- |
+| `renderMarkdown(markdown, resolvers?)` | `@fkp/mdrs` | Full server render, sanitized |
+| `renderMarkdownUnsafe(markdown, resolvers?)` | `@fkp/mdrs` | The same without `sanitizeHtml`; only for trusted post-processing |
+| `prepareMarkdownPage(markdown, resolvers?)` | `@fkp/mdrs` | `renderMarkdown` + `injectHeadingIds` + `prefixHashLinks` + `extractHeadings`, returns `{ html, headings }` |
+| `injectHeadingIds(html)`, `prefixHashLinks(html)`, `extractHeadings(html)` | `@fkp/mdrs` | Heading IDs, same-document links and table of contents |
+| `replaceMathBlocks`, `MATH_INLINE_RE` | `@fkp/mdrs` | Math helpers for the editor's syntax highlighting |
+| `extractFrontmatter(markdown)`, `importPostDocument(text)` | `@fkp/mdrs` | YAML frontmatter and the admin file import |
+| `sanitizeHtml(html)`, `sanitizeUrl(href)` | `@fkp/mdrs` | The allowlist sanitizer and URL check |
+| `extractDefineBlock`, `validateDefineForSave`, `MAX_DOCUMENT_LENGTH` | `@fkp/mdrs` | `:::define` placement, save validation and the size limit |
+| `unavailableResolvers()`, `jsToDefineValue`, `walkPath`, `DefineError`, `ApiRegistry` | `@fkp/mdrs` | Building blocks for live-data resolvers |
+| `markdownToPlainText(markdown)`, `decodeHtmlEntities(text)` | `@fkp/mdrs` | Plain-text version for `.txt` routes and `?output=txt` |
+| `convertLegacyMarkdown`, `convertLegacyMarkdownWithNotes` | `@fkp/mdrs/legacy` | Old syntax → MDRS, used by `scripts/migrate-markdown-syntax.ts` |
+| `createMdrsResolvers(supabase)` | `packages/lib/src/mdrsResolvers.ts` | The site's `api.v1.author` and `api.v1.blog` resolvers |
+| `validateMdrsRemote(markdown)`, `mdrsContent(label)` | `packages/lib/src/mdrsValidation.ts` | Editor-side validation through `POST /api/internal/blog/validate-define` |
+| `resolveMdrsHash(hash, container)` | `packages/lib/src/utils/headingAnchors.ts` | Maps `#setup` to `#mdrs-setup` when the page scrolls to a hash |
+| `enhanceMarkdownContent(options)` | `packages/lib/src/utils/markdownEnhancer.ts` | Browser pass |
+| `enhanceHeadingAnchors(container)` | `packages/lib/src/utils/headingAnchors.ts` | ¶ anchor links |
+
+Pass resolvers to enable [live data](../002-extensions/014-live-data.md): the site uses `createMdrsResolvers(supabase)`. Without them, the default `unavailableResolvers()` makes `api.v1.*` render an error marker.
 
 ## Where MDRS is used
 
@@ -90,6 +94,6 @@ Pass a Supabase client to enable [live data](../002-extensions/014-live-data.md)
 
 ## Migrating legacy syntax
 
-Before MDRS settled on `:::name key="value"`, posts used older forms: GitHub `> [!NOTE]` alerts (which now render directly as well), `:::callout{title="…"}` and `::tab{…}` braces, `::::` wide closers, raw `<details>` and `<video>` HTML, `\[ … \]`, `\( … \)` and single-`$` math, and `{1,3-5}` fence line markers. `scripts/migrate-markdown-syntax.ts` (built on `packages/lib/src/legacyMarkdown.ts`) converts stored posts to the current syntax. It runs as a dry run by default; see [Scripts and tooling](../../004-development/004-scripts-and-tooling.md).
+Before MDRS settled on `:::name key="value"`, posts used older forms: GitHub `> [!NOTE]` alerts (which now render directly as well), `:::callout{title="…"}` and `::tab{…}` braces, `::::` wide closers, raw `<details>` and `<video>` HTML, `\[ … \]`, `\( … \)` and single-`$` math, and `{1,3-5}` fence line markers. `scripts/migrate-markdown-syntax.ts` (built on `packages/mdrs/src/legacy.ts`) converts stored posts to the current syntax. It runs as a dry run by default; see [Scripts and tooling](../../004-development/004-scripts-and-tooling.md).
 
-Source: `packages/lib/src/markdown.ts` (`renderMarkdownUnsafe`, `renderMarkdown`, `prepareMarkdownPage`), `packages/lib/src/frontmatter.ts`, `packages/lib/src/placeholders.ts`, `packages/lib/src/utils/markdownEnhancer.ts`, `packages/lib/src/legacyMarkdown.ts`.
+Source: `packages/mdrs/src/markdown.ts` (`renderMarkdownUnsafe`, `renderMarkdown`, `prepareMarkdownPage`), `packages/mdrs/src/frontmatter.ts`, `packages/mdrs/src/placeholders.ts`, `packages/lib/src/utils/markdownEnhancer.ts`, `packages/mdrs/src/legacy.ts`.

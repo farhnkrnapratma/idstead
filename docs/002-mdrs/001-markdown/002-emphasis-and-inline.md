@@ -65,4 +65,4 @@ Visible text.
 <p>Visible text.</p>
 ```
 
-Source: `marked` (GFM mode), `packages/lib/src/sanitizeHtml.ts`.
+Source: `marked` (GFM mode), `packages/mdrs/src/sanitize.ts`.

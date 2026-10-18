@@ -48,7 +48,8 @@
         prefixHashLinks,
         replaceMathBlocks,
         MATH_INLINE_RE
-    } from '#lib/markdown.ts';
+    } from '@fkp/mdrs';
+    import { createMdrsResolvers } from '#lib/mdrsResolvers.ts';
     import { supabase } from '#lib/supabase.ts';
     import { assetAltText } from '#lib/assetNaming.ts';
     import { splitHighlightedHtmlLines } from '#lib/utils/codeBlocks.ts';
@@ -285,7 +286,7 @@
     $effect(() => {
         let active = true;
         if (value !== undefined) {
-            renderMarkdown(value, supabase)
+            renderMarkdown(value, createMdrsResolvers(supabase))
                 .then(html => {
                     if (active) {
                         previewHtml = prefixHashLinks(injectHeadingIds(html));

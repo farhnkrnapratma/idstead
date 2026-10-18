@@ -100,4 +100,4 @@ Keyboard shortcuts on a focused block: <kbd>C</kbd> copy, <kbd>O</kbd> options, 
 
 Code blocks inside `:::snippets` share one set of controls in the tab header; see [Tabs and snippets](005-tabs-and-snippets.md).
 
-Source: `packages/lib/src/markdown.ts` (`parseFenceInfo`, `parseHighlightedLines`), `packages/lib/src/utils/codeBlocks.ts`, `packages/lib/src/utils/codeBlockExtensions.ts`, `packages/lib/src/stores/codeBlockPrefsStore.svelte.ts`.
+Source: `packages/mdrs/src/markdown.ts` (`parseFenceInfo`, `parseHighlightedLines`), `packages/lib/src/utils/codeBlocks.ts`, `packages/lib/src/utils/codeBlockExtensions.ts`, `packages/lib/src/stores/codeBlockPrefsStore.svelte.ts`.

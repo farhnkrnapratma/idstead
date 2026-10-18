@@ -21,7 +21,7 @@
     import ArticleMeta from '#lib/article/ArticleMeta.svelte';
     import { toastStore } from '#lib/stores/toastStore.svelte.ts';
     import { readingModeStore } from '#lib/stores/readingModeStore.svelte.ts';
-    import type { HeadingItem } from '#lib/markdown.ts';
+    import type { HeadingItem } from '@fkp/mdrs';
     import { formatReadTime } from '#lib/utils/formatters.ts';
     import { countReadingMinutes } from '#lib/readTime.ts';
     import { enhanceMarkdownContent } from '#lib/utils/markdownEnhancer.ts';

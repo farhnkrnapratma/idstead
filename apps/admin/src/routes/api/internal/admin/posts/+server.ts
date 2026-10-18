@@ -13,7 +13,8 @@ import { cleanupBlogAssets, putBanner } from '#lib/server/blogBannerStorage.ts';
 import { relocateMarkdownAssets, syncPostAssets } from '#lib/server/blogPostAssets.ts';
 import { cdnBaseUrl } from '#lib/cdn.ts';
 import { UUID_PATTERN } from '#lib/blogBanner.ts';
-import { createApiRegistry, validateDefineForSave } from '#lib/define.ts';
+import { validateDefineForSave } from '@fkp/mdrs';
+import { createMdrsResolvers } from '#lib/mdrsResolvers.ts';
 import { notifyNewPost } from '#lib/server/subscriberBroadcast.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { runInBackground } from '#lib/server/workerEnv.ts';
@@ -39,7 +40,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     }
     try {
         if (input.kind === 'save') {
-            const validation = await validateDefineForSave(input.markdown, createApiRegistry(db));
+            const validation = await validateDefineForSave(input.markdown, createMdrsResolvers(db));
             if (!validation.ok)
                 return apiError(
                     422,

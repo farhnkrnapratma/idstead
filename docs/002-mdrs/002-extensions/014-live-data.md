@@ -63,11 +63,11 @@ Read [${post.title}](/blog/hello-world), first published ${post.created_at}.
 - Only `v1` exists, and only `author` and `blog` resources (`Unknown api.v1 resource 'x' (supported: author, blog)`).
 - An unknown slug gives `api.v1.blog['x'] does not resolve to a published post`. In the examples, `hello-world` stands for a real slug.
 - Indexing past the end of the list fails with `Index [0] is out of range`, so `api.v1.blog[0]` errors (and blocks saving) while no post is published. Guard it with conditional text, as in the first example: the `${…}` inside `[…].${…}` is only evaluated when the condition is true ([Variables](013-variables.md#conditional-text-textcondition)).
-- Rendering without a Supabase client (for example in tests) gives `Database access is unavailable in this context.`
+- Rendering without resolvers (for example in tests) gives `Database access is unavailable in this context.`
 - Internal database IDs are never exposed: posts carry their public ID as `id`.
 - The old `db.*` root has been removed; using it gives a message pointing to `api.v1.*`.
 - Every reference to `api.v1.author` fetches the whole profile again. Read it once into a `:::define` variable when you use it several times.
 
 Errors render the same `[define error]` marker as other [variables](013-variables.md#errors), and block saving.
 
-Source: `packages/lib/src/define.ts` (`evaluateReference`, `createApiRegistry`, `resolveAuthorPath`, `resolveBlogPath`).
+Source: `packages/mdrs/src/define.ts` (`evaluateReference`, `unavailableResolvers`), `packages/lib/src/mdrsResolvers.ts` (`createMdrsResolvers`, `resolveAuthorPath`, `resolveBlogPath`).

@@ -97,4 +97,4 @@ Code spans and fenced code blocks are protected: a `:::note` line inside a code 
 
 `:::math`, `:::references`, `:::define` and `:::ignore-render` are handled in earlier passes than the other directives (see [Rendering pipeline](../003-reference/002-rendering-pipeline.md)), so they follow slightly stricter rules, which are listed on their pages.
 
-Source: `packages/lib/src/markdown.ts` (`parseAttrs`, `CONTAINER_OPEN_RE`, `parseContainers`, `MAX_CONTAINER_DEPTH`).
+Source: `packages/mdrs/src/markdown.ts` (`parseAttrs`, `CONTAINER_OPEN_RE`, `parseContainers`, `MAX_CONTAINER_DEPTH`).

@@ -1,8 +1,8 @@
 import { Marked, Renderer, type Tokens } from 'marked';
-import { extractReferences, placeReferences } from './markdownReferences';
+import { extractReferences, placeReferences } from './references';
 import markedFootnote from 'marked-footnote';
 import katex from 'katex';
-import { extractFrontmatter } from '#lib/frontmatter.ts';
+import { extractFrontmatter } from './frontmatter';
 import {
     MAX_DOCUMENT_LENGTH,
     extractDefineBlock,
@@ -10,11 +10,12 @@ import {
     hasDefineEntries,
     protectInterpolationTokens,
     resolveProtectedInterpolationTokens,
-    createApiRegistry
-} from '#lib/define.ts';
-import { loadIcons } from '#lib/markdownIcons.ts';
-import { decodeHtmlEntities } from '#lib/utils/formatters.ts';
-import { sanitizeHtml, sanitizeUrl } from '#lib/sanitizeHtml.ts';
+    unavailableResolvers,
+    type ApiRegistry
+} from './define';
+import { loadIcons } from './icons';
+import { decodeHtmlEntities } from './entities';
+import { sanitizeHtml, sanitizeUrl } from './sanitize';
 import {
     PLACEHOLDER_TOKEN_RE,
     placeholderKey,
@@ -25,7 +26,7 @@ import {
     replaceLineBlocks,
     restoreAllPlaceholders,
     stripPlaceholderChars
-} from '#lib/placeholders.ts';
+} from './placeholders';
 
 const ATTR_RE = /([a-zA-Z][\w-]*)="((?:[^"\\]|\\.)*)"/g;
 const FENCE_MARK_RE = /(?:^|\s)mark=([\d.,]+)/;
@@ -1003,7 +1004,7 @@ export function convertGithubAlerts(markdown: string): string {
 
 export async function renderMarkdownUnsafe(
     markdown: string,
-    supabaseClient?: any
+    resolvers: ApiRegistry = unavailableResolvers()
 ): Promise<string> {
     if (markdown.length > MAX_DOCUMENT_LENGTH) {
         throw new Error('Markdown document is too large to render.');
@@ -1011,9 +1012,8 @@ export async function renderMarkdownUnsafe(
     const { body: bodyAfterFrontmatter } = extractFrontmatter(stripPlaceholderChars(markdown));
     const { raw: defineRaw, body: bodyAfterDefine } = extractDefineBlock(bodyAfterFrontmatter);
     const interpolate = hasDefineEntries(defineRaw);
-    const apiRegistry = createApiRegistry(supabaseClient);
     const { scope } =
-        interpolate ? await evaluateDefineBlock(defineRaw, apiRegistry) : { scope: new Map() };
+        interpolate ? await evaluateDefineBlock(defineRaw, resolvers) : { scope: new Map() };
     const ignoreRenderPlaceholders = new Map<string, string>();
     const withRawBlocksExtracted = extractIgnoreRenderBlocks(
         bodyAfterDefine,
@@ -1030,7 +1030,7 @@ export async function renderMarkdownUnsafe(
         withMathExtracted,
         interpolationPlaceholders,
         scope,
-        apiRegistry
+        resolvers
     );
     const mathPlaceholders = await renderMathSources(mathSources, async source =>
         source.includes(placeholderPrefix('INTERPOLATION')) ?
@@ -1039,7 +1039,7 @@ export async function renderMarkdownUnsafe(
                     source,
                     interpolationPlaceholders,
                     scope,
-                    apiRegistry
+                    resolvers
                 )
             ).output
         :   source
@@ -1058,8 +1058,11 @@ export async function renderMarkdownUnsafe(
     return restoreAllPlaceholders(withUnwrappedBlocks, ignoreRenderPlaceholders);
 }
 
-export async function renderMarkdown(markdown: string, supabaseClient?: any): Promise<string> {
-    return sanitizeHtml(await renderMarkdownUnsafe(markdown, supabaseClient));
+export async function renderMarkdown(
+    markdown: string,
+    resolvers: ApiRegistry = unavailableResolvers()
+): Promise<string> {
+    return sanitizeHtml(await renderMarkdownUnsafe(markdown, resolvers));
 }
 
 function replaceKatexWithSource(html: string): string {
@@ -1152,9 +1155,9 @@ export function extractHeadings(html: string): HeadingItem[] {
 
 export async function prepareMarkdownPage(
     markdown: string,
-    supabaseClient?: any
+    resolvers: ApiRegistry = unavailableResolvers()
 ): Promise<{ html: string; headings: HeadingItem[] }> {
-    const rawHtml = await renderMarkdown(markdown, supabaseClient);
+    const rawHtml = await renderMarkdown(markdown, resolvers);
     const html = prefixHashLinks(injectHeadingIds(rawHtml));
     const headings = extractHeadings(html);
     return { html, headings };

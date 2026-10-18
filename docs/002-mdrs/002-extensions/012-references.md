@@ -56,4 +56,4 @@ These two mistakes make the render fail; the editor preview shows the message in
 | Two `:::references` blocks | `Use only one references block per document.` |
 | The block is never closed  | `Close the references block with :::.`        |
 
-Source: `packages/lib/src/markdownReferences.ts` (`extractReferences`, `placeReferences`), `packages/lib/src/components/MarkdownEditor.svelte`.
+Source: `packages/mdrs/src/references.ts` (`extractReferences`, `placeReferences`), `packages/lib/src/components/MarkdownEditor.svelte`.

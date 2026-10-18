@@ -55,27 +55,17 @@ export default defineConfig(
         }
     },
     {
-        files: [
-            'packages/lib/src/markdown.ts',
-            'packages/lib/src/define.ts',
-            'packages/lib/src/frontmatter.ts',
-            'packages/lib/src/markdownReferences.ts',
-            'packages/lib/src/markdownIcons.ts',
-            'packages/lib/src/placeholders.ts',
-            'packages/lib/src/sanitizeHtml.ts',
-            'packages/lib/src/legacyMarkdown.ts',
-            'packages/lib/src/mdrsValidation.ts'
-        ],
+        files: ['packages/mdrs/**'],
         rules: {
             '@typescript-eslint/no-restricted-imports': [
-                'warn',
+                'error',
                 {
                     patterns: [
                         {
-                            regex: '^(@supabase/|#lib/(supabase|authorApi|server/|stores/)|svelte($|/))',
+                            regex: '^(@supabase/|#lib|@fkp/|\\$app/|\\$lib|svelte($|/))',
                             allowTypeImports: true,
                             message:
-                                'The MDRS engine stays free of data access and UI state; inject resolvers instead.'
+                                '@fkp/mdrs is a standalone engine: no app, lib, Svelte or data-access imports; inject resolvers instead.'
                         }
                     ]
                 }

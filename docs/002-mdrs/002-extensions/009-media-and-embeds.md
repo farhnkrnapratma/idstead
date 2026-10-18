@@ -96,4 +96,4 @@ Other URLs fall back to a plain external link that opens in a new tab. A URL tha
 
 Extra query parameters such as `?si=…` or `&t=30s` are not carried into the embed.
 
-Source: `packages/lib/src/markdown.ts` (`image` renderer, `VIDEO_EXT_RE`, `POST_IMAGE_RE`, `renderEmbed`), `packages/lib/src/assetNaming.ts`, `packages/lib/src/sanitizeHtml.ts` (iframe allowlist).
+Source: `packages/mdrs/src/markdown.ts` (`image` renderer, `VIDEO_EXT_RE`, `POST_IMAGE_RE`, `renderEmbed`), `packages/lib/src/assetNaming.ts`, `packages/mdrs/src/sanitize.ts` (iframe allowlist).
