@@ -24,7 +24,15 @@ phase run --env prod bun scripts/regenerate-post-slugs.ts apply     # real run
 | `tooling/git-hooks/pre-commit` | Runs TruffleHog (`--results=verified --fail`) on staged files and **blocks** the commit on a verified secret. If `trufflehog` is not installed it prints a warning and lets the commit through. |
 | `tooling/git-hooks/commit-msg` | Runs `bunx --no-install commitlint --edit` on the commit message and **blocks** a message that breaks the Conventional Commits rules in `commitlint.config.ts`. |
 | `tooling/git-hooks/install.sh` | Copies `pre-commit` and `commit-msg` into `.git/hooks/`. The root `prepare` script runs it during `bun install`. |
+| `tooling/lib-usage.ts` | Prints which apps reach each file in `packages/lib/src`, directly or through other lib files, grouped as `web-only`, `admin-only`, `shared: …`, `only tests` or `unused`. Named imports from the `index.ts` barrel count toward the file that defines them. Run `bun tooling/lib-usage.ts` (`--json` for machine-readable output) before moving lib code into a package or an app. |
 | `tooling/vite/webp-wasm-plugin.ts` | Vite plugin that provides `virtual:banner-webp-wasm`, the WebP decoder WASM used by server-side banner and content-image validation. It is inlined as base64 or imported as a module, depending on the build. |
+
+## Import boundaries
+
+`eslint.config.ts` enforces two import boundaries with `@typescript-eslint/no-restricted-imports` (type-only imports stay allowed):
+
+- **Browser code never imports server modules.** `.svelte` and `.svelte.ts` files, plus `packages/lib/src/{components,layout,article,stores,utils}`, fail lint when they import a path containing `server/` (`#lib/server/*`, `$lib/server/*`, `../server/*`).
+- **The MDRS engine stays free of data access.** `markdown.ts`, `define.ts`, `frontmatter.ts`, `markdownReferences.ts`, `markdownIcons.ts`, `placeholders.ts`, `sanitizeHtml.ts`, `legacyMarkdown.ts` and `mdrsValidation.ts` get a warning when they import `@supabase/*`, `#lib/supabase*`, `#lib/authorApi*`, `#lib/server/*`, `#lib/stores/*` or `svelte`. Two warnings remain until the engine moves into its own package with injected resolvers (`define.ts` → `authorApi`, `mdrsValidation.ts` → `supabase`).
 
 ## Claude Code hooks (`.claude/`)
 
