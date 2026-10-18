@@ -53,7 +53,11 @@ function fakeDb(subscriberCount: number, notifiedAt: string | null = null) {
 }
 
 const realFetch = globalThis.fetch;
-const batchCalls: { key: string | null; size: number; body: { text: string }[] }[] = [];
+const batchCalls: {
+    key: string | null;
+    size: number;
+    body: { text: string; headers?: Record<string, string> }[];
+}[] = [];
 
 function stubFetch(failingChunks: Set<number>) {
     batchCalls.length = 0;
@@ -130,5 +134,18 @@ describe('notifyNewPost', () => {
         expect(batchCalls[0].body[0].text).toContain(
             'https://site.example/unsubscribe?token=token-0'
         );
+    });
+
+    test('lists the confirm page as the unsubscribe link without promising a one-click POST', async () => {
+        const { db } = fakeDb(1);
+        stubFetch(new Set());
+        await notifyNewPost(
+            db,
+            { env: { ...platform.env, PUBLIC_SITE_URL: 'https://site.example' } },
+            POST_ID
+        );
+        expect(batchCalls[0].body[0].headers).toEqual({
+            'List-Unsubscribe': '<https://site.example/unsubscribe?token=token-0>'
+        });
     });
 });
