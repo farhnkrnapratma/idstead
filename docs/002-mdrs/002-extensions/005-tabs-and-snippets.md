@@ -120,4 +120,4 @@ This tab has no label.
 :::
 ```
 
-Source: `packages/lib/src/markdown.ts` (`TAB_OPEN_RE`, `renderTabs`), `packages/lib/src/utils/markdownTabs.ts`.
+Source: `packages/mdrs/src/markdown.ts` (`TAB_OPEN_RE`, `renderTabs`), `packages/lib/src/utils/markdownTabs.ts`.

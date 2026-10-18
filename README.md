@@ -82,7 +82,7 @@ And that's it, you're ready to start hacking!
 
 ### Repository Layout
 
-This is a Bun workspaces monorepo. Each app is its own Cloudflare Worker, and all of them share `packages/lib`:
+This is a Bun workspaces monorepo. Each app is its own Cloudflare Worker, and all of them share `packages/lib` and `packages/mdrs`:
 
 | Path | Deploys to | What it is |
 | --- | --- | --- |
@@ -90,7 +90,8 @@ This is a Bun workspaces monorepo. Each app is its own Cloudflare Worker, and al
 | `apps/admin` | `admin.fkp.my.id` | Admin portal (SvelteKit). |
 | `apps/api` | `api.fkp.my.id/v1` | Public read-only REST API (Hono). |
 | `apps/jobs` | — (queue and cron only) | Newsletter delivery and daily storage cleanup. |
-| `packages/lib` | — | Shared components, styles, markdown engine and server code. |
+| `packages/lib` | — | Shared components, styles and server code. |
+| `packages/mdrs` | — | The MDRS engine (`@fkp/mdrs`), used by the web, admin and API apps. |
 
 ### Start Development Servers
 
@@ -173,7 +174,7 @@ All apps share the same Supabase project. Local `.env*` files are for developmen
 
 ## Markdown syntax
 
-Posts and legal pages are written in **MDRS** (Markdown Rich Syntax, `.mdrs`), a superset of CommonMark and GitHub Flavored Markdown rendered by `packages/lib/src/markdown.ts`. On top of standard Markdown it adds directives (`:::note`, `:::callout`, `:::details`, `:::tabs`, `:::snippets`, `:::steps`, `:::embed`, `:::references`), code block options (`filename=`, `mark=`), extended task states, math (`$$ … $$`, `:::math`), Mermaid and chart fences, and document variables (`:::define`, `${…}`) with live site data.
+Posts and legal pages are written in **MDRS** (Markdown Rich Syntax, `.mdrs`), a superset of CommonMark and GitHub Flavored Markdown rendered by the `@fkp/mdrs` workspace package (`packages/mdrs`). On top of standard Markdown it adds directives (`:::note`, `:::callout`, `:::details`, `:::tabs`, `:::snippets`, `:::steps`, `:::embed`, `:::references`), code block options (`filename=`, `mark=`), extended task states, math (`$$ … $$`, `:::math`), Mermaid and chart fences, and document variables (`:::define`, `${…}`) with live site data.
 
 ```mdrs
 :::tip

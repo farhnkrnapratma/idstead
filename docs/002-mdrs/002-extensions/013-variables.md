@@ -167,4 +167,4 @@ Common messages:
 
 To pull data from the site itself (author profile, posts), see [Live data](014-live-data.md).
 
-Source: `packages/lib/src/define.ts` (`tokenize`, `Parser`, `evaluateExpr`, `extractDefineBlock`, `hasDefineEntries`, `scanInterpolationTokens`, `validateDefineForSave`), `packages/lib/src/mdrsValidation.ts`, `apps/admin/src/routes/api/internal/blog/validate-define/+server.ts`, `apps/admin/src/routes/api/internal/admin/posts/+server.ts`.
+Source: `packages/mdrs/src/define.ts` (`tokenize`, `Parser`, `evaluateExpr`, `extractDefineBlock`, `hasDefineEntries`, `scanInterpolationTokens`, `validateDefineForSave`), `packages/lib/src/mdrsValidation.ts`, `apps/admin/src/routes/api/internal/blog/validate-define/+server.ts`, `apps/admin/src/routes/api/internal/admin/posts/+server.ts`.

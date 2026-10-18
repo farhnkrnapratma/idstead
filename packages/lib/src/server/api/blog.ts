@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { findPost } from '#lib/server/postLookup.ts';
 import { escapePostgrestFilter } from '#lib/server/postgrestSanitize.ts';
-import { markdownToPlainText } from '#lib/utils/markdownToText.ts';
+import { markdownToPlainText } from '@fkp/mdrs';
 import { ApiRequestError, parseApiParams, parsePositiveInt, resolveOutput } from './params';
 import { jsonResponse, textResponse } from './responses';
 

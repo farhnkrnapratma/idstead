@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
-import { convertLegacyMarkdownWithNotes } from '../packages/lib/src/legacyMarkdown';
-import { renderMarkdown } from '../packages/lib/src/markdown';
+import { convertLegacyMarkdownWithNotes } from '../packages/mdrs/src/legacy';
+import { renderMarkdown } from '../packages/mdrs/src/markdown';
 
 const argv = Bun.argv.slice(2);
 const mode = argv.find(arg => !arg.startsWith('--')) ?? 'dry-run';

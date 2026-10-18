@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { renderMarkdown } from '../packages/lib/src/markdown.ts';
+import { renderMarkdown } from '../packages/mdrs/src/markdown.ts';
 
 const cdn = 'https://cdn.example.com';
 

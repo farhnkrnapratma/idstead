@@ -1,7 +1,7 @@
 import { supabase } from '#lib/supabase.ts';
 import { getLegalPage } from '#lib/server/legalPages.ts';
 import { isValidPostSlug } from '#lib/slug.ts';
-import { markdownToPlainText } from '#lib/utils/markdownToText.ts';
+import { markdownToPlainText } from '@fkp/mdrs';
 
 export type DocumentFormat = 'md' | 'txt';
 

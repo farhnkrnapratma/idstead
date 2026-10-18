@@ -32,6 +32,7 @@
       "version": "0.0.1",
       "dependencies": {
         "@fkp/lib": "workspace:*",
+        "@fkp/mdrs": "workspace:*",
         "@lucide/svelte": "^1.55.0",
         "@sentry/cloudflare": "11.6.0",
         "@sentry/sveltekit": "^11.6.0",
@@ -86,6 +87,7 @@
       "version": "0.0.1",
       "dependencies": {
         "@fkp/lib": "workspace:*",
+        "@fkp/mdrs": "workspace:*",
         "@lucide/svelte": "^1.55.0",
         "@sentry/cloudflare": "11.6.0",
         "@sentry/sveltekit": "^11.6.0",
@@ -110,6 +112,7 @@
       "version": "0.0.1",
       "dependencies": {
         "@blobatar/svelte": "^2.7.0",
+        "@fkp/mdrs": "workspace:*",
         "@fontsource-variable/lexend": "^5.3.0",
         "@fontsource-variable/lilex": "^5.3.0",
         "@fontsource-variable/noto-sans": "^5.3.0",
@@ -154,6 +157,22 @@
       "peerDependencies": {
         "@sveltejs/kit": "^3.0.1",
         "svelte": "^5.0.0",
+      },
+    },
+    "packages/mdrs": {
+      "name": "@fkp/mdrs",
+      "version": "0.0.1",
+      "dependencies": {
+        "bootstrap-icons": "^1.13.2",
+        "js-yaml": "^5.4.3",
+        "katex": "^0.19.0",
+        "lucide-static": "^1.55.0",
+        "marked": "^18.1.0",
+        "marked-footnote": "^1.4.0",
+      },
+      "devDependencies": {
+        "@types/js-yaml": "^4.0.9",
+        "@types/katex": "^0.16.8",
       },
     },
   },
@@ -360,6 +379,8 @@
     "@fkp/jobs": ["@fkp/jobs@workspace:apps/jobs"],
 
     "@fkp/lib": ["@fkp/lib@workspace:packages/lib"],
+
+    "@fkp/mdrs": ["@fkp/mdrs@workspace:packages/mdrs"],
 
     "@fkp/web": ["@fkp/web@workspace:apps/web"],
 

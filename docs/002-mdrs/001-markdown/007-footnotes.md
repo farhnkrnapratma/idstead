@@ -84,4 +84,4 @@ To get a visible "References" heading in the article and its table of contents, 
 
 IDs and data attributes use the `mdrs-fn-` prefix, so they can't collide with IDs on the surrounding page.
 
-Source: `packages/lib/src/markdown.ts` (`markedFootnote({ refMarkers: true, prefixId: 'mdrs-fn-', … })`, `formatFootnoteReferences`).
+Source: `packages/mdrs/src/markdown.ts` (`markedFootnote({ refMarkers: true, prefixId: 'mdrs-fn-', … })`, `formatFootnoteReferences`).

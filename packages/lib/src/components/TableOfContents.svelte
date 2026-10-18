@@ -1,6 +1,6 @@
 <script lang="ts">
     import { pushState } from '$app/navigation';
-    import { sanitizeHtml } from '#lib/sanitizeHtml.ts';
+    import { sanitizeHtml } from '@fkp/mdrs';
     import { onMount } from 'svelte';
     import {
         TableOfContents as TableOfContentsIcon,

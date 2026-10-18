@@ -158,4 +158,4 @@ print("four")
 ```
 ````
 
-Source: `packages/lib/src/markdown.ts`, `packages/lib/src/define.ts`.
+Source: `packages/mdrs/src/markdown.ts`, `packages/mdrs/src/define.ts`.

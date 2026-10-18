@@ -90,4 +90,4 @@ An absolute `http(s)` link to another site opens in a new tab and gets a small e
 
 MDRS also uses the image syntax for videos and serves post images as AVIF with a WebP fallback; see [Media and embeds](../002-extensions/009-media-and-embeds.md).
 
-Source: `packages/lib/src/markdown.ts` (`link` and `image` renderers), `packages/lib/src/sanitizeHtml.ts` (`sanitizeUrl`).
+Source: `packages/mdrs/src/markdown.ts` (`link` and `image` renderers), `packages/mdrs/src/sanitize.ts` (`sanitizeUrl`).

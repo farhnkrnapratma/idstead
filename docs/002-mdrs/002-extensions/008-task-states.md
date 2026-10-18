@@ -42,4 +42,4 @@ GFM task lists know two states, `[ ]` and `[x]`. MDRS adds five more, each with 
 - The icon is decorative (`aria-hidden`), and a visually hidden label (`Done: `, `To do: `, …) announces the state to screen readers.
 - In plain GFM, `[*]`, `[/]`, `[-]`, `[!]` and `[?]` are ordinary text. This is the one deliberate reinterpretation of plain Markdown in MDRS: the pattern has no meaning in GFM, so the risk of changing an existing document is small ([Compatibility](../003-reference/001-compatibility.md)).
 
-Source: `packages/lib/src/markdown.ts` (`TASK_STATES`, `renderTaskItem`, `list` renderer).
+Source: `packages/mdrs/src/markdown.ts` (`TASK_STATES`, `renderTaskItem`, `list` renderer).

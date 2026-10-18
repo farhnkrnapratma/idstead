@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'bun:test';
-import { extractFrontmatter } from '../packages/lib/src/frontmatter';
-import { renderMarkdown } from '../packages/lib/src/markdown';
-import { createApiRegistry, validateDefineForSave } from '../packages/lib/src/define';
+import { extractFrontmatter } from '../packages/mdrs/src/frontmatter';
+import { renderMarkdown } from '../packages/mdrs/src/markdown';
+import { unavailableResolvers, validateDefineForSave } from '../packages/mdrs/src/define';
 
-const validate = (markdown: string) => validateDefineForSave(markdown, createApiRegistry(null));
+const validate = (markdown: string) => validateDefineForSave(markdown, unavailableResolvers());
 
 describe('frontmatter', () => {
     test('a leading YAML block is parsed and removed', () => {
@@ -80,7 +80,7 @@ describe('save validation', () => {
 
 describe('post import', () => {
     test('title, excerpt and tags come from the frontmatter', async () => {
-        const { importPostDocument } = await import('../packages/lib/src/frontmatter');
+        const { importPostDocument } = await import('../packages/mdrs/src/frontmatter');
         const post = importPostDocument(
             '---\ntitle: Hello\nexcerpt: Short\ntags: [mdrs, markdown]\ndraft: true\n---\n\n# Body'
         );
@@ -94,12 +94,12 @@ describe('post import', () => {
     });
 
     test('a comma separated tag string is accepted', async () => {
-        const { importPostDocument } = await import('../packages/lib/src/frontmatter');
+        const { importPostDocument } = await import('../packages/mdrs/src/frontmatter');
         expect(importPostDocument('---\ntags: a, b\n---\nx').tags).toEqual(['a', 'b']);
     });
 
     test('a file without frontmatter imports as body only', async () => {
-        const { importPostDocument } = await import('../packages/lib/src/frontmatter');
+        const { importPostDocument } = await import('../packages/mdrs/src/frontmatter');
         expect(importPostDocument('# Body')).toEqual({
             body: '# Body',
             ignored: [],

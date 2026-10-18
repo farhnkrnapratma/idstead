@@ -1,6 +1,6 @@
-import { extractFrontmatter } from '../frontmatter';
-import { stripPlaceholderChars } from '../placeholders';
-import { decodeHtmlEntities } from './formatters';
+import { extractFrontmatter } from './frontmatter';
+import { stripPlaceholderChars } from './placeholders';
+import { decodeHtmlEntities } from './entities';
 
 export function markdownToPlainText(markdown: string): string {
     if (!markdown) return '';

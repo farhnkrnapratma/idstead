@@ -12,7 +12,7 @@
     } from '@lucide/svelte';
     import { toastStore } from '../stores/toastStore.svelte';
     import Dropdown from './Dropdown.svelte';
-    import { markdownToPlainText } from '../utils/markdownToText';
+    import { markdownToPlainText } from '@fkp/mdrs';
     import { cn } from '../utils/cn';
     import Button from './Button.svelte';
     import { shortcut } from '../utils/shortcut.svelte';
