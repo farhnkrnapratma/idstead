@@ -62,6 +62,7 @@ export { default as ConfirmationDialog } from './components/ConfirmationDialog.s
 export { default as ReportCommentDialog } from './components/ReportCommentDialog.svelte';
 
 export { default as PageContainer } from './layout/PageContainer.svelte';
+export { default as PageMain } from './layout/PageMain.svelte';
 export { default as Section } from './layout/Section.svelte';
 export { default as FormSection } from './layout/FormSection.svelte';
 export { default as FooterSection } from './layout/FooterSection.svelte';
@@ -85,6 +86,7 @@ export { default as TableOfContents } from './components/TableOfContents.svelte'
 
 export { default as ScrollToTopButton } from './components/ScrollToTopButton.svelte';
 export { default as FeedbackButton } from './components/FeedbackButton.svelte';
+export { default as ReadingModeExitButton } from './components/ReadingModeExitButton.svelte';
 export { default as ConsentNotice } from './components/ConsentNotice.svelte';
 export { readingModeStore } from './stores/readingModeStore.svelte';
 
