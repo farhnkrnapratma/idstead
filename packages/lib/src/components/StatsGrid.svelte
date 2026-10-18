@@ -62,12 +62,8 @@
                     <span
                         class="block text-3xl leading-none font-extrabold tracking-tight text-text-primary tabular-nums"
                         >{item.value}</span>
-                    {#if item.description}<span class="block truncate text-xs text-text-muted"
-                            >{item.description}</span
-                        >{:else}<span
-                            class="block text-xs"
-                            aria-hidden="true">&nbsp;</span
-                        >{/if}
+                    <span class="block min-h-lh truncate text-xs text-text-muted"
+                        >{item.description ?? ''}</span>
                 </span>
                 {#if item.ratio !== undefined}
                     <span

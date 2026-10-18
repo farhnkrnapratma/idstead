@@ -5623,7 +5623,7 @@
                             class="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
                             <div class="flex min-w-0 items-center gap-3.5">
                                 <div
-                                    class="flex size-11 shrink-0 items-center justify-center rounded-lg border border-accent/20 bg-accent/10 text-accent dark:border-accent/30 dark:bg-accent/15">
+                                    class="flex size-11 shrink-0 items-center justify-center rounded-md border border-accent/25 bg-accent-subtle text-accent-text">
                                     <FileUser class="size-5.5" />
                                 </div>
                                 <div class="min-w-0">
@@ -5866,7 +5866,7 @@
                     <div class="rounded-sm border border-border-subtle bg-surface-card">
                         <div class="flex min-w-0 items-start gap-3.5 p-4">
                             <div
-                                class="flex size-11 shrink-0 items-center justify-center rounded-lg border border-accent/20 bg-accent/10 text-accent dark:border-accent/30 dark:bg-accent/15">
+                                class="flex size-11 shrink-0 items-center justify-center rounded-md border border-accent/25 bg-accent-subtle text-accent-text">
                                 <KeyRound class="size-5.5" />
                             </div>
                             <div class="min-w-0 flex-1">

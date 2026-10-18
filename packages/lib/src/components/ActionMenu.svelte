@@ -3,6 +3,7 @@
     import { Check, Ellipsis } from '@lucide/svelte';
     import IconButton from './IconButton.svelte';
     import { cn } from '../utils/cn';
+    import { MENU_ITEM_TONE_CLASSES } from '../utils/menuItemStyles';
     import { portal } from '../utils/actions';
 
     interface MenuItem {
@@ -122,9 +123,7 @@
                         disabled={item.disabled}
                         class={cn(
                             'flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-xs font-medium whitespace-nowrap transition-colors focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 pointer-coarse:min-h-11',
-                            item.danger ?
-                                'text-danger hover:bg-danger/10 focus-visible:bg-danger/10'
-                            :   'text-text-primary hover:bg-surface-hover hover:text-accent-text focus-visible:bg-surface-hover focus-visible:text-accent-text'
+                            MENU_ITEM_TONE_CLASSES[item.danger ? 'danger' : 'default']
                         )}
                         onclick={() => {
                             open = false;
