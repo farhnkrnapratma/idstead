@@ -39,5 +39,5 @@ export default defineConfig({
             }
         ]
     },
-    ssr: { noExternal: ['@lucide/svelte'] }
+    ssr: { noExternal: ['@lucide/svelte', '@fkp/mdrs'] }
 });
