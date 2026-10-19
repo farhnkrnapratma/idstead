@@ -1,26 +1,23 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { DefineError, unavailableResolvers, type ApiRegistry } from '@fkp/mdrs';
-import { createSupabaseBlogRepository, type BlogRepository } from '@fkp/data';
-import { publicPostFields } from '@fkp/domain/blog.ts';
 import {
-    fetchAuthorProfile,
-    fetchCvEntries,
-    fetchFundingLinks,
-    fetchContactInfo,
-    fetchGroupedSkills,
-    fetchSocials
-} from '#lib/author.ts';
+    createSupabaseAuthorRepository,
+    createSupabaseBlogRepository,
+    type AuthorRepository,
+    type BlogRepository
+} from '@fkp/data';
+import { publicPostFields } from '@fkp/domain/blog.ts';
 import { sanitizePublicApiData } from '#lib/authorApi.ts';
 import { createMdrsResolvers, type MdrsDataLoaders } from '#lib/mdrsResolvers.ts';
 
-async function authorData(db: SupabaseClient) {
+async function authorData(author: AuthorRepository) {
     const [profile, cv, funding, contact, skills, socials] = await Promise.all([
-        fetchAuthorProfile(db, { includeEmail: true }),
-        fetchCvEntries(db),
-        fetchFundingLinks(db),
-        fetchContactInfo(db),
-        fetchGroupedSkills(db),
-        fetchSocials(db)
+        author.profile({ includeEmail: true }).catch(() => null),
+        author.cvEntries().catch(() => ({ experience: [], education: [] })),
+        author.fundingLinks().catch(() => []),
+        author.contactLinks().catch(() => []),
+        author.skillGroups().catch(() => []),
+        author.socialLinks().catch(() => [])
     ]);
     const combined = sanitizePublicApiData({ profile, cv, funding, contact, skills, socials });
     if (profile?.email && combined.profile) combined.profile.email = profile.email;
@@ -53,8 +50,9 @@ async function blogPostData(slug: string, blog: BlogRepository) {
 
 export function supabaseMdrsLoaders(db: SupabaseClient): MdrsDataLoaders {
     const blog = createSupabaseBlogRepository(db);
+    const author = createSupabaseAuthorRepository(db);
     return {
-        author: () => authorData(db),
+        author: () => authorData(author),
         blogList: () => blogListData(blog),
         blogPost: slug => blogPostData(slug, blog)
     };

@@ -1,11 +1,10 @@
+import { publicRepositories } from '#lib/server/repositories.ts';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { apiError } from '#lib/server/apiError.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { verifyTurnstileToken } from '#lib/server/turnstile.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
-import { supabase } from '#lib/supabase.ts';
-import { fetchAuthorProfile, fetchContactInfo } from '#lib/author.ts';
 import {
     contactMessageEmail,
     resendApiKey,
@@ -34,8 +33,12 @@ const NOTIFICATION_KINDS: Record<ContactKind, string> = {
 
 async function resolveContactEmail(): Promise<string> {
     const [contactInfo, authorProfile] = await Promise.all([
-        fetchContactInfo(supabase),
-        fetchAuthorProfile(supabase, { includeEmail: true })
+        publicRepositories()
+            .author.contactLinks()
+            .catch(() => []),
+        publicRepositories()
+            .author.profile({ includeEmail: true })
+            .catch(() => null)
     ]);
     const emailItem = contactInfo.find(
         c => c.platform.toLowerCase() === 'email' || c.href.startsWith('mailto:')

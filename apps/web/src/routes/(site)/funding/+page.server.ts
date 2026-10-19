@@ -1,5 +1,8 @@
-import { supabase } from '#lib/supabase.ts';
-import { fetchFundingLinks } from '#lib/author.ts';
+import { publicRepositories } from '#lib/server/repositories.ts';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async () => ({ funding: await fetchFundingLinks(supabase) });
+export const load: PageServerLoad = async ({ fetch }) => ({
+    funding: await publicRepositories(fetch)
+        .author.fundingLinks()
+        .catch(() => [])
+});

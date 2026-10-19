@@ -13,7 +13,7 @@ import {
     safeKeyserverUrl,
     wkdEmails,
     wkdHash
-} from '../packages/lib/src/openpgpKey.ts';
+} from '../packages/domain/src/openpgpKey.ts';
 import { buildCvBundle } from '../packages/lib/src/server/cvBundle.ts';
 import { cvChecksums } from '../packages/lib/src/server/cvChecksums.ts';
 

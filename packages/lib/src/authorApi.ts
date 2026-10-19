@@ -18,6 +18,7 @@ export function sanitizePublicApiData(obj: any): any {
         for (const [key, value] of Object.entries(obj)) {
             if (
                 key === 'updatedAt'
+                || key === 'createdAt'
                 || key === 'revision'
                 || key === 'avatarVersion'
                 || key === 'bannerVersion'

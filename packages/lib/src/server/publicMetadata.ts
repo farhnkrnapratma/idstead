@@ -1,19 +1,14 @@
 import { error } from '@sveltejs/kit';
-import { supabase } from '#lib/supabase.ts';
-import { decodeHtmlEntities } from '@fkp/mdrs';
 import { publicRepositories } from './repositories';
 
 export async function readSiteProfile() {
-    const { data, error: failure } = await supabase
-        .from('db_profiles')
-        .select('*')
-        .order('created_at')
-        .limit(1)
-        .maybeSingle();
-    if (failure || !data) error(503, 'Site metadata is temporarily unavailable.');
+    const profile = await publicRepositories()
+        .author.profile({ includeEmail: true })
+        .catch(() => null);
+    if (!profile) error(503, 'Site metadata is temporarily unavailable.');
     let canonical: URL;
     try {
-        canonical = new URL(data.site_url);
+        canonical = new URL(profile.siteUrl);
         if (
             !['https:', 'http:'].includes(canonical.protocol)
             || canonical.username
@@ -24,11 +19,14 @@ export async function readSiteProfile() {
         error(503, 'Site metadata is temporarily unavailable.');
     }
     return {
-        ...data,
-        name: decodeHtmlEntities(data.name),
-        username: decodeHtmlEntities(data.username),
-        bio: decodeHtmlEntities(data.bio),
-        headline: decodeHtmlEntities(data.headline),
+        name: profile.name,
+        username: profile.username,
+        bio: profile.bio,
+        headline: profile.headline,
+        email: profile.email,
+        manifest_settings: profile.manifestSettings,
+        created_at: profile.createdAt,
+        updated_at: profile.updatedAt,
         siteUrl: canonical.origin
     };
 }

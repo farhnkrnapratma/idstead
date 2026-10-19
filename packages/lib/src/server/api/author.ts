@@ -1,14 +1,4 @@
-import {
-    fetchActiveCvDocument,
-    fetchActiveOpenPgpKey,
-    fetchAuthorProfile,
-    fetchContactInfo,
-    fetchCvEntries,
-    fetchFundingLinks,
-    fetchGroupedSkills,
-    fetchSocials,
-    type CvDocument
-} from '#lib/author.ts';
+import type { CvDocument } from '@fkp/domain/author.ts';
 import { generateAuthorMarkdown, sanitizePublicApiData } from '#lib/authorApi.ts';
 import { buildCvBundle } from '#lib/server/cvBundle.ts';
 import {
@@ -51,12 +41,12 @@ const PROFILE_ORDER = [
 
 function loaders(ctx: ApiContext): Record<AuthorField, () => Promise<unknown>> {
     return {
-        profile: () => fetchAuthorProfile(ctx.db, { includeEmail: true, strict: true }),
-        contact: () => fetchContactInfo(ctx.db, { strict: true }),
-        cv: () => fetchCvEntries(ctx.db, { strict: true }),
-        funding: () => fetchFundingLinks(ctx.db, { strict: true }),
-        skills: () => fetchGroupedSkills(ctx.db, { strict: true }),
-        socials: () => fetchSocials(ctx.db, { strict: true })
+        profile: () => ctx.repos.author.profile({ includeEmail: true }),
+        contact: () => ctx.repos.author.contactLinks(),
+        cv: () => ctx.repos.author.cvEntries(),
+        funding: () => ctx.repos.author.fundingLinks(),
+        skills: () => ctx.repos.author.skillGroups(),
+        socials: () => ctx.repos.author.socialLinks()
     };
 }
 
@@ -156,8 +146,8 @@ async function assembleBundle(
     filename: string
 ) {
     const [key, profile] = await Promise.all([
-        fetchActiveOpenPgpKey(ctx.db, { strict: true }),
-        fetchAuthorProfile(ctx.db, { strict: true })
+        ctx.repos.author.activeOpenPgpKey(),
+        ctx.repos.author.profile()
     ]).catch(() => {
         throw new ApiRequestError(500, 'CV_METADATA_FETCH_FAILED', 'Could not fetch CV metadata.');
     });
@@ -203,7 +193,7 @@ async function assembleBundle(
 async function cvFile(ctx: ApiContext, output: CvFileOutput, withChecksum: boolean) {
     let document;
     try {
-        document = await fetchActiveCvDocument(ctx.db, ctx.fetch, { strict: true });
+        document = await ctx.repos.author.activeCvDocument();
     } catch {
         throw new ApiRequestError(500, 'CV_METADATA_FETCH_FAILED', 'Could not fetch CV metadata.');
     }
@@ -247,7 +237,7 @@ async function cvFile(ctx: ApiContext, output: CvFileOutput, withChecksum: boole
         type = 'application/zip';
         name = cvBundleFilename(filename);
     } else if (output === 'asc' || output === 'sig') {
-        const key = await fetchActiveOpenPgpKey(ctx.db, { strict: true }).catch(() => {
+        const key = await ctx.repos.author.activeOpenPgpKey().catch(() => {
             throw new ApiRequestError(
                 500,
                 'CV_METADATA_FETCH_FAILED',
@@ -285,9 +275,9 @@ async function cvFile(ctx: ApiContext, output: CvFileOutput, withChecksum: boole
 async function cvDocumentFor(ctx: ApiContext) {
     try {
         const [document, key, profile] = await Promise.all([
-            fetchActiveCvDocument(ctx.db, ctx.fetch, { strict: true }),
-            fetchActiveOpenPgpKey(ctx.db, { strict: true }),
-            fetchAuthorProfile(ctx.db, { strict: true })
+            ctx.repos.author.activeCvDocument(),
+            ctx.repos.author.activeOpenPgpKey(),
+            ctx.repos.author.profile()
         ]);
         if (!document?.fileUrl) return null;
         return cvDocumentInfo(document, key, profile?.siteUrl || '', ctx.url.origin);

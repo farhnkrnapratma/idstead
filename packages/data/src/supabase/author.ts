@@ -1,0 +1,192 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
+import {
+    contactLinkFromRow,
+    cvDocumentFromRow,
+    educationFromRow,
+    experienceFromRow,
+    fundingLinkFromRow,
+    LINK_LIMITS,
+    openPgpKeyFromRow,
+    profileFromRow,
+    projectRepoRulesFromRows,
+    skillGroupFromItem,
+    skillItemFromRow,
+    socialLinkFromRow,
+    type AuthorProfile
+} from '@fkp/domain/author.ts';
+import { decodeHtmlEntities } from '@fkp/domain/entities.ts';
+import type { AuthorRepository } from '../author';
+import { DataError } from '../errors';
+
+type Row = Record<string, any>;
+
+function withoutId<T extends { id?: unknown }>(item: T): T {
+    const { id: _id, ...rest } = item;
+    return rest as T;
+}
+
+async function versionToken(version: unknown): Promise<string | null> {
+    if (typeof version !== 'string' || !version) return null;
+    const digest = await crypto.subtle.digest(
+        'SHA-256',
+        new TextEncoder().encode(`identity-version:${version}`)
+    );
+    return Array.from(new Uint8Array(digest).slice(0, 8), byte =>
+        byte.toString(16).padStart(2, '0')
+    ).join('');
+}
+
+export async function publicProfile(profile: AuthorProfile): Promise<AuthorProfile> {
+    const { id: _id, revision: _revision, ...rest } = profile;
+    return {
+        ...rest,
+        avatarVersion: await versionToken(profile.avatarVersion),
+        bannerVersion: await versionToken(profile.bannerVersion)
+    };
+}
+
+export function createSupabaseAuthorRepository(
+    db: SupabaseClient,
+    options: { fetch?: typeof fetch } = {}
+): AuthorRepository {
+    const fetchFn = options.fetch ?? fetch;
+
+    async function rows(operation: string, query: PromiseLike<{ data: unknown; error: unknown }>) {
+        const { data, error } = await query;
+        if (error) throw new DataError(operation, error);
+        return (data ?? []) as Row[];
+    }
+
+    async function single(
+        operation: string,
+        query: PromiseLike<{ data: unknown; error: unknown }>
+    ) {
+        const { data, error } = await query;
+        if (error) throw new DataError(operation, error);
+        return (data ?? null) as Row | null;
+    }
+
+    function links(category: 'social' | 'funding' | 'contact') {
+        return rows(
+            `author.${category}Links`,
+            db
+                .from('db_links')
+                .select('*')
+                .eq('category', category)
+                .order('sort_order', { ascending: true })
+                .limit(LINK_LIMITS[category])
+        );
+    }
+
+    return {
+        async profile({ includeEmail = false } = {}) {
+            const data = await single(
+                'author.profile',
+                db.from('db_profiles').select('*').limit(1).maybeSingle()
+            );
+            return data ? publicProfile(profileFromRow(data, { includeEmail })) : null;
+        },
+
+        async socialLinks() {
+            return (await links('social')).map(row => withoutId(socialLinkFromRow(row)));
+        },
+
+        async fundingLinks() {
+            return (await links('funding')).map(row => withoutId(fundingLinkFromRow(row)));
+        },
+
+        async contactLinks() {
+            return (await links('contact')).map(row => withoutId(contactLinkFromRow(row)));
+        },
+
+        async cvEntries() {
+            const [experience, education] = await Promise.all([
+                rows(
+                    'author.experience',
+                    db.from('db_experiences').select('*').order('sort_order', { ascending: true })
+                ),
+                rows(
+                    'author.education',
+                    db.from('db_educations').select('*').order('sort_order', { ascending: true })
+                )
+            ]);
+            return {
+                experience: experience.map(row => withoutId(experienceFromRow(row))),
+                education: education.map(row => withoutId(educationFromRow(row)))
+            };
+        },
+
+        async skillGroups() {
+            const categories = await rows(
+                'author.skills',
+                db
+                    .from('db_categories')
+                    .select('id, category, sort_order, db_items(id, name, sort_order)')
+                    .order('sort_order', { ascending: true })
+            );
+            return categories.map(row => withoutId(skillGroupFromItem(skillItemFromRow(row))));
+        },
+
+        async projectRepoRules() {
+            const data = await rows(
+                'author.projectRepoRules',
+                db
+                    .from('db_project_repo_rules')
+                    .select('rule_type, repo_name')
+                    .order('sort_order', { ascending: true })
+            );
+            return projectRepoRulesFromRows(
+                data as Array<{ rule_type: string; repo_name: string }>
+            );
+        },
+
+        async activeCvDocument() {
+            const data = await single(
+                'author.activeCvDocument',
+                db
+                    .from('db_documents')
+                    .select('*')
+                    .eq('is_active', true)
+                    .order('sort_order', { ascending: true })
+                    .limit(1)
+                    .maybeSingle()
+            );
+            if (!data) return null;
+            let hash: string = data.hash || '';
+            if (hash.length < 64 && data.file_url) {
+                try {
+                    const response = await fetchFn(`${data.file_url}.sha256`);
+                    const match =
+                        response.ok ?
+                            (await response.text()).trim().match(/^[a-fA-F0-9]{64}/)
+                        :   null;
+                    if (match) hash = match[0];
+                } catch {}
+            }
+            return withoutId(cvDocumentFromRow(data, hash));
+        },
+
+        async activeOpenPgpKey() {
+            const data = await single(
+                'author.activeOpenPgpKey',
+                db
+                    .from('db_openpgp_keys')
+                    .select(
+                        'fingerprint, armored, user_ids, algorithm, key_created_at, expires_at, keyservers'
+                    )
+                    .eq('is_active', true)
+                    .limit(1)
+                    .maybeSingle()
+            );
+            return data ? openPgpKeyFromRow(data) : null;
+        },
+
+        async siteUrl() {
+            const data = await single(
+                'author.siteUrl',
+                db.from('db_profiles').select('site_url').limit(1).maybeSingle()
+            );
+            return decodeHtmlEntities(data?.site_url || '');
+        }
+    };
+}

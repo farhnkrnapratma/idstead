@@ -1,8 +1,7 @@
+import { publicRepositories } from '#lib/server/repositories.ts';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { supabase } from '#lib/supabase.ts';
 import { isNameReserved, extractAuthorNameTokens } from '@fkp/domain/nameValidator.ts';
-import { fetchAuthorProfile } from '#lib/author.ts';
 import { verifyTurnstileToken } from '#lib/server/turnstile.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
@@ -79,7 +78,9 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         );
     }
 
-    const authorProfile = await fetchAuthorProfile(supabase);
+    const authorProfile = await publicRepositories()
+        .author.profile()
+        .catch(() => null);
     const authorTokens = extractAuthorNameTokens(authorProfile);
     if (isNameReserved(authorName, authorTokens)) {
         return apiError(

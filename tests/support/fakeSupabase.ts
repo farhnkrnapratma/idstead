@@ -2,11 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 export type Row = Record<string, unknown>;
 
-export interface FakeTables {
-    db_posts: Row[];
-    db_comments: Row[];
-    db_views: Row[];
-}
+export type FakeTables = Record<string, Row[]>;
 
 type Filter = { column: string; test: (value: unknown) => boolean };
 
@@ -38,11 +34,20 @@ function parseOr(expression: string): Array<(row: Row) => boolean> {
     });
 }
 
+function foreignKey(parentTable: string) {
+    const name = parentTable.replace(/^db_/, '');
+    return `${name.endsWith('ies') ? name.slice(0, -3) + 'y' : name.replace(/s$/, '')}_id`;
+}
+
 function embeds(columns: string) {
-    return [...columns.matchAll(/(\w+):(db_\w+)\(count\)/g)].map(([, alias, table]) => ({
-        alias,
-        table: table as keyof FakeTables
-    }));
+    return [...columns.matchAll(/(?:(\w+):)?(db_\w+)\(([^)]*)\)/g)]
+        .filter(([, , , fields]) => !fields.includes('!'))
+        .map(([, alias, table, fields]) => ({
+            alias: alias ?? table,
+            table,
+            count: fields.trim() === 'count',
+            fields: fields.split(',').map(field => field.trim())
+        }));
 }
 
 function inner(columns: string) {
@@ -51,7 +56,7 @@ function inner(columns: string) {
 }
 
 export function fakeSupabase(tables: FakeTables, files: Record<string, string> = {}) {
-    function query(table: keyof FakeTables) {
+    function query(table: string) {
         const filters: Filter[] = [];
         const embedFilters: Filter[] = [];
         const orders: Array<{ column: string; ascending: boolean }> = [];
@@ -63,17 +68,23 @@ export function fakeSupabase(tables: FakeTables, files: Record<string, string> =
 
         function rows() {
             const relation = inner(columns);
-            let result = tables[table].map(row => {
+            let result = (tables[table] ?? []).map(row => {
                 const copy: Row = { ...row };
-                for (const { alias, table: child } of embeds(columns)) {
-                    const related = tables[child].filter(
+                for (const { alias, table: child, count, fields } of embeds(columns)) {
+                    const key = foreignKey(table);
+                    const related = (tables[child] ?? []).filter(
                         item =>
-                            item.post_id === row.id
+                            item[key] === row.id
                             && embedFilters
                                 .filter(f => f.column.startsWith(`${alias}.`))
                                 .every(f => f.test(item[f.column.slice(alias.length + 1)]))
                     );
-                    copy[alias] = [{ count: related.length }];
+                    copy[alias] =
+                        count ?
+                            [{ count: related.length }]
+                        :   related.map(item =>
+                                Object.fromEntries(fields.map(field => [field, item[field]]))
+                            );
                 }
                 if (relation) {
                     const post = tables.db_posts.find(p => p.id === row.post_id);
@@ -168,7 +179,7 @@ export function fakeSupabase(tables: FakeTables, files: Record<string, string> =
     }
 
     const db = {
-        from: (table: keyof FakeTables) => query(table),
+        from: (table: string) => query(table),
         storage: {
             from: () => ({
                 getPublicUrl: (path: string) => ({ data: { publicUrl: STORAGE_ORIGIN + path } })

@@ -1,12 +1,12 @@
-import { supabase } from '#lib/supabase.ts';
-import { fetchCvEntries, fetchGroupedSkills } from '#lib/author.ts';
 import { loadPublicCvDocument } from '#lib/server/publicCvDocument.ts';
+import { publicRepositories } from '#lib/server/repositories.ts';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ fetch }) => {
+    const { author } = publicRepositories(fetch);
     const [cv, skills, cvDocument] = await Promise.all([
-        fetchCvEntries(supabase),
-        fetchGroupedSkills(supabase),
+        author.cvEntries().catch(() => ({ experience: [], education: [] })),
+        author.skillGroups().catch(() => []),
         loadPublicCvDocument(fetch)
     ]);
     return { cv, skills, cvDocument };

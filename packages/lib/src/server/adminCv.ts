@@ -34,7 +34,7 @@ import {
 } from '#lib/server/cvChecksums.ts';
 import { buildCvBundle } from '#lib/server/cvBundle.ts';
 import { cvBundleFilename } from '#lib/cvVerification.ts';
-import { safeKeyserverUrl } from '#lib/openpgpKey.ts';
+import { safeKeyserverUrl } from '@fkp/domain/openpgpKey.ts';
 import {
     OPENPGP_KEY_LIMIT,
     OpenPgpError,

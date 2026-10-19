@@ -1,6 +1,6 @@
 # 3. Page Render (`/`, `/projects`, `/cv`, `/funding`, `/contact`, `/blog`, `/blog/[slug]`)
 
-How the public pages load their data. Every page load uses the **anon** Supabase client from `packages/lib/src/supabase.ts`. No session is involved, and RLS limits reads to public rows. Posts and comments are read through the `@fkp/data` repositories from `publicRepositories(fetch)`.
+How the public pages load their data. Every page load uses the **anon** Supabase client from `packages/lib/src/supabase.ts`. No session is involved, and RLS limits reads to public rows. Posts, comments and author data are read through the `@fkp/data` repositories from `publicRepositories(fetch)`, so page data carries no database IDs.
 
 ```mermaid
 sequenceDiagram
@@ -13,10 +13,10 @@ sequenceDiagram
 
     B->>W: GET any page
     Note over W: +layout.server.ts
-    W->>DB: fetchAuthorProfileWithSocials()<br/>db_profiles, db_links
+    W->>DB: author.profile(), author.socialLinks()<br/>db_profiles, db_links
     par
         W->>GH: fetchCachedProjects(username) (edge cache, 10 min)
-        W->>DB: project repo rules (drop excluded repos, pinned names)
+        W->>DB: author.projectRepoRules() (drop excluded repos, pinned names)
     end
     W-->>W: Cache-Control s-maxage=60
 
@@ -77,6 +77,6 @@ sequenceDiagram
 - `apps/web/src/routes/+layout.server.ts`
 - `apps/web/src/routes/(site)/+page.server.ts`, `(site)/{projects,cv,funding,contact,blog}/+page.server.ts`
 - `apps/web/src/routes/blog/[slug]/+page.server.ts`
-- `packages/lib/src/author.ts`
+- `packages/data/src/author.ts`, `supabase/author.ts`, `packages/domain/src/author.ts`
 - `packages/lib/src/server/blogPosts.ts`, `repositories.ts`, `githubProjects.ts`, `postRender.ts`
 - `packages/data/src/blog.ts`, `supabase/blog.ts`

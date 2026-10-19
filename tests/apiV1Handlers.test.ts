@@ -18,21 +18,21 @@ const cvDocument: Record<string, unknown> = {
 };
 
 mock.module('$app/env/public', () => ({}));
-mock.module('#lib/author.ts', () => ({
-    fetchAuthorProfile: async () => ({
+const authorRepository = {
+    profile: async () => ({
         id: 'a1b2c3d4-0000-4000-8000-000000000000',
         name: 'A',
         avatar: 'https://fkp.my.id/avatar.png'
     }),
-    fetchContactInfo: async () => [{ id: 'x', platform: 'Email', href: 'mailto:a@b.c' }],
-    fetchCvEntries: async () => ({
+    contactLinks: async () => [{ id: 'x', platform: 'Email', href: 'mailto:a@b.c' }],
+    cvEntries: async () => ({
         experiences: [{ id: 'f0e1d2c3-0000-4000-8000-000000000000', title: 'Engineer' }]
     }),
-    fetchFundingLinks: async () => [],
-    fetchGroupedSkills: async () => [],
-    fetchSocials: async () => [],
-    fetchActiveCvDocument: async () => ({ ...cvDocument }),
-    fetchActiveOpenPgpKey: async () => ({
+    fundingLinks: async () => [],
+    skillGroups: async () => [],
+    socialLinks: async () => [],
+    activeCvDocument: async () => ({ ...cvDocument }),
+    activeOpenPgpKey: async () => ({
         fingerprint: FPR,
         armored: '-----BEGIN PGP PUBLIC KEY BLOCK-----',
         algorithm: 'Ed25519',
@@ -41,7 +41,7 @@ mock.module('#lib/author.ts', () => ({
         userIds: [{ name: 'Ada', email: 'ada@fkp.my.id' }],
         keyservers: [{ label: 'keys.openpgp.org', url: 'https://keys.openpgp.org/x' }]
     })
-}));
+};
 
 const { getAuthor } = await import('../packages/lib/src/server/api/author.ts');
 const { buildCommentTree } = await import('../packages/lib/src/server/api/blog.ts');
@@ -67,6 +67,7 @@ function ctx(path: string, accept?: string) {
         url,
         request: new Request(url, accept ? { headers: { Accept: accept } } : undefined),
         db: {} as SupabaseClient,
+        repos: { author: authorRepository } as never,
         fetch: fakeFetch
     };
 }
