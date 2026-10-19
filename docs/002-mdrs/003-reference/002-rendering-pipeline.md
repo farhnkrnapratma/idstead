@@ -79,7 +79,7 @@ Pass resolvers to enable [live data](../002-extensions/014-live-data.md): the si
 | Admin post save | `buildPostRender` → `prepareMarkdownPage`, stored as `{operationId}.render.json` |
 | Blog post page (`apps/web/src/routes/blog/[slug]`) | The stored render; `renderMarkdown` + `injectHeadingIds` + `prefixHashLinks` + `extractHeadings` only when it is missing, outdated or `live` |
 | Legal pages (`/privacy`, `/terms`, `/security`) | `prepareMarkdownPage` |
-| Admin editor preview (`MarkdownEditor.svelte`) | `renderMarkdown` in the browser, `injectHeadingIds`, `prefixHashLinks` |
+| Admin editor preview (`packages/lib/src/components/editor/`, Preview tab only) | The `render` prop: `renderMdrsPreview` (`packages/lib/src/mdrsPreview.ts`, `renderMarkdown` with the site resolvers) in the browser, then `injectHeadingIds`, `prefixHashLinks` |
 | Admin editors (post, privacy, security, terms) while typing and before saving | `validateMdrsRemote` → `validateDefineForSave` |
 | Admin post save (validation) | `validateDefineForSave` |
 | `.md` and `.txt` variants, `GET /v1/blog/content` | The raw source, or `markdownToPlainText` for text output |
