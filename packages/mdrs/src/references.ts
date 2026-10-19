@@ -60,5 +60,5 @@ export function placeReferences(html: string, marker: string | null) {
             return '';
         }
     );
-    return body.replace(`<p>${marker}</p>`, references);
+    return body.replace(`<p>${marker}</p>`, () => references);
 }
