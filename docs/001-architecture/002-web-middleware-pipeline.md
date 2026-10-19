@@ -23,7 +23,7 @@ flowchart TD
     RLQ -->|yes| RL{"checkRateLimit(clientIp)<br/>60 req / 60 s"}
     RL -->|limited| R429(["429<br/>ARD: {errorCode}<br/>other: {error:{code:'RATE_LIMITED'}}"])
     RL -->|ok| RES
-    RLQ -->|no| RES["resolve(event)<br/>collapse CDN // in HTML"]
+    RLQ -->|no| RES["resolve(event) through pageDataCache:<br/>section page __data.json from the edge cache (60 s)<br/>collapse CDN // in HTML"]
     RES --> H1["HTML: Content-Security-Policy"]
     H1 --> H2["internal or preview host: X-Robots-Tag noindex<br/>internal or status ≥ 400: Cache-Control no-store"]
     H2 --> H3["public /api/*: Vary Accept, Expose-Headers, Allow-Origin *<br/>all /api/*: X-Request-ID, X-RateLimit-*"]
@@ -54,4 +54,4 @@ flowchart TD
 
 - `apps/web/src/hooks.server.ts`
 - `packages/lib/src/server/profileAssets.ts` (`assetNames`, `serveIdentityAsset`)
-- `packages/lib/src/server/rateLimit.ts`, `csp.ts`, `apiEnvelope.ts`, `publicResponse.ts`
+- `packages/lib/src/server/rateLimit.ts`, `csp.ts`, `apiEnvelope.ts`, `publicResponse.ts`, `pageDataCache.ts`

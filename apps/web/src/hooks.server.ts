@@ -11,6 +11,7 @@ import { buildContentSecurityPolicy } from '#lib/server/csp.ts';
 import { apiErrorEnvelope, needsApiEnvelope } from '#lib/server/apiEnvelope.ts';
 import { checkRateLimit, clientIp } from '#lib/server/rateLimit.ts';
 import { apiBaseUrl } from '#lib/apiConfig.ts';
+import { pageDataCache } from '#lib/server/pageDataCache.ts';
 
 const sentryInitHandle: Handle =
     import.meta.hot?.data.sentryInitHandle
@@ -301,7 +302,8 @@ export const handle: Handle = sequence(
         if (event.request.method === 'HEAD' && response.body)
             response = new Response(null, { status: response.status, headers: response.headers });
         return response;
-    }
+    },
+    pageDataCache
 );
 
 export const handleError = Sentry.handleErrorWithSentry();

@@ -1,33 +1,21 @@
+import type { RouteId } from '$app/types';
 import type { Section } from '@fkp/domain/types.ts';
 
 export interface SiteSection {
     id: Section;
     label: string;
     path: string;
+    routeId: RouteId;
 }
 
 export const SITE_SECTIONS: SiteSection[] = [
-    { id: 'home', label: 'Home', path: '/' },
-    { id: 'projects', label: 'Projects', path: '/projects' },
-    { id: 'blog', label: 'Blog', path: '/blog' },
-    { id: 'cv', label: 'CV', path: '/cv' },
-    { id: 'funding', label: 'Funding', path: '/funding' },
-    { id: 'contact', label: 'Contact', path: '/contact' }
+    { id: 'home', label: 'Home', path: '/', routeId: '/(site)' },
+    { id: 'projects', label: 'Projects', path: '/projects', routeId: '/(site)/projects' },
+    { id: 'blog', label: 'Blog', path: '/blog', routeId: '/(site)/blog' },
+    { id: 'cv', label: 'CV', path: '/cv', routeId: '/(site)/cv' },
+    { id: 'funding', label: 'Funding', path: '/funding', routeId: '/(site)/funding' },
+    { id: 'contact', label: 'Contact', path: '/contact', routeId: '/(site)/contact' }
 ];
-
-export function sectionPath(id: Section): string {
-    return SITE_SECTIONS.find(section => section.id === id)?.path ?? '/';
-}
-
-export function sectionForPath(pathname: string): Section | null {
-    if (pathname === '/') return 'home';
-    const match = SITE_SECTIONS.find(
-        section =>
-            section.path !== '/'
-            && (pathname === section.path || pathname.startsWith(`${section.path}/`))
-    );
-    return match?.id ?? null;
-}
 
 export function legacySectionPath(hash: string): string | null {
     const id = hash.replace(/^#/, '').toLowerCase();

@@ -1,8 +1,7 @@
 <script lang="ts">
     import { cn } from '@fkp/ui/utils/cn.ts';
-    import { consentStore } from '../stores/consentStore.svelte';
-    import { buttonKey } from '@fkp/ui/shortcuts.ts';
-    import { shortcut } from '@fkp/ui/utils/shortcut.svelte.ts';
+    import FooterSiteLink from './FooterSiteLink.svelte';
+    import { FOOTER_SITE_LINKS } from './footerLinks';
 
     interface Props {
         name?: string;
@@ -20,48 +19,7 @@
     <span class="inline-flex shrink-0 items-center text-text-muted">
         &copy; {new Date().getFullYear()}{name ? ` ${name}.` : '.'}
     </span>
-    <a
-        href="/terms"
-        use:shortcut={{ combo: buttonKey('termsLink'), label: 'Terms' }}
-        class="relative inline-flex shrink-0 items-center transition-colors hover:text-text-primary focus-visible:text-text-primary focus-visible:outline-none">
-        Terms
-    </a>
-    <a
-        href="/privacy"
-        use:shortcut={{ combo: buttonKey('privacyLink'), label: 'Privacy' }}
-        class="relative inline-flex shrink-0 items-center transition-colors hover:text-text-primary focus-visible:text-text-primary focus-visible:outline-none">
-        Privacy
-    </a>
-    <a
-        href="/security"
-        use:shortcut={{ combo: buttonKey('securityLink'), label: 'Security' }}
-        class="relative inline-flex shrink-0 items-center transition-colors hover:text-text-primary focus-visible:text-text-primary focus-visible:outline-none">
-        Security
-    </a>
-    <button
-        type="button"
-        onclick={() => consentStore.openCustomizeModal()}
-        use:shortcut={{ combo: buttonKey('cookiesLink'), label: 'Cookies' }}
-        class="relative inline-flex shrink-0 cursor-pointer items-center transition-colors hover:text-text-primary focus-visible:text-text-primary focus-visible:outline-none">
-        Cookies
-    </button>
-    <a
-        href="/sitemap.xml"
-        use:shortcut={{ combo: buttonKey('sitemapLink'), label: 'Sitemap' }}
-        class="relative inline-flex shrink-0 items-center transition-colors hover:text-text-primary focus-visible:text-text-primary focus-visible:outline-none">
-        Sitemap
-    </a>
-    <a
-        href="/atom.xml"
-        use:shortcut={{ combo: buttonKey('feed'), label: 'RSS' }}
-        class="relative inline-flex shrink-0 items-center transition-colors hover:text-text-primary focus-visible:text-text-primary focus-visible:outline-none">
-        RSS
-    </a>
-    <a
-        href="https://fkp.instatus.com/"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="relative inline-flex shrink-0 items-center transition-colors hover:text-text-primary focus-visible:text-text-primary focus-visible:outline-none">
-        Status
-    </a>
+    {#each FOOTER_SITE_LINKS as item (item.label)}
+        <FooterSiteLink {item} />
+    {/each}
 </div>

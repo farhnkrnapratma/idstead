@@ -10,7 +10,8 @@
     import { themeStore } from '@fkp/ui/stores/themeStore.svelte.ts';
     import { type SocialLink } from '#lib/author.ts';
     import BrandIcon from '#lib/components/BrandIcon.svelte';
-    import FooterLegalRow from './FooterLegalRow.svelte';
+    import FooterSiteLink from './FooterSiteLink.svelte';
+    import { FOOTER_SITE_LINKS } from './footerLinks';
     import StatusBadge from '@fkp/ui/components/StatusBadge.svelte';
     import { BookOpenText } from '@lucide/svelte';
 
@@ -22,9 +23,6 @@
     }
 
     interface Props {
-        name?: string;
-        headline?: string;
-        description?: string;
         navItems?: NavItem[];
         socials?: SocialLink[];
         onNavClick?: (url: string) => void;
@@ -46,9 +44,6 @@
     ];
 
     let {
-        name = '',
-        headline = '',
-        description = '',
         navItems = [],
         socials = [],
         onNavClick,
@@ -68,9 +63,7 @@
 
     let pageAuthor = $derived((page?.data as any)?.author);
 
-    let resolvedName = $derived(name || pageAuthor?.name || '');
-    let resolvedHeadline = $derived(headline || pageAuthor?.headline || pageAuthor?.jobTitle || '');
-    let resolvedDescription = $derived(description || pageAuthor?.bio || '');
+    let copyrightName = $derived(pageAuthor?.name || '');
 
     let resolvedNavItems = $derived(navItems.length > 0 ? navItems : defaultNavItems);
 
@@ -84,7 +77,7 @@
 <footer
     class={cn(
         'relative z-10 mx-auto mt-auto w-full max-w-full pt-0 font-sans text-xs text-text-muted',
-        width === 'standard' ? 'pb-20 md:pb-20 lg:pb-8' : 'pb-0',
+        width === 'standard' ? 'pb-8' : 'pb-0',
         widthStyles[width],
         className
     )}>
@@ -96,30 +89,11 @@
     {/if}
     <div class="rounded-md glass-card p-3.5 sm:p-6">
         <div class="flex flex-col gap-5 sm:gap-6">
-            <div class="flex min-w-0 flex-col gap-1.5">
-                <div class="flex min-w-0 flex-col gap-0.5">
-                    <h3 class="type-card-title">
-                        {resolvedName}
-                    </h3>
-                    {#if resolvedHeadline}
-                        <p class="type-body font-medium text-text-muted">
-                            {resolvedHeadline}
-                        </p>
-                    {/if}
-                </div>
-                {#if resolvedDescription}
-                    <p class="max-w-lg type-body text-text-secondary">
-                        {resolvedDescription}
-                    </p>
-                {/if}
-            </div>
-
-            <div
-                class="flex flex-col gap-5 border-t border-border-subtle pt-5 sm:flex-row sm:items-stretch sm:justify-between sm:gap-10 sm:pt-6">
+            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-10">
                 {#if resolvedNavItems.length > 0}
                     <nav
                         aria-label="Footer navigation"
-                        class="flex min-w-0 flex-col gap-2 sm:max-w-xs sm:flex-1 sm:justify-between">
+                        class="flex min-w-0 flex-col gap-2">
                         <h4 class="text-xs font-semibold text-text-primary">Navigation</h4>
                         <ul
                             class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs font-normal text-text-secondary">
@@ -153,61 +127,80 @@
                     </nav>
                 {/if}
 
-                <div class="flex flex-col gap-3 sm:items-end sm:justify-between sm:gap-4">
-                    {#if resolvedSocials.length > 0}
-                        <div class="flex flex-wrap gap-2">
-                            {#each resolvedSocials as item (item.url + item.platform)}
-                                <a
-                                    href={item.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    aria-label={item.platform}
-                                    title={item.platform}
-                                    use:shortcut={{ group: 'social', label: item.platform }}
-                                    class="relative flex size-8 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-text-muted transition-all hover:bg-surface-hover hover:text-accent-text focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:size-9">
-                                    <BrandIcon
-                                        icon={item.icon}
-                                        class="size-4 text-base leading-none sm:size-4.5 sm:text-lg" />
-                                </a>
-                            {/each}
-                        </div>
-                    {/if}
+                <nav
+                    aria-label="Site links"
+                    class="flex min-w-0 flex-col gap-2">
+                    <h4 class="text-xs font-semibold text-text-primary">Site</h4>
+                    <ul
+                        class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs font-normal text-text-secondary">
+                        {#each FOOTER_SITE_LINKS as item (item.label)}
+                            <li class="text-xs">
+                                <FooterSiteLink
+                                    {item}
+                                    class="text-xs font-normal text-text-secondary" />
+                            </li>
+                        {/each}
+                    </ul>
+                </nav>
+            </div>
 
-                    <div class="flex flex-wrap items-center gap-1.5 sm:justify-end sm:gap-2">
-                        <SpotlightSearch variant="icon" />
-                        {#if onToggleReadingMode}
-                            <IconButton
-                                ariaLabel={readingMode ? 'Exit reading mode' : 'Enter reading mode'}
-                                tooltip={readingMode ? 'Exit reading mode' : 'Reading mode'}
-                                keyboardShortcut={buttonKey('readingMode')}
-                                shortcutLabel="Reading mode"
-                                tooltipPlacement="top"
-                                tooltipAlign="right"
-                                size="sm"
-                                onclick={onToggleReadingMode}
-                                class="border-border-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9 {(
-                                    readingMode
-                                ) ?
-                                    'border-accent text-accent-text'
-                                :   ''}">
-                                <BookOpenText class="size-4" />
-                            </IconButton>
-                        {/if}
-                        <ThemeSelect
-                            theme={themeStore.current}
-                            onThemeChange={themeStore.apply}
-                            dropdownDirection="up" />
-                        {#if showFontSelect}
-                            <ContentFontSelect dropdownDirection="up" />
-                        {/if}
-                        <AccessibilitySelect dropdownDirection="up" />
+            <div
+                class="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle pt-4 sm:pt-5">
+                {#if resolvedSocials.length > 0}
+                    <div class="flex flex-wrap gap-2">
+                        {#each resolvedSocials as item (item.url + item.platform)}
+                            <a
+                                href={item.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label={item.platform}
+                                title={item.platform}
+                                use:shortcut={{ group: 'social', label: item.platform }}
+                                class="relative flex size-8 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-text-muted transition-all hover:bg-surface-hover hover:text-accent-text focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:size-9">
+                                <BrandIcon
+                                    icon={item.icon}
+                                    class="size-4 text-base leading-none sm:size-4.5 sm:text-lg" />
+                            </a>
+                        {/each}
                     </div>
+                {/if}
+
+                <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    <SpotlightSearch variant="icon" />
+                    {#if onToggleReadingMode}
+                        <IconButton
+                            ariaLabel={readingMode ? 'Exit reading mode' : 'Enter reading mode'}
+                            tooltip={readingMode ? 'Exit reading mode' : 'Reading mode'}
+                            keyboardShortcut={buttonKey('readingMode')}
+                            shortcutLabel="Reading mode"
+                            tooltipPlacement="top"
+                            tooltipAlign="right"
+                            size="sm"
+                            onclick={onToggleReadingMode}
+                            class="border-border-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9 {(
+                                readingMode
+                            ) ?
+                                'border-accent text-accent-text'
+                            :   ''}">
+                            <BookOpenText class="size-4" />
+                        </IconButton>
+                    {/if}
+                    <ThemeSelect
+                        theme={themeStore.current}
+                        onThemeChange={themeStore.apply}
+                        dropdownDirection="up" />
+                    {#if showFontSelect}
+                        <ContentFontSelect dropdownDirection="up" />
+                    {/if}
+                    <AccessibilitySelect dropdownDirection="up" />
                 </div>
             </div>
 
             <div
-                class="flex flex-col items-center gap-3 border-t border-border-subtle pt-4 text-center select-none sm:pt-5">
-                <FooterLegalRow name={resolvedName} />
+                class="flex flex-col items-center gap-3 border-t border-border-subtle pt-4 text-center select-none sm:flex-row sm:justify-between sm:pt-5 sm:text-left">
+                <span class="text-xs font-medium text-text-muted">
+                    &copy; {new Date().getFullYear()}{copyrightName ? ` ${copyrightName}.` : '.'}
+                </span>
                 <StatusBadge />
             </div>
         </div>
@@ -219,10 +212,6 @@
 
     footer {
         @apply font-sans text-xs leading-normal font-normal not-italic;
-    }
-
-    h3 {
-        @apply not-italic;
     }
 
     h4 {

@@ -268,6 +268,20 @@ export function parseLucideTag(
     return { name, props };
 }
 
+export async function fetchSiteUrl(supabaseClient?: any): Promise<string> {
+    if (!supabaseClient) return '';
+    try {
+        const { data } = await supabaseClient
+            .from('db_profiles')
+            .select('site_url')
+            .limit(1)
+            .maybeSingle();
+        return decodeHtmlEntities(data?.site_url || '');
+    } catch {
+        return '';
+    }
+}
+
 export async function fetchAuthorProfile(
     supabaseClient?: any,
     options?: { includeEmail?: boolean; strict?: boolean }
