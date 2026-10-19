@@ -22,9 +22,9 @@
         "fmt:check": "prettier --check ."
     },
     "devDependencies": {
-        "@aws-sdk/client-s3": "^3.1149.0",
-        "@commitlint/cli": "^21.2.3",
-        "@commitlint/config-conventional": "^21.2.3",
+        "@aws-sdk/client-s3": "^3.1152.0",
+        "@commitlint/cli": "^21.2.4",
+        "@commitlint/config-conventional": "^21.2.4",
         "@commitlint/types": "^21.2.3",
         "@eslint/js": "^10.0.1",
         "@prettier/plugin-xml": "^3.4.2",
