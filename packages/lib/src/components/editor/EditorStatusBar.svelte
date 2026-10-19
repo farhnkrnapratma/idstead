@@ -1,6 +1,6 @@
 <script lang="ts">
     import { Indent, RefreshCw, RefreshCwOff } from '@lucide/svelte';
-    import Tooltip from '../Tooltip.svelte';
+    import Tooltip from '@fkp/ui/components/Tooltip.svelte';
     import type { EditorPreferences } from './preferences.svelte';
 
     interface Props {

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { createFrameScheduler } from '../packages/lib/src/utils/frameScheduler';
+import { createFrameScheduler } from '../packages/ui/src/utils/frameScheduler';
 
 describe('animation frame scheduler', () => {
     test('coalesces same-frame events into one callback', () => {

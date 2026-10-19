@@ -8,7 +8,7 @@
         FieldMessage,
         IconButton,
         toastStore
-    } from '#lib/index.ts';
+    } from '@fkp/ui';
     import {
         DEFAULT_RANDOM_PASSWORD,
         DEFAULT_MEMORABLE_PASSWORD,

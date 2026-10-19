@@ -6,7 +6,7 @@ import {
     type HeadingItem
 } from '@fkp/mdrs';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { estimateReadTime } from '#lib/readTime.ts';
+import { estimateReadTime } from '@fkp/domain/readTime.ts';
 
 import { postRenderPath } from './postRenderPath';
 

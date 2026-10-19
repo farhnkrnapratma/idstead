@@ -1,4 +1,4 @@
-@reference "../../global.css";
+@reference "@fkp/ui/styles/global.css";
 
 .editor-shell {
     background-color: var(--code-theme-bg);

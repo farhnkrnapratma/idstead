@@ -24,9 +24,9 @@
 <script
     lang="ts"
     generics="T extends CommentItem">
-    import Avatar from './Avatar.svelte';
+    import Avatar from '@fkp/ui/components/Avatar.svelte';
     import { commentAuthorName } from '#lib/commentAuthor.ts';
-    import { clampPage, pageCount, pageOfIndex, pageSlice } from '#lib/pagination.ts';
+    import { clampPage, pageCount, pageOfIndex, pageSlice } from '@fkp/domain/pagination.ts';
     import {
         arrangeThreads,
         commentMatchesQuery,
@@ -35,11 +35,11 @@
         type CommentSort,
         type CommentSortDirection
     } from '#lib/commentFilter.ts';
-    import Pagination from './Pagination.svelte';
-    import Input from './Input.svelte';
-    import FilterToolbar from './filter/FilterToolbar.svelte';
-    import SortControl from './filter/SortControl.svelte';
-    import SearchResultCount from './filter/SearchResultCount.svelte';
+    import Pagination from '@fkp/ui/components/Pagination.svelte';
+    import Input from '@fkp/ui/components/Input.svelte';
+    import FilterToolbar from '@fkp/ui/components/filter/FilterToolbar.svelte';
+    import SortControl from '@fkp/ui/components/filter/SortControl.svelte';
+    import SearchResultCount from '@fkp/ui/components/filter/SearchResultCount.svelte';
     import type { Snippet } from 'svelte';
     import { SvelteMap, SvelteSet } from 'svelte/reactivity';
     import {
@@ -51,15 +51,15 @@
         ChevronDown,
         ChevronUp
     } from '@lucide/svelte';
-    import RelativeTime from './RelativeTime.svelte';
-    import IconButton from './IconButton.svelte';
-    import { cn } from '../utils/cn';
-    import Dropdown from './Dropdown.svelte';
-    import { focusScope } from '../utils/focusScope';
-    import { shortcut } from '../utils/shortcut.svelte';
-    import { contentFontStore } from '../stores/contentFontStore.svelte';
-    import { decodeHtmlEntities } from '../utils/formatters';
-    import { toastStore } from '../stores/toastStore.svelte';
+    import RelativeTime from '@fkp/ui/components/RelativeTime.svelte';
+    import IconButton from '@fkp/ui/components/IconButton.svelte';
+    import { cn } from '@fkp/ui/utils/cn.ts';
+    import Dropdown from '@fkp/ui/components/Dropdown.svelte';
+    import { focusScope } from '@fkp/ui/utils/focusScope.ts';
+    import { shortcut } from '@fkp/ui/utils/shortcut.svelte.ts';
+    import { contentFontStore } from '@fkp/ui/stores/contentFontStore.svelte.ts';
+    import { decodeHtmlEntities } from '@fkp/mdrs';
+    import { toastStore } from '@fkp/ui/stores/toastStore.svelte.ts';
 
     interface Props {
         class?: string;

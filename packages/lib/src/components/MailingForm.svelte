@@ -1,12 +1,12 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { MailCheck } from '@lucide/svelte';
-    import Button from './Button.svelte';
-    import FormField from './FormField.svelte';
-    import Input from './Input.svelte';
+    import Button from '@fkp/ui/components/Button.svelte';
+    import FormField from '@fkp/ui/components/FormField.svelte';
+    import Input from '@fkp/ui/components/Input.svelte';
     import { mailingEmailError, submitMailing, type MailingAction } from '#lib/mailing.ts';
-    import { buttonKey } from '#lib/shortcuts.ts';
-    import { toastStore } from '#lib/stores/toastStore.svelte.ts';
+    import { buttonKey } from '@fkp/ui/shortcuts.ts';
+    import { toastStore } from '@fkp/ui/stores/toastStore.svelte.ts';
     import {
         turnstileWidget,
         executeTurnstile,

@@ -9,15 +9,15 @@
         MessageCircle,
         User
     } from '@lucide/svelte';
-    import { cn } from '../utils/cn';
+    import { cn } from '@fkp/ui/utils/cn.ts';
     import {
         formatCommentCount,
         formatViewCount,
         formatAbsoluteDate,
         formatExactDateTime
-    } from '../utils/formatters';
-    import RelativeTime from '../components/RelativeTime.svelte';
-    import SkeletonBlock from '../components/SkeletonBlock.svelte';
+    } from '@fkp/domain/formatters.ts';
+    import RelativeTime from '@fkp/ui/components/RelativeTime.svelte';
+    import SkeletonBlock from '@fkp/ui/components/SkeletonBlock.svelte';
     import type { Snippet } from 'svelte';
 
     interface Props {

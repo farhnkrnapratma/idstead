@@ -3,7 +3,7 @@
     import { Chart, Svg, Pie, Arc, Tooltip } from 'layerchart';
     import { scaleOrdinal } from 'd3-scale';
     import { formatCount } from '#lib/adminWorkspace.ts';
-    import EmptyState from '../EmptyState.svelte';
+    import EmptyState from '@fkp/ui/components/EmptyState.svelte';
     interface Segment {
         label: string;
         value: number;

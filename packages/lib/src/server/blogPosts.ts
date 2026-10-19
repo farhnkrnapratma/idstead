@@ -1,8 +1,8 @@
 import { supabase } from '#lib/supabase.ts';
 import { publicBannerUrl } from '#lib/blogBanner.ts';
 import { cdnBaseUrl } from '#lib/cdn.ts';
-import { estimateReadTime } from '#lib/readTime.ts';
-import { decodeHtmlEntities } from '#lib/utils/formatters.ts';
+import { estimateReadTime } from '@fkp/domain/readTime.ts';
+import { decodeHtmlEntities } from '@fkp/mdrs';
 import { publicPostFields, type PublicPostFields } from '#lib/publicPost.ts';
 
 export interface BlogPost extends PublicPostFields {

@@ -8,7 +8,7 @@ import { requireAdminAuth } from '#lib/server/adminCv.ts';
 import { bearerToken } from '#lib/server/adminAuth.ts';
 import { profilePatch, ProfileInputError } from '#lib/server/profilePatch.ts';
 import { fetchExperiences, fetchEducation } from '#lib/author.ts';
-import { sanitizeInput } from '#lib/utils/sanitizeInput.ts';
+import { sanitizeInput } from '@fkp/domain/sanitizeInput.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
 

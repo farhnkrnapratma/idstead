@@ -1,8 +1,8 @@
 <script lang="ts">
     import { supabase } from '#lib/supabase.ts';
-    import { getSafeRedirectUrl } from '#lib/utils/safeRedirect.ts';
+    import { getSafeRedirectUrl } from '@fkp/domain/safeRedirect.ts';
     import { clearLocalAdminSession, inspectAdminAuth } from '#lib/adminAuthState.ts';
-    import { LoadingState } from '#lib/index.ts';
+    import { LoadingState } from '@fkp/ui';
     import { page } from '$app/state';
     import { onMount } from 'svelte';
     import type { Snippet } from 'svelte';

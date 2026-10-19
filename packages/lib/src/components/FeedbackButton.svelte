@@ -1,10 +1,10 @@
 <script lang="ts">
-    import { buttonKey } from '#lib/shortcuts.ts';
+    import { buttonKey } from '@fkp/ui/shortcuts.ts';
     import { fade } from 'svelte/transition';
     import { goto } from '$app/navigation';
     import { page } from '$app/state';
     import { MessageSquareWarning } from '@lucide/svelte';
-    import IconButton from './IconButton.svelte';
+    import IconButton from '@fkp/ui/components/IconButton.svelte';
 
     interface Props {
         show?: boolean;

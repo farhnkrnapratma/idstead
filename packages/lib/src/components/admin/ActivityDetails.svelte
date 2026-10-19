@@ -7,7 +7,7 @@
         isFeedbackActivity
     } from '#lib/adminActivity.ts';
     import { reportReasonLabel } from '#lib/reportReasons.ts';
-    import { cn } from '#lib/utils/cn.ts';
+    import { cn } from '@fkp/ui/utils/cn.ts';
 
     let { item, withAuthor = false }: { item: AdminNotificationRow; withAuthor?: boolean } =
         $props();

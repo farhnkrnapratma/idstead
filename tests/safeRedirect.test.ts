@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { getSafeRedirectUrl } from '../packages/lib/src/utils/safeRedirect.ts';
+import { getSafeRedirectUrl } from '../packages/domain/src/safeRedirect.ts';
 
 describe('admin login redirect target', () => {
     test('keeps admin pages on the admin host', () => {

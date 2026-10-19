@@ -3,7 +3,7 @@
     import { Download, FileText, Search, Logs } from '@lucide/svelte';
     import { SvelteURLSearchParams } from 'svelte/reactivity';
     import { supabase } from '#lib/supabase.ts';
-    import { toastStore } from '#lib/index.ts';
+    import { toastStore } from '@fkp/ui';
     import {
         activityCategories,
         activityLogSortFields,
@@ -13,19 +13,19 @@
         type ActivityLogSortField
     } from '#lib/activityLog.ts';
     import { shouldShowDataControls } from '#lib/adminWorkspace.ts';
-    import Section from '#lib/layout/Section.svelte';
-    import DataTable from '../DataTable.svelte';
-    import Pagination from '../Pagination.svelte';
-    import Button from '../Button.svelte';
-    import Badge from '../Badge.svelte';
-    import Input from '../Input.svelte';
-    import Dropdown from '../Dropdown.svelte';
-    import FilterToolbar from '../filter/FilterToolbar.svelte';
-    import SortControl from '../filter/SortControl.svelte';
-    import SearchResultCount from '../filter/SearchResultCount.svelte';
-    import LoadingState from '../LoadingState.svelte';
-    import ErrorState from '../ErrorState.svelte';
-    import EmptyState from '../EmptyState.svelte';
+    import Section from '@fkp/ui/layout/Section.svelte';
+    import DataTable from '@fkp/ui/components/DataTable.svelte';
+    import Pagination from '@fkp/ui/components/Pagination.svelte';
+    import Button from '@fkp/ui/components/Button.svelte';
+    import Badge from '@fkp/ui/components/Badge.svelte';
+    import Input from '@fkp/ui/components/Input.svelte';
+    import Dropdown from '@fkp/ui/components/Dropdown.svelte';
+    import FilterToolbar from '@fkp/ui/components/filter/FilterToolbar.svelte';
+    import SortControl from '@fkp/ui/components/filter/SortControl.svelte';
+    import SearchResultCount from '@fkp/ui/components/filter/SearchResultCount.svelte';
+    import LoadingState from '@fkp/ui/components/LoadingState.svelte';
+    import ErrorState from '@fkp/ui/components/ErrorState.svelte';
+    import EmptyState from '@fkp/ui/components/EmptyState.svelte';
     import ActivityTimestamp from './ActivityTimestamp.svelte';
 
     let rows = $state.raw<ActivityLogEntry[]>([]);

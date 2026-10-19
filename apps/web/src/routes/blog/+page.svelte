@@ -3,31 +3,29 @@
     import { SvelteSet } from 'svelte/reactivity';
     import { page } from '$app/state';
     import { Rss, Quote } from '@lucide/svelte';
-    import Tag from '#lib/components/Tag.svelte';
+    import Tag from '@fkp/ui/components/Tag.svelte';
+    import { BlogPostCard, FooterSection, TopNav } from '#lib/index.ts';
     import {
-        BlogPostCard,
         Button,
         Dropdown,
         EmptyState,
         FilterChipGroup,
         FilterEmptyState,
         FilterToolbar,
-        FooterSection,
         PageMain,
         Input,
         PageContainer,
         Pagination,
         SearchResultCount,
-        Section,
         SortControl,
         Tooltip,
         SkipLink,
-        TopNav,
         createFilterSortStore,
-        decodeHtmlEntities,
         staggerChildren
-    } from '#lib/index.ts';
-    import { buttonKey } from '#lib/shortcuts.ts';
+    } from '@fkp/ui';
+    import { Section } from '@fkp/ui';
+    import { decodeHtmlEntities } from '@fkp/mdrs';
+    import { buttonKey } from '@fkp/ui/shortcuts.ts';
     import { publicAvatarUrl, publicBannerOgUrl } from '#lib/siteIdentity.ts';
 
     let { data } = $props();

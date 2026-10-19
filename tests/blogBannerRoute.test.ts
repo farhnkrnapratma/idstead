@@ -53,7 +53,7 @@ describe('Blog banner URLs on the CDN', () => {
 
 describe('Reserved post slugs', () => {
     test('banners and content never become a post folder', async () => {
-        const { isValidPostSlug, slugifyTitle } = await import('../packages/lib/src/slug.ts');
+        const { isValidPostSlug, slugifyTitle } = await import('../packages/domain/src/slug.ts');
         expect(isValidPostSlug('banners')).toBe(false);
         expect(isValidPostSlug('content')).toBe(false);
         expect(slugifyTitle('Banners')).toBe('banners-post');

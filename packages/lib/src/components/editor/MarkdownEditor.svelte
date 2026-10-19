@@ -5,8 +5,8 @@
     import 'katex/dist/katex.min.css';
     import './editor.css';
     import { applyCodeThemeVariables, ensureHljsThemeStylesheet } from '#lib/utils/codeBlocks.ts';
-    import { cn } from '#lib/utils/cn.ts';
-    import { themeStore } from '#lib/stores/themeStore.svelte.ts';
+    import { cn } from '@fkp/ui/utils/cn.ts';
+    import { themeStore } from '@fkp/ui/stores/themeStore.svelte.ts';
     import EditorViewBar from './EditorViewBar.svelte';
     import EditorToolbar from './EditorToolbar.svelte';
     import EditorCodeArea from './EditorCodeArea.svelte';

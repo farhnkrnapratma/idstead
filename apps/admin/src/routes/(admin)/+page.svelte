@@ -1,5 +1,5 @@
 <script lang="ts">
-    import Tag from '#lib/components/Tag.svelte';
+    import Tag from '@fkp/ui/components/Tag.svelte';
     import { COMMENTS_PAGE_SIZE, commentAuthorName } from '#lib/commentAuthor.ts';
     import { blogBannerAlt } from '#lib/blogBanner.ts';
     import { adminUrl, navigateAdmin } from '#lib/adminNavigation.ts';
@@ -11,7 +11,7 @@
         recallPostSave,
         PostSaveError
     } from '#lib/postSaveClient.ts';
-    import { FieldValidation, requiredText, emailError } from '#lib/fieldValidation.ts';
+    import { FieldValidation, requiredText, emailError } from '@fkp/domain/fieldValidation.ts';
     import { mdrsContent } from '#lib/mdrsValidation.ts';
     import { renderMdrsPreview } from '#lib/mdrsPreview.ts';
     import { avatarSource, siteBannerSource } from '#lib/siteIdentity.ts';
@@ -106,7 +106,11 @@
         type WorkspaceArea,
         type WorkspacePage
     } from '#lib/adminWorkspace.ts';
-    import { lockScroll, preferredScrollBehavior, whenScrollSettles } from '#lib/utils/scroll.ts';
+    import {
+        lockScroll,
+        preferredScrollBehavior,
+        whenScrollSettles
+    } from '@fkp/ui/utils/scroll.ts';
     import { adminNotificationsStore } from '#lib/stores/adminNotificationsStore.svelte.ts';
 
     const loadActivityWorkspace = () => import('#lib/components/admin/ActivityWorkspace.svelte');
@@ -115,20 +119,18 @@
     const loadAccountSettings = () => import('#lib/components/admin/AccountSettings.svelte');
     const loadPostEditor = () => import('#lib/components/admin/PostEditor.svelte');
     const loadMarkdownEditor = () => import('#lib/components/editor/index.ts');
-    import { estimateReadTime } from '#lib/readTime.ts';
-    import { formatBadgeCount } from '#lib/utils/formatters.ts';
+    import { estimateReadTime } from '@fkp/domain/readTime.ts';
+    import { formatBadgeCount } from '@fkp/domain/formatters.ts';
     import {
         Button,
         Badge,
         Card,
-        BrandIcon,
         Textarea,
         FormField,
         FieldMessage,
         Input,
         Checkbox,
         ConfirmationDialog,
-        CommentThread,
         LoadingState,
         EmptyState,
         SkeletonBlock,
@@ -147,21 +149,20 @@
         ThemeSelect,
         Tooltip,
         StatusBanner,
-        formatReadTime,
         FormSection,
         FormActions,
         PillInput,
-        sanitizeInput,
-        decodeHtmlEntities,
         splitEscapedCommas,
         FileUploadField,
-        IconButton,
-        CodeTabs
-    } from '#lib/index.ts';
-    import ActionMenu from '#lib/components/ActionMenu.svelte';
+        IconButton
+    } from '@fkp/ui';
+    import { BrandIcon, CommentThread, CodeTabs } from '#lib/index.ts';
+    import { formatReadTime, sanitizeInput } from '@fkp/domain';
+    import { decodeHtmlEntities } from '@fkp/mdrs';
+    import ActionMenu from '@fkp/ui/components/ActionMenu.svelte';
     import ArticleMeta from '#lib/article/ArticleMeta.svelte';
 
-    import { themeStore } from '#lib/stores/themeStore.svelte.ts';
+    import { themeStore } from '@fkp/ui/stores/themeStore.svelte.ts';
     import {
         fetchAuthorProfile,
         fetchIdentityMeta,
@@ -185,7 +186,7 @@
         type IdentityVersionMeta
     } from '#lib/author.ts';
     import { CV_CHECKSUM_ALGORITHMS, cvFileUrl } from '#lib/cvVerification.ts';
-    import { copyText, downloadUrl as downloadFrom } from '#lib/utils/fileActions.ts';
+    import { copyText, downloadUrl as downloadFrom } from '@fkp/ui/utils/fileActions.ts';
     import {
         KEYSERVER_PRESETS,
         formatFingerprint,

@@ -73,6 +73,42 @@ export default defineConfig(
         }
     },
     {
+        files: ['packages/ui/**'],
+        rules: {
+            '@typescript-eslint/no-restricted-imports': [
+                'error',
+                {
+                    patterns: [
+                        {
+                            regex: '(^|/)server/|^(@supabase/|#lib|@fkp/(lib|mdrs|ui)($|/))',
+                            allowTypeImports: true,
+                            message:
+                                '@fkp/ui is the design system: browser-safe, and it may only depend on @fkp/domain.'
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        files: ['packages/domain/**'],
+        rules: {
+            '@typescript-eslint/no-restricted-imports': [
+                'error',
+                {
+                    patterns: [
+                        {
+                            regex: '^(@supabase/|#lib|@fkp/|\\$app/|\\$lib|svelte($|/))',
+                            allowTypeImports: true,
+                            message:
+                                '@fkp/domain holds pure, framework-free code: no workspace, Svelte, SvelteKit or Supabase imports.'
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    {
         rules: {
             'svelte/no-at-html-tags': 'off',
             'svelte/no-navigation-without-resolve': 'off',

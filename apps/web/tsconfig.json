@@ -6,7 +6,9 @@
         "test",
         "*",
         "../../packages/lib/src",
-        "../../packages/mdrs/src"
+        "../../packages/mdrs/src",
+        "../../packages/ui/src",
+        "../../packages/domain/src"
     ],
     "exclude": ["src/service-worker"],
     "compilerOptions": {

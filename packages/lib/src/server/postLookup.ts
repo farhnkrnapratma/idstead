@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { isValidPostSlug } from '#lib/slug.ts';
+import { isValidPostSlug } from '@fkp/domain/slug.ts';
 
 export const PUBLIC_ID_PATTERN = /^[0-9a-f]{64}$/;
 export const PUBLIC_ID_PREFIX_PATTERN = /^[0-9a-f]{7,63}$/;

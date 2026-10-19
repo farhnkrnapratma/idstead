@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { buttonKey, COMMAND_SHORTCUTS } from '#lib/shortcuts.ts';
-    import { shortcutStore } from '../stores/shortcutStore.svelte';
+    import { buttonKey, COMMAND_SHORTCUTS } from '@fkp/ui/shortcuts.ts';
+    import { shortcutStore } from '@fkp/ui/stores/shortcutStore.svelte.ts';
     import { onMount } from 'svelte';
     import {
         ThumbsUp,
@@ -11,9 +11,9 @@
         MessageSquareQuote,
         AtSign
     } from '@lucide/svelte';
-    import Button from '../components/Button.svelte';
-    import FieldMessage from '../components/FieldMessage.svelte';
-    import { cn } from '../utils/cn';
+    import Button from '@fkp/ui/components/Button.svelte';
+    import FieldMessage from '@fkp/ui/components/FieldMessage.svelte';
+    import { cn } from '@fkp/ui/utils/cn.ts';
 
     interface Props {
         title?: string;

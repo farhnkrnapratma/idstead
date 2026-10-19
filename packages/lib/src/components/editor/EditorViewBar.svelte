@@ -10,9 +10,9 @@
         TextAlignJustify,
         TextWrap
     } from '@lucide/svelte';
-    import { cn } from '#lib/utils/cn.ts';
-    import IconButton from '../IconButton.svelte';
-    import Dropdown from '../Dropdown.svelte';
+    import { cn } from '@fkp/ui/utils/cn.ts';
+    import IconButton from '@fkp/ui/components/IconButton.svelte';
+    import Dropdown from '@fkp/ui/components/Dropdown.svelte';
     import { INDENT_SIZES, type EditorPreferences, type IndentSize } from './preferences.svelte';
 
     interface Props {

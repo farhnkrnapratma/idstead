@@ -6,11 +6,11 @@
     import { scaleBand, scaleLinear } from 'd3-scale';
     import { curveMonotoneX } from 'd3-shape';
 
-    import Chip from '../Chip.svelte';
-    import LoadingState from '../LoadingState.svelte';
-    import ErrorState from '../ErrorState.svelte';
-    import EmptyState from '../EmptyState.svelte';
-    import { cn } from '#lib/utils/cn.ts';
+    import Chip from '@fkp/ui/components/Chip.svelte';
+    import LoadingState from '@fkp/ui/components/LoadingState.svelte';
+    import ErrorState from '@fkp/ui/components/ErrorState.svelte';
+    import EmptyState from '@fkp/ui/components/EmptyState.svelte';
+    import { cn } from '@fkp/ui/utils/cn.ts';
     import { hasChartActivity } from '#lib/adminWorkspace.ts';
     import { activityDate, activityTimestamp } from '#lib/adminActivity.ts';
     import { adminDisplayStore } from '#lib/stores/adminDisplayStore.svelte.ts';

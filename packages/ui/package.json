@@ -1,0 +1,40 @@
+{
+    "name": "@fkp/ui",
+    "version": "0.0.1",
+    "private": true,
+    "license": "MIT",
+    "type": "module",
+    "svelte": "./src/index.ts",
+    "exports": {
+        ".": {
+            "types": "./src/index.ts",
+            "svelte": "./src/index.ts",
+            "default": "./src/index.ts"
+        },
+        "./components/*": "./src/components/*",
+        "./layout/*": "./src/layout/*",
+        "./stores/*": "./src/stores/*",
+        "./utils/*": "./src/utils/*",
+        "./styles/*": "./src/styles/*",
+        "./*.ts": "./src/*.ts"
+    },
+    "sideEffects": [
+        "**/*.css"
+    ],
+    "dependencies": {
+        "@fkp/domain": "workspace:*",
+        "@blobatar/svelte": "^2.7.0",
+        "@fontsource-variable/lexend": "^5.3.0",
+        "@fontsource-variable/lilex": "^5.3.0",
+        "@fontsource-variable/noto-sans": "^5.3.0",
+        "@fontsource-variable/noto-serif": "^5.3.0",
+        "@fontsource/ia-writer-quattro": "^5.3.0",
+        "@fontsource/ibm-plex-serif": "^5.3.0",
+        "@lucide/svelte": "^1.55.0",
+        "bootstrap-icons": "^1.13.2"
+    },
+    "peerDependencies": {
+        "@sveltejs/kit": "^3.0.1",
+        "svelte": "^5.0.0"
+    }
+}

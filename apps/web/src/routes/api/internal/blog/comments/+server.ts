@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { supabase } from '#lib/supabase.ts';
-import { isNameReserved, extractAuthorNameTokens } from '#lib/utils/nameValidator.ts';
+import { isNameReserved, extractAuthorNameTokens } from '@fkp/domain/nameValidator.ts';
 import { fetchAuthorProfile } from '#lib/author.ts';
 import { verifyTurnstileToken } from '#lib/server/turnstile.ts';
 import { apiError } from '#lib/server/apiError.ts';

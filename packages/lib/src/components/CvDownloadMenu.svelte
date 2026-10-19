@@ -7,13 +7,13 @@
         ShieldAlert,
         ShieldCheck
     } from '@lucide/svelte';
-    import Button from './Button.svelte';
-    import CommandLine from './CommandLine.svelte';
+    import Button from '@fkp/ui/components/Button.svelte';
+    import CommandLine from '@fkp/ui/components/CommandLine.svelte';
     import CodeTabs from './CodeTabs.svelte';
-    import Dialog from './Dialog.svelte';
-    import Dropdown from './Dropdown.svelte';
-    import Tooltip from './Tooltip.svelte';
-    import { downloadUrl as download } from '../utils/fileActions';
+    import Dialog from '@fkp/ui/components/Dialog.svelte';
+    import Dropdown from '@fkp/ui/components/Dropdown.svelte';
+    import Tooltip from '@fkp/ui/components/Tooltip.svelte';
+    import { downloadUrl as download } from '@fkp/ui/utils/fileActions.ts';
     import { CV_CHECKSUM_ALGORITHMS, type CvDocumentInfo } from '../cvVerification';
     import { formatFingerprint, formatUserId } from '../openpgpKey';
 

@@ -82,7 +82,7 @@ And that's it, you're ready to start hacking!
 
 ### Repository Layout
 
-This is a Bun workspaces monorepo. Each app is its own Cloudflare Worker, and all of them share `packages/lib` and `packages/mdrs`:
+This is a Bun workspaces monorepo. Each app is its own Cloudflare Worker, and all of them share the packages under `packages/`:
 
 | Path | Deploys to | What it is |
 | --- | --- | --- |
@@ -90,7 +90,9 @@ This is a Bun workspaces monorepo. Each app is its own Cloudflare Worker, and al
 | `apps/admin` | `admin.fkp.my.id` | Admin portal (SvelteKit). |
 | `apps/api` | `api.fkp.my.id/v1` | Public read-only REST API (Hono). |
 | `apps/jobs` | — (queue and cron only) | Newsletter delivery and daily storage cleanup. |
-| `packages/lib` | — | Shared components, styles and server code. |
+| `packages/lib` | — | Site feature components, data access and server code. |
+| `packages/ui` | — | The design system (`@fkp/ui`): tokens, global styles, UI primitives and stores. |
+| `packages/domain` | — | Pure helpers and types (`@fkp/domain`) shared by every app. |
 | `packages/mdrs` | — | The MDRS engine (`@fkp/mdrs`), used by the web, admin and API apps. |
 
 ### Start Development Servers

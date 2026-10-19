@@ -13,7 +13,7 @@
         Trash
     } from '@lucide/svelte';
     import { supabase } from '#lib/supabase.ts';
-    import { passwordPolicyError } from '#lib/passwordPolicy.ts';
+    import { passwordPolicyError } from '@fkp/domain/passwordPolicy.ts';
     import PasswordGenerator from './PasswordGenerator.svelte';
     import {
         Badge,
@@ -27,9 +27,9 @@
         Input,
         LoadingState,
         toastStore
-    } from '#lib/index.ts';
-    import FormSection from '#lib/layout/FormSection.svelte';
-    import Section from '#lib/layout/Section.svelte';
+    } from '@fkp/ui';
+    import FormSection from '@fkp/ui/layout/FormSection.svelte';
+    import Section from '@fkp/ui/layout/Section.svelte';
     import ActivityTimestamp from './ActivityTimestamp.svelte';
     import DisplaySettings from './DisplaySettings.svelte';
     import type { Factor, PasskeyListItem } from '@supabase/supabase-js';

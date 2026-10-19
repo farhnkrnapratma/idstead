@@ -1,6 +1,6 @@
 import { isSupportedRasterImage } from './imageFormat';
 import { UPLOAD_LIMIT, buildSvg, type ImagePackage } from './siteIdentity';
-import { themeColors } from './themeColors';
+import { themeColors } from '@fkp/ui/themeColors.ts';
 
 export async function processAvatar(
     file: File,

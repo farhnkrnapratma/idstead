@@ -8,28 +8,24 @@
         TopNav,
         TableOfContents,
         HelpfulBlock,
-        Toast,
         ContentActions,
         FooterSection,
-        PageMain,
-        SkipLink,
-        FeedbackButton,
-        ScrollToTopButton,
-        ReadingModeExitButton
+        FeedbackButton
     } from '#lib/index.ts';
+    import { Toast, PageMain, SkipLink, ScrollToTopButton, ReadingModeExitButton } from '@fkp/ui';
     import ArticleHeader from '#lib/article/ArticleHeader.svelte';
     import ArticleMeta from '#lib/article/ArticleMeta.svelte';
-    import { toastStore } from '#lib/stores/toastStore.svelte.ts';
-    import { readingModeStore } from '#lib/stores/readingModeStore.svelte.ts';
+    import { toastStore } from '@fkp/ui/stores/toastStore.svelte.ts';
+    import { readingModeStore } from '@fkp/ui/stores/readingModeStore.svelte.ts';
     import type { HeadingItem } from '@fkp/mdrs';
-    import { formatReadTime } from '#lib/utils/formatters.ts';
-    import { countReadingMinutes } from '#lib/readTime.ts';
+    import { formatReadTime } from '@fkp/domain/formatters.ts';
+    import { countReadingMinutes } from '@fkp/domain/readTime.ts';
     import { enhanceMarkdownContent } from '#lib/utils/markdownEnhancer.ts';
     import { enhanceHeadingAnchors, resolveMdrsHash } from '#lib/utils/headingAnchors.ts';
-    import { highlightAfterScroll } from '#lib/utils/scroll.ts';
+    import { highlightAfterScroll } from '@fkp/ui/utils/scroll.ts';
     import hljs from 'highlight.js';
     import 'katex/dist/katex.min.css';
-    import { contentFontStore } from '#lib/stores/contentFontStore.svelte.ts';
+    import { contentFontStore } from '@fkp/ui/stores/contentFontStore.svelte.ts';
     import { pushState, goto } from '$app/navigation';
     import { page } from '$app/state';
 

@@ -1,6 +1,14 @@
 {
     "extends": "$app/tsconfig",
-    "include": ["src", "test", "*", "../../packages/lib/src", "../../packages/mdrs/src"],
+    "include": [
+        "src",
+        "test",
+        "*",
+        "../../packages/lib/src",
+        "../../packages/mdrs/src",
+        "../../packages/ui/src",
+        "../../packages/domain/src"
+    ],
     "exclude": ["src/service-worker"],
     "compilerOptions": {
         "target": "esnext",

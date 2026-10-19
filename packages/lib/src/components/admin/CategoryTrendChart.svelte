@@ -4,11 +4,11 @@
     import { scaleBand, scaleLinear } from 'd3-scale';
     import { ChartColumnBig, ChartSpline, ChartPie } from '@lucide/svelte';
     import { onMount } from 'svelte';
-    import Chip from '../Chip.svelte';
-    import LoadingState from '../LoadingState.svelte';
-    import ErrorState from '../ErrorState.svelte';
-    import EmptyState from '../EmptyState.svelte';
-    import { cn } from '#lib/utils/cn.ts';
+    import Chip from '@fkp/ui/components/Chip.svelte';
+    import LoadingState from '@fkp/ui/components/LoadingState.svelte';
+    import ErrorState from '@fkp/ui/components/ErrorState.svelte';
+    import EmptyState from '@fkp/ui/components/EmptyState.svelte';
+    import { cn } from '@fkp/ui/utils/cn.ts';
     import { activityDate } from '#lib/adminActivity.ts';
     import { formatCount, hasChartActivity } from '#lib/adminWorkspace.ts';
     import { adminDisplayStore } from '#lib/stores/adminDisplayStore.svelte.ts';
