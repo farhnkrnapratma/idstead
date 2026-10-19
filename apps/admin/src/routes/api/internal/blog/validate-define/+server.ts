@@ -5,7 +5,7 @@ import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { requireAdminAuth } from '#lib/server/adminCv.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { validateDefineForSave } from '@fkp/mdrs';
-import { createMdrsResolvers } from '#lib/mdrsResolvers.ts';
+import { createSupabaseMdrsResolvers } from '#lib/server/mdrsData.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform }) => {
     if (!isSameOriginRequest(request, url)) {
@@ -33,7 +33,7 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
         return apiError(400, 'BLOG_DEFINE_MARKDOWN_REQUIRED', 'Markdown content is required.');
     }
 
-    const apiRegistry = createMdrsResolvers(getSupabaseAdminClient(platform));
+    const apiRegistry = createSupabaseMdrsResolvers(getSupabaseAdminClient(platform));
     const { ok, errors } = await validateDefineForSave(markdown, apiRegistry);
 
     if (!ok) {

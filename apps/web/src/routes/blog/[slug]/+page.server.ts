@@ -1,6 +1,3 @@
-import { publicBannerUrl } from '#lib/blogBanner.ts';
-import { cdnBaseUrl } from '#lib/cdn.ts';
-import { supabase } from '#lib/supabase.ts';
 import { error } from '@sveltejs/kit';
 import {
     renderMarkdown,
@@ -9,10 +6,14 @@ import {
     prefixHashLinks,
     type HeadingItem
 } from '@fkp/mdrs';
-import { fetchPostRender, postRenderPath } from '#lib/server/postRender.ts';
-import { createMdrsResolvers } from '#lib/mdrsResolvers.ts';
+import type { PublishedPost } from '@fkp/data';
+import { publicPostFields } from '@fkp/domain/blog.ts';
 import { estimateReadTime } from '@fkp/domain/readTime.ts';
-import { publicPostFields } from '#lib/publicPost.ts';
+import { parsePostRender } from '#lib/server/postRender.ts';
+import { postReadTime } from '#lib/server/blogPosts.ts';
+import { publicRepositories } from '#lib/server/repositories.ts';
+import { createSupabaseMdrsResolvers } from '#lib/server/mdrsData.ts';
+import { supabase } from '#lib/supabase.ts';
 import type { PageServerLoad } from './$types';
 
 export interface BlogComment {
@@ -50,177 +51,76 @@ function getRelatedWindow<T extends { id: string }>(posts: T[], currentId: strin
 }
 
 export const load: PageServerLoad = async ({ params, fetch }) => {
-    const { slug } = params;
+    const { blog, comments: commentRepository } = publicRepositories(fetch);
 
-    let post;
+    let post: PublishedPost | null;
     try {
-        const { data, error: postError } = await supabase
-            .from('db_posts')
-            .select('*')
-            .eq('slug', slug)
-            .eq('published', true)
-            .single();
-
-        if (postError || !data) {
-            console.error(`Post not found: ${slug}`, postError);
-            throw error(404, 'Blog post not found');
-        }
-        post = data;
-    } catch (err: unknown) {
-        const errorObj = err as { status?: number };
-        if (errorObj && errorObj.status) throw err;
-        console.error(`Database error fetching post: ${slug}`, err);
+        post = await blog.getPublishedBySlug(params.slug);
+    } catch (err) {
+        console.error(`Database error fetching post: ${params.slug}`, err);
         throw error(500, 'Internal Server Error: Could not retrieve post.');
     }
+    if (!post) throw error(404, 'Blog post not found');
 
     let html = '<p class="text-red-500">Error: Could not render post content.</p>';
     let headings: HeadingItem[] = [];
     let readTime = '1 min read';
-    const renderPath = postRenderPath(post.storage_path);
-    const prerendered =
-        renderPath ?
-            await fetchPostRender(
-                supabase.storage.from('blog-posts').getPublicUrl(renderPath).data.publicUrl,
-                fetch
-            )
-        :   null;
+    const storedRender = await blog.readRender(post.source, { timeoutMs: 3000 });
+    const prerendered = storedRender === null ? null : parsePostRender(storedRender);
     if (prerendered) {
         ({ html, headings, readTime } = prerendered);
     } else {
         try {
-            const { data } = supabase.storage.from('blog-posts').getPublicUrl(post.storage_path);
-            const fileRes = await fetch(data.publicUrl, { signal: AbortSignal.timeout(5000) });
-            if (!fileRes.ok) {
-                throw new Error(`Failed to fetch markdown file: ${fileRes.statusText}`);
-            }
-            const markdown = await fileRes.text();
+            const markdown = await blog.readMarkdown(post.source, { timeoutMs: 5000 });
+            if (markdown === null) throw new Error('Failed to fetch markdown file.');
             readTime = estimateReadTime(markdown);
-            const rawHtml = await renderMarkdown(markdown, createMdrsResolvers(supabase));
+            const rawHtml = await renderMarkdown(markdown, createSupabaseMdrsResolvers(supabase));
             html = prefixHashLinks(injectHeadingIds(rawHtml));
             headings = extractHeadings(html);
         } catch (err) {
             console.error('Error fetching/rendering markdown file:', err);
-            if (prerendered) ({ html, headings, readTime } = prerendered);
         }
     }
 
     let comments: BlogComment[] = [];
     try {
-        const { data, error: commentsError } = await supabase
-            .from('db_comments')
-            .select(
-                'id, parent_id, author_name, content, is_anonymous, is_admin, is_approved, created_at'
-            )
-            .eq('post_id', post.id)
-            .eq('is_approved', true)
-            .order('created_at', { ascending: true });
-
-        if (commentsError) {
-            console.error('Error fetching comments:', commentsError);
-        } else {
-            comments = (data || []).map(comment =>
-                comment.is_anonymous ? { ...comment, author_name: 'Anonymous' } : comment
-            );
-        }
+        comments = (await commentRepository.listApproved(post)).map(comment => ({
+            ...comment,
+            author_name: comment.author_name ?? '',
+            is_approved: true
+        }));
     } catch (err) {
-        console.error('Database error fetching comments:', err);
+        console.error('Error fetching comments:', err);
     }
 
     let initialViewsCount = 0;
-    try {
-        const { count } = await supabase
-            .from('db_views')
-            .select('*', { count: 'exact', head: true })
-            .eq('post_id', post.id);
-        initialViewsCount = count ?? 0;
-    } catch (err) {
-        console.error('Error counting post views:', err);
-    }
-
-    const bannerPublicUrl = publicBannerUrl(post, cdnBaseUrl());
-
     let relatedPosts: RelatedPost[] = [];
     try {
-        const { data, error: relatedError } = await supabase
-            .from('db_posts')
-            .select(
-                'id, public_id, title, slug, excerpt, created_at, updated_at, banner_version, storage_path, tags, pinned'
-            )
-            .eq('published', true)
-            .order('created_at', { ascending: false });
-
-        if (relatedError) {
-            console.error('Error fetching related posts:', relatedError);
-        } else if (data) {
-            relatedPosts = await Promise.all(
-                getRelatedWindow(data, post.id).map(async (p: any) => {
-                    const relatedBannerUrl = publicBannerUrl(
-                        { ...p, published: true },
-                        cdnBaseUrl()
-                    );
-
-                    let readTime = '1 min read';
-                    try {
-                        const { data: urlData } = supabase.storage
-                            .from('blog-posts')
-                            .getPublicUrl(p.storage_path);
-                        const fileRes = await fetch(urlData.publicUrl, {
-                            signal: AbortSignal.timeout(3000)
-                        }).catch(() => null);
-                        if (fileRes?.ok) {
-                            readTime = estimateReadTime(await fileRes.text());
-                        }
-                    } catch (err) {
-                        console.error('Error estimating related post read time:', err);
-                    }
-
-                    let commentCount = 0;
-                    try {
-                        const { count } = await supabase
-                            .from('db_comments')
-                            .select('*', { count: 'exact', head: true })
-                            .eq('post_id', p.id)
-                            .eq('is_approved', true);
-                        commentCount = count ?? 0;
-                    } catch (err) {
-                        console.error('Error counting related post comments:', err);
-                    }
-
-                    let viewsCount = 0;
-                    try {
-                        const { count } = await supabase
-                            .from('db_views')
-                            .select('*', { count: 'exact', head: true })
-                            .eq('post_id', p.id);
-                        viewsCount = count ?? 0;
-                    } catch (err) {
-                        console.error('Error counting related post views:', err);
-                    }
-
-                    return {
-                        id: p.public_id,
-                        title: p.title,
-                        slug: p.slug,
-                        excerpt: p.excerpt ?? null,
-                        created_at: p.created_at,
-                        updated_at: p.updated_at ?? null,
-                        bannerPublicUrl: relatedBannerUrl,
-                        read_time: readTime,
-                        comment_count: commentCount,
-                        views_count: viewsCount,
-                        tags: p.tags ?? [],
-                        pinned: p.pinned ?? false
-                    };
-                })
-            );
-        }
+        const { posts } = await blog.listPublishedWithStats();
+        initialViewsCount = posts.find(p => p.id === post.id)?.views_count ?? 0;
+        relatedPosts = await Promise.all(
+            getRelatedWindow(posts, post.id).map(async related => ({
+                id: related.id,
+                title: related.title,
+                slug: related.slug,
+                excerpt: related.excerpt,
+                created_at: related.created_at,
+                updated_at: related.updated_at,
+                bannerPublicUrl: related.banner_url,
+                read_time: await postReadTime(blog, related),
+                comment_count: related.comment_count,
+                views_count: related.views_count,
+                tags: related.tags,
+                pinned: related.pinned
+            }))
+        );
     } catch (err) {
         console.error('Database error fetching related posts:', err);
     }
 
     return {
         post: { ...publicPostFields(post), read_time: readTime },
-        bannerPublicUrl,
+        bannerPublicUrl: post.banner_url,
         html,
         headings,
         comments,

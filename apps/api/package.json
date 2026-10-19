@@ -15,6 +15,7 @@
         "check": "tsc --noEmit -p tsconfig.json"
     },
     "dependencies": {
+        "@fkp/data": "workspace:*",
         "@fkp/domain": "workspace:*",
         "@fkp/lib": "workspace:*",
         "@sentry/cloudflare": "11.6.0",

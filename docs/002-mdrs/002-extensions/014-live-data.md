@@ -46,7 +46,7 @@ I list ${api.v1.author.socials.length} social profiles.
 | `api.v1.blog` | The 20 most recent published posts, newest first. Each has `id` (the public 64-hex ID), `title`, `slug`, `excerpt`, `summary`, `tldr`, `collaborators`, `created_at`, `updated_at` |
 | `api.v1.blog.length` | How many of those posts there are (at most 20) |
 | `api.v1.blog[0].title` | A field of one post |
-| `api.v1.blog["my-post-slug"]` | One published post by slug, with all of its columns (`id` is the public ID) and `content` |
+| `api.v1.blog["my-post-slug"]` | One published post by slug: `id` (the public ID), `title`, `slug`, `pinned`, `created_at`, `updated_at`, `excerpt`, `tags`, `collaborators`, `summary`, `tldr` and `content` |
 
 ```mdrs
 :::define
@@ -56,7 +56,7 @@ post: api.v1.blog["hello-world"]
 Read [${post.title}](/blog/hello-world), first published ${post.created_at}.
 ```
 
-`api.v1.blog["slug"]` reads the post body from the `storage_path` file in Supabase Storage. Posts without a `storage_path` return an empty `content`.
+`api.v1.blog["slug"]` reads the post body from its markdown file in Supabase Storage. Posts without a markdown file return an empty `content`.
 
 ## Rules
 
@@ -71,4 +71,4 @@ Read [${post.title}](/blog/hello-world), first published ${post.created_at}.
 
 Errors render the same `[define error]` marker as other [variables](013-variables.md#errors), and block saving.
 
-Source: `packages/mdrs/src/define/evaluate.ts` (`evaluateReference`, `unavailableResolvers`), `packages/lib/src/mdrsResolvers.ts` (`createMdrsResolvers`, `resolveAuthorPath`, `resolveBlogPath`).
+Source: `packages/mdrs/src/define/evaluate.ts` (`evaluateReference`, `unavailableResolvers`), `packages/lib/src/mdrsResolvers.ts` (`createMdrsResolvers`), `packages/lib/src/server/mdrsData.ts` (`createSupabaseMdrsResolvers`, `supabaseMdrsLoaders`).

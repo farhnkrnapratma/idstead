@@ -22,6 +22,7 @@
     ],
     "dependencies": {
         "@blobatar/svelte": "^2.7.0",
+        "@fkp/data": "workspace:*",
         "@fkp/domain": "workspace:*",
         "@fkp/mdrs": "workspace:*",
         "@fkp/mdrs-ui": "workspace:*",

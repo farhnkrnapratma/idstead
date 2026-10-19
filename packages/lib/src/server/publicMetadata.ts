@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { supabase } from '#lib/supabase.ts';
 import { decodeHtmlEntities } from '@fkp/mdrs';
+import { publicRepositories } from './repositories';
 
 export async function readSiteProfile() {
     const { data, error: failure } = await supabase
@@ -33,6 +34,7 @@ export async function readSiteProfile() {
 }
 
 export async function readPublishedPosts() {
+    const { blog } = publicRepositories();
     const posts: {
         id: string;
         slug: string;
@@ -42,17 +44,24 @@ export async function readPublishedPosts() {
         created_at: string;
         updated_at: string | null;
     }[] = [];
-    for (let offset = 0; ; offset += 500) {
-        const { data, error: failure } = await supabase
-            .from('db_posts')
-            .select('public_id,slug,title,excerpt,summary,created_at,updated_at')
-            .eq('published', true)
-            .order('created_at', { ascending: false })
-            .order('public_id')
-            .range(offset, offset + 499);
-        if (failure) error(503, 'Published content is temporarily unavailable.');
-        posts.push(...(data ?? []).map(({ public_id, ...post }) => ({ ...post, id: public_id })));
-        if (!data || data.length < 500) break;
+    try {
+        for (let offset = 0; ; offset += 500) {
+            const page = await blog.listPublished({ limit: 500, offset });
+            posts.push(
+                ...page.posts.map(post => ({
+                    slug: post.slug,
+                    title: post.title,
+                    excerpt: post.excerpt,
+                    summary: post.summary,
+                    created_at: post.created_at,
+                    updated_at: post.updated_at,
+                    id: post.id
+                }))
+            );
+            if (page.posts.length < 500) break;
+        }
+    } catch {
+        error(503, 'Published content is temporarily unavailable.');
     }
     return posts;
 }

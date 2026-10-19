@@ -105,6 +105,7 @@ API routes authenticate themselves:
 | `/api/internal/admin/openpgp-key` | POST, DELETE | same-origin + `requireAdminAuth`, called inside `processOpenPgpKey()` |
 | `/api/internal/admin/skills` | POST | same-origin + `requireAdminAuth` |
 | `/api/internal/admin/links` | POST | same-origin + `requireAdminAuth` |
+| `/api/internal/admin/mdrs-data` | POST | same-origin + `requireAdminAuth`; returns the `author`, `blog` or one `post` live-data tree for the editor preview |
 | `/api/internal/admin/comments/reply` | POST | same-origin + `requireAdminAuth` |
 | `/api/internal/admin/comments/dismiss-reports` | POST | same-origin + `requireAdminAuth` |
 | `/api/internal/admin/data/export` | GET | same-origin + `requireAdminAuth` |

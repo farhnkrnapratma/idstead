@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { sha256 } from '#lib/blogBanner.ts';
 import type { parsePostInput } from './blogPostInput';
-import { postRenderPath } from './postRenderPath';
+import { postRenderPath } from '@fkp/data';
 
 type Input = Awaited<ReturnType<typeof parsePostInput>>;
 export type PostOperation = {

@@ -1,4 +1,4 @@
-import { supabase } from '#lib/supabase.ts';
+import { publicRepositories } from './repositories';
 import { getLegalPage } from '#lib/server/legalPages.ts';
 import { isValidPostSlug } from '@fkp/domain/slug.ts';
 import { markdownToPlainText } from '@fkp/mdrs';
@@ -25,24 +25,10 @@ function notFound() {
 
 export async function blogDocument(slug: string, format: DocumentFormat, fetchFn: typeof fetch) {
     if (!isValidPostSlug(slug)) return notFound();
-    const { data: post, error } = await supabase
-        .from('db_posts')
-        .select('title, excerpt, storage_path')
-        .eq('slug', slug)
-        .eq('published', true)
-        .maybeSingle();
-    if (error || !post) return notFound();
-
-    let markdown = '';
-    if (post.storage_path) {
-        try {
-            const { data } = supabase.storage.from('blog-posts').getPublicUrl(post.storage_path);
-            const response = await fetchFn(data.publicUrl);
-            if (response.ok) markdown = await response.text();
-        } catch (err) {
-            console.error('Could not read post markdown:', err);
-        }
-    }
+    const { blog } = publicRepositories(fetchFn);
+    const post = await blog.getPublishedBySlug(slug).catch(() => null);
+    if (!post) return notFound();
+    const markdown = (await blog.readMarkdown(post.source)) ?? '';
     const body = markdown || post.excerpt || '';
 
     if (format === 'txt')
