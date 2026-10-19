@@ -211,7 +211,7 @@ erDiagram
 - **`public.is_admin()`** is the RLS predicate for admin writes. See [006-admin-login-mfa.md](006-admin-login-mfa.md#mfa-rule).
 - **Post saves:** `db_prepare_post_operation`, `db_ready_post_operation`, `db_commit_post_operation`. The commit stores `read_time` when the operation data carries one; the admin save route sets it to `countReadingMinutes()` of the final markdown.
 - **Public IDs:** posts and comments carry an immutable 64-hex `public_id` (trigger `db_keep_post_public_id`); page data, the API and the comment and report endpoints use it, never the UUID.
-- **`db_views` exposure:** `anon` can read every column, including the salted daily `ip_hash`, because PostgREST's embedded `db_views(count)` needs table-level `SELECT` (a column grant broke public counts and was reverted by `20261020000000_restore_view_grants`). The move to D1 removes direct table access; until then a fix needs a count view or a separate private table, tested against PostgREST.
+- **`db_views` exposure:** `anon` can read every column, including the salted daily `ip_hash`, because PostgREST's embedded `db_views(count)` needs table-level `SELECT` (a column grant broke public counts and was reverted by `20261020000000_restore_view_grants`). `anon` keeps only `SELECT` (and `DELETE`, which RLS denies); views are written by the service role and `db_increment_view`. The move to D1 removes direct table access; until then a fix needs a count view or a separate private table, tested against PostgREST.
 - **Cleanup claims:** `db_claim_blog_banner_cleanup`, `db_claim_identity_cleanup`.
 - **Saves:** `db_save_cv`, `db_save_links`, `db_save_skills`, `db_save_legal`, `db_save_project_repo_rules`.
 - **Public:** `db_record_page_feedback`.
