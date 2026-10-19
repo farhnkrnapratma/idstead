@@ -104,7 +104,7 @@
                 <Search class="size-4 shrink-0" />
             {:else}
                 <div class="flex min-w-0 items-center gap-2">
-                    <Search class="size-4 shrink-0 lg:hidden" />
+                    <Search class="size-4 shrink-0 lg:text-text-muted" />
                     <span class="sr-only lg:hidden">Search</span>
                     <span class="hidden truncate font-sans text-xs text-text-muted lg:inline"
                         >Search...</span>
