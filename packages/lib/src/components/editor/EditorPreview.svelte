@@ -2,10 +2,10 @@
     import { tick } from 'svelte';
     import type { Attachment } from 'svelte/attachments';
     import hljs from 'highlight.js';
-    import FieldMessage from '../FieldMessage.svelte';
+    import FieldMessage from '@fkp/ui/components/FieldMessage.svelte';
     import { enhanceMarkdownContent } from '#lib/utils/markdownEnhancer.ts';
     import { enhanceHeadingAnchors } from '#lib/utils/headingAnchors.ts';
-    import { contentFontStore } from '#lib/stores/contentFontStore.svelte.ts';
+    import { contentFontStore } from '@fkp/ui/stores/contentFontStore.svelte.ts';
 
     interface Props {
         html: string;

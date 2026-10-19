@@ -2,8 +2,8 @@ import { enhanceCodeBlocks } from './codeBlocks';
 import { enhanceMermaidBlocks } from './mermaid';
 import { enhanceMarkdownCharts } from './markdownCharts';
 import { enhanceMarkdownTabs } from './markdownTabs';
-import { shortcut } from './shortcut.svelte';
-import { focusScope } from './focusScope';
+import { shortcut } from '@fkp/ui/utils/shortcut.svelte.ts';
+import { focusScope } from '@fkp/ui/utils/focusScope.ts';
 import { nextCodeScope } from './codeBlocks';
 
 function enhanceMarkdownDetails(container: ParentNode) {

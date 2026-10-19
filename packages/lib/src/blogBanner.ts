@@ -1,3 +1,6 @@
+import type { ImageSource } from '@fkp/ui/types.ts';
+
+export type { ImageSource };
 export const BANNER_WIDTH = 1280;
 export const BANNER_HEIGHT = 640;
 
@@ -13,11 +16,6 @@ export const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0
 
 export type BannerChange =
     { operation: 'keep' | 'remove' } | { operation: 'replace'; webp: Blob; avif: Blob };
-
-export interface ImageSource {
-    srcset: string;
-    type: string;
-}
 
 export function blogBannerAlt(title: string, excerpt?: string | null) {
     const description = excerpt?.trim();

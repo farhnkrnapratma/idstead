@@ -1,7 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'bun:test';
 
-const globalCss = readFileSync(new URL('../packages/lib/src/global.css', import.meta.url), 'utf8');
+const globalCss = readFileSync(
+    new URL('../packages/ui/src/styles/global.css', import.meta.url),
+    'utf8'
+);
 const appLayout = readFileSync(
     new URL('../apps/web/src/routes/+layout.svelte', import.meta.url),
     'utf8'

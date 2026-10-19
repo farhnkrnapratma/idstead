@@ -16,8 +16,8 @@
     import { curveMonotoneX } from 'd3-shape';
 
     import { EllipsisVertical, Copy } from '@lucide/svelte';
-    import Dropdown from '../Dropdown.svelte';
-    import { toastStore } from '../../stores/toastStore.svelte';
+    import Dropdown from '@fkp/ui/components/Dropdown.svelte';
+    import { toastStore } from '@fkp/ui/stores/toastStore.svelte.ts';
     import {
         ADMIN_CHART_AXIS_CLASSES,
         ADMIN_CHART_PADDING,
@@ -409,7 +409,7 @@
 </div>
 
 <style>
-    @reference "../../global.css";
+    @reference "@fkp/ui/styles/global.css";
 
     :global(.lc-axis-label, .lc-axis-tick-label) {
         @apply stroke-none! [stroke-width:0]!;

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import Badge from '../Badge.svelte';
+    import Badge from '@fkp/ui/components/Badge.svelte';
     import { isFeedbackActivity } from '#lib/adminActivity.ts';
     import { activityTone, activityToneStyles } from './activityTone';
 

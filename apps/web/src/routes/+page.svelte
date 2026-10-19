@@ -1,6 +1,6 @@
 <script lang="ts">
-    import Tag from '#lib/components/Tag.svelte';
-    import { FieldValidation, requiredText, emailError } from '#lib/fieldValidation.ts';
+    import Tag from '@fkp/ui/components/Tag.svelte';
+    import { FieldValidation, requiredText, emailError } from '@fkp/domain/fieldValidation.ts';
     import {
         avatarSources,
         avatarWebpSource,
@@ -31,22 +31,32 @@
         FileUser,
         Layers
     } from '@lucide/svelte';
-    import { isNameReserved, extractAuthorNameTokens } from '#lib/utils/nameValidator.ts';
+    import { isNameReserved, extractAuthorNameTokens } from '@fkp/domain/nameValidator.ts';
     import {
         LinkGridSection,
+        SpotlightSearch,
+        BottomNav,
+        CvEntryCard,
+        FooterSection,
+        SkillGroup,
+        SubscribeForm,
+        ConsentNotice,
+        BlogPostCard,
+        ProfileCard,
+        QrCodeDialog,
+        CvDownloadMenu
+    } from '#lib/index.ts';
+    import {
         Card,
         ShinyText,
         SkipLink,
         ImageWithSkeleton,
-        SpotlightSearch,
-        BottomNav,
         FormField,
         Input,
         Textarea,
         Button,
         EmptyState,
         Tooltip,
-        CvEntryCard,
         FilterToolbar,
         FilterChipGroup,
         Dropdown,
@@ -56,23 +66,15 @@
         Pagination,
         toastStore,
         createFilterSortStore,
-        FooterSection,
         PageMain,
         ThemeSelect,
-        SkillGroup,
-        decodeHtmlEntities,
-        Section,
-        SubscribeForm,
         PageContainer,
-        ConsentNotice,
-        BlogPostCard,
-        ProfileCard,
-        QrCodeDialog,
-        CvDownloadMenu,
         staggerChildren,
         withViewTransition
-    } from '#lib/index.ts';
-    import { buttonKey, argKey, sectionCommandKey } from '#lib/shortcuts.ts';
+    } from '@fkp/ui';
+    import { decodeHtmlEntities } from '@fkp/mdrs';
+    import { Section } from '@fkp/ui';
+    import { buttonKey, argKey, sectionCommandKey } from '@fkp/ui/shortcuts.ts';
     import { goto } from '$app/navigation';
     import { resolve } from '$app/paths';
     import { page } from '$app/state';
@@ -82,16 +84,16 @@
         normalizeSkillGroups,
         type SkillGroup as SkillGroupData
     } from '#lib/profilePageHelpers.ts';
-    import { themeStore } from '#lib/stores/themeStore.svelte.ts';
-    import { pluralize } from '#lib/utils/pluralize.ts';
-    import AccessibilitySelect from '#lib/components/filter/AccessibilitySelect.svelte';
+    import { themeStore } from '@fkp/ui/stores/themeStore.svelte.ts';
+    import { pluralize } from '@fkp/domain/pluralize.ts';
+    import AccessibilitySelect from '@fkp/ui/components/filter/AccessibilitySelect.svelte';
     import {
         turnstileWidget,
         executeTurnstile,
         resetTurnstile,
         turnstileSiteKey
     } from '#lib/utils/turnstile.ts';
-    import type { Project } from '#lib/types.ts';
+    import type { Project } from '@fkp/domain/types.ts';
 
     let { data } = $props();
 

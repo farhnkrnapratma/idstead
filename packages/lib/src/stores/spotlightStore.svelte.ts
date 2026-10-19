@@ -1,7 +1,7 @@
 import type { Component } from 'svelte';
-import type { Project } from '#lib/types.ts';
-import { COMMAND_SHORTCUTS } from '#lib/shortcuts.ts';
-import { shortcutStore } from './shortcutStore.svelte';
+import type { Project } from '@fkp/domain/types.ts';
+import { COMMAND_SHORTCUTS } from '@fkp/ui/shortcuts.ts';
+import { shortcutStore } from '@fkp/ui/stores/shortcutStore.svelte.ts';
 
 export interface SpotlightDialogApi {
     open(initialQuery?: string): void;

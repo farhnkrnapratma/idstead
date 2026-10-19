@@ -3,7 +3,7 @@ import {
     classifyDevice,
     DESKTOP_MIN_LONG_SIDE,
     TABLET_MIN_SHORT_SIDE
-} from '../packages/lib/src/deviceClass.ts';
+} from '../packages/ui/src/deviceClass.ts';
 
 describe('classifyDevice', () => {
     test('touch-primary screens split into phone and tablet by their short side', () => {

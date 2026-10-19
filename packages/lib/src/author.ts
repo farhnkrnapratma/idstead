@@ -1,4 +1,4 @@
-import { decodeHtmlEntities } from '#lib/utils/formatters.ts';
+import { decodeHtmlEntities } from '@fkp/mdrs';
 import { CV_CHECKSUM_ALGORITHMS, type CvChecksums } from '#lib/cvVerification.ts';
 import { isFingerprint, safeKeyserverUrl, type PublicOpenPgpKey } from '#lib/openpgpKey.ts';
 

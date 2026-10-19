@@ -45,17 +45,17 @@ describe('Admin keyboard shortcuts', () => {
     });
 
     test('a disabled store and action never listen or register', () => {
-        const store = read('packages/lib/src/stores/shortcutStore.svelte.ts');
+        const store = read('packages/ui/src/stores/shortcutStore.svelte.ts');
         expect(store).toContain("if (disabled) return '';");
         expect(store).toContain('if (disabled || listening ||');
-        expect(read('packages/lib/src/utils/shortcut.svelte.ts')).toContain(
+        expect(read('packages/ui/src/utils/shortcut.svelte.ts')).toContain(
             '!shortcutStore.enabled ||'
         );
     });
 
     test('the shared catalog keeps no admin-only section or chord group', () => {
-        expect(read('packages/lib/src/shortcuts.ts')).not.toContain('sidebar:');
-        const catalog = read('packages/lib/src/shortcutCatalog.ts');
+        expect(read('packages/ui/src/shortcuts.ts')).not.toContain('sidebar:');
+        const catalog = read('packages/ui/src/shortcutCatalog.ts');
         expect(catalog).not.toContain("'admin'");
         expect(catalog).not.toContain('adminPage');
     });

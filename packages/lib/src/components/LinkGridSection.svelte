@@ -1,13 +1,13 @@
 <script lang="ts">
     import type { Component } from 'svelte';
     import { SquareArrowOutUpRight, Inbox } from '@lucide/svelte';
-    import SectionHeader from './SectionHeader.svelte';
-    import EmptyState from './EmptyState.svelte';
+    import SectionHeader from '@fkp/ui/components/SectionHeader.svelte';
+    import EmptyState from '@fkp/ui/components/EmptyState.svelte';
     import BrandIcon from './BrandIcon.svelte';
-    import Section from '../layout/Section.svelte';
-    import PageContainer from '../layout/PageContainer.svelte';
-    import { cn } from '../utils/cn';
-    import { shortcut } from '../utils/shortcut.svelte';
+    import Section from '@fkp/ui/layout/Section.svelte';
+    import PageContainer from '@fkp/ui/layout/PageContainer.svelte';
+    import { cn } from '@fkp/ui/utils/cn.ts';
+    import { shortcut } from '@fkp/ui/utils/shortcut.svelte.ts';
 
     interface GridItem {
         label: string;

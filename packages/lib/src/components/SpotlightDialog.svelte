@@ -90,21 +90,21 @@
         PersonStanding,
         Rocket
     } from '@lucide/svelte';
-    import { portal } from '../utils/actions';
-    import { cn } from '../utils/cn';
-    import ShortcutBadge from './ShortcutBadge.svelte';
-    import CommandSectionHeading from './CommandSectionHeading.svelte';
-    import { SHORTCUT_SECTIONS, commandSection } from '#lib/shortcutCatalog.ts';
-    import { shortcutStore } from '../stores/shortcutStore.svelte';
-    import { CATALOG_KEY, COMMAND_SHORTCUTS } from '#lib/shortcuts.ts';
-    import { lockScroll, scrollToTop, scrollToBottom } from '../utils/scroll';
+    import { portal } from '@fkp/ui/utils/actions.ts';
+    import { cn } from '@fkp/ui/utils/cn.ts';
+    import ShortcutBadge from '@fkp/ui/components/ShortcutBadge.svelte';
+    import CommandSectionHeading from '@fkp/ui/components/CommandSectionHeading.svelte';
+    import { SHORTCUT_SECTIONS, commandSection } from '@fkp/ui/shortcutCatalog.ts';
+    import { shortcutStore } from '@fkp/ui/stores/shortcutStore.svelte.ts';
+    import { CATALOG_KEY, COMMAND_SHORTCUTS } from '@fkp/ui/shortcuts.ts';
+    import { lockScroll, scrollToTop, scrollToBottom } from '@fkp/ui/utils/scroll.ts';
     import ShareDialog from './ShareDialog.svelte';
-    import Button from '../components/Button.svelte';
+    import Button from '@fkp/ui/components/Button.svelte';
     import QrCodeDialog from './QrCodeDialog.svelte';
-    import { themeStore } from '../stores/themeStore.svelte';
-    import { toastStore } from '../stores/toastStore.svelte';
-    import { a11yStore, type FontScale } from '../stores/a11yStore.svelte';
-    import { contentFontStore, type ContentFont } from '../stores/contentFontStore.svelte';
+    import { themeStore } from '@fkp/ui/stores/themeStore.svelte.ts';
+    import { toastStore } from '@fkp/ui/stores/toastStore.svelte.ts';
+    import { a11yStore, type FontScale } from '@fkp/ui/stores/a11yStore.svelte.ts';
+    import { contentFontStore, type ContentFont } from '@fkp/ui/stores/contentFontStore.svelte.ts';
     import {
         searchHistoryStore,
         type SearchHistoryEntry
@@ -112,7 +112,7 @@
     import { codeBlockPrefsStore } from '../stores/codeBlockPrefsStore.svelte';
     import { refreshCodeBlockPrefs, type CodeColorScheme } from '../utils/codeBlocks';
     import { consentStore } from '../stores/consentStore.svelte';
-    import { readingModeStore } from '../stores/readingModeStore.svelte';
+    import { readingModeStore } from '@fkp/ui/stores/readingModeStore.svelte.ts';
 
     type ItemCategory =
         | 'pages'
@@ -3762,7 +3762,7 @@
     onClose={() => (mailingRequest = null)} />
 
 <style>
-    @reference "../global.css";
+    @reference "@fkp/ui/styles/global.css";
 
     .search-input::-webkit-search-cancel-button,
     .search-input::-webkit-search-decoration,

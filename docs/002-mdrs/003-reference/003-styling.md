@@ -41,7 +41,7 @@ The sanitizer enforces the contract: on any element, a `class` token survives on
 
 ## Default stylesheet
 
-The defaults live in `packages/lib/src/mdrs.css`, imported by `global.css`. Every rule sits in Tailwind's `base` cascade layer, the lowest one. Any later layer (`components`, `utilities`) and any unlayered CSS therefore wins without a specificity fight:
+The defaults live in `packages/lib/src/mdrs.css`, imported by `packages/lib/src/global.css` after the design system's styles. Every rule sits in Tailwind's `base` cascade layer, the lowest one. Any later layer (`components`, `utilities`) and any unlayered CSS therefore wins without a specificity fight:
 
 ```css
 .mdrs-alert--note {

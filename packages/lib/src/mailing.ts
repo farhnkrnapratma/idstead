@@ -1,4 +1,4 @@
-import { emailError } from './fieldValidation';
+import { emailError } from '@fkp/domain/fieldValidation.ts';
 
 export type MailingAction = 'subscribe' | 'unsubscribe';
 export type MailingCommand = { action: MailingAction; email: string };

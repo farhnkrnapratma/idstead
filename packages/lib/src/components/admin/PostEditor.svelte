@@ -1,9 +1,9 @@
 <script lang="ts">
-    import { FieldValidation, requiredText } from '#lib/fieldValidation.ts';
+    import { FieldValidation, requiredText } from '@fkp/domain/fieldValidation.ts';
     import { mdrsContent } from '#lib/mdrsValidation.ts';
     import { renderMdrsPreview } from '#lib/mdrsPreview.ts';
     import { supabase } from '#lib/supabase.ts';
-    import { slugifyTitle } from '#lib/slug.ts';
+    import { slugifyTitle } from '@fkp/domain/slug.ts';
     import { processContentImage } from '#lib/processContentImage.ts';
     import { onDestroy, onMount } from 'svelte';
     import {
@@ -14,12 +14,12 @@
         FieldMessage,
         Input,
         Textarea,
-        MarkdownEditor,
         ConfirmationDialog,
         toastStore,
-        PillInput,
-        decodeHtmlEntities
-    } from '#lib/index.ts';
+        PillInput
+    } from '@fkp/ui';
+    import { MarkdownEditor } from '#lib/index.ts';
+    import { decodeHtmlEntities } from '@fkp/mdrs';
     import { Mail } from '@lucide/svelte';
     import { importPostDocument, MAX_DOCUMENT_LENGTH, type ImportedPost } from '@fkp/mdrs';
     import BannerImageUpload from '#lib/components/BannerImageUpload.svelte';

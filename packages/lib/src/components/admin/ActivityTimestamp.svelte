@@ -2,9 +2,9 @@
     import { activityTimestamp, activityTimeZone } from '#lib/adminActivity.ts';
     import { isRelativeTimestamp } from '#lib/adminDateFormat.ts';
     import { adminDisplayStore } from '#lib/stores/adminDisplayStore.svelte.ts';
-    import { formatRelativeTime } from '#lib/utils/formatters.ts';
-    import RelativeTime from '../RelativeTime.svelte';
-    import { cn } from '#lib/utils/cn.ts';
+    import { formatRelativeTime } from '@fkp/domain/formatters.ts';
+    import RelativeTime from '@fkp/ui/components/RelativeTime.svelte';
+    import { cn } from '@fkp/ui/utils/cn.ts';
     let {
         date,
         timeZone,

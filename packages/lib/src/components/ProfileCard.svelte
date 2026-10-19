@@ -1,12 +1,12 @@
 <script lang="ts">
     import type { Snippet } from 'svelte';
     import { AudioLines, BadgeCheck, MapPin, QrCode } from '@lucide/svelte';
-    import type { ImageSource } from '../blogBanner';
-    import { cn } from '../utils/cn';
+    import type { ImageSource } from '@fkp/ui/types.ts';
+    import { cn } from '@fkp/ui/utils/cn.ts';
 
     import BrandIcon from './BrandIcon.svelte';
-    import IconButton from './IconButton.svelte';
-    import ImageWithSkeleton from './ImageWithSkeleton.svelte';
+    import IconButton from '@fkp/ui/components/IconButton.svelte';
+    import ImageWithSkeleton from '@fkp/ui/components/ImageWithSkeleton.svelte';
 
     interface SocialLink {
         url: string;

@@ -1,6 +1,6 @@
 <script lang="ts">
     import { tick } from 'svelte';
-    import { cn } from '#lib/utils/cn.ts';
+    import { cn } from '@fkp/ui/utils/cn.ts';
     import { splitHighlightedHtmlLines } from '#lib/utils/codeBlocks.ts';
     import { highlightMarkdown } from './highlight';
     import type { EditorPreferences } from './preferences.svelte';

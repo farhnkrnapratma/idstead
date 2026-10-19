@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { Component } from 'svelte';
-    import { cn } from '../utils/cn';
+    import { cn } from '@fkp/ui/utils/cn.ts';
     import { normalizeIconInput, parseLucideTag } from '../author';
 
     interface Props {

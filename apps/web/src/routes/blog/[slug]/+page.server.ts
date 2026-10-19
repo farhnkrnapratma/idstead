@@ -11,7 +11,7 @@ import {
 } from '@fkp/mdrs';
 import { fetchPostRender, postRenderPath } from '#lib/server/postRender.ts';
 import { createMdrsResolvers } from '#lib/mdrsResolvers.ts';
-import { estimateReadTime } from '#lib/readTime.ts';
+import { estimateReadTime } from '@fkp/domain/readTime.ts';
 import { publicPostFields } from '#lib/publicPost.ts';
 import type { PageServerLoad } from './$types';
 

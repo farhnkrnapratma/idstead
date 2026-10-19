@@ -7,7 +7,7 @@
         ChevronsUpDown,
         ChevronsDownUp
     } from '@lucide/svelte';
-    import { cn } from '../utils/cn';
+    import { cn } from '@fkp/ui/utils/cn.ts';
 
     interface HeadingItem {
         id: string;
@@ -330,7 +330,7 @@
 {/if}
 
 <style>
-    @reference "../global.css";
+    @reference "@fkp/ui/styles/global.css";
 
     :global(nav[aria-label='Table of contents'] code),
     :global(details.mdrs-details code) {

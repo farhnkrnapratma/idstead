@@ -1,12 +1,12 @@
 import hljs from 'highlight.js';
 import { codeBlockPrefsStore } from '../stores/codeBlockPrefsStore.svelte';
-import { readingModeStore } from '../stores/readingModeStore.svelte';
+import { readingModeStore } from '@fkp/ui/stores/readingModeStore.svelte.ts';
 import { getDownloadFilename, sanitizeFilename } from './codeBlockExtensions';
-import { cn } from './cn';
+import { cn } from '@fkp/ui/utils/cn.ts';
 import { createCodeScrollbar } from './codeScrollbar';
-import { shortcut, type ShortcutParams } from './shortcut.svelte';
-import { focusScope } from './focusScope';
-import { argKey } from '#lib/shortcuts.ts';
+import { shortcut, type ShortcutParams } from '@fkp/ui/utils/shortcut.svelte.ts';
+import { focusScope } from '@fkp/ui/utils/focusScope.ts';
+import { argKey } from '@fkp/ui/shortcuts.ts';
 
 let codeScopeSeq = 0;
 

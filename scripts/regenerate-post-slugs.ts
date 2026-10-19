@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { planSlugRegeneration } from '../packages/lib/src/slug';
+import { planSlugRegeneration } from '../packages/domain/src/slug';
 
 const mode = Bun.argv.slice(2).find(arg => !arg.startsWith('--')) ?? 'dry-run';
 if (!['dry-run', 'apply'].includes(mode))

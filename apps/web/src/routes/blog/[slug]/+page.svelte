@@ -1,23 +1,23 @@
 <script lang="ts">
-    import Avatar from '#lib/components/Avatar.svelte';
+    import Avatar from '@fkp/ui/components/Avatar.svelte';
     import { COMMENTS_PAGE_SIZE, commentAuthorName } from '#lib/commentAuthor.ts';
     import { blogBannerAlt } from '#lib/blogBanner.ts';
     import { createFeedbackClient } from '#lib/feedbackClient.svelte.ts';
-    import { shortcut } from '#lib/utils/shortcut.svelte.ts';
-    import { buttonKey } from '#lib/shortcuts.ts';
-    import { focusScope } from '#lib/utils/focusScope.ts';
-    import { FieldValidation, requiredText } from '#lib/fieldValidation.ts';
+    import { shortcut } from '@fkp/ui/utils/shortcut.svelte.ts';
+    import { buttonKey } from '@fkp/ui/shortcuts.ts';
+    import { focusScope } from '@fkp/ui/utils/focusScope.ts';
+    import { FieldValidation, requiredText } from '@fkp/domain/fieldValidation.ts';
     import { onMount, onDestroy, tick, untrack } from 'svelte';
     import { fade } from 'svelte/transition';
     import { MessageCircle } from '@lucide/svelte';
     import type { PageProps } from './$types';
     import type { BlogComment } from './+page.server';
     import hljs from 'highlight.js';
-    import { isNameReserved, extractAuthorNameTokens } from '#lib/utils/nameValidator.ts';
+    import { isNameReserved, extractAuthorNameTokens } from '@fkp/domain/nameValidator.ts';
     import { enhanceMarkdownContent } from '#lib/utils/markdownEnhancer.ts';
     import { enhanceHeadingAnchors, resolveMdrsHash } from '#lib/utils/headingAnchors.ts';
     import { refreshCodeBlockPrefs } from '#lib/utils/codeBlocks.ts';
-    import { highlightAfterScroll } from '#lib/utils/scroll.ts';
+    import { highlightAfterScroll } from '@fkp/ui/utils/scroll.ts';
     import 'katex/dist/katex.min.css';
     import {
         turnstileWidget,
@@ -27,23 +27,27 @@
     } from '#lib/utils/turnstile.ts';
     import {
         SkipLink,
-        TopNav,
         Button,
-        BlogPostCard,
-        CommentThread,
         EmptyState,
         StatusBanner,
         FormField,
         Input,
         Textarea,
-        FooterSection,
         PageMain,
-        TableOfContents,
         RelativeTime,
-        ContentActions,
         toastStore,
-        formatReadTime,
         Dialog,
+        readingModeStore,
+        ScrollToTopButton,
+        ReadingModeExitButton
+    } from '@fkp/ui';
+    import {
+        TopNav,
+        BlogPostCard,
+        CommentThread,
+        FooterSection,
+        TableOfContents,
+        ContentActions,
         ReportCommentDialog,
         ArticleHeader,
         ShareDialog,
@@ -53,14 +57,12 @@
         SubscribeForm,
         PostInsights,
         ConsentNotice,
-        readingModeStore,
-        ScrollToTopButton,
-        FeedbackButton,
-        ReadingModeExitButton
+        FeedbackButton
     } from '#lib/index.ts';
+    import { formatReadTime } from '@fkp/domain';
     import { pushState } from '$app/navigation';
     import { page, navigating } from '$app/state';
-    import { contentFontStore } from '#lib/stores/contentFontStore.svelte.ts';
+    import { contentFontStore } from '@fkp/ui/stores/contentFontStore.svelte.ts';
     import { codeBlockPrefsStore } from '#lib/stores/codeBlockPrefsStore.svelte.ts';
 
     let { data }: PageProps = $props();

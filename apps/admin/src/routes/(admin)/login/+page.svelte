@@ -1,22 +1,14 @@
 <script lang="ts">
-    import { FieldValidation, requiredText, emailError } from '#lib/fieldValidation.ts';
+    import { FieldValidation, requiredText, emailError } from '@fkp/domain/fieldValidation.ts';
     import { page } from '$app/state';
     import { clearLocalAdminSession, inspectAdminAuth } from '#lib/adminAuthState.ts';
     import { supabase } from '#lib/supabase.ts';
     import { onDestroy, onMount } from 'svelte';
     import { ShieldUser, ArrowLeft, Eye, EyeOff, FingerprintPattern } from '@lucide/svelte';
-    import {
-        Card,
-        FormField,
-        Input,
-        Button,
-        IconButton,
-        SkipLink,
-        ThemeSelect,
-        getSafeRedirectUrl
-    } from '#lib/index.ts';
-    import { themeStore } from '#lib/stores/themeStore.svelte.ts';
-    import { toastStore } from '#lib/stores/toastStore.svelte.ts';
+    import { Card, FormField, Input, Button, IconButton, SkipLink, ThemeSelect } from '@fkp/ui';
+    import { getSafeRedirectUrl } from '@fkp/domain';
+    import { themeStore } from '@fkp/ui/stores/themeStore.svelte.ts';
+    import { toastStore } from '@fkp/ui/stores/toastStore.svelte.ts';
     import {
         turnstileWidget,
         executeTurnstile,

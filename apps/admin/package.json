@@ -18,8 +18,10 @@
         "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --diagnostic-sources \"js,svelte\""
     },
     "dependencies": {
+        "@fkp/domain": "workspace:*",
         "@fkp/lib": "workspace:*",
         "@fkp/mdrs": "workspace:*",
+        "@fkp/ui": "workspace:*",
         "@lucide/svelte": "^1.55.0",
         "@sentry/cloudflare": "11.6.0",
         "@sentry/sveltekit": "^11.6.0",

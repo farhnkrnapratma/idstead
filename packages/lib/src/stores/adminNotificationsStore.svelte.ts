@@ -8,7 +8,7 @@ import type {
     InboxPreferences,
     InboxResult
 } from '#lib/adminActivity.ts';
-import { toastStore } from './toastStore.svelte';
+import { toastStore } from '@fkp/ui/stores/toastStore.svelte.ts';
 
 const defaults: InboxPreferences = {
     query: '',

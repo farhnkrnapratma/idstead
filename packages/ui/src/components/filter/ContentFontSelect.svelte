@@ -1,0 +1,221 @@
+<script lang="ts">
+    import { buttonKey } from '../../shortcuts.ts';
+    import { CaseSensitive, Circle, CircleDot } from '@lucide/svelte';
+    import { cn } from '../../utils/cn';
+    import { popoverPosition } from '../../utils/popoverPosition';
+    import IconButton from '../IconButton.svelte';
+    import ShortcutBadge from '../ShortcutBadge.svelte';
+    import { contentFontStore, type ContentFont } from '../../stores/contentFontStore.svelte';
+
+    interface Props {
+        class?: string;
+        dropdownDirection?: 'up' | 'down';
+    }
+
+    let { class: className = '', dropdownDirection = 'down' }: Props = $props();
+
+    let isOpen = $state(false);
+    let hoveredFont = $state<ContentFont | null>(null);
+
+    const fontOptions: { value: ContentFont; label: string; fontClass: string }[] = [
+        { value: 'sans', label: 'Sans serif', fontClass: 'font-sans' },
+        { value: 'serif', label: 'Serif', fontClass: 'font-serif' },
+        { value: 'mono', label: 'Monospace', fontClass: 'font-mono' }
+    ];
+
+    const previewFontClass = $derived(
+        fontOptions.find(o => o.value === (hoveredFont ?? contentFontStore.current))?.fontClass
+            ?? 'font-sans'
+    );
+
+    let containerRef: HTMLDivElement | undefined = $state();
+
+    function close() {
+        isOpen = false;
+    }
+
+    function handleWindowPointerDown(event: PointerEvent) {
+        if (isOpen && containerRef && !containerRef.contains(event.target as Node)) {
+            close();
+        }
+    }
+
+    function handleKeydown(event: KeyboardEvent) {
+        if (!isOpen) return;
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            close();
+            return;
+        }
+        if (contentFontStore.locked) return;
+        if (event.ctrlKey || event.metaKey || event.altKey) return;
+        const index = Number(event.key) - 1;
+        if (Number.isInteger(index) && index >= 0 && index < fontOptions.length) {
+            event.preventDefault();
+            contentFontStore.setFont(fontOptions[index].value);
+        }
+    }
+</script>
+
+<svelte:window
+    onpointerdown={handleWindowPointerDown}
+    onkeydown={handleKeydown} />
+
+<div
+    class={cn(
+        'items-center gap-2 select-none',
+        isOpen ? 'z-60' : 'z-20',
+        className.includes('hidden') ? className : `inline-flex ${className}`
+    )}>
+    <div
+        bind:this={containerRef}
+        class="relative inline-block">
+        <IconButton
+            ariaLabel="Reading Font"
+            keyboardShortcut={buttonKey('contentFont')}
+            shortcutLabel="Reading font"
+            tooltip="Reading font"
+            tooltipPlacement={dropdownDirection === 'up' ? 'top' : 'bottom'}
+            tooltipAlign="right"
+            size="sm"
+            aria-haspopup="true"
+            aria-expanded={isOpen}
+            onclick={() => (isOpen = !isOpen)}
+            class={cn(
+                'border-border-subtle bg-surface backdrop-blur-none hover:border-accent hover:bg-surface-hover sm:h-9 sm:w-9',
+                isOpen && 'border-accent text-accent-text'
+            )}>
+            <CaseSensitive class="size-4" />
+        </IconButton>
+
+        {#if isOpen}
+            <button
+                type="button"
+                class="fixed inset-0 z-65 cursor-default"
+                onclick={close}
+                aria-label="Close reading font settings"></button>
+
+            <div
+                use:popoverPosition={{
+                    placement: dropdownDirection === 'up' ? 'top-end' : 'bottom-end',
+                    offset: 8,
+                    padding: 8
+                }}
+                class={cn(
+                    'absolute z-70 flex w-72 max-w-[calc(100vw-1.5rem)] flex-col gap-2.5 popover-surface p-3'
+                )}>
+                <div class="relative z-10 flex flex-col gap-2.5">
+                    <div class="flex items-center justify-between gap-2">
+                        <p
+                            class="text-2xs font-semibold tracking-wider text-text-muted uppercase"
+                            id="content-font-heading">
+                            Reading Font
+                        </p>
+                        <button
+                            type="button"
+                            onclick={contentFontStore.reset}
+                            aria-disabled={contentFontStore.locked}
+                            class={cn(
+                                'text-2xs font-semibold text-text-muted underline-offset-2',
+                                contentFontStore.locked ?
+                                    'cursor-not-allowed opacity-50'
+                                :   'cursor-pointer hover:text-accent-text hover:underline'
+                            )}>
+                            Reset to default
+                        </button>
+                    </div>
+
+                    {#if contentFontStore.locked}
+                        <p
+                            id="content-font-locked"
+                            class="rounded-md border border-border-subtle bg-surface px-2.5 py-2 text-2xs text-text-muted">
+                            Locked while the dyslexic-friendly font is on.
+                        </p>
+                    {/if}
+
+                    <div
+                        class="flex flex-col gap-1.5"
+                        role="radiogroup"
+                        aria-labelledby="content-font-heading"
+                        aria-describedby={contentFontStore.locked ? 'content-font-locked' : (
+                            undefined
+                        )}>
+                        {#each fontOptions as option, index (option.value)}
+                            {@const selected = contentFontStore.current === option.value}
+                            <button
+                                type="button"
+                                role="radio"
+                                aria-checked={selected}
+                                aria-disabled={contentFontStore.locked}
+                                aria-keyshortcuts={contentFontStore.locked ? undefined : (
+                                    String(index + 1)
+                                )}
+                                onclick={() => contentFontStore.setFont(option.value)}
+                                onmouseenter={() => (hoveredFont = option.value)}
+                                onmouseleave={() => (hoveredFont = null)}
+                                class={cn(
+                                    'group flex items-center justify-between gap-2.5 rounded-md border px-2.5 py-2 text-left transition-colors',
+                                    contentFontStore.locked ?
+                                        'cursor-not-allowed opacity-50'
+                                    :   'cursor-pointer',
+                                    selected ?
+                                        'border-accent bg-accent/10 text-accent-text'
+                                    :   cn(
+                                            'border-border-subtle bg-surface text-text-secondary',
+                                            !contentFontStore.locked
+                                                && 'hover:border-accent/50 hover:text-text-primary'
+                                        )
+                                )}>
+                                <span
+                                    class="flex items-center gap-1.5 text-xs font-medium {option.fontClass}">
+                                    {option.label}
+                                    {#if !contentFontStore.locked}
+                                        <ShortcutBadge
+                                            combo={String(index + 1)}
+                                            class="opacity-0 transition-opacity group-hover:opacity-100" />
+                                    {/if}
+                                </span>
+                                <span
+                                    class="relative flex size-4 shrink-0 items-center justify-center">
+                                    <Circle
+                                        class={cn(
+                                            'absolute size-4 transition-all duration-200',
+                                            selected ? 'scale-0 opacity-0' : (
+                                                'scale-100 text-text-muted opacity-100 group-hover:text-text-secondary'
+                                            )
+                                        )} />
+                                    <CircleDot
+                                        class={cn(
+                                            'absolute size-4 transition-all duration-200',
+                                            selected ?
+                                                'scale-100 text-accent-text opacity-100'
+                                            :   'scale-0 opacity-0'
+                                        )} />
+                                </span>
+                            </button>
+                        {/each}
+                    </div>
+
+                    <div class="flex flex-col gap-1.5">
+                        <p class="text-2xs font-semibold tracking-wider text-text-muted uppercase">
+                            Preview
+                        </p>
+                        <div class="rounded-md border border-border-subtle bg-surface px-2.5 py-2">
+                            <span
+                                class={cn(
+                                    'text-xs wrap-break-word whitespace-normal',
+                                    previewFontClass
+                                )}>
+                                Everyone has the right to freedom of thought, conscience and
+                                religion; this right includes freedom to change his religion or
+                                belief, and freedom, either alone or in community with others and in
+                                public or private, to manifest his religion or belief in teaching,
+                                practice, worship and observance.
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {/if}
+    </div>
+</div>

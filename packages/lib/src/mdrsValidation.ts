@@ -1,5 +1,5 @@
 import { supabase } from '#lib/supabase.ts';
-import { requiredText } from '#lib/fieldValidation.ts';
+import { requiredText } from '@fkp/domain/fieldValidation.ts';
 
 const VALIDATE_ENDPOINT = '/api/internal/blog/validate-define';
 const MAX_SHOWN_ERRORS = 3;

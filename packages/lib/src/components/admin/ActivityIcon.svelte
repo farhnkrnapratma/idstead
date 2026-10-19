@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { cn } from '#lib/utils/cn.ts';
+    import { cn } from '@fkp/ui/utils/cn.ts';
     import { activityTone, activityToneStyles } from './activityTone';
 
     let {

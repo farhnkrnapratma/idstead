@@ -1,15 +1,15 @@
 <script lang="ts">
     import SpotlightSearch from './SpotlightSearch.svelte';
-    import ThemeSelect from './filter/ThemeSelect.svelte';
-    import ContentFontSelect from './filter/ContentFontSelect.svelte';
-    import AccessibilitySelect from './filter/AccessibilitySelect.svelte';
-    import ReadingOptionsMenu from './filter/ReadingOptionsMenu.svelte';
-    import IconButton from './IconButton.svelte';
-    import { shortcut } from '../utils/shortcut.svelte';
-    import { buttonKey } from '#lib/shortcuts.ts';
-    import { themeStore } from '../stores/themeStore.svelte';
+    import ThemeSelect from '@fkp/ui/components/filter/ThemeSelect.svelte';
+    import ContentFontSelect from '@fkp/ui/components/filter/ContentFontSelect.svelte';
+    import AccessibilitySelect from '@fkp/ui/components/filter/AccessibilitySelect.svelte';
+    import ReadingOptionsMenu from '@fkp/ui/components/filter/ReadingOptionsMenu.svelte';
+    import IconButton from '@fkp/ui/components/IconButton.svelte';
+    import { shortcut } from '@fkp/ui/utils/shortcut.svelte.ts';
+    import { buttonKey } from '@fkp/ui/shortcuts.ts';
+    import { themeStore } from '@fkp/ui/stores/themeStore.svelte.ts';
     import { ArrowLeft, BookOpenText } from '@lucide/svelte';
-    import type { Project } from '../types';
+    import type { Project } from '@fkp/domain/types.ts';
 
     interface Props {
         ariaLabel: string;

@@ -6,7 +6,7 @@ import { blogAdmin } from '#lib/server/blogPostAuth.ts';
 import { bearerToken } from '#lib/server/adminAuth.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { boundedBody } from '#lib/server/blogPostInput.ts';
-import { passwordPolicyError } from '#lib/passwordPolicy.ts';
+import { passwordPolicyError } from '@fkp/domain/passwordPolicy.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import {
     checkLoginLockout,

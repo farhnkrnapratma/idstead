@@ -6,7 +6,7 @@ import {
     migrateLegacySettings,
     parseOverrides,
     resolveSettings
-} from '../packages/lib/src/a11ySettings';
+} from '../packages/ui/src/a11ySettings';
 
 describe('a11y settings: stored overrides', () => {
     test.each([

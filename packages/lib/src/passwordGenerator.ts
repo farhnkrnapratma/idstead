@@ -1,5 +1,9 @@
 import words from './data/password-words.json';
-import { passwordPolicyError, PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from './passwordPolicy';
+import {
+    passwordPolicyError,
+    PASSWORD_MIN_LENGTH,
+    PASSWORD_MAX_LENGTH
+} from '@fkp/domain/passwordPolicy.ts';
 
 export type RandomPasswordOptions = {
     mode: 'random';

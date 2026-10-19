@@ -1,4 +1,4 @@
-import { decodeHtmlEntities } from './utils/formatters';
+import { decodeHtmlEntities } from '@fkp/mdrs';
 
 export type CommentFilter = 'all' | 'replied' | 'unanswered' | 'admin' | 'reported';
 export type CommentSort = 'date' | 'replies' | 'author';

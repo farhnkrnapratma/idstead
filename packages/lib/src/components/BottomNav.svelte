@@ -1,9 +1,9 @@
 <script lang="ts">
     import { House, FolderOpen, Quote, FileUser, AtSign } from '@lucide/svelte';
-    import { cn } from '../utils/cn';
-    import { shortcut } from '../utils/shortcut.svelte';
-    import { sectionCommandKey } from '#lib/shortcuts.ts';
-    import type { Section } from '../types';
+    import { cn } from '@fkp/ui/utils/cn.ts';
+    import { shortcut } from '@fkp/ui/utils/shortcut.svelte.ts';
+    import { sectionCommandKey } from '@fkp/ui/shortcuts.ts';
+    import type { Section } from '@fkp/domain/types.ts';
 
     interface NavItem {
         id: Section;

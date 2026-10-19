@@ -31,7 +31,7 @@
         Video
     } from '@lucide/svelte';
     import { assetAltText } from '#lib/assetNaming.ts';
-    import Dropdown from '../Dropdown.svelte';
+    import Dropdown from '@fkp/ui/components/Dropdown.svelte';
     import { assetMarkdown } from './textEdits';
 
     interface Props {

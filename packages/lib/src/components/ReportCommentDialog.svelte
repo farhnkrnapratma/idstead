@@ -1,20 +1,20 @@
 <script lang="ts">
     import { onDestroy } from 'svelte';
-    import { FieldValidation } from '#lib/fieldValidation.ts';
+    import { FieldValidation } from '@fkp/domain/fieldValidation.ts';
     import { Circle, CircleDot } from '@lucide/svelte';
-    import Dialog from './Dialog.svelte';
-    import Button from './Button.svelte';
-    import FormField from './FormField.svelte';
-    import Textarea from './Textarea.svelte';
+    import Dialog from '@fkp/ui/components/Dialog.svelte';
+    import Button from '@fkp/ui/components/Button.svelte';
+    import FormField from '@fkp/ui/components/FormField.svelte';
+    import Textarea from '@fkp/ui/components/Textarea.svelte';
     import {
         turnstileWidget,
         executeTurnstile,
         resetTurnstile,
         turnstileSiteKey
     } from '#lib/utils/turnstile.ts';
-    import { toastStore } from '#lib/stores/toastStore.svelte.ts';
-    import { cn } from '#lib/utils/cn.ts';
-    import { shortcut } from '#lib/utils/shortcut.svelte.ts';
+    import { toastStore } from '@fkp/ui/stores/toastStore.svelte.ts';
+    import { cn } from '@fkp/ui/utils/cn.ts';
+    import { shortcut } from '@fkp/ui/utils/shortcut.svelte.ts';
     import {
         REPORT_REASONS,
         reportReasonColor,

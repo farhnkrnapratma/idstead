@@ -1,8 +1,8 @@
 <script lang="ts">
-    import { cn } from '../utils/cn';
+    import { cn } from '@fkp/ui/utils/cn.ts';
     import { consentStore } from '../stores/consentStore.svelte';
-    import { buttonKey } from '#lib/shortcuts.ts';
-    import { shortcut } from '../utils/shortcut.svelte';
+    import { buttonKey } from '@fkp/ui/shortcuts.ts';
+    import { shortcut } from '@fkp/ui/utils/shortcut.svelte.ts';
 
     interface Props {
         name?: string;

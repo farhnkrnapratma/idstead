@@ -46,7 +46,7 @@ import {
 } from '#lib/server/openpgp.ts';
 import { ipSalt } from './ipSalt';
 import { apiError } from './apiError';
-import { decodeHtmlEntities } from '#lib/utils/formatters.ts';
+import { decodeHtmlEntities } from '@fkp/mdrs';
 import { deleteObjects, findAssetBucket } from './r2';
 
 const CV_PROJECT_LIMIT = 4;

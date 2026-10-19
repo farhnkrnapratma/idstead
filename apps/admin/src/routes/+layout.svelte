@@ -1,11 +1,11 @@
 <script lang="ts">
     import '#lib/global.css';
     import { onMount } from 'svelte';
-    import { themeColors } from '#lib/themeColors.ts';
-    import { Toast } from '#lib/index.ts';
-    import { shortcutStore } from '#lib/stores/shortcutStore.svelte.ts';
-    import { themeStore } from '#lib/stores/themeStore.svelte.ts';
-    import { a11yStore } from '#lib/stores/a11yStore.svelte.ts';
+    import { themeColors } from '@fkp/ui/themeColors.ts';
+    import { Toast } from '@fkp/ui';
+    import { shortcutStore } from '@fkp/ui/stores/shortcutStore.svelte.ts';
+    import { themeStore } from '@fkp/ui/stores/themeStore.svelte.ts';
+    import { a11yStore } from '@fkp/ui/stores/a11yStore.svelte.ts';
     import { codeBlockPrefsStore } from '#lib/stores/codeBlockPrefsStore.svelte.ts';
     import { refreshCodeBlockPrefs } from '#lib/utils/codeBlocks.ts';
 

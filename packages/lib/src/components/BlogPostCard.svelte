@@ -19,12 +19,13 @@
 <script lang="ts">
     import type { Snippet } from 'svelte';
     import { Image as ImageIcon, Pin, Sparkles } from '@lucide/svelte';
-    import Button from './Button.svelte';
-    import ImageWithSkeleton from './ImageWithSkeleton.svelte';
-    import Tag from './Tag.svelte';
+    import Button from '@fkp/ui/components/Button.svelte';
+    import ImageWithSkeleton from '@fkp/ui/components/ImageWithSkeleton.svelte';
+    import Tag from '@fkp/ui/components/Tag.svelte';
     import ArticleMeta from '#lib/article/ArticleMeta.svelte';
     import { avifSources, blogBannerAlt } from '#lib/blogBanner.ts';
-    import { decodeHtmlEntities, formatReadTime } from '#lib/utils/formatters.ts';
+    import { formatReadTime } from '@fkp/domain/formatters.ts';
+    import { decodeHtmlEntities } from '@fkp/mdrs';
 
     const NEW_POST_WINDOW_MS = 24 * 60 * 60 * 1000;
 

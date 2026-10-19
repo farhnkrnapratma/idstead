@@ -1,22 +1,23 @@
 <script lang="ts">
-    import { themeColors } from '#lib/themeColors.ts';
+    import { themeColors } from '@fkp/ui/themeColors.ts';
     import '#lib/global.css';
     import { onMount } from 'svelte';
-    import { installSubmitShortcut } from '#lib/utils/submitShortcut.ts';
+    import { installSubmitShortcut } from '@fkp/ui/utils/submitShortcut.ts';
     import { onNavigate } from '$app/navigation';
     import { page } from '$app/state';
     import * as publicEnv from '$app/env/public';
     import { apiUrl } from '#lib/apiConfig.ts';
-    import { ConsentBanner, Toast, ScrollToTopButton, FeedbackButton } from '#lib/index.ts';
-    import ShortcutCatalogDialog from '#lib/components/ShortcutCatalogDialog.svelte';
-    import ShortcutModeIndicator from '#lib/components/ShortcutModeIndicator.svelte';
-    import { platformStore } from '#lib/stores/platformStore.svelte.ts';
+    import { ConsentBanner, FeedbackButton } from '#lib/index.ts';
+    import { Toast, ScrollToTopButton } from '@fkp/ui';
+    import ShortcutCatalogDialog from '@fkp/ui/components/ShortcutCatalogDialog.svelte';
+    import ShortcutModeIndicator from '@fkp/ui/components/ShortcutModeIndicator.svelte';
+    import { platformStore } from '@fkp/ui/stores/platformStore.svelte.ts';
 
-    import { themeStore } from '#lib/stores/themeStore.svelte.ts';
-    import { a11yStore } from '#lib/stores/a11yStore.svelte.ts';
+    import { themeStore } from '@fkp/ui/stores/themeStore.svelte.ts';
+    import { a11yStore } from '@fkp/ui/stores/a11yStore.svelte.ts';
     import { codeBlockPrefsStore } from '#lib/stores/codeBlockPrefsStore.svelte.ts';
-    import { scrollStore } from '#lib/stores/scrollStore.svelte.ts';
-    import { readingModeStore } from '#lib/stores/readingModeStore.svelte.ts';
+    import { scrollStore } from '@fkp/ui/stores/scrollStore.svelte.ts';
+    import { readingModeStore } from '@fkp/ui/stores/readingModeStore.svelte.ts';
     import { refreshCodeBlockPrefs } from '#lib/utils/codeBlocks.ts';
 
     const { data, children } = $props();

@@ -21,8 +21,10 @@
         "**/*.css"
     ],
     "dependencies": {
-        "@fkp/mdrs": "workspace:*",
         "@blobatar/svelte": "^2.7.0",
+        "@fkp/domain": "workspace:*",
+        "@fkp/mdrs": "workspace:*",
+        "@fkp/ui": "workspace:*",
         "@fontsource-variable/lexend": "^5.3.0",
         "@fontsource-variable/lilex": "^5.3.0",
         "@fontsource-variable/noto-sans": "^5.3.0",

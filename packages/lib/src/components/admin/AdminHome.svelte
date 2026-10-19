@@ -17,7 +17,7 @@
     import { adminNotificationsStore } from '#lib/stores/adminNotificationsStore.svelte.ts';
     import { adminChartRangeStore } from '#lib/stores/adminChartRangeStore.svelte.ts';
     import { WorkspaceFeed } from '#lib/stores/workspaceFeed.svelte.ts';
-    import { pluralize } from '#lib/utils/pluralize.ts';
+    import { pluralize } from '@fkp/domain/pluralize.ts';
     import {
         formatCount,
         helpfulPercent,
@@ -28,16 +28,16 @@
         type WorkspaceRow
     } from '#lib/adminWorkspace.ts';
     import { supabase } from '#lib/supabase.ts';
-    import Card from '../Card.svelte';
-    import StatsGrid from '../StatsGrid.svelte';
-    import Button from '../Button.svelte';
+    import Card from '@fkp/ui/components/Card.svelte';
+    import StatsGrid from '@fkp/ui/components/StatsGrid.svelte';
+    import Button from '@fkp/ui/components/Button.svelte';
     import { reportReasonLabel } from '#lib/reportReasons.ts';
-    import DataTable, { type DataTableColumn } from '../DataTable.svelte';
+    import DataTable, { type DataTableColumn } from '@fkp/ui/components/DataTable.svelte';
     import ActivityTimestamp from './ActivityTimestamp.svelte';
-    import ErrorState from '../ErrorState.svelte';
-    import LoadingState from '../LoadingState.svelte';
-    import EmptyState from '../EmptyState.svelte';
-    import Section from '#lib/layout/Section.svelte';
+    import ErrorState from '@fkp/ui/components/ErrorState.svelte';
+    import LoadingState from '@fkp/ui/components/LoadingState.svelte';
+    import EmptyState from '@fkp/ui/components/EmptyState.svelte';
+    import Section from '@fkp/ui/layout/Section.svelte';
     import ViewsCalendar from './ViewsCalendar.svelte';
     import ViewsChart from './ViewsChart.svelte';
     import type { ViewsRange } from './viewsRange';

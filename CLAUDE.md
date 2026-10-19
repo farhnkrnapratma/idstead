@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Personal website/blog for Farhan Kurnia Pratama (fkp.my.id) — SvelteKit 5 + TypeScript + Tailwind CSS 4, backed by Supabase (Postgres + RLS), deployed as Cloudflare Workers. A Bun-workspaces monorepo with four deployables that share a library and the MDRS engine:
+Personal website/blog for Farhan Kurnia Pratama (fkp.my.id) — SvelteKit 5 + TypeScript + Tailwind CSS 4, backed by Supabase (Postgres + RLS), deployed as Cloudflare Workers. A Bun-workspaces monorepo with four deployables that share a library, a design system, domain helpers and the MDRS engine:
 
 | Workspace | Worker | Host | Role |
 | --- | --- | --- | --- |
@@ -12,7 +12,9 @@ Personal website/blog for Farhan Kurnia Pratama (fkp.my.id) — SvelteKit 5 + Ty
 | `apps/admin` | `fkp-admin` | `admin.fkp.my.id` | Admin portal at the host root plus `/api/internal/admin/**`. |
 | `apps/api` | `fkp-api` | `api.fkp.my.id/v1` | Public read-only REST API (Hono). |
 | `apps/jobs` | `fkp-jobs` | none | Queue consumer (`fkp-newsletter`), daily cron cleanups and post render refreshes. |
-| `packages/lib` | — | — | `@fkp/lib`: components, layout, stores, server helpers, API handlers. |
+| `packages/lib` | — | — | `@fkp/lib`: site feature components, data access, server helpers, API handlers. |
+| `packages/ui` | — | — | `@fkp/ui`: the design system: tokens, global styles, UI primitives, layout primitives, UI stores and the keyboard shortcut system. |
+| `packages/domain` | — | — | `@fkp/domain`: pure, framework-free helpers and types (formatters, read time, slugs, pagination, validation, sanitizers). |
 | `packages/mdrs` | — | — | `@fkp/mdrs`: the standalone MDRS engine (render, `:::define`, frontmatter, sanitizer, legacy migration). |
 
 ## Commands
@@ -43,8 +45,8 @@ Env files stay at the repository root (`apps/*/vite.config.ts` set `envDir` and 
 
 Every app imports shared code as `#lib/...`. Each app's `package.json` maps `#lib/*` to `@fkp/lib/*`, and `@fkp/lib` exports `./*` from `src/*`, so the import paths are identical everywhere. Svelte apps type-check `packages/lib/src` through their own `tsconfig.json`; lib code must therefore type-check in both web and admin (no app-specific typed `resolve()` routes in lib).
 
-- `src/components/`, `src/layout/`, `src/article/`, `src/stores/` — UI primitives, page layout, article rendering, rune stores.
-- `src/global.css` (Tailwind entry, fonts, `@source './'`) and `src/tokens.css` (design tokens). Apps import `#lib/global.css` in their root layout; component `<style>` blocks `@reference` it relatively.
+- `src/components/`, `src/layout/`, `src/article/`, `src/stores/` — site feature components (TopNav, ProfileCard, CommentThread, Spotlight, …), article rendering, feature stores. UI primitives live in `@fkp/ui`.
+- `src/global.css` — the app stylesheet entry: it imports `@fkp/ui/styles/global.css` (Tailwind, fonts, tokens), scans lib with `@source './'` and adds `mdrs.css`. Apps import `#lib/global.css` in their root layout; lib component `<style>` blocks `@reference` it relatively.
 - `src/server/` — server-only helpers: `apiError`, `apiEnvelope` (public `{error:{...}}` wrapping), `rateLimit`, `r2` (the `ASSET_BUCKET` R2 binding), `workerEnv` (Cloudflare bindings through `cloudflare:workers`; `event.platform` is always undefined with adapter-cloudflare 8), `csp`, `postLookup`, `subscriberBroadcast`, `newsletterQueue`, and `api/` (API handlers).
 - `src/apiConfig.ts` — `apiUrl()`/`apiBaseUrl()` for links to the API host from web pages.
 
@@ -106,11 +108,13 @@ The workspace package `@fkp/mdrs` (`packages/mdrs`) renders posts and legal page
 
 ### Components
 
-- `packages/lib/src/components/` — flat directory of reusable UI primitives (Button, Dialog family, form fields, Toast, DataTable, Pagination, BlogPostCard, etc.) plus `filter/` and `admin/` subfolders, and `editor/`: the Markdown editor module. Import it only through `editor/index.ts` (`MarkdownEditor`); the shell composes `EditorViewBar` (tabs, settings, the optional `onImport` file button), `EditorToolbar`, `EditorCodeArea`, `EditorPreview` and `EditorStatusBar`, with pure helpers in `textEdits.ts`, `highlight.ts` and `preferences.svelte.ts`. It never imports Supabase: callers pass `render` (the admin uses `renderMdrsPreview` from `packages/lib/src/mdrsPreview.ts`) and the upload and import handlers.
-- `packages/lib/src/layout/` — page-structure components (PageMain, PageContainer, Section, FormSection, FooterSection, FooterLegalRow). `PageMain` is the `<main id="main">` shell that clears the fixed `TopNav` (`variant="article"` and `reading` for posts and legal pages); use it instead of repeating the offsets.
+- `@fkp/ui` (`packages/ui/src`) — the design system, browser-safe and depending only on `@fkp/domain` (ESLint enforces this): `components/` (Button, IconButton, Dialog, ConfirmationDialog, Dropdown, ActionMenu, form fields, Toast, Tooltip, DataTable, Pagination, EmptyState, ErrorState, LoadingState, StatusBanner, StatsGrid, the shortcut badges and catalog, and `filter/` controls), `layout/` (PageMain, PageContainer, Section, FormSection), `stores/` (theme, toast, a11y, content font, reading mode, scroll, shortcuts, filter/sort), `utils/` (`cn`, focus scope, popover positioning, shortcut attachment), `shortcuts.ts` (the keyboard shortcut engine and this site's key map), `types.ts`, and `styles/` (`global.css`, `tokens.css`). Import components and stores by path (`@fkp/ui/components/Button.svelte`) or through the `@fkp/ui` barrel; ui components `@reference "../styles/global.css"`.
+- `@fkp/domain` (`packages/domain/src`) — pure TypeScript with no workspace, Svelte, SvelteKit or Supabase imports: `formatters.ts`, `pluralize.ts`, `readTime.ts`, `slug.ts`, `pagination.ts`, `passwordPolicy.ts`, `fieldValidation.ts`, `nameValidator.ts`, `sanitizeInput.ts`, `safeRedirect.ts`, `xml.ts` and the domain `types.ts` (`Section`, `Project`). `bun run check` type-checks it with strict `tsc`, and the Svelte apps list it in `ssr.noExternal`.
+- `packages/lib/src/components/` — site feature components (TopNav, BottomNav, ProfileCard, BlogPostCard, CommentThread, SpotlightDialog, ConsentBanner, CvDownloadMenu, …) plus `admin/` and `editor/`: the Markdown editor module. Import it only through `editor/index.ts` (`MarkdownEditor`); the shell composes `EditorViewBar` (tabs, settings, the optional `onImport` file button), `EditorToolbar`, `EditorCodeArea`, `EditorPreview` and `EditorStatusBar`, with pure helpers in `textEdits.ts`, `highlight.ts` and `preferences.svelte.ts`. It never imports Supabase: callers pass `render` (the admin uses `renderMdrsPreview` from `packages/lib/src/mdrsPreview.ts`) and the upload and import handlers.
+- `packages/lib/src/layout/` — site page parts (FooterSection, FooterLegalRow). The page-structure primitives (PageMain, PageContainer, Section, FormSection) are in `@fkp/ui/layout/`. `PageMain` is the `<main id="main">` shell that clears the fixed `TopNav` (`variant="article"` and `reading` for posts and legal pages); use it instead of repeating the offsets.
 - `packages/lib/src/article/` — blog-post-specific rendering (ArticleHeader, ArticleMeta, HelpfulBlock).
-- `packages/lib/src/stores/` — Svelte 5 runes-based stores (`.svelte.ts` files): theme, toast, consent, filter/sort state.
-- Styling: Tailwind CSS 4 (via `@tailwindcss/vite`, no separate config file) plus `tokens.css` and `global.css` in the lib — component- and page-specific styling lives in each component/page's own `<style>` block or inline Tailwind classes.
+- `packages/lib/src/stores/` — feature stores (`.svelte.ts` files): consent, spotlight, search history, code block preferences, admin settings.
+- Styling: Tailwind CSS 4 (via `@tailwindcss/vite`, no separate config file) plus `tokens.css` and `global.css` in `@fkp/ui/styles/` — component- and page-specific styling lives in each component/page's own `<style>` block or inline Tailwind classes.
 - **Every page must reuse the existing shared components/layout primitives consistently** — never build a page-local one-off replacement for something that already exists. Run the `ui-consistency-check` skill (or the `ui-consistency-reviewer` agent) after touching any page or component to catch drift.
 
 ### Agent/skills tooling
