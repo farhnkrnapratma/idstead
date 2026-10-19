@@ -6,7 +6,8 @@
     "type": "module",
     "imports": {
         "#lib": "@fkp/lib",
-        "#lib/*": "@fkp/lib/*"
+        "#lib/*": "@fkp/lib/*",
+        "#app/*": "./src/lib/*"
     },
     "scripts": {
         "dev": "vite dev --port 5174",

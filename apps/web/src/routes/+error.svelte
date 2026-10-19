@@ -2,7 +2,7 @@
     import { page } from '$app/state';
     import { House, MessageSquareWarning } from '@lucide/svelte';
     import { Button, SkipLink, ErrorState } from '@fkp/ui';
-    import { FooterLegalRow } from '#lib/index.ts';
+    import FooterLegalRow from '#app/layout/FooterLegalRow.svelte';
 
     let pageAuthor = $derived((page?.data as any)?.author);
     let name = $derived(pageAuthor?.name || '');

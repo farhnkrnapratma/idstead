@@ -32,20 +32,18 @@
         Layers
     } from '@lucide/svelte';
     import { isNameReserved, extractAuthorNameTokens } from '@fkp/domain/nameValidator.ts';
-    import {
-        LinkGridSection,
-        SpotlightSearch,
-        BottomNav,
-        CvEntryCard,
-        FooterSection,
-        SkillGroup,
-        SubscribeForm,
-        ConsentNotice,
-        BlogPostCard,
-        ProfileCard,
-        QrCodeDialog,
-        CvDownloadMenu
-    } from '#lib/index.ts';
+    import LinkGridSection from '#app/components/LinkGridSection.svelte';
+    import SpotlightSearch from '#app/components/SpotlightSearch.svelte';
+    import BottomNav from '#app/components/BottomNav.svelte';
+    import CvEntryCard from '#app/components/CvEntryCard.svelte';
+    import FooterSection from '#app/layout/FooterSection.svelte';
+    import SkillGroup from '#app/components/SkillGroup.svelte';
+    import SubscribeForm from '#app/components/SubscribeForm.svelte';
+    import ConsentNotice from '#app/components/ConsentNotice.svelte';
+    import BlogPostCard from '#app/components/BlogPostCard.svelte';
+    import ProfileCard from '#app/components/ProfileCard.svelte';
+    import QrCodeDialog from '#app/components/QrCodeDialog.svelte';
+    import CvDownloadMenu from '#app/components/CvDownloadMenu.svelte';
     import {
         Card,
         ShinyText,
@@ -83,7 +81,7 @@
         formatPeriod,
         normalizeSkillGroups,
         type SkillGroup as SkillGroupData
-    } from '#lib/profilePageHelpers.ts';
+    } from '#app/profilePageHelpers.ts';
     import { themeStore } from '@fkp/ui/stores/themeStore.svelte.ts';
     import { pluralize } from '@fkp/domain/pluralize.ts';
     import AccessibilitySelect from '@fkp/ui/components/filter/AccessibilitySelect.svelte';

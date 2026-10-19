@@ -2,7 +2,7 @@
     import Avatar from '@fkp/ui/components/Avatar.svelte';
     import { COMMENTS_PAGE_SIZE, commentAuthorName } from '#lib/commentAuthor.ts';
     import { blogBannerAlt } from '#lib/blogBanner.ts';
-    import { createFeedbackClient } from '#lib/feedbackClient.svelte.ts';
+    import { createFeedbackClient } from '#app/feedbackClient.svelte.ts';
     import { shortcut } from '@fkp/ui/utils/shortcut.svelte.ts';
     import { buttonKey } from '@fkp/ui/shortcuts.ts';
     import { focusScope } from '@fkp/ui/utils/focusScope.ts';
@@ -41,24 +41,21 @@
         ScrollToTopButton,
         ReadingModeExitButton
     } from '@fkp/ui';
-    import {
-        TopNav,
-        BlogPostCard,
-        CommentThread,
-        FooterSection,
-        TableOfContents,
-        ContentActions,
-        ReportCommentDialog,
-        ArticleHeader,
-        ShareDialog,
-        QrCodeDialog,
-        ArticleMeta,
-        HelpfulBlock,
-        SubscribeForm,
-        PostInsights,
-        ConsentNotice,
-        FeedbackButton
-    } from '#lib/index.ts';
+    import { CommentThread, ArticleMeta } from '#lib/index.ts';
+    import TopNav from '#app/components/TopNav.svelte';
+    import BlogPostCard from '#app/components/BlogPostCard.svelte';
+    import FooterSection from '#app/layout/FooterSection.svelte';
+    import TableOfContents from '#app/components/TableOfContents.svelte';
+    import ContentActions from '#app/components/ContentActions.svelte';
+    import ReportCommentDialog from '#app/components/ReportCommentDialog.svelte';
+    import ArticleHeader from '#app/article/ArticleHeader.svelte';
+    import ShareDialog from '#app/components/ShareDialog.svelte';
+    import QrCodeDialog from '#app/components/QrCodeDialog.svelte';
+    import HelpfulBlock from '#app/article/HelpfulBlock.svelte';
+    import SubscribeForm from '#app/components/SubscribeForm.svelte';
+    import PostInsights from '#app/article/PostInsights.svelte';
+    import ConsentNotice from '#app/components/ConsentNotice.svelte';
+    import FeedbackButton from '#app/components/FeedbackButton.svelte';
     import { formatReadTime } from '@fkp/domain';
     import { pushState } from '$app/navigation';
     import { page, navigating } from '$app/state';

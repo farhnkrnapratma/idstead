@@ -2,7 +2,7 @@
     import Tag from '@fkp/ui/components/Tag.svelte';
     import { COMMENTS_PAGE_SIZE, commentAuthorName } from '#lib/commentAuthor.ts';
     import { blogBannerAlt } from '#lib/blogBanner.ts';
-    import { adminUrl, navigateAdmin } from '#lib/adminNavigation.ts';
+    import { adminUrl, navigateAdmin } from '#app/adminNavigation.ts';
     import { bannerUrl } from '#lib/blogBanner.ts';
     import { cdnBaseUrl } from '#lib/cdn.ts';
     import {
@@ -10,15 +10,15 @@
         rememberPostSave,
         recallPostSave,
         PostSaveError
-    } from '#lib/postSaveClient.ts';
+    } from '#app/postSaveClient.ts';
     import { FieldValidation, requiredText, emailError } from '@fkp/domain/fieldValidation.ts';
-    import { mdrsContent } from '#lib/mdrsValidation.ts';
-    import { renderMdrsPreview } from '#lib/mdrsPreview.ts';
+    import { mdrsContent } from '#app/mdrsValidation.ts';
+    import { renderMdrsPreview } from '#app/mdrsPreview.ts';
     import { avatarSource, siteBannerSource } from '#lib/siteIdentity.ts';
-    import IdentityImageUpload from '#lib/components/IdentityImageUpload.svelte';
+    import IdentityImageUpload from '#app/components/IdentityImageUpload.svelte';
     import type { ImagePackage } from '#lib/siteIdentity.ts';
-    import { processAvatar } from '#lib/processAvatar.ts';
-    import { processSiteBanner, type SiteBannerOutput } from '#lib/processSiteBanner.ts';
+    import { processAvatar } from '#app/processAvatar.ts';
+    import { processSiteBanner, type SiteBannerOutput } from '#app/processSiteBanner.ts';
     import {
         avatarFingerprint,
         avatarPreview,
@@ -26,8 +26,8 @@
         generateAvatarPackage,
         generateBannerPackage,
         renderBanner
-    } from '#lib/identityFallback.ts';
-    import { avatarSeed, type BannerInput } from '#lib/identityFallbackLayout.ts';
+    } from '#app/identityFallback.ts';
+    import { avatarSeed, type BannerInput } from '#app/identityFallbackLayout.ts';
     import * as publicEnv from '$app/env/public';
     import { page } from '$app/state';
     import { invalidateAll } from '$app/navigation';
@@ -92,15 +92,15 @@
     import { onDestroy, onMount, tick, untrack } from 'svelte';
     import { SvelteSet } from 'svelte/reactivity';
     import type { AdminNotificationRow } from '#lib/adminActivity.ts';
-    import AdminHome from '#lib/components/admin/AdminHome.svelte';
-    import ActivityTimestamp from '#lib/components/admin/ActivityTimestamp.svelte';
-    import SessionTimeoutDialog from '#lib/components/admin/SessionTimeoutDialog.svelte';
-    import { SESSION_WARNING_SECONDS, extendedTimeoutMinutes } from '#lib/sessionTimeout.ts';
+    import AdminHome from '#app/components/admin/AdminHome.svelte';
+    import ActivityTimestamp from '#app/components/admin/ActivityTimestamp.svelte';
+    import SessionTimeoutDialog from '#app/components/admin/SessionTimeoutDialog.svelte';
+    import { SESSION_WARNING_SECONDS, extendedTimeoutMinutes } from '#app/sessionTimeout.ts';
     import { formatAdminDateTime } from '#lib/adminDateFormat.ts';
-    import { cleanAdminParams } from '#lib/adminUrl.ts';
-    import { adminDisplayStore } from '#lib/stores/adminDisplayStore.svelte.ts';
-    import { startAdminSettingsSync } from '#lib/stores/adminSettingsSync.svelte.ts';
-    import { adminActivityRequest } from '#lib/adminActivityClient.ts';
+    import { cleanAdminParams } from '#app/adminUrl.ts';
+    import { adminDisplayStore } from '#app/stores/adminDisplayStore.svelte.ts';
+    import { startAdminSettingsSync } from '#app/stores/adminSettingsSync.svelte.ts';
+    import { adminActivityRequest } from '#app/adminActivityClient.ts';
     import {
         ADMIN_WORKSPACE_PAGE_SIZE,
         type WorkspaceArea,
@@ -111,13 +111,13 @@
         preferredScrollBehavior,
         whenScrollSettles
     } from '@fkp/ui/utils/scroll.ts';
-    import { adminNotificationsStore } from '#lib/stores/adminNotificationsStore.svelte.ts';
+    import { adminNotificationsStore } from '#app/stores/adminNotificationsStore.svelte.ts';
 
-    const loadActivityWorkspace = () => import('#lib/components/admin/ActivityWorkspace.svelte');
+    const loadActivityWorkspace = () => import('#app/components/admin/ActivityWorkspace.svelte');
     const loadActivityLogWorkspace = () =>
-        import('#lib/components/admin/ActivityLogWorkspace.svelte');
-    const loadAccountSettings = () => import('#lib/components/admin/AccountSettings.svelte');
-    const loadPostEditor = () => import('#lib/components/admin/PostEditor.svelte');
+        import('#app/components/admin/ActivityLogWorkspace.svelte');
+    const loadAccountSettings = () => import('#app/components/admin/AccountSettings.svelte');
+    const loadPostEditor = () => import('#app/components/admin/PostEditor.svelte');
     const loadMarkdownEditor = () => import('#lib/components/editor/index.ts');
     import { estimateReadTime } from '@fkp/domain/readTime.ts';
     import { formatBadgeCount } from '@fkp/domain/formatters.ts';

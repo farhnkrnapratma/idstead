@@ -27,7 +27,9 @@
         Badge,
         toastStore
     } from '@fkp/ui';
-    import { TopNav, FooterSection, ConsentNotice } from '#lib/index.ts';
+    import TopNav from '#app/components/TopNav.svelte';
+    import FooterSection from '#app/layout/FooterSection.svelte';
+    import ConsentNotice from '#app/components/ConsentNotice.svelte';
     import { Section } from '@fkp/ui';
     import {
         turnstileWidget,

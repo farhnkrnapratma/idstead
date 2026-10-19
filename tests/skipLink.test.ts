@@ -32,7 +32,7 @@ function skipLinksIn(path: string, seen = new Set<string>()): number {
 
 describe('Skip link', () => {
     test('shared navigation never renders its own skip link', () => {
-        expect(read(join(root, 'packages/lib/src/components/TopNav.svelte'))).not.toContain(
+        expect(read(join(root, 'apps/web/src/lib/components/TopNav.svelte'))).not.toContain(
             'SkipLink'
         );
     });
@@ -41,7 +41,7 @@ describe('Skip link', () => {
         const pages = [
             ...svelteFiles('apps/web/src/routes'),
             ...svelteFiles('apps/admin/src/routes'),
-            join(root, 'packages/lib/src/components/LegalPageLayout.svelte')
+            join(root, 'apps/web/src/lib/components/LegalPageLayout.svelte')
         ].filter(path => /\+(page|error)\.svelte$|LegalPageLayout\.svelte$/.test(path));
 
         const counts = pages
