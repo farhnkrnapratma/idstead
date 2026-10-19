@@ -9,15 +9,15 @@
 <p align="center">
   <a href="https://fkp.my.id/">Home</a>
   ·
-  <a href="https://fkp.my.id/#projects">Projects</a>
+  <a href="https://fkp.my.id/projects">Projects</a>
   ·
   <a href="https://fkp.my.id/blog">Blog</a>
   ·
-  <a href="https://fkp.my.id/#cv">CV</a>
+  <a href="https://fkp.my.id/cv">CV</a>
   ·
-  <a href="https://fkp.my.id/#funding">Funding</a>
+  <a href="https://fkp.my.id/funding">Funding</a>
   ·
-  <a href="https://fkp.my.id/#contact">Contact</a>
+  <a href="https://fkp.my.id/contact">Contact</a>
 </p>
 
 ---

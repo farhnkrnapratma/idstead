@@ -63,7 +63,7 @@ export function createDefaultCommands(ctx: SpotlightCommandContext): SpotlightIt
             category: 'pages',
             title: '/projects',
             subtitle: 'Browse featured projects and repositories.',
-            url: '/#projects',
+            url: '/projects',
             icon: FolderOpen,
             badge: 'Section'
         },
@@ -81,7 +81,7 @@ export function createDefaultCommands(ctx: SpotlightCommandContext): SpotlightIt
             category: 'pages',
             title: '/cv',
             subtitle: 'View curriculum vitae and work experience.',
-            url: '/#cv',
+            url: '/cv',
             icon: FileUser,
             badge: 'Section'
         },
@@ -90,7 +90,7 @@ export function createDefaultCommands(ctx: SpotlightCommandContext): SpotlightIt
             category: 'pages',
             title: '/funding',
             subtitle: 'Support open source work and development.',
-            url: '/#funding',
+            url: '/funding',
             icon: HeartHandshake,
             badge: 'Section'
         },
@@ -99,7 +99,7 @@ export function createDefaultCommands(ctx: SpotlightCommandContext): SpotlightIt
             category: 'pages',
             title: '/contact',
             subtitle: 'Send a message or contact details.',
-            url: '/#contact',
+            url: '/contact',
             icon: AtSign,
             badge: 'Section'
         },

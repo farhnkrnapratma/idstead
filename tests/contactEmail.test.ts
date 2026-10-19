@@ -56,7 +56,7 @@ describe('contact form payloads', () => {
         expect(mail.text).toContain('Page: https://fkp.my.id/blog/x');
     });
 
-    test.each(['+page.svelte', 'feedback/+page.svelte'])(
+    test.each(['(site)/contact/+page.svelte', 'feedback/+page.svelte'])(
         '%s sends raw text and leaves escaping to the server',
         page => {
             const source = readFileSync(

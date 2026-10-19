@@ -4,6 +4,8 @@
     import { shortcut } from '@fkp/ui/utils/shortcut.svelte.ts';
     import { sectionCommandKey } from '@fkp/ui/shortcuts.ts';
     import type { Section } from '@fkp/domain/types.ts';
+    import { page } from '$app/state';
+    import { sectionForPath, sectionPath } from '../siteSections';
 
     interface NavItem {
         id: Section;
@@ -12,8 +14,6 @@
     }
 
     interface Props {
-        activeSection?: Section;
-        onNavigate?: (id: Section) => void;
         items?: NavItem[];
         class?: string;
     }
@@ -26,12 +26,9 @@
         { id: 'contact', label: 'Contact', icon: AtSign }
     ];
 
-    let {
-        activeSection = 'home',
-        onNavigate,
-        items = defaultItems,
-        class: className = ''
-    }: Props = $props();
+    let { items = defaultItems, class: className = '' }: Props = $props();
+
+    const activeSection = $derived(sectionForPath(page.url.pathname));
 </script>
 
 <nav
@@ -43,11 +40,10 @@
     {#each items as item (item.id)}
         {@const isActive = activeSection === item.id}
         {@const IconComponent = item.icon}
-        <button
-            type="button"
-            onclick={() => onNavigate?.(item.id)}
+        <a
+            href={sectionPath(item.id)}
             aria-label={item.label}
-            aria-current={isActive ? 'location' : undefined}
+            aria-current={isActive ? 'page' : undefined}
             use:shortcut={{ combo: sectionCommandKey(item.id), label: item.label }}
             class={cn(
                 'relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-md px-0.5 py-1 transition select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring active:inset-shadow-button-pressed motion-safe:active:translate-y-px [&>span>svg]:block',
@@ -65,6 +61,6 @@
                 )}>
                 {item.label}
             </span>
-        </button>
+        </a>
     {/each}
 </nav>

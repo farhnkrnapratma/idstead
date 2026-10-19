@@ -335,7 +335,7 @@ export function createDynamicCommandItems(
                     name: 'projects',
                     title: '/goto projects',
                     subtitle: 'Explore featured projects and creations.',
-                    url: '/#projects',
+                    url: '/projects',
                     icon: FolderOpen,
                     badge: 'Section'
                 },
@@ -343,7 +343,7 @@ export function createDynamicCommandItems(
                     name: 'cv',
                     title: '/goto cv',
                     subtitle: 'View resume and work experience.',
-                    url: '/#cv',
+                    url: '/cv',
                     icon: FileUser,
                     badge: 'Section'
                 },
@@ -351,7 +351,7 @@ export function createDynamicCommandItems(
                     name: 'funding',
                     title: '/goto funding',
                     subtitle: 'Support projects and open development.',
-                    url: '/#funding',
+                    url: '/funding',
                     icon: HeartHandshake,
                     badge: 'Section'
                 },
@@ -359,7 +359,7 @@ export function createDynamicCommandItems(
                     name: 'contact',
                     title: '/goto contact',
                     subtitle: 'Send a message or connect.',
-                    url: '/#contact',
+                    url: '/contact',
                     icon: AtSign,
                     badge: 'Section'
                 },

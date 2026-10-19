@@ -32,16 +32,17 @@
         readingMode?: boolean;
         onToggleReadingMode?: () => void;
         width?: 'standard' | 'full' | 'reading';
+        divided?: boolean;
         class?: string;
     }
 
     const defaultNavItems: NavItem[] = [
         { label: 'Home', url: '/' },
-        { label: 'Projects', url: '/#projects' },
+        { label: 'Projects', url: '/projects' },
         { label: 'Blog', url: '/blog' },
-        { label: 'CV', url: '/#cv' },
-        { label: 'Funding', url: '/#funding' },
-        { label: 'Contact', url: '/#contact' }
+        { label: 'CV', url: '/cv' },
+        { label: 'Funding', url: '/funding' },
+        { label: 'Contact', url: '/contact' }
     ];
 
     let {
@@ -55,6 +56,7 @@
         readingMode = false,
         onToggleReadingMode,
         width = 'standard',
+        divided = false,
         class: className = ''
     }: Props = $props();
 
@@ -86,6 +88,12 @@
         widthStyles[width],
         className
     )}>
+    {#if divided}
+        <div
+            class="mt-2 mb-6 w-full border-t border-border-subtle/60"
+            aria-hidden="true">
+        </div>
+    {/if}
     <div class="rounded-md glass-card p-3.5 sm:p-6">
         <div class="flex flex-col gap-5 sm:gap-6">
             <div class="flex min-w-0 flex-col gap-1.5">

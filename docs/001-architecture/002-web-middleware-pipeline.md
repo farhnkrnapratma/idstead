@@ -13,8 +13,8 @@ flowchart TD
     IA -->|yes| SIA(["serveIdentityAsset()<br/>R2 via S3, 503 on storage error"])
     IA -->|no| CDNQ{"/static/, /fonts/, /logo/?"}
     CDNQ -->|yes| CDN(["fetch PUBLIC_CDN_BASE_URL + path<br/>retry under /static for fonts/logo<br/>200 immutable, upstream status, 500 or 502"])
-    CDNQ -->|no| SEC{"/projects /contact /cv /funding /home?"}
-    SEC -->|yes| R307([307 to /#section])
+    CDNQ -->|no| SEC{"/home?"}
+    SEC -->|yes| R308([308 to /])
     SEC -->|no| CLS["classify: isApiRequest, isInternalApi, isArdRequest"]
     CLS --> OPT{"/api/* and OPTIONS?"}
     OPT -->|"internal + foreign Origin"| R403([403])
