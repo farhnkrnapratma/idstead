@@ -38,6 +38,7 @@ export default defineConfig(
             'packages/lib/src/article/**',
             'packages/lib/src/stores/**',
             'packages/lib/src/utils/**',
+            'packages/lib/src/mdrsResolvers.ts',
             'apps/web/src/lib/**',
             'apps/admin/src/lib/**'
         ],
@@ -47,7 +48,7 @@ export default defineConfig(
                 {
                     patterns: [
                         {
-                            regex: '(^|/)server/',
+                            regex: '(^|/)server/|^@fkp/data($|/)',
                             allowTypeImports: true,
                             message: 'Browser code must not import server-only modules.'
                         }
@@ -122,6 +123,24 @@ export default defineConfig(
                             allowTypeImports: true,
                             message:
                                 '@fkp/editor takes data access through props: no lib, Supabase or server imports.'
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        files: ['packages/data/**'],
+        rules: {
+            '@typescript-eslint/no-restricted-imports': [
+                'error',
+                {
+                    patterns: [
+                        {
+                            regex: '^(#lib|@fkp/(?!domain($|/))|\\$app/|\\$lib|svelte($|/))',
+                            allowTypeImports: true,
+                            message:
+                                '@fkp/data is the server-only data layer: it may depend on @fkp/domain and @supabase/* only.'
                         }
                     ]
                 }

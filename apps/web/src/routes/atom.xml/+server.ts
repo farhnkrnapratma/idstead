@@ -1,22 +1,18 @@
-import { supabase } from '#lib/supabase.ts';
 import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { readSiteProfile, validDate, publicResponse } from '#lib/server/publicMetadata.ts';
+import { publicRepositories } from '#lib/server/repositories.ts';
 import { escapeXml as xml } from '@fkp/domain/xml.ts';
 
 export const GET: RequestHandler = async ({ request }) => {
-    const [profile, { data, error: failure }] = await Promise.all([
+    const [profile, latest] = await Promise.all([
         readSiteProfile(),
-        supabase
-            .from('db_posts')
-            .select('public_id,title,slug,excerpt,summary,created_at,updated_at')
-            .eq('published', true)
-            .order('created_at', { ascending: false })
-            .order('public_id')
-            .limit(20)
+        publicRepositories()
+            .blog.listPublished({ limit: 20 })
+            .catch(() => null)
     ]);
-    if (failure) error(503, 'Feed is temporarily unavailable.');
-    const posts = (data ?? []).map(post => {
+    if (!latest) error(503, 'Feed is temporarily unavailable.');
+    const posts = latest.posts.map(post => {
         const published = validDate(post.created_at);
         const updated = validDate(post.updated_at) ?? published;
         if (!published || !updated) error(503, 'Feed timestamps are unavailable.');
@@ -45,7 +41,7 @@ ${posts
         post => `<entry><title>${xml(post.title)}</title>
 <link href="${xml(base + '/blog/' + encodeURIComponent(post.slug))}" rel="alternate" type="text/html"/>
 <link href="${xml(base + '/blog/' + encodeURIComponent(post.slug) + '.md')}" rel="alternate" type="text/markdown"/>
-<id>tag:${xml(new URL(base).hostname)},2026:post:${xml(post.public_id)}</id><published>${post.published}</published><updated>${post.updated}</updated>
+<id>tag:${xml(new URL(base).hostname)},2026:post:${xml(post.id)}</id><published>${post.published}</published><updated>${post.updated}</updated>
 <summary type="text">${xml(post.excerpt || post.summary || '')}</summary></entry>`
     )
     .join('\n')}

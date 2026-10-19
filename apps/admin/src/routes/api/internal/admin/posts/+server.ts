@@ -14,7 +14,7 @@ import { relocateMarkdownAssets, syncPostAssets } from '#lib/server/blogPostAsse
 import { cdnBaseUrl } from '#lib/cdn.ts';
 import { UUID_PATTERN } from '#lib/blogBanner.ts';
 import { validateDefineForSave } from '@fkp/mdrs';
-import { createMdrsResolvers } from '#lib/mdrsResolvers.ts';
+import { createSupabaseMdrsResolvers } from '#lib/server/mdrsData.ts';
 import { buildPostRender } from '#lib/server/postRender.ts';
 import { notifyNewPost } from '#lib/server/subscriberBroadcast.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
@@ -42,7 +42,10 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     }
     try {
         if (input.kind === 'save') {
-            const validation = await validateDefineForSave(input.markdown, createMdrsResolvers(db));
+            const validation = await validateDefineForSave(
+                input.markdown,
+                createSupabaseMdrsResolvers(db)
+            );
             if (!validation.ok)
                 return apiError(
                     422,
@@ -96,7 +99,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         if (input.kind === 'save') {
             try {
                 render = JSON.stringify(
-                    await buildPostRender(input.markdown, createMdrsResolvers(db))
+                    await buildPostRender(input.markdown, createSupabaseMdrsResolvers(db))
                 );
             } catch (error) {
                 console.error('Post pre-render failed:', error);

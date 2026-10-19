@@ -1,4 +1,4 @@
-export function escapePostgrestFilter(term: string): string {
+export function escapeSearchTerm(term: string): string {
     if (!term) return '';
 
     return term

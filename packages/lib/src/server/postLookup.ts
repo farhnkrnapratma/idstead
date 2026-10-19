@@ -1,8 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { isValidPostSlug } from '@fkp/domain/slug.ts';
+import { PUBLIC_ID_PATTERN, parsePostReference } from '@fkp/domain/postReference.ts';
 
-export const PUBLIC_ID_PATTERN = /^[0-9a-f]{64}$/;
-export const PUBLIC_ID_PREFIX_PATTERN = /^[0-9a-f]{7,63}$/;
+export { PUBLIC_ID_PATTERN };
 
 export type PostLookupResult<T> =
     | { status: 'found'; post: T }
@@ -11,18 +10,14 @@ export type PostLookupResult<T> =
     | { status: 'ambiguous' }
     | { status: 'error'; error: unknown };
 
-export function isPostReference(value: string): boolean {
-    return PUBLIC_ID_PATTERN.test(value) || isValidPostSlug(value);
-}
-
 export async function findPost<T extends Record<string, unknown>>(
     db: SupabaseClient,
     reference: string,
     columns: string,
     { publishedOnly = true }: { publishedOnly?: boolean } = {}
 ): Promise<PostLookupResult<T>> {
-    const value = reference.trim().toLowerCase();
-    if (!isPostReference(value)) return { status: 'invalid' };
+    const parsed = parsePostReference(reference);
+    if (!parsed) return { status: 'invalid' };
 
     const query = () => {
         const base = db.from('db_posts').select(columns);
@@ -30,10 +25,9 @@ export async function findPost<T extends Record<string, unknown>>(
     };
 
     const attempts: Array<() => PromiseLike<{ data: unknown; error: unknown }>> = [];
-    if (PUBLIC_ID_PATTERN.test(value)) attempts.push(() => query().eq('public_id', value).limit(2));
-    if (isValidPostSlug(value)) attempts.push(() => query().eq('slug', value).limit(2));
-    if (PUBLIC_ID_PREFIX_PATTERN.test(value))
-        attempts.push(() => query().like('public_id', `${value}%`).limit(2));
+    if (parsed.publicId) attempts.push(() => query().eq('public_id', parsed.publicId!).limit(2));
+    if (parsed.slug) attempts.push(() => query().eq('slug', parsed.slug!).limit(2));
+    if (parsed.prefix) attempts.push(() => query().like('public_id', `${parsed.prefix}%`).limit(2));
 
     for (const attempt of attempts) {
         const { data, error } = await attempt();

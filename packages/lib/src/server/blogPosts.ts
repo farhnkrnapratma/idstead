@@ -1,9 +1,9 @@
-import { supabase } from '#lib/supabase.ts';
-import { publicBannerUrl } from '#lib/blogBanner.ts';
-import { cdnBaseUrl } from '#lib/cdn.ts';
+import type { BlogRepository, PublishedPost } from '@fkp/data';
+import { publicPostFields, type PublicPostFields } from '@fkp/domain/blog.ts';
+import { formatReadTime } from '@fkp/domain/formatters.ts';
 import { estimateReadTime } from '@fkp/domain/readTime.ts';
 import { decodeHtmlEntities } from '@fkp/mdrs';
-import { publicPostFields, type PublicPostFields } from '#lib/publicPost.ts';
+import { publicRepositories } from './repositories';
 
 export interface BlogPost extends PublicPostFields {
     bannerPublicUrl?: string | null;
@@ -12,63 +12,35 @@ export interface BlogPost extends PublicPostFields {
     views_count?: number;
 }
 
-async function readTime(storagePath: string, fetchFn: typeof fetch) {
-    try {
-        const { data } = supabase.storage.from('blog-posts').getPublicUrl(storagePath);
-        const response = await fetchFn(data.publicUrl, { signal: AbortSignal.timeout(3000) }).catch(
-            () => null
-        );
-        return response?.ok ? estimateReadTime(await response.text()) : '1 min read';
-    } catch (err) {
-        console.error(err);
-        return '1 min read';
-    }
-}
+const FALLBACK_READ_TIME = '1 min read';
 
-async function count(table: 'db_comments' | 'db_views', postId: string) {
-    try {
-        let query = supabase
-            .from(table)
-            .select('id', { count: 'exact', head: true })
-            .eq('post_id', postId);
-        if (table === 'db_comments') query = query.eq('is_approved', true);
-        const { count: total } = await query;
-        return total ?? 0;
-    } catch (err) {
-        console.error(err);
-        return 0;
-    }
+export async function postReadTime(
+    blog: BlogRepository,
+    post: PublishedPost,
+    timeoutMs = 3000
+): Promise<string> {
+    if (post.read_minutes) return formatReadTime(post.read_minutes);
+    const markdown = await blog.readMarkdown(post.source, { timeoutMs });
+    return markdown === null ? FALLBACK_READ_TIME : estimateReadTime(markdown);
 }
 
 export async function loadPublishedPosts(
     fetchFn: typeof fetch,
     { limit }: { limit?: number } = {}
 ): Promise<BlogPost[]> {
+    const { blog } = publicRepositories(fetchFn);
     try {
-        let query = supabase
-            .from('db_posts')
-            .select('*')
-            .eq('published', true)
-            .order('created_at', { ascending: false });
-        if (limit) query = query.limit(limit);
-        const { data, error } = await query;
-        if (error || !data) return [];
-
+        const { posts } = await blog.listPublishedWithStats({ limit });
         return await Promise.all(
-            data.map(async post => {
-                const [readTimeValue, commentCount, viewsCount] = await Promise.all([
-                    readTime(post.storage_path, fetchFn),
-                    count('db_comments', post.id),
-                    count('db_views', post.id)
-                ]);
+            posts.map(async post => {
                 const fields = publicPostFields(post);
                 return {
                     ...fields,
-                    bannerPublicUrl: publicBannerUrl(post, cdnBaseUrl()),
+                    bannerPublicUrl: post.banner_url,
                     tags: fields.tags.map(decodeHtmlEntities),
-                    read_time: readTimeValue,
-                    comment_count: commentCount,
-                    views_count: viewsCount
+                    read_time: await postReadTime(blog, post),
+                    comment_count: post.comment_count,
+                    views_count: post.views_count
                 } satisfies BlogPost;
             })
         );

@@ -2,6 +2,7 @@ import { Hono, type Context } from 'hono';
 import * as Sentry from '@sentry/cloudflare';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { stringify } from 'yaml';
+import { createSupabaseRepositories } from '@fkp/data';
 import { openapiSpec } from '#lib/openapi.ts';
 import { getAuthor } from '#lib/server/api/author.ts';
 import {
@@ -44,11 +45,14 @@ function database(env: Env): SupabaseClient {
 type AppEnv = { Bindings: Env; Variables: { requestId: string } };
 
 function context(c: Context<AppEnv>): ApiContext {
+    const db = database(c.env);
+    const fetchFn: typeof fetch = (input, init) => fetch(input, init);
     return {
         url: new URL(c.req.url),
         request: c.req.raw,
-        db: database(c.env),
-        fetch: (input, init) => fetch(input, init)
+        db,
+        repos: createSupabaseRepositories(db, { fetch: fetchFn }),
+        fetch: fetchFn
     };
 }
 

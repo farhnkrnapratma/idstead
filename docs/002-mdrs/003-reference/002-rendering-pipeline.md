@@ -64,13 +64,14 @@ The engine is the workspace package `@fkp/mdrs` (`packages/mdrs`). Import it onl
 | `unavailableResolvers()`, `jsToDefineValue`, `walkPath`, `DefineError`, `ApiRegistry` | `@fkp/mdrs` | Building blocks for live-data resolvers |
 | `markdownToPlainText(markdown)`, `decodeHtmlEntities(text)` | `@fkp/mdrs` | Plain-text version for `.txt` routes and `?output=txt` |
 | `convertLegacyMarkdown`, `convertLegacyMarkdownWithNotes` | `@fkp/mdrs/legacy` | Old syntax → MDRS, used by `scripts/migrate-markdown-syntax.ts` |
-| `createMdrsResolvers(supabase)` | `packages/lib/src/mdrsResolvers.ts` | The site's `api.v1.author` and `api.v1.blog` resolvers |
+| `createSupabaseMdrsResolvers(db)` | `packages/lib/src/server/mdrsData.ts` | The site's `api.v1.author` and `api.v1.blog` resolvers on the server |
+| `createMdrsResolvers(loaders)` | `packages/lib/src/mdrsResolvers.ts` | Browser-safe resolvers over any data loaders; the admin preview's load from `/api/internal/admin/mdrs-data` |
 | `validateMdrsRemote(markdown)`, `mdrsContent(label)` | `apps/admin/src/lib/mdrsValidation.ts` | Editor-side validation through `POST /api/internal/blog/validate-define` |
 | `resolveMdrsHash(hash, container)` | `packages/mdrs-ui/src/headingAnchors.ts` | Maps `#setup` to `#mdrs-setup` when the page scrolls to a hash |
 | `enhanceMarkdownContent(options)` | `packages/mdrs-ui/src/enhance.ts` | Browser pass |
 | `enhanceHeadingAnchors(container)` | `packages/mdrs-ui/src/headingAnchors.ts` | ¶ anchor links |
 
-Pass resolvers to enable [live data](../002-extensions/014-live-data.md): the site uses `createMdrsResolvers(supabase)`. Without them, the default `unavailableResolvers()` makes `api.v1.*` render an error marker.
+Pass resolvers to enable [live data](../002-extensions/014-live-data.md): the site uses `createSupabaseMdrsResolvers(db)` on the server. Without them, the default `unavailableResolvers()` makes `api.v1.*` render an error marker.
 
 ## Where MDRS is used
 
@@ -79,7 +80,7 @@ Pass resolvers to enable [live data](../002-extensions/014-live-data.md): the si
 | Admin post save | `buildPostRender` → `prepareMarkdownPage`, stored as `{operationId}.render.json` |
 | Blog post page (`apps/web/src/routes/blog/[slug]`) | The stored render; `renderMarkdown` + `injectHeadingIds` + `prefixHashLinks` + `extractHeadings` only when it is missing, outdated or `live` |
 | Legal pages (`/privacy`, `/terms`, `/security`) | `prepareMarkdownPage` |
-| Admin editor preview (`packages/editor/src/`, Preview tab only) | The `render` prop: `renderMdrsPreview` (`apps/admin/src/lib/mdrsPreview.ts`, `renderMarkdown` with the site resolvers) in the browser, then `injectHeadingIds`, `prefixHashLinks` |
+| Admin editor preview (`packages/editor/src/`, Preview tab only) | The `render` prop: `renderMdrsPreview` (`apps/admin/src/lib/mdrsPreview.ts`, `renderMarkdown` with resolvers that fetch live data from `/api/internal/admin/mdrs-data`) in the browser, then `injectHeadingIds`, `prefixHashLinks` |
 | Admin editors (post, privacy, security, terms) while typing and before saving | `validateMdrsRemote` → `validateDefineForSave` |
 | Admin post save (validation) | `validateDefineForSave` |
 | `.md` and `.txt` variants, `GET /v1/blog/content` | The raw source, or `markdownToPlainText` for text output |

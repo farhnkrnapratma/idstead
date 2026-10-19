@@ -1,6 +1,6 @@
 # 3. Page Render (`/`, `/projects`, `/cv`, `/funding`, `/contact`, `/blog`, `/blog/[slug]`)
 
-How the public pages load their data. Every page load uses the **anon** Supabase client from `packages/lib/src/supabase.ts`. No session is involved, and RLS limits reads to public rows.
+How the public pages load their data. Every page load uses the **anon** Supabase client from `packages/lib/src/supabase.ts`. No session is involved, and RLS limits reads to public rows. Posts and comments are read through the `@fkp/data` repositories from `publicRepositories(fetch)`.
 
 ```mermaid
 sequenceDiagram
@@ -35,26 +35,23 @@ sequenceDiagram
         W->>DB: contact channels, profile email
         W-->>W: canSendMessage only, the email itself is not returned
     else GET /blog
-        W->>DB: loadPublishedPosts(): db_posts where published
-        loop each post
-            W->>ST: GET public URL of storage_path (3 s timeout) for read time
-            W->>DB: count db_comments, count db_views
+        W->>DB: blog.listPublishedWithStats(): published db_posts<br/>with embedded db_comments(count), db_views(count)
+        loop each post without a stored read_time
+            W->>ST: GET markdown (3 s timeout) for read time
         end
     else GET /blog/[slug]
-        W->>DB: db_posts where slug and published (.single(), 404 if missing)
+        W->>DB: blog.getPublishedBySlug() (404 if missing)
         W->>ST: GET {operationId}.render.json (3 s timeout)
         alt render found, current RENDER_VERSION, not live
             W-->>W: use the stored html, headings and read time
         else missing, outdated or live
             W->>ST: GET markdown (5 s timeout)
-            W-->>W: renderMarkdown, injectHeadingIds, extractHeadings<br/>(on failure, fall back to the stored render if any)
+            W-->>W: renderMarkdown, injectHeadingIds, extractHeadings
         end
-        W->>DB: db_comments where is_approved
-        W->>DB: count db_views
-        W->>DB: all published db_posts, then previous/next window
-        loop each related post
+        W->>DB: comments.listApproved()
+        W->>DB: blog.listPublishedWithStats(): view count of this post,<br/>previous/next window with their counts
+        loop each related post without a stored read_time
             W->>ST: GET markdown (3 s timeout)
-            W->>DB: count comments and views
         end
     end
     W-->>B: HTML
@@ -63,7 +60,8 @@ sequenceDiagram
 ## Notes
 
 - **Post data:**
-    - Posts expose `public_id` as `id`. The UUID never leaves the server.
+    - Posts expose `public_id` as `id`. The UUID never leaves the server: the repositories return `@fkp/domain/blog.ts` DTOs and keep the post's storage location in an opaque `PostSource`.
+    - Comment and view counts come from embedded counts in the listing query, so a list costs one query plus a markdown fetch per post until posts store `read_time`.
     - The banner URL is built by `publicBannerUrl()` (`packages/lib/src/blogBanner.ts`) as `{PUBLIC_CDN_BASE_URL}/blog/{slug}/banner.webp`, with `banner.avif` as the preferred source (see [008-asset-pipeline.md](008-asset-pipeline.md#blog-post-assets)).
 - **Markdown** lives in Supabase Storage (`blog-posts`). Images and banners live in R2 (see [008-asset-pipeline.md](008-asset-pipeline.md)).
 - **Pre-rendered posts:** each saved post has a `.render.json` next to its markdown (see [007-publish-post.md](007-publish-post.md#notes)). The post page serves it without running the MDRS engine. It renders on the request only when the file is missing or was written by another `RENDER_VERSION`. Posts flagged `live` (they read `api.*` data) are served from the stored file as well, so their live data can be up to a day old: the jobs worker re-renders them after every publish and in its daily cron (see [007-publish-post.md](007-publish-post.md#notes)). Only the service role can write to the bucket, so the stored HTML is trusted as sanitized at save time.
@@ -75,4 +73,5 @@ sequenceDiagram
 - `apps/web/src/routes/(site)/+page.server.ts`, `(site)/{projects,cv,funding,contact,blog}/+page.server.ts`
 - `apps/web/src/routes/blog/[slug]/+page.server.ts`
 - `packages/lib/src/author.ts`
-- `packages/lib/src/server/blogPosts.ts`, `githubProjects.ts`, `postRender.ts`
+- `packages/lib/src/server/blogPosts.ts`, `repositories.ts`, `githubProjects.ts`, `postRender.ts`
+- `packages/data/src/blog.ts`, `supabase/blog.ts`

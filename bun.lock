@@ -31,6 +31,7 @@
       "name": "@fkp/admin",
       "version": "0.0.1",
       "dependencies": {
+        "@fkp/data": "workspace:*",
         "@fkp/domain": "workspace:*",
         "@fkp/editor": "workspace:*",
         "@fkp/lib": "workspace:*",
@@ -60,6 +61,7 @@
       "name": "@fkp/api",
       "version": "0.0.1",
       "dependencies": {
+        "@fkp/data": "workspace:*",
         "@fkp/domain": "workspace:*",
         "@fkp/lib": "workspace:*",
         "@sentry/cloudflare": "11.6.0",
@@ -77,6 +79,7 @@
       "name": "@fkp/jobs",
       "version": "0.0.1",
       "dependencies": {
+        "@fkp/data": "workspace:*",
         "@fkp/domain": "workspace:*",
         "@fkp/lib": "workspace:*",
         "@sentry/cloudflare": "11.6.0",
@@ -92,6 +95,7 @@
       "name": "@fkp/web",
       "version": "0.0.1",
       "dependencies": {
+        "@fkp/data": "workspace:*",
         "@fkp/domain": "workspace:*",
         "@fkp/lib": "workspace:*",
         "@fkp/mdrs": "workspace:*",
@@ -114,6 +118,16 @@
         "typescript": "npm:@typescript/typescript6@^6.0.2",
         "vite": "^8.3.4",
         "wrangler": "^4.149.0",
+      },
+    },
+    "packages/data": {
+      "name": "@fkp/data",
+      "version": "0.0.1",
+      "dependencies": {
+        "@fkp/domain": "workspace:*",
+      },
+      "peerDependencies": {
+        "@supabase/supabase-js": "*",
       },
     },
     "packages/domain": {
@@ -142,6 +156,7 @@
       "version": "0.0.1",
       "dependencies": {
         "@blobatar/svelte": "^2.7.0",
+        "@fkp/data": "workspace:*",
         "@fkp/domain": "workspace:*",
         "@fkp/mdrs": "workspace:*",
         "@fkp/mdrs-ui": "workspace:*",
@@ -451,6 +466,8 @@
     "@fkp/admin": ["@fkp/admin@workspace:apps/admin"],
 
     "@fkp/api": ["@fkp/api@workspace:apps/api"],
+
+    "@fkp/data": ["@fkp/data@workspace:packages/data"],
 
     "@fkp/domain": ["@fkp/domain@workspace:packages/domain"],
 

@@ -19,6 +19,7 @@
         "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --diagnostic-sources \"js,svelte\""
     },
     "dependencies": {
+        "@fkp/data": "workspace:*",
         "@fkp/domain": "workspace:*",
         "@fkp/editor": "workspace:*",
         "@fkp/lib": "workspace:*",

@@ -2,7 +2,7 @@ import { IMAGE_CACHE_CONTROL } from './profileAssets';
 import { assetBucket, readObjectBytes } from './r2';
 import { bannerKey, sha256 } from '#lib/blogBanner.ts';
 import { cleanupOrphanedStaging } from './blogPostAssets';
-import { postRenderPath } from './postRenderPath';
+import { postRenderPath } from '@fkp/data';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export async function putBanner(

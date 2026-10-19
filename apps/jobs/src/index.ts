@@ -4,9 +4,10 @@ import { notifyNewPost } from '#lib/server/subscriberBroadcast.ts';
 import { isNewsletterMessage, type NewsletterMessage } from '#lib/server/newsletterQueue.ts';
 import { cleanupBlogAssets } from '#lib/server/blogBannerStorage.ts';
 import { cleanupAssets } from '#lib/server/profileAssets.ts';
+import { createSupabaseRenderStore } from '@fkp/data';
 import { refreshPostRenders } from '#lib/server/postRender.ts';
 import { isRenderRefreshMessage } from '#lib/server/renderQueue.ts';
-import { createMdrsResolvers } from '#lib/mdrsResolvers.ts';
+import { createSupabaseMdrsResolvers } from '#lib/server/mdrsData.ts';
 
 export interface Env {
     PUBLIC_SITE_URL?: string;
@@ -57,7 +58,10 @@ function deadLetter(message: Message<unknown>) {
 async function refreshRenders(env: Env) {
     const db = getSupabaseAdminClient({ env });
     if (!db) throw new Error('Post render refresh needs the Supabase service role.');
-    const result = await refreshPostRenders(db, createMdrsResolvers(db));
+    const result = await refreshPostRenders(
+        createSupabaseRenderStore(db),
+        createSupabaseMdrsResolvers(db)
+    );
     if (result.failed)
         Sentry.captureMessage('Post render refresh failed', {
             level: 'warning',
