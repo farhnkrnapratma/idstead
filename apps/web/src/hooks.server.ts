@@ -141,11 +141,8 @@ export const handle: Handle = sequence(
             }
         }
 
-        const pathname = event.url.pathname.toLowerCase().replace(/\/$/, '');
-
-        if (['/projects', '/contact', '/cv', '/funding', '/home'].includes(pathname)) {
-            const section = pathname.replace('/', '');
-            throw redirect(307, `/#${section}`);
+        if (event.url.pathname.toLowerCase().replace(/\/$/, '') === '/home') {
+            throw redirect(308, '/');
         }
 
         const isApiRequest =

@@ -48,14 +48,14 @@
             {subtitle} />
 
         {#if items.length === 0}
-            <div class="mt-8">
+            <div class="mt-6">
                 <EmptyState
                     icon={emptyIcon}
                     title={emptyTitle}
                     description={emptyDescription} />
             </div>
         {:else}
-            <div class="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {#each items as item, idx (item.href || item.label || idx)}
                     <a
                         href={item.href}

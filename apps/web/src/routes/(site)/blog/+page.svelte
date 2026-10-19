@@ -6,7 +6,6 @@
     import Tag from '@fkp/ui/components/Tag.svelte';
     import BlogPostCard from '#app/components/BlogPostCard.svelte';
     import FooterSection from '#app/layout/FooterSection.svelte';
-    import TopNav from '#app/components/TopNav.svelte';
     import {
         Button,
         Dropdown,
@@ -21,7 +20,6 @@
         SearchResultCount,
         SortControl,
         Tooltip,
-        SkipLink,
         createFilterSortStore,
         staggerChildren
     } from '@fkp/ui';
@@ -36,7 +34,6 @@
 
     const posts = $derived(data.posts ?? []);
     const pageAuthor = $derived((page?.data as any)?.author);
-    const pageProjects = $derived((page?.data as any)?.projects ?? []);
     const authorName = $derived(pageAuthor?.name || '');
     const siteUrl = $derived((pageAuthor?.siteUrl || '').replace(/\/$/, ''));
     const description = $derived(
@@ -165,15 +162,7 @@
     </Tag>
 {/snippet}
 
-<SkipLink />
-
-<TopNav
-    ariaLabel="Blog navigation"
-    backHref="/"
-    backLabel="Home"
-    projects={pageProjects} />
-
-<PageMain>
+<PageMain class="pb-16 md:pb-0">
     <Section
         spacing="none"
         class="relative z-10 pt-5 pb-6 md:pt-8 md:pb-8">
@@ -297,5 +286,5 @@
         </PageContainer>
     </Section>
 
-    <FooterSection />
+    <FooterSection divided />
 </PageMain>

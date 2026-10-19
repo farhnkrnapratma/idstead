@@ -37,6 +37,18 @@ describe('Skip link', () => {
         );
     });
 
+    test('the (site) layout renders the only skip link for its pages', () => {
+        const layout = read(join(root, 'apps/web/src/routes/(site)/+layout.svelte'));
+        expect((layout.match(/<SkipLink\b/g) ?? []).length).toBe(1);
+        for (const path of svelteFiles('apps/web/src/routes/(site)').filter(path =>
+            path.endsWith('+page.svelte')
+        ))
+            expect({
+                path: relative(root, path),
+                skipLink: read(path).includes('<SkipLink')
+            }).toEqual({ path: relative(root, path), skipLink: false });
+    });
+
     test('every page with a main target renders exactly one skip link', () => {
         const pages = [
             ...svelteFiles('apps/web/src/routes'),

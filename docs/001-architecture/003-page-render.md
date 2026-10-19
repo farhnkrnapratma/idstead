@@ -1,4 +1,4 @@
-# 3. Page Render (`/`, `/blog`, `/blog/[slug]`)
+# 3. Page Render (`/`, `/projects`, `/cv`, `/funding`, `/contact`, `/blog`, `/blog/[slug]`)
 
 How the public pages load their data. Every page load uses the **anon** Supabase client from `packages/lib/src/supabase.ts`. No session is involved, and RLS limits reads to public rows.
 
@@ -18,16 +18,22 @@ sequenceDiagram
     W-->>W: Cache-Control s-maxage=60
 
     alt GET /
-        par Promise.all (+page.server.ts)
-            W->>DB: profile (+email), CV entries, funding, contact
-            W->>DB: grouped skills, project repo rules
+        par Promise.all ((site)/+page.server.ts)
+            W->>DB: CV entries, project repo rules, active OpenPGP key
             W->>DB: fetchActiveCvDocument() reads db_documents
+            W->>DB: loadPublishedPosts(limit 10)
         end
         Note over W,DB: fetchActiveCvDocument is read-only. If hash is missing it reads file_url + .sha256<br/>for display. The hash is written only at CV upload
-        par
-            W->>GH: fetchProjects(username, excluded repos)
-            W->>DB: loadPublishedPosts(limit 5)
-        end
+        W-->>W: 2 experience, 1 education, 3 newest unpinned posts,<br/>layout projects minus excluded repos (page shows the 2 most recently pushed unpinned)
+    else GET /projects
+        W->>DB: project repo rules (layout projects minus excluded, pinned names)
+    else GET /cv
+        W->>DB: CV entries, grouped skills, active CV document, active OpenPGP key
+    else GET /funding
+        W->>DB: funding links
+    else GET /contact
+        W->>DB: contact channels, profile email
+        W-->>W: canSendMessage only, the email itself is not returned
     else GET /blog
         W->>DB: loadPublishedPosts(): db_posts where published
         loop each post
@@ -65,7 +71,8 @@ sequenceDiagram
 
 ## Source
 
-- `apps/web/src/routes/+layout.server.ts`, `+page.server.ts`
-- `apps/web/src/routes/blog/+page.server.ts`, `blog/[slug]/+page.server.ts`
+- `apps/web/src/routes/+layout.server.ts`
+- `apps/web/src/routes/(site)/+page.server.ts`, `(site)/{projects,cv,funding,contact,blog}/+page.server.ts`
+- `apps/web/src/routes/blog/[slug]/+page.server.ts`
 - `packages/lib/src/author.ts`
 - `packages/lib/src/server/blogPosts.ts`, `githubProjects.ts`, `postRender.ts`

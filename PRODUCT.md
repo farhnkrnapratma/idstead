@@ -34,7 +34,7 @@ The site is itself the portfolio piece: a security-focused engineer's blog whose
 
 ## Operating Context
 
-- **Public site (`fkp.my.id`):** a single-page homepage with anchored sections (home, projects, blog, CV, funding, contact) showing the five newest posts; `/blog` index with search, tag filter, sort, and pagination; post pages with table of contents, references, comments, and helpful feedback; legal pages (privacy, terms, security); subscribe/unsubscribe flows.
+- **Public site (`fkp.my.id`):** a homepage summarising the profile, recent experience, posts and projects; `/projects`, `/cv`, `/funding` and `/contact` pages; `/blog` index with search, tag filter, sort, and pagination; post pages with table of contents, references, comments, and helpful feedback; legal pages (privacy, terms, security); subscribe/unsubscribe flows.
 - **Reading formats:** every post and legal page also exists as `.md` and `.txt`; content is reachable through `api.fkp.my.id/v1`, Atom, sitemap, and `llms.txt`.
 - **Posts** are written in the project's own Markdown dialect (callouts, tabs, snippets, steps, details, embeds, KaTeX math, filenamed and line-marked code blocks, references) and rendered server-side through an allowlist sanitizer.
 - **Newsletter:** publishing a post enqueues delivery to subscribers by email (Resend).
