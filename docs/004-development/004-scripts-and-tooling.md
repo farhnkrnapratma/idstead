@@ -34,6 +34,7 @@ phase run --env prod bun scripts/regenerate-post-slugs.ts apply     # real run
 - **Browser code never imports server modules.** `.svelte` and `.svelte.ts` files, plus `packages/lib/src/{components,layout,article,stores,utils}`, fail lint when they import a path containing `server/` (`#lib/server/*`, `$lib/server/*`, `../server/*`).
 - **The MDRS engine is standalone.** Files under `packages/mdrs/` fail lint when they import `@supabase/*`, `#lib`, `@fkp/*`, `$app/*`, `$lib` or `svelte`. Live data reaches the engine through injected resolvers (`createMdrsResolvers` in `packages/lib/src/mdrsResolvers.ts`).
 - **The design system depends only on the domain.** Files under `packages/ui/` fail lint when they import `#lib`, `@fkp/lib`, `@fkp/mdrs`, `@supabase/*` or a `server/` path.
+- **The MDRS browser layer and the editor stay out of lib.** Files under `packages/mdrs-ui/` may import only `@fkp/ui`, `@fkp/domain` and `@fkp/mdrs`; files under `packages/editor/` must not import `#lib`, `@fkp/lib`, `@supabase/*` or a `server/` path.
 - **The domain is pure.** Files under `packages/domain/` fail lint when they import `#lib`, any `@fkp/*` package, `$app/*`, `$lib`, `svelte` or `@supabase/*`.
 
 ## Claude Code hooks (`.claude/`)

@@ -75,5 +75,5 @@ sequenceDiagram
 - `packages/lib/src/process*.ts`, `packages/lib/src/workers/*.worker.ts`
 - `packages/lib/src/server/validate*.ts`, `r2.ts`, `profileAssets.ts`, `blogBannerStorage.ts`, `blogContentStorage.ts`
 - `packages/lib/src/blogBanner.ts`, `blogContentImage.ts`, `siteIdentity.ts`
-- `packages/lib/src/server/blogPostAssets.ts`, `packages/lib/src/assetNaming.ts`, `packages/lib/src/cdn.ts`
+- `packages/lib/src/server/blogPostAssets.ts`, `packages/domain/src/assetNaming.ts`, `packages/lib/src/cdn.ts`
 - `apps/admin/src/routes/api/internal/admin/{profile,blog/content-image,blog/content-video}/+server.ts`

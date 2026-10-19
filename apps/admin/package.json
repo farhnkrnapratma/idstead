@@ -20,8 +20,10 @@
     },
     "dependencies": {
         "@fkp/domain": "workspace:*",
+        "@fkp/editor": "workspace:*",
         "@fkp/lib": "workspace:*",
         "@fkp/mdrs": "workspace:*",
+        "@fkp/mdrs-ui": "workspace:*",
         "@fkp/ui": "workspace:*",
         "@lucide/svelte": "^1.55.0",
         "@sentry/cloudflare": "11.6.0",

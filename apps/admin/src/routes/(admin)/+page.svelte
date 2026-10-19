@@ -118,7 +118,7 @@
         import('#app/components/admin/ActivityLogWorkspace.svelte');
     const loadAccountSettings = () => import('#app/components/admin/AccountSettings.svelte');
     const loadPostEditor = () => import('#app/components/admin/PostEditor.svelte');
-    const loadMarkdownEditor = () => import('#lib/components/editor/index.ts');
+    const loadMarkdownEditor = () => import('@fkp/editor');
     import { estimateReadTime } from '@fkp/domain/readTime.ts';
     import { formatBadgeCount } from '@fkp/domain/formatters.ts';
     import {
@@ -156,7 +156,8 @@
         FileUploadField,
         IconButton
     } from '@fkp/ui';
-    import { BrandIcon, CommentThread, CodeTabs } from '#lib/index.ts';
+    import { BrandIcon, CommentThread } from '#lib/index.ts';
+    import CodeTabs from '@fkp/mdrs-ui/CodeTabs.svelte';
     import { formatReadTime, sanitizeInput } from '@fkp/domain';
     import { decodeHtmlEntities } from '@fkp/mdrs';
     import ActionMenu from '@fkp/ui/components/ActionMenu.svelte';

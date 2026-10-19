@@ -25,7 +25,7 @@
         ADMIN_CHART_X_TICK_LABEL_PROPS,
         ADMIN_CHART_Y_TICK_LABEL_PROPS,
         ADMIN_CHART_TICK_LENGTH
-    } from '#lib/utils/chartAxisStyles.ts';
+    } from '@fkp/ui/utils/chartAxisStyles.ts';
 
     interface Props {
         ceiling?: number;

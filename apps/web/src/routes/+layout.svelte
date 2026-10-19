@@ -16,10 +16,10 @@
 
     import { themeStore } from '@fkp/ui/stores/themeStore.svelte.ts';
     import { a11yStore } from '@fkp/ui/stores/a11yStore.svelte.ts';
-    import { codeBlockPrefsStore } from '#lib/stores/codeBlockPrefsStore.svelte.ts';
+    import { codeBlockPrefsStore } from '@fkp/mdrs-ui/codeBlockPrefsStore.svelte.ts';
     import { scrollStore } from '@fkp/ui/stores/scrollStore.svelte.ts';
     import { readingModeStore } from '@fkp/ui/stores/readingModeStore.svelte.ts';
-    import { refreshCodeBlockPrefs } from '#lib/utils/codeBlocks.ts';
+    import { refreshCodeBlockPrefs } from '@fkp/mdrs-ui/codeBlocks.ts';
 
     const { data, children } = $props();
 

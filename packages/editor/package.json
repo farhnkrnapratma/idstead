@@ -1,0 +1,31 @@
+{
+    "name": "@fkp/editor",
+    "version": "0.0.1",
+    "private": true,
+    "license": "MIT",
+    "type": "module",
+    "sideEffects": [
+        "**/*.css"
+    ],
+    "peerDependencies": {
+        "@sveltejs/kit": "^3.0.1",
+        "svelte": "^5.0.0"
+    },
+    "svelte": "./src/index.ts",
+    "exports": {
+        ".": {
+            "types": "./src/index.ts",
+            "svelte": "./src/index.ts",
+            "default": "./src/index.ts"
+        }
+    },
+    "dependencies": {
+        "@fkp/domain": "workspace:*",
+        "@fkp/mdrs": "workspace:*",
+        "@fkp/mdrs-ui": "workspace:*",
+        "@fkp/ui": "workspace:*",
+        "@lucide/svelte": "^1.55.0",
+        "highlight.js": "^11.12.0",
+        "katex": "^0.19.0"
+    }
+}

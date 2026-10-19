@@ -18,7 +18,7 @@
         toastStore,
         PillInput
     } from '@fkp/ui';
-    import { MarkdownEditor } from '#lib/index.ts';
+    import { MarkdownEditor } from '@fkp/editor';
     import { decodeHtmlEntities } from '@fkp/mdrs';
     import { Mail } from '@lucide/svelte';
     import { importPostDocument, MAX_DOCUMENT_LENGTH, type ImportedPost } from '@fkp/mdrs';

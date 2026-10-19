@@ -94,6 +94,8 @@ This is a Bun workspaces monorepo. Each app is its own Cloudflare Worker, and al
 | `packages/ui` | — | The design system (`@fkp/ui`): tokens, global styles, UI primitives and stores. |
 | `packages/domain` | — | Pure helpers and types (`@fkp/domain`) shared by every app. |
 | `packages/mdrs` | — | The MDRS engine (`@fkp/mdrs`), used by the web, admin and API apps. |
+| `packages/mdrs-ui` | — | The browser side of MDRS (`@fkp/mdrs-ui`): code blocks, tabs, charts, diagrams and `mdrs.css`. |
+| `packages/editor` | — | The admin's Markdown editor (`@fkp/editor`). |
 
 ### Start Development Servers
 

@@ -1,6 +1,6 @@
 import { mount } from 'svelte';
 import { load as yamlLoad } from 'js-yaml';
-import MarkdownChart from '../components/markdown/MarkdownChart.svelte';
+import MarkdownChart from './MarkdownChart.svelte';
 
 export interface ChartSpec {
     type?: 'line' | 'bar' | 'area' | 'donut' | 'pie';

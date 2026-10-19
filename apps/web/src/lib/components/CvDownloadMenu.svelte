@@ -9,7 +9,7 @@
     } from '@lucide/svelte';
     import Button from '@fkp/ui/components/Button.svelte';
     import CommandLine from '@fkp/ui/components/CommandLine.svelte';
-    import CodeTabs from '#lib/components/CodeTabs.svelte';
+    import CodeTabs from '@fkp/mdrs-ui/CodeTabs.svelte';
     import Dialog from '@fkp/ui/components/Dialog.svelte';
     import Dropdown from '@fkp/ui/components/Dropdown.svelte';
     import Tooltip from '@fkp/ui/components/Tooltip.svelte';

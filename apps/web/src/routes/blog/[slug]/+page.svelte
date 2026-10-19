@@ -14,9 +14,9 @@
     import type { BlogComment } from './+page.server';
     import hljs from 'highlight.js';
     import { isNameReserved, extractAuthorNameTokens } from '@fkp/domain/nameValidator.ts';
-    import { enhanceMarkdownContent } from '#lib/utils/markdownEnhancer.ts';
-    import { enhanceHeadingAnchors, resolveMdrsHash } from '#lib/utils/headingAnchors.ts';
-    import { refreshCodeBlockPrefs } from '#lib/utils/codeBlocks.ts';
+    import { enhanceMarkdownContent } from '@fkp/mdrs-ui/enhance.ts';
+    import { enhanceHeadingAnchors, resolveMdrsHash } from '@fkp/mdrs-ui/headingAnchors.ts';
+    import { refreshCodeBlockPrefs } from '@fkp/mdrs-ui/codeBlocks.ts';
     import { highlightAfterScroll } from '@fkp/ui/utils/scroll.ts';
     import 'katex/dist/katex.min.css';
     import {
@@ -60,7 +60,7 @@
     import { pushState } from '$app/navigation';
     import { page, navigating } from '$app/state';
     import { contentFontStore } from '@fkp/ui/stores/contentFontStore.svelte.ts';
-    import { codeBlockPrefsStore } from '#lib/stores/codeBlockPrefsStore.svelte.ts';
+    import { codeBlockPrefsStore } from '@fkp/mdrs-ui/codeBlockPrefsStore.svelte.ts';
 
     let { data }: PageProps = $props();
     const post = $derived(data.post);

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { assetAltText, assetFileName } from '../packages/lib/src/assetNaming.ts';
+import { assetAltText, assetFileName } from '../packages/domain/src/assetNaming.ts';
 
 describe('assetFileName', () => {
     test.each([

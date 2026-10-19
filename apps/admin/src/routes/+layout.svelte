@@ -6,8 +6,8 @@
     import { shortcutStore } from '@fkp/ui/stores/shortcutStore.svelte.ts';
     import { themeStore } from '@fkp/ui/stores/themeStore.svelte.ts';
     import { a11yStore } from '@fkp/ui/stores/a11yStore.svelte.ts';
-    import { codeBlockPrefsStore } from '#lib/stores/codeBlockPrefsStore.svelte.ts';
-    import { refreshCodeBlockPrefs } from '#lib/utils/codeBlocks.ts';
+    import { codeBlockPrefsStore } from '@fkp/mdrs-ui/codeBlockPrefsStore.svelte.ts';
+    import { refreshCodeBlockPrefs } from '@fkp/mdrs-ui/codeBlocks.ts';
 
     const { children } = $props();
 
