@@ -18,16 +18,7 @@
         description?: string;
     }
 
-    const {
-        title,
-        subtitle,
-        items,
-        emptyIcon = Inbox,
-        emptyTitle = 'Nothing here yet',
-        emptyDescription = 'Check back soon.',
-        shortcutGroup,
-        class: className = ''
-    } = $props<{
+    interface Props {
         title: string;
         subtitle: string;
         items: GridItem[];
@@ -36,7 +27,18 @@
         emptyDescription?: string;
         shortcutGroup?: string;
         class?: string;
-    }>();
+    }
+
+    let {
+        title,
+        subtitle,
+        items,
+        emptyIcon = Inbox,
+        emptyTitle = 'Nothing here yet',
+        emptyDescription = 'Check back soon.',
+        shortcutGroup,
+        class: className = ''
+    }: Props = $props();
 </script>
 
 <Section

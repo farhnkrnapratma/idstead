@@ -1,4 +1,19 @@
 <script lang="ts">
+    interface Props {
+        text: string;
+        disabled?: boolean;
+        speed?: number;
+        class?: string;
+        color?: string;
+        shineColor?: string;
+        spread?: number;
+        yoyo?: boolean;
+        pauseOnHover?: boolean;
+        direction?: 'left' | 'right';
+        delay?: number;
+        [key: string]: unknown;
+    }
+
     let {
         text,
         disabled = false,
@@ -12,20 +27,7 @@
         direction = 'left',
         delay = 0,
         ...restProps
-    } = $props<{
-        text: string;
-        disabled?: boolean;
-        speed?: number;
-        class?: string;
-        color?: string;
-        shineColor?: string;
-        spread?: number;
-        yoyo?: boolean;
-        pauseOnHover?: boolean;
-        direction?: 'left' | 'right';
-        delay?: number;
-        [key: string]: unknown;
-    }>();
+    }: Props = $props();
 </script>
 
 <span
