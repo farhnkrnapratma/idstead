@@ -551,6 +551,14 @@ describe('references block', () => {
         const html = await render('Claim[^a].\n\n:::references\n[^a]: Source.\n:::');
         expect(html).toContain('Source.');
     });
+
+    test('dollar signs in references are kept as written', async () => {
+        const html = await render(
+            "Claim[^a].\n\n:::references\n[^a]: Costs $$5, or $& and $' here.\n:::"
+        );
+        expect(html).toContain('Costs $$5, or $&amp; and $&#39; here.');
+        expect(html).not.toContain('REFERENCES');
+    });
 });
 
 describe('containers inside lists and blockquotes', () => {
