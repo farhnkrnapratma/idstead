@@ -33,6 +33,7 @@ The suite sends about 50 requests. The rate limit is 60 per minute, so wait a mi
 | `markdown.test.ts`, `legacyMarkdown.test.ts`, `frontmatter.test.ts`, `postAssetMarkdown.test.ts` | Markdown engine output; legacy syntax migration; YAML frontmatter and `:::define` validation; post images (AVIF with WebP fallback) and WebM videos |
 | `mdrsDocsSnapshot.test.ts` | Snapshot of the rendered HTML for every ` ```mdrs ` example in `docs/002-mdrs/` and for `fixtures/markdown-demo.md`. After an intended engine change, review the diff and refresh it with `bun test tests/mdrsDocsSnapshot.test.ts --update-snapshots` |
 | `mdrsRenderVersion.test.ts`, `postRender.test.ts`, `blogPostSave.test.ts` | `RENDER_VERSION` is bumped whenever the MDRS snapshot changes; render file paths, live-data detection and render file validation; the save stores the render next to the markdown and survives a failed render upload |
+| `postRenderRefresh.test.ts` | The render refresh re-renders live, missing and outdated renders within its budget; resolvers fetch each live-data list once per render |
 | `editorTextEdits.test.ts` | Markdown editor helpers: selection wrapping, Tab indent, list and quote continuation, cursor position, asset markdown, and highlighting that keeps every `$` so the overlay lines up |
 | `sanitizeHtml.test.ts`, `decodeHtmlEntities.test.ts` | Hostile input, and engine output surviving the allow-list; single-level entity decoding |
 | `docsLayout.test.ts` | `docs/` folders are numbered `001…n` and every relative link and anchor resolves |

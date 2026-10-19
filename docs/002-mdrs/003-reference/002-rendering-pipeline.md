@@ -88,7 +88,7 @@ Pass resolvers to enable [live data](../002-extensions/014-live-data.md): the si
 
 Saved posts keep their rendered HTML, stamped with `RENDER_VERSION` (`packages/mdrs/src/version.ts`). Pages ignore a stored render with another version and render the post again, so bump `RENDER_VERSION` whenever the engine's output changes. `tests/mdrsRenderVersion.test.ts` enforces this: it pins the hash of the MDRS snapshot file to the current version and fails until both are updated together.
 
-`usesLiveData(markdown)` reports whether a document reads `api.*` inside an active `:::define`; such posts are always rendered on the request.
+`usesLiveData(markdown)` reports whether a document reads `api.*` inside an active `:::define`. Pages still serve the stored render of such a post; the jobs worker re-renders it after every publish and once a day, together with any stored render from an older `RENDER_VERSION`.
 
 ## Limits
 

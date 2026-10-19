@@ -38,11 +38,17 @@ sequenceDiagram
             P-)P: runInBackground(notifyNewPost(...))
         end
     end
+    opt result.published or previously published
+        P->>Q: enqueueRenderRefresh() → {kind: 'refresh-renders'}
+    end
     P->>DB: cleanupBlogAssets()
     P->>DB: logActivity blog.publish, blog.update or blog.delete
     P-->>B: saved post
 
     Q->>J: batch (max 10)
+    opt any {kind: 'refresh-renders'} in the batch
+        J->>ST: refreshPostRenders() once, then ack those messages
+    end
     J->>J: isNewsletterMessage? else ack (drop)
     J->>DB: notifyNewPost(db, env, siteUrl, postId, force)
     DB-->>J: post row: published? subscribers_notified_at?
@@ -78,7 +84,8 @@ sequenceDiagram
     - `force: true` skips the `IS NULL` guard on the claim and re-sends to everyone.
     - A failed chunk returns `502 BLOG_NOTIFY_SEND_FAILED` after the claim is restored.
 - **Error mapping:** the post route also returns `503 BLOG_SAVE_UNCONFIRMED` when the commit cannot be confirmed. `GET /api/internal/admin/posts?operationId=…` reads `db_post_operations` to check a save's outcome.
-- **Jobs cron** (`17 3 * * *`) only runs `cleanupBlogAssets` and `cleanupAssets`. It never sends newsletters.
+- **Jobs cron** (`17 3 * * *`) runs `cleanupBlogAssets`, `cleanupAssets` and `refreshPostRenders`. It never sends newsletters.
+- **Render refresh:** after saving a published post, or unpublishing one, the route sends `{ kind: 'refresh-renders' }` to `fkp-newsletter`, because the list behind `api.v1.blog` changed. The consumer runs `refreshPostRenders()` (`packages/lib/src/server/postRender.ts`) re-renders published posts whose stored render is `live`, missing or from another `RENDER_VERSION`, checking the 20 newest posts and rendering at most 5 per run to stay inside the free plan's 50 external subrequests per invocation. Several refresh messages in one batch run the job once.
 - **Retries do not duplicate mail:** each chunk's `Idempotency-Key` is `newsletter/{postId}/{previous subscribers_notified_at, or auto}/{sha256 of the chunk}`, and Resend dedups identical keys for 24 hours, so a retry, including a retried forced re-send, only delivers the chunks that failed.
 - **DLQ:** `fkp-jobs` consumes `fkp-newsletter-dlq` (`max_retries: 0`), reports each message to Sentry with its `postId`, and acks it.
 

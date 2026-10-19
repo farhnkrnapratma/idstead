@@ -11,7 +11,7 @@ Personal website/blog for Farhan Kurnia Pratama (fkp.my.id) — SvelteKit 5 + Ty
 | `apps/web` | `fkp-web` | `fkp.my.id` (+ `www.`) | Public site: homepage, `/blog`, posts, legal pages, feeds, `.well-known`, first-party `/api/internal/**` and `/api/ard/**`. |
 | `apps/admin` | `fkp-admin` | `admin.fkp.my.id` | Admin portal at the host root plus `/api/internal/admin/**`. |
 | `apps/api` | `fkp-api` | `api.fkp.my.id/v1` | Public read-only REST API (Hono). |
-| `apps/jobs` | `fkp-jobs` | none | Queue consumer (`fkp-newsletter`) and daily cron cleanups. |
+| `apps/jobs` | `fkp-jobs` | none | Queue consumer (`fkp-newsletter`), daily cron cleanups and post render refreshes. |
 | `packages/lib` | — | — | `@fkp/lib`: components, layout, stores, server helpers, API handlers. |
 | `packages/mdrs` | — | — | `@fkp/mdrs`: the standalone MDRS engine (render, `:::define`, frontmatter, sanitizer, legacy migration). |
 
@@ -79,7 +79,7 @@ Full endpoint reference and error-code table: [apps/api/src/README.md](apps/api/
 
 ### Jobs (`apps/jobs`)
 
-Consumes `fkp-newsletter` (retries, dead-letter queue `fkp-newsletter-dlq`, which it also consumes to report each dead-lettered message to Sentry) and runs `cleanupBlogAssets`/`cleanupAssets` daily. `wrangler.jsonc` aliases `$app/env/private`/`$app/env/public` to `src/appEnv.ts`, which reads `cloudflare:workers` env, so shared server code runs unchanged.
+Consumes `fkp-newsletter` (retries, dead-letter queue `fkp-newsletter-dlq`, which it also consumes to report each dead-lettered message to Sentry) and runs `cleanupBlogAssets`/`cleanupAssets` daily. The same queue carries `{ kind: 'refresh-renders' }` messages (`packages/lib/src/server/renderQueue.ts`), which admin sends after saving a published post or unpublishing one; the consumer and the daily cron both run `refreshPostRenders()` (`packages/lib/src/server/postRender.ts`) re-renders published posts whose stored render is `live`, missing or from another `RENDER_VERSION`, checking the 20 newest posts and rendering at most 5 per run to stay inside the free plan's 50 external subrequests per invocation. `wrangler.jsonc` aliases `$app/env/private`/`$app/env/public` to `src/appEnv.ts`, which reads `cloudflare:workers` env, so shared server code runs unchanged.
 
 ### Data layer
 
