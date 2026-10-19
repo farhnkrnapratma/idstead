@@ -4,6 +4,9 @@ import { notifyNewPost } from '#lib/server/subscriberBroadcast.ts';
 import { isNewsletterMessage, type NewsletterMessage } from '#lib/server/newsletterQueue.ts';
 import { cleanupBlogAssets } from '#lib/server/blogBannerStorage.ts';
 import { cleanupAssets } from '#lib/server/profileAssets.ts';
+import { refreshPostRenders } from '#lib/server/postRender.ts';
+import { isRenderRefreshMessage } from '#lib/server/renderQueue.ts';
+import { createMdrsResolvers } from '#lib/mdrsResolvers.ts';
 
 export interface Env {
     PUBLIC_SITE_URL?: string;
@@ -51,11 +54,24 @@ function deadLetter(message: Message<unknown>) {
     message.ack();
 }
 
+async function refreshRenders(env: Env) {
+    const db = getSupabaseAdminClient({ env });
+    if (!db) throw new Error('Post render refresh needs the Supabase service role.');
+    const result = await refreshPostRenders(db, createMdrsResolvers(db));
+    if (result.failed)
+        Sentry.captureMessage('Post render refresh failed', {
+            level: 'warning',
+            extra: { ...result }
+        });
+    return result;
+}
+
 async function cleanup(env: Env) {
     const db = getSupabaseAdminClient({ env });
     const results = await Promise.allSettled([
         db ? cleanupBlogAssets(db, { env } as App.Platform) : Promise.resolve(null),
-        cleanupAssets({ env } as App.Platform)
+        cleanupAssets({ env } as App.Platform),
+        refreshRenders(env)
     ]);
     results
         .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
@@ -77,13 +93,27 @@ export default Sentry.withSentry<Env>(
                 batch.messages.forEach(deadLetter);
                 return;
             }
+            const refreshes = batch.messages.filter(message =>
+                isRenderRefreshMessage(message.body)
+            );
+            if (refreshes.length) {
+                try {
+                    await refreshRenders(env);
+                    refreshes.forEach(message => message.ack());
+                } catch (error) {
+                    Sentry.captureException(error);
+                    refreshes.forEach(message => message.retry({ delaySeconds: 300 }));
+                }
+            }
             await Promise.all(
-                batch.messages.map(message =>
-                    deliver(message, env).catch(error => {
-                        Sentry.captureException(error);
-                        message.retry({ delaySeconds: 300 });
-                    })
-                )
+                batch.messages
+                    .filter(message => !isRenderRefreshMessage(message.body))
+                    .map(message =>
+                        deliver(message, env).catch(error => {
+                            Sentry.captureException(error);
+                            message.retry({ delaySeconds: 300 });
+                        })
+                    )
             );
         },
         async scheduled(_controller, env, ctx) {

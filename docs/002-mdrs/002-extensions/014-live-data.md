@@ -66,7 +66,8 @@ Read [${post.title}](/blog/hello-world), first published ${post.created_at}.
 - Rendering without resolvers (for example in tests) gives `Database access is unavailable in this context.`
 - Internal database IDs are never exposed: posts carry their public ID as `id`.
 - The old `db.*` root has been removed; using it gives a message pointing to `api.v1.*`.
-- Every reference to `api.v1.author` fetches the whole profile again. Read it once into a `:::define` variable when you use it several times.
+- Within one render, `api.v1.author`, the `api.v1.blog` list and each `api.v1.blog['slug']` are fetched once and reused, however often they are referenced.
+- Published posts show live data as of their last render: when the post was saved, when any post was last published or unpublished, or the daily refresh. It can therefore be up to a day old. The admin preview always renders fresh.
 
 Errors render the same `[define error]` marker as other [variables](013-variables.md#errors), and block saving.
 

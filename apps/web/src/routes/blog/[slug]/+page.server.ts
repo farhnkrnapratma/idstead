@@ -84,7 +84,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
                 fetch
             )
         :   null;
-    if (prerendered && !prerendered.live) {
+    if (prerendered) {
         ({ html, headings, readTime } = prerendered);
     } else {
         try {

@@ -5,9 +5,12 @@ import {
     type ApiRegistry,
     type HeadingItem
 } from '@fkp/mdrs';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { estimateReadTime } from '#lib/readTime.ts';
 
-export { postRenderPath } from './postRenderPath';
+import { postRenderPath } from './postRenderPath';
+
+export { postRenderPath };
 
 export interface PostRender {
     version: number;
@@ -82,4 +85,63 @@ export async function fetchPostRender(
     } catch {
         return null;
     }
+}
+
+export interface RenderRefreshResult {
+    checked: number;
+    rendered: number;
+    failed: number;
+}
+
+export const RENDER_REFRESH_MAX_POSTS = 20;
+export const RENDER_REFRESH_MAX_RENDERS = 5;
+
+async function readText(
+    bucket: ReturnType<SupabaseClient['storage']['from']>,
+    path: string
+): Promise<string | null> {
+    const { data, error } = await bucket.download(path);
+    return error || !data ? null : data.text();
+}
+
+export async function refreshPostRenders(
+    db: SupabaseClient,
+    resolvers: ApiRegistry,
+    maxRenders = RENDER_REFRESH_MAX_RENDERS
+): Promise<RenderRefreshResult> {
+    const result: RenderRefreshResult = { checked: 0, rendered: 0, failed: 0 };
+    const { data: posts, error } = await db
+        .from('db_posts')
+        .select('storage_path')
+        .eq('published', true)
+        .order('created_at', { ascending: false })
+        .limit(RENDER_REFRESH_MAX_POSTS);
+    if (error) throw error;
+    const bucket = db.storage.from('blog-posts');
+    for (const post of posts ?? []) {
+        if (result.rendered + result.failed >= maxRenders) break;
+        const storagePath = (post as { storage_path: string | null }).storage_path;
+        const renderPath = postRenderPath(storagePath);
+        if (!renderPath || !storagePath) continue;
+        result.checked++;
+        const stored = await readText(bucket, renderPath);
+        const current = stored === null ? null : parsePostRender(stored);
+        if (current && !current.live) continue;
+        try {
+            const markdown = await readText(bucket, storagePath);
+            if (markdown === null) throw new Error('Markdown file is missing.');
+            const render = await buildPostRender(markdown, resolvers);
+            const { error: uploadError } = await bucket.upload(
+                renderPath,
+                new Blob([JSON.stringify(render)], { type: 'application/json' }),
+                { contentType: 'application/json', upsert: true }
+            );
+            if (uploadError) throw new Error(uploadError.message);
+            result.rendered++;
+        } catch (error) {
+            console.error('Post render refresh failed:', renderPath, error);
+            result.failed++;
+        }
+    }
+    return result;
 }

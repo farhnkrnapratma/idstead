@@ -20,6 +20,7 @@ import { notifyNewPost } from '#lib/server/subscriberBroadcast.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { runInBackground } from '#lib/server/workerEnv.ts';
 import { enqueueNewsletter } from '#lib/server/newsletterQueue.ts';
+import { enqueueRenderRefresh } from '#lib/server/renderQueue.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
@@ -138,6 +139,10 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
                     })
                 );
         }
+        if (operation.result?.published || previous?.published)
+            await enqueueRenderRefresh().catch(error => {
+                console.error('Could not queue the post render refresh:', error);
+            });
         let cleanupPending = false;
         try {
             const deleted = input.kind === 'delete' || Boolean(operation.result?.deleted);
