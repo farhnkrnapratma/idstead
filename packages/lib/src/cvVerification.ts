@@ -5,18 +5,16 @@ import {
     wkdEmails,
     type OpenPgpKeyserver,
     type OpenPgpUserId
-} from '#lib/openpgpKey.ts';
+} from '@fkp/domain/openpgpKey.ts';
 
-export const CV_CHECKSUM_ALGORITHMS = [
-    { ext: 'sha256', label: 'SHA-256', command: 'sha256sum' },
-    { ext: 'sha512', label: 'SHA-512', command: 'sha512sum' },
-    { ext: 'b2', label: 'BLAKE2b', command: 'b2sum' },
-    { ext: 'md5', label: 'MD5', command: 'md5sum' }
-] as const;
+import {
+    CV_CHECKSUM_ALGORITHMS,
+    type CvChecksumExt,
+    type CvChecksums
+} from '@fkp/domain/cvChecksums.ts';
 
-export type CvChecksumExt = (typeof CV_CHECKSUM_ALGORITHMS)[number]['ext'];
+export { CV_CHECKSUM_ALGORITHMS, type CvChecksumExt, type CvChecksums };
 export type CvSignatureExt = 'asc' | 'sig';
-export type CvChecksums = Record<CvChecksumExt, string>;
 
 export interface CvSigningKey {
     fingerprint: string;

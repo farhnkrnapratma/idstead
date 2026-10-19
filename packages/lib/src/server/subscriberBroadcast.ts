@@ -1,6 +1,5 @@
+import { publicRepositories } from './repositories';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { fetchAuthorProfile } from '#lib/author.ts';
-import { supabase as publicSupabase } from '#lib/supabase.ts';
 import {
     activeSubscribers,
     newPostEmail,
@@ -64,7 +63,9 @@ export async function notifyNewPost(
     }
     if (!recipients.length) return { sent: 0, reason: 'no-subscribers' };
 
-    const profile = await fetchAuthorProfile(publicSupabase);
+    const profile = await publicRepositories()
+        .author.profile()
+        .catch(() => null);
     const siteUrl = profile?.siteUrl?.trim().replace(/\/+$/, '') || configuredSiteUrl(platform);
     const siteName = profile?.name?.trim() || new URL(siteUrl).hostname;
     const postUrl = `${siteUrl}/blog/${post.slug}`;

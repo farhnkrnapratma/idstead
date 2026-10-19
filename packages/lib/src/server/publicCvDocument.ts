@@ -1,13 +1,13 @@
 import * as publicEnv from '$app/env/public';
-import { supabase } from '#lib/supabase.ts';
-import { fetchActiveCvDocument, fetchActiveOpenPgpKey, fetchSiteUrl } from '#lib/author.ts';
 import { cvDocumentInfo } from '#lib/cvVerification.ts';
+import { publicRepositories } from './repositories';
 
 export async function loadPublicCvDocument(fetchFn: typeof fetch) {
+    const { author } = publicRepositories(fetchFn);
     const [document, signingKey, siteUrl] = await Promise.all([
-        fetchActiveCvDocument(supabase, fetchFn),
-        fetchActiveOpenPgpKey(supabase),
-        fetchSiteUrl(supabase)
+        author.activeCvDocument().catch(() => null),
+        author.activeOpenPgpKey().catch(() => null),
+        author.siteUrl().catch(() => '')
     ]);
     if (!document?.fileUrl) return null;
     return cvDocumentInfo(

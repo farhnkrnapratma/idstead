@@ -74,11 +74,7 @@ export const bannerAssetNames = Object.keys(bannerSizes);
 
 export const identityAssetNames = [...avatarAssetNames, ...bannerAssetNames];
 
-export interface ManifestSettings {
-    theme_color: string;
-    background_color: string;
-    display: 'standalone' | 'minimal-ui' | 'browser' | 'fullscreen';
-}
+export type { ManifestSettings } from '@fkp/domain/author.ts';
 
 export interface IdentityAsset {
     name: string;

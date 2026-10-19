@@ -1,11 +1,10 @@
+import { publicRepositories } from '#lib/server/repositories.ts';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { apiError } from '#lib/server/apiError.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { verifyTurnstileToken } from '#lib/server/turnstile.ts';
-import { fetchAuthorProfile } from '#lib/author.ts';
-import { supabase as publicSupabase } from '#lib/supabase.ts';
 import {
     SUBSCRIBER_TABLE,
     confirmEmail,
@@ -107,7 +106,9 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         );
     }
 
-    const profile = await fetchAuthorProfile(publicSupabase);
+    const profile = await publicRepositories()
+        .author.profile()
+        .catch(() => null);
     const siteName = profile?.name?.trim() || url.hostname;
     const confirmUrl = `${url.origin}/subscribe/confirm?token=${confirmToken}`;
 

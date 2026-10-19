@@ -7,7 +7,7 @@ import {
     type Key,
     type Signature
 } from 'openpgp';
-import type { OpenPgpUserId } from '#lib/openpgpKey.ts';
+import type { OpenPgpUserId } from '@fkp/domain/openpgpKey.ts';
 import { CV_SIGNATURE_LIMIT } from '#lib/server/cvChecksums.ts';
 
 export const OPENPGP_KEY_LIMIT = 64 * 1024;

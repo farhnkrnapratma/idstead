@@ -1,11 +1,11 @@
-import { supabase } from '#lib/supabase.ts';
-import { fetchAuthorProfile, fetchContactInfo } from '#lib/author.ts';
+import { publicRepositories } from '#lib/server/repositories.ts';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ fetch }) => {
+    const { author } = publicRepositories(fetch);
     const [contact, profile] = await Promise.all([
-        fetchContactInfo(supabase),
-        fetchAuthorProfile(supabase, { includeEmail: true })
+        author.contactLinks().catch(() => []),
+        author.profile({ includeEmail: true }).catch(() => null)
     ]);
     const hasEmailChannel = contact.some(
         item => item.platform.toLowerCase() === 'email' || item.href.startsWith('mailto:')

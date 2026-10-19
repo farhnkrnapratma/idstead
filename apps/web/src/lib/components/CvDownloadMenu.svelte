@@ -15,7 +15,7 @@
     import Tooltip from '@fkp/ui/components/Tooltip.svelte';
     import { downloadUrl as download } from '@fkp/ui/utils/fileActions.ts';
     import { CV_CHECKSUM_ALGORITHMS, type CvDocumentInfo } from '#lib/cvVerification.ts';
-    import { formatFingerprint, formatUserId } from '#lib/openpgpKey.ts';
+    import { formatFingerprint, formatUserId } from '@fkp/domain/openpgpKey.ts';
 
     const CV_UNAVAILABLE = 'No CV document is available yet.';
 

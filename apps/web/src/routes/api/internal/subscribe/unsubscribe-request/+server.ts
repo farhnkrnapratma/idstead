@@ -1,3 +1,4 @@
+import { publicRepositories } from '#lib/server/repositories.ts';
 import type { RequestHandler } from './$types';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { verifyTurnstileToken } from '#lib/server/turnstile.ts';
@@ -8,8 +9,6 @@ import {
     sendEmail,
     unsubscribeEmail
 } from '#lib/server/subscribers.ts';
-import { fetchAuthorProfile } from '#lib/author.ts';
-import { supabase } from '#lib/supabase.ts';
 
 export const POST: RequestHandler = ({ request, url, platform, getClientAddress }) => {
     const apiKey = resendApiKey(platform);
@@ -22,7 +21,9 @@ export const POST: RequestHandler = ({ request, url, platform, getClientAddress 
         send:
             apiKey && from ?
                 async (email, token) => {
-                    const profile = await fetchAuthorProfile(supabase);
+                    const profile = await publicRepositories()
+                        .author.profile()
+                        .catch(() => null);
                     return sendEmail(apiKey, from, {
                         to: email,
                         ...unsubscribeEmail(

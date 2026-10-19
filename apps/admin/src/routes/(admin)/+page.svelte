@@ -195,7 +195,7 @@
         wkdEmails,
         type OpenPgpKeyserver,
         type PublicOpenPgpKey
-    } from '#lib/openpgpKey.ts';
+    } from '@fkp/domain/openpgpKey.ts';
 
     const publicSiteUrl = $derived(
         ((page.data as { author?: { siteUrl?: string } })?.author?.siteUrl ?? '').replace(/\/$/, '')

@@ -1,17 +1,21 @@
 import type { LayoutServerLoad } from './$types';
-import { supabase } from '#lib/supabase.ts';
-import { fetchAuthorProfileWithSocials, fetchProjectRepoRules } from '#lib/author.ts';
+import { publicRepositories } from '#lib/server/repositories.ts';
 import { avatarSource } from '#lib/siteIdentity.ts';
 import { extractGitHubUsername } from '#lib/server/githubProjects.ts';
 import { fetchCachedProjects, withoutExcludedProjects } from '#lib/server/projectsCache.ts';
 
 export const load: LayoutServerLoad = async ({ fetch, platform, setHeaders }) => {
-    const author = await fetchAuthorProfileWithSocials(supabase);
+    const { author: authorRepository } = publicRepositories(fetch);
+    const [profile, socialLinks] = await Promise.all([
+        authorRepository.profile().catch(() => null),
+        authorRepository.socialLinks().catch(() => [])
+    ]);
+    const author = profile ? { ...profile, socialLinks } : null;
 
     const githubUsername = extractGitHubUsername(author);
     const [projects, repoRules] = await Promise.all([
         githubUsername ? fetchCachedProjects(githubUsername, fetch, platform) : [],
-        fetchProjectRepoRules(supabase)
+        authorRepository.projectRepoRules().catch(() => ({ excluded: [], pinned: [] }))
     ]);
 
     try {
