@@ -1,3 +1,4 @@
+import { countReadingMinutes } from '@fkp/domain/readTime.ts';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
@@ -97,6 +98,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         }
         let render: string | null = null;
         if (input.kind === 'save') {
+            input.post.read_time = countReadingMinutes(input.markdown);
             try {
                 render = JSON.stringify(
                     await buildPostRender(input.markdown, createSupabaseMdrsResolvers(db))

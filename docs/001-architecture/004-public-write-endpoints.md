@@ -17,14 +17,14 @@ sequenceDiagram
     B->>H: {postId, parentId?, authorName, content, turnstileToken}
     H->>H: isSameOriginRequest, else 403
     H->>TS: verifyTurnstileToken, else 403
-    H->>H: validate: parentId UUID, content ≤ 2000, no links, author name not reserved
+    H->>H: validate: parentId is a comment public ID, content ≤ 2000, no links, author name not reserved
     H->>AI: moderateContent(text)
     alt model unavailable
         H-->>B: 503 BLOG_COMMENT_MODERATION_UNAVAILABLE
     end
-    H->>DB: resolvePostUuid, then check the parent is approved on the same post
+    H->>DB: resolvePostUuid, then resolve the parent's public ID to an approved comment on the same post
     H->>DB: INSERT db_comments {post_id, parent_id, author_name, content, is_approved = moderation.safe}
-    H-->>B: 201 {comment, moderation}
+    H-->>B: 201 {comment (public id and parent public id), moderation}
     end
 
     rect rgba(120, 220, 140, 0.15)
@@ -70,7 +70,7 @@ sequenceDiagram
 | Endpoint | Guards | Writes |
 | --- | --- | --- |
 | `POST /api/internal/blog/comments` | same-origin, Turnstile, validation, Llama Guard | `db_comments` |
-| `POST /api/internal/blog/comments/report` | same-origin, Turnstile, reason allow-list | `db_comment_reports` |
+| `POST /api/internal/blog/comments/report` | same-origin, Turnstile, reason allow-list; `commentId` is the comment public ID | `db_comment_reports` |
 | `POST /api/internal/blog/views` | same-origin | `db_views` |
 | `POST /api/internal/feedback` | same-origin, `sec-fetch-site` not `cross-site` | RPC `db_record_page_feedback`, which writes `db_feedback_operations`, `db_feedback_events` and, for posts, `db_post_feedback` and `db_posts.helpful_*` |
 | `POST /api/internal/subscribe` | same-origin, Turnstile | `db_subscribers` and a confirm mail |

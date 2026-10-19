@@ -1,6 +1,10 @@
 import { describe, expect, test } from 'bun:test';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { createSupabaseBlogRepository, postFromRow } from '../packages/data/src/supabase/blog.ts';
+import {
+    createSupabaseBlogRepository,
+    createSupabaseCommentRepository,
+    postFromRow
+} from '../packages/data/src/supabase/blog.ts';
 
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
 const ID_A = 'a'.repeat(8) + '1'.repeat(56);
@@ -146,5 +150,44 @@ describe('post content', () => {
         const post = await blog.getPublishedBySlug('hello');
         expect(await blog.readMarkdown(post!.source)).toBeNull();
         expect(await blog.readRender(post!.source)).toBeNull();
+    });
+});
+
+describe('approved comments', () => {
+    const PARENT_UUID = '0f8fad5b-d9cb-469f-a165-70867728950e';
+    const CHILD_UUID = '7c9e6679-7425-40de-944b-e07fc1f90ae7';
+    const ORPHAN_UUID = '16fd2706-8baf-433b-82eb-8c7fada847da';
+    const HIDDEN_UUID = '886313e1-3b8a-5372-9b90-0c9aee199e5d';
+    const comment = (id: string, publicId: string, parent: string | null) => ({
+        id,
+        public_id: publicId,
+        parent_id: parent,
+        author_name: 'Ann',
+        content: 'Hi',
+        is_anonymous: false,
+        is_admin: false,
+        created_at: '2026-10-01T00:00:00Z'
+    });
+
+    test('expose public IDs and link replies by public ID', async () => {
+        const rows = [
+            comment(PARENT_UUID, 'a'.repeat(64), null),
+            comment(CHILD_UUID, 'b'.repeat(64), PARENT_UUID),
+            comment(ORPHAN_UUID, 'c'.repeat(64), HIDDEN_UUID)
+        ];
+        const builder: Record<string, unknown> = {};
+        for (const method of ['select', 'eq', 'order', 'limit']) builder[method] = () => builder;
+        builder.then = (resolve: (value: unknown) => unknown) =>
+            resolve({ data: rows, error: null });
+        const db = { from: () => builder } as unknown as SupabaseClient;
+        const blog = fakeDb([row({})]);
+        const post = await blog.getPublishedBySlug('hello');
+        const comments = await createSupabaseCommentRepository(db).listApproved(post!);
+        expect(comments.map(c => [c.id, c.parent_id])).toEqual([
+            ['a'.repeat(64), null],
+            ['b'.repeat(64), 'a'.repeat(64)],
+            ['c'.repeat(64), null]
+        ]);
+        expect(JSON.stringify(comments)).not.toMatch(UUID);
     });
 });
