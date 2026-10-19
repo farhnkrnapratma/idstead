@@ -173,7 +173,7 @@
         defer></script>
 </svelte:head>
 
-<PageMain>
+<PageMain variant="site">
     <LinkGridSection
         title="Contact"
         subtitle="Reach out through any of the channels below."

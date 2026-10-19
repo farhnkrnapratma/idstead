@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { Snippet } from 'svelte';
-    import { AudioLines, BadgeCheck, MapPin, QrCode } from '@lucide/svelte';
+    import { AudioLines, BadgeCheck, BriefcaseBusiness, MapPin, QrCode } from '@lucide/svelte';
     import type { ImageSource } from '@fkp/ui/types.ts';
     import { cn } from '@fkp/ui/utils/cn.ts';
 
@@ -18,6 +18,7 @@
         name: string;
         pronunciation?: string;
         headline?: string;
+        jobTitle?: string;
         location?: string;
         bio?: string;
         avatarUrl?: string;
@@ -35,6 +36,7 @@
         name,
         pronunciation = '',
         headline = '',
+        jobTitle = '',
         location = '',
         bio = '',
         avatarUrl = '',
@@ -56,7 +58,7 @@
         'profile-card relative w-full overflow-hidden rounded-md glass-card text-left',
         className
     )}>
-    <div class="aspect-2/1 w-full bg-accent-subtle">
+    <div class="aspect-3/1 w-full bg-accent-subtle sm:aspect-40/9">
         {#if bannerUrl && !bannerFailed}
             <ImageWithSkeleton
                 src={bannerUrl}
@@ -118,7 +120,7 @@
             <p class="mt-1 type-body text-text-secondary">{headline}</p>
         {/if}
 
-        {#if pronunciation || location}
+        {#if pronunciation || jobTitle || location}
             <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-text-muted">
                 {#if pronunciation}
                     <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
@@ -126,6 +128,14 @@
                             class="size-3.5 shrink-0"
                             aria-hidden="true" />
                         <span class="tracking-wide">{pronunciation}</span>
+                    </span>
+                {/if}
+                {#if jobTitle}
+                    <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
+                        <BriefcaseBusiness
+                            class="size-3.5 shrink-0"
+                            aria-hidden="true" />
+                        {jobTitle}
                     </span>
                 {/if}
                 {#if location}

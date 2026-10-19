@@ -18,6 +18,17 @@
 @custom-variant dark (&:where(.dark, .dark *));
 @custom-variant motion-reduce (&:where([data-reduce-motion='true'], [data-reduce-motion='true'] *));
 @custom-variant motion-safe (&:where([data-reduce-motion='false'], [data-reduce-motion='false'] *));
+@custom-variant toolbar-gutter {
+    @media (width >= 80rem) {
+        &:where(
+            :root:not([data-font-scale]) *,
+            :root[data-font-scale='100'] *,
+            :root[data-font-scale='110'] *
+        ) {
+            @slot;
+        }
+    }
+}
 
 @utility type-page-title {
     @apply text-2xl leading-tight font-bold tracking-tight text-balance text-text-primary sm:text-3xl;

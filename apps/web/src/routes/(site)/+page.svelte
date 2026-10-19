@@ -153,10 +153,10 @@
         class="font-mono">{decodeHtmlEntities(tag)}</Tag>
 {/snippet}
 
-<PageMain>
+<PageMain variant="site">
     <Section
         spacing="none"
-        class="relative z-10 pt-4 pb-6 sm:pt-5 md:pt-10 md:pb-8">
+        class="relative z-10 pt-4 pb-6 sm:pt-5 md:pt-10 md:pb-8 toolbar-gutter:pt-0">
         <PageContainer
             width="standard"
             class="flex flex-col gap-4 sm:gap-5">
@@ -164,6 +164,7 @@
                 {name}
                 {pronunciation}
                 {headline}
+                {jobTitle}
                 {location}
                 bio={desc}
                 avatarUrl={avatarWebp}

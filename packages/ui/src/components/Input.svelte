@@ -1,5 +1,6 @@
 <script lang="ts">
     import { getContext, type Snippet } from 'svelte';
+    import { Search } from '@lucide/svelte';
     import {
         FILTER_TOOLBAR_CONTROL_SIZE,
         type FilterToolbarContext
@@ -69,6 +70,13 @@
     const isFloating = $derived(resolvedVariant === 'floating');
     const hasValue = $derived(value !== undefined && value !== null && String(value).length > 0);
     const resolvedCounter = $derived(formCtx?.counter ?? '');
+    const showSearchIcon = $derived(restProps.type === 'search' && !leadingIcon && !leadingSlot);
+
+    const searchIconStyles = {
+        sm: { wrapper: 'left-2.5', icon: 'size-3.5', input: 'pl-8' },
+        md: { wrapper: 'left-3', icon: 'size-4', input: 'pl-9' },
+        lg: { wrapper: 'left-4', icon: 'size-4.5', input: 'pl-11' }
+    };
 </script>
 
 <div class={cn('relative flex min-w-0 items-center', fullWidth ? 'w-full' : '')}>
@@ -89,6 +97,16 @@
                 isFloating ? 'top-1/2 -translate-y-1/2' : ''
             )}>
             {@render leadingSlot()}
+        </div>
+    {:else if showSearchIcon}
+        <div
+            class={cn(
+                'pointer-events-none absolute z-10 flex items-center text-text-muted',
+                searchIconStyles[resolvedSize].wrapper
+            )}>
+            <Search
+                class={searchIconStyles[resolvedSize].icon}
+                aria-hidden="true" />
         </div>
     {/if}
 
@@ -113,6 +131,7 @@
             isFloating ? '' : 'placeholder:text-text-secondary/70',
             leadingSlot ? 'pl-12'
             : leadingIcon ? 'pl-9'
+            : showSearchIcon ? searchIconStyles[resolvedSize].input
             : '',
             trailingIcon || trailingSlot ? 'pr-9' : '',
             error ? 'border-danger! ring-danger/20!' : '',

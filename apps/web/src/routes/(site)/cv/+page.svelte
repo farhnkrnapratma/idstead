@@ -30,10 +30,10 @@
     siteName={data.author?.name || ''}
     siteUrl={data.author?.siteUrl || ''} />
 
-<PageMain>
+<PageMain variant="site">
     <Section
         spacing="none"
-        class="relative z-10 pt-5 pb-6 md:pt-8 md:pb-8">
+        class="relative z-10 pt-5 pb-6 md:pt-8 md:pb-8 toolbar-gutter:pt-0">
         <PageContainer width="standard">
             <SectionHeader
                 class="mb-6"
