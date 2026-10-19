@@ -1,6 +1,6 @@
 import { describe, expect, mock, test } from 'bun:test';
 
-mock.module('$app/env/private', () => ({}));
+mock.module('$app/env/private', () => ({ IP_SALT: undefined }));
 
 const { ipSalt } = await import('../packages/lib/src/server/ipSalt.ts');
 
