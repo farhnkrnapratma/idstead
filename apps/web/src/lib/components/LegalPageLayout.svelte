@@ -2,8 +2,8 @@
     import { createFeedbackClient } from '../feedbackClient.svelte.ts';
     import { tick, onMount, onDestroy } from 'svelte';
     import { fade } from 'svelte/transition';
-    import { refreshCodeBlockPrefs } from '#lib/utils/codeBlocks.ts';
-    import { codeBlockPrefsStore } from '#lib/stores/codeBlockPrefsStore.svelte.ts';
+    import { refreshCodeBlockPrefs } from '@fkp/mdrs-ui/codeBlocks.ts';
+    import { codeBlockPrefsStore } from '@fkp/mdrs-ui/codeBlockPrefsStore.svelte.ts';
     import TopNav from './TopNav.svelte';
     import TableOfContents from './TableOfContents.svelte';
     import HelpfulBlock from '../article/HelpfulBlock.svelte';
@@ -18,8 +18,8 @@
     import type { HeadingItem } from '@fkp/mdrs';
     import { formatReadTime } from '@fkp/domain/formatters.ts';
     import { countReadingMinutes } from '@fkp/domain/readTime.ts';
-    import { enhanceMarkdownContent } from '#lib/utils/markdownEnhancer.ts';
-    import { enhanceHeadingAnchors, resolveMdrsHash } from '#lib/utils/headingAnchors.ts';
+    import { enhanceMarkdownContent } from '@fkp/mdrs-ui/enhance.ts';
+    import { enhanceHeadingAnchors, resolveMdrsHash } from '@fkp/mdrs-ui/headingAnchors.ts';
     import { highlightAfterScroll } from '@fkp/ui/utils/scroll.ts';
     import hljs from 'highlight.js';
     import 'katex/dist/katex.min.css';

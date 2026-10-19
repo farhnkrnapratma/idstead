@@ -6,7 +6,7 @@ let getDownloadFilename: (className: string, filename?: string) => string;
 beforeAll(async () => {
     const markdown = await import('../packages/mdrs/src/markdown');
     render = markdownSource => markdown.renderMarkdown(markdownSource);
-    getDownloadFilename = (await import('../packages/lib/src/utils/codeBlockExtensions'))
+    getDownloadFilename = (await import('../packages/mdrs-ui/src/codeBlockExtensions'))
         .getDownloadFilename;
 });
 

@@ -6,7 +6,7 @@ import { blogAdmin } from '#lib/server/blogPostAuth.ts';
 import { boundedBody } from '#lib/server/blogPostInput.ts';
 import { UUID_PATTERN, stagingAssetHome } from '#lib/blogBanner.ts';
 import { CONTENT_VIDEO_LIMIT, isWebm } from '#app/blogContentVideo.ts';
-import { assetFileName } from '#lib/assetNaming.ts';
+import { assetFileName } from '@fkp/domain/assetNaming.ts';
 import { cdnBaseUrl } from '#lib/cdn.ts';
 import { uniqueAssetName } from '#lib/server/blogPostAssets.ts';
 import { putContentAsset } from '#lib/server/blogContentStorage.ts';

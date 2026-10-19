@@ -93,6 +93,42 @@ export default defineConfig(
         }
     },
     {
+        files: ['packages/mdrs-ui/**'],
+        rules: {
+            '@typescript-eslint/no-restricted-imports': [
+                'error',
+                {
+                    patterns: [
+                        {
+                            regex: '(^|/)server/|^(@supabase/|#lib|@fkp/(lib|editor)($|/))',
+                            allowTypeImports: true,
+                            message:
+                                '@fkp/mdrs-ui is the browser side of MDRS: it may depend on @fkp/ui, @fkp/domain and @fkp/mdrs only.'
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        files: ['packages/editor/**'],
+        rules: {
+            '@typescript-eslint/no-restricted-imports': [
+                'error',
+                {
+                    patterns: [
+                        {
+                            regex: '(^|/)server/|^(@supabase/|#lib|@fkp/lib($|/))',
+                            allowTypeImports: true,
+                            message:
+                                '@fkp/editor takes data access through props: no lib, Supabase or server imports.'
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    {
         files: ['packages/domain/**'],
         rules: {
             '@typescript-eslint/no-restricted-imports': [

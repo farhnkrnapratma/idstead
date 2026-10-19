@@ -41,7 +41,7 @@ The sanitizer enforces the contract: on any element, a `class` token survives on
 
 ## Default stylesheet
 
-The defaults live in `packages/lib/src/mdrs.css`, imported by `packages/lib/src/global.css` after the design system's styles. Every rule sits in Tailwind's `base` cascade layer, the lowest one. Any later layer (`components`, `utilities`) and any unlayered CSS therefore wins without a specificity fight:
+The defaults live in `packages/mdrs-ui/src/mdrs.css`, imported by `packages/lib/src/global.css` after the design system's styles. Every rule sits in Tailwind's `base` cascade layer, the lowest one. Any later layer (`components`, `utilities`) and any unlayered CSS therefore wins without a specificity fight:
 
 ```css
 .mdrs-alert--note {
@@ -78,4 +78,4 @@ Heading IDs carry the prefix so they can't collide with the page around them. A 
 - Links inside the document (`[setup](#setup)`) are rewritten to `#mdrs-setup` when that heading exists (`prefixHashLinks`).
 - A URL such as `/blog/post#setup` scrolls to `#mdrs-setup`. The post and legal pages resolve hashes with `resolveMdrsHash`, which prefers the prefixed ID inside the article.
 
-Source: `packages/lib/src/mdrs.css`, `packages/mdrs/src/sanitize.ts` (`CLASS_TOKEN_RE`, `ID_RE`), `packages/mdrs/src/render/headings.ts` (`injectHeadingIds`, `prefixHashLinks`), `packages/lib/src/utils/headingAnchors.ts` (`resolveMdrsHash`).
+Source: `packages/mdrs-ui/src/mdrs.css`, `packages/mdrs/src/sanitize.ts` (`CLASS_TOKEN_RE`, `ID_RE`), `packages/mdrs/src/render/headings.ts` (`injectHeadingIds`, `prefixHashLinks`), `packages/mdrs-ui/src/headingAnchors.ts` (`resolveMdrsHash`).

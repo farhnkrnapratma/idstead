@@ -7,7 +7,9 @@
         "../../packages/lib/src",
         "../../packages/mdrs/src",
         "../../packages/ui/src",
-        "../../packages/domain/src"
+        "../../packages/domain/src",
+        "../../packages/mdrs-ui/src",
+        "../../packages/editor/src"
     ],
     "exclude": ["src/service-worker"],
     "compilerOptions": {

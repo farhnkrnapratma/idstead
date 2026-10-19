@@ -53,4 +53,4 @@ Prefer fences. They can carry a language, a file name and line markers, and they
 
 The info string after the language can carry `filename="…"` and `mark=…` options, and some languages get special treatment (`diff`, shell, `mermaid`, `chart`). Every block also gets copy, download, wrap and line-number controls in the browser. See [Code blocks](../002-extensions/007-code-blocks.md) and [Diagrams and charts](../002-extensions/011-diagrams-and-charts.md).
 
-Source: `marked`, `packages/mdrs/src/render/parser.ts` (`code` renderer), `packages/lib/src/utils/codeBlocks.ts`.
+Source: `marked`, `packages/mdrs/src/render/parser.ts` (`code` renderer), `packages/mdrs-ui/src/codeBlocks.ts`.

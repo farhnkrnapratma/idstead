@@ -109,8 +109,8 @@
         searchHistoryStore,
         type SearchHistoryEntry
     } from '../stores/searchHistoryStore.svelte';
-    import { codeBlockPrefsStore } from '#lib/stores/codeBlockPrefsStore.svelte.ts';
-    import { refreshCodeBlockPrefs, type CodeColorScheme } from '#lib/utils/codeBlocks.ts';
+    import { codeBlockPrefsStore } from '@fkp/mdrs-ui/codeBlockPrefsStore.svelte.ts';
+    import { refreshCodeBlockPrefs, type CodeColorScheme } from '@fkp/mdrs-ui/codeBlocks.ts';
     import { consentStore } from '../stores/consentStore.svelte';
     import { readingModeStore } from '@fkp/ui/stores/readingModeStore.svelte.ts';
 

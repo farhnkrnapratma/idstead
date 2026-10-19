@@ -1,5 +1,5 @@
 import hljs from 'highlight.js';
-import { codeBlockPrefsStore } from '../stores/codeBlockPrefsStore.svelte';
+import { codeBlockPrefsStore } from './codeBlockPrefsStore.svelte';
 import { readingModeStore } from '@fkp/ui/stores/readingModeStore.svelte.ts';
 import { getDownloadFilename, sanitizeFilename } from './codeBlockExtensions';
 import { cn } from '@fkp/ui/utils/cn.ts';

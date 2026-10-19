@@ -30,7 +30,7 @@
         Underline,
         Video
     } from '@lucide/svelte';
-    import { assetAltText } from '#lib/assetNaming.ts';
+    import { assetAltText } from '@fkp/domain/assetNaming.ts';
     import Dropdown from '@fkp/ui/components/Dropdown.svelte';
     import { assetMarkdown } from './textEdits';
 

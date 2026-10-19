@@ -3,8 +3,8 @@
     import type { Attachment } from 'svelte/attachments';
     import hljs from 'highlight.js';
     import FieldMessage from '@fkp/ui/components/FieldMessage.svelte';
-    import { enhanceMarkdownContent } from '#lib/utils/markdownEnhancer.ts';
-    import { enhanceHeadingAnchors } from '#lib/utils/headingAnchors.ts';
+    import { enhanceMarkdownContent } from '@fkp/mdrs-ui/enhance.ts';
+    import { enhanceHeadingAnchors } from '@fkp/mdrs-ui/headingAnchors.ts';
     import { contentFontStore } from '@fkp/ui/stores/contentFontStore.svelte.ts';
 
     interface Props {

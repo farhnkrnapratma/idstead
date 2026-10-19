@@ -5,7 +5,7 @@ import {
     cursorPosition,
     insertIndent,
     wrapSelection
-} from '../packages/lib/src/components/editor/textEdits.ts';
+} from '../packages/editor/src/textEdits.ts';
 
 describe('editor text edits', () => {
     test('wrapSelection wraps the selection and keeps it selected', () => {
@@ -56,8 +56,7 @@ describe('editor text edits', () => {
 
 describe('editor highlighting', () => {
     test('keeps every dollar sign so the overlay lines up with the text', async () => {
-        const { highlightMarkdown } =
-            await import('../packages/lib/src/components/editor/highlight.ts');
+        const { highlightMarkdown } = await import('../packages/editor/src/highlight.ts');
         const source = 'Math $$x^2$$ and $$ a + b $$, a price of $5 and $$10.';
         const text = highlightMarkdown(source)
             .replace(/<[^>]+>/g, '')

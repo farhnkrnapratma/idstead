@@ -66,9 +66,9 @@ The engine is the workspace package `@fkp/mdrs` (`packages/mdrs`). Import it onl
 | `convertLegacyMarkdown`, `convertLegacyMarkdownWithNotes` | `@fkp/mdrs/legacy` | Old syntax → MDRS, used by `scripts/migrate-markdown-syntax.ts` |
 | `createMdrsResolvers(supabase)` | `packages/lib/src/mdrsResolvers.ts` | The site's `api.v1.author` and `api.v1.blog` resolvers |
 | `validateMdrsRemote(markdown)`, `mdrsContent(label)` | `apps/admin/src/lib/mdrsValidation.ts` | Editor-side validation through `POST /api/internal/blog/validate-define` |
-| `resolveMdrsHash(hash, container)` | `packages/lib/src/utils/headingAnchors.ts` | Maps `#setup` to `#mdrs-setup` when the page scrolls to a hash |
-| `enhanceMarkdownContent(options)` | `packages/lib/src/utils/markdownEnhancer.ts` | Browser pass |
-| `enhanceHeadingAnchors(container)` | `packages/lib/src/utils/headingAnchors.ts` | ¶ anchor links |
+| `resolveMdrsHash(hash, container)` | `packages/mdrs-ui/src/headingAnchors.ts` | Maps `#setup` to `#mdrs-setup` when the page scrolls to a hash |
+| `enhanceMarkdownContent(options)` | `packages/mdrs-ui/src/enhance.ts` | Browser pass |
+| `enhanceHeadingAnchors(container)` | `packages/mdrs-ui/src/headingAnchors.ts` | ¶ anchor links |
 
 Pass resolvers to enable [live data](../002-extensions/014-live-data.md): the site uses `createMdrsResolvers(supabase)`. Without them, the default `unavailableResolvers()` makes `api.v1.*` render an error marker.
 
@@ -79,7 +79,7 @@ Pass resolvers to enable [live data](../002-extensions/014-live-data.md): the si
 | Admin post save | `buildPostRender` → `prepareMarkdownPage`, stored as `{operationId}.render.json` |
 | Blog post page (`apps/web/src/routes/blog/[slug]`) | The stored render; `renderMarkdown` + `injectHeadingIds` + `prefixHashLinks` + `extractHeadings` only when it is missing, outdated or `live` |
 | Legal pages (`/privacy`, `/terms`, `/security`) | `prepareMarkdownPage` |
-| Admin editor preview (`packages/lib/src/components/editor/`, Preview tab only) | The `render` prop: `renderMdrsPreview` (`apps/admin/src/lib/mdrsPreview.ts`, `renderMarkdown` with the site resolvers) in the browser, then `injectHeadingIds`, `prefixHashLinks` |
+| Admin editor preview (`packages/editor/src/`, Preview tab only) | The `render` prop: `renderMdrsPreview` (`apps/admin/src/lib/mdrsPreview.ts`, `renderMarkdown` with the site resolvers) in the browser, then `injectHeadingIds`, `prefixHashLinks` |
 | Admin editors (post, privacy, security, terms) while typing and before saving | `validateMdrsRemote` → `validateDefineForSave` |
 | Admin post save (validation) | `validateDefineForSave` |
 | `.md` and `.txt` variants, `GET /v1/blog/content` | The raw source, or `markdownToPlainText` for text output |
@@ -105,4 +105,4 @@ Saved posts keep their rendered HTML, stamped with `RENDER_VERSION` (`packages/m
 
 Before MDRS settled on `:::name key="value"`, posts used older forms: GitHub `> [!NOTE]` alerts (which now render directly as well), `:::callout{title="…"}` and `::tab{…}` braces, `::::` wide closers, raw `<details>` and `<video>` HTML, `\[ … \]`, `\( … \)` and single-`$` math, and `{1,3-5}` fence line markers. `scripts/migrate-markdown-syntax.ts` (built on `packages/mdrs/src/legacy.ts`) converts stored posts to the current syntax. It runs as a dry run by default; see [Scripts and tooling](../../004-development/004-scripts-and-tooling.md).
 
-Source: `packages/mdrs/src/markdown.ts` (`renderMarkdownUnsafe`, `renderMarkdown`, `prepareMarkdownPage`), `packages/mdrs/src/frontmatter.ts`, `packages/mdrs/src/placeholders.ts`, `packages/lib/src/utils/markdownEnhancer.ts`, `packages/mdrs/src/legacy.ts`.
+Source: `packages/mdrs/src/markdown.ts` (`renderMarkdownUnsafe`, `renderMarkdown`, `prepareMarkdownPage`), `packages/mdrs/src/frontmatter.ts`, `packages/mdrs/src/placeholders.ts`, `packages/mdrs-ui/src/enhance.ts`, `packages/mdrs/src/legacy.ts`.
