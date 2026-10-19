@@ -14,21 +14,24 @@ sequenceDiagram
     B->>W: GET any page
     Note over W: +layout.server.ts
     W->>DB: fetchAuthorProfileWithSocials()<br/>db_profiles, db_links
-    W->>GH: fetchProjects(username)
+    par
+        W->>GH: fetchCachedProjects(username) (edge cache, 10 min)
+        W->>DB: project repo rules (drop excluded repos, pinned names)
+    end
     W-->>W: Cache-Control s-maxage=60
 
     alt GET /
         par Promise.all ((site)/+page.server.ts)
-            W->>DB: CV entries, project repo rules, active OpenPGP key
+            W->>DB: CV entries, site URL, active OpenPGP key
             W->>DB: fetchActiveCvDocument() reads db_documents
             W->>DB: loadPublishedPosts(limit 10)
         end
         Note over W,DB: fetchActiveCvDocument is read-only. If hash is missing it reads file_url + .sha256<br/>for display. The hash is written only at CV upload
         W-->>W: 2 experience, 1 education, 3 newest unpinned posts,<br/>layout projects minus excluded repos (page shows the 2 most recently pushed unpinned)
     else GET /projects
-        W->>DB: project repo rules (layout projects minus excluded, pinned names)
+        W-->>W: no page load: the layout's projects and pinnedRepoNames
     else GET /cv
-        W->>DB: CV entries, grouped skills, active CV document, active OpenPGP key
+        W->>DB: CV entries, grouped skills, active CV document, site URL, active OpenPGP key
     else GET /funding
         W->>DB: funding links
     else GET /contact
@@ -58,6 +61,8 @@ sequenceDiagram
 ```
 
 ## Notes
+
+- **Client navigation:** links preload code and data on hover, Spotlight preloads its highlighted command, and the `(site)` layout preloads every section's code when idle. No page load calls `parent()`, so navigating between section pages runs only that page's load, and `pageDataCache` (`packages/lib/src/server/pageDataCache.ts`) serves the six section pages' `__data.json` from the edge cache for 60 s.
 
 - **Post data:**
     - Posts expose `public_id` as `id`. The UUID never leaves the server: the repositories return `@fkp/domain/blog.ts` DTOs and keep the post's storage location in an opaque `PostSource`.

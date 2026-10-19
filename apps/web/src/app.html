@@ -100,7 +100,6 @@
             }
 
             gtag('consent', 'default', defaultConsent);
-            gtag('set', 'url_passthrough', true);
             gtag('js', new Date());
             gtag('config', 'G-6HR3DKWZLF');
         </script>
@@ -116,6 +115,7 @@
         %sveltekit.head%
     </head>
     <body
+        data-sveltekit-preload-data="hover"
         class="m-0 min-h-screen w-full overflow-x-clip bg-background p-0 font-sans text-text-primary">
         <div style="display: contents">%sveltekit.body%</div>
     </body>

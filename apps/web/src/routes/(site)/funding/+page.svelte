@@ -35,7 +35,7 @@
     siteName={data.author?.name || ''}
     siteUrl={data.author?.siteUrl || ''} />
 
-<PageMain class="pb-16 md:pb-0">
+<PageMain>
     <LinkGridSection
         title="Supporting & Funding"
         subtitle="Ways to support my work."

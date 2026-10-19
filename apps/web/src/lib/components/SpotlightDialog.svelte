@@ -3,9 +3,9 @@
     import { type MailingCommand } from '#lib/mailing.ts';
     let mailingRequest = $state<MailingCommand | null>(null);
     import { SvelteMap, SvelteSet } from 'svelte/reactivity';
-    import { onMount, tick, untrack } from 'svelte';
+    import { onMount, tick } from 'svelte';
     import { spotlightStore } from '../stores/spotlightStore.svelte';
-    import { goto } from '$app/navigation';
+    import { goto, preloadData } from '$app/navigation';
     import { page } from '$app/state';
     import * as publicEnv from '$app/env/public';
     import { apiUrl } from '#lib/apiConfig.ts';
@@ -30,6 +30,7 @@
     import { shortcutStore } from '@fkp/ui/stores/shortcutStore.svelte.ts';
     import { CATALOG_KEY, COMMAND_SHORTCUTS } from '@fkp/ui/shortcuts.ts';
     import { lockScroll } from '@fkp/ui/utils/scroll.ts';
+    import { visualViewport } from '@fkp/ui/utils/visualViewport.svelte.ts';
     import ShareDialog from './ShareDialog.svelte';
     import Button from '@fkp/ui/components/Button.svelte';
     import QrCodeDialog from './QrCodeDialog.svelte';
@@ -85,8 +86,8 @@
     let inputEl = $state<HTMLInputElement | null>(null);
     let listEl = $state<HTMLElement | null>(null);
     let helpDialogEl = $state<HTMLDivElement | null>(null);
-    let visualViewportHeight = $state<number | null>(null);
-    let visualViewportTop = $state<number | null>(null);
+    const visualViewportHeight = $derived(isOpen ? visualViewport.height : null);
+    const visualViewportTop = $derived(isOpen ? visualViewport.offsetTop : null);
 
     const activePageContext = $derived.by(() => {
         if (!isQrOpen && !isShareOpen) {
@@ -957,33 +958,7 @@
     }
 
     $effect(() => {
-        if (isOpen) {
-            const unlock = lockScroll();
-            const handleViewportChange = () => {
-                if (typeof window !== 'undefined' && window.visualViewport) {
-                    const newHeight = window.visualViewport.height;
-                    const newTop = window.visualViewport.offsetTop;
-                    if (visualViewportHeight !== newHeight) {
-                        visualViewportHeight = newHeight;
-                    }
-                    if (visualViewportTop !== newTop) {
-                        visualViewportTop = newTop;
-                    }
-                }
-            };
-            untrack(handleViewportChange);
-            if (typeof window !== 'undefined' && window.visualViewport) {
-                window.visualViewport.addEventListener('resize', handleViewportChange);
-            }
-            return () => {
-                unlock();
-                if (typeof window !== 'undefined' && window.visualViewport) {
-                    window.visualViewport.removeEventListener('resize', handleViewportChange);
-                }
-                visualViewportHeight = null;
-                visualViewportTop = null;
-            };
-        }
+        if (isOpen) return lockScroll();
     });
 
     $effect(() => {
@@ -1134,6 +1109,21 @@
 
     let indexById = $derived.by(() => {
         return new Map(flatItems.map((item, i) => [item.id, i]));
+    });
+
+    const preloadTarget = $derived.by(() => {
+        if (!isOpen) return null;
+        const itemIdx = activeIndex - filteredHistory.length;
+        const item =
+            activeIndex === -1 ? flatItems[0]
+            : itemIdx >= 0 ? flatItems[itemIdx]
+            : undefined;
+        const url = item && !item.action ? item.url : undefined;
+        return url?.startsWith('/') && !url.startsWith('//') ? url : null;
+    });
+
+    $effect(() => {
+        if (preloadTarget) preloadData(preloadTarget).catch(() => {});
     });
 
     const flatHelpCommands = $derived(helpCategories.flatMap(cat => cat.commands));

@@ -30,7 +30,7 @@
     siteName={data.author?.name || ''}
     siteUrl={data.author?.siteUrl || ''} />
 
-<PageMain class="pb-16 md:pb-0">
+<PageMain>
     <Section
         spacing="none"
         class="relative z-10 pt-5 pb-6 md:pt-8 md:pb-8">

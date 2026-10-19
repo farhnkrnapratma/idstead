@@ -153,7 +153,7 @@
         class="font-mono">{decodeHtmlEntities(tag)}</Tag>
 {/snippet}
 
-<PageMain class="pb-16 md:pb-0">
+<PageMain>
     <Section
         spacing="none"
         class="relative z-10 pt-4 pb-6 sm:pt-5 md:pt-10 md:pb-8">
