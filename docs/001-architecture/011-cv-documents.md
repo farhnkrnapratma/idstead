@@ -113,5 +113,5 @@ A detached signature carries only the issuer's key ID. The signer's name and ema
 - `apps/admin/src/routes/api/internal/admin/{cv/{generate,signature,delete},openpgp-key}/+server.ts`
 - `apps/admin/src/routes/(admin)/+page.svelte` (CV Document and OpenPGP key cards)
 - `apps/web/src/routes/pgp.asc/+server.ts`, `apps/web/src/routes/.well-known/openpgpkey/**`
-- `packages/lib/src/components/CvDownloadMenu.svelte`
+- `apps/web/src/lib/components/CvDownloadMenu.svelte`
 - `supabase/migrations/20261016120000_cv_versions.sql`, `supabase/migrations/20261017090000_cv_openpgp.sql`

@@ -10,7 +10,7 @@ import {
     socialHandle,
     type BannerInput,
     type Measure
-} from '../packages/lib/src/identityFallbackLayout.ts';
+} from '../apps/admin/src/lib/identityFallbackLayout.ts';
 import { buildSvg } from '../packages/lib/src/siteIdentity.ts';
 
 const measure: Measure = (text, font, size) =>

@@ -76,7 +76,7 @@ sequenceDiagram
 
 ## Notes
 
-- **MDRS validation before the save:** while the author types, and again before submitting, `PostEditor` (and the legal page editors) call `POST /api/internal/blog/validate-define` through `validateMdrsRemote` (`packages/lib/src/mdrsValidation.ts`). The save route repeats `validateDefineForSave` and answers `422 BLOG_DEFINE_VALIDATION_FAILED` when the document has errors.
+- **MDRS validation before the save:** while the author types, and again before submitting, `PostEditor` (and the legal page editors) call `POST /api/internal/blog/validate-define` through `validateMdrsRemote` (`apps/admin/src/lib/mdrsValidation.ts`). The save route repeats `validateDefineForSave` and answers `422 BLOG_DEFINE_VALIDATION_FAILED` when the document has errors.
 - **Pre-render:** the save route renders the post with `buildPostRender()` (`packages/lib/src/server/postRender.ts`) and stores `posts/{postId}/{operationId}.render.json` next to the markdown file: the sanitized HTML, headings, read time, `RENDER_VERSION` and a `live` flag. `live` is true when a `:::define` block reads `api.*` (`usesLiveData()`), because that output depends on data that changes after the save. The queued storage cleanup removes the render file together with its markdown file.
 - **Every save of a published post enqueues a message.** Duplicates are harmless because of the atomic claim on `subscribers_notified_at`.
 - **Manual re-send:**

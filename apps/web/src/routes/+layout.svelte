@@ -7,7 +7,8 @@
     import { page } from '$app/state';
     import * as publicEnv from '$app/env/public';
     import { apiUrl } from '#lib/apiConfig.ts';
-    import { ConsentBanner, FeedbackButton } from '#lib/index.ts';
+    import ConsentBanner from '#app/components/ConsentBanner.svelte';
+    import FeedbackButton from '#app/components/FeedbackButton.svelte';
     import { Toast, ScrollToTopButton } from '@fkp/ui';
     import ShortcutCatalogDialog from '@fkp/ui/components/ShortcutCatalogDialog.svelte';
     import ShortcutModeIndicator from '@fkp/ui/components/ShortcutModeIndicator.svelte';

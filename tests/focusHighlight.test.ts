@@ -10,7 +10,7 @@ const appLayout = readFileSync(
     'utf8'
 );
 const tableOfContents = readFileSync(
-    new URL('../packages/lib/src/components/TableOfContents.svelte', import.meta.url),
+    new URL('../apps/web/src/lib/components/TableOfContents.svelte', import.meta.url),
     'utf8'
 );
 

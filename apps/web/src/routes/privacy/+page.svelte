@@ -1,5 +1,5 @@
 <script lang="ts">
-    import LegalPageLayout from '#lib/components/LegalPageLayout.svelte';
+    import LegalPageLayout from '#app/components/LegalPageLayout.svelte';
 
     let { data } = $props();
 

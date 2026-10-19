@@ -4,7 +4,9 @@
     import { page } from '$app/state';
     import { Rss, Quote } from '@lucide/svelte';
     import Tag from '@fkp/ui/components/Tag.svelte';
-    import { BlogPostCard, FooterSection, TopNav } from '#lib/index.ts';
+    import BlogPostCard from '#app/components/BlogPostCard.svelte';
+    import FooterSection from '#app/layout/FooterSection.svelte';
+    import TopNav from '#app/components/TopNav.svelte';
     import {
         Button,
         Dropdown,

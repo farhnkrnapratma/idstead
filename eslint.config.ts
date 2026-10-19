@@ -37,7 +37,9 @@ export default defineConfig(
             'packages/lib/src/layout/**',
             'packages/lib/src/article/**',
             'packages/lib/src/stores/**',
-            'packages/lib/src/utils/**'
+            'packages/lib/src/utils/**',
+            'apps/web/src/lib/**',
+            'apps/admin/src/lib/**'
         ],
         rules: {
             '@typescript-eslint/no-restricted-imports': [
