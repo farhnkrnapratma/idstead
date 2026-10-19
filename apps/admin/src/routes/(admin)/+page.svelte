@@ -13,6 +13,7 @@
     } from '#lib/postSaveClient.ts';
     import { FieldValidation, requiredText, emailError } from '#lib/fieldValidation.ts';
     import { mdrsContent } from '#lib/mdrsValidation.ts';
+    import { renderMdrsPreview } from '#lib/mdrsPreview.ts';
     import { avatarSource, siteBannerSource } from '#lib/siteIdentity.ts';
     import IdentityImageUpload from '#lib/components/IdentityImageUpload.svelte';
     import type { ImagePackage } from '#lib/siteIdentity.ts';
@@ -113,7 +114,7 @@
         import('#lib/components/admin/ActivityLogWorkspace.svelte');
     const loadAccountSettings = () => import('#lib/components/admin/AccountSettings.svelte');
     const loadPostEditor = () => import('#lib/components/admin/PostEditor.svelte');
-    const loadMarkdownEditor = () => import('#lib/components/MarkdownEditor.svelte');
+    const loadMarkdownEditor = () => import('#lib/components/editor/index.ts');
     import { estimateReadTime } from '#lib/readTime.ts';
     import { formatBadgeCount } from '#lib/utils/formatters.ts';
     import {
@@ -6884,8 +6885,9 @@
                     <LoadingState
                         variant="spinner"
                         label="Loading editor..." />
-                {:then { default: MarkdownEditor }}
+                {:then { MarkdownEditor }}
                     <MarkdownEditor
+                        render={renderMdrsPreview}
                         bind:value={
                             () => legalPagesData.privacy.content,
                             value => {
@@ -6959,8 +6961,9 @@
                     <LoadingState
                         variant="spinner"
                         label="Loading editor..." />
-                {:then { default: MarkdownEditor }}
+                {:then { MarkdownEditor }}
                     <MarkdownEditor
+                        render={renderMdrsPreview}
                         bind:value={
                             () => legalPagesData.security.content,
                             value => {
@@ -7033,8 +7036,9 @@
                     <LoadingState
                         variant="spinner"
                         label="Loading editor..." />
-                {:then { default: MarkdownEditor }}
+                {:then { MarkdownEditor }}
                     <MarkdownEditor
+                        render={renderMdrsPreview}
                         bind:value={
                             () => legalPagesData.terms.content,
                             value => {

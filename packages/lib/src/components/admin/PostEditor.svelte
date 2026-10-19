@@ -1,7 +1,7 @@
 <script lang="ts">
-    import type { Attachment } from 'svelte/attachments';
     import { FieldValidation, requiredText } from '#lib/fieldValidation.ts';
     import { mdrsContent } from '#lib/mdrsValidation.ts';
+    import { renderMdrsPreview } from '#lib/mdrsPreview.ts';
     import { supabase } from '#lib/supabase.ts';
     import { slugifyTitle } from '#lib/slug.ts';
     import { processContentImage } from '#lib/processContentImage.ts';
@@ -20,7 +20,7 @@
         PillInput,
         decodeHtmlEntities
     } from '#lib/index.ts';
-    import { FileUp, Mail } from '@lucide/svelte';
+    import { Mail } from '@lucide/svelte';
     import { importPostDocument, MAX_DOCUMENT_LENGTH, type ImportedPost } from '@fkp/mdrs';
     import BannerImageUpload from '#lib/components/BannerImageUpload.svelte';
     import { bannerUrl, type BannerChange } from '#lib/blogBanner.ts';
@@ -406,20 +406,9 @@
     }
 
     let showNotifyDialog = $state(false);
-    let importInput: HTMLInputElement | undefined;
-    const trackImportInput: Attachment<HTMLInputElement> = node => {
-        importInput = node;
-        return () => {
-            if (importInput === node) importInput = undefined;
-        };
-    };
     let pendingImport = $state<ImportedPost | null>(null);
 
-    async function handleImportFile(event: Event) {
-        const input = event.currentTarget as HTMLInputElement;
-        const file = input.files?.[0];
-        input.value = '';
-        if (!file) return;
+    async function importFile(file: File) {
         if (!/\.(?:md|mdrs|markdown)$/i.test(file.name)) {
             toastStore.error('Choose a .md or .mdrs file.');
             return;
@@ -626,23 +615,7 @@
             class="contents">
             <div
                 class="rounded-md border border-border-subtle bg-surface-card p-4 text-left sm:p-5">
-                <div class="mb-3 flex items-center justify-between gap-2">
-                    <h2 class="type-card-title select-none">Post details</h2>
-                    <Button
-                        type="ghost"
-                        size="sm"
-                        onclick={() => importInput?.click()}>
-                        {#snippet leading()}<FileUp class="size-4" />{/snippet}
-                        Import file
-                    </Button>
-                    <input
-                        {@attach trackImportInput}
-                        type="file"
-                        accept=".md,.mdrs,.markdown,text/markdown"
-                        class="hidden"
-                        aria-label="Import a Markdown or MDRS file"
-                        onchange={handleImportFile} />
-                </div>
+                <h2 class="mb-3 type-card-title select-none">Post details</h2>
 
                 <div class="flex flex-col gap-4">
                     <BannerImageUpload
@@ -781,6 +754,8 @@
                 placeholder="Write your markdown content here..."
                 minHeight="500px"
                 stickyTopClass="top-12 md:top-0"
+                render={renderMdrsPreview}
+                onImport={importFile}
                 onImageUpload={handleImageUploadFile}
                 onVideoUpload={handleVideoUploadFile} />
         </fieldset>

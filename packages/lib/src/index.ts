@@ -45,7 +45,7 @@ export { default as PostInsights } from './article/PostInsights.svelte';
 
 export { default as Input } from './components/Input.svelte';
 export { default as Textarea } from './components/Textarea.svelte';
-export { default as MarkdownEditor } from './components/MarkdownEditor.svelte';
+export { MarkdownEditor } from './components/editor/index.ts';
 export { default as Checkbox } from './components/Checkbox.svelte';
 export { default as FileUploadField } from './components/FileUploadField.svelte';
 export { default as FieldMessage } from './components/FieldMessage.svelte';

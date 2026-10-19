@@ -1,0 +1,154 @@
+@reference "../../global.css";
+
+.editor-shell {
+    background-color: var(--code-theme-bg);
+    border-color: var(--code-theme-border);
+    color: var(--code-theme-fg);
+}
+
+.editor-header {
+    background-color: color-mix(in srgb, var(--code-theme-bg) 96%, var(--code-theme-fg));
+}
+
+.editor-chrome {
+    background-color: color-mix(in srgb, var(--code-theme-bg) 96%, var(--code-theme-fg));
+    border-color: var(--code-theme-border);
+    color: var(--code-theme-muted);
+}
+
+.editor-surface {
+    --editor-line-height: 1.5rem;
+    background-color: var(--code-theme-bg);
+    color: var(--code-theme-fg);
+}
+
+.editor-lines {
+    min-height: 100%;
+}
+
+.editor-gutter {
+    background-color: var(--code-theme-bg);
+    border-color: var(--code-theme-border);
+}
+
+.editor-theme-probe {
+    display: none;
+}
+
+.editor-theme-foreground {
+    color: var(--code-theme-fg);
+}
+
+.editor-theme-muted {
+    color: var(--code-theme-muted);
+}
+
+.editor-tab {
+    color: var(--code-theme-muted);
+}
+
+.editor-tab-list,
+.editor-toolbar {
+    border-color: var(--code-theme-border);
+}
+
+.editor-tab-inactive:hover {
+    background-color: color-mix(in srgb, var(--code-theme-fg) 6%, transparent);
+    color: var(--code-theme-fg);
+}
+
+.editor-gutter-track,
+.editor-gutter-num,
+.editor-textarea,
+.editor-pre,
+.editor-pre code,
+.editor-pre span {
+    @apply font-mono text-xs! leading-6! tracking-normal! normal-case!;
+}
+
+.editor-code-line,
+.editor-gutter-num {
+    min-height: var(--editor-line-height) !important;
+    line-height: var(--editor-line-height) !important;
+}
+
+.editor-gutter-track,
+.editor-gutter-num,
+.editor-gutter-muted {
+    background-color: var(--code-theme-bg);
+    border-color: var(--code-theme-border);
+}
+
+.editor-gutter-muted {
+    color: var(--code-theme-muted);
+}
+
+.editor-textarea,
+.editor-pre,
+.editor-pre code {
+    tab-size: var(--editor-tab-size);
+}
+
+.editor-textarea,
+.editor-textarea:focus {
+    caret-color: var(--code-theme-fg);
+}
+
+.editor-control-button {
+    background-color: color-mix(in srgb, var(--code-theme-bg) 88%, var(--code-theme-fg));
+    border-color: var(--code-theme-border);
+    color: var(--code-theme-muted);
+}
+
+.editor-control-button:hover,
+.editor-control-button[aria-expanded='true'] {
+    background-color: color-mix(in srgb, var(--code-theme-fg) 14%, var(--code-theme-bg));
+    border-color: var(--code-theme-border);
+    color: var(--code-theme-fg);
+}
+
+.editor-control-button:focus-visible {
+    border-color: var(--code-theme-border);
+}
+
+.editor-toolbar-scroll {
+    background-image:
+        linear-gradient(to left, var(--code-theme-bg) 0%, transparent 100%),
+        linear-gradient(
+            to left,
+            color-mix(in srgb, var(--code-theme-fg) 8%, transparent) 0%,
+            transparent 100%
+        );
+    background-repeat: no-repeat;
+    background-position:
+        100% 0,
+        100% 0;
+    background-size:
+        28px 100%,
+        20px 100%;
+    background-attachment: local, scroll;
+}
+
+@media (min-width: 40rem) {
+    .editor-toolbar-scroll {
+        background-image: none;
+    }
+}
+
+.editor-line-number-active {
+    background-color: var(--code-theme-bg);
+    border-color: var(--code-theme-border);
+    color: var(--code-theme-fg) !important;
+}
+
+.editor-code-line-active {
+    background-color: color-mix(in srgb, var(--code-theme-fg) 8%, var(--code-theme-bg));
+}
+
+.editor-code-line-active .editor-gutter-num {
+    background-color: color-mix(in srgb, var(--code-theme-fg) 8%, var(--code-theme-bg));
+}
+
+.editor-preview > *:first-child {
+    @apply mt-0!;
+}

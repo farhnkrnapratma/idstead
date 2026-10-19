@@ -106,7 +106,7 @@ The workspace package `@fkp/mdrs` (`packages/mdrs`) renders posts and legal page
 
 ### Components
 
-- `packages/lib/src/components/` — flat directory of reusable UI primitives (Button, Dialog family, form fields, Toast, DataTable, Pagination, BlogPostCard, etc.) plus `filter/` and `admin/` subfolders.
+- `packages/lib/src/components/` — flat directory of reusable UI primitives (Button, Dialog family, form fields, Toast, DataTable, Pagination, BlogPostCard, etc.) plus `filter/` and `admin/` subfolders, and `editor/`: the Markdown editor module. Import it only through `editor/index.ts` (`MarkdownEditor`); the shell composes `EditorViewBar` (tabs, settings, the optional `onImport` file button), `EditorToolbar`, `EditorCodeArea`, `EditorPreview` and `EditorStatusBar`, with pure helpers in `textEdits.ts`, `highlight.ts` and `preferences.svelte.ts`. It never imports Supabase: callers pass `render` (the admin uses `renderMdrsPreview` from `packages/lib/src/mdrsPreview.ts`) and the upload and import handlers.
 - `packages/lib/src/layout/` — page-structure components (PageMain, PageContainer, Section, FormSection, FooterSection, FooterLegalRow). `PageMain` is the `<main id="main">` shell that clears the fixed `TopNav` (`variant="article"` and `reading` for posts and legal pages); use it instead of repeating the offsets.
 - `packages/lib/src/article/` — blog-post-specific rendering (ArticleHeader, ArticleMeta, HelpfulBlock).
 - `packages/lib/src/stores/` — Svelte 5 runes-based stores (`.svelte.ts` files): theme, toast, consent, filter/sort state.

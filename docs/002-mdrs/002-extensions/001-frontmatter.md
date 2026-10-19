@@ -38,7 +38,7 @@ There are ${posts} published posts.
 
 ## Keys the admin understands
 
-MDRS itself accepts any keys. The admin post editor's **Import file** button (in **Post details**) reads a `.md` or `.mdrs` file and fills the form:
+MDRS itself accepts any keys. The admin post editor's import button (the file icon in the Markdown editor's top bar) reads a `.md` or `.mdrs` file and fills the form:
 
 | Key | Field | Notes |
 | --- | --- | --- |
