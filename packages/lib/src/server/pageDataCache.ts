@@ -31,7 +31,10 @@ export function pageDataCacheKey(url: URL, appVersion: string = version): string
 }
 
 export const pageDataCache: Handle = async ({ event, resolve }) => {
-    const key = event.request.method === 'GET' ? pageDataCacheKey(event.url) : null;
+    const key =
+        event.request.method === 'GET' && event.isDataRequest ?
+            pageDataCacheKey(new URL(event.request.url))
+        :   null;
     const cache = key ? edgeCache() : undefined;
     if (!key || !cache) return resolve(event);
 
