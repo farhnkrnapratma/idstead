@@ -5,6 +5,14 @@
     "compatibility_flags": ["nodejs_compat"],
     "routes": [{ "pattern": "api.fkp.my.id", "custom_domain": true }],
     "observability": { "enabled": true },
+    "secrets": {
+        "required": [
+            "PUBLIC_SUPABASE_URL",
+            "PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+            "PUBLIC_SENTRY_DSN",
+            "PUBLIC_SENTRY_ENVIRONMENT"
+        ]
+    },
     "rules": [{ "type": "Text", "globs": ["**/*.md"], "fallthrough": true }],
     "ratelimits": [
         {

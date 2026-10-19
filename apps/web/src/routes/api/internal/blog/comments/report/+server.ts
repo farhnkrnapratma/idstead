@@ -6,8 +6,7 @@ import { verifyTurnstileToken } from '#lib/server/turnstile.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { REPORT_REASON_IDS } from '#lib/reportReasons.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
-
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+import { PUBLIC_ID_PATTERN } from '@fkp/domain/postReference.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
     if (!isSameOriginRequest(request, url)) {
@@ -39,11 +38,11 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     const reason = typeof body?.reason === 'string' ? body.reason.trim() : '';
     const details = typeof body?.details === 'string' ? body.details.trim().slice(0, 500) : '';
 
-    if (!commentId || !UUID_RE.test(commentId)) {
+    if (!commentId || !PUBLIC_ID_PATTERN.test(commentId)) {
         return apiError(
             400,
             'BLOG_COMMENT_REPORT_INVALID_COMMENT_ID',
-            'commentId must be a valid UUID.'
+            'commentId must be a comment ID.'
         );
     }
 
@@ -67,7 +66,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     const { data: comment, error: commentErr } = await adminClient
         .from('db_comments')
         .select('id')
-        .eq('id', commentId)
+        .eq('public_id', commentId)
         .maybeSingle();
 
     if (commentErr || !comment) {
@@ -95,7 +94,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     const { error: insertErr } = await adminClient
         .from('db_comment_reports')
         .insert({
-            comment_id: commentId,
+            comment_id: comment.id,
             reason,
             details: details || null,
             reporter_ip_hash: ipHash

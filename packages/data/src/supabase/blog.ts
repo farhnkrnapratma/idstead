@@ -33,7 +33,9 @@ const BUCKET = 'blog-posts';
 const POST_COLUMNS =
     'id, public_id, title, slug, pinned, created_at, updated_at, excerpt, tags, collaborators, summary, tldr, storage_path, banner_version, read_time';
 const STATS_COLUMNS = 'comments:db_comments(count), views:db_views(count)';
-const COMMENT_COLUMNS = 'id, parent_id, author_name, content, is_anonymous, is_admin, created_at';
+const APPROVED_COMMENTS = 'comments.is_approved';
+const COMMENT_COLUMNS =
+    'id, public_id, parent_id, author_name, content, is_anonymous, is_admin, created_at';
 const PAST_LAST_PAGE = 'PGRST103';
 
 interface PostRow {
@@ -148,6 +150,7 @@ export function createSupabaseBlogRepository(
         let query = published(columns, true)
             .order('created_at', { ascending: false })
             .order('public_id');
+        if (columns.includes(STATS_COLUMNS)) query = query.eq(APPROVED_COMMENTS, true);
         if (term) query = query.or(`title.ilike.%${term}%,excerpt.ilike.%${term}%`);
         if (limit !== undefined) query = query.range(offset, offset + limit - 1);
         else if (offset) query = query.range(offset, offset + 999);
@@ -224,6 +227,7 @@ export function createSupabaseBlogRepository(
                 .from('db_posts')
                 .select(STATS_COLUMNS)
                 .eq('id', postId)
+                .eq(APPROVED_COMMENTS, true)
                 .maybeSingle();
             if (error) throw new DataError('blog.postStats', error);
             const row = (data ?? {}) as Pick<PostRow, 'comments' | 'views'>;
@@ -256,7 +260,18 @@ export function createSupabaseCommentRepository(db: SupabaseClient): CommentRepo
                 .order('id')
                 .limit(1000);
             if (error) throw new DataError('comments.listApproved', error);
-            return ((data ?? []) as Record<string, unknown>[]).map(toComment);
+            const rows = (data ?? []) as Record<string, unknown>[];
+            const publicIds = new Map(rows.map(row => [String(row.id), String(row.public_id)]));
+            return rows.map(row =>
+                toComment({
+                    ...row,
+                    id: row.public_id,
+                    parent_id:
+                        typeof row.parent_id === 'string' ?
+                            (publicIds.get(row.parent_id) ?? null)
+                        :   null
+                })
+            );
         },
 
         async listRecentApproved(limit: number): Promise<RecentComment[]> {

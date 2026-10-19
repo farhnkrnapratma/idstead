@@ -11,8 +11,6 @@ import { workerBinding } from '#lib/server/workerEnv.ts';
 import { moderateContent } from '#lib/server/moderation.ts';
 import { PUBLIC_ID_PATTERN, resolvePostUuid } from '#lib/server/postLookup.ts';
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
     if (!isSameOriginRequest(request, url)) {
         return apiError(
@@ -48,8 +46,8 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             'postId is required and must be a post ID.'
         );
     }
-    if (parentId && !UUID_RE.test(parentId)) {
-        return apiError(400, 'BLOG_COMMENT_INVALID_PARENT_ID', 'parentId must be a valid UUID.');
+    if (parentId && !PUBLIC_ID_PATTERN.test(parentId)) {
+        return apiError(400, 'BLOG_COMMENT_INVALID_PARENT_ID', 'parentId must be a comment ID.');
     }
     if (!content) {
         return apiError(400, 'BLOG_COMMENT_CONTENT_REQUIRED', 'content is required.');
@@ -123,11 +121,12 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     if (!postId) {
         return apiError(404, 'BLOG_POST_NOT_FOUND', 'No published post matches postId.');
     }
+    let parentUuid: string | null = null;
     if (parentId) {
         const { data: parent } = await adminClient
             .from('db_comments')
             .select('id')
-            .eq('id', parentId)
+            .eq('public_id', parentId)
             .eq('post_id', postId)
             .eq('is_approved', true)
             .maybeSingle();
@@ -138,22 +137,21 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
                 'parentId must refer to a published comment on this post.'
             );
         }
+        parentUuid = parent.id;
     }
 
     const { data, error: dbErr } = await adminClient
         .from('db_comments')
         .insert({
             post_id: postId,
-            parent_id: parentId,
+            parent_id: parentUuid,
             author_name: authorName,
             content,
             is_anonymous: false,
             is_admin: false,
             is_approved: moderation.safe
         })
-        .select(
-            'id, parent_id, author_name, content, is_anonymous, is_admin, is_approved, created_at'
-        )
+        .select('public_id, author_name, content, is_anonymous, is_admin, is_approved, created_at')
         .single();
 
     if (dbErr) {
@@ -164,7 +162,16 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     return json(
         {
             is_approved: moderation.safe,
-            comment: data,
+            comment: {
+                id: data.public_id,
+                parent_id: parentId,
+                author_name: data.author_name,
+                content: data.content,
+                is_anonymous: data.is_anonymous,
+                is_admin: data.is_admin,
+                is_approved: data.is_approved,
+                created_at: data.created_at
+            },
             moderation: { engine: moderation.engine, categories: moderation.categories }
         },
         { status: 201 }
