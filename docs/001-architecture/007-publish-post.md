@@ -78,20 +78,21 @@ sequenceDiagram
 
 - **MDRS validation before the save:** while the author types, and again before submitting, `PostEditor` (and the legal page editors) call `POST /api/internal/blog/validate-define` through `validateMdrsRemote` (`apps/admin/src/lib/mdrsValidation.ts`). The save route repeats `validateDefineForSave` and answers `422 BLOG_DEFINE_VALIDATION_FAILED` when the document has errors.
 - **Pre-render:** the save route renders the post with `buildPostRender()` (`packages/lib/src/server/postRender.ts`) and stores `posts/{postId}/{operationId}.render.json` next to the markdown file: the sanitized HTML, headings, read time, `RENDER_VERSION` and a `live` flag. `live` is true when a `:::define` block reads `api.*` (`usesLiveData()`), because that output depends on data that changes after the save. The queued storage cleanup removes the render file together with its markdown file.
-- **Every save of a published post enqueues a message.** Duplicates are harmless because of the atomic claim on `subscribers_notified_at`.
+- **Every save of a published post enqueues a message**, and so does publishing from the post list (`POST /api/internal/admin/posts/flags`). Duplicates are harmless because of the atomic claim on `subscribers_notified_at`.
 - **Manual re-send:**
     - `POST /api/internal/admin/posts/notify` with `{postId, force}` calls `notifyNewPost` synchronously, without going through the queue.
     - `force: true` skips the `IS NULL` guard on the claim and re-sends to everyone.
     - A failed chunk returns `502 BLOG_NOTIFY_SEND_FAILED` after the claim is restored.
 - **Error mapping:** the post route also returns `503 BLOG_SAVE_UNCONFIRMED` when the commit cannot be confirmed. `GET /api/internal/admin/posts?operationId=…` reads `db_post_operations` to check a save's outcome.
 - **Jobs cron** (`17 3 * * *`) runs `cleanupBlogAssets`, `cleanupAssets` and `refreshPostRenders`. It never sends newsletters.
-- **Render refresh:** after saving a published post, or unpublishing one, the route sends `{ kind: 'refresh-renders' }` to `fkp-newsletter`, because the list behind `api.v1.blog` changed. The consumer runs `refreshPostRenders()` (`packages/lib/src/server/postRender.ts`) re-renders published posts whose stored render is `live`, missing or from another `RENDER_VERSION`, checking the 20 newest posts and rendering at most 5 per run to stay inside the free plan's 50 external subrequests per invocation. Several refresh messages in one batch run the job once.
+- **Render refresh:** after saving a published post, or publishing or unpublishing one (from the editor or the post list), the route sends `{ kind: 'refresh-renders' }` to `fkp-newsletter`, because the list behind `api.v1.blog` changed. The consumer runs `refreshPostRenders()` (`packages/lib/src/server/postRender.ts`) re-renders published posts whose stored render is `live`, missing or from another `RENDER_VERSION`, checking the 20 newest posts and rendering at most 5 per run to stay inside the free plan's 50 external subrequests per invocation. Several refresh messages in one batch run the job once.
 - **Retries do not duplicate mail:** each chunk's `Idempotency-Key` is `newsletter/{postId}/{previous subscribers_notified_at, or auto}/{sha256 of the chunk}`, and Resend dedups identical keys for 24 hours, so a retry, including a retried forced re-send, only delivers the chunks that failed.
 - **DLQ:** `fkp-jobs` consumes `fkp-newsletter-dlq` (`max_retries: 0`), reports each message to Sentry with its `postId`, and acks it.
 
 ## Source
 
-- `apps/admin/src/routes/api/internal/admin/posts/+server.ts`, `posts/notify/+server.ts`, `api/internal/blog/validate-define/+server.ts`, `api/internal/blog/validate-define/+server.ts`
-- `packages/lib/src/server/blogPostSave.ts`, `blogPostInput.ts`, `blogBannerStorage.ts`
+- `apps/admin/src/routes/api/internal/admin/posts/+server.ts`, `posts/notify/+server.ts`, `posts/flags/+server.ts`, `api/internal/blog/validate-define/+server.ts`
+- `packages/lib/src/server/blogPostSave.ts`, `blogPostInput.ts`, `blogBannerStorage.ts`, `postEffects.ts`
+- `packages/data/src/adminPosts.ts`, `packages/data/src/supabase/adminPosts.ts`
 - `packages/lib/src/server/newsletterQueue.ts`, `subscriberBroadcast.ts`, `subscribers.ts`
 - `apps/jobs/src/index.ts`, `apps/jobs/wrangler.jsonc`

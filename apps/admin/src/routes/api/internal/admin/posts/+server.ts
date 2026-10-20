@@ -8,7 +8,7 @@ import { parsePostInput } from '#lib/server/blogPostInput.ts';
 import {
     savePostOperation,
     BannerRequiredError,
-    type PostOperation
+    OperationReusedError
 } from '#lib/server/blogPostSave.ts';
 import { cleanupBlogAssets, putBanner } from '#lib/server/blogBannerStorage.ts';
 import { relocateMarkdownAssets, syncPostAssets } from '#lib/server/blogPostAssets.ts';
@@ -17,12 +17,9 @@ import { UUID_PATTERN } from '#lib/blogBanner.ts';
 import { validateDefineForSave } from '@fkp/mdrs';
 import { createSupabaseMdrsResolvers } from '#lib/server/mdrsData.ts';
 import { buildPostRender } from '#lib/server/postRender.ts';
-import { notifyNewPost } from '#lib/server/subscriberBroadcast.ts';
-import { createSupabaseNewsletterStore } from '@fkp/data';
+import { createSupabaseAdminPostStores, createSupabaseNewsletterStore } from '@fkp/data';
 import { logActivity } from '#lib/server/activityLog.ts';
-import { runInBackground } from '#lib/server/workerEnv.ts';
-import { enqueueNewsletter } from '#lib/server/newsletterQueue.ts';
-import { enqueueRenderRefresh } from '#lib/server/renderQueue.ts';
+import { queuePostEffects } from '#lib/server/postEffects.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
@@ -42,6 +39,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             error instanceof Error ? error.message : 'Invalid post data.'
         );
     }
+    const stores = createSupabaseAdminPostStores(db);
     try {
         if (input.kind === 'save') {
             const validation = await validateDefineForSave(
@@ -55,23 +53,10 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
                     validation.errors.map(error => error.message).join(' | ')
                 );
         }
-        const { data: previous, error: previousError } = await db
-            .from('db_posts')
-            .select('id, slug, published, banner_version')
-            .eq('id', input.id)
-            .maybeSingle();
-        if (previousError) throw previousError;
+        const previous = await stores.posts.assetState(input.id);
         const cdnBase = cdnBaseUrl();
         if (input.kind === 'save') {
-            const { data: owner, error: ownerError } = await db
-                .from('db_posts')
-                .select('id')
-                .eq('slug', input.post.slug as string)
-                .neq('id', input.id)
-                .limit(1)
-                .maybeSingle();
-            if (ownerError) throw ownerError;
-            if (owner)
+            if (await stores.posts.slugTaken(input.post.slug as string, input.id))
                 return apiError(
                     422,
                     'BLOG_SAVE_REJECTED',
@@ -109,7 +94,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             }
         }
         const operation = await savePostOperation(
-            db,
+            stores.operations,
             auth.actor,
             input,
             async () => {
@@ -132,34 +117,15 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
                 'BLOG_SAVE_REJECTED',
                 'Post fields could not be committed. Check that the slug is unique.'
             );
-        if (operation.result?.published && operation.result.id) {
-            const postId = operation.result.id;
-            const queued = await enqueueNewsletter({ postId }).catch(error => {
-                console.error('Could not queue the subscriber broadcast:', error);
-                return false;
-            });
-            if (!queued)
-                await runInBackground(
-                    notifyNewPost(createSupabaseNewsletterStore(db), platform, postId).catch(
-                        error => {
-                            console.error('Subscriber broadcast failed:', error);
-                        }
-                    )
-                );
-        }
-        if (operation.result?.published || previous?.published)
-            await enqueueRenderRefresh().catch(error => {
-                console.error('Could not queue the post render refresh:', error);
-            });
+        await queuePostEffects(createSupabaseNewsletterStore(db), platform, {
+            postId: operation.result?.id ?? input.id,
+            published: Boolean(operation.result?.published && operation.result.id),
+            wasPublished: Boolean(previous?.published)
+        });
         let cleanupPending = false;
         try {
             const deleted = input.kind === 'delete' || Boolean(operation.result?.deleted);
-            const { data: current, error: readError } = await db
-                .from('db_posts')
-                .select('id, slug, published, banner_version')
-                .eq('id', input.id)
-                .maybeSingle();
-            if (readError) throw readError;
+            const current = await stores.posts.assetState(input.id);
             await syncPostAssets({
                 platform,
                 cdnBase,
@@ -173,7 +139,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             cleanupPending = true;
         }
         try {
-            const cleanup = await cleanupBlogAssets(db, platform);
+            const cleanup = await cleanupBlogAssets(stores, platform);
             if (cleanup.cleanupPending) cleanupPending = true;
         } catch {
             cleanupPending = true;
@@ -214,7 +180,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     } catch (error) {
         if (error instanceof BannerRequiredError)
             return apiError(400, 'BLOG_SAVE_INVALID_INPUT', error.message);
-        if ((error as { code?: string })?.code === '22023')
+        if (error instanceof OperationReusedError)
             return apiError(
                 409,
                 'BLOG_OPERATION_REUSED',
@@ -238,20 +204,17 @@ export const GET: RequestHandler = async ({ request, url, platform }) => {
     const id = url.searchParams.get('operationId') || '';
     if (!UUID_PATTERN.test(id))
         return apiError(400, 'BLOG_OPERATION_INVALID', 'A valid operation ID is required.');
-    const { data, error } = await db
-        .from('db_post_operations')
-        .select('id, state, result')
-        .eq('id', id)
-        .eq('actor_id', auth.actor)
-        .maybeSingle();
-    if (error)
+    let operation;
+    try {
+        operation = await createSupabaseAdminPostStores(db).operations.find(id, auth.actor);
+    } catch {
         return apiError(
             503,
             'BLOG_RECONCILIATION_UNAVAILABLE',
             'Save status could not be checked. Retry shortly.'
         );
-    if (!data) return json({ state: 'unknown' }, { headers: { 'Cache-Control': 'no-store' } });
-    const operation = data as PostOperation;
+    }
+    if (!operation) return json({ state: 'unknown' }, { headers: { 'Cache-Control': 'no-store' } });
     return json(
         { operationId: operation.id, state: operation.state, post: operation.result },
         { headers: { 'Cache-Control': 'no-store' } }

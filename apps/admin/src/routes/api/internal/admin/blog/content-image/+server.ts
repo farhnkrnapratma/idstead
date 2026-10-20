@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
+import { createSupabaseAdminPostStore } from '@fkp/data';
 import { apiError } from '#lib/server/apiError.ts';
 import { blogAdmin } from '#lib/server/blogPostAuth.ts';
 import { boundedBody } from '#lib/server/blogPostInput.ts';
@@ -76,12 +77,7 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
     const home = stagingAssetHome(postId);
     let name: string;
     try {
-        const { data: post, error: postError } = await db
-            .from('db_posts')
-            .select('slug, published')
-            .eq('id', postId)
-            .maybeSingle();
-        if (postError) throw postError;
+        const post = await createSupabaseAdminPostStore(db).assetState(postId);
         name = await uniqueAssetName({
             platform,
             post: { id: postId, slug: post?.slug, published: post?.published },

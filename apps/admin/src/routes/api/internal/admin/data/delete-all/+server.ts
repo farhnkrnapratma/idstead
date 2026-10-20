@@ -7,6 +7,7 @@ import { requireAdminAuth, deleteCvFile } from '#lib/server/adminCv.ts';
 import { removeAssets, removeCanonicalIdentity } from '#lib/server/profileAssets.ts';
 import { syncPostAssets } from '#lib/server/blogPostAssets.ts';
 import { cleanupBlogAssets } from '#lib/server/blogBannerStorage.ts';
+import { createSupabaseAdminPostStores } from '@fkp/data';
 import { bearerToken } from '#lib/server/adminAuth.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { getSupabaseUserClient } from '#lib/server/supabaseUser.ts';
@@ -171,7 +172,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         );
     }
 
-    const sweepPending = await cleanupBlogAssets(db, platform).then(
+    const sweepPending = await cleanupBlogAssets(createSupabaseAdminPostStores(db), platform).then(
         ({ cleanupPending }) => cleanupPending,
         error => {
             console.error('Blog asset cleanup failed:', error);

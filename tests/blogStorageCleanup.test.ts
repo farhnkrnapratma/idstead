@@ -8,6 +8,7 @@ mock.module('$app/env/public', () => ({
 }));
 
 const { cleanupBlogAssets } = await import('../packages/lib/src/server/blogBannerStorage');
+const { createSupabaseAdminPostStores } = await import('../packages/data/src/index.ts');
 
 describe('queued blog Markdown cleanup', () => {
     test('deletes orphaned post files with their renders and keeps files still in use or outside posts/', async () => {
@@ -62,7 +63,7 @@ describe('queued blog Markdown cleanup', () => {
             }
         } as unknown as SupabaseClient;
 
-        const result = await cleanupBlogAssets(db);
+        const result = await cleanupBlogAssets(createSupabaseAdminPostStores(db));
 
         expect(result).toEqual({ cleanupPending: false, removed: 2 });
         expect(removedPaths).toEqual(

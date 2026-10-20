@@ -4,7 +4,11 @@ import { notifyNewPost } from '#lib/server/subscriberBroadcast.ts';
 import { isNewsletterMessage, type NewsletterMessage } from '#lib/server/newsletterQueue.ts';
 import { cleanupBlogAssets } from '#lib/server/blogBannerStorage.ts';
 import { cleanupAssets } from '#lib/server/profileAssets.ts';
-import { createSupabaseNewsletterStore, createSupabaseRenderStore } from '@fkp/data';
+import {
+    createSupabaseAdminPostStores,
+    createSupabaseNewsletterStore,
+    createSupabaseRenderStore
+} from '@fkp/data';
 import { refreshPostRenders } from '#lib/server/postRender.ts';
 import { isRenderRefreshMessage } from '#lib/server/renderQueue.ts';
 import { createSupabaseMdrsResolvers } from '#lib/server/mdrsData.ts';
@@ -78,7 +82,9 @@ async function refreshRenders(env: Env) {
 async function cleanup(env: Env) {
     const db = getSupabaseAdminClient({ env });
     const results = await Promise.allSettled([
-        db ? cleanupBlogAssets(db, { env } as App.Platform) : Promise.resolve(null),
+        db ?
+            cleanupBlogAssets(createSupabaseAdminPostStores(db), { env } as App.Platform)
+        :   Promise.resolve(null),
         cleanupAssets({ env } as App.Platform),
         refreshRenders(env)
     ]);
