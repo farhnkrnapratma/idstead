@@ -4,7 +4,7 @@ import { notifyNewPost } from '#lib/server/subscriberBroadcast.ts';
 import { isNewsletterMessage, type NewsletterMessage } from '#lib/server/newsletterQueue.ts';
 import { cleanupBlogAssets } from '#lib/server/blogBannerStorage.ts';
 import { cleanupAssets } from '#lib/server/profileAssets.ts';
-import { createSupabaseRenderStore } from '@fkp/data';
+import { createSupabaseNewsletterStore, createSupabaseRenderStore } from '@fkp/data';
 import { refreshPostRenders } from '#lib/server/postRender.ts';
 import { isRenderRefreshMessage } from '#lib/server/renderQueue.ts';
 import { createSupabaseMdrsResolvers } from '#lib/server/mdrsData.ts';
@@ -30,7 +30,12 @@ async function deliver(message: Message<unknown>, env: Env) {
         message.retry({ delaySeconds: 300 });
         return;
     }
-    const result = await notifyNewPost(db, { env }, body.postId, body.force === true);
+    const result = await notifyNewPost(
+        createSupabaseNewsletterStore(db),
+        { env },
+        body.postId,
+        body.force === true
+    );
     if (result.reason === 'send-failed')
         Sentry.captureMessage('Newsletter send failed', {
             level: 'warning',

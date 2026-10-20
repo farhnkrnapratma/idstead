@@ -36,7 +36,7 @@ export interface ContractSeed {
 export type RepositoryFactory = (seed: ContractSeed) => {
     blog: BlogRepository;
     comments: CommentRepository;
-    writers: Writers;
+    writers: Pick<Writers, 'comments' | 'views'>;
 };
 
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;

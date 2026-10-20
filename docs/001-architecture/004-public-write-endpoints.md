@@ -42,7 +42,7 @@ sequenceDiagram
     Note over B,RS: POST /api/internal/subscribe
     B->>H: {email, turnstileToken}
     H->>H: same-origin, email check, Turnstile
-    H->>DB: SELECT db_subscribers by email
+    H->>DB: serviceData().writers.subscribers.request(...)
     alt active, or pending inside the 5 min resend cooldown
         H-->>B: 200 same accepted body (no enumeration)
     else

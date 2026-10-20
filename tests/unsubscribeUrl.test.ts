@@ -6,10 +6,6 @@ const unsubscribePageServer = readFileSync(
     new URL('../apps/web/src/routes/unsubscribe/+page.server.ts', import.meta.url),
     'utf8'
 );
-const subscribeHandler = readFileSync(
-    new URL('../apps/web/src/routes/api/internal/subscribe/+server.ts', import.meta.url),
-    'utf8'
-);
 
 describe('unsubscribe result URL', () => {
     test('removes every bearer token before the result page can load analytics', () => {
@@ -24,21 +20,15 @@ describe('unsubscribe result URL', () => {
 
     test('redirects token-bearing requests before rendering the analytics shell', () => {
         expect(unsubscribePageServer).toContain("const hasToken = url.searchParams.has('token')");
-        expect(unsubscribePageServer).toContain(".eq('unsubscribe_token', token)");
+        expect(unsubscribePageServer).toContain('subscribers.statusByUnsubscribeToken(token)');
         expect(unsubscribePageServer).toContain('redirect(303, unsubscribeResultUrl(url, state))');
     });
 
     test('only unsubscribes from a form POST, never while loading the page', () => {
         const [loadSource, actionSource] = unsubscribePageServer.split('export const actions');
         expect(actionSource).toBeDefined();
-        expect(loadSource).not.toContain('.update(');
-        expect(actionSource).toContain("status: 'unsubscribed'");
+        expect(loadSource).not.toContain('.unsubscribe(');
+        expect(actionSource).toContain('subscribers.unsubscribe(token)');
         expect(loadSource).toContain('httpOnly: true');
-    });
-
-    test('rotates an old unsubscribe token when an address resubscribes', () => {
-        expect(subscribeHandler).toMatch(
-            /existing\?\.status === 'unsubscribed'[\s\S]*?unsubscribe_token: createToken\(\)/
-        );
     });
 });

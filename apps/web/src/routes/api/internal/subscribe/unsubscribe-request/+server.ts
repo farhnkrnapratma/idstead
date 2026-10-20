@@ -1,6 +1,5 @@
-import { publicRepositories } from '#lib/server/repositories.ts';
+import { publicRepositories, serviceData } from '#lib/server/repositories.ts';
 import type { RequestHandler } from './$types';
-import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { verifyTurnstileToken } from '#lib/server/turnstile.ts';
 import { requestUnsubscribe } from '#lib/server/unsubscribeRequest.ts';
 import {
@@ -16,7 +15,7 @@ export const POST: RequestHandler = ({ request, url, platform, getClientAddress 
     return requestUnsubscribe({
         request,
         url,
-        db: getSupabaseAdminClient(platform),
+        subscribers: serviceData(platform)?.writers.subscribers ?? null,
         verify: token => verifyTurnstileToken(token, getClientAddress(), platform),
         send:
             apiKey && from ?

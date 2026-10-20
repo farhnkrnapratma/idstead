@@ -1,12 +1,10 @@
-import { publicRepositories } from '#lib/server/repositories.ts';
+import { publicRepositories, serviceData } from '#lib/server/repositories.ts';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { apiError } from '#lib/server/apiError.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
-import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { verifyTurnstileToken } from '#lib/server/turnstile.ts';
 import {
-    SUBSCRIBER_TABLE,
     confirmEmail,
     createToken,
     hashIp,
@@ -55,49 +53,30 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             'Verification challenge failed. Please try again.'
         );
 
-    const db = getSupabaseAdminClient(platform);
-    if (!db) return apiError(503, 'SUBSCRIBE_UNAVAILABLE', 'Subscriptions are not configured.');
+    const subscribers = serviceData(platform)?.writers.subscribers;
+    if (!subscribers)
+        return apiError(503, 'SUBSCRIBE_UNAVAILABLE', 'Subscriptions are not configured.');
 
     const apiKey = resendApiKey(platform);
     const from = senderAddress(platform);
     if (!apiKey || !from)
         return apiError(503, 'SUBSCRIBE_UNAVAILABLE', 'Subscriptions are not configured.');
 
-    const { data: existing } = await db
-        .from(SUBSCRIBER_TABLE)
-        .select('id, status, confirm_sent_at')
-        .eq('email', email)
-        .maybeSingle();
-
-    if (existing?.status === 'active') return json(ACCEPTED);
-
-    if (
-        existing?.status === 'pending'
-        && existing.confirm_sent_at
-        && Date.now() - new Date(existing.confirm_sent_at).getTime() < CONFIRM_RESEND_COOLDOWN_MS
-    )
-        return json(ACCEPTED);
-
     const salt = ipSalt(platform);
-
     const confirmToken = createToken();
-    const row = {
-        email,
-        status: 'pending' as const,
-        confirm_token_hash: await hashToken(confirmToken),
-        confirm_sent_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        user_agent: (request.headers.get('user-agent') ?? '').slice(0, 300),
-        ...(existing?.status === 'unsubscribed' ? { unsubscribe_token: createToken() } : {}),
-        ...(salt ? { ip_hash: await hashIp(getClientAddress(), salt) } : {})
-    };
+    const confirmTokenHash = await hashToken(confirmToken);
 
-    const { error } =
-        existing ?
-            await db.from(SUBSCRIBER_TABLE).update(row).eq('id', existing.id)
-        :   await db.from(SUBSCRIBER_TABLE).insert({ ...row, unsubscribe_token: createToken() });
-
-    if (error) {
+    let result;
+    try {
+        result = await subscribers.request({
+            email,
+            confirmTokenHash,
+            unsubscribeToken: createToken(),
+            userAgent: (request.headers.get('user-agent') ?? '').slice(0, 300),
+            ipHash: salt ? await hashIp(getClientAddress(), salt) : null,
+            resendCooldownMs: CONFIRM_RESEND_COOLDOWN_MS
+        });
+    } catch (error) {
         console.error('Failed to record subscriber:', error);
         return apiError(
             503,
@@ -105,6 +84,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             'Could not record the subscription right now.'
         );
     }
+    if (result !== 'requested') return json(ACCEPTED);
 
     const profile = await publicRepositories()
         .author.profile()
@@ -117,11 +97,9 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         ...confirmEmail(siteName, confirmUrl)
     });
     if (!sent) {
-        await db
-            .from(SUBSCRIBER_TABLE)
-            .update({ confirm_sent_at: null })
-            .eq('email', email)
-            .eq('confirm_token_hash', row.confirm_token_hash);
+        await subscribers.cancelConfirmation(email, confirmTokenHash).catch(error => {
+            console.error('Failed to reset the confirmation cooldown:', error);
+        });
         return apiError(
             502,
             'SUBSCRIBE_EMAIL_FAILED',

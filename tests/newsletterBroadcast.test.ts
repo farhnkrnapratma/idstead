@@ -4,6 +4,8 @@ mock.module('$app/env/public', () => ({}));
 mock.module('$app/env/private', () => ({}));
 
 const { notifyNewPost } = await import('../packages/lib/src/server/subscriberBroadcast.ts');
+const { createSupabaseNewsletterStore } =
+    await import('../packages/data/src/supabase/subscribers.ts');
 
 const POST_ID = '7f3c2a10-4b1d-4c8e-9a2f-0d1e2f3a4b5c';
 const platform = { env: { RESEND_API_KEY: 're_test', SUBSCRIBER_FROM_EMAIL: 'news@example.com' } };
@@ -49,7 +51,7 @@ function fakeDb(subscriberCount: number, notifiedAt: string | null = null) {
         return builder;
     }
 
-    return { db: { from: query } as never, post };
+    return { db: createSupabaseNewsletterStore({ from: query } as never), post };
 }
 
 const realFetch = globalThis.fetch;

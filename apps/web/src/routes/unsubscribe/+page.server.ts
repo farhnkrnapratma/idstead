@@ -1,7 +1,6 @@
 import type { Actions, PageServerLoad } from './$types';
 import { redirect, type Cookies } from '@sveltejs/kit';
-import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
-import { SUBSCRIBER_TABLE } from '#lib/server/subscribers.ts';
+import { serviceData } from '#lib/server/repositories.ts';
 import { unsubscribeResultUrl, type UnsubscribeState } from '#lib/server/unsubscribeUrl.ts';
 
 const TOKEN_COOKIE = 'unsubscribe_token';
@@ -29,17 +28,19 @@ export const load: PageServerLoad = async ({ url, platform, cookies }) => {
 
     if (!TOKEN_RE.test(token)) return redirectToResult('invalid');
 
-    const db = getSupabaseAdminClient(platform);
-    if (!db) return redirectToResult('unavailable');
+    const subscribers = serviceData(platform)?.writers.subscribers;
+    if (!subscribers) return redirectToResult('unavailable');
 
-    const { data: row } = await db
-        .from(SUBSCRIBER_TABLE)
-        .select('id, status')
-        .eq('unsubscribe_token', token)
-        .maybeSingle();
+    let status;
+    try {
+        status = await subscribers.statusByUnsubscribeToken(token);
+    } catch (error) {
+        console.error('Failed to look up the unsubscribe token:', error);
+        return redirectToResult('unavailable');
+    }
 
-    if (!row) return redirectToResult('invalid');
-    if (row.status === 'unsubscribed') return redirectToResult('unsubscribed');
+    if (!status) return redirectToResult('invalid');
+    if (status === 'unsubscribed') return redirectToResult('unsubscribed');
 
     cookies.set(TOKEN_COOKIE, token, {
         path: '/unsubscribe',
@@ -59,35 +60,17 @@ export const actions: Actions = {
         const token = storedToken(cookies);
         if (!token) return redirectToResult('invalid');
 
-        const db = getSupabaseAdminClient(platform);
-        if (!db) return redirectToResult('unavailable');
+        const subscribers = serviceData(platform)?.writers.subscribers;
+        if (!subscribers) return redirectToResult('unavailable');
 
-        const { data: updatedRow, error } = await db
-            .from(SUBSCRIBER_TABLE)
-            .update({
-                status: 'unsubscribed',
-                unsubscribed_at: new Date().toISOString(),
-                confirm_token_hash: null,
-                updated_at: new Date().toISOString()
-            })
-            .eq('unsubscribe_token', token)
-            .neq('status', 'unsubscribed')
-            .select('id')
-            .maybeSingle();
-
-        if (error) {
+        let result;
+        try {
+            result = await subscribers.unsubscribe(token);
+        } catch (error) {
             console.error('Failed to unsubscribe:', error);
             return redirectToResult('unavailable');
         }
         cookies.delete(TOKEN_COOKIE, { path: '/unsubscribe' });
-        if (!updatedRow) {
-            const { data: row } = await db
-                .from(SUBSCRIBER_TABLE)
-                .select('status')
-                .eq('unsubscribe_token', token)
-                .maybeSingle();
-            return redirectToResult(row?.status === 'unsubscribed' ? 'unsubscribed' : 'invalid');
-        }
-        return redirectToResult('unsubscribed');
+        return redirectToResult(result);
     }
 };

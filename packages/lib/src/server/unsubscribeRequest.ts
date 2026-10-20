@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { SubscriberRepository } from '@fkp/data';
 import { apiError } from './apiError';
 import { isSameOriginRequest } from './sameOrigin';
 import { mailingEmailError } from '../mailing';
@@ -7,13 +7,13 @@ import { mailingEmailError } from '../mailing';
 export async function requestUnsubscribe({
     request,
     url,
-    db,
+    subscribers,
     verify,
     send
 }: {
     request: Request;
     url: URL;
-    db: SupabaseClient | null;
+    subscribers: SubscriberRepository | null;
     verify: (token: string) => Promise<boolean>;
     send: ((email: string, token: string) => Promise<boolean>) | null;
 }) {
@@ -45,22 +45,12 @@ export async function requestUnsubscribe({
             'UNSUBSCRIBE_TURNSTILE_FAILED',
             'Verification challenge failed. Please try again.'
         );
-    if (!db || !send)
+    if (!subscribers || !send)
         return apiError(503, 'UNSUBSCRIBE_UNAVAILABLE', 'Mailing requests are not configured.');
     try {
-        const { data, error } = await db
-            .from('db_subscribers')
-            .select('status, unsubscribe_token')
-            .eq('email', email)
-            .maybeSingle();
-        if (error) throw new Error('Subscriber lookup failed');
-        if (data && data.status !== 'unsubscribed') {
-            if (
-                !/^[0-9a-f]{64}$/.test(data.unsubscribe_token ?? '')
-                || !(await send(email, data.unsubscribe_token))
-            )
-                throw new Error('Confirmation email failed');
-        }
+        const token = await subscribers.unsubscribeTokenFor(email);
+        if (token !== null && (!/^[0-9a-f]{64}$/.test(token) || !(await send(email, token))))
+            throw new Error('Confirmation email failed');
         return json({
             ok: true,
             message:
