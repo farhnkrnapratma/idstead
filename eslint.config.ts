@@ -58,6 +58,28 @@ export default defineConfig(
         }
     },
     {
+        files: [
+            'apps/admin/src/**/*.svelte',
+            'apps/admin/src/**/*.svelte.ts',
+            'apps/admin/src/lib/**/*.ts',
+            'packages/lib/src/**/*.svelte',
+            'packages/lib/src/stores/**',
+            'packages/lib/src/utils/**'
+        ],
+        ignores: ['**/server/**'],
+        rules: {
+            'no-restricted-syntax': [
+                'error',
+                {
+                    selector:
+                        "MemberExpression[object.name='supabase'][property.name!=/^(auth|channel|removeChannel)$/]",
+                    message:
+                        'Browser code uses the Supabase client for auth and realtime only; read and write data through a first-party endpoint backed by @fkp/data.'
+                }
+            ]
+        }
+    },
+    {
         files: ['packages/mdrs/**'],
         rules: {
             '@typescript-eslint/no-restricted-imports': [

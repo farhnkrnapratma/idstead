@@ -1,12 +1,16 @@
 import type { RequestHandler } from './$types';
 import { error } from '@sveltejs/kit';
-import { supabase } from '#lib/supabase.ts';
-import { fetchActiveOpenPgpKey } from '#lib/author.ts';
+import { publicRepositories } from '#lib/server/repositories.ts';
 import { readSiteProfile } from '#lib/server/publicMetadata.ts';
 import { wkdKey } from '#lib/server/wkd.ts';
 
-export const GET: RequestHandler = async ({ params }) => {
-    const [key, profile] = await Promise.all([fetchActiveOpenPgpKey(supabase), readSiteProfile()]);
+export const GET: RequestHandler = async ({ params, fetch }) => {
+    const [key, profile] = await Promise.all([
+        publicRepositories(fetch)
+            .author.activeOpenPgpKey()
+            .catch(() => null),
+        readSiteProfile()
+    ]);
     const body = await wkdKey(params.hash, key, profile.siteUrl);
     if (!body) error(404, 'Not found.');
     return new Response(body, {

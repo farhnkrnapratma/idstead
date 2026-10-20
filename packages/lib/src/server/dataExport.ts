@@ -1,13 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { strToU8, zipSync, type Zippable } from 'fflate';
 import {
-    fetchAuthorProfile,
-    fetchContactInfo,
-    fetchCvEntries,
-    fetchFundingLinks,
-    fetchGroupedSkills,
-    fetchSocials
-} from '#lib/author.ts';
+    createSupabaseActivityLog,
+    createSupabaseAdminAuthorStore,
+    createSupabaseSiteDataStore
+} from '@fkp/data';
+import { skillGroupFromItem } from '@fkp/domain/author.ts';
 import { DEFAULT_ADMIN_DISPLAY } from '#lib/adminDateFormat.ts';
 import { DEFAULT_CHART_RANGE, parseAdminSettings } from '#lib/adminSettings.ts';
 import { findAssetBucket, readObjectBytes } from './r2';
@@ -61,14 +59,7 @@ export async function buildDataExport(
         counts.files = (counts.files ?? 0) + 1;
     };
 
-    async function rows<T>(
-        scope: string,
-        query: PromiseLike<{ data: T[] | null; error: unknown }>
-    ) {
-        const { data, error } = await query;
-        if (error) warn(scope, error);
-        return data ?? [];
-    }
+    const siteData = createSupabaseSiteDataStore(db);
 
     async function guard<T>(scope: string, task: () => Promise<T>, fallback: T) {
         try {
@@ -102,66 +93,24 @@ export async function buildDataExport(
 
     async function readMarkdown(storagePath: string | null) {
         if (!storagePath) return null;
-        const { data, error } = await db.storage.from('blog-posts').download(storagePath);
-        if (error || !data) throw error ?? new Error('markdown not found');
-        return data.text();
+        return siteData.postMarkdown(storagePath);
     }
 
     async function writeMedia(dir: string, collector: ReturnType<typeof createMediaCollector>) {
         for (const [key, relative] of collector.files) await fetchBinary(`${dir}/${relative}`, key);
     }
 
-    const [posts, comments, reports, feedback, legals, rules, documents, settingsRows, profileRow] =
-        await Promise.all([
-            rows<any>(
-                'posts',
-                db
-                    .from('db_posts')
-                    .select(
-                        'id, slug, title, excerpt, published, pinned, storage_path, read_time, tags, collaborators, summary, tldr, helpful_yes, helpful_no, created_at, updated_at'
-                    )
-                    .order('created_at', { ascending: true })
-            ),
-            rows<CommentRow & { post_id: string }>(
-                'comments',
-                db
-                    .from('db_comments')
-                    .select(
-                        'id, post_id, parent_id, author_name, content, is_anonymous, is_admin, is_approved, created_at'
-                    )
-            ),
-            rows<any>(
-                'reports',
-                db
-                    .from('db_comment_reports')
-                    .select('comment_id, reason, details, created_at')
-                    .order('created_at', { ascending: true })
-            ),
-            rows<any>(
-                'feedback',
-                db
-                    .from('db_feedback_events')
-                    .select('target_type, target_id, post_id, vote, created_at')
-                    .order('created_at', { ascending: true })
-            ),
-            rows<any>(
-                'legal pages',
-                db.from('db_legals').select('slug, title, content, created_at, updated_at')
-            ),
-            rows<any>(
-                'project rules',
-                db
-                    .from('db_project_repo_rules')
-                    .select('rule_type, repo_name')
-                    .order('sort_order', { ascending: true })
-            ),
-            rows<any>(
-                'cv documents',
-                db.from('db_documents').select('filename, hash').eq('is_active', true)
-            ),
-            rows<any>('settings', db.from('db_admin_settings').select('settings')),
-            db.from('db_profiles').select('avatar_version').limit(1).maybeSingle()
-        ]);
+    const { tables, failures } = await siteData.exportTables();
+    for (const failure of failures) warn(failure.scope, failure.error);
+    const posts = tables.posts as any[];
+    const reports = tables.reports as any[];
+    const feedback = tables.feedback as any[];
+    const legals = tables.legals as any[];
+    const rules = tables.repoRules as any[];
+    const documents = tables.activeDocuments;
+    const settingsRows = tables.settings;
+    const { avatarVersion } = tables;
+    const comments = tables.comments as (CommentRow & { post_id: string })[];
 
     const cdnBase = cdnBaseUrl();
     const postById = new Map<string, { slug: string; dir: string }>();
@@ -195,12 +144,6 @@ export async function buildDataExport(
             ))
                 await fetchBinary(key, key);
 
-        const { count, error: viewsError } = await db
-            .from('db_views')
-            .select('id', { count: 'exact', head: true })
-            .eq('post_id', post.id);
-        if (viewsError) warn(`${dir}/metadata.json views`, viewsError);
-
         putJson(`${dir}/metadata.json`, {
             title: post.title,
             slug: post.slug,
@@ -215,7 +158,7 @@ export async function buildDataExport(
             createdAt: post.created_at,
             updatedAt: post.updated_at,
             stats: {
-                views: count ?? 0,
+                views: post.view_count ?? 0,
                 helpfulYes: post.helpful_yes ?? 0,
                 helpfulNo: post.helpful_no ?? 0
             }
@@ -281,14 +224,14 @@ export async function buildDataExport(
         exclude: rules.filter(r => r.rule_type === 'exclude').map(r => r.repo_name)
     });
 
-    const profile = await guard(
-        'identity/profile.json',
-        () => fetchAuthorProfile(db, { includeEmail: true, strict: true }),
+    const author = await guard(
+        'identity',
+        () => createSupabaseAdminAuthorStore(db).snapshot(),
         null
     );
     putJson(
         'identity/profile.json',
-        stripKeys(profile ?? {}, [
+        stripKeys(author?.profile ?? {}, [
             'id',
             'revision',
             'avatar',
@@ -304,33 +247,17 @@ export async function buildDataExport(
     const identityIds = ['id', 'sortOrder'];
     putJson(
         'identity/resume.json',
-        stripKeys(
-            await guard('identity/resume.json', () => fetchCvEntries(db, { strict: true }), {
-                experience: [],
-                education: []
-            }),
-            identityIds
-        )
+        stripKeys(author?.cv ?? { experience: [], education: [] }, identityIds)
     );
-    const sections: [
-        string,
-        (client: SupabaseClient, options: { strict: boolean }) => Promise<unknown>
-    ][] = [
-        ['skills', fetchGroupedSkills],
-        ['socials', fetchSocials],
-        ['funding', fetchFundingLinks],
-        ['contact', fetchContactInfo]
+    const sections: [string, unknown[]][] = [
+        ['skills', (author?.skills ?? []).map(skillGroupFromItem)],
+        ['socials', author?.social ?? []],
+        ['funding', author?.funding ?? []],
+        ['contact', author?.contact ?? []]
     ];
-    for (const [name, fetcher] of sections)
-        putJson(
-            `identity/${name}.json`,
-            stripKeys(
-                await guard(`identity/${name}.json`, () => fetcher(db, { strict: true }), []),
-                identityIds
-            )
-        );
+    for (const [name, items] of sections)
+        putJson(`identity/${name}.json`, stripKeys(items, identityIds));
 
-    const avatarVersion = profileRow.data?.avatar_version as string | null;
     if (avatarVersion)
         for (const name of identityAssetNames)
             if (!(await fetchBinary(`identity/${name}`, `identity/${name}`, true)))
@@ -344,16 +271,22 @@ export async function buildDataExport(
             await fetchBinary(key, key);
 
     const logs: Record<string, unknown>[] = [];
+    const activityLog = createSupabaseActivityLog(db);
     await guard(
         'administration/logs.json',
         async () => {
             for (let offset = 0; ; offset += ACTIVITY_PAGE) {
-                const { data, error } = await db.rpc('db_activity_log_list', {
-                    p_limit: ACTIVITY_PAGE,
-                    p_offset: offset
+                const data = await activityLog.list({
+                    category: null,
+                    query: null,
+                    direction: 'desc',
+                    sort: 'created_at',
+                    from: null,
+                    to: null,
+                    limit: ACTIVITY_PAGE,
+                    offset
                 });
-                if (error) throw error;
-                const batch = (data?.data ?? []) as any[];
+                const batch = data.data as any[];
                 for (const row of batch)
                     logs.push({
                         timestamp: row.created_at,
