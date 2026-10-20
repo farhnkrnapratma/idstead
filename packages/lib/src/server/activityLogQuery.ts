@@ -1,3 +1,4 @@
+import type { ActivityLogFilter } from '@fkp/data';
 import { activityCategories, activityLogSortFields, ACTIVITY_LOG_PAGE_SIZE } from '../activityLog';
 
 export class ActivityLogQueryError extends Error {}
@@ -36,13 +37,13 @@ export function activityLogQuery(params: URLSearchParams) {
         return value;
     };
     return {
-        p_category: category,
-        p_query: query || null,
-        p_direction: direction,
-        p_sort: sort,
-        p_from: from,
-        p_to: to,
-        p_limit: integer('limit', ACTIVITY_LOG_PAGE_SIZE, 1, 200),
-        p_offset: integer('offset', 0, 0, 2147483647)
-    };
+        category,
+        query: query || null,
+        direction: direction as 'asc' | 'desc',
+        sort,
+        from,
+        to,
+        limit: integer('limit', ACTIVITY_LOG_PAGE_SIZE, 1, 200),
+        offset: integer('offset', 0, 0, 2147483647)
+    } satisfies ActivityLogFilter;
 }

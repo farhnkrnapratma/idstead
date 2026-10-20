@@ -9,6 +9,7 @@ import {
 } from '#lib/server/activityLogExport.ts';
 
 import { activityLogQuery } from '#lib/server/activityLogQuery.ts';
+import { createSupabaseActivityLog } from '@fkp/data';
 export const GET: RequestHandler = async ({ request, url, platform }) => {
     const db = getSupabaseAdminClient(platform);
     if (!db)
@@ -34,19 +35,16 @@ export const GET: RequestHandler = async ({ request, url, platform }) => {
     const format = url.searchParams.get('format') ?? 'pdf';
     if (format !== 'txt' && format !== 'pdf')
         return apiError(400, 'ACTIVITY_LOG_INVALID_FORMAT', 'Invalid export format.');
-    const { p_category, p_from, p_to, p_query, p_direction, p_sort } = query;
-    const { data, error } = await db.rpc('db_activity_log_export', {
-        p_category,
-        p_from,
-        p_to,
-        p_query,
-        p_direction,
-        p_sort
-    });
-    if (error) return apiError(503, 'ACTIVITY_LOG_EXPORT_FAILED', 'Could not export activity log.');
+    const { limit: _limit, offset: _offset, ...filter } = query;
+    let page;
+    try {
+        page = await createSupabaseActivityLog(db).export(filter);
+    } catch {
+        return apiError(503, 'ACTIVITY_LOG_EXPORT_FAILED', 'Could not export activity log.');
+    }
 
-    const rows = (data?.data ?? []) as ActivityLogRow[];
-    const exportHeaders = { 'X-Total-Count': String(data?.total ?? 0), 'X-Export-Limit': '5000' };
+    const rows = page.data as ActivityLogRow[];
+    const exportHeaders = { 'X-Total-Count': String(page.total), 'X-Export-Limit': '5000' };
     const stamp = new Date().toISOString().slice(0, 10);
 
     if (format === 'txt') {

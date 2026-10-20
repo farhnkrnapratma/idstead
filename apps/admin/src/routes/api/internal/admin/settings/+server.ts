@@ -5,6 +5,7 @@ import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { verifyAdminToken } from '#lib/server/adminAuth.ts';
 import { parseAdminSettings } from '#lib/adminSettings.ts';
+import { createSupabaseAdminSettingsStore } from '@fkp/data';
 
 const MAX_BODY_BYTES = 2048;
 
@@ -19,19 +20,19 @@ async function authorize(request: Request, url: URL, platform: unknown) {
     const auth = await verifyAdminToken(request, db);
     if (auth.status)
         return { error: apiError(auth.status, auth.code ?? 'ADMIN_AUTH_REQUIRED', auth.message) };
-    return { db, actor: auth.actor };
+    return { store: createSupabaseAdminSettingsStore(db), actor: auth.actor };
 }
 
 export const GET: RequestHandler = async ({ request, url, platform }) => {
     const ctx = await authorize(request, url, platform);
     if (ctx.error) return ctx.error;
-    const { data, error } = await ctx.db
-        .from('db_admin_settings')
-        .select('settings')
-        .eq('user_id', ctx.actor)
-        .maybeSingle();
-    if (error) return apiError(500, 'ADMIN_SETTINGS_READ_FAILED', 'Could not read settings.');
-    return json(parseAdminSettings(data?.settings), { headers: { 'Cache-Control': 'no-store' } });
+    let stored: unknown;
+    try {
+        stored = await ctx.store.read(ctx.actor);
+    } catch {
+        return apiError(500, 'ADMIN_SETTINGS_READ_FAILED', 'Could not read settings.');
+    }
+    return json(parseAdminSettings(stored), { headers: { 'Cache-Control': 'no-store' } });
 };
 
 export const PUT: RequestHandler = async ({ request, url, platform }) => {
@@ -47,9 +48,10 @@ export const PUT: RequestHandler = async ({ request, url, platform }) => {
         return apiError(400, 'ADMIN_SETTINGS_INVALID', 'Settings must be valid JSON.');
     }
     const settings = parseAdminSettings(body);
-    const { error } = await ctx.db
-        .from('db_admin_settings')
-        .upsert({ user_id: ctx.actor, settings, updated_at: new Date().toISOString() });
-    if (error) return apiError(500, 'ADMIN_SETTINGS_WRITE_FAILED', 'Could not save settings.');
+    try {
+        await ctx.store.write(ctx.actor, settings);
+    } catch {
+        return apiError(500, 'ADMIN_SETTINGS_WRITE_FAILED', 'Could not save settings.');
+    }
     return json(settings, { headers: { 'Cache-Control': 'no-store' } });
 };

@@ -102,7 +102,7 @@
     import { startAdminSettingsSync } from '#app/stores/adminSettingsSync.svelte.ts';
     import { adminActivityRequest } from '#app/adminActivityClient.ts';
     import { adminRequest } from '#app/adminClient.ts';
-    import type { AdminAuthorSnapshot } from '@fkp/data';
+    import type { AdminAuthorSnapshot, LegalPage } from '@fkp/data';
     import {
         ADMIN_WORKSPACE_PAGE_SIZE,
         type WorkspaceArea,
@@ -773,11 +773,13 @@
         toastStore.show(`Discarded draft for ${legalPagesData[slug].title}`);
     }
 
-    async function loadLegalPagesFromSupabase() {
+    async function loadLegalPages() {
         try {
-            const { data, error } = await supabase.from('db_legals').select('slug, title, content');
-            if (!error && data && data.length > 0) {
-                for (const item of data) {
+            const { pages } = await adminRequest<{ pages: LegalPage[] }>('legal', {
+                fallbackMessage: 'Legal pages could not be loaded.'
+            });
+            if (pages.length > 0) {
+                for (const item of pages) {
                     if (item.slug && legalPagesData[item.slug]) {
                         const fetchedContent = item.content ?? '';
                         legalPagesData[item.slug] = {
@@ -808,29 +810,10 @@
 
         const pageToSave = legalPagesData[slugToSave];
         try {
-            const { error } = await supabase.rpc('db_save_legal', {
-                p_slug: slugToSave,
-                p_title: pageToSave.title,
-                p_content: pageToSave.content
+            await adminRequest('legal', {
+                body: { slug: slugToSave, title: pageToSave.title, content: pageToSave.content },
+                fallbackMessage: 'Failed to save legal page'
             });
-
-            if (error) {
-                const { error: upsertErr } = await supabase
-                    .from('db_legals')
-                    .upsert(
-                        {
-                            slug: slugToSave,
-                            title: pageToSave.title,
-                            content: pageToSave.content,
-                            updated_at: new Date().toISOString()
-                        },
-                        { onConflict: 'slug' }
-                    );
-
-                if (upsertErr) {
-                    throw upsertErr;
-                }
-            }
 
             if (typeof window !== 'undefined') {
                 localStorage.removeItem(`autosave_legal_${slugToSave}`);
@@ -840,8 +823,8 @@
             legalValidation.clear(slugToSave);
 
             toastStore.success(`${pageToSave.title} saved successfully`);
-        } catch (err: any) {
-            legalSaveError = err?.message || 'Failed to save legal page';
+        } catch (err) {
+            legalSaveError = err instanceof Error ? err.message : 'Failed to save legal page';
             toastStore.error(`Error: ${legalSaveError}`);
         } finally {
             isSavingLegal = false;
@@ -2313,7 +2296,7 @@
             if (group === 'posts')
                 [postsLoaded] = await Promise.all([fetchPosts(), loadSiteAuthorName()]);
             else if (group === 'legal') {
-                await loadLegalPagesFromSupabase();
+                await loadLegalPages();
                 legalLoaded = true;
             } else {
                 await loadAdminData();

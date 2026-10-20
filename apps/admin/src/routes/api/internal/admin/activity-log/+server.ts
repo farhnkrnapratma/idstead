@@ -5,6 +5,7 @@ import { blogAdmin } from '#lib/server/blogPostAuth.ts';
 import { apiError } from '#lib/server/apiError.ts';
 
 import { activityLogQuery } from '#lib/server/activityLogQuery.ts';
+import { createSupabaseActivityLog } from '@fkp/data';
 export const GET: RequestHandler = async ({ request, url, platform }) => {
     const db = getSupabaseAdminClient(platform);
     if (!db)
@@ -27,16 +28,15 @@ export const GET: RequestHandler = async ({ request, url, platform }) => {
             error instanceof Error ? error.message : 'Invalid query.'
         );
     }
-    const { data, error } = await db.rpc('db_activity_log_list', query);
-    if (error) return apiError(503, 'ACTIVITY_LOG_FETCH_FAILED', 'Could not load activity log.');
+    let page;
+    try {
+        page = await createSupabaseActivityLog(db).list(query);
+    } catch {
+        return apiError(503, 'ACTIVITY_LOG_FETCH_FAILED', 'Could not load activity log.');
+    }
 
     return json(
-        {
-            data: data?.data ?? [],
-            total: Number(data?.total ?? 0),
-            limit: query.p_limit,
-            offset: query.p_offset
-        },
+        { data: page.data, total: page.total, limit: query.limit, offset: query.offset },
         { headers: { 'Cache-Control': 'no-store' } }
     );
 };
