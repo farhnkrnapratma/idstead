@@ -18,6 +18,7 @@
 
 <script lang="ts">
     import type { Snippet } from 'svelte';
+    import { navigating } from '$app/state';
     import { Image as ImageIcon, Pin, Sparkles } from '@lucide/svelte';
     import Button from '@fkp/ui/components/Button.svelte';
     import ImageWithSkeleton from '@fkp/ui/components/ImageWithSkeleton.svelte';
@@ -40,6 +41,9 @@
     } = $props();
 
     let bannerFailed = $state(false);
+
+    const postPath = $derived(`/blog/${post.slug}`);
+    const isOpening = $derived(navigating.to?.url.pathname === postPath);
 
     const isNew = $derived(
         !!post.created_at && Date.now() - new Date(post.created_at).getTime() < NEW_POST_WINDOW_MS
@@ -129,7 +133,8 @@
         <div class="relative z-20 mt-auto flex flex-col gap-2 pt-1">
             <hr class="border-border-subtle/25" />
             <Button
-                href="/blog/{post.slug}"
+                href={postPath}
+                isLoading={isOpening}
                 type="primary"
                 size="sm"
                 shortcutGroup="posts"
