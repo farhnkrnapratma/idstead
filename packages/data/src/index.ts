@@ -1,4 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import type { AdminNotifier, FeedbackRecorder } from './activity';
+import {
+    createSupabaseActivityLog,
+    createSupabaseAdminActivityStore,
+    createSupabaseAdminNotifier,
+    createSupabaseFeedbackRecorder
+} from './supabase/activity';
 import type { AuthorRepository } from './author';
 import type { BlogRepository, CommentRepository, CommentWriter, ViewRecorder } from './blog';
 import { createSupabaseAuthorRepository, publicProfile } from './supabase/author';
@@ -14,6 +21,7 @@ import {
     type SupabaseRepositoryOptions
 } from './supabase/blog';
 
+export type * from './activity';
 export type * from './author';
 export type * from './blog';
 export type * from './subscribers';
@@ -24,6 +32,12 @@ export { createSupabaseBlogRepository, createSupabaseCommentRepository };
 export { createSupabaseAuthorRepository, publicProfile };
 export { createSupabaseCommentWriter, createSupabaseViewRecorder };
 export { createSupabaseNewsletterStore, createSupabaseSubscriberRepository };
+export {
+    createSupabaseActivityLog,
+    createSupabaseAdminActivityStore,
+    createSupabaseAdminNotifier,
+    createSupabaseFeedbackRecorder
+};
 export type { SupabaseRepositoryOptions };
 
 export interface Repositories {
@@ -48,6 +62,8 @@ export interface Writers {
     views: ViewRecorder;
     subscribers: SubscriberRepository;
     newsletter: NewsletterStore;
+    feedback: FeedbackRecorder;
+    notifications: AdminNotifier;
 }
 
 export function createSupabaseWriters(db: SupabaseClient): Writers {
@@ -55,6 +71,8 @@ export function createSupabaseWriters(db: SupabaseClient): Writers {
         comments: createSupabaseCommentWriter(db),
         views: createSupabaseViewRecorder(db),
         subscribers: createSupabaseSubscriberRepository(db),
-        newsletter: createSupabaseNewsletterStore(db)
+        newsletter: createSupabaseNewsletterStore(db),
+        feedback: createSupabaseFeedbackRecorder(db),
+        notifications: createSupabaseAdminNotifier(db)
     };
 }

@@ -1,10 +1,10 @@
-import { publicRepositories } from '#lib/server/repositories.ts';
+import { publicRepositories, serviceData } from '#lib/server/repositories.ts';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import type { AdminNotificationKind } from '@fkp/data';
 import { apiError } from '#lib/server/apiError.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { verifyTurnstileToken } from '#lib/server/turnstile.ts';
-import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import {
     contactMessageEmail,
     resendApiKey,
@@ -26,7 +26,7 @@ const SUBJECTS: Record<ContactKind, string> = {
     feedback: 'New feedback report from website!'
 };
 
-const NOTIFICATION_KINDS: Record<ContactKind, string> = {
+const NOTIFICATION_KINDS: Record<ContactKind, AdminNotificationKind> = {
     message: 'contact_message',
     feedback: 'feedback_report'
 };
@@ -132,15 +132,11 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         return apiError(502, 'CONTACT_DELIVERY_FAILED', 'The message could not be delivered.');
     }
 
-    const adminClient = getSupabaseAdminClient(platform);
-    if (adminClient) {
-        const { error } = await adminClient
-            .from('db_admin_notifications')
-            .insert({ kind: NOTIFICATION_KINDS[kind] });
-        if (error) {
+    await serviceData(platform)
+        ?.writers.notifications.notify(NOTIFICATION_KINDS[kind])
+        .catch(error => {
             console.error('Failed to record admin notification:', error);
-        }
-    }
+        });
 
     return json({ success: true }, { status: 201 });
 };

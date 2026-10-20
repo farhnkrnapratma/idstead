@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { createSupabaseAdminActivityStore } from '@fkp/data';
 import { apiError } from './apiError';
 import { blogAdmin } from './blogPostAuth';
 import { ActivityInputError, activityJson, activityUuid } from './activityInput';
@@ -161,14 +162,12 @@ export async function adminWorkspace({
                 auth.code ?? 'ADMIN_WORKSPACE_AUTH_REQUIRED',
                 auth.message
             );
+        const store = createSupabaseAdminActivityStore(db);
         if (request.method === 'POST') {
             const body = await activityJson(request);
             if (body.action === 'delete_comment') {
-                const result = await db.rpc('db_admin_delete_comment', {
-                    p_id: activityUuid(body.id)
-                });
-                if (result.error) throw result.error;
-                return Response.json(result.data, { headers: { 'Cache-Control': 'no-store' } });
+                const result = await store.deleteComment(activityUuid(body.id));
+                return Response.json(result, { headers: { 'Cache-Control': 'no-store' } });
             }
 
             if (
@@ -186,27 +185,22 @@ export async function adminWorkspace({
                     timeZone: String(body.timeZone ?? 'UTC')
                 })
             );
-            const result = await db.rpc('db_admin_notification_group_action', {
-                p_id: body.id,
-                p_as_of: asOf,
-                p_tz: options.timeZone,
-                p_delete: body.action === 'delete_group',
-                p_from: body.from ? timestamp(body.from) : '-infinity',
-                p_to: body.to ? timestamp(body.to) : 'infinity'
+            const result = await store.notificationGroupAction({
+                id: body.id,
+                asOf,
+                timeZone: options.timeZone,
+                remove: body.action === 'delete_group',
+                from: body.from ? timestamp(body.from) : null,
+                to: body.to ? timestamp(body.to) : null
             });
-            if (result.error) throw result.error;
-            return Response.json(result.data, { headers: { 'Cache-Control': 'no-store' } });
+            return Response.json(result, { headers: { 'Cache-Control': 'no-store' } });
         }
         if (request.method !== 'GET')
             return apiError(405, 'ADMIN_WORKSPACE_METHOD_INVALID', 'Method not allowed.');
         const { section, options } = workspaceOptions(url.searchParams);
-        const result = await db.rpc('db_admin_workspace', {
-            p_section: section,
-            p_options: options
-        });
-        if (result.error) throw result.error;
-        const data = result.data;
-        if (data && typeof data === 'object') data.scope = { from: options.from, to: options.to };
+        const data = await store.workspace(section, options);
+        if (data && typeof data === 'object')
+            (data as Record<string, unknown>).scope = { from: options.from, to: options.to };
         return Response.json(data, { headers: { 'Cache-Control': 'no-store' } });
     } catch (error) {
         if (error instanceof ActivityInputError)
