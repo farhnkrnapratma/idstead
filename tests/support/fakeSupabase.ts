@@ -55,8 +55,44 @@ function inner(columns: string) {
     return match ? { alias: match[1], fields: match[2].split(',').map(f => f.trim()) } : null;
 }
 
-export function fakeSupabase(tables: FakeTables, files: Record<string, string> = {}) {
+export interface FakeOptions {
+    defaults?: Record<string, () => Row>;
+    afterInsert?: (table: string, row: Row, tables: FakeTables) => void;
+}
+
+function project(row: Row, columns: string): Row {
+    if (columns.trim() === '*') return { ...row };
+    return Object.fromEntries(
+        columns.split(',').map(column => [column.trim(), row[column.trim()]])
+    );
+}
+
+export function fakeSupabase(
+    tables: FakeTables,
+    files: Record<string, string> = {},
+    options: FakeOptions = {}
+) {
     function query(table: string) {
+        let write: { rows: Row[]; conflict: string[] | null } | null = null;
+        let written: Row[] | null = null;
+
+        function performWrite() {
+            if (written) return written;
+            written = [];
+            for (const values of write!.rows) {
+                const row = { ...(options.defaults?.[table]?.() ?? {}), ...values };
+                const existing =
+                    write!.conflict
+                    && (tables[table] ?? []).some(item =>
+                        write!.conflict!.every(column => item[column] === row[column])
+                    );
+                if (existing) continue;
+                (tables[table] ??= []).push(row);
+                options.afterInsert?.(table, row, tables);
+                written.push(row);
+            }
+            return written;
+        }
         const filters: Filter[] = [];
         const embedFilters: Filter[] = [];
         const orders: Array<{ column: string; ascending: boolean }> = [];
@@ -119,6 +155,12 @@ export function fakeSupabase(tables: FakeTables, files: Record<string, string> =
         }
 
         function resolve() {
+            if (write)
+                return {
+                    data: performWrite().map(row => project(row, columns)),
+                    count: null,
+                    error: null
+                };
             const all = rows();
             const count = withCount ? all.length : null;
             if (range) {
@@ -167,9 +209,27 @@ export function fakeSupabase(tables: FakeTables, files: Record<string, string> =
                 max = count;
                 return builder;
             },
+            insert(values: Row | Row[]) {
+                write = { rows: [values].flat(), conflict: null };
+                return builder;
+            },
+            upsert(values: Row | Row[], settings?: { onConflict?: string }) {
+                write = {
+                    rows: [values].flat(),
+                    conflict: settings?.onConflict?.split(',').map(c => c.trim()) ?? null
+                };
+                return builder;
+            },
             async maybeSingle() {
                 const { data, error } = resolve();
                 return { data: (data ?? [])[0] ?? null, error };
+            },
+            async single() {
+                const { data, error } = resolve();
+                const row = (data ?? [])[0];
+                return row ?
+                        { data: row, error }
+                    :   { data: null, error: error ?? { code: 'PGRST116', message: 'no rows' } };
             },
             then(onFulfilled: (value: ReturnType<typeof resolve>) => unknown) {
                 return Promise.resolve(resolve()).then(onFulfilled);

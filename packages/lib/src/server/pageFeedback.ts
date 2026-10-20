@@ -1,3 +1,4 @@
+import { hashIp } from '@fkp/domain/hash.ts';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { ActivityInputError, activityJson, activityTarget, activityUuid } from './activityInput';
 import { isSameOriginRequest } from './sameOrigin';
@@ -42,10 +43,7 @@ export async function recordPageFeedback(input: {
                 'FEEDBACK_UNAVAILABLE',
                 'Feedback is temporarily unavailable. Please try again.'
             );
-        const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(ip + secret));
-        const ipHash = Array.from(new Uint8Array(bytes), value =>
-            value.toString(16).padStart(2, '0')
-        ).join('');
+        const ipHash = await hashIp(ip, secret);
         const { data, error } = await db.rpc('db_record_page_feedback', {
             p_operation_id: operationId,
             p_target_type: target.type,

@@ -2,6 +2,10 @@ import {
     createSupabaseBlogRepository,
     createSupabaseCommentRepository
 } from '../packages/data/src/supabase/blog.ts';
+import {
+    createSupabaseCommentWriter,
+    createSupabaseViewRecorder
+} from '../packages/data/src/supabase/writes.ts';
 import { blogRepositoryContract, type ContractSeed } from './contracts/blogRepository.contract.ts';
 import { fakeSupabase } from './support/fakeSupabase.ts';
 
@@ -31,7 +35,8 @@ function supabaseFromSeed(seed: ContractSeed) {
             tldr: [],
             storage_path: storagePath,
             banner_version: null,
-            read_time: post.readMinutes ?? null
+            read_time: post.readMinutes ?? null,
+            view_count: seed.views.filter(view => view.postUuid === post.uuid).length
         };
     });
     const db_comments = seed.comments.map(comment => ({
@@ -47,10 +52,35 @@ function supabaseFromSeed(seed: ContractSeed) {
         created_at: comment.createdAt
     }));
     const db_views = seed.views.map((view, i) => ({ id: `view-${i}`, post_id: view.postUuid }));
-    const { db, fetch } = fakeSupabase({ db_posts, db_comments, db_views }, files);
+    let sequence = 0;
+    const uuid = () => `00000000-0000-4000-9000-${String(++sequence).padStart(12, '0')}`;
+    const { db, fetch } = fakeSupabase(
+        { db_posts, db_comments, db_views, db_comment_reports: [] },
+        files,
+        {
+            defaults: {
+                db_comments: () => ({
+                    id: uuid(),
+                    public_id: (sequence + 1).toString(16).padStart(64, 'f'),
+                    created_at: '2026-10-07T00:00:00Z'
+                }),
+                db_views: () => ({ id: uuid() }),
+                db_comment_reports: () => ({ id: uuid() })
+            },
+            afterInsert: (table, row, tables) => {
+                if (table !== 'db_views') return;
+                const post = tables.db_posts.find(item => item.id === row.post_id);
+                if (post) post.view_count = Number(post.view_count ?? 0) + 1;
+            }
+        }
+    );
     return {
         blog: createSupabaseBlogRepository(db, { fetch, cdnBase: 'https://cdn.test' }),
-        comments: createSupabaseCommentRepository(db)
+        comments: createSupabaseCommentRepository(db),
+        writers: {
+            comments: createSupabaseCommentWriter(db),
+            views: createSupabaseViewRecorder(db)
+        }
     };
 }
 

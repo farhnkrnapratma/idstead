@@ -18,15 +18,9 @@ export function createToken(): string {
     return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
 }
 
-export async function hashToken(token: string): Promise<string> {
-    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token));
-    return Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('');
-}
+import { hashIp, sha256Hex as hashToken } from '@fkp/domain/hash.ts';
 
-export async function hashIp(ip: string, secret: string): Promise<string> {
-    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(ip + secret));
-    return Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('');
-}
+export { hashIp, hashToken };
 
 export function resendApiKey(platform: unknown): string {
     return (
