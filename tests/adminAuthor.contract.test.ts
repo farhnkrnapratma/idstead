@@ -105,6 +105,13 @@ describe('Supabase admin author adapter', () => {
         ]);
     });
 
+    test('returns the identity versions claimed for cleanup', async () => {
+        const { store } = supabaseFromSeed(ADMIN_AUTHOR_SEED, {
+            db_claim_identity_cleanup: () => ({ data: [{ id: 'v1' }, { id: 'v2' }], error: null })
+        });
+        expect(await store.claimIdentityCleanup()).toEqual(['v1', 'v2']);
+    });
+
     test('reports a failed profile save with its database code', async () => {
         const { store } = supabaseFromSeed(ADMIN_AUTHOR_SEED, {
             db_save_profile_identity: () => ({

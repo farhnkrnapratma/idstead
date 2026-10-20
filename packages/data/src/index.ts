@@ -13,6 +13,10 @@ import {
     createSupabasePostOperationStore
 } from './supabase/adminPosts';
 import { createSupabaseAdminAuthorStore, createSupabaseAuthorWriter } from './supabase/adminAuthor';
+import {
+    createSupabaseCvDocumentStore,
+    createSupabaseOpenPgpKeyStore
+} from './supabase/cvDocuments';
 import type { AuthorRepository } from './author';
 import type { BlogRepository, CommentRepository, CommentWriter, ViewRecorder } from './blog';
 import { createSupabaseAuthorRepository, publicProfile } from './supabase/author';
@@ -31,6 +35,7 @@ import {
 export type * from './activity';
 export type * from './adminAuthor';
 export type * from './adminPosts';
+export type * from './cvDocuments';
 export type * from './author';
 export type * from './blog';
 export type * from './subscribers';
@@ -48,6 +53,7 @@ export {
     createSupabaseFeedbackRecorder
 };
 export { createSupabaseAdminAuthorStore, createSupabaseAuthorWriter };
+export { createSupabaseCvDocumentStore, createSupabaseOpenPgpKeyStore };
 export {
     createSupabaseAdminPostStore,
     createSupabasePostCleanupStore,

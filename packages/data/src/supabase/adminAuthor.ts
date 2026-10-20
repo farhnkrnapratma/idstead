@@ -170,6 +170,12 @@ export function createSupabaseAdminAuthorStore(
             if (error) throw new DataError('adminAuthor.registerIdentityVersion', error);
         },
 
+        async claimIdentityCleanup(): Promise<string[]> {
+            const { data, error } = await db.rpc('db_claim_identity_cleanup');
+            if (error) throw new DataError('adminAuthor.claimIdentityCleanup', error);
+            return ((data ?? []) as Row[]).map(row => row.id as string);
+        },
+
         async deleteIdentityVersion(id: string) {
             const { error } = await db.from(IDENTITY_VERSIONS).delete().eq('id', id);
             if (error) throw new DataError('adminAuthor.deleteIdentityVersion', error);
