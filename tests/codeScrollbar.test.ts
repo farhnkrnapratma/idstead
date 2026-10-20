@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
-import { createCodeScrollbar } from '../packages/mdrs-ui/src/codeScrollbar.ts';
+import { createCodeScrollbar } from '../packages/mdrs-dom/src/codeScrollbar.ts';
 
 function fakeElement() {
     const children: unknown[] = [];

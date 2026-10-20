@@ -1,12 +1,12 @@
 {
-    "name": "@fkp/jobs",
+    "name": "@idstead/jobs",
     "version": "0.0.1",
     "private": true,
     "license": "MIT",
     "type": "module",
     "imports": {
-        "#lib": "@fkp/lib",
-        "#lib/*": "@fkp/lib/*"
+        "#lib": "@idstead/lib",
+        "#lib/*": "@idstead/lib/*"
     },
     "scripts": {
         "dev": "wrangler dev --test-scheduled --port 8788 --inspector-port 9230",
@@ -15,9 +15,9 @@
         "check": "tsc --noEmit -p tsconfig.json"
     },
     "dependencies": {
-        "@fkp/data": "workspace:*",
-        "@fkp/domain": "workspace:*",
-        "@fkp/lib": "workspace:*",
+        "@idstead/data": "workspace:*",
+        "@idstead/domain": "workspace:*",
+        "@idstead/lib": "workspace:*",
         "@sentry/cloudflare": "11.8.0",
         "@supabase/supabase-js": "^2.118.0"
     },

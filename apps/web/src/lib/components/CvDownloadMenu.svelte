@@ -7,15 +7,15 @@
         ShieldAlert,
         ShieldCheck
     } from '@lucide/svelte';
-    import Button from '@fkp/ui/components/Button.svelte';
-    import CommandLine from '@fkp/ui/components/CommandLine.svelte';
-    import CodeTabs from '@fkp/mdrs-ui/CodeTabs.svelte';
-    import Dialog from '@fkp/ui/components/Dialog.svelte';
-    import Dropdown from '@fkp/ui/components/Dropdown.svelte';
-    import Tooltip from '@fkp/ui/components/Tooltip.svelte';
-    import { downloadUrl as download } from '@fkp/ui/utils/fileActions.ts';
+    import Button from '@idstead/ui/components/Button.svelte';
+    import CommandLine from '@idstead/ui/components/CommandLine.svelte';
+    import CodeTabs from '@mdrs/dom/CodeTabs.svelte';
+    import Dialog from '@idstead/ui/components/Dialog.svelte';
+    import Dropdown from '@idstead/ui/components/Dropdown.svelte';
+    import Tooltip from '@idstead/ui/components/Tooltip.svelte';
+    import { downloadUrl as download } from '@idstead/ui/utils/fileActions.ts';
     import { CV_CHECKSUM_ALGORITHMS, type CvDocumentInfo } from '#lib/cvVerification.ts';
-    import { formatFingerprint, formatUserId } from '@fkp/domain/openpgpKey.ts';
+    import { formatFingerprint, formatUserId } from '@idstead/domain/openpgpKey.ts';
 
     const CV_UNAVAILABLE = 'No CV document is available yet.';
 

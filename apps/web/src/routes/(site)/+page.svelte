@@ -1,10 +1,10 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { ChevronRight, FolderOpen, Quote } from '@lucide/svelte';
-    import { Button, EmptyState, PageContainer, PageMain, Section } from '@fkp/ui';
-    import Tag from '@fkp/ui/components/Tag.svelte';
-    import { argKey, buttonKey } from '@fkp/ui/shortcuts.ts';
-    import { decodeHtmlEntities } from '@fkp/mdrs';
+    import { Button, EmptyState, PageContainer, PageMain, Section } from '@idstead/ui';
+    import Tag from '@idstead/ui/components/Tag.svelte';
+    import { argKey, buttonKey } from '@idstead/ui/shortcuts.ts';
+    import { decodeHtmlEntities } from '@mdrs/core';
     import { goto } from '$app/navigation';
     import {
         avatarSources,

@@ -13,7 +13,7 @@ There is no CI, so run all three before pushing. Tests live in `tests/` at the r
 `tests/apiV1.test.ts` runs against a real `fkp-api` worker and is **skipped** unless `API_TEST_BASE_URL` is set:
 
 ```sh
-phase run --env dev bun run --filter @fkp/api dev          # terminal 1
+phase run --env dev bun run --filter @idstead/api dev          # terminal 1
 API_TEST_BASE_URL=http://localhost:8787 phase run --env dev bun test tests/apiV1.test.ts   # terminal 2
 ```
 

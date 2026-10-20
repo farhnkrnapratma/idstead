@@ -1,4 +1,4 @@
-import type { ActivityLogFilter } from '@fkp/data';
+import type { ActivityLogFilter } from '@idstead/data';
 import { activityCategories, activityLogSortFields, ACTIVITY_LOG_PAGE_SIZE } from '../activityLog';
 
 export class ActivityLogQueryError extends Error {}

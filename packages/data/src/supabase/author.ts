@@ -15,9 +15,9 @@ import {
     type AuthorProfile,
     type CvDocument,
     type ProjectRepoRules
-} from '@fkp/domain/author.ts';
-import type { PublicOpenPgpKey } from '@fkp/domain/openpgpKey.ts';
-import { decodeHtmlEntities } from '@fkp/domain/entities.ts';
+} from '@idstead/domain/author.ts';
+import type { PublicOpenPgpKey } from '@idstead/domain/openpgpKey.ts';
+import { decodeHtmlEntities } from '@idstead/domain/entities.ts';
 import type { AuthorRepository } from '../author';
 import { DataError } from '../errors';
 

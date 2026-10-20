@@ -12,7 +12,7 @@
     import ActivityTimestamp from './ActivityTimestamp.svelte';
     import ActivitySentence from './ActivitySentence.svelte';
     import ActivityDetails from './ActivityDetails.svelte';
-    import { cn } from '@fkp/ui/utils/cn.ts';
+    import { cn } from '@idstead/ui/utils/cn.ts';
 
     let {
         item,

@@ -2,10 +2,10 @@
     import type { Snippet } from 'svelte';
     import { Pilcrow } from '@lucide/svelte';
     import { avifSources, blogBannerAlt } from '#lib/blogBanner.ts';
-    import ImageWithSkeleton from '@fkp/ui/components/ImageWithSkeleton.svelte';
-    import { activateHeadingAnchor } from '@fkp/mdrs-ui/headingAnchors.ts';
-    import { cn } from '@fkp/ui/utils/cn.ts';
-    import { contentFontStore } from '@fkp/ui/stores/contentFontStore.svelte.ts';
+    import ImageWithSkeleton from '@idstead/ui/components/ImageWithSkeleton.svelte';
+    import { activateHeadingAnchor } from '@mdrs/dom/headingAnchors.ts';
+    import { cn } from '@idstead/ui/utils/cn.ts';
+    import { contentFontStore } from '@idstead/ui/stores/contentFontStore.svelte.ts';
 
     interface Props {
         title: string;

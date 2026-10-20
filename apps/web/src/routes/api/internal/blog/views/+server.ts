@@ -3,8 +3,8 @@ import type { RequestHandler } from './$types';
 import { apiError } from '#lib/server/apiError.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { serviceData } from '#lib/server/repositories.ts';
-import { PUBLIC_ID_PATTERN } from '@fkp/domain/postReference.ts';
-import { hashIp } from '@fkp/domain/hash.ts';
+import { PUBLIC_ID_PATTERN } from '@idstead/domain/postReference.ts';
+import { hashIp } from '@idstead/domain/hash.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
 
 export const POST: RequestHandler = async ({ request, url, getClientAddress, platform }) => {

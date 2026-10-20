@@ -5,7 +5,7 @@ import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { verifyAdminToken } from '#lib/server/adminAuth.ts';
 import { parseAdminSettings } from '#lib/adminSettings.ts';
-import { createSupabaseAdminSettingsStore } from '@fkp/data';
+import { createSupabaseAdminSettingsStore } from '@idstead/data';
 
 const MAX_BODY_BYTES = 2048;
 

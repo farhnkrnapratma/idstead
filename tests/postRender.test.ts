@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'bun:test';
-import { RENDER_VERSION, unavailableResolvers, usesLiveData } from '../packages/mdrs/src/index.ts';
+import {
+    RENDER_VERSION,
+    unavailableResolvers,
+    usesLiveData
+} from '../packages/mdrs-core/src/index.ts';
 import {
     buildPostRender,
     parsePostRender,

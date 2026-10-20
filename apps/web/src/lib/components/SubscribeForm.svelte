@@ -1,8 +1,8 @@
 <script lang="ts">
     import { Mail, Paperclip, MailCheck } from '@lucide/svelte';
-    import Card from '@fkp/ui/components/Card.svelte';
+    import Card from '@idstead/ui/components/Card.svelte';
     import MailingForm from './MailingForm.svelte';
-    import { ShinyText } from '@fkp/ui';
+    import { ShinyText } from '@idstead/ui';
 
     let {
         title = 'Subscribe to Stay Updated',

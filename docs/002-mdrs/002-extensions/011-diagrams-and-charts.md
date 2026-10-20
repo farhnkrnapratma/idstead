@@ -107,4 +107,4 @@ data:
 
 Every chart has an options menu with **Copy spec JSON**.
 
-Source: `packages/mdrs/src/render/parser.ts` (`code` renderer), `packages/mdrs-ui/src/mermaid.ts`, `packages/mdrs-ui/src/charts.ts`, `packages/mdrs-ui/src/MarkdownChart.svelte`.
+Source: `packages/mdrs-core/src/render/parser.ts` (`code` renderer), `packages/mdrs-dom/src/mermaid.ts`, `packages/mdrs-dom/src/charts.ts`, `packages/mdrs-dom/src/MarkdownChart.svelte`.

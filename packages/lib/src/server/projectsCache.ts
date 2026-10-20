@@ -1,4 +1,4 @@
-import type { Project } from '@fkp/domain/types.ts';
+import type { Project } from '@idstead/domain/types.ts';
 import { fetchProjects } from '#lib/server/githubProjects.ts';
 import { runInBackground } from '#lib/server/workerEnv.ts';
 

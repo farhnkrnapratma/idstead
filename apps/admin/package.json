@@ -1,12 +1,12 @@
 {
-    "name": "@fkp/admin",
+    "name": "@idstead/admin",
     "version": "0.0.1",
     "private": true,
     "license": "MIT",
     "type": "module",
     "imports": {
-        "#lib": "@fkp/lib",
-        "#lib/*": "@fkp/lib/*",
+        "#lib": "@idstead/lib",
+        "#lib/*": "@idstead/lib/*",
         "#app/*": "./src/lib/*"
     },
     "scripts": {
@@ -19,13 +19,13 @@
         "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --diagnostic-sources \"js,svelte\""
     },
     "dependencies": {
-        "@fkp/data": "workspace:*",
-        "@fkp/domain": "workspace:*",
-        "@fkp/editor": "workspace:*",
-        "@fkp/lib": "workspace:*",
-        "@fkp/mdrs": "workspace:*",
-        "@fkp/mdrs-ui": "workspace:*",
-        "@fkp/ui": "workspace:*",
+        "@idstead/data": "workspace:*",
+        "@idstead/domain": "workspace:*",
+        "@mdrs/editor": "workspace:*",
+        "@idstead/lib": "workspace:*",
+        "@mdrs/core": "workspace:*",
+        "@mdrs/dom": "workspace:*",
+        "@idstead/ui": "workspace:*",
         "@lucide/svelte": "^1.59.0",
         "@sentry/cloudflare": "11.8.0",
         "@sentry/sveltekit": "^11.8.0",

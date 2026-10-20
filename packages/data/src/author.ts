@@ -8,8 +8,8 @@ import type {
     SkillCategoryGroup,
     SocialLink,
     SponsorshipLink
-} from '@fkp/domain/author.ts';
-import type { PublicOpenPgpKey } from '@fkp/domain/openpgpKey.ts';
+} from '@idstead/domain/author.ts';
+import type { PublicOpenPgpKey } from '@idstead/domain/openpgpKey.ts';
 
 export interface CvEntries {
     experience: ExperienceItem[];

@@ -1,8 +1,8 @@
 <script lang="ts">
-    import ThemeSelect from '@fkp/ui/components/filter/ThemeSelect.svelte';
-    import AccessibilitySelect from '@fkp/ui/components/filter/AccessibilitySelect.svelte';
-    import { themeStore } from '@fkp/ui/stores/themeStore.svelte.ts';
-    import type { Project } from '@fkp/domain/types.ts';
+    import ThemeSelect from '@idstead/ui/components/filter/ThemeSelect.svelte';
+    import AccessibilitySelect from '@idstead/ui/components/filter/AccessibilitySelect.svelte';
+    import { themeStore } from '@idstead/ui/stores/themeStore.svelte.ts';
+    import type { Project } from '@idstead/domain/types.ts';
     import SpotlightSearch from './SpotlightSearch.svelte';
 
     interface Props {

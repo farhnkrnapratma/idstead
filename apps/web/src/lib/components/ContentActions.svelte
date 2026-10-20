@@ -10,13 +10,13 @@
         FileText,
         ChevronDown
     } from '@lucide/svelte';
-    import { toastStore } from '@fkp/ui/stores/toastStore.svelte.ts';
-    import Dropdown from '@fkp/ui/components/Dropdown.svelte';
-    import { markdownToPlainText } from '@fkp/mdrs';
-    import { cn } from '@fkp/ui/utils/cn.ts';
-    import Button from '@fkp/ui/components/Button.svelte';
-    import { shortcut } from '@fkp/ui/utils/shortcut.svelte.ts';
-    import { buttonKey, argKey, VIEW_FORMAT_KEYS } from '@fkp/ui/shortcuts.ts';
+    import { toastStore } from '@idstead/ui/stores/toastStore.svelte.ts';
+    import Dropdown from '@idstead/ui/components/Dropdown.svelte';
+    import { markdownToPlainText } from '@mdrs/core';
+    import { cn } from '@idstead/ui/utils/cn.ts';
+    import Button from '@idstead/ui/components/Button.svelte';
+    import { shortcut } from '@idstead/ui/utils/shortcut.svelte.ts';
+    import { buttonKey, argKey, VIEW_FORMAT_KEYS } from '@idstead/ui/shortcuts.ts';
 
     interface Props {
         variant?: 'inline' | 'sidebar' | 'toolbar';

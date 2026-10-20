@@ -9,7 +9,7 @@ import {
 } from '#lib/server/activityLogExport.ts';
 
 import { activityLogQuery } from '#lib/server/activityLogQuery.ts';
-import { createSupabaseActivityLog } from '@fkp/data';
+import { createSupabaseActivityLog } from '@idstead/data';
 export const GET: RequestHandler = async ({ request, url, platform }) => {
     const db = getSupabaseAdminClient(platform);
     if (!db)

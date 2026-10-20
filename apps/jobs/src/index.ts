@@ -8,7 +8,7 @@ import {
     createSupabaseAdminPostStores,
     createSupabaseNewsletterStore,
     createSupabaseRenderStore
-} from '@fkp/data';
+} from '@idstead/data';
 import { refreshPostRenders } from '#lib/server/postRender.ts';
 import { isRenderRefreshMessage } from '#lib/server/renderQueue.ts';
 import { createSupabaseMdrsResolvers } from '#lib/server/mdrsData.ts';

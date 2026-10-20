@@ -74,7 +74,7 @@ export const bannerAssetNames = Object.keys(bannerSizes);
 
 export const identityAssetNames = [...avatarAssetNames, ...bannerAssetNames];
 
-export type { ManifestSettings } from '@fkp/domain/author.ts';
+export type { ManifestSettings } from '@idstead/domain/author.ts';
 
 export interface IdentityAsset {
     name: string;

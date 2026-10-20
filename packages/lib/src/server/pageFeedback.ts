@@ -1,6 +1,6 @@
-import { hashIp } from '@fkp/domain/hash.ts';
-import type { BlogRepository, FeedbackRecorder, FeedbackTarget, LegalPageId } from '@fkp/data';
-import { PUBLIC_ID_PATTERN } from '@fkp/domain/postReference.ts';
+import { hashIp } from '@idstead/domain/hash.ts';
+import type { BlogRepository, FeedbackRecorder, FeedbackTarget, LegalPageId } from '@idstead/data';
+import { PUBLIC_ID_PATTERN } from '@idstead/domain/postReference.ts';
 import { ActivityInputError, activityJson, activityTarget, activityUuid } from './activityInput';
 import { isSameOriginRequest } from './sameOrigin';
 import { apiError } from './apiError';

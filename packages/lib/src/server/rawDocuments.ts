@@ -1,7 +1,7 @@
 import { publicRepositories } from './repositories';
 import { getLegalPage } from '#lib/server/legalPages.ts';
-import { isValidPostSlug } from '@fkp/domain/slug.ts';
-import { markdownToPlainText } from '@fkp/mdrs';
+import { isValidPostSlug } from '@idstead/domain/slug.ts';
+import { markdownToPlainText } from '@mdrs/core';
 
 export type DocumentFormat = 'md' | 'txt';
 

@@ -4,7 +4,7 @@ import {
     RENDER_VERSION,
     renderMarkdown,
     unavailableResolvers
-} from '../packages/mdrs/src/index.ts';
+} from '../packages/mdrs-core/src/index.ts';
 import { refreshPostRenders } from '../packages/lib/src/server/postRender.ts';
 import { createSupabaseMdrsResolvers } from '../packages/lib/src/server/mdrsData.ts';
 

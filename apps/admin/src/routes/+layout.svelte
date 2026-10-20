@@ -1,13 +1,13 @@
 <script lang="ts">
     import '#lib/global.css';
     import { onMount } from 'svelte';
-    import { themeColors } from '@fkp/ui/themeColors.ts';
-    import { Toast } from '@fkp/ui';
-    import { shortcutStore } from '@fkp/ui/stores/shortcutStore.svelte.ts';
-    import { themeStore } from '@fkp/ui/stores/themeStore.svelte.ts';
-    import { a11yStore } from '@fkp/ui/stores/a11yStore.svelte.ts';
-    import { codeBlockPrefsStore } from '@fkp/mdrs-ui/codeBlockPrefsStore.svelte.ts';
-    import { refreshCodeBlockPrefs } from '@fkp/mdrs-ui/codeBlocks.ts';
+    import { themeColors } from '@idstead/ui/themeColors.ts';
+    import { Toast } from '@idstead/ui';
+    import { shortcutStore } from '@idstead/ui/stores/shortcutStore.svelte.ts';
+    import { themeStore } from '@idstead/ui/stores/themeStore.svelte.ts';
+    import { a11yStore } from '@idstead/ui/stores/a11yStore.svelte.ts';
+    import { codeBlockPrefsStore } from '@mdrs/dom/codeBlockPrefsStore.svelte.ts';
+    import { refreshCodeBlockPrefs } from '@mdrs/dom/codeBlocks.ts';
 
     const { children } = $props();
 

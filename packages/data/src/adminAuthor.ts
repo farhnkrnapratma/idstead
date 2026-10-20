@@ -6,8 +6,8 @@ import type {
     SkillItem,
     SocialLink,
     SponsorshipLink
-} from '@fkp/domain/author.ts';
-import type { PublicOpenPgpKey } from '@fkp/domain/openpgpKey.ts';
+} from '@idstead/domain/author.ts';
+import type { PublicOpenPgpKey } from '@idstead/domain/openpgpKey.ts';
 import type { CvEntries } from './author';
 
 export type IdentitySource = 'custom' | 'generated';

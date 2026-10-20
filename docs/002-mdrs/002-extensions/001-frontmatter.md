@@ -50,4 +50,4 @@ The rest of the file, without the frontmatter, becomes the post content. Other k
 
 [`SHOWCASE.md`](../SHOWCASE.md) is a complete example that imports cleanly.
 
-Source: `packages/mdrs/src/frontmatter.ts` (`extractFrontmatter`, `importPostDocument`), `packages/mdrs/src/markdown.ts` (`renderMarkdownUnsafe`), `apps/admin/src/lib/components/admin/PostEditor.svelte`.
+Source: `packages/mdrs-core/src/frontmatter.ts` (`extractFrontmatter`, `importPostDocument`), `packages/mdrs-core/src/markdown.ts` (`renderMarkdownUnsafe`), `apps/admin/src/lib/components/admin/PostEditor.svelte`.

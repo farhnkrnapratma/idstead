@@ -3,7 +3,7 @@ import {
     createSupabaseWriters,
     type Repositories,
     type Writers
-} from '@fkp/data';
+} from '@idstead/data';
 import { supabase } from '#lib/supabase.ts';
 import { cdnBaseUrl } from '#lib/cdn.ts';
 import { getSupabaseAdminClient } from './supabaseAdmin';

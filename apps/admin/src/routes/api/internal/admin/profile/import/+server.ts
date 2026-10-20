@@ -7,8 +7,8 @@ import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { requireAdminAuth } from '#lib/server/adminCv.ts';
 import { bearerToken } from '#lib/server/adminAuth.ts';
 import { profilePatch, ProfileInputError } from '#lib/server/profilePatch.ts';
-import { createSupabaseAdminAuthorStore, createSupabaseAuthorWriter } from '@fkp/data';
-import { sanitizeInput } from '@fkp/domain/sanitizeInput.ts';
+import { createSupabaseAdminAuthorStore, createSupabaseAuthorWriter } from '@idstead/data';
+import { sanitizeInput } from '@idstead/domain/sanitizeInput.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
 

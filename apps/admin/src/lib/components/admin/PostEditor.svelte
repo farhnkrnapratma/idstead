@@ -1,11 +1,11 @@
 <script lang="ts">
-    import { FieldValidation, requiredText } from '@fkp/domain/fieldValidation.ts';
+    import { FieldValidation, requiredText } from '@idstead/domain/fieldValidation.ts';
     import { mdrsContent } from '../../mdrsValidation.ts';
     import { renderMdrsPreview } from '../../mdrsPreview.ts';
     import { supabase } from '#lib/supabase.ts';
     import { adminRequest } from '../../adminClient.ts';
-    import type { AdminPostDraft } from '@fkp/data';
-    import { slugifyTitle } from '@fkp/domain/slug.ts';
+    import type { AdminPostDraft } from '@idstead/data';
+    import { slugifyTitle } from '@idstead/domain/slug.ts';
     import { processContentImage } from '../../processContentImage.ts';
     import { onDestroy, onMount } from 'svelte';
     import {
@@ -19,11 +19,11 @@
         ConfirmationDialog,
         toastStore,
         PillInput
-    } from '@fkp/ui';
-    import { MarkdownEditor } from '@fkp/editor';
-    import { decodeHtmlEntities } from '@fkp/mdrs';
+    } from '@idstead/ui';
+    import { MarkdownEditor } from '@mdrs/editor';
+    import { decodeHtmlEntities } from '@mdrs/core';
     import { Mail } from '@lucide/svelte';
-    import { importPostDocument, MAX_DOCUMENT_LENGTH, type ImportedPost } from '@fkp/mdrs';
+    import { importPostDocument, MAX_DOCUMENT_LENGTH, type ImportedPost } from '@mdrs/core';
     import BannerImageUpload from '../BannerImageUpload.svelte';
     import { bannerUrl, type BannerChange } from '#lib/blogBanner.ts';
     import { cdnBaseUrl } from '#lib/cdn.ts';

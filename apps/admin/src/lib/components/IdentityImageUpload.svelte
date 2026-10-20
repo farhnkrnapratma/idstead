@@ -13,10 +13,10 @@
     generics="T">
     import { onDestroy } from 'svelte';
     import { ImageOff, LoaderCircle, Trash2 } from '@lucide/svelte';
-    import Button from '@fkp/ui/components/Button.svelte';
-    import FileUploadField from '@fkp/ui/components/FileUploadField.svelte';
-    import ImageWithSkeleton from '@fkp/ui/components/ImageWithSkeleton.svelte';
-    import { cn } from '@fkp/ui/utils/cn.ts';
+    import Button from '@idstead/ui/components/Button.svelte';
+    import FileUploadField from '@idstead/ui/components/FileUploadField.svelte';
+    import ImageWithSkeleton from '@idstead/ui/components/ImageWithSkeleton.svelte';
+    import { cn } from '@idstead/ui/utils/cn.ts';
 
     let {
         id,

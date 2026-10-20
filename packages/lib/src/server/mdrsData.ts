@@ -1,12 +1,12 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { DefineError, unavailableResolvers, type ApiRegistry } from '@fkp/mdrs';
+import { DefineError, unavailableResolvers, type ApiRegistry } from '@mdrs/core';
 import {
     createSupabaseAuthorRepository,
     createSupabaseBlogRepository,
     type AuthorRepository,
     type BlogRepository
-} from '@fkp/data';
-import { publicPostFields } from '@fkp/domain/blog.ts';
+} from '@idstead/data';
+import { publicPostFields } from '@idstead/domain/blog.ts';
 import { sanitizePublicApiData } from '#lib/authorApi.ts';
 import { createMdrsResolvers, type MdrsDataLoaders } from '#lib/mdrsResolvers.ts';
 

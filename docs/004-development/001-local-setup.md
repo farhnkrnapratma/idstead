@@ -23,8 +23,8 @@ Variables come from Phase. The repo is linked through `.phase.json`: app `www`, 
 ```sh
 phase run --env dev bun run dev                       # public site (Vite)
 phase run --env dev bun run dev:admin                 # admin portal, http://localhost:5174
-phase run --env dev bun run --filter @fkp/api dev     # API worker, http://localhost:8787
-phase run --env dev bun run --filter @fkp/jobs dev    # jobs worker, http://localhost:8788 (--test-scheduled)
+phase run --env dev bun run --filter @idstead/api dev     # API worker, http://localhost:8787
+phase run --env dev bun run --filter @idstead/jobs dev    # jobs worker, http://localhost:8788 (--test-scheduled)
 ```
 
 - `--env` matches by prefix: `dev` → Development, `prod` → Production. Use `dev` unless you need production values.
@@ -60,7 +60,7 @@ There is no CI. These local runs are the only gate before Workers Builds deploys
 | `apps/admin` | `fkp-admin` on `admin.fkp.my.id` | SvelteKit admin portal (port 5174) |
 | `apps/api` | `fkp-api` on `api.fkp.my.id` | Hono public API (port 8787) |
 | `apps/jobs` | `fkp-jobs` | Queue consumer + cron (port 8788) |
-| `packages/lib` | – | `@fkp/lib`, imported everywhere as `#lib/...` |
+| `packages/lib` | – | `@idstead/lib`, imported everywhere as `#lib/...` |
 | `tests/` | – | Bun tests ([testing.md](003-testing.md)) |
 | `scripts/`, `tooling/` | – | [scripts-and-tooling.md](004-scripts-and-tooling.md) |
 | `supabase/` | – | migrations |

@@ -23,26 +23,29 @@
         Keyboard,
         Quote
     } from '@lucide/svelte';
-    import { portal } from '@fkp/ui/utils/actions.ts';
-    import { cn } from '@fkp/ui/utils/cn.ts';
-    import ShortcutBadge from '@fkp/ui/components/ShortcutBadge.svelte';
-    import CommandSectionHeading from '@fkp/ui/components/CommandSectionHeading.svelte';
-    import { shortcutStore } from '@fkp/ui/stores/shortcutStore.svelte.ts';
-    import { CATALOG_KEY, COMMAND_SHORTCUTS } from '@fkp/ui/shortcuts.ts';
-    import { lockScroll } from '@fkp/ui/utils/scroll.ts';
-    import { visualViewport } from '@fkp/ui/utils/visualViewport.svelte.ts';
+    import { portal } from '@idstead/ui/utils/actions.ts';
+    import { cn } from '@idstead/ui/utils/cn.ts';
+    import ShortcutBadge from '@idstead/ui/components/ShortcutBadge.svelte';
+    import CommandSectionHeading from '@idstead/ui/components/CommandSectionHeading.svelte';
+    import { shortcutStore } from '@idstead/ui/stores/shortcutStore.svelte.ts';
+    import { CATALOG_KEY, COMMAND_SHORTCUTS } from '@idstead/ui/shortcuts.ts';
+    import { lockScroll } from '@idstead/ui/utils/scroll.ts';
+    import { visualViewport } from '@idstead/ui/utils/visualViewport.svelte.ts';
     import ShareDialog from './ShareDialog.svelte';
-    import Button from '@fkp/ui/components/Button.svelte';
+    import Button from '@idstead/ui/components/Button.svelte';
     import QrCodeDialog from './QrCodeDialog.svelte';
-    import { themeStore } from '@fkp/ui/stores/themeStore.svelte.ts';
-    import { toastStore } from '@fkp/ui/stores/toastStore.svelte.ts';
-    import { contentFontStore, type ContentFont } from '@fkp/ui/stores/contentFontStore.svelte.ts';
+    import { themeStore } from '@idstead/ui/stores/themeStore.svelte.ts';
+    import { toastStore } from '@idstead/ui/stores/toastStore.svelte.ts';
+    import {
+        contentFontStore,
+        type ContentFont
+    } from '@idstead/ui/stores/contentFontStore.svelte.ts';
     import {
         searchHistoryStore,
         type SearchHistoryEntry
     } from '../stores/searchHistoryStore.svelte';
-    import { codeBlockPrefsStore } from '@fkp/mdrs-ui/codeBlockPrefsStore.svelte.ts';
-    import { refreshCodeBlockPrefs } from '@fkp/mdrs-ui/codeBlocks.ts';
+    import { codeBlockPrefsStore } from '@mdrs/dom/codeBlockPrefsStore.svelte.ts';
+    import { refreshCodeBlockPrefs } from '@mdrs/dom/codeBlocks.ts';
 
     import type { ItemCategory, SpotlightItem, HelpCommandSpec } from './spotlight/types';
     import {
@@ -1950,7 +1953,7 @@
     onClose={() => (mailingRequest = null)} />
 
 <style>
-    @reference "@fkp/ui/styles/global.css";
+    @reference "@idstead/ui/styles/global.css";
 
     .search-input::-webkit-search-cancel-button,
     .search-input::-webkit-search-decoration,

@@ -6,11 +6,11 @@
     import { scaleBand, scaleLinear } from 'd3-scale';
     import { curveMonotoneX } from 'd3-shape';
 
-    import Chip from '@fkp/ui/components/Chip.svelte';
-    import LoadingState from '@fkp/ui/components/LoadingState.svelte';
-    import ErrorState from '@fkp/ui/components/ErrorState.svelte';
-    import EmptyState from '@fkp/ui/components/EmptyState.svelte';
-    import { cn } from '@fkp/ui/utils/cn.ts';
+    import Chip from '@idstead/ui/components/Chip.svelte';
+    import LoadingState from '@idstead/ui/components/LoadingState.svelte';
+    import ErrorState from '@idstead/ui/components/ErrorState.svelte';
+    import EmptyState from '@idstead/ui/components/EmptyState.svelte';
+    import { cn } from '@idstead/ui/utils/cn.ts';
     import { hasChartActivity } from '#lib/adminWorkspace.ts';
     import { activityDate, activityTimestamp } from '#lib/adminActivity.ts';
     import { adminDisplayStore } from '../../stores/adminDisplayStore.svelte.ts';
@@ -25,7 +25,7 @@
         ADMIN_CHART_X_TICK_LABEL_PROPS,
         ADMIN_CHART_Y_TICK_LABEL_PROPS,
         ADMIN_CHART_TICK_LENGTH
-    } from '@fkp/ui/utils/chartAxisStyles.ts';
+    } from '@idstead/ui/utils/chartAxisStyles.ts';
 
     interface Props {
         ceiling?: number;

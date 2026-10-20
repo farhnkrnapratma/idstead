@@ -8,7 +8,7 @@ Environment variables for this repo come from [Phase](https://phase.dev), not fr
     phase run --env dev bun run dev
     phase run --env dev bun run dev:admin
     phase run --env prod bun run build
-    phase run --env dev bun run --filter @fkp/api dev
+    phase run --env dev bun run --filter @idstead/api dev
     phase run --env dev bun run test
     ```
 

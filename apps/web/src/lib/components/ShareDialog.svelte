@@ -1,9 +1,9 @@
 <script lang="ts">
     import { CopyCheck, Copy, QrCode } from '@lucide/svelte';
-    import Dialog from '@fkp/ui/components/Dialog.svelte';
-    import Button from '@fkp/ui/components/Button.svelte';
-    import IconButton from '@fkp/ui/components/IconButton.svelte';
-    import { copyText } from '@fkp/ui/utils/fileActions.ts';
+    import Dialog from '@idstead/ui/components/Dialog.svelte';
+    import Button from '@idstead/ui/components/Button.svelte';
+    import IconButton from '@idstead/ui/components/IconButton.svelte';
+    import { copyText } from '@idstead/ui/utils/fileActions.ts';
 
     interface Props {
         isOpen: boolean;

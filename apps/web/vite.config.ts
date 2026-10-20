@@ -28,5 +28,5 @@ export default defineConfig({
             tracing: { server: true }
         })
     ],
-    ssr: { noExternal: ['@lucide/svelte', '@fkp/mdrs', '@fkp/domain', '@fkp/data'] }
+    ssr: { noExternal: ['@lucide/svelte', '@mdrs/core', '@idstead/domain', '@idstead/data'] }
 });

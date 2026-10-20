@@ -59,4 +59,4 @@ These are the only places where MDRS reads plain text differently. Each one is e
 
 The plan for the standalone engine is to run the official [CommonMark spec examples](https://spec.commonmark.org) and the GFM spec examples as a test suite, normalising away the extra classes and wrappers, alongside the regression tests above.
 
-Source: `packages/mdrs/src/markdown.ts`, `packages/mdrs/src/define/`, `packages/mdrs/src/frontmatter.ts`, `packages/mdrs/src/placeholders.ts`, `packages/mdrs/src/sanitize.ts`.
+Source: `packages/mdrs-core/src/markdown.ts`, `packages/mdrs-core/src/define/`, `packages/mdrs-core/src/frontmatter.ts`, `packages/mdrs-core/src/placeholders.ts`, `packages/mdrs-core/src/sanitize.ts`.

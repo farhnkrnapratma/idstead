@@ -1,10 +1,10 @@
-# @fkp/mdrs
+# @mdrs/core
 
 The MDRS (Markdown Rich Syntax) engine. It turns MDRS source into sanitized HTML and has no dependency on Svelte, SvelteKit, Supabase or any other workspace package.
 
 ```ts
-import { prepareMarkdownPage, renderMarkdown, validateDefineForSave } from '@fkp/mdrs';
-import { convertLegacyMarkdown } from '@fkp/mdrs/legacy';
+import { prepareMarkdownPage, renderMarkdown, validateDefineForSave } from '@mdrs/core';
+import { convertLegacyMarkdown } from '@mdrs/core/legacy';
 
 const html = await renderMarkdown(source);
 const { html: page, headings } = await prepareMarkdownPage(source, resolvers);
@@ -19,8 +19,8 @@ Only these are public. Everything else under `src/` is internal and may change.
 
 | Entry | File | Contents |
 | --- | --- | --- |
-| `@fkp/mdrs` | `src/index.ts` | Rendering, headings, frontmatter, sanitizer, `:::define` validation and resolver building blocks, plain-text conversion |
-| `@fkp/mdrs/legacy` | `src/legacy.ts` | Conversion from the pre-MDRS syntax |
+| `@mdrs/core` | `src/index.ts` | Rendering, headings, frontmatter, sanitizer, `:::define` validation and resolver building blocks, plain-text conversion |
+| `@mdrs/core/legacy` | `src/legacy.ts` | Conversion from the pre-MDRS syntax |
 
 ## Layout
 

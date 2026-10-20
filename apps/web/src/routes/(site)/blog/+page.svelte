@@ -3,7 +3,7 @@
     import { SvelteSet } from 'svelte/reactivity';
     import { page } from '$app/state';
     import { Rss, Quote } from '@lucide/svelte';
-    import Tag from '@fkp/ui/components/Tag.svelte';
+    import Tag from '@idstead/ui/components/Tag.svelte';
     import BlogPostCard from '#app/components/BlogPostCard.svelte';
     import FooterSection from '#app/layout/FooterSection.svelte';
     import {
@@ -22,10 +22,10 @@
         Tooltip,
         createFilterSortStore,
         staggerChildren
-    } from '@fkp/ui';
-    import { Section } from '@fkp/ui';
-    import { decodeHtmlEntities } from '@fkp/mdrs';
-    import { buttonKey } from '@fkp/ui/shortcuts.ts';
+    } from '@idstead/ui';
+    import { Section } from '@idstead/ui';
+    import { decodeHtmlEntities } from '@mdrs/core';
+    import { buttonKey } from '@idstead/ui/shortcuts.ts';
     import { publicAvatarUrl, publicBannerOgUrl } from '#lib/siteIdentity.ts';
 
     let { data } = $props();

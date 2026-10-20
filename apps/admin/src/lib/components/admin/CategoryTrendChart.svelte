@@ -4,11 +4,11 @@
     import { scaleBand, scaleLinear } from 'd3-scale';
     import { ChartColumnBig, ChartSpline, ChartPie } from '@lucide/svelte';
     import { onMount } from 'svelte';
-    import Chip from '@fkp/ui/components/Chip.svelte';
-    import LoadingState from '@fkp/ui/components/LoadingState.svelte';
-    import ErrorState from '@fkp/ui/components/ErrorState.svelte';
-    import EmptyState from '@fkp/ui/components/EmptyState.svelte';
-    import { cn } from '@fkp/ui/utils/cn.ts';
+    import Chip from '@idstead/ui/components/Chip.svelte';
+    import LoadingState from '@idstead/ui/components/LoadingState.svelte';
+    import ErrorState from '@idstead/ui/components/ErrorState.svelte';
+    import EmptyState from '@idstead/ui/components/EmptyState.svelte';
+    import { cn } from '@idstead/ui/utils/cn.ts';
     import { activityDate } from '#lib/adminActivity.ts';
     import { formatCount, hasChartActivity } from '#lib/adminWorkspace.ts';
     import { adminDisplayStore } from '../../stores/adminDisplayStore.svelte.ts';
@@ -19,7 +19,7 @@
         ADMIN_CHART_X_TICK_LABEL_PROPS,
         ADMIN_CHART_Y_TICK_LABEL_PROPS,
         ADMIN_CHART_TICK_LENGTH
-    } from '@fkp/ui/utils/chartAxisStyles.ts';
+    } from '@idstead/ui/utils/chartAxisStyles.ts';
     import CategoryDonut from './CategoryDonut.svelte';
     import { segmentRounding } from '../../chartRounding.ts';
 

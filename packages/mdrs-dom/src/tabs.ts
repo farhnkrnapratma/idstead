@@ -6,8 +6,8 @@ import {
 } from './codeBlocks';
 import { getDownloadFilename } from './codeBlockExtensions';
 import { registerPrefsListener, nextCodeScope } from './codeBlocks';
-import { shortcut } from '@fkp/ui/utils/shortcut.svelte.ts';
-import { focusScope } from '@fkp/ui/utils/focusScope.ts';
+import { shortcut } from '@idstead/ui/utils/shortcut.svelte.ts';
+import { focusScope } from '@idstead/ui/utils/focusScope.ts';
 
 const tabPreferences = new Map<string, string>();
 const tabListeners = new Set<(key: string, value: string) => void>();

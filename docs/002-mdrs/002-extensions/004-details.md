@@ -52,4 +52,4 @@ Without `summary`, the block renders the error `:::details requires summary="...
 
 A hand-written `<details><summary>…</summary>…</details>` gets the same styling; see [Raw HTML](../001-markdown/008-raw-html.md#raw-details).
 
-Source: `packages/mdrs/src/render/containers.ts` (`renderContainer`), `packages/mdrs/src/render/details.ts` (`parseDetailsBlocks`), `packages/mdrs-ui/src/enhance.ts` (`enhanceMarkdownDetails`).
+Source: `packages/mdrs-core/src/render/containers.ts` (`renderContainer`), `packages/mdrs-core/src/render/details.ts` (`parseDetailsBlocks`), `packages/mdrs-dom/src/enhance.ts` (`enhanceMarkdownDetails`).

@@ -1,9 +1,9 @@
 <script lang="ts">
-    import { FieldValidation, requiredText, emailError } from '@fkp/domain/fieldValidation.ts';
+    import { FieldValidation, requiredText, emailError } from '@idstead/domain/fieldValidation.ts';
     import { publicAvatarUrl, publicBannerOgUrl } from '#lib/siteIdentity.ts';
     import { page } from '$app/state';
-    import { shortcut } from '@fkp/ui/utils/shortcut.svelte.ts';
-    import { buttonKey } from '@fkp/ui/shortcuts.ts';
+    import { shortcut } from '@idstead/ui/utils/shortcut.svelte.ts';
+    import { buttonKey } from '@idstead/ui/shortcuts.ts';
     import { onDestroy } from 'svelte';
     import {
         PenLine,
@@ -14,7 +14,7 @@
         HelpCircle,
         MessageSquareWarning
     } from '@lucide/svelte';
-    import { isNameReserved, extractAuthorNameTokens } from '@fkp/domain/nameValidator.ts';
+    import { isNameReserved, extractAuthorNameTokens } from '@idstead/domain/nameValidator.ts';
     import {
         Card,
         FormField,
@@ -26,11 +26,11 @@
         PageContainer,
         Badge,
         toastStore
-    } from '@fkp/ui';
+    } from '@idstead/ui';
     import TopNav from '#app/components/TopNav.svelte';
     import FooterSection from '#app/layout/FooterSection.svelte';
     import ConsentNotice from '#app/components/ConsentNotice.svelte';
-    import { Section } from '@fkp/ui';
+    import { Section } from '@idstead/ui';
     import {
         turnstileWidget,
         executeTurnstile,

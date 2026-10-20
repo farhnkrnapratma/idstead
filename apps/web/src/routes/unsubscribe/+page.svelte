@@ -1,9 +1,9 @@
 <script lang="ts">
     import { MailX, TriangleAlert } from '@lucide/svelte';
-    import Button from '@fkp/ui/components/Button.svelte';
-    import EmptyState from '@fkp/ui/components/EmptyState.svelte';
-    import PageContainer from '@fkp/ui/layout/PageContainer.svelte';
-    import SkipLink from '@fkp/ui/components/SkipLink.svelte';
+    import Button from '@idstead/ui/components/Button.svelte';
+    import EmptyState from '@idstead/ui/components/EmptyState.svelte';
+    import PageContainer from '@idstead/ui/layout/PageContainer.svelte';
+    import SkipLink from '@idstead/ui/components/SkipLink.svelte';
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();

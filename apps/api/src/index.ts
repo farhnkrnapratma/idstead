@@ -2,7 +2,7 @@ import { Hono, type Context } from 'hono';
 import * as Sentry from '@sentry/cloudflare';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { stringify } from 'yaml';
-import { createSupabaseRepositories } from '@fkp/data';
+import { createSupabaseRepositories } from '@idstead/data';
 import { openapiSpec } from '#lib/openapi.ts';
 import { getAuthor } from '#lib/server/api/author.ts';
 import {

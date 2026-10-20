@@ -1,5 +1,5 @@
 {
-    "name": "@fkp/data",
+    "name": "@idstead/data",
     "version": "0.0.1",
     "private": true,
     "license": "MIT",
@@ -12,7 +12,7 @@
         "check": "tsc --noEmit -p tsconfig.json"
     },
     "dependencies": {
-        "@fkp/domain": "workspace:*"
+        "@idstead/domain": "workspace:*"
     },
     "peerDependencies": {
         "@supabase/supabase-js": "*"

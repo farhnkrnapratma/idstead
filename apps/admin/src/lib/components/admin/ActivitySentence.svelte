@@ -6,7 +6,7 @@
         activitySentence,
         isFeedbackActivity
     } from '#lib/adminActivity.ts';
-    import { cn } from '@fkp/ui/utils/cn.ts';
+    import { cn } from '@idstead/ui/utils/cn.ts';
     import ActivityPageLink from './ActivityPageLink.svelte';
 
     let { item, class: className = '' }: { item: AdminNotificationRow; class?: string } = $props();

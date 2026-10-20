@@ -5,13 +5,13 @@ import {
     wkdEmails,
     type OpenPgpKeyserver,
     type OpenPgpUserId
-} from '@fkp/domain/openpgpKey.ts';
+} from '@idstead/domain/openpgpKey.ts';
 
 import {
     CV_CHECKSUM_ALGORITHMS,
     type CvChecksumExt,
     type CvChecksums
-} from '@fkp/domain/cvChecksums.ts';
+} from '@idstead/domain/cvChecksums.ts';
 
 export { CV_CHECKSUM_ALGORITHMS, type CvChecksumExt, type CvChecksums };
 export type CvSignatureExt = 'asc' | 'sig';

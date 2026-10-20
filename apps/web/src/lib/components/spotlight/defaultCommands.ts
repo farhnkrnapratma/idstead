@@ -3,10 +3,10 @@ import * as publicEnv from '$app/env/public';
 
 import { page } from '$app/state';
 import { consentStore } from '../../stores/consentStore.svelte';
-import { readingModeStore } from '@fkp/ui/stores/readingModeStore.svelte.ts';
-import { shortcutStore } from '@fkp/ui/stores/shortcutStore.svelte.ts';
-import { toastStore } from '@fkp/ui/stores/toastStore.svelte.ts';
-import { scrollToTop, scrollToBottom } from '@fkp/ui/utils/scroll.ts';
+import { readingModeStore } from '@idstead/ui/stores/readingModeStore.svelte.ts';
+import { shortcutStore } from '@idstead/ui/stores/shortcutStore.svelte.ts';
+import { toastStore } from '@idstead/ui/stores/toastStore.svelte.ts';
+import { scrollToTop, scrollToBottom } from '@idstead/ui/utils/scroll.ts';
 import {
     Mail,
     RotateCw,

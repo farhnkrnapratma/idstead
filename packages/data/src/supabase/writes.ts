@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { publicCommentAuthor } from '@fkp/domain/blog.ts';
+import { publicCommentAuthor } from '@idstead/domain/blog.ts';
 import type {
     CommentCreation,
     CommentReport,

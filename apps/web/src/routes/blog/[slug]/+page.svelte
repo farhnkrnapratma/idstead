@@ -1,23 +1,23 @@
 <script lang="ts">
-    import Avatar from '@fkp/ui/components/Avatar.svelte';
+    import Avatar from '@idstead/ui/components/Avatar.svelte';
     import { COMMENTS_PAGE_SIZE, commentAuthorName } from '#lib/commentAuthor.ts';
     import { blogBannerAlt } from '#lib/blogBanner.ts';
     import { createFeedbackClient } from '#app/feedbackClient.svelte.ts';
-    import { shortcut } from '@fkp/ui/utils/shortcut.svelte.ts';
-    import { buttonKey } from '@fkp/ui/shortcuts.ts';
-    import { focusScope } from '@fkp/ui/utils/focusScope.ts';
-    import { FieldValidation, requiredText } from '@fkp/domain/fieldValidation.ts';
+    import { shortcut } from '@idstead/ui/utils/shortcut.svelte.ts';
+    import { buttonKey } from '@idstead/ui/shortcuts.ts';
+    import { focusScope } from '@idstead/ui/utils/focusScope.ts';
+    import { FieldValidation, requiredText } from '@idstead/domain/fieldValidation.ts';
     import { onMount, onDestroy, tick, untrack } from 'svelte';
     import { fade } from 'svelte/transition';
     import { MessageCircle } from '@lucide/svelte';
     import type { PageProps } from './$types';
     import type { BlogComment } from './+page.server';
     import hljs from 'highlight.js';
-    import { isNameReserved, extractAuthorNameTokens } from '@fkp/domain/nameValidator.ts';
-    import { enhanceMarkdownContent } from '@fkp/mdrs-ui/enhance.ts';
-    import { enhanceHeadingAnchors, resolveMdrsHash } from '@fkp/mdrs-ui/headingAnchors.ts';
-    import { refreshCodeBlockPrefs } from '@fkp/mdrs-ui/codeBlocks.ts';
-    import { highlightAfterScroll } from '@fkp/ui/utils/scroll.ts';
+    import { isNameReserved, extractAuthorNameTokens } from '@idstead/domain/nameValidator.ts';
+    import { enhanceMarkdownContent } from '@mdrs/dom/enhance.ts';
+    import { enhanceHeadingAnchors, resolveMdrsHash } from '@mdrs/dom/headingAnchors.ts';
+    import { refreshCodeBlockPrefs } from '@mdrs/dom/codeBlocks.ts';
+    import { highlightAfterScroll } from '@idstead/ui/utils/scroll.ts';
     import 'katex/dist/katex.min.css';
     import {
         turnstileWidget,
@@ -40,7 +40,7 @@
         readingModeStore,
         ScrollToTopButton,
         ReadingModeExitButton
-    } from '@fkp/ui';
+    } from '@idstead/ui';
     import { CommentThread, ArticleMeta } from '#lib/index.ts';
     import TopNav from '#app/components/TopNav.svelte';
     import BlogPostCard from '#app/components/BlogPostCard.svelte';
@@ -56,11 +56,11 @@
     import PostInsights from '#app/article/PostInsights.svelte';
     import ConsentNotice from '#app/components/ConsentNotice.svelte';
     import FeedbackButton from '#app/components/FeedbackButton.svelte';
-    import { formatReadTime } from '@fkp/domain';
+    import { formatReadTime } from '@idstead/domain';
     import { pushState } from '$app/navigation';
     import { page, navigating } from '$app/state';
-    import { contentFontStore } from '@fkp/ui/stores/contentFontStore.svelte.ts';
-    import { codeBlockPrefsStore } from '@fkp/mdrs-ui/codeBlockPrefsStore.svelte.ts';
+    import { contentFontStore } from '@idstead/ui/stores/contentFontStore.svelte.ts';
+    import { codeBlockPrefsStore } from '@mdrs/dom/codeBlockPrefsStore.svelte.ts';
 
     let { data }: PageProps = $props();
     const post = $derived(data.post);

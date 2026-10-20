@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { getLegalPage } from '#lib/server/legalPages.ts';
-import { prepareMarkdownPage } from '@fkp/mdrs';
+import { prepareMarkdownPage } from '@mdrs/core';
 import { createSupabaseMdrsResolvers } from '#lib/server/mdrsData.ts';
 import { supabase } from '#lib/supabase.ts';
 

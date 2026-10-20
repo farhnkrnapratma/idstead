@@ -5,7 +5,7 @@ import { blogAdmin } from '#lib/server/blogPostAuth.ts';
 import { apiError } from '#lib/server/apiError.ts';
 
 import { activityLogQuery } from '#lib/server/activityLogQuery.ts';
-import { createSupabaseActivityLog } from '@fkp/data';
+import { createSupabaseActivityLog } from '@idstead/data';
 export const GET: RequestHandler = async ({ request, url, platform }) => {
     const db = getSupabaseAdminClient(platform);
     if (!db)

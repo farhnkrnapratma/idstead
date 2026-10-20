@@ -15,7 +15,7 @@ export function createToken(): string {
     return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
 }
 
-import { hashIp, sha256Hex as hashToken } from '@fkp/domain/hash.ts';
+import { hashIp, sha256Hex as hashToken } from '@idstead/domain/hash.ts';
 
 export { hashIp, hashToken };
 

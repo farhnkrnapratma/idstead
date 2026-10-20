@@ -17,7 +17,7 @@
     import { adminNotificationsStore } from '../../stores/adminNotificationsStore.svelte.ts';
     import { adminChartRangeStore } from '../../stores/adminChartRangeStore.svelte.ts';
     import { WorkspaceFeed } from '../../stores/workspaceFeed.svelte.ts';
-    import { pluralize } from '@fkp/domain/pluralize.ts';
+    import { pluralize } from '@idstead/domain/pluralize.ts';
     import {
         formatCount,
         helpfulPercent,
@@ -27,17 +27,17 @@
         type WorkspaceArea,
         type WorkspaceRow
     } from '#lib/adminWorkspace.ts';
-    import type { SubscriberStats } from '@fkp/data';
-    import Card from '@fkp/ui/components/Card.svelte';
-    import StatsGrid from '@fkp/ui/components/StatsGrid.svelte';
-    import Button from '@fkp/ui/components/Button.svelte';
+    import type { SubscriberStats } from '@idstead/data';
+    import Card from '@idstead/ui/components/Card.svelte';
+    import StatsGrid from '@idstead/ui/components/StatsGrid.svelte';
+    import Button from '@idstead/ui/components/Button.svelte';
     import { reportReasonLabel } from '#lib/reportReasons.ts';
-    import DataTable, { type DataTableColumn } from '@fkp/ui/components/DataTable.svelte';
+    import DataTable, { type DataTableColumn } from '@idstead/ui/components/DataTable.svelte';
     import ActivityTimestamp from './ActivityTimestamp.svelte';
-    import ErrorState from '@fkp/ui/components/ErrorState.svelte';
-    import LoadingState from '@fkp/ui/components/LoadingState.svelte';
-    import EmptyState from '@fkp/ui/components/EmptyState.svelte';
-    import Section from '@fkp/ui/layout/Section.svelte';
+    import ErrorState from '@idstead/ui/components/ErrorState.svelte';
+    import LoadingState from '@idstead/ui/components/LoadingState.svelte';
+    import EmptyState from '@idstead/ui/components/EmptyState.svelte';
+    import Section from '@idstead/ui/layout/Section.svelte';
     import ViewsCalendar from './ViewsCalendar.svelte';
     import ViewsChart from './ViewsChart.svelte';
     import type { ViewsRange } from '#lib/components/admin/viewsRange.ts';

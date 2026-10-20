@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { decodeHtmlEntities } from '../packages/mdrs/src/index.ts';
+import { decodeHtmlEntities } from '../packages/mdrs-core/src/index.ts';
 
 describe('decodeHtmlEntities', () => {
     test('decodes one level only, so an escaped entity stays literal text', () => {

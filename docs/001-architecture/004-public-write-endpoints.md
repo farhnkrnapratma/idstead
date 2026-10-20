@@ -80,7 +80,7 @@ sequenceDiagram
 - **Origin check:** every endpoint above rejects a cross-origin request with `403` and `FORBIDDEN_ORIGIN`.
 - **Clients:** writes use `getSupabaseAdminClient()` (service role, bypasses RLS). It is server-only (`packages/lib/src/server/supabaseAdmin.ts`).
 - **Activity log:** these public endpoints do **not** write `db_activity_log`. Only admin endpoints do.
-- **IP hashing** uses SHA-256 of the IP plus `IP_SALT` (`hashIp` in `@fkp/domain/hash.ts`). It is used for view de-duplication, report and feedback tracking, and subscriber rows.
+- **IP hashing** uses SHA-256 of the IP plus `IP_SALT` (`hashIp` in `@idstead/domain/hash.ts`). It is used for view de-duplication, report and feedback tracking, and subscriber rows.
 
 ## Source
 

@@ -1,7 +1,7 @@
 <script lang="ts">
     import { tick } from 'svelte';
-    import { cn } from '@fkp/ui/utils/cn.ts';
-    import { splitHighlightedHtmlLines } from '@fkp/mdrs-ui/codeBlocks.ts';
+    import { cn } from '@idstead/ui/utils/cn.ts';
+    import { splitHighlightedHtmlLines } from '@mdrs/dom/codeBlocks.ts';
     import { highlightMarkdown } from './highlight';
     import type { EditorPreferences } from './preferences.svelte';
     import {

@@ -1,8 +1,8 @@
-import type { BlogRepository, PublishedPost } from '@fkp/data';
-import { publicPostFields, type PublicPostFields } from '@fkp/domain/blog.ts';
-import { formatReadTime } from '@fkp/domain/formatters.ts';
-import { estimateReadTime } from '@fkp/domain/readTime.ts';
-import { decodeHtmlEntities } from '@fkp/mdrs';
+import type { BlogRepository, PublishedPost } from '@idstead/data';
+import { publicPostFields, type PublicPostFields } from '@idstead/domain/blog.ts';
+import { formatReadTime } from '@idstead/domain/formatters.ts';
+import { estimateReadTime } from '@idstead/domain/readTime.ts';
+import { decodeHtmlEntities } from '@mdrs/core';
 import { publicRepositories } from './repositories';
 
 export interface BlogPost extends PublicPostFields {

@@ -2,10 +2,10 @@
     import { tick } from 'svelte';
     import type { Attachment } from 'svelte/attachments';
     import hljs from 'highlight.js';
-    import FieldMessage from '@fkp/ui/components/FieldMessage.svelte';
-    import { enhanceMarkdownContent } from '@fkp/mdrs-ui/enhance.ts';
-    import { enhanceHeadingAnchors } from '@fkp/mdrs-ui/headingAnchors.ts';
-    import { contentFontStore } from '@fkp/ui/stores/contentFontStore.svelte.ts';
+    import FieldMessage from '@idstead/ui/components/FieldMessage.svelte';
+    import { enhanceMarkdownContent } from '@mdrs/dom/enhance.ts';
+    import { enhanceHeadingAnchors } from '@mdrs/dom/headingAnchors.ts';
+    import { contentFontStore } from '@idstead/ui/stores/contentFontStore.svelte.ts';
 
     interface Props {
         html: string;

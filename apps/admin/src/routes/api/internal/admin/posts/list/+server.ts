@@ -3,7 +3,7 @@ import type { RequestHandler } from './$types';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { blogAdmin } from '#lib/server/blogPostAuth.ts';
-import { createSupabaseAdminPostStore } from '@fkp/data';
+import { createSupabaseAdminPostStore } from '@idstead/data';
 
 export const GET: RequestHandler = async ({ request, url, platform }) => {
     const db = getSupabaseAdminClient(platform);

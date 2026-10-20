@@ -1,5 +1,5 @@
 {
-    "name": "@fkp/ui",
+    "name": "@idstead/ui",
     "version": "0.0.1",
     "private": true,
     "license": "MIT",
@@ -22,7 +22,7 @@
         "**/*.css"
     ],
     "dependencies": {
-        "@fkp/domain": "workspace:*",
+        "@idstead/domain": "workspace:*",
         "@blobatar/svelte": "^2.7.0",
         "@fontsource-variable/lexend": "^5.3.0",
         "@fontsource-variable/lilex": "^5.3.0",

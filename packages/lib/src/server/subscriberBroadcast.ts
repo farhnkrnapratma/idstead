@@ -1,5 +1,5 @@
 import { publicRepositories } from './repositories';
-import type { NewsletterRecipient, NewsletterStore } from '@fkp/data';
+import type { NewsletterRecipient, NewsletterStore } from '@idstead/data';
 import { newPostEmail, resendApiKey, sendBatch, senderAddress } from './subscribers';
 import { configuredSiteUrl } from './siteUrl';
 

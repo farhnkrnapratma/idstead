@@ -1,9 +1,9 @@
 <script lang="ts">
     import { onDestroy, untrack } from 'svelte';
-    import FileUploadField from '@fkp/ui/components/FileUploadField.svelte';
-    import FieldMessage from '@fkp/ui/components/FieldMessage.svelte';
-    import Button from '@fkp/ui/components/Button.svelte';
-    import ImageWithSkeleton from '@fkp/ui/components/ImageWithSkeleton.svelte';
+    import FileUploadField from '@idstead/ui/components/FileUploadField.svelte';
+    import FieldMessage from '@idstead/ui/components/FieldMessage.svelte';
+    import Button from '@idstead/ui/components/Button.svelte';
+    import ImageWithSkeleton from '@idstead/ui/components/ImageWithSkeleton.svelte';
     import { processBanner } from '../processBanner.ts';
     import { blogBannerAlt } from '#lib/blogBanner.ts';
     import type { BannerChange } from '#lib/blogBanner.ts';

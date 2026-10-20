@@ -1,10 +1,10 @@
 <script lang="ts">
-    import { shortcut } from '@fkp/ui/utils/shortcut.svelte.ts';
-    import { buttonKey } from '@fkp/ui/shortcuts.ts';
+    import { shortcut } from '@idstead/ui/utils/shortcut.svelte.ts';
+    import { buttonKey } from '@idstead/ui/shortcuts.ts';
     import { onDestroy } from 'svelte';
     import { Sparkles, List, ChevronsUpDown, ChevronsDownUp } from '@lucide/svelte';
-    import { cn } from '@fkp/ui/utils/cn.ts';
-    import { contentFontStore } from '@fkp/ui/stores/contentFontStore.svelte.ts';
+    import { cn } from '@idstead/ui/utils/cn.ts';
+    import { contentFontStore } from '@idstead/ui/stores/contentFontStore.svelte.ts';
 
     interface Props {
         mode?: 'all' | 'tldr-only' | 'summary-only';

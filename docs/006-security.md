@@ -60,8 +60,8 @@ Details and the flow diagram: [architecture/6](001-architecture/006-admin-login-
 
 ## Content rendering
 
-- Markdown (posts, legal pages) is rendered by the `@fkp/mdrs` package (`packages/mdrs/src/markdown.ts`).
-- The output **always** passes through the allow-list sanitizer `sanitizeHtml()` (`packages/mdrs/src/sanitize.ts`). `tests/sanitizeHtml.test.ts` covers both hostile input and the engine's own markup.
+- Markdown (posts, legal pages) is rendered by the `@mdrs/core` package (`packages/mdrs-core/src/markdown.ts`).
+- The output **always** passes through the allow-list sanitizer `sanitizeHtml()` (`packages/mdrs-core/src/sanitize.ts`). `tests/sanitizeHtml.test.ts` covers both hostile input and the engine's own markup.
 - Images and banners are re-validated on the server before storage: sizes, pixel limits, magic bytes, WebP decode.
 
 ## Response headers

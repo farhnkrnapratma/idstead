@@ -4,10 +4,10 @@ import { apiError } from '#lib/server/apiError.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { verifyTurnstileToken } from '#lib/server/turnstile.ts';
 import { serviceData } from '#lib/server/repositories.ts';
-import { hashIp } from '@fkp/domain/hash.ts';
+import { hashIp } from '@idstead/domain/hash.ts';
 import { REPORT_REASON_IDS } from '#lib/reportReasons.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
-import { PUBLIC_ID_PATTERN } from '@fkp/domain/postReference.ts';
+import { PUBLIC_ID_PATTERN } from '@idstead/domain/postReference.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
     if (!isSameOriginRequest(request, url)) {

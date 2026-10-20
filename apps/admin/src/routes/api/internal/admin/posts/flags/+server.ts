@@ -4,7 +4,7 @@ import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { blogAdmin } from '#lib/server/blogPostAuth.ts';
 import { UUID_PATTERN } from '#lib/blogBanner.ts';
-import { createSupabaseAdminPostStore, createSupabaseNewsletterStore } from '@fkp/data';
+import { createSupabaseAdminPostStore, createSupabaseNewsletterStore } from '@idstead/data';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { queuePostEffects } from '#lib/server/postEffects.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';

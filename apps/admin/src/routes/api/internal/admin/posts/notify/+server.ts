@@ -4,7 +4,7 @@ import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { blogAdmin } from '#lib/server/blogPostAuth.ts';
 import { notifyNewPost } from '#lib/server/subscriberBroadcast.ts';
-import { createSupabaseNewsletterStore } from '@fkp/data';
+import { createSupabaseNewsletterStore } from '@idstead/data';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

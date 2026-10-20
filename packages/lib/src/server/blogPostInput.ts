@@ -7,7 +7,7 @@ import {
 } from '#lib/blogBanner.ts';
 import { inspectAvif } from '#lib/avif.ts';
 import { validateBanner } from './validateBanner';
-import { isValidPostSlug, POST_SLUG_MAX_LENGTH } from '@fkp/domain/slug.ts';
+import { isValidPostSlug, POST_SLUG_MAX_LENGTH } from '@idstead/domain/slug.ts';
 
 export const POST_PAYLOAD_LIMIT = 3 * 1024 * 1024;
 export const MARKDOWN_LIMIT = 2 * 1024 * 1024;

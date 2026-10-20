@@ -4,7 +4,7 @@
         formatRelativeTime,
         getRelativeTimeNextUpdateMs,
         formatExactDateTime
-    } from '@fkp/domain/formatters.ts';
+    } from '@idstead/domain/formatters.ts';
 
     interface Props {
         date: string | Date | null | undefined;

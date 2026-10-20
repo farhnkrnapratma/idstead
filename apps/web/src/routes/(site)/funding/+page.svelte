@@ -1,6 +1,6 @@
 <script lang="ts">
     import { HeartHandshake } from '@lucide/svelte';
-    import { PageMain } from '@fkp/ui';
+    import { PageMain } from '@idstead/ui';
     import FooterSection from '#app/layout/FooterSection.svelte';
     import LinkGridSection from '#app/components/LinkGridSection.svelte';
     import SiteMeta from '#app/components/SiteMeta.svelte';

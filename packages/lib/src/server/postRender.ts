@@ -4,11 +4,11 @@ import {
     usesLiveData,
     type ApiRegistry,
     type HeadingItem
-} from '@fkp/mdrs';
-import type { PostRenderStore } from '@fkp/data';
-import { estimateReadTime } from '@fkp/domain/readTime.ts';
+} from '@mdrs/core';
+import type { PostRenderStore } from '@idstead/data';
+import { estimateReadTime } from '@idstead/domain/readTime.ts';
 
-export { postRenderPath } from '@fkp/data';
+export { postRenderPath } from '@idstead/data';
 
 export interface PostRender {
     version: number;
