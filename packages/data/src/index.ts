@@ -4,6 +4,7 @@ import {
     createSupabaseActivityLog,
     createSupabaseAdminActivityStore,
     createSupabaseAdminNotifier,
+    createSupabaseAdminSettingsStore,
     createSupabaseFeedbackRecorder
 } from './supabase/activity';
 import type { AdminPostStore, PostCleanupStore, PostOperationStore } from './adminPosts';
@@ -17,6 +18,8 @@ import {
     createSupabaseCvDocumentStore,
     createSupabaseOpenPgpKeyStore
 } from './supabase/cvDocuments';
+import { createSupabaseLegalPageRepository, createSupabaseLegalPageWriter } from './supabase/legal';
+import type { LegalPageRepository } from './legal';
 import type { AuthorRepository } from './author';
 import type { BlogRepository, CommentRepository, CommentWriter, ViewRecorder } from './blog';
 import { createSupabaseAuthorRepository, publicProfile } from './supabase/author';
@@ -36,6 +39,7 @@ export type * from './activity';
 export type * from './adminAuthor';
 export type * from './adminPosts';
 export type * from './cvDocuments';
+export type * from './legal';
 export type * from './author';
 export type * from './blog';
 export type * from './subscribers';
@@ -50,10 +54,12 @@ export {
     createSupabaseActivityLog,
     createSupabaseAdminActivityStore,
     createSupabaseAdminNotifier,
+    createSupabaseAdminSettingsStore,
     createSupabaseFeedbackRecorder
 };
 export { createSupabaseAdminAuthorStore, createSupabaseAuthorWriter };
 export { createSupabaseCvDocumentStore, createSupabaseOpenPgpKeyStore };
+export { createSupabaseLegalPageRepository, createSupabaseLegalPageWriter };
 export {
     createSupabaseAdminPostStore,
     createSupabasePostCleanupStore,
@@ -65,6 +71,7 @@ export interface Repositories {
     author: AuthorRepository;
     blog: BlogRepository;
     comments: CommentRepository;
+    legal: LegalPageRepository;
 }
 
 export function createSupabaseRepositories(
@@ -74,7 +81,8 @@ export function createSupabaseRepositories(
     return {
         author: createSupabaseAuthorRepository(db, options),
         blog: createSupabaseBlogRepository(db, options),
-        comments: createSupabaseCommentRepository(db)
+        comments: createSupabaseCommentRepository(db),
+        legal: createSupabaseLegalPageRepository(db)
     };
 }
 

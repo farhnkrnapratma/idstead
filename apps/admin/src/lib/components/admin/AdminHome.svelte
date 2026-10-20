@@ -27,7 +27,7 @@
         type WorkspaceArea,
         type WorkspaceRow
     } from '#lib/adminWorkspace.ts';
-    import { supabase } from '#lib/supabase.ts';
+    import type { SubscriberStats } from '@fkp/data';
     import Card from '@fkp/ui/components/Card.svelte';
     import StatsGrid from '@fkp/ui/components/StatsGrid.svelte';
     import Button from '@fkp/ui/components/Button.svelte';
@@ -131,13 +131,14 @@
             feed: feedbackFeed
         }
     ]);
-    let subscribers = $state<{ active: number; pending: number; unsubscribed: number } | null>(
-        null
-    );
+    let subscribers = $state<SubscriberStats | null>(null);
 
     async function loadSubscribers() {
-        const { data: stats, error } = await supabase.rpc('db_subscriber_stats');
-        if (!error && stats) subscribers = stats;
+        try {
+            subscribers = await adminActivityRequest<SubscriberStats>('activity', {
+                section: 'subscribers'
+            });
+        } catch {}
     }
 
     async function load() {

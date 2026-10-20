@@ -40,8 +40,26 @@ export interface ActivityEntry {
     userAgent: string | null;
 }
 
+export interface ActivityLogFilter {
+    category: string | null;
+    query: string | null;
+    direction: 'asc' | 'desc';
+    sort: string;
+    from: string | null;
+    to: string | null;
+    limit: number;
+    offset: number;
+}
+
+export interface ActivityLogPage {
+    data: unknown[];
+    total: number;
+}
+
 export interface ActivityLog {
     append(entry: ActivityEntry): Promise<void>;
+    list(filter: ActivityLogFilter): Promise<ActivityLogPage>;
+    export(filter: Omit<ActivityLogFilter, 'limit' | 'offset'>): Promise<ActivityLogPage>;
 }
 
 export interface ActivityPage {
@@ -101,4 +119,28 @@ export interface AdminActivityStore {
     workspace(section: string, options: Record<string, unknown>): Promise<unknown>;
     notificationGroupAction(action: NotificationGroupAction): Promise<unknown>;
     deleteComment(id: string): Promise<unknown>;
+    replyToComment(reply: AdminReply): Promise<AdminReplyResult>;
+    dismissReports(commentId: string): Promise<void>;
+    subscriberStats(): Promise<SubscriberStats>;
+}
+
+export interface AdminReply {
+    postId: string;
+    parentId: string;
+    authorName: string;
+    content: string;
+}
+
+export type AdminReplyResult =
+    { status: 'created'; comment: Record<string, unknown> } | { status: 'invalid-parent' };
+
+export interface SubscriberStats {
+    active: number;
+    pending: number;
+    unsubscribed: number;
+}
+
+export interface AdminSettingsStore {
+    read(userId: string): Promise<unknown | null>;
+    write(userId: string, settings: unknown): Promise<void>;
 }

@@ -18,10 +18,15 @@ function optionalId(value: string | null) {
 }
 
 export async function adminActivity(
-    input: { request: Request; url: URL; db: SupabaseClient | null },
+    input: {
+        request: Request;
+        url: URL;
+        db: SupabaseClient | null;
+        sessionDb?: SupabaseClient | null;
+    },
     inbox: boolean
 ) {
-    const { request, url, db } = input;
+    const { request, url, db, sessionDb } = input;
     const fail = apiError;
     if (!db)
         return fail(
@@ -113,13 +118,28 @@ export async function adminActivity(
             } else {
                 const section = choice(
                     params.get('section'),
-                    ['stats', 'feedback', 'feedback_history', 'reports', 'report_history'],
+                    [
+                        'stats',
+                        'subscribers',
+                        'feedback',
+                        'feedback_history',
+                        'reports',
+                        'report_history'
+                    ],
                     'stats'
                 );
                 const pageOffset = offset(params.get('offset'));
                 const focusId = optionalId(params.get('focusId'));
                 if (section === 'stats') result = await store.dashboard();
-                else if (section === 'feedback' || section === 'feedback_history') {
+                else if (section === 'subscribers') {
+                    if (!sessionDb)
+                        return fail(
+                            503,
+                            'ADMIN_ACTIVITY_UNAVAILABLE',
+                            'Subscriber counts are temporarily unavailable.'
+                        );
+                    result = await createSupabaseAdminActivityStore(sessionDb).subscriberStats();
+                } else if (section === 'feedback' || section === 'feedback_history') {
                     const target =
                         params.has('targetId') ?
                             activityTarget(params.get('targetType'), params.get('targetId'))

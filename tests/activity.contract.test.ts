@@ -4,10 +4,15 @@ import {
     createSupabaseActivityLog,
     createSupabaseAdminActivityStore,
     createSupabaseAdminNotifier,
+    createSupabaseAdminSettingsStore,
     createSupabaseFeedbackRecorder
 } from '../packages/data/src/supabase/activity.ts';
 import { DataError } from '../packages/data/src/errors.ts';
-import { activityContract, type ActivitySeed } from './contracts/activity.contract.ts';
+import {
+    ACTIVITY_SEED,
+    activityContract,
+    type ActivitySeed
+} from './contracts/activity.contract.ts';
 import { fakeSupabase, type Row } from './support/fakeSupabase.ts';
 
 function supabaseFromSeed(
@@ -237,5 +242,101 @@ describe('Supabase activity adapter', () => {
                 user_agent: 'ua'
             }
         ]);
+    });
+
+    test('lists and exports the activity log with the filter as database arguments', async () => {
+        const calls: Row[] = [];
+        const page = (name: string) => (args: Row) => {
+            calls.push({ name, ...args });
+            return { data: { data: [{ id: 1 }], total: '7' }, error: null };
+        };
+        const { db } = supabaseFromSeed(empty, {
+            db_activity_log_list: page('list'),
+            db_activity_log_export: page('export')
+        });
+        const log = createSupabaseActivityLog(db);
+        const filter = {
+            category: 'blog',
+            query: null,
+            direction: 'desc' as const,
+            sort: 'created_at',
+            from: null,
+            to: '2026-10-02T00:00:00.000Z'
+        };
+        expect(await log.list({ ...filter, limit: 25, offset: 50 })).toEqual({
+            data: [{ id: 1 }],
+            total: 7
+        });
+        expect(await log.export(filter)).toEqual({ data: [{ id: 1 }], total: 7 });
+        const args = {
+            p_category: 'blog',
+            p_from: null,
+            p_to: '2026-10-02T00:00:00.000Z',
+            p_query: null,
+            p_direction: 'desc',
+            p_sort: 'created_at'
+        };
+        expect(calls).toEqual([
+            { name: 'list', ...args, p_limit: 25, p_offset: 50 },
+            { name: 'export', ...args }
+        ]);
+    });
+
+    test('replies to a comment only on the post it belongs to', async () => {
+        const post = ACTIVITY_SEED.posts[0].uuid;
+        const { db, activity } = supabaseFromSeed(ACTIVITY_SEED);
+        await db.from('db_comments').insert({ id: 'parent', post_id: post, content: 'hi' });
+        expect(
+            await activity.replyToComment({
+                postId: 'another-post',
+                parentId: 'parent',
+                authorName: 'Admin',
+                content: 'Thanks'
+            })
+        ).toEqual({ status: 'invalid-parent' });
+        const reply = await activity.replyToComment({
+            postId: post,
+            parentId: 'parent',
+            authorName: 'Admin',
+            content: 'Thanks'
+        });
+        expect(reply).toMatchObject({
+            status: 'created',
+            comment: { post_id: post, parent_id: 'parent', is_admin: true, is_approved: true }
+        });
+    });
+
+    test('dismisses every report on a comment', async () => {
+        const { db, activity } = supabaseFromSeed(empty);
+        await db.from('db_comment_reports').insert([
+            { comment_id: 'a', reason: 'spam' },
+            { comment_id: 'a', reason: 'abuse' },
+            { comment_id: 'b', reason: 'spam' }
+        ]);
+        await activity.dismissReports('a');
+        const { data } = await db.from('db_comment_reports').select('*');
+        expect(data).toEqual([{ comment_id: 'b', reason: 'spam' }]);
+    });
+
+    test('reads subscriber counts as numbers', async () => {
+        const { activity } = supabaseFromSeed(empty, {
+            db_subscriber_stats: () => ({ data: { active: '3', pending: 1 }, error: null })
+        });
+        expect(await activity.subscriberStats()).toEqual({
+            active: 3,
+            pending: 1,
+            unsubscribed: 0
+        });
+    });
+
+    test('keeps admin settings per user', async () => {
+        const { db } = supabaseFromSeed(empty);
+        const settings = createSupabaseAdminSettingsStore(db);
+        expect(await settings.read('u1')).toBeNull();
+        await settings.write('u1', { theme: 'dark' });
+        await settings.write('u2', { theme: 'light' });
+        await settings.write('u1', { theme: 'light' });
+        expect(await settings.read('u1')).toEqual({ theme: 'light' });
+        expect(await settings.read('u2')).toEqual({ theme: 'light' });
     });
 });

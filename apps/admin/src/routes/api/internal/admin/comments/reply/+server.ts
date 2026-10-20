@@ -5,6 +5,7 @@ import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { sanitizeInput } from '@fkp/domain/sanitizeInput.ts';
+import { createSupabaseAdminActivityStore } from '@fkp/data';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -65,25 +66,23 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
         return apiError(500, 'DATABASE_UNAVAILABLE', 'Database client unavailable.');
     }
 
-    const { data, error } = await adminClient
-        .from('db_comments')
-        .insert({
-            post_id: postId,
-            parent_id: parentId,
-            author_name: authorName,
-            content,
-            is_anonymous: false,
-            is_admin: true,
-            is_approved: true
-        })
-        .select(
-            'id, post_id, parent_id, author_name, content, is_anonymous, is_admin, is_approved, created_at'
-        )
-        .single();
-
-    if (error) {
+    let result;
+    try {
+        result = await createSupabaseAdminActivityStore(adminClient).replyToComment({
+            postId,
+            parentId,
+            authorName,
+            content
+        });
+    } catch {
         return apiError(500, 'BLOG_COMMENT_SAVE_FAILED', 'Could not save admin reply.');
     }
+    if (result.status === 'invalid-parent')
+        return apiError(
+            400,
+            'BLOG_COMMENT_INVALID_PARENT_ID',
+            'parentId must be a comment on the same post.'
+        );
 
-    return json({ comment: data }, { status: 201 });
+    return json({ comment: result.comment }, { status: 201 });
 };
