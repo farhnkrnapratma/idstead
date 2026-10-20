@@ -101,9 +101,9 @@ function resolveFile(base: string): string | null {
 }
 
 function resolveLibImport(spec: string, fromFile: string): string | null {
-    if (spec === '#lib' || spec === '@fkp/lib') return barrel;
+    if (spec === '#lib' || spec === '@idstead/lib') return barrel;
     if (spec.startsWith('#lib/')) return resolveFile(path.join(libSrc, spec.slice(5)));
-    if (spec.startsWith('@fkp/lib/')) return resolveFile(path.join(libSrc, spec.slice(9)));
+    if (spec.startsWith('@idstead/lib/')) return resolveFile(path.join(libSrc, spec.slice(9)));
     if (spec.startsWith('.')) return resolveFile(path.resolve(path.dirname(fromFile), spec));
     return null;
 }

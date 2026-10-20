@@ -7,8 +7,8 @@
         shouldAnnounce,
         type CountdownTone
     } from '../../sessionTimeout.ts';
-    import Button from '@fkp/ui/components/Button.svelte';
-    import Dialog from '@fkp/ui/components/Dialog.svelte';
+    import Button from '@idstead/ui/components/Button.svelte';
+    import Dialog from '@idstead/ui/components/Dialog.svelte';
 
     const RING_LENGTH = 125.66;
     const toneStyles: Record<CountdownTone, { track: string; arc: string; text: string }> = {

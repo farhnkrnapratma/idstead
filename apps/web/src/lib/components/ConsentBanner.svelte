@@ -3,11 +3,11 @@
     import { fade } from 'svelte/transition';
     import { ShieldCheck, X, Trash } from '@lucide/svelte';
     import { consentStore, type ConsentStatus } from '../stores/consentStore.svelte';
-    import { focusScope } from '@fkp/ui/utils/focusScope.ts';
-    import { buttonKey } from '@fkp/ui/shortcuts.ts';
-    import Button from '@fkp/ui/components/Button.svelte';
-    import Dialog from '@fkp/ui/components/Dialog.svelte';
-    import Dropdown from '@fkp/ui/components/Dropdown.svelte';
+    import { focusScope } from '@idstead/ui/utils/focusScope.ts';
+    import { buttonKey } from '@idstead/ui/shortcuts.ts';
+    import Button from '@idstead/ui/components/Button.svelte';
+    import Dialog from '@idstead/ui/components/Dialog.svelte';
+    import Dropdown from '@idstead/ui/components/Dropdown.svelte';
 
     const CONSENT_BANNER_SCOPE = 'consent-banner';
 

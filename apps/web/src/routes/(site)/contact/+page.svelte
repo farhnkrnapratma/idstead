@@ -10,10 +10,10 @@
         Section,
         Textarea,
         toastStore
-    } from '@fkp/ui';
-    import { buttonKey } from '@fkp/ui/shortcuts.ts';
-    import { FieldValidation, requiredText, emailError } from '@fkp/domain/fieldValidation.ts';
-    import { isNameReserved, extractAuthorNameTokens } from '@fkp/domain/nameValidator.ts';
+    } from '@idstead/ui';
+    import { buttonKey } from '@idstead/ui/shortcuts.ts';
+    import { FieldValidation, requiredText, emailError } from '@idstead/domain/fieldValidation.ts';
+    import { isNameReserved, extractAuthorNameTokens } from '@idstead/domain/nameValidator.ts';
     import {
         turnstileWidget,
         executeTurnstile,

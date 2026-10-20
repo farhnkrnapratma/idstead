@@ -1,4 +1,4 @@
-import { jsToDefineValue, walkPath, type ApiRegistry, type DefineValue } from '@fkp/mdrs';
+import { jsToDefineValue, walkPath, type ApiRegistry, type DefineValue } from '@mdrs/core';
 
 export interface MdrsDataLoaders {
     author(): Promise<unknown>;

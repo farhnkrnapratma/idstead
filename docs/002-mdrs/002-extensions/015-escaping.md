@@ -77,4 +77,4 @@ In a document without `:::define`, nothing needs escaping: `${…}` is already p
 
 A single `$` never starts math, so prices need no escaping: `It costs $5`. Doubled dollars followed by a digit, as in `$$5 and $$10`, aren't math either ([Math](010-math.md#inline-math)).
 
-Source: `packages/mdrs/src/render/ignoreRender.ts` (`IGNORE_RENDER_OPEN_RE`, `extractIgnoreRenderBlocks`), `packages/mdrs/src/render/math.ts` (`MATH_INLINE_RE`), `packages/mdrs/src/define/interpolation.ts` (`scanInterpolationTokens`), `packages/mdrs/src/define/block.ts` (`hasDefineEntries`).
+Source: `packages/mdrs-core/src/render/ignoreRender.ts` (`IGNORE_RENDER_OPEN_RE`, `extractIgnoreRenderBlocks`), `packages/mdrs-core/src/render/math.ts` (`MATH_INLINE_RE`), `packages/mdrs-core/src/define/interpolation.ts` (`scanInterpolationTokens`), `packages/mdrs-core/src/define/block.ts` (`hasDefineEntries`).

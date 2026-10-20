@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { decodeHtmlEntities as domainDecode } from '../packages/domain/src/entities.ts';
-import { decodeHtmlEntities as mdrsDecode } from '../packages/mdrs/src/entities.ts';
+import { decodeHtmlEntities as mdrsDecode } from '../packages/mdrs-core/src/entities.ts';
 
 const SAMPLES = [
     '',

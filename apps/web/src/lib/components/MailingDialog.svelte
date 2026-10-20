@@ -1,5 +1,5 @@
 <script lang="ts">
-    import Dialog from '@fkp/ui/components/Dialog.svelte';
+    import Dialog from '@idstead/ui/components/Dialog.svelte';
     import MailingForm from './MailingForm.svelte';
     import type { MailingCommand } from '#lib/mailing.ts';
 

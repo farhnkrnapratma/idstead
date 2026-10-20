@@ -91,11 +91,11 @@ This is a Bun workspaces monorepo. Each app is its own Cloudflare Worker, and al
 | `apps/api` | `api.fkp.my.id/v1` | Public read-only REST API (Hono). |
 | `apps/jobs` | — (queue and cron only) | Newsletter delivery and daily storage cleanup. |
 | `packages/lib` | — | Site feature components, data access and server code. |
-| `packages/ui` | — | The design system (`@fkp/ui`): tokens, global styles, UI primitives and stores. |
-| `packages/domain` | — | Pure helpers and types (`@fkp/domain`) shared by every app. |
-| `packages/mdrs` | — | The MDRS engine (`@fkp/mdrs`), used by the web, admin and API apps. |
-| `packages/mdrs-ui` | — | The browser side of MDRS (`@fkp/mdrs-ui`): code blocks, tabs, charts, diagrams and `mdrs.css`. |
-| `packages/editor` | — | The admin's Markdown editor (`@fkp/editor`). |
+| `packages/ui` | — | The design system (`@idstead/ui`): tokens, global styles, UI primitives and stores. |
+| `packages/domain` | — | Pure helpers and types (`@idstead/domain`) shared by every app. |
+| `packages/mdrs-core` | — | The MDRS engine (`@mdrs/core`), used by the web, admin and API apps. |
+| `packages/mdrs-dom` | — | The browser side of MDRS (`@mdrs/dom`): code blocks, tabs, charts, diagrams and `mdrs.css`. |
+| `packages/mdrs-editor` | — | The admin's Markdown editor (`@mdrs/editor`). |
 
 ### Start Development Servers
 
@@ -115,8 +115,8 @@ Or start one server directly:
 ```sh
 bun run dev [--host]              # public site (Vite)
 bun run dev:admin                 # admin portal on http://localhost:5174
-bun run --filter @fkp/api dev     # API worker on http://localhost:8787
-bun run --filter @fkp/jobs dev    # jobs worker on http://localhost:8788
+bun run --filter @idstead/api dev     # API worker on http://localhost:8787
+bun run --filter @idstead/jobs dev    # jobs worker on http://localhost:8788
 ```
 
 The wrangler-based workers get their variables from `phase run --env dev`, or from the repository root by adding `--env-file ../../.env` to the `wrangler dev` command. Point the site at a local API by setting `PUBLIC_API_BASE_URL=http://localhost:8787`.
@@ -178,7 +178,7 @@ All apps share the same Supabase project. Local `.env*` files are for developmen
 
 ## Markdown syntax
 
-Posts and legal pages are written in **MDRS** (Markdown Rich Syntax, `.mdrs`), a superset of CommonMark and GitHub Flavored Markdown rendered by the `@fkp/mdrs` workspace package (`packages/mdrs`). On top of standard Markdown it adds directives (`:::note`, `:::callout`, `:::details`, `:::tabs`, `:::snippets`, `:::steps`, `:::embed`, `:::references`), code block options (`filename=`, `mark=`), extended task states, math (`$$ … $$`, `:::math`), Mermaid and chart fences, and document variables (`:::define`, `${…}`) with live site data.
+Posts and legal pages are written in **MDRS** (Markdown Rich Syntax, `.mdrs`), a superset of CommonMark and GitHub Flavored Markdown rendered by the `@mdrs/core` workspace package (`packages/mdrs-core`). On top of standard Markdown it adds directives (`:::note`, `:::callout`, `:::details`, `:::tabs`, `:::snippets`, `:::steps`, `:::embed`, `:::references`), code block options (`filename=`, `mark=`), extended task states, math (`$$ … $$`, `:::math`), Mermaid and chart fences, and document variables (`:::define`, `${…}`) with live site data.
 
 ```mdrs
 :::tip

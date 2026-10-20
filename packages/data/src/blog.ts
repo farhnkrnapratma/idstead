@@ -3,7 +3,7 @@ import type {
     PublicComment,
     PublicPostFields,
     RecentComment
-} from '@fkp/domain/blog.ts';
+} from '@idstead/domain/blog.ts';
 
 export interface PostSource {
     readonly kind: 'post-source';

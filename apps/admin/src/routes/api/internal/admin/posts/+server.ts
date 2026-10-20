@@ -1,4 +1,4 @@
-import { countReadingMinutes } from '@fkp/domain/readTime.ts';
+import { countReadingMinutes } from '@idstead/domain/readTime.ts';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
@@ -14,10 +14,10 @@ import { cleanupBlogAssets, putBanner } from '#lib/server/blogBannerStorage.ts';
 import { relocateMarkdownAssets, syncPostAssets } from '#lib/server/blogPostAssets.ts';
 import { cdnBaseUrl } from '#lib/cdn.ts';
 import { UUID_PATTERN } from '#lib/blogBanner.ts';
-import { validateDefineForSave } from '@fkp/mdrs';
+import { validateDefineForSave } from '@mdrs/core';
 import { createSupabaseMdrsResolvers } from '#lib/server/mdrsData.ts';
 import { buildPostRender } from '#lib/server/postRender.ts';
-import { createSupabaseAdminPostStores, createSupabaseNewsletterStore } from '@fkp/data';
+import { createSupabaseAdminPostStores, createSupabaseNewsletterStore } from '@idstead/data';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { queuePostEffects } from '#lib/server/postEffects.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';

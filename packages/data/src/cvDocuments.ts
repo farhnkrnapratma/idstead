@@ -1,5 +1,5 @@
-import type { ProjectRepoRules, SocialLink } from '@fkp/domain/author.ts';
-import type { OpenPgpUserId, PublicOpenPgpKey } from '@fkp/domain/openpgpKey.ts';
+import type { ProjectRepoRules, SocialLink } from '@idstead/domain/author.ts';
+import type { OpenPgpUserId, PublicOpenPgpKey } from '@idstead/domain/openpgpKey.ts';
 import type { ProfileRecord } from './adminAuthor';
 
 export interface CvSourceData {

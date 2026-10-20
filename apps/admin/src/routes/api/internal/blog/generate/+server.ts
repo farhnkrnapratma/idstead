@@ -3,7 +3,7 @@ import type { RequestHandler } from './$types';
 import { apiError } from '#lib/server/apiError.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { requireAdminAuth } from '#lib/server/adminCv.ts';
-import { extractDefineBlock } from '@fkp/mdrs';
+import { extractDefineBlock } from '@mdrs/core';
 import { isAiBindingAvailable, generateSummary, generateTldr } from '#lib/server/blogAi.ts';
 import { workerBinding } from '#lib/server/workerEnv.ts';
 

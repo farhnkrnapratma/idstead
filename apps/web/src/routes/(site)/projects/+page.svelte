@@ -18,10 +18,10 @@
         SortControl,
         createFilterSortStore,
         staggerChildren
-    } from '@fkp/ui';
-    import Tag from '@fkp/ui/components/Tag.svelte';
-    import { buttonKey } from '@fkp/ui/shortcuts.ts';
-    import { decodeHtmlEntities } from '@fkp/mdrs';
+    } from '@idstead/ui';
+    import Tag from '@idstead/ui/components/Tag.svelte';
+    import { buttonKey } from '@idstead/ui/shortcuts.ts';
+    import { decodeHtmlEntities } from '@mdrs/core';
     import FooterSection from '#app/layout/FooterSection.svelte';
     import ProjectCard from '#app/components/ProjectCard.svelte';
     import SiteMeta from '#app/components/SiteMeta.svelte';

@@ -16,15 +16,15 @@
     import { curveMonotoneX } from 'd3-shape';
 
     import { EllipsisVertical, Copy } from '@lucide/svelte';
-    import Dropdown from '@fkp/ui/components/Dropdown.svelte';
-    import { toastStore } from '@fkp/ui/stores/toastStore.svelte.ts';
+    import Dropdown from '@idstead/ui/components/Dropdown.svelte';
+    import { toastStore } from '@idstead/ui/stores/toastStore.svelte.ts';
     import {
         ADMIN_CHART_AXIS_CLASSES,
         ADMIN_CHART_PADDING,
         ADMIN_CHART_X_TICK_LABEL_PROPS,
         ADMIN_CHART_Y_TICK_LABEL_PROPS,
         ADMIN_CHART_TICK_LENGTH
-    } from '@fkp/ui/utils/chartAxisStyles.ts';
+    } from '@idstead/ui/utils/chartAxisStyles.ts';
 
     export interface ChartSpec {
         type?: 'line' | 'bar' | 'area' | 'donut' | 'pie';
@@ -409,7 +409,7 @@
 </div>
 
 <style>
-    @reference "@fkp/ui/styles/global.css";
+    @reference "@idstead/ui/styles/global.css";
 
     :global(.lc-axis-label, .lc-axis-tick-label) {
         @apply stroke-none! [stroke-width:0]!;

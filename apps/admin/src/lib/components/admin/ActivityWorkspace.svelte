@@ -23,7 +23,7 @@
     import { adminNotificationsStore as inbox } from '../../stores/adminNotificationsStore.svelte.ts';
     import { adminChartRangeStore } from '../../stores/adminChartRangeStore.svelte.ts';
     import { adminDisplayStore } from '../../stores/adminDisplayStore.svelte.ts';
-    import { pluralize } from '@fkp/domain/pluralize.ts';
+    import { pluralize } from '@idstead/domain/pluralize.ts';
     import {
         notificationTypes,
         formatCount,
@@ -43,24 +43,24 @@
         type AdminNotificationRow,
         type ClearOperation
     } from '#lib/adminActivity.ts';
-    import Section from '@fkp/ui/layout/Section.svelte';
-    import Avatar from '@fkp/ui/components/Avatar.svelte';
-    import Card from '@fkp/ui/components/Card.svelte';
-    import Button from '@fkp/ui/components/Button.svelte';
-    import Input from '@fkp/ui/components/Input.svelte';
-    import Dropdown from '@fkp/ui/components/Dropdown.svelte';
-    import Pagination from '@fkp/ui/components/Pagination.svelte';
-    import LoadingState from '@fkp/ui/components/LoadingState.svelte';
-    import ErrorState from '@fkp/ui/components/ErrorState.svelte';
-    import EmptyState from '@fkp/ui/components/EmptyState.svelte';
-    import ConfirmationDialog from '@fkp/ui/components/ConfirmationDialog.svelte';
-    import FieldMessage from '@fkp/ui/components/FieldMessage.svelte';
-    import FilterToolbar from '@fkp/ui/components/filter/FilterToolbar.svelte';
-    import SortControl from '@fkp/ui/components/filter/SortControl.svelte';
-    import SearchResultCount from '@fkp/ui/components/filter/SearchResultCount.svelte';
-    import DataTable, { type DataTableColumn } from '@fkp/ui/components/DataTable.svelte';
-    import ActionMenu from '@fkp/ui/components/ActionMenu.svelte';
-    import Badge from '@fkp/ui/components/Badge.svelte';
+    import Section from '@idstead/ui/layout/Section.svelte';
+    import Avatar from '@idstead/ui/components/Avatar.svelte';
+    import Card from '@idstead/ui/components/Card.svelte';
+    import Button from '@idstead/ui/components/Button.svelte';
+    import Input from '@idstead/ui/components/Input.svelte';
+    import Dropdown from '@idstead/ui/components/Dropdown.svelte';
+    import Pagination from '@idstead/ui/components/Pagination.svelte';
+    import LoadingState from '@idstead/ui/components/LoadingState.svelte';
+    import ErrorState from '@idstead/ui/components/ErrorState.svelte';
+    import EmptyState from '@idstead/ui/components/EmptyState.svelte';
+    import ConfirmationDialog from '@idstead/ui/components/ConfirmationDialog.svelte';
+    import FieldMessage from '@idstead/ui/components/FieldMessage.svelte';
+    import FilterToolbar from '@idstead/ui/components/filter/FilterToolbar.svelte';
+    import SortControl from '@idstead/ui/components/filter/SortControl.svelte';
+    import SearchResultCount from '@idstead/ui/components/filter/SearchResultCount.svelte';
+    import DataTable, { type DataTableColumn } from '@idstead/ui/components/DataTable.svelte';
+    import ActionMenu from '@idstead/ui/components/ActionMenu.svelte';
+    import Badge from '@idstead/ui/components/Badge.svelte';
     import ActivityRow from './ActivityRow.svelte';
     import ActivityBadge from './ActivityBadge.svelte';
     import ActivityPageLink from './ActivityPageLink.svelte';

@@ -1,7 +1,7 @@
 import { publicRepositories, serviceData } from '#lib/server/repositories.ts';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import type { AdminNotificationKind } from '@fkp/data';
+import type { AdminNotificationKind } from '@idstead/data';
 import { apiError } from '#lib/server/apiError.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { verifyTurnstileToken } from '#lib/server/turnstile.ts';

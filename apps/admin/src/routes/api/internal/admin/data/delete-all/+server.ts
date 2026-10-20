@@ -11,7 +11,7 @@ import {
     createSupabaseAdminAuthorStore,
     createSupabaseAdminPostStores,
     createSupabaseSiteDataStore
-} from '@fkp/data';
+} from '@idstead/data';
 import { bearerToken } from '#lib/server/adminAuth.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { getSupabaseUserClient } from '#lib/server/supabaseUser.ts';

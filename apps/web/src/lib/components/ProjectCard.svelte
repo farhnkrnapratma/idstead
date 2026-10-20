@@ -11,10 +11,10 @@
         SquareArrowOutUpRight,
         Star
     } from '@lucide/svelte';
-    import Button from '@fkp/ui/components/Button.svelte';
-    import ImageWithSkeleton from '@fkp/ui/components/ImageWithSkeleton.svelte';
-    import { pluralize } from '@fkp/domain/pluralize.ts';
-    import type { Project } from '@fkp/domain/types.ts';
+    import Button from '@idstead/ui/components/Button.svelte';
+    import ImageWithSkeleton from '@idstead/ui/components/ImageWithSkeleton.svelte';
+    import { pluralize } from '@idstead/domain/pluralize.ts';
+    import type { Project } from '@idstead/domain/types.ts';
 
     interface Props {
         project: Project;

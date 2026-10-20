@@ -5,10 +5,10 @@ import {
     extractHeadings,
     prefixHashLinks,
     type HeadingItem
-} from '@fkp/mdrs';
-import type { PublishedPost } from '@fkp/data';
-import { publicPostFields } from '@fkp/domain/blog.ts';
-import { estimateReadTime } from '@fkp/domain/readTime.ts';
+} from '@mdrs/core';
+import type { PublishedPost } from '@idstead/data';
+import { publicPostFields } from '@idstead/domain/blog.ts';
+import { estimateReadTime } from '@idstead/domain/readTime.ts';
 import { parsePostRender } from '#lib/server/postRender.ts';
 import { postReadTime } from '#lib/server/blogPosts.ts';
 import { publicRepositories } from '#lib/server/repositories.ts';

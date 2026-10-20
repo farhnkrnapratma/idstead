@@ -3,12 +3,12 @@ import { parseMailingCommand, type MailingAction } from '#lib/mailing.ts';
 import * as publicEnv from '$app/env/public';
 
 import { page } from '$app/state';
-import { codeBlockPrefsStore } from '@fkp/mdrs-ui/codeBlockPrefsStore.svelte.ts';
-import { refreshCodeBlockPrefs, type CodeColorScheme } from '@fkp/mdrs-ui/codeBlocks.ts';
-import { a11yStore, type FontScale } from '@fkp/ui/stores/a11yStore.svelte.ts';
-import { contentFontStore, type ContentFont } from '@fkp/ui/stores/contentFontStore.svelte.ts';
-import { themeStore } from '@fkp/ui/stores/themeStore.svelte.ts';
-import { toastStore } from '@fkp/ui/stores/toastStore.svelte.ts';
+import { codeBlockPrefsStore } from '@mdrs/dom/codeBlockPrefsStore.svelte.ts';
+import { refreshCodeBlockPrefs, type CodeColorScheme } from '@mdrs/dom/codeBlocks.ts';
+import { a11yStore, type FontScale } from '@idstead/ui/stores/a11yStore.svelte.ts';
+import { contentFontStore, type ContentFont } from '@idstead/ui/stores/contentFontStore.svelte.ts';
+import { themeStore } from '@idstead/ui/stores/themeStore.svelte.ts';
+import { toastStore } from '@idstead/ui/stores/toastStore.svelte.ts';
 import {
     Mail,
     FileText,

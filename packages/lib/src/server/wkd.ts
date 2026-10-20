@@ -1,4 +1,4 @@
-import { dearmor, wkdEmails, wkdHash, type PublicOpenPgpKey } from '@fkp/domain/openpgpKey.ts';
+import { dearmor, wkdEmails, wkdHash, type PublicOpenPgpKey } from '@idstead/domain/openpgpKey.ts';
 
 export async function wkdKey(hash: string, key: PublicOpenPgpKey | null, siteUrl: string) {
     if (!key || !/^[ybndrfg8ejkmcpqxot1uwisza345h769]{32}$/.test(hash)) return null;

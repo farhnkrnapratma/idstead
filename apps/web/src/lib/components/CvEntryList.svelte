@@ -1,6 +1,6 @@
 <script lang="ts">
     import { FileUser } from '@lucide/svelte';
-    import EmptyState from '@fkp/ui/components/EmptyState.svelte';
+    import EmptyState from '@idstead/ui/components/EmptyState.svelte';
     import type { EducationItem, ExperienceItem } from '#lib/author.ts';
     import CvEntryCard from './CvEntryCard.svelte';
     import { formatPeriod } from '../profilePageHelpers';

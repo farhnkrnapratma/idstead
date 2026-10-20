@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { DefineError } from '@fkp/mdrs';
-import { isValidPostSlug } from '@fkp/domain/slug.ts';
+import { DefineError } from '@mdrs/core';
+import { isValidPostSlug } from '@idstead/domain/slug.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { requireAdminAuth } from '#lib/server/adminCv.ts';

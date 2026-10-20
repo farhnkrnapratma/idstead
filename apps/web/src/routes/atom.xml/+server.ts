@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { readSiteProfile, validDate, publicResponse } from '#lib/server/publicMetadata.ts';
 import { publicRepositories } from '#lib/server/repositories.ts';
-import { escapeXml as xml } from '@fkp/domain/xml.ts';
+import { escapeXml as xml } from '@idstead/domain/xml.ts';
 
 export const GET: RequestHandler = async ({ request }) => {
     const [profile, latest] = await Promise.all([

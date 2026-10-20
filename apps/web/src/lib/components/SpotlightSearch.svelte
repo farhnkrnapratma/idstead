@@ -1,12 +1,12 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { Search } from '@lucide/svelte';
-    import type { Project } from '@fkp/domain/types.ts';
-    import { isTextEntryTarget } from '@fkp/ui/shortcuts.ts';
-    import { cn } from '@fkp/ui/utils/cn.ts';
+    import type { Project } from '@idstead/domain/types.ts';
+    import { isTextEntryTarget } from '@idstead/ui/shortcuts.ts';
+    import { cn } from '@idstead/ui/utils/cn.ts';
     import { spotlightStore } from '../stores/spotlightStore.svelte';
-    import ShortcutBadge from '@fkp/ui/components/ShortcutBadge.svelte';
-    import Tooltip from '@fkp/ui/components/Tooltip.svelte';
+    import ShortcutBadge from '@idstead/ui/components/ShortcutBadge.svelte';
+    import Tooltip from '@idstead/ui/components/Tooltip.svelte';
 
     interface Props {
         projects?: Project[];

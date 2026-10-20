@@ -23,7 +23,7 @@ import { avatarAssetNames, bannerAssetNames, type IdentityAsset } from '#lib/sit
 import { logActivity } from '#lib/server/activityLog.ts';
 import { workerBinding, type RateLimit } from '#lib/server/workerEnv.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
-import { createSupabaseAdminAuthorStore, type AdminAuthorStore } from '@fkp/data';
+import { createSupabaseAdminAuthorStore, type AdminAuthorStore } from '@idstead/data';
 
 const attempts = new Map<string, number>();
 

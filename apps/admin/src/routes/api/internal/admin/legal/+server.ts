@@ -12,7 +12,7 @@ import {
     createSupabaseLegalPageRepository,
     createSupabaseLegalPageWriter,
     type LegalSlug
-} from '@fkp/data';
+} from '@idstead/data';
 
 const SLUGS: LegalSlug[] = ['privacy', 'security', 'terms'];
 const MAX_TITLE_LENGTH = 200;

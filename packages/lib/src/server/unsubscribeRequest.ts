@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import type { SubscriberRepository } from '@fkp/data';
+import type { SubscriberRepository } from '@idstead/data';
 import { apiError } from './apiError';
 import { isSameOriginRequest } from './sameOrigin';
 import { mailingEmailError } from '../mailing';

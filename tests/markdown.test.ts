@@ -4,9 +4,9 @@ let render: (markdown: string) => Promise<string>;
 let getDownloadFilename: (className: string, filename?: string) => string;
 
 beforeAll(async () => {
-    const markdown = await import('../packages/mdrs/src/markdown');
+    const markdown = await import('../packages/mdrs-core/src/markdown');
     render = markdownSource => markdown.renderMarkdown(markdownSource);
-    getDownloadFilename = (await import('../packages/mdrs-ui/src/codeBlockExtensions'))
+    getDownloadFilename = (await import('../packages/mdrs-dom/src/codeBlockExtensions'))
         .getDownloadFilename;
 });
 
@@ -355,7 +355,7 @@ describe('icon resolution', () => {
     let resolve: (value: string) => Promise<string>;
 
     beforeAll(async () => {
-        resolve = (await import('../packages/mdrs/src/icons')).resolveIconMarkup;
+        resolve = (await import('../packages/mdrs-core/src/icons')).resolveIconMarkup;
     });
 
     test('lucide wins when the name exists in both libraries', async () => {
@@ -501,7 +501,7 @@ describe('plain text export', () => {
     let toText: (markdown: string) => string;
 
     beforeAll(async () => {
-        toText = (await import('../packages/mdrs/src/plainText')).markdownToPlainText;
+        toText = (await import('../packages/mdrs-core/src/plainText')).markdownToPlainText;
     });
 
     test('fences with the new info string keep their body intact', () => {
@@ -532,7 +532,7 @@ describe('plain text export', () => {
 
 describe('headings with math', () => {
     test('inline math in a heading yields a clean id and toc text', async () => {
-        const { prepareMarkdownPage } = await import('../packages/mdrs/src/markdown');
+        const { prepareMarkdownPage } = await import('../packages/mdrs-core/src/markdown');
         const { html, headings } = await prepareMarkdownPage('## Title $$ x^2 $$\n\ntext');
         expect(html).toContain('id="mdrs-title-x2"');
         expect(headings).toEqual([{ id: 'mdrs-title-x2', text: 'Title x^2', level: 2 }]);
@@ -679,14 +679,14 @@ describe('drop-in compatibility', () => {
     });
 
     test('a punctuation-only heading gets a fallback id', async () => {
-        const { prepareMarkdownPage } = await import('../packages/mdrs/src/markdown');
+        const { prepareMarkdownPage } = await import('../packages/mdrs-core/src/markdown');
         const { html } = await prepareMarkdownPage('## !!!\n\n## Main');
         expect(html).toContain('id="mdrs-heading-0"');
         expect(html).toContain('id="mdrs-main"');
     });
 
     test('same-document links follow the prefixed heading ids', async () => {
-        const { prepareMarkdownPage } = await import('../packages/mdrs/src/markdown');
+        const { prepareMarkdownPage } = await import('../packages/mdrs-core/src/markdown');
         const { html } = await prepareMarkdownPage('## Setup\n\nSee [setup](#setup).');
         expect(html).toContain('href="#mdrs-setup"');
     });

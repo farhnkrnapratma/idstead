@@ -2,28 +2,34 @@
     import { createFeedbackClient } from '../feedbackClient.svelte.ts';
     import { tick, onMount, onDestroy } from 'svelte';
     import { fade } from 'svelte/transition';
-    import { refreshCodeBlockPrefs } from '@fkp/mdrs-ui/codeBlocks.ts';
-    import { codeBlockPrefsStore } from '@fkp/mdrs-ui/codeBlockPrefsStore.svelte.ts';
+    import { refreshCodeBlockPrefs } from '@mdrs/dom/codeBlocks.ts';
+    import { codeBlockPrefsStore } from '@mdrs/dom/codeBlockPrefsStore.svelte.ts';
     import TopNav from './TopNav.svelte';
     import TableOfContents from './TableOfContents.svelte';
     import HelpfulBlock from '../article/HelpfulBlock.svelte';
     import ContentActions from './ContentActions.svelte';
     import FooterSection from '../layout/FooterSection.svelte';
     import FeedbackButton from './FeedbackButton.svelte';
-    import { Toast, PageMain, SkipLink, ScrollToTopButton, ReadingModeExitButton } from '@fkp/ui';
+    import {
+        Toast,
+        PageMain,
+        SkipLink,
+        ScrollToTopButton,
+        ReadingModeExitButton
+    } from '@idstead/ui';
     import ArticleHeader from '../article/ArticleHeader.svelte';
     import ArticleMeta from '#lib/article/ArticleMeta.svelte';
-    import { toastStore } from '@fkp/ui/stores/toastStore.svelte.ts';
-    import { readingModeStore } from '@fkp/ui/stores/readingModeStore.svelte.ts';
-    import type { HeadingItem } from '@fkp/mdrs';
-    import { formatReadTime } from '@fkp/domain/formatters.ts';
-    import { countReadingMinutes } from '@fkp/domain/readTime.ts';
-    import { enhanceMarkdownContent } from '@fkp/mdrs-ui/enhance.ts';
-    import { enhanceHeadingAnchors, resolveMdrsHash } from '@fkp/mdrs-ui/headingAnchors.ts';
-    import { highlightAfterScroll } from '@fkp/ui/utils/scroll.ts';
+    import { toastStore } from '@idstead/ui/stores/toastStore.svelte.ts';
+    import { readingModeStore } from '@idstead/ui/stores/readingModeStore.svelte.ts';
+    import type { HeadingItem } from '@mdrs/core';
+    import { formatReadTime } from '@idstead/domain/formatters.ts';
+    import { countReadingMinutes } from '@idstead/domain/readTime.ts';
+    import { enhanceMarkdownContent } from '@mdrs/dom/enhance.ts';
+    import { enhanceHeadingAnchors, resolveMdrsHash } from '@mdrs/dom/headingAnchors.ts';
+    import { highlightAfterScroll } from '@idstead/ui/utils/scroll.ts';
     import hljs from 'highlight.js';
     import 'katex/dist/katex.min.css';
-    import { contentFontStore } from '@fkp/ui/stores/contentFontStore.svelte.ts';
+    import { contentFontStore } from '@idstead/ui/stores/contentFontStore.svelte.ts';
     import { pushState, goto } from '$app/navigation';
     import { page } from '$app/state';
 

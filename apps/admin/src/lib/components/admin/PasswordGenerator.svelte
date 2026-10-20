@@ -8,7 +8,7 @@
         FieldMessage,
         IconButton,
         toastStore
-    } from '@fkp/ui';
+    } from '@idstead/ui';
     import {
         DEFAULT_RANDOM_PASSWORD,
         DEFAULT_MEMORABLE_PASSWORD,

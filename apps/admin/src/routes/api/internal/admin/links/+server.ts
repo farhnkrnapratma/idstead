@@ -8,7 +8,7 @@ import { requireAdminAuth } from '#lib/server/adminCv.ts';
 import { bearerToken } from '#lib/server/adminAuth.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
-import { createSupabaseAdminAuthorStore, createSupabaseAuthorWriter } from '@fkp/data';
+import { createSupabaseAdminAuthorStore, createSupabaseAuthorWriter } from '@idstead/data';
 
 const CATEGORIES = ['social', 'funding', 'contact'] as const;
 

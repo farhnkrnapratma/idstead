@@ -1,10 +1,10 @@
 <script lang="ts">
     import { Download } from '@lucide/svelte';
-    import Dialog from '@fkp/ui/components/Dialog.svelte';
-    import Button from '@fkp/ui/components/Button.svelte';
-    import ErrorState from '@fkp/ui/components/ErrorState.svelte';
-    import LoadingState from '@fkp/ui/components/LoadingState.svelte';
-    import { toastStore } from '@fkp/ui/stores/toastStore.svelte.ts';
+    import Dialog from '@idstead/ui/components/Dialog.svelte';
+    import Button from '@idstead/ui/components/Button.svelte';
+    import ErrorState from '@idstead/ui/components/ErrorState.svelte';
+    import LoadingState from '@idstead/ui/components/LoadingState.svelte';
+    import { toastStore } from '@idstead/ui/stores/toastStore.svelte.ts';
     import { renderQrSvg } from '../qrSvg';
 
     import { page } from '$app/state';

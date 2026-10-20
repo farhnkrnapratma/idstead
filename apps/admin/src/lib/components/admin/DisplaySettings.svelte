@@ -10,13 +10,13 @@
         isRelativeTimestamp
     } from '#lib/adminDateFormat.ts';
     import { adminDisplayStore } from '../../stores/adminDisplayStore.svelte.ts';
-    import { themeStore } from '@fkp/ui/stores/themeStore.svelte.ts';
-    import { formatRelativeTime } from '@fkp/domain/formatters.ts';
+    import { themeStore } from '@idstead/ui/stores/themeStore.svelte.ts';
+    import { formatRelativeTime } from '@idstead/domain/formatters.ts';
     import { CalendarClock, Moon, RotateCcwClock, Sparkles, Sun, SunMoon } from '@lucide/svelte';
-    import Button from '@fkp/ui/components/Button.svelte';
-    import Card from '@fkp/ui/components/Card.svelte';
-    import Dropdown from '@fkp/ui/components/Dropdown.svelte';
-    import FormSection from '@fkp/ui/layout/FormSection.svelte';
+    import Button from '@idstead/ui/components/Button.svelte';
+    import Card from '@idstead/ui/components/Card.svelte';
+    import Dropdown from '@idstead/ui/components/Dropdown.svelte';
+    import FormSection from '@idstead/ui/layout/FormSection.svelte';
 
     const HOUR_MS = 60 * 60 * 1000;
     const themes = [

@@ -1,20 +1,20 @@
 <script lang="ts">
     import { onDestroy } from 'svelte';
-    import { FieldValidation } from '@fkp/domain/fieldValidation.ts';
+    import { FieldValidation } from '@idstead/domain/fieldValidation.ts';
     import { Circle, CircleDot } from '@lucide/svelte';
-    import Dialog from '@fkp/ui/components/Dialog.svelte';
-    import Button from '@fkp/ui/components/Button.svelte';
-    import FormField from '@fkp/ui/components/FormField.svelte';
-    import Textarea from '@fkp/ui/components/Textarea.svelte';
+    import Dialog from '@idstead/ui/components/Dialog.svelte';
+    import Button from '@idstead/ui/components/Button.svelte';
+    import FormField from '@idstead/ui/components/FormField.svelte';
+    import Textarea from '@idstead/ui/components/Textarea.svelte';
     import {
         turnstileWidget,
         executeTurnstile,
         resetTurnstile,
         turnstileSiteKey
     } from '#lib/utils/turnstile.ts';
-    import { toastStore } from '@fkp/ui/stores/toastStore.svelte.ts';
-    import { cn } from '@fkp/ui/utils/cn.ts';
-    import { shortcut } from '@fkp/ui/utils/shortcut.svelte.ts';
+    import { toastStore } from '@idstead/ui/stores/toastStore.svelte.ts';
+    import { cn } from '@idstead/ui/utils/cn.ts';
+    import { shortcut } from '@idstead/ui/utils/shortcut.svelte.ts';
     import {
         REPORT_REASONS,
         reportReasonColor,

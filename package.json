@@ -1,5 +1,5 @@
 {
-    "name": "fkp",
+    "name": "idstead",
     "version": "0.0.1",
     "private": true,
     "license": "MIT",
@@ -9,9 +9,9 @@
         "packages/*"
     ],
     "scripts": {
-        "dev": "bun run --filter @fkp/web dev",
-        "dev:production": "bun run --filter @fkp/web dev:production",
-        "dev:admin": "bun run --filter @fkp/admin dev",
+        "dev": "bun run --filter @idstead/web dev",
+        "dev:production": "bun run --filter @idstead/web dev:production",
+        "dev:admin": "bun run --filter @idstead/admin dev",
         "build": "bun run --filter './apps/*' build",
         "check": "bun run --filter './apps/*' --filter './packages/*' check",
         "test": "bun test tests",

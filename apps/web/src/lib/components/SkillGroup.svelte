@@ -1,7 +1,7 @@
 <script lang="ts">
-    import Tag from '@fkp/ui/components/Tag.svelte';
-    import { cn } from '@fkp/ui/utils/cn.ts';
-    import { decodeHtmlEntities } from '@fkp/mdrs';
+    import Tag from '@idstead/ui/components/Tag.svelte';
+    import { cn } from '@idstead/ui/utils/cn.ts';
+    import { decodeHtmlEntities } from '@mdrs/core';
 
     interface Props {
         category: string;

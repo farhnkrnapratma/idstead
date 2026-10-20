@@ -50,7 +50,7 @@ const cases = markdownFiles(docsRoot).flatMap(file =>
 let render: (markdown: string) => Promise<string>;
 
 beforeAll(async () => {
-    const markdown = await import('../packages/mdrs/src/markdown');
+    const markdown = await import('../packages/mdrs-core/src/markdown');
     render = source => markdown.renderMarkdown(source);
 });
 

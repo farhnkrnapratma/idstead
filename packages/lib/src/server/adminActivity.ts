@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { createSupabaseAdminActivityStore } from '@fkp/data';
+import { createSupabaseAdminActivityStore } from '@idstead/data';
 import { blogAdmin } from './blogPostAuth';
 import { ActivityInputError, activityJson, activityTarget, activityUuid } from './activityInput';
 import { apiError } from './apiError';

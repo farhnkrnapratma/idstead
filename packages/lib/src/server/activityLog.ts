@@ -1,5 +1,5 @@
-import { hashIp } from '@fkp/domain/hash.ts';
-import { createSupabaseActivityLog } from '@fkp/data';
+import { hashIp } from '@idstead/domain/hash.ts';
+import { createSupabaseActivityLog } from '@idstead/data';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export type ActivityCategory = 'profile' | 'cv' | 'skills' | 'links' | 'blog' | 'auth' | 'security';

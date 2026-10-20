@@ -56,4 +56,4 @@ These two mistakes make the render fail; the editor preview shows the message in
 | Two `:::references` blocks | `Use only one references block per document.` |
 | The block is never closed  | `Close the references block with :::.`        |
 
-Source: `packages/mdrs/src/references.ts` (`extractReferences`, `placeReferences`), `packages/editor/src/`.
+Source: `packages/mdrs-core/src/references.ts` (`extractReferences`, `placeReferences`), `packages/mdrs-editor/src/`.

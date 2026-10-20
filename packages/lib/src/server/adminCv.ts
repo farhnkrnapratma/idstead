@@ -19,7 +19,7 @@ import {
     createSupabaseOpenPgpKeyStore,
     type CvDocumentStore,
     type StoredCvDocument
-} from '@fkp/data';
+} from '@idstead/data';
 import {
     cvSnapshot,
     cvVersionBump,
@@ -39,7 +39,7 @@ import {
 } from '#lib/server/cvChecksums.ts';
 import { buildCvBundle } from '#lib/server/cvBundle.ts';
 import { cvBundleFilename } from '#lib/cvVerification.ts';
-import { safeKeyserverUrl } from '@fkp/domain/openpgpKey.ts';
+import { safeKeyserverUrl } from '@idstead/domain/openpgpKey.ts';
 import {
     OPENPGP_KEY_LIMIT,
     OpenPgpError,
@@ -51,7 +51,7 @@ import {
 } from '#lib/server/openpgp.ts';
 import { ipSalt } from './ipSalt';
 import { apiError } from './apiError';
-import { decodeHtmlEntities } from '@fkp/mdrs';
+import { decodeHtmlEntities } from '@mdrs/core';
 import { deleteObjects, findAssetBucket } from './r2';
 
 const CV_PROJECT_LIMIT = 4;

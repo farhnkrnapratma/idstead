@@ -1,7 +1,7 @@
 <script lang="ts">
     import { Layers } from '@lucide/svelte';
-    import { EmptyState, PageContainer, PageMain, Section, SectionHeader } from '@fkp/ui';
-    import { argKey } from '@fkp/ui/shortcuts.ts';
+    import { EmptyState, PageContainer, PageMain, Section, SectionHeader } from '@idstead/ui';
+    import { argKey } from '@idstead/ui/shortcuts.ts';
     import FooterSection from '#app/layout/FooterSection.svelte';
     import CvDownloadMenu from '#app/components/CvDownloadMenu.svelte';
     import CvEntryList from '#app/components/CvEntryList.svelte';

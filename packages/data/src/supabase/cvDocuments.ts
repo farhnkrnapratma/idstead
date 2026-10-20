@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { socialLinkFromRow } from '@fkp/domain/author.ts';
+import { socialLinkFromRow } from '@idstead/domain/author.ts';
 import type {
     CvDocumentStore,
     CvSourceData,

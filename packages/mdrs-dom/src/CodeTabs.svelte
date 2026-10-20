@@ -1,7 +1,7 @@
 <script lang="ts">
     import { Copy, CopyCheck, Download } from '@lucide/svelte';
-    import { cn } from '@fkp/ui/utils/cn.ts';
-    import { copyText, downloadUrl } from '@fkp/ui/utils/fileActions.ts';
+    import { cn } from '@idstead/ui/utils/cn.ts';
+    import { copyText, downloadUrl } from '@idstead/ui/utils/fileActions.ts';
     import { bindCodeTheme, CODE_ICON_BUTTON_CLASS } from './codeBlocks';
     import { createCodeScrollbar } from './codeScrollbar';
     import { getTabPreference, onTabPreference, setTabPreference } from './tabs';

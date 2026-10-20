@@ -7,7 +7,7 @@ import {
     skillItemFromRow,
     socialLinkFromRow,
     type ProjectRepoRules
-} from '@fkp/domain/author.ts';
+} from '@idstead/domain/author.ts';
 import type {
     AdminAuthorSnapshot,
     AdminAuthorStore,

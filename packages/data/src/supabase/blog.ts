@@ -1,13 +1,13 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { bannerUrl } from '@fkp/domain/blogAssets.ts';
-import { parsePostReference } from '@fkp/domain/postReference.ts';
-import { isValidPostSlug } from '@fkp/domain/slug.ts';
+import { bannerUrl } from '@idstead/domain/blogAssets.ts';
+import { parsePostReference } from '@idstead/domain/postReference.ts';
+import { isValidPostSlug } from '@idstead/domain/slug.ts';
 import {
     publicCommentAuthor,
     type PostStats,
     type PublicComment,
     type RecentComment
-} from '@fkp/domain/blog.ts';
+} from '@idstead/domain/blog.ts';
 import type {
     BlogRepository,
     CommentRepository,

@@ -1,12 +1,12 @@
 <script lang="ts">
     import type { Snippet } from 'svelte';
     import { AudioLines, BadgeCheck, BriefcaseBusiness, MapPin, QrCode } from '@lucide/svelte';
-    import type { ImageSource } from '@fkp/ui/types.ts';
-    import { cn } from '@fkp/ui/utils/cn.ts';
+    import type { ImageSource } from '@idstead/ui/types.ts';
+    import { cn } from '@idstead/ui/utils/cn.ts';
 
     import BrandIcon from '#lib/components/BrandIcon.svelte';
-    import IconButton from '@fkp/ui/components/IconButton.svelte';
-    import ImageWithSkeleton from '@fkp/ui/components/ImageWithSkeleton.svelte';
+    import IconButton from '@idstead/ui/components/IconButton.svelte';
+    import ImageWithSkeleton from '@idstead/ui/components/ImageWithSkeleton.svelte';
 
     interface SocialLink {
         url: string;

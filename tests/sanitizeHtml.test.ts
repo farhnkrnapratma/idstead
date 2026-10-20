@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'bun:test';
-import { sanitizeHtml } from '../packages/mdrs/src/sanitize';
-import { renderMarkdown, renderMarkdownUnsafe } from '../packages/mdrs/src/markdown';
+import { sanitizeHtml } from '../packages/mdrs-core/src/sanitize';
+import { renderMarkdown, renderMarkdownUnsafe } from '../packages/mdrs-core/src/markdown';
 
 describe('sanitizeHtml: hostile input', () => {
     test.each([

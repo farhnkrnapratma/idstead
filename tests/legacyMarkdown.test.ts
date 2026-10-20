@@ -3,8 +3,8 @@ import { describe, expect, test } from 'bun:test';
 import {
     convertLegacyMarkdown as convert,
     convertLegacyMarkdownWithNotes
-} from '../packages/mdrs/src/legacy';
-import { renderMarkdown } from '../packages/mdrs/src/markdown';
+} from '../packages/mdrs-core/src/legacy';
+import { renderMarkdown } from '../packages/mdrs-core/src/markdown';
 
 describe('alerts', () => {
     test('multi-line and single-line alerts become directives', () => {

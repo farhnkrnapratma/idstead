@@ -1,1 +1,1 @@
-export * from '@fkp/domain/author.ts';
+export * from '@idstead/domain/author.ts';

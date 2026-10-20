@@ -1,15 +1,15 @@
 <script lang="ts">
     import SpotlightSearch from './SpotlightSearch.svelte';
-    import ThemeSelect from '@fkp/ui/components/filter/ThemeSelect.svelte';
-    import ContentFontSelect from '@fkp/ui/components/filter/ContentFontSelect.svelte';
-    import AccessibilitySelect from '@fkp/ui/components/filter/AccessibilitySelect.svelte';
-    import ReadingOptionsMenu from '@fkp/ui/components/filter/ReadingOptionsMenu.svelte';
-    import IconButton from '@fkp/ui/components/IconButton.svelte';
-    import { shortcut } from '@fkp/ui/utils/shortcut.svelte.ts';
-    import { buttonKey } from '@fkp/ui/shortcuts.ts';
-    import { themeStore } from '@fkp/ui/stores/themeStore.svelte.ts';
+    import ThemeSelect from '@idstead/ui/components/filter/ThemeSelect.svelte';
+    import ContentFontSelect from '@idstead/ui/components/filter/ContentFontSelect.svelte';
+    import AccessibilitySelect from '@idstead/ui/components/filter/AccessibilitySelect.svelte';
+    import ReadingOptionsMenu from '@idstead/ui/components/filter/ReadingOptionsMenu.svelte';
+    import IconButton from '@idstead/ui/components/IconButton.svelte';
+    import { shortcut } from '@idstead/ui/utils/shortcut.svelte.ts';
+    import { buttonKey } from '@idstead/ui/shortcuts.ts';
+    import { themeStore } from '@idstead/ui/stores/themeStore.svelte.ts';
     import { ArrowLeft, BookOpenText } from '@lucide/svelte';
-    import type { Project } from '@fkp/domain/types.ts';
+    import type { Project } from '@idstead/domain/types.ts';
 
     interface Props {
         ariaLabel: string;

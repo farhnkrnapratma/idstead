@@ -1,9 +1,9 @@
 <script lang="ts">
     import { Calendar, MapPin, BuildingComplex } from '@lucide/svelte';
-    import Tag from '@fkp/ui/components/Tag.svelte';
-    import TagGroup from '@fkp/ui/components/TagGroup.svelte';
-    import { cn } from '@fkp/ui/utils/cn.ts';
-    import { decodeHtmlEntities } from '@fkp/mdrs';
+    import Tag from '@idstead/ui/components/Tag.svelte';
+    import TagGroup from '@idstead/ui/components/TagGroup.svelte';
+    import { cn } from '@idstead/ui/utils/cn.ts';
+    import { decodeHtmlEntities } from '@mdrs/core';
 
     interface Props {
         role: string;

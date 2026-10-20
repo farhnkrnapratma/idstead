@@ -1,5 +1,5 @@
 <script lang="ts">
-    import Tag from '@fkp/ui/components/Tag.svelte';
+    import Tag from '@idstead/ui/components/Tag.svelte';
     import { COMMENTS_PAGE_SIZE, commentAuthorName } from '#lib/commentAuthor.ts';
     import { blogBannerAlt } from '#lib/blogBanner.ts';
     import { adminUrl, navigateAdmin } from '#app/adminNavigation.ts';
@@ -11,7 +11,7 @@
         recallPostSave,
         PostSaveError
     } from '#app/postSaveClient.ts';
-    import { FieldValidation, requiredText, emailError } from '@fkp/domain/fieldValidation.ts';
+    import { FieldValidation, requiredText, emailError } from '@idstead/domain/fieldValidation.ts';
     import { mdrsContent } from '#app/mdrsValidation.ts';
     import { renderMdrsPreview } from '#app/mdrsPreview.ts';
     import { avatarSource, siteBannerSource } from '#lib/siteIdentity.ts';
@@ -102,7 +102,7 @@
     import { startAdminSettingsSync } from '#app/stores/adminSettingsSync.svelte.ts';
     import { adminActivityRequest } from '#app/adminActivityClient.ts';
     import { adminRequest } from '#app/adminClient.ts';
-    import type { AdminAuthorSnapshot, IdentityVersionMeta, LegalPage } from '@fkp/data';
+    import type { AdminAuthorSnapshot, IdentityVersionMeta, LegalPage } from '@idstead/data';
     import {
         ADMIN_WORKSPACE_PAGE_SIZE,
         type WorkspaceArea,
@@ -112,7 +112,7 @@
         lockScroll,
         preferredScrollBehavior,
         whenScrollSettles
-    } from '@fkp/ui/utils/scroll.ts';
+    } from '@idstead/ui/utils/scroll.ts';
     import { adminNotificationsStore } from '#app/stores/adminNotificationsStore.svelte.ts';
 
     const loadActivityWorkspace = () => import('#app/components/admin/ActivityWorkspace.svelte');
@@ -120,8 +120,8 @@
         import('#app/components/admin/ActivityLogWorkspace.svelte');
     const loadAccountSettings = () => import('#app/components/admin/AccountSettings.svelte');
     const loadPostEditor = () => import('#app/components/admin/PostEditor.svelte');
-    const loadMarkdownEditor = () => import('@fkp/editor');
-    import { formatBadgeCount } from '@fkp/domain/formatters.ts';
+    const loadMarkdownEditor = () => import('@mdrs/editor');
+    import { formatBadgeCount } from '@idstead/domain/formatters.ts';
     import {
         Button,
         Badge,
@@ -156,15 +156,15 @@
         splitEscapedCommas,
         FileUploadField,
         IconButton
-    } from '@fkp/ui';
+    } from '@idstead/ui';
     import { BrandIcon, CommentThread } from '#lib/index.ts';
-    import CodeTabs from '@fkp/mdrs-ui/CodeTabs.svelte';
-    import { formatReadTime, sanitizeInput } from '@fkp/domain';
-    import { decodeHtmlEntities } from '@fkp/mdrs';
-    import ActionMenu from '@fkp/ui/components/ActionMenu.svelte';
+    import CodeTabs from '@mdrs/dom/CodeTabs.svelte';
+    import { formatReadTime, sanitizeInput } from '@idstead/domain';
+    import { decodeHtmlEntities } from '@mdrs/core';
+    import ActionMenu from '@idstead/ui/components/ActionMenu.svelte';
     import ArticleMeta from '#lib/article/ArticleMeta.svelte';
 
-    import { themeStore } from '@fkp/ui/stores/themeStore.svelte.ts';
+    import { themeStore } from '@idstead/ui/stores/themeStore.svelte.ts';
     import {
         normalizeIconInput,
         type AuthorProfile,
@@ -177,7 +177,7 @@
         type CvDocument
     } from '#lib/author.ts';
     import { CV_CHECKSUM_ALGORITHMS, cvFileUrl } from '#lib/cvVerification.ts';
-    import { copyText, downloadUrl as downloadFrom } from '@fkp/ui/utils/fileActions.ts';
+    import { copyText, downloadUrl as downloadFrom } from '@idstead/ui/utils/fileActions.ts';
     import {
         KEYSERVER_PRESETS,
         formatFingerprint,
@@ -185,7 +185,7 @@
         wkdEmails,
         type OpenPgpKeyserver,
         type PublicOpenPgpKey
-    } from '@fkp/domain/openpgpKey.ts';
+    } from '@idstead/domain/openpgpKey.ts';
 
     const publicSiteUrl = $derived(
         ((page.data as { author?: { siteUrl?: string } })?.author?.siteUrl ?? '').replace(/\/$/, '')

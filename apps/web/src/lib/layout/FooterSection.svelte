@@ -1,18 +1,18 @@
 <script lang="ts">
-    import { buttonKey, sectionCommandKey } from '@fkp/ui/shortcuts.ts';
-    import { shortcut } from '@fkp/ui/utils/shortcut.svelte.ts';
-    import { cn } from '@fkp/ui/utils/cn.ts';
+    import { buttonKey, sectionCommandKey } from '@idstead/ui/shortcuts.ts';
+    import { shortcut } from '@idstead/ui/utils/shortcut.svelte.ts';
+    import { cn } from '@idstead/ui/utils/cn.ts';
     import SpotlightSearch from '../components/SpotlightSearch.svelte';
-    import ThemeSelect from '@fkp/ui/components/filter/ThemeSelect.svelte';
-    import ContentFontSelect from '@fkp/ui/components/filter/ContentFontSelect.svelte';
-    import AccessibilitySelect from '@fkp/ui/components/filter/AccessibilitySelect.svelte';
-    import IconButton from '@fkp/ui/components/IconButton.svelte';
-    import { themeStore } from '@fkp/ui/stores/themeStore.svelte.ts';
+    import ThemeSelect from '@idstead/ui/components/filter/ThemeSelect.svelte';
+    import ContentFontSelect from '@idstead/ui/components/filter/ContentFontSelect.svelte';
+    import AccessibilitySelect from '@idstead/ui/components/filter/AccessibilitySelect.svelte';
+    import IconButton from '@idstead/ui/components/IconButton.svelte';
+    import { themeStore } from '@idstead/ui/stores/themeStore.svelte.ts';
     import { type SocialLink } from '#lib/author.ts';
     import BrandIcon from '#lib/components/BrandIcon.svelte';
     import FooterSiteLink from './FooterSiteLink.svelte';
     import { FOOTER_SITE_LINKS } from './footerLinks';
-    import StatusBadge from '@fkp/ui/components/StatusBadge.svelte';
+    import StatusBadge from '@idstead/ui/components/StatusBadge.svelte';
     import { BookOpenText } from '@lucide/svelte';
 
     import { page } from '$app/state';
@@ -208,7 +208,7 @@
 </footer>
 
 <style>
-    @reference '@fkp/ui/styles/global.css';
+    @reference '@idstead/ui/styles/global.css';
 
     footer {
         @apply font-sans text-xs leading-normal font-normal not-italic;

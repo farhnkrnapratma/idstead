@@ -1,4 +1,4 @@
-import { DefineError, renderMarkdown } from '@fkp/mdrs';
+import { DefineError, renderMarkdown } from '@mdrs/core';
 import { createMdrsResolvers } from '#lib/mdrsResolvers.ts';
 import { supabase } from '#lib/supabase.ts';
 

@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { publicCommentAuthor, type PostStats, type PublicComment } from '@fkp/domain/blog.ts';
-import type { PublishedPost, Repositories } from '@fkp/data';
-import { markdownToPlainText } from '@fkp/mdrs';
+import { publicCommentAuthor, type PostStats, type PublicComment } from '@idstead/domain/blog.ts';
+import type { PublishedPost, Repositories } from '@idstead/data';
+import { markdownToPlainText } from '@mdrs/core';
 import { ApiRequestError, parseApiParams, parsePositiveInt, resolveOutput } from './params';
 import { jsonResponse, textResponse } from './responses';
 

@@ -1,7 +1,7 @@
 <script lang="ts">
     import { page } from '$app/state';
     import { House, MessageSquareWarning } from '@lucide/svelte';
-    import { Button, SkipLink, ErrorState } from '@fkp/ui';
+    import { Button, SkipLink, ErrorState } from '@idstead/ui';
     import FooterLegalRow from '#app/layout/FooterLegalRow.svelte';
 
     let pageAuthor = $derived((page?.data as any)?.author);

@@ -14,7 +14,7 @@ import {
 import { processAvatar } from './processAvatar';
 import { processSiteBanner, type SiteBannerOutput } from './processSiteBanner';
 import type { ImagePackage } from '#lib/siteIdentity.ts';
-import { themeToken } from '@fkp/ui/themeColors.ts';
+import { themeToken } from '@idstead/ui/themeColors.ts';
 
 const fontFamilies: Record<BannerFont, string> = {
     sans: "'iA Writer Quattro', 'Noto Sans Variable', sans-serif",

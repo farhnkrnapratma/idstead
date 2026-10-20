@@ -1,7 +1,7 @@
 <script lang="ts">
-    import { cn } from '@fkp/ui/utils/cn.ts';
-    import { buttonKey } from '@fkp/ui/shortcuts.ts';
-    import { shortcut } from '@fkp/ui/utils/shortcut.svelte.ts';
+    import { cn } from '@idstead/ui/utils/cn.ts';
+    import { buttonKey } from '@idstead/ui/shortcuts.ts';
+    import { shortcut } from '@idstead/ui/utils/shortcut.svelte.ts';
     import { consentStore } from '../stores/consentStore.svelte';
     import type { FooterSiteLinkItem } from './footerLinks';
 

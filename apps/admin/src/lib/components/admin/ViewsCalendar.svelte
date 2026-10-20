@@ -10,9 +10,9 @@
     } from '#lib/adminWorkspace.ts';
     import { formatAdminDate } from '#lib/adminDateFormat.ts';
     import { adminDisplayStore } from '../../stores/adminDisplayStore.svelte.ts';
-    import { pluralize } from '@fkp/domain/pluralize.ts';
-    import IconButton from '@fkp/ui/components/IconButton.svelte';
-    import EmptyState from '@fkp/ui/components/EmptyState.svelte';
+    import { pluralize } from '@idstead/domain/pluralize.ts';
+    import IconButton from '@idstead/ui/components/IconButton.svelte';
+    import EmptyState from '@idstead/ui/components/EmptyState.svelte';
     let {
         data,
         onPrevYear,

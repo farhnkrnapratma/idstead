@@ -1,5 +1,5 @@
 import type { RouteId } from '$app/types';
-import type { Section } from '@fkp/domain/types.ts';
+import type { Section } from '@idstead/domain/types.ts';
 
 export interface SiteSection {
     id: Section;

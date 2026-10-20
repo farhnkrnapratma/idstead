@@ -7,7 +7,7 @@ import {
     validDate,
     publicResponse
 } from '#lib/server/publicMetadata.ts';
-import { escapeXml as xml } from '@fkp/domain/xml.ts';
+import { escapeXml as xml } from '@idstead/domain/xml.ts';
 
 export const GET: RequestHandler = async ({ request, fetch }) => {
     const [profile, posts, legal] = await Promise.all([

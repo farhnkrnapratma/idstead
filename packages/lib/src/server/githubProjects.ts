@@ -1,5 +1,5 @@
 import * as privateEnv from '$app/env/private';
-import type { Project } from '@fkp/domain/types.ts';
+import type { Project } from '@idstead/domain/types.ts';
 import { getLanguageColor } from '#lib/utils/githubLanguageColors.ts';
 
 interface GitHubRepo {

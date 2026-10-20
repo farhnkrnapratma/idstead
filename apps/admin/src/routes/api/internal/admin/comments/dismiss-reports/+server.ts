@@ -4,7 +4,7 @@ import { requireAdminAuth } from '#lib/server/adminCv.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { apiError } from '#lib/server/apiError.ts';
-import { createSupabaseAdminActivityStore } from '@fkp/data';
+import { createSupabaseAdminActivityStore } from '@idstead/data';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

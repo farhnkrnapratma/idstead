@@ -4,8 +4,8 @@ import {
     createSupabaseActivityLog,
     createSupabaseAdminAuthorStore,
     createSupabaseSiteDataStore
-} from '@fkp/data';
-import { skillGroupFromItem } from '@fkp/domain/author.ts';
+} from '@idstead/data';
+import { skillGroupFromItem } from '@idstead/domain/author.ts';
 import { DEFAULT_ADMIN_DISPLAY } from '#lib/adminDateFormat.ts';
 import { DEFAULT_CHART_RANGE, parseAdminSettings } from '#lib/adminSettings.ts';
 import { findAssetBucket, readObjectBytes } from './r2';

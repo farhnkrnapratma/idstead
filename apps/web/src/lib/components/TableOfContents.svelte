@@ -1,13 +1,13 @@
 <script lang="ts">
     import { pushState } from '$app/navigation';
-    import { sanitizeHtml } from '@fkp/mdrs';
+    import { sanitizeHtml } from '@mdrs/core';
     import { onMount } from 'svelte';
     import {
         TableOfContents as TableOfContentsIcon,
         ChevronsUpDown,
         ChevronsDownUp
     } from '@lucide/svelte';
-    import { cn } from '@fkp/ui/utils/cn.ts';
+    import { cn } from '@idstead/ui/utils/cn.ts';
 
     interface HeadingItem {
         id: string;
@@ -330,7 +330,7 @@
 {/if}
 
 <style>
-    @reference "@fkp/ui/styles/global.css";
+    @reference "@idstead/ui/styles/global.css";
 
     :global(nav[aria-label='Table of contents'] code),
     :global(details.mdrs-details code) {

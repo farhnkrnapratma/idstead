@@ -1,4 +1,4 @@
-import { SHORTCUT_SECTIONS, commandSection } from '@fkp/ui/shortcutCatalog.ts';
+import { SHORTCUT_SECTIONS, commandSection } from '@idstead/ui/shortcutCatalog.ts';
 import {
     Mail,
     RotateCw,

@@ -1,6 +1,6 @@
 import * as publicEnv from '$app/env/public';
 import { getSupabaseAdminClient } from './supabaseAdmin';
-import { createSupabaseAdminAuthorStore } from '@fkp/data';
+import { createSupabaseAdminAuthorStore } from '@idstead/data';
 import { assetBucket, copyObject } from './r2';
 import { supabase } from '#lib/supabase.ts';
 import {

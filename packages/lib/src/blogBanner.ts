@@ -1,5 +1,5 @@
-import type { ImageSource } from '@fkp/ui/types.ts';
-import { bannerUrl, type PostAssetOwner } from '@fkp/domain/blogAssets.ts';
+import type { ImageSource } from '@idstead/ui/types.ts';
+import { bannerUrl, type PostAssetOwner } from '@idstead/domain/blogAssets.ts';
 
 export type { ImageSource };
 export const BANNER_WIDTH = 1280;
@@ -31,7 +31,7 @@ export {
     bannerObjectKey,
     bannerUrl,
     bannerUrl as publicBannerUrl
-} from '@fkp/domain/blogAssets.ts';
+} from '@idstead/domain/blogAssets.ts';
 
 export function avifSources(webpUrl?: string | null): ImageSource[] {
     if (!webpUrl || !/\.webp$/.test(webpUrl)) return [];

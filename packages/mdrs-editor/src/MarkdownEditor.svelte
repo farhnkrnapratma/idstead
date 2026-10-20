@@ -1,12 +1,12 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import type { Attachment } from 'svelte/attachments';
-    import { renderMarkdown, injectHeadingIds, prefixHashLinks } from '@fkp/mdrs';
+    import { renderMarkdown, injectHeadingIds, prefixHashLinks } from '@mdrs/core';
     import 'katex/dist/katex.min.css';
     import './editor.css';
-    import { applyCodeThemeVariables, ensureHljsThemeStylesheet } from '@fkp/mdrs-ui/codeBlocks.ts';
-    import { cn } from '@fkp/ui/utils/cn.ts';
-    import { themeStore } from '@fkp/ui/stores/themeStore.svelte.ts';
+    import { applyCodeThemeVariables, ensureHljsThemeStylesheet } from '@mdrs/dom/codeBlocks.ts';
+    import { cn } from '@idstead/ui/utils/cn.ts';
+    import { themeStore } from '@idstead/ui/stores/themeStore.svelte.ts';
     import EditorViewBar from './EditorViewBar.svelte';
     import EditorToolbar from './EditorToolbar.svelte';
     import EditorCodeArea from './EditorCodeArea.svelte';

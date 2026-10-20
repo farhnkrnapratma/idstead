@@ -1,4 +1,4 @@
-import type { PostOperation, PostOperationStore } from '@fkp/data';
+import type { PostOperation, PostOperationStore } from '@idstead/data';
 import type { parsePostInput } from './blogPostInput';
 
 type Input = Awaited<ReturnType<typeof parsePostInput>>;

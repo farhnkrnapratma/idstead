@@ -69,7 +69,7 @@ Every post has an immutable public ID: 64 lowercase hex characters (`db_posts.pu
 2. an exact slug;
 3. a unique hex prefix of 7 to 63 characters, like a git commit hash.
 
-Resolution (`BlogRepository.findPublished()` in `@fkp/data`) runs in that order, over published posts only. An exact slug always wins over a prefix.
+Resolution (`BlogRepository.findPublished()` in `@idstead/data`) runs in that order, over published posts only. An exact slug always wins over a prefix.
 
 | Situation | Result |
 | --- | --- |

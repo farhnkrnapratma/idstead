@@ -48,7 +48,7 @@ export default defineConfig(
                 {
                     patterns: [
                         {
-                            regex: '(^|/)server/|^@fkp/data($|/)',
+                            regex: '(^|/)server/|^@idstead/data($|/)',
                             allowTypeImports: true,
                             message: 'Browser code must not import server-only modules.'
                         }
@@ -74,23 +74,23 @@ export default defineConfig(
                     selector:
                         "MemberExpression[object.name='supabase'][property.name!=/^(auth|channel|removeChannel)$/]",
                     message:
-                        'Browser code uses the Supabase client for auth and realtime only; read and write data through a first-party endpoint backed by @fkp/data.'
+                        'Browser code uses the Supabase client for auth and realtime only; read and write data through a first-party endpoint backed by @idstead/data.'
                 }
             ]
         }
     },
     {
-        files: ['packages/mdrs/**'],
+        files: ['packages/mdrs-core/**'],
         rules: {
             '@typescript-eslint/no-restricted-imports': [
                 'error',
                 {
                     patterns: [
                         {
-                            regex: '^(@supabase/|#lib|@fkp/|\\$app/|\\$lib|svelte($|/))',
+                            regex: '^(@supabase/|#lib|@idstead/|\\$app/|\\$lib|svelte($|/))',
                             allowTypeImports: true,
                             message:
-                                '@fkp/mdrs is a standalone engine: no app, lib, Svelte or data-access imports; inject resolvers instead.'
+                                '@mdrs/core is a standalone engine: no app, lib, Svelte or data-access imports; inject resolvers instead.'
                         }
                     ]
                 }
@@ -105,10 +105,10 @@ export default defineConfig(
                 {
                     patterns: [
                         {
-                            regex: '(^|/)server/|^(@supabase/|#lib|@fkp/(lib|mdrs|ui)($|/))',
+                            regex: '(^|/)server/|^(@supabase/|#lib|@idstead/(lib|mdrs|ui)($|/))',
                             allowTypeImports: true,
                             message:
-                                '@fkp/ui is the design system: browser-safe, and it may only depend on @fkp/domain.'
+                                '@idstead/ui is the design system: browser-safe, and it may only depend on @idstead/domain.'
                         }
                     ]
                 }
@@ -116,17 +116,17 @@ export default defineConfig(
         }
     },
     {
-        files: ['packages/mdrs-ui/**'],
+        files: ['packages/mdrs-dom/**'],
         rules: {
             '@typescript-eslint/no-restricted-imports': [
                 'error',
                 {
                     patterns: [
                         {
-                            regex: '(^|/)server/|^(@supabase/|#lib|@fkp/(lib|editor)($|/))',
+                            regex: '(^|/)server/|^(@supabase/|#lib|@idstead/(lib|editor)($|/))',
                             allowTypeImports: true,
                             message:
-                                '@fkp/mdrs-ui is the browser side of MDRS: it may depend on @fkp/ui, @fkp/domain and @fkp/mdrs only.'
+                                '@mdrs/dom is the browser side of MDRS: it may depend on @idstead/ui, @idstead/domain and @mdrs/core only.'
                         }
                     ]
                 }
@@ -134,17 +134,17 @@ export default defineConfig(
         }
     },
     {
-        files: ['packages/editor/**'],
+        files: ['packages/mdrs-editor/**'],
         rules: {
             '@typescript-eslint/no-restricted-imports': [
                 'error',
                 {
                     patterns: [
                         {
-                            regex: '(^|/)server/|^(@supabase/|#lib|@fkp/lib($|/))',
+                            regex: '(^|/)server/|^(@supabase/|#lib|@idstead/lib($|/))',
                             allowTypeImports: true,
                             message:
-                                '@fkp/editor takes data access through props: no lib, Supabase or server imports.'
+                                '@mdrs/editor takes data access through props: no lib, Supabase or server imports.'
                         }
                     ]
                 }
@@ -159,10 +159,10 @@ export default defineConfig(
                 {
                     patterns: [
                         {
-                            regex: '^(#lib|@fkp/(?!domain($|/))|\\$app/|\\$lib|svelte($|/))',
+                            regex: '^(#lib|@idstead/(?!domain($|/))|\\$app/|\\$lib|svelte($|/))',
                             allowTypeImports: true,
                             message:
-                                '@fkp/data is the server-only data layer: it may depend on @fkp/domain and @supabase/* only.'
+                                '@idstead/data is the server-only data layer: it may depend on @idstead/domain and @supabase/* only.'
                         }
                     ]
                 }
@@ -177,10 +177,10 @@ export default defineConfig(
                 {
                     patterns: [
                         {
-                            regex: '^(@supabase/|#lib|@fkp/|\\$app/|\\$lib|svelte($|/))',
+                            regex: '^(@supabase/|#lib|@idstead/|\\$app/|\\$lib|svelte($|/))',
                             allowTypeImports: true,
                             message:
-                                '@fkp/domain holds pure, framework-free code: no workspace, Svelte, SvelteKit or Supabase imports.'
+                                '@idstead/domain holds pure, framework-free code: no workspace, Svelte, SvelteKit or Supabase imports.'
                         }
                     ]
                 }

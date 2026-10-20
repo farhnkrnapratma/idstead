@@ -1,4 +1,4 @@
-import type { CvDocument } from '@fkp/domain/author.ts';
+import type { CvDocument } from '@idstead/domain/author.ts';
 import { generateAuthorMarkdown, sanitizePublicApiData } from '#lib/authorApi.ts';
 import { buildCvBundle } from '#lib/server/cvBundle.ts';
 import {

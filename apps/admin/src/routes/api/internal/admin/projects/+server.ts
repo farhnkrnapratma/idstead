@@ -8,8 +8,8 @@ import { requireAdminAuth } from '#lib/server/adminCv.ts';
 import { bearerToken } from '#lib/server/adminAuth.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
-import { createSupabaseAdminAuthorStore, createSupabaseAuthorWriter } from '@fkp/data';
-import { sanitizeInput } from '@fkp/domain/sanitizeInput.ts';
+import { createSupabaseAdminAuthorStore, createSupabaseAuthorWriter } from '@idstead/data';
+import { sanitizeInput } from '@idstead/domain/sanitizeInput.ts';
 
 const MAX_PINNED = 3;
 const MAX_EXCLUDED = 100;

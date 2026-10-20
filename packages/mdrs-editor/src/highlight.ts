@@ -1,5 +1,5 @@
 import hljs from 'highlight.js';
-import { replaceMathBlocks, MATH_INLINE_RE } from '@fkp/mdrs';
+import { replaceMathBlocks, MATH_INLINE_RE } from '@mdrs/core';
 
 function escapeFormula(formula: string): string {
     return formula.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');

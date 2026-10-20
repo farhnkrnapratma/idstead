@@ -20,13 +20,13 @@
     import type { Snippet } from 'svelte';
     import { navigating } from '$app/state';
     import { Image as ImageIcon, Pin, Sparkles } from '@lucide/svelte';
-    import Button from '@fkp/ui/components/Button.svelte';
-    import ImageWithSkeleton from '@fkp/ui/components/ImageWithSkeleton.svelte';
-    import Tag from '@fkp/ui/components/Tag.svelte';
+    import Button from '@idstead/ui/components/Button.svelte';
+    import ImageWithSkeleton from '@idstead/ui/components/ImageWithSkeleton.svelte';
+    import Tag from '@idstead/ui/components/Tag.svelte';
     import ArticleMeta from '#lib/article/ArticleMeta.svelte';
     import { avifSources, blogBannerAlt } from '#lib/blogBanner.ts';
-    import { formatReadTime } from '@fkp/domain/formatters.ts';
-    import { decodeHtmlEntities } from '@fkp/mdrs';
+    import { formatReadTime } from '@idstead/domain/formatters.ts';
+    import { decodeHtmlEntities } from '@mdrs/core';
 
     const NEW_POST_WINDOW_MS = 24 * 60 * 60 * 1000;
 

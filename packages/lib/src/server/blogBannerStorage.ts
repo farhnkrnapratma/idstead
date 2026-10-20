@@ -2,7 +2,7 @@ import { IMAGE_CACHE_CONTROL } from './profileAssets';
 import { assetBucket, readObjectBytes } from './r2';
 import { bannerKey, sha256 } from '#lib/blogBanner.ts';
 import { cleanupOrphanedStaging } from './blogPostAssets';
-import { postRenderPath, type AdminPostStores } from '@fkp/data';
+import { postRenderPath, type AdminPostStores } from '@idstead/data';
 
 export async function putBanner(
     platform: App.Platform | undefined,

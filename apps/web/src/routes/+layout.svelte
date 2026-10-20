@@ -1,25 +1,25 @@
 <script lang="ts">
-    import { themeColors } from '@fkp/ui/themeColors.ts';
+    import { themeColors } from '@idstead/ui/themeColors.ts';
     import '#lib/global.css';
     import { onMount } from 'svelte';
-    import { installSubmitShortcut } from '@fkp/ui/utils/submitShortcut.ts';
+    import { installSubmitShortcut } from '@idstead/ui/utils/submitShortcut.ts';
     import { onNavigate } from '$app/navigation';
     import { page } from '$app/state';
     import * as publicEnv from '$app/env/public';
     import { apiUrl } from '#lib/apiConfig.ts';
     import ConsentBanner from '#app/components/ConsentBanner.svelte';
     import FeedbackButton from '#app/components/FeedbackButton.svelte';
-    import { Toast, ScrollToTopButton } from '@fkp/ui';
-    import ShortcutCatalogDialog from '@fkp/ui/components/ShortcutCatalogDialog.svelte';
-    import ShortcutModeIndicator from '@fkp/ui/components/ShortcutModeIndicator.svelte';
-    import { platformStore } from '@fkp/ui/stores/platformStore.svelte.ts';
+    import { Toast, ScrollToTopButton } from '@idstead/ui';
+    import ShortcutCatalogDialog from '@idstead/ui/components/ShortcutCatalogDialog.svelte';
+    import ShortcutModeIndicator from '@idstead/ui/components/ShortcutModeIndicator.svelte';
+    import { platformStore } from '@idstead/ui/stores/platformStore.svelte.ts';
 
-    import { themeStore } from '@fkp/ui/stores/themeStore.svelte.ts';
-    import { a11yStore } from '@fkp/ui/stores/a11yStore.svelte.ts';
-    import { codeBlockPrefsStore } from '@fkp/mdrs-ui/codeBlockPrefsStore.svelte.ts';
-    import { scrollStore } from '@fkp/ui/stores/scrollStore.svelte.ts';
-    import { readingModeStore } from '@fkp/ui/stores/readingModeStore.svelte.ts';
-    import { refreshCodeBlockPrefs } from '@fkp/mdrs-ui/codeBlocks.ts';
+    import { themeStore } from '@idstead/ui/stores/themeStore.svelte.ts';
+    import { a11yStore } from '@idstead/ui/stores/a11yStore.svelte.ts';
+    import { codeBlockPrefsStore } from '@mdrs/dom/codeBlockPrefsStore.svelte.ts';
+    import { scrollStore } from '@idstead/ui/stores/scrollStore.svelte.ts';
+    import { readingModeStore } from '@idstead/ui/stores/readingModeStore.svelte.ts';
+    import { refreshCodeBlockPrefs } from '@mdrs/dom/codeBlocks.ts';
 
     const { data, children } = $props();
 

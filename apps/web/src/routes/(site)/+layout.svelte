@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { preloadCode } from '$app/navigation';
-    import SkipLink from '@fkp/ui/components/SkipLink.svelte';
+    import SkipLink from '@idstead/ui/components/SkipLink.svelte';
     import SiteNav from '#app/components/SiteNav.svelte';
     import { SITE_SECTIONS } from '#app/siteSections.ts';
 

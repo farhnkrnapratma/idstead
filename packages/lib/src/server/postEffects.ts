@@ -1,4 +1,4 @@
-import type { NewsletterStore } from '@fkp/data';
+import type { NewsletterStore } from '@idstead/data';
 import { notifyNewPost } from './subscriberBroadcast';
 import { runInBackground } from './workerEnv';
 import { enqueueNewsletter } from './newsletterQueue';
