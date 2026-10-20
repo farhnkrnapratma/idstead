@@ -1,3 +1,4 @@
+import { hashIp } from '@fkp/domain/hash.ts';
 export type ActivityCategory = 'profile' | 'cv' | 'skills' | 'links' | 'blog' | 'auth' | 'security';
 
 interface ActivityLogClient {
@@ -16,11 +17,6 @@ export interface LogActivityInput {
     ip?: string | null;
     ipSalt?: string;
     userAgent?: string | null;
-}
-
-async function hashIp(ip: string, salt: string): Promise<string> {
-    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(ip + salt));
-    return Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('');
 }
 
 export async function logActivity(

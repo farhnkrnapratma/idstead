@@ -60,3 +60,37 @@ export interface PostRenderStore {
     writeRender(source: PostSource, render: string): Promise<void>;
     renderPath(source: PostSource): string | null;
 }
+
+export interface NewComment {
+    parentId: string | null;
+    authorName: string;
+    content: string;
+    approved: boolean;
+}
+
+export interface SavedComment extends PublicComment {
+    is_approved: boolean;
+}
+
+export type CommentCreation =
+    { status: 'created'; comment: SavedComment } | { status: 'invalid-parent' };
+
+export interface CommentReport {
+    reason: string;
+    details: string | null;
+    reporterIpHash: string;
+}
+
+export interface CommentWriter {
+    create(post: PublishedPost, comment: NewComment): Promise<CommentCreation>;
+    report(commentId: string, report: CommentReport): Promise<'reported' | 'not-found'>;
+}
+
+export interface ViewRecording {
+    counted: boolean;
+    views: number;
+}
+
+export interface ViewRecorder {
+    record(post: PublishedPost, visitorKey: string): Promise<ViewRecording>;
+}

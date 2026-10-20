@@ -1,14 +1,14 @@
-import { publicRepositories } from '#lib/server/repositories.ts';
+import { publicRepositories, serviceData } from '#lib/server/repositories.ts';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { isNameReserved, extractAuthorNameTokens } from '@fkp/domain/nameValidator.ts';
 import { verifyTurnstileToken } from '#lib/server/turnstile.ts';
 import { apiError } from '#lib/server/apiError.ts';
-import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { workerBinding } from '#lib/server/workerEnv.ts';
 import { moderateContent } from '#lib/server/moderation.ts';
-import { PUBLIC_ID_PATTERN, resolvePostUuid } from '#lib/server/postLookup.ts';
+import { PUBLIC_ID_PATTERN } from '@fkp/domain/postReference.ts';
+import type { CommentCreation } from '@fkp/data';
 
 export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
     if (!isSameOriginRequest(request, url)) {
@@ -109,8 +109,8 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         );
     }
 
-    const adminClient = getSupabaseAdminClient(platform);
-    if (!adminClient) {
+    const data = serviceData(platform);
+    if (!data) {
         return apiError(
             500,
             'BLOG_COMMENT_SERVICE_UNAVAILABLE',
@@ -118,61 +118,34 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         );
     }
 
-    const postId = await resolvePostUuid(adminClient, publicId);
-    if (!postId) {
-        return apiError(404, 'BLOG_POST_NOT_FOUND', 'No published post matches postId.');
-    }
-    let parentUuid: string | null = null;
-    if (parentId) {
-        const { data: parent } = await adminClient
-            .from('db_comments')
-            .select('id')
-            .eq('public_id', parentId)
-            .eq('post_id', postId)
-            .eq('is_approved', true)
-            .maybeSingle();
-        if (!parent) {
-            return apiError(
-                400,
-                'BLOG_COMMENT_INVALID_PARENT_ID',
-                'parentId must refer to a published comment on this post.'
-            );
+    let created: CommentCreation;
+    try {
+        const lookup = await data.blog.findPublished(publicId);
+        if (lookup.status !== 'found') {
+            return apiError(404, 'BLOG_POST_NOT_FOUND', 'No published post matches postId.');
         }
-        parentUuid = parent.id;
-    }
-
-    const { data, error: dbErr } = await adminClient
-        .from('db_comments')
-        .insert({
-            post_id: postId,
-            parent_id: parentUuid,
-            author_name: authorName,
+        created = await data.writers.comments.create(lookup.post, {
+            parentId,
+            authorName,
             content,
-            is_anonymous: false,
-            is_admin: false,
-            is_approved: moderation.safe
-        })
-        .select('public_id, author_name, content, is_anonymous, is_admin, is_approved, created_at')
-        .single();
-
-    if (dbErr) {
-        console.error('Failed to insert comment:', dbErr);
+            approved: moderation.safe
+        });
+    } catch (error) {
+        console.error('Failed to save comment:', error);
         return apiError(500, 'BLOG_COMMENT_SAVE_FAILED', 'Could not save comment.');
+    }
+    if (created.status === 'invalid-parent') {
+        return apiError(
+            400,
+            'BLOG_COMMENT_INVALID_PARENT_ID',
+            'parentId must refer to a published comment on this post.'
+        );
     }
 
     return json(
         {
             is_approved: moderation.safe,
-            comment: {
-                id: data.public_id,
-                parent_id: parentId,
-                author_name: data.author_name,
-                content: data.content,
-                is_anonymous: data.is_anonymous,
-                is_admin: data.is_admin,
-                is_approved: data.is_approved,
-                created_at: data.created_at
-            },
+            comment: created.comment,
             moderation: { engine: moderation.engine, categories: moderation.categories }
         },
         { status: 201 }

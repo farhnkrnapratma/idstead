@@ -3,7 +3,8 @@ import type { RequestHandler } from './$types';
 import { apiError } from '#lib/server/apiError.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { verifyTurnstileToken } from '#lib/server/turnstile.ts';
-import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
+import { serviceData } from '#lib/server/repositories.ts';
+import { hashIp } from '@fkp/domain/hash.ts';
 import { REPORT_REASON_IDS } from '#lib/reportReasons.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
 import { PUBLIC_ID_PATTERN } from '@fkp/domain/postReference.ts';
@@ -54,30 +55,6 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         );
     }
 
-    const adminClient = getSupabaseAdminClient(platform);
-    if (!adminClient) {
-        return apiError(
-            500,
-            'BLOG_COMMENT_REPORT_SERVICE_UNAVAILABLE',
-            'Report service is temporarily unavailable.'
-        );
-    }
-
-    const { data: comment, error: commentErr } = await adminClient
-        .from('db_comments')
-        .select('id')
-        .eq('public_id', commentId)
-        .maybeSingle();
-
-    if (commentErr || !comment) {
-        return apiError(
-            404,
-            'BLOG_COMMENT_REPORT_COMMENT_NOT_FOUND',
-            'The specified comment was not found.'
-        );
-    }
-
-    const ip = getClientAddress();
     const salt = ipSalt(platform);
     if (!salt)
         return apiError(
@@ -86,22 +63,32 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             'Reporting is temporarily unavailable.'
         );
 
-    const ipHashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(ip + salt));
-    const ipHash = Array.from(new Uint8Array(ipHashBuffer))
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('');
+    const data = serviceData(platform);
+    if (!data) {
+        return apiError(
+            500,
+            'BLOG_COMMENT_REPORT_SERVICE_UNAVAILABLE',
+            'Report service is temporarily unavailable.'
+        );
+    }
 
-    const { error: insertErr } = await adminClient
-        .from('db_comment_reports')
-        .insert({
-            comment_id: comment.id,
+    let outcome: 'reported' | 'not-found';
+    try {
+        outcome = await data.writers.comments.report(commentId, {
             reason,
             details: details || null,
-            reporter_ip_hash: ipHash
+            reporterIpHash: await hashIp(getClientAddress(), salt)
         });
-
-    if (insertErr) {
+    } catch (error) {
+        console.error('Failed to save comment report:', error);
         return apiError(500, 'BLOG_COMMENT_REPORT_SAVE_FAILED', 'Could not save report.');
+    }
+    if (outcome === 'not-found') {
+        return apiError(
+            404,
+            'BLOG_COMMENT_REPORT_COMMENT_NOT_FOUND',
+            'The specified comment was not found.'
+        );
     }
 
     return json({ success: true }, { status: 201 });

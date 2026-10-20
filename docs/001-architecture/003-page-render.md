@@ -38,7 +38,7 @@ sequenceDiagram
         W->>DB: contact channels, profile email
         W-->>W: canSendMessage only, the email itself is not returned
     else GET /blog
-        W->>DB: blog.listPublishedWithStats(): published db_posts<br/>with embedded db_comments(count), db_views(count)
+        W->>DB: blog.listPublishedWithStats(): published db_posts<br/>with view_count and embedded db_comments(count)
         loop each post without a stored read_time
             W->>ST: GET markdown (3 s timeout) for read time
         end

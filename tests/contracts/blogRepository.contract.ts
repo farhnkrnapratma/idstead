@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import type { BlogRepository, CommentRepository } from '../../packages/data/src/index.ts';
+import type { BlogRepository, CommentRepository, Writers } from '../../packages/data/src/index.ts';
 
 export interface SeedPost {
     uuid: string;
@@ -36,6 +36,7 @@ export interface ContractSeed {
 export type RepositoryFactory = (seed: ContractSeed) => {
     blog: BlogRepository;
     comments: CommentRepository;
+    writers: Writers;
 };
 
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
@@ -218,6 +219,105 @@ export function blogRepositoryContract(name: string, factory: RepositoryFactory)
                 await comments.listRecentApproved(10)
             ]);
             expect(output).not.toMatch(UUID);
+        });
+    });
+
+    describe(`${name}: write contract`, () => {
+        test('creates a comment and lists it only once approved', async () => {
+            const { blog, comments, writers } = factory(SEED);
+            const post = (await blog.getPublishedBySlug('newest'))!;
+            const held = await writers.comments.create(post, {
+                parentId: null,
+                authorName: 'Guest',
+                content: 'Held back',
+                approved: false
+            });
+            const shown = await writers.comments.create(post, {
+                parentId: null,
+                authorName: 'Guest',
+                content: 'Shown',
+                approved: true
+            });
+            expect(held.status === 'created' && held.comment.is_approved).toBe(false);
+            expect(shown.status).toBe('created');
+            if (shown.status !== 'created') return;
+            expect(shown.comment.id).toMatch(/^[0-9a-f]{64}$/);
+            expect(shown.comment).toMatchObject({
+                parent_id: null,
+                author_name: 'Guest',
+                content: 'Shown',
+                is_admin: false,
+                is_anonymous: false,
+                is_approved: true
+            });
+            const listed = (await comments.listApproved(post)).map(comment => comment.content);
+            expect(listed).toContain('Shown');
+            expect(listed).not.toContain('Held back');
+            expect(await blog.postStats(post)).toMatchObject({ comment_count: 3 });
+            expect(JSON.stringify(shown)).not.toMatch(UUID);
+        });
+
+        test('accepts replies only to approved comments on the same post', async () => {
+            const { blog, writers } = factory(SEED);
+            const newest = (await blog.getPublishedBySlug('newest'))!;
+            const middle = (await blog.getPublishedBySlug('middle'))!;
+            const reply = await writers.comments.create(newest, {
+                parentId: SEED.comments[0].publicId,
+                authorName: 'Guest',
+                content: 'Reply',
+                approved: true
+            });
+            expect(reply.status === 'created' && reply.comment.parent_id).toBe(
+                SEED.comments[0].publicId
+            );
+            for (const parentId of [SEED.comments[2].publicId, hex('9')]) {
+                expect(
+                    await writers.comments.create(newest, {
+                        parentId,
+                        authorName: 'Guest',
+                        content: 'Reply',
+                        approved: true
+                    })
+                ).toEqual({ status: 'invalid-parent' });
+            }
+            expect(
+                await writers.comments.create(middle, {
+                    parentId: SEED.comments[0].publicId,
+                    authorName: 'Guest',
+                    content: 'Reply',
+                    approved: true
+                })
+            ).toEqual({ status: 'invalid-parent' });
+        });
+
+        test('reports existing comments by public ID', async () => {
+            const { writers } = factory(SEED);
+            const report = { reason: 'spam', details: null, reporterIpHash: 'a'.repeat(64) };
+            expect(await writers.comments.report(SEED.comments[0].publicId, report)).toBe(
+                'reported'
+            );
+            expect(await writers.comments.report(hex('9'), report)).toBe('not-found');
+        });
+
+        test('counts a visitor once per key and keeps the public count in step', async () => {
+            const { blog, writers } = factory(SEED);
+            const post = (await blog.getPublishedBySlug('middle'))!;
+            expect(await writers.views.record(post, 'day1_visitor')).toEqual({
+                counted: true,
+                views: 2
+            });
+            expect(await writers.views.record(post, 'day1_visitor')).toEqual({
+                counted: false,
+                views: 2
+            });
+            expect(await writers.views.record(post, 'day2_visitor')).toEqual({
+                counted: true,
+                views: 3
+            });
+            const listed = (await blog.listPublishedWithStats()).posts.find(
+                item => item.slug === 'middle'
+            );
+            expect(listed?.views_count).toBe(3);
         });
     });
 }

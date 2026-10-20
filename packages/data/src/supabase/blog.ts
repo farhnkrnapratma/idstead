@@ -32,7 +32,7 @@ export interface SupabaseRepositoryOptions {
 const BUCKET = 'blog-posts';
 const POST_COLUMNS =
     'id, public_id, title, slug, pinned, created_at, updated_at, excerpt, tags, collaborators, summary, tldr, storage_path, banner_version, read_time';
-const STATS_COLUMNS = 'comments:db_comments(count), views:db_views(count)';
+const STATS_COLUMNS = 'view_count, comments:db_comments(count)';
 const APPROVED_COMMENTS = 'comments.is_approved';
 const COMMENT_COLUMNS =
     'id, public_id, parent_id, author_name, content, is_anonymous, is_admin, created_at';
@@ -55,7 +55,7 @@ interface PostRow {
     banner_version: string | null;
     read_time: number | null;
     comments?: { count: number }[];
-    views?: { count: number }[];
+    view_count?: number | null;
 }
 
 function strings(value: unknown): string[] {
@@ -98,7 +98,7 @@ function withStats(row: PostRow, post: PublishedPost): PublishedPostWithStats {
     return {
         ...post,
         comment_count: embeddedCount(row.comments),
-        views_count: embeddedCount(row.views)
+        views_count: row.view_count ?? 0
     };
 }
 
@@ -230,11 +230,8 @@ export function createSupabaseBlogRepository(
                 .eq(APPROVED_COMMENTS, true)
                 .maybeSingle();
             if (error) throw new DataError('blog.postStats', error);
-            const row = (data ?? {}) as Pick<PostRow, 'comments' | 'views'>;
-            return {
-                comment_count: embeddedCount(row.comments),
-                views_count: embeddedCount(row.views)
-            };
+            const row = (data ?? {}) as Pick<PostRow, 'comments' | 'view_count'>;
+            return { comment_count: embeddedCount(row.comments), views_count: row.view_count ?? 0 };
         },
 
         readMarkdown(source: PostSource, readOptions?: ReadOptions) {

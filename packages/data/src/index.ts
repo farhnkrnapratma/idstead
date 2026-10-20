@@ -1,7 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { AuthorRepository } from './author';
-import type { BlogRepository, CommentRepository } from './blog';
+import type { BlogRepository, CommentRepository, CommentWriter, ViewRecorder } from './blog';
 import { createSupabaseAuthorRepository, publicProfile } from './supabase/author';
+import { createSupabaseCommentWriter, createSupabaseViewRecorder } from './supabase/writes';
 import {
     createSupabaseBlogRepository,
     createSupabaseCommentRepository,
@@ -15,6 +16,7 @@ export { postRenderPath } from './supabase/paths';
 export { createSupabaseRenderStore } from './supabase/renders';
 export { createSupabaseBlogRepository, createSupabaseCommentRepository };
 export { createSupabaseAuthorRepository, publicProfile };
+export { createSupabaseCommentWriter, createSupabaseViewRecorder };
 export type { SupabaseRepositoryOptions };
 
 export interface Repositories {
@@ -32,4 +34,13 @@ export function createSupabaseRepositories(
         blog: createSupabaseBlogRepository(db, options),
         comments: createSupabaseCommentRepository(db)
     };
+}
+
+export interface Writers {
+    comments: CommentWriter;
+    views: ViewRecorder;
+}
+
+export function createSupabaseWriters(db: SupabaseClient): Writers {
+    return { comments: createSupabaseCommentWriter(db), views: createSupabaseViewRecorder(db) };
 }
