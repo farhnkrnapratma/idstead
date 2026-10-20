@@ -2,8 +2,7 @@ import { IMAGE_CACHE_CONTROL } from './profileAssets';
 import { assetBucket, readObjectBytes } from './r2';
 import { bannerKey, sha256 } from '#lib/blogBanner.ts';
 import { cleanupOrphanedStaging } from './blogPostAssets';
-import { postRenderPath } from '@fkp/data';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import { postRenderPath, type AdminPostStores } from '@fkp/data';
 
 export async function putBanner(
     platform: App.Platform | undefined,
@@ -24,79 +23,44 @@ export async function putBanner(
         throw new Error('Stored banner verification failed.');
 }
 
-export async function cleanupBlogAssets(db: SupabaseClient, platform?: App.Platform) {
-    const { data, error } = await db.rpc('db_claim_blog_banner_cleanup');
-    if (error) throw error;
+export async function cleanupBlogAssets(
+    stores: Pick<AdminPostStores, 'posts' | 'cleanup'>,
+    platform?: App.Platform
+) {
+    const { posts, cleanup } = stores;
     let failed = false;
     let removed = 0;
-    for (const version of data ?? []) {
+    for (const version of await cleanup.claimBanners()) {
         try {
             const webpKey = bannerKey(version.post_id, version.id, 'webp');
             const avifKey = bannerKey(version.post_id, version.id, 'avif');
             if (webpKey !== version.object_key && avifKey !== version.object_key)
                 throw new Error('Invalid cleanup key.');
             await (await assetBucket(platform)).delete([webpKey, avifKey]);
-            const { error: failure } = await db
-                .from('db_blog_banner_versions')
-                .update({ state: 'deleted', cleanup_error: null })
-                .eq('id', version.id)
-                .eq('state', 'cleaning');
-            if (failure) throw failure;
+            await cleanup.bannerRemoved(version.id);
             removed++;
         } catch {
             failed = true;
-            await db
-                .from('db_blog_banner_versions')
-                .update({ cleanup_error: 'R2 cleanup failed; retry required.' })
-                .eq('id', version.id);
+            await cleanup.bannerFailed(version.id).catch(() => {});
         }
     }
-    const { data: markdown, error: markdownError } = await db
-        .from('db_post_storage_cleanup')
-        .select('*')
-        .lt('created_at', new Date(Date.now() - 86_400_000).toISOString())
-        .limit(20);
-    if (markdownError) throw markdownError;
-    for (const item of markdown ?? []) {
+    for (const item of await cleanup.pendingMarkdown(new Date(Date.now() - 86_400_000), 20)) {
         try {
-            const { count: posts, error: postError } = await db
-                .from('db_posts')
-                .select('id', { count: 'exact', head: true })
-                .eq('storage_path', item.storage_path);
-            if (postError) throw new Error('Reference check failed.');
-            if (posts) continue;
+            if (await cleanup.markdownInUse(item.storage_path)) continue;
             if (!/^posts\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.md$/.test(item.storage_path)) continue;
             const renderPath = postRenderPath(item.storage_path);
-            const { error: failure } = await db.storage
-                .from('blog-posts')
-                .remove(renderPath ? [item.storage_path, renderPath] : [item.storage_path]);
-            if (failure) throw failure;
-            const { error: removeError } = await db
-                .from('db_post_storage_cleanup')
-                .delete()
-                .eq('storage_path', item.storage_path);
-            if (removeError) throw removeError;
+            await cleanup.removeMarkdown(
+                renderPath ? [item.storage_path, renderPath] : [item.storage_path]
+            );
+            await cleanup.markdownRemoved(item.storage_path);
             removed++;
         } catch {
             failed = true;
-            await db
-                .from('db_post_storage_cleanup')
-                .update({
-                    cleanup_attempts: item.cleanup_attempts + 1,
-                    cleanup_error: 'Markdown cleanup failed; retry required.'
-                })
-                .eq('storage_path', item.storage_path);
+            await cleanup.markdownFailed(item).catch(() => {});
         }
     }
     try {
-        removed += await cleanupOrphanedStaging(platform, async postId => {
-            const { count, error: lookupError } = await db
-                .from('db_posts')
-                .select('id', { count: 'exact', head: true })
-                .eq('id', postId);
-            if (lookupError) throw lookupError;
-            return Boolean(count);
-        });
+        removed += await cleanupOrphanedStaging(platform, postId => posts.exists(postId));
     } catch {
         failed = true;
     }

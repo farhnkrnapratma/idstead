@@ -3,6 +3,8 @@
     import { mdrsContent } from '../../mdrsValidation.ts';
     import { renderMdrsPreview } from '../../mdrsPreview.ts';
     import { supabase } from '#lib/supabase.ts';
+    import { adminRequest } from '../../adminClient.ts';
+    import type { AdminPostDraft } from '@fkp/data';
     import { slugifyTitle } from '@fkp/domain/slug.ts';
     import { processContentImage } from '../../processContentImage.ts';
     import { onDestroy, onMount } from 'svelte';
@@ -182,53 +184,21 @@
 
     async function loadPostForEdit(id: string) {
         try {
-            const { data: post, error } = await supabase
-                .from('db_posts')
-                .select('*')
-                .eq('id', id)
-                .single();
-
-            if (error || !post) {
-                throw error || new Error('Post not found');
-            }
+            const { post } = await adminRequest<{ post: AdminPostDraft }>('posts/draft', {
+                params: { id },
+                fallbackMessage: 'Failed to load post for editing'
+            });
 
             title = post.title;
             postRevision = post.post_revision;
             savedBannerUrl = bannerUrl(post, cdnBaseUrl());
             excerpt = post.excerpt || '';
-            tags =
-                Array.isArray(post.tags) ? post.tags.map((t: string) => decodeHtmlEntities(t)) : [];
-            collaborators =
-                Array.isArray(post.collaborators) ?
-                    post.collaborators
-                        .map((c: string) => decodeHtmlEntities(c.trim().replace(/^@/, '')))
-                        .filter(Boolean)
-                :   [];
+            tags = post.tags.map(t => decodeHtmlEntities(t));
+            collaborators = post.collaborators
+                .map(c => decodeHtmlEntities(c.trim().replace(/^@/, '')))
+                .filter(Boolean);
 
-            let fileText = '';
-            if (post.storage_path) {
-                try {
-                    const { data: fileData, error: fileError } = await supabase.storage
-                        .from('blog-posts')
-                        .download(post.storage_path);
-
-                    if (!fileError && fileData) {
-                        fileText = await fileData.text();
-                    } else {
-                        const { data: publicUrlData } = supabase.storage
-                            .from('blog-posts')
-                            .getPublicUrl(post.storage_path);
-                        const fileRes = await fetch(publicUrlData.publicUrl);
-                        if (fileRes.ok) {
-                            fileText = await fileRes.text();
-                        }
-                    }
-                } catch (storageErr) {
-                    console.error('Failed downloading post markdown file:', storageErr);
-                }
-            }
-
-            markdownContent = fileText;
+            markdownContent = post.markdown ?? '';
             initialTitle = title;
             initialExcerpt = excerpt;
             initialTags = [...tags];

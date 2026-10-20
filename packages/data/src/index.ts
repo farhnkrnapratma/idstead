@@ -6,6 +6,12 @@ import {
     createSupabaseAdminNotifier,
     createSupabaseFeedbackRecorder
 } from './supabase/activity';
+import type { AdminPostStore, PostCleanupStore, PostOperationStore } from './adminPosts';
+import {
+    createSupabaseAdminPostStore,
+    createSupabasePostCleanupStore,
+    createSupabasePostOperationStore
+} from './supabase/adminPosts';
 import type { AuthorRepository } from './author';
 import type { BlogRepository, CommentRepository, CommentWriter, ViewRecorder } from './blog';
 import { createSupabaseAuthorRepository, publicProfile } from './supabase/author';
@@ -22,6 +28,7 @@ import {
 } from './supabase/blog';
 
 export type * from './activity';
+export type * from './adminPosts';
 export type * from './author';
 export type * from './blog';
 export type * from './subscribers';
@@ -37,6 +44,11 @@ export {
     createSupabaseAdminActivityStore,
     createSupabaseAdminNotifier,
     createSupabaseFeedbackRecorder
+};
+export {
+    createSupabaseAdminPostStore,
+    createSupabasePostCleanupStore,
+    createSupabasePostOperationStore
 };
 export type { SupabaseRepositoryOptions };
 
@@ -74,5 +86,19 @@ export function createSupabaseWriters(db: SupabaseClient): Writers {
         newsletter: createSupabaseNewsletterStore(db),
         feedback: createSupabaseFeedbackRecorder(db),
         notifications: createSupabaseAdminNotifier(db)
+    };
+}
+
+export interface AdminPostStores {
+    posts: AdminPostStore;
+    operations: PostOperationStore;
+    cleanup: PostCleanupStore;
+}
+
+export function createSupabaseAdminPostStores(db: SupabaseClient): AdminPostStores {
+    return {
+        posts: createSupabaseAdminPostStore(db),
+        operations: createSupabasePostOperationStore(db),
+        cleanup: createSupabasePostCleanupStore(db)
     };
 }

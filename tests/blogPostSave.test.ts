@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { savePostOperation } from '../packages/lib/src/server/blogPostSave.ts';
+import { createSupabasePostOperationStore } from '../packages/data/src/supabase/adminPosts.ts';
 
 const postId = '0f8fad5b-d9cb-469f-a165-70867728950e';
 const operationId = '7c9e6679-7425-40de-944b-e07fc1f90ae7';
@@ -38,7 +39,7 @@ function fakeDb(renderUploadFails = false) {
             })
         }
     } as unknown as SupabaseClient;
-    return { db, uploads };
+    return { db: createSupabasePostOperationStore(db), uploads };
 }
 
 const input = {

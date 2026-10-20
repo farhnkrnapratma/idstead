@@ -90,7 +90,7 @@
         DatabaseX
     } from '@lucide/svelte';
     import { onDestroy, onMount, tick, untrack } from 'svelte';
-    import { SvelteSet } from 'svelte/reactivity';
+    import { SvelteMap, SvelteSet } from 'svelte/reactivity';
     import type { AdminNotificationRow } from '#lib/adminActivity.ts';
     import AdminHome from '#app/components/admin/AdminHome.svelte';
     import ActivityTimestamp from '#app/components/admin/ActivityTimestamp.svelte';
@@ -101,6 +101,7 @@
     import { adminDisplayStore } from '#app/stores/adminDisplayStore.svelte.ts';
     import { startAdminSettingsSync } from '#app/stores/adminSettingsSync.svelte.ts';
     import { adminActivityRequest } from '#app/adminActivityClient.ts';
+    import { adminRequest } from '#app/adminClient.ts';
     import {
         ADMIN_WORKSPACE_PAGE_SIZE,
         type WorkspaceArea,
@@ -119,7 +120,6 @@
     const loadAccountSettings = () => import('#app/components/admin/AccountSettings.svelte');
     const loadPostEditor = () => import('#app/components/admin/PostEditor.svelte');
     const loadMarkdownEditor = () => import('@fkp/editor');
-    import { estimateReadTime } from '@fkp/domain/readTime.ts';
     import { formatBadgeCount } from '@fkp/domain/formatters.ts';
     import {
         Button,
@@ -207,18 +207,17 @@
         slug: string;
         published: boolean;
         pinned: boolean;
-        storage_path: string;
         created_at: string;
         updated_at?: string | null;
         banner_version?: string | null;
         post_revision: number;
         excerpt?: string | null;
         tags?: string[] | null;
-        read_time?: string | null;
-        comment_count?: number | null;
-        views_count?: number | null;
-        helpful_yes?: number | null;
-        helpful_no?: number | null;
+        read_minutes: number | null;
+        comment_count: number;
+        views_count: number;
+        helpful_yes: number;
+        helpful_no: number;
     }
 
     const failedBanners = new SvelteSet<string>();
@@ -1885,35 +1884,7 @@
         return Array.from(set).sort();
     });
 
-    const postViewsMap = $state(new Map<string, number>());
-
-    async function fetchPostViews(postId: string) {
-        if (typeof window === 'undefined') return;
-        if (postViewsMap.has(postId)) return;
-        try {
-            const { count, error } = await supabase
-                .from('db_views')
-                .select('id', { count: 'exact', head: true })
-                .eq('post_id', postId);
-            if (!error) postViewsMap.set(postId, count ?? 0);
-        } catch (err) {
-            console.error('Failed to fetch views for post:', postId, err);
-        }
-    }
-
-    const postCommentCounts = $state(new Map<string, number>());
-
-    async function fetchPostCommentCount(postId: string) {
-        try {
-            const { count, error } = await supabase
-                .from('db_comments')
-                .select('id', { count: 'exact', head: true })
-                .eq('post_id', postId);
-            if (!error && count !== null) postCommentCounts.set(postId, count);
-        } catch (err) {
-            console.error('Failed to count comments for post:', postId, err);
-        }
-    }
+    const postCommentCounts = new SvelteMap<string, number>();
 
     function getPostComments(postId: string): AdminComment[] {
         return comments.filter(c => c.post_id === postId);
@@ -1957,18 +1928,18 @@
                 return mult * (Number(a.published) - Number(b.published));
             }
             if (field === 'views') {
-                const vA = postViewsMap.get(a.id) ?? 0;
-                const vB = postViewsMap.get(b.id) ?? 0;
+                const vA = a.views_count;
+                const vB = b.views_count;
                 return mult * (vA - vB);
             }
             if (field === 'comments') {
-                const cA = postCommentCounts.get(a.id) ?? 0;
-                const cB = postCommentCounts.get(b.id) ?? 0;
+                const cA = postCommentCounts.get(a.id) ?? a.comment_count;
+                const cB = postCommentCounts.get(b.id) ?? b.comment_count;
                 return mult * (cA - cB);
             }
             if (field === 'readingTime') {
-                const rA = parseInt(a.read_time || '0', 10);
-                const rB = parseInt(b.read_time || '0', 10);
+                const rA = a.read_minutes ?? 0;
+                const rB = b.read_minutes ?? 0;
                 return mult * (rA - rB);
             }
             return 0;
@@ -2263,72 +2234,25 @@
 
     let postsRequest = 0;
 
-    async function fetchPosts(withReadTimes = true) {
+    async function fetchPosts() {
         if (postsLoading) return true;
         const current = ++postsRequest;
-        if (withReadTimes) postsLoading = true;
+        postsLoading = true;
         postsLoadError = '';
         try {
-            const { data, error } = await supabase
-                .from('db_posts')
-                .select(
-                    'id, title, slug, published, pinned, storage_path, created_at, updated_at, banner_version, post_revision, excerpt, tags, helpful_yes, helpful_no'
-                )
-                .order('created_at', { ascending: false })
-                .abortSignal(AbortSignal.timeout(10000));
-
-            if (error) throw error;
-
-            if (current !== postsRequest) return true;
-            const rawPosts = data || [];
-            posts = rawPosts.map(post => ({
-                ...post,
-                pinned: Boolean(post.pinned),
-                read_time:
-                    posts.find(existing => existing.id === post.id)?.read_time ?? '1 min read'
-            }));
-            if (!withReadTimes) return true;
-            rawPosts.forEach(post => {
-                fetchPostViews(post.id);
-                void fetchPostCommentCount(post.id);
+            const { posts: loaded } = await adminRequest<{ posts: AdminPost[] }>('posts/list', {
+                fallbackMessage: 'Posts could not be loaded. Please try again.'
             });
-
-            void (async () => {
-                const postsWithReadTime = await Promise.all(
-                    rawPosts.map(async post => {
-                        let readTime = '1 min read';
-                        try {
-                            const { data: urlData } = supabase.storage
-                                .from('blog-posts')
-                                .getPublicUrl(post.storage_path);
-                            const fileRes = await fetch(urlData.publicUrl, {
-                                signal: AbortSignal.timeout(3000)
-                            }).catch(() => null);
-                            if (fileRes?.ok) {
-                                const text = await fileRes.text();
-                                readTime = estimateReadTime(text);
-                            }
-                        } catch (err) {
-                            console.error(err);
-                        }
-                        return { ...post, pinned: Boolean(post.pinned), read_time: readTime };
-                    })
-                );
-                const readTimes = new Map(postsWithReadTime.map(post => [post.id, post]));
-                posts = posts.map(post => {
-                    const measured = readTimes.get(post.id);
-                    return measured?.storage_path === post.storage_path ?
-                            { ...post, read_time: measured.read_time }
-                        :   post;
-                });
-            })();
+            if (current !== postsRequest) return true;
+            posts = loaded;
+            postCommentCounts.clear();
             return true;
         } catch (err) {
             console.error('Error fetching admin posts:', err);
             postsLoadError = 'Posts could not be loaded. Please try again.';
             return false;
         } finally {
-            if (withReadTimes) postsLoading = false;
+            postsLoading = false;
         }
     }
 
@@ -2457,14 +2381,9 @@
                 toastStore.error('Add a manual excerpt before publishing this post.');
                 return;
             }
-            const { data: updatedPost, error } = await supabase
-                .from('db_posts')
-                .update({ published: nextPublished })
-                .eq('id', post.id)
-                .select('post_revision')
-                .single();
-
-            if (error) throw error;
+            const updatedPost = await adminRequest<{ post_revision: number }>('posts/flags', {
+                body: { id: post.id, published: nextPublished }
+            });
             posts = posts.map(p =>
                 p.id === post.id ?
                     { ...p, published: nextPublished, post_revision: updatedPost.post_revision }
@@ -2473,7 +2392,7 @@
             toastStore.success(nextPublished ? 'Post published.' : 'Post unpublished.');
         } catch (err) {
             console.error('Error updating post published status:', err);
-            toastStore.error('Failed to update post status.');
+            toastStore.error(err instanceof Error ? err.message : 'Failed to update post status.');
         }
     }
 
@@ -2487,23 +2406,18 @@
                     return;
                 }
             }
-            const { data: updatedPost, error } = await supabase
-                .from('db_posts')
-                .update({ pinned: nextPinned })
-                .eq('id', post.id)
-                .select('post_revision')
-                .single();
-
-            if (error) throw error;
+            const updatedPost = await adminRequest<{ post_revision: number }>('posts/flags', {
+                body: { id: post.id, pinned: nextPinned }
+            });
             posts = posts.map(p =>
                 p.id === post.id ?
                     { ...p, pinned: nextPinned, post_revision: updatedPost.post_revision }
                 :   p
             );
             toastStore.success(nextPinned ? 'Post pinned.' : 'Post unpinned.');
-        } catch (err: any) {
+        } catch (err) {
             console.error('Error updating post pinned status:', err);
-            toastStore.error(err?.message || 'Failed to update pin status.');
+            toastStore.error(err instanceof Error ? err.message : 'Failed to update pin status.');
         }
     }
 
@@ -4028,11 +3942,10 @@
                                             class="min-h-4.5"
                                             date={post.created_at}
                                             updatedAt={post.updated_at}
-                                            readingTime={formatReadTime(post.read_time)}
-                                            commentsCount={postCommentCounts.get(post.id) ?? 0}
-                                            views={postViewsMap.get(post.id)
-                                                ?? post.views_count
-                                                ?? 0} />
+                                            readingTime={formatReadTime(post.read_minutes)}
+                                            commentsCount={postCommentCounts.get(post.id)
+                                                ?? post.comment_count}
+                                            views={post.views_count} />
 
                                         {#if post.excerpt}
                                             <p class="type-body text-text-secondary">
@@ -4166,7 +4079,8 @@
                                         class="rounded-b-md glass-card border-t border-border-subtle p-4 text-left">
                                         <div class="mb-3 flex items-center justify-between gap-2">
                                             <h4 class="type-card-title">
-                                                Comments ({postCommentCounts.get(post.id) ?? 0})
+                                                Comments ({postCommentCounts.get(post.id)
+                                                    ?? post.comment_count})
                                             </h4>
                                         </div>
                                         {#if commentsError[post.id]}<ErrorState

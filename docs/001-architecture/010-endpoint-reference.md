@@ -88,6 +88,9 @@ API routes authenticate themselves:
 | `/api/internal/admin/password` | POST | `blogAdmin` + lockout |
 | `/api/internal/admin/posts` | GET, POST | `blogAdmin` |
 | `/api/internal/admin/posts/notify` | POST | `blogAdmin` |
+| `/api/internal/admin/posts/list` | GET | `blogAdmin`; every post with read time, view and comment counts |
+| `/api/internal/admin/posts/draft` | GET | `blogAdmin`; `?id=` returns one post with its markdown for the editor |
+| `/api/internal/admin/posts/flags` | POST | `blogAdmin`; `{id, published}` or `{id, pinned}`; publishing queues the newsletter and a render refresh like a save |
 | `/api/internal/admin/blog/content-image` | POST | `blogAdmin` |
 | `/api/internal/admin/blog/content-video` | POST | `blogAdmin` (WebM only) |
 | `/api/internal/admin/activity-log` | GET | `blogAdmin` |

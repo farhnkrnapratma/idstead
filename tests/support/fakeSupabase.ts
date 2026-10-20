@@ -58,9 +58,18 @@ function inner(columns: string) {
 export interface FakeOptions {
     defaults?: Record<string, () => Row>;
     afterInsert?: (table: string, row: Row, tables: FakeTables) => void;
+    beforeUpdate?: (
+        table: string,
+        row: Row,
+        patch: Row,
+        tables: FakeTables
+    ) => { code?: string; message: string } | null;
     rpc?: Record<
         string,
-        (args: Row, tables: FakeTables) => { data: unknown; error: { message: string } | null }
+        (
+            args: Row,
+            tables: FakeTables
+        ) => { data: unknown; error: { code?: string; message: string } | null }
     >;
 }
 
@@ -90,11 +99,20 @@ export function fakeSupabase(
             return written;
         }
 
+        let updateError: { code?: string; message: string } | null = null;
+
         function performUpdate() {
             if (written) return written;
             written = (tables[table] ?? []).filter(row =>
                 filters.every(f => f.test(row[f.column]))
             );
+            for (const row of written) {
+                updateError = options.beforeUpdate?.(table, row, patch!, tables) ?? null;
+                if (updateError) {
+                    written = [];
+                    break;
+                }
+            }
             for (const row of written) Object.assign(row, patch);
             return written;
         }
@@ -188,15 +206,15 @@ export function fakeSupabase(
                     count: null,
                     error: null
                 };
-            if (patch)
-                return {
-                    data:
-                        selected ?
-                            performUpdate().map(row => project(row, columns))
-                        :   (performUpdate(), null),
-                    count: null,
-                    error: null
-                };
+            if (patch) {
+                const data =
+                    selected ?
+                        performUpdate().map(row => project(row, columns))
+                    :   (performUpdate(), null);
+                return updateError ?
+                        { data: null, count: null, error: updateError }
+                    :   { data, count: null, error: null };
+            }
             if (write)
                 return {
                     data:
@@ -267,6 +285,10 @@ export function fakeSupabase(
                 write = { rows: [values].flat(), conflict: null };
                 return builder;
             },
+            lt(column: string, value: unknown) {
+                filters.push({ column, test: actual => String(actual) < String(value) });
+                return builder;
+            },
             lte(column: string, value: unknown) {
                 filters.push({ column, test: actual => String(actual) <= String(value) });
                 return builder;
@@ -314,7 +336,21 @@ export function fakeSupabase(
         },
         storage: {
             from: () => ({
-                getPublicUrl: (path: string) => ({ data: { publicUrl: STORAGE_ORIGIN + path } })
+                getPublicUrl: (path: string) => ({ data: { publicUrl: STORAGE_ORIGIN + path } }),
+                download: async (path: string) =>
+                    path in files ?
+                        { data: new Blob([files[path]]), error: null }
+                    :   { data: null, error: { message: 'Object not found' } },
+                upload: async (path: string, body: Blob, settings?: { upsert?: boolean }) => {
+                    if (path in files && !settings?.upsert)
+                        return { data: null, error: { message: 'The resource already exists' } };
+                    files[path] = await body.text();
+                    return { data: { path }, error: null };
+                },
+                remove: async (paths: string[]) => {
+                    for (const path of paths) delete files[path];
+                    return { data: paths.map(name => ({ name })), error: null };
+                }
             })
         }
     } as unknown as SupabaseClient;
