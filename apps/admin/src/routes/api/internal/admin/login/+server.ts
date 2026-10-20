@@ -8,8 +8,7 @@ import {
     clearLoginAttempts
 } from '#lib/server/loginRateLimit.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
-import { fetchAuthorProfile } from '#lib/author.ts';
-import { supabase as publicSupabase } from '#lib/supabase.ts';
+import { publicRepositories } from '#lib/server/repositories.ts';
 import {
     hashIp,
     loginAlertEmail,
@@ -44,7 +43,9 @@ async function sendLoginAlert(
 
     const salt = ipSalt(platform);
 
-    const profile = await fetchAuthorProfile(publicSupabase);
+    const profile = await publicRepositories()
+        .author.profile()
+        .catch(() => null);
     await sendEmail(apiKey, from, {
         to,
         ...loginAlertEmail(profile?.name?.trim() || url.hostname, {

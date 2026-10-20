@@ -102,6 +102,7 @@
     import { startAdminSettingsSync } from '#app/stores/adminSettingsSync.svelte.ts';
     import { adminActivityRequest } from '#app/adminActivityClient.ts';
     import { adminRequest } from '#app/adminClient.ts';
+    import type { AdminAuthorSnapshot } from '@fkp/data';
     import {
         ADMIN_WORKSPACE_PAGE_SIZE,
         type WorkspaceArea,
@@ -165,16 +166,6 @@
 
     import { themeStore } from '@fkp/ui/stores/themeStore.svelte.ts';
     import {
-        fetchAuthorProfile,
-        fetchIdentityMeta,
-        fetchCvEntries,
-        fetchSponsorship,
-        fetchContactInfo,
-        fetchSocials,
-        fetchSkills,
-        fetchActiveCvDocument,
-        fetchActiveOpenPgpKey,
-        fetchProjectRepoRules,
         normalizeIconInput,
         type AuthorProfile,
         type ExperienceItem,
@@ -672,7 +663,10 @@
     async function loadSiteAuthorName() {
         if (siteAuthorName) return;
         try {
-            siteAuthorName = (await fetchAuthorProfile(supabase))?.name ?? '';
+            const { profile } = await adminRequest<{ profile: AuthorProfile | null }>('author', {
+                params: { part: 'profile' }
+            });
+            siteAuthorName = profile?.name ?? '';
         } catch {}
     }
     let authorState = $state<AuthorProfile>({
@@ -2182,25 +2176,22 @@
 
     async function loadAdminData() {
         try {
-            const [p, cv, sp, ct, soc, sk, doc, rules, pgpKey] = await Promise.all([
-                fetchAuthorProfile(supabase, { includeEmail: true }),
-                fetchCvEntries(supabase),
-                fetchSponsorship(supabase),
-                fetchContactInfo(supabase),
-                fetchSocials(supabase),
-                fetchSkills(supabase),
-                fetchActiveCvDocument(supabase),
-                fetchProjectRepoRules(supabase),
-                fetchActiveOpenPgpKey(supabase)
-            ]);
+            const {
+                profile: p,
+                identity,
+                cv,
+                funding: sp,
+                contact: ct,
+                social: soc,
+                skills: sk,
+                cvDocument: doc,
+                repoRules: rules,
+                openPgpKey: pgpKey
+            } = await adminRequest<AdminAuthorSnapshot>('author', {
+                fallbackMessage: 'Author data could not be loaded.'
+            });
             if (p) authorState = p;
-            identityMeta =
-                p ?
-                    await fetchIdentityMeta(supabase, p).catch(() => ({
-                        avatar: null,
-                        banner: null
-                    }))
-                :   { avatar: null, banner: null };
+            identityMeta = identity;
             authorInitial = { ...authorState };
             if (cv) cvState = cv;
             cvInitial = $state.snapshot(cvState);
@@ -2756,43 +2747,6 @@
         }
     }
 
-    async function getAuthorId(): Promise<string | null> {
-        if (authorState.id) return authorState.id;
-        try {
-            const { data } = await supabase.from('db_profiles').select('id').limit(1).maybeSingle();
-            if (data?.id) {
-                authorState.id = data.id;
-                return data.id;
-            }
-
-            const { data: created } = await supabase
-                .from('db_profiles')
-                .insert({
-                    name: authorState.name ? authorState.name.trim() : '',
-                    username: authorState.username ? authorState.username.trim() : '',
-                    headline: authorState.headline ? authorState.headline.trim() : '',
-                    job_title: authorState.jobTitle ? authorState.jobTitle.trim() : '',
-                    bio: authorState.bio ? authorState.bio.trim() : '',
-                    avatar: authorState.avatar ? authorState.avatar.trim() : '',
-                    email: authorState.email ? authorState.email.trim() : '',
-                    city: authorState.city ? authorState.city.trim() : '',
-                    postal_code: authorState.postalCode ? authorState.postalCode.trim() : '',
-                    country: authorState.country ? authorState.country.trim() : '',
-                    site_url: authorState.siteUrl ? authorState.siteUrl.trim() : ''
-                })
-                .select('id')
-                .maybeSingle();
-
-            if (created?.id) {
-                authorState.id = created.id;
-                return created.id;
-            }
-        } catch (err) {
-            console.error('Error fetching or creating author_id:', err);
-        }
-        return null;
-    }
-
     async function handleSaveCv(e: SubmitEvent) {
         e.preventDefault();
         if (isSavingCv) return;
@@ -2805,9 +2759,6 @@
         isSavingCv = true;
         cvSaveSuccess = false;
         try {
-            const authorId = await getAuthorId();
-            if (!authorId) throw new Error('Could not resolve author ID.');
-
             const experiences = cvState.experience.map((item, idx) => ({
                 title: sanitizeInput(item.title.trim()),
                 type: item.type || '',
@@ -2844,7 +2795,7 @@
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${sessionData?.session?.access_token}`
                 },
-                body: JSON.stringify({ authorId, experiences, education })
+                body: JSON.stringify({ experiences, education })
             });
             if (!res.ok) {
                 const body = await res.json().catch(() => ({}));
@@ -2876,9 +2827,6 @@
         isSavingSkills = true;
         skillsSaveSuccess = false;
         try {
-            const authorId = await getAuthorId();
-            if (!authorId) throw new Error('Could not resolve author ID.');
-
             const categories = skillsState.map((item, idx) => ({
                 category: sanitizeInput(item.category.trim()),
                 sort_order: idx + 1,
@@ -2895,7 +2843,7 @@
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${sessionData?.session?.access_token}`
                 },
-                body: JSON.stringify({ authorId, categories })
+                body: JSON.stringify({ categories })
             });
             if (!res.ok) {
                 const body = await res.json().catch(() => ({}));
@@ -2923,41 +2871,28 @@
         if (!(await termValidation.submit(['pinned', 'excluded']))) return;
         isSavingProjects = true;
         try {
-            const authorId = await getAuthorId();
-            if (!authorId) throw new Error('Could not resolve author ID.');
-
             const cleanPinned = pinnedReposState.map(r => sanitizeInput(r.trim())).filter(Boolean);
             if (cleanPinned.length > 3) {
                 toastStore.error('Maximum of 3 pinned repositories allowed.');
                 return;
             }
 
-            const { error: pinError } = await supabase.rpc('db_save_project_repo_rules', {
-                p_author_id: authorId,
-                p_rule_type: 'pin',
-                p_names: cleanPinned
-            });
-            if (pinError) throw pinError;
-
             const cleanExcluded = excludedReposState
                 .map(r => sanitizeInput(r.trim()))
                 .filter(Boolean);
-            const { error: excludeError } = await supabase.rpc('db_save_project_repo_rules', {
-                p_author_id: authorId,
-                p_rule_type: 'exclude',
-                p_names: cleanExcluded
+            await adminRequest('projects', {
+                body: { pinned: cleanPinned, excluded: cleanExcluded },
+                fallbackMessage: 'Failed to save project rules.'
             });
-            if (excludeError) throw excludeError;
 
             pinnedReposInitial = $state.snapshot(pinnedReposState);
             excludedReposInitial = $state.snapshot(excludedReposState);
             termValidation.clear('pinned');
             termValidation.clear('excluded');
             toastStore.success('Projects rules saved.');
-        } catch (err: any) {
+        } catch (err) {
             console.error('Error saving project rules:', err);
-            const msg = err?.message || err?.error || 'Failed to save project rules.';
-            toastStore.error(msg);
+            toastStore.error(err instanceof Error ? err.message : 'Failed to save project rules.');
         } finally {
             isSavingProjects = false;
         }
@@ -2973,9 +2908,6 @@
         isSavingSocials = true;
         socialsSaveSuccess = false;
         try {
-            const authorId = await getAuthorId();
-            if (!authorId) throw new Error('Could not resolve author ID.');
-
             const items = socialState.map((item, idx) => ({
                 platform: sanitizeInput(item.platform.trim()),
                 display_value: null,
@@ -2992,7 +2924,7 @@
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${sessionData?.session?.access_token}`
                 },
-                body: JSON.stringify({ authorId, category: 'social', items })
+                body: JSON.stringify({ category: 'social', items })
             });
             if (!res.ok) {
                 const body = await res.json().catch(() => ({}));
@@ -3024,9 +2956,6 @@
         isSavingSponsorship = true;
         sponsorshipSaveSuccess = false;
         try {
-            const authorId = await getAuthorId();
-            if (!authorId) throw new Error('Could not resolve author ID.');
-
             const items = sponsorshipState.map((item, idx) => ({
                 platform: sanitizeInput(item.platform.trim()),
                 display_value: sanitizeInput(item.displayValue.trim()),
@@ -3043,7 +2972,7 @@
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${sessionData?.session?.access_token}`
                 },
-                body: JSON.stringify({ authorId, category: 'funding', items })
+                body: JSON.stringify({ category: 'funding', items })
             });
             if (!res.ok) {
                 const body = await res.json().catch(() => ({}));
@@ -3074,9 +3003,6 @@
         isSavingContact = true;
         contactSaveSuccess = false;
         try {
-            const authorId = await getAuthorId();
-            if (!authorId) throw new Error('Could not resolve author ID.');
-
             const items = contactState.map((item, idx) => ({
                 platform: sanitizeInput(item.platform.trim()),
                 display_value: sanitizeInput(item.displayValue.trim()),
@@ -3093,7 +3019,7 @@
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${sessionData?.session?.access_token}`
                 },
-                body: JSON.stringify({ authorId, category: 'contact', items })
+                body: JSON.stringify({ category: 'contact', items })
             });
             if (!res.ok) {
                 const body = await res.json().catch(() => ({}));

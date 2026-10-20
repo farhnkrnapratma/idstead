@@ -285,6 +285,10 @@ export function fakeSupabase(
                 write = { rows: [values].flat(), conflict: null };
                 return builder;
             },
+            in(column: string, values: unknown[]) {
+                filters.push({ column, test: actual => values.includes(actual) });
+                return builder;
+            },
             lt(column: string, value: unknown) {
                 filters.push({ column, test: actual => String(actual) < String(value) });
                 return builder;
