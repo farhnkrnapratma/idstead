@@ -51,6 +51,7 @@ export interface TurnstileWidgetOptions {
 const executionResolvers = new WeakMap<HTMLElement, (token: string) => void>();
 const pendingRenders = new WeakMap<HTMLElement, () => Promise<void>>();
 const widgetAppearances = new WeakMap<HTMLElement, TurnstileWidgetOptions['appearance']>();
+const renderedWidgets = new WeakMap<HTMLElement, string>();
 const LAZY_RENDER_MARGIN = '200px';
 let turnstileScriptPromise: Promise<void> | undefined;
 
@@ -209,6 +210,7 @@ export function turnstileWidget(node: HTMLElement, options: TurnstileWidgetOptio
                         options['timeout-callback']?.();
                     }
                 });
+                if (widgetId) renderedWidgets.set(node, widgetId);
             } catch (err) {
                 console.error('Turnstile render error:', err);
             }
@@ -265,6 +267,7 @@ export function turnstileWidget(node: HTMLElement, options: TurnstileWidgetOptio
             pendingRenders.delete(node);
             widgetAppearances.delete(node);
             executionResolvers.delete(node);
+            renderedWidgets.delete(node);
             if (widgetId && window.turnstile) {
                 try {
                     window.turnstile.remove(widgetId);
@@ -322,7 +325,15 @@ export async function executeTurnstile(node: HTMLElement | null): Promise<string
 export function resetTurnstile(node: HTMLElement | null) {
     if (!node) return;
     executionResolvers.delete(node);
-    window.turnstile?.reset(node);
+    const widgetId = renderedWidgets.get(node);
+    if (widgetId && window.turnstile) {
+        try {
+            window.turnstile.reset(widgetId);
+        } catch (error) {
+            renderedWidgets.delete(node);
+            console.warn('Turnstile reset skipped:', error);
+        }
+    }
     if ((widgetAppearances.get(node) ?? 'interaction-only') === 'interaction-only') {
         node.style.position = 'absolute';
         node.style.width = '1px';
