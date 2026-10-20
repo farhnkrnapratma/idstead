@@ -102,7 +102,7 @@
     import { startAdminSettingsSync } from '#app/stores/adminSettingsSync.svelte.ts';
     import { adminActivityRequest } from '#app/adminActivityClient.ts';
     import { adminRequest } from '#app/adminClient.ts';
-    import type { AdminAuthorSnapshot, LegalPage } from '@fkp/data';
+    import type { AdminAuthorSnapshot, IdentityVersionMeta, LegalPage } from '@fkp/data';
     import {
         ADMIN_WORKSPACE_PAGE_SIZE,
         type WorkspaceArea,
@@ -174,8 +174,7 @@
         type ContactInfo,
         type SocialLink,
         type SkillItem,
-        type CvDocument,
-        type IdentityVersionMeta
+        type CvDocument
     } from '#lib/author.ts';
     import { CV_CHECKSUM_ALGORITHMS, cvFileUrl } from '#lib/cvVerification.ts';
     import { copyText, downloadUrl as downloadFrom } from '@fkp/ui/utils/fileActions.ts';

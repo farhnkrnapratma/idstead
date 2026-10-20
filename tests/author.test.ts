@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import { fetchCvEntries } from '../packages/lib/src/author';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { createSupabaseAdminAuthorStore } from '../packages/data/src/supabase/adminAuthor.ts';
 
 describe('author data loading', () => {
     test('loads experience and education concurrently', async () => {
@@ -22,7 +23,9 @@ describe('author data loading', () => {
             }
         };
 
-        const cvPromise = fetchCvEntries(supabaseClient);
+        const cvPromise = createSupabaseAdminAuthorStore(
+            supabaseClient as unknown as SupabaseClient
+        ).cvEntries();
 
         expect(requested).toEqual(['db_experiences', 'db_educations']);
 

@@ -20,6 +20,7 @@ import {
 } from './supabase/cvDocuments';
 import { createSupabaseLegalPageRepository, createSupabaseLegalPageWriter } from './supabase/legal';
 import type { LegalPageRepository } from './legal';
+import { createSupabaseSiteDataStore } from './supabase/siteData';
 import type { AuthorRepository } from './author';
 import type { BlogRepository, CommentRepository, CommentWriter, ViewRecorder } from './blog';
 import { createSupabaseAuthorRepository, publicProfile } from './supabase/author';
@@ -40,6 +41,7 @@ export type * from './adminAuthor';
 export type * from './adminPosts';
 export type * from './cvDocuments';
 export type * from './legal';
+export type * from './siteData';
 export type * from './author';
 export type * from './blog';
 export type * from './subscribers';
@@ -60,6 +62,7 @@ export {
 export { createSupabaseAdminAuthorStore, createSupabaseAuthorWriter };
 export { createSupabaseCvDocumentStore, createSupabaseOpenPgpKeyStore };
 export { createSupabaseLegalPageRepository, createSupabaseLegalPageWriter };
+export { createSupabaseSiteDataStore };
 export {
     createSupabaseAdminPostStore,
     createSupabasePostCleanupStore,

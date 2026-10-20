@@ -1,6 +1,6 @@
 import type { RequestHandler } from './$types';
 import { error } from '@sveltejs/kit';
-import { supabase } from '#lib/supabase.ts';
+import { publicRepositories } from '#lib/server/repositories.ts';
 import {
     readSiteProfile,
     readPublishedPosts,
@@ -9,13 +9,15 @@ import {
 } from '#lib/server/publicMetadata.ts';
 import { escapeXml as xml } from '@fkp/domain/xml.ts';
 
-export const GET: RequestHandler = async ({ request }) => {
-    const [profile, posts, { data: legal, error: failure }] = await Promise.all([
+export const GET: RequestHandler = async ({ request, fetch }) => {
+    const [profile, posts, legal] = await Promise.all([
         readSiteProfile(),
         readPublishedPosts(),
-        supabase.from('db_legals').select('slug,updated_at')
+        publicRepositories(fetch)
+            .legal.pages()
+            .catch(() => null)
     ]);
-    if (failure) error(503, 'Sitemap is temporarily unavailable.');
+    if (!legal) error(503, 'Sitemap is temporarily unavailable.');
     const routes = [
         { path: '/', updated: undefined as string | undefined },
         { path: '/projects', updated: undefined as string | undefined },
@@ -24,7 +26,7 @@ export const GET: RequestHandler = async ({ request }) => {
         { path: '/funding', updated: undefined as string | undefined },
         { path: '/contact', updated: undefined as string | undefined },
         { path: '/feedback', updated: undefined as string | undefined },
-        ...(legal ?? [])
+        ...legal
             .filter(page => ['privacy', 'terms', 'security'].includes(page.slug))
             .map(page => ({ path: '/' + page.slug, updated: validDate(page.updated_at) })),
         ...posts.map(post => ({

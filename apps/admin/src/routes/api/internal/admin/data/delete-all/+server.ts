@@ -7,7 +7,11 @@ import { requireAdminAuth, deleteCvFile } from '#lib/server/adminCv.ts';
 import { removeAssets, removeCanonicalIdentity } from '#lib/server/profileAssets.ts';
 import { syncPostAssets } from '#lib/server/blogPostAssets.ts';
 import { cleanupBlogAssets } from '#lib/server/blogBannerStorage.ts';
-import { createSupabaseAdminPostStores } from '@fkp/data';
+import {
+    createSupabaseAdminAuthorStore,
+    createSupabaseAdminPostStores,
+    createSupabaseSiteDataStore
+} from '@fkp/data';
 import { bearerToken } from '#lib/server/adminAuth.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { getSupabaseUserClient } from '#lib/server/supabaseUser.ts';
@@ -64,33 +68,17 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     if (passwordError) return apiError(401, 'DATA_DELETE_PASSWORD_INVALID', 'Incorrect password.');
     await clearLoginAttempts(db, '', lockoutKey);
 
-    const { data: profile } = await db.from('db_profiles').select('id').limit(1).maybeSingle();
-
-    let documents: { filename: string }[] = [];
-    let identityVersions: { id: string }[] = [];
-    if (profile?.id) {
-        const [
-            { data: documentsData, error: documentsError },
-            { data: versionsData, error: versionsError }
-        ] = await Promise.all([
-            db.from('db_documents').select('filename').eq('author_id', profile.id),
-            db.from('db_identity_versions').select('id').eq('profile_id', profile.id)
-        ]);
-        if (documentsError || versionsError)
-            return apiError(
-                503,
-                'DATA_DELETE_FAILED',
-                'Could not load profile files. No data was deleted.'
-            );
-        documents = documentsData ?? [];
-        identityVersions = versionsData ?? [];
+    const siteData = createSupabaseSiteDataStore(db);
+    let plan;
+    try {
+        plan = await siteData.deletionPlan();
+    } catch {
+        return apiError(
+            503,
+            'DATA_DELETE_FAILED',
+            'Could not load profile files and posts. No data was deleted.'
+        );
     }
-
-    const { data: postRows, error: postError } = await db
-        .from('db_posts')
-        .select('id, slug, published');
-    if (postError)
-        return apiError(503, 'DATA_DELETE_FAILED', 'Could not load posts. No data was deleted.');
 
     const audit = (summary: string) =>
         logActivity(
@@ -113,9 +101,8 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         );
 
     let cleanupFailed = false;
-    for (const doc of documents) {
-        if (doc.filename && !(await deleteCvFile(platform, db, doc.filename, true)))
-            cleanupFailed = true;
+    for (const filename of plan.documents) {
+        if (!(await deleteCvFile(platform, db, filename, true))) cleanupFailed = true;
     }
     try {
         await removeCanonicalIdentity(platform);
@@ -123,7 +110,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         cleanupFailed = true;
         console.error('Identity asset cleanup failed:', error);
     }
-    for (const post of postRows ?? []) {
+    for (const post of plan.posts) {
         try {
             await syncPostAssets({
                 platform,
@@ -138,14 +125,11 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             console.error('Blog asset cleanup failed:', error);
         }
     }
-    for (const version of identityVersions) {
+    const authorStore = createSupabaseAdminAuthorStore(db);
+    for (const version of plan.identityVersions) {
         try {
-            await removeAssets(platform, version.id);
-            const { error: deleteError } = await db
-                .from('db_identity_versions')
-                .delete()
-                .eq('id', version.id);
-            if (deleteError) cleanupFailed = true;
+            await removeAssets(platform, version);
+            await authorStore.deleteIdentityVersion(version);
         } catch (error) {
             cleanupFailed = true;
             console.error('Identity asset cleanup failed:', error);
@@ -160,8 +144,9 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         );
     }
 
-    const { error } = await db.rpc('db_clear_all_data');
-    if (error) {
+    try {
+        await siteData.clearAll();
+    } catch {
         await audit(
             'Delete all stopped: uploaded files were removed but site data was not cleared.'
         );
