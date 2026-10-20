@@ -8,6 +8,7 @@ import { requireAdminAuth } from '#lib/server/adminCv.ts';
 import { bearerToken } from '#lib/server/adminAuth.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
+import { createSupabaseAdminAuthorStore, createSupabaseAuthorWriter } from '@fkp/data';
 
 const CATEGORIES = ['social', 'funding', 'contact'] as const;
 
@@ -28,16 +29,19 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     } catch {
         return apiError(400, 'LINKS_INVALID_INPUT', 'Invalid JSON body.');
     }
-    const { authorId, category, items } = body ?? {};
-    if (typeof authorId !== 'string' || !CATEGORIES.includes(category) || !Array.isArray(items))
+    const { category, items } = body ?? {};
+    if (!CATEGORIES.includes(category) || !Array.isArray(items))
         return apiError(400, 'LINKS_INVALID_INPUT', 'Invalid links data.');
 
-    const { error } = await userDb.rpc('db_save_links', {
-        p_author_id: authorId,
-        p_category: category,
-        p_items: items
-    });
-    if (error) return apiError(400, 'LINKS_SAVE_FAILED', error.message || 'Save failed.');
+    let authorId: string;
+    try {
+        authorId = await createSupabaseAdminAuthorStore(db).ensureProfileId();
+    } catch (error) {
+        console.error('Author profile lookup failed:', error);
+        return apiError(503, 'LINKS_STORAGE_UNAVAILABLE', 'Database is unavailable.');
+    }
+    const result = await createSupabaseAuthorWriter(userDb).saveLinks(authorId, category, items);
+    if (result.status === 'rejected') return apiError(400, 'LINKS_SAVE_FAILED', result.message);
 
     const token = bearerToken(request);
     const actor = token ? (await db.auth.getUser(token)).data.user?.email : null;

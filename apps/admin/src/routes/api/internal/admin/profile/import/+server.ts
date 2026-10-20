@@ -7,7 +7,7 @@ import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { requireAdminAuth } from '#lib/server/adminCv.ts';
 import { bearerToken } from '#lib/server/adminAuth.ts';
 import { profilePatch, ProfileInputError } from '#lib/server/profilePatch.ts';
-import { fetchExperiences, fetchEducation } from '#lib/author.ts';
+import { createSupabaseAdminAuthorStore, createSupabaseAuthorWriter } from '@fkp/data';
 import { sanitizeInput } from '@fkp/domain/sanitizeInput.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
@@ -81,7 +81,14 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     if (!body || typeof body !== 'object' || Array.isArray(body))
         return apiError(400, 'PROFILE_IMPORT_INVALID_INPUT', 'Invalid import payload.');
 
-    const { data: current } = await db.from('db_profiles').select('*').limit(1).maybeSingle();
+    const store = createSupabaseAdminAuthorStore(db);
+    const writer = createSupabaseAuthorWriter(userDb);
+    let current;
+    try {
+        current = await store.profileRecord();
+    } catch {
+        return apiError(503, 'PROFILE_IMPORT_UNAVAILABLE', 'Profile storage is unavailable.');
+    }
     if (!current?.id) return apiError(404, 'PROFILE_NOT_FOUND', 'No profile to import into.');
     const authorId = current.id;
 
@@ -107,11 +114,8 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             if (p.country !== undefined) patch.country = s(p.country);
             if (p.siteUrl !== undefined) patch.site_url = s(p.siteUrl);
             const payload = profilePatch(patch, current);
-            const { error } = await db.rpc('db_save_profile_identity', {
-                p_profile: payload,
-                p_identity: null
-            });
-            if (error) throw error;
+            const saved = await store.saveProfile(payload, null);
+            if (saved.status === 'failed') throw new Error(saved.message);
             applied.push('profile');
         } catch (err) {
             errors.profile =
@@ -126,18 +130,13 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             const hasExperience = Array.isArray(body.cv.experience);
             const hasEducation = Array.isArray(body.cv.education);
             if (hasExperience || hasEducation) {
-                const experienceSource =
-                    hasExperience ?
-                        body.cv.experience
-                    :   await fetchExperiences(db, { strict: true });
-                const educationSource =
-                    hasEducation ? body.cv.education : await fetchEducation(db, { strict: true });
-                const { error } = await userDb.rpc('db_save_cv', {
-                    p_author_id: authorId,
-                    p_experiences: mapExperience(experienceSource),
-                    p_education: mapEducation(educationSource)
-                });
-                if (error) throw error;
+                const stored = hasExperience && hasEducation ? null : await store.cvEntries();
+                const result = await writer.saveCv(
+                    authorId,
+                    mapExperience(hasExperience ? body.cv.experience : stored!.experience),
+                    mapEducation(hasEducation ? body.cv.education : stored!.education)
+                );
+                if (result.status === 'rejected') throw new Error(result.message);
                 applied.push('cv');
             }
         } catch (err) {
@@ -155,11 +154,8 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
                         item.items.map((skill: unknown) => s(skill)).filter(Boolean)
                     :   []
             }));
-            const { error } = await userDb.rpc('db_save_skills', {
-                p_author_id: authorId,
-                p_categories: categories
-            });
-            if (error) throw error;
+            const result = await writer.saveSkills(authorId, categories);
+            if (result.status === 'rejected') throw new Error(result.message);
             applied.push('skills');
         } catch (err) {
             errors.skills = err instanceof Error ? err.message : 'Invalid skills data.';
@@ -177,12 +173,8 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
                 description: s(item?.description),
                 sort_order: idx + 1
             }));
-            const { error } = await userDb.rpc('db_save_links', {
-                p_author_id: authorId,
-                p_category: category,
-                p_items: items
-            });
-            if (error) throw error;
+            const result = await writer.saveLinks(authorId, category, items);
+            if (result.status === 'rejected') throw new Error(result.message);
             applied.push(section);
         } catch (err) {
             errors[section] = err instanceof Error ? err.message : `Invalid ${section} data.`;

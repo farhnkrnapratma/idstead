@@ -8,6 +8,7 @@ import { requireAdminAuth } from '#lib/server/adminCv.ts';
 import { bearerToken } from '#lib/server/adminAuth.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
+import { createSupabaseAdminAuthorStore, createSupabaseAuthorWriter } from '@fkp/data';
 
 export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
     if (!isSameOriginRequest(request, url))
@@ -26,15 +27,19 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     } catch {
         return apiError(400, 'SKILLS_INVALID_INPUT', 'Invalid JSON body.');
     }
-    const { authorId, categories } = body ?? {};
-    if (typeof authorId !== 'string' || !Array.isArray(categories))
+    const { categories } = body ?? {};
+    if (!Array.isArray(categories))
         return apiError(400, 'SKILLS_INVALID_INPUT', 'Invalid skills data.');
 
-    const { error } = await userDb.rpc('db_save_skills', {
-        p_author_id: authorId,
-        p_categories: categories
-    });
-    if (error) return apiError(400, 'SKILLS_SAVE_FAILED', error.message || 'Save failed.');
+    let authorId: string;
+    try {
+        authorId = await createSupabaseAdminAuthorStore(db).ensureProfileId();
+    } catch (error) {
+        console.error('Author profile lookup failed:', error);
+        return apiError(503, 'SKILLS_STORAGE_UNAVAILABLE', 'Database is unavailable.');
+    }
+    const result = await createSupabaseAuthorWriter(userDb).saveSkills(authorId, categories);
+    if (result.status === 'rejected') return apiError(400, 'SKILLS_SAVE_FAILED', result.message);
 
     const token = bearerToken(request);
     const actor = token ? (await db.auth.getUser(token)).data.user?.email : null;

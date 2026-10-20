@@ -23,6 +23,7 @@ import { avatarAssetNames, bannerAssetNames, type IdentityAsset } from '#lib/sit
 import { logActivity } from '#lib/server/activityLog.ts';
 import { workerBinding, type RateLimit } from '#lib/server/workerEnv.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
+import { createSupabaseAdminAuthorStore, type AdminAuthorStore } from '@fkp/data';
 
 const attempts = new Map<string, number>();
 
@@ -55,12 +56,12 @@ function groupMeta(row: VersionRow, kind: IdentityKind): IdentityMeta {
 
 async function discardVersion(
     platform: App.Platform | undefined,
-    db: NonNullable<ReturnType<typeof getSupabaseAdminClient>>,
+    store: AdminAuthorStore,
     version: string
 ) {
     try {
         await removeAssets(platform, version);
-        await db.from('db_identity_versions').delete().eq('id', version);
+        await store.deleteIdentityVersion(version);
     } catch (cleanupError) {
         Sentry.captureException(cleanupError);
     }
@@ -71,10 +72,13 @@ export const GET: RequestHandler = async ({ request, platform }) => {
     if (authFailure) return authFailure;
     const db = getSupabaseAdminClient(platform);
     if (!db) return apiError(503, 'PROFILE_STORAGE_UNAVAILABLE', 'Profile storage is unavailable.');
-    const { data, error } = await db.rpc('db_identity_defaults');
-    if (error)
+    let manifestSettings: unknown;
+    try {
+        manifestSettings = await createSupabaseAdminAuthorStore(db).identityDefaults();
+    } catch {
         return apiError(503, 'PROFILE_STORAGE_UNAVAILABLE', 'Profile storage is unavailable.');
-    return json({ manifestSettings: data }, { headers: { 'Cache-Control': 'no-store' } });
+    }
+    return json({ manifestSettings }, { headers: { 'Cache-Control': 'no-store' } });
 };
 
 export const POST: RequestHandler = async ({ request, platform, url, getClientAddress }) => {
@@ -84,6 +88,7 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
     if (authFailure) return authFailure;
     const db = getSupabaseAdminClient(platform);
     if (!db) return apiError(503, 'PROFILE_STORAGE_UNAVAILABLE', 'Profile storage is unavailable.');
+    const store = createSupabaseAdminAuthorStore(db);
     const {
         data: { user }
     } = await db.auth.getUser(
@@ -158,18 +163,15 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
             throw new Error('Invalid profile.');
         let current = null;
         if (payload.id) {
-            const result = await db
-                .from('db_profiles')
-                .select('*')
-                .eq('id', payload.id)
-                .maybeSingle();
-            if (result.error)
+            try {
+                current = await store.profileRecord(payload.id as string);
+            } catch {
                 return apiError(
                     503,
                     'PROFILE_STORAGE_UNAVAILABLE',
                     'Profile storage is unavailable.'
                 );
-            current = result.data;
+            }
             if (!current || current.profile_revision !== payload.revision)
                 return apiError(
                     409,
@@ -186,20 +188,22 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
         if (!bannerFiles && !current?.banner_version)
             throw new ProfileInputError({ banner: 'Website banner is required.' });
         if ((files || bannerFiles) && current) {
-            const { data: rows, error: rowsError } = await db
-                .from('db_identity_versions')
-                .select(
-                    'id, kind, source, fingerprint, avatar_source, avatar_fingerprint, banner_source, banner_fingerprint, assets'
-                )
-                .in('id', [current.avatar_version, current.banner_version].filter(Boolean));
-            if (rowsError)
+            let rows: VersionRow[];
+            try {
+                rows = (await store.identityVersions(
+                    [current.avatar_version, current.banner_version].filter((id): id is string =>
+                        Boolean(id)
+                    )
+                )) as unknown as VersionRow[];
+            } catch {
                 return apiError(
                     503,
                     'PROFILE_STORAGE_UNAVAILABLE',
                     'Image metadata could not be prepared.'
                 );
+            }
             const keep = (kind: IdentityKind, version: string, names: string[]) => {
-                const row = (rows as VersionRow[] | null)?.find(entry => entry.id === version);
+                const row = rows.find(entry => entry.id === version);
                 const assets = (row?.assets ?? []).filter(asset => names.includes(asset.name));
                 if (!row || assets.length !== names.length)
                     throw new ProfileInputError({
@@ -211,8 +215,8 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
                 meta[kind] = groupMeta(row, kind);
                 kept.push({ kind, assets });
             };
-            if (!files) keep('avatar', current.avatar_version, avatarAssetNames);
-            if (!bannerFiles) keep('banner', current.banner_version, bannerAssetNames);
+            if (!files) keep('avatar', current.avatar_version as string, avatarAssetNames);
+            if (!bannerFiles) keep('banner', current.banner_version as string, bannerAssetNames);
         }
     } catch (error) {
         return apiError(
@@ -227,9 +231,8 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
     const version = files || bannerFiles ? crypto.randomUUID() : null;
     let identity: { version: string; assets: IdentityAsset[] } | null = null;
     if (version) {
-        const { error: registerError } = await db
-            .from('db_identity_versions')
-            .insert({
+        try {
+            await store.registerIdentityVersion({
                 id: version,
                 kind: 'identity',
                 source: meta.avatar.source,
@@ -241,12 +244,13 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
                 assets: [],
                 retired_at: new Date().toISOString()
             });
-        if (registerError)
+        } catch {
             return apiError(
                 503,
                 'PROFILE_STORAGE_UNAVAILABLE',
                 'Image metadata could not be prepared.'
             );
+        }
         try {
             const assets = await writeAssets(platform, version, {
                 ...(files ?? {}),
@@ -257,7 +261,7 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
             identity = { version, assets };
         } catch (error) {
             Sentry.captureException(error);
-            await discardVersion(platform, db, version);
+            await discardVersion(platform, store, version);
             return apiError(
                 502,
                 'PROFILE_UPLOAD_FAILED',
@@ -265,17 +269,16 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
             );
         }
     }
-    const { data, error } = await db.rpc('db_save_profile_identity', {
-        p_profile: payload,
-        p_identity: identity
-    });
-    if (error) {
+    const saved = await store.saveProfile(payload, identity);
+    if (saved.status === 'failed') {
         if (version) {
-            const { data: committed, error: verifyError } = await db
-                .from('db_profiles')
-                .select('*')
-                .eq('avatar_version', version)
-                .maybeSingle();
+            let committed = null;
+            let verifyFailed = false;
+            try {
+                committed = await store.profileWithAvatarVersion(version);
+            } catch {
+                verifyFailed = true;
+            }
             if (committed)
                 return json(
                     {
@@ -286,20 +289,20 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
                     { headers: { 'Cache-Control': 'no-store' } }
                 );
             if (
-                !verifyError
+                !verifyFailed
                 && ['40001', '23505', '23502', '23503', '23514', '22P02', 'P0001'].includes(
-                    error.code
+                    saved.code ?? ''
                 )
             )
-                await discardVersion(platform, db, version);
+                await discardVersion(platform, store, version);
         }
-        if (error.code === '40001')
+        if (saved.code === '40001')
             return apiError(
                 409,
                 'PROFILE_REVISION_CONFLICT',
                 'The profile changed in another session. Reload before saving.'
             );
-        Sentry.captureException(error);
+        Sentry.captureException(new Error(saved.message), { extra: { code: saved.code } });
         return apiError(
             503,
             'PROFILE_SAVE_FAILED',
@@ -335,7 +338,7 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
         db
     );
     return json(
-        { success: true, profile: data, cleanupPending },
+        { success: true, profile: saved.profile, cleanupPending },
         { headers: { 'Cache-Control': 'no-store' } }
     );
 };
@@ -346,13 +349,8 @@ async function cleanupAfterSave(platform: App.Platform | undefined, version: str
         try {
             const db = getSupabaseAdminClient(platform);
             if (!db) throw new Error('Database is not configured.');
-            const { data, error } = await db
-                .from('db_profiles')
-                .select('avatar_version')
-                .eq('avatar_version', version)
-                .maybeSingle();
-            if (error) throw error;
-            if (data) await promoteIdentity(platform, version);
+            if (await createSupabaseAdminAuthorStore(db).profileWithAvatarVersion(version))
+                await promoteIdentity(platform, version);
         } catch (error) {
             Sentry.captureException(error);
             pending = true;

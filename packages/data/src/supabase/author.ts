@@ -12,13 +12,16 @@ import {
     skillGroupFromItem,
     skillItemFromRow,
     socialLinkFromRow,
-    type AuthorProfile
+    type AuthorProfile,
+    type CvDocument,
+    type ProjectRepoRules
 } from '@fkp/domain/author.ts';
+import type { PublicOpenPgpKey } from '@fkp/domain/openpgpKey.ts';
 import { decodeHtmlEntities } from '@fkp/domain/entities.ts';
 import type { AuthorRepository } from '../author';
 import { DataError } from '../errors';
 
-type Row = Record<string, any>;
+export type Row = Record<string, any>;
 
 function withoutId<T extends { id?: unknown }>(item: T): T {
     const { id: _id, ...rest } = item;
@@ -45,10 +48,22 @@ export async function publicProfile(profile: AuthorProfile): Promise<AuthorProfi
     };
 }
 
-export function createSupabaseAuthorRepository(
+export interface AuthorReader {
+    profile(options?: { includeEmail?: boolean }): Promise<AuthorProfile | null>;
+    links(category: 'social' | 'funding' | 'contact'): Promise<Row[]>;
+    experience(): Promise<Row[]>;
+    education(): Promise<Row[]>;
+    skills(): Promise<Row[]>;
+    projectRepoRules(): Promise<ProjectRepoRules>;
+    activeCvDocument(): Promise<CvDocument | null>;
+    activeOpenPgpKey(): Promise<PublicOpenPgpKey | null>;
+    siteUrl(): Promise<string>;
+}
+
+export function createAuthorReader(
     db: SupabaseClient,
     options: { fetch?: typeof fetch } = {}
-): AuthorRepository {
+): AuthorReader {
     const fetchFn = options.fetch ?? fetch;
 
     async function rows(operation: string, query: PromiseLike<{ data: unknown; error: unknown }>) {
@@ -66,65 +81,49 @@ export function createSupabaseAuthorRepository(
         return (data ?? null) as Row | null;
     }
 
-    function links(category: 'social' | 'funding' | 'contact') {
-        return rows(
-            `author.${category}Links`,
-            db
-                .from('db_links')
-                .select('*')
-                .eq('category', category)
-                .order('sort_order', { ascending: true })
-                .limit(LINK_LIMITS[category])
-        );
-    }
-
     return {
         async profile({ includeEmail = false } = {}) {
             const data = await single(
                 'author.profile',
                 db.from('db_profiles').select('*').limit(1).maybeSingle()
             );
-            return data ? publicProfile(profileFromRow(data, { includeEmail })) : null;
+            return data ? profileFromRow(data, { includeEmail }) : null;
         },
 
-        async socialLinks() {
-            return (await links('social')).map(row => withoutId(socialLinkFromRow(row)));
+        links(category) {
+            return rows(
+                `author.${category}Links`,
+                db
+                    .from('db_links')
+                    .select('*')
+                    .eq('category', category)
+                    .order('sort_order', { ascending: true })
+                    .limit(LINK_LIMITS[category])
+            );
         },
 
-        async fundingLinks() {
-            return (await links('funding')).map(row => withoutId(fundingLinkFromRow(row)));
+        experience() {
+            return rows(
+                'author.experience',
+                db.from('db_experiences').select('*').order('sort_order', { ascending: true })
+            );
         },
 
-        async contactLinks() {
-            return (await links('contact')).map(row => withoutId(contactLinkFromRow(row)));
+        education() {
+            return rows(
+                'author.education',
+                db.from('db_educations').select('*').order('sort_order', { ascending: true })
+            );
         },
 
-        async cvEntries() {
-            const [experience, education] = await Promise.all([
-                rows(
-                    'author.experience',
-                    db.from('db_experiences').select('*').order('sort_order', { ascending: true })
-                ),
-                rows(
-                    'author.education',
-                    db.from('db_educations').select('*').order('sort_order', { ascending: true })
-                )
-            ]);
-            return {
-                experience: experience.map(row => withoutId(experienceFromRow(row))),
-                education: education.map(row => withoutId(educationFromRow(row)))
-            };
-        },
-
-        async skillGroups() {
-            const categories = await rows(
+        skills() {
+            return rows(
                 'author.skills',
                 db
                     .from('db_categories')
                     .select('id, category, sort_order, db_items(id, name, sort_order)')
                     .order('sort_order', { ascending: true })
             );
-            return categories.map(row => withoutId(skillGroupFromItem(skillItemFromRow(row))));
         },
 
         async projectRepoRules() {
@@ -163,7 +162,7 @@ export function createSupabaseAuthorRepository(
                     if (match) hash = match[0];
                 } catch {}
             }
-            return withoutId(cvDocumentFromRow(data, hash));
+            return cvDocumentFromRow(data, hash);
         },
 
         async activeOpenPgpKey() {
@@ -188,5 +187,59 @@ export function createSupabaseAuthorRepository(
             );
             return decodeHtmlEntities(data?.site_url || '');
         }
+    };
+}
+
+export function createSupabaseAuthorRepository(
+    db: SupabaseClient,
+    options: { fetch?: typeof fetch } = {}
+): AuthorRepository {
+    const reader = createAuthorReader(db, options);
+
+    return {
+        async profile(settings = {}) {
+            const profile = await reader.profile(settings);
+            return profile ? publicProfile(profile) : null;
+        },
+
+        async socialLinks() {
+            return (await reader.links('social')).map(row => withoutId(socialLinkFromRow(row)));
+        },
+
+        async fundingLinks() {
+            return (await reader.links('funding')).map(row => withoutId(fundingLinkFromRow(row)));
+        },
+
+        async contactLinks() {
+            return (await reader.links('contact')).map(row => withoutId(contactLinkFromRow(row)));
+        },
+
+        async cvEntries() {
+            const [experience, education] = await Promise.all([
+                reader.experience(),
+                reader.education()
+            ]);
+            return {
+                experience: experience.map(row => withoutId(experienceFromRow(row))),
+                education: education.map(row => withoutId(educationFromRow(row)))
+            };
+        },
+
+        async skillGroups() {
+            return (await reader.skills()).map(row =>
+                withoutId(skillGroupFromItem(skillItemFromRow(row)))
+            );
+        },
+
+        projectRepoRules: () => reader.projectRepoRules(),
+
+        async activeCvDocument() {
+            const document = await reader.activeCvDocument();
+            return document ? withoutId(document) : null;
+        },
+
+        activeOpenPgpKey: () => reader.activeOpenPgpKey(),
+
+        siteUrl: () => reader.siteUrl()
     };
 }
