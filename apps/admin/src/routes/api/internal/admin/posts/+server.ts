@@ -18,6 +18,7 @@ import { validateDefineForSave } from '@fkp/mdrs';
 import { createSupabaseMdrsResolvers } from '#lib/server/mdrsData.ts';
 import { buildPostRender } from '#lib/server/postRender.ts';
 import { notifyNewPost } from '#lib/server/subscriberBroadcast.ts';
+import { createSupabaseNewsletterStore } from '@fkp/data';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { runInBackground } from '#lib/server/workerEnv.ts';
 import { enqueueNewsletter } from '#lib/server/newsletterQueue.ts';
@@ -139,9 +140,11 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             });
             if (!queued)
                 await runInBackground(
-                    notifyNewPost(db, platform, postId).catch(error => {
-                        console.error('Subscriber broadcast failed:', error);
-                    })
+                    notifyNewPost(createSupabaseNewsletterStore(db), platform, postId).catch(
+                        error => {
+                            console.error('Subscriber broadcast failed:', error);
+                        }
+                    )
                 );
         }
         if (operation.result?.published || previous?.published)

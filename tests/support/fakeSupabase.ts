@@ -75,6 +75,16 @@ export function fakeSupabase(
     function query(table: string) {
         let write: { rows: Row[]; conflict: string[] | null } | null = null;
         let written: Row[] | null = null;
+        let patch: Row | null = null;
+
+        function performUpdate() {
+            if (written) return written;
+            written = (tables[table] ?? []).filter(row =>
+                filters.every(f => f.test(row[f.column]))
+            );
+            for (const row of written) Object.assign(row, patch);
+            return written;
+        }
 
         function performWrite() {
             if (written) return written;
@@ -155,6 +165,12 @@ export function fakeSupabase(
         }
 
         function resolve() {
+            if (patch)
+                return {
+                    data: performUpdate().map(row => project(row, columns)),
+                    count: null,
+                    error: null
+                };
             if (write)
                 return {
                     data: performWrite().map(row => project(row, columns)),
@@ -185,6 +201,14 @@ export function fakeSupabase(
                 else filters.push(filter);
                 return builder;
             },
+            neq(column: string, value: unknown) {
+                filters.push({ column, test: actual => actual !== value });
+                return builder;
+            },
+            is(column: string, value: unknown) {
+                filters.push({ column, test: actual => actual === value });
+                return builder;
+            },
             like(column: string, pattern: string) {
                 const regex = likePattern(pattern, false);
                 filters.push({
@@ -211,6 +235,10 @@ export function fakeSupabase(
             },
             insert(values: Row | Row[]) {
                 write = { rows: [values].flat(), conflict: null };
+                return builder;
+            },
+            update(values: Row) {
+                patch = values;
                 return builder;
             },
             upsert(values: Row | Row[], settings?: { onConflict?: string }) {

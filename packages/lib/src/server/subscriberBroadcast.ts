@@ -1,12 +1,6 @@
 import { publicRepositories } from './repositories';
-import type { SupabaseClient } from '@supabase/supabase-js';
-import {
-    activeSubscribers,
-    newPostEmail,
-    resendApiKey,
-    sendBatch,
-    senderAddress
-} from './subscribers';
+import type { NewsletterRecipient, NewsletterStore } from '@fkp/data';
+import { newPostEmail, resendApiKey, sendBatch, senderAddress } from './subscribers';
 import { configuredSiteUrl } from './siteUrl';
 
 export type BroadcastOutcome =
@@ -15,7 +9,7 @@ export type BroadcastOutcome =
     | { sent: 0; reason: 'unpublished' | 'already-sent' | 'no-subscribers' | 'unavailable' };
 
 export async function notifyNewPost(
-    db: SupabaseClient,
+    newsletter: NewsletterStore,
     platform: unknown,
     postId: string,
     force = false
@@ -24,40 +18,24 @@ export async function notifyNewPost(
     const from = senderAddress(platform);
     if (!apiKey || !from) return { sent: 0, reason: 'unavailable' };
 
-    const { data: post, error } = await db
-        .from('db_posts')
-        .select('id, title, slug, excerpt, published, subscribers_notified_at')
-        .eq('id', postId)
-        .maybeSingle();
-    if (error || !post) return { sent: 0, reason: 'unavailable' };
-    if (!post.published) return { sent: 0, reason: 'unpublished' };
-    if (post.subscribers_notified_at && !force) return { sent: 0, reason: 'already-sent' };
+    const claim = await newsletter.claim(postId, force).catch(error => {
+        console.error('Failed to claim post notification:', error);
+        return null;
+    });
+    if (!claim || claim.status === 'not-found') return { sent: 0, reason: 'unavailable' };
+    if (claim.status !== 'claimed') return { sent: 0, reason: claim.status };
+    const { post } = claim;
 
-    const claimedAt = new Date().toISOString();
-    const claim = db
-        .from('db_posts')
-        .update({ subscribers_notified_at: claimedAt })
-        .eq('id', postId);
-    const { data: claimed, error: claimError } = await (force ?
-        claim.select('id')
-    :   claim.is('subscribers_notified_at', null).select('id'));
-    if (claimError) {
-        console.error('Failed to claim post notification:', claimError);
-        return { sent: 0, reason: 'unavailable' };
-    }
-    if (!claimed?.length) return { sent: 0, reason: 'already-sent' };
+    const release = () =>
+        claim.release().catch(error => {
+            console.error('Failed to release post notification:', error);
+        });
 
-    const release = async () => {
-        const { error: releaseError } = await db
-            .from('db_posts')
-            .update({ subscribers_notified_at: post.subscribers_notified_at ?? null })
-            .eq('id', postId)
-            .eq('subscribers_notified_at', claimedAt);
-        if (releaseError) console.error('Failed to release post notification:', releaseError);
-    };
-
-    const recipients = await activeSubscribers(db);
-    if (!recipients) {
+    let recipients: NewsletterRecipient[];
+    try {
+        recipients = await newsletter.recipients();
+    } catch (error) {
+        console.error('Failed to load subscribers:', error);
         await release();
         return { sent: 0, reason: 'unavailable' };
     }
@@ -70,10 +48,10 @@ export async function notifyNewPost(
     const siteName = profile?.name?.trim() || new URL(siteUrl).hostname;
     const postUrl = `${siteUrl}/blog/${post.slug}`;
 
-    const mails = recipients.map(row => {
-        const unsubscribeUrl = `${siteUrl}/unsubscribe?token=${row.unsubscribe_token}`;
+    const mails = recipients.map(recipient => {
+        const unsubscribeUrl = `${siteUrl}/unsubscribe?token=${recipient.unsubscribeToken}`;
         return {
-            to: row.email,
+            to: recipient.email,
             unsubscribeUrl,
             ...newPostEmail(
                 siteName,
@@ -87,7 +65,7 @@ export async function notifyNewPost(
         apiKey,
         from,
         mails,
-        `newsletter/${postId}/${post.subscribers_notified_at ?? 'auto'}`
+        `newsletter/${postId}/${post.previousSentAt ?? 'auto'}`
     );
     if (failed) {
         await release();

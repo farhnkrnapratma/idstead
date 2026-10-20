@@ -50,7 +50,7 @@ sequenceDiagram
         J->>ST: refreshPostRenders() once, then ack those messages
     end
     J->>J: isNewsletterMessage? else ack (drop)
-    J->>DB: notifyNewPost(db, env, siteUrl, postId, force)
+    J->>DB: notifyNewPost(createSupabaseNewsletterStore(db), env, postId, force)
     DB-->>J: post row: published? subscribers_notified_at?
     alt not published, or already notified and not force
         J->>J: ack
@@ -59,7 +59,7 @@ sequenceDiagram
         alt no row claimed
             J->>J: ack (already-sent)
         else claimed
-            J->>DB: activeSubscribers() ordered by email
+            J->>DB: newsletter.recipients() ordered by email
             J->>RS: POST /emails/batch in chunks of 100<br/>(per-recipient unsubscribe link, Idempotency-Key per chunk)
             alt every chunk sent
                 J->>J: ack

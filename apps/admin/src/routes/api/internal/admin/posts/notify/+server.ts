@@ -4,6 +4,7 @@ import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { blogAdmin } from '#lib/server/blogPostAuth.ts';
 import { notifyNewPost } from '#lib/server/subscriberBroadcast.ts';
+import { createSupabaseNewsletterStore } from '@fkp/data';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -32,7 +33,7 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
         return apiError(400, 'BLOG_NOTIFY_INVALID_POST', 'Invalid post id.');
 
     const result = await notifyNewPost(
-        db,
+        createSupabaseNewsletterStore(db),
         platform,
         postId,
         (body as { force?: unknown }).force === true

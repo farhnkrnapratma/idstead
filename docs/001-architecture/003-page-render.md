@@ -70,7 +70,7 @@ sequenceDiagram
     - The banner URL is built by `publicBannerUrl()` (`packages/lib/src/blogBanner.ts`) as `{PUBLIC_CDN_BASE_URL}/blog/{slug}/banner.webp`, with `banner.avif` as the preferred source (see [008-asset-pipeline.md](008-asset-pipeline.md#blog-post-assets)).
 - **Markdown** lives in Supabase Storage (`blog-posts`). Images and banners live in R2 (see [008-asset-pipeline.md](008-asset-pipeline.md)).
 - **Pre-rendered posts:** each saved post has a `.render.json` next to its markdown (see [007-publish-post.md](007-publish-post.md#notes)). The post page serves it without running the MDRS engine. It renders on the request only when the file is missing or was written by another `RENDER_VERSION`. Posts flagged `live` (they read `api.*` data) are served from the stored file as well, so their live data can be up to a day old: the jobs worker re-renders them after every publish and in its daily cron (see [007-publish-post.md](007-publish-post.md#notes)). Only the service role can write to the bucket, so the stored HTML is trusted as sanitized at save time.
-- **Supabase admin client:** `/subscribe/confirm` and `/unsubscribe` use it against `db_subscribers`.
+- **Service-role data:** `/subscribe/confirm` and `/unsubscribe` use `serviceData(platform).writers.subscribers` (`SubscriberRepository` from `@fkp/data`).
 
 ## Source
 

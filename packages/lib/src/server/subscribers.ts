@@ -1,7 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
 import * as privateEnv from '$app/env/private';
-
-export const SUBSCRIBER_TABLE = 'db_subscribers';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
@@ -256,19 +253,4 @@ export function contactMessageEmail(
         ),
         text: `${rows.map(([label, value]) => `${label}: ${value}`).join('\n')}\n\n${details.message}`
     };
-}
-
-export async function activeSubscribers(
-    db: SupabaseClient
-): Promise<{ email: string; unsubscribe_token: string }[] | null> {
-    const { data, error } = await db
-        .from(SUBSCRIBER_TABLE)
-        .select('email, unsubscribe_token')
-        .eq('status', 'active')
-        .order('email', { ascending: true });
-    if (error) {
-        console.error('Failed to load subscribers:', error);
-        return null;
-    }
-    return data ?? [];
 }
