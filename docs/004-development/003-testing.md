@@ -26,7 +26,7 @@ The suite sends about 50 requests. The rate limit is 60 per minute, so wait a mi
 | `apiV1.test.ts` | Live v1 contract: discovery, parameters/aliases, blog, comments, views, author/CV byte-equality, PDF checksum headers, search, CORS, 404/405, error envelope shape |
 | `apiV1Handlers.test.ts` | Offline v1 handlers: `/cv` equals `/author?field=cv`, no DB IDs, checksum rules, markdown negotiation, comment nesting |
 | `apiParams.test.ts` | `parseApiParams`, aliases, conflicts, `output` vs `Accept`, boolean and number parsing |
-| `postLookup.test.ts` | Post slugs, slug regeneration plan, `findPost()` (ID / prefix / slug) |
+| `postSlug.test.ts` | Post slugs and the slug regeneration plan |
 | `publicPost.test.ts` | `publicPostFields` keeps only public columns and swaps the UUID for the public ID |
 | `sanitizePublicApiData.test.ts` | `sanitizePublicApiData` drops row IDs and the avatar and banner asset versions from `/v1/author` |
 | `ard.test.ts`, `ardIngestion.test.ts` | ARD manifest, search, filters, facets, tokens, no lexical fallback; index ingestion and migration privacy |

@@ -1,8 +1,8 @@
 import { hashIp } from '@fkp/domain/hash.ts';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { BlogRepository, FeedbackRecorder, FeedbackTarget, LegalPageId } from '@fkp/data';
+import { PUBLIC_ID_PATTERN } from '@fkp/domain/postReference.ts';
 import { ActivityInputError, activityJson, activityTarget, activityUuid } from './activityInput';
 import { isSameOriginRequest } from './sameOrigin';
-import { resolvePostUuid } from './postLookup';
 import { apiError } from './apiError';
 
 export async function recordPageFeedback(input: {
@@ -10,9 +10,9 @@ export async function recordPageFeedback(input: {
     url: URL;
     ip: () => string;
     secret: string | undefined;
-    db: SupabaseClient | null;
+    data: { blog: BlogRepository; feedback: FeedbackRecorder } | null;
 }) {
-    const { request, url, secret, db } = input;
+    const { request, url, secret, data } = input;
     const fail = apiError;
     if (
         !isSameOriginRequest(request, url)
@@ -26,16 +26,27 @@ export async function recordPageFeedback(input: {
         const targetId = body.targetId;
         if (body.vote !== 'yes' && body.vote !== 'no')
             throw new ActivityInputError('Choose Yes or No.');
-        if (!db || !secret?.trim())
+        if (!data || !secret?.trim())
             return fail(
                 503,
                 'FEEDBACK_UNAVAILABLE',
                 'Feedback is temporarily unavailable. Please try again.'
             );
-        const articleId = targetType === 'article' ? await resolvePostUuid(db, targetId) : null;
-        if (targetType === 'article' && !articleId)
-            return fail(404, 'FEEDBACK_TARGET_NOT_FOUND', 'This page is not available.');
-        const target = activityTarget(targetType, articleId ?? targetId);
+        let target: FeedbackTarget;
+        if (targetType === 'article') {
+            const found =
+                typeof targetId === 'string' && PUBLIC_ID_PATTERN.test(targetId) ?
+                    await data.blog.findPublished(targetId)
+                :   null;
+            if (found?.status !== 'found')
+                return fail(404, 'FEEDBACK_TARGET_NOT_FOUND', 'This page is not available.');
+            target = { type: 'article', post: found.post };
+        } else {
+            target = {
+                type: 'legal',
+                page: activityTarget(targetType, targetId).id as LegalPageId
+            };
+        }
         const ip = input.ip();
         if (!ip)
             return fail(
@@ -43,38 +54,22 @@ export async function recordPageFeedback(input: {
                 'FEEDBACK_UNAVAILABLE',
                 'Feedback is temporarily unavailable. Please try again.'
             );
-        const ipHash = await hashIp(ip, secret);
-        const { data, error } = await db.rpc('db_record_page_feedback', {
-            p_operation_id: operationId,
-            p_target_type: target.type,
-            p_target_id: target.id,
-            p_vote: body.vote,
-            p_ip_hash: ipHash
+        const result = await data.feedback.record(target, {
+            operationId,
+            vote: body.vote,
+            ipHash: await hashIp(ip, secret)
         });
-        if (error) {
-            if (error.message.includes('FEEDBACK_OPERATION_CONFLICT'))
-                return fail(
-                    409,
-                    'FEEDBACK_OPERATION_CONFLICT',
-                    'This feedback request has already been used.'
-                );
-            if (error.message.includes('FEEDBACK_TARGET_NOT_FOUND'))
-                return fail(404, 'FEEDBACK_TARGET_NOT_FOUND', 'This page is not available.');
+        if (result.status === 'operation-conflict')
             return fail(
-                503,
-                'FEEDBACK_UNAVAILABLE',
-                'Feedback could not be saved. Please try again.'
+                409,
+                'FEEDBACK_OPERATION_CONFLICT',
+                'This feedback request has already been used.'
             );
-        }
-        if (typeof data?.recorded !== 'boolean' || typeof data?.replayed !== 'boolean')
-            return fail(
-                503,
-                'FEEDBACK_UNAVAILABLE',
-                'Feedback could not be confirmed. Please try again.'
-            );
+        if (result.status === 'target-not-found')
+            return fail(404, 'FEEDBACK_TARGET_NOT_FOUND', 'This page is not available.');
         return Response.json(
-            { recorded: data.recorded, replayed: data.replayed },
-            { status: data.recorded && !data.replayed ? 201 : 200 }
+            { recorded: result.recorded, replayed: result.replayed },
+            { status: result.recorded && !result.replayed ? 201 : 200 }
         );
     } catch (error) {
         return error instanceof ActivityInputError ?

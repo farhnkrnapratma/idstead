@@ -117,4 +117,4 @@ API routes authenticate themselves:
 
 - `apps/api/src/index.ts`
 - `apps/web/src/routes/**`, `apps/admin/src/routes/**`
-- `packages/lib/src/server/adminAuth.ts`, `blogPostAuth.ts`, `adminCv.ts`, `adminActivity.ts`, `adminWorkspace.ts`
+- `packages/lib/src/server/adminAuth.ts`, `blogPostAuth.ts`, `adminCv.ts`, `adminActivity.ts`, `adminWorkspace.ts` (the last two read and write through `AdminActivityStore` from `@fkp/data`)

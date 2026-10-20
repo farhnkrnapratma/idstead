@@ -58,6 +58,10 @@ function inner(columns: string) {
 export interface FakeOptions {
     defaults?: Record<string, () => Row>;
     afterInsert?: (table: string, row: Row, tables: FakeTables) => void;
+    rpc?: Record<
+        string,
+        (args: Row, tables: FakeTables) => { data: unknown; error: { message: string } | null }
+    >;
 }
 
 function project(row: Row, columns: string): Row {
@@ -76,6 +80,15 @@ export function fakeSupabase(
         let write: { rows: Row[]; conflict: string[] | null } | null = null;
         let written: Row[] | null = null;
         let patch: Row | null = null;
+        let removing = false;
+
+        function performDelete() {
+            if (written) return written;
+            const all = tables[table] ?? [];
+            written = all.filter(row => filters.every(f => f.test(row[f.column])));
+            tables[table] = all.filter(row => !written!.includes(row));
+            return written;
+        }
 
         function performUpdate() {
             if (written) return written;
@@ -107,6 +120,7 @@ export function fakeSupabase(
         const embedFilters: Filter[] = [];
         const orders: Array<{ column: string; ascending: boolean }> = [];
         let columns = '*';
+        let selected = false;
         let withCount = false;
         let range: [number, number] | null = null;
         let max = Infinity;
@@ -165,15 +179,30 @@ export function fakeSupabase(
         }
 
         function resolve() {
+            if (removing)
+                return {
+                    data:
+                        selected ?
+                            performDelete().map(row => project(row, columns))
+                        :   (performDelete(), null),
+                    count: null,
+                    error: null
+                };
             if (patch)
                 return {
-                    data: performUpdate().map(row => project(row, columns)),
+                    data:
+                        selected ?
+                            performUpdate().map(row => project(row, columns))
+                        :   (performUpdate(), null),
                     count: null,
                     error: null
                 };
             if (write)
                 return {
-                    data: performWrite().map(row => project(row, columns)),
+                    data:
+                        selected ?
+                            performWrite().map(row => project(row, columns))
+                        :   (performWrite(), null),
                     count: null,
                     error: null
                 };
@@ -189,8 +218,9 @@ export function fakeSupabase(
         }
 
         const builder = {
-            select(selected = '*', options?: { count?: string; head?: boolean }) {
-                columns = selected;
+            select(fields = '*', options?: { count?: string; head?: boolean }) {
+                columns = fields;
+                selected = true;
                 withCount = options?.count === 'exact';
                 return builder;
             },
@@ -237,6 +267,14 @@ export function fakeSupabase(
                 write = { rows: [values].flat(), conflict: null };
                 return builder;
             },
+            lte(column: string, value: unknown) {
+                filters.push({ column, test: actual => String(actual) <= String(value) });
+                return builder;
+            },
+            delete() {
+                removing = true;
+                return builder;
+            },
             update(values: Row) {
                 patch = values;
                 return builder;
@@ -268,6 +306,12 @@ export function fakeSupabase(
 
     const db = {
         from: (table: string) => query(table),
+        rpc: async (name: string, args: Row = {}) => {
+            const handler = options.rpc?.[name];
+            return handler ?
+                    handler(args, tables)
+                :   { data: null, error: { message: `Unknown function ${name}` } };
+        },
         storage: {
             from: () => ({
                 getPublicUrl: (path: string) => ({ data: { publicUrl: STORAGE_ORIGIN + path } })

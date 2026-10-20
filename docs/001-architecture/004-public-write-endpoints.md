@@ -58,7 +58,7 @@ sequenceDiagram
     H->>H: same-origin, Turnstile, field checks
     H->>DB: resolve recipient (contact link or profile email)
     H->>RS: sendEmail to the site owner, else 502
-    H->>DB: INSERT db_admin_notifications {kind}
+    H->>DB: writers.notifications.notify(kind)<br/>(INSERT db_admin_notifications)
     H-->>B: 201 {success}
     end
 ```
@@ -86,4 +86,5 @@ sequenceDiagram
 
 - `apps/web/src/routes/api/internal/**/+server.ts`
 - `packages/lib/src/server/sameOrigin.ts`, `turnstile.ts`, `moderation.ts`, `pageFeedback.ts`, `subscribers.ts`, `unsubscribeRequest.ts`
+- `packages/data/src/activity.ts` and `supabase/activity.ts` (`FeedbackRecorder` calls `db_record_page_feedback`, `AdminNotifier` inserts into `db_admin_notifications`)
 - `supabase/migrations/20260911123339_feedback_operation_replay.sql` (`db_record_page_feedback`)
