@@ -86,7 +86,8 @@ export function fakeSupabase(
     options: FakeOptions = {}
 ) {
     function query(table: string) {
-        let write: { rows: Row[]; conflict: string[] | null } | null = null;
+        let write: { rows: Row[]; conflict: string[] | null; ignoreDuplicates: boolean } | null =
+            null;
         let written: Row[] | null = null;
         let patch: Row | null = null;
         let removing = false;
@@ -123,11 +124,18 @@ export function fakeSupabase(
             for (const values of write!.rows) {
                 const row = { ...(options.defaults?.[table]?.() ?? {}), ...values };
                 const existing =
-                    write!.conflict
-                    && (tables[table] ?? []).some(item =>
-                        write!.conflict!.every(column => item[column] === row[column])
-                    );
-                if (existing) continue;
+                    write!.conflict ?
+                        (tables[table] ?? []).find(item =>
+                            write!.conflict!.every(column => item[column] === row[column])
+                        )
+                    :   undefined;
+                if (existing) {
+                    if (!write!.ignoreDuplicates) {
+                        Object.assign(existing, values);
+                        written.push(existing);
+                    }
+                    continue;
+                }
                 (tables[table] ??= []).push(row);
                 options.afterInsert?.(table, row, tables);
                 written.push(row);
@@ -282,7 +290,7 @@ export function fakeSupabase(
                 return builder;
             },
             insert(values: Row | Row[]) {
-                write = { rows: [values].flat(), conflict: null };
+                write = { rows: [values].flat(), conflict: null, ignoreDuplicates: false };
                 return builder;
             },
             in(column: string, values: unknown[]) {
@@ -305,10 +313,14 @@ export function fakeSupabase(
                 patch = values;
                 return builder;
             },
-            upsert(values: Row | Row[], settings?: { onConflict?: string }) {
+            upsert(
+                values: Row | Row[],
+                settings?: { onConflict?: string; ignoreDuplicates?: boolean }
+            ) {
                 write = {
                     rows: [values].flat(),
-                    conflict: settings?.onConflict?.split(',').map(c => c.trim()) ?? null
+                    conflict: settings?.onConflict?.split(',').map(c => c.trim()) ?? null,
+                    ignoreDuplicates: settings?.ignoreDuplicates === true
                 };
                 return builder;
             },

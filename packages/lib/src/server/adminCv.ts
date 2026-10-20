@@ -14,7 +14,12 @@ import {
 import { loadCvFonts } from '#lib/server/cvFonts.ts';
 import { readAvatarBytes } from '#lib/server/profileAssets.ts';
 import { fetchProjects, extractGitHubUsername } from '#lib/server/githubProjects.ts';
-import { fetchSocials, fetchProjectRepoRules, fetchActiveOpenPgpKey } from '#lib/author.ts';
+import {
+    createSupabaseCvDocumentStore,
+    createSupabaseOpenPgpKeyStore,
+    type CvDocumentStore,
+    type StoredCvDocument
+} from '@fkp/data';
 import {
     cvSnapshot,
     cvVersionBump,
@@ -53,6 +58,15 @@ const CV_PROJECT_LIMIT = 4;
 
 function getAdminDb(platform?: unknown) {
     return getSupabaseAdminClient(platform) || publicSupabase;
+}
+
+function cvStores(platform?: unknown) {
+    const db = getAdminDb(platform);
+    return {
+        db,
+        documents: createSupabaseCvDocumentStore(db),
+        keys: createSupabaseOpenPgpKeyStore(db)
+    };
 }
 
 async function cvStorage(platform?: any) {
@@ -156,7 +170,7 @@ function cvObjectKeys(filename: string) {
 
 async function putCvObject(
     platform: unknown,
-    db: ReturnType<typeof getAdminDb>,
+    documents: CvDocumentStore,
     key: string,
     body: Uint8Array,
     contentType: string,
@@ -175,38 +189,13 @@ async function putCvObject(
         });
         return;
     }
-    const { error } = await db.storage
-        .from('cv_documents')
-        .upload(key, body, { contentType, upsert: true, cacheControl: '60' });
-    if (error) throw error;
+    await documents.uploadFallback(key, body, contentType);
 }
 
-async function deleteCvObjects(
-    platform: unknown,
-    db: ReturnType<typeof getAdminDb>,
-    keys: string[]
-) {
+async function deleteCvObjects(platform: unknown, documents: CvDocumentStore, keys: string[]) {
     const storage = await cvStorage(platform);
     if (storage) await deleteObjects(storage.bucket, keys);
-    else await db.storage.from('cv_documents').remove(keys);
-}
-
-interface ActiveCvDocument {
-    id: string;
-    filename: string;
-    file_url: string;
-    signed_at: string | null;
-}
-
-async function activeCvDocument(db: ReturnType<typeof getAdminDb>) {
-    const { data, error } = await db
-        .from('db_documents')
-        .select('id, filename, file_url, signed_at')
-        .eq('is_active', true)
-        .limit(1)
-        .maybeSingle();
-    if (error) throw error;
-    return (data?.filename && data.file_url ? data : null) as ActiveCvDocument | null;
+    else await documents.removeFallback(keys).catch(() => {});
 }
 
 async function fetchBytes(url: string) {
@@ -227,10 +216,9 @@ async function storedSignature(fileUrl: string) {
     return null;
 }
 
-async function siteUrlFor(db: ReturnType<typeof getAdminDb>, platform: unknown) {
-    const { data } = await db.from('db_profiles').select('site_url').limit(1).maybeSingle();
+async function siteUrlFor(documents: CvDocumentStore, platform: unknown) {
     return (
-        data?.site_url
+        (await documents.siteUrl().catch(() => ''))
         || (platform as { env?: { PUBLIC_SITE_URL?: string } } | undefined)?.env?.PUBLIC_SITE_URL
         || (publicEnv as Record<string, string | undefined>).PUBLIC_SITE_URL
         || ''
@@ -239,13 +227,13 @@ async function siteUrlFor(db: ReturnType<typeof getAdminDb>, platform: unknown) 
 
 async function storeCvSignature(
     platform: unknown,
-    db: ReturnType<typeof getAdminDb>,
+    documents: CvDocumentStore,
     filename: string,
     signature: { asc: string; sig: Uint8Array }
 ) {
     await putCvObject(
         platform,
-        db,
+        documents,
         cvKey(filename, 'asc'),
         new TextEncoder().encode(signature.asc),
         'application/pgp-signature',
@@ -253,7 +241,7 @@ async function storeCvSignature(
     );
     await putCvObject(
         platform,
-        db,
+        documents,
         cvKey(filename, 'sig'),
         signature.sig,
         'application/pgp-signature',
@@ -263,24 +251,21 @@ async function storeCvSignature(
 
 async function clearCvSignature(
     platform: unknown,
-    db: ReturnType<typeof getAdminDb>,
-    doc: ActiveCvDocument
+    documents: CvDocumentStore,
+    doc: StoredCvDocument
 ) {
     await deleteCvObjects(
         platform,
-        db,
+        documents,
         CV_SIGNATURE_EXTENSIONS.map(ext => cvKey(doc.filename, ext))
     );
-    await db
-        .from('db_documents')
-        .update({ signed_at: null, signer_fingerprint: null })
-        .eq('id', doc.id);
+    await documents.setSignature(doc.id, null);
 }
 
 async function refreshCvBundle(
     platform: unknown,
-    db: ReturnType<typeof getAdminDb>,
-    doc: ActiveCvDocument,
+    stores: ReturnType<typeof cvStores>,
+    doc: StoredCvDocument,
     known: { pdf?: Uint8Array; signature?: { asc: string; sig: Uint8Array } | null } = {}
 ) {
     const pdf = known.pdf ?? (await fetchBytes(doc.file_url));
@@ -290,8 +275,8 @@ async function refreshCvBundle(
         : doc.signed_at ? await storedSignature(doc.file_url)
         : null;
     if (signature && known.signature === undefined)
-        await storeCvSignature(platform, db, doc.filename, signature);
-    const key = await fetchActiveOpenPgpKey(db, { strict: true });
+        await storeCvSignature(platform, stores.documents, doc.filename, signature);
+    const key = await stores.keys.active();
     const bundle = buildCvBundle({
         filename: doc.filename,
         pdf,
@@ -299,7 +284,7 @@ async function refreshCvBundle(
         signature,
         publicKey: key?.armored ?? null,
         key,
-        siteUrl: await siteUrlFor(db, platform),
+        siteUrl: await siteUrlFor(stores.documents, platform),
         apiBase:
             (platform as { env?: { PUBLIC_API_BASE_URL?: string } } | undefined)?.env
                 ?.PUBLIC_API_BASE_URL || publicEnv.PUBLIC_API_BASE_URL,
@@ -307,18 +292,20 @@ async function refreshCvBundle(
     });
     await putCvObject(
         platform,
-        db,
+        stores.documents,
         cvBundleKey(doc.filename),
         bundle,
         'application/zip',
         cvBundleFilename(doc.filename)
     );
-    await db.from('db_documents').update({ checksums: digests }).eq('id', doc.id);
+    await stores.documents
+        .setChecksums(doc.id, digests)
+        .catch(error => console.error('CV checksums could not be saved:', error));
 }
 
 async function removeCvObjects(
     platform: unknown,
-    db: ReturnType<typeof getAdminDb>,
+    documents: CvDocumentStore,
     filename: string,
     strict: boolean
 ) {
@@ -334,8 +321,7 @@ async function removeCvObjects(
         }
     }
     try {
-        const { error } = await db.storage.from('cv_documents').remove(keys);
-        if (strict && error) return false;
+        await documents.removeFallback(keys);
     } catch (err) {
         console.error('Supabase storage removal warning:', err);
         if (strict) return false;
@@ -349,9 +335,9 @@ export async function deleteCvFile(
     filename: string,
     strict = false
 ): Promise<boolean> {
-    if (!(await removeCvObjects(platform, db, filename, strict))) return false;
-    const { error: deleteError } = await db.from('db_documents').delete().eq('filename', filename);
-    return !deleteError;
+    const documents = createSupabaseCvDocumentStore(db);
+    if (!(await removeCvObjects(platform, documents, filename, strict))) return false;
+    return documents.delete(filename);
 }
 
 export async function processCvGenerate(
@@ -363,7 +349,8 @@ export async function processCvGenerate(
         const authError = await requireAdminAuth(req, platform);
         if (authError) return authError;
 
-        const db = getAdminDb(platform);
+        const stores = cvStores(platform);
+        const { db, documents } = stores;
 
         let force = false;
         try {
@@ -373,51 +360,18 @@ export async function processCvGenerate(
             force = false;
         }
 
-        const { data: profile } = await db.from('db_profiles').select('*').limit(1).maybeSingle();
-
-        if (!profile?.id) {
-            return apiError(404, 'CV_NOT_FOUND', 'Author profile not found in database.');
-        }
-
-        const [
-            { data: experiences, error: experiencesError },
-            { data: educations, error: educationsError },
-            { data: categories, error: categoriesError },
-            socials,
-            repoRules
-        ] = await Promise.all([
-            db
-                .from('db_experiences')
-                .select(
-                    'title, company, type, location, loc_type, start_date, end_date, currently_in, description'
-                )
-                .order('sort_order', { ascending: true }),
-            db
-                .from('db_educations')
-                .select(
-                    'institution, degree, field, grade, start_date, end_date, currently_in, description'
-                )
-                .order('sort_order', { ascending: true }),
-            db
-                .from('db_categories')
-                .select('id, category, sort_order, db_items(id, name, sort_order)')
-                .order('sort_order', { ascending: true }),
-            fetchSocials(db),
-            fetchProjectRepoRules(db)
-        ]);
-
-        const loadError = experiencesError || educationsError || categoriesError;
-        if (loadError) {
+        let source;
+        try {
+            source = await documents.sourceData();
+        } catch (loadError) {
             console.error('CV data query failed:', loadError);
             return fail('Failed to load CV data.');
         }
-
-        const skillCategories: SkillCategoryData[] = (categories || []).map((cat: any) => ({
-            category: cat.category,
-            items: (cat.db_items || [])
-                .sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
-                .map((item: any) => item.name)
-        }));
+        if (!source) return apiError(404, 'CV_NOT_FOUND', 'Author profile not found in database.');
+        const { profile, socials, repoRules } = source;
+        const experiences = source.experiences as unknown as ExperienceData[];
+        const educations = source.educations as unknown as EducationData[];
+        const skillCategories: SkillCategoryData[] = source.skills;
 
         const githubUsername = extractGitHubUsername({ ...profile, socialLinks: socials });
         const repositories =
@@ -438,11 +392,11 @@ export async function processCvGenerate(
 
         const cvData: AuthorCvData = {
             profile: {
-                name: profile.name || '',
-                title: profile.job_title || profile.headline || '',
-                bio: profile.bio || '',
-                email: profile.email || '',
-                website: profile.site_url || '',
+                name: String(profile.name || ''),
+                title: String(profile.job_title || profile.headline || ''),
+                bio: String(profile.bio || ''),
+                email: String(profile.email || ''),
+                website: String(profile.site_url || ''),
                 location: [profile.city, profile.country].filter(Boolean).join(', '),
                 avatarBytes: await readAvatarBytes(
                     platform as Pick<App.Platform, 'env'> | undefined,
@@ -452,9 +406,9 @@ export async function processCvGenerate(
             links: socials
                 .filter(item => /github|linkedin/i.test(item.platform))
                 .map(item => ({ url: item.url })),
-            experiences: (experiences || []) as ExperienceData[],
+            experiences,
             projects,
-            educations: (educations || []) as EducationData[],
+            educations,
             skills: skillCategories
         };
 
@@ -462,33 +416,18 @@ export async function processCvGenerate(
             profile: { ...cvData.profile },
             avatar: profile.avatar_version ?? null,
             links: cvData.links.map(link => link.url),
-            experiences: experiences || [],
-            educations: educations || [],
+            experiences: source.experiences,
+            educations: source.educations,
             skills: skillCategories,
             projects
         });
 
-        const { data: activeDoc } = await db
-            .from('db_documents')
-            .select('id, filename')
-            .eq('is_active', true)
-            .limit(1)
-            .maybeSingle();
-        const { data: previousSnapshot } =
-            activeDoc ?
-                await db
-                    .from('db_document_snapshots')
-                    .select('content')
-                    .eq('document_id', activeDoc.id)
-                    .maybeSingle()
-            :   { data: null };
+        const activeDoc = await documents.active();
+        const previousSnapshot = activeDoc ? await documents.snapshot(activeDoc.id) : null;
 
         let bump =
             activeDoc ?
-                cvVersionBump(
-                    (previousSnapshot?.content as CvSnapshot | undefined) ?? null,
-                    snapshot
-                )
+                cvVersionBump((previousSnapshot as CvSnapshot | null) ?? null, snapshot)
             :   null;
         if (activeDoc && !bump && !force)
             return jsonResponse({
@@ -517,16 +456,12 @@ export async function processCvGenerate(
         )
             .join('')
             .slice(0, 7);
-        const filename = `${formatAuthorSlug(profile.name)}-${shortHash}-v${versionLabel}.pdf`;
+        const filename = `${formatAuthorSlug(String(profile.name || ''))}-${shortHash}-v${versionLabel}.pdf`;
         const { digests, files: checksumFiles } = await cvChecksums(pdfBytes, filename);
 
-        const { data: previousDocs } = await db
-            .from('db_documents')
-            .select('id, filename')
-            .eq('is_active', true);
-        for (const oldDoc of previousDocs ?? [])
-            if (oldDoc.filename && oldDoc.filename !== filename)
-                await removeCvObjects(platform, db, oldDoc.filename, false);
+        for (const oldFilename of await documents.activeFilenames())
+            if (oldFilename !== filename)
+                await removeCvObjects(platform, documents, oldFilename, false);
 
         let fileUrl = '';
         let storageProvider: 'R2' | 'Supabase Storage' = 'R2';
@@ -556,46 +491,37 @@ export async function processCvGenerate(
 
         if (!fileUrl) {
             storageProvider = 'Supabase Storage';
-            const bucket = db.storage.from('cv_documents');
-            for (const [key, body, contentType] of uploads) {
-                const { error: storageError } = await bucket.upload(key, body, {
-                    contentType,
-                    upsert: true
-                });
-                if (storageError) return fail('Failed to upload CV file.');
+            try {
+                for (const [key, body, contentType] of uploads)
+                    await documents.uploadFallback(key, body, contentType);
+            } catch {
+                return fail('Failed to upload CV file.');
             }
-            fileUrl = bucket.getPublicUrl(cvKey(filename)).data.publicUrl;
+            fileUrl = documents.fallbackUrl(cvKey(filename));
         }
 
-        await db.from('db_documents').update({ is_active: false }).eq('is_active', true);
-
-        const { data: inserted, error: insertError } = await db
-            .from('db_documents')
-            .insert({
-                author_id: profile.id,
-                filename,
-                file_url: fileUrl,
-                hash: digests.sha256,
-                checksums: digests,
-                version: versionLabel,
-                is_active: true
-            })
-            .select('id')
-            .single();
-
-        if (insertError || !inserted) {
+        let inserted: { id: string };
+        try {
+            inserted = await documents.publish(
+                {
+                    authorId: profile.id,
+                    filename,
+                    fileUrl,
+                    hash: digests.sha256,
+                    checksums: digests,
+                    version: versionLabel
+                },
+                snapshot
+            );
+        } catch (insertError) {
+            console.error('CV record could not be saved:', insertError);
             return fail('Failed to save CV record.');
         }
-
-        const { error: snapshotError } = await db
-            .from('db_document_snapshots')
-            .insert({ document_id: inserted.id, content: snapshot });
-        if (snapshotError) console.error('CV snapshot could not be saved:', snapshotError);
 
         try {
             await refreshCvBundle(
                 platform,
-                db,
+                stores,
                 { id: inserted.id, filename, file_url: fileUrl, signed_at: null },
                 { pdf: pdfBytes, signature: null }
             );
@@ -650,7 +576,7 @@ export async function processCvDelete(
         const authError = await requireAdminAuth(req, platform);
         if (authError) return authError;
 
-        const db = getAdminDb(platform);
+        const { db, documents } = cvStores(platform);
         let targetFilename: string | null = null;
         try {
             const body = await req.json();
@@ -663,29 +589,13 @@ export async function processCvDelete(
 
         let filename: string;
         if (targetFilename) {
-            const { data: doc, error: lookupError } = await db
-                .from('db_documents')
-                .select('filename')
-                .eq('filename', targetFilename)
-                .limit(1)
-                .maybeSingle();
-
-            if (lookupError || !doc?.filename) {
-                return apiError(404, 'CV_NOT_FOUND', 'CV document not found.');
-            }
-            filename = doc.filename;
+            const found = await documents.findFilename(targetFilename).catch(() => null);
+            if (!found) return apiError(404, 'CV_NOT_FOUND', 'CV document not found.');
+            filename = found;
         } else {
-            const { data: activeDoc, error: lookupError } = await db
-                .from('db_documents')
-                .select('filename')
-                .eq('is_active', true)
-                .limit(1)
-                .maybeSingle();
-
-            if (lookupError || !activeDoc?.filename) {
-                return apiError(404, 'CV_NOT_FOUND', 'No active CV document to delete.');
-            }
-            filename = activeDoc.filename;
+            const active = await documents.active().catch(() => null);
+            if (!active) return apiError(404, 'CV_NOT_FOUND', 'No active CV document to delete.');
+            filename = active.filename;
         }
 
         const deleted = await deleteCvFile(platform, db, filename);
@@ -724,13 +634,19 @@ export async function processCvSignature(
     try {
         const authError = await requireAdminAuth(req, platform);
         if (authError) return authError;
-        const db = getAdminDb(platform);
-        const doc = await activeCvDocument(db);
+        const stores = cvStores(platform);
+        const { db, documents, keys } = stores;
+        const doc = await documents.active();
         if (!doc) return apiError(404, 'CV_NOT_FOUND', 'No active CV document.');
 
         if (req.method === 'DELETE') {
-            await clearCvSignature(platform, db, doc);
-            await refreshCvBundle(platform, db, { ...doc, signed_at: null }, { signature: null });
+            await clearCvSignature(platform, documents, doc);
+            await refreshCvBundle(
+                platform,
+                stores,
+                { ...doc, signed_at: null },
+                { signature: null }
+            );
             await logCvActivity(
                 req,
                 platform,
@@ -751,7 +667,7 @@ export async function processCvSignature(
         } catch {
             return apiError(413, 'CV_UPLOAD_TOO_LARGE', 'Signature files are at most 16 KiB.');
         }
-        const activeKey = await fetchActiveOpenPgpKey(db, { strict: true });
+        const activeKey = await keys.active();
         if (!activeKey)
             return apiError(
                 409,
@@ -764,15 +680,12 @@ export async function processCvSignature(
         await verifyDetachedSignature(pdf, signature.signature, key);
 
         const files = { asc: signature.asc, sig: signature.sig };
-        await storeCvSignature(platform, db, doc.filename, files);
+        await storeCvSignature(platform, documents, doc.filename, files);
         const signedAt = new Date().toISOString();
-        await db
-            .from('db_documents')
-            .update({ signed_at: signedAt, signer_fingerprint: activeKey.fingerprint })
-            .eq('id', doc.id);
+        await documents.setSignature(doc.id, { signedAt, fingerprint: activeKey.fingerprint });
         await refreshCvBundle(
             platform,
-            db,
+            stores,
             { ...doc, signed_at: signedAt },
             { pdf, signature: files }
         );
@@ -829,18 +742,22 @@ export async function processOpenPgpKey(
     try {
         const authError = await requireAdminAuth(req, platform);
         if (authError) return authError;
-        const db = getAdminDb(platform);
-        const existing = await fetchActiveOpenPgpKey(db, { strict: true });
-        const doc = await activeCvDocument(db);
+        const stores = cvStores(platform);
+        const { db, documents, keys } = stores;
+        const existing = await keys.active();
+        const doc = await documents.active();
 
         if (req.method === 'DELETE') {
-            const { error } = await db.from('db_openpgp_keys').delete().eq('is_active', true);
-            if (error) return fail('Failed to remove the OpenPGP key.');
+            try {
+                await keys.removeActive();
+            } catch {
+                return fail('Failed to remove the OpenPGP key.');
+            }
             if (doc) {
-                if (doc.signed_at) await clearCvSignature(platform, db, doc);
+                if (doc.signed_at) await clearCvSignature(platform, documents, doc);
                 await refreshCvBundle(
                     platform,
-                    db,
+                    stores,
                     { ...doc, signed_at: null },
                     { signature: null }
                 );
@@ -892,46 +809,27 @@ export async function processOpenPgpKey(
         );
         if (failures.length) return apiError(422, 'CV_INVALID_INPUT', failures.join(' '));
 
-        const { error: deactivateError } = await db
-            .from('db_openpgp_keys')
-            .update({ is_active: false, updated_at: new Date().toISOString() })
-            .eq('is_active', true)
-            .neq('fingerprint', parsed.fingerprint);
-        if (deactivateError) return fail('Failed to save the OpenPGP key.');
-        const { error: saveError } = await db
-            .from('db_openpgp_keys')
-            .upsert(
-                {
-                    fingerprint: parsed.fingerprint,
-                    armored: parsed.armored,
-                    user_ids: parsed.userIds,
-                    algorithm: parsed.algorithm,
-                    key_created_at: parsed.createdAt,
-                    expires_at: parsed.expiresAt,
-                    keyservers,
-                    is_active: true,
-                    updated_at: new Date().toISOString()
-                },
-                { onConflict: 'fingerprint' }
-            );
-        if (saveError) return fail('Failed to save the OpenPGP key.');
+        try {
+            await keys.publish({
+                fingerprint: parsed.fingerprint,
+                armored: parsed.armored,
+                userIds: parsed.userIds,
+                algorithm: parsed.algorithm,
+                createdAt: parsed.createdAt,
+                expiresAt: parsed.expiresAt,
+                keyservers
+            });
+        } catch {
+            return fail('Failed to save the OpenPGP key.');
+        }
 
-        const { data: signer } =
-            doc ?
-                await db
-                    .from('db_documents')
-                    .select('signer_fingerprint')
-                    .eq('id', doc.id)
-                    .maybeSingle()
-            :   { data: null };
-        const signatureCleared = Boolean(
-            doc?.signed_at && signer?.signer_fingerprint !== parsed.fingerprint
-        );
+        const signer = doc ? await documents.signerFingerprint(doc.id) : null;
+        const signatureCleared = Boolean(doc?.signed_at && signer !== parsed.fingerprint);
         if (doc) {
-            if (signatureCleared) await clearCvSignature(platform, db, doc);
+            if (signatureCleared) await clearCvSignature(platform, documents, doc);
             await refreshCvBundle(
                 platform,
-                db,
+                stores,
                 { ...doc, signed_at: signatureCleared ? null : doc.signed_at },
                 signatureCleared ? { signature: null } : {}
             );

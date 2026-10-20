@@ -1,5 +1,6 @@
 import * as publicEnv from '$app/env/public';
 import { getSupabaseAdminClient } from './supabaseAdmin';
+import { createSupabaseAdminAuthorStore } from '@fkp/data';
 import { assetBucket, copyObject } from './r2';
 import { supabase } from '#lib/supabase.ts';
 import {
@@ -114,17 +115,13 @@ export async function removeAssets(
 export async function cleanupAssets(platform?: Pick<App.Platform, 'env'>) {
     const db = getSupabaseAdminClient(platform);
     if (!db) throw new Error('Database is not configured.');
-    const { data, error } = await db.rpc('db_claim_identity_cleanup');
-    if (error) throw error;
-    for (const version of data ?? []) {
-        await removeAssets(platform, version.id);
-        const { error: failure } = await db
-            .from('db_identity_versions')
-            .delete()
-            .eq('id', version.id);
-        if (failure) throw failure;
+    const store = createSupabaseAdminAuthorStore(db);
+    const versions = await store.claimIdentityCleanup();
+    for (const version of versions) {
+        await removeAssets(platform, version);
+        await store.deleteIdentityVersion(version);
     }
-    return data?.length ?? 0;
+    return versions.length;
 }
 
 export async function readAvatarBytes(

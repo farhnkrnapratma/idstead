@@ -58,6 +58,7 @@ export interface AdminAuthorStore {
     identityVersions(ids: string[]): Promise<IdentityVersionRecord[]>;
     registerIdentityVersion(version: IdentityVersionRecord): Promise<void>;
     deleteIdentityVersion(id: string): Promise<void>;
+    claimIdentityCleanup(): Promise<string[]>;
 }
 
 export type LinkCategory = 'social' | 'funding' | 'contact';
