@@ -1,8 +1,15 @@
+:::define
+owner: api.v1.author.profile.name
+site: api.v1.author.profile.siteUrl
+email: api.v1.author.profile.email
+location: api.v1.author.profile.city + ", " + api.v1.author.profile.country
+:::
+
 # Privacy Policy
 
 **Effective date:** 15 October 2026
 
-This **Privacy Policy** explains what personal data is processed when you visit **https://fkp.my.id** (the "**Website**"), why it is processed, who else receives it, and what rights you have over it.
+This **Privacy Policy** explains what personal data is processed when you visit **${site}** (the "**Website**"), why it is processed, who else receives it, and what rights you have over it.
 
 We aim to describe the Website's actual behaviour rather than a generic template. Where a control is weaker than it might appear, this document says so.
 
@@ -10,15 +17,15 @@ We aim to describe the Website's actual behaviour rather than a generic template
 
 The controller responsible for the processing described here is:
 
-- **Farhan Kurnia Pratama**
-- Palembang, Indonesia
-- Email: [contact@fkp.my.id](mailto:contact@fkp.my.id)
+- **${owner}**
+- ${location}
+- Email: ${email}
 
 No data protection officer has been appointed, as the scale of processing does not require one. Enquiries should be sent to the address above.
 
 ## 2. Scope and Legal Framework
 
-This policy covers the Website, its public API at `api.fkp.my.id/v1`, and the forms it presents.
+This policy covers the Website, its public API (`/v1`), and the forms it presents.
 
 Processing is carried out in accordance with **Law of the Republic of Indonesia No. 27 of 2022 on Personal Data Protection** (the "**PDP Law**"). Because the Website is reachable from the European Economic Area and the United Kingdom, this policy also sets out the corresponding rights and legal bases under the **General Data Protection Regulation** ("**GDPR**") for Visitors to whom that regulation applies.
 
@@ -45,19 +52,18 @@ We cannot recover your IP address from these hashes, but the second and third ar
 
 The following entries are written to `localStorage` on your device. They remain on your device, are readable only by this Website, and can be erased at any time by clearing site data in your browser.
 
-- `fkp_cookie_consent_v2` — your consent choices for the four signals described in Section 5.
-- `fkp_ga4_retention_settings` — the analytics retention preference shown in the consent dialog. See the note in Section 5 regarding its effect.
+- `idstead_cookie_consent_v2` — your consent choices for the four signals described in Section 5.
 - `theme` — your light, dark, or automatic appearance choice.
 - `a11y_settings` — accessibility preferences such as font scale and dyslexia-friendly typeface.
-- `fkp_content_font` — your reading typeface choice.
+- `idstead_content_font` — your reading typeface choice.
 - `codeblock_prefs` — display preferences for code blocks.
-- `fkp_search_history` — the last five entries you opened from the search dialog, kept so that the dialog can offer them again. This is a record of your activity on the Website, but it is stored only on your device and is never transmitted to us or to any third party.
+- `idstead_search_history` — the last five entries you opened from the search dialog, kept so that the dialog can offer them again. This is a record of your activity on the Website, but it is stored only on your device and is never transmitted to us or to any third party.
 
-Third-party cookies that may be set in your browser: `_ga` and `_ga_G-6HR3DKWZLF` by Google, only after you grant analytics consent; and `__cf_bm` together with `cf_clearance` by Cloudflare, in connection with bot management and the anti-abuse challenge described in Section 8.
+Third-party cookies that may be set in your browser: `_ga` and `_ga_<measurement ID>` by Google, only after you grant analytics consent; and `__cf_bm` together with `cf_clearance` by Cloudflare, in connection with bot management and the anti-abuse challenge described in Section 8.
 
 ## 5. Analytics: Google Analytics 4
 
-The Website loads the Google tag (`gtag.js`) directly for the **Google Analytics 4** property `G-6HR3DKWZLF`. It does not use a Google Tag Manager container.
+The Website loads the Google tag (`gtag.js`) directly for the site's **Google Analytics 4** property. It does not use a Google Tag Manager container.
 
 **Google Consent Mode v2** is implemented. Four signals are transmitted, and **all four default to `denied`** before you make any choice:
 
@@ -83,13 +89,13 @@ The Website uses [Sentry](https://sentry.io/) for error monitoring, performance 
 - **Session replay is enabled.** Approximately ten percent of all sessions are recorded, and one hundred percent of sessions in which an error occurs are recorded. A replay reconstructs page structure, navigation, clicks, scrolling, and network timing.
 - Replay recording runs with the vendor's default privacy settings, under which **text content and form input values are masked and media elements are blocked** before the recording leaves your browser. Sentry additionally observes the IP address from which a report is sent.
 
-:::warning Sentry, including session replay, initialises independently of the cookie banner. The banner governs the Google Consent Mode signals described in Section 5; it does not switch Sentry off. If you object to session replay, please contact us at [contact@fkp.my.id](mailto:contact@fkp.my.id). :::
+:::warning Sentry, including session replay, initialises independently of the cookie banner. The banner governs the Google Consent Mode signals described in Section 5; it does not switch Sentry off. If you object to session replay, please contact us at ${email}. :::
 
 **Legal basis:** legitimate interests in maintaining the security, stability, and correct operation of the Website, under Article 20(2) of the PDP Law and Article 6(1)(f) GDPR.
 
 ## 7. Contact and Feedback Forms
 
-The contact form on the home page and the form at [Feedback](https://fkp.my.id/feedback) are submitted to the Website's own server, which delivers each message to our mailbox as email through **Resend**.
+The contact form on the home page and the form at [Feedback](/feedback) are submitted to the Website's own server, which delivers each message to our mailbox as email through **Resend**.
 
 - The contact form transmits the name, email address, and message you enter.
 - The feedback form additionally transmits the page URL you are reporting.
@@ -113,7 +119,7 @@ When you submit a comment or reply, **your display name and the full text of you
 
 The outcome of that evaluation determines, on its own, whether your comment is published. There is no human review step before publication.
 
-:::important This is a decision taken by automated means. If your comment is withheld and you consider the decision wrong, you may contest it and obtain human review by reporting the comment through the kebab menu (⋮) or by writing to [contact@fkp.my.id](mailto:contact@fkp.my.id). This reflects your right under Article 22(3) GDPR and the corresponding provisions of the PDP Law. :::
+:::important This is a decision taken by automated means. If your comment is withheld and you consider the decision wrong, you may contest it and obtain human review by reporting the comment through the kebab menu (⋮) or by writing to ${email}. This reflects your right under Article 22(3) GDPR and the corresponding provisions of the PDP Law. :::
 
 **Legal basis:** legitimate interests in preventing the publication of unlawful or abusive material, under Article 20(2) of the PDP Law and Article 6(1)(f) GDPR.
 
@@ -158,7 +164,7 @@ Subject to the conditions and exceptions in the applicable law, you have the rig
 - **not be subject to a decision based solely on automated processing** that produces legal or similarly significant effects, and to obtain human intervention as described in Section 9 (PDP Law Art. 10; GDPR Art. 22);
 - **lodge a complaint** with a supervisory authority, as described in Section 19.
 
-To exercise any of these rights, write to [contact@fkp.my.id](mailto:contact@fkp.my.id). We will respond without undue delay and, in any event, within the period prescribed by the applicable law. We may ask you for information sufficient to establish that the request concerns your own data.
+To exercise any of these rights, write to ${email}. We will respond without undue delay and, in any event, within the period prescribed by the applicable law. We may ask you for information sufficient to establish that the request concerns your own data.
 
 ## 14. Removing a Comment
 
@@ -166,13 +172,13 @@ Because comments are posted without an account, the practical identifier for a r
 
 1. Open the kebab menu (⋮) on the comment concerned.
 2. Choose **Copy Comment ID**, or choose **Report** and select the **removal request** ground.
-3. If you proceed by email or through the [Feedback](https://fkp.my.id/feedback) form, include the Comment ID and your reasons, and send it to [contact@fkp.my.id](mailto:contact@fkp.my.id).
+3. If you proceed by email or through the [Feedback](/feedback) form, include the Comment ID and your reasons, and send it to ${email}.
 
 ## 15. Security Measures
 
 We apply, among others: transport encryption; a content security policy and associated response headers; restriction of the internal interface to same-origin requests; database row-level security; rate limiting of the public interface; a lockout after repeated failed administrator sign-in attempts, applied to both the originating address and the account; optional two-factor authentication and passkeys for the administrator account, enforced on the server and in the database; an email notification to the administrator when a password sign-in succeeds; and the salted hashing of IP addresses described in Section 3.
 
-No system is perfectly secure, and we make no assurance that these measures will prevent every incident. Our vulnerability disclosure procedure is published at [Security Policy](https://fkp.my.id/security).
+No system is perfectly secure, and we make no assurance that these measures will prevent every incident. Our vulnerability disclosure procedure is published at [Security Policy](/security).
 
 ## 16. Children
 
@@ -198,6 +204,6 @@ You may ask to be notified by email when a new article is published. This is opt
 
 We may revise this **Privacy Policy**. The revised version takes effect on publication, and the modification date shown alongside this document reflects the most recent revision.
 
-Questions, requests, and objections should be addressed to [contact@fkp.my.id](mailto:contact@fkp.my.id).
+Questions, requests, and objections should be addressed to ${email}.
 
 If you consider that our processing infringes your rights, you may lodge a complaint with the competent authority in Indonesia under the PDP Law. Visitors in the European Economic Area or the United Kingdom may instead lodge a complaint with the supervisory authority of their habitual residence or place of work.

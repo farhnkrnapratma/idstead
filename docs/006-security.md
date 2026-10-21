@@ -77,4 +77,4 @@ Details and the flow diagram: [architecture/6](001-architecture/006-admin-login-
 
 - Secrets live in Phase and in Worker secrets. They are never in the repo.
 - The pre-commit hook runs TruffleHog on staged files and blocks the commit on a verified secret.
-- GitHub secret scanning and push protection are enabled (per [SECURITY.md](../SECURITY.md)).
+- GitHub secret scanning and push protection are enabled on the repository.

@@ -5,3 +5,6 @@ supabase/migrations/*.sql
 tests/fixtures/**
 
 docs/**/SHOWCASE.md
+
+templates/legal/*.md
+!templates/legal/README.md
