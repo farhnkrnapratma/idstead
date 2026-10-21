@@ -9,6 +9,14 @@ const MIGRATION_FILES = new Set([
     'tests/naming.test.ts'
 ]);
 
+const INSTANCE_FILES = new Set([
+    'idstead.jsonc',
+    'apps/admin/wrangler.jsonc',
+    'apps/api/wrangler.jsonc',
+    'apps/jobs/wrangler.jsonc',
+    'apps/web/wrangler.jsonc'
+]);
+
 const PENDING_FILES = new Set([
     'AGENTS.md',
     'CLAUDE.md',
@@ -17,10 +25,6 @@ const PENDING_FILES = new Set([
     'README.md',
     'SECURITY.md',
     'TERMS.md',
-    'apps/admin/wrangler.jsonc',
-    'apps/api/wrangler.jsonc',
-    'apps/jobs/wrangler.jsonc',
-    'apps/web/wrangler.jsonc',
     'docs/001-architecture/001-component-map.md',
     'docs/001-architecture/002-web-middleware-pipeline.md',
     'docs/001-architecture/003-page-render.md',
@@ -61,7 +65,7 @@ function mentionsLegacyName(file: string): boolean {
 
 describe('Idstead naming', () => {
     const offenders = trackedFiles().filter(
-        file => !MIGRATION_FILES.has(file) && mentionsLegacyName(file)
+        file => !MIGRATION_FILES.has(file) && !INSTANCE_FILES.has(file) && mentionsLegacyName(file)
     );
 
     test('only allowlisted files still use the old name', () => {

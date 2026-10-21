@@ -1,0 +1,24 @@
+{
+    "name": "{{workers.api}}",
+    "main": "src/index.ts",
+    "compatibility_date": "2025-06-28",
+    "compatibility_flags": ["nodejs_compat"],
+    "routes": "{{routes.api}}",
+    "observability": { "enabled": true },
+    "secrets": {
+        "required": [
+            "PUBLIC_SUPABASE_URL",
+            "PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+            "PUBLIC_SENTRY_DSN",
+            "PUBLIC_SENTRY_ENVIRONMENT"
+        ]
+    },
+    "rules": [{ "type": "Text", "globs": ["**/*.md"], "fallthrough": true }],
+    "ratelimits": [
+        {
+            "name": "API_RATE_LIMITER",
+            "namespace_id": "{{rateLimitNamespaces.api}}",
+            "simple": { "limit": 60, "period": 60 }
+        }
+    ]
+}

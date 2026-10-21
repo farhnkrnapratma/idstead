@@ -1,0 +1,8 @@
+{
+    "domains": { "site": "fkp.my.id", "redirectWww": true },
+    "cloudflare": {
+        "workers": { "web": "fkp-web", "admin": "fkp-admin", "api": "fkp-api", "jobs": "fkp-jobs" },
+        "assetBucket": "static",
+        "newsletterQueue": "fkp-newsletter"
+    }
+}

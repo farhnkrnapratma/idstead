@@ -32,6 +32,7 @@ Developer documentation for example.com. The project overview stays in the root 
 | [002-environment.md](004-development/002-environment.md) | Every environment variable and binding, per app |
 | [003-testing.md](004-development/003-testing.md) | Test suite map, the live API suite, coverage gaps |
 | [004-scripts-and-tooling.md](004-development/004-scripts-and-tooling.md) | `scripts/` operations, `tooling/` hooks and plugins |
+| [005-instance-configuration.md](004-development/005-instance-configuration.md) | `idstead.jsonc` fields and `bun run configure` |
 
 ## 005 Operations
 

@@ -1,0 +1,20 @@
+{
+    "domains": {
+        "site": "example.com",
+        "admin": "admin.example.com",
+        "api": "api.example.com",
+        "redirectWww": true
+    },
+    "cloudflare": {
+        "workers": {
+            "web": "idstead-web",
+            "admin": "idstead-admin",
+            "api": "idstead-api",
+            "jobs": "idstead-jobs"
+        },
+        "assetBucket": "idstead-assets",
+        "newsletterQueue": "idstead-newsletter",
+        "rateLimitNamespaces": { "web": 1001, "api": 1002, "admin": 1003 }
+    },
+    "jobs": { "cron": "17 3 * * *" }
+}
