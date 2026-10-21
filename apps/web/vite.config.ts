@@ -11,12 +11,7 @@ export default defineConfig({
     envDir: ENV_DIR,
     plugins: [
         webpWasmPlugin(),
-        sentrySvelteKit({
-            org: 'farhnkrnapratma',
-            project: 'www',
-            authToken: process.env.SENTRY_AUTH_TOKEN,
-            telemetry: false
-        }),
+        sentrySvelteKit({ authToken: process.env.SENTRY_AUTH_TOKEN, telemetry: false }),
         tailwindcss(),
         sveltekit({
             compilerOptions: {
