@@ -36,4 +36,4 @@ Only these are public. Everything else under `src/` is internal and may change.
 
 The package ships TypeScript source with extensionless relative imports, so a consumer has to bundle it: the Svelte apps list it in `ssr.noExternal` (`apps/web/vite.config.ts`, `apps/admin/vite.config.ts`), and wrangler bundles it for the API and jobs Workers.
 
-The language is documented in [docs/002-mdrs](../../docs/002-mdrs/README.md). `bun run check` type-checks the package on its own (strict `tsc`); `tests/mdrsDocsSnapshot.test.ts` pins the output of every documented example.
+The language is documented in [docs/008-mdrs](../../docs/008-mdrs/README.md). `bun run check` type-checks the package on its own (strict `tsc`); `tests/mdrsDocsSnapshot.test.ts` pins the output of every documented example.

@@ -9,12 +9,12 @@ The public API is the Hono worker at `apps/api/src/index.ts` (`api.example.com/v
 
 - `apps/api/src/README.md`: served live at `GET /v1`, holds the error-code table
 - `packages/lib/src/openapi.ts`: served at `/v1/openapi.{json,yaml}`, mirrored at `example.com/.well-known/openapi.*`, and drives `llms.txt` / agent skills
-- `docs/api/v1/*.md`: the extended reference
+- `docs/004-api/001-v1/*.md`: the extended reference
 - `tests/apiV1.test.ts`, `tests/apiV1Handlers.test.ts`, `tests/apiParams.test.ts`
 
 ## Steps
 
-1. **Routes**: `rg -n "^app\.get" apps/api/src/index.ts`. Every `/v1/...` route must appear in the README Endpoints tables, in `openapi.ts` `paths`, and in `docs/api/v1/README.md`.
+1. **Routes**: `rg -n "^app\.get" apps/api/src/index.ts`. Every `/v1/...` route must appear in the README Endpoints tables, in `openapi.ts` `paths`, and in `docs/004-api/001-v1/README.md`.
 
 2. **Error envelope**:
     - Handlers must return errors through `apiError(status, CODE, message, details?)` or throw `ApiRequestError`.
@@ -22,10 +22,10 @@ The public API is the Hono worker at `apps/api/src/index.ts` (`api.example.com/v
 
 3. **Error codes**:
     - Collect every code: `rg -o "'[A-Z][A-Z_]{3,}'" packages/lib/src/server/api packages/lib/src/server/postLookup.ts apps/api/src/index.ts`.
-    - Cross-check against the README table **and** `docs/api/v1/errors.md`. Flag codes missing from either, codes documented but no longer produced, and generic codes (`BAD_REQUEST`, `INTERNAL_ERROR`) used where a specific per-endpoint code is expected.
+    - Cross-check against the README table **and** `docs/004-api/001-v1/002-errors.md`. Flag codes missing from either, codes documented but no longer produced, and generic codes (`BAD_REQUEST`, `INTERNAL_ERROR`) used where a specific per-endpoint code is expected.
 
 4. **Parameters**:
-    - Every handler parses its query with `parseApiParams(url, allowed)`. Check that the `allowed` list matches the README and `docs/api/v1/parameters.md`.
+    - Every handler parses its query with `parseApiParams(url, allowed)`. Check that the `allowed` list matches the README and `docs/004-api/001-v1/001-parameters.md`.
     - Single resources use `?id=`, never a path segment.
 
 5. **Outputs**:
@@ -38,8 +38,8 @@ The public API is the Hono worker at `apps/api/src/index.ts` (`api.example.com/v
 
 8. **Versioning**:
     - Flag any breaking change made in place under `/v1`: a removed or renamed field, a changed type or default, a removed endpoint or parameter, or a changed error code.
-    - Breaking changes must ship under a new `/v2` and a new `docs/api/v2/`.
+    - Breaking changes must ship under a new `/v2` and a new `docs/004-api/002-v2/ (renumbering the pages after it)`.
 
 ## Output
 
-List each finding as: `file:line`, what is inconsistent, and the specific fix. Example: "add `WIDGET_NOT_FOUND` to the README table and `docs/api/v1/errors.md`". If everything is consistent, say so explicitly. Don't invent findings.
+List each finding as: `file:line`, what is inconsistent, and the specific fix. Example: "add `WIDGET_NOT_FOUND` to the README table and `docs/004-api/001-v1/002-errors.md`". If everything is consistent, say so explicitly. Don't invent findings.

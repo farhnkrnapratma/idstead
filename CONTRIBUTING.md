@@ -1,6 +1,6 @@
 # Contributing
 
-Read [docs/](docs/README.md) for the architecture and setup, and [CLAUDE.md](CLAUDE.md) for code conventions. Set up locally with [docs/004-development/001-local-setup.md](docs/004-development/001-local-setup.md).
+Read [docs/](docs/README.md) for the architecture and setup, and [CLAUDE.md](CLAUDE.md) for code conventions. Set up locally with [docs/005-development/001-local-setup.md](docs/005-development/001-local-setup.md).
 
 ## Branches
 
@@ -29,10 +29,10 @@ git-flow init --preset=classic --defaults --main main
 
 ## Before you push
 
-There is no CI. These local runs are the only gate before Workers Builds deploys:
+There is no CI pipeline. These local runs are the only gate before Workers Builds deploys:
 
 ```sh
-phase run --env dev bun run test
+bun run test
 bun run check
 bun run lint
 ```
@@ -46,7 +46,7 @@ bun run lint
 - Never hardcode content (name, bio, links, CV, …). It comes from Supabase.
 - **API changes:**
     - Breaking changes go under a new version (`/v2`).
-    - Update `packages/lib/src/openapi.ts`, `apps/api/src/README.md` and `docs/003-api/001-v1/` together.
+    - Update `packages/lib/src/openapi.ts`, `apps/api/src/README.md` and `docs/004-api/001-v1/` together.
 - **Database:** every `UPDATE`/`DELETE` in a function needs a `WHERE` clause.
 - **Docs:** when behaviour changes, update the matching page in `docs/`.
 
