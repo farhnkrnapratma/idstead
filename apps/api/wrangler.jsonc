@@ -1,5 +1,5 @@
 {
-    "name": "fkp-api",
+    "name": "idstead-api",
     "main": "src/index.ts",
     "compatibility_date": "2025-06-28",
     "compatibility_flags": ["nodejs_compat"],

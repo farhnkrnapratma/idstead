@@ -1,5 +1,5 @@
 {
-    "name": "fkp-jobs",
+    "name": "idstead-jobs",
     "main": "src/index.ts",
     "compatibility_date": "2025-06-28",
     "compatibility_flags": ["nodejs_compat"],
@@ -23,12 +23,12 @@
     "queues": {
         "consumers": [
             {
-                "queue": "fkp-newsletter",
+                "queue": "idstead-newsletter",
                 "max_batch_size": 10,
                 "max_retries": 5,
-                "dead_letter_queue": "fkp-newsletter-dlq"
+                "dead_letter_queue": "idstead-newsletter-dlq"
             },
-            { "queue": "fkp-newsletter-dlq", "max_batch_size": 10, "max_retries": 0 }
+            { "queue": "idstead-newsletter-dlq", "max_batch_size": 10, "max_retries": 0 }
         ]
     },
     "triggers": { "crons": ["17 3 * * *"] }
