@@ -183,7 +183,7 @@ Rules:
 
 ## This instance
 
-This checkout is also the owner's own instance, **fkp.my.id**. Only these places may name it: `idstead.jsonc` (site `fkp.my.id`, Workers `fkp-web`/`fkp-admin`/`fkp-api`/`fkp-jobs`, bucket `static`, queue `fkp-newsletter`), the rendered `apps/*/wrangler.jsonc`, the live-example link in `README.md`, the security contact in `SECURITY.md`, and this section of `CLAUDE.md` and `AGENTS.md`.
+This checkout is also the owner's own instance, **fkp.my.id**. Only these places may name it: `idstead.jsonc` (site `fkp.my.id`, the default Worker and queue names, and the bucket `static`), the rendered `apps/*/wrangler.jsonc`, the live-example link in `README.md`, the security contact in `SECURITY.md`, and this section of `CLAUDE.md` and `AGENTS.md`.
 
 - **Environment variables** come from Phase (app `www`, environments Development and Production; `.claude/rules/phase.md` has the rules). Run commands as `phase run --env dev|prod -- <command>`; Production Worker secrets are synced from the Phase folders `/workers/<app>`, so never edit them in the Cloudflare dashboard.
 - **Dev servers in parallel:** `run dev [dev.web ...]` through the `run` command runner; targets live in `run.conf` (`run --list`).

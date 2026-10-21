@@ -1,5 +1,5 @@
 {
-    "name": "fkp-admin",
+    "name": "idstead-admin",
     "main": ".svelte-kit/cloudflare/_worker.js",
     "compatibility_date": "2025-06-28",
     "compatibility_flags": ["nodejs_compat"],
@@ -8,7 +8,7 @@
     "observability": { "enabled": true },
     "ai": { "binding": "AI", "remote": true },
     "r2_buckets": [{ "binding": "ASSET_BUCKET", "bucket_name": "static", "remote": true }],
-    "queues": { "producers": [{ "binding": "NEWSLETTER_QUEUE", "queue": "fkp-newsletter" }] },
+    "queues": { "producers": [{ "binding": "NEWSLETTER_QUEUE", "queue": "idstead-newsletter" }] },
     "ratelimits": [
         {
             "name": "API_RATE_LIMITER",

@@ -1,8 +1,13 @@
 {
     "domains": { "site": "fkp.my.id", "redirectWww": true },
     "cloudflare": {
-        "workers": { "web": "fkp-web", "admin": "fkp-admin", "api": "fkp-api", "jobs": "fkp-jobs" },
+        "workers": {
+            "web": "idstead-web",
+            "admin": "idstead-admin",
+            "api": "idstead-api",
+            "jobs": "idstead-jobs"
+        },
         "assetBucket": "static",
-        "newsletterQueue": "fkp-newsletter"
+        "newsletterQueue": "idstead-newsletter"
     }
 }
