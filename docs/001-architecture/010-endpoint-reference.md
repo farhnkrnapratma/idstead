@@ -8,7 +8,7 @@ rg --files --hidden apps/web/src/routes apps/admin/src/routes
 rg -n "^app\.get" apps/api/src/index.ts
 ```
 
-## fkp-api: `api.fkp.my.id` (public, read-only)
+## fkp-api: `api.example.com` (public, read-only)
 
 All routes are `GET`/`HEAD` (`OPTIONS` returns 204), rate-limited to 60 requests per minute per IP, use the anon client, and are CORS `*`. Full reference: [docs/003-api/001-v1](../003-api/001-v1/README.md).
 
@@ -26,7 +26,7 @@ All routes are `GET`/`HEAD` (`OPTIONS` returns 204), rate-limited to 60 requests
 | `/v1/search`                           | `getSearch`                                   |
 | `/v1/openapi.json`, `/v1/openapi.yaml` | `openapiSpec`                                 |
 
-## fkp-web: `fkp.my.id`
+## fkp-web: `example.com`
 
 ### Pages
 
@@ -70,7 +70,7 @@ See [docs/003-api/002-ard.md](../003-api/002-ard.md).
 
 Details: [004-public-write-endpoints.md](004-public-write-endpoints.md).
 
-## fkp-admin: `admin.fkp.my.id`
+## fkp-admin: `admin.example.com`
 
 Pages: `/` (dashboard), `/new`, `/login`. All of them pass the hook's session + MFA guard, except `/login`. Other routes: `/robots.txt` (disallow all) and the identity assets. Blog banners, images and videos are served from the CDN.
 

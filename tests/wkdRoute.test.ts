@@ -14,7 +14,7 @@ const key = {
     createdAt: null,
     expiresAt: null,
     userIds: [
-        { name: 'Ada', email: 'ada@fkp.my.id' },
+        { name: 'Ada', email: 'ada@example.com' },
         { name: 'Ada', email: 'ada@example.org' }
     ],
     keyservers: []
@@ -22,14 +22,14 @@ const key = {
 
 describe('WKD direct method', () => {
     test('serves the binary key for an address on the site domain', async () => {
-        expect(await wkdKey(await wkdHash('ada'), key, 'https://fkp.my.id')).toEqual(binary);
+        expect(await wkdKey(await wkdHash('ada'), key, 'https://example.com')).toEqual(binary);
     });
 
     test('does not answer for other addresses, malformed hashes or a missing key', async () => {
         const hash = await wkdHash('ada');
-        expect(await wkdKey(await wkdHash('bob'), key, 'https://fkp.my.id')).toBeNull();
-        expect(await wkdKey(hash.toUpperCase(), key, 'https://fkp.my.id')).toBeNull();
+        expect(await wkdKey(await wkdHash('bob'), key, 'https://example.com')).toBeNull();
+        expect(await wkdKey(hash.toUpperCase(), key, 'https://example.com')).toBeNull();
         expect(await wkdKey(hash, key, 'https://example.org.evil')).toBeNull();
-        expect(await wkdKey(hash, null, 'https://fkp.my.id')).toBeNull();
+        expect(await wkdKey(hash, null, 'https://example.com')).toBeNull();
     });
 });

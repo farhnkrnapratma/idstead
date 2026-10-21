@@ -1,13 +1,13 @@
 # Public REST API (v1)
 
-Public, read-only endpoints at `https://api.fkp.my.id/v1/`. No authentication is required. This document is served live at `GET /v1` as `text/markdown`; send `Accept: application/json` (or `?output=json`) for a JSON index of the endpoints instead. The full machine-readable spec is at `/v1/openapi.json` and `/v1/openapi.yaml` (also mirrored at `https://fkp.my.id/.well-known/openapi.json`).
+Public, read-only endpoints at `{{API_BASE_URL}}/v1/`. No authentication is required. This document is served live at `GET /v1` as `text/markdown`; send `Accept: application/json` (or `?output=json`) for a JSON index of the endpoints instead. The full machine-readable spec is at `/v1/openapi.json` and `/v1/openapi.yaml` (also mirrored at `{{SITE_URL}}/.well-known/openapi.json`).
 
-**Base URL**: `https://api.fkp.my.id`. Every endpoint accepts `GET`, `HEAD` and `OPTIONS` only.
+**Base URL**: `{{API_BASE_URL}}`. Every endpoint accepts `GET`, `HEAD` and `OPTIONS` only.
 
-Found a bug or a security issue with this API? See https://fkp.my.id/security for how to report it privately.
+Found a bug or a security issue with this API? See {{SITE_URL}}/security for how to report it privately.
 
 ```sh
-curl https://api.fkp.my.id/v1/blog
+curl {{API_BASE_URL}}/v1/blog
 ```
 
 ## Parameters
@@ -108,8 +108,8 @@ The HTTP status code is authoritative and isn't repeated in the body. Every erro
 Post metadata is `{id, slug, title, excerpt, summary, tldr, tags, collaborators, created_at, updated_at}`. `excerpt` is written by hand; `summary` and `tldr` are generated when the post is saved and may be `null`/`[]`.
 
 ```sh
-curl "https://api.fkp.my.id/v1/blog?id=update-gnome-51"
-curl "https://api.fkp.my.id/v1/blog/content?id=3f9a1c2&o=txt"
+curl "{{API_BASE_URL}}/v1/blog?id=update-gnome-51"
+curl "{{API_BASE_URL}}/v1/blog/content?id=3f9a1c2&o=txt"
 ```
 
 #### Comments
@@ -140,13 +140,13 @@ The CV file outputs are available only when the request is for the CV alone (`/v
 
 `checksum` applies to `pdf` and `zip` and defaults to `true`, which adds `Repr-Digest: sha-256=:<base64>:, sha-512=:<base64>:` (RFC 9530) and `X-Checksum-SHA256: <hex>`. Send `Want-Repr-Digest` (for example `sha-512=10, sha-256=1`) to narrow or order the algorithms. `checksum=false` downloads the file without these headers, and `checksum` with any other output returns `400 CV_CHECKSUM_REQUIRES_PDF`.
 
-The signature is verified against the active OpenPGP key when it is uploaded. Fetch that key from a source other than the bundle: `https://fkp.my.id/pgp.asc`, WKD (`gpg --locate-keys` with an address listed in `publicKey.wkd`), or a keyserver in `publicKey.keyservers`.
+The signature is verified against the active OpenPGP key when it is uploaded. Fetch that key from a source other than the bundle: `{{SITE_URL}}/pgp.asc`, WKD (`gpg --locate-keys` with an address listed in `publicKey.wkd`), or a keyserver in `publicKey.keyservers`.
 
 ```sh
-curl "https://api.fkp.my.id/v1/author?f=profile,skills&o=md"
-curl -OJ "https://api.fkp.my.id/v1/cv?o=pdf"
-curl -OJ "https://api.fkp.my.id/v1/cv?o=sha256" && sha256sum -c CV-*.pdf.sha256
-curl -OJ "https://api.fkp.my.id/v1/cv?o=sig" && gpg --verify CV-*.pdf.sig
+curl "{{API_BASE_URL}}/v1/author?f=profile,skills&o=md"
+curl -OJ "{{API_BASE_URL}}/v1/cv?o=pdf"
+curl -OJ "{{API_BASE_URL}}/v1/cv?o=sha256" && sha256sum -c CV-*.pdf.sha256
+curl -OJ "{{API_BASE_URL}}/v1/cv?o=sig" && gpg --verify CV-*.pdf.sig
 ```
 
 ### Search
@@ -165,7 +165,7 @@ Each result is `{type: "post", id, title, subtitle, url}`. A query under two cha
 | `/v1/openapi.json` | OpenAPI 3 specification, JSON.                             |
 | `/v1/openapi.yaml` | Same specification, YAML.                                  |
 
-Also available for AI/LLM agents on `https://fkp.my.id`: `/llms.txt`, `/.well-known/agent-skills/index.json` (per-endpoint agent skill descriptors with content digests), and `/.well-known/api-catalog` (RFC 9727 linkset).
+Also available for AI/LLM agents on `{{SITE_URL}}`: `/llms.txt`, `/.well-known/agent-skills/index.json` (per-endpoint agent skill descriptors with content digests), and `/.well-known/api-catalog` (RFC 9727 linkset).
 
 ---
 

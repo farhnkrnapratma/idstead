@@ -98,7 +98,7 @@ exports[`MDRS docs examples render unchanged 001-markdown/003-links-and-images.m
 `;
 
 exports[`MDRS docs examples render unchanged 001-markdown/003-links-and-images.md #5 1`] = `
-"<p><a href="https://fkp.my.id/blog">Internal</a> and <a href="https://example.com" class="mdrs-external-link" target="_blank" rel="noopener noreferrer">external<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a></p>
+"<p><a href="https://my-site.example/blog">Internal</a> and <a href="https://example.com" class="mdrs-external-link" target="_blank" rel="noopener noreferrer">external<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a></p>
 "
 `;
 
@@ -664,12 +664,12 @@ exports[`MDRS docs examples render unchanged 002-extensions/008-task-states.md #
 `;
 
 exports[`MDRS docs examples render unchanged 002-extensions/009-media-and-embeds.md #1 1`] = `
-"<p><video controls preload="metadata" playsinline src="https://cdn.fkp.my.id/blog/my-post/videos/product-demo.webm" title="Product demo" aria-label="Product demo"></video></p>
+"<p><video controls preload="metadata" playsinline src="https://cdn.my-site.example/blog/my-post/videos/product-demo.webm" title="Product demo" aria-label="Product demo"></video></p>
 "
 `;
 
 exports[`MDRS docs examples render unchanged 002-extensions/009-media-and-embeds.md #2 1`] = `
-"<p><picture><source srcset="https://cdn.fkp.my.id/blog/my-post/images/architecture-overview.avif" type="image/avif"><img src="https://cdn.fkp.my.id/blog/my-post/images/architecture-overview.webp" alt="Architecture overview" title="Architecture overview" loading="lazy" decoding="async"></picture></p>
+"<p><picture><source srcset="https://cdn.my-site.example/blog/my-post/images/architecture-overview.avif" type="image/avif"><img src="https://cdn.my-site.example/blog/my-post/images/architecture-overview.webp" alt="Architecture overview" title="Architecture overview" loading="lazy" decoding="async"></picture></p>
 "
 `;
 
@@ -777,7 +777,7 @@ exports[`MDRS docs examples render unchanged 002-extensions/012-references.md #1
 `;
 
 exports[`MDRS docs examples render unchanged 002-extensions/013-variables.md #1 1`] = `
-"<p><strong>Welcome to fkp.my.id.</strong> Engine v2.1, © 2026.</p>
+"<p><strong>Welcome to my-site.example.</strong> Engine v2.1, © 2026.</p>
 <ul class="mdrs-list mdrs-list--unordered">
 <li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">First locale: en of 2</div></li>
 <li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Directives: 14</div></li>
@@ -964,7 +964,7 @@ exports[`MDRS docs examples render unchanged markdown-demo fixture 1`] = `
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mdrs-icon mdrs-icon-info"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
     <span>Note</span>
   </div>
-  <div class="mdrs-alert-content"><p><strong>Welcome to fkp.my.id, where markdown comes alive.</strong> This is not your average markdown renderer. What you are reading right now is a living document: every heading, chart, formula, and data point on this page is processed by our custom-built <strong>Next-Gen Markdown Engine</strong>, compiled at the edge, and delivered in under 100ms. Below is everything it can do.</p>
+  <div class="mdrs-alert-content"><p><strong>Welcome to my-site.example, where markdown comes alive.</strong> This is not your average markdown renderer. What you are reading right now is a living document: every heading, chart, formula, and data point on this page is processed by our custom-built <strong>Next-Gen Markdown Engine</strong>, compiled at the edge, and delivered in under 100ms. Below is everything it can do.</p>
 </div>
 </div><hr>
 <h2>Typography That Speaks</h2>
@@ -1315,7 +1315,7 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">�
 <p>Every value on this page is alive. The <code>:::define</code> block at the top of this document declares typed variables (strings, numbers, booleans, arrays, and objects) with full expression support: arithmetic (<code>+ - * / %</code>), comparison (<code>== != &gt; &lt; &gt;= &lt;=</code>), logical (<code>&amp;&amp; || !</code>), and cross-references via <code>this.*</code>.</p>
 <h3>What was declared</h3>
 <pre><code class="language-text">:::define
-site_name: &quot;fkp.my.id&quot;
+site_name: &quot;my-site.example&quot;
 engine_version: &quot;2.1&quot;
 current_year: 2026
 is_production: true
@@ -1327,8 +1327,8 @@ engine_stats: { directives: 14, chart_types: 5, since: 2026, stable: true }
 </code></pre>
 <h3>What you see (live interpolation)</h3>
 <ul class="mdrs-list mdrs-list--unordered">
-<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Greeting: <strong>Welcome to fkp.my.id, where markdown comes alive</strong></div></li>
-<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Site: <strong>fkp.my.id</strong>, engine v2.1, copyright 2026</div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Greeting: <strong>Welcome to my-site.example, where markdown comes alive</strong></div></li>
+<li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Site: <strong>my-site.example</strong>, engine v2.1, copyright 2026</div></li>
 <li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Expression <code>(2 + 3) * 4</code> evaluates to: <strong>20</strong></div></li>
 <li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">First locale: <strong>en</strong> out of 2 supported</div></li>
 <li class="mdrs-list-item"><span class="mdrs-list-marker" aria-hidden="true"></span><div class="mdrs-list-content">Directive count from nested object: <strong>14</strong></div></li>

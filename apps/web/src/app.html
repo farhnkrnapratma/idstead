@@ -79,7 +79,9 @@
 
             let savedConsent = null;
             try {
-                const stored = localStorage.getItem('fkp_cookie_consent_v2');
+                const stored =
+                    localStorage.getItem('idstead_cookie_consent_v2')
+                    ?? localStorage.getItem('fkp_cookie_consent_v2');
                 if (stored) savedConsent = JSON.parse(stored);
             } catch (e) {}
 

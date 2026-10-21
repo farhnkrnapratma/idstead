@@ -6,7 +6,7 @@ Every script defaults to a **dry run**, and every one acts on the database chose
 
 | Script | Usage | What it does |
 | --- | --- | --- |
-| `migrate-markdown-syntax.ts` | `bun scripts/migrate-markdown-syntax.ts [dry-run\|apply\|verify] [--dir=PATH] [--show=SLUG_OR_PATH] [--origin=https://production-origin]` | Converts stored post and legal Markdown from the legacy syntax to the current one, using `packages/mdrs-core/src/legacy.ts`. Working files and `manifest.json` go to `--dir` (default `.local/markdown-syntax-migration`). `apply` requires `--origin`. `verify` re-checks a finished migration. |
+| `migrate-markdown-syntax.ts` | `bun scripts/migrate-markdown-syntax.ts [dry-run\|apply\|verify] [--dir=PATH] [--show=SLUG_OR_PATH] [--origin=https://production-origin]` | Converts stored post and legal Markdown from the legacy syntax to the current one, using `packages/mdrs/core/src/legacy.ts`. Working files and `manifest.json` go to `--dir` (default `.local/markdown-syntax-migration`). `apply` requires `--origin`. `verify` re-checks a finished migration. |
 | `regenerate-post-slugs.ts` | `bun scripts/regenerate-post-slugs.ts [dry-run\|apply]` | Recomputes post slugs with the current slug rules. Needs `PUBLIC_SUPABASE_URL` and the service-role key. |
 | `migrate-cdn-layout.ts` | `bun scripts/migrate-cdn-layout.ts [dry-run\|apply]` | Moves the active CV from the bucket root into `cv/` with a versioned filename and its checksum files, updates `db_documents`, and deletes obsolete root PDFs and `blog/content/` or `blog/banners/` objects of deleted posts. It runs outside Workers, so it talks to R2 through the S3 API (`@aws-sdk/client-s3`, a root devDependency) and needs `R2_ACCOUNT_ID`, `R2_BUCKET_NAME`, `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY`, plus `PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` and `PUBLIC_CDN_BASE_URL`. |
 
@@ -32,9 +32,9 @@ phase run --env prod bun scripts/regenerate-post-slugs.ts apply     # real run
 `eslint.config.ts` enforces these import boundaries with `@typescript-eslint/no-restricted-imports` (type-only imports stay allowed):
 
 - **Browser code never imports server modules.** `.svelte` and `.svelte.ts` files, plus `packages/lib/src/{components,layout,article,stores,utils}`, fail lint when they import a path containing `server/` (`#lib/server/*`, `$lib/server/*`, `../server/*`).
-- **The MDRS engine is standalone.** Files under `packages/mdrs-core/` fail lint when they import `@supabase/*`, `#lib`, `@idstead/*`, `$app/*`, `$lib` or `svelte`. Live data reaches the engine through injected resolvers (`createSupabaseMdrsResolvers` in `packages/lib/src/server/mdrsData.ts` on the server, `createMdrsResolvers` in `packages/lib/src/mdrsResolvers.ts` for the admin preview).
+- **The MDRS engine is standalone.** Files under `packages/mdrs/core/` fail lint when they import `@supabase/*`, `#lib`, `@idstead/*`, `$app/*`, `$lib` or `svelte`. Live data reaches the engine through injected resolvers (`createSupabaseMdrsResolvers` in `packages/lib/src/server/mdrsData.ts` on the server, `createMdrsResolvers` in `packages/lib/src/mdrsResolvers.ts` for the admin preview).
 - **The design system depends only on the domain.** Files under `packages/ui/` fail lint when they import `#lib`, `@idstead/lib`, `@mdrs/core`, `@supabase/*` or a `server/` path.
-- **The MDRS browser layer and the editor stay out of lib.** Files under `packages/mdrs-dom/` may import only `@idstead/ui`, `@idstead/domain` and `@mdrs/core`; files under `packages/mdrs-editor/` must not import `#lib`, `@idstead/lib`, `@supabase/*` or a `server/` path.
+- **The MDRS browser layer and the editor stay out of lib.** Files under `packages/mdrs/dom/` may import only `@idstead/ui`, `@idstead/domain` and `@mdrs/core`; files under `packages/mdrs/editor/` must not import `#lib`, `@idstead/lib`, `@supabase/*` or a `server/` path.
 - **The domain is pure.** Files under `packages/domain/` fail lint when they import `#lib`, any `@idstead/*` package, `$app/*`, `$lib`, `svelte` or `@supabase/*`.
 
 ## Claude Code hooks (`.claude/`)

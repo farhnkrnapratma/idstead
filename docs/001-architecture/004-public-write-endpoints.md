@@ -5,7 +5,7 @@ These endpoints are unversioned and first-party only. They are called by the sit
 ```mermaid
 sequenceDiagram
     autonumber
-    participant B as Browser (fkp.my.id page)
+    participant B as Browser (example.com page)
     participant H as /api/internal handler
     participant TS as Turnstile
     participant AI as Workers AI (Llama Guard)

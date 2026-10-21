@@ -1,8 +1,9 @@
 export const API_VERSION_PATH = '/v1';
-export const DEFAULT_API_BASE_URL = 'https://api.fkp.my.id';
 
 export function apiBaseUrl(configured?: string | null): string {
-    return (configured?.trim() || DEFAULT_API_BASE_URL).replace(/\/+$/, '');
+    const base = configured?.trim();
+    if (!base) throw new Error('PUBLIC_API_BASE_URL is not configured.');
+    return base.replace(/\/+$/, '');
 }
 
 export function apiUrl(path = '', configured?: string | null): string {

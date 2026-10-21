@@ -6,7 +6,7 @@ Interpolation is opt-in: `${…}` and `[text].${…}` only do anything in a docu
 
 ```mdrs
 :::define
-site_name: "fkp.my.id"
+site_name: "my-site.example"
 version: "2.1"
 year: 2026
 is_production: true
@@ -22,7 +22,7 @@ stats: { directives: 14, stable: true }
 - [You are viewing the production build.].${is_production}
 ```
 
-Renders "**Welcome to fkp.my.id.** Engine v2.1, © 2026.", then "First locale: en of 2", "Directives: 14" and "You are viewing the production build."
+Renders "**Welcome to my-site.example.** Engine v2.1, © 2026.", then "First locale: en of 2", "Directives: 14" and "You are viewing the production build."
 
 ## The `:::define` block
 
@@ -167,4 +167,4 @@ Common messages:
 
 To pull data from the site itself (author profile, posts), see [Live data](014-live-data.md).
 
-Source: `packages/mdrs-core/src/define/lexer.ts` (`tokenize`), `packages/mdrs-core/src/define/parser.ts` (`Parser`), `packages/mdrs-core/src/define/evaluate.ts` (`evaluateExpr`), `packages/mdrs-core/src/define/block.ts` (`extractDefineBlock`, `hasDefineEntries`), `packages/mdrs-core/src/define/interpolation.ts` (`scanInterpolationTokens`), `packages/mdrs-core/src/define/validate.ts` (`validateDefineForSave`), `apps/admin/src/lib/mdrsValidation.ts`, `apps/admin/src/routes/api/internal/blog/validate-define/+server.ts`, `apps/admin/src/routes/api/internal/admin/posts/+server.ts`.
+Source: `packages/mdrs/core/src/define/lexer.ts` (`tokenize`), `packages/mdrs/core/src/define/parser.ts` (`Parser`), `packages/mdrs/core/src/define/evaluate.ts` (`evaluateExpr`), `packages/mdrs/core/src/define/block.ts` (`extractDefineBlock`, `hasDefineEntries`), `packages/mdrs/core/src/define/interpolation.ts` (`scanInterpolationTokens`), `packages/mdrs/core/src/define/validate.ts` (`validateDefineForSave`), `apps/admin/src/lib/mdrsValidation.ts`, `apps/admin/src/routes/api/internal/blog/validate-define/+server.ts`, `apps/admin/src/routes/api/internal/admin/posts/+server.ts`.

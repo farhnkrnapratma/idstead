@@ -51,14 +51,14 @@ Only `http:`, `https:`, `mailto:` and `tel:` URLs are kept, plus relative URLs a
 
 ## External links
 
-An absolute `http(s)` link to another site opens in a new tab and gets a small external-link icon. Links to `fkp.my.id` and `www.fkp.my.id`, and relative links, stay in the same tab.
+An absolute `http(s)` link to another site opens in a new tab and gets a small external-link icon. Links to `my-site.example` and `www.my-site.example`, and relative links, stay in the same tab.
 
 ```mdrs
-[Internal](https://fkp.my.id/blog) and [external](https://example.com)
+[Internal](https://my-site.example/blog) and [external](https://example.com)
 ```
 
 ```html
-<a href="https://fkp.my.id/blog">Internal</a> and
+<a href="https://my-site.example/blog">Internal</a> and
 <a
     href="https://example.com"
     class="mdrs-external-link"
@@ -90,4 +90,4 @@ An absolute `http(s)` link to another site opens in a new tab and gets a small e
 
 MDRS also uses the image syntax for videos and serves post images as AVIF with a WebP fallback; see [Media and embeds](../002-extensions/009-media-and-embeds.md).
 
-Source: `packages/mdrs-core/src/render/parser.ts` (`link` and `image` renderers), `packages/mdrs-core/src/sanitize.ts` (`sanitizeUrl`).
+Source: `packages/mdrs/core/src/render/parser.ts` (`link` and `image` renderers), `packages/mdrs/core/src/sanitize.ts` (`sanitizeUrl`).

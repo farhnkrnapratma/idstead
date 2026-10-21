@@ -4,7 +4,7 @@ import { QR_BACKGROUND, QR_COLOR, renderQrSvg } from '../apps/web/src/lib/qrSvg'
 
 const LOGO =
     'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
-const URL_TEXT = 'https://fkp.my.id/blog/qr-code-test';
+const URL_TEXT = 'https://example.com/blog/qr-code-test';
 
 function dotCenters(svg: string) {
     const d = svg.match(/<path fill="[^"]+" d="([^"]*)"/)?.[1] ?? '';
@@ -27,7 +27,7 @@ describe('renderQrSvg', () => {
     test('is deterministic and never embeds the encoded text', () => {
         expect(renderQrSvg(URL_TEXT)).toBe(renderQrSvg(URL_TEXT));
         expect(renderQrSvg('<script>alert(1)</script>')).not.toContain('script');
-        expect(renderQrSvg(URL_TEXT)).not.toContain('fkp.my.id');
+        expect(renderQrSvg(URL_TEXT)).not.toContain('example.com');
     });
 
     test('draws one dot per dark data module when there is no logo', () => {

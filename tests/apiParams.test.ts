@@ -7,7 +7,7 @@ import {
     resolveOutput
 } from '../packages/lib/src/server/api/params.ts';
 
-const url = (query: string) => new URL(`https://fkp.my.id/api/v1/author${query}`);
+const url = (query: string) => new URL(`https://example.com/api/v1/author${query}`);
 
 function rejection(run: () => unknown) {
     try {
@@ -58,7 +58,9 @@ describe('API parameters', () => {
     });
 
     test('lets output override Accept and rejects unsupported output', () => {
-        const request = new Request('https://fkp.my.id', { headers: { Accept: 'text/markdown' } });
+        const request = new Request('https://example.com', {
+            headers: { Accept: 'text/markdown' }
+        });
         const params = parseApiParams(url('?o=json'), ['output']);
         expect(resolveOutput(params, request, ['json', 'md'], 'json')).toBe('json');
         expect(

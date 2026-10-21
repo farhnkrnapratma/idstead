@@ -1,4 +1,4 @@
-import { discoveryOperations, type DiscoveryOperation } from '#lib/server/apiDiscovery.ts';
+import type { DiscoveryOperation } from '#lib/server/apiDiscovery.ts';
 import { workerBinding } from '#lib/server/workerEnv.ts';
 import { EMBEDDING_MODEL } from '#lib/server/aiModels.ts';
 
@@ -112,10 +112,7 @@ function createEntry(
     return { '@context': ARD_CONTEXT, '@id': identifier, identifier, ...fields };
 }
 
-export function createArdEntries(
-    base: string,
-    operations: DiscoveryOperation[] = discoveryOperations()
-): ArdEntry[] {
+export function createArdEntries(base: string, operations: DiscoveryOperation[]): ArdEntry[] {
     const registry = createEntry(base, 'registry', 'local', {
         displayName: 'Local Agentic Resource Registry',
         type: 'application/ai-registry+json',
@@ -167,10 +164,7 @@ export function createArdEntries(
     return [registry, ...apis, ...skills];
 }
 
-export function createArdManifest(
-    base: string,
-    operations: DiscoveryOperation[] = discoveryOperations()
-) {
+export function createArdManifest(base: string, operations: DiscoveryOperation[]) {
     return { entries: createArdEntries(base, operations) };
 }
 
@@ -662,7 +656,7 @@ function encodePageToken(offset: number): string {
     return btoa(String(offset)).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '');
 }
 
-export function searchArdEntries(value: unknown, base: string, entries = createArdEntries(base)) {
+export function searchArdEntries(value: unknown, base: string, entries: ArdEntry[]) {
     const request = parseSearchRequest(value);
     return searchValidatedArdRequest(request, base, entries);
 }
@@ -685,7 +679,7 @@ function validateSupportedFilters(
 export function searchValidatedArdRequest(
     request: ArdSearchRequest,
     base: string,
-    entries = createArdEntries(base),
+    entries: ArdEntry[],
     semanticScores?: Map<string, number>
 ) {
     validateSupportedFilters(request.query.filter, entries, request.query.context);
@@ -820,7 +814,7 @@ export async function searchArdEntriesWithAI(
     request: ArdSearchRequest,
     base: string,
     ai: unknown,
-    entries = createArdEntries(base)
+    entries: ArdEntry[]
 ) {
     validateSupportedFilters(request.query.filter, entries, request.query.context);
     if (!isArdAiBinding(ai))
@@ -831,8 +825,8 @@ export async function searchArdEntriesWithAI(
 
 export function exploreArdEntries(
     request: ArdExploreRequest,
-    base: string,
-    entries = createArdEntries(base),
+    _base: string,
+    entries: ArdEntry[],
     semanticRelevance?: Map<string, number>
 ) {
     validateSupportedFilters(request.query.filter, entries, request.query.context);
@@ -894,7 +888,7 @@ export async function exploreArdEntriesWithAI(
     request: ArdExploreRequest,
     base: string,
     ai: unknown,
-    entries = createArdEntries(base)
+    entries: ArdEntry[]
 ) {
     validateSupportedFilters(request.query.filter, entries, request.query.context);
     if (!request.query.text) return exploreArdEntries(request, base, entries);
@@ -931,11 +925,7 @@ function listEntryMatchesFilters(entry: ArdEntry, filters: ArdListFilter[]): boo
     });
 }
 
-export function listArdEntries(
-    request: ArdListRequest,
-    base: string,
-    entries = createArdEntries(base)
-) {
+export function listArdEntries(request: ArdListRequest, _base: string, entries: ArdEntry[]) {
     const sorted = entries
         .filter(entry => listEntryMatchesFilters(entry, request.filters))
         .slice()

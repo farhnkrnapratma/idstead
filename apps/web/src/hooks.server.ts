@@ -66,9 +66,10 @@ export const handle: Handle = sequence(
     async ({ event, resolve }) => {
         const requestId = event.request.headers.get('x-request-id') || crypto.randomUUID();
 
-        if (event.url.hostname === 'www.fkp.my.id') {
-            throw redirect(301, `https://fkp.my.id${event.url.pathname}${event.url.search}`, {
-                external: ['https://fkp.my.id']
+        if (event.url.hostname.startsWith('www.')) {
+            const apex = `${event.url.protocol}//${event.url.host.slice(4)}`;
+            throw redirect(301, `${apex}${event.url.pathname}${event.url.search}`, {
+                external: [apex]
             });
         }
 

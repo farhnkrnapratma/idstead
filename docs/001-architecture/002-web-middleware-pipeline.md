@@ -6,8 +6,8 @@ The order of work in `apps/web/src/hooks.server.ts`. It runs as `sequence(sentry
 flowchart TD
     A([Request]) --> S["Sentry init + sentryHandle"]
     S --> RID["requestId = x-request-id or randomUUID()"]
-    RID --> WWW{"host = www.fkp.my.id?"}
-    WWW -->|yes| R301([301 to https://fkp.my.id + path])
+    RID --> WWW{"host = www.example.com?"}
+    WWW -->|yes| R301([301 to https://example.com + path])
     WWW -->|no| IA{"identity asset?<br/>icons, favicon, avatar.*, /hero.png"}
     IA -->|"non GET/HEAD"| R405([405 Allow: GET, HEAD])
     IA -->|yes| SIA(["serveIdentityAsset()<br/>R2 via S3, 503 on storage error"])

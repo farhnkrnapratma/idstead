@@ -1,6 +1,8 @@
 import { DefineError, renderMarkdown } from '@mdrs/core';
 import { createMdrsResolvers } from '#lib/mdrsResolvers.ts';
 import { supabase } from '#lib/supabase.ts';
+import * as publicEnv from '$app/env/public';
+import { siteRenderOptions } from '#lib/mdrsOptions.ts';
 
 const ENDPOINT = '/api/internal/admin/mdrs-data';
 const CACHE_MS = 60_000;
@@ -41,6 +43,7 @@ export function renderMdrsPreview(markdown: string): Promise<string> {
             author: () => cached('author'),
             blogList: () => cached('blog'),
             blogPost: slug => cached('post', slug)
-        })
+        }),
+        siteRenderOptions(publicEnv.PUBLIC_SITE_URL)
     );
 }

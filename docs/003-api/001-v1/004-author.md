@@ -30,8 +30,8 @@ Before a response is sent, `sanitizePublicApiData()` (`packages/lib/src/authorAp
 `output=md` renders the same data as Markdown (`generateAuthorMarkdown`). An unknown section returns `400 AUTHOR_FIELD_INVALID`.
 
 ```sh
-curl "https://api.fkp.my.id/v1/author?f=profile,skills"
-curl "https://api.fkp.my.id/v1/author?f=profile,skills&o=md"
+curl "https://api.example.com/v1/author?f=profile,skills"
+curl "https://api.example.com/v1/author?f=profile,skills&o=md"
 ```
 
 ## `GET /v1/cv`
@@ -63,10 +63,10 @@ Headers:
 The worker does **not** add an ETag to CV file responses.
 
 ```sh
-curl -OJ "https://api.fkp.my.id/v1/cv?o=pdf"
-curl -I  "https://api.fkp.my.id/v1/cv?o=pdf&c=false"
-curl -OJ "https://api.fkp.my.id/v1/cv?o=zip"
-curl -OJ "https://api.fkp.my.id/v1/cv?o=sig" && gpg --verify CV-*.pdf.sig
+curl -OJ "https://api.example.com/v1/cv?o=pdf"
+curl -I  "https://api.example.com/v1/cv?o=pdf&c=false"
+curl -OJ "https://api.example.com/v1/cv?o=zip"
+curl -OJ "https://api.example.com/v1/cv?o=sig" && gpg --verify CV-*.pdf.sig
 ```
 
 ## Errors

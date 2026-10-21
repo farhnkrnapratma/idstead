@@ -5,10 +5,10 @@ description: Verify the public API worker (apps/api, handlers in packages/lib/sr
 
 # API contract check
 
-The public API is the Hono worker at `apps/api/src/index.ts` (`api.fkp.my.id/v1`). Routes only wrap handlers from `packages/lib/src/server/api/` (`blog.ts`, `author.ts`, `root.ts`, `params.ts`, `responses.ts`) in `runApi()`. Four descriptions of the contract must agree with the handlers:
+The public API is the Hono worker at `apps/api/src/index.ts` (`api.example.com/v1`). Routes only wrap handlers from `packages/lib/src/server/api/` (`blog.ts`, `author.ts`, `root.ts`, `params.ts`, `responses.ts`) in `runApi()`. Four descriptions of the contract must agree with the handlers:
 
 - `apps/api/src/README.md`: served live at `GET /v1`, holds the error-code table
-- `packages/lib/src/openapi.ts`: served at `/v1/openapi.{json,yaml}`, mirrored at `fkp.my.id/.well-known/openapi.*`, and drives `llms.txt` / agent skills
+- `packages/lib/src/openapi.ts`: served at `/v1/openapi.{json,yaml}`, mirrored at `example.com/.well-known/openapi.*`, and drives `llms.txt` / agent skills
 - `docs/api/v1/*.md`: the extended reference
 - `tests/apiV1.test.ts`, `tests/apiV1Handlers.test.ts`, `tests/apiParams.test.ts`
 

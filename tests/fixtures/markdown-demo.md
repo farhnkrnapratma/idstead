@@ -1,5 +1,5 @@
 :::define
-site_name: "fkp.my.id"
+site_name: "my-site.example"
 engine_version: "2.1"
 current_year: 2026
 is_production: true
@@ -531,7 +531,7 @@ Every value on this page is alive. The `:::define` block at the top of this docu
 
 ```text
 :::define
-site_name: "fkp.my.id"
+site_name: "my-site.example"
 engine_version: "2.1"
 current_year: 2026
 is_production: true

@@ -1,3 +1,5 @@
+import { readStorage } from '@idstead/ui/utils/storageKeys.ts';
+
 export type ConsentStatus = 'granted' | 'denied';
 
 export interface ConsentSignals {
@@ -7,7 +9,7 @@ export interface ConsentSignals {
     ad_personalization: ConsentStatus;
 }
 
-const STORAGE_KEY = 'fkp_cookie_consent_v2';
+const STORAGE_KEY = 'idstead_cookie_consent_v2';
 
 declare global {
     interface Window {
@@ -35,7 +37,7 @@ function createConsentStore() {
         if (typeof window === 'undefined') return;
 
         try {
-            const stored = localStorage.getItem(STORAGE_KEY);
+            const stored = readStorage(STORAGE_KEY);
             if (stored) {
                 const parsed = JSON.parse(stored);
                 signals.analytics_storage = consentStatus(parsed?.analytics_storage);

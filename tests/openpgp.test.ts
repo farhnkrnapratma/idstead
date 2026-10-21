@@ -89,10 +89,10 @@ describe('key discovery', () => {
 
     test('lists only addresses on the site domain', () => {
         const ids = [
-            { name: 'A', email: 'a@fkp.my.id' },
+            { name: 'A', email: 'a@example.com' },
             { name: 'A', email: 'a@gmail.com' }
         ];
-        expect(wkdEmails(ids, 'www.fkp.my.id')).toEqual(['a@fkp.my.id']);
+        expect(wkdEmails(ids, 'www.example.com')).toEqual(['a@example.com']);
     });
 
     test('accepts a keyserver only when it serves the same key', async () => {
@@ -124,7 +124,7 @@ describe('key discovery', () => {
             'https://user:pw@h/x'
         ])
             expect(safeKeyserverUrl(url)).toBeNull();
-        expect(wkdEmails([{ name: '', email: 'a$(id)@fkp.my.id' }], 'fkp.my.id')).toEqual([]);
+        expect(wkdEmails([{ name: '', email: 'a$(id)@example.com' }], 'example.com')).toEqual([]);
     });
 
     test('groups fingerprints by four', () => {
@@ -146,10 +146,11 @@ describe('verification bundle', () => {
                 publicKey: new TextDecoder().decode(armoredKey),
                 key: {
                     fingerprint: FPR,
-                    userIds: [{ name: 'Ada', email: 'ada@fkp.my.id' }],
+                    userIds: [{ name: 'Ada', email: 'ada@example.com' }],
                     keyservers: []
                 },
-                siteUrl: 'https://fkp.my.id',
+                siteUrl: 'https://example.com',
+                apiBase: 'https://api.example.com',
                 date: new Date('2026-10-17T00:00:00Z')
             })
         );
@@ -167,9 +168,9 @@ describe('verification bundle', () => {
             ].sort()
         );
         const verify = strFromU8(zip['VERIFY.txt']);
-        expect(verify).toContain('Ada <ada@fkp.my.id>');
-        expect(verify).toContain('gpg --auto-key-locate clear,wkd --locate-keys ada@fkp.my.id');
-        expect(verify).toContain('curl -sSf https://fkp.my.id/pgp.asc | gpg --import');
+        expect(verify).toContain('Ada <ada@example.com>');
+        expect(verify).toContain('gpg --auto-key-locate clear,wkd --locate-keys ada@example.com');
+        expect(verify).toContain('curl -sSf https://example.com/pgp.asc | gpg --import');
         expect(strFromU8(zip[`${filename}.sha256`])).toBe(files.sha256);
         expect(zip[filename]).toEqual(pdf);
     });
@@ -185,6 +186,7 @@ describe('verification bundle', () => {
                 publicKey: null,
                 key: null,
                 siteUrl: '',
+                apiBase: 'https://api.example.com',
                 date: new Date()
             })
         );

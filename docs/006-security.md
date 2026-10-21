@@ -6,11 +6,11 @@ This page describes how the system protects itself. To report a vulnerability, s
 
 | Surface | Who calls it | Guard |
 | --- | --- | --- |
-| `api.fkp.my.id/v1` | anyone | read-only (`GET`/`HEAD`/`OPTIONS`), anon client + RLS, rate limit |
-| `fkp.my.id` pages, `/.well-known`, `/api/ard` | anyone | anon client for reads; ARD index read with service-role; rate limit on `/api/*` |
-| `fkp.my.id/api/internal/**` | the site's own pages | same-origin, Turnstile on anything that sends mail or stores text, rate limit |
-| `admin.fkp.my.id` pages | the admin | Supabase session cookie + role `admin` + MFA, checked in the hooks |
-| `admin.fkp.my.id/api/internal/**` | the admin UI | same-origin + `verifyAdminToken()` (Bearer token, role, MFA) |
+| `api.example.com/v1` | anyone | read-only (`GET`/`HEAD`/`OPTIONS`), anon client + RLS, rate limit |
+| `example.com` pages, `/.well-known`, `/api/ard` | anyone | anon client for reads; ARD index read with service-role; rate limit on `/api/*` |
+| `example.com/api/internal/**` | the site's own pages | same-origin, Turnstile on anything that sends mail or stores text, rate limit |
+| `admin.example.com` pages | the admin | Supabase session cookie + role `admin` + MFA, checked in the hooks |
+| `admin.example.com/api/internal/**` | the admin UI | same-origin + `verifyAdminToken()` (Bearer token, role, MFA) |
 | `fkp-jobs` | Queues and cron only | no HTTP surface (`fetch` returns 404, `workers_dev: false`) |
 
 ## Authentication and MFA (admin)
@@ -25,7 +25,7 @@ This page describes how the system protects itself. To report a vulnerability, s
     The database mirrors the rule in `public.is_admin()`. That function requires role `admin` **and** one of: `aal2`, a passkey `amr`, or no verified factor.
 
 - **Login lockout:** 5 failures per 15 minutes per IP and per email + IP pair. The email is always paired with the IP, so nobody can lock the admin out from elsewhere just by knowing the address. The counter is shared across isolates in `db_login_failures`, which stores only salted SHA-256 hashes of the `ip:`/`email-ip:` keys and is reachable only through `service_role` RPCs (`db_login_lockout`, `db_login_record_failure`, `db_login_clear`). If the database is unreachable, the isolate's in-memory counter takes over. The password-change and `data/delete-all` routes use the same counter (`password-change:…`, `delete-all:…`). Successful and failed logins go to `db_activity_log`, and every successful login sends an email alert.
-- **Session cookie:** host-only on `admin.fkp.my.id`, `sameSite=lax`, `secure`.
+- **Session cookie:** host-only on `admin.example.com`, `sameSite=lax`, `secure`.
 
 Details and the flow diagram: [architecture/6](001-architecture/006-admin-login-mfa.md).
 
@@ -37,7 +37,7 @@ Details and the flow diagram: [architecture/6](001-architecture/006-admin-login-
     - Every internal endpoint calls this check.
     - The web hook additionally answers cross-origin `OPTIONS` to `/api/internal/*` with 403.
 - **Turnstile:** `verifyTurnstileToken()` calls Cloudflare `siteverify` with `TURNSTILE_SECRET`. It is used by comments, comment reports, subscribe, unsubscribe-request, contact and admin login.
-- **Rate limiting:** 60 requests per 60 s per IP on `fkp.my.id/api/*` and on `api.fkp.my.id`, through the Workers Rate Limiting binding `API_RATE_LIMITER`, with an in-memory fallback.
+- **Rate limiting:** 60 requests per 60 s per IP on `example.com/api/*` and on `api.example.com`, through the Workers Rate Limiting binding `API_RATE_LIMITER`, with an in-memory fallback.
 - **Comment moderation:**
     - Every comment is checked by Llama Guard 3 through the Workers AI `AI` binding.
     - Unsafe comments are stored with `is_approved = false` and never shown.
@@ -60,8 +60,8 @@ Details and the flow diagram: [architecture/6](001-architecture/006-admin-login-
 
 ## Content rendering
 
-- Markdown (posts, legal pages) is rendered by the `@mdrs/core` package (`packages/mdrs-core/src/markdown.ts`).
-- The output **always** passes through the allow-list sanitizer `sanitizeHtml()` (`packages/mdrs-core/src/sanitize.ts`). `tests/sanitizeHtml.test.ts` covers both hostile input and the engine's own markup.
+- Markdown (posts, legal pages) is rendered by the `@mdrs/core` package (`packages/mdrs/core/src/markdown.ts`).
+- The output **always** passes through the allow-list sanitizer `sanitizeHtml()` (`packages/mdrs/core/src/sanitize.ts`). `tests/sanitizeHtml.test.ts` covers both hostile input and the engine's own markup.
 - Images and banners are re-validated on the server before storage: sizes, pixel limits, magic bytes, WebP decode.
 
 ## Response headers

@@ -4,18 +4,18 @@ Handlers: `getBlog`, `getBlogContent`, `getBlogComments`, `getBlogViews` in `pac
 
 ## Post object
 
-| Field           | Type              | Notes                                                      |
-| --------------- | ----------------- | ---------------------------------------------------------- |
-| `id`            | string            | 64-hex public ID (`db_posts.public_id`), immutable         |
-| `slug`          | string            | URL slug; the post page is `https://fkp.my.id/blog/{slug}` |
-| `title`         | string            |                                                            |
-| `excerpt`       | string \| null    | written by hand                                            |
-| `summary`       | string \| null    | generated when the post is saved                           |
-| `tldr`          | string[]          | generated, may be empty                                    |
-| `tags`          | string[]          |                                                            |
-| `collaborators` | string[]          |                                                            |
-| `created_at`    | string (ISO 8601) |                                                            |
-| `updated_at`    | string (ISO 8601) | falls back to `created_at`                                 |
+| Field | Type | Notes |
+| --- | --- | --- |
+| `id` | string | 64-hex public ID (`db_posts.public_id`), immutable |
+| `slug` | string | URL slug; the post page is `https://example.com/blog/{slug}` |
+| `title` | string |  |
+| `excerpt` | string \| null | written by hand |
+| `summary` | string \| null | generated when the post is saved |
+| `tldr` | string[] | generated, may be empty |
+| `tags` | string[] |  |
+| `collaborators` | string[] |  |
+| `created_at` | string (ISO 8601) |  |
+| `updated_at` | string (ISO 8601) | falls back to `created_at` |
 
 The single-post form adds `comment_count` (approved only) and `views_count`.
 
@@ -71,8 +71,8 @@ Posts are ordered newest first (`created_at` desc, then `public_id`).
 The response is the post object plus `comment_count` and `views_count`. Combining `id` with `query`, `page` or `limit` returns `400 PARAM_CONFLICT`.
 
 ```sh
-curl "https://api.fkp.my.id/v1/blog?id=update-gnome-51"
-curl "https://api.fkp.my.id/v1/blog?id=3f9a1c2&o=md"
+curl "https://api.example.com/v1/blog?id=update-gnome-51"
+curl "https://api.example.com/v1/blog?id=3f9a1c2&o=md"
 ```
 
 ## `GET /v1/blog/content?id=…`: post body
@@ -85,7 +85,7 @@ curl "https://api.fkp.my.id/v1/blog?id=3f9a1c2&o=md"
 The body is read from Supabase Storage (`blog-posts`). A missing or unreadable file returns `502 BLOG_CONTENT_FETCH_FAILED`.
 
 ```sh
-curl "https://api.fkp.my.id/v1/blog/content?id=3f9a1c2&o=txt"
+curl "https://api.example.com/v1/blog/content?id=3f9a1c2&o=txt"
 ```
 
 ## `GET /v1/blog/comments`: approved comments

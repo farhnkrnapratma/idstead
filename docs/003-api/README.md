@@ -1,6 +1,6 @@
 # Public API
 
-The public REST API is read-only and needs no authentication. It is served by the `fkp-api` Worker (`apps/api`) at **`https://api.fkp.my.id`**.
+The public REST API is read-only and needs no authentication. It is served by the `fkp-api` Worker (`apps/api`) at **`https://api.example.com`**.
 
 ## Versions
 
@@ -12,7 +12,7 @@ The public REST API is read-only and needs no authentication. It is served by th
 
 - A **breaking change** ships under a new version path (`/v2`) and never in place under `/v1`. Breaking changes include removing or renaming a field, changing a type, removing an endpoint or parameter, and changing an error code or a default.
 - **Additive changes** may land in the current version: a new optional field, endpoint, parameter or error code.
-- The October 2026 reshape of v1 and its move from `fkp.my.id/api/v1` to `api.fkp.my.id/v1` were one-time exceptions, not a precedent.
+- The October 2026 reshape of v1 and its move from `example.com/api/v1` to `api.example.com/v1` were one-time exceptions, not a precedent.
 - The OpenAPI document version (`info.version`, currently `1.0.0`) tracks the v1 contract.
 
 To start a new version:
@@ -25,11 +25,11 @@ To start a new version:
 
 | Surface | Host | Docs |
 | --- | --- | --- |
-| OpenAPI 3 spec | `api.fkp.my.id/v1/openapi.{json,yaml}`, mirrored at `fkp.my.id/.well-known/openapi.{json,yaml}` | [v1/discovery.md](001-v1/006-discovery.md) |
-| Agent discovery (`llms.txt`, agent skills, api-catalog) | `fkp.my.id` | [v1/discovery.md](001-v1/006-discovery.md) |
-| Agent Registry Discovery (`/api/ard/**`) | `fkp.my.id` (unversioned) | [ard.md](002-ard.md) |
+| OpenAPI 3 spec | `api.example.com/v1/openapi.{json,yaml}`, mirrored at `example.com/.well-known/openapi.{json,yaml}` | [v1/discovery.md](001-v1/006-discovery.md) |
+| Agent discovery (`llms.txt`, agent skills, api-catalog) | `example.com` | [v1/discovery.md](001-v1/006-discovery.md) |
+| Agent Registry Discovery (`/api/ard/**`) | `example.com` (unversioned) | [ard.md](002-ard.md) |
 
-Endpoints under `/api/internal/**` on `fkp.my.id` and `admin.fkp.my.id` are first-party only. They are deliberately undocumented as an API and can change at any time. Their architecture is described in [architecture/4](../001-architecture/004-public-write-endpoints.md) and [architecture/10](../001-architecture/010-endpoint-reference.md).
+Endpoints under `/api/internal/**` on `example.com` and `admin.example.com` are first-party only. They are deliberately undocumented as an API and can change at any time. Their architecture is described in [architecture/4](../001-architecture/004-public-write-endpoints.md) and [architecture/10](../001-architecture/010-endpoint-reference.md).
 
 ## Sources of truth
 

@@ -1,6 +1,6 @@
 # 5. Public API Worker (fkp-api)
 
-How a request moves through the Hono worker at `api.fkp.my.id`. Endpoints, parameters, response shapes and error codes are in **[docs/003-api/001-v1](../003-api/001-v1/README.md)**.
+How a request moves through the Hono worker at `api.example.com`. Endpoints, parameters, response shapes and error codes are in **[docs/003-api/001-v1](../003-api/001-v1/README.md)**.
 
 ```mermaid
 sequenceDiagram

@@ -4,7 +4,7 @@ import {
     RENDER_VERSION,
     renderMarkdown,
     unavailableResolvers
-} from '../packages/mdrs-core/src/index.ts';
+} from '../packages/mdrs/core/src/index.ts';
 import { refreshPostRenders } from '../packages/lib/src/server/postRender.ts';
 import { createSupabaseMdrsResolvers } from '../packages/lib/src/server/mdrsData.ts';
 
@@ -59,7 +59,7 @@ describe('refreshPostRenders', () => {
         const paths = [post(1), post(2), post(3)];
         const files = Object.fromEntries(paths.map(path => [path, '# Post']));
         const { store, uploads } = memoryStore(files, paths);
-        const result = await refreshPostRenders(store, unavailableResolvers(), 2);
+        const result = await refreshPostRenders(store, unavailableResolvers(), {}, 2);
         expect(result.rendered).toBe(2);
         expect(uploads).toHaveLength(2);
     });

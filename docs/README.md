@@ -1,6 +1,6 @@
 # Documentation
 
-Developer documentation for fkp.my.id. The project overview stays in the root [README.md](../README.md). Every page here is numbered, so the folders and files sort in reading order.
+Developer documentation for example.com. The project overview stays in the root [README.md](../README.md). Every page here is numbered, so the folders and files sort in reading order.
 
 ## 001 Architecture
 
@@ -21,8 +21,8 @@ Developer documentation for fkp.my.id. The project overview stays in the root [R
 | Page | Covers |
 | --- | --- |
 | [003-api/](003-api/README.md) | Versions and versioning policy |
-| [001-v1/](003-api/001-v1/README.md) | `api.fkp.my.id/v1`: [parameters](003-api/001-v1/001-parameters.md), [errors](003-api/001-v1/002-errors.md), [blog](003-api/001-v1/003-blog.md), [author & CV](003-api/001-v1/004-author.md), [search](003-api/001-v1/005-search.md), [discovery](003-api/001-v1/006-discovery.md) |
-| [002-ard.md](003-api/002-ard.md) | `fkp.my.id/api/ard` (Agent Registry Discovery, unversioned) |
+| [001-v1/](003-api/001-v1/README.md) | `api.example.com/v1`: [parameters](003-api/001-v1/001-parameters.md), [errors](003-api/001-v1/002-errors.md), [blog](003-api/001-v1/003-blog.md), [author & CV](003-api/001-v1/004-author.md), [search](003-api/001-v1/005-search.md), [discovery](003-api/001-v1/006-discovery.md) |
+| [002-ard.md](003-api/002-ard.md) | `example.com/api/ard` (Agent Registry Discovery, unversioned) |
 
 ## 004 Development
 

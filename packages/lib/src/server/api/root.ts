@@ -28,8 +28,16 @@ export function apiIndex() {
     };
 }
 
+export function renderReadme(readme: string, urls: { apiBase: string; siteUrl: string }) {
+    return readme
+        .replaceAll('{{API_BASE_URL}}', urls.apiBase.replace(/\/+$/, ''))
+        .replaceAll('{{SITE_URL}}', urls.siteUrl.replace(/\/+$/, ''));
+}
+
 export async function getRoot(ctx: ApiContext, readme: string) {
     const params = parseApiParams(ctx.url, ['output']);
     const output = resolveOutput(params, ctx.request, ['md', 'json'], 'md');
-    return output === 'json' ? jsonResponse(apiIndex()) : textResponse(readme, 'md');
+    if (output === 'json') return jsonResponse(apiIndex());
+    const siteUrl = await ctx.repos.author.siteUrl().catch(() => '');
+    return textResponse(renderReadme(readme, { apiBase: ctx.url.origin, siteUrl }), 'md');
 }

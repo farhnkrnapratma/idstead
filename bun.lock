@@ -190,7 +190,7 @@
         "svelte": "^5.0.0",
       },
     },
-    "packages/mdrs-core": {
+    "packages/mdrs/core": {
       "name": "@mdrs/core",
       "version": "0.0.1",
       "dependencies": {
@@ -206,7 +206,7 @@
         "@types/katex": "^0.16.8",
       },
     },
-    "packages/mdrs-dom": {
+    "packages/mdrs/dom": {
       "name": "@mdrs/dom",
       "version": "0.0.1",
       "dependencies": {
@@ -229,7 +229,7 @@
         "svelte": "^5.0.0",
       },
     },
-    "packages/mdrs-editor": {
+    "packages/mdrs/editor": {
       "name": "@mdrs/editor",
       "version": "0.0.1",
       "dependencies": {
@@ -595,11 +595,11 @@
 
     "@lucide/svelte": ["@lucide/svelte@1.59.0", "", { "peerDependencies": { "svelte": "^5" } }, "sha512-ga9IrEsFJBkt/34VnRFcQ2HLs8eOpOovXZ62XzwfC7f0zBfo4y116FBIDroZkD0gInYYY2hSSAcsQEm/Vm+AoA=="],
 
-    "@mdrs/core": ["@mdrs/core@workspace:packages/mdrs-core"],
+    "@mdrs/core": ["@mdrs/core@workspace:packages/mdrs/core"],
 
-    "@mdrs/dom": ["@mdrs/dom@workspace:packages/mdrs-dom"],
+    "@mdrs/dom": ["@mdrs/dom@workspace:packages/mdrs/dom"],
 
-    "@mdrs/editor": ["@mdrs/editor@workspace:packages/mdrs-editor"],
+    "@mdrs/editor": ["@mdrs/editor@workspace:packages/mdrs/editor"],
 
     "@mermaid-js/parser": ["@mermaid-js/parser@2.0.1", "", { "dependencies": { "@chevrotain/types": "~13.2.0" } }, "sha512-j37dj/h6p6pots1L7pLPPNuABEEu9WP4OYg9pW1g+nYG331j0+3canE9OagtYdytYvdSAMG+2fKU5cxep6LgjA=="],
 

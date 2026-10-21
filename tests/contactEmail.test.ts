@@ -10,7 +10,7 @@ describe('contact message email', () => {
         name: '<b>Eve</b>',
         email: 'eve@example.com',
         message: 'Broken <script>alert(1)</script> link',
-        pageUrl: 'https://fkp.my.id/blog/x?a=1&b="2"'
+        pageUrl: 'https://example.com/blog/x?a=1&b="2"'
     });
 
     test('lets the owner reply straight to the visitor', () => {
@@ -27,7 +27,7 @@ describe('contact message email', () => {
 
     test('keeps the plain-text body readable', () => {
         expect(mail.text).toContain('Name: <b>Eve</b>');
-        expect(mail.text).toContain('Page: https://fkp.my.id/blog/x?a=1&b="2"');
+        expect(mail.text).toContain('Page: https://example.com/blog/x?a=1&b="2"');
         expect(mail.text.endsWith('Broken <script>alert(1)</script> link')).toBe(true);
     });
 
@@ -47,13 +47,13 @@ describe('contact form payloads', () => {
             name: "Tom's",
             email: 'tom@example.com',
             message: 'A&B',
-            pageUrl: 'https://fkp.my.id/blog/x'
+            pageUrl: 'https://example.com/blog/x'
         });
         expect(mail.html).toContain('A&amp;B');
-        expect(mail.html).toContain('https://fkp.my.id/blog/x');
+        expect(mail.html).toContain('https://example.com/blog/x');
         expect(mail.html).not.toContain('&amp;amp;');
         expect(mail.text).toContain("Name: Tom's");
-        expect(mail.text).toContain('Page: https://fkp.my.id/blog/x');
+        expect(mail.text).toContain('Page: https://example.com/blog/x');
     });
 
     test.each(['(site)/contact/+page.svelte', 'feedback/+page.svelte'])(

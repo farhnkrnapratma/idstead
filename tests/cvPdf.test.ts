@@ -26,8 +26,8 @@ const fixture = (): AuthorCvData => ({
         name: 'Farhan Kurnia Pratama',
         title: 'Software Engineer',
         bio: 'Security and privacy-focused Software Engineer.',
-        email: 'contact@fkp.my.id',
-        website: 'https://fkp.my.id',
+        email: 'contact@example.com',
+        website: 'https://example.com',
         location: 'Palembang, Indonesia'
     },
     links: [{ url: 'https://github.com/example' }],
@@ -130,7 +130,7 @@ describe('cv pdf', () => {
                         && object.get(PDFName.of('Subtype'))?.toString() === '/Link'
                 ).length;
         };
-        const safe = await countLinks('https://fkp.my.id');
+        const safe = await countLinks('https://example.com');
         expect(await countLinks('https://a)/S/JavaScript/JS(x)')).toBe(safe - 1);
         expect(await countLinks('javascript:alert(1)')).toBe(safe - 1);
     });

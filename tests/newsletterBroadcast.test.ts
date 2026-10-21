@@ -8,7 +8,13 @@ const { createSupabaseNewsletterStore } =
     await import('../packages/data/src/supabase/subscribers.ts');
 
 const POST_ID = '7f3c2a10-4b1d-4c8e-9a2f-0d1e2f3a4b5c';
-const platform = { env: { RESEND_API_KEY: 're_test', SUBSCRIBER_FROM_EMAIL: 'news@example.com' } };
+const platform = {
+    env: {
+        RESEND_API_KEY: 're_test',
+        SUBSCRIBER_FROM_EMAIL: 'news@example.com',
+        PUBLIC_SITE_URL: 'https://example.com'
+    }
+};
 
 type Row = Record<string, unknown>;
 
