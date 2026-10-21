@@ -4,7 +4,7 @@
 
 ---
 
-> [!WARNING] Idstead is being extracted from a personal site and is not ready for other deployments yet. Data and admin sign-in still depend on a Supabase project, and the setup script and getting-started guides are not written. Expect breaking changes until the first release.
+> **Warning:** Idstead is being extracted from a personal site and is not ready for other deployments yet. Data and admin sign-in still depend on a Supabase project whose schema cannot yet be created from this repository. Expect breaking changes until the first release.
 
 ## What you get
 
@@ -47,6 +47,8 @@ bun install
 
 5. **Add your content** in the admin portal. Starter texts for the legal pages are in [`templates/legal/`](templates/legal/README.md).
 6. **Deploy** each app as a Worker; see [deployment](docs/005-operations/001-deployment.md).
+
+`bun run setup` does steps 1, 5 and 6 for you, along with the Cloudflare resources and the admin account, and an AI coding agent can drive it through the `setup-idstead` skill. See [setting up an instance](docs/005-operations/003-setup.md).
 
 ## Repository layout
 

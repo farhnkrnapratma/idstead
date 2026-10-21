@@ -40,6 +40,7 @@ Developer documentation for example.com. The project overview stays in the root 
 | --- | --- |
 | [001-deployment.md](005-operations/001-deployment.md) | Workers Builds, environments, bindings, migrations |
 | [002-newsletter.md](005-operations/002-newsletter.md) | Subscription lifecycle, queue delivery, recovery procedures |
+| [003-setup.md](005-operations/003-setup.md) | Setting up a new instance: `bun run setup`, the agent skill, and by hand |
 
 ## 006 Security
 
