@@ -15,7 +15,7 @@ import {
     LEGAL_SLUGS,
     SetupAnswersError,
     instanceSource,
-    legalTitle,
+    legalTemplate,
     missingVariables,
     nextSteps,
     resolveSetupAnswers,
@@ -262,11 +262,12 @@ async function legalPages(db: SupabaseClient) {
             note(`/${slug} already has content; left as is.`);
             continue;
         }
-        const content = await readFile(path.join(ROOT, 'templates/legal', `${slug}.md`), 'utf8');
+        const page = legalTemplate(
+            await readFile(path.join(ROOT, 'templates/legal', `${slug}.md`), 'utf8'),
+            slug
+        );
         if (apply) {
-            const { error: insertError } = await db
-                .from('db_legals')
-                .insert({ slug, title: legalTitle(content, slug), content });
+            const { error: insertError } = await db.from('db_legals').insert({ slug, ...page });
             if (insertError) throw new SetupStop(`Saving /${slug} failed: ${insertError.message}`);
         }
         planned(`add /${slug} from templates/legal/${slug}.md`);

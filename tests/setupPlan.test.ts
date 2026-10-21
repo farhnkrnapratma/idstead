@@ -3,7 +3,7 @@ import { resolveInstanceConfig } from '../packages/domain/src/instance.ts';
 import {
     SetupAnswersError,
     instanceSource,
-    legalTitle,
+    legalTemplate,
     missingVariables,
     requiredVariables,
     resolveSetupAnswers,
@@ -107,11 +107,14 @@ describe('variables', () => {
 });
 
 describe('content helpers', () => {
-    test('legalTitle reads the first heading', () => {
-        expect(legalTitle(':::define\na: 1\n:::\n\n# Privacy Policy\n\nText', 'privacy')).toBe(
-            'Privacy Policy'
-        );
-        expect(legalTitle('No heading', 'terms')).toBe('Terms');
+    test('legalTemplate takes the title from the first heading and removes it', () => {
+        expect(
+            legalTemplate(':::define\na: 1\n:::\n\n# Privacy Policy\n\nText', 'privacy')
+        ).toEqual({ title: 'Privacy Policy', content: ':::define\na: 1\n:::\n\nText' });
+        expect(legalTemplate('No heading', 'terms')).toEqual({
+            title: 'Terms',
+            content: 'No heading'
+        });
     });
 
     test('temporaryPassword meets the admin password policy', () => {
