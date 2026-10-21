@@ -10,7 +10,7 @@ Only the latest commit on `main` receives security fixes. There are no maintaine
 
 ## Reporting a vulnerability
 
-Report it privately through GitHub: open the repository's **Security** tab and choose **Report a vulnerability**. Please don't open a public issue, discussion or pull request for a suspected vulnerability before it has been fixed.
+Report it privately by email to [security@fkp.my.id](mailto:security@fkp.my.id). Please don't open a public issue, discussion or pull request for a suspected vulnerability before it has been fixed.
 
 Please include:
 

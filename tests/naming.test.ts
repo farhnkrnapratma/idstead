@@ -11,6 +11,7 @@ const MIGRATION_FILES = new Set([
 
 const INSTANCE_FILES = new Set([
     'README.md',
+    'SECURITY.md',
     'idstead.jsonc',
     'apps/admin/wrangler.jsonc',
     'apps/api/wrangler.jsonc',
