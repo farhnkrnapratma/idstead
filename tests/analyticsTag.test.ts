@@ -14,12 +14,15 @@ describe('Google Analytics tag', () => {
         expect(charsetIndex).toBeLessThan(firstScriptIndex);
     });
 
-    test('loads the GA4 property directly after setting consent defaults', () => {
+    test('loads the configured GA4 property after setting consent defaults', () => {
         const defaultsIndex = appHtml.indexOf("gtag('consent', 'default', defaultConsent)");
-        const configIndex = appHtml.indexOf("gtag('config', 'G-6HR3DKWZLF')");
-        const scriptIndex = appHtml.indexOf(
-            'https://www.googletagmanager.com/gtag/js?id=G-6HR3DKWZLF'
-        );
+        const idIndex = appHtml.indexOf("'%sveltekit.env.PUBLIC_GA_MEASUREMENT_ID%'");
+        const configIndex = appHtml.indexOf("gtag('config', measurementId)");
+        const scriptIndex = appHtml.indexOf('https://www.googletagmanager.com/gtag/js?id=');
+
+        expect(idIndex).toBeGreaterThan(defaultsIndex);
+        expect(appHtml).toContain('if (/^G-[A-Z0-9]+$/.test(measurementId))');
+        expect(appHtml).not.toMatch(/G-[A-Z0-9]{6,}/);
 
         expect(defaultsIndex).toBeGreaterThanOrEqual(0);
         expect(configIndex).toBeGreaterThan(defaultsIndex);
