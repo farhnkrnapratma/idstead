@@ -1,6 +1,5 @@
 <script lang="ts">
     import { cn } from '../../utils/cn';
-    import SkeletonBlock from '../SkeletonBlock.svelte';
 
     interface Props {
         count: number;
@@ -19,31 +18,18 @@
     }: Props = $props();
 </script>
 
-<div
-    class={cn('text-xs font-normal whitespace-nowrap text-text-secondary select-none', className)}
-    aria-live="polite"
-    aria-atomic="true"
-    aria-busy={loading}>
-    {#if loading}
-        <span class="sr-only">Loading counts…</span>
-    {/if}
-    Showing
-    {#if loading}
-        <SkeletonBlock
-            height="h-3"
-            width="w-5"
-            class="inline-block align-middle" />
-    {:else}
+{#if !loading && total > 0}
+    <div
+        class={cn(
+            'text-xs font-normal whitespace-nowrap text-text-secondary select-none',
+            className
+        )}
+        aria-live="polite"
+        aria-atomic="true">
+        Showing
         <span class="font-bold text-accent-text">{count}</span>
-    {/if}
-    of
-    {#if loading}
-        <SkeletonBlock
-            height="h-3"
-            width="w-5"
-            class="inline-block align-middle" />
-    {:else}
+        of
         <span class="font-bold text-accent-text">{total}</span>
-    {/if}
-    {itemLabel}
-</div>
+        {itemLabel}
+    </div>
+{/if}

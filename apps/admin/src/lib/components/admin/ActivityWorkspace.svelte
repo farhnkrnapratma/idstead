@@ -463,16 +463,14 @@
                 ))
     );
     const showListControls = $derived(
-        Boolean(list.loading && !list.data)
-            || shouldShowDataControls(list.data?.total ?? 0, listFiltersActive)
+        shouldShowDataControls(list.data?.total ?? 0, listFiltersActive)
     );
     const detailFiltersActive = $derived(
         (area === 'reports' && Boolean(detailSearch.trim() || params.get('detailReason')))
             || (area === 'feedback' && Boolean(params.get('vote') && params.get('vote') !== 'all'))
     );
     const showDetailControls = $derived(
-        Boolean(detail.loading && !detail.data)
-            || shouldShowDataControls(detail.data?.total ?? 0, detailFiltersActive)
+        shouldShowDataControls(detail.data?.total ?? 0, detailFiltersActive)
     );
     const historyTitle = $derived(
         area === 'reports' ? 'Report history'
@@ -1111,15 +1109,13 @@
 {/snippet}
 
 {#snippet listCount()}
-    {#if list.loading || (list.data?.total ?? 0) > 0}
-        <SearchResultCount
-            count={list.data?.items.length ?? 0}
-            total={list.data?.total ?? 0}
-            loading={list.loading}
-            itemLabel={area === 'reports' ? 'reported comments'
-            : area === 'feedback' ? 'pages'
-            : 'notifications'} />
-    {/if}
+    <SearchResultCount
+        count={list.data?.items.length ?? 0}
+        total={list.data?.total ?? 0}
+        loading={list.loading}
+        itemLabel={area === 'reports' ? 'reported comments'
+        : area === 'feedback' ? 'pages'
+        : 'notifications'} />
 {/snippet}
 
 {#snippet reportsToolbar()}
@@ -1172,13 +1168,11 @@
 {/snippet}
 
 {#snippet reportsCount()}
-    {#if detail.loading || (detail.data?.total ?? 0) > 0}
-        <SearchResultCount
-            count={detail.data?.items.length ?? 0}
-            total={detail.data?.total ?? 0}
-            loading={detail.loading}
-            itemLabel="reports" />
-    {/if}
+    <SearchResultCount
+        count={detail.data?.items.length ?? 0}
+        total={detail.data?.total ?? 0}
+        loading={detail.loading}
+        itemLabel="reports" />
 {/snippet}
 
 {#snippet feedbackToolbar()}
@@ -1215,13 +1209,11 @@
 {/snippet}
 
 {#snippet feedbackCount()}
-    {#if detail.loading || (detail.data?.total ?? 0) > 0}
-        <SearchResultCount
-            count={detail.data?.items.length ?? 0}
-            total={detail.data?.total ?? 0}
-            loading={detail.loading}
-            itemLabel="events" />
-    {/if}
+    <SearchResultCount
+        count={detail.data?.items.length ?? 0}
+        total={detail.data?.total ?? 0}
+        loading={detail.loading}
+        itemLabel="events" />
 {/snippet}
 
 {#snippet listStateView()}
