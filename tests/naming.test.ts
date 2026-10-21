@@ -10,6 +10,8 @@ const MIGRATION_FILES = new Set([
 ]);
 
 const INSTANCE_FILES = new Set([
+    'AGENTS.md',
+    'CLAUDE.md',
     'README.md',
     'SECURITY.md',
     'idstead.jsonc',
@@ -17,29 +19,6 @@ const INSTANCE_FILES = new Set([
     'apps/api/wrangler.jsonc',
     'apps/jobs/wrangler.jsonc',
     'apps/web/wrangler.jsonc'
-]);
-
-const PENDING_FILES = new Set([
-    'AGENTS.md',
-    'CLAUDE.md',
-    'docs/001-architecture/001-component-map.md',
-    'docs/001-architecture/002-web-middleware-pipeline.md',
-    'docs/001-architecture/003-page-render.md',
-    'docs/001-architecture/004-public-write-endpoints.md',
-    'docs/001-architecture/005-public-api.md',
-    'docs/001-architecture/006-admin-login-mfa.md',
-    'docs/001-architecture/007-publish-post.md',
-    'docs/001-architecture/008-asset-pipeline.md',
-    'docs/001-architecture/010-endpoint-reference.md',
-    'docs/001-architecture/011-cv-documents.md',
-    'docs/003-api/002-ard.md',
-    'docs/003-api/README.md',
-    'docs/004-development/001-local-setup.md',
-    'docs/004-development/002-environment.md',
-    'docs/004-development/003-testing.md',
-    'docs/005-operations/001-deployment.md',
-    'docs/005-operations/002-newsletter.md',
-    'docs/006-security.md'
 ]);
 
 function trackedFiles(): string[] {
@@ -61,15 +40,11 @@ function mentionsLegacyName(file: string): boolean {
 }
 
 describe('Idstead naming', () => {
-    const offenders = trackedFiles().filter(
-        file => !MIGRATION_FILES.has(file) && !INSTANCE_FILES.has(file) && mentionsLegacyName(file)
-    );
-
-    test('only allowlisted files still use the old name', () => {
-        expect(offenders.filter(file => !PENDING_FILES.has(file))).toEqual([]);
-    });
-
-    test('the pending list only names files that still need the rename', () => {
-        expect([...PENDING_FILES].filter(file => !offenders.includes(file))).toEqual([]);
+    test('only the migration and instance files use the old name', () => {
+        const offenders = trackedFiles().filter(
+            file =>
+                !MIGRATION_FILES.has(file) && !INSTANCE_FILES.has(file) && mentionsLegacyName(file)
+        );
+        expect(offenders).toEqual([]);
     });
 });

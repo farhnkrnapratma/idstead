@@ -5,7 +5,7 @@ description: Set up a new Idstead instance (personal site, admin portal, public 
 
 # Set up an Idstead instance
 
-`tooling/setup.ts` (`bun run setup`) does the work. Your job is to collect the answers, get the dry run clean with the user, and run `apply` once they agree. Follow these steps in order and do not improvise other ways to create resources. The full reference is `docs/005-operations/003-setup.md`; read it before you start.
+`tooling/setup.ts` (`bun run setup`) does the work. Your job is to collect the answers, get the dry run clean with the user, and run `apply` once they agree. Follow these steps in order and do not improvise other ways to create resources. The full reference is `docs/001-getting-started/README.md`; read it before you start.
 
 ## Rules
 

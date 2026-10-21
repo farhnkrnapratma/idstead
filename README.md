@@ -9,7 +9,7 @@
 ## What you get
 
 - **A public site**: a homepage summarising your profile, experience, latest posts and projects, plus `/blog`, `/projects`, `/cv`, `/funding` and `/contact`, and privacy, terms and security pages.
-- **A blog** written in [MDRS](docs/002-mdrs/README.md), a Markdown superset with callouts, tabs, steps, math, diagrams, charts and live site data, with search, tags, comments screened by an AI moderation model, "was this helpful" feedback and an email newsletter.
+- **A blog** written in [MDRS](docs/008-mdrs/README.md), a Markdown superset with callouts, tabs, steps, math, diagrams, charts and live site data, with search, tags, comments screened by an AI moderation model, "was this helpful" feedback and an email newsletter.
 - **Machine-readable twins**: every post and legal page also exists as `.md` and `.txt`, next to an Atom feed, a sitemap, `llms.txt` and `.well-known` discovery documents.
 - **A public read-only REST API** (`/v1`) for posts, comments, the author profile, CV and search, with an OpenAPI description.
 - **An admin portal** on its own host, behind MFA or a passkey: a post editor with live preview, comment moderation, profile, CV and legal page management, and activity analytics.
@@ -33,8 +33,8 @@ cd idstead
 bun install
 ```
 
-1. **Describe your instance.** Copy `idstead.example.jsonc` to `idstead.jsonc`, set your domain and, if you like, the Worker, bucket and queue names, then run `bun run configure` to render each app's `wrangler.jsonc`. See [instance configuration](docs/004-development/005-instance-configuration.md).
-2. **Set environment variables.** `.env.example` lists every one; copy it to `.env` and fill it in. `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `PUBLIC_SITE_URL` and `PUBLIC_API_BASE_URL` are required. See [environment](docs/004-development/002-environment.md).
+1. **Describe your instance.** Copy `idstead.example.jsonc` to `idstead.jsonc`, set your domain and, if you like, the Worker, bucket and queue names, then run `bun run configure` to render each app's `wrangler.jsonc`. See [instance configuration](docs/002-configuration/001-instance.md).
+2. **Set environment variables.** `.env.example` lists every one; copy it to `.env` and fill it in. `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `PUBLIC_SITE_URL` and `PUBLIC_API_BASE_URL` are required. See [environment](docs/002-configuration/002-environment.md).
 3. **Apply the database schema** in `supabase/migrations/` to your Supabase project.
 4. **Run it locally:**
 
@@ -46,9 +46,9 @@ bun install
     ```
 
 5. **Add your content** in the admin portal. Starter texts for the legal pages are in [`templates/legal/`](templates/legal/README.md).
-6. **Deploy** each app as a Worker; see [deployment](docs/005-operations/001-deployment.md).
+6. **Deploy** each app as a Worker; see [deployment](docs/006-operations/001-deployment.md).
 
-`bun run setup` does steps 1, 5 and 6 for you, along with the Cloudflare resources and the admin account, and an AI coding agent can drive it through the `setup-idstead` skill. See [setting up an instance](docs/005-operations/003-setup.md).
+`bun run setup` does steps 1, 5 and 6 for you, along with the Cloudflare resources and the admin account, and an AI coding agent can drive it through the `setup-idstead` skill. See [setting up an instance](docs/001-getting-started/README.md).
 
 ## Repository layout
 

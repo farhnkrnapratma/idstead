@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, test } from 'bun:test';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 
-const docsRoot = path.resolve(import.meta.dir, '../docs/002-mdrs');
+const docsRoot = path.resolve(import.meta.dir, '../docs/008-mdrs');
 const demoFixture = path.resolve(import.meta.dir, 'fixtures/markdown-demo.md');
 
 function markdownFiles(dir: string): string[] {

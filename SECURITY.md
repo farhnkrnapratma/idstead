@@ -46,4 +46,4 @@ Out of scope:
 
 Idstead is maintained by one person, so response times are best-effort: an acknowledgment within a few days, triage as soon as reasonably possible, and a fix prioritised by severity (authentication bypass, Row Level Security bypass and data exposure first). Please allow time for a fix before any public disclosure. There is no bug bounty, but valid reports are credited, with your permission, in the advisory and release notes.
 
-The protections already in place are described in [`docs/006-security.md`](docs/006-security.md).
+The protections already in place are described in [`docs/007-security.md`](docs/007-security.md).
