@@ -65,6 +65,7 @@
     );
     const axisLabels = $derived(new Map(series.map(row => [row.label, row.axisLabel])));
     const hasActivity = $derived(hasChartActivity(series.map(row => row.views)));
+    const showControls = $derived(hasActivity && !isLoading && !error);
     const maxViews = $derived(Math.max(ceiling, ...series.map(d => d.views)));
     const tickCount = $derived(Math.min(6, series.length));
     let chartType = $state<'spline' | 'bar'>('spline');
@@ -96,7 +97,7 @@
             </p>
         </div>
         <div class="flex items-center gap-2">
-            {#if hasActivity || isLoading || error}
+            {#if showControls}
                 <div
                     class="flex items-center gap-1"
                     role="group"
@@ -118,9 +119,6 @@
                         <ChartColumnBig class="size-3.5" />
                     </Chip>
                 </div>
-            {/if}
-
-            {#if hasActivity}
                 {#if range && onRangeChange}
                     <div
                         class="flex items-center gap-1.5"

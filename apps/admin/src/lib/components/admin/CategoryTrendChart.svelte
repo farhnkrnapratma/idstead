@@ -74,6 +74,7 @@
     );
 
     const hasActivity = $derived(hasChartActivity(donutSegments.map(segment => segment.value)));
+    const showControls = $derived(hasActivity && !isLoading && !error);
     const rows = $derived(
         data.map(row => ({
             ...row,
@@ -121,7 +122,7 @@
             {/if}
         </div>
         <div class="flex items-center gap-2">
-            {#if hasActivity || isLoading || error}
+            {#if showControls}
                 <div
                     class="flex items-center gap-1"
                     role="group"
@@ -153,8 +154,6 @@
                         </Chip>
                     {/if}
                 </div>
-            {/if}
-            {#if hasActivity}
                 {#if range && onRangeChange}
                     <div
                         class="flex items-center gap-1.5"
