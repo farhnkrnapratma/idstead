@@ -102,12 +102,17 @@
             }
 
             gtag('consent', 'default', defaultConsent);
-            gtag('js', new Date());
-            gtag('config', 'G-6HR3DKWZLF');
+
+            const measurementId = '%sveltekit.env.PUBLIC_GA_MEASUREMENT_ID%';
+            if (/^G-[A-Z0-9]+$/.test(measurementId)) {
+                gtag('js', new Date());
+                gtag('config', measurementId);
+                const tag = document.createElement('script');
+                tag.async = true;
+                tag.src = 'https://www.googletagmanager.com/gtag/js?id=' + measurementId;
+                document.head.appendChild(tag);
+            }
         </script>
-        <script
-            async
-            src="https://www.googletagmanager.com/gtag/js?id=G-6HR3DKWZLF"></script>
         <meta
             name="viewport"
             content="width=device-width, initial-scale=1" />
