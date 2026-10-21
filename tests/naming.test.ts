@@ -10,6 +10,7 @@ const MIGRATION_FILES = new Set([
 ]);
 
 const INSTANCE_FILES = new Set([
+    'README.md',
     'idstead.jsonc',
     'apps/admin/wrangler.jsonc',
     'apps/api/wrangler.jsonc',
@@ -20,11 +21,6 @@ const INSTANCE_FILES = new Set([
 const PENDING_FILES = new Set([
     'AGENTS.md',
     'CLAUDE.md',
-    'PRIVACY.md',
-    'PRODUCT.md',
-    'README.md',
-    'SECURITY.md',
-    'TERMS.md',
     'docs/001-architecture/001-component-map.md',
     'docs/001-architecture/002-web-middleware-pipeline.md',
     'docs/001-architecture/003-page-render.md',

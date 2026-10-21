@@ -1,8 +1,15 @@
+:::define
+owner: api.v1.author.profile.name
+site: api.v1.author.profile.siteUrl
+email: api.v1.author.profile.email
+location: api.v1.author.profile.city + ", " + api.v1.author.profile.country
+:::
+
 # Terms of Service
 
 **Effective date:** 8 September 2026
 
-These **Terms of Service** (the "**Terms**") govern your access to and use of **https://fkp.my.id** (the "**Website**"), together with its content, its public application programming interface, and every related feature made available through it (collectively, the "**Service**"). The Service is operated by **Farhan Kurnia Pratama** ("**we**", "**us**", or "**our**").
+These **Terms of Service** (the "**Terms**") govern your access to and use of **${site}** (the "**Website**"), together with its content, its public application programming interface, and every related feature made available through it (collectively, the "**Service**"). The Service is operated by **${owner}** ("**we**", "**us**", or "**our**").
 
 By accessing, browsing, querying, or otherwise using the Service, you acknowledge that you have read, understood, and agree to be bound by these **Terms**. If you do not agree to these **Terms**, you must not use the Service.
 
@@ -19,13 +26,13 @@ For the purposes of these **Terms**:
 
 You represent that you have the legal capacity to enter into a binding agreement in your jurisdiction. If you are below the age of majority applicable to you, you may use the Service only with the involvement of a parent or legal guardian.
 
-Each point at which the Service accepts a Submission displays a notice stating that, by proceeding, you accept these **Terms** and our [Privacy Policy](https://fkp.my.id/privacy). Completing that action constitutes your acceptance.
+Each point at which the Service accepts a Submission displays a notice stating that, by proceeding, you accept these **Terms** and our [Privacy Policy](/privacy). Completing that action constitutes your acceptance.
 
 ## 3. Acceptable Use
 
 You agree to use the Service only for lawful purposes and in accordance with these **Terms**. You must not:
 
-- Attempt to breach, bypass, disable, or probe for vulnerabilities in any authentication, authorization, or access-control mechanism, except as expressly permitted under our [Security Policy](https://fkp.my.id/security).
+- Attempt to breach, bypass, disable, or probe for vulnerabilities in any authentication, authorization, or access-control mechanism, except as expressly permitted under our [Security Policy](/security).
 - Conduct denial-of-service or distributed denial-of-service attacks, automated brute-force attempts, or request flooding that degrades availability for other Visitors.
 - Circumvent, or attempt to circumvent, published rate limits, the directives published at `/robots.txt`, or any technical measure that restricts access to the Service.
 - Submit or transmit malware, phishing links, spam, or any material that is unlawful, defamatory, harassing, or infringing.
@@ -37,7 +44,7 @@ You agree to use the Service only for lawful purposes and in accordance with the
 
 **Source code.** Source code, components, and utilities that we publish as open source are licensed under the [**MIT License**](https://opensource.org/license/mit) unless a different licence is stated in the relevant repository.
 
-**Written Content.** Blog posts, articles, documentation, illustrations, and other editorial material published on the Website remain the property of **Farhan Kurnia Pratama** and are protected by applicable copyright law. You may quote or reference such material for the purposes of commentary, criticism, reporting, teaching, or research, provided you give appropriate attribution and include a link to the original page. You may not republish substantial portions of the written Content without prior written permission.
+**Written Content.** Blog posts, articles, documentation, illustrations, and other editorial material published on the Website remain the property of **${owner}** and are protected by applicable copyright law. You may quote or reference such material for the purposes of commentary, criticism, reporting, teaching, or research, provided you give appropriate attribution and include a link to the original page. You may not republish substantial portions of the written Content without prior written permission.
 
 **Your Submissions.** You retain ownership of your Submissions. By making a Submission that is intended for publication, you grant us a non-exclusive, worldwide, royalty-free licence to store, reproduce, display, and distribute that Submission through the Service, including through the Public API and syndication feeds. You may withdraw this licence by requesting removal in accordance with Section 7.
 
@@ -75,7 +82,7 @@ Every published comment carries a kebab menu (⋮) offering a **Report** action 
 
 The report form accepts one of the following grounds: spam, harassment, violence or illegal activity, sexual content, self-harm, impersonation, **removal request**, misinformation, or other, together with optional supporting detail. Reports are the designated route for objecting to an automated publication decision, and each report is reviewed by a human.
 
-If you wish to request removal of a comment on grounds of privacy, copyright, or factual inaccuracy, you may either submit a report using the **removal request** ground, or copy the Comment ID and send it, together with your reasons, through our [Feedback](https://fkp.my.id/feedback) form or by email to [contact@fkp.my.id](mailto:contact@fkp.my.id).
+If you wish to request removal of a comment on grounds of privacy, copyright, or factual inaccuracy, you may either submit a report using the **removal request** ground, or copy the Comment ID and send it, together with your reasons, through our [Feedback](/feedback) form or by email to ${email}.
 
 ## 8. Automatically Generated Content
 
@@ -95,13 +102,13 @@ THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIN
 
 ## 11. Limitation of Liability
 
-TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL **Farhan Kurnia Pratama** BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES, OR FOR ANY LOSS OF PROFITS, REVENUE, DATA, GOODWILL, OR BUSINESS OPPORTUNITY, ARISING OUT OF OR IN CONNECTION WITH YOUR USE OF, OR INABILITY TO USE, THE SERVICE, WHETHER BASED IN CONTRACT, TORT, STRICT LIABILITY, OR ANY OTHER LEGAL THEORY, AND WHETHER OR NOT WE HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL **${owner}** BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES, OR FOR ANY LOSS OF PROFITS, REVENUE, DATA, GOODWILL, OR BUSINESS OPPORTUNITY, ARISING OUT OF OR IN CONNECTION WITH YOUR USE OF, OR INABILITY TO USE, THE SERVICE, WHETHER BASED IN CONTRACT, TORT, STRICT LIABILITY, OR ANY OTHER LEGAL THEORY, AND WHETHER OR NOT WE HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 
 Nothing in these **Terms** excludes or limits liability that cannot lawfully be excluded or limited, including liability for death or personal injury caused by negligence, or for fraud.
 
 ## 12. Indemnity
 
-You agree to indemnify and hold harmless **Farhan Kurnia Pratama** against any claim, demand, loss, liability, or expense, including reasonable legal fees, arising out of your Submissions, your use of the Service, or your breach of these **Terms** or of any applicable law.
+You agree to indemnify and hold harmless **${owner}** against any claim, demand, loss, liability, or expense, including reasonable legal fees, arising out of your Submissions, your use of the Service, or your breach of these **Terms** or of any applicable law.
 
 ## 13. Changes to These Terms
 
@@ -119,4 +126,4 @@ If any provision of these **Terms** is held to be invalid, illegal, or unenforce
 
 ## 16. Contact
 
-Questions regarding these **Terms** may be sent to [contact@fkp.my.id](mailto:contact@fkp.my.id), or submitted through the [Feedback](https://fkp.my.id/feedback) form.
+Questions regarding these **Terms** may be sent to ${email}, or submitted through the [Feedback](/feedback) form.
