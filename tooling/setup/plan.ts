@@ -98,9 +98,11 @@ export function workerSecrets(
     ) as Record<App, Record<string, string>>;
 }
 
-export function legalTitle(markdown: string, slug: string): string {
-    const heading = markdown.match(/^# (.+)$/m)?.[1]?.trim();
-    return heading || slug.charAt(0).toUpperCase() + slug.slice(1);
+export function legalTemplate(markdown: string, slug: string): { title: string; content: string } {
+    const heading = markdown.match(/^# (.+)\n+/m);
+    const title = heading?.[1]?.trim() || slug.charAt(0).toUpperCase() + slug.slice(1);
+    const content = heading ? markdown.replace(heading[0], '') : markdown;
+    return { title, content };
 }
 
 const PASSWORD_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789-_.!';

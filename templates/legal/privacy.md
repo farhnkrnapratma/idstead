@@ -1,13 +1,12 @@
 :::define
-owner: api.v1.author.profile.name
+name: api.v1.author.profile.name
 site: api.v1.author.profile.siteUrl
 email: api.v1.author.profile.email
-location: api.v1.author.profile.city + ", " + api.v1.author.profile.country
+city: api.v1.author.profile.city
+country: api.v1.author.profile.country
 :::
 
 # Privacy Policy
-
-**Effective date:** 15 October 2026
 
 This **Privacy Policy** explains what personal data is processed when you visit **${site}** (the "**Website**"), why it is processed, who else receives it, and what rights you have over it.
 
@@ -17,15 +16,15 @@ We aim to describe the Website's actual behaviour rather than a generic template
 
 The controller responsible for the processing described here is:
 
-- **${owner}**
-- ${location}
-- Email: ${email}
+- **${name}**
+- ${city}, ${country}
+- Email: [${email}](mailto:${email})
 
 No data protection officer has been appointed, as the scale of processing does not require one. Enquiries should be sent to the address above.
 
 ## 2. Scope and Legal Framework
 
-This policy covers the Website, its public API (`/v1`), and the forms it presents.
+This policy covers the Website, its public API under `/v1`, and the forms it presents.
 
 Processing is carried out in accordance with **Law of the Republic of Indonesia No. 27 of 2022 on Personal Data Protection** (the "**PDP Law**"). Because the Website is reachable from the European Economic Area and the United Kingdom, this policy also sets out the corresponding rights and legal bases under the **General Data Protection Regulation** ("**GDPR**") for Visitors to whom that regulation applies.
 
@@ -48,13 +47,15 @@ We cannot recover your IP address from these hashes, but the second and third ar
 
 ## 4. Local Storage and Cookies
 
-:::important **The Website sets no first-party cookie for Visitors.** Your preferences are kept in your browser's `localStorage`, which is never transmitted to us. The administrator portal runs on a separate host and sets its session cookie only there, after the administrator signs in; that cookie is never issued to Visitors browsing the public Website. The other cookies you may encounter are set by third parties, as listed at the end of this section. :::
+:::important
+**The Website sets no first-party cookie for Visitors.** Your preferences are kept in your browser's `localStorage`, which is never transmitted to us. The administrator portal runs on a separate host and sets its session cookie only there, after the administrator signs in; that cookie is never issued to Visitors browsing the public Website. The other cookies you may encounter are set by third parties, as listed at the end of this section.
+:::
 
 The following entries are written to `localStorage` on your device. They remain on your device, are readable only by this Website, and can be erased at any time by clearing site data in your browser.
 
 - `idstead_cookie_consent_v2` — your consent choices for the four signals described in Section 5.
 - `theme` — your light, dark, or automatic appearance choice.
-- `a11y_settings` — accessibility preferences such as font scale and dyslexia-friendly typeface.
+- `a11y_overrides` — accessibility preferences such as font scale and dyslexia-friendly typeface.
 - `idstead_content_font` — your reading typeface choice.
 - `codeblock_prefs` — display preferences for code blocks.
 - `idstead_search_history` — the last five entries you opened from the search dialog, kept so that the dialog can offer them again. This is a record of your activity on the Website, but it is stored only on your device and is never transmitted to us or to any third party.
@@ -76,7 +77,6 @@ Google tags start with analytics and advertising storage denied. While consent i
 
 Analytics data associated with the property is retained by Google for fourteen months before automated deletion.
 
-:::note The consent dialog presents a data-retention selector. In the current implementation that selector records your preference in `localStorage` only; it does not reconfigure the retention period held by Google. We state this plainly rather than let the control imply an assurance it does not provide. If you wish the retention period changed, please contact us. :::
 
 **Legal basis:** consent, under Article 20(1) of the PDP Law and Article 6(1)(a) GDPR.
 
@@ -89,7 +89,9 @@ The Website uses [Sentry](https://sentry.io/) for error monitoring, performance 
 - **Session replay is enabled.** Approximately ten percent of all sessions are recorded, and one hundred percent of sessions in which an error occurs are recorded. A replay reconstructs page structure, navigation, clicks, scrolling, and network timing.
 - Replay recording runs with the vendor's default privacy settings, under which **text content and form input values are masked and media elements are blocked** before the recording leaves your browser. Sentry additionally observes the IP address from which a report is sent.
 
-:::warning Sentry, including session replay, initialises independently of the cookie banner. The banner governs the Google Consent Mode signals described in Section 5; it does not switch Sentry off. If you object to session replay, please contact us at ${email}. :::
+:::warning
+Sentry, including session replay, initialises independently of the cookie banner. The banner governs the Google Consent Mode signals described in Section 5; it does not switch Sentry off. If you object to session replay, please contact us at [${email}](mailto:${email}).
+:::
 
 **Legal basis:** legitimate interests in maintaining the security, stability, and correct operation of the Website, under Article 20(2) of the PDP Law and Article 6(1)(f) GDPR.
 
@@ -119,7 +121,9 @@ When you submit a comment or reply, **your display name and the full text of you
 
 The outcome of that evaluation determines, on its own, whether your comment is published. There is no human review step before publication.
 
-:::important This is a decision taken by automated means. If your comment is withheld and you consider the decision wrong, you may contest it and obtain human review by reporting the comment through the kebab menu (⋮) or by writing to ${email}. This reflects your right under Article 22(3) GDPR and the corresponding provisions of the PDP Law. :::
+:::important
+This is a decision taken by automated means. If your comment is withheld and you consider the decision wrong, you may contest it and obtain human review by reporting the comment through the kebab menu (⋮) or by writing to [${email}](mailto:${email}). This reflects your right under Article 22(3) GDPR and the corresponding provisions of the PDP Law.
+:::
 
 **Legal basis:** legitimate interests in preventing the publication of unlawful or abusive material, under Article 20(2) of the PDP Law and Article 6(1)(f) GDPR.
 
@@ -138,7 +142,7 @@ We do not sell personal data, and we do not disclose it to any other party excep
 
 ## 11. International Transfers
 
-We are established in Indonesia. Several of the recipients listed in Section 10 process data outside Indonesia, principally in the United States and in the global edge networks operated by Cloudflare. Where personal data of Visitors in the European Economic Area or the United Kingdom is transferred to a country without an adequacy decision, that transfer relies on the standard contractual clauses or equivalent safeguards adopted by the relevant provider. Transfers of personal data outside Indonesia are made in accordance with Articles 56 and 57 of the PDP Law.
+We are established in ${country}. Several of the recipients listed in Section 10 process data outside ${country}, principally in the United States and in the global edge networks operated by Cloudflare. Where personal data of Visitors in the European Economic Area or the United Kingdom is transferred to a country without an adequacy decision, that transfer relies on the standard contractual clauses or equivalent safeguards adopted by the relevant provider. Transfers of personal data outside Indonesia are made in accordance with Articles 56 and 57 of the PDP Law.
 
 ## 12. Retention
 
@@ -164,7 +168,7 @@ Subject to the conditions and exceptions in the applicable law, you have the rig
 - **not be subject to a decision based solely on automated processing** that produces legal or similarly significant effects, and to obtain human intervention as described in Section 9 (PDP Law Art. 10; GDPR Art. 22);
 - **lodge a complaint** with a supervisory authority, as described in Section 19.
 
-To exercise any of these rights, write to ${email}. We will respond without undue delay and, in any event, within the period prescribed by the applicable law. We may ask you for information sufficient to establish that the request concerns your own data.
+To exercise any of these rights, write to [${email}](mailto:${email}). We will respond without undue delay and, in any event, within the period prescribed by the applicable law. We may ask you for information sufficient to establish that the request concerns your own data.
 
 ## 14. Removing a Comment
 
@@ -172,7 +176,7 @@ Because comments are posted without an account, the practical identifier for a r
 
 1. Open the kebab menu (⋮) on the comment concerned.
 2. Choose **Copy Comment ID**, or choose **Report** and select the **removal request** ground.
-3. If you proceed by email or through the [Feedback](/feedback) form, include the Comment ID and your reasons, and send it to ${email}.
+3. If you proceed by email or through the [Feedback](/feedback) form, include the Comment ID and your reasons, and send it to [${email}](mailto:${email}).
 
 ## 15. Security Measures
 
@@ -204,6 +208,6 @@ You may ask to be notified by email when a new article is published. This is opt
 
 We may revise this **Privacy Policy**. The revised version takes effect on publication, and the modification date shown alongside this document reflects the most recent revision.
 
-Questions, requests, and objections should be addressed to ${email}.
+Questions, requests, and objections should be addressed to [${email}](mailto:${email}).
 
 If you consider that our processing infringes your rights, you may lodge a complaint with the competent authority in Indonesia under the PDP Law. Visitors in the European Economic Area or the United Kingdom may instead lodge a complaint with the supervisory authority of their habitual residence or place of work.

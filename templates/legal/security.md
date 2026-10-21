@@ -1,5 +1,5 @@
 :::define
-owner: api.v1.author.profile.name
+name: api.v1.author.profile.name
 site: api.v1.author.profile.siteUrl
 email: api.v1.author.profile.email
 :::
@@ -8,7 +8,7 @@ email: api.v1.author.profile.email
 
 **Effective date:** 15 October 2026
 
-This is the personal website and public interface of **${owner}**, built on [Idstead](https://github.com/farhnkrnapratma/idstead): SvelteKit and Hono applications with a Supabase backend, deployed as Cloudflare Workers. It consists of the public site at **${site}**, an admin portal, and a public read-only API under `/v1`.
+This is the personal website and public interface of **${name}**, built on [Idstead](https://github.com/farhnkrnapratma/idstead): SvelteKit and Hono applications with a Supabase backend, deployed as Cloudflare Workers. It consists of the public site at **${site}**, an admin portal, and a public read-only API under `/v1`.
 
 ## Scope
 
