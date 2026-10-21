@@ -206,7 +206,7 @@
             { key: 'created_at', header: 'Time', width: '18%' }
         ]}>
         {#snippet meta()}
-            {#if showDataControls && (loading || total > 0) && !error}<SearchResultCount
+            {#if showDataControls && !error}<SearchResultCount
                     count={rows.length}
                     {total}
                     {loading}
