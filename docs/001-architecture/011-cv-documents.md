@@ -78,7 +78,7 @@ Verify a download:
 ```sh
 sha256sum -c CV-Name-1234567-v1.0.pdf.sha256
 b2sum -c CV-Name-1234567-v1.0.pdf.b2
-gpg --locate-keys you@fkp.my.id
+gpg --locate-keys you@example.com
 gpg --verify CV-Name-1234567-v1.0.pdf.sig
 ```
 

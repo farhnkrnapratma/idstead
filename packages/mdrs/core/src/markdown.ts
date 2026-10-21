@@ -30,12 +30,15 @@ import {
 } from './render/headings';
 import { extractIgnoreRenderBlocks } from './render/ignoreRender';
 import { type MathSource, extractMath, renderMathSources } from './render/math';
-import { markdownParser } from './render/parser';
+import { parseWithOptions, type RenderOptions } from './render/parser';
 import { parseSteps } from './render/steps';
+
+export type { RenderOptions };
 
 export async function renderMarkdownUnsafe(
     markdown: string,
-    resolvers: ApiRegistry = unavailableResolvers()
+    resolvers: ApiRegistry = unavailableResolvers(),
+    options: RenderOptions = {}
 ): Promise<string> {
     if (markdown.length > MAX_DOCUMENT_LENGTH) {
         throw new Error('Markdown document is too large to render.');
@@ -78,7 +81,7 @@ export async function renderMarkdownUnsafe(
     const references = extractReferences(withInterpolated);
     const icons = await loadIcons(references.markdown);
     const withContainers = parseContainers(convertGithubAlerts(references.markdown), icons);
-    const rawHtml = await markdownParser.parse(withContainers);
+    const rawHtml = parseWithOptions(withContainers, options);
     const withDetails = parseDetailsBlocks(rawHtml);
     const withSteps = parseSteps(withDetails);
     const withFootnotes = placeReferences(formatFootnoteReferences(withSteps), references.marker);
@@ -91,16 +94,18 @@ export async function renderMarkdownUnsafe(
 
 export async function renderMarkdown(
     markdown: string,
-    resolvers: ApiRegistry = unavailableResolvers()
+    resolvers: ApiRegistry = unavailableResolvers(),
+    options: RenderOptions = {}
 ): Promise<string> {
-    return sanitizeHtml(await renderMarkdownUnsafe(markdown, resolvers));
+    return sanitizeHtml(await renderMarkdownUnsafe(markdown, resolvers, options));
 }
 
 export async function prepareMarkdownPage(
     markdown: string,
-    resolvers: ApiRegistry = unavailableResolvers()
+    resolvers: ApiRegistry = unavailableResolvers(),
+    options: RenderOptions = {}
 ): Promise<{ html: string; headings: HeadingItem[] }> {
-    const rawHtml = await renderMarkdown(markdown, resolvers);
+    const rawHtml = await renderMarkdown(markdown, resolvers, options);
     const html = prefixHashLinks(injectHeadingIds(rawHtml));
     const headings = extractHeadings(html);
     return { html, headings };

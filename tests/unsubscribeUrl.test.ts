@@ -10,7 +10,9 @@ const unsubscribePageServer = readFileSync(
 describe('unsubscribe result URL', () => {
     test('removes every bearer token before the result page can load analytics', () => {
         const url = unsubscribeResultUrl(
-            new URL('https://fkp.my.id/unsubscribe?token=first&campaign=email&token=second#status'),
+            new URL(
+                'https://example.com/unsubscribe?token=first&campaign=email&token=second#status'
+            ),
             'unsubscribed'
         );
 

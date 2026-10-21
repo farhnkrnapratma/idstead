@@ -9,8 +9,8 @@ The columns show which apps read each variable, from a code search on 2026-10-18
 | `PUBLIC_SUPABASE_URL` | public | ✓ | ✓ | ✓ | ✓ | Supabase project URL |
 | `PUBLIC_SUPABASE_PUBLISHABLE_KEY` | public | ✓ | ✓ | ✓ | ✓ | anon/publishable key (RLS applies) |
 | `SUPABASE_SERVICE_ROLE_KEY` | **secret** | ✓ | ✓ | – | ✓ | service-role client that bypasses RLS. Server-only. The API worker never has it. |
-| `PUBLIC_API_BASE_URL` | public | ✓ | ✓ | – | – | API origin for links, CSP `connect-src` and the OpenAPI mirror (default `https://api.fkp.my.id`) |
-| `PUBLIC_SITE_URL` | public | – | ✓ | – | ✓ | public site origin, used when the author profile has no site URL: for newsletter links (`configuredSiteUrl` in `server/siteUrl.ts`, default `https://fkp.my.id`), for the site links in the CV verification bundle (`adminCv.ts`), and for the generated website banner in admin |
+| `PUBLIC_API_BASE_URL` | public | ✓ | ✓ | – | – | API origin for links, CSP `connect-src` and the OpenAPI mirror (default `https://api.example.com`) |
+| `PUBLIC_SITE_URL` | public | – | ✓ | – | ✓ | public site origin, used when the author profile has no site URL: for newsletter links (`configuredSiteUrl` in `server/siteUrl.ts`, default `https://example.com`), for the site links in the CV verification bundle (`adminCv.ts`), and for the generated website banner in admin |
 | `PUBLIC_CDN_BASE_URL` | public | ✓ | ✓ | – | ✓ | public R2/CDN origin for `/static`, `/fonts`, `/logo`, CV URLs and the identity fallback |
 | `R2_ACCOUNT_ID`, `R2_BUCKET_NAME`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | **secret**, script | – | – | – | – | S3-API access to the R2 bucket for `scripts/migrate-cdn-layout.ts`, which runs with bun outside Workers. The Workers use the `ASSET_BUCKET` binding instead. |
 | `PUBLIC_TURNSTILE_SITE_KEY` | public | ✓ | ✓ | – | – | Turnstile widget key |

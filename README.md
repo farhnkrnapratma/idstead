@@ -93,9 +93,9 @@ This is a Bun workspaces monorepo. Each app is its own Cloudflare Worker, and al
 | `packages/lib` | — | Site feature components, data access and server code. |
 | `packages/ui` | — | The design system (`@idstead/ui`): tokens, global styles, UI primitives and stores. |
 | `packages/domain` | — | Pure helpers and types (`@idstead/domain`) shared by every app. |
-| `packages/mdrs-core` | — | The MDRS engine (`@mdrs/core`), used by the web, admin and API apps. |
-| `packages/mdrs-dom` | — | The browser side of MDRS (`@mdrs/dom`): code blocks, tabs, charts, diagrams and `mdrs.css`. |
-| `packages/mdrs-editor` | — | The admin's Markdown editor (`@mdrs/editor`). |
+| `packages/mdrs/core` | — | The MDRS engine (`@mdrs/core`), used by the web, admin and API apps. |
+| `packages/mdrs/dom` | — | The browser side of MDRS (`@mdrs/dom`): code blocks, tabs, charts, diagrams and `mdrs.css`. |
+| `packages/mdrs/editor` | — | The admin's Markdown editor (`@mdrs/editor`). |
 
 ### Start Development Servers
 
@@ -178,7 +178,7 @@ All apps share the same Supabase project. Local `.env*` files are for developmen
 
 ## Markdown syntax
 
-Posts and legal pages are written in **MDRS** (Markdown Rich Syntax, `.mdrs`), a superset of CommonMark and GitHub Flavored Markdown rendered by the `@mdrs/core` workspace package (`packages/mdrs-core`). On top of standard Markdown it adds directives (`:::note`, `:::callout`, `:::details`, `:::tabs`, `:::snippets`, `:::steps`, `:::embed`, `:::references`), code block options (`filename=`, `mark=`), extended task states, math (`$$ … $$`, `:::math`), Mermaid and chart fences, and document variables (`:::define`, `${…}`) with live site data.
+Posts and legal pages are written in **MDRS** (Markdown Rich Syntax, `.mdrs`), a superset of CommonMark and GitHub Flavored Markdown rendered by the `@mdrs/core` workspace package (`packages/mdrs/core`). On top of standard Markdown it adds directives (`:::note`, `:::callout`, `:::details`, `:::tabs`, `:::snippets`, `:::steps`, `:::embed`, `:::references`), code block options (`filename=`, `mark=`), extended task states, math (`$$ … $$`, `:::math`), Mermaid and chart fences, and document variables (`:::define`, `${…}`) with live site data.
 
 ```mdrs
 :::tip

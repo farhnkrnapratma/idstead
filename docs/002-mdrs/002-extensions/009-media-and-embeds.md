@@ -5,7 +5,7 @@
 Images and videos share one syntax: `![alt](source "title")`. A source ending in `.mp4` or `.webm` (query strings and fragments allowed) renders a `<video>` with controls; anything else renders an image.
 
 ```mdrs
-![Product demo](https://cdn.fkp.my.id/blog/my-post/videos/product-demo.webm "Product demo")
+![Product demo](https://cdn.my-site.example/blog/my-post/videos/product-demo.webm "Product demo")
 ```
 
 ```html
@@ -13,7 +13,7 @@ Images and videos share one syntax: `![alt](source "title")`. A source ending in
     controls
     preload="metadata"
     playsinline
-    src="https://cdn.fkp.my.id/blog/my-post/videos/product-demo.webm"
+    src="https://cdn.my-site.example/blog/my-post/videos/product-demo.webm"
     title="Product demo"
     aria-label="Product demo"></video>
 ```
@@ -25,16 +25,16 @@ The alt text becomes the video's `aria-label`.
 Images uploaded for a post live on the CDN as an AVIF file with a WebP sibling. When the source matches `https://<host>/blog/<slug>/images/<name>.avif` (or the `staging/blog/<uuid>/images/…` path used before a post is first saved), MDRS renders a `<picture>`:
 
 ```mdrs
-![Architecture overview](https://cdn.fkp.my.id/blog/my-post/images/architecture-overview.avif "Architecture overview")
+![Architecture overview](https://cdn.my-site.example/blog/my-post/images/architecture-overview.avif "Architecture overview")
 ```
 
 ```html
 <picture
     ><source
-        srcset="https://cdn.fkp.my.id/blog/my-post/images/architecture-overview.avif"
+        srcset="https://cdn.my-site.example/blog/my-post/images/architecture-overview.avif"
         type="image/avif" />
     <img
-        src="https://cdn.fkp.my.id/blog/my-post/images/architecture-overview.webp"
+        src="https://cdn.my-site.example/blog/my-post/images/architecture-overview.webp"
         alt="Architecture overview"
         title="Architecture overview"
         loading="lazy"
@@ -96,4 +96,4 @@ Other URLs fall back to a plain external link that opens in a new tab. A URL tha
 
 Extra query parameters such as `?si=…` or `&t=30s` are not carried into the embed.
 
-Source: `packages/mdrs-core/src/render/parser.ts` (`image` renderer, `VIDEO_EXT_RE`, `POST_IMAGE_RE`), `packages/mdrs-core/src/render/containers.ts` (`renderEmbed`), `packages/domain/src/assetNaming.ts`, `packages/mdrs-core/src/sanitize.ts` (iframe allowlist).
+Source: `packages/mdrs/core/src/render/parser.ts` (`image` renderer, `VIDEO_EXT_RE`, `POST_IMAGE_RE`), `packages/mdrs/core/src/render/containers.ts` (`renderEmbed`), `packages/domain/src/assetNaming.ts`, `packages/mdrs/core/src/sanitize.ts` (iframe allowlist).

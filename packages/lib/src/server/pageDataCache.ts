@@ -4,7 +4,6 @@ import { runInBackground } from './workerEnv';
 
 export const PAGE_DATA_CACHE_SECONDS = 60;
 
-const CACHE_ORIGIN = 'https://page-data-cache.fkp.my.id';
 const CACHEABLE_PAGES = new Set(['/', '/projects', '/blog', '/cv', '/funding', '/contact']);
 const DATA_SUFFIX = '/__data.json';
 const TRACKING_PARAM = /^(_gl|_ga|gclid|fbclid|msclkid|utm_[a-z_]+)$/i;
@@ -22,7 +21,9 @@ export function pageDataCacheKey(url: URL, appVersion: string = version): string
     if (!url.pathname.endsWith(DATA_SUFFIX)) return null;
     const page = url.pathname.slice(0, -DATA_SUFFIX.length) || '/';
     if (!CACHEABLE_PAGES.has(page)) return null;
-    const key = new URL(`${CACHE_ORIGIN}/${encodeURIComponent(appVersion)}${url.pathname}`);
+    const key = new URL(
+        `https://page-data-cache.${url.hostname}/${encodeURIComponent(appVersion)}${url.pathname}`
+    );
     const params = [...url.searchParams]
         .filter(([name]) => !TRACKING_PARAM.test(name))
         .sort(([a], [b]) => a.localeCompare(b));

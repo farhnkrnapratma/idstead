@@ -37,6 +37,38 @@ function parseHighlightedLines(spec: string, totalLines: number): number[] {
     return [...lines].sort((a, b) => a - b);
 }
 
+export interface RenderOptions {
+    internalOrigins?: readonly string[];
+}
+
+let activeOptions: RenderOptions = {};
+
+export function parseWithOptions(markdown: string, options: RenderOptions = {}): string {
+    const previous = activeOptions;
+    activeOptions = options;
+    try {
+        return markdownParser.parse(markdown, { async: false }) as string;
+    } finally {
+        activeOptions = previous;
+    }
+}
+
+function isInternalHref(href: string): boolean {
+    let url: URL;
+    try {
+        url = new URL(href);
+    } catch {
+        return false;
+    }
+    return (activeOptions.internalOrigins ?? []).some(origin => {
+        try {
+            return new URL(origin).origin === url.origin;
+        } catch {
+            return false;
+        }
+    });
+}
+
 export const markdownParser = new Marked();
 
 markdownParser.use({
@@ -94,8 +126,7 @@ markdownParser.use({
             const href = sanitizeUrl(token.href || '') ?? '#';
             const title = token.title ? ` title="${escapeAttr(token.title)}"` : '';
             const text = this.parser.parseInline(token.tokens);
-            const isOwnDomain = /^https?:\/\/(?:www\.)?fkp\.my\.id(?:\/|$)/i.test(href);
-            const isExternal = /^https?:\/\//i.test(href) && !isOwnDomain;
+            const isExternal = /^https?:\/\//i.test(href) && !isInternalHref(href);
             const safeHref = escapeUrl(href);
             if (!isExternal) {
                 return `<a href="${safeHref}"${title}>${text}</a>`;

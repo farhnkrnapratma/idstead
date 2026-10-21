@@ -107,4 +107,4 @@ Always the Bootstrap Icons GitHub logo.
 
 Lucide icons are inlined as SVG with `class="mdrs-icon mdrs-icon-<name>"` during rendering. Bootstrap Icons render as `<i class="mdrs-icon bi bi-<name>">` and rely on the Bootstrap Icons font the site loads.
 
-Source: `packages/mdrs-core/src/render/containers.ts` (`NOTE_CALLOUTS`, `renderContainer`), `packages/mdrs-core/src/render/alerts.ts` (`convertGithubAlerts`), `packages/mdrs-core/src/icons.ts`.
+Source: `packages/mdrs/core/src/render/containers.ts` (`NOTE_CALLOUTS`, `renderContainer`), `packages/mdrs/core/src/render/alerts.ts` (`convertGithubAlerts`), `packages/mdrs/core/src/icons.ts`.

@@ -6,11 +6,11 @@
         "test",
         "*",
         "../../packages/lib/src",
-        "../../packages/mdrs-core/src",
+        "../../packages/mdrs/core/src",
         "../../packages/ui/src",
         "../../packages/domain/src",
-        "../../packages/mdrs-dom/src",
-        "../../packages/mdrs-editor/src"
+        "../../packages/mdrs/dom/src",
+        "../../packages/mdrs/editor/src"
     ],
     "exclude": ["src/service-worker"],
     "compilerOptions": {

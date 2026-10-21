@@ -3,7 +3,8 @@ import {
     prepareMarkdownPage,
     usesLiveData,
     type ApiRegistry,
-    type HeadingItem
+    type HeadingItem,
+    type RenderOptions
 } from '@mdrs/core';
 import type { PostRenderStore } from '@idstead/data';
 import { estimateReadTime } from '@idstead/domain/readTime.ts';
@@ -22,9 +23,10 @@ const MAX_RENDER_BYTES = 4_000_000;
 
 export async function buildPostRender(
     markdown: string,
-    resolvers: ApiRegistry
+    resolvers: ApiRegistry,
+    options: RenderOptions = {}
 ): Promise<PostRender> {
-    const { html, headings } = await prepareMarkdownPage(markdown, resolvers);
+    const { html, headings } = await prepareMarkdownPage(markdown, resolvers, options);
     return {
         version: RENDER_VERSION,
         live: usesLiveData(markdown),
@@ -84,6 +86,7 @@ export const RENDER_REFRESH_MAX_RENDERS = 5;
 export async function refreshPostRenders(
     store: PostRenderStore,
     resolvers: ApiRegistry,
+    options: RenderOptions = {},
     maxRenders = RENDER_REFRESH_MAX_RENDERS
 ): Promise<RenderRefreshResult> {
     const result: RenderRefreshResult = { checked: 0, rendered: 0, failed: 0 };
@@ -99,7 +102,7 @@ export async function refreshPostRenders(
             if (markdown === null) throw new Error('Markdown file is missing.');
             await store.writeRender(
                 source,
-                JSON.stringify(await buildPostRender(markdown, resolvers))
+                JSON.stringify(await buildPostRender(markdown, resolvers, options))
             );
             result.rendered++;
         } catch (error) {

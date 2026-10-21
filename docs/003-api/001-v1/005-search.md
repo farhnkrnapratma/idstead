@@ -21,12 +21,12 @@ This endpoint has no `output` parameter; the response is always JSON.
 ```
 
 - `subtitle` is the post excerpt, or `"Blog post"` when the post has none.
-- `url` is a path relative to `https://fkp.my.id`.
+- `url` is a path relative to `https://example.com`.
 - Keep requesting the next `page` until `hasMore` is `false`. Pagination uses `returned`/`hasMore`, which differs from the `/v1/blog` list.
 - A query shorter than 2 characters, or one that is empty after escaping, returns `200` with empty `data` and `hasMore: false`. It is not an error.
 
 ```sh
-curl "https://api.fkp.my.id/v1/search?q=gnome&n=10"
+curl "https://api.example.com/v1/search?q=gnome&n=10"
 ```
 
 ## Errors

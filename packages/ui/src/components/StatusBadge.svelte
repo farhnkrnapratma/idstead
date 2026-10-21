@@ -3,15 +3,17 @@
     import { cn } from '../utils/cn';
 
     interface Props {
+        host?: string;
+        code?: string;
         class?: string;
     }
 
-    let { class: className = '' }: Props = $props();
+    let { host = '', code = '', class: className = '' }: Props = $props();
 
-    const host = 'fkp.instatus.com';
-    const code = 'c5a56947';
-    const pageUrl = `https://${host}`;
-    const widgetSrc = `https://api.dashboard.instatus.com/widget?host=${host}&code=${code}&locale=en`;
+    const pageUrl = $derived(`https://${host}`);
+    const widgetSrc = $derived(
+        `https://api.dashboard.instatus.com/widget?host=${encodeURIComponent(host)}&code=${encodeURIComponent(code)}&locale=en`
+    );
 
     const statuses = {
         UP: { label: 'All systems operational', dot: 'bg-success' },
@@ -23,6 +25,7 @@
     let status = $state<keyof typeof statuses | null>(null);
 
     onMount(() => {
+        if (!/^[a-z0-9-]+\.instatus\.com$/i.test(host)) return;
         const controller = new AbortController();
 
         fetch(`${pageUrl}/summary.json`, {
@@ -41,7 +44,7 @@
                 if (!controller.signal.aborted) status = 'UNKNOWN';
             });
 
-        if (!document.querySelector(`script[src="${widgetSrc}"]`)) {
+        if (code && !document.querySelector(`script[src="${widgetSrc}"]`)) {
             const script = document.createElement('script');
             script.src = widgetSrc;
             script.async = true;

@@ -50,8 +50,11 @@ const cases = markdownFiles(docsRoot).flatMap(file =>
 let render: (markdown: string) => Promise<string>;
 
 beforeAll(async () => {
-    const markdown = await import('../packages/mdrs-core/src/markdown');
-    render = source => markdown.renderMarkdown(source);
+    const markdown = await import('../packages/mdrs/core/src/markdown');
+    render = source =>
+        markdown.renderMarkdown(source, undefined, {
+            internalOrigins: ['https://my-site.example']
+        });
 });
 
 describe('MDRS docs examples render unchanged', () => {

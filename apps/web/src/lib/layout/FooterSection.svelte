@@ -13,6 +13,7 @@
     import FooterSiteLink from './FooterSiteLink.svelte';
     import { FOOTER_SITE_LINKS } from './footerLinks';
     import StatusBadge from '@idstead/ui/components/StatusBadge.svelte';
+    import * as publicEnv from '$app/env/public';
     import { BookOpenText } from '@lucide/svelte';
 
     import { page } from '$app/state';
@@ -201,7 +202,9 @@
                 <span class="text-xs font-medium text-text-muted">
                     &copy; {new Date().getFullYear()}{copyrightName ? ` ${copyrightName}.` : '.'}
                 </span>
-                <StatusBadge />
+                <StatusBadge
+                    host={publicEnv.PUBLIC_STATUS_PAGE_HOST}
+                    code={publicEnv.PUBLIC_STATUS_PAGE_CODE} />
             </div>
         </div>
     </div>

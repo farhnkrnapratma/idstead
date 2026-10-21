@@ -22,7 +22,7 @@ const authorRepository = {
     profile: async () => ({
         id: 'a1b2c3d4-0000-4000-8000-000000000000',
         name: 'A',
-        avatar: 'https://fkp.my.id/avatar.png'
+        avatar: 'https://example.com/avatar.png'
     }),
     contactLinks: async () => [{ id: 'x', platform: 'Email', href: 'mailto:a@b.c' }],
     cvEntries: async () => ({
@@ -38,7 +38,7 @@ const authorRepository = {
         algorithm: 'Ed25519',
         createdAt: null,
         expiresAt: null,
-        userIds: [{ name: 'Ada', email: 'ada@fkp.my.id' }],
+        userIds: [{ name: 'Ada', email: 'ada@example.com' }],
         keyservers: [{ label: 'keys.openpgp.org', url: 'https://keys.openpgp.org/x' }]
     })
 };
@@ -62,7 +62,7 @@ const fakeFetch = (async (input: string | URL) => {
 }) as unknown as typeof fetch;
 
 function ctx(path: string, accept?: string) {
-    const url = new URL(`https://fkp.my.id${path}`);
+    const url = new URL(`https://example.com${path}`);
     return {
         url,
         request: new Request(url, accept ? { headers: { Accept: accept } } : undefined),
@@ -86,7 +86,7 @@ describe('author and CV endpoints', () => {
         const body = await response.text();
         expect(body).not.toMatch(UUID);
         expect(JSON.parse(body)).toHaveProperty('profile.name', 'A');
-        expect(JSON.parse(body)).toHaveProperty('profile.avatar', 'https://fkp.my.id/avatar.png');
+        expect(JSON.parse(body)).toHaveProperty('profile.avatar', 'https://example.com/avatar.png');
     });
 
     test('downloads the PDF with checksum headers by default', async () => {
@@ -155,7 +155,7 @@ describe('author and CV endpoints', () => {
     });
 
     test('honors Want-Repr-Digest', async () => {
-        const url = new URL('https://fkp.my.id/api/v1/cv?o=pdf');
+        const url = new URL('https://example.com/api/v1/cv?o=pdf');
         const response = await runApi(() =>
             getAuthor(
                 {
@@ -225,9 +225,9 @@ describe('author and CV endpoints', () => {
         expect(json.cv.document.checksums.sha256).toBe('a'.repeat(64));
         expect(json.cv.document.signature.fingerprint).toBe(FPR);
         expect(json.cv.document.signature.signer).toEqual([
-            { name: 'Ada', email: 'ada@fkp.my.id' }
+            { name: 'Ada', email: 'ada@example.com' }
         ]);
-        expect(json.cv.document.files.sig).toBe('https://fkp.my.id/v1/cv?output=sig');
+        expect(json.cv.document.files.sig).toBe('https://example.com/v1/cv?output=sig');
         expect(json.cv.document.publicKey.keyservers).toHaveLength(1);
         const md = await (await runApi(() => getAuthor(ctx('/api/v1/cv?o=md'), ['cv']))).text();
         expect(md).toContain('## CV Document');

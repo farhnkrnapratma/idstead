@@ -1,11 +1,11 @@
 # API v1
 
-- **Base URL:** `https://api.fkp.my.id/v1`
+- **Base URL:** `https://api.example.com/v1`
 - **Authentication:** none
 - **Methods:** `GET`, `HEAD`, `OPTIONS`
 
 ```sh
-curl https://api.fkp.my.id/v1/blog
+curl https://api.example.com/v1/blog
 ```
 
 ## Pages
@@ -75,7 +75,7 @@ Outside `/v1`, `GET /` redirects 301 to `/v1`, and `GET /robots.txt` returns `Us
 
 - Only **published** posts and **approved** comments are visible.
 - Internal database identifiers (UUIDs, `*_id` columns) are never returned. Posts are identified by their 64-hex `public_id`, returned as `id` (see [parameters.md](001-parameters.md#post-ids)).
-- The API never writes. Comment submission, view counting and subscriptions are first-party endpoints on `fkp.my.id` and are not part of this API.
+- The API never writes. Comment submission, view counting and subscriptions are first-party endpoints on `example.com` and are not part of this API.
 
 ## Reporting problems
 

@@ -1,9 +1,9 @@
 import type { Project } from '@idstead/domain/types.ts';
 import { fetchProjects } from '#lib/server/githubProjects.ts';
 import { runInBackground } from '#lib/server/workerEnv.ts';
+import { configuredSiteUrl } from '#lib/server/siteUrl.ts';
 
 const PROJECTS_CACHE_SECONDS = 600;
-const PROJECTS_CACHE_ORIGIN = 'https://projects-cache.fkp.my.id';
 
 interface EdgeCache {
     match(key: string): Promise<Response | undefined>;
@@ -14,8 +14,16 @@ function edgeCache(): EdgeCache | undefined {
     return (globalThis as { caches?: { default?: EdgeCache } }).caches?.default;
 }
 
-function cacheKey(githubUsername: string) {
-    return `${PROJECTS_CACHE_ORIGIN}/github/${encodeURIComponent(githubUsername.toLowerCase())}`;
+function cacheHost(platform: unknown) {
+    try {
+        return new URL(configuredSiteUrl(platform)).hostname;
+    } catch {
+        return 'localhost';
+    }
+}
+
+function cacheKey(githubUsername: string, platform: unknown) {
+    return `https://projects-cache.${cacheHost(platform)}/github/${encodeURIComponent(githubUsername.toLowerCase())}`;
 }
 
 async function readCachedProjects(cache: EdgeCache, key: string): Promise<Project[] | null> {
@@ -37,7 +45,7 @@ export async function fetchCachedProjects(
     if (!githubUsername) return [];
 
     const cache = edgeCache();
-    const key = cacheKey(githubUsername);
+    const key = cacheKey(githubUsername, platform);
     if (cache) {
         const cached = await readCachedProjects(cache, key);
         if (cached) return cached;

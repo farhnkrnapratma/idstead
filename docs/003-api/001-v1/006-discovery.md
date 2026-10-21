@@ -2,7 +2,7 @@
 
 These are the machine-readable descriptions of the API. Each one is generated from `packages/lib/src/openapi.ts` and `apps/api/src/README.md`, so changing those two files changes all of them.
 
-## On `api.fkp.my.id`
+## On `api.example.com`
 
 | Path | Content |
 | --- | --- |
@@ -12,7 +12,7 @@ These are the machine-readable descriptions of the API. Each one is generated fr
 
 Both OpenAPI files are cached with `s-maxage=300` and get an ETag.
 
-## On `fkp.my.id`
+## On `example.com`
 
 | Path | Content |
 | --- | --- |
@@ -23,7 +23,7 @@ Both OpenAPI files are cached with `s-maxage=300` and get an ETag.
 | `/.well-known/api-catalog` | RFC 9727 linkset (`application/linkset+json`) |
 | `/.well-known/ard.json` | ARD manifest `{entries}` (see [../ard.md](../002-ard.md)) |
 
-Every HTML page on `fkp.my.id` also sends these `Link` headers:
+Every HTML page on `example.com` also sends these `Link` headers:
 
 - `</.well-known/api-catalog>; rel="api-catalog"`
 - `</.well-known/agent-skills/index.json>; rel="describedby"`

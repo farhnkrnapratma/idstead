@@ -4,7 +4,7 @@ excerpt: A tour of MDRS, the Markdown dialect behind this site. Plain CommonMark
 tags: [mdrs, markdown, writing, showcase]
 ---
 :::define
-site: "fkp.my.id"
+site: "my-site.example"
 author: api.v1.author.profile.name
 posts: api.v1.blog.length
 version: "1.0"

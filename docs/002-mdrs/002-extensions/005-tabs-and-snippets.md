@@ -120,4 +120,4 @@ This tab has no label.
 :::
 ```
 
-Source: `packages/mdrs-core/src/render/containers.ts` (`TAB_OPEN_RE`, `renderTabs`), `packages/mdrs-dom/src/tabs.ts`.
+Source: `packages/mdrs/core/src/render/containers.ts` (`TAB_OPEN_RE`, `renderTabs`), `packages/mdrs/dom/src/tabs.ts`.

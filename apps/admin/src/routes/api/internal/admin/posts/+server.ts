@@ -17,6 +17,8 @@ import { UUID_PATTERN } from '#lib/blogBanner.ts';
 import { validateDefineForSave } from '@mdrs/core';
 import { createSupabaseMdrsResolvers } from '#lib/server/mdrsData.ts';
 import { buildPostRender } from '#lib/server/postRender.ts';
+import { siteRenderOptions } from '#lib/mdrsOptions.ts';
+import { configuredSiteUrl } from '#lib/server/siteUrl.ts';
 import { createSupabaseAdminPostStores, createSupabaseNewsletterStore } from '@idstead/data';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { queuePostEffects } from '#lib/server/postEffects.ts';
@@ -87,7 +89,11 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             input.post.read_time = countReadingMinutes(input.markdown);
             try {
                 render = JSON.stringify(
-                    await buildPostRender(input.markdown, createSupabaseMdrsResolvers(db))
+                    await buildPostRender(
+                        input.markdown,
+                        createSupabaseMdrsResolvers(db),
+                        siteRenderOptions(configuredSiteUrl(platform))
+                    )
                 );
             } catch (error) {
                 console.error('Post pre-render failed:', error);

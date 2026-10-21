@@ -56,9 +56,8 @@ The known gaps were closed on 2026-10-17 ([Compatibility](001-compatibility.md))
 
 ## Site-specific behaviour to make configurable
 
-These parts are hard-coded for fkp.my.id today and become options in the package:
+These parts are hard-coded for my-site.example today and become options in the package:
 
-- The internal-link check (`fkp.my.id`, `www.fkp.my.id`) behind the external-link icon.
 - The CDN image pattern that triggers AVIF + WebP `<picture>` output.
 - The default stylesheet. The HTML already uses only stable `mdrs-*` classes ([Styling](003-styling.md)); the package will ship `mdrs.css` as plain CSS with custom properties instead of the Tailwind `@apply` rules used here.
 - The `api.v1` resource registry (`author`, `blog`).

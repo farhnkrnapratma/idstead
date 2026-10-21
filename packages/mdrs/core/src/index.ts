@@ -1,4 +1,9 @@
-export { renderMarkdown, renderMarkdownUnsafe, prepareMarkdownPage } from './markdown';
+export {
+    renderMarkdown,
+    renderMarkdownUnsafe,
+    prepareMarkdownPage,
+    type RenderOptions
+} from './markdown';
 export {
     injectHeadingIds,
     extractHeadings,

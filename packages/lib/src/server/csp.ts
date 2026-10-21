@@ -33,7 +33,7 @@ const FRAME_SOURCES = [
 
 const CONNECT_SOURCES = [
     'https://api.instatus.com',
-    'https://fkp.instatus.com',
+    'https://*.instatus.com',
     'https://api.dashboard.instatus.com',
     'https://challenges.cloudflare.com',
     'https://www.googletagmanager.com',

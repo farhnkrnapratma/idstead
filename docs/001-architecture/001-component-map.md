@@ -7,9 +7,9 @@ flowchart LR
     Browser(["Browser / API client"])
 
     subgraph CF["Cloudflare"]
-        WEB["fkp-web<br/>fkp.my.id"]
-        ADMIN["fkp-admin<br/>admin.fkp.my.id"]
-        API["fkp-api<br/>api.fkp.my.id"]
+        WEB["fkp-web<br/>example.com"]
+        ADMIN["fkp-admin<br/>admin.example.com"]
+        API["fkp-api<br/>api.example.com"]
         JOBS["fkp-jobs<br/>no route"]
         RL[["Rate Limiting<br/>API_RATE_LIMITER"]]
         AI[["Workers AI<br/>AI binding"]]
@@ -77,9 +77,9 @@ flowchart LR
 ## Notes
 
 - **Workers** (`apps/*/wrangler.jsonc`):
-    - `fkp-web` serves `fkp.my.id` and `www.fkp.my.id`, which is redirected to the apex.
-    - `fkp-admin` serves `admin.fkp.my.id`.
-    - `fkp-api` serves `api.fkp.my.id`.
+    - `fkp-web` serves `example.com` and `www.example.com`, which is redirected to the apex.
+    - `fkp-admin` serves `admin.example.com`.
+    - `fkp-api` serves `api.example.com`.
     - `fkp-jobs` sets `workers_dev: false` and has no route. Its `fetch` handler returns 404.
 - **R2 is a Worker binding.** web, admin and jobs declare `r2_buckets` binding `ASSET_BUCKET` → bucket `static` (`remote: true`, so local dev reaches the real bucket). `packages/lib/src/server/r2.ts` wraps it. The Workers no longer use `@aws-sdk/client-s3` or the `R2_*` secrets; only `scripts/migrate-cdn-layout.ts`, which runs with bun outside Workers, still uses the S3 API.
 - **`API_RATE_LIMITER` is the Workers Rate Limiting binding** (`ratelimits`, 60 requests per 60 s). It is namespace `1001` on web, `1002` on api and `1003` on admin (password and profile writes). When the binding is missing, `packages/lib/src/server/rateLimit.ts` falls back to an in-memory window.

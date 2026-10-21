@@ -6,11 +6,11 @@ const { pageDataCache, pageDataCacheKey } =
     await import('../packages/lib/src/server/pageDataCache.ts');
 
 const key = (path: string, version = 'v1') =>
-    pageDataCacheKey(new URL(`https://fkp.my.id${path}`), version);
+    pageDataCacheKey(new URL(`https://example.com${path}`), version);
 
 describe('pageDataCacheKey', () => {
     test('caches the data of the site section pages only', () => {
-        expect(key('/__data.json')).toBe('https://page-data-cache.fkp.my.id/v1/__data.json');
+        expect(key('/__data.json')).toBe('https://page-data-cache.example.com/v1/__data.json');
         expect(key('/blog/__data.json')).toContain('/v1/blog/__data.json');
         expect(key('/contact/__data.json')).not.toBeNull();
         expect(key('/blog/some-post/__data.json')).toBeNull();
@@ -41,8 +41,10 @@ describe('pageDataCache handle', () => {
             }
         };
         const event = {
-            request: new Request('https://fkp.my.id/blog/__data.json?x-sveltekit-invalidated=001'),
-            url: new URL('https://fkp.my.id/blog'),
+            request: new Request(
+                'https://example.com/blog/__data.json?x-sveltekit-invalidated=001'
+            ),
+            url: new URL('https://example.com/blog'),
             isDataRequest: true
         };
         let renders = 0;
@@ -60,7 +62,7 @@ describe('pageDataCache handle', () => {
         expect(renders).toBe(1);
         expect(second.headers.get('X-Page-Data-Cache')).toBe('HIT');
         expect([...store.keys()]).toEqual([
-            'https://page-data-cache.fkp.my.id/v1/blog/__data.json?x-sveltekit-invalidated=001'
+            'https://page-data-cache.example.com/v1/blog/__data.json?x-sveltekit-invalidated=001'
         ]);
         delete (globalThis as { caches?: unknown }).caches;
     });

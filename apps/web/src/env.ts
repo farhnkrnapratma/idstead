@@ -7,6 +7,8 @@ export const variables = defineEnvVars({
     PUBLIC_CDN_BASE_URL: { public: true, schema: optional },
     PUBLIC_SENTRY_DSN: { public: true, schema: optional },
     PUBLIC_SENTRY_ENVIRONMENT: { public: true, schema: optional },
+    PUBLIC_STATUS_PAGE_CODE: { public: true, schema: optional },
+    PUBLIC_STATUS_PAGE_HOST: { public: true, schema: optional },
     PUBLIC_SUPABASE_PUBLISHABLE_KEY: { public: true, schema: optional },
     PUBLIC_SUPABASE_URL: { public: true, schema: optional },
     PUBLIC_TURNSTILE_SITE_KEY: { public: true, schema: optional },

@@ -14,18 +14,19 @@ import {
 import type { ArdEntry } from '../packages/lib/src/server/ard';
 import { discoveryOperations } from '../packages/lib/src/server/apiDiscovery';
 
-const base = 'https://fkp.my.id';
+const base = 'https://example.com';
+const operations = discoveryOperations('https://api.example.com');
+const localEntries = () => createArdEntries(base, operations);
 
 describe('ARD manifest', () => {
     test('publishes valid, domain-anchored API, Skill, and registry entries', () => {
-        const manifest = createArdManifest(base);
-        const operations = discoveryOperations();
+        const manifest = createArdManifest(base, operations);
 
         expect(manifest.entries.length).toBeGreaterThan(1);
         for (const entry of manifest.entries) {
             expect(entry['@context']).toBe('https://agenticresourcediscovery.org/context/v1');
             expect(entry['@id']).toBe(entry.identifier);
-            expect(entry.identifier).toMatch(/^urn:air:fkp\.my\.id:[a-z]+:[a-z0-9._-]+$/);
+            expect(entry.identifier).toMatch(/^urn:air:example\.com:[a-z]+:[a-z0-9._-]+$/);
             expect(entry.displayName.length).toBeGreaterThan(0);
             expect(entry.type).toContain('/');
             expect(new URL(entry.url).protocol).toBe('https:');
@@ -50,7 +51,7 @@ describe('ARD manifest', () => {
             'application/json'
         );
         expect(manifest.entries.some(entry => entry.url.endsWith('/v1/docs'))).toBe(false);
-        expect(createArdEntries(base).some(entry => entry.url.includes('{'))).toBe(false);
+        expect(localEntries().some(entry => entry.url.includes('{'))).toBe(false);
         expect(operations.length).toBeGreaterThan(0);
     });
 });
@@ -69,7 +70,8 @@ describe('ARD search', () => {
                 federation: 'none',
                 pageSize: 10
             },
-            base
+            base,
+            localEntries()
         );
 
         expect(result.results.length).toBeGreaterThan(0);
@@ -80,7 +82,7 @@ describe('ARD search', () => {
     });
 
     test('returns a continuation token and referrals only when requested', () => {
-        const entries = createArdEntries(base);
+        const entries = localEntries();
         const firstPage = searchArdEntries(
             { query: { text: 'api' }, federation: 'referrals', pageSize: 1 },
             base,
@@ -109,46 +111,58 @@ describe('ARD search', () => {
 
     test('rejects malformed requests and unsupported filter terms', () => {
         try {
-            searchArdEntries({}, base);
+            searchArdEntries({}, base, localEntries());
             throw new Error('Expected invalid request to throw.');
         } catch (error) {
             expect(error).toBeInstanceOf(ArdRequestError);
             expect((error as ArdRequestError).errorCode).toBe('INVALID_ARGUMENT');
         }
         expect(() =>
-            searchArdEntries({ query: { text: 'blog' }, pageToken: 'not-a-token!' }, base)
+            searchArdEntries(
+                { query: { text: 'blog' }, pageToken: 'not-a-token!' },
+                base,
+                localEntries()
+            )
         ).toThrow('pageToken must be a valid pagination token.');
-        expect(() => searchArdEntries({ query: { text: '   ' } }, base)).toThrow(
+        expect(() => searchArdEntries({ query: { text: '   ' } }, base, localEntries())).toThrow(
             'query.text must be a non-empty string'
         );
         expect(() =>
-            searchArdEntries({ query: { text: 'find a blog', filter: { unsupported: 'x' } } }, base)
+            searchArdEntries(
+                { query: { text: 'find a blog', filter: { unsupported: 'x' } } },
+                base,
+                localEntries()
+            )
         ).toThrow('Filtering by "unsupported" is not supported.');
-        expect(() => searchArdEntries({ query: { text: 'blog' }, pageSize: 101 }, base)).toThrow(
-            'pageSize must be an integer between 1 and 100.'
-        );
-        expect(() => searchArdEntries({ query: { text: 'blog' }, pageSize: null }, base)).toThrow(
-            'pageSize must be an integer between 1 and 100.'
-        );
+        expect(() =>
+            searchArdEntries({ query: { text: 'blog' }, pageSize: 101 }, base, localEntries())
+        ).toThrow('pageSize must be an integer between 1 and 100.');
+        expect(() =>
+            searchArdEntries({ query: { text: 'blog' }, pageSize: null }, base, localEntries())
+        ).toThrow('pageSize must be an integer between 1 and 100.');
     });
 
     test('returns no matches for unrelated queries', () => {
-        const result = searchArdEntries({ query: { text: 'quantum spacecraft' } }, base);
+        const result = searchArdEntries(
+            { query: { text: 'quantum spacecraft' } },
+            base,
+            localEntries()
+        );
 
         expect(result.results).toEqual([]);
         expect(result).not.toHaveProperty('pageToken');
     });
 
     test('resolves aliased core terms and namespaced extension filters', () => {
-        const entries = createArdEntries(base);
+        const entries = localEntries();
         const customEntry: ArdEntry = {
             ...entries[0],
             '@context': {
                 ard: 'https://agenticresourcediscovery.org/ns#',
                 ex: 'https://example.com/vocab#'
             },
-            '@id': 'urn:air:fkp.my.id:api:regional',
-            identifier: 'urn:air:fkp.my.id:api:regional',
+            '@id': 'urn:air:example.com:api:regional',
+            identifier: 'urn:air:example.com:api:regional',
             displayName: 'Regional resource',
             type: 'application/json',
             url: `${base}/regional`,
@@ -187,7 +201,7 @@ describe('ARD search', () => {
                 ]
             }
         });
-        const result = exploreArdEntries(request, base);
+        const result = exploreArdEntries(request, base, localEntries());
         const typeFacet = result.facets.type as {
             buckets: { value: string; count: number }[];
             otherCount?: number;
@@ -197,12 +211,12 @@ describe('ARD search', () => {
         expect(typeFacet.buckets).toHaveLength(1);
         expect(typeFacet.otherCount).toBeGreaterThan(0);
         expect(result.facets.publisher).toEqual({
-            buckets: [{ value: 'fkp.my.id', count: expect.any(Number) }]
+            buckets: [{ value: 'example.com', count: expect.any(Number) }]
         });
     });
 
     test('supports deterministic List filtering, ordering, and pagination', () => {
-        const list = createArdEntries(base);
+        const list = localEntries();
         const url = new URL(
             'https://example.com/api/ard/agents?filter=type%20%3D%20%27application%2Fjson%2Ctext%2Fmarkdown%27&pageSize=1&orderBy=displayName%20ASC'
         );
@@ -222,19 +236,19 @@ describe('ARD search', () => {
     });
 
     test('ranks and facets semantic matches using Workers AI embeddings', async () => {
-        const entries = createArdEntries(base).slice(0, 2);
+        const entries = localEntries().slice(0, 2);
         const weather: ArdEntry = {
             ...entries[0],
-            '@id': 'urn:air:fkp.my.id:api:weather',
-            identifier: 'urn:air:fkp.my.id:api:weather',
+            '@id': 'urn:air:example.com:api:weather',
+            identifier: 'urn:air:example.com:api:weather',
             displayName: 'Weather forecast',
             description: 'Provides weather and forecast information.',
             representativeQueries: ['Find weather information', 'Get a forecast']
         };
         const blogging: ArdEntry = {
             ...entries[1],
-            '@id': 'urn:air:fkp.my.id:api:blog',
-            identifier: 'urn:air:fkp.my.id:api:blog',
+            '@id': 'urn:air:example.com:api:blog',
+            identifier: 'urn:air:example.com:api:blog',
             displayName: 'Blog archive',
             description: 'Browse published articles.',
             representativeQueries: ['Find published articles', 'Browse blog posts']
@@ -286,8 +300,8 @@ describe('ARD search', () => {
             offset: 0
         };
 
-        await expect(searchArdEntriesWithAI(request, base, undefined)).rejects.toThrow(
-            'Workers AI binding is required for semantic ARD search.'
-        );
+        await expect(
+            searchArdEntriesWithAI(request, base, undefined, localEntries())
+        ).rejects.toThrow('Workers AI binding is required for semantic ARD search.');
     });
 });

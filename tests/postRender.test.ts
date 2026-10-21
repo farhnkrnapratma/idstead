@@ -3,7 +3,7 @@ import {
     RENDER_VERSION,
     unavailableResolvers,
     usesLiveData
-} from '../packages/mdrs-core/src/index.ts';
+} from '../packages/mdrs/core/src/index.ts';
 import {
     buildPostRender,
     parsePostRender,

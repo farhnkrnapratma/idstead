@@ -12,6 +12,7 @@ import {
 import { refreshPostRenders } from '#lib/server/postRender.ts';
 import { isRenderRefreshMessage } from '#lib/server/renderQueue.ts';
 import { createSupabaseMdrsResolvers } from '#lib/server/mdrsData.ts';
+import { siteRenderOptions } from '#lib/mdrsOptions.ts';
 
 export interface Env {
     PUBLIC_SITE_URL?: string;
@@ -19,8 +20,6 @@ export interface Env {
     PUBLIC_SENTRY_ENVIRONMENT?: string;
     [key: string]: unknown;
 }
-
-const DEAD_LETTER_QUEUE = 'fkp-newsletter-dlq';
 
 async function deliver(message: Message<unknown>, env: Env) {
     if (!isNewsletterMessage(message.body)) {
@@ -69,7 +68,8 @@ async function refreshRenders(env: Env) {
     if (!db) throw new Error('Post render refresh needs the Supabase service role.');
     const result = await refreshPostRenders(
         createSupabaseRenderStore(db),
-        createSupabaseMdrsResolvers(db)
+        createSupabaseMdrsResolvers(db),
+        siteRenderOptions(env.PUBLIC_SITE_URL)
     );
     if (result.failed)
         Sentry.captureMessage('Post render refresh failed', {
@@ -104,7 +104,7 @@ export default Sentry.withSentry<Env>(
             return new Response('Not found', { status: 404 });
         },
         async queue(batch, env) {
-            if (batch.queue === DEAD_LETTER_QUEUE) {
+            if (batch.queue.endsWith('-dlq')) {
                 batch.messages.forEach(deadLetter);
                 return;
             }

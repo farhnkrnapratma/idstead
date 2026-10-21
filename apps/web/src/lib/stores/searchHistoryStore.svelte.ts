@@ -1,4 +1,5 @@
 import { browser } from '$app/env';
+import { readStorage } from '@idstead/ui/utils/storageKeys.ts';
 
 export interface SearchHistoryEntry {
     id: string;
@@ -18,7 +19,7 @@ export interface SearchHistoryEntry {
     iconName?: string;
 }
 
-const STORAGE_KEY = 'fkp_search_history';
+const STORAGE_KEY = 'idstead_search_history';
 const MAX_ENTRIES = 5;
 
 function createSearchHistoryStore() {
@@ -26,7 +27,7 @@ function createSearchHistoryStore() {
 
     if (browser) {
         try {
-            const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            const stored = JSON.parse(readStorage(STORAGE_KEY) || '[]');
             if (Array.isArray(stored)) {
                 current = stored
                     .filter(

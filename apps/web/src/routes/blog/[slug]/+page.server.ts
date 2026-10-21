@@ -15,6 +15,7 @@ import { publicRepositories } from '#lib/server/repositories.ts';
 import { createSupabaseMdrsResolvers } from '#lib/server/mdrsData.ts';
 import { supabase } from '#lib/supabase.ts';
 import type { PageServerLoad } from './$types';
+import { siteRenderOptions } from '#lib/mdrsOptions.ts';
 
 export interface BlogComment {
     id: string;
@@ -50,7 +51,7 @@ function getRelatedWindow<T extends { id: string }>(posts: T[], currentId: strin
     return [posts[idx - 1], posts[idx + 1]];
 }
 
-export const load: PageServerLoad = async ({ params, fetch }) => {
+export const load: PageServerLoad = async ({ params, fetch, url }) => {
     const { blog, comments: commentRepository } = publicRepositories(fetch);
 
     let post: PublishedPost | null;
@@ -74,7 +75,11 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
             const markdown = await blog.readMarkdown(post.source, { timeoutMs: 5000 });
             if (markdown === null) throw new Error('Failed to fetch markdown file.');
             readTime = estimateReadTime(markdown);
-            const rawHtml = await renderMarkdown(markdown, createSupabaseMdrsResolvers(supabase));
+            const rawHtml = await renderMarkdown(
+                markdown,
+                createSupabaseMdrsResolvers(supabase),
+                siteRenderOptions(url.origin)
+            );
             html = prefixHashLinks(injectHeadingIds(rawHtml));
             headings = extractHeadings(html);
         } catch (err) {

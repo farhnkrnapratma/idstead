@@ -36,7 +36,7 @@ describe('data export helpers', () => {
         const collector = createMediaCollector();
         const markdown = [
             `![Diagram](/blog/content/${hash('a')}.webp)`,
-            `![Other](https://fkp.my.id/blog/content/${hash('a')}.webp)`,
+            `![Other](https://example.com/blog/content/${hash('a')}.webp)`,
             `<video controls src="/blog/content/${hash('b')}.mp4"></video>`,
             `![Demo clip](/blog/content/${hash('c')}.webm "Demo")`
         ].join('\n');

@@ -27,9 +27,9 @@ Taken from each `wrangler.jsonc` (all of them use `compatibility_date 2025-06-28
 
 | Worker | Routes | Bindings and triggers |
 | --- | --- | --- |
-| `fkp-web` | `fkp.my.id`, `www.fkp.my.id` (custom domains) | `ASSETS` (static assets), `AI` (Workers AI, `remote: true`), `ASSET_BUCKET` (R2 bucket `static`, `remote: true`), `ratelimits` `API_RATE_LIMITER` (namespace `1001`, 60 requests / 60 s), observability |
-| `fkp-admin` | `admin.fkp.my.id` | `ASSETS`, `AI` (`remote: true`), `ASSET_BUCKET` (`remote: true`), `ratelimits` `API_RATE_LIMITER` (namespace `1003`), queue producer `NEWSLETTER_QUEUE` → `fkp-newsletter`, observability |
-| `fkp-api` | `api.fkp.my.id` | `ratelimits` `API_RATE_LIMITER` (namespace `1002`), a `Text` rule for `**/*.md` (bundles `README.md`), observability |
+| `fkp-web` | `example.com`, `www.example.com` (custom domains) | `ASSETS` (static assets), `AI` (Workers AI, `remote: true`), `ASSET_BUCKET` (R2 bucket `static`, `remote: true`), `ratelimits` `API_RATE_LIMITER` (namespace `1001`, 60 requests / 60 s), observability |
+| `fkp-admin` | `admin.example.com` | `ASSETS`, `AI` (`remote: true`), `ASSET_BUCKET` (`remote: true`), `ratelimits` `API_RATE_LIMITER` (namespace `1003`), queue producer `NEWSLETTER_QUEUE` → `fkp-newsletter`, observability |
+| `fkp-api` | `api.example.com` | `ratelimits` `API_RATE_LIMITER` (namespace `1002`), a `Text` rule for `**/*.md` (bundles `README.md`), observability |
 | `fkp-jobs` | none (`workers_dev: false`) | `ASSET_BUCKET` (`remote: true`), queue consumers on `fkp-newsletter` (`max_batch_size 10`, `max_retries 5`, `dead_letter_queue fkp-newsletter-dlq`) and `fkp-newsletter-dlq` (`max_retries 0`, reports to Sentry), cron `17 3 * * *`, `$app/env/*` alias to `src/appEnv.ts`, observability |
 
 R2 is bound as `ASSET_BUCKET` (bucket `static`) on web, admin and jobs, and `packages/lib/src/server/r2.ts` wraps it. The Workers no longer read the `R2_*` secrets. Once the release with the binding is live, remove the four `R2_*` references from the Workers' Phase folders (only `/workers/jobs` still has them); keep them at the Phase root, because `scripts/migrate-cdn-layout.ts` still uses the S3 API locally (see [environment.md](../004-development/002-environment.md)).
@@ -37,7 +37,7 @@ R2 is bound as `ASSET_BUCKET` (bucket `static`) on web, admin and jobs, and `pac
 ## One-time setup
 
 1. Create the queues: `bunx wrangler queues create fkp-newsletter` and `bunx wrangler queues create fkp-newsletter-dlq`.
-2. In Supabase Auth, add `https://admin.fkp.my.id` to the redirect URLs and to the Passkeys **Relying Party Origins**.
+2. In Supabase Auth, add `https://admin.example.com` to the redirect URLs and to the Passkeys **Relying Party Origins**.
 3. In the Phase Console, sync each `/workers/<app>` folder of Production to its Worker ([environment.md](../004-development/002-environment.md#phase-layout-and-sync-to-cloudflare)).
 
 ## Database migrations
@@ -50,5 +50,5 @@ R2 is bound as `ASSET_BUCKET` (bucket `static`) on web, admin and jobs, and `pac
 ## After a deploy
 
 - Check Workers observability or Sentry (filtered by `PUBLIC_SENTRY_ENVIRONMENT`) for errors.
-- Smoke-test the public API: `curl -I https://api.fkp.my.id/v1/blog` should return `200` with `ETag` and `X-RateLimit-*` headers.
+- Smoke-test the public API: `curl -I https://api.example.com/v1/blog` should return `200` with `ETag` and `X-RateLimit-*` headers.
 - If the newsletter changed, follow [newsletter.md](002-newsletter.md).

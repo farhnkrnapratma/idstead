@@ -1,6 +1,6 @@
 # 6. Admin Login, MFA and Request Auth
 
-How the admin signs in at `admin.fkp.my.id`, and how pages and API calls are authorised afterwards.
+How the admin signs in at `admin.example.com`, and how pages and API calls are authorised afterwards.
 
 ```mermaid
 sequenceDiagram
@@ -72,7 +72,7 @@ The database enforces the same rule in `public.is_admin()` (migration `202610121
 
 - **Unguarded paths:** the page guard in `hooks.server.ts` skips `/login`, `/robots.txt`, `/api/*`, `/_app/*` and identity assets. API routes authenticate themselves.
 - **Auth cookies:**
-    - They are host-only on `admin.fkp.my.id`, set by `@supabase/ssr` through `createAuthClient` (`packages/lib/src/server/supabaseAuth.ts`).
+    - They are host-only on `admin.example.com`, set by `@supabase/ssr` through `createAuthClient` (`packages/lib/src/server/supabaseAuth.ts`).
     - Options are `path=/`, `sameSite=lax`, and `secure` on HTTPS.
     - The code spreads the `@supabase/ssr` options and overrides only those three. It does not set `httpOnly` itself.
 - **Login lockout:** `packages/lib/src/server/loginRateLimit.ts` counts failures in `db_login_failures` through the `service_role` RPCs `db_login_lockout`, `db_login_record_failure` and `db_login_clear`, so every isolate shares one count. Keys (`ip:…`, `email-ip:…`, `password-change:…`) are stored only as salted SHA-256 hashes. If the RPC fails, the isolate's in-memory `Map` is used instead.

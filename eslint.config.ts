@@ -80,7 +80,7 @@ export default defineConfig(
         }
     },
     {
-        files: ['packages/mdrs-core/**'],
+        files: ['packages/mdrs/core/**'],
         rules: {
             '@typescript-eslint/no-restricted-imports': [
                 'error',
@@ -116,7 +116,7 @@ export default defineConfig(
         }
     },
     {
-        files: ['packages/mdrs-dom/**'],
+        files: ['packages/mdrs/dom/**'],
         rules: {
             '@typescript-eslint/no-restricted-imports': [
                 'error',
@@ -134,7 +134,7 @@ export default defineConfig(
         }
     },
     {
-        files: ['packages/mdrs-editor/**'],
+        files: ['packages/mdrs/editor/**'],
         rules: {
             '@typescript-eslint/no-restricted-imports': [
                 'error',
