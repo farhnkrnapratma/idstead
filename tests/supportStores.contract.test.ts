@@ -59,7 +59,7 @@ describe('Supabase identity version adapter', () => {
 });
 
 describe('Supabase login lockout adapter', () => {
-    function lockoutDb(lockout: unknown, error: Row | null = null) {
+    function lockoutDb(lockout: unknown, error: { code?: string; message: string } | null = null) {
         const calls: { fn: string; args: Row }[] = [];
         const handler = (fn: string) => (args: Row) => {
             calls.push({ fn, args });

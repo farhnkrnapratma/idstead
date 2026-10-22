@@ -12,7 +12,10 @@ const { assetBucket, copyObject, deleteObjects, findAssetBucket, listObjects, re
     await import('../packages/lib/src/server/r2.ts');
 
 function memoryBucket(pageSize = 2) {
-    const store = new Map<string, { bytes: Uint8Array; httpMetadata?: StoredHttpMetadata }>();
+    const store = new Map<
+        string,
+        { bytes: Uint8Array<ArrayBuffer>; httpMetadata?: StoredHttpMetadata }
+    >();
     const deleteCalls: string[][] = [];
     const meta = (key: string): StoredObject => ({
         key,
@@ -39,7 +42,7 @@ function memoryBucket(pageSize = 2) {
             const bytes =
                 typeof value === 'string' ? new TextEncoder().encode(value)
                 : value instanceof ArrayBuffer ? new Uint8Array(value)
-                : new Uint8Array((value as ArrayBufferView).buffer);
+                : new Uint8Array((value as ArrayBufferView<ArrayBuffer>).buffer);
             store.set(key, { bytes, httpMetadata: options?.httpMetadata });
             return meta(key);
         },
@@ -119,8 +122,8 @@ describe('R2 binding helpers', () => {
             onlyIf: new Headers({ 'If-None-Match': '*' })
         });
         expect(result).toBeNull();
-        expect(new TextDecoder().decode(await readObjectBytes(bucket, 'blog/banners/1.webp'))).toBe(
-            'first'
-        );
+        expect(
+            new TextDecoder().decode((await readObjectBytes(bucket, 'blog/banners/1.webp'))!)
+        ).toBe('first');
     });
 });

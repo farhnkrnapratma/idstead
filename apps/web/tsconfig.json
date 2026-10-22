@@ -32,7 +32,6 @@
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "erasableSyntaxOnly": true,
-        "noFallthroughCasesInSwitch": true,
-        "paths": { "$app/types": ["./.svelte-kit/types/index.d.ts"] }
+        "noFallthroughCasesInSwitch": true
     }
 }

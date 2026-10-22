@@ -79,11 +79,12 @@ describe('admin authentication state', () => {
     test.each(['webauthn', 'WebAuthn', 'mfa/webauthn'])(
         'accepts the %s authentication method as a passkey sign-in',
         method => {
+            const currentAuthenticationMethods = [{ method, timestamp: 1 }, 'password'];
             expect(
                 requiresAdminMfa({
                     currentLevel: 'aal1',
                     nextLevel: 'aal2',
-                    currentAuthenticationMethods: [{ method, timestamp: 1 }, 'password']
+                    currentAuthenticationMethods
                 })
             ).toBe(false);
         }

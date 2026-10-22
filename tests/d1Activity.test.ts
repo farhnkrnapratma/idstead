@@ -343,7 +343,7 @@ describe('D1 admin activity store', () => {
         const overview = (await activity.workspace('overview', range)) as {
             series: Array<{ bucket: string; views: number; helpful: number; partial: boolean }>;
             reads: number;
-            topPages: Array<{ metric: string; value: string }>;
+            topPages: Array<{ metric: string; page: string; href?: string; value: string }>;
         };
         expect(overview.reads).toBe(3);
         const byDay = Object.fromEntries(overview.series.map(point => [point.bucket, point]));

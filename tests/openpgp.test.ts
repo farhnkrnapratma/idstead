@@ -96,7 +96,7 @@ describe('key discovery', () => {
     });
 
     test('accepts a keyserver only when it serves the same key', async () => {
-        const serve = (body: Uint8Array) =>
+        const serve = (body: Uint8Array<ArrayBuffer>) =>
             (async () => new Response(body)) as unknown as typeof fetch;
         await verifyKeyserver('https://keys.example/k', FPR, serve(armoredKey));
         await expect(

@@ -257,7 +257,7 @@ describe('comment threads', () => {
                 parent_id: 'a',
                 author_name: 'Bob',
                 content: 'Reply',
-                is_anonymous: null,
+                is_anonymous: false,
                 is_admin: true,
                 created_at: '2026-10-02T00:00:00Z'
             },

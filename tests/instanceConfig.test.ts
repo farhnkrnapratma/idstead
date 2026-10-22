@@ -5,7 +5,7 @@ import { renderWranglerConfigs } from '../tooling/configure.ts';
 
 const example = Bun.JSONC.parse(
     readFileSync(new URL('../idstead.example.jsonc', import.meta.url), 'utf8')
-);
+) as Record<string, Record<string, unknown>>;
 
 describe('resolveInstanceConfig', () => {
     test('fills product defaults from the site domain alone', () => {
