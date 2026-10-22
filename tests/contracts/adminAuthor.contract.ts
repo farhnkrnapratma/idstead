@@ -15,7 +15,11 @@ export type AdminAuthorStoresFactory = (seed: AdminAuthorSeed) => {
 export const ADMIN_AUTHOR_SEED: AdminAuthorSeed = {
     author: AUTHOR_SEED,
     identityVersions: [
-        { uuid: AUTHOR_SEED.profile.avatarVersion!, source: 'generated', fingerprint: 'f1' }
+        {
+            uuid: AUTHOR_SEED.profile.avatarVersion!,
+            source: 'generated',
+            fingerprint: 'f'.repeat(64)
+        }
     ]
 };
 
@@ -42,7 +46,7 @@ export function adminAuthorContract(name: string, factory: AdminAuthorStoresFact
                 avatarVersion: profile.avatarVersion
             });
             expect(snapshot.identity).toEqual({
-                avatar: { source: 'generated', fingerprint: 'f1' },
+                avatar: { source: 'generated', fingerprint: 'f'.repeat(64) },
                 banner: null
             });
             expect(snapshot.cv.experience.map(item => [item.id, item.title])).toEqual([
@@ -91,7 +95,13 @@ export function adminAuthorContract(name: string, factory: AdminAuthorStoresFact
         test('registers and deletes identity versions', async () => {
             const { store } = factory(ADMIN_AUTHOR_SEED);
             const id = '00000000-0000-4000-8000-000000000099';
-            await store.registerIdentityVersion({ id, kind: 'identity', source: 'custom' });
+            await store.registerIdentityVersion({
+                id,
+                kind: 'identity',
+                source: 'custom',
+                avatar_source: 'custom',
+                banner_source: 'custom'
+            });
             expect((await store.identityVersions([id])).map(row => row.id)).toEqual([id]);
             await store.deleteIdentityVersion(id);
             expect(await store.identityVersions([id])).toEqual([]);
