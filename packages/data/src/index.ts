@@ -83,6 +83,11 @@ export {
     createD1FeedbackRecorder
 } from './d1/activity';
 export { createD1AdminActivityStore } from './d1/adminActivity';
+export {
+    createD1AdminPostStore,
+    createD1PostCleanupStore,
+    createD1PostOperationStore
+} from './d1/adminPosts';
 export { createD1LegalPageRepository, createD1LegalPageWriter } from './d1/legal';
 export {
     createD1ArdIndexStore,

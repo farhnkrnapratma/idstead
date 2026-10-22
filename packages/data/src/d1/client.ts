@@ -23,6 +23,7 @@ export interface ContentBucket {
         value: string,
         options?: { httpMetadata?: { contentType?: string } }
     ): Promise<unknown>;
+    delete(keys: string | string[]): Promise<void>;
 }
 
 export function flag(value: unknown): boolean {
