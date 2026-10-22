@@ -152,7 +152,7 @@ describe('banner asset routing', () => {
             'utf8'
         );
         expect(source).toContain('export const assetNames = identityAssetNames;');
-        expect(source).toMatch(/name in bannerSizes \? 'banner_version' : 'avatar_version'/);
+        expect(source).toContain('isBanner(name) ? versions.banner : versions.avatar');
     });
 
     test('public banner URLs are versioned and absolute for Open Graph', () => {

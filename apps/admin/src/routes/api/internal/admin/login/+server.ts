@@ -18,6 +18,7 @@ import {
 } from '#lib/server/subscribers.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
+import { createSupabaseLoginLockoutStore } from '@idstead/data';
 import { runInBackground } from '#lib/server/workerEnv.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
 
@@ -71,9 +72,10 @@ export const POST: RequestHandler = async ({
     const clientIp = getClientIp(getClientAddress);
     const salt = ipSalt(platform);
     const activityDb = getSupabaseAdminClient(platform);
+    const lockoutStore = activityDb ? createSupabaseLoginLockoutStore(activityDb) : null;
     const userAgent = request.headers.get('user-agent') ?? undefined;
 
-    const lockout = await checkLoginLockout(activityDb, salt, `ip:${clientIp}`);
+    const lockout = await checkLoginLockout(lockoutStore, salt, `ip:${clientIp}`);
     if (!lockout.allowed) {
         await logActivity(
             {
@@ -116,7 +118,7 @@ export const POST: RequestHandler = async ({
     }
 
     const emailKey = `email-ip:${email.toLowerCase()}|${clientIp}`;
-    const emailLockout = await checkLoginLockout(activityDb, salt, emailKey);
+    const emailLockout = await checkLoginLockout(lockoutStore, salt, emailKey);
     if (!emailLockout.allowed)
         return apiError(
             429,
@@ -126,7 +128,7 @@ export const POST: RequestHandler = async ({
         );
 
     const rejectTurnstile = async () => {
-        await recordFailedLogin(activityDb, salt, `ip:${clientIp}`);
+        await recordFailedLogin(lockoutStore, salt, `ip:${clientIp}`);
         await logActivity(
             {
                 actor: email,
@@ -154,7 +156,7 @@ export const POST: RequestHandler = async ({
     if (error || !data.session) {
         if (error && error.code !== 'invalid_credentials')
             console.error('Admin login rejected by Supabase:', error.code, error.message);
-        await recordFailedLogin(activityDb, salt, `ip:${clientIp}`, emailKey);
+        await recordFailedLogin(lockoutStore, salt, `ip:${clientIp}`, emailKey);
         await logActivity(
             {
                 actor: email,
@@ -170,7 +172,7 @@ export const POST: RequestHandler = async ({
         return apiError(401, 'ADMIN_LOGIN_INVALID_CREDENTIALS', 'Invalid email or password.');
     }
 
-    await clearLoginAttempts(activityDb, salt, `ip:${clientIp}`, emailKey);
+    await clearLoginAttempts(lockoutStore, salt, `ip:${clientIp}`, emailKey);
     await logActivity(
         {
             actor: data.user?.email ?? email,
