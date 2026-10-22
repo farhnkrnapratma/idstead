@@ -89,6 +89,9 @@ export function memoryBucket(
         async put(key, value) {
             objects[key] = value;
             return {};
+        },
+        async delete(keys) {
+            for (const key of Array.isArray(keys) ? keys : [keys]) delete objects[key];
         }
     };
 }
