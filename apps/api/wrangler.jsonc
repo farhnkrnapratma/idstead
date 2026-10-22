@@ -5,6 +5,7 @@
     "compatibility_flags": ["nodejs_compat"],
     "routes": [{ "pattern": "api.fkp.my.id", "custom_domain": true }],
     "observability": { "enabled": true },
+    "alias": { "$app/env/private": "./src/appEnv.ts", "$app/env/public": "./src/appEnv.ts" },
     "secrets": {
         "required": [
             "PUBLIC_SUPABASE_URL",

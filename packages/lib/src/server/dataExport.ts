@@ -1,10 +1,5 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
 import { strToU8, zipSync, type Zippable } from 'fflate';
-import {
-    createSupabaseActivityLog,
-    createSupabaseAdminAuthorStore,
-    createSupabaseSiteDataStore
-} from '@idstead/data';
+import type { ServiceStores } from './data';
 import { skillGroupFromItem } from '@idstead/domain/author.ts';
 import { DEFAULT_ADMIN_DISPLAY } from '#lib/adminDateFormat.ts';
 import { DEFAULT_CHART_RANGE, parseAdminSettings } from '#lib/adminSettings.ts';
@@ -37,7 +32,7 @@ async function mapLimit<T>(items: readonly T[], limit: number, task: (item: T) =
 }
 
 export async function buildDataExport(
-    db: SupabaseClient,
+    stores: Pick<ServiceStores, 'siteData' | 'adminAuthor' | 'activityLog'>,
     platform: App.Platform | undefined,
     stampInput: string | null
 ) {
@@ -59,7 +54,7 @@ export async function buildDataExport(
         counts.files = (counts.files ?? 0) + 1;
     };
 
-    const siteData = createSupabaseSiteDataStore(db);
+    const { siteData, adminAuthor, activityLog } = stores;
 
     async function guard<T>(scope: string, task: () => Promise<T>, fallback: T) {
         try {
@@ -224,11 +219,7 @@ export async function buildDataExport(
         exclude: rules.filter(r => r.rule_type === 'exclude').map(r => r.repo_name)
     });
 
-    const author = await guard(
-        'identity',
-        () => createSupabaseAdminAuthorStore(db).snapshot(),
-        null
-    );
+    const author = await guard('identity', () => adminAuthor.snapshot(), null);
     putJson(
         'identity/profile.json',
         stripKeys(author?.profile ?? {}, [
@@ -271,7 +262,6 @@ export async function buildDataExport(
             await fetchBinary(key, key);
 
     const logs: Record<string, unknown>[] = [];
-    const activityLog = createSupabaseActivityLog(db);
     await guard(
         'administration/logs.json',
         async () => {

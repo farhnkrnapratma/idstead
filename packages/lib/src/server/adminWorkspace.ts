@@ -1,5 +1,5 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
-import { createSupabaseAdminActivityStore } from '@idstead/data';
+import { dataStores } from './data';
+import { getSupabaseAdminClient } from './supabaseAdmin';
 import { apiError } from './apiError';
 import { blogAdmin } from './blogPostAuth';
 import { ActivityInputError, activityJson, activityUuid } from './activityInput';
@@ -142,13 +142,15 @@ export function workspaceOptions(params: URLSearchParams, now = new Date()) {
 export async function adminWorkspace({
     request,
     url,
-    db
+    platform
 }: {
     request: Request;
     url: URL;
-    db: SupabaseClient | null;
+    platform: unknown;
 }) {
-    if (!db)
+    const db = getSupabaseAdminClient(platform);
+    const service = dataStores(platform).service;
+    if (!db || !service)
         return apiError(
             503,
             'ADMIN_WORKSPACE_UNAVAILABLE',
@@ -162,7 +164,7 @@ export async function adminWorkspace({
                 auth.code ?? 'ADMIN_WORKSPACE_AUTH_REQUIRED',
                 auth.message
             );
-        const store = createSupabaseAdminActivityStore(db);
+        const store = service.adminActivity;
         if (request.method === 'POST') {
             const body = await activityJson(request);
             if (body.action === 'delete_comment') {

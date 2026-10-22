@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
-import { createSupabaseAdminPostStore } from '@idstead/data';
+import { dataStores } from '#lib/server/data.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { blogAdmin } from '#lib/server/blogPostAuth.ts';
 import { boundedBody } from '#lib/server/blogPostInput.ts';
@@ -18,7 +18,8 @@ import { putContentAsset } from '#lib/server/blogContentStorage.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform }) => {
     const db = getSupabaseAdminClient(platform);
-    if (!db)
+    const service = dataStores(platform).service;
+    if (!db || !service)
         return apiError(
             503,
             'BLOG_CONTENT_IMAGE_UNAVAILABLE',
@@ -77,7 +78,7 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
     const home = stagingAssetHome(postId);
     let name: string;
     try {
-        const post = await createSupabaseAdminPostStore(db).assetState(postId);
+        const post = await service.adminPosts.posts.assetState(postId);
         name = await uniqueAssetName({
             platform,
             post: { id: postId, slug: post?.slug, published: post?.published },

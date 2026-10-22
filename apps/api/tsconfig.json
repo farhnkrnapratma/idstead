@@ -12,7 +12,8 @@
         "strict": true,
         "skipLibCheck": true,
         "noUnusedLocals": true,
-        "erasableSyntaxOnly": true
+        "erasableSyntaxOnly": true,
+        "paths": { "$app/env/private": ["./src/appEnv.ts"], "$app/env/public": ["./src/appEnv.ts"] }
     },
     "include": ["src"]
 }

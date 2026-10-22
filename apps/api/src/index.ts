@@ -1,8 +1,7 @@
 import { Hono, type Context } from 'hono';
 import * as Sentry from '@sentry/cloudflare';
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { stringify } from 'yaml';
-import { createSupabaseRepositories } from '@idstead/data';
+import { dataStores } from '#lib/server/data.ts';
 import { openapiSpec } from '#lib/openapi.ts';
 import { getAuthor } from '#lib/server/api/author.ts';
 import {
@@ -31,27 +30,14 @@ const ALLOW = 'GET, HEAD, OPTIONS';
 const EXPOSED_HEADERS =
     'ETag, Link, X-Request-ID, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, Retry-After, X-Checksum-SHA256, Repr-Digest, Content-Disposition';
 
-let client: SupabaseClient | undefined;
-
-function database(env: Env): SupabaseClient {
-    client ??= createClient(
-        (env.PUBLIC_SUPABASE_URL ?? '').replace(/\/rest\/v1\/?$/, ''),
-        env.PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? '',
-        { auth: { persistSession: false, autoRefreshToken: false } }
-    );
-    return client;
-}
-
 type AppEnv = { Bindings: Env; Variables: { requestId: string } };
 
 function context(c: Context<AppEnv>): ApiContext {
-    const db = database(c.env);
     const fetchFn: typeof fetch = (input, init) => fetch(input, init);
     return {
         url: new URL(c.req.url),
         request: c.req.raw,
-        db,
-        repos: createSupabaseRepositories(db, { fetch: fetchFn }),
+        repos: dataStores({ env: c.env }, { fetch: fetchFn, bannerUrls: false }).public,
         fetch: fetchFn
     };
 }

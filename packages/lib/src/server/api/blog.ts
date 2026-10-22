@@ -1,4 +1,3 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
 import { publicCommentAuthor, type PostStats, type PublicComment } from '@idstead/domain/blog.ts';
 import type { PublishedPost, Repositories } from '@idstead/data';
 import { markdownToPlainText } from '@mdrs/core';
@@ -8,7 +7,6 @@ import { jsonResponse, textResponse } from './responses';
 export interface ApiContext {
     url: URL;
     request: Request;
-    db: SupabaseClient;
     repos: Repositories;
     fetch: typeof fetch;
 }

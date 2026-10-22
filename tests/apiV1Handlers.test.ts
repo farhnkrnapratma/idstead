@@ -1,5 +1,4 @@
 import { describe, expect, mock, test } from 'bun:test';
-import type { SupabaseClient } from '@supabase/supabase-js';
 import { strFromU8, unzipSync } from 'fflate';
 
 const FPR = '73C032AD78AC6F2E7CE781A27ABA82BF0C80A58C';
@@ -66,7 +65,6 @@ function ctx(path: string, accept?: string) {
     return {
         url,
         request: new Request(url, accept ? { headers: { Accept: accept } } : undefined),
-        db: {} as SupabaseClient,
         repos: { author: authorRepository } as never,
         fetch: fakeFetch
     };

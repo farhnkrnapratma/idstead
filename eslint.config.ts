@@ -152,6 +152,31 @@ export default defineConfig(
         }
     },
     {
+        files: [
+            'apps/*/src/routes/**/*.ts',
+            'apps/*/src/hooks.server.ts',
+            'apps/api/src/**/*.ts',
+            'apps/jobs/src/**/*.ts',
+            'packages/lib/src/server/**/*.ts'
+        ],
+        ignores: ['packages/lib/src/server/data.ts', '**/*.svelte.ts'],
+        rules: {
+            '@typescript-eslint/no-restricted-imports': [
+                'error',
+                {
+                    patterns: [
+                        {
+                            group: ['@idstead/data'],
+                            importNamePattern: '^createSupabase',
+                            message:
+                                'Build data stores through dataStores() in packages/lib/src/server/data.ts, the only place that picks a data adapter.'
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    {
         files: ['packages/data/**'],
         rules: {
             '@typescript-eslint/no-restricted-imports': [

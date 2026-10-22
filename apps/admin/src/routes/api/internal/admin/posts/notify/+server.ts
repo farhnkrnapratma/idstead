@@ -1,16 +1,17 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
+import { dataStores } from '#lib/server/data.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { blogAdmin } from '#lib/server/blogPostAuth.ts';
 import { notifyNewPost } from '#lib/server/subscriberBroadcast.ts';
-import { createSupabaseNewsletterStore } from '@idstead/data';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const POST: RequestHandler = async ({ request, url, platform }) => {
     const db = getSupabaseAdminClient(platform);
-    if (!db)
+    const service = dataStores(platform).service;
+    if (!db || !service)
         return apiError(
             503,
             'BLOG_NOTIFY_UNAVAILABLE',
@@ -33,7 +34,7 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
         return apiError(400, 'BLOG_NOTIFY_INVALID_POST', 'Invalid post id.');
 
     const result = await notifyNewPost(
-        createSupabaseNewsletterStore(db),
+        service.writers.newsletter,
         platform,
         postId,
         (body as { force?: unknown }).force === true

@@ -5,7 +5,7 @@ import { apiError } from '#lib/server/apiError.ts';
 import { blogAdmin } from '#lib/server/blogPostAuth.ts';
 import { bearerToken } from '#lib/server/adminAuth.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
-import { createSupabaseLoginLockoutStore } from '@idstead/data';
+import { dataStores } from '#lib/server/data.ts';
 import { boundedBody } from '#lib/server/blogPostInput.ts';
 import { passwordPolicyError } from '@idstead/domain/passwordPolicy.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
@@ -18,8 +18,10 @@ import { workerBinding, type RateLimit } from '#lib/server/workerEnv.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform, fetch }) => {
     const db = getSupabaseAdminClient(platform);
-    if (!db) return apiError(503, 'PASSWORD_UNAVAILABLE', 'Password changes are unavailable.');
-    const lockoutStore = createSupabaseLoginLockoutStore(db);
+    const service = dataStores(platform).service;
+    if (!db || !service)
+        return apiError(503, 'PASSWORD_UNAVAILABLE', 'Password changes are unavailable.');
+    const lockoutStore = service.lockout;
     const auth = await blogAdmin(request, url, db);
     if (auth.status)
         return apiError(auth.status, auth.code ?? 'PASSWORD_AUTH_REQUIRED', auth.message);
@@ -111,7 +113,7 @@ export const POST: RequestHandler = async ({ request, url, platform, fetch }) =>
                 category: 'auth',
                 summary: 'Admin changed their password.'
             },
-            db
+            service.activityLog
         );
         return json({ success: true }, { headers: { 'Cache-Control': 'no-store' } });
     } catch {

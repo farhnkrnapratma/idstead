@@ -1,6 +1,7 @@
 import { verifyAdminToken, bearerToken } from './adminAuth';
 import * as publicEnv from '$app/env/public';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
+import { dataStores } from '#lib/server/data.ts';
 import { supabase as publicSupabase } from '#lib/supabase.ts';
 import { logActivity, type ActivityCategory } from '#lib/server/activityLog.ts';
 import {
@@ -14,12 +15,7 @@ import {
 import { loadCvFonts } from '#lib/server/cvFonts.ts';
 import { readAvatarBytes } from '#lib/server/profileAssets.ts';
 import { fetchProjects, extractGitHubUsername } from '#lib/server/githubProjects.ts';
-import {
-    createSupabaseCvDocumentStore,
-    createSupabaseOpenPgpKeyStore,
-    type CvDocumentStore,
-    type StoredCvDocument
-} from '@idstead/data';
+import type { CvDocumentStore, StoredCvDocument } from '@idstead/data';
 import {
     cvSnapshot,
     cvVersionBump,
@@ -61,12 +57,9 @@ function getAdminDb(platform?: unknown) {
 }
 
 function cvStores(platform?: unknown) {
-    const db = getAdminDb(platform);
-    return {
-        db,
-        documents: createSupabaseCvDocumentStore(db),
-        keys: createSupabaseOpenPgpKeyStore(db)
-    };
+    const service = dataStores(platform).service;
+    if (!service) throw new Error('CV storage is unavailable.');
+    return { db: getAdminDb(platform), documents: service.cvDocuments, keys: service.openPgpKeys };
 }
 
 async function cvStorage(platform?: any) {
@@ -130,7 +123,7 @@ async function logCvActivity(
             ipSalt: ipSalt(platform),
             userAgent: req.headers.get('user-agent') ?? undefined
         },
-        db
+        dataStores(platform).service?.activityLog
     );
 }
 
@@ -331,11 +324,10 @@ async function removeCvObjects(
 
 export async function deleteCvFile(
     platform: unknown,
-    db: ReturnType<typeof getAdminDb>,
+    documents: CvDocumentStore,
     filename: string,
     strict = false
 ): Promise<boolean> {
-    const documents = createSupabaseCvDocumentStore(db);
     if (!(await removeCvObjects(platform, documents, filename, strict))) return false;
     return documents.delete(filename);
 }
@@ -598,7 +590,7 @@ export async function processCvDelete(
             filename = active.filename;
         }
 
-        const deleted = await deleteCvFile(platform, db, filename);
+        const deleted = await deleteCvFile(platform, documents, filename);
         if (!deleted) {
             return fail('Failed to remove CV record.');
         }

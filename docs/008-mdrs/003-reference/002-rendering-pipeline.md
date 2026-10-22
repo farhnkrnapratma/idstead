@@ -64,14 +64,14 @@ The engine is the workspace package `@mdrs/core` (`packages/mdrs/core`). Import 
 | `unavailableResolvers()`, `jsToDefineValue`, `walkPath`, `DefineError`, `ApiRegistry` | `@mdrs/core` | Building blocks for live-data resolvers |
 | `markdownToPlainText(markdown)`, `decodeHtmlEntities(text)` | `@mdrs/core` | Plain-text version for `.txt` routes and `?output=txt` |
 | `convertLegacyMarkdown`, `convertLegacyMarkdownWithNotes` | `@mdrs/core/legacy` | Old syntax → MDRS, used by `scripts/migrate-markdown-syntax.ts` |
-| `createSupabaseMdrsResolvers(db)` | `packages/lib/src/server/mdrsData.ts` | The site's `api.v1.author` and `api.v1.blog` resolvers on the server |
+| `mdrsResolvers(repositories)` | `packages/lib/src/server/mdrsData.ts` | The site's `api.v1.author` and `api.v1.blog` resolvers on the server |
 | `createMdrsResolvers(loaders)` | `packages/lib/src/mdrsResolvers.ts` | Browser-safe resolvers over any data loaders; the admin preview's load from `/api/internal/admin/mdrs-data` |
 | `validateMdrsRemote(markdown)`, `mdrsContent(label)` | `apps/admin/src/lib/mdrsValidation.ts` | Editor-side validation through `POST /api/internal/blog/validate-define` |
 | `resolveMdrsHash(hash, container)` | `packages/mdrs/dom/src/headingAnchors.ts` | Maps `#setup` to `#mdrs-setup` when the page scrolls to a hash |
 | `enhanceMarkdownContent(options)` | `packages/mdrs/dom/src/enhance.ts` | Browser pass |
 | `enhanceHeadingAnchors(container)` | `packages/mdrs/dom/src/headingAnchors.ts` | ¶ anchor links |
 
-Pass resolvers to enable [live data](../002-extensions/014-live-data.md): the site uses `createSupabaseMdrsResolvers(db)` on the server. Without them, the default `unavailableResolvers()` makes `api.v1.*` render an error marker.
+Pass resolvers to enable [live data](../002-extensions/014-live-data.md): the site uses `mdrsResolvers(repositories)` on the server. Without them, the default `unavailableResolvers()` makes `api.v1.*` render an error marker.
 
 ## Where MDRS is used
 

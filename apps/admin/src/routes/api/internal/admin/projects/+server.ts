@@ -1,14 +1,13 @@
-import { getSupabaseUserClient } from '#lib/server/supabaseUser.ts';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
+import { dataStores } from '#lib/server/data.ts';
 import { requireAdminAuth } from '#lib/server/adminCv.ts';
 import { bearerToken } from '#lib/server/adminAuth.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
-import { createSupabaseAdminAuthorStore, createSupabaseAuthorWriter } from '@idstead/data';
 import { sanitizeInput } from '@idstead/domain/sanitizeInput.ts';
 
 const MAX_PINNED = 3;
@@ -32,9 +31,10 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     const authError = await requireAdminAuth(request, platform);
     if (authError) return authError;
 
-    const userDb = getSupabaseUserClient(request, platform);
     const db = getSupabaseAdminClient(platform);
-    if (!db || !userDb)
+
+    const { service, session } = dataStores(platform, { request });
+    if (!db || !service || !session)
         return apiError(503, 'PROJECTS_STORAGE_UNAVAILABLE', 'Database is unavailable.');
 
     let body: { pinned?: unknown; excluded?: unknown };
@@ -60,15 +60,12 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
 
     let authorId: string;
     try {
-        authorId = await createSupabaseAdminAuthorStore(db).ensureProfileId();
+        authorId = await service.adminAuthor.ensureProfileId();
     } catch (error) {
         console.error('Author profile lookup failed:', error);
         return apiError(503, 'PROJECTS_STORAGE_UNAVAILABLE', 'Database is unavailable.');
     }
-    const result = await createSupabaseAuthorWriter(userDb).saveRepoRules(authorId, {
-        pinned,
-        excluded
-    });
+    const result = await session.authorWriter.saveRepoRules(authorId, { pinned, excluded });
     if (result.status === 'rejected') return apiError(400, 'PROJECTS_SAVE_FAILED', result.message);
 
     const token = bearerToken(request);
@@ -89,7 +86,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             ipSalt: ipSalt(platform),
             userAgent: request.headers.get('user-agent') ?? undefined
         },
-        db
+        service.activityLog
     );
 
     return json({ success: true, pinned, excluded }, { headers: { 'Cache-Control': 'no-store' } });

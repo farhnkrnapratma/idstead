@@ -1,15 +1,15 @@
 import type { PageServerLoad } from './$types';
 import { getLegalPage } from '#lib/server/legalPages.ts';
 import { prepareMarkdownPage } from '@mdrs/core';
-import { createSupabaseMdrsResolvers } from '#lib/server/mdrsData.ts';
-import { supabase } from '#lib/supabase.ts';
+import { mdrsResolvers } from '#lib/server/mdrsData.ts';
+import { publicRepositories } from '#lib/server/repositories.ts';
 import { siteRenderOptions } from '#lib/mdrsOptions.ts';
 
 export const load: PageServerLoad = async ({ url }) => {
     const pageData = await getLegalPage('terms');
     const { html, headings } = await prepareMarkdownPage(
         pageData.content,
-        createSupabaseMdrsResolvers(supabase),
+        mdrsResolvers(publicRepositories()),
         siteRenderOptions(url.origin)
     );
 

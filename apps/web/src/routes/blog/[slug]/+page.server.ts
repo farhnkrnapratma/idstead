@@ -12,8 +12,7 @@ import { estimateReadTime } from '@idstead/domain/readTime.ts';
 import { parsePostRender } from '#lib/server/postRender.ts';
 import { postReadTime } from '#lib/server/blogPosts.ts';
 import { publicRepositories } from '#lib/server/repositories.ts';
-import { createSupabaseMdrsResolvers } from '#lib/server/mdrsData.ts';
-import { supabase } from '#lib/supabase.ts';
+import { mdrsResolvers } from '#lib/server/mdrsData.ts';
 import type { PageServerLoad } from './$types';
 import { siteRenderOptions } from '#lib/mdrsOptions.ts';
 
@@ -52,7 +51,8 @@ function getRelatedWindow<T extends { id: string }>(posts: T[], currentId: strin
 }
 
 export const load: PageServerLoad = async ({ params, fetch, url }) => {
-    const { blog, comments: commentRepository } = publicRepositories(fetch);
+    const repositories = publicRepositories(fetch);
+    const { blog, comments: commentRepository } = repositories;
 
     let post: PublishedPost | null;
     try {
@@ -77,7 +77,7 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
             readTime = estimateReadTime(markdown);
             const rawHtml = await renderMarkdown(
                 markdown,
-                createSupabaseMdrsResolvers(supabase),
+                mdrsResolvers(repositories),
                 siteRenderOptions(url.origin)
             );
             html = prefixHashLinks(injectHeadingIds(rawHtml));

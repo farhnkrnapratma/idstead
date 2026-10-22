@@ -2,6 +2,7 @@ import { countReadingMinutes } from '@idstead/domain/readTime.ts';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
+import { dataStores } from '#lib/server/data.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { blogAdmin } from '#lib/server/blogPostAuth.ts';
 import { parsePostInput } from '#lib/server/blogPostInput.ts';
@@ -15,18 +16,19 @@ import { relocateMarkdownAssets, syncPostAssets } from '#lib/server/blogPostAsse
 import { cdnBaseUrl } from '#lib/cdn.ts';
 import { UUID_PATTERN } from '#lib/blogBanner.ts';
 import { validateDefineForSave } from '@mdrs/core';
-import { createSupabaseMdrsResolvers } from '#lib/server/mdrsData.ts';
+import { mdrsResolvers } from '#lib/server/mdrsData.ts';
 import { buildPostRender } from '#lib/server/postRender.ts';
 import { siteRenderOptions } from '#lib/mdrsOptions.ts';
 import { configuredSiteUrl } from '#lib/server/siteUrl.ts';
-import { createSupabaseAdminPostStores, createSupabaseNewsletterStore } from '@idstead/data';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { queuePostEffects } from '#lib/server/postEffects.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
     const db = getSupabaseAdminClient(platform);
-    if (!db) return apiError(503, 'BLOG_SAVE_UNAVAILABLE', 'Post storage is not configured.');
+    const service = dataStores(platform).service;
+    if (!db || !service)
+        return apiError(503, 'BLOG_SAVE_UNAVAILABLE', 'Post storage is not configured.');
     const auth = await blogAdmin(request, url, db);
     if (auth.status)
         return apiError(auth.status, auth.code ?? 'BLOG_SAVE_AUTH_REQUIRED', auth.message);
@@ -41,13 +43,10 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             error instanceof Error ? error.message : 'Invalid post data.'
         );
     }
-    const stores = createSupabaseAdminPostStores(db);
+    const stores = service.adminPosts;
     try {
         if (input.kind === 'save') {
-            const validation = await validateDefineForSave(
-                input.markdown,
-                createSupabaseMdrsResolvers(db)
-            );
+            const validation = await validateDefineForSave(input.markdown, mdrsResolvers(service));
             if (!validation.ok)
                 return apiError(
                     422,
@@ -91,7 +90,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
                 render = JSON.stringify(
                     await buildPostRender(
                         input.markdown,
-                        createSupabaseMdrsResolvers(db),
+                        mdrsResolvers(service),
                         siteRenderOptions(configuredSiteUrl(platform))
                     )
                 );
@@ -123,7 +122,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
                 'BLOG_SAVE_REJECTED',
                 'Post fields could not be committed. Check that the slug is unique.'
             );
-        await queuePostEffects(createSupabaseNewsletterStore(db), platform, {
+        await queuePostEffects(service.writers.newsletter, platform, {
             postId: operation.result?.id ?? input.id,
             published: Boolean(operation.result?.published && operation.result.id),
             wasPublished: Boolean(previous?.published)
@@ -171,7 +170,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
                 ipSalt: ipSalt(platform),
                 userAgent: request.headers.get('user-agent') ?? undefined
             },
-            db
+            service.activityLog
         );
         return json(
             {
@@ -203,7 +202,9 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
 
 export const GET: RequestHandler = async ({ request, url, platform }) => {
     const db = getSupabaseAdminClient(platform);
-    if (!db) return apiError(503, 'BLOG_SAVE_UNAVAILABLE', 'Post storage is not configured.');
+    const service = dataStores(platform).service;
+    if (!db || !service)
+        return apiError(503, 'BLOG_SAVE_UNAVAILABLE', 'Post storage is not configured.');
     const auth = await blogAdmin(request, url, db);
     if (auth.status)
         return apiError(auth.status, auth.code ?? 'BLOG_SAVE_AUTH_REQUIRED', auth.message);
@@ -212,7 +213,7 @@ export const GET: RequestHandler = async ({ request, url, platform }) => {
         return apiError(400, 'BLOG_OPERATION_INVALID', 'A valid operation ID is required.');
     let operation;
     try {
-        operation = await createSupabaseAdminPostStores(db).operations.find(id, auth.actor);
+        operation = await service.adminPosts.operations.find(id, auth.actor);
     } catch {
         return apiError(
             503,

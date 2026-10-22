@@ -3,6 +3,7 @@ import * as Sentry from '@sentry/sveltekit';
 import type { RequestHandler } from './$types';
 import { requireAdminAuth } from '#lib/server/adminCv.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
+import { dataStores } from '#lib/server/data.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { validateAvatar } from '#lib/server/validateAvatar.ts';
@@ -23,7 +24,7 @@ import { avatarAssetNames, bannerAssetNames, type IdentityAsset } from '#lib/sit
 import { logActivity } from '#lib/server/activityLog.ts';
 import { workerBinding, type RateLimit } from '#lib/server/workerEnv.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
-import { createSupabaseAdminAuthorStore, type AdminAuthorStore } from '@idstead/data';
+import type { AdminAuthorStore } from '@idstead/data';
 
 const attempts = new Map<string, number>();
 
@@ -71,10 +72,12 @@ export const GET: RequestHandler = async ({ request, platform }) => {
     const authFailure = await requireAdminAuth(request, platform);
     if (authFailure) return authFailure;
     const db = getSupabaseAdminClient(platform);
-    if (!db) return apiError(503, 'PROFILE_STORAGE_UNAVAILABLE', 'Profile storage is unavailable.');
+    const service = dataStores(platform).service;
+    if (!db || !service)
+        return apiError(503, 'PROFILE_STORAGE_UNAVAILABLE', 'Profile storage is unavailable.');
     let manifestSettings: unknown;
     try {
-        manifestSettings = await createSupabaseAdminAuthorStore(db).identityDefaults();
+        manifestSettings = await service.adminAuthor.identityDefaults();
     } catch {
         return apiError(503, 'PROFILE_STORAGE_UNAVAILABLE', 'Profile storage is unavailable.');
     }
@@ -87,8 +90,10 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
     const authFailure = await requireAdminAuth(request, platform);
     if (authFailure) return authFailure;
     const db = getSupabaseAdminClient(platform);
-    if (!db) return apiError(503, 'PROFILE_STORAGE_UNAVAILABLE', 'Profile storage is unavailable.');
-    const store = createSupabaseAdminAuthorStore(db);
+    const service = dataStores(platform).service;
+    if (!db || !service)
+        return apiError(503, 'PROFILE_STORAGE_UNAVAILABLE', 'Profile storage is unavailable.');
+    const store = service.adminAuthor;
     const {
         data: { user }
     } = await db.auth.getUser(
@@ -335,7 +340,7 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
             ipSalt: ipSalt(platform),
             userAgent: request.headers.get('user-agent') ?? undefined
         },
-        db
+        service.activityLog
     );
     return json(
         { success: true, profile: saved.profile, cleanupPending },
@@ -348,8 +353,9 @@ async function cleanupAfterSave(platform: App.Platform | undefined, version: str
     if (version) {
         try {
             const db = getSupabaseAdminClient(platform);
-            if (!db) throw new Error('Database is not configured.');
-            if (await createSupabaseAdminAuthorStore(db).profileWithAvatarVersion(version))
+            const service = dataStores(platform).service;
+            if (!db || !service) throw new Error('Database is not configured.');
+            if (await service.adminAuthor.profileWithAvatarVersion(version))
                 await promoteIdentity(platform, version);
         } catch (error) {
             Sentry.captureException(error);

@@ -17,8 +17,7 @@ import {
     senderAddress
 } from '#lib/server/subscribers.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
-import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
-import { createSupabaseLoginLockoutStore } from '@idstead/data';
+import { dataStores } from '#lib/server/data.ts';
 import { runInBackground } from '#lib/server/workerEnv.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
 
@@ -71,8 +70,8 @@ export const POST: RequestHandler = async ({
 
     const clientIp = getClientIp(getClientAddress);
     const salt = ipSalt(platform);
-    const activityDb = getSupabaseAdminClient(platform);
-    const lockoutStore = activityDb ? createSupabaseLoginLockoutStore(activityDb) : null;
+    const service = dataStores(platform).service;
+    const lockoutStore = service?.lockout ?? null;
     const userAgent = request.headers.get('user-agent') ?? undefined;
 
     const lockout = await checkLoginLockout(lockoutStore, salt, `ip:${clientIp}`);
@@ -87,7 +86,7 @@ export const POST: RequestHandler = async ({
                 ipSalt: salt,
                 userAgent
             },
-            activityDb
+            service?.activityLog
         );
         return apiError(
             429,
@@ -139,7 +138,7 @@ export const POST: RequestHandler = async ({
                 ipSalt: salt,
                 userAgent
             },
-            activityDb
+            service?.activityLog
         );
         return apiError(403, 'ADMIN_LOGIN_TURNSTILE_FAILED', 'Turnstile verification failed.');
     };
@@ -167,7 +166,7 @@ export const POST: RequestHandler = async ({
                 ipSalt: salt,
                 userAgent
             },
-            activityDb
+            service?.activityLog
         );
         return apiError(401, 'ADMIN_LOGIN_INVALID_CREDENTIALS', 'Invalid email or password.');
     }
@@ -183,7 +182,7 @@ export const POST: RequestHandler = async ({
             ipSalt: salt,
             userAgent
         },
-        activityDb
+        service?.activityLog
     );
 
     const { data: aal } = await locals.supabase.auth.mfa.getAuthenticatorAssuranceLevel();

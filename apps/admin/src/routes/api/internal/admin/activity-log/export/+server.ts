@@ -1,5 +1,6 @@
 import type { RequestHandler } from './$types';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
+import { dataStores } from '#lib/server/data.ts';
 import { blogAdmin } from '#lib/server/blogPostAuth.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import {
@@ -9,10 +10,11 @@ import {
 } from '#lib/server/activityLogExport.ts';
 
 import { activityLogQuery } from '#lib/server/activityLogQuery.ts';
-import { createSupabaseActivityLog } from '@idstead/data';
+
 export const GET: RequestHandler = async ({ request, url, platform }) => {
     const db = getSupabaseAdminClient(platform);
-    if (!db)
+    const service = dataStores(platform).service;
+    if (!db || !service)
         return apiError(
             503,
             'ACTIVITY_LOG_UNAVAILABLE',
@@ -38,7 +40,7 @@ export const GET: RequestHandler = async ({ request, url, platform }) => {
     const { limit: _limit, offset: _offset, ...filter } = query;
     let page;
     try {
-        page = await createSupabaseActivityLog(db).export(filter);
+        page = await service.activityLog.export(filter);
     } catch {
         return apiError(503, 'ACTIVITY_LOG_EXPORT_FAILED', 'Could not export activity log.');
     }

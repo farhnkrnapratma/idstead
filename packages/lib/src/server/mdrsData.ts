@@ -1,11 +1,5 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
 import { DefineError, unavailableResolvers, type ApiRegistry } from '@mdrs/core';
-import {
-    createSupabaseAuthorRepository,
-    createSupabaseBlogRepository,
-    type AuthorRepository,
-    type BlogRepository
-} from '@idstead/data';
+import type { AuthorRepository, BlogRepository, Repositories } from '@idstead/data';
 import { publicPostFields } from '@idstead/domain/blog.ts';
 import { sanitizePublicApiData } from '#lib/authorApi.ts';
 import { createMdrsResolvers, type MdrsDataLoaders } from '#lib/mdrsResolvers.ts';
@@ -48,9 +42,9 @@ async function blogPostData(slug: string, blog: BlogRepository) {
     return { ...publicPostFields(post), content };
 }
 
-export function supabaseMdrsLoaders(db: SupabaseClient): MdrsDataLoaders {
-    const blog = createSupabaseBlogRepository(db);
-    const author = createSupabaseAuthorRepository(db);
+export type MdrsRepositories = Pick<Repositories, 'author' | 'blog'>;
+
+export function mdrsLoaders({ author, blog }: MdrsRepositories): MdrsDataLoaders {
     return {
         author: () => authorData(author),
         blogList: () => blogListData(blog),
@@ -58,6 +52,6 @@ export function supabaseMdrsLoaders(db: SupabaseClient): MdrsDataLoaders {
     };
 }
 
-export function createSupabaseMdrsResolvers(db: SupabaseClient | null | undefined): ApiRegistry {
-    return db ? createMdrsResolvers(supabaseMdrsLoaders(db)) : unavailableResolvers();
+export function mdrsResolvers(repos: MdrsRepositories | null | undefined): ApiRegistry {
+    return repos ? createMdrsResolvers(mdrsLoaders(repos)) : unavailableResolvers();
 }
