@@ -14,6 +14,7 @@
         },
         "assetBucket": "idstead-assets",
         "newsletterQueue": "idstead-newsletter",
+        "database": { "name": "idstead" },
         "rateLimitNamespaces": { "web": 1001, "api": 1002, "admin": 1003 }
     },
     "jobs": { "cron": "17 3 * * *", "hourlyCron": "37 * * * *" }

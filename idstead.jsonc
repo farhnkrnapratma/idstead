@@ -8,6 +8,7 @@
             "jobs": "idstead-jobs"
         },
         "assetBucket": "static",
-        "newsletterQueue": "idstead-newsletter"
+        "newsletterQueue": "idstead-newsletter",
+        "database": { "name": "idstead", "id": "01a9d5d0-7228-4791-ab9a-0813d73abbf3" }
     }
 }

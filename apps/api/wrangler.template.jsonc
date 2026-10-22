@@ -5,6 +5,7 @@
     "compatibility_flags": ["nodejs_compat"],
     "routes": "{{routes.api}}",
     "observability": { "enabled": true },
+    "d1_databases": "{{d1Databases}}",
     "alias": { "$app/env/private": "./src/appEnv.ts", "$app/env/public": "./src/appEnv.ts" },
     "secrets": {
         "required": [

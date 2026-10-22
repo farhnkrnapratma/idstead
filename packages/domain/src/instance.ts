@@ -4,6 +4,7 @@ export interface InstanceConfig {
         workers: { web: string; admin: string; api: string; jobs: string };
         assetBucket: string;
         newsletterQueue: string;
+        database: { name: string; id: string | null };
         rateLimitNamespaces: { web: number; admin: number; api: number };
     };
     jobs: { cron: string; hourlyCron: string };
@@ -14,6 +15,7 @@ export class InstanceConfigError extends Error {}
 const HOSTNAME = /^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;
 const RESOURCE_NAME = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/;
 const CRON = /^(?:\S+\s+){4}\S+$/;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 type Raw = Record<string, unknown>;
 
@@ -44,6 +46,7 @@ export function resolveInstanceConfig(value: unknown): InstanceConfig {
     const cloudflare = record(root.cloudflare, 'cloudflare');
     const workers = record(cloudflare.workers, 'cloudflare.workers');
     const namespaces = record(cloudflare.rateLimitNamespaces, 'cloudflare.rateLimitNamespaces');
+    const database = record(cloudflare.database, 'cloudflare.database');
     const jobs = record(root.jobs, 'jobs');
     const site = text(domains.site, 'domains.site', HOSTNAME);
     if (domains.redirectWww !== undefined && typeof domains.redirectWww !== 'boolean')
@@ -82,6 +85,13 @@ export function resolveInstanceConfig(value: unknown): InstanceConfig {
                 'idstead-assets'
             ),
             newsletterQueue: queue,
+            database: {
+                name: text(database.name, 'cloudflare.database.name', RESOURCE_NAME, 'idstead'),
+                id:
+                    database.id === undefined ?
+                        null
+                    :   text(database.id, 'cloudflare.database.id', UUID)
+            },
             rateLimitNamespaces: {
                 web: namespace(namespaces.web, 'cloudflare.rateLimitNamespaces.web', 1001),
                 api: namespace(namespaces.api, 'cloudflare.rateLimitNamespaces.api', 1002),
