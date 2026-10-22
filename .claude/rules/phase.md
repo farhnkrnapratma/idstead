@@ -1,4 +1,4 @@
-Environment variables for this repo come from [Phase](https://phase.dev), not from local `.env` files. The project is linked through `.phase.json` (app `idstead`, default environment `Development`).
+Environment variables for this repo come from [Phase](https://phase.dev), not from local `.env` files. The project is linked through `.phase.json` (app `idstead`, default environment `development`).
 
 ## Rules
 
@@ -12,7 +12,7 @@ Environment variables for this repo come from [Phase](https://phase.dev), not fr
     phase run --env dev bun run test
     ```
 
-    `--env` matches partially (`dev` → `Development`, `prod` → `Production`). Use `dev` unless the task specifically needs production values.
+    `--env` matches partially (`dev` → `development`, `prod` → `production`). Use `dev` unless the task specifically needs production values.
 
 - Do not create, copy, or read `.env`, `.env.development`, `.env.production`, or `.dev.vars` files to get secrets, and do not pass `--env-file` to wrangler. Where README or CLAUDE.md say to copy a `.env*.example` file, use `phase run` instead.
 - Use `phase run` only to start processes. Never print injected values (`echo $VAR`, `printenv`, `env`), pipe them elsewhere, or write `phase secrets export` output to a file, unless the user has explicitly allowed it as described below. `phase shell` is blocked in AI mode.
