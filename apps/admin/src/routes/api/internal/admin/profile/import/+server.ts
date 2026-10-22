@@ -68,7 +68,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
 
     const db = getSupabaseAdminClient(platform);
 
-    const { service, session } = dataStores(platform, { request });
+    const { service, session } = dataStores(platform, { request, verifiedAdmin: true });
     if (!db || !service || !session)
         return apiError(503, 'PROFILE_IMPORT_UNAVAILABLE', 'Profile storage is unavailable.');
 

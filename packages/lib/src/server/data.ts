@@ -108,6 +108,7 @@ export interface DataStores {
 
 export interface DataStoreOptions {
     request?: Request;
+    verifiedAdmin?: boolean;
     fetch?: typeof fetch;
     bannerUrls?: boolean;
 }
@@ -211,7 +212,11 @@ function d1Stores(platform: unknown, options: DataStoreOptions): DataStores {
         get session() {
             if (sessionStores === undefined)
                 sessionStores =
-                    options.request && bearerToken(options.request) ?
+                    (
+                        options.verifiedAdmin === true
+                        && options.request
+                        && bearerToken(options.request)
+                    ) ?
                         {
                             authorWriter: createD1AuthorWriter(backend.db),
                             legalWriter: createD1LegalPageWriter(backend.db),
