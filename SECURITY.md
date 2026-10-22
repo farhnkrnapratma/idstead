@@ -10,7 +10,7 @@ Only the latest commit on `main` receives security fixes. There are no maintaine
 
 ## Reporting a vulnerability
 
-Report it privately by email to [security@fkp.my.id](mailto:security@fkp.my.id). Please don't open a public issue, discussion or pull request for a suspected vulnerability before it has been fixed.
+Report it privately by email to [contact@fkp.my.id](mailto:contact@fkp.my.id). Please don't open a public issue, discussion or pull request for a suspected vulnerability before it has been fixed.
 
 Please include:
 
