@@ -24,8 +24,8 @@ export async function adminActivity(
     const { request, url, platform } = input;
     const fail = apiError;
     const db = getSupabaseAdminClient(platform);
-    const data = dataStores(platform, { request });
-    if (!db || !data.service)
+    const service = dataStores(platform).service;
+    if (!db || !service)
         return fail(
             503,
             'ADMIN_ACTIVITY_UNAVAILABLE',
@@ -35,7 +35,8 @@ export async function adminActivity(
         const auth = await blogAdmin(request, url, db);
         if (auth.status)
             return fail(auth.status, auth.code ?? 'ADMIN_ACTIVITY_AUTH_REQUIRED', auth.message);
-        const store = data.service.adminActivity;
+        const store = service.adminActivity;
+        const data = dataStores(platform, { request, verifiedAdmin: true });
         let result: unknown;
         if (request.method === 'POST' && inbox) {
             const body = await activityJson(request);

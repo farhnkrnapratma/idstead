@@ -68,7 +68,10 @@ describe('dataStores', () => {
         const withToken = new Request('https://example.com', {
             headers: { Authorization: 'Bearer token' }
         });
-        expect(dataStores({ env }, { request: withToken }).session).not.toBeNull();
+        expect(dataStores({ env }, { request: withToken }).session).toBeNull();
+        expect(
+            dataStores({ env }, { request: withToken, verifiedAdmin: true }).session
+        ).not.toBeNull();
         await expect(
             dataStores({ env: { DATA_BACKEND: 'd1' } }).public.legal.pages()
         ).rejects.toThrow();
