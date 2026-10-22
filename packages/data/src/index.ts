@@ -157,3 +157,13 @@ export function createSupabaseAdminPostStores(db: SupabaseClient): AdminPostStor
         cleanup: createSupabasePostCleanupStore(db)
     };
 }
+export {
+    CACHE_TTL_SECONDS,
+    RENDER_TTL_SECONDS,
+    STATS_TTL_SECONDS,
+    cachedRepositories,
+    createD1CacheGenerations,
+    memoryResultCache,
+    type CacheGenerations,
+    type ResultCache
+} from './cache';

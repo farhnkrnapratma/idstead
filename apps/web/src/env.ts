@@ -14,6 +14,7 @@ export const variables = defineEnvVars({
     PUBLIC_SUPABASE_URL: { public: true, schema: optional },
     PUBLIC_TURNSTILE_SITE_KEY: { public: true, schema: optional },
     DATA_BACKEND: { schema: optional },
+    DATA_CACHE: { schema: optional },
     GITHUB_PAT: { schema: optional },
     IP_SALT: { schema: optional },
     RESEND_API_KEY: { schema: optional },

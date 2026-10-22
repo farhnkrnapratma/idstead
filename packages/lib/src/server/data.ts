@@ -62,7 +62,9 @@ import {
     createD1SubscriberRepository,
     createD1ViewRecorder,
     type ContentBucket,
-    type D1Like
+    type D1Like,
+    cachedRepositories,
+    createD1CacheGenerations
 } from '@idstead/data';
 import * as privateEnv from '$app/env/private';
 import { supabase } from '#lib/supabase.ts';
@@ -72,6 +74,7 @@ import { getSupabaseUserClient } from './supabaseUser';
 import { bearerToken } from './adminAuth';
 import { lazyBucket, lazyD1 } from './lazyBindings';
 import { workerBinding } from './workerEnv';
+import { workersResultCache } from './resultCache';
 
 export interface PublicStores extends Repositories {
     identity: IdentityVersionReader;
@@ -191,6 +194,29 @@ function d1ServiceStores(backend: D1Backend): ServiceStores {
     };
 }
 
+function cacheEnabled(platform: unknown) {
+    const configured =
+        (platform as PlatformEnv)?.env?.DATA_CACHE
+        ?? (privateEnv as Record<string, string | undefined>).DATA_CACHE
+        ?? process.env.DATA_CACHE;
+    return ['1', 'true'].includes(
+        String(configured ?? '')
+            .trim()
+            .toLowerCase()
+    );
+}
+
+function cachedPublic(platform: unknown, backend: D1Backend, repos: Repositories): Repositories {
+    const cache = cacheEnabled(platform) ? workersResultCache() : null;
+    if (!cache) return repos;
+    const version = binding<{ id?: string }>(platform, 'CF_VERSION_METADATA');
+    return cachedRepositories(repos, {
+        generations: createD1CacheGenerations(backend.db),
+        cache,
+        namespace: async () => (await version().catch(() => null))?.id ?? 'unversioned'
+    });
+}
+
 function d1Stores(platform: unknown, options: DataStoreOptions): DataStores {
     const backend: D1Backend = {
         db: lazyD1(binding<D1Like>(platform, 'DB')),
@@ -202,7 +228,7 @@ function d1Stores(platform: unknown, options: DataStoreOptions): DataStores {
     return {
         get public() {
             return (publicStores ??= {
-                ...d1Repositories(backend, options),
+                ...cachedPublic(platform, backend, d1Repositories(backend, options)),
                 identity: createD1IdentityVersionReader(backend.db)
             });
         },

@@ -76,4 +76,40 @@ describe('dataStores', () => {
             dataStores({ env: { DATA_BACKEND: 'd1' } }).public.legal.pages()
         ).rejects.toThrow();
     });
+
+    test('caches public reads through the Cache API when DATA_CACHE is on', async () => {
+        const stored = new Map<string, string>();
+        const keys: string[] = [];
+        const previous = (globalThis as { caches?: unknown }).caches;
+        (globalThis as { caches?: unknown }).caches = {
+            open: async () => ({
+                match: async (key: string) =>
+                    stored.has(key) ? new Response(stored.get(key)) : undefined,
+                put: async (key: string, response: Response) => {
+                    keys.push(key);
+                    stored.set(key, await response.text());
+                }
+            })
+        };
+        try {
+            const { db, sqlite } = d1Shim();
+            insertRows(sqlite, 'db_legals', [{ slug: 'terms', title: 'Terms', content: '# T' }]);
+            const env = {
+                DATA_BACKEND: 'd1',
+                DATA_CACHE: '1',
+                DB: db,
+                ASSET_BUCKET: memoryBucket(),
+                CF_VERSION_METADATA: { id: 'version-7' }
+            };
+            expect((await dataStores({ env }).public.legal.pages())[0].title).toBe('Terms');
+            expect((await dataStores({ env }).public.legal.pages())[0].title).toBe('Terms');
+            expect(keys).toHaveLength(1);
+            expect(keys[0]).toContain('/version-7/legal%401/legal.pages');
+            sqlite.exec("UPDATE db_legals SET title = 'Changed'");
+            expect((await dataStores({ env }).public.legal.pages())[0].title).toBe('Changed');
+            expect(keys).toHaveLength(2);
+        } finally {
+            (globalThis as { caches?: unknown }).caches = previous;
+        }
+    });
 });

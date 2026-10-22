@@ -18,3 +18,7 @@ export function sourceRecord(source: PostSource): SourceRecord {
     if (!record) throw new Error('Unknown post source.');
     return record;
 }
+
+export function isPostSource(value: unknown): value is PostSource {
+    return typeof value === 'object' && value !== null && records.has(value as PostSource);
+}
