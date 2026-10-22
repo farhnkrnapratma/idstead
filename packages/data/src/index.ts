@@ -76,6 +76,13 @@ export { createD1BlogRepository, createD1CommentRepository, createD1RenderStore 
 export { createD1CommentWriter, createD1ViewRecorder } from './d1/writes';
 export { createD1AuthorRepository } from './d1/author';
 export { createD1NewsletterStore, createD1SubscriberRepository } from './d1/subscribers';
+export {
+    createD1ActivityLog,
+    createD1AdminNotifier,
+    createD1AdminSettingsStore,
+    createD1FeedbackRecorder
+} from './d1/activity';
+export { createD1AdminActivityStore } from './d1/adminActivity';
 export { createD1LegalPageRepository, createD1LegalPageWriter } from './d1/legal';
 export {
     createD1ArdIndexStore,
