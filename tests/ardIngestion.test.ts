@@ -90,7 +90,7 @@ function createSiteFetcher() {
         ]
     ]);
 
-    const fetcher: typeof fetch = async (input, init) => {
+    const fetcher = async (input: RequestInfo | URL, init?: RequestInit) => {
         const url = String(input);
         requests.push(url);
         expect(init?.redirect).toBe('manual');
@@ -122,7 +122,7 @@ describe('ARD web ingestion', () => {
 
     test('rejects off-origin sources and redirects', async () => {
         const requests: string[] = [];
-        const fetcher: typeof fetch = async input => {
+        const fetcher = async (input: RequestInfo | URL) => {
             const url = String(input);
             requests.push(url);
             if (url === `${siteUrl}/.well-known/ard.json`)
@@ -155,7 +155,7 @@ describe('ARD web ingestion', () => {
     });
 
     test('rejects source documents that exceed the configured byte limit', async () => {
-        const fetcher: typeof fetch = async input => {
+        const fetcher = async (input: RequestInfo | URL) => {
             if (String(input) === `${siteUrl}/.well-known/ard.json`)
                 return new Response('{}', {
                     headers: { 'Content-Type': 'application/json', 'Content-Length': '1048577' }

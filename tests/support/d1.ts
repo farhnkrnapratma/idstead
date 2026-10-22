@@ -16,11 +16,15 @@ function d1Value(value: unknown): SQLQueryBindings {
 }
 
 class ShimStatement implements D1Statement {
-    constructor(
-        private readonly sqlite: Database,
-        private readonly sql: string,
-        private readonly params: SQLQueryBindings[] = []
-    ) {}
+    private readonly sqlite: Database;
+    private readonly sql: string;
+    private readonly params: SQLQueryBindings[];
+
+    constructor(sqlite: Database, sql: string, params: SQLQueryBindings[] = []) {
+        this.sqlite = sqlite;
+        this.sql = sql;
+        this.params = params;
+    }
 
     bind(...values: unknown[]): D1Statement {
         return new ShimStatement(this.sqlite, this.sql, values.map(d1Value));
@@ -51,11 +55,11 @@ export interface D1Shim {
 
 export function d1Shim(): D1Shim {
     const sqlite = new Database(':memory:');
-    sqlite.exec('PRAGMA foreign_keys = ON');
+    sqlite.run('PRAGMA foreign_keys = ON');
     for (const file of readdirSync(MIGRATIONS)
         .filter(name => name.endsWith('.sql'))
         .sort())
-        sqlite.exec(readFileSync(new URL(file, MIGRATIONS), 'utf8'));
+        sqlite.run(readFileSync(new URL(file, MIGRATIONS), 'utf8'));
     const db: D1Like = {
         prepare: sql => new ShimStatement(sqlite, sql),
         async batch<T = D1Row>(statements: D1Statement[]) {

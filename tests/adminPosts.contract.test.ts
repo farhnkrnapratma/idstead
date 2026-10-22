@@ -4,6 +4,7 @@ import {
     createSupabasePostCleanupStore,
     createSupabasePostOperationStore
 } from '../packages/data/src/supabase/adminPosts.ts';
+import type { PostOperationState } from '../packages/data/src/adminPosts.ts';
 import { DataError } from '../packages/data/src/errors.ts';
 import {
     ADMIN_POST_SEED,
@@ -87,7 +88,7 @@ function supabaseFromSeed(
 
 adminPostContract('Supabase adapter', supabaseFromSeed);
 
-const operation = (state: string) => ({
+const operation = (state: PostOperationState) => ({
     id: 'operation',
     state,
     result: state === 'committed' ? { id: 'post' } : null

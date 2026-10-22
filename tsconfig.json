@@ -1,0 +1,23 @@
+{
+    "extends": "./packages/lib/tsconfig.json",
+    "compilerOptions": {
+        "types": ["bun", "vite/client", "$app/types"],
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "rootDirs": [
+            ".",
+            "apps/web",
+            "apps/web/.svelte-kit/types",
+            "apps/admin",
+            "apps/admin/.svelte-kit/types"
+        ]
+    },
+    "include": [
+        "*.ts",
+        "tests",
+        "tooling",
+        "scripts",
+        "apps/web/src/app.d.ts",
+        "apps/web/src/cloudflare-workers.d.ts"
+    ]
+}

@@ -68,12 +68,11 @@ const assetBucket = {
     async get(key: string) {
         try {
             const object = await r2.send(new GetObjectCommand({ Bucket: bucketName, Key: key }));
-            const bytes = await object.Body!.transformToByteArray();
+            const bytes = new Uint8Array(await object.Body!.transformToByteArray());
             return {
                 ...stored(key, object.ETag, object.LastModified, object.ContentType),
                 body: new Response(bytes).body!,
-                arrayBuffer: async () =>
-                    bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)
+                arrayBuffer: async () => bytes.buffer
             };
         } catch {
             return null;

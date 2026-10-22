@@ -42,9 +42,9 @@ function fakeAvif() {
     return bytes;
 }
 
-function bannerForm(overrides: Record<string, Uint8Array | null> = {}) {
+function bannerForm(overrides: Record<string, Uint8Array<ArrayBuffer> | null> = {}) {
     const form = new FormData();
-    const files: Record<string, Uint8Array | null> = {
+    const files: Record<string, Uint8Array<ArrayBuffer> | null> = {
         'banner.webp': webp(1280, 640),
         'banner.avif': bannerAvif,
         'banner-og.webp': webp(1200, 630),

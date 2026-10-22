@@ -29,9 +29,9 @@ describe('ARD manifest', () => {
             expect(entry.identifier).toMatch(/^urn:air:example\.com:[a-z]+:[a-z0-9._-]+$/);
             expect(entry.displayName.length).toBeGreaterThan(0);
             expect(entry.type).toContain('/');
-            expect(new URL(entry.url).protocol).toBe('https:');
-            expect(entry.representativeQueries.length).toBeGreaterThanOrEqual(2);
-            expect(entry.representativeQueries.length).toBeLessThanOrEqual(5);
+            expect(new URL(entry.url ?? '').protocol).toBe('https:');
+            expect(entry.representativeQueries?.length).toBeGreaterThanOrEqual(2);
+            expect(entry.representativeQueries?.length).toBeLessThanOrEqual(5);
         }
 
         expect(
@@ -41,17 +41,17 @@ describe('ARD manifest', () => {
             manifest.entries.some(
                 entry =>
                     entry.type === 'application/ai-skill+md'
-                    && entry.url.includes('/.well-known/agent-skills/')
+                    && entry.url?.includes('/.well-known/agent-skills/')
             )
         ).toBe(true);
-        expect(manifest.entries.find(entry => entry.url.endsWith('/v1'))?.type).toBe(
+        expect(manifest.entries.find(entry => entry.url?.endsWith('/v1'))?.type).toBe(
             'text/markdown'
         );
-        expect(manifest.entries.find(entry => entry.url.endsWith('/v1/cv'))?.type).toBe(
+        expect(manifest.entries.find(entry => entry.url?.endsWith('/v1/cv'))?.type).toBe(
             'application/json'
         );
-        expect(manifest.entries.some(entry => entry.url.endsWith('/v1/docs'))).toBe(false);
-        expect(localEntries().some(entry => entry.url.includes('{'))).toBe(false);
+        expect(manifest.entries.some(entry => entry.url?.endsWith('/v1/docs'))).toBe(false);
+        expect(localEntries().some(entry => entry.url?.includes('{'))).toBe(false);
         expect(operations.length).toBeGreaterThan(0);
     });
 });

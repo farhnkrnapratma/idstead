@@ -15,7 +15,7 @@ const STORAGE_PATH = `posts/${POST_UUID}/0f8fad5b-d9cb-469f-a165-70867728950e.md
 
 type Row = Record<string, unknown> & { public_id: string; slug: string; published: boolean };
 
-const row = (overrides: Partial<Row>): Row => ({
+const row = (overrides: Partial<Row>) => ({
     id: POST_UUID,
     public_id: ID_A,
     title: 'Hello',

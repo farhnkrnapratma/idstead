@@ -1,5 +1,5 @@
 import { normalizeArdEntry, type ArdEntry } from '#lib/server/ard.ts';
-import { crawlArdSources } from '#lib/server/ardIngestion.ts';
+import { crawlArdSources, type ArdFetcher } from '#lib/server/ardIngestion.ts';
 import type { ArdIndexStore } from '@idstead/data';
 
 const INDEX_TTL_MS = 5 * 60 * 1000;
@@ -29,7 +29,7 @@ function normalizedEntries(value: unknown): ArdEntry[] {
 export async function loadArdIndex(
     siteUrl: string,
     store: ArdIndexStore,
-    fetcher: typeof fetch = fetch,
+    fetcher: ArdFetcher = fetch,
     cache: ArdIndexCache = defaultCache,
     now: () => number = Date.now
 ): Promise<ArdEntry[]> {

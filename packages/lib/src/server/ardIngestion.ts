@@ -7,7 +7,7 @@ const MAX_REDIRECTS = 3;
 const FETCH_TIMEOUT_MS = 5000;
 const ARD_MANIFEST_PATH = '/.well-known/ard.json';
 
-type ArdFetcher = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+export type ArdFetcher = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 
 interface ArdSource {
     url: string;
