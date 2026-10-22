@@ -6,7 +6,7 @@ export interface InstanceConfig {
         newsletterQueue: string;
         rateLimitNamespaces: { web: number; admin: number; api: number };
     };
-    jobs: { cron: string };
+    jobs: { cron: string; hourlyCron: string };
 }
 
 export class InstanceConfigError extends Error {}
@@ -88,8 +88,16 @@ export function resolveInstanceConfig(value: unknown): InstanceConfig {
                 admin: namespace(namespaces.admin, 'cloudflare.rateLimitNamespaces.admin', 1003)
             }
         },
-        jobs: { cron: text(jobs.cron, 'jobs.cron', CRON, '17 3 * * *') }
+        jobs: jobSchedules(jobs)
     };
+}
+
+function jobSchedules(jobs: Raw): InstanceConfig['jobs'] {
+    const cron = text(jobs.cron, 'jobs.cron', CRON, '17 3 * * *');
+    const hourlyCron = text(jobs.hourlyCron, 'jobs.hourlyCron', CRON, '37 * * * *');
+    if (cron === hourlyCron)
+        throw new InstanceConfigError('jobs.cron and jobs.hourlyCron must be different.');
+    return { cron, hourlyCron };
 }
 
 export function instanceVariables(config: InstanceConfig): Record<string, string> {
@@ -107,6 +115,7 @@ export function instanceVariables(config: InstanceConfig): Record<string, string
         'rateLimitNamespaces.web': String(config.cloudflare.rateLimitNamespaces.web),
         'rateLimitNamespaces.admin': String(config.cloudflare.rateLimitNamespaces.admin),
         'rateLimitNamespaces.api': String(config.cloudflare.rateLimitNamespaces.api),
-        'jobs.cron': config.jobs.cron
+        'jobs.cron': config.jobs.cron,
+        'jobs.hourlyCron': config.jobs.hourlyCron
     };
 }

@@ -55,7 +55,7 @@ Details and the flow diagram: [architecture/6](003-architecture/006-admin-login-
 - **Error scrubbing:** API error messages that mention database internals are replaced with a generic message (`apiEnvelope.ts`).
 - **IP privacy:**
     - Public endpoints store IPs only as SHA-256 hashes salted with `IP_SALT`. This covers views, reports, feedback and subscribers.
-    - The admin activity log (`packages/lib/src/server/activityLog.ts`) stores the raw `ip` **and** `ip_hash` for admin actions and login attempts. Those rows are pruned daily by `pg_cron` `prune-activity-log`.
+    - The admin activity log (`packages/lib/src/server/activityLog.ts`) stores the raw `ip` **and** `ip_hash` for admin actions and login attempts. Those rows are pruned after 30 days by the jobs Worker's daily cron.
         - Sentry request data is filtered by `privateRequestIntegrations()` (`packages/lib/src/server/sentryPrivacy.ts`).
 
 ## Content rendering

@@ -23,7 +23,16 @@ describe('resolveInstanceConfig', () => {
             jobs: 'idstead-jobs'
         });
         expect(config.cloudflare.newsletterQueue).toBe('idstead-newsletter');
-        expect(config.jobs.cron).toBe('17 3 * * *');
+        expect(config.jobs).toEqual({ cron: '17 3 * * *', hourlyCron: '37 * * * *' });
+    });
+
+    test('rejects an hourly schedule equal to the daily one', () => {
+        expect(() =>
+            resolveInstanceConfig({
+                domains: { site: 'example.org' },
+                jobs: { cron: '0 * * * *', hourlyCron: '0 * * * *' }
+            })
+        ).toThrow('jobs.hourlyCron');
     });
 
     test('rejects invalid domains, names and queue names', () => {

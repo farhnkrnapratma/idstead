@@ -12,7 +12,7 @@ How new-post emails reach subscribers, and what to do when they don't. The full 
     - Every email links to `/unsubscribe?token={unsubscribe_token}`. Opening the link does not unsubscribe: `GET` stores the token in a short-lived httpOnly cookie and shows a confirm button, and the page's form action (`POST /unsubscribe`) sets `unsubscribed`. Link scanners that prefetch the URL therefore cannot unsubscribe anyone.
     - `POST /api/internal/subscribe/unsubscribe-request` emails a fresh link.
     - Mails carry `List-Unsubscribe: <…/unsubscribe?token=…>` without `List-Unsubscribe-Post`. SvelteKit's CSRF check rejects cross-site form POSTs that carry no matching `Origin`, so a one-click (RFC 8058) POST from a mail provider would fail; mail clients open the confirm page instead.
-4. **Pruning:** `pg_cron` job `prune-stale-subscriptions` runs at `17 3 * * *`.
+4. **Pruning:** the jobs Worker's daily cron (`jobs.cron`, `17 3 * * *`) deletes pending subscriptions older than 7 days.
 
 ## Delivery
 

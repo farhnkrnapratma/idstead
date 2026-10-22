@@ -31,5 +31,6 @@
             { "queue": "{{newsletterDeadLetterQueue}}", "max_batch_size": 10, "max_retries": 0 }
         ]
     },
-    "triggers": { "crons": ["{{jobs.cron}}"] }
+    "vars": { "HOURLY_CRON": "{{jobs.hourlyCron}}" },
+    "triggers": { "crons": ["{{jobs.cron}}", "{{jobs.hourlyCron}}"] }
 }
