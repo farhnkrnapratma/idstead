@@ -9,7 +9,7 @@ The columns show which apps read each variable, from a code search on 2026-10-18
 | `PUBLIC_SUPABASE_URL` | public | ✓ | ✓ | ✓ | ✓ | Supabase project URL |
 | `PUBLIC_SUPABASE_PUBLISHABLE_KEY` | public | ✓ | ✓ | ✓ | ✓ | anon/publishable key (RLS applies) |
 | `SUPABASE_SERVICE_ROLE_KEY` | **secret** | ✓ | ✓ | – | ✓ | service-role client that bypasses RLS. Server-only. The API worker never has it. |
-| `DATA_BACKEND` | var, optional | ✓ | ✓ | ✓ | ✓ | data adapter that `dataStores()` (`server/data.ts`) builds every store from. `supabase` is the default and, for now, the only value; anything else throws. |
+| `DATA_BACKEND` | var, optional | ✓ | ✓ | ✓ | ✓ | data adapter that `dataStores()` (`server/data.ts`) builds every store from: `supabase` (the default) or `d1`, which reads the `DB` binding for data and the `ASSET_BUCKET` binding for post content. Anything else throws. |
 | `WRITES_FROZEN` | var, optional | ✓ | ✓ | – | ✓ | `1` or `true` pauses writes for maintenance: `POST`, `PUT`, `PATCH` and `DELETE` requests under `/api/internal/**` answer `503 MAINTENANCE` with `Retry-After: 60`, the jobs Worker retries queue messages after 5 minutes and skips its cron run. Reads keep working. |
 | `PUBLIC_API_BASE_URL` | public | ✓ | ✓ | – | – | API origin for links, CSP `connect-src` and the OpenAPI mirror. Required: `apiBaseUrl()` throws without it. |
 | `PUBLIC_SITE_URL` | public | – | ✓ | – | ✓ | public site origin, used when the author profile has no site URL: for newsletter links (`configuredSiteUrl` in `server/siteUrl.ts`, which throws without it), for the site links in the CV verification bundle (`adminCv.ts`), and for the generated website banner in admin |

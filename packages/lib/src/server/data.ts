@@ -33,13 +33,45 @@ import {
     type PostRenderStore,
     type Repositories,
     type SiteDataStore,
-    type Writers
+    type Writers,
+    createD1ActivityLog,
+    createD1AdminActivityStore,
+    createD1AdminAuthorStore,
+    createD1AdminNotifier,
+    createD1AdminPostStore,
+    createD1AdminSettingsStore,
+    createD1ArdIndexStore,
+    createD1AuthorRepository,
+    createD1AuthorWriter,
+    createD1BlogRepository,
+    createD1CommentRepository,
+    createD1CommentWriter,
+    createD1CvDocumentStore,
+    createD1FeedbackRecorder,
+    createD1IdentityVersionReader,
+    createD1LegalPageRepository,
+    createD1LegalPageWriter,
+    createD1LoginLockoutStore,
+    createD1MaintenanceStore,
+    createD1NewsletterStore,
+    createD1OpenPgpKeyStore,
+    createD1PostCleanupStore,
+    createD1PostOperationStore,
+    createD1RenderStore,
+    createD1SiteDataStore,
+    createD1SubscriberRepository,
+    createD1ViewRecorder,
+    type ContentBucket,
+    type D1Like
 } from '@idstead/data';
 import * as privateEnv from '$app/env/private';
 import { supabase } from '#lib/supabase.ts';
 import { cdnBaseUrl } from '#lib/cdn.ts';
 import { getSupabaseAdminClient } from './supabaseAdmin';
 import { getSupabaseUserClient } from './supabaseUser';
+import { bearerToken } from './adminAuth';
+import { lazyBucket, lazyD1 } from './lazyBindings';
+import { workerBinding } from './workerEnv';
 
 export interface PublicStores extends Repositories {
     identity: IdentityVersionReader;
@@ -96,8 +128,99 @@ function dataBackend(platform: unknown) {
         ?? process.env.DATA_BACKEND
         ?? 'supabase';
     const backend = String(configured).trim() || 'supabase';
-    if (backend !== 'supabase') throw new DataBackendError(backend);
+    if (backend !== 'supabase' && backend !== 'd1') throw new DataBackendError(backend);
     return backend;
+}
+
+function binding<T>(platform: unknown, name: string): () => Promise<T> {
+    let loaded: Promise<T> | undefined;
+    return () =>
+        (loaded ??= (async () => {
+            const value = (platform as PlatformEnv)?.env?.[name] ?? (await workerBinding(name));
+            if (!value) throw new Error(`The ${name} binding is not configured.`);
+            return value as T;
+        })());
+}
+
+interface D1Backend {
+    db: D1Like;
+    bucket: ContentBucket;
+}
+
+function d1Repositories({ db, bucket }: D1Backend, options: DataStoreOptions = {}): Repositories {
+    return {
+        author: createD1AuthorRepository(db, { fetch: options.fetch }),
+        blog: createD1BlogRepository(db, bucket, {
+            ...(options.bannerUrls === false ? {} : { cdnBase: cdnBaseUrl() })
+        }),
+        comments: createD1CommentRepository(db),
+        legal: createD1LegalPageRepository(db)
+    };
+}
+
+function d1ServiceStores(backend: D1Backend): ServiceStores {
+    const { db, bucket } = backend;
+    return {
+        ...d1Repositories(backend, { bannerUrls: false }),
+        writers: {
+            comments: createD1CommentWriter(db),
+            views: createD1ViewRecorder(db),
+            subscribers: createD1SubscriberRepository(db),
+            newsletter: createD1NewsletterStore(db),
+            feedback: createD1FeedbackRecorder(db),
+            notifications: createD1AdminNotifier(db)
+        },
+        identity: createD1IdentityVersionReader(db),
+        ard: createD1ArdIndexStore(db),
+        lockout: createD1LoginLockoutStore(db),
+        maintenance: createD1MaintenanceStore(db),
+        renders: createD1RenderStore(db, bucket),
+        activityLog: createD1ActivityLog(db),
+        adminActivity: createD1AdminActivityStore(db),
+        adminSettings: createD1AdminSettingsStore(db),
+        adminAuthor: createD1AdminAuthorStore(db),
+        adminPosts: {
+            posts: createD1AdminPostStore(db, bucket),
+            operations: createD1PostOperationStore(db, bucket),
+            cleanup: createD1PostCleanupStore(db, bucket)
+        },
+        cvDocuments: createD1CvDocumentStore(db),
+        openPgpKeys: createD1OpenPgpKeyStore(db),
+        siteData: createD1SiteDataStore(db, bucket)
+    };
+}
+
+function d1Stores(platform: unknown, options: DataStoreOptions): DataStores {
+    const backend: D1Backend = {
+        db: lazyD1(binding<D1Like>(platform, 'DB')),
+        bucket: lazyBucket(binding<ContentBucket>(platform, 'ASSET_BUCKET'))
+    };
+    let publicStores: PublicStores | undefined;
+    let serviceStores: ServiceStores | undefined;
+    let sessionStores: SessionStores | null | undefined;
+    return {
+        get public() {
+            return (publicStores ??= {
+                ...d1Repositories(backend, options),
+                identity: createD1IdentityVersionReader(backend.db)
+            });
+        },
+        get service() {
+            return (serviceStores ??= d1ServiceStores(backend));
+        },
+        get session() {
+            if (sessionStores === undefined)
+                sessionStores =
+                    options.request && bearerToken(options.request) ?
+                        {
+                            authorWriter: createD1AuthorWriter(backend.db),
+                            legalWriter: createD1LegalPageWriter(backend.db),
+                            adminActivity: createD1AdminActivityStore(backend.db)
+                        }
+                    :   null;
+            return sessionStores;
+        }
+    };
 }
 
 function supabasePublicStores(db: SupabaseClient, options: DataStoreOptions): PublicStores {
@@ -139,7 +262,7 @@ function supabaseSessionStores(db: SupabaseClient): SessionStores {
 }
 
 export function dataStores(platform?: unknown, options: DataStoreOptions = {}): DataStores {
-    dataBackend(platform);
+    if (dataBackend(platform) === 'd1') return d1Stores(platform, options);
     let publicStores: PublicStores | undefined;
     let serviceStores: ServiceStores | null | undefined;
     let sessionStores: SessionStores | null | undefined;
