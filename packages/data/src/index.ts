@@ -74,6 +74,14 @@ export { createSupabaseMaintenanceStore } from './supabase/maintenance';
 export type { ContentBucket, D1Like } from './d1/client';
 export { createD1BlogRepository, createD1CommentRepository, createD1RenderStore } from './d1/blog';
 export { createD1CommentWriter, createD1ViewRecorder } from './d1/writes';
+export { createD1AuthorRepository } from './d1/author';
+export { createD1LegalPageRepository, createD1LegalPageWriter } from './d1/legal';
+export {
+    createD1ArdIndexStore,
+    createD1IdentityVersionReader,
+    createD1LoginLockoutStore,
+    createD1MaintenanceStore
+} from './d1/support';
 export {
     createSupabaseAdminPostStore,
     createSupabasePostCleanupStore,
