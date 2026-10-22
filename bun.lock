@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "www",
+      "name": "idstead",
       "devDependencies": {
         "@aws-sdk/client-s3": "^3.1152.0",
         "@commitlint/cli": "^21.2.4",
