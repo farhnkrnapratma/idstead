@@ -8,6 +8,7 @@ import { refreshPostRenders } from '#lib/server/postRender.ts';
 import { isRenderRefreshMessage } from '#lib/server/renderQueue.ts';
 import { mdrsResolvers } from '#lib/server/mdrsData.ts';
 import { siteRenderOptions } from '#lib/mdrsOptions.ts';
+import { writesFrozen } from '#lib/server/writeFreeze.ts';
 
 export interface Env {
     PUBLIC_SITE_URL?: string;
@@ -103,6 +104,10 @@ export default Sentry.withSentry<Env>(
                 batch.messages.forEach(deadLetter);
                 return;
             }
+            if (writesFrozen({ env })) {
+                batch.messages.forEach(message => message.retry({ delaySeconds: 300 }));
+                return;
+            }
             const refreshes = batch.messages.filter(message =>
                 isRenderRefreshMessage(message.body)
             );
@@ -127,6 +132,7 @@ export default Sentry.withSentry<Env>(
             );
         },
         async scheduled(_controller, env, ctx) {
+            if (writesFrozen({ env })) return;
             ctx.waitUntil(cleanup(env));
         }
     } satisfies ExportedHandler<Env>

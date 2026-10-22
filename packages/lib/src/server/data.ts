@@ -33,6 +33,7 @@ import {
     type SiteDataStore,
     type Writers
 } from '@idstead/data';
+import * as privateEnv from '$app/env/private';
 import { supabase } from '#lib/supabase.ts';
 import { cdnBaseUrl } from '#lib/cdn.ts';
 import { getSupabaseAdminClient } from './supabaseAdmin';
@@ -87,7 +88,10 @@ type PlatformEnv = { env?: Record<string, unknown> } | undefined;
 
 function dataBackend(platform: unknown) {
     const configured =
-        (platform as PlatformEnv)?.env?.DATA_BACKEND ?? process.env.DATA_BACKEND ?? 'supabase';
+        (platform as PlatformEnv)?.env?.DATA_BACKEND
+        ?? (privateEnv as Record<string, string | undefined>).DATA_BACKEND
+        ?? process.env.DATA_BACKEND
+        ?? 'supabase';
     const backend = String(configured).trim() || 'supabase';
     if (backend !== 'supabase') throw new DataBackendError(backend);
     return backend;
