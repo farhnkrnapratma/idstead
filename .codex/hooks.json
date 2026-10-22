@@ -3,7 +3,7 @@
         "PreToolUse": [
             {
                 "matcher": "Bash",
-                "hooks": [{ "type": "command", "command": "$HOME/.local/bin/graphify hook-check" }]
+                "hooks": [{ "type": "command", "command": "graphify hook-check" }]
             }
         ]
     }
