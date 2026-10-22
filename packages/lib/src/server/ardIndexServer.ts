@@ -1,6 +1,7 @@
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import type { ArdEntry } from '#lib/server/ard.ts';
-import { loadArdIndex, type ArdIndexStore } from '#lib/server/ardIndex.ts';
+import { loadArdIndex } from '#lib/server/ardIndex.ts';
+import { createSupabaseArdIndexStore, type ArdIndexStore } from '@idstead/data';
 
 export class ArdIndexUnavailableError extends Error {
     constructor() {
@@ -28,25 +29,7 @@ export function ardIndexUnavailableResponse(): Response {
 function supabaseIndexStore(platform: unknown): ArdIndexStore {
     const client = getSupabaseAdminClient(platform);
     if (!client) throw new ArdIndexUnavailableError();
-
-    return {
-        async read(siteUrl) {
-            const { data, error } = await client
-                .from('db_ard_index')
-                .select('entries,indexed_at')
-                .eq('site_url', siteUrl)
-                .maybeSingle();
-            if (error) throw new Error('ARD index storage read failed.', { cause: error });
-            if (!data) return null;
-            return { entries: data.entries, indexedAt: data.indexed_at };
-        },
-        async write(siteUrl, entries, sources, indexedAt) {
-            const { error } = await client
-                .from('db_ard_index')
-                .upsert({ site_url: siteUrl, entries, sources, indexed_at: indexedAt });
-            if (error) throw new Error('ARD index storage write failed.', { cause: error });
-        }
-    };
+    return createSupabaseArdIndexStore(client);
 }
 
 export async function getArdIndexEntries(siteUrl: string, platform: unknown): Promise<ArdEntry[]> {

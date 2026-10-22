@@ -5,6 +5,7 @@ import { apiError } from '#lib/server/apiError.ts';
 import { blogAdmin } from '#lib/server/blogPostAuth.ts';
 import { bearerToken } from '#lib/server/adminAuth.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
+import { createSupabaseLoginLockoutStore } from '@idstead/data';
 import { boundedBody } from '#lib/server/blogPostInput.ts';
 import { passwordPolicyError } from '@idstead/domain/passwordPolicy.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
@@ -18,11 +19,12 @@ import { workerBinding, type RateLimit } from '#lib/server/workerEnv.ts';
 export const POST: RequestHandler = async ({ request, url, platform, fetch }) => {
     const db = getSupabaseAdminClient(platform);
     if (!db) return apiError(503, 'PASSWORD_UNAVAILABLE', 'Password changes are unavailable.');
+    const lockoutStore = createSupabaseLoginLockoutStore(db);
     const auth = await blogAdmin(request, url, db);
     if (auth.status)
         return apiError(auth.status, auth.code ?? 'PASSWORD_AUTH_REQUIRED', auth.message);
     const key = `password-change:${auth.actor}`;
-    const lockout = await checkLoginLockout(db, '', key);
+    const lockout = await checkLoginLockout(lockoutStore, '', key);
     if (!lockout.allowed)
         return apiError(
             429,
@@ -67,7 +69,7 @@ export const POST: RequestHandler = async ({ request, url, platform, fetch }) =>
         bindings?.PUBLIC_SUPABASE_PUBLISHABLE_KEY || env.PUBLIC_SUPABASE_PUBLISHABLE_KEY;
     if (!authUrl || !publicKey)
         return apiError(503, 'PASSWORD_UNAVAILABLE', 'Password changes are unavailable.');
-    await recordFailedLogin(db, '', key);
+    await recordFailedLogin(lockoutStore, '', key);
     try {
         const response = await fetch(
             `${authUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '')}/auth/v1/user`,
@@ -101,7 +103,7 @@ export const POST: RequestHandler = async ({ request, url, platform, fetch }) =>
                     || 'Password could not be changed. Check your current password or sign in again.'
             );
         }
-        await clearLoginAttempts(db, '', key);
+        await clearLoginAttempts(lockoutStore, '', key);
         await logActivity(
             {
                 actor: auth.actor,

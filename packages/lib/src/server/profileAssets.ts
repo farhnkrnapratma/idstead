@@ -1,6 +1,6 @@
 import * as publicEnv from '$app/env/public';
 import { getSupabaseAdminClient } from './supabaseAdmin';
-import { createSupabaseAdminAuthorStore } from '@idstead/data';
+import { createSupabaseAdminAuthorStore, createSupabaseIdentityVersionReader } from '@idstead/data';
 import { assetBucket, copyObject } from './r2';
 import { supabase } from '#lib/supabase.ts';
 import {
@@ -24,8 +24,8 @@ const contentTypes: Record<string, string> = {
     png: 'image/png'
 };
 
-function versionColumn(name: string) {
-    return name in bannerSizes ? 'banner_version' : 'avatar_version';
+function isBanner(name: string) {
+    return name in bannerSizes;
 }
 
 function assetDimensions(name: string) {
@@ -160,26 +160,22 @@ export async function serveIdentityAsset(
     const missing = () =>
         new Response(null, { status: 404, headers: { 'Cache-Control': 'no-store' } });
     if (!assetNames.includes(name) || url.searchParams.has('v')) return missing();
-    const column = versionColumn(name);
-    const { data, error } = await supabase
-        .from('db_profiles')
-        .select(column)
-        .order('created_at')
-        .limit(1)
-        .maybeSingle();
-    if (error)
+    const versions = await createSupabaseIdentityVersionReader(supabase)
+        .current()
+        .catch(() => null);
+    if (!versions)
         return new Response('Image metadata unavailable.', {
             status: 503,
             headers: { 'Cache-Control': 'no-store' }
         });
-    const version = (data as Record<string, string | null> | null)?.[column] ?? null;
+    const version = isBanner(name) ? versions.banner : versions.avatar;
     if (!version) {
         const base = String(
             platform?.env?.PUBLIC_CDN_BASE_URL ?? publicEnv.PUBLIC_CDN_BASE_URL ?? ''
         ).replace(/\/+$/, '');
         if (
             !base
-            || column === 'banner_version'
+            || isBanner(name)
             || name === 'favicon.svg'
             || (name === 'avatar.png' && url.pathname !== '/hero.png')
         )

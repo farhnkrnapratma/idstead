@@ -1,3 +1,5 @@
+import type { LoginLockoutStore } from '@idstead/data';
+
 const MAX_ATTEMPTS = 5;
 const WINDOW_MS = 15 * 60 * 1000;
 const MAX_TRACKED_KEYS = 10000;
@@ -5,13 +7,6 @@ const MAX_TRACKED_KEYS = 10000;
 interface LockoutResult {
     allowed: boolean;
     retryAfterSeconds: number;
-}
-
-interface LockoutDb {
-    rpc: (
-        fn: string,
-        args: Record<string, unknown>
-    ) => PromiseLike<{ data: unknown; error: unknown }>;
 }
 
 interface AttemptRecord {
@@ -88,36 +83,47 @@ async function hashKeys(keys: string[], salt: string): Promise<string[]> {
     );
 }
 
-async function sharedCall(db: LockoutDb | null, fn: string, keys: string[], salt: string) {
-    if (!db || !keys.some(Boolean)) return { ok: false as const };
+async function sharedCall<T>(
+    store: LoginLockoutStore | null,
+    keys: string[],
+    salt: string,
+    run: (store: LoginLockoutStore, hashed: string[]) => Promise<T>
+) {
+    if (!store || !keys.some(Boolean)) return { ok: false as const };
     try {
-        const { data, error } = await db.rpc(fn, { p_keys: await hashKeys(keys, salt) });
-        if (error) throw error;
-        return { ok: true as const, data };
+        return { ok: true as const, data: await run(store, await hashKeys(keys, salt)) };
     } catch (error) {
-        console.error(`Login lockout ${fn} failed; using the in-memory counter:`, error);
+        console.error('Login lockout storage failed; using the in-memory counter:', error);
         return { ok: false as const };
     }
 }
 
 export async function checkLoginLockout(
-    db: LockoutDb | null,
+    store: LoginLockoutStore | null,
     salt: string,
     ...keys: string[]
 ): Promise<LockoutResult> {
-    const shared = await sharedCall(db, 'db_login_lockout', keys, salt);
-    if (!shared.ok || typeof shared.data !== 'number') return memoryLockout(keys);
+    const shared = await sharedCall(store, keys, salt, (s, hashed) => s.retryAfter(hashed));
+    if (!shared.ok) return memoryLockout(keys);
     return shared.data > 0 ?
             { allowed: false, retryAfterSeconds: shared.data }
         :   { allowed: true, retryAfterSeconds: 0 };
 }
 
-export async function recordFailedLogin(db: LockoutDb | null, salt: string, ...keys: string[]) {
-    if (!(await sharedCall(db, 'db_login_record_failure', keys, salt)).ok)
-        memoryRecordFailure(keys);
+export async function recordFailedLogin(
+    store: LoginLockoutStore | null,
+    salt: string,
+    ...keys: string[]
+) {
+    const shared = await sharedCall(store, keys, salt, (s, hashed) => s.recordFailure(hashed));
+    if (!shared.ok) memoryRecordFailure(keys);
 }
 
-export async function clearLoginAttempts(db: LockoutDb | null, salt: string, ...keys: string[]) {
+export async function clearLoginAttempts(
+    store: LoginLockoutStore | null,
+    salt: string,
+    ...keys: string[]
+) {
     memoryClear(keys);
-    await sharedCall(db, 'db_login_clear', keys, salt);
+    await sharedCall(store, keys, salt, (s, hashed) => s.clear(hashed));
 }

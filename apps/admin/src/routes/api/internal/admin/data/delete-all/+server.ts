@@ -3,6 +3,7 @@ import type { RequestHandler } from './$types';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
+import { createSupabaseLoginLockoutStore } from '@idstead/data';
 import { requireAdminAuth, deleteCvFile } from '#lib/server/adminCv.ts';
 import { removeAssets, removeCanonicalIdentity } from '#lib/server/profileAssets.ts';
 import { syncPostAssets } from '#lib/server/blogPostAssets.ts';
@@ -30,13 +31,14 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
 
     const db = getSupabaseAdminClient(platform);
     if (!db) return apiError(503, 'DATA_STORAGE_UNAVAILABLE', 'Data storage is unavailable.');
+    const lockoutStore = createSupabaseLoginLockoutStore(db);
 
     const token = bearerToken(request);
     const actorEmail = token ? (await db.auth.getUser(token)).data.user?.email : null;
     if (!actorEmail) return apiError(401, 'DATA_DELETE_AUTH_REQUIRED', 'Admin session is invalid.');
 
     const lockoutKey = `delete-all:${actorEmail}`;
-    if (!(await checkLoginLockout(db, '', lockoutKey)).allowed)
+    if (!(await checkLoginLockout(lockoutStore, '', lockoutKey)).allowed)
         return apiError(
             429,
             'DATA_DELETE_RATE_LIMITED',
@@ -57,7 +59,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
 
     const verifier = getSupabaseUserClient(request, platform);
     if (!verifier) return apiError(503, 'DATA_STORAGE_UNAVAILABLE', 'Data storage is unavailable.');
-    await recordFailedLogin(db, '', lockoutKey);
+    await recordFailedLogin(lockoutStore, '', lockoutKey);
     const { error: passwordError } = await verifier.auth.signInWithPassword({
         email: actorEmail,
         password,
@@ -66,7 +68,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     if (passwordError?.code === 'captcha_failed')
         return apiError(403, 'DATA_DELETE_TURNSTILE_FAILED', 'Verification challenge failed.');
     if (passwordError) return apiError(401, 'DATA_DELETE_PASSWORD_INVALID', 'Incorrect password.');
-    await clearLoginAttempts(db, '', lockoutKey);
+    await clearLoginAttempts(lockoutStore, '', lockoutKey);
 
     const siteData = createSupabaseSiteDataStore(db);
     let plan;

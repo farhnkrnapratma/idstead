@@ -1,22 +1,8 @@
 import { normalizeArdEntry, type ArdEntry } from '#lib/server/ard.ts';
 import { crawlArdSources } from '#lib/server/ardIngestion.ts';
+import type { ArdIndexStore } from '@idstead/data';
 
 const INDEX_TTL_MS = 5 * 60 * 1000;
-
-interface StoredArdIndex {
-    entries: unknown;
-    indexedAt: string;
-}
-
-export interface ArdIndexStore {
-    read(siteUrl: string): Promise<StoredArdIndex | null>;
-    write(
-        siteUrl: string,
-        entries: ArdEntry[],
-        sources: string[],
-        indexedAt: string
-    ): Promise<void>;
-}
 
 export interface ArdIndexCache {
     entries: Map<string, { entries: ArdEntry[]; expiresAt: number }>;

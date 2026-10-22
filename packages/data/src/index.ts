@@ -38,6 +38,9 @@ import {
 
 export type * from './activity';
 export type * from './adminAuthor';
+export type * from './ard';
+export type * from './identity';
+export type * from './lockout';
 export type * from './adminPosts';
 export type * from './cvDocuments';
 export type * from './legal';
@@ -63,6 +66,9 @@ export { createSupabaseAdminAuthorStore, createSupabaseAuthorWriter };
 export { createSupabaseCvDocumentStore, createSupabaseOpenPgpKeyStore };
 export { createSupabaseLegalPageRepository, createSupabaseLegalPageWriter };
 export { createSupabaseSiteDataStore };
+export { createSupabaseArdIndexStore } from './supabase/ard';
+export { createSupabaseIdentityVersionReader } from './supabase/identity';
+export { createSupabaseLoginLockoutStore } from './supabase/lockout';
 export {
     createSupabaseAdminPostStore,
     createSupabasePostCleanupStore,
