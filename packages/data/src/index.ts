@@ -41,6 +41,7 @@ export type * from './adminAuthor';
 export type * from './ard';
 export type * from './identity';
 export type * from './lockout';
+export type * from './maintenance';
 export type * from './adminPosts';
 export type * from './cvDocuments';
 export type * from './legal';
@@ -69,6 +70,7 @@ export { createSupabaseSiteDataStore };
 export { createSupabaseArdIndexStore } from './supabase/ard';
 export { createSupabaseIdentityVersionReader } from './supabase/identity';
 export { createSupabaseLoginLockoutStore } from './supabase/lockout';
+export { createSupabaseMaintenanceStore } from './supabase/maintenance';
 export {
     createSupabaseAdminPostStore,
     createSupabasePostCleanupStore,

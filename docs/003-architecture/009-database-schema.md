@@ -200,7 +200,7 @@ erDiagram
 | `db_post_operations` | Idempotent post saves keyed by `operationId`: `state`, `request_hash`, `expected_revision`, `result`. |
 | `db_post_storage_cleanup` | Markdown files queued for deletion from Storage (each removed together with its `.render.json`), with `cleanup_attempts`. |
 | `db_subscribers` | Newsletter subscribers: `email`, `status` (pending, active, unsubscribed), `confirm_token_hash`, `unsubscribe_token`, `ip_hash`. |
-| `db_activity_log` | Admin audit log: `actor`, `action`, `category`, `entity_id`, `summary`, `details`, `ip_hash`. Pruned by `pg_cron` `prune-activity-log`. |
+| `db_activity_log` | Admin audit log: `actor`, `action`, `category`, `entity_id`, `summary`, `details`, `ip_hash`. Rows older than 30 days are pruned by the jobs Worker's daily cron. |
 | `db_login_failures` | Shared admin login lockout: `key_hash` (salted SHA-256 of `ip:`, `email-ip:` or `password-change:` keys), `failed_at`. RLS on with no policies; reached only through `service_role` RPCs. Pruned by `pg_cron` `prune-login-failures`. |
 | `db_admin_settings` | Per-user admin settings (`user_id`, `settings jsonb`). |
 | `db_notification_clear_operations` | Idempotent "clear notifications" operations. |
@@ -220,7 +220,7 @@ erDiagram
 - **Admin dashboard:** `db_admin_*`, `db_views_timeseries`, `db_activity_log_list`, `db_activity_log_export`, `db_clear_all_data`, `db_subscriber_stats()` (a **function**, not a table).
 - **Profile identity save:** `db_save_profile_identity(p_profile, p_identity)` (`service_role` only). `p_identity` is `{version, assets}` for one `kind = 'identity'` row whose assets must match `db_identity_asset_names()` exactly. It points `avatar_version` and `banner_version` at that row and retires the previous rows. The `db_profile_identity_kind` trigger rejects a profile whose two columns differ while either references an `identity` row.
 - **`safeupdate`:** PostgREST runs with `safeupdate`, so every `UPDATE`/`DELETE` inside a function needs a `WHERE` clause. `tests/safeupdate.test.ts` checks this.
-- **`pg_cron`:** `prune-stale-subscriptions` (`17 3 * * *`), `prune-activity-log` (`31 3 * * *`) and `prune-login-failures` (`37 * * * *`).
+- **Prunes** (`service_role` only): `db_prune_stale_subscriptions`, `db_prune_activity_log` and `db_prune_login_failures`, called by the jobs Worker's cron through `MaintenanceStore`.
 
 ## Maintenance
 

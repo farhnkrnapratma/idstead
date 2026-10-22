@@ -14,6 +14,7 @@ export interface Env {
     PUBLIC_SITE_URL?: string;
     PUBLIC_SENTRY_DSN?: string;
     PUBLIC_SENTRY_ENVIRONMENT?: string;
+    HOURLY_CRON?: string;
     [key: string]: unknown;
 }
 
@@ -75,12 +76,20 @@ async function refreshRenders(env: Env) {
     return result;
 }
 
+async function hourly(env: Env) {
+    const service = dataStores({ env }).service;
+    if (!service) return;
+    await service.maintenance.pruneLoginFailures().catch(error => Sentry.captureException(error));
+}
+
 async function cleanup(env: Env) {
     const service = dataStores({ env }).service;
     const results = await Promise.allSettled([
         service ?
             cleanupBlogAssets(service.adminPosts, { env } as App.Platform)
         :   Promise.resolve(null),
+        service ? service.maintenance.pruneStaleSubscriptions() : Promise.resolve(null),
+        service ? service.maintenance.pruneActivityLog() : Promise.resolve(null),
         cleanupAssets({ env } as App.Platform),
         refreshRenders(env)
     ]);
@@ -131,9 +140,9 @@ export default Sentry.withSentry<Env>(
                     )
             );
         },
-        async scheduled(_controller, env, ctx) {
+        async scheduled(controller, env, ctx) {
             if (writesFrozen({ env })) return;
-            ctx.waitUntil(cleanup(env));
+            ctx.waitUntil(controller.cron === env.HOURLY_CRON ? hourly(env) : cleanup(env));
         }
     } satisfies ExportedHandler<Env>
 );

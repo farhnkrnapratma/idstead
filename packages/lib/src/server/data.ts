@@ -11,6 +11,7 @@ import {
     createSupabaseIdentityVersionReader,
     createSupabaseLegalPageWriter,
     createSupabaseLoginLockoutStore,
+    createSupabaseMaintenanceStore,
     createSupabaseOpenPgpKeyStore,
     createSupabaseRenderStore,
     createSupabaseRepositories,
@@ -27,6 +28,7 @@ import {
     type IdentityVersionReader,
     type LegalPageWriter,
     type LoginLockoutStore,
+    type MaintenanceStore,
     type OpenPgpKeyStore,
     type PostRenderStore,
     type Repositories,
@@ -48,6 +50,7 @@ export interface ServiceStores extends Repositories {
     identity: IdentityVersionReader;
     ard: ArdIndexStore;
     lockout: LoginLockoutStore;
+    maintenance: MaintenanceStore;
     renders: PostRenderStore;
     activityLog: ActivityLog;
     adminActivity: AdminActivityStore;
@@ -114,6 +117,7 @@ function supabaseServiceStores(db: SupabaseClient): ServiceStores {
         identity: createSupabaseIdentityVersionReader(db),
         ard: createSupabaseArdIndexStore(db),
         lockout: createSupabaseLoginLockoutStore(db),
+        maintenance: createSupabaseMaintenanceStore(db),
         renders: createSupabaseRenderStore(db),
         activityLog: createSupabaseActivityLog(db),
         adminActivity: createSupabaseAdminActivityStore(db),

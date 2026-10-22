@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { createSupabaseArdIndexStore } from '../packages/data/src/supabase/ard.ts';
 import { createSupabaseIdentityVersionReader } from '../packages/data/src/supabase/identity.ts';
 import { createSupabaseLoginLockoutStore } from '../packages/data/src/supabase/lockout.ts';
+import { createSupabaseMaintenanceStore } from '../packages/data/src/supabase/maintenance.ts';
 import { DataError } from '../packages/data/src/errors.ts';
 import { fakeSupabase, type Row } from './support/fakeSupabase.ts';
 
@@ -88,5 +89,50 @@ describe('Supabase login lockout adapter', () => {
             lockoutDb(0, { message: 'offline' }).store.recordFailure(['k'])
         ).rejects.toThrow(DataError);
         await expect(lockoutDb('soon').store.retryAfter(['k'])).rejects.toThrow(DataError);
+    });
+});
+
+describe('Supabase maintenance adapter', () => {
+    test('runs each prune function and returns the removed row count', async () => {
+        const calls: string[] = [];
+        const prune = (fn: string, removed: unknown) => () => {
+            calls.push(fn);
+            return { data: removed, error: null };
+        };
+        const { db } = fakeSupabase(
+            {},
+            {},
+            {
+                rpc: {
+                    db_prune_stale_subscriptions: prune('db_prune_stale_subscriptions', 2),
+                    db_prune_activity_log: prune('db_prune_activity_log', 40),
+                    db_prune_login_failures: prune('db_prune_login_failures', null)
+                }
+            }
+        );
+        const store = createSupabaseMaintenanceStore(db);
+        expect(await store.pruneStaleSubscriptions()).toBe(2);
+        expect(await store.pruneActivityLog()).toBe(40);
+        expect(await store.pruneLoginFailures()).toBe(0);
+        expect(calls).toEqual([
+            'db_prune_stale_subscriptions',
+            'db_prune_activity_log',
+            'db_prune_login_failures'
+        ]);
+    });
+
+    test('throws a DataError when a prune fails', async () => {
+        const { db } = fakeSupabase(
+            {},
+            {},
+            {
+                rpc: {
+                    db_prune_activity_log: () => ({ data: null, error: { message: 'offline' } })
+                }
+            }
+        );
+        await expect(createSupabaseMaintenanceStore(db).pruneActivityLog()).rejects.toThrow(
+            DataError
+        );
     });
 });

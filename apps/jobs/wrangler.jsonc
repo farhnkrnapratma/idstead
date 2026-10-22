@@ -31,5 +31,6 @@
             { "queue": "idstead-newsletter-dlq", "max_batch_size": 10, "max_retries": 0 }
         ]
     },
-    "triggers": { "crons": ["17 3 * * *"] }
+    "vars": { "HOURLY_CRON": "37 * * * *" },
+    "triggers": { "crons": ["17 3 * * *", "37 * * * *"] }
 }
