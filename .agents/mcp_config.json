@@ -8,8 +8,8 @@
         "svelte": { "type": "stdio", "command": "bunx", "args": ["-y", "@sveltejs/mcp"] },
         "sentry": {
             "type": "http",
-            "url": "https://mcp.sentry.dev/mcp/farhnkrnapratma/www",
-            "serverUrl": "https://mcp.sentry.dev/mcp/farhnkrnapratma/www"
+            "url": "https://mcp.sentry.dev/mcp/farhnkrnapratma/idstead",
+            "serverUrl": "https://mcp.sentry.dev/mcp/farhnkrnapratma/idstead"
         },
         "resend": {
             "type": "http",

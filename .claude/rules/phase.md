@@ -1,4 +1,4 @@
-Environment variables for this repo come from [Phase](https://phase.dev), not from local `.env` files. The project is linked through `.phase.json` (app `www`, default environment `Development`).
+Environment variables for this repo come from [Phase](https://phase.dev), not from local `.env` files. The project is linked through `.phase.json` (app `idstead`, default environment `Development`).
 
 ## Rules
 
