@@ -76,6 +76,8 @@ export { createD1BlogRepository, createD1CommentRepository, createD1RenderStore 
 export { createD1CommentWriter, createD1ViewRecorder } from './d1/writes';
 export { createD1AuthorRepository } from './d1/author';
 export { createD1AdminAuthorStore, createD1AuthorWriter } from './d1/adminAuthor';
+export { createD1CvDocumentStore, createD1OpenPgpKeyStore } from './d1/cvDocuments';
+export { createD1SiteDataStore } from './d1/siteData';
 export { createD1NewsletterStore, createD1SubscriberRepository } from './d1/subscribers';
 export {
     createD1ActivityLog,
