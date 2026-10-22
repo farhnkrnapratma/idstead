@@ -6,6 +6,7 @@
     "routes": "{{routes.api}}",
     "observability": { "enabled": true },
     "version_metadata": { "binding": "CF_VERSION_METADATA" },
+    "r2_buckets": [{ "binding": "ASSET_BUCKET", "bucket_name": "{{assetBucket}}", "remote": true }],
     "d1_databases": "{{d1Databases}}",
     "alias": { "$app/env/private": "./src/appEnv.ts", "$app/env/public": "./src/appEnv.ts" },
     "secrets": {
