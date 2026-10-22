@@ -1,5 +1,4 @@
 import type { NotificationSummary } from '#lib/adminWorkspace.ts';
-import { supabase } from '#lib/supabase.ts';
 import { adminActivityRequest } from '../adminActivityClient.ts';
 import type {
     AdminNotificationRow,
@@ -31,7 +30,7 @@ let pages = 1;
 let generation = 0;
 let requestId = 0;
 let controller: AbortController | undefined;
-let channel: ReturnType<typeof supabase.channel> | null = null;
+let subscribed = false;
 let timer: ReturnType<typeof setInterval> | undefined;
 
 let restored = false;
@@ -159,20 +158,9 @@ function refreshVisible() {
     if (document.visibilityState === 'visible') scheduleRefresh();
 }
 function subscribe() {
-    if (channel) return;
-    const session = generation;
-    channel = supabase
-        .channel('admin-notifications')
-        .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'db_admin_notifications' },
-            () => {
-                if (session === generation) scheduleRefresh();
-            }
-        )
-        .subscribe(status => {
-            if (status === 'SUBSCRIBED' && session === generation) void load();
-        });
+    if (subscribed) return;
+    subscribed = true;
+    void load();
     timer = setInterval(refreshVisible, 30000);
     document.addEventListener('visibilitychange', refreshVisible);
     window.addEventListener('focus', refreshVisible);
@@ -182,8 +170,7 @@ function unsubscribe() {
     generation++;
     requestId++;
     controller?.abort();
-    if (channel) void supabase.removeChannel(channel);
-    channel = null;
+    subscribed = false;
     clearInterval(timer);
     clearTimeout(scheduled);
     scheduled = undefined;

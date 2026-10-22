@@ -54,10 +54,6 @@ function originOf(value: string | undefined): string {
     }
 }
 
-function websocketOf(origin: string): string {
-    return origin.startsWith('https://') ? `wss://${origin.slice(8)}` : '';
-}
-
 export function buildContentSecurityPolicy(env: CspEnv = {}): string {
     const supabase = originOf(env.supabaseUrl);
     const sentry = originOf(env.sentryDsn);
@@ -75,7 +71,6 @@ export function buildContentSecurityPolicy(env: CspEnv = {}): string {
         'connect-src': [
             "'self'",
             supabase,
-            websocketOf(supabase),
             sentry,
             cdn,
             api,

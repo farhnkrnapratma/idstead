@@ -71,10 +71,9 @@ export default defineConfig(
             'no-restricted-syntax': [
                 'error',
                 {
-                    selector:
-                        "MemberExpression[object.name='supabase'][property.name!=/^(auth|channel|removeChannel)$/]",
+                    selector: "MemberExpression[object.name='supabase'][property.name!='auth']",
                     message:
-                        'Browser code uses the Supabase client for auth and realtime only; read and write data through a first-party endpoint backed by @idstead/data.'
+                        'Browser code uses the Supabase client for auth only; read and write data through a first-party endpoint backed by @idstead/data.'
                 }
             ]
         }
