@@ -2,7 +2,7 @@
     "version": "2",
     "phaseApp": "idstead",
     "appId": "e3a5c8b2-b3ad-4599-a7a6-1741607a325f",
-    "defaultEnv": "Development",
+    "defaultEnv": "development",
     "envId": "da9a4d11-7a14-4425-aa4a-b153924d46db",
     "monorepoSupport": false
 }
