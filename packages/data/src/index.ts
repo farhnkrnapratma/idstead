@@ -71,6 +71,9 @@ export { createSupabaseArdIndexStore } from './supabase/ard';
 export { createSupabaseIdentityVersionReader } from './supabase/identity';
 export { createSupabaseLoginLockoutStore } from './supabase/lockout';
 export { createSupabaseMaintenanceStore } from './supabase/maintenance';
+export type { ContentBucket, D1Like } from './d1/client';
+export { createD1BlogRepository, createD1CommentRepository, createD1RenderStore } from './d1/blog';
+export { createD1CommentWriter, createD1ViewRecorder } from './d1/writes';
 export {
     createSupabaseAdminPostStore,
     createSupabasePostCleanupStore,
