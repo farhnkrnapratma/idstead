@@ -2,9 +2,9 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { requireAdminAuth } from '#lib/server/adminCv.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
+import { dataStores } from '#lib/server/data.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { apiError } from '#lib/server/apiError.ts';
-import { createSupabaseAdminActivityStore } from '@idstead/data';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -36,12 +36,14 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
     }
 
     const adminClient = getSupabaseAdminClient(platform);
-    if (!adminClient) {
+
+    const service = dataStores(platform).service;
+    if (!adminClient || !service) {
         return apiError(500, 'DATABASE_UNAVAILABLE', 'Database client unavailable.');
     }
 
     try {
-        await createSupabaseAdminActivityStore(adminClient).dismissReports(commentId);
+        await service.adminActivity.dismissReports(commentId);
     } catch {
         return apiError(500, 'DISMISS_REPORTS_FAILED', 'Could not dismiss reports.');
     }

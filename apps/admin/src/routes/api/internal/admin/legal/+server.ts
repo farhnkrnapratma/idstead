@@ -1,18 +1,14 @@
-import { getSupabaseUserClient } from '#lib/server/supabaseUser.ts';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
+import { dataStores } from '#lib/server/data.ts';
 import { requireAdminAuth } from '#lib/server/adminCv.ts';
 import { bearerToken } from '#lib/server/adminAuth.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
-import {
-    createSupabaseLegalPageRepository,
-    createSupabaseLegalPageWriter,
-    type LegalSlug
-} from '@idstead/data';
+import type { LegalSlug } from '@idstead/data';
 
 const SLUGS: LegalSlug[] = ['privacy', 'security', 'terms'];
 const MAX_TITLE_LENGTH = 200;
@@ -23,10 +19,10 @@ export const GET: RequestHandler = async ({ request, url, platform }) => {
         return apiError(403, 'FORBIDDEN_ORIGIN', 'Cross-origin requests are forbidden.');
     const authError = await requireAdminAuth(request, platform);
     if (authError) return authError;
-    const db = getSupabaseAdminClient(platform);
-    if (!db) return apiError(503, 'LEGAL_UNAVAILABLE', 'Database is unavailable.');
+    const service = dataStores(platform).service;
+    if (!service) return apiError(503, 'LEGAL_UNAVAILABLE', 'Database is unavailable.');
     try {
-        const pages = await createSupabaseLegalPageRepository(db).pages();
+        const pages = await service.legal.pages();
         return json({ pages }, { headers: { 'Cache-Control': 'no-store' } });
     } catch (error) {
         console.error('Legal pages could not be loaded:', error);
@@ -39,9 +35,10 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         return apiError(403, 'FORBIDDEN_ORIGIN', 'Cross-origin requests are forbidden.');
     const authError = await requireAdminAuth(request, platform);
     if (authError) return authError;
-    const userDb = getSupabaseUserClient(request, platform);
     const db = getSupabaseAdminClient(platform);
-    if (!db || !userDb) return apiError(503, 'LEGAL_UNAVAILABLE', 'Database is unavailable.');
+    const { service, session } = dataStores(platform, { request });
+    if (!db || !service || !session)
+        return apiError(503, 'LEGAL_UNAVAILABLE', 'Database is unavailable.');
 
     let body: { slug?: unknown; title?: unknown; content?: unknown };
     try {
@@ -63,11 +60,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             'Content is required and must fit 200,000 characters.'
         );
 
-    const result = await createSupabaseLegalPageWriter(userDb).save({
-        slug: slug as LegalSlug,
-        title,
-        content
-    });
+    const result = await session.legalWriter.save({ slug: slug as LegalSlug, title, content });
     if (result.status === 'rejected') return apiError(400, 'LEGAL_SAVE_FAILED', result.message);
 
     const token = bearerToken(request);
@@ -89,7 +82,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             ipSalt: ipSalt(platform),
             userAgent: request.headers.get('user-agent') ?? undefined
         },
-        db
+        service.activityLog
     );
     return json({ success: true }, { headers: { 'Cache-Control': 'no-store' } });
 };

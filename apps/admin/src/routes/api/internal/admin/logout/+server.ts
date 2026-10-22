@@ -3,6 +3,7 @@ import type { RequestHandler } from './$types';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
+import { dataStores } from '#lib/server/data.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { bearerToken } from '#lib/server/adminAuth.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
@@ -36,7 +37,7 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
             ipSalt: ipSalt(platform),
             userAgent: request.headers.get('user-agent') ?? undefined
         },
-        db
+        dataStores(platform).service?.activityLog
     );
 
     return json({ ok: true }, { headers: { 'Cache-Control': 'no-store' } });

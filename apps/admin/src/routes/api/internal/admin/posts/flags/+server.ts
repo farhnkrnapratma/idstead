@@ -1,17 +1,19 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
+import { dataStores } from '#lib/server/data.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { blogAdmin } from '#lib/server/blogPostAuth.ts';
 import { UUID_PATTERN } from '#lib/blogBanner.ts';
-import { createSupabaseAdminPostStore, createSupabaseNewsletterStore } from '@idstead/data';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { queuePostEffects } from '#lib/server/postEffects.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform, getClientAddress }) => {
     const db = getSupabaseAdminClient(platform);
-    if (!db) return apiError(503, 'BLOG_POSTS_UNAVAILABLE', 'Post storage is not configured.');
+    const service = dataStores(platform).service;
+    if (!db || !service)
+        return apiError(503, 'BLOG_POSTS_UNAVAILABLE', 'Post storage is not configured.');
     const auth = await blogAdmin(request, url, db);
     if (auth.status)
         return apiError(auth.status, auth.code ?? 'BLOG_POSTS_AUTH_REQUIRED', auth.message);
@@ -38,7 +40,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         );
     const flag = flags[0] as 'published' | 'pinned';
     const value = body[flag] as boolean;
-    const posts = createSupabaseAdminPostStore(db);
+    const posts = service.adminPosts.posts;
     let previous;
     let update;
     try {
@@ -61,7 +63,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         return apiError(422, 'BLOG_POST_PIN_LIMIT', 'Maximum of 3 pinned posts allowed.');
     const { post } = update;
     if (flag === 'published')
-        await queuePostEffects(createSupabaseNewsletterStore(db), platform, {
+        await queuePostEffects(service.writers.newsletter, platform, {
             postId: post.id,
             published: post.published,
             wasPublished: previous.published
@@ -89,7 +91,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             ipSalt: ipSalt(platform),
             userAgent: request.headers.get('user-agent') ?? undefined
         },
-        db
+        service.activityLog
     );
     return json(
         { post_revision: post.post_revision, published: post.published, pinned: post.pinned },

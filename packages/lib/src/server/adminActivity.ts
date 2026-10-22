@@ -1,5 +1,5 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
-import { createSupabaseAdminActivityStore } from '@idstead/data';
+import { dataStores } from './data';
+import { getSupabaseAdminClient } from './supabaseAdmin';
 import { blogAdmin } from './blogPostAuth';
 import { ActivityInputError, activityJson, activityTarget, activityUuid } from './activityInput';
 import { apiError } from './apiError';
@@ -18,17 +18,14 @@ function optionalId(value: string | null) {
 }
 
 export async function adminActivity(
-    input: {
-        request: Request;
-        url: URL;
-        db: SupabaseClient | null;
-        sessionDb?: SupabaseClient | null;
-    },
+    input: { request: Request; url: URL; platform: unknown },
     inbox: boolean
 ) {
-    const { request, url, db, sessionDb } = input;
+    const { request, url, platform } = input;
     const fail = apiError;
-    if (!db)
+    const db = getSupabaseAdminClient(platform);
+    const data = dataStores(platform, { request });
+    if (!db || !data.service)
         return fail(
             503,
             'ADMIN_ACTIVITY_UNAVAILABLE',
@@ -38,7 +35,7 @@ export async function adminActivity(
         const auth = await blogAdmin(request, url, db);
         if (auth.status)
             return fail(auth.status, auth.code ?? 'ADMIN_ACTIVITY_AUTH_REQUIRED', auth.message);
-        const store = createSupabaseAdminActivityStore(db);
+        const store = data.service.adminActivity;
         let result: unknown;
         if (request.method === 'POST' && inbox) {
             const body = await activityJson(request);
@@ -132,13 +129,14 @@ export async function adminActivity(
                 const focusId = optionalId(params.get('focusId'));
                 if (section === 'stats') result = await store.dashboard();
                 else if (section === 'subscribers') {
-                    if (!sessionDb)
+                    const session = data.session;
+                    if (!session)
                         return fail(
                             503,
                             'ADMIN_ACTIVITY_UNAVAILABLE',
                             'Subscriber counts are temporarily unavailable.'
                         );
-                    result = await createSupabaseAdminActivityStore(sessionDb).subscriberStats();
+                    result = await session.adminActivity.subscriberStats();
                 } else if (section === 'feedback' || section === 'feedback_history') {
                     const target =
                         params.has('targetId') ?

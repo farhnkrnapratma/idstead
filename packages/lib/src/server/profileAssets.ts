@@ -1,8 +1,6 @@
 import * as publicEnv from '$app/env/public';
-import { getSupabaseAdminClient } from './supabaseAdmin';
-import { createSupabaseAdminAuthorStore, createSupabaseIdentityVersionReader } from '@idstead/data';
+import { dataStores } from './data';
 import { assetBucket, copyObject } from './r2';
-import { supabase } from '#lib/supabase.ts';
 import {
     bannerSizes,
     iconSizes,
@@ -113,9 +111,8 @@ export async function removeAssets(
 }
 
 export async function cleanupAssets(platform?: Pick<App.Platform, 'env'>) {
-    const db = getSupabaseAdminClient(platform);
-    if (!db) throw new Error('Database is not configured.');
-    const store = createSupabaseAdminAuthorStore(db);
+    const store = dataStores(platform).service?.adminAuthor;
+    if (!store) throw new Error('Database is not configured.');
     const versions = await store.claimIdentityCleanup();
     for (const version of versions) {
         await removeAssets(platform, version);
@@ -160,8 +157,8 @@ export async function serveIdentityAsset(
     const missing = () =>
         new Response(null, { status: 404, headers: { 'Cache-Control': 'no-store' } });
     if (!assetNames.includes(name) || url.searchParams.has('v')) return missing();
-    const versions = await createSupabaseIdentityVersionReader(supabase)
-        .current()
+    const versions = await dataStores(platform)
+        .public.identity.current()
         .catch(() => null);
     if (!versions)
         return new Response('Image metadata unavailable.', {

@@ -1,7 +1,7 @@
-import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import type { ArdEntry } from '#lib/server/ard.ts';
 import { loadArdIndex } from '#lib/server/ardIndex.ts';
-import { createSupabaseArdIndexStore, type ArdIndexStore } from '@idstead/data';
+import type { ArdIndexStore } from '@idstead/data';
+import { dataStores } from '#lib/server/data.ts';
 
 export class ArdIndexUnavailableError extends Error {
     constructor() {
@@ -26,15 +26,15 @@ export function ardIndexUnavailableResponse(): Response {
     );
 }
 
-function supabaseIndexStore(platform: unknown): ArdIndexStore {
-    const client = getSupabaseAdminClient(platform);
-    if (!client) throw new ArdIndexUnavailableError();
-    return createSupabaseArdIndexStore(client);
+function indexStore(platform: unknown): ArdIndexStore {
+    const store = dataStores(platform).service?.ard;
+    if (!store) throw new ArdIndexUnavailableError();
+    return store;
 }
 
 export async function getArdIndexEntries(siteUrl: string, platform: unknown): Promise<ArdEntry[]> {
     try {
-        return await loadArdIndex(siteUrl, supabaseIndexStore(platform));
+        return await loadArdIndex(siteUrl, indexStore(platform));
     } catch (error) {
         if (!(error instanceof ArdIndexUnavailableError))
             console.error('ARD registry index refresh failed.', error);

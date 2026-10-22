@@ -1,7 +1,7 @@
 import type { RequestHandler } from './$types';
 import { apiError } from '#lib/server/apiError.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
-import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
+import { dataStores } from '#lib/server/data.ts';
 import { requireAdminAuth } from '#lib/server/adminCv.ts';
 import { buildDataExport } from '#lib/server/dataExport.ts';
 
@@ -11,11 +11,11 @@ export const GET: RequestHandler = async ({ request, url, platform }) => {
     const authError = await requireAdminAuth(request, platform);
     if (authError) return authError;
 
-    const db = getSupabaseAdminClient(platform);
-    if (!db) return apiError(503, 'DATA_STORAGE_UNAVAILABLE', 'Data storage is unavailable.');
+    const service = dataStores(platform).service;
+    if (!service) return apiError(503, 'DATA_STORAGE_UNAVAILABLE', 'Data storage is unavailable.');
 
     const { zip, stamp, warnings } = await buildDataExport(
-        db,
+        service,
         platform,
         url.searchParams.get('stamp')
     );

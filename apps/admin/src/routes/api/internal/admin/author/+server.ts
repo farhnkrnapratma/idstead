@@ -3,8 +3,8 @@ import type { RequestHandler } from './$types';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
+import { dataStores } from '#lib/server/data.ts';
 import { requireAdminAuth } from '#lib/server/adminCv.ts';
-import { createSupabaseAdminAuthorStore } from '@idstead/data';
 
 export const GET: RequestHandler = async ({ request, url, platform }) => {
     if (!isSameOriginRequest(request, url))
@@ -12,11 +12,12 @@ export const GET: RequestHandler = async ({ request, url, platform }) => {
     const authError = await requireAdminAuth(request, platform);
     if (authError) return authError;
     const db = getSupabaseAdminClient(platform);
-    if (!db) return apiError(503, 'AUTHOR_UNAVAILABLE', 'Database is unavailable.');
+    const service = dataStores(platform).service;
+    if (!db || !service) return apiError(503, 'AUTHOR_UNAVAILABLE', 'Database is unavailable.');
     const part = url.searchParams.get('part') ?? 'all';
     if (part !== 'all' && part !== 'profile')
         return apiError(400, 'AUTHOR_INVALID_PART', 'part must be all or profile.');
-    const store = createSupabaseAdminAuthorStore(db);
+    const store = service.adminAuthor;
     try {
         const body =
             part === 'profile' ? { profile: await store.profile() } : await store.snapshot();

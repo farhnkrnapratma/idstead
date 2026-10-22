@@ -1,17 +1,12 @@
 import * as Sentry from '@sentry/cloudflare';
-import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
+import { dataStores } from '#lib/server/data.ts';
 import { notifyNewPost } from '#lib/server/subscriberBroadcast.ts';
 import { isNewsletterMessage, type NewsletterMessage } from '#lib/server/newsletterQueue.ts';
 import { cleanupBlogAssets } from '#lib/server/blogBannerStorage.ts';
 import { cleanupAssets } from '#lib/server/profileAssets.ts';
-import {
-    createSupabaseAdminPostStores,
-    createSupabaseNewsletterStore,
-    createSupabaseRenderStore
-} from '@idstead/data';
 import { refreshPostRenders } from '#lib/server/postRender.ts';
 import { isRenderRefreshMessage } from '#lib/server/renderQueue.ts';
-import { createSupabaseMdrsResolvers } from '#lib/server/mdrsData.ts';
+import { mdrsResolvers } from '#lib/server/mdrsData.ts';
 import { siteRenderOptions } from '#lib/mdrsOptions.ts';
 
 export interface Env {
@@ -28,13 +23,13 @@ async function deliver(message: Message<unknown>, env: Env) {
         return;
     }
     const body: NewsletterMessage = message.body;
-    const db = getSupabaseAdminClient({ env });
-    if (!db) {
+    const service = dataStores({ env }).service;
+    if (!service) {
         message.retry({ delaySeconds: 300 });
         return;
     }
     const result = await notifyNewPost(
-        createSupabaseNewsletterStore(db),
+        service.writers.newsletter,
         { env },
         body.postId,
         body.force === true
@@ -64,11 +59,11 @@ function deadLetter(message: Message<unknown>) {
 }
 
 async function refreshRenders(env: Env) {
-    const db = getSupabaseAdminClient({ env });
-    if (!db) throw new Error('Post render refresh needs the Supabase service role.');
+    const service = dataStores({ env }).service;
+    if (!service) throw new Error('Post render refresh needs the Supabase service role.');
     const result = await refreshPostRenders(
-        createSupabaseRenderStore(db),
-        createSupabaseMdrsResolvers(db),
+        service.renders,
+        mdrsResolvers(service),
         siteRenderOptions(env.PUBLIC_SITE_URL)
     );
     if (result.failed)
@@ -80,10 +75,10 @@ async function refreshRenders(env: Env) {
 }
 
 async function cleanup(env: Env) {
-    const db = getSupabaseAdminClient({ env });
+    const service = dataStores({ env }).service;
     const results = await Promise.allSettled([
-        db ?
-            cleanupBlogAssets(createSupabaseAdminPostStores(db), { env } as App.Platform)
+        service ?
+            cleanupBlogAssets(service.adminPosts, { env } as App.Platform)
         :   Promise.resolve(null),
         cleanupAssets({ env } as App.Platform),
         refreshRenders(env)

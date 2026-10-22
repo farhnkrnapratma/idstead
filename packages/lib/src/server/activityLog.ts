@@ -1,6 +1,5 @@
 import { hashIp } from '@idstead/domain/hash.ts';
-import { createSupabaseActivityLog } from '@idstead/data';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { ActivityLog } from '@idstead/data';
 
 export type ActivityCategory = 'profile' | 'cv' | 'skills' | 'links' | 'blog' | 'auth' | 'security';
 
@@ -18,16 +17,16 @@ export interface LogActivityInput {
 
 export async function logActivity(
     input: LogActivityInput,
-    db: SupabaseClient | null
+    log: ActivityLog | null | undefined
 ): Promise<void> {
-    if (!db) {
-        console.error('logActivity: no database client available');
+    if (!log) {
+        console.error('logActivity: no activity log available');
         return;
     }
 
     try {
         const ipHash = input.ip && input.ipSalt ? await hashIp(input.ip, input.ipSalt) : null;
-        await createSupabaseActivityLog(db).append({
+        await log.append({
             actor: input.actor,
             action: input.action,
             category: input.category,

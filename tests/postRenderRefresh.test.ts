@@ -6,7 +6,8 @@ import {
     unavailableResolvers
 } from '../packages/mdrs/core/src/index.ts';
 import { refreshPostRenders } from '../packages/lib/src/server/postRender.ts';
-import { createSupabaseMdrsResolvers } from '../packages/lib/src/server/mdrsData.ts';
+import { mdrsResolvers } from '../packages/lib/src/server/mdrsData.ts';
+import { createSupabaseRepositories } from '../packages/data/src/index.ts';
 
 const post = (n: number) =>
     `posts/0f8fad5b-d9cb-469f-a165-70867728950e/7c9e6679-7425-40de-944b-e07fc1f9000${n}.md`;
@@ -72,7 +73,7 @@ describe('refreshPostRenders', () => {
     });
 });
 
-describe('createSupabaseMdrsResolvers', () => {
+describe('mdrsResolvers', () => {
     test('fetches the blog list once per render, however often it is referenced', async () => {
         const tables: string[] = [];
         const chain: unknown = new Proxy(() => {}, {
@@ -91,7 +92,7 @@ describe('createSupabaseMdrsResolvers', () => {
             },
             storage: { from: () => chain }
         };
-        const resolvers = createSupabaseMdrsResolvers(client);
+        const resolvers = mdrsResolvers(createSupabaseRepositories(client as never));
         await renderMarkdown(
             ':::define\na: api.v1.blog.length\nb: api.v1.blog\n:::\n\n${a} ${b.length}',
             resolvers

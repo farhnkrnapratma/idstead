@@ -71,4 +71,4 @@ Read [${post.title}](/blog/hello-world), first published ${post.created_at}.
 
 Errors render the same `[define error]` marker as other [variables](013-variables.md#errors), and block saving.
 
-Source: `packages/mdrs/core/src/define/evaluate.ts` (`evaluateReference`, `unavailableResolvers`), `packages/lib/src/mdrsResolvers.ts` (`createMdrsResolvers`), `packages/lib/src/server/mdrsData.ts` (`createSupabaseMdrsResolvers`, `supabaseMdrsLoaders`).
+Source: `packages/mdrs/core/src/define/evaluate.ts` (`evaluateReference`, `unavailableResolvers`), `packages/lib/src/mdrsResolvers.ts` (`createMdrsResolvers`), `packages/lib/src/server/mdrsData.ts` (`mdrsResolvers`, `mdrsLoaders`).

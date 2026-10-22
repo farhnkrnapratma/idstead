@@ -1,14 +1,15 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
+import { dataStores } from '#lib/server/data.ts';
 import { blogAdmin } from '#lib/server/blogPostAuth.ts';
 import { apiError } from '#lib/server/apiError.ts';
-
 import { activityLogQuery } from '#lib/server/activityLogQuery.ts';
-import { createSupabaseActivityLog } from '@idstead/data';
+
 export const GET: RequestHandler = async ({ request, url, platform }) => {
     const db = getSupabaseAdminClient(platform);
-    if (!db)
+    const service = dataStores(platform).service;
+    if (!db || !service)
         return apiError(
             503,
             'ACTIVITY_LOG_UNAVAILABLE',
@@ -30,7 +31,7 @@ export const GET: RequestHandler = async ({ request, url, platform }) => {
     }
     let page;
     try {
-        page = await createSupabaseActivityLog(db).list(query);
+        page = await service.activityLog.list(query);
     } catch {
         return apiError(503, 'ACTIVITY_LOG_FETCH_FAILED', 'Could not load activity log.');
     }

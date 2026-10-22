@@ -3,16 +3,11 @@ import type { RequestHandler } from './$types';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
-import { createSupabaseLoginLockoutStore } from '@idstead/data';
+import { dataStores } from '#lib/server/data.ts';
 import { requireAdminAuth, deleteCvFile } from '#lib/server/adminCv.ts';
 import { removeAssets, removeCanonicalIdentity } from '#lib/server/profileAssets.ts';
 import { syncPostAssets } from '#lib/server/blogPostAssets.ts';
 import { cleanupBlogAssets } from '#lib/server/blogBannerStorage.ts';
-import {
-    createSupabaseAdminAuthorStore,
-    createSupabaseAdminPostStores,
-    createSupabaseSiteDataStore
-} from '@idstead/data';
 import { bearerToken } from '#lib/server/adminAuth.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { getSupabaseUserClient } from '#lib/server/supabaseUser.ts';
@@ -30,8 +25,11 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     if (authError) return authError;
 
     const db = getSupabaseAdminClient(platform);
-    if (!db) return apiError(503, 'DATA_STORAGE_UNAVAILABLE', 'Data storage is unavailable.');
-    const lockoutStore = createSupabaseLoginLockoutStore(db);
+
+    const service = dataStores(platform).service;
+    if (!db || !service)
+        return apiError(503, 'DATA_STORAGE_UNAVAILABLE', 'Data storage is unavailable.');
+    const lockoutStore = service.lockout;
 
     const token = bearerToken(request);
     const actorEmail = token ? (await db.auth.getUser(token)).data.user?.email : null;
@@ -70,7 +68,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     if (passwordError) return apiError(401, 'DATA_DELETE_PASSWORD_INVALID', 'Incorrect password.');
     await clearLoginAttempts(lockoutStore, '', lockoutKey);
 
-    const siteData = createSupabaseSiteDataStore(db);
+    const siteData = service.siteData;
     let plan;
     try {
         plan = await siteData.deletionPlan();
@@ -99,12 +97,13 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
                 ipSalt: ipSalt(platform),
                 userAgent: request.headers.get('user-agent') ?? undefined
             },
-            db
+            service.activityLog
         );
 
     let cleanupFailed = false;
     for (const filename of plan.documents) {
-        if (!(await deleteCvFile(platform, db, filename, true))) cleanupFailed = true;
+        if (!(await deleteCvFile(platform, service.cvDocuments, filename, true)))
+            cleanupFailed = true;
     }
     try {
         await removeCanonicalIdentity(platform);
@@ -127,7 +126,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             console.error('Blog asset cleanup failed:', error);
         }
     }
-    const authorStore = createSupabaseAdminAuthorStore(db);
+    const authorStore = service.adminAuthor;
     for (const version of plan.identityVersions) {
         try {
             await removeAssets(platform, version);
@@ -159,7 +158,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         );
     }
 
-    const sweepPending = await cleanupBlogAssets(createSupabaseAdminPostStores(db), platform).then(
+    const sweepPending = await cleanupBlogAssets(service.adminPosts, platform).then(
         ({ cleanupPending }) => cleanupPending,
         error => {
             console.error('Blog asset cleanup failed:', error);

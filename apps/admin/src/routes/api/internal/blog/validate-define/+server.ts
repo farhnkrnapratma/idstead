@@ -3,9 +3,9 @@ import type { RequestHandler } from './$types';
 import { apiError } from '#lib/server/apiError.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { requireAdminAuth } from '#lib/server/adminCv.ts';
-import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
+import { dataStores } from '#lib/server/data.ts';
 import { validateDefineForSave } from '@mdrs/core';
-import { createSupabaseMdrsResolvers } from '#lib/server/mdrsData.ts';
+import { mdrsResolvers } from '#lib/server/mdrsData.ts';
 
 export const POST: RequestHandler = async ({ request, url, platform }) => {
     if (!isSameOriginRequest(request, url)) {
@@ -33,7 +33,7 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
         return apiError(400, 'BLOG_DEFINE_MARKDOWN_REQUIRED', 'Markdown content is required.');
     }
 
-    const apiRegistry = createSupabaseMdrsResolvers(getSupabaseAdminClient(platform));
+    const apiRegistry = mdrsResolvers(dataStores(platform).service);
     const { ok, errors } = await validateDefineForSave(markdown, apiRegistry);
 
     if (!ok) {
