@@ -1,4 +1,3 @@
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { requireAdminAuth } from '#lib/server/adminCv.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
@@ -48,5 +47,5 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
         return apiError(500, 'DISMISS_REPORTS_FAILED', 'Could not dismiss reports.');
     }
 
-    return json({ success: true });
+    return Response.json({ success: true });
 };

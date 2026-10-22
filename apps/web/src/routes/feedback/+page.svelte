@@ -7,11 +7,11 @@
     import { onDestroy } from 'svelte';
     import {
         PenLine,
-        Code2,
+        CodeXml,
         ClockFading,
         Link2Off,
         Bug,
-        HelpCircle,
+        CircleQuestionMark,
         MessageSquareWarning
     } from '@lucide/svelte';
     import { isNameReserved, extractAuthorNameTokens } from '@idstead/domain/nameValidator.ts';
@@ -332,7 +332,7 @@
                             class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
                             aria-label="Select category: Technical inaccuracies">
                             <div class="flex items-center gap-2">
-                                <Code2
+                                <CodeXml
                                     class="size-4 shrink-0 text-accent-text transition-transform group-hover:scale-105" />
                                 <span
                                     class="translate-y-[0.5px] text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent-text">
@@ -411,7 +411,7 @@
                             class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-border-subtle/70 bg-surface-card/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface-card/80 focus-visible:border-accent focus-visible:outline-none"
                             aria-label="Select category: Other issues">
                             <div class="flex items-center gap-2">
-                                <HelpCircle
+                                <CircleQuestionMark
                                     class="size-4 shrink-0 text-accent-text transition-transform group-hover:scale-105" />
                                 <span
                                     class="translate-y-[0.5px] text-sm leading-none font-semibold text-text-primary transition-colors group-hover:text-accent-text">

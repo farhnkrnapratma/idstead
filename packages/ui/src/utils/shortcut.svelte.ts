@@ -52,13 +52,7 @@ function candidatesFor(placement: keyof typeof HINT_PLACEMENT, narrow: boolean):
 }
 
 function textAt(x: number, y: number) {
-    const doc = document as Document & {
-        caretPositionFromPoint?: (x: number, y: number) => { offsetNode: Node } | null;
-        caretRangeFromPoint?: (x: number, y: number) => Range | null;
-    };
-    const node =
-        doc.caretPositionFromPoint?.(x, y)?.offsetNode
-        ?? doc.caretRangeFromPoint?.(x, y)?.startContainer;
+    const node = document.caretPositionFromPoint(x, y)?.offsetNode;
     if (node?.nodeType !== Node.TEXT_NODE || !node.textContent?.trim()) return false;
     const range = document.createRange();
     range.selectNodeContents(node);

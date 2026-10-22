@@ -1,4 +1,3 @@
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { dataStores } from '#lib/server/data.ts';
@@ -59,7 +58,7 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
             'Publish the post before notifying subscribers.'
         );
 
-    return json(
+    return Response.json(
         { sent: result.sent, reason: result.reason ?? null },
         { headers: { 'Cache-Control': 'no-store' } }
     );

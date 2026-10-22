@@ -16,16 +16,17 @@
         "build": "bun run --filter './apps/*' build",
         "configure": "bun tooling/configure.ts",
         "setup": "bun tooling/setup.ts",
-        "check": "bun tooling/configure.ts --check && bun run --filter './apps/*' --filter './packages/*' --filter './packages/mdrs/*' check",
+        "check": "bun tooling/configure.ts --check && bun run --filter './apps/*' --filter './packages/*' --filter './packages/mdrs/*' check && tsc --noEmit -p tsconfig.json",
         "test": "bun test tests",
         "prepare": "bun run --filter './apps/*' prepare; bash tooling/git-hooks/install.sh || echo ''",
-        "lint": "prettier --write . && eslint .",
+        "lint": "prettier --write . && eslint . && bun run lint:deprecated",
+        "lint:deprecated": "eslint --config eslint.deprecated.config.ts apps/*/src packages/*/src packages/mdrs/*/src",
         "lint:fix": "eslint . --fix",
         "fmt": "prettier --write .",
         "fmt:check": "prettier --check ."
     },
     "devDependencies": {
-        "@aws-sdk/client-s3": "^3.1155.0",
+        "@aws-sdk/client-s3": "^3.1156.0",
         "@commitlint/cli": "^21.2.4",
         "@commitlint/config-conventional": "^21.2.4",
         "@commitlint/types": "^21.2.3",
@@ -51,5 +52,8 @@
         "esbuild",
         "sharp",
         "workerd"
-    ]
+    ],
+    "overrides": {
+        "katex": "^0.19.0"
+    }
 }

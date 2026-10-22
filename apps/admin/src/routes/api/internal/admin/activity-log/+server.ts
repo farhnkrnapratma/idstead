@@ -1,4 +1,3 @@
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { dataStores } from '#lib/server/data.ts';
@@ -36,7 +35,7 @@ export const GET: RequestHandler = async ({ request, url, platform }) => {
         return apiError(503, 'ACTIVITY_LOG_FETCH_FAILED', 'Could not load activity log.');
     }
 
-    return json(
+    return Response.json(
         { data: page.data, total: page.total, limit: query.limit, offset: query.offset },
         { headers: { 'Cache-Control': 'no-store' } }
     );

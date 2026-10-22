@@ -1,4 +1,3 @@
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { DefineError } from '@mdrs/core';
 import { isValidPostSlug } from '@idstead/domain/slug.ts';
@@ -43,7 +42,7 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
             scope === 'author' ? await loaders.author()
             : scope === 'blog' ? await loaders.blogList()
             : await loaders.blogPost(slug);
-        return json({ data }, { headers: { 'Cache-Control': 'no-store' } });
+        return Response.json({ data }, { headers: { 'Cache-Control': 'no-store' } });
     } catch (error) {
         if (error instanceof DefineError)
             return apiError(404, 'MDRS_DATA_NOT_FOUND', error.message);

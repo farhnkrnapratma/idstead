@@ -1,5 +1,4 @@
 import { publicRepositories, serviceData } from '#lib/server/repositories.ts';
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import type { AdminNotificationKind } from '@idstead/data';
 import { apiError } from '#lib/server/apiError.ts';
@@ -138,5 +137,5 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             console.error('Failed to record admin notification:', error);
         });
 
-    return json({ success: true }, { status: 201 });
+    return Response.json({ success: true }, { status: 201 });
 };

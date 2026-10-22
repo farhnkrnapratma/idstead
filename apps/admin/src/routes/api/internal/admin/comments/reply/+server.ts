@@ -1,4 +1,3 @@
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { requireAdminAuth } from '#lib/server/adminCv.ts';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
@@ -86,5 +85,5 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
             'parentId must be a comment on the same post.'
         );
 
-    return json({ comment: result.comment }, { status: 201 });
+    return Response.json({ comment: result.comment }, { status: 201 });
 };

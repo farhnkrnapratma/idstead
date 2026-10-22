@@ -1,4 +1,3 @@
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import * as env from '$app/env/public';
 import { apiError } from '#lib/server/apiError.ts';
@@ -115,7 +114,7 @@ export const POST: RequestHandler = async ({ request, url, platform, fetch }) =>
             },
             service.activityLog
         );
-        return json({ success: true }, { headers: { 'Cache-Control': 'no-store' } });
+        return Response.json({ success: true }, { headers: { 'Cache-Control': 'no-store' } });
     } catch {
         return apiError(
             503,

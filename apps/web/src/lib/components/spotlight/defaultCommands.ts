@@ -32,7 +32,7 @@ import {
     Share2,
     QrCode,
     Keyboard,
-    HelpCircle,
+    CircleQuestionMark,
     Quote,
     MessageSquareWarning,
     ScrollText,
@@ -418,7 +418,7 @@ export function createDefaultCommands(ctx: SpotlightCommandContext): SpotlightIt
             action: () => {
                 ctx.setHelp(true);
             },
-            icon: HelpCircle,
+            icon: CircleQuestionMark,
             badge: 'Help'
         },
         {

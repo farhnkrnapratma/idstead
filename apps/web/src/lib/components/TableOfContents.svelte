@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { pushState } from '$app/navigation';
+    import { goto } from '$app/navigation';
     import { sanitizeHtml } from '@mdrs/core';
     import { onMount } from 'svelte';
     import {
@@ -66,7 +66,7 @@
 
         target.scrollIntoView({ behavior: instant ? 'auto' : 'smooth', block: 'start' });
 
-        pushState(`#${id}`, {});
+        void goto(`#${id}`, { shallow: true });
         activeHeadingId = id;
         updateIndicatorPos(id, undefined, undefined, true);
     }

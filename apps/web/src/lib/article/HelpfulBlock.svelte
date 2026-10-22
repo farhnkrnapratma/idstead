@@ -5,7 +5,7 @@
     import {
         ThumbsUp,
         ThumbsDown,
-        CheckCircle2,
+        CircleCheck,
         Share2,
         Send,
         MessageSquareQuote,
@@ -71,7 +71,7 @@
             {#if currentVoted !== null}
                 <div
                     class="flex items-center justify-center gap-2 text-sm font-semibold text-accent-text sm:justify-start">
-                    <CheckCircle2 class="size-4 shrink-0" />
+                    <CircleCheck class="size-4 shrink-0" />
                     <span>Thanks for your feedback!</span>
                 </div>
             {:else}

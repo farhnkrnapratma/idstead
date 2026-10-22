@@ -132,7 +132,7 @@ describe('generational read cache', () => {
         await healthy.cached.blog.postStats(post);
         await healthy.cached.blog.postStats(post);
         expect(healthy.calls.filter(call => call === 'blog.postStats')).toHaveLength(2);
-        healthy.sqlite.exec('DROP TABLE db_legals');
+        healthy.sqlite.run('DROP TABLE db_legals');
         await expect(healthy.cached.legal.pages()).rejects.toThrow();
         await expect(healthy.cached.legal.pages()).rejects.toThrow();
         expect(healthy.calls.filter(call => call === 'legal.pages')).toHaveLength(2);

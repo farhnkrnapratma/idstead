@@ -1,5 +1,4 @@
 import { publicRepositories, serviceData } from '#lib/server/repositories.ts';
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { isNameReserved, extractAuthorNameTokens } from '@idstead/domain/nameValidator.ts';
 import { verifyTurnstileToken } from '#lib/server/turnstile.ts';
@@ -142,7 +141,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         );
     }
 
-    return json(
+    return Response.json(
         {
             is_approved: moderation.safe,
             comment: created.comment,

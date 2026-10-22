@@ -1,4 +1,3 @@
-import { json } from '@sveltejs/kit';
 import * as Sentry from '@sentry/sveltekit';
 import type { RequestHandler } from './$types';
 import { requireAdminAuth } from '#lib/server/adminCv.ts';
@@ -81,7 +80,7 @@ export const GET: RequestHandler = async ({ request, platform }) => {
     } catch {
         return apiError(503, 'PROFILE_STORAGE_UNAVAILABLE', 'Profile storage is unavailable.');
     }
-    return json({ manifestSettings }, { headers: { 'Cache-Control': 'no-store' } });
+    return Response.json({ manifestSettings }, { headers: { 'Cache-Control': 'no-store' } });
 };
 
 export const POST: RequestHandler = async ({ request, platform, url, getClientAddress }) => {
@@ -285,7 +284,7 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
                 verifyFailed = true;
             }
             if (committed)
-                return json(
+                return Response.json(
                     {
                         success: true,
                         profile: committed,
@@ -342,7 +341,7 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
         },
         service.activityLog
     );
-    return json(
+    return Response.json(
         { success: true, profile: saved.profile, cleanupPending },
         { headers: { 'Cache-Control': 'no-store' } }
     );

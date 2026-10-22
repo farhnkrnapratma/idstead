@@ -1,4 +1,3 @@
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { dataStores } from '#lib/server/data.ts';
@@ -24,5 +23,5 @@ export const GET: RequestHandler = async ({ request, url, platform }) => {
         return apiError(503, 'BLOG_POSTS_UNAVAILABLE', 'The post could not be loaded.');
     }
     if (!post) return apiError(404, 'BLOG_POST_NOT_FOUND', 'Post not found.');
-    return json({ post }, { headers: { 'Cache-Control': 'no-store' } });
+    return Response.json({ post }, { headers: { 'Cache-Control': 'no-store' } });
 };

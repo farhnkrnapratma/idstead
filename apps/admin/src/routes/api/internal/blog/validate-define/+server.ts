@@ -1,4 +1,3 @@
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { apiError } from '#lib/server/apiError.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
@@ -46,5 +45,5 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
         );
     }
 
-    return json({ errors: [] });
+    return Response.json({ errors: [] });
 };

@@ -1,4 +1,3 @@
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { apiError } from '#lib/server/apiError.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
@@ -33,7 +32,7 @@ export const GET: RequestHandler = async ({ request, url, platform }) => {
     } catch {
         return apiError(500, 'ADMIN_SETTINGS_READ_FAILED', 'Could not read settings.');
     }
-    return json(parseAdminSettings(stored), { headers: { 'Cache-Control': 'no-store' } });
+    return Response.json(parseAdminSettings(stored), { headers: { 'Cache-Control': 'no-store' } });
 };
 
 export const PUT: RequestHandler = async ({ request, url, platform }) => {
@@ -54,5 +53,5 @@ export const PUT: RequestHandler = async ({ request, url, platform }) => {
     } catch {
         return apiError(500, 'ADMIN_SETTINGS_WRITE_FAILED', 'Could not save settings.');
     }
-    return json(settings, { headers: { 'Cache-Control': 'no-store' } });
+    return Response.json(settings, { headers: { 'Cache-Control': 'no-store' } });
 };

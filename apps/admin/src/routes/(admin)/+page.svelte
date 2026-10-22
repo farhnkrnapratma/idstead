@@ -30,7 +30,7 @@
     import { avatarSeed, type BannerInput } from '#app/identityFallbackLayout.ts';
     import * as publicEnv from '$app/env/public';
     import { page } from '$app/state';
-    import { invalidateAll } from '$app/navigation';
+    import { refreshAll } from '$app/navigation';
     import { supabase } from '#lib/supabase.ts';
     import {
         turnstileWidget,
@@ -2581,7 +2581,7 @@
             setTimeout(() => (authorSaveSuccess = false), 2500);
             toastStore.success('Author profile saved.');
             const currentAdminUrl = adminUrl();
-            await invalidateAll();
+            await refreshAll();
             navigateAdmin(currentAdminUrl, true);
             executeGenerateCvPdf();
         } catch (err: any) {

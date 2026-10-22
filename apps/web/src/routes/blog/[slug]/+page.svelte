@@ -57,7 +57,7 @@
     import ConsentNotice from '#app/components/ConsentNotice.svelte';
     import FeedbackButton from '#app/components/FeedbackButton.svelte';
     import { formatReadTime } from '@idstead/domain';
-    import { pushState } from '$app/navigation';
+    import { goto } from '$app/navigation';
     import { page, navigating } from '$app/state';
     import { contentFontStore } from '@idstead/ui/stores/contentFontStore.svelte.ts';
     import { codeBlockPrefsStore } from '@mdrs/dom/codeBlockPrefsStore.svelte.ts';
@@ -222,7 +222,7 @@
         if (!targetEl) return;
 
         e.preventDefault();
-        pushState(`#${targetId}`, {});
+        void goto(`#${targetId}`, { shallow: true });
         scrollToTarget(targetId, true);
     }
 

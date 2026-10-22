@@ -26,7 +26,7 @@ import {
     Share2,
     QrCode,
     Keyboard,
-    HelpCircle,
+    CircleQuestionMark,
     Quote,
     MessageSquareWarning,
     ScrollText,
@@ -346,7 +346,7 @@ export const helpCommandCategories: HelpCategory[] = [
                 description: 'Show command and shortcut reference guide.',
                 validArgs: [],
                 actionQuery: '/help',
-                icon: HelpCircle
+                icon: CircleQuestionMark
             },
             {
                 command: '/exit',

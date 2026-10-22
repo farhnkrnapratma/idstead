@@ -105,7 +105,7 @@ describe('dataStores', () => {
             expect((await dataStores({ env }).public.legal.pages())[0].title).toBe('Terms');
             expect(keys).toHaveLength(1);
             expect(keys[0]).toContain('/version-7/legal%401/legal.pages');
-            sqlite.exec("UPDATE db_legals SET title = 'Changed'");
+            sqlite.run("UPDATE db_legals SET title = 'Changed'");
             expect((await dataStores({ env }).public.legal.pages())[0].title).toBe('Changed');
             expect(keys).toHaveLength(2);
         } finally {

@@ -1,4 +1,3 @@
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { verifyTurnstileToken } from '#lib/server/turnstile.ts';
 import { apiError } from '#lib/server/apiError.ts';
@@ -198,5 +197,5 @@ export const POST: RequestHandler = async ({
     ).catch(error => console.error('Login alert failed:', error));
     await runInBackground(alert);
 
-    return json({ ok: true, mfaRequired }, { headers: { 'Cache-Control': 'no-store' } });
+    return Response.json({ ok: true, mfaRequired }, { headers: { 'Cache-Control': 'no-store' } });
 };

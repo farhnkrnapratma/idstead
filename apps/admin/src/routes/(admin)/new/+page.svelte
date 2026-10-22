@@ -9,7 +9,7 @@
         const target = new URL('/', window.location.origin);
         target.searchParams.set('tab', 'posts');
         target.searchParams.set('editPost', id || 'new');
-        goto(`${target.pathname}${target.search}`, { replaceState: true });
+        goto(`${target.pathname}${target.search}`, { replace: true });
     });
 </script>
 

@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { Snippet } from 'svelte';
-    import { Info, CheckCircle2, AlertTriangle, AlertOctagon } from '@lucide/svelte';
+    import { Info, CircleCheck, TriangleAlert, OctagonAlert } from '@lucide/svelte';
     import { cn } from '../utils/cn';
 
     interface Props {
@@ -36,11 +36,11 @@
         className
     )}>
     {#if variant === 'success'}
-        <CheckCircle2 class="mt-0.5 size-4 shrink-0 self-start text-success" />
+        <CircleCheck class="mt-0.5 size-4 shrink-0 self-start text-success" />
     {:else if variant === 'warning'}
-        <AlertTriangle class="mt-0.5 size-4 shrink-0 self-start text-warning" />
+        <TriangleAlert class="mt-0.5 size-4 shrink-0 self-start text-warning" />
     {:else if variant === 'error'}
-        <AlertOctagon class="mt-0.5 size-4 shrink-0 self-start text-danger" />
+        <OctagonAlert class="mt-0.5 size-4 shrink-0 self-start text-danger" />
     {:else}
         <Info class="mt-0.5 size-4 shrink-0 self-start text-text-muted" />
     {/if}

@@ -12,11 +12,11 @@ type Row = Record<string, unknown>;
 
 function migratedDb() {
     const db = new Database(':memory:');
-    db.exec('PRAGMA foreign_keys = ON');
+    db.run('PRAGMA foreign_keys = ON');
     for (const file of readdirSync(MIGRATIONS)
         .filter(name => name.endsWith('.sql'))
         .sort())
-        db.exec(readFileSync(new URL(file, MIGRATIONS), 'utf8'));
+        db.run(readFileSync(new URL(file, MIGRATIONS), 'utf8'));
     return db;
 }
 

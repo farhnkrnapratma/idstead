@@ -1,4 +1,3 @@
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { apiError } from '#lib/server/apiError.ts';
@@ -21,7 +20,7 @@ export const GET: RequestHandler = async ({ request, url, platform }) => {
     try {
         const body =
             part === 'profile' ? { profile: await store.profile() } : await store.snapshot();
-        return json(body, { headers: { 'Cache-Control': 'no-store' } });
+        return Response.json(body, { headers: { 'Cache-Control': 'no-store' } });
     } catch (error) {
         console.error('Admin author load failed:', error);
         return apiError(503, 'AUTHOR_UNAVAILABLE', 'Author data could not be loaded.');

@@ -1,4 +1,3 @@
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { apiError } from '#lib/server/apiError.ts';
@@ -172,5 +171,5 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         :   'Deleted all site data.'
     );
 
-    return json({ success: true }, { headers: { 'Cache-Control': 'no-store' } });
+    return Response.json({ success: true }, { headers: { 'Cache-Control': 'no-store' } });
 };

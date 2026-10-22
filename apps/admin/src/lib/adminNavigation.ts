@@ -1,5 +1,5 @@
 import { page } from '$app/state';
-import { pushState, replaceState } from '$app/navigation';
+import { goto } from '$app/navigation';
 import { cleanAdminParams } from './adminUrl';
 
 export function adminUrl() {
@@ -8,14 +8,19 @@ export function adminUrl() {
     return url;
 }
 
-export function navigateAdmin(url: URL, replace = false) {
+export async function navigateAdmin(url: URL, replace = false) {
     const scroll = document.getElementById('main')?.scrollTop ?? 0;
-    if (!replace) replaceState('', { ...page.state, adminScroll: scroll });
+    if (!replace)
+        await goto('', {
+            state: { ...page.state, adminScroll: scroll },
+            shallow: true,
+            replace: true
+        });
     const query = cleanAdminParams(url.searchParams).toString();
     const state = {
         ...page.state,
         adminSearch: query ? `?${query}` : '',
         adminScroll: replace ? scroll : 0
     };
-    (replace ? replaceState : pushState)(query ? `/?${query}` : '/', state);
+    await goto(query ? `/?${query}` : '/', { state, shallow: true, replace });
 }

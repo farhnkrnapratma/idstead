@@ -1,6 +1,6 @@
 <script lang="ts">
     import { setContext, type Snippet } from 'svelte';
-    import { AlertCircle, CheckCircle2 } from '@lucide/svelte';
+    import { CircleAlert, CircleCheck } from '@lucide/svelte';
     import type { FormFieldContext } from '../types';
     import { cn } from '../utils/cn';
 
@@ -114,12 +114,12 @@
                         id="{id}-error"
                         role="alert"
                         class="flex items-start gap-1.5 text-danger">
-                        <AlertCircle class="mt-px size-3 shrink-0 self-start" />
+                        <CircleAlert class="mt-px size-3 shrink-0 self-start" />
                         <span class="min-w-0 flex-1 wrap-break-word">{error}</span>
                     </span>
                 {:else if valid}
                     <span class="flex items-start gap-1.5 text-accent-text">
-                        <CheckCircle2 class="mt-px size-3 shrink-0 self-start" />
+                        <CircleCheck class="mt-px size-3 shrink-0 self-start" />
                         <span class="min-w-0 flex-1">Looks good</span>
                     </span>
                 {:else if hintSnippet}
