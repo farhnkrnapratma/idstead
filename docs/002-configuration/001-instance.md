@@ -17,6 +17,8 @@ Only `domains.site` is required. Every other field has a default. `idstead.examp
 | `cloudflare.workers.web`, `.admin`, `.api`, `.jobs` | `idstead-web`, `idstead-admin`, `idstead-api`, `idstead-jobs` | Worker names |
 | `cloudflare.assetBucket` | `idstead-assets` | R2 bucket bound as `ASSET_BUCKET` |
 | `cloudflare.newsletterQueue` | `idstead-newsletter` | Newsletter queue. The dead-letter queue is the same name plus `-dlq`, and the jobs Worker recognizes it by that suffix |
+| `cloudflare.database.name` | `idstead` | D1 database bound as `DB` |
+| `cloudflare.database.id` | none | The D1 database ID. Every Worker gets the `DB` binding, with migrations from `packages/data/d1/migrations`, only once this is set, so an instance without a D1 database still deploys. |
 | `cloudflare.rateLimitNamespaces.web`, `.api`, `.admin` | `1001`, `1002`, `1003` | `API_RATE_LIMITER` namespace IDs |
 | `jobs.cron` | `17 3 * * *` | Daily cleanup, render refresh and the pending-subscription and activity log prunes |
 | `jobs.hourlyCron` | `37 * * * *` | Hourly prune of expired login failures. Must differ from `jobs.cron`: the jobs Worker tells the two runs apart by schedule (`HOURLY_CRON`). |

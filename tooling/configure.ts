@@ -42,12 +42,33 @@ function substitute(value: Value, variables: Record<string, Value>, file: string
     return value;
 }
 
+function databases(config: InstanceConfig): Record<string, Value> {
+    const { name, id } = config.cloudflare.database;
+    return {
+        d1Databases:
+            id ?
+                [
+                    {
+                        binding: 'DB',
+                        database_name: name,
+                        database_id: id,
+                        migrations_dir: '../../packages/data/d1/migrations'
+                    }
+                ]
+            :   []
+    };
+}
+
 export async function readInstanceConfig(file = path.join(ROOT, 'idstead.jsonc')) {
     return resolveInstanceConfig(Bun.JSONC.parse(await readFile(file, 'utf8')));
 }
 
 export async function renderWranglerConfigs(config: InstanceConfig) {
-    const variables: Record<string, Value> = { ...instanceVariables(config), ...routes(config) };
+    const variables: Record<string, Value> = {
+        ...instanceVariables(config),
+        ...routes(config),
+        ...databases(config)
+    };
     const rendered: Record<string, string> = {};
     for (const app of APPS) {
         const template = path.join(ROOT, 'apps', app, 'wrangler.template.jsonc');

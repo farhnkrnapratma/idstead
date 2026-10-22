@@ -26,6 +26,17 @@ describe('resolveInstanceConfig', () => {
         expect(config.jobs).toEqual({ cron: '17 3 * * *', hourlyCron: '37 * * * *' });
     });
 
+    test('defaults the database name and validates its ID', () => {
+        const config = resolveInstanceConfig({ domains: { site: 'example.org' } });
+        expect(config.cloudflare.database).toEqual({ name: 'idstead', id: null });
+        expect(() =>
+            resolveInstanceConfig({
+                domains: { site: 'example.org' },
+                cloudflare: { database: { id: 'not-a-uuid' } }
+            })
+        ).toThrow('cloudflare.database.id');
+    });
+
     test('rejects an hourly schedule equal to the daily one', () => {
         expect(() =>
             resolveInstanceConfig({
@@ -65,6 +76,7 @@ describe('renderWranglerConfigs', () => {
             ])
         );
         expect(byApp.web.name).toBe('idstead-web');
+        expect(byApp.web.d1_databases).toEqual([]);
         expect(byApp.web.routes.map((route: { pattern: string }) => route.pattern)).toEqual([
             'example.com',
             'www.example.com'
@@ -86,5 +98,24 @@ describe('renderWranglerConfigs', () => {
         expect(Bun.JSONC.parse(web)).toMatchObject({
             routes: [{ pattern: 'example.org', custom_domain: true }]
         });
+    });
+
+    test('binds the D1 database to every Worker once its ID is set', async () => {
+        const id = '01234567-89ab-4cde-8f01-23456789abcd';
+        const rendered = await renderWranglerConfigs(
+            resolveInstanceConfig({
+                ...example,
+                cloudflare: { ...example.cloudflare, database: { name: 'site-db', id } }
+            })
+        );
+        for (const text of Object.values(rendered))
+            expect((Bun.JSONC.parse(text) as Record<string, any>).d1_databases).toEqual([
+                {
+                    binding: 'DB',
+                    database_name: 'site-db',
+                    database_id: id,
+                    migrations_dir: '../../packages/data/d1/migrations'
+                }
+            ]);
     });
 });

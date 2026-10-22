@@ -5,6 +5,14 @@
     "compatibility_flags": ["nodejs_compat"],
     "routes": [{ "pattern": "api.fkp.my.id", "custom_domain": true }],
     "observability": { "enabled": true },
+    "d1_databases": [
+        {
+            "binding": "DB",
+            "database_name": "idstead",
+            "database_id": "01a9d5d0-7228-4791-ab9a-0813d73abbf3",
+            "migrations_dir": "../../packages/data/d1/migrations"
+        }
+    ],
     "alias": { "$app/env/private": "./src/appEnv.ts", "$app/env/public": "./src/appEnv.ts" },
     "secrets": {
         "required": [

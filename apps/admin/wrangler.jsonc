@@ -6,6 +6,14 @@
     "assets": { "binding": "ASSETS", "directory": ".svelte-kit/cloudflare" },
     "routes": [{ "pattern": "admin.fkp.my.id", "custom_domain": true }],
     "observability": { "enabled": true },
+    "d1_databases": [
+        {
+            "binding": "DB",
+            "database_name": "idstead",
+            "database_id": "01a9d5d0-7228-4791-ab9a-0813d73abbf3",
+            "migrations_dir": "../../packages/data/d1/migrations"
+        }
+    ],
     "ai": { "binding": "AI", "remote": true },
     "r2_buckets": [{ "binding": "ASSET_BUCKET", "bucket_name": "static", "remote": true }],
     "queues": { "producers": [{ "binding": "NEWSLETTER_QUEUE", "queue": "idstead-newsletter" }] },
