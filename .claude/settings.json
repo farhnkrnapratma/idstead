@@ -29,21 +29,13 @@
             {
                 "matcher": "Bash|Grep",
                 "hooks": [
-                    {
-                        "type": "command",
-                        "command": "$HOME/.local/bin/graphify hook-guard search",
-                        "timeout": 10
-                    }
+                    { "type": "command", "command": "graphify hook-guard search", "timeout": 10 }
                 ]
             },
             {
                 "matcher": "Read|Glob",
                 "hooks": [
-                    {
-                        "type": "command",
-                        "command": "$HOME/.local/bin/graphify hook-guard read",
-                        "timeout": 10
-                    }
+                    { "type": "command", "command": "graphify hook-guard read", "timeout": 10 }
                 ]
             }
         ],
