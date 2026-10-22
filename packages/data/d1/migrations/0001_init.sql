@@ -221,7 +221,7 @@ CREATE INDEX db_blog_banner_cleanup_idx ON db_blog_banner_versions (retired_at) 
 
 CREATE TABLE db_posts (
     id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))), 2) || '-' || substr('89ab', 1 + (abs(random()) % 4), 1) || substr(lower(hex(randomblob(2))), 2) || '-' || lower(hex(randomblob(6)))),
-    slug TEXT NOT NULL UNIQUE CHECK (slug <> '' AND slug NOT GLOB '*[^a-z-]*'),
+    slug TEXT NOT NULL UNIQUE CHECK (length(slug) BETWEEN 1 AND 100 AND slug NOT GLOB '*[^a-z0-9-]*' AND slug NOT GLOB '-*' AND slug NOT GLOB '*-' AND slug NOT GLOB '*--*' AND slug NOT IN ('banners', 'content')),
     title TEXT NOT NULL CHECK (length(title) <= 60),
     excerpt TEXT,
     published INTEGER NOT NULL DEFAULT 0 CHECK (published IN (0, 1)),

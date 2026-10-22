@@ -88,6 +88,9 @@ describe('D1 schema', () => {
     test('rejects values the Postgres constraints rejected', () => {
         const db = migratedDb();
         expect(() => post(db, 'a', { slug: 'Bad Slug' })).toThrow();
+        for (const slug of ['-lead', 'trail-', 'double--dash', 'content'])
+            expect(() => post(db, `x${slug}`, { slug })).toThrow();
+        post(db, 'svelte', { slug: 'svelte-5-2' });
         expect(() => post(db, 'b', { title: 'x'.repeat(61) })).toThrow();
         expect(() =>
             post(db, 'c', { tags: JSON.stringify(['a', 'b', 'c', 'd', 'e', 'f']) })
