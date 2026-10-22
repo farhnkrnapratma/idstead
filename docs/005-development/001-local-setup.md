@@ -39,7 +39,7 @@ bun run --filter @idstead/jobs dev       # jobs worker, http://localhost:8788 (-
 ## Everyday commands
 
 ```sh
-bun run check        # svelte-check (web, admin) + tsc (api, jobs, mdrs)
+bun run check        # svelte-check (web, admin) + tsc (api, jobs, mdrs, tests/tooling/scripts)
 bun run lint         # prettier --write . && eslint .
 bun run fmt:check    # prettier --check .
 bun run test         # bun test tests

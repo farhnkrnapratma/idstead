@@ -1,4 +1,3 @@
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { dataStores } from '#lib/server/data.ts';
@@ -15,7 +14,7 @@ export const GET: RequestHandler = async ({ request, url, platform }) => {
         return apiError(auth.status, auth.code ?? 'BLOG_POSTS_AUTH_REQUIRED', auth.message);
     try {
         const posts = await service.adminPosts.posts.list();
-        return json({ posts }, { headers: { 'Cache-Control': 'no-store' } });
+        return Response.json({ posts }, { headers: { 'Cache-Control': 'no-store' } });
     } catch (error) {
         console.error('Admin post list failed:', error);
         return apiError(503, 'BLOG_POSTS_UNAVAILABLE', 'Posts could not be loaded.');

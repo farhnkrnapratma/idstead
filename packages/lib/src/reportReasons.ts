@@ -7,7 +7,7 @@ import {
     UserX,
     FileX,
     Newspaper,
-    HelpCircle
+    CircleQuestionMark
 } from '@lucide/svelte';
 
 export const REPORT_REASONS = [
@@ -91,7 +91,7 @@ export const REPORT_REASON_ICONS: Record<ReportReasonId, typeof ShieldAlert> = {
     impersonation: UserX,
     removal_request: FileX,
     misinformation: Newspaper,
-    other: HelpCircle
+    other: CircleQuestionMark
 };
 
 export function reportReasonIcon(id: string) {

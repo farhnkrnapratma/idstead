@@ -3,7 +3,7 @@
     import { buttonKey } from '../shortcuts.ts';
     import { shortcutStore } from '../stores/shortcutStore.svelte';
     import { untrack, type Snippet } from 'svelte';
-    import { AlertTriangle, X } from '@lucide/svelte';
+    import { TriangleAlert, X } from '@lucide/svelte';
     import { cn } from '../utils/cn';
     import { portal } from '../utils/actions';
     import { lockScroll } from '../utils/scroll';
@@ -194,7 +194,7 @@
                         isDestructive ? 'text-danger' : ''
                     )}>
                     {#if isDestructive}
-                        <AlertTriangle class="size-4 shrink-0 text-danger" />
+                        <TriangleAlert class="size-4 shrink-0 text-danger" />
                     {/if}
                     {title}
                 </h2>

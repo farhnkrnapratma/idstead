@@ -1,6 +1,6 @@
 <script lang="ts">
     import { fade } from 'svelte/transition';
-    import { AlertCircle, AlertTriangle, Info } from '@lucide/svelte';
+    import { CircleAlert, TriangleAlert, Info } from '@lucide/svelte';
     import { toastStore } from '../stores/toastStore.svelte';
     import { cn } from '../utils/cn';
 
@@ -21,9 +21,9 @@
             className
         )}>
         {#if toastStore.type === 'error'}
-            <AlertCircle class="size-4 text-danger" />
+            <CircleAlert class="size-4 text-danger" />
         {:else if toastStore.type === 'warning'}
-            <AlertTriangle class="size-4 text-warning" />
+            <TriangleAlert class="size-4 text-warning" />
         {:else}
             <Info class="size-4 text-accent-text" />
         {/if}

@@ -200,7 +200,7 @@ describe('D1 post operations', () => {
 
     test('claims retired banners after a day and keeps different markdown from being overwritten', async () => {
         const s = stores();
-        s.sqlite.exec(
+        s.sqlite.run(
             `INSERT INTO db_blog_banner_versions (id, post_id, object_key, sha256, bytes, state, retired_at)
              VALUES ('${uuid(7)}', '${uuid(8)}', 'blog/banners/${uuid(8)}/${uuid(7)}.webp', '${sha}', 10, 'retired', '2020-01-01T00:00:00.000Z')`
         );

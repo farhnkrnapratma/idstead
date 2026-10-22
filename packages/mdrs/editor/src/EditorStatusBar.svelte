@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Indent, RefreshCw, RefreshCwOff } from '@lucide/svelte';
+    import { ListIndentIncrease, RefreshCw, RefreshCwOff } from '@lucide/svelte';
     import Tooltip from '@idstead/ui/components/Tooltip.svelte';
     import type { EditorPreferences } from './preferences.svelte';
 
@@ -22,7 +22,7 @@
     <div class="flex min-w-0 items-center gap-3 overflow-x-auto">
         <span class="editor-theme-foreground shrink-0">Ln {line}, Col {column}</span>
         <span class="flex shrink-0 items-center gap-1">
-            <Indent class="hidden size-3 sm:inline-flex" />
+            <ListIndentIncrease class="hidden size-3 sm:inline-flex" />
             <span class="sm:hidden"
                 >{preferences.indentMode === 'tabs' ? 'T' : `S: ${preferences.indentSize}`}</span>
             <span class="hidden sm:inline"

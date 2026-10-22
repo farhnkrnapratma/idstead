@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { Snippet } from 'svelte';
-    import { AlertTriangle, RotateCw } from '@lucide/svelte';
+    import { TriangleAlert, RotateCw } from '@lucide/svelte';
     import Button from './Button.svelte';
     import ShinyText from './ShinyText.svelte';
     import { cn } from '../utils/cn';
@@ -80,7 +80,7 @@
         )}>
         <div
             class="mb-3 flex h-12 w-12 items-center justify-center rounded-md bg-danger-subtle/30 text-danger">
-            <AlertTriangle class="size-6" />
+            <TriangleAlert class="size-6" />
         </div>
         <h3 class="type-card-title">{title}</h3>
         {#if description}

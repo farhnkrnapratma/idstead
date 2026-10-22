@@ -12,7 +12,7 @@
     lang="ts"
     generics="T">
     import { onDestroy } from 'svelte';
-    import { ImageOff, LoaderCircle, Trash2 } from '@lucide/svelte';
+    import { ImageOff, LoaderCircle, Trash } from '@lucide/svelte';
     import Button from '@idstead/ui/components/Button.svelte';
     import FileUploadField from '@idstead/ui/components/FileUploadField.svelte';
     import ImageWithSkeleton from '@idstead/ui/components/ImageWithSkeleton.svelte';
@@ -177,7 +177,7 @@
                 aria-label={`Remove ${title.toLowerCase()}`}
                 disabled={disabled || busy}
                 onclick={remove}>
-                {#snippet leading()}<Trash2
+                {#snippet leading()}<Trash
                         class="size-3.5"
                         aria-hidden="true" />{/snippet}
                 Remove

@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { Snippet } from 'svelte';
-    import { FileCheck2, UploadCloud } from '@lucide/svelte';
+    import { FileCheckCorner, CloudUpload } from '@lucide/svelte';
     import { cn } from '../utils/cn';
     import Button from './Button.svelte';
     import FieldMessage from './FieldMessage.svelte';
@@ -150,7 +150,8 @@
                 {uploadingLabel}
             </p>
         {:else if selectedFileName}
-            <FileCheck2 class={cn('text-accent-text', compact ? 'size-5 shrink-0' : 'size-8')} />
+            <FileCheckCorner
+                class={cn('text-accent-text', compact ? 'size-5 shrink-0' : 'size-8')} />
             <span class={cn('flex min-w-0 flex-col', compact ? 'gap-0.5' : 'items-center gap-2')}>
                 <span class="max-w-full truncate font-mono text-sm font-semibold text-text-primary">
                     {selectedFileName}
@@ -160,7 +161,7 @@
                 {/if}
             </span>
         {:else if compact}
-            <UploadCloud
+            <CloudUpload
                 class="size-5 shrink-0 text-text-secondary transition-colors group-hover:text-accent-text" />
             <span class="flex min-w-0 flex-col gap-0.5">
                 {#if actions}
@@ -173,7 +174,7 @@
                 {/if}
             </span>
         {:else}
-            <UploadCloud
+            <CloudUpload
                 class="size-8 text-text-secondary transition-colors group-hover:text-accent-text" />
             {#if actions}
                 {@render actions({ trigger: () => fileInputRef?.click() })}

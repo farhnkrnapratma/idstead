@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { AlertCircle, CheckCircle2, AlertTriangle, Info } from '@lucide/svelte';
+    import { CircleAlert, CircleCheck, TriangleAlert, Info } from '@lucide/svelte';
     import { cn } from '../utils/cn';
 
     interface Props {
@@ -30,11 +30,11 @@
             className
         )}>
         {#if variant === 'error'}
-            <AlertCircle class="size-3 shrink-0" />
+            <CircleAlert class="size-3 shrink-0" />
         {:else if variant === 'success'}
-            <CheckCircle2 class="size-3 shrink-0" />
+            <CircleCheck class="size-3 shrink-0" />
         {:else if variant === 'warning'}
-            <AlertTriangle class="size-3 shrink-0" />
+            <TriangleAlert class="size-3 shrink-0" />
         {:else}
             <Info class="size-3 shrink-0" />
         {/if}

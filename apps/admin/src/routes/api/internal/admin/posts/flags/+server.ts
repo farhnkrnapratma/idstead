@@ -1,4 +1,3 @@
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { dataStores } from '#lib/server/data.ts';
@@ -93,7 +92,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         },
         service.activityLog
     );
-    return json(
+    return Response.json(
         { post_revision: post.post_revision, published: post.published, pinned: post.pinned },
         { headers: { 'Cache-Control': 'no-store' } }
     );

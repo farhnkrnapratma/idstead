@@ -30,7 +30,7 @@
     import hljs from 'highlight.js';
     import 'katex/dist/katex.min.css';
     import { contentFontStore } from '@idstead/ui/stores/contentFontStore.svelte.ts';
-    import { pushState, goto } from '$app/navigation';
+    import { goto } from '$app/navigation';
     import { page } from '$app/state';
 
     interface Props {
@@ -160,7 +160,7 @@
         if (!targetEl) return;
 
         e.preventDefault();
-        pushState(`#${targetId}`, {});
+        void goto(`#${targetId}`, { shallow: true });
         scrollToTarget(targetId, true);
     }
 

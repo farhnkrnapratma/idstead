@@ -1,4 +1,3 @@
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
 import { apiError } from '#lib/server/apiError.ts';
@@ -40,5 +39,5 @@ export const POST: RequestHandler = async ({ request, platform, url, getClientAd
         dataStores(platform).service?.activityLog
     );
 
-    return json({ ok: true }, { headers: { 'Cache-Control': 'no-store' } });
+    return Response.json({ ok: true }, { headers: { 'Cache-Control': 'no-store' } });
 };

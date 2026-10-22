@@ -1,4 +1,3 @@
-import { json } from '@sveltejs/kit';
 import type { SubscriberRepository } from '@idstead/data';
 import { apiError } from './apiError';
 import { isSameOriginRequest } from './sameOrigin';
@@ -51,7 +50,7 @@ export async function requestUnsubscribe({
         const token = await subscribers.unsubscribeTokenFor(email);
         if (token !== null && (!/^[0-9a-f]{64}$/.test(token) || !(await send(email, token))))
             throw new Error('Confirmation email failed');
-        return json({
+        return Response.json({
             ok: true,
             message:
                 'If this address has a subscription, check your inbox for a link to confirm unsubscribing.'

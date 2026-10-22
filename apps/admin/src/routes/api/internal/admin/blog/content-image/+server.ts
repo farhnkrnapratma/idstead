@@ -1,4 +1,3 @@
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { dataStores } from '#lib/server/data.ts';
@@ -96,7 +95,7 @@ export const POST: RequestHandler = async ({ request, url, platform }) => {
         );
     }
 
-    return json(
+    return Response.json(
         {
             url: `${cdnBaseUrl()}/${home}/images/${name}.avif`,
             width: metadata.width,

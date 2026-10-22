@@ -1,5 +1,4 @@
 import { countReadingMinutes } from '@idstead/domain/readTime.ts';
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
 import { dataStores } from '#lib/server/data.ts';
@@ -172,7 +171,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             },
             service.activityLog
         );
-        return json(
+        return Response.json(
             {
                 success: true,
                 operationId: operation.id,
@@ -221,8 +220,9 @@ export const GET: RequestHandler = async ({ request, url, platform }) => {
             'Save status could not be checked. Retry shortly.'
         );
     }
-    if (!operation) return json({ state: 'unknown' }, { headers: { 'Cache-Control': 'no-store' } });
-    return json(
+    if (!operation)
+        return Response.json({ state: 'unknown' }, { headers: { 'Cache-Control': 'no-store' } });
+    return Response.json(
         { operationId: operation.id, state: operation.state, post: operation.result },
         { headers: { 'Cache-Control': 'no-store' } }
     );

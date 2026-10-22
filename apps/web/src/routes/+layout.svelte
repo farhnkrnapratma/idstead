@@ -70,7 +70,8 @@
     const BLOG_POST_ROUTE_ID = '/blog/[slug]';
 
     onNavigate(navigation => {
-        if (!document.startViewTransition || a11yStore.current.reduceMotion) return;
+        if (navigation.shallow || !document.startViewTransition || a11yStore.current.reduceMotion)
+            return;
 
         const isBlogPostTransition =
             navigation.to?.route.id === BLOG_POST_ROUTE_ID

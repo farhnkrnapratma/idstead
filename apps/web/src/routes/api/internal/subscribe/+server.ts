@@ -1,5 +1,4 @@
 import { publicRepositories, serviceData } from '#lib/server/repositories.ts';
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { apiError } from '#lib/server/apiError.ts';
 import { isSameOriginRequest } from '#lib/server/sameOrigin.ts';
@@ -84,7 +83,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             'Could not record the subscription right now.'
         );
     }
-    if (result !== 'requested') return json(ACCEPTED);
+    if (result !== 'requested') return Response.json(ACCEPTED);
 
     const profile = await publicRepositories()
         .author.profile()
@@ -107,5 +106,5 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         );
     }
 
-    return json(ACCEPTED);
+    return Response.json(ACCEPTED);
 };

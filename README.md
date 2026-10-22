@@ -73,7 +73,7 @@ bun install
 ```sh
 bun run test     # regression and contract tests
 bun run check    # instance config, svelte-check and tsc
-bun run lint     # prettier and eslint
+bun run lint     # prettier, eslint and the deprecated-API check
 bun run build    # every app
 ```
 
