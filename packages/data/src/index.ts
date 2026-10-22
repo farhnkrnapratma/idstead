@@ -75,6 +75,7 @@ export type { ContentBucket, D1Like } from './d1/client';
 export { createD1BlogRepository, createD1CommentRepository, createD1RenderStore } from './d1/blog';
 export { createD1CommentWriter, createD1ViewRecorder } from './d1/writes';
 export { createD1AuthorRepository } from './d1/author';
+export { createD1NewsletterStore, createD1SubscriberRepository } from './d1/subscribers';
 export { createD1LegalPageRepository, createD1LegalPageWriter } from './d1/legal';
 export {
     createD1ArdIndexStore,
