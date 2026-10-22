@@ -13,3 +13,5 @@ export const IP_SALT = read('IP_SALT');
 export const SUPABASE_SERVICE_ROLE_KEY = read('SUPABASE_SERVICE_ROLE_KEY');
 export const RESEND_API_KEY = read('RESEND_API_KEY');
 export const SUBSCRIBER_FROM_EMAIL = read('SUBSCRIBER_FROM_EMAIL');
+export const DATA_BACKEND = read('DATA_BACKEND');
+export const WRITES_FROZEN = read('WRITES_FROZEN');

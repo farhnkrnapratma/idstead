@@ -76,10 +76,12 @@ export async function apiErrorEnvelope(
         } catch {}
     }
 
+    const retryAfter = response.headers.get('retry-after');
     const headers: Record<string, string> = {
         'Content-Type': 'application/json; charset=utf-8',
         'Cache-Control': 'no-store',
         'X-Request-ID': options.requestId,
+        ...(retryAfter ? { 'Retry-After': retryAfter } : {}),
         ...(options.noindex ? { 'X-Robots-Tag': 'noindex, nofollow' } : {}),
         ...(status === 405 ?
             {

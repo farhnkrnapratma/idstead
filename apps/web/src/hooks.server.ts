@@ -2,6 +2,7 @@ import { sequence } from '@sveltejs/kit/hooks';
 import * as Sentry from '@sentry/sveltekit';
 import { redirect } from '@sveltejs/kit';
 import type { Handle } from '@sveltejs/kit/hooks';
+import { writeFreezeHandle } from '#lib/server/writeFreeze.ts';
 import * as publicEnv from '$app/env/public';
 import { dev } from '$app/env';
 import { assetNames, serveIdentityAsset } from '#lib/server/profileAssets.ts';
@@ -304,7 +305,8 @@ export const handle: Handle = sequence(
             response = new Response(null, { status: response.status, headers: response.headers });
         return response;
     },
-    pageDataCache
+    pageDataCache,
+    writeFreezeHandle
 );
 
 export const handleError = Sentry.handleErrorWithSentry();
