@@ -43,9 +43,9 @@ describe('content security policy', () => {
         expect(directive('connect-src')).toContain('https://analytics.google.com');
     });
 
-    test('supabase is allowed over https and wss, derived from the env', () => {
+    test('supabase is allowed over https only, derived from the env', () => {
         expect(directive('connect-src')).toContain('https://abc.supabase.co');
-        expect(directive('connect-src')).toContain('wss://abc.supabase.co');
+        expect(directive('connect-src')).not.toContain('wss://abc.supabase.co');
     });
 
     test('sentry and cdn origins come from the env', () => {
