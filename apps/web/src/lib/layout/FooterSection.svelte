@@ -16,6 +16,7 @@
     import StatusBadge from '@idstead/ui/components/StatusBadge.svelte';
     import * as publicEnv from '$app/env/public';
     import { BookOpenText } from '@lucide/svelte';
+    import { copyrightLine } from '@idstead/domain/copyright.ts';
 
     import { page } from '$app/state';
 
@@ -65,7 +66,7 @@
 
     let pageAuthor = $derived((page?.data as any)?.author);
 
-    let copyrightName = $derived(pageAuthor?.name || '');
+    let copyright = $derived(copyrightLine(pageAuthor?.name, new Date().getFullYear()));
 
     let resolvedNavItems = $derived(navItems.length > 0 ? navItems : defaultNavItems);
 
@@ -148,9 +149,8 @@
                 </nav>
             </div>
 
-            <div
-                class="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle pt-4 sm:pt-5">
-                {#if resolvedSocials.length > 0}
+            {#if resolvedSocials.length > 0}
+                <div class="border-t border-border-subtle pt-4 sm:pt-5">
                     <div class="flex flex-wrap gap-2">
                         {#each resolvedSocials as item (item.url + item.platform)}
                             <a
@@ -167,8 +167,17 @@
                             </a>
                         {/each}
                     </div>
-                {/if}
+                </div>
+            {/if}
 
+            <div
+                class="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-t border-border-subtle pt-4 sm:pt-5">
+                <div class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 select-none">
+                    <span class="text-xs font-medium text-text-muted">{copyright}</span>
+                    <StatusBadge
+                        host={publicEnv.PUBLIC_STATUS_PAGE_HOST}
+                        code={publicEnv.PUBLIC_STATUS_PAGE_CODE} />
+                </div>
                 <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
                     <SpotlightSearch variant="icon" />
                     {#if onToggleReadingMode}
@@ -198,16 +207,6 @@
                     {/if}
                     <AccessibilitySelect dropdownDirection="up" />
                 </div>
-            </div>
-
-            <div
-                class="flex flex-col items-center gap-3 border-t border-border-subtle pt-4 text-center select-none sm:flex-row sm:justify-between sm:pt-5 sm:text-left">
-                <span class="text-xs font-medium text-text-muted">
-                    &copy; {new Date().getFullYear()}{copyrightName ? ` ${copyrightName}.` : '.'}
-                </span>
-                <StatusBadge
-                    host={publicEnv.PUBLIC_STATUS_PAGE_HOST}
-                    code={publicEnv.PUBLIC_STATUS_PAGE_CODE} />
             </div>
         </div>
     </div>

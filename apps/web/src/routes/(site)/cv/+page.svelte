@@ -25,7 +25,9 @@
 
 <SiteMeta
     title="Curriculum Vitae"
-    description={`Experience, education and skills of ${data.author?.name || 'the author'}.`}
+    description={data.author?.name ?
+        `Experience, education and skills of ${data.author.name}.`
+    :   'Experience, education and skills.'}
     path="/cv"
     siteName={data.author?.name || ''}
     siteUrl={data.author?.siteUrl || ''} />
@@ -33,7 +35,7 @@
 <PageMain variant="site">
     <Section
         spacing="none"
-        class="relative z-10 pt-5 pb-6 md:pt-8 md:pb-8 toolbar-gutter:pt-0">
+        class="relative z-10 pt-6 pb-6 sm:pt-8 md:pb-8">
         <PageContainer width="standard">
             <SectionHeader
                 class="mb-6"

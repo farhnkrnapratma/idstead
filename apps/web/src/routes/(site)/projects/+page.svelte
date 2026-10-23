@@ -119,7 +119,9 @@
 
 <SiteMeta
     title="Projects"
-    description={`Open source projects by ${data.author?.name || 'the author'} on GitHub.`}
+    description={data.author?.name ?
+        `Open source projects by ${data.author.name} on GitHub.`
+    :   'Open source projects on GitHub.'}
     path="/projects"
     siteName={data.author?.name || ''}
     siteUrl={data.author?.siteUrl || ''} />
@@ -138,7 +140,7 @@
 <PageMain variant="site">
     <Section
         spacing="none"
-        class="relative z-10 pt-5 pb-6 md:pt-8 md:pb-8 toolbar-gutter:pt-0">
+        class="relative z-10 pt-6 pb-6 sm:pt-8 md:pb-8">
         <PageContainer width="standard">
             <SectionHeader
                 class="mb-6"

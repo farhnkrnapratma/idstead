@@ -12,11 +12,10 @@
     let { variant = 'page', reading = false, class: className = '', children }: Props = $props();
 
     const shellStyles = $derived(
-        reading ?
-            'min-h-screen pt-4 sm:pt-6'
-        :   cn(
+        reading ? 'min-h-screen pt-4 sm:pt-6'
+        : variant === 'site' ? 'min-h-[calc(100vh-4.25rem)] sm:min-h-[calc(100vh-5.25rem)]'
+        : cn(
                 'min-h-[calc(100vh-4rem)] pt-16 sm:min-h-[calc(100vh-5rem)] sm:pt-20',
-                variant === 'site' && 'toolbar-gutter:pt-3',
                 variant === 'article' && 'overscroll-none lg:h-dvh lg:min-h-0 lg:overflow-clip'
             )
     );

@@ -43,7 +43,7 @@
 
 <Section
     spacing="none"
-    class={cn('pt-5 pb-6 md:pt-8 md:pb-8 toolbar-gutter:pt-0', className)}>
+    class={cn('pt-6 pb-6 sm:pt-8 md:pb-8', className)}>
     <PageContainer width="standard">
         <SectionHeader
             {title}

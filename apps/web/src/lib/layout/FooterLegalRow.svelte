@@ -3,6 +3,7 @@
     import FooterSiteLink from './FooterSiteLink.svelte';
     import { FOOTER_SITE_LINKS } from './footerLinks';
     import { isHiddenLegalPath } from '#app/legalVisibility.ts';
+    import { copyrightLine } from '@idstead/domain/copyright.ts';
 
     interface Props {
         name?: string;
@@ -20,7 +21,7 @@
         className
     )}>
     <span class="inline-flex shrink-0 items-center text-text-muted">
-        &copy; {new Date().getFullYear()}{name ? ` ${name}.` : '.'}
+        {copyrightLine(name, new Date().getFullYear())}
     </span>
     {#each siteLinks as item (item.label)}
         <FooterSiteLink {item} />
