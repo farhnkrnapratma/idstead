@@ -46,7 +46,7 @@ flowchart LR
 ```
 
 - **Rust core.** Parsing, directives, the expression language, sanitizing (for example with the `ammonia` crate), formatting and linting. It compiles to WebAssembly with `wasm-bindgen`. Native Node addons (napi-rs) aren't an option, because Cloudflare Workers can't load them; this repository already ships WASM inside Workers.
-- **Data resolvers stay in TypeScript.** The WASM core can't call Supabase. It collects the `api.v1.*` references it needs, the host resolves them asynchronously, and the core finishes rendering with the results. Hosts other than this site plug in their own resolvers.
+- **Data resolvers stay in TypeScript.** The WASM core can't query the database. It collects the `api.v1.*` references it needs, the host resolves them asynchronously, and the core finishes rendering with the results. Hosts other than this site plug in their own resolvers.
 - **Math.** KaTeX is a JavaScript library: either keep calling it from the TypeScript layer, or move to a Rust TeX renderer once one matches its output.
 - **Size.** The WASM bundle has to fit the Workers script size limit (3 MB compressed on the free plan, 10 MB on paid plans).
 

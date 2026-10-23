@@ -20,7 +20,7 @@ Documentation for Idstead, a self-hostable personal site and identity home. The 
 
 ## 003 Architecture
 
-[003-architecture/](003-architecture/README.md) holds eleven low-level diagrams, from the browser through Cloudflare to Supabase. Each one names the source files it was verified against.
+[003-architecture/](003-architecture/README.md) holds eleven low-level diagrams, from the browser through Cloudflare to D1 and R2. Each one names the source files it was verified against.
 
 ## 004 Public API
 

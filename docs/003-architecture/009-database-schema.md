@@ -1,8 +1,8 @@
 # 9. Database Schema
 
-The public tables in the Supabase project, with their relationships. The diagrams list key columns only. Source: the live `information_schema` on 2026-10-15. All tables use the `db_` prefix, introduced in migration `20260810`.
+The tables of the site, with their relationships. Production runs on Cloudflare D1 since 2026-10-23 (see [D1 schema](#d1-schema)); the diagrams below were drawn from the Postgres schema the D1 schema was converted from, and the relationships are the same. The diagrams list key columns only. Source: the live `information_schema` on 2026-10-15. All tables use the `db_` prefix, introduced in migration `20260810`.
 
-> Production was migrated partly through the Supabase MCP tool, so recorded migration versions differ from the file names in `supabase/migrations/`, and the original `create table` statements are not in the repo. Check the live schema before assuming a migration is applied. Re-generate this page with `information_schema.columns` and the foreign-key query in [Maintenance](#maintenance).
+> `supabase/migrations/` is the history of the retired Postgres schema, kept with its data until Stage 8. New schema changes go to `packages/data/d1/migrations/`.
 
 ## Content
 
@@ -224,7 +224,7 @@ erDiagram
 
 ## D1 schema
 
-The same tables also exist as a Cloudflare D1 (SQLite) schema in `packages/data/d1/migrations/`, which the D1 adapters will use after the move off Supabase; until the cutover the site still reads and writes Supabase. `0001_init.sql` was written from the live schema above, with these conversions:
+The same tables also exist as a Cloudflare D1 (SQLite) schema in `packages/data/d1/migrations/`, which every data store reads and writes since the cutover on 2026-10-23. `0001_init.sql` was written from the live schema above, with these conversions:
 
 - **Types:** UUIDs, timestamps and dates are `TEXT` (UUIDs default to a random v4, timestamps to ISO 8601 UTC with milliseconds, `public_id` to 64 random hex characters); booleans are `INTEGER` 0 or 1; `jsonb` and `text[]` are JSON `TEXT` checked with `json_valid` and `json_type`.
 - **Checks:** D1 has no regular expressions, so pattern checks use `GLOB` (for example `public_id NOT GLOB '*[^0-9a-f]*'`), and checks that need a subquery (the length of each tag and TL;DR point) are `BEFORE` triggers.
@@ -233,7 +233,7 @@ The same tables also exist as a Cloudflare D1 (SQLite) schema in `packages/data/
 - **Read cache:** `db_cache_generations` holds one generation per cached domain (`author`, `blog`, `legal` and `comments:<post id>`), bumped by triggers on every write to the tables behind it.
 - **Dropped:** the full-text (`gin`) indexes and the foreign key from `db_admin_settings` to `auth.users`.
 
-`tests/d1Schema.test.ts` loads every migration into SQLite and checks that each column of the live Postgres schema (`tests/fixtures/postgresColumns.json`) still exists and that the triggers behave as before. Apply a migration to a D1 database with `bunx wrangler d1 execute <database> --remote --file <migration>`.
+`tests/d1Schema.test.ts` loads every migration into SQLite and checks that each column of the live Postgres schema (`tests/fixtures/postgresColumns.json`) still exists and that the triggers behave as before. Apply new migrations with `bunx wrangler d1 migrations apply <database> --remote` from `apps/web`, and to the shared local database used by the dev servers with `bun run db:local`.
 
 ## Maintenance
 
@@ -250,6 +250,6 @@ where tc.constraint_type = 'FOREIGN KEY' and tc.table_schema = 'public';
 
 ## Source
 
-- Live Supabase schema (`information_schema`, `cron.job`)
-- `supabase/migrations/`
-- `tests/safeupdate.test.ts`
+- `packages/data/d1/migrations/`
+- `tests/d1Schema.test.ts`, `tests/fixtures/postgresColumns.json`
+- `supabase/migrations/` and `tests/safeupdate.test.ts` (retired Postgres schema)

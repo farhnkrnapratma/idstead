@@ -62,7 +62,7 @@ sequenceDiagram
 - A **passkey session** is MFA-satisfied. A session counts as passkey when its authentication methods include `passkey`, `webauthn` or `mfa/webauthn`.
 - Any other session needs MFA only when `nextLevel === 'aal2'` and `currentLevel !== 'aal2'`.
 
-The database enforces the same rule in `public.is_admin()` (migration `20261012121000_is_admin_accepts_passkey.sql`). It returns true when the JWT has `app_metadata.role = 'admin'` **and** any one of these holds:
+The retired Postgres schema enforced the same rule in `public.is_admin()`; on D1 the admin endpoints apply it in code before they write (migration `20261012121000_is_admin_accepts_passkey.sql`). It returns true when the JWT has `app_metadata.role = 'admin'` **and** any one of these holds:
 
 - `aal = 'aal2'`;
 - an `amr` entry has `method = 'passkey'`;

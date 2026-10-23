@@ -82,7 +82,7 @@ curl "https://api.example.com/v1/blog?id=3f9a1c2&o=md"
 | `id` | required |  |
 | `output` / `o` | `md` | `md` (raw Markdown), `txt` (plain text), or `json` (`{id, slug, title, content}`) |
 
-The body is read from Supabase Storage (`blog-posts`). A missing or unreadable file returns `502 BLOG_CONTENT_FETCH_FAILED`.
+The body is read from R2 (`content/posts/`). A missing or unreadable file returns `502 BLOG_CONTENT_FETCH_FAILED`.
 
 ```sh
 curl "https://api.example.com/v1/blog/content?id=3f9a1c2&o=txt"

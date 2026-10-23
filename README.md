@@ -4,7 +4,7 @@
 
 ---
 
-> **Warning:** Idstead is being extracted from a personal site and is not ready for other deployments yet. Data and admin sign-in still depend on a Supabase project whose schema cannot yet be created from this repository. Expect breaking changes until the first release.
+> **Warning:** Idstead is being extracted from a personal site and is not ready for other deployments yet. Data lives in Cloudflare D1 and R2; admin sign-in still uses Supabase Auth until a later release. Expect breaking changes until the first release.
 
 ## What you get
 
@@ -22,7 +22,7 @@ All personal content (name, bio, CV, skills, links, posts) lives in the database
 
 - [Bun](https://bun.com/), the only package manager and runtime used here.
 - A Cloudflare account with a domain, for Workers, R2, Queues, Workers AI and rate limiting.
-- A [Supabase](https://supabase.com/) project for data and admin sign-in.
+- A [Supabase](https://supabase.com/) project for admin sign-in (Supabase Auth only).
 - Optional: [Resend](https://resend.com/) for the newsletter and contact form, [Turnstile](https://developers.cloudflare.com/turnstile/) keys, [Sentry](https://sentry.io/) and Google Analytics.
 
 ## Getting started
@@ -35,7 +35,7 @@ bun install
 
 1. **Describe your instance.** Copy `idstead.example.jsonc` to `idstead.jsonc`, set your domain and, if you like, the Worker, bucket and queue names, then run `bun run configure` to render each app's `wrangler.jsonc`. See [instance configuration](docs/002-configuration/001-instance.md).
 2. **Set environment variables.** `.env.example` lists every one; copy it to `.env` and fill it in. `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `PUBLIC_SITE_URL` and `PUBLIC_API_BASE_URL` are required. See [environment](docs/002-configuration/002-environment.md).
-3. **Apply the database schema** in `supabase/migrations/` to your Supabase project.
+3. **Create the local database:** `bun run db:local` applies the D1 migrations to a local database the dev servers share. For production, `bun run setup` creates the D1 database and applies them.
 4. **Run it locally:**
 
     ```sh

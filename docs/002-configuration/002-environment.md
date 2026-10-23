@@ -6,16 +6,14 @@ The columns show which apps read each variable, from a code search on 2026-10-18
 
 | Variable | Kind | web | admin | api | jobs | Purpose |
 | --- | --- | :-: | :-: | :-: | :-: | --- |
-| `PUBLIC_SUPABASE_URL` | public | ✓ | ✓ | ✓ | ✓ | Supabase project URL |
-| `PUBLIC_SUPABASE_PUBLISHABLE_KEY` | public | ✓ | ✓ | ✓ | ✓ | anon/publishable key (RLS applies) |
-| `SUPABASE_SERVICE_ROLE_KEY` | **secret** | ✓ | ✓ | – | ✓ | service-role client that bypasses RLS. Server-only. The API worker never has it. |
-| `DATA_BACKEND` | var, optional | ✓ | ✓ | ✓ | ✓ | data adapter that `dataStores()` (`server/data.ts`) builds every store from: `supabase` (the default) or `d1`, which reads the `DB` binding for data and the `ASSET_BUCKET` binding for post content. Anything else throws. |
-| `DATA_CACHE` | var, optional | ✓ | ✓ | ✓ | ✓ | `1` or `true` caches the public reads of the `d1` backend (author, posts, comments per post, legal pages) in the Workers Cache API for a day, keyed by the Worker version and the `db_cache_generations` generation of each domain, so a write invalidates them at once. Post lists with view and comment counts are kept for 60 seconds and post renders for 5 minutes; errors are never cached. No effect on `supabase` or where the Cache API is missing (local dev). |
+| `PUBLIC_SUPABASE_URL` | public | ✓ | ✓ | – | – | Supabase project URL, for admin sign-in (Supabase Auth). The web app only type-checks the shared auth modules. |
+| `PUBLIC_SUPABASE_PUBLISHABLE_KEY` | public | ✓ | ✓ | – | – | publishable key for Supabase Auth in the admin browser code |
+| `SUPABASE_SERVICE_ROLE_KEY` | **secret** | – | ✓ | – | – | Supabase Auth admin client: verifies admin tokens and manages the admin user. Server-only; it never reads site data. |
+| `DATA_CACHE` | var, optional | ✓ | ✓ | ✓ | ✓ | `1` or `true` caches the public reads (author, posts, comments per post, legal pages) in the Workers Cache API for a day, keyed by the Worker version and the `db_cache_generations` generation of each domain, so a write invalidates them at once. Post lists with view and comment counts are kept for 60 seconds and post renders for 5 minutes; errors are never cached. No effect on `supabase` or where the Cache API is missing (local dev). |
 | `WRITES_FROZEN` | var, optional | ✓ | ✓ | – | ✓ | `1` or `true` pauses writes for maintenance: `POST`, `PUT`, `PATCH` and `DELETE` requests under `/api/internal/**` answer `503 MAINTENANCE` with `Retry-After: 60`, the jobs Worker retries queue messages after 5 minutes and skips its cron run. Reads keep working. |
 | `PUBLIC_API_BASE_URL` | public | ✓ | ✓ | – | – | API origin for links, CSP `connect-src` and the OpenAPI mirror. Required: `apiBaseUrl()` throws without it. |
 | `PUBLIC_SITE_URL` | public | – | ✓ | – | ✓ | public site origin, used when the author profile has no site URL: for newsletter links (`configuredSiteUrl` in `server/siteUrl.ts`, which throws without it), for the site links in the CV verification bundle (`adminCv.ts`), and for the generated website banner in admin |
 | `PUBLIC_CDN_BASE_URL` | public | ✓ | ✓ | – | ✓ | public R2/CDN origin for `/static`, `/fonts`, `/logo`, CV URLs and the identity fallback |
-| `R2_ACCOUNT_ID`, `R2_BUCKET_NAME`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | **secret**, script | – | – | – | – | S3-API access to the R2 bucket for `scripts/migrate-cdn-layout.ts` and `scripts/export-site-data.ts`, which run with bun outside Workers. The Workers use the `ASSET_BUCKET` binding instead. |
 | `PUBLIC_TURNSTILE_SITE_KEY` | public | ✓ | ✓ | – | – | Turnstile widget key |
 | `TURNSTILE_SECRET` | **secret** | ✓ | ✓ | – | – | server-side `siteverify`. The production value is also the Supabase Auth CAPTCHA secret. |
 | `RESEND_API_KEY` | **secret** | ✓ | ✓ | – | ✓ | email: confirm, contact, login alert, newsletter |
@@ -52,7 +50,7 @@ In production each Worker gets its variables as Worker secrets and reads them at
 
 `wrangler deploy` fails for `api` and `jobs` while a key in their `secrets.required` is missing on the Worker. The [setup script](../001-getting-started/001-setup-script.md) uploads each Worker's secrets with its deploy; afterwards, change one with `bunx wrangler secret put <KEY> --name <worker>`.
 
-Build-time and tooling values are never Worker secrets: `SENTRY_AUTH_TOKEN`, `SENTRY_ORG` and `SENTRY_PROJECT` (source-map upload during `vite build`), `CLOUDFLARE_API_TOKEN` and `SUPABASE_ACCESS_TOKEN` (tooling), and the `R2_*` keys (`scripts/migrate-cdn-layout.ts`).
+Build-time and tooling values are never Worker secrets: `SENTRY_AUTH_TOKEN`, `SENTRY_ORG` and `SENTRY_PROJECT` (source-map upload during `vite build`), and `CLOUDFLARE_API_TOKEN` and `SUPABASE_ACCESS_TOKEN` (tooling).
 
 ## Using a secret manager
 
@@ -63,13 +61,13 @@ phase run --env dev -- bun run dev
 phase run --env prod -- bun run setup
 ```
 
-A secret manager can also own the Worker secrets. With Phase, give each Worker a folder such as `/workers/web` that references the root values (`PUBLIC_SUPABASE_URL = ${PUBLIC_SUPABASE_URL}`), and sync each folder to its Worker. The sync is one-way and the secret manager is authoritative, so a key missing from a folder is removed from the Worker: then change values only in the secret manager, never in the Cloudflare dashboard.
+A secret manager can also own the Worker secrets. With Phase, give each Worker a folder such as `/workers/web` that references the root values (`PUBLIC_SITE_URL = ${PUBLIC_SITE_URL}`), and sync each folder to its Worker. The sync is one-way and the secret manager is authoritative, so a key missing from a folder is removed from the Worker: then change values only in the secret manager, never in the Cloudflare dashboard.
 
 ## Where they are read
 
 - **Svelte apps:** `apps/web/src/env.ts` and `apps/admin/src/env.ts` declare the schema. Code reads values through `$app/env/private` and `$app/env/public`.
 - **Wrangler workers:**
-    - `apps/api` reads `c.env`.
+    - `apps/api` reads `c.env`, and like jobs aliases `$app/env/*` to its `src/appEnv.ts`.
     - `apps/jobs` aliases `$app/env/*` to `src/appEnv.ts`, which reads the `cloudflare:workers` env, so shared lib code runs unchanged.
 - **Cloudflare bindings in SvelteKit:** read them through `workerBinding()` (`packages/lib/src/server/workerEnv.ts`), because `event.platform` is undefined with adapter-cloudflare 8.
 

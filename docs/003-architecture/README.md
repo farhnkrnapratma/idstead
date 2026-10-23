@@ -1,10 +1,10 @@
 # Architecture
 
-Low-level diagrams of how a request travels from the browser through the Cloudflare Workers to Supabase, R2 and the external services. Each file covers one flow. Each file ends with a **Source** list of the code it was verified against. Re-check those files when you edit a diagram.
+Low-level diagrams of how a request travels from the browser through the Cloudflare Workers to D1, R2, Supabase Auth and the external services. Each file covers one flow. Each file ends with a **Source** list of the code it was verified against. Re-check those files when you edit a diagram.
 
 | # | File | Covers |
 | --- | --- | --- |
-| 1 | [Component map](001-component-map.md) | Workers, bindings, Supabase, R2, external services |
+| 1 | [Component map](001-component-map.md) | Workers, bindings, D1, R2, Supabase Auth, external services |
 | 2 | [Web request pipeline](002-web-middleware-pipeline.md) | `apps/web/src/hooks.server.ts`, step by step |
 | 3 | [Page render](003-page-render.md) | Data loading for `/`, `/blog`, `/blog/[slug]` |
 | 4 | [Public write endpoints](004-public-write-endpoints.md) | Comments, views, subscribe, contact, feedback |

@@ -7,9 +7,9 @@ sequenceDiagram
     autonumber
     participant B as Admin browser (PostEditor)
     participant P as POST /api/internal/admin/posts
-    participant DB as Supabase (service-role)
+    participant DB as D1 (DB binding)
     participant R2 as R2 (ASSET_BUCKET)
-    participant ST as Storage (blog-posts)
+    participant ST as R2 (ASSET_BUCKET, content/)
     participant Q as Queue idstead-newsletter
     participant J as idstead-jobs (queue consumer)
     participant RS as Resend
@@ -19,14 +19,14 @@ sequenceDiagram
     P->>P: blogAdmin(): same-origin + verifyAdminToken
     P->>P: parsePostInput() (banner WASM validation), validateDefineForSave()
     P->>P: buildPostRender(): render MDRS once (failure is logged, the save continues)
-    P->>DB: rpc db_prepare_post_operation (keyed by operationId)
+    P->>DB: prepare the post operation (keyed by operationId)
     opt new banner
         P->>R2: putBanner webp, then avif<br/>blog/banners/{postId}/{version}.{ext} (staging), read-back SHA-256 check
     end
     P->>ST: upload markdown (read back if it already exists)
     P->>ST: upload {operationId}.render.json (upsert; a failure is logged, not fatal)
-    P->>DB: rpc db_ready_post_operation
-    P->>DB: rpc db_commit_post_operation
+    P->>DB: mark the operation ready
+    P->>DB: commit the operation in one batch
     alt revision conflict
         P-->>B: 409 BLOG_REVISION_CONFLICT
     else rejected (for example a duplicate slug)
@@ -50,7 +50,7 @@ sequenceDiagram
         J->>ST: refreshPostRenders() once, then ack those messages
     end
     J->>J: isNewsletterMessage? else ack (drop)
-    J->>DB: notifyNewPost(createSupabaseNewsletterStore(db), env, postId, force)
+    J->>DB: notifyNewPost(service.writers.newsletter, env, postId, force)
     DB-->>J: post row: published? subscribers_notified_at?
     alt not published, or already notified and not force
         J->>J: ack
@@ -93,6 +93,6 @@ sequenceDiagram
 
 - `apps/admin/src/routes/api/internal/admin/posts/+server.ts`, `posts/notify/+server.ts`, `posts/flags/+server.ts`, `api/internal/blog/validate-define/+server.ts`
 - `packages/lib/src/server/blogPostSave.ts`, `blogPostInput.ts`, `blogBannerStorage.ts`, `postEffects.ts`
-- `packages/data/src/adminPosts.ts`, `packages/data/src/supabase/adminPosts.ts`
+- `packages/data/src/adminPosts.ts`, `packages/data/src/d1/adminPosts.ts`
 - `packages/lib/src/server/newsletterQueue.ts`, `subscriberBroadcast.ts`, `subscribers.ts`
 - `apps/jobs/src/index.ts`, `apps/jobs/wrangler.jsonc`

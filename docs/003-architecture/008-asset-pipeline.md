@@ -1,6 +1,6 @@
 # 8. Image Pipeline: Encode, Validate, Store, Serve, Clean Up
 
-Images are encoded **in the browser**, validated again on the server, written to R2 through the `ASSET_BUCKET` binding (`packages/lib/src/server/r2.ts`), served by idstead-web routes, and cleaned up by idstead-jobs. Markdown bodies are stored separately in Supabase Storage.
+Images are encoded **in the browser**, validated again on the server, written to R2 through the `ASSET_BUCKET` binding (`packages/lib/src/server/r2.ts`), served by idstead-web routes, and cleaned up by idstead-jobs. Markdown bodies are stored in the same bucket under `content/posts/`.
 
 ```mermaid
 sequenceDiagram
@@ -9,7 +9,7 @@ sequenceDiagram
     participant WW as Web Worker (OffscreenCanvas)
     participant A as idstead-admin route
     participant R2 as R2 (ASSET_BUCKET)
-    participant DB as Supabase (service-role)
+    participant DB as D1 (DB binding)
     participant V as Visitor
     participant W as idstead-web route
     participant J as idstead-jobs (cron 03:17 UTC)
@@ -19,7 +19,7 @@ sequenceDiagram
     B->>A: upload (Bearer token)
     A->>A: validate (sizes, magic bytes, WASM WebP decode)
     A->>R2: PUT objects (IfNoneMatch *, then read back + SHA-256 check)
-    A->>DB: RPC commits the new version (versions table + pointer row)
+    A->>DB: commit the new version in one batch (versions table + pointer row)
     A->>R2: promote: copy the staged objects to their canonical keys, then delete the staging copies
 
     V->>W: GET image URL
@@ -27,7 +27,7 @@ sequenceDiagram
     W->>R2: GetObject canonical key (staging key of the current version as fallback)
     W-->>V: bytes (max-age=300 + ETag)
 
-    J->>DB: rpc db_claim_blog_banner_cleanup / db_claim_identity_cleanup
+    J->>DB: claim the banner and identity versions to clean up
     J->>R2: delete retired objects
     J->>DB: mark deleted or remove version rows
 ```
@@ -42,7 +42,7 @@ sequenceDiagram
 | Markdown video | uploaded as-is, **WebM only** (EBML header with DocType `webm`, `isWebm()`) | `admin/blog/content-video` route | `{home}/videos/{name}.webm` | CDN URL, rendered as `<video>` |
 | Website banner | `processSiteBanner.ts` → `workers/siteBanner.worker.ts`: `banner.avif`, `banner.webp` (1280×640), `banner-og.webp` (1200×630) | `validateSiteBanner.ts`: `inspectAvif` / `inspectWebp` with exact dimensions | `identity/{name}`, next to the avatar | `/banner.{avif,webp}`, `/banner-og.webp` → `serveIdentityAsset()` |
 | CV PDF | generated server-side (`pdfGenerator.ts`) | – | `cv/{filename}` plus `.sha256`, `.sha512`, `.md5`, `.b2` and an optional `.asc` (see [011-cv-documents.md](011-cv-documents.md)) | `db_documents.file_url` (CDN URL), streamed by `/v1/cv?output=pdf` |
-| Post Markdown | – | – | Supabase Storage `blog-posts`, `posts/{postUuid}/{operationId}.md` | read by page loads and the API |
+| Post Markdown | – | – | R2 `content/posts/{postUuid}/{operationId}.md` | read by page loads and the API |
 
 ## Blog post assets
 

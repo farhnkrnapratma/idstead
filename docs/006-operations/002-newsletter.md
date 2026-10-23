@@ -68,7 +68,7 @@ Sentry shows `Newsletter message dead-lettered` with the `postId`. The DLQ consu
 ## Source
 
 - `packages/lib/src/server/newsletterQueue.ts`, `subscriberBroadcast.ts`, `subscribers.ts`, `unsubscribeRequest.ts`
-- `packages/data/src/subscribers.ts` (`SubscriberRepository`, `NewsletterStore`) and its adapter `packages/data/src/supabase/subscribers.ts`, the only code that queries `db_subscribers`; `tests/contracts/subscriberRepository.contract.ts` pins their behaviour
+- `packages/data/src/subscribers.ts` (`SubscriberRepository`, `NewsletterStore`) and its adapter `packages/data/src/d1/subscribers.ts`, the only code that queries `db_subscribers`; `tests/contracts/subscriberRepository.contract.ts` pins their behaviour
 - `apps/jobs/src/index.ts`, `apps/jobs/wrangler.jsonc`
 - `apps/web/src/routes/api/internal/subscribe/**`, `subscribe/confirm`, `unsubscribe`
 - `apps/admin/src/routes/api/internal/admin/posts/{+server.ts,notify/+server.ts}`

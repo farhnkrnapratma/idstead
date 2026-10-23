@@ -9,7 +9,7 @@ sequenceDiagram
     participant H as /api/internal handler
     participant TS as Turnstile
     participant AI as Workers AI (Llama Guard)
-    participant DB as Supabase (service-role)
+    participant DB as D1 (DB binding)
     participant RS as Resend
 
     rect rgba(120, 160, 255, 0.15)
@@ -70,7 +70,7 @@ sequenceDiagram
 | `POST /api/internal/blog/comments` | same-origin, Turnstile, validation, Llama Guard | `db_comments` |
 | `POST /api/internal/blog/comments/report` | same-origin, Turnstile, reason allow-list; `commentId` is the comment public ID | `db_comment_reports` |
 | `POST /api/internal/blog/views` | same-origin | `db_views` |
-| `POST /api/internal/feedback` | same-origin, `sec-fetch-site` not `cross-site` | RPC `db_record_page_feedback`, which writes `db_feedback_operations`, `db_feedback_events` and, for posts, `db_post_feedback` and `db_posts.helpful_*` |
+| `POST /api/internal/feedback` | same-origin, `sec-fetch-site` not `cross-site` | `FeedbackRecorder.record()`, one D1 batch that writes `db_feedback_operations`, `db_feedback_events` and, for posts, `db_post_feedback` and `db_posts.helpful_*` |
 | `POST /api/internal/subscribe` | same-origin, Turnstile | `db_subscribers` and a confirm mail |
 | `POST /api/internal/subscribe/unsubscribe-request` | same-origin, Turnstile | none (mails an unsubscribe link without revealing whether the address exists) |
 | `POST /api/internal/contact` | same-origin, Turnstile | a mail to the owner, then `db_admin_notifications` |
@@ -78,7 +78,7 @@ sequenceDiagram
 ## Notes
 
 - **Origin check:** every endpoint above rejects a cross-origin request with `403` and `FORBIDDEN_ORIGIN`.
-- **Clients:** writes use `getSupabaseAdminClient()` (service role, bypasses RLS). It is server-only (`packages/lib/src/server/supabaseAdmin.ts`).
+- **Stores:** writes go through `dataStores(platform).service` (`packages/lib/src/server/data.ts`), which is server-only.
 - **Activity log:** these public endpoints do **not** write `db_activity_log`. Only admin endpoints do.
 - **IP hashing** uses SHA-256 of the IP plus `IP_SALT` (`hashIp` in `@idstead/domain/hash.ts`). It is used for view de-duplication, report and feedback tracking, and subscriber rows.
 
@@ -86,5 +86,5 @@ sequenceDiagram
 
 - `apps/web/src/routes/api/internal/**/+server.ts`
 - `packages/lib/src/server/sameOrigin.ts`, `turnstile.ts`, `moderation.ts`, `pageFeedback.ts`, `subscribers.ts`, `unsubscribeRequest.ts`
-- `packages/data/src/activity.ts` and `supabase/activity.ts` (`FeedbackRecorder` calls `db_record_page_feedback`, `AdminNotifier` inserts into `db_admin_notifications`)
-- `supabase/migrations/20260911123339_feedback_operation_replay.sql` (`db_record_page_feedback`)
+- `packages/data/src/activity.ts` and `d1/activity.ts` (`FeedbackRecorder` records the page feedback, `AdminNotifier` inserts into `db_admin_notifications`)
+- `packages/data/d1/migrations/0001_init.sql`
