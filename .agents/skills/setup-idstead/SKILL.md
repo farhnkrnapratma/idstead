@@ -10,7 +10,7 @@ description: Set up a new Idstead instance (personal site, admin portal, public 
 ## Rules
 
 - **Never handle secret values.** Do not ask for API keys, tokens or passwords in chat, do not write them into files, and do not print the environment. Tell the user which variable names are missing and let them put the values in `.env` (repository root) or their secret manager themselves.
-- **Dry run first.** `apply` creates Cloudflare resources, a Supabase admin user and database rows, and deploys four Workers. Run it only after the user has seen a clean dry run and said yes.
+- **Dry run first.** `apply` creates Cloudflare resources (the R2 bucket, queues and the D1 database with its migrations), a Supabase Auth admin user and the starter legal pages, and deploys four Workers. Run it only after the user has seen a clean dry run and said yes.
 - **Use bun only** (`bun`, `bunx`), never npm, npx, yarn or pnpm.
 - If the repository has a secret manager rule (for example `.claude/rules/phase.md`), run the commands through it, such as `phase run --env prod -- bun run setup`.
 
@@ -29,7 +29,7 @@ description: Set up a new Idstead instance (personal site, admin portal, public 
 4. **Dry run:** `bun run setup --answers=<file>`. It stops at the first problem. The usual ones:
     - _Missing variables_: give the user the list and the table in the setup doc, and wait until they say the values are set.
     - _Wrangler is not signed in_: step 1.
-    - _No Idstead schema_: the Supabase project is empty. Explain the warning at the top of the setup doc. Do not try to build the schema from `supabase/migrations/`, which cannot do that yet. Stop and report.
+    - _D1 step fails_: report Wrangler's message. A missing permission usually means the Cloudflare API token lacks D1 edit rights; the user fixes the token, then runs the setup again (it resumes where it stopped).
 5. **Repeat the dry run** until it reaches "Next steps", then show the user what it would change and ask for a go-ahead.
 6. **Apply:** `bun run setup apply --answers=<file>`. The build and deploys take a few minutes. If a step fails, report the error. Do not delete what earlier steps created; running `apply` again resumes, because every step checks first.
 7. **Hand over.** Give the user the temporary admin password exactly as printed, once, and tell them to change it at first sign-in. Walk them through the printed next steps. Delete the answers file if it is inside the repository.

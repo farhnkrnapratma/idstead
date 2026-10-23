@@ -6,6 +6,7 @@ import { sentrySvelteKit } from '@sentry/sveltekit/vite';
 import { webpWasmPlugin } from '../../tooling/vite/webp-wasm-plugin.ts';
 
 const ENV_DIR = '../..';
+const LOCAL_STATE = '../../.wrangler/state/v3';
 
 export default defineConfig({
     envDir: ENV_DIR,
@@ -18,7 +19,7 @@ export default defineConfig({
                 runes: ({ filename }) =>
                     filename.split(/[/\\]/).includes('node_modules') ? undefined : true
             },
-            adapter: adapter(),
+            adapter: adapter({ platformProxy: { persist: { path: LOCAL_STATE } } }),
             env: { dir: ENV_DIR },
             tracing: { server: true }
         })
