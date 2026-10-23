@@ -16,7 +16,6 @@
         "*.ts",
         "tests",
         "tooling",
-        "scripts",
         "apps/web/src/app.d.ts",
         "apps/web/src/cloudflare-workers.d.ts"
     ]
