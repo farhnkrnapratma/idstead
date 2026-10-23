@@ -232,7 +232,6 @@ export const handle: Handle = sequence(
             response.headers.set(
                 'Content-Security-Policy',
                 buildContentSecurityPolicy({
-                    supabaseUrl: publicEnv.PUBLIC_SUPABASE_URL,
                     sentryDsn: publicEnv.PUBLIC_SENTRY_DSN,
                     cdnBaseUrl: publicEnv.PUBLIC_CDN_BASE_URL,
                     apiBaseUrl: apiBaseUrl(publicEnv.PUBLIC_API_BASE_URL),
