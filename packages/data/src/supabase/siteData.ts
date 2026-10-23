@@ -29,6 +29,7 @@ export function createSupabaseSiteDataStore(db: SupabaseClient): SiteDataStore {
                 repoRules,
                 activeDocuments,
                 settings,
+                subscribers,
                 profiles
             ] = await Promise.all([
                 rows(
@@ -78,6 +79,13 @@ export function createSupabaseSiteDataStore(db: SupabaseClient): SiteDataStore {
                     db.from('db_documents').select('filename, hash').eq('is_active', true)
                 ),
                 rows('settings', db.from('db_admin_settings').select('settings')),
+                rows(
+                    'subscribers',
+                    db
+                        .from('db_subscribers')
+                        .select('email, status, confirmed_at, unsubscribed_at, created_at')
+                        .order('created_at', { ascending: true })
+                ),
                 rows('profile', db.from('db_profiles').select('avatar_version').limit(1))
             ]);
             const tables: ExportTables = {
@@ -89,6 +97,7 @@ export function createSupabaseSiteDataStore(db: SupabaseClient): SiteDataStore {
                 repoRules,
                 activeDocuments,
                 settings,
+                subscribers,
                 avatarVersion: (profiles[0]?.avatar_version as string | null | undefined) ?? null
             };
             return { tables, failures };

@@ -37,7 +37,16 @@ function tables(): FakeTables {
             { id: 'v1', profile_id: PROFILE },
             { id: 'v2', profile_id: 'someone-else' }
         ],
-        db_admin_settings: [{ user_id: 'u', settings: { theme: 'dark' } }]
+        db_admin_settings: [{ user_id: 'u', settings: { theme: 'dark' } }],
+        db_subscribers: [
+            {
+                email: 'reader@example.com',
+                status: 'active',
+                confirmed_at: '2026-10-02T00:00:00Z',
+                unsubscribed_at: null,
+                created_at: '2026-10-01T00:00:00Z'
+            }
+        ]
     };
 }
 
@@ -67,6 +76,9 @@ describe('Supabase site data adapter', () => {
         expect(data.comments).toHaveLength(1);
         expect(data.activeDocuments.map(doc => doc.filename)).toEqual(['cv.pdf']);
         expect(data.settings).toEqual([{ user_id: 'u', settings: { theme: 'dark' } }]);
+        expect(data.subscribers.map(row => [row.email, row.status])).toEqual([
+            ['reader@example.com', 'active']
+        ]);
         expect(data.avatarVersion).toBe('avatar-1');
     });
 
@@ -197,6 +209,15 @@ describe('D1 site data adapter', () => {
         expect(data.comments[0]).toMatchObject({ is_admin: false, is_approved: false });
         expect(data.activeDocuments.map(doc => doc.filename)).toEqual(['cv.pdf']);
         expect(data.settings).toEqual([{ settings: { theme: 'dark' } }]);
+        expect(data.subscribers).toEqual([
+            {
+                email: 'a@example.com',
+                status: 'pending',
+                confirmed_at: null,
+                unsubscribed_at: null,
+                created_at: expect.any(String)
+            }
+        ]);
         expect(data.avatarVersion).toBe(V1);
         expect(await store.deletionPlan()).toEqual({
             documents: ['cv.pdf', 'old.pdf'],

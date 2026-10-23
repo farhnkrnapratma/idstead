@@ -44,6 +44,7 @@ export function createD1SiteDataStore(db: D1Like, bucket: ContentBucket): SiteDa
                 repoRules,
                 activeDocuments,
                 settings,
+                subscribers,
                 profiles
             ] = await Promise.all([
                 rows(
@@ -92,6 +93,10 @@ export function createD1SiteDataStore(db: D1Like, bucket: ContentBucket): SiteDa
                 rows('settings', 'SELECT settings FROM db_admin_settings', row => ({
                     settings: parseJson(row.settings)
                 })),
+                rows(
+                    'subscribers',
+                    'SELECT email, status, confirmed_at, unsubscribed_at, created_at FROM db_subscribers ORDER BY created_at'
+                ),
                 rows('profile', 'SELECT avatar_version FROM db_profiles LIMIT 1')
             ]);
             const tables: ExportTables = {
@@ -103,6 +108,7 @@ export function createD1SiteDataStore(db: D1Like, bucket: ContentBucket): SiteDa
                 repoRules,
                 activeDocuments,
                 settings,
+                subscribers,
                 avatarVersion: (profiles[0]?.avatar_version as string | null | undefined) ?? null
             };
             return { tables, failures };
