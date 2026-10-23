@@ -1,8 +1,8 @@
 import type { RequestHandler } from './$types';
 import * as env from '$app/env/public';
-import { readSiteProfile, publicResponse } from '#lib/server/publicMetadata.ts';
+import { readSite, publicResponse } from '#lib/server/publicMetadata.ts';
 
-export const GET: RequestHandler = async ({ request, url }) => {
+export const GET: RequestHandler = async ({ request, url, platform }) => {
     if (
         env.PUBLIC_SENTRY_ENVIRONMENT === 'preview'
         || url.hostname.endsWith('.pages.dev')
@@ -10,7 +10,7 @@ export const GET: RequestHandler = async ({ request, url }) => {
     ) {
         return publicResponse(request, 'User-agent: *\nDisallow: /\n', 'text/plain; charset=utf-8');
     }
-    const profile = await readSiteProfile();
+    const { siteUrl } = await readSite(platform);
     return publicResponse(
         request,
         `User-agent: *
@@ -20,7 +20,7 @@ Disallow: /api/internal/
 
 Content-Signal: ai-train=no, search=yes, ai-input=yes
 
-Sitemap: ${profile.siteUrl}/sitemap.xml
+Sitemap: ${siteUrl}/sitemap.xml
 `,
         'text/plain; charset=utf-8'
     );

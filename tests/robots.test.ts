@@ -3,7 +3,7 @@ import { describe, expect, mock, test } from 'bun:test';
 mock.module('$app/env/public', () => ({ PUBLIC_SENTRY_ENVIRONMENT: '' }));
 
 mock.module('#lib/server/publicMetadata.ts', () => ({
-    readSiteProfile: async () => ({ siteUrl: 'https://example.com' }),
+    readSite: async () => ({ siteUrl: 'https://example.com', profile: null }),
     publicResponse: async (_request: Request, body: string, type: string) =>
         new Response(body, { headers: { 'Content-Type': type } })
 }));

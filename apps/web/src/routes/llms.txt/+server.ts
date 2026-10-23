@@ -2,20 +2,36 @@ import type { RequestHandler } from './$types';
 import * as publicEnv from '$app/env/public';
 import { apiUrl } from '#lib/apiConfig.ts';
 import {
-    readSiteProfile,
+    readSite,
     readPublishedPosts,
     markdownText,
     validDate,
     publicResponse
 } from '#lib/server/publicMetadata.ts';
 
-export const GET: RequestHandler = async ({ request }) => {
-    const [author, posts] = await Promise.all([readSiteProfile(), readPublishedPosts()]);
+export const GET: RequestHandler = async ({ request, platform }) => {
+    const [{ siteUrl, profile: author }, posts] = await Promise.all([
+        readSite(platform),
+        readPublishedPosts()
+    ]);
+    const SITE_URL = siteUrl;
+    const API_URL = apiUrl('', publicEnv.PUBLIC_API_BASE_URL);
+    if (!author)
+        return publicResponse(
+            request,
+            `# ${markdownText(new URL(SITE_URL).hostname)}
+
+> This site is being set up. Check back soon.
+
+- [Public API Documentation](${API_URL}): Human-friendly documentation for REST & Markdown API endpoints.
+- [OpenAPI (JSON)](${API_URL}/openapi.json): Machine-readable OpenAPI v3 JSON specification for all public APIs.
+`,
+            'text/markdown; charset=utf-8',
+            300
+        );
     const authorName = markdownText(author.name);
     const authorHeadline = markdownText(author.headline);
     const authorBio = markdownText(author.bio);
-    const SITE_URL = author.siteUrl;
-    const API_URL = apiUrl('', publicEnv.PUBLIC_API_BASE_URL);
 
     let md = `# ${authorName} — ${authorHeadline}
 

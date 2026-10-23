@@ -2,14 +2,14 @@ import type { RequestHandler } from './$types';
 import * as publicEnv from '$app/env/public';
 import { createArdManifest } from '#lib/server/ard.ts';
 import { discoveryOperations } from '#lib/server/apiDiscovery.ts';
-import { readSiteProfile, publicResponse } from '#lib/server/publicMetadata.ts';
+import { readSite, publicResponse } from '#lib/server/publicMetadata.ts';
 
-export const GET: RequestHandler = async ({ request }) => {
-    const profile = await readSiteProfile();
+export const GET: RequestHandler = async ({ request, platform }) => {
+    const { siteUrl } = await readSite(platform);
     const response = await publicResponse(
         request,
         JSON.stringify(
-            createArdManifest(profile.siteUrl, discoveryOperations(publicEnv.PUBLIC_API_BASE_URL)),
+            createArdManifest(siteUrl, discoveryOperations(publicEnv.PUBLIC_API_BASE_URL)),
             null,
             2
         ),
