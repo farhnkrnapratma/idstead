@@ -84,7 +84,10 @@ export function createD1AuthorReader(
 
     return {
         async profile({ includeEmail = false } = {}) {
-            const row = await first('author.profile', 'SELECT * FROM db_profiles LIMIT 1');
+            const row = await first(
+                'author.profile',
+                'SELECT * FROM db_profiles WHERE avatar_version IS NOT NULL LIMIT 1'
+            );
             return row ? profileFromRow(profileRow(row), { includeEmail }) : null;
         },
 

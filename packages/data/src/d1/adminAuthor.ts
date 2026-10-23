@@ -146,11 +146,18 @@ export function createD1AdminAuthorStore(
         profile: Record<string, unknown>,
         identity: Record<string, unknown> | null
     ): Promise<Record<string, unknown>> {
-        const requestedId = typeof profile.id === 'string' && profile.id ? profile.id : null;
         const identityId =
             identity && typeof identity.version === 'string' && identity.version ?
                 identity.version
             :   null;
+        if (!(typeof profile.id === 'string' && profile.id)) {
+            const shell = await profileBy(
+                'WHERE avatar_version IS NULL AND banner_version IS NULL'
+            );
+            if (shell && identityId)
+                profile = { ...profile, id: shell.id, revision: shell.profile_revision };
+        }
+        const requestedId = typeof profile.id === 'string' && profile.id ? profile.id : null;
         let current: ProfileRecord | null;
         const targetId = requestedId ?? crypto.randomUUID();
         if (!requestedId) {
