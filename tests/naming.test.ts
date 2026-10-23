@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
 
 const LEGACY_NAME = /fkp/i;
+const OWNER_HANDLE = /farhnkrnapratma/i;
 
 const MIGRATION_FILES = new Set([
     'apps/web/src/app.html',
@@ -31,9 +32,9 @@ function trackedFiles(): string[] {
         .filter(file => file && file !== 'bun.lock' && !file.startsWith('supabase/migrations/'));
 }
 
-function mentionsLegacyName(file: string): boolean {
+function mentions(file: string, pattern: RegExp): boolean {
     try {
-        return LEGACY_NAME.test(readFileSync(new URL(`../${file}`, import.meta.url), 'utf8'));
+        return pattern.test(readFileSync(new URL(`../${file}`, import.meta.url), 'utf8'));
     } catch {
         return false;
     }
@@ -43,7 +44,16 @@ describe('Idstead naming', () => {
     test('only the migration and instance files use the old name', () => {
         const offenders = trackedFiles().filter(
             file =>
-                !MIGRATION_FILES.has(file) && !INSTANCE_FILES.has(file) && mentionsLegacyName(file)
+                !MIGRATION_FILES.has(file)
+                && !INSTANCE_FILES.has(file)
+                && mentions(file, LEGACY_NAME)
+        );
+        expect(offenders).toEqual([]);
+    });
+
+    test('application code never falls back to the owner handle', () => {
+        const offenders = trackedFiles().filter(
+            file => /^(apps|packages)\//.test(file) && mentions(file, OWNER_HANDLE)
         );
         expect(offenders).toEqual([]);
     });

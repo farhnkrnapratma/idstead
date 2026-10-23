@@ -30,7 +30,7 @@
     import TopNav from '#app/components/TopNav.svelte';
     import FooterSection from '#app/layout/FooterSection.svelte';
     import ConsentNotice from '#app/components/ConsentNotice.svelte';
-    import { Section } from '@idstead/ui';
+    import { Section, StatusBanner } from '@idstead/ui';
     import {
         turnstileWidget,
         executeTurnstile,
@@ -427,179 +427,185 @@
                 </div>
             </Card>
 
-            <form
-                novalidate
-                onsubmit={handleSubmit}
-                class="relative z-10 flex w-full flex-col gap-3 rounded-md glass-card p-6 text-left"
-                autocomplete="off">
-                <div class="mb-2 select-none">
-                    <h2 class="type-card-title">Report an issue</h2>
-                    <p class="mt-0.5 text-xs text-text-muted">
-                        Complete the fields below to submit your feedback directly.
-                    </p>
-                </div>
-
-                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <FormField
-                        id="form-name"
-                        label="Name"
-                        variant="floating"
-                        required
-                        hideAsterisk
-                        maxlength={50}
-                        currentLength={formName.length}
-                        error={formErrors.name}
-                        valid={formValid.name}>
-                        <Input
-                            type="text"
-                            id="form-name"
-                            name="name"
-                            autocomplete="name"
-                            maxlength={50}
-                            bind:value={formName}
-                            error={!!formErrors.name}
-                            valid={formValid.name}
-                            oninput={() => {
-                                formErrors.name = '';
-                                formValid.name = false;
-                                queueMicrotask(() => validation.input('name'));
-                            }}
-                            onblur={() => {
-                                void validation.check('name');
-                            }} />
-                    </FormField>
-
-                    <FormField
-                        id="form-email"
-                        label="Email"
-                        variant="floating"
-                        required
-                        hideAsterisk
-                        maxlength={100}
-                        currentLength={formEmail.length}
-                        error={formErrors.email}
-                        valid={formValid.email}>
-                        <Input
-                            type="text"
-                            id="form-email"
-                            name="email"
-                            autocomplete="email"
-                            maxlength={100}
-                            bind:value={formEmail}
-                            error={!!formErrors.email}
-                            valid={formValid.email}
-                            oninput={() => {
-                                formErrors.email = '';
-                                formValid.email = false;
-                                queueMicrotask(() => validation.input('email'));
-                            }}
-                            onblur={() => {
-                                void validation.check('email');
-                            }} />
-                    </FormField>
-                </div>
-
-                <FormField
-                    id="form-url"
-                    label="Which URL/page contains the issue?"
-                    variant="floating"
-                    required
-                    hideAsterisk
-                    maxlength={200}
-                    currentLength={formUrl.length}
-                    error={formErrors.url}
-                    valid={formValid.url}>
-                    <Input
-                        type="text"
-                        id="form-url"
-                        name="url"
-                        maxlength={200}
-                        bind:value={formUrl}
-                        error={!!formErrors.url}
-                        valid={formValid.url}
-                        oninput={() => {
-                            formErrors.url = '';
-                            formValid.url = false;
-                            queueMicrotask(() => validation.input('url'));
-                        }}
-                        onblur={() => {
-                            void validation.check('url');
-                        }} />
-                </FormField>
-
-                <FormField
-                    id="form-message"
-                    label="Message"
-                    variant="floating"
-                    required
-                    hideAsterisk
-                    maxlength={2000}
-                    currentLength={formMessage.length}
-                    counter={`${formMessage.length}/2000`}
-                    error={formErrors.message}
-                    valid={formValid.message}>
-                    <Textarea
-                        id="form-message"
-                        name="message"
-                        rows={4}
-                        maxlength={2000}
-                        bind:value={formMessage}
-                        error={!!formErrors.message}
-                        valid={formValid.message}
-                        oninput={() => {
-                            formErrors.message = '';
-                            formValid.message = false;
-                            queueMicrotask(() => validation.input('message'));
-                        }}
-                        onblur={() => {
-                            void validation.check('message');
-                        }} />
-                </FormField>
-
-                {#if turnstileSiteKey}
-                    <div
-                        bind:this={turnstileFeedbackEl}
-                        class="turnstile-widget select-none"
-                        use:turnstileWidget={{
-                            sitekey: turnstileSiteKey,
-                            action: 'feedback',
-                            size: 'flexible',
-                            theme: 'auto',
-                            appearance: 'interaction-only',
-                            execution: 'execute'
-                        }}>
+            {#if contactEmail}
+                <form
+                    novalidate
+                    onsubmit={handleSubmit}
+                    class="relative z-10 flex w-full flex-col gap-3 rounded-md glass-card p-6 text-left"
+                    autocomplete="off">
+                    <div class="mb-2 select-none">
+                        <h2 class="type-card-title">Report an issue</h2>
+                        <p class="mt-0.5 text-xs text-text-muted">
+                            Complete the fields below to submit your feedback directly.
+                        </p>
                     </div>
-                {/if}
 
-                <ConsentNotice action="submitting this feedback report" />
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <FormField
+                            id="form-name"
+                            label="Name"
+                            variant="floating"
+                            required
+                            hideAsterisk
+                            maxlength={50}
+                            currentLength={formName.length}
+                            error={formErrors.name}
+                            valid={formValid.name}>
+                            <Input
+                                type="text"
+                                id="form-name"
+                                name="name"
+                                autocomplete="name"
+                                maxlength={50}
+                                bind:value={formName}
+                                error={!!formErrors.name}
+                                valid={formValid.name}
+                                oninput={() => {
+                                    formErrors.name = '';
+                                    formValid.name = false;
+                                    queueMicrotask(() => validation.input('name'));
+                                }}
+                                onblur={() => {
+                                    void validation.check('name');
+                                }} />
+                        </FormField>
 
-                <div class="mt-2 flex items-center justify-between gap-2 select-none">
-                    <Button
-                        htmlType="button"
-                        type="outline"
-                        tone="critical"
-                        size="md"
-                        class="flex-1 sm:flex-initial"
-                        disabled={!canClearFeedback || isSubmitting}
-                        keyboardShortcut={buttonKey('formClear')}
-                        shortcutLabel="Clear feedback"
-                        onclick={clearFeedbackForm}>
-                        <span>Clear<span class="hidden sm:inline">&nbsp;feedback</span></span>
-                    </Button>
-                    <Button
-                        htmlType="submit"
-                        type="primary"
-                        size="md"
-                        class="flex-1 sm:flex-initial"
-                        aria-keyshortcuts="Control+Enter Meta+Enter"
-                        disabled={isSubmitting}
-                        isLoading={isSubmitting}
-                        keyboardShortcut={buttonKey('formSubmit')}
-                        shortcutLabel="Submit feedback">
-                        {isSubmitting ? 'Submitting…' : 'Submit feedback'}
-                    </Button>
-                </div>
-            </form>
+                        <FormField
+                            id="form-email"
+                            label="Email"
+                            variant="floating"
+                            required
+                            hideAsterisk
+                            maxlength={100}
+                            currentLength={formEmail.length}
+                            error={formErrors.email}
+                            valid={formValid.email}>
+                            <Input
+                                type="text"
+                                id="form-email"
+                                name="email"
+                                autocomplete="email"
+                                maxlength={100}
+                                bind:value={formEmail}
+                                error={!!formErrors.email}
+                                valid={formValid.email}
+                                oninput={() => {
+                                    formErrors.email = '';
+                                    formValid.email = false;
+                                    queueMicrotask(() => validation.input('email'));
+                                }}
+                                onblur={() => {
+                                    void validation.check('email');
+                                }} />
+                        </FormField>
+                    </div>
+
+                    <FormField
+                        id="form-url"
+                        label="Which URL/page contains the issue?"
+                        variant="floating"
+                        required
+                        hideAsterisk
+                        maxlength={200}
+                        currentLength={formUrl.length}
+                        error={formErrors.url}
+                        valid={formValid.url}>
+                        <Input
+                            type="text"
+                            id="form-url"
+                            name="url"
+                            maxlength={200}
+                            bind:value={formUrl}
+                            error={!!formErrors.url}
+                            valid={formValid.url}
+                            oninput={() => {
+                                formErrors.url = '';
+                                formValid.url = false;
+                                queueMicrotask(() => validation.input('url'));
+                            }}
+                            onblur={() => {
+                                void validation.check('url');
+                            }} />
+                    </FormField>
+
+                    <FormField
+                        id="form-message"
+                        label="Message"
+                        variant="floating"
+                        required
+                        hideAsterisk
+                        maxlength={2000}
+                        currentLength={formMessage.length}
+                        counter={`${formMessage.length}/2000`}
+                        error={formErrors.message}
+                        valid={formValid.message}>
+                        <Textarea
+                            id="form-message"
+                            name="message"
+                            rows={4}
+                            maxlength={2000}
+                            bind:value={formMessage}
+                            error={!!formErrors.message}
+                            valid={formValid.message}
+                            oninput={() => {
+                                formErrors.message = '';
+                                formValid.message = false;
+                                queueMicrotask(() => validation.input('message'));
+                            }}
+                            onblur={() => {
+                                void validation.check('message');
+                            }} />
+                    </FormField>
+
+                    {#if turnstileSiteKey}
+                        <div
+                            bind:this={turnstileFeedbackEl}
+                            class="turnstile-widget select-none"
+                            use:turnstileWidget={{
+                                sitekey: turnstileSiteKey,
+                                action: 'feedback',
+                                size: 'flexible',
+                                theme: 'auto',
+                                appearance: 'interaction-only',
+                                execution: 'execute'
+                            }}>
+                        </div>
+                    {/if}
+
+                    <ConsentNotice action="submitting this feedback report" />
+
+                    <div class="mt-2 flex items-center justify-between gap-2 select-none">
+                        <Button
+                            htmlType="button"
+                            type="outline"
+                            tone="critical"
+                            size="md"
+                            class="flex-1 sm:flex-initial"
+                            disabled={!canClearFeedback || isSubmitting}
+                            keyboardShortcut={buttonKey('formClear')}
+                            shortcutLabel="Clear feedback"
+                            onclick={clearFeedbackForm}>
+                            <span>Clear<span class="hidden sm:inline">&nbsp;feedback</span></span>
+                        </Button>
+                        <Button
+                            htmlType="submit"
+                            type="primary"
+                            size="md"
+                            class="flex-1 sm:flex-initial"
+                            aria-keyshortcuts="Control+Enter Meta+Enter"
+                            disabled={isSubmitting}
+                            isLoading={isSubmitting}
+                            keyboardShortcut={buttonKey('formSubmit')}
+                            shortcutLabel="Submit feedback">
+                            {isSubmitting ? 'Submitting…' : 'Submit feedback'}
+                        </Button>
+                    </div>
+                </form>
+            {:else}
+                <StatusBanner
+                    title="Feedback is not available yet"
+                    message="This site cannot receive feedback until its owner adds a contact email." />
+            {/if}
         </PageContainer>
     </Section>
 

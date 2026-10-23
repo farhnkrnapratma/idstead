@@ -110,11 +110,13 @@
             {/if}
         </div>
 
-        <svelte:element
-            this={headingTag}
-            class="mt-3 type-page-title font-extrabold sm:text-4xl">
-            {name}
-        </svelte:element>
+        {#if name}
+            <svelte:element
+                this={headingTag}
+                class="mt-3 type-page-title font-extrabold sm:text-4xl">
+                {name}
+            </svelte:element>
+        {/if}
 
         {#if headline}
             <p class="mt-1 type-body text-text-secondary">{headline}</p>

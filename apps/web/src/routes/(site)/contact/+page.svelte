@@ -161,7 +161,9 @@
 
 <SiteMeta
     title="Contact"
-    description={`Get in touch with ${data.author?.name || 'the author'}.`}
+    description={data.author?.name ?
+        `Get in touch with ${data.author.name}.`
+    :   'Contact channels and a message form.'}
     path="/contact"
     siteName={data.author?.name || ''}
     siteUrl={data.author?.siteUrl || ''} />
@@ -183,158 +185,160 @@
         emptyTitle="No contact channels yet"
         emptyDescription="Check back soon for ways to get in touch." />
 
-    <Section
-        spacing="none"
-        class="relative z-10 pb-6 md:pb-8">
-        <PageContainer width="standard">
-            <form
-                novalidate
-                onsubmit={validateForm}
-                class="flex w-full flex-col gap-2.5 rounded-md glass-card p-4 text-left sm:gap-3 sm:p-6"
-                autocomplete="off">
-                <div class="mb-2 select-none">
-                    <h2 class="type-card-title">Send a Message</h2>
-                    <p class="mt-0.5 type-body text-text-muted">
-                        Feel free to drop me a line. I'll get back to you as soon as possible.
-                    </p>
-                </div>
+    {#if data.canSendMessage}
+        <Section
+            spacing="none"
+            class="relative z-10 pb-6 md:pb-8">
+            <PageContainer width="standard">
+                <form
+                    novalidate
+                    onsubmit={validateForm}
+                    class="flex w-full flex-col gap-2.5 rounded-md glass-card p-4 text-left sm:gap-3 sm:p-6"
+                    autocomplete="off">
+                    <div class="mb-2 select-none">
+                        <h2 class="type-card-title">Send a Message</h2>
+                        <p class="mt-0.5 type-body text-text-muted">
+                            Feel free to drop me a line. I'll get back to you as soon as possible.
+                        </p>
+                    </div>
 
-                <FormField
-                    id="form-name"
-                    label="Name"
-                    variant="floating"
-                    required
-                    hideAsterisk
-                    maxlength={50}
-                    currentLength={formName.length}
-                    error={formErrors.name}
-                    valid={formValid.name}>
-                    <Input
-                        type="text"
+                    <FormField
                         id="form-name"
-                        name="name"
-                        autocomplete="name"
+                        label="Name"
+                        variant="floating"
+                        required
+                        hideAsterisk
                         maxlength={50}
-                        bind:value={formName}
-                        error={!!formErrors.name}
-                        valid={formValid.name}
-                        oninput={() => {
-                            formErrors.name = '';
-                            formValid.name = false;
-                            queueMicrotask(() => validation.input('name'));
-                        }}
-                        onblur={() => {
-                            void validation.check('name');
-                        }} />
-                </FormField>
+                        currentLength={formName.length}
+                        error={formErrors.name}
+                        valid={formValid.name}>
+                        <Input
+                            type="text"
+                            id="form-name"
+                            name="name"
+                            autocomplete="name"
+                            maxlength={50}
+                            bind:value={formName}
+                            error={!!formErrors.name}
+                            valid={formValid.name}
+                            oninput={() => {
+                                formErrors.name = '';
+                                formValid.name = false;
+                                queueMicrotask(() => validation.input('name'));
+                            }}
+                            onblur={() => {
+                                void validation.check('name');
+                            }} />
+                    </FormField>
 
-                <FormField
-                    id="form-email"
-                    label="Email"
-                    variant="floating"
-                    required
-                    hideAsterisk
-                    maxlength={100}
-                    currentLength={formEmail.length}
-                    error={formErrors.email}
-                    valid={formValid.email}>
-                    <Input
-                        type="text"
+                    <FormField
                         id="form-email"
-                        name="email"
-                        autocomplete="email"
+                        label="Email"
+                        variant="floating"
+                        required
+                        hideAsterisk
                         maxlength={100}
-                        bind:value={formEmail}
-                        error={!!formErrors.email}
-                        valid={formValid.email}
-                        oninput={() => {
-                            formErrors.email = '';
-                            formValid.email = false;
-                            queueMicrotask(() => validation.input('email'));
-                        }}
-                        onblur={() => {
-                            void validation.check('email');
-                        }} />
-                </FormField>
+                        currentLength={formEmail.length}
+                        error={formErrors.email}
+                        valid={formValid.email}>
+                        <Input
+                            type="text"
+                            id="form-email"
+                            name="email"
+                            autocomplete="email"
+                            maxlength={100}
+                            bind:value={formEmail}
+                            error={!!formErrors.email}
+                            valid={formValid.email}
+                            oninput={() => {
+                                formErrors.email = '';
+                                formValid.email = false;
+                                queueMicrotask(() => validation.input('email'));
+                            }}
+                            onblur={() => {
+                                void validation.check('email');
+                            }} />
+                    </FormField>
 
-                <FormField
-                    id="form-message"
-                    label="Message"
-                    variant="floating"
-                    required
-                    hideAsterisk
-                    maxlength={2000}
-                    currentLength={formMessage.length}
-                    counter={`${formMessage.length}/2000`}
-                    error={formErrors.message}
-                    valid={formValid.message}>
-                    <Textarea
+                    <FormField
                         id="form-message"
-                        name="message"
-                        rows={4}
+                        label="Message"
+                        variant="floating"
+                        required
+                        hideAsterisk
                         maxlength={2000}
-                        bind:value={formMessage}
-                        error={!!formErrors.message}
-                        valid={formValid.message}
-                        oninput={() => {
-                            formErrors.message = '';
-                            formValid.message = false;
-                            queueMicrotask(() => validation.input('message'));
+                        currentLength={formMessage.length}
+                        counter={`${formMessage.length}/2000`}
+                        error={formErrors.message}
+                        valid={formValid.message}>
+                        <Textarea
+                            id="form-message"
+                            name="message"
+                            rows={4}
+                            maxlength={2000}
+                            bind:value={formMessage}
+                            error={!!formErrors.message}
+                            valid={formValid.message}
+                            oninput={() => {
+                                formErrors.message = '';
+                                formValid.message = false;
+                                queueMicrotask(() => validation.input('message'));
+                            }}
+                            onblur={() => {
+                                void validation.check('message');
+                            }} />
+                    </FormField>
+
+                    <div
+                        {@attach element => {
+                            turnstileContactEl = element;
+                            return () => {
+                                turnstileContactEl = null;
+                            };
                         }}
-                        onblur={() => {
-                            void validation.check('message');
-                        }} />
-                </FormField>
+                        class="turnstile-widget select-none"
+                        use:turnstileWidget={{
+                            sitekey: turnstileSiteKey,
+                            size: 'flexible',
+                            action: 'contact-message',
+                            theme: 'auto',
+                            appearance: 'interaction-only',
+                            execution: 'execute'
+                        }}>
+                    </div>
 
-                <div
-                    {@attach element => {
-                        turnstileContactEl = element;
-                        return () => {
-                            turnstileContactEl = null;
-                        };
-                    }}
-                    class="turnstile-widget select-none"
-                    use:turnstileWidget={{
-                        sitekey: turnstileSiteKey,
-                        size: 'flexible',
-                        action: 'contact-message',
-                        theme: 'auto',
-                        appearance: 'interaction-only',
-                        execution: 'execute'
-                    }}>
-                </div>
+                    <ConsentNotice action="sending this message" />
 
-                <ConsentNotice action="sending this message" />
-
-                <div class="mt-2 flex items-center justify-between gap-2 select-none">
-                    <Button
-                        htmlType="button"
-                        type="outline"
-                        tone="critical"
-                        size="md"
-                        class="flex-1 sm:flex-initial"
-                        disabled={!canClearContactForm || isSubmittingMessage}
-                        keyboardShortcut={buttonKey('formClear')}
-                        shortcutLabel="Clear message"
-                        onclick={clearContactForm}>
-                        <span>Clear<span class="hidden sm:inline">&nbsp;message</span></span>
-                    </Button>
-                    <Button
-                        htmlType="submit"
-                        type="primary"
-                        size="md"
-                        class="flex-1 sm:flex-initial"
-                        aria-keyshortcuts="Control+Enter Meta+Enter"
-                        disabled={isSubmittingMessage}
-                        isLoading={isSubmittingMessage}
-                        keyboardShortcut={buttonKey('formSubmit')}
-                        shortcutLabel="Send message">
-                        {isSubmittingMessage ? 'Sending…' : 'Send message'}
-                    </Button>
-                </div>
-            </form>
-        </PageContainer>
-    </Section>
+                    <div class="mt-2 flex items-center justify-between gap-2 select-none">
+                        <Button
+                            htmlType="button"
+                            type="outline"
+                            tone="critical"
+                            size="md"
+                            class="flex-1 sm:flex-initial"
+                            disabled={!canClearContactForm || isSubmittingMessage}
+                            keyboardShortcut={buttonKey('formClear')}
+                            shortcutLabel="Clear message"
+                            onclick={clearContactForm}>
+                            <span>Clear<span class="hidden sm:inline">&nbsp;message</span></span>
+                        </Button>
+                        <Button
+                            htmlType="submit"
+                            type="primary"
+                            size="md"
+                            class="flex-1 sm:flex-initial"
+                            aria-keyshortcuts="Control+Enter Meta+Enter"
+                            disabled={isSubmittingMessage}
+                            isLoading={isSubmittingMessage}
+                            keyboardShortcut={buttonKey('formSubmit')}
+                            shortcutLabel="Send message">
+                            {isSubmittingMessage ? 'Sending…' : 'Send message'}
+                        </Button>
+                    </div>
+                </form>
+            </PageContainer>
+        </Section>
+    {/if}
 
     <FooterSection divided />
 </PageMain>

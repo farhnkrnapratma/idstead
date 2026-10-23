@@ -30,7 +30,9 @@
 
 <SiteMeta
     title="Supporting & Funding"
-    description={`Ways to support the open source work of ${data.author?.name || 'the author'}.`}
+    description={data.author?.name ?
+        `Ways to support the open source work of ${data.author.name}.`
+    :   'Ways to support this open source work.'}
     path="/funding"
     siteName={data.author?.name || ''}
     siteUrl={data.author?.siteUrl || ''} />

@@ -4,6 +4,7 @@ import { avatarSource } from '#lib/siteIdentity.ts';
 import { extractGitHubUsername } from '#lib/server/githubProjects.ts';
 import { fetchCachedProjects, withoutExcludedProjects } from '#lib/server/projectsCache.ts';
 import { publishedLegalSlugs } from '@idstead/domain/legal.ts';
+import { resendApiKey, senderAddress } from '#lib/server/subscribers.ts';
 
 export const load: LayoutServerLoad = async ({ fetch, platform, setHeaders }) => {
     const { author: authorRepository, legal } = publicRepositories(fetch);
@@ -30,6 +31,7 @@ export const load: LayoutServerLoad = async ({ fetch, platform, setHeaders }) =>
         author: author ? { ...author, avatar: avatarSource(author) } : author,
         projects: withoutExcludedProjects(projects, repoRules.excluded),
         pinnedRepoNames: repoRules.pinned,
-        legalPages
+        legalPages,
+        newsletterEnabled: Boolean(resendApiKey(platform) && senderAddress(platform))
     };
 };

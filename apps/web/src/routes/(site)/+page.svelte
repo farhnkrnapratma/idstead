@@ -1,6 +1,8 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import { ChevronRight, FolderOpen, Quote } from '@lucide/svelte';
+    import { ChevronRight, FolderOpen, Quote, Sprout } from '@lucide/svelte';
+    import { page } from '$app/state';
+    import { newsletterSignupVisible } from '@idstead/domain/newsletter.ts';
     import { Button, EmptyState, PageContainer, PageMain, Section } from '@idstead/ui';
     import Tag from '@idstead/ui/components/Tag.svelte';
     import { argKey, buttonKey } from '@idstead/ui/shortcuts.ts';
@@ -55,6 +57,15 @@
         (data.pinnedRepoNames || []).map((n: string) => n.toLowerCase())
     );
     const recentProjects = $derived(recentlyPushed(projects, pinnedRepoNames, HOME_PROJECT_COUNT));
+    const hasCvEntries = $derived(data.experience.length > 0 || data.education.length > 0);
+    const siteHost = $derived(page.url.host);
+    const showSubscribe = $derived(
+        newsletterSignupVisible({
+            configured: Boolean(data.newsletterEnabled),
+            hasAuthor: Boolean(author),
+            hasPublishedPosts: Boolean(data.hasPublishedPosts)
+        })
+    );
 
     onMount(() => {
         const legacyPath = legacySectionPath(window.location.hash);
@@ -76,75 +87,79 @@
 </script>
 
 <svelte:head>
-    <title>{name}{headline ? ` · ${headline}` : ''}</title>
-    <meta
-        name="description"
-        content={desc} />
-    <meta
-        name="robots"
-        content="index, follow" />
-    <link
-        rel="canonical"
-        href={siteUrl} />
-    <meta
-        property="og:title"
-        content="{name} · {headline}" />
-    <meta
-        property="og:description"
-        content={desc} />
-    <meta
-        property="og:type"
-        content="profile" />
-    <meta
-        property="og:url"
-        content={siteUrl} />
-    <meta
-        property="og:site_name"
-        content={name} />
-    <meta
-        property="og:image"
-        content={ogImage} />
-    <meta
-        property="og:image:secure_url"
-        content={ogImage} />
-    <meta
-        property="og:image:type"
-        content={ogImageType} />
-    <meta
-        property="og:image:width"
-        content={ogImageWidth} />
-    <meta
-        property="og:image:height"
-        content={ogImageHeight} />
-    <meta
-        property="og:image:alt"
-        content="{name} · {desc}" />
-    <meta
-        property="og:locale"
-        content="en_US" />
-    <meta
-        property="profile:username"
-        content={username} />
-    <meta
-        property="profile:gender"
-        content="male" />
-    <meta
-        name="twitter:image"
-        content={ogImage} />
-    <meta
-        name="twitter:card"
-        content="summary_large_image" />
-    <meta
-        name="twitter:title"
-        content="{name} · {headline}" />
-    <meta
-        name="twitter:description"
-        content={desc} />
-    <script
-        type="application/ld+json"
-        {@attach (node: HTMLScriptElement) => {
-            node.textContent = jsonLdScript;
-        }}></script>
+    {#if author}
+        <title>{name}{headline ? ` · ${headline}` : ''}</title>
+        <meta
+            name="description"
+            content={desc} />
+        <meta
+            name="robots"
+            content="index, follow" />
+        <link
+            rel="canonical"
+            href={siteUrl} />
+        <meta
+            property="og:title"
+            content="{name} · {headline}" />
+        <meta
+            property="og:description"
+            content={desc} />
+        <meta
+            property="og:type"
+            content="profile" />
+        <meta
+            property="og:url"
+            content={siteUrl} />
+        <meta
+            property="og:site_name"
+            content={name} />
+        <meta
+            property="og:image"
+            content={ogImage} />
+        <meta
+            property="og:image:secure_url"
+            content={ogImage} />
+        <meta
+            property="og:image:type"
+            content={ogImageType} />
+        <meta
+            property="og:image:width"
+            content={ogImageWidth} />
+        <meta
+            property="og:image:height"
+            content={ogImageHeight} />
+        <meta
+            property="og:image:alt"
+            content="{name} · {desc}" />
+        <meta
+            property="og:locale"
+            content="en_US" />
+        <meta
+            property="profile:username"
+            content={username} />
+        <meta
+            name="twitter:image"
+            content={ogImage} />
+        <meta
+            name="twitter:card"
+            content="summary_large_image" />
+        <meta
+            name="twitter:title"
+            content="{name} · {headline}" />
+        <meta
+            name="twitter:description"
+            content={desc} />
+        <script
+            type="application/ld+json"
+            {@attach (node: HTMLScriptElement) => {
+                node.textContent = jsonLdScript;
+            }}></script>
+    {:else}
+        <title>{siteHost}</title>
+        <meta
+            name="robots"
+            content="noindex" />
+    {/if}
 </svelte:head>
 
 {#snippet staticTag(tag: string)}
@@ -156,150 +171,165 @@
 <PageMain variant="site">
     <Section
         spacing="none"
-        class="relative z-10 pt-4 pb-6 sm:pt-5 md:pt-10 md:pb-8 toolbar-gutter:pt-0">
+        class="relative z-10 pt-6 pb-6 sm:pt-8 md:pb-8">
         <PageContainer
             width="standard"
             class="flex flex-col gap-4 sm:gap-5">
-            <ProfileCard
-                {name}
-                {pronunciation}
-                {headline}
-                {jobTitle}
-                {location}
-                bio={desc}
-                avatarUrl={avatarWebp}
-                avatarSources={avatarFormats}
-                bannerUrl={siteBannerSource(author)}
-                bannerSources={siteBannerSources(author)}
-                {socials}
-                onShowQr={() => (isQrOpen = true)}>
-                {#snippet actions()}
-                    <div
-                        class="grid grid-cols-1 gap-3 sm:grid-cols-[repeat(auto-fit,minmax(calc(10rem*var(--a11y-scale)),1fr))]">
-                        <CvDownloadMenu
-                            document={data.cvDocument}
-                            shortcutGroup="save"
-                            shortcutChordKey={argKey('/save', 'cv')}
-                            class="w-full" />
+            {#if !author}
+                <EmptyState
+                    icon={Sprout}
+                    title="This site is being set up"
+                    description="Check back soon." />
+            {:else}
+                <ProfileCard
+                    {name}
+                    {pronunciation}
+                    {headline}
+                    {jobTitle}
+                    {location}
+                    bio={desc}
+                    avatarUrl={avatarWebp}
+                    avatarSources={avatarFormats}
+                    bannerUrl={siteBannerSource(author)}
+                    bannerSources={siteBannerSources(author)}
+                    {socials}
+                    onShowQr={() => (isQrOpen = true)}>
+                    {#snippet actions()}
+                        <div
+                            class="grid grid-cols-1 gap-3 sm:grid-cols-[repeat(auto-fit,minmax(calc(10rem*var(--a11y-scale)),1fr))]">
+                            {#if data.cvDocument}
+                                <CvDownloadMenu
+                                    document={data.cvDocument}
+                                    shortcutGroup="save"
+                                    shortcutChordKey={argKey('/save', 'cv')}
+                                    class="w-full" />
+                            {/if}
 
-                        <Button
-                            type="secondary"
-                            size="md"
-                            href="/projects"
-                            keyboardShortcut={buttonKey('browseProjects')}
-                            shortcutLabel="Browse projects"
-                            class="w-full justify-center">
-                            Browse projects
-                        </Button>
+                            {#if projects.length > 0}
+                                <Button
+                                    type="secondary"
+                                    size="md"
+                                    href="/projects"
+                                    keyboardShortcut={buttonKey('browseProjects')}
+                                    shortcutLabel="Browse projects"
+                                    class="w-full justify-center">
+                                    Browse projects
+                                </Button>
+                            {/if}
 
-                        <Button
-                            type="ghost"
-                            size="md"
-                            href="/contact"
-                            keyboardShortcut={buttonKey('getInTouch')}
-                            shortcutLabel="Get in touch"
-                            class="w-full justify-center">
-                            Get in touch
-                            {#snippet trailing()}
-                                <ChevronRight
-                                    class="size-3"
-                                    aria-hidden="true" />
-                            {/snippet}
-                        </Button>
-                    </div>
-                {/snippet}
-            </ProfileCard>
+                            <Button
+                                type="ghost"
+                                size="md"
+                                href="/contact"
+                                keyboardShortcut={buttonKey('getInTouch')}
+                                shortcutLabel="Get in touch"
+                                class="w-full justify-center">
+                                Get in touch
+                                {#snippet trailing()}
+                                    <ChevronRight
+                                        class="size-3"
+                                        aria-hidden="true" />
+                                {/snippet}
+                            </Button>
+                        </div>
+                    {/snippet}
+                </ProfileCard>
 
-            <div>
-                <h2 class="mb-4 type-section-title">Experience</h2>
-                <CvEntryList
-                    kind="experience"
-                    entries={data.experience} />
-            </div>
-
-            <div>
-                <h2 class="mb-4 type-section-title">Education</h2>
-                <CvEntryList
-                    kind="education"
-                    entries={data.education} />
-                <div class="mt-4 flex justify-end">
-                    <Button
-                        type="ghost"
-                        size="sm"
-                        href="/cv"
-                        keyboardShortcut={buttonKey('viewFullCv')}
-                        shortcutLabel="View full CV"
-                        aria-label="View full CV including education and experience">
-                        <span class="leading-none">View full CV</span>
-                        {#snippet trailing()}
-                            <ChevronRight class="size-3" />
-                        {/snippet}
-                    </Button>
+                <div>
+                    <h2 class="mb-4 type-section-title">Experience</h2>
+                    <CvEntryList
+                        kind="experience"
+                        entries={data.experience} />
                 </div>
-            </div>
 
-            <div>
-                <h2 class="mb-3 type-section-title sm:mb-4">Recent Posts</h2>
-                {#if posts.length === 0}
-                    <EmptyState
-                        icon={Quote}
-                        title="No posts yet"
-                        description="Check back soon for new articles." />
-                {:else}
-                    <div class="mt-2 grid auto-rows-fr grid-cols-1 gap-3 sm:gap-4">
-                        {#each posts as post (post.id)}
-                            <BlogPostCard {post} />
-                        {/each}
-                    </div>
-                {/if}
-                {#if posts.length > 0}
-                    <div class="mt-4 flex justify-end">
-                        <Button
-                            href="/blog"
-                            type="ghost"
-                            size="sm"
-                            keyboardShortcut={buttonKey('viewAllPosts')}
-                            shortcutLabel="View all posts">
-                            View all posts
-                            {#snippet trailing()}<ChevronRight class="size-3" />{/snippet}
-                        </Button>
-                    </div>
-                {/if}
-                <SubscribeForm class="mt-4" />
-            </div>
+                <div>
+                    <h2 class="mb-4 type-section-title">Education</h2>
+                    <CvEntryList
+                        kind="education"
+                        entries={data.education} />
+                    {#if hasCvEntries}
+                        <div class="mt-4 flex justify-end">
+                            <Button
+                                type="ghost"
+                                size="sm"
+                                href="/cv"
+                                keyboardShortcut={buttonKey('viewFullCv')}
+                                shortcutLabel="View full CV"
+                                aria-label="View full CV including education and experience">
+                                <span class="leading-none">View full CV</span>
+                                {#snippet trailing()}
+                                    <ChevronRight class="size-3" />
+                                {/snippet}
+                            </Button>
+                        </div>
+                    {/if}
+                </div>
 
-            <div>
-                <h2 class="mb-3 type-section-title sm:mb-4">Recent Projects</h2>
-                {#if recentProjects.length === 0}
-                    <EmptyState
-                        icon={FolderOpen}
-                        title="No projects yet"
-                        description="Check back soon for featured repositories." />
-                {:else}
-                    <div class="mt-2 grid auto-rows-fr grid-cols-1 gap-3 sm:gap-4">
-                        {#each recentProjects as project (project.name)}
-                            <ProjectCard
-                                {project}
-                                pinned={isRepoPinned(project, pinnedRepoNames)}
-                                isNew={isRepoNew(project)}
-                                tagItem={staticTag} />
-                        {/each}
-                    </div>
-                {/if}
-                {#if projects.length > 0}
-                    <div class="mt-3 flex justify-end sm:mt-4">
-                        <Button
-                            type="ghost"
-                            size="sm"
-                            href="/projects"
-                            keyboardShortcut={buttonKey('viewAllProjects')}
-                            shortcutLabel="View all projects">
-                            View all projects
-                            {#snippet trailing()}<ChevronRight class="size-3" />{/snippet}
-                        </Button>
-                    </div>
-                {/if}
-            </div>
+                <div>
+                    <h2 class="mb-3 type-section-title sm:mb-4">Recent Posts</h2>
+                    {#if posts.length === 0}
+                        <EmptyState
+                            icon={Quote}
+                            title="No posts yet"
+                            description="Check back soon for new articles." />
+                    {:else}
+                        <div class="mt-2 grid auto-rows-fr grid-cols-1 gap-3 sm:gap-4">
+                            {#each posts as post (post.id)}
+                                <BlogPostCard {post} />
+                            {/each}
+                        </div>
+                    {/if}
+                    {#if posts.length > 0}
+                        <div class="mt-4 flex justify-end">
+                            <Button
+                                href="/blog"
+                                type="ghost"
+                                size="sm"
+                                keyboardShortcut={buttonKey('viewAllPosts')}
+                                shortcutLabel="View all posts">
+                                View all posts
+                                {#snippet trailing()}<ChevronRight class="size-3" />{/snippet}
+                            </Button>
+                        </div>
+                    {/if}
+                    {#if showSubscribe}
+                        <SubscribeForm class="mt-4" />
+                    {/if}
+                </div>
+
+                <div>
+                    <h2 class="mb-3 type-section-title sm:mb-4">Recent Projects</h2>
+                    {#if recentProjects.length === 0}
+                        <EmptyState
+                            icon={FolderOpen}
+                            title="No projects yet"
+                            description="Check back soon for featured repositories." />
+                    {:else}
+                        <div class="mt-2 grid auto-rows-fr grid-cols-1 gap-3 sm:gap-4">
+                            {#each recentProjects as project (project.name)}
+                                <ProjectCard
+                                    {project}
+                                    pinned={isRepoPinned(project, pinnedRepoNames)}
+                                    isNew={isRepoNew(project)}
+                                    tagItem={staticTag} />
+                            {/each}
+                        </div>
+                    {/if}
+                    {#if projects.length > 0}
+                        <div class="mt-3 flex justify-end sm:mt-4">
+                            <Button
+                                type="ghost"
+                                size="sm"
+                                href="/projects"
+                                keyboardShortcut={buttonKey('viewAllProjects')}
+                                shortcutLabel="View all projects">
+                                View all projects
+                                {#snippet trailing()}<ChevronRight class="size-3" />{/snippet}
+                            </Button>
+                        </div>
+                    {/if}
+                </div>
+            {/if}
         </PageContainer>
     </Section>
 
@@ -308,7 +338,6 @@
 
 <QrCodeDialog
     bind:isOpen={isQrOpen}
-    title={name}
     url={siteUrl}
     slug={username || 'profile'}
     avatarUrl={avatarWebp}

@@ -56,6 +56,7 @@
     } from './spotlight/icons';
     import { helpCategories } from './spotlight/helpCommands';
     import { createDefaultCommands } from './spotlight/defaultCommands';
+    import { isHiddenCommand } from '#app/commandVisibility.ts';
     import { isHiddenLegalPath } from '#app/legalVisibility.ts';
     import { applyContentFont, createDynamicCommandItems } from './spotlight/dynamicCommands';
     import type { SpotlightCommandContext } from './spotlight/context';
@@ -164,16 +165,20 @@
     };
     const allDefaultCommands = createDefaultCommands(commandContext);
     const defaultCommands = $derived(
-        allDefaultCommands.filter(item => !isHiddenLegalPath(item.url))
+        allDefaultCommands.filter(
+            item => !isHiddenCommand(item.url) && !isHiddenCommand(item.title)
+        )
     );
     const buildDynamicCommandItems = createDynamicCommandItems(commandContext);
     const getDynamicCommandItems = (query: string) =>
-        buildDynamicCommandItems(query).filter(item => !isHiddenLegalPath(item.url));
+        buildDynamicCommandItems(query).filter(
+            item => !isHiddenCommand(item.url) && !isHiddenCommand(item.title)
+        );
     const visibleHelpCategories = $derived(
         helpCategories.map(category => ({
             ...category,
             commands: category.commands
-                .filter(cmd => !isHiddenLegalPath(cmd.command))
+                .filter(cmd => !isHiddenCommand(cmd.command))
                 .map(cmd => ({
                     ...cmd,
                     validArgs: cmd.validArgs.filter(arg => !isHiddenLegalPath(arg))
@@ -1959,7 +1964,6 @@
 
 <QrCodeDialog
     bind:isOpen={isQrOpen}
-    title={activePageContext.title}
     url={activePageContext.url}
     slug={activePageContext.slug}
     avatarUrl={activePageContext.avatarUrl}
