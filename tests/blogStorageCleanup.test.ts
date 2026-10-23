@@ -1,5 +1,5 @@
 import { describe, expect, mock, test } from 'bun:test';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { AdminPostStore, PostCleanupStore } from '../packages/data/src/adminPosts.ts';
 
 mock.module('$app/env/private', () => ({}));
 mock.module('$app/env/public', () => ({
@@ -8,7 +8,6 @@ mock.module('$app/env/public', () => ({
 }));
 
 const { cleanupBlogAssets } = await import('../packages/lib/src/server/blogBannerStorage');
-const { createSupabaseAdminPostStores } = await import('../packages/data/src/index.ts');
 
 describe('queued blog Markdown cleanup', () => {
     test('deletes orphaned post files with their renders and keeps files still in use or outside posts/', async () => {
@@ -28,42 +27,23 @@ describe('queued blog Markdown cleanup', () => {
             cleanup_attempts: 0,
             cleanup_error: null
         }));
-        const db = {
-            rpc: async () => ({ data: [], error: null }),
-            from: (table: string) => {
-                if (table === 'db_post_storage_cleanup') {
-                    return {
-                        select: () => ({
-                            lt: () => ({ limit: async () => ({ data: rows, error: null }) })
-                        }),
-                        delete: () => ({
-                            eq: async (_column: string, path: string) => {
-                                deletedQueuePaths.push(path);
-                                return { error: null };
-                            }
-                        })
-                    };
-                }
-                return {
-                    select: () => ({
-                        eq: async (_column: string, path: string) => ({
-                            count: path === livePath ? 1 : 0,
-                            error: null
-                        })
-                    })
-                };
+        const cleanup: PostCleanupStore = {
+            claimBanners: async () => [],
+            bannerRemoved: async () => {},
+            bannerFailed: async () => {},
+            pendingMarkdown: async () => rows,
+            markdownInUse: async path => path === livePath,
+            removeMarkdown: async paths => {
+                removedPaths.push(paths);
             },
-            storage: {
-                from: () => ({
-                    remove: async (paths: string[]) => {
-                        removedPaths.push(paths);
-                        return { error: null };
-                    }
-                })
-            }
-        } as unknown as SupabaseClient;
+            markdownRemoved: async path => {
+                deletedQueuePaths.push(path);
+            },
+            markdownFailed: async () => {}
+        };
+        const posts = { exists: async () => true } as unknown as AdminPostStore;
 
-        const result = await cleanupBlogAssets(createSupabaseAdminPostStores(db));
+        const result = await cleanupBlogAssets({ posts, cleanup });
 
         expect(result).toEqual({ cleanupPending: false, removed: 2 });
         expect(removedPaths).toEqual(

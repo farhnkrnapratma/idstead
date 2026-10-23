@@ -26,10 +26,6 @@ async function deliver(message: Message<unknown>, env: Env) {
     }
     const body: NewsletterMessage = message.body;
     const service = dataStores({ env }).service;
-    if (!service) {
-        message.retry({ delaySeconds: 300 });
-        return;
-    }
     const result = await notifyNewPost(
         service.writers.newsletter,
         { env },
@@ -62,7 +58,6 @@ function deadLetter(message: Message<unknown>) {
 
 async function refreshRenders(env: Env) {
     const service = dataStores({ env }).service;
-    if (!service) throw new Error('Post render refresh needs the Supabase service role.');
     const result = await refreshPostRenders(
         service.renders,
         mdrsResolvers(service),
@@ -78,18 +73,15 @@ async function refreshRenders(env: Env) {
 
 async function hourly(env: Env) {
     const service = dataStores({ env }).service;
-    if (!service) return;
     await service.maintenance.pruneLoginFailures().catch(error => Sentry.captureException(error));
 }
 
 async function cleanup(env: Env) {
     const service = dataStores({ env }).service;
     const results = await Promise.allSettled([
-        service ?
-            cleanupBlogAssets(service.adminPosts, { env } as App.Platform)
-        :   Promise.resolve(null),
-        service ? service.maintenance.pruneStaleSubscriptions() : Promise.resolve(null),
-        service ? service.maintenance.pruneActivityLog() : Promise.resolve(null),
+        cleanupBlogAssets(service.adminPosts, { env } as App.Platform),
+        service.maintenance.pruneStaleSubscriptions(),
+        service.maintenance.pruneActivityLog(),
         cleanupAssets({ env } as App.Platform),
         refreshRenders(env)
     ]);

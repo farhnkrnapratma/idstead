@@ -222,11 +222,6 @@ describe('shared identity folder', () => {
         expect(source).toContain('store.saveProfile(payload, identity)');
         expect(source).not.toContain('p_avatar');
         expect(source).not.toContain('p_banner');
-        const adapter = await readFile(
-            new URL('../packages/data/src/supabase/adminAuthor.ts', import.meta.url),
-            'utf8'
-        );
-        expect(adapter).toContain('p_identity: identity');
     });
 
     test('the avatar package requires AVIF and WebP', async () => {

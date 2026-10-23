@@ -181,18 +181,7 @@ export function createD1CvDocumentStore(db: D1Like): CvDocumentStore {
             }
         },
 
-        siteUrl: () => reader.siteUrl(),
-
-        async uploadFallback() {
-            throw new DataError(
-                'cvDocuments.uploadFallback',
-                'CV files need the asset bucket and PUBLIC_CDN_BASE_URL.'
-            );
-        },
-
-        async removeFallback() {},
-
-        fallbackUrl: () => ''
+        siteUrl: () => reader.siteUrl()
     };
 }
 

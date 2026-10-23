@@ -34,9 +34,8 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     const authError = await requireAdminAuth(request, platform);
     if (authError) return authError;
     const db = getSupabaseAdminClient(platform);
-    const { service, session } = dataStores(platform, { request, verifiedAdmin: true });
-    if (!db || !service || !session)
-        return apiError(503, 'LEGAL_UNAVAILABLE', 'Database is unavailable.');
+    const { service } = dataStores(platform);
+    if (!db || !service) return apiError(503, 'LEGAL_UNAVAILABLE', 'Database is unavailable.');
 
     let body: { slug?: unknown; title?: unknown; content?: unknown };
     try {
@@ -58,7 +57,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             'Content is required and must fit 200,000 characters.'
         );
 
-    const result = await session.legalWriter.save({ slug, title, content });
+    const result = await service.legalWriter.save({ slug, title, content });
     if (result.status === 'rejected') return apiError(400, 'LEGAL_SAVE_FAILED', result.message);
 
     const token = bearerToken(request);

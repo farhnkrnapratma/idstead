@@ -16,8 +16,8 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
 
     const db = getSupabaseAdminClient(platform);
 
-    const { service, session } = dataStores(platform, { request, verifiedAdmin: true });
-    if (!db || !service || !session)
+    const { service } = dataStores(platform);
+    if (!db || !service)
         return apiError(503, 'SKILLS_STORAGE_UNAVAILABLE', 'Database is unavailable.');
 
     let body: any;
@@ -37,7 +37,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         console.error('Author profile lookup failed:', error);
         return apiError(503, 'SKILLS_STORAGE_UNAVAILABLE', 'Database is unavailable.');
     }
-    const result = await session.authorWriter.saveSkills(authorId, categories);
+    const result = await service.authorWriter.saveSkills(authorId, categories);
     if (result.status === 'rejected') return apiError(400, 'SKILLS_SAVE_FAILED', result.message);
 
     const token = bearerToken(request);

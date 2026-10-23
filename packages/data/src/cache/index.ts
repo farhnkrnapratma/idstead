@@ -2,7 +2,7 @@ import type { AuthorRepository } from '../author';
 import type { BlogRepository, CommentRepository, PostSource } from '../blog';
 import type { Repositories } from '../index';
 import type { LegalPageRepository } from '../legal';
-import { postRenderPath } from '../supabase/paths';
+import { postRenderPath } from '../paths';
 import { createPostSource, isPostSource, sourceRecord } from '../source';
 import type { D1Like } from '../d1/client';
 
