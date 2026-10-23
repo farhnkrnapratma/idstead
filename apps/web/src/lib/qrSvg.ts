@@ -1,7 +1,7 @@
 import { encode, QrCodeDataType } from 'uqr';
 
-export const QR_COLOR = '#0065d1';
-export const QR_BACKGROUND = '#eef5ff';
+export const QR_COLOR = '#000000';
+export const QR_BACKGROUND = '#ffffff';
 
 const QUIET_ZONE = 3;
 const DOT_RADIUS = 0.44;

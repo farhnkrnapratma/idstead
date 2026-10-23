@@ -1,17 +1,19 @@
 <script lang="ts">
-    import { Download } from '@lucide/svelte';
+    import { Copy, Download, Info } from '@lucide/svelte';
     import Dialog from '@idstead/ui/components/Dialog.svelte';
     import Button from '@idstead/ui/components/Button.svelte';
     import ErrorState from '@idstead/ui/components/ErrorState.svelte';
+    import Input from '@idstead/ui/components/Input.svelte';
     import LoadingState from '@idstead/ui/components/LoadingState.svelte';
+    import Tooltip from '@idstead/ui/components/Tooltip.svelte';
     import { toastStore } from '@idstead/ui/stores/toastStore.svelte.ts';
+    import { copyText } from '@idstead/ui/utils/fileActions.ts';
     import { renderQrSvg } from '../qrSvg';
 
     import { page } from '$app/state';
 
     interface Props {
         isOpen: boolean;
-        title?: string;
         url?: string;
         slug?: string;
         avatarUrl?: string;
@@ -20,12 +22,14 @@
 
     let {
         isOpen = $bindable(false),
-        title = '',
         url = '',
         slug = 'document',
         avatarUrl = '',
         onClose
     }: Props = $props();
+
+    const PNG_SIZE = 1024;
+    const SCAN_HINT = "To scan this code, use a QR scanner app or your phone's camera.";
 
     let attempt = $state(0);
 
@@ -52,6 +56,7 @@
                     ctx.beginPath();
                     ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
                     ctx.clip();
+                    ctx.filter = 'grayscale(1)';
                     ctx.drawImage(img, (size - width) / 2, 0, width, height);
                     resolve(canvas.toDataURL('image/png'));
                 } catch {
@@ -78,48 +83,61 @@
         return isOpen && targetUrl ? createQrSvg(targetUrl, resolvedAvatarUrl) : null;
     });
 
-    function downloadSvg(svgString: string) {
-        const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-        const blobUrl = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = blobUrl;
-        a.download = `${slug || 'page'}-qr.svg`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(blobUrl);
-        toastStore.success('SVG QR code downloaded');
-    }
-
-    function downloadPng(svgString: string) {
-        const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-        const blobUrl = URL.createObjectURL(blob);
-        const img = new Image();
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = 1024;
-            canvas.height = 1024;
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
+    function renderPng(svgString: string): Promise<Blob> {
+        return new Promise((resolve, reject) => {
+            const svgUrl = URL.createObjectURL(
+                new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' })
+            );
+            const img = new Image();
+            img.onload = () => {
+                URL.revokeObjectURL(svgUrl);
+                const canvas = document.createElement('canvas');
+                canvas.width = PNG_SIZE;
+                canvas.height = PNG_SIZE;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) return reject(new Error('Canvas is unavailable.'));
                 ctx.imageSmoothingEnabled = true;
                 ctx.imageSmoothingQuality = 'high';
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                const pngUrl = canvas.toDataURL('image/png');
-                const a = document.createElement('a');
-                a.href = pngUrl;
-                a.download = `${slug || 'page'}-qr.png`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                toastStore.success('PNG QR code downloaded');
-            }
-            URL.revokeObjectURL(blobUrl);
-        };
-        img.onerror = () => {
-            URL.revokeObjectURL(blobUrl);
-            toastStore.error('Could not create the PNG QR code.');
-        };
-        img.src = blobUrl;
+                ctx.drawImage(img, 0, 0, PNG_SIZE, PNG_SIZE);
+                canvas.toBlob(blob =>
+                    blob ? resolve(blob) : reject(new Error('PNG export failed.'))
+                );
+            };
+            img.onerror = () => {
+                URL.revokeObjectURL(svgUrl);
+                reject(new Error('The QR code could not be drawn.'));
+            };
+            img.src = svgUrl;
+        });
+    }
+
+    async function copyQr(svgString: string) {
+        try {
+            if (typeof ClipboardItem === 'undefined' || !navigator.clipboard?.write)
+                throw new Error('Image clipboard is unavailable.');
+            await navigator.clipboard.write([
+                new ClipboardItem({ 'image/png': renderPng(svgString) })
+            ]);
+            toastStore.success('QR code copied.');
+        } catch {
+            await copyText(targetUrl, 'Link');
+        }
+    }
+
+    async function downloadQr(svgString: string) {
+        try {
+            const pngUrl = URL.createObjectURL(await renderPng(svgString));
+            const a = document.createElement('a');
+            a.href = pngUrl;
+            a.download = `${slug || 'page'}-qr.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(pngUrl);
+            toastStore.success('QR code downloaded.');
+        } catch {
+            toastStore.error('Could not create the QR code image.');
+        }
     }
 </script>
 
@@ -127,57 +145,70 @@
     <LoadingState
         variant="spinner"
         label="Generating QR code..."
-        class="size-full rounded-md bg-accent-subtle" />
+        class="size-full rounded-md bg-white" />
 {/snippet}
 
-{#snippet downloads(svg: string | null)}
-    <div class="grid w-full grid-cols-2 gap-2 pt-1">
-        <Button
-            type="secondary"
-            size="sm"
-            fullWidth
-            onclick={() => svg && downloadSvg(svg)}
-            disabled={!svg}>
-            {#snippet leading()}
-                <Download
-                    class="size-3.5"
+{#snippet actions(svg: string | null)}
+    <div class="flex w-full items-center justify-between gap-2">
+        <Tooltip
+            content={SCAN_HINT}
+            align="left"
+            class="max-w-64 leading-relaxed wrap-anywhere whitespace-normal!">
+            <button
+                type="button"
+                aria-label={SCAN_HINT}
+                class="inline-flex size-7 shrink-0 cursor-help items-center justify-center rounded-sm text-text-muted transition-colors hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring">
+                <Info
+                    class="size-4"
                     aria-hidden="true" />
-            {/snippet}
-            <span>Download SVG</span>
-        </Button>
-
-        <Button
-            type="secondary"
-            size="sm"
-            fullWidth
-            onclick={() => svg && downloadPng(svg)}
-            disabled={!svg}>
-            {#snippet leading()}
-                <Download
-                    class="size-3.5"
-                    aria-hidden="true" />
-            {/snippet}
-            <span>Download PNG</span>
-        </Button>
+            </button>
+        </Tooltip>
+        <div class="flex items-center gap-2">
+            <Button
+                type="secondary"
+                size="sm"
+                onclick={() => svg && copyQr(svg)}
+                disabled={!svg}>
+                {#snippet leading()}
+                    <Copy
+                        class="size-3.5"
+                        aria-hidden="true" />
+                {/snippet}
+                <span>Copy</span>
+            </Button>
+            <Button
+                type="secondary"
+                size="sm"
+                onclick={() => svg && downloadQr(svg)}
+                disabled={!svg}>
+                {#snippet leading()}
+                    <Download
+                        class="size-3.5"
+                        aria-hidden="true" />
+                {/snippet}
+                <span>Download</span>
+            </Button>
+        </div>
     </div>
 {/snippet}
 
 <Dialog
     bind:isOpen
     title="Scan QR code"
-    description="Scan with your smartphone camera to open this page directly."
-    size="md"
+    size="sm"
     {onClose}>
-    <div class="flex flex-col items-center justify-center gap-4 pt-1 pb-1">
-        <div class="relative flex aspect-square w-full max-w-80 items-center justify-center">
+    <div class="flex flex-col items-center gap-4 pt-1 pb-1">
+        <div
+            class="relative flex aspect-square w-full max-w-60 items-center justify-center rounded-md border border-border-subtle bg-white p-3">
             {#await qrSvg}
                 {@render generating()}
             {:then svg}
                 {#if svg}
-                    <div
-                        class="flex size-full items-center justify-center drop-shadow-sm [&>svg]:size-full">
-                        {@html svg}
-                    </div>
+                    <img
+                        src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`}
+                        alt={`QR code for ${targetUrl}`}
+                        class="size-full select-none"
+                        draggable="false" />
                 {:else}
                     {@render generating()}
                 {/if}
@@ -190,23 +221,20 @@
             {/await}
         </div>
 
-        {#if title}
-            <div class="w-full text-center">
-                <p class="truncate text-sm font-semibold text-text-primary">
-                    {title}
-                </p>
-                <p class="mt-0.5 truncate text-xs text-text-muted">
-                    {targetUrl}
-                </p>
-            </div>
-        {/if}
+        <Input
+            value={targetUrl}
+            readonly
+            size="sm"
+            aria-label="Link in the QR code"
+            class="font-mono"
+            onfocus={(event: FocusEvent) => (event.currentTarget as HTMLInputElement).select()} />
 
         {#await qrSvg}
-            {@render downloads(null)}
+            {@render actions(null)}
         {:then svg}
-            {@render downloads(svg)}
+            {@render actions(svg)}
         {:catch}
-            {@render downloads(null)}
+            {@render actions(null)}
         {/await}
     </div>
 </Dialog>
