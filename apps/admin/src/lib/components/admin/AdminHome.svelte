@@ -2,6 +2,7 @@
     import { adminUrl, navigateAdmin } from '../../adminNavigation.ts';
     import { onMount } from 'svelte';
     import { page } from '$app/state';
+    import * as publicEnv from '$app/env/public';
     import { analyticsPeriod, browserTimeZone, zonedMidnight } from '../../adminAnalytics.ts';
     import {
         Eye,
@@ -43,7 +44,11 @@
     import type { ViewsRange } from '#lib/components/admin/viewsRange.ts';
 
     const publicSiteUrl = $derived(
-        ((page.data as { author?: { siteUrl?: string } })?.author?.siteUrl ?? '').replace(/\/$/, '')
+        (
+            (page.data as { author?: { siteUrl?: string } })?.author?.siteUrl
+            || publicEnv.PUBLIC_SITE_URL
+            || ''
+        ).replace(/\/$/, '')
     );
 
     function publicHref(href: string) {
@@ -323,7 +328,11 @@
                 data={data.series}
                 timeZone={data.timeZone}
                 {range}
-                onRangeChange={setRange} />{/if}
+                onRangeChange={setRange} />
+        {:else}<ErrorState
+                title="Readers chart unavailable"
+                description="The overview could not be loaded."
+                onRetry={load} />{/if}
     </Card>
     {#if data}
         <DataTable

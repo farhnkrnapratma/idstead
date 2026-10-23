@@ -187,8 +187,13 @@
         type PublicOpenPgpKey
     } from '@idstead/domain/openpgpKey.ts';
 
+    const hasSavedProfile = $derived(Boolean((page.data as { author?: unknown })?.author));
     const publicSiteUrl = $derived(
-        ((page.data as { author?: { siteUrl?: string } })?.author?.siteUrl ?? '').replace(/\/$/, '')
+        (
+            (page.data as { author?: { siteUrl?: string } })?.author?.siteUrl
+            || publicEnv.PUBLIC_SITE_URL
+            || ''
+        ).replace(/\/$/, '')
     );
 
     interface AdminPost {
@@ -1980,7 +1985,7 @@
                 body: JSON.stringify({
                     postId,
                     parentId,
-                    authorName: authorState.name,
+                    authorName: authorState.name || siteAuthorName,
                     content: trimmed
                 })
             });
@@ -4151,7 +4156,7 @@
                 title="Projects"
                 titleTag="h1"
                 titleClass="type-page-title"
-                description="Pin or hide the GitHub repositories shown in your portfolio."
+                description="Pin or hide the GitHub repositories shown in your portfolio. Repositories come from the GitHub account in your social links."
                 class="gap-4! p-4! sm:p-5!">
                 <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                     <FormField
@@ -5426,14 +5431,16 @@
                     <EmptyState
                         icon={FileUser}
                         title="No CV generated yet"
-                        description="Build a PDF from your profile, experience, education, skills and pinned projects. Visitors can then download it from the CV section and the API.">
+                        description={hasSavedProfile ?
+                            'Build a PDF from your profile, experience, education, skills and pinned projects. Visitors can then download it from the CV section and the API.'
+                        :   'Save your profile first. The CV is built from it.'}>
                         {#snippet actions()}
                             <Button
                                 htmlType="button"
                                 type="primary"
                                 size="sm"
                                 isLoading={isGeneratingPdf}
-                                disabled={isGeneratingPdf}
+                                disabled={isGeneratingPdf || !hasSavedProfile}
                                 onclick={() => executeGenerateCvPdf({ manual: true })}>
                                 {#snippet leading()}
                                     <RefreshCw class="size-3.5" />

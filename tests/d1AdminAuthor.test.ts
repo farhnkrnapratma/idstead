@@ -111,6 +111,20 @@ describe('D1 admin author store', () => {
         ).toMatchObject({ status: 'failed', code: '40001' });
     });
 
+    test('adopts the blank profile shell on the first profile save', async () => {
+        const { db } = d1Shim();
+        const store = createD1AdminAuthorStore(db);
+        const author = createD1AuthorRepository(db);
+        const shellId = await store.ensureProfileId();
+        expect(await author.profile()).toBeNull();
+        await registered(store, uuid(1));
+        expect(
+            await store.saveProfile(profile, { version: uuid(1), assets: ASSETS })
+        ).toMatchObject({ status: 'saved', profile: { name: 'Ada', avatar_version: uuid(1) } });
+        expect((await store.profileRecord())?.id).toBe(shellId);
+        expect(await author.profile()).toMatchObject({ name: 'Ada' });
+    });
+
     test('creates an empty profile shell only once', async () => {
         const { db } = d1Shim();
         const store = createD1AdminAuthorStore(db);
