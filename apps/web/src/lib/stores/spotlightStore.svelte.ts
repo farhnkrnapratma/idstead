@@ -1,7 +1,7 @@
 import type { Component } from 'svelte';
 import type { Project } from '@idstead/domain/types.ts';
 import { COMMAND_SHORTCUTS } from '@idstead/ui/shortcuts.ts';
-import { isHiddenLegalPath } from '#app/legalVisibility.ts';
+import { isHiddenCommand } from '#app/commandVisibility.ts';
 import { shortcutStore } from '@idstead/ui/stores/shortcutStore.svelte.ts';
 
 export interface SpotlightDialogApi {
@@ -48,7 +48,7 @@ function withDialog(run: (dialog: SpotlightDialogApi) => void) {
 
 function registerCommands() {
     commandDisposers = Object.entries(COMMAND_SHORTCUTS)
-        .filter(([title]) => !isHiddenLegalPath(title))
+        .filter(([title]) => !isHiddenCommand(title))
         .map(([title, key]) =>
             shortcutStore.registerCommand(key, title, () =>
                 title === OPEN_COMMAND ?

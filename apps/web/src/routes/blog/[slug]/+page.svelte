@@ -53,6 +53,7 @@
     import QrCodeDialog from '#app/components/QrCodeDialog.svelte';
     import HelpfulBlock from '#app/article/HelpfulBlock.svelte';
     import SubscribeForm from '#app/components/SubscribeForm.svelte';
+    import { newsletterSignupVisible } from '@idstead/domain/newsletter.ts';
     import PostInsights from '#app/article/PostInsights.svelte';
     import ConsentNotice from '#app/components/ConsentNotice.svelte';
     import FeedbackButton from '#app/components/FeedbackButton.svelte';
@@ -102,11 +103,11 @@
     let showQrDialog = $state(false);
     let viewCount = $state<number | null>(untrack(() => data.initialViewsCount ?? null));
 
-    const mainAuthorUsername = $derived(author?.username || 'farhnkrnapratma');
+    const mainAuthorUsername = $derived(author?.username || '');
     const collaboratorsList = $derived(
         Array.isArray(post.collaborators) ? post.collaborators.filter(Boolean) : []
     );
-    const allAuthors = $derived([mainAuthorUsername, ...collaboratorsList]);
+    const allAuthors = $derived([mainAuthorUsername, ...collaboratorsList].filter(Boolean));
     const visibleAvatarAuthors = $derived(allAuthors.slice(0, 3));
     const hiddenCollaborators = $derived(allAuthors.slice(3));
     let isCollaboratorsPopoverOpen = $state(false);
@@ -827,7 +828,9 @@
                     onVote={helpful => feedback.vote(helpful ? 'yes' : 'no')}
                     onFeedbackClick={() => (showNoFeedbackDialog = true)} />
 
-                <SubscribeForm class="mt-6 sm:mt-8" />
+                {#if newsletterSignupVisible( { configured: Boolean(data.newsletterEnabled), hasAuthor: Boolean(author), hasPublishedPosts: true } )}
+                    <SubscribeForm class="mt-6 sm:mt-8" />
+                {/if}
 
                 {#if relatedPosts.length > 0}
                     <section
@@ -1215,7 +1218,6 @@
 
 <QrCodeDialog
     bind:isOpen={showQrDialog}
-    title={post.title}
     url={page.url.href}
     slug={post.slug}
     avatarUrl={author?.avatar ?? ''}
