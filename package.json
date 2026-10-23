@@ -19,7 +19,7 @@
         "setup": "bun tooling/setup.ts",
         "check": "bun tooling/configure.ts --check && bun run --filter './apps/*' --filter './packages/*' --filter './packages/mdrs/*' check && tsc --noEmit -p tsconfig.json",
         "test": "bun test tests",
-        "prepare": "bun run --filter './apps/*' prepare; bash tooling/git-hooks/install.sh || echo ''",
+        "prepare": "bun run --filter './apps/*' prepare; bash tooling/git-hooks/install.sh",
         "lint": "prettier --write . && eslint . && bun run lint:deprecated",
         "lint:deprecated": "eslint --config eslint.deprecated.config.ts apps/*/src packages/*/src packages/mdrs/*/src",
         "lint:fix": "eslint . --fix",

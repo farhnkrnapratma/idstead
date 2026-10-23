@@ -15,7 +15,7 @@
         "build": "vite build",
         "preview": "vite preview",
         "deploy": "wrangler deploy",
-        "prepare": "svelte-kit sync || echo ''",
+        "prepare": "svelte-kit sync",
         "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --diagnostic-sources \"js,svelte\""
     },
     "dependencies": {
@@ -27,8 +27,8 @@
         "@mdrs/dom": "workspace:*",
         "@idstead/ui": "workspace:*",
         "@lucide/svelte": "^1.61.0",
-        "@sentry/cloudflare": "11.8.0",
-        "@sentry/sveltekit": "^11.8.0",
+        "@sentry/cloudflare": "11.9.0",
+        "@sentry/sveltekit": "^11.9.0",
         "@supabase/ssr": "^0.12.7",
         "@supabase/supabase-js": "^2.118.0"
     },
