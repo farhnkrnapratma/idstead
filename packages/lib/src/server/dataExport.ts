@@ -300,6 +300,15 @@ export async function buildDataExport(
         chartRange: settings.chartRange ?? DEFAULT_CHART_RANGE
     });
     counts.logs = logs.length;
+    const subscribers = tables.subscribers.map(row => ({
+        email: row.email,
+        status: row.status,
+        subscribedAt: row.created_at,
+        confirmedAt: row.confirmed_at ?? null,
+        unsubscribedAt: row.unsubscribed_at ?? null
+    }));
+    putJson('administration/subscribers.json', subscribers);
+    counts.subscribers = subscribers.length;
 
     putJson('manifest.json', {
         formatVersion: 1,

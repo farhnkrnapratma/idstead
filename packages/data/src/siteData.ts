@@ -11,6 +11,7 @@ export interface ExportTables {
     repoRules: ExportRow[];
     activeDocuments: ExportRow[];
     settings: ExportRow[];
+    subscribers: ExportRow[];
     avatarVersion: string | null;
 }
 
