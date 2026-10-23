@@ -195,14 +195,85 @@ function serviceClient(values: Record<string, string>) {
     });
 }
 
-async function database(db: SupabaseClient) {
-    step('Database');
-    const { error } = await db.from('db_legals').select('slug').limit(1);
-    if (error)
-        throw new SetupStop(
-            `The Supabase project has no Idstead schema (${error.message}). The migrations in supabase/migrations/ assume an existing schema, so a new project cannot be set up from them yet.`
-        );
-    note('The Idstead schema is present.');
+function sqlText(value: string) {
+    return `'${value.replaceAll("'", "''")}'`;
+}
+
+async function d1Query(config: InstanceConfig, sql: string) {
+    const result = await mustRun([
+        'bunx',
+        'wrangler',
+        'd1',
+        'execute',
+        config.cloudflare.database.name,
+        '--remote',
+        '--json',
+        '--command',
+        sql
+    ]);
+    const parsed = JSON.parse(result.output.slice(result.output.indexOf('['))) as {
+        results?: Record<string, unknown>[];
+    }[];
+    return parsed.flatMap(item => item.results ?? []);
+}
+
+async function databaseId(name: string): Promise<string | null> {
+    const listed = await mustRun(['bunx', 'wrangler', 'd1', 'list', '--json']);
+    const databases = JSON.parse(listed.output.slice(listed.output.indexOf('['))) as {
+        name: string;
+        uuid: string;
+    }[];
+    return databases.find(item => item.name === name)?.uuid ?? null;
+}
+
+async function saveDatabaseId(config: InstanceConfig, id: string): Promise<InstanceConfig> {
+    const source = Bun.JSONC.parse(await readFile(CONFIG_FILE, 'utf8')) as {
+        cloudflare?: { database?: Record<string, unknown> } & Record<string, unknown>;
+    };
+    source.cloudflare = {
+        ...source.cloudflare,
+        database: { ...source.cloudflare?.database, name: config.cloudflare.database.name, id }
+    };
+    await writeFile(
+        CONFIG_FILE,
+        await format(JSON.stringify(source), {
+            ...(await resolveConfig(CONFIG_FILE)),
+            filepath: CONFIG_FILE
+        })
+    );
+    const updated = resolveInstanceConfig(source);
+    for (const [file, text] of Object.entries(await renderWranglerConfigs(updated)))
+        await writeFile(file, text);
+    return updated;
+}
+
+async function database(config: InstanceConfig): Promise<InstanceConfig> {
+    step('D1 database');
+    const { name, id } = config.cloudflare.database;
+    let current = config;
+    if (id) note(`idstead.jsonc binds the database ${name} (${id}).`);
+    else {
+        let found = await databaseId(name);
+        if (!found) {
+            if (!apply) {
+                planned(`create the D1 database ${name} and write its ID to idstead.jsonc`);
+                planned('apply the D1 migrations');
+                return config;
+            }
+            await mustRun(['bunx', 'wrangler', 'd1', 'create', name]);
+            found = await databaseId(name);
+            if (!found) throw new SetupStop(`The D1 database ${name} was not created.`);
+            planned(`create the D1 database ${name}`);
+        } else note(`Database ${name} exists.`);
+        if (apply) current = await saveDatabaseId(config, found);
+        planned(`write the database ID to idstead.jsonc and render the Wrangler configs`);
+    }
+    if (apply)
+        await mustRun(['bunx', 'wrangler', 'd1', 'migrations', 'apply', name, '--remote'], {
+            cwd: path.join(ROOT, 'apps/web')
+        });
+    planned('apply the D1 migrations');
+    return current;
 }
 
 async function findUser(db: SupabaseClient, email: string) {
@@ -249,14 +320,14 @@ async function adminUser(db: SupabaseClient, answers: SetupAnswers) {
     note(`Temporary password (shown once): ${password}`);
 }
 
-async function legalPages(db: SupabaseClient) {
+async function legalPages(config: InstanceConfig) {
     step('Legal pages');
-    const { data, error } = await db
-        .from('db_legals')
-        .select('slug')
-        .in('slug', [...LEGAL_SLUGS]);
-    if (error) throw new SetupStop(`Reading legal pages failed: ${error.message}`);
-    const present = new Set((data ?? []).map(row => row.slug as string));
+    if (!config.cloudflare.database.id) {
+        planned('add the legal pages from templates/legal/ once the database exists');
+        return;
+    }
+    const rows = await d1Query(config, "SELECT slug FROM db_legals WHERE trim(content) <> ''");
+    const present = new Set(rows.map(row => String(row.slug)));
     for (const slug of LEGAL_SLUGS) {
         if (present.has(slug)) {
             note(`/${slug} already has content; left as is.`);
@@ -266,10 +337,12 @@ async function legalPages(db: SupabaseClient) {
             await readFile(path.join(ROOT, 'templates/legal', `${slug}.md`), 'utf8'),
             slug
         );
-        if (apply) {
-            const { error: insertError } = await db.from('db_legals').insert({ slug, ...page });
-            if (insertError) throw new SetupStop(`Saving /${slug} failed: ${insertError.message}`);
-        }
+        if (apply)
+            await d1Query(
+                config,
+                `INSERT INTO db_legals (slug, title, content) VALUES (${sqlText(slug)}, ${sqlText(page.title)}, ${sqlText(page.content)})
+                 ON CONFLICT (slug) DO UPDATE SET title = excluded.title, content = excluded.content`
+            );
         planned(`add /${slug} from templates/legal/${slug}.md`);
     }
 }
@@ -317,11 +390,10 @@ async function main() {
     const keys = await workerKeys();
     const values = await variables(config, keys);
     await cloudflare(config);
-    const db = serviceClient(values);
-    await database(db);
-    await adminUser(db, answers);
-    await legalPages(db);
-    await deploy(config, workerSecrets(keys, values));
+    const ready = await database(config);
+    await adminUser(serviceClient(values), answers);
+    await legalPages(ready);
+    await deploy(ready, workerSecrets(keys, values));
     step('Next steps');
     for (const [index, line] of nextSteps(config).entries()) note(`${index + 1}. ${line}`);
 }
