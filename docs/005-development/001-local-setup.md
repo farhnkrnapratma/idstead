@@ -20,13 +20,16 @@ bun install
 Copy `.env.example` to `.env` in the repository root and fill in the values. Every app reads that one file: the Vite configs point `envDir` at the root, and Bun loads it for tests and scripts. Then start the dev servers:
 
 ```sh
+bun run db:local                         # create or migrate the shared local D1 database
 bun run dev                              # public site (Vite)
 bun run dev:admin                        # admin portal, http://localhost:5174
 bun run --filter @idstead/api dev        # API worker, http://localhost:8787
 bun run --filter @idstead/jobs dev       # jobs worker, http://localhost:8788 (--test-scheduled)
 ```
 
-- At minimum, `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY` must be set, or the dev servers fail at start-up. `PUBLIC_SITE_URL` and `PUBLIC_API_BASE_URL` are required too.
+- **Local database:** the dev servers never touch production data. `bun run db:local` applies `packages/data/d1/migrations/` to a local D1 database in `.wrangler/state/v3` at the repository root, which the web and admin dev servers share (`platformProxy.persist` in their Vite configs). Run it again after pulling a new migration. It starts empty; sign in to the local admin portal to create a profile and posts.
+- **Remote bindings:** the `ASSET_BUCKET` R2 bucket and the `AI` binding are `remote: true`, so uploads in local dev reach the real bucket.
+- At minimum, `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY` must be set for admin sign-in, plus `PUBLIC_SITE_URL` and `PUBLIC_API_BASE_URL`.
 - For what each variable does and which app reads it, see [environment.md](../002-configuration/002-environment.md).
 - With a secret manager instead of a `.env` file, start each command through it, for example `phase run --env dev -- bun run dev` with [Phase](https://phase.dev) ([environment.md](../002-configuration/002-environment.md#using-a-secret-manager)).
 
@@ -58,8 +61,9 @@ There is no CI pipeline. These local runs are the only gate before Workers Build
 | `apps/jobs` | `idstead-jobs` | Queue consumer + cron (port 8788) |
 | `packages/lib` | – | `@idstead/lib`, imported everywhere as `#lib/...` |
 | `tests/` | – | Bun tests ([testing.md](002-testing.md)) |
-| `scripts/`, `tooling/` | – | [scripts-and-tooling.md](003-scripts-and-tooling.md) |
-| `supabase/` | – | migrations |
+| `tooling/` | – | [scripts-and-tooling.md](003-scripts-and-tooling.md) |
+| `packages/data/d1/` | – | D1 migrations |
+| `supabase/` | – | retired Postgres migrations, kept until Stage 8 |
 | `templates/` | – | starter content for a new site |
 
 Lib code must type-check in both web and admin, so don't use app-specific typed routes inside `packages/lib`.

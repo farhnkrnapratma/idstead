@@ -26,8 +26,8 @@ The script runs these steps in order and stops at the first one that fails. Each
 2. **Environment variables.** Stops with the list of missing variables.
 3. **Cloudflare account.** Checks that Wrangler is signed in.
 4. **R2 bucket and queues.** Creates the asset bucket, the newsletter queue and its `-dlq` dead-letter queue when they do not exist.
-5. **Database.** Checks that the Supabase project has the Idstead schema.
-6. **Admin account.** Creates a confirmed Supabase user with the `admin` role and prints a temporary password once. An existing user with that email is given the `admin` role instead.
-7. **Legal pages.** Adds `/privacy`, `/terms` and `/security` from [`templates/legal/`](../../templates/legal/README.md) when the database has no page for them. Existing pages are left alone.
+5. **D1 database.** Creates the D1 database named in `idstead.jsonc` when it does not exist, writes its ID to `idstead.jsonc`, renders the Wrangler configs again so every Worker binds it as `DB`, and applies the migrations in `packages/data/d1/migrations/`.
+6. **Admin account.** Creates a confirmed Supabase Auth user with the `admin` role and prints a temporary password once. An existing user with that email is given the `admin` role instead.
+7. **Legal pages.** Adds `/privacy`, `/terms` and `/security` from [`templates/legal/`](../../templates/legal/README.md) when D1 has no page with content for them. Existing pages are left alone.
 8. **Build and deploy.** Builds every app and deploys the API, jobs, web and admin Workers, uploading each Worker's secrets with the deploy (`wrangler deploy --secrets-file`). The secrets file lives in a private temporary folder and is deleted afterwards. Each Worker gets only the keys it reads: `secrets.required` in the API and jobs templates, and `apps/web/src/env.ts` and `apps/admin/src/env.ts` for the two sites. The custom domains in `idstead.jsonc` are attached on deploy.
 9. **Next steps.** Prints what is left to do by hand, listed under [After setup](README.md#after-setup).

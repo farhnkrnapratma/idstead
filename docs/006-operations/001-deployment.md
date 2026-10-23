@@ -21,7 +21,7 @@ There is no CI pipeline. Run `bun run test`, `bun run check` and `bun run lint` 
     - Give previews their own variables: Cloudflare's dummy Turnstile keys and `PUBLIC_SENTRY_ENVIRONMENT=preview`.
     - `*.workers.dev` hosts and `preview` deployments are served with `noindex` and a disallow-all `robots.txt`.
 
-All Workers share one Supabase project.
+All Workers share one D1 database (`cloudflare.database` in `idstead.jsonc`) and one R2 bucket; admin sign-in uses one Supabase Auth project.
 
 ## Bindings
 
@@ -42,10 +42,9 @@ The [setup script](../001-getting-started/001-setup-script.md) creates the bucke
 
 ## Database migrations
 
-- Files live in `supabase/migrations/`.
-- Production has been migrated partly through the Supabase MCP tool, so recorded versions differ from the file names. Compare the live schema before you assume a migration is applied.
-- Apply a migration **before** deploying code that depends on it.
-- Every `UPDATE`/`DELETE` inside a function needs a `WHERE` clause (PostgREST `safeupdate`, enforced by `tests/safeupdate.test.ts`).
+- Files live in `packages/data/d1/migrations/`. Apply them with `bunx wrangler d1 migrations apply <database> --remote` from `apps/web` (its `wrangler.jsonc` names the migrations directory); the setup script does this for a new instance.
+- Apply a migration **before** deploying code that depends on it, and keep `tests/d1Schema.test.ts` passing.
+- `supabase/migrations/` is the history of the retired Postgres schema. It stays until Stage 8, together with the Supabase data kept for a rollback.
 
 ## After a deploy
 

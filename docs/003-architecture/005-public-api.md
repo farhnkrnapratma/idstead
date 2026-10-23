@@ -9,8 +9,8 @@ sequenceDiagram
     participant M as Hono middleware (app.use '*')
     participant R as Route + runApi()
     participant HND as Handler (packages/lib/src/server/api)
-    participant DB as Supabase PostgREST (anon)
-    participant ST as Supabase Storage (blog-posts)
+    participant DB as D1 (DB binding)
+    participant ST as R2 (ASSET_BUCKET, content/)
 
     C->>M: GET /v1/...
     M->>M: requestId = x-request-id or randomUUID()
@@ -47,9 +47,9 @@ sequenceDiagram
 
 ## Notes
 
-- **Read-only, anon client:**
-    - The worker never holds the service-role key.
-    - `database(env)` builds a module-level anon client from `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+- **Read-only public repositories:**
+    - The worker only builds `dataStores({ env }, { bannerUrls: false }).public`, the published and public rows.
+    - Post content is read from the `ASSET_BUCKET` R2 binding.
 - **Fallback handlers:**
     - `app.notFound` returns `NOT_FOUND`.
     - `app.onError` reports to Sentry and returns `INTERNAL_ERROR`. Both are wrapped by the envelope.

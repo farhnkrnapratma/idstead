@@ -107,7 +107,7 @@ API routes authenticate themselves:
 | `/api/internal/admin/cv/signature` | POST, DELETE | same-origin + `requireAdminAuth`, called inside `processCvSignature()` |
 | `/api/internal/admin/openpgp-key` | POST, DELETE | same-origin + `requireAdminAuth`, called inside `processOpenPgpKey()` |
 | `/api/internal/admin/author` | GET | same-origin + `requireAdminAuth`; the admin editing snapshot (profile, identity metadata, CV, skills, links, repository rules, CV document, OpenPGP key), or `?part=profile` for the profile alone |
-| `/api/internal/admin/legal` | GET, POST | same-origin + `requireAdminAuth`; the privacy, security and terms pages, or `{slug, title, content}` to save one through `db_save_legal` with the admin session |
+| `/api/internal/admin/legal` | GET, POST | same-origin + `requireAdminAuth`; the privacy, security and terms pages, or `{slug, title, content}` to save one through `service.legalWriter` |
 | `/api/internal/admin/projects` | POST | same-origin + `requireAdminAuth`; `{pinned, excluded}` repository names for the projects section |
 | `/api/internal/admin/skills` | POST | same-origin + `requireAdminAuth` |
 | `/api/internal/admin/links` | POST | same-origin + `requireAdminAuth` |

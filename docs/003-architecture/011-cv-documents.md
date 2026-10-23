@@ -7,7 +7,7 @@ sequenceDiagram
     autonumber
     participant B as Admin browser (Resume tab)
     participant G as POST /api/internal/admin/cv/generate
-    participant DB as Supabase (service-role)
+    participant DB as D1 (DB binding)
     participant R2 as R2 cv/
 
     B->>G: { force?: boolean }
@@ -114,4 +114,4 @@ A detached signature carries only the issuer's key ID. The signer's name and ema
 - `apps/admin/src/routes/(admin)/+page.svelte` (CV Document and OpenPGP key cards)
 - `apps/web/src/routes/pgp.asc/+server.ts`, `apps/web/src/routes/.well-known/openpgpkey/**`
 - `apps/web/src/lib/components/CvDownloadMenu.svelte`
-- `supabase/migrations/20261016120000_cv_versions.sql`, `supabase/migrations/20261017090000_cv_openpgp.sql`
+- `packages/data/d1/migrations/0001_init.sql`, `packages/data/src/d1/cvDocuments.ts`

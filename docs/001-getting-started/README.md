@@ -8,13 +8,11 @@ There are three ways to set up a new Idstead site, and they all perform the same
 | [002-ai-agent.md](002-ai-agent.md) | An AI coding agent driving the script through the `setup-idstead` skill |
 | [003-manual-setup.md](003-manual-setup.md) | The same steps by hand |
 
-> **Warning:** A new Supabase project cannot be set up from this repository yet. The migrations in `supabase/migrations/` start from a schema that already existed when they were written, so they cannot build an empty database. The setup script stops at its database check when the schema is missing. A schema that builds from scratch arrives with the move to Cloudflare D1.
-
 ## What you need
 
 - [Bun](https://bun.com/) and a clone of this repository with `bun install` run.
 - A Cloudflare account with your domain on it, and Wrangler signed in (`bunx wrangler login`, or `CLOUDFLARE_API_TOKEN` in the environment).
-- A Supabase project with the Idstead schema (see the warning above).
+- A Supabase project for admin sign-in (Supabase Auth only; the site's data lives in Cloudflare D1, which the setup script creates).
 - A Turnstile widget, a Resend account with a verified sending domain, and a Sentry project. The API and jobs Workers refuse to deploy without their Sentry DSN, Resend key and sender address.
 
 ## Environment variables
@@ -23,7 +21,7 @@ The setup script reads every value from the process environment. Bun loads a `.e
 
 | Variables | Notes |
 | --- | --- |
-| `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | From the Supabase project's API settings. The service role key stays server-side. |
+| `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | From the Supabase project's API settings, for admin sign-in. The service role key stays server-side. |
 | `PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET` | The Turnstile widget for the contact form, comments and admin sign-in. |
 | `IP_SALT` | A long random string, for example from `openssl rand -hex 32`. Keep it stable: it salts the hashed IP addresses the site stores. |
 | `RESEND_API_KEY`, `SUBSCRIBER_FROM_EMAIL` | Newsletter and contact form email. |

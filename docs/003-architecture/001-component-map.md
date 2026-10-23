@@ -15,13 +15,12 @@ flowchart LR
         AI[["Workers AI<br/>AI binding"]]
         Q[["Queue idstead-newsletter<br/>DLQ idstead-newsletter-dlq"]]
         R2[("R2 bucket idstead-assets<br/>ASSET_BUCKET binding")]
+        D1[("D1 database idstead<br/>DB binding")]
         CDN[("CDN origin<br/>PUBLIC_CDN_BASE_URL")]
     end
 
     subgraph SB["Supabase"]
-        PG[("Postgres + RLS<br/>via PostgREST")]
         AUTH["Auth<br/>password, TOTP, passkey"]
-        ST[("Storage<br/>blog-posts bucket")]
     end
 
     subgraph EXT["External"]
@@ -35,9 +34,8 @@ flowchart LR
     Browser --> ADMIN
     Browser --> API
 
-    WEB -->|"anon + service-role"| PG
-    WEB --> ST
-    WEB -->|"identity, banners, content"| R2
+    WEB -->|"cached public reads, writes"| D1
+    WEB -->|"identity, banners, post content"| R2
     WEB -->|"/static /fonts /logo proxy"| CDN
     WEB --> RL
     WEB -->|"Llama Guard, ARD embeddings"| AI
@@ -46,8 +44,7 @@ flowchart LR
     WEB -->|"projects"| GH
 
     ADMIN -->|"cookie session"| AUTH
-    ADMIN -->|"service-role + user-scoped"| PG
-    ADMIN --> ST
+    ADMIN --> D1
     ADMIN --> R2
     ADMIN -->|"password, profile"| RL
     ADMIN -->|"post summary, TL;DR"| AI
@@ -55,15 +52,14 @@ flowchart LR
     ADMIN -->|"login alert, manual re-send"| RS
     ADMIN -->|"produce"| Q
 
-    API -->|"anon only"| PG
-    API --> ST
+    API -->|"cached public reads"| D1
+    API -->|"post content"| R2
     API --> RL
 
     Q -->|"consume"| JOBS
-    JOBS -->|"service-role"| PG
+    JOBS -->|"newsletter, prunes"| D1
     JOBS -->|"newsletter batch"| RS
-    JOBS -->|"daily cleanup"| R2
-    JOBS -->|"daily cleanup"| ST
+    JOBS -->|"daily cleanup, render refresh"| R2
 
     WEB -.-> SEN
     ADMIN -.-> SEN
@@ -89,4 +85,4 @@ flowchart LR
 - `apps/web/wrangler.jsonc`, `apps/admin/wrangler.jsonc`, `apps/api/wrangler.jsonc`, `apps/jobs/wrangler.jsonc`
 - `packages/lib/src/server/r2.ts`, `rateLimit.ts`, `newsletterQueue.ts`
 - `apps/jobs/src/index.ts`
-- `cron.job` in the Supabase project
+- `packages/lib/src/server/data.ts` (`dataStores()`), `packages/data/src/d1/`

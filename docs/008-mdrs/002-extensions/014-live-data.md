@@ -56,7 +56,7 @@ post: api.v1.blog["hello-world"]
 Read [${post.title}](/blog/hello-world), first published ${post.created_at}.
 ```
 
-`api.v1.blog["slug"]` reads the post body from its markdown file in Supabase Storage. Posts without a markdown file return an empty `content`.
+`api.v1.blog["slug"]` reads the post body from its markdown file in R2. Posts without a markdown file return an empty `content`.
 
 ## Rules
 
