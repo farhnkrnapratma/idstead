@@ -1,9 +1,11 @@
 import type { RequestHandler } from './$types';
-import { readSiteProfile, publicResponse } from '#lib/server/publicMetadata.ts';
+import { error } from '@sveltejs/kit';
+import { readSite, publicResponse } from '#lib/server/publicMetadata.ts';
 import { themeColors } from '@idstead/ui/themeColors.ts';
 
-export const GET: RequestHandler = async ({ request }) => {
-    const profile = await readSiteProfile();
+export const GET: RequestHandler = async ({ request, platform }) => {
+    const { profile } = await readSite(platform);
+    if (!profile) error(404, 'The site has no profile yet.');
     const manifest = {
         id: '/',
         name: profile.name,

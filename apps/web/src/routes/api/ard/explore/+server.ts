@@ -12,19 +12,17 @@ import {
     ardIndexUnavailableResponse,
     getArdIndexEntries
 } from '#lib/server/ardIndexServer.ts';
-import { readSiteProfile } from '#lib/server/publicMetadata.ts';
+import { readSite } from '#lib/server/publicMetadata.ts';
 
 export const POST: RequestHandler = async ({ request, platform }) => {
     try {
         const body = await readArdRequestJson(request);
         const exploreRequest = validateArdExploreRequest(body);
-        const profile = await readSiteProfile();
-        const entries = await getArdIndexEntries(profile.siteUrl, platform);
+        const { siteUrl } = await readSite(platform);
+        const entries = await getArdIndexEntries(siteUrl, platform);
         const ai = await resolveArdAiBinding(platform?.env?.AI);
         return new Response(
-            JSON.stringify(
-                await exploreArdEntriesWithAI(exploreRequest, profile.siteUrl, ai, entries)
-            ),
+            JSON.stringify(await exploreArdEntriesWithAI(exploreRequest, siteUrl, ai, entries)),
             {
                 headers: {
                     'Content-Type': 'application/json; charset=utf-8',

@@ -1,34 +1,39 @@
 import { error } from '@sveltejs/kit';
+import { siteOrigin } from '@idstead/domain/siteOrigin.ts';
 import { publicRepositories } from './repositories';
+import { configuredSiteUrl } from './siteUrl';
 
-export async function readSiteProfile() {
-    const profile = await publicRepositories()
-        .author.profile({ includeEmail: true })
-        .catch(() => null);
-    if (!profile) error(503, 'Site metadata is temporarily unavailable.');
-    let canonical: URL;
+function configuredOrigin(platform: unknown) {
     try {
-        canonical = new URL(profile.siteUrl);
-        if (
-            !['https:', 'http:'].includes(canonical.protocol)
-            || canonical.username
-            || canonical.password
-        )
-            throw new Error();
+        return configuredSiteUrl(platform);
+    } catch {
+        return null;
+    }
+}
+
+export async function readSite(platform?: unknown) {
+    let profile: Awaited<ReturnType<ReturnType<typeof publicRepositories>['author']['profile']>>;
+    try {
+        profile = await publicRepositories().author.profile({ includeEmail: true });
     } catch {
         error(503, 'Site metadata is temporarily unavailable.');
     }
-    return {
-        name: profile.name,
-        username: profile.username,
-        bio: profile.bio,
-        headline: profile.headline,
-        email: profile.email,
-        manifest_settings: profile.manifestSettings,
-        created_at: profile.createdAt,
-        updated_at: profile.updatedAt,
-        siteUrl: canonical.origin
-    };
+    const siteUrl = siteOrigin(profile?.siteUrl) ?? siteOrigin(configuredOrigin(platform));
+    if (!siteUrl) error(503, 'Site metadata is temporarily unavailable.');
+    const site =
+        profile ?
+            {
+                name: profile.name,
+                username: profile.username,
+                bio: profile.bio,
+                headline: profile.headline,
+                email: profile.email,
+                manifest_settings: profile.manifestSettings,
+                created_at: profile.createdAt,
+                updated_at: profile.updatedAt
+            }
+        :   null;
+    return { siteUrl, profile: site };
 }
 
 export async function readPublishedPosts() {

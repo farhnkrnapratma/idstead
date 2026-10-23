@@ -1,11 +1,11 @@
 import type { RequestHandler } from './$types';
 import * as publicEnv from '$app/env/public';
 import { apiUrl } from '#lib/apiConfig.ts';
-import { readSiteProfile, publicResponse } from '#lib/server/publicMetadata.ts';
+import { readSite, publicResponse } from '#lib/server/publicMetadata.ts';
 import { discoveryOperations } from '#lib/server/apiDiscovery.ts';
 
-export const GET: RequestHandler = async ({ request }) => {
-    const { siteUrl: base } = await readSiteProfile();
+export const GET: RequestHandler = async ({ request, platform }) => {
+    const { siteUrl: base } = await readSite(platform);
     const apiBase = publicEnv.PUBLIC_API_BASE_URL;
     const catalog = {
         linkset: [

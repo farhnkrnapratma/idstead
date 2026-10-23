@@ -10,16 +10,16 @@ import {
     ardIndexUnavailableResponse,
     getArdIndexEntries
 } from '#lib/server/ardIndexServer.ts';
-import { readSiteProfile, publicResponse } from '#lib/server/publicMetadata.ts';
+import { readSite, publicResponse } from '#lib/server/publicMetadata.ts';
 
 export const GET: RequestHandler = async ({ request, url, platform }) => {
     try {
         const listRequest = parseArdListRequest(url);
-        const profile = await readSiteProfile();
-        const entries = await getArdIndexEntries(profile.siteUrl, platform);
+        const { siteUrl } = await readSite(platform);
+        const entries = await getArdIndexEntries(siteUrl, platform);
         const response = await publicResponse(
             request,
-            JSON.stringify(listArdEntries(listRequest, profile.siteUrl, entries)),
+            JSON.stringify(listArdEntries(listRequest, siteUrl, entries)),
             'application/json; charset=utf-8'
         );
         response.headers.set('Access-Control-Allow-Origin', '*');
