@@ -2,6 +2,7 @@
     import { cn } from '@idstead/ui/utils/cn.ts';
     import FooterSiteLink from './FooterSiteLink.svelte';
     import { FOOTER_SITE_LINKS } from './footerLinks';
+    import { isHiddenLegalPath } from '#app/legalVisibility.ts';
 
     interface Props {
         name?: string;
@@ -9,6 +10,8 @@
     }
 
     let { name = '', class: className = '' }: Props = $props();
+
+    const siteLinks = $derived(FOOTER_SITE_LINKS.filter(item => !isHiddenLegalPath(item.href)));
 </script>
 
 <div
@@ -19,7 +22,7 @@
     <span class="inline-flex shrink-0 items-center text-text-muted">
         &copy; {new Date().getFullYear()}{name ? ` ${name}.` : '.'}
     </span>
-    {#each FOOTER_SITE_LINKS as item (item.label)}
+    {#each siteLinks as item (item.label)}
         <FooterSiteLink {item} />
     {/each}
 </div>

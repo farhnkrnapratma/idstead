@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { isHiddenLegalPath } from '#app/legalVisibility.ts';
     import { onMount, untrack } from 'svelte';
     import { fade } from 'svelte/transition';
     import { ShieldCheck, X, Trash } from '@lucide/svelte';
@@ -143,10 +144,11 @@
 
             <p class="text-xs leading-relaxed text-text-secondary">
                 Choose which data processing signals you wish to allow. You can update your choice
-                at any time. See our <a
-                    href="/privacy"
-                    class="font-semibold text-accent-text underline hover:text-accent-hover"
-                    >Privacy Policy</a> for full details.
+                at any time.{#if !isHiddenLegalPath('/privacy')}
+                    See our <a
+                        href="/privacy"
+                        class="font-semibold text-accent-text underline hover:text-accent-hover"
+                        >Privacy Policy</a> for full details.{/if}
             </p>
 
             <div class="grid grid-cols-2 gap-2 pt-1 sm:flex sm:flex-wrap sm:items-center">

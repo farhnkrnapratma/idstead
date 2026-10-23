@@ -3,12 +3,17 @@ import { publicRepositories } from '#lib/server/repositories.ts';
 import { avatarSource } from '#lib/siteIdentity.ts';
 import { extractGitHubUsername } from '#lib/server/githubProjects.ts';
 import { fetchCachedProjects, withoutExcludedProjects } from '#lib/server/projectsCache.ts';
+import { publishedLegalSlugs } from '@idstead/domain/legal.ts';
 
 export const load: LayoutServerLoad = async ({ fetch, platform, setHeaders }) => {
-    const { author: authorRepository } = publicRepositories(fetch);
-    const [profile, socialLinks] = await Promise.all([
+    const { author: authorRepository, legal } = publicRepositories(fetch);
+    const [profile, socialLinks, legalPages] = await Promise.all([
         authorRepository.profile().catch(() => null),
-        authorRepository.socialLinks().catch(() => [])
+        authorRepository.socialLinks().catch(() => []),
+        legal
+            .pages()
+            .then(publishedLegalSlugs)
+            .catch(() => [])
     ]);
     const author = profile ? { ...profile, socialLinks } : null;
 
@@ -24,6 +29,7 @@ export const load: LayoutServerLoad = async ({ fetch, platform, setHeaders }) =>
     return {
         author: author ? { ...author, avatar: avatarSource(author) } : author,
         projects: withoutExcludedProjects(projects, repoRules.excluded),
-        pinnedRepoNames: repoRules.pinned
+        pinnedRepoNames: repoRules.pinned,
+        legalPages
     };
 };

@@ -15,14 +15,22 @@
         normalizeKey
     } from '../shortcuts.ts';
 
-    const commandRows = Object.entries(COMMAND_SHORTCUTS)
-        .filter(([command]) => COMMAND_LABELS[command])
-        .map(([command, combo]) => ({
-            id: command,
-            label: `${COMMAND_LABELS[command]} or ${command}`,
-            section: commandSection(command),
-            combo
-        }));
+    interface Props {
+        hiddenCommands?: string[];
+    }
+
+    let { hiddenCommands = [] }: Props = $props();
+
+    const commandRows = $derived(
+        Object.entries(COMMAND_SHORTCUTS)
+            .filter(([command]) => COMMAND_LABELS[command] && !hiddenCommands.includes(command))
+            .map(([command, combo]) => ({
+                id: command,
+                label: `${COMMAND_LABELS[command]} or ${command}`,
+                section: commandSection(command),
+                combo
+            }))
+    );
 
     const commandKeys = new Set(Object.values(COMMAND_SHORTCUTS).map(normalizeKey));
 
