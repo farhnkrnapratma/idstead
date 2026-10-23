@@ -43,7 +43,7 @@ Numbers outside the block are ignored (a range is clamped to the block's length)
     data-mdrs-filename="auth.svelte.ts"><code class="language-typescript">…</code></pre>
 ```
 
-The old `{1,3-5}` syntax is no longer parsed; `scripts/migrate-markdown-syntax.ts` converted existing posts to `mark=`.
+The old `{1,3-5}` syntax is no longer parsed; a one-off migration script (removed after the D1 move) converted existing posts to `mark=`.
 
 ## Diffs
 
