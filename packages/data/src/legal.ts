@@ -1,4 +1,5 @@
-export type LegalSlug = 'privacy' | 'security' | 'terms';
+export type { LegalSlug } from '@idstead/domain/legal.ts';
+import type { LegalSlug } from '@idstead/domain/legal.ts';
 
 export interface LegalPage {
     slug: string;

@@ -11,6 +11,7 @@
     import FeedbackButton from '#app/components/FeedbackButton.svelte';
     import { Toast, ScrollToTopButton } from '@idstead/ui';
     import ShortcutCatalogDialog from '@idstead/ui/components/ShortcutCatalogDialog.svelte';
+    import { hiddenLegalPaths } from '#app/legalVisibility.ts';
     import ShortcutModeIndicator from '@idstead/ui/components/ShortcutModeIndicator.svelte';
     import { platformStore } from '@idstead/ui/stores/platformStore.svelte.ts';
 
@@ -152,5 +153,5 @@
 
 <ConsentBanner />
 <Toast />
-<ShortcutCatalogDialog />
+<ShortcutCatalogDialog hiddenCommands={hiddenLegalPaths()} />
 <ShortcutModeIndicator />

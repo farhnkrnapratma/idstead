@@ -7,9 +7,8 @@ import { requireAdminAuth } from '#lib/server/adminCv.ts';
 import { bearerToken } from '#lib/server/adminAuth.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
-import type { LegalSlug } from '@idstead/data';
+import { isLegalSlug } from '@idstead/domain/legal.ts';
 
-const SLUGS: LegalSlug[] = ['privacy', 'security', 'terms'];
 const MAX_TITLE_LENGTH = 200;
 const MAX_CONTENT_LENGTH = 200_000;
 
@@ -48,7 +47,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
     const slug = body?.slug;
     const title = typeof body?.title === 'string' ? body.title.trim() : '';
     const content = typeof body?.content === 'string' ? body.content : null;
-    if (typeof slug !== 'string' || !SLUGS.includes(slug as LegalSlug))
+    if (typeof slug !== 'string' || !isLegalSlug(slug))
         return apiError(400, 'LEGAL_INVALID_INPUT', 'Unknown legal page.');
     if (!title || title.length > MAX_TITLE_LENGTH)
         return apiError(400, 'LEGAL_INVALID_INPUT', 'A title of up to 200 characters is required.');
@@ -59,7 +58,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
             'Content is required and must fit 200,000 characters.'
         );
 
-    const result = await session.legalWriter.save({ slug: slug as LegalSlug, title, content });
+    const result = await session.legalWriter.save({ slug, title, content });
     if (result.status === 'rejected') return apiError(400, 'LEGAL_SAVE_FAILED', result.message);
 
     const token = bearerToken(request);

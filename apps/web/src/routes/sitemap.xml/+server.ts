@@ -8,6 +8,7 @@ import {
     publicResponse
 } from '#lib/server/publicMetadata.ts';
 import { escapeXml as xml } from '@idstead/domain/xml.ts';
+import { publishedLegalSlugs } from '@idstead/domain/legal.ts';
 
 export const GET: RequestHandler = async ({ request, fetch }) => {
     const [profile, posts, legal] = await Promise.all([
@@ -27,7 +28,7 @@ export const GET: RequestHandler = async ({ request, fetch }) => {
         { path: '/contact', updated: undefined as string | undefined },
         { path: '/feedback', updated: undefined as string | undefined },
         ...legal
-            .filter(page => ['privacy', 'terms', 'security'].includes(page.slug))
+            .filter(page => publishedLegalSlugs([page]).length > 0)
             .map(page => ({ path: '/' + page.slug, updated: validDate(page.updated_at) })),
         ...posts.map(post => ({
             path: '/blog/' + encodeURIComponent(post.slug),

@@ -2,7 +2,7 @@
     import MailingDialog from './MailingDialog.svelte';
     import { type MailingCommand } from '#lib/mailing.ts';
     let mailingRequest = $state<MailingCommand | null>(null);
-    import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+    import { SvelteSet } from 'svelte/reactivity';
     import { onMount, tick } from 'svelte';
     import { spotlightStore } from '../stores/spotlightStore.svelte';
     import { goto, preloadData } from '$app/navigation';
@@ -56,6 +56,7 @@
     } from './spotlight/icons';
     import { helpCategories } from './spotlight/helpCommands';
     import { createDefaultCommands } from './spotlight/defaultCommands';
+    import { isHiddenLegalPath } from '#app/legalVisibility.ts';
     import { applyContentFont, createDynamicCommandItems } from './spotlight/dynamicCommands';
     import type { SpotlightCommandContext } from './spotlight/context';
     import {
@@ -161,8 +162,24 @@
             mailingRequest = request;
         }
     };
-    const defaultCommands = createDefaultCommands(commandContext);
-    const getDynamicCommandItems = createDynamicCommandItems(commandContext);
+    const allDefaultCommands = createDefaultCommands(commandContext);
+    const defaultCommands = $derived(
+        allDefaultCommands.filter(item => !isHiddenLegalPath(item.url))
+    );
+    const buildDynamicCommandItems = createDynamicCommandItems(commandContext);
+    const getDynamicCommandItems = (query: string) =>
+        buildDynamicCommandItems(query).filter(item => !isHiddenLegalPath(item.url));
+    const visibleHelpCategories = $derived(
+        helpCategories.map(category => ({
+            ...category,
+            commands: category.commands
+                .filter(cmd => !isHiddenLegalPath(cmd.command))
+                .map(cmd => ({
+                    ...cmd,
+                    validArgs: cmd.validArgs.filter(arg => !isHiddenLegalPath(arg))
+                }))
+        }))
+    );
     const searchFlags = (): SearchFlags => ({
         caseSensitive: isCaseSensitive,
         wholeWord: isWholeWord,
@@ -174,13 +191,13 @@
     const getHighlightChunks = (text: string, query: string) =>
         highlightChunks(text, query, searchFlags());
 
-    const helpCmdIndexMap = new SvelteMap<string, number>();
-    let helpCmdIdxCounter = 0;
-    for (const cat of helpCategories) {
-        for (const cmd of cat.commands) {
-            helpCmdIndexMap.set(cmd.command, helpCmdIdxCounter++);
-        }
-    }
+    const helpCmdIndexMap = $derived(
+        new Map(
+            visibleHelpCategories
+                .flatMap(category => category.commands)
+                .map((cmd, index) => [cmd.command, index])
+        )
+    );
 
     async function loadLinkItems() {
         if (linkItems) return;
@@ -1129,7 +1146,7 @@
         if (preloadTarget) preloadData(preloadTarget).catch(() => {});
     });
 
-    const flatHelpCommands = $derived(helpCategories.flatMap(cat => cat.commands));
+    const flatHelpCommands = $derived(visibleHelpCategories.flatMap(cat => cat.commands));
 
     function selectHelpCommand(cmd: HelpCommandSpec) {
         showHelp = false;
@@ -1750,7 +1767,7 @@
             </div>
 
             <div class="flex-1 space-y-3 overflow-y-auto px-2.5 py-2.5 text-xs">
-                {#each helpCategories as category (category.id)}
+                {#each visibleHelpCategories as category (category.id)}
                     <section aria-label={category.label}>
                         <CommandSectionHeading
                             label={category.label}

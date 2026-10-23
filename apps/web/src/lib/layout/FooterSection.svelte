@@ -12,6 +12,7 @@
     import BrandIcon from '#lib/components/BrandIcon.svelte';
     import FooterSiteLink from './FooterSiteLink.svelte';
     import { FOOTER_SITE_LINKS } from './footerLinks';
+    import { isHiddenLegalPath } from '#app/legalVisibility.ts';
     import StatusBadge from '@idstead/ui/components/StatusBadge.svelte';
     import * as publicEnv from '$app/env/public';
     import { BookOpenText } from '@lucide/svelte';
@@ -73,6 +74,8 @@
         : pageAuthor?.socialLinks && pageAuthor.socialLinks.length > 0 ? pageAuthor.socialLinks
         : []
     );
+
+    const siteLinks = $derived(FOOTER_SITE_LINKS.filter(item => !isHiddenLegalPath(item.href)));
 </script>
 
 <footer
@@ -134,7 +137,7 @@
                     <h4 class="text-xs font-semibold text-text-primary">Site</h4>
                     <ul
                         class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs font-normal text-text-secondary">
-                        {#each FOOTER_SITE_LINKS as item (item.label)}
+                        {#each siteLinks as item (item.label)}
                             <li class="text-xs">
                                 <FooterSiteLink
                                     {item}
