@@ -153,7 +153,7 @@
         <Tooltip
             content={SCAN_HINT}
             align="left"
-            class="max-w-64 leading-relaxed wrap-anywhere whitespace-normal!">
+            class="z-100001 max-w-64 leading-relaxed wrap-anywhere whitespace-normal!">
             <button
                 type="button"
                 aria-label={SCAN_HINT}
@@ -199,7 +199,7 @@
     {onClose}>
     <div class="flex flex-col items-center gap-4 pt-1 pb-1">
         <div
-            class="relative flex aspect-square w-full max-w-60 items-center justify-center rounded-md border border-border-subtle bg-white p-3">
+            class="relative flex aspect-square w-full items-center justify-center rounded-md border border-border-subtle bg-white p-2">
             {#await qrSvg}
                 {@render generating()}
             {:then svg}
