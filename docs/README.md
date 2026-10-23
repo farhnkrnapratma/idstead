@@ -36,7 +36,7 @@ Documentation for Idstead, a self-hostable personal site and identity home. The 
 | --- | --- |
 | [001-local-setup.md](005-development/001-local-setup.md) | Install, environment variables, dev servers, everyday commands |
 | [002-testing.md](005-development/002-testing.md) | Test suite map, the live API suite, coverage gaps |
-| [003-scripts-and-tooling.md](005-development/003-scripts-and-tooling.md) | `scripts/` operations, `tooling/` hooks, plugins and the setup script |
+| [003-scripts-and-tooling.md](005-development/003-scripts-and-tooling.md) | `tooling/` hooks, plugins and the setup script |
 
 ## 006 Operations
 
