@@ -42,9 +42,6 @@ export interface CvDocumentStore {
     signerFingerprint(documentId: string): Promise<string | null>;
     delete(filename: string): Promise<boolean>;
     siteUrl(): Promise<string>;
-    uploadFallback(key: string, body: Uint8Array, contentType: string): Promise<void>;
-    removeFallback(keys: string[]): Promise<void>;
-    fallbackUrl(key: string): string;
 }
 
 export interface OpenPgpKeyInput {

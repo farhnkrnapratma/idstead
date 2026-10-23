@@ -20,8 +20,6 @@ import { checkRateLimit, clientIp } from '#lib/server/rateLimit.ts';
 import readme from './README.md';
 
 export interface Env {
-    PUBLIC_SUPABASE_URL?: string;
-    PUBLIC_SUPABASE_PUBLISHABLE_KEY?: string;
     PUBLIC_SENTRY_DSN?: string;
     PUBLIC_SENTRY_ENVIRONMENT?: string;
 }

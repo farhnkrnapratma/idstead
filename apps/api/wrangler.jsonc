@@ -16,14 +16,7 @@
         }
     ],
     "alias": { "$app/env/private": "./src/appEnv.ts", "$app/env/public": "./src/appEnv.ts" },
-    "secrets": {
-        "required": [
-            "PUBLIC_SUPABASE_URL",
-            "PUBLIC_SUPABASE_PUBLISHABLE_KEY",
-            "PUBLIC_SENTRY_DSN",
-            "PUBLIC_SENTRY_ENVIRONMENT"
-        ]
-    },
+    "secrets": { "required": ["PUBLIC_SENTRY_DSN", "PUBLIC_SENTRY_ENVIRONMENT"] },
     "rules": [{ "type": "Text", "globs": ["**/*.md"], "fallthrough": true }],
     "ratelimits": [
         {

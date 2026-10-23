@@ -67,8 +67,8 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
 
     const db = getSupabaseAdminClient(platform);
 
-    const { service, session } = dataStores(platform, { request, verifiedAdmin: true });
-    if (!db || !service || !session)
+    const { service } = dataStores(platform);
+    if (!db || !service)
         return apiError(503, 'PROFILE_IMPORT_UNAVAILABLE', 'Profile storage is unavailable.');
 
     let body: any;
@@ -81,7 +81,7 @@ export const POST: RequestHandler = async ({ request, url, platform, getClientAd
         return apiError(400, 'PROFILE_IMPORT_INVALID_INPUT', 'Invalid import payload.');
 
     const store = service.adminAuthor;
-    const writer = session.authorWriter;
+    const writer = service.authorWriter;
     let current;
     try {
         current = await store.profileRecord();

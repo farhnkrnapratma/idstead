@@ -163,7 +163,6 @@ function cvObjectKeys(filename: string) {
 
 async function putCvObject(
     platform: unknown,
-    documents: CvDocumentStore,
     key: string,
     body: Uint8Array,
     contentType: string,
@@ -182,13 +181,12 @@ async function putCvObject(
         });
         return;
     }
-    await documents.uploadFallback(key, body, contentType);
+    throw new Error('CV files need the asset bucket and PUBLIC_CDN_BASE_URL.');
 }
 
-async function deleteCvObjects(platform: unknown, documents: CvDocumentStore, keys: string[]) {
+async function deleteCvObjects(platform: unknown, keys: string[]) {
     const storage = await cvStorage(platform);
     if (storage) await deleteObjects(storage.bucket, keys);
-    else await documents.removeFallback(keys).catch(() => {});
 }
 
 async function fetchBytes(url: string) {
@@ -220,13 +218,11 @@ async function siteUrlFor(documents: CvDocumentStore, platform: unknown) {
 
 async function storeCvSignature(
     platform: unknown,
-    documents: CvDocumentStore,
     filename: string,
     signature: { asc: string; sig: Uint8Array }
 ) {
     await putCvObject(
         platform,
-        documents,
         cvKey(filename, 'asc'),
         new TextEncoder().encode(signature.asc),
         'application/pgp-signature',
@@ -234,7 +230,6 @@ async function storeCvSignature(
     );
     await putCvObject(
         platform,
-        documents,
         cvKey(filename, 'sig'),
         signature.sig,
         'application/pgp-signature',
@@ -249,7 +244,6 @@ async function clearCvSignature(
 ) {
     await deleteCvObjects(
         platform,
-        documents,
         CV_SIGNATURE_EXTENSIONS.map(ext => cvKey(doc.filename, ext))
     );
     await documents.setSignature(doc.id, null);
@@ -268,7 +262,7 @@ async function refreshCvBundle(
         : doc.signed_at ? await storedSignature(doc.file_url)
         : null;
     if (signature && known.signature === undefined)
-        await storeCvSignature(platform, stores.documents, doc.filename, signature);
+        await storeCvSignature(platform, doc.filename, signature);
     const key = await stores.keys.active();
     const bundle = buildCvBundle({
         filename: doc.filename,
@@ -285,7 +279,6 @@ async function refreshCvBundle(
     });
     await putCvObject(
         platform,
-        stores.documents,
         cvBundleKey(doc.filename),
         bundle,
         'application/zip',
@@ -296,12 +289,7 @@ async function refreshCvBundle(
         .catch(error => console.error('CV checksums could not be saved:', error));
 }
 
-async function removeCvObjects(
-    platform: unknown,
-    documents: CvDocumentStore,
-    filename: string,
-    strict: boolean
-) {
+async function removeCvObjects(platform: unknown, filename: string, strict: boolean) {
     const keys = cvObjectKeys(filename);
     const storage = await cvStorage(platform);
     if (strict && !storage) return false;
@@ -313,12 +301,6 @@ async function removeCvObjects(
             if (strict) return false;
         }
     }
-    try {
-        await documents.removeFallback(keys);
-    } catch (err) {
-        console.error('Supabase storage removal warning:', err);
-        if (strict) return false;
-    }
     return true;
 }
 
@@ -328,7 +310,7 @@ export async function deleteCvFile(
     filename: string,
     strict = false
 ): Promise<boolean> {
-    if (!(await removeCvObjects(platform, documents, filename, strict))) return false;
+    if (!(await removeCvObjects(platform, filename, strict))) return false;
     return documents.delete(filename);
 }
 
@@ -452,11 +434,9 @@ export async function processCvGenerate(
         const { digests, files: checksumFiles } = await cvChecksums(pdfBytes, filename);
 
         for (const oldFilename of await documents.activeFilenames())
-            if (oldFilename !== filename)
-                await removeCvObjects(platform, documents, oldFilename, false);
+            if (oldFilename !== filename) await removeCvObjects(platform, oldFilename, false);
 
         let fileUrl = '';
-        let storageProvider: 'R2' | 'Supabase Storage' = 'R2';
         const uploads: [string, Uint8Array, string][] = [
             [cvKey(filename), pdfBytes, 'application/pdf'],
             ...CV_CHECKSUM_EXTENSIONS.map(
@@ -477,20 +457,11 @@ export async function processCvGenerate(
                     });
                 fileUrl = `${r2Storage.cdnUrl}/${cvKey(filename)}`;
             } catch (r2Err) {
-                console.error('R2 upload failed, trying Supabase Storage fallback:', r2Err);
+                console.error('CV upload to R2 failed:', r2Err);
             }
         }
 
-        if (!fileUrl) {
-            storageProvider = 'Supabase Storage';
-            try {
-                for (const [key, body, contentType] of uploads)
-                    await documents.uploadFallback(key, body, contentType);
-            } catch {
-                return fail('Failed to upload CV file.');
-            }
-            fileUrl = documents.fallbackUrl(cvKey(filename));
-        }
+        if (!fileUrl) return fail('Failed to upload CV file.');
 
         let inserted: { id: string };
         try {
@@ -540,8 +511,7 @@ export async function processCvGenerate(
                 checksums: digests,
                 version: versionLabel,
                 level: activeDoc ? bump!.level : 'major',
-                reasons,
-                storageProvider
+                reasons
             },
             200
         );
@@ -672,7 +642,7 @@ export async function processCvSignature(
         await verifyDetachedSignature(pdf, signature.signature, key);
 
         const files = { asc: signature.asc, sig: signature.sig };
-        await storeCvSignature(platform, documents, doc.filename, files);
+        await storeCvSignature(platform, doc.filename, files);
         const signedAt = new Date().toISOString();
         await documents.setSignature(doc.id, { signedAt, fingerprint: activeKey.fingerprint });
         await refreshCvBundle(

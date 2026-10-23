@@ -4,8 +4,8 @@ mock.module('$app/env/public', () => ({}));
 mock.module('$app/env/private', () => ({}));
 
 const { notifyNewPost } = await import('../packages/lib/src/server/subscriberBroadcast.ts');
-const { createSupabaseNewsletterStore } =
-    await import('../packages/data/src/supabase/subscribers.ts');
+const { createD1NewsletterStore } = await import('../packages/data/src/d1/subscribers.ts');
+const { d1Shim, insertRows } = await import('./support/d1.ts');
 
 const POST_ID = '7f3c2a10-4b1d-4c8e-9a2f-0d1e2f3a4b5c';
 const platform = {
@@ -16,48 +16,38 @@ const platform = {
     }
 };
 
-type Row = Record<string, unknown>;
-
 function fakeDb(subscriberCount: number, notifiedAt: string | null = null) {
-    const post: Row = {
-        id: POST_ID,
-        title: 'Hello',
-        slug: 'hello',
-        excerpt: 'Excerpt',
-        published: true,
-        subscribers_notified_at: notifiedAt
+    const { db, sqlite } = d1Shim();
+    insertRows(sqlite, 'db_posts', [
+        {
+            id: POST_ID,
+            title: 'Hello',
+            slug: 'hello',
+            excerpt: 'Excerpt',
+            published: true,
+            storage_path: `posts/${POST_ID}/content.md`,
+            subscribers_notified_at: notifiedAt
+        }
+    ]);
+    insertRows(
+        sqlite,
+        'db_subscribers',
+        Array.from({ length: subscriberCount }, (_, i) => ({
+            email: `reader${String(i).padStart(3, '0')}@example.com`,
+            status: 'active',
+            unsubscribe_token: `token-${i}`
+        }))
+    );
+    const post = {
+        get subscribers_notified_at() {
+            return (
+                sqlite
+                    .query('SELECT subscribers_notified_at FROM db_posts WHERE id = ?')
+                    .get(POST_ID) as { subscribers_notified_at: string | null }
+            ).subscribers_notified_at;
+        }
     };
-    const subscribers = Array.from({ length: subscriberCount }, (_, i) => ({
-        email: `reader${String(i).padStart(3, '0')}@example.com`,
-        unsubscribe_token: `token-${i}`
-    }));
-
-    function query(table: string) {
-        const filters: [string, unknown][] = [];
-        let patch: Row | null = null;
-        const run = () => {
-            if (table === 'db_subscribers') return { data: subscribers, error: null };
-            const matches = filters.every(([key, value]) => post[key] === value);
-            if (patch) {
-                if (!matches) return { data: [], error: null };
-                Object.assign(post, patch);
-                return { data: [{ id: POST_ID }], error: null };
-            }
-            return { data: matches ? { ...post } : null, error: null };
-        };
-        const builder = {
-            select: () => builder,
-            order: () => builder,
-            update: (values: Row) => ((patch = values), builder),
-            eq: (key: string, value: unknown) => (filters.push([key, value]), builder),
-            is: (key: string, value: unknown) => (filters.push([key, value]), builder),
-            maybeSingle: () => Promise.resolve(run()),
-            then: (resolve: (value: unknown) => unknown) => Promise.resolve(run()).then(resolve)
-        };
-        return builder;
-    }
-
-    return { db: createSupabaseNewsletterStore({ from: query } as never), post };
+    return { db: createD1NewsletterStore(db), post };
 }
 
 const realFetch = globalThis.fetch;

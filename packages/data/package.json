@@ -13,8 +13,5 @@
     },
     "dependencies": {
         "@idstead/domain": "workspace:*"
-    },
-    "peerDependencies": {
-        "@supabase/supabase-js": "^2.118.0"
     }
 }

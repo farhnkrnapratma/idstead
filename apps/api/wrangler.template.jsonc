@@ -9,14 +9,7 @@
     "r2_buckets": [{ "binding": "ASSET_BUCKET", "bucket_name": "{{assetBucket}}", "remote": true }],
     "d1_databases": "{{d1Databases}}",
     "alias": { "$app/env/private": "./src/appEnv.ts", "$app/env/public": "./src/appEnv.ts" },
-    "secrets": {
-        "required": [
-            "PUBLIC_SUPABASE_URL",
-            "PUBLIC_SUPABASE_PUBLISHABLE_KEY",
-            "PUBLIC_SENTRY_DSN",
-            "PUBLIC_SENTRY_ENVIRONMENT"
-        ]
-    },
+    "secrets": { "required": ["PUBLIC_SENTRY_DSN", "PUBLIC_SENTRY_ENVIRONMENT"] },
     "rules": [{ "type": "Text", "globs": ["**/*.md"], "fallthrough": true }],
     "ratelimits": [
         {

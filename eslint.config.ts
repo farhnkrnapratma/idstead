@@ -166,9 +166,40 @@ export default defineConfig(
                     patterns: [
                         {
                             group: ['@idstead/data'],
-                            importNamePattern: '^createSupabase',
+                            importNamePattern: '^create(D1|Supabase)',
                             message:
                                 'Build data stores through dataStores() in packages/lib/src/server/data.ts, the only place that picks a data adapter.'
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        files: [
+            'apps/**/*.ts',
+            'apps/**/*.svelte',
+            'packages/lib/**/*.ts',
+            'packages/lib/**/*.svelte'
+        ],
+        ignores: [
+            'packages/lib/src/supabase.ts',
+            'packages/lib/src/server/supabaseAuth.ts',
+            'packages/lib/src/server/supabaseAdmin.ts',
+            'packages/lib/src/server/supabaseUser.ts',
+            'packages/lib/src/server/adminAuth.ts',
+            'packages/lib/src/server/blogPostAuth.ts',
+            'apps/admin/src/lib/components/admin/AccountSettings.svelte'
+        ],
+        rules: {
+            'no-restricted-imports': [
+                'error',
+                {
+                    patterns: [
+                        {
+                            group: ['@supabase/*'],
+                            message:
+                                'Supabase is only the auth provider: import it in the auth modules (supabase.ts, supabaseAuth.ts, supabaseAdmin.ts, supabaseUser.ts, adminAuth.ts, blogPostAuth.ts). Data goes through dataStores().'
                         }
                     ]
                 }
@@ -183,10 +214,10 @@ export default defineConfig(
                 {
                     patterns: [
                         {
-                            regex: '^(#lib|@idstead/(?!domain($|/))|\\$app/|\\$lib|svelte($|/))',
+                            regex: '^(#lib|@idstead/(?!domain($|/))|@supabase/|\\$app/|\\$lib|svelte($|/))',
                             allowTypeImports: true,
                             message:
-                                '@idstead/data is the server-only data layer: it may depend on @idstead/domain and @supabase/* only.'
+                                '@idstead/data is the server-only data layer: it may depend on @idstead/domain only.'
                         }
                     ]
                 }

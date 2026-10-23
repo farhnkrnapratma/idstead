@@ -9,9 +9,6 @@
     "d1_databases": "{{d1Databases}}",
     "secrets": {
         "required": [
-            "PUBLIC_SUPABASE_URL",
-            "PUBLIC_SUPABASE_PUBLISHABLE_KEY",
-            "SUPABASE_SERVICE_ROLE_KEY",
             "PUBLIC_SITE_URL",
             "PUBLIC_CDN_BASE_URL",
             "PUBLIC_SENTRY_DSN",

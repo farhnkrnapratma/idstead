@@ -1,22 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
 import {
-    createSupabaseActivityLog,
-    createSupabaseAdminActivityStore,
-    createSupabaseAdminAuthorStore,
-    createSupabaseAdminPostStores,
-    createSupabaseAdminSettingsStore,
-    createSupabaseArdIndexStore,
-    createSupabaseAuthorWriter,
-    createSupabaseCvDocumentStore,
-    createSupabaseIdentityVersionReader,
-    createSupabaseLegalPageWriter,
-    createSupabaseLoginLockoutStore,
-    createSupabaseMaintenanceStore,
-    createSupabaseOpenPgpKeyStore,
-    createSupabaseRenderStore,
-    createSupabaseRepositories,
-    createSupabaseSiteDataStore,
-    createSupabaseWriters,
     type ActivityLog,
     type AdminActivityStore,
     type AdminAuthorStore,
@@ -67,11 +49,7 @@ import {
     createD1CacheGenerations
 } from '@idstead/data';
 import * as privateEnv from '$app/env/private';
-import { supabase } from '#lib/supabase.ts';
 import { cdnBaseUrl } from '#lib/cdn.ts';
-import { getSupabaseAdminClient } from './supabaseAdmin';
-import { getSupabaseUserClient } from './supabaseUser';
-import { bearerToken } from './adminAuth';
 import { lazyBucket, lazyD1 } from './lazyBindings';
 import { workerBinding } from './workerEnv';
 import { workersResultCache } from './resultCache';
@@ -95,46 +73,21 @@ export interface ServiceStores extends Repositories {
     cvDocuments: CvDocumentStore;
     openPgpKeys: OpenPgpKeyStore;
     siteData: SiteDataStore;
-}
-
-export interface SessionStores {
     authorWriter: AuthorWriter;
     legalWriter: LegalPageWriter;
-    adminActivity: AdminActivityStore;
 }
 
 export interface DataStores {
     readonly public: PublicStores;
-    readonly service: ServiceStores | null;
-    readonly session: SessionStores | null;
+    readonly service: ServiceStores;
 }
 
 export interface DataStoreOptions {
-    request?: Request;
-    verifiedAdmin?: boolean;
     fetch?: typeof fetch;
     bannerUrls?: boolean;
 }
 
-export class DataBackendError extends Error {
-    constructor(backend: string) {
-        super(`Unknown DATA_BACKEND "${backend}".`);
-        this.name = 'DataBackendError';
-    }
-}
-
 type PlatformEnv = { env?: Record<string, unknown> } | undefined;
-
-function dataBackend(platform: unknown) {
-    const configured =
-        (platform as PlatformEnv)?.env?.DATA_BACKEND
-        ?? (privateEnv as Record<string, string | undefined>).DATA_BACKEND
-        ?? process.env.DATA_BACKEND
-        ?? 'supabase';
-    const backend = String(configured).trim() || 'supabase';
-    if (backend !== 'supabase' && backend !== 'd1') throw new DataBackendError(backend);
-    return backend;
-}
 
 function binding<T>(platform: unknown, name: string): () => Promise<T> {
     let loaded: Promise<T> | undefined;
@@ -190,7 +143,9 @@ function d1ServiceStores(backend: D1Backend): ServiceStores {
         },
         cvDocuments: createD1CvDocumentStore(db),
         openPgpKeys: createD1OpenPgpKeyStore(db),
-        siteData: createD1SiteDataStore(db, bucket)
+        siteData: createD1SiteDataStore(db, bucket),
+        authorWriter: createD1AuthorWriter(db),
+        legalWriter: createD1LegalPageWriter(db)
     };
 }
 
@@ -217,14 +172,13 @@ function cachedPublic(platform: unknown, backend: D1Backend, repos: Repositories
     });
 }
 
-function d1Stores(platform: unknown, options: DataStoreOptions): DataStores {
+export function dataStores(platform?: unknown, options: DataStoreOptions = {}): DataStores {
     const backend: D1Backend = {
         db: lazyD1(binding<D1Like>(platform, 'DB')),
         bucket: lazyBucket(binding<ContentBucket>(platform, 'ASSET_BUCKET'))
     };
     let publicStores: PublicStores | undefined;
     let serviceStores: ServiceStores | undefined;
-    let sessionStores: SessionStores | null | undefined;
     return {
         get public() {
             return (publicStores ??= {
@@ -234,87 +188,6 @@ function d1Stores(platform: unknown, options: DataStoreOptions): DataStores {
         },
         get service() {
             return (serviceStores ??= d1ServiceStores(backend));
-        },
-        get session() {
-            if (sessionStores === undefined)
-                sessionStores =
-                    (
-                        options.verifiedAdmin === true
-                        && options.request
-                        && bearerToken(options.request)
-                    ) ?
-                        {
-                            authorWriter: createD1AuthorWriter(backend.db),
-                            legalWriter: createD1LegalPageWriter(backend.db),
-                            adminActivity: createD1AdminActivityStore(backend.db)
-                        }
-                    :   null;
-            return sessionStores;
-        }
-    };
-}
-
-function supabasePublicStores(db: SupabaseClient, options: DataStoreOptions): PublicStores {
-    return {
-        ...createSupabaseRepositories(db, {
-            fetch: options.fetch,
-            ...(options.bannerUrls === false ? {} : { cdnBase: cdnBaseUrl() })
-        }),
-        identity: createSupabaseIdentityVersionReader(db)
-    };
-}
-
-function supabaseServiceStores(db: SupabaseClient): ServiceStores {
-    return {
-        ...createSupabaseRepositories(db),
-        writers: createSupabaseWriters(db),
-        identity: createSupabaseIdentityVersionReader(db),
-        ard: createSupabaseArdIndexStore(db),
-        lockout: createSupabaseLoginLockoutStore(db),
-        maintenance: createSupabaseMaintenanceStore(db),
-        renders: createSupabaseRenderStore(db),
-        activityLog: createSupabaseActivityLog(db),
-        adminActivity: createSupabaseAdminActivityStore(db),
-        adminSettings: createSupabaseAdminSettingsStore(db),
-        adminAuthor: createSupabaseAdminAuthorStore(db),
-        adminPosts: createSupabaseAdminPostStores(db),
-        cvDocuments: createSupabaseCvDocumentStore(db),
-        openPgpKeys: createSupabaseOpenPgpKeyStore(db),
-        siteData: createSupabaseSiteDataStore(db)
-    };
-}
-
-function supabaseSessionStores(db: SupabaseClient): SessionStores {
-    return {
-        authorWriter: createSupabaseAuthorWriter(db),
-        legalWriter: createSupabaseLegalPageWriter(db),
-        adminActivity: createSupabaseAdminActivityStore(db)
-    };
-}
-
-export function dataStores(platform?: unknown, options: DataStoreOptions = {}): DataStores {
-    if (dataBackend(platform) === 'd1') return d1Stores(platform, options);
-    let publicStores: PublicStores | undefined;
-    let serviceStores: ServiceStores | null | undefined;
-    let sessionStores: SessionStores | null | undefined;
-    return {
-        get public() {
-            return (publicStores ??= supabasePublicStores(supabase, options));
-        },
-        get service() {
-            if (serviceStores === undefined) {
-                const db = getSupabaseAdminClient(platform);
-                serviceStores = db ? supabaseServiceStores(db) : null;
-            }
-            return serviceStores;
-        },
-        get session() {
-            if (sessionStores === undefined) {
-                const db =
-                    options.request ? getSupabaseUserClient(options.request, platform) : null;
-                sessionStores = db ? supabaseSessionStores(db) : null;
-            }
-            return sessionStores;
         }
     };
 }

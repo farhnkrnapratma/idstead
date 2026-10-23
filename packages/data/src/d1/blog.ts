@@ -20,7 +20,7 @@ import type {
 } from '../blog';
 import { DataError } from '../errors';
 import { createPostSource, sourceRecord } from '../source';
-import { postRenderPath } from '../supabase/paths';
+import { postRenderPath } from '../paths';
 import {
     contentKey,
     flag,

@@ -19,7 +19,6 @@
         "@idstead/domain": "workspace:*",
         "@idstead/lib": "workspace:*",
         "@sentry/cloudflare": "11.8.0",
-        "@supabase/supabase-js": "^2.118.0",
         "hono": "^4.13.13",
         "yaml": "^2.9.1"
     },

@@ -14,7 +14,7 @@ import type {
     PostOperationStore
 } from '../adminPosts';
 import { DataError } from '../errors';
-import { postMarkdownPath, postRenderPath } from '../supabase/paths';
+import { postMarkdownPath, postRenderPath } from '../paths';
 import {
     contentKey,
     flag,

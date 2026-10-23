@@ -36,7 +36,6 @@ export async function adminActivity(
         if (auth.status)
             return fail(auth.status, auth.code ?? 'ADMIN_ACTIVITY_AUTH_REQUIRED', auth.message);
         const store = service.adminActivity;
-        const data = dataStores(platform, { request, verifiedAdmin: true });
         let result: unknown;
         if (request.method === 'POST' && inbox) {
             const body = await activityJson(request);
@@ -130,14 +129,7 @@ export async function adminActivity(
                 const focusId = optionalId(params.get('focusId'));
                 if (section === 'stats') result = await store.dashboard();
                 else if (section === 'subscribers') {
-                    const session = data.session;
-                    if (!session)
-                        return fail(
-                            503,
-                            'ADMIN_ACTIVITY_UNAVAILABLE',
-                            'Subscriber counts are temporarily unavailable.'
-                        );
-                    result = await session.adminActivity.subscriberStats();
+                    result = await store.subscriberStats();
                 } else if (section === 'feedback' || section === 'feedback_history') {
                     const target =
                         params.has('targetId') ?
