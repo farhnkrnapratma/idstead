@@ -1,5 +1,6 @@
 import type { ArdEntry } from '#lib/server/ard.ts';
 import { loadArdIndex } from '#lib/server/ardIndex.ts';
+import type { ArdFetcher } from '#lib/server/ardIngestion.ts';
 import type { ArdIndexStore } from '@idstead/data';
 import { dataStores } from '#lib/server/data.ts';
 
@@ -32,9 +33,13 @@ function indexStore(platform: unknown): ArdIndexStore {
     return store;
 }
 
-export async function getArdIndexEntries(siteUrl: string, platform: unknown): Promise<ArdEntry[]> {
+export async function getArdIndexEntries(
+    siteUrl: string,
+    platform: unknown,
+    fetcher: ArdFetcher
+): Promise<ArdEntry[]> {
     try {
-        return await loadArdIndex(siteUrl, indexStore(platform));
+        return await loadArdIndex(siteUrl, indexStore(platform), fetcher);
     } catch (error) {
         if (!(error instanceof ArdIndexUnavailableError))
             console.error('ARD registry index refresh failed.', error);

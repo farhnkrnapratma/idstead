@@ -12,11 +12,11 @@ import {
 } from '#lib/server/ardIndexServer.ts';
 import { readSite, publicResponse } from '#lib/server/publicMetadata.ts';
 
-export const GET: RequestHandler = async ({ request, url, platform }) => {
+export const GET: RequestHandler = async ({ request, url, platform, fetch }) => {
     try {
         const listRequest = parseArdListRequest(url);
         const { siteUrl } = await readSite(platform);
-        const entries = await getArdIndexEntries(siteUrl, platform);
+        const entries = await getArdIndexEntries(siteUrl, platform, fetch);
         const response = await publicResponse(
             request,
             JSON.stringify(listArdEntries(listRequest, siteUrl, entries)),

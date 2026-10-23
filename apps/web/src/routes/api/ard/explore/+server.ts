@@ -14,12 +14,12 @@ import {
 } from '#lib/server/ardIndexServer.ts';
 import { readSite } from '#lib/server/publicMetadata.ts';
 
-export const POST: RequestHandler = async ({ request, platform }) => {
+export const POST: RequestHandler = async ({ request, platform, fetch }) => {
     try {
         const body = await readArdRequestJson(request);
         const exploreRequest = validateArdExploreRequest(body);
         const { siteUrl } = await readSite(platform);
-        const entries = await getArdIndexEntries(siteUrl, platform);
+        const entries = await getArdIndexEntries(siteUrl, platform, fetch);
         const ai = await resolveArdAiBinding(platform?.env?.AI);
         return new Response(
             JSON.stringify(await exploreArdEntriesWithAI(exploreRequest, siteUrl, ai, entries)),
