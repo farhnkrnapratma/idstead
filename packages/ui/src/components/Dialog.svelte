@@ -161,9 +161,9 @@
             aria-labelledby="dialog-title"
             aria-describedby={description ? 'dialog-desc' : undefined}
             class={cn(
-                'relative z-10 max-h-[calc(100dvh-2rem)] w-full transform overflow-y-auto overscroll-contain rounded-md glass-overlay shadow-xl transition-[opacity,transform] outline-none select-none focus:outline-none',
+                'relative z-10 max-h-[calc(100dvh-2rem)] w-full transform overscroll-contain rounded-md glass-overlay shadow-xl transition-[opacity,transform] outline-none select-none focus:outline-none',
                 compact ? 'p-5' : 'p-6',
-                scrollBody && 'flex flex-col overflow-hidden',
+                scrollBody ? 'flex flex-col overflow-hidden' : 'overflow-y-auto',
                 sizeStyles[size],
                 isDestructive ? 'border-danger/30' : '',
                 className
