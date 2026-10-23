@@ -97,7 +97,11 @@
     --color-surface-card: #ffffff;
     --color-surface-subtle: #e4ebe6;
     --color-surface-elevated: #ffffff;
-    --color-button-tertiary: #f0f0f0;
+    --color-button-tertiary: color-mix(
+        in srgb,
+        var(--color-text-primary) 5%,
+        var(--color-surface-card)
+    );
     --color-surface-hover: rgba(16, 20, 17, 0.04);
     --color-surface-switcher: rgba(228, 235, 230, 0.5);
     --color-surface-switcher-active: #ffffff;
@@ -240,7 +244,11 @@
     --color-surface-card: #101411;
     --color-surface-subtle: #0a241b;
     --color-surface-elevated: #101411;
-    --color-button-tertiary: #2f2f2f;
+    --color-button-tertiary: color-mix(
+        in srgb,
+        var(--color-text-primary) 8%,
+        var(--color-surface-card)
+    );
     --color-surface-hover: rgba(242, 245, 243, 0.05);
     --color-surface-switcher: rgba(16, 20, 17, 0.5);
     --color-surface-switcher-active: #101411;

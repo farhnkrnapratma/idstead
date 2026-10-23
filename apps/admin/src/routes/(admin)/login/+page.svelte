@@ -25,7 +25,6 @@
     let valid = $state({ email: false, password: false });
     let turnstileEl = $state<HTMLDivElement | null>(null);
     let pageAuthor = $derived((page?.data as any)?.author);
-    let authorName = $derived(pageAuthor?.name || '');
     let publicSiteUrl = $derived(
         typeof pageAuthor?.siteUrl === 'string' && /^https?:\/\//.test(pageAuthor.siteUrl) ?
             pageAuthor.siteUrl
@@ -495,12 +494,4 @@
             {/if}
         </Card>
     </div>
-
-    <footer
-        class="absolute inset-x-0 bottom-0 w-full px-6 py-6 text-center font-sans text-xs text-text-muted select-none">
-        <p>
-            &copy; {new Date().getFullYear()}{authorName ? ` ${authorName}` : ''}. All rights
-            reserved.
-        </p>
-    </footer>
 </main>
