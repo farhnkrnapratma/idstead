@@ -5,7 +5,7 @@ jq 'if ((.tool_input.file_path // "") | test("\\.svelte$"))
     hookSpecificOutput: {
       hookEventName: "PreToolUse",
       permissionDecision: "deny",
-      permissionDecisionReason: "src/lib/server/supabaseAdmin is service-role (bypasses RLS) and must never be imported into a .svelte file per CLAUDE.md."
+      permissionDecisionReason: "packages/lib/src/server/supabaseAdmin.ts holds the Supabase service-role key (it manages the admin user) and is server-only: never import it into a .svelte file, per CLAUDE.md."
     }
   }
   else {}

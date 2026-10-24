@@ -21,7 +21,7 @@ The public API is the Hono worker at `apps/api/src/index.ts` (`api.example.com/v
     - Flag any hand-rolled `Response.json({...}, {status: 4xx|5xx})` in a handler. The worker's `notFound`/`onError` fallbacks are the only exceptions.
 
 3. **Error codes**:
-    - Collect every code: `rg -o "'[A-Z][A-Z_]{3,}'" packages/lib/src/server/api packages/lib/src/server/postLookup.ts apps/api/src/index.ts`.
+    - Collect every code: `rg -o "'[A-Z][A-Z_]{3,}'" packages/lib/src/server/api apps/api/src/index.ts`.
     - Cross-check against the README table **and** `docs/004-api/001-v1/002-errors.md`. Flag codes missing from either, codes documented but no longer produced, and generic codes (`BAD_REQUEST`, `INTERNAL_ERROR`) used where a specific per-endpoint code is expected.
 
 4. **Parameters**:
@@ -38,7 +38,7 @@ The public API is the Hono worker at `apps/api/src/index.ts` (`api.example.com/v
 
 8. **Versioning**:
     - Flag any breaking change made in place under `/v1`: a removed or renamed field, a changed type or default, a removed endpoint or parameter, or a changed error code.
-    - Breaking changes must ship under a new `/v2` and a new `docs/004-api/002-v2/ (renumbering the pages after it)`.
+    - Breaking changes must ship under a new `/v2`, documented in a new `docs/004-api/002-v2/` folder (renumber the pages after it).
 
 ## Output
 
