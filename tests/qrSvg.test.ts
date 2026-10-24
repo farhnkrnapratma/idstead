@@ -56,6 +56,15 @@ describe('renderQrSvg', () => {
         expect(withLogo).toContain(`href="${LOGO}"`);
     });
 
+    test('draws a themed code on a transparent background for the on-screen version', () => {
+        const svg = renderQrSvg(URL_TEXT, { color: '#909692', background: 'none' });
+        expect(svg).toContain('fill="#909692"');
+        expect(svg).toContain('<rect width="');
+        expect(svg).not.toContain(`fill="${QR_COLOR}"`);
+        expect(svg).not.toContain(`fill="${QR_BACKGROUND}"`);
+        expect(renderQrSvg(URL_TEXT, { color: 'currentColor' })).toContain(`fill="${QR_COLOR}"`);
+    });
+
     test('rejects logos and colours that are not plain data', () => {
         const svg = renderQrSvg(URL_TEXT, {
             logoDataUrl: 'javascript:alert(1)',

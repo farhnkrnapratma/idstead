@@ -12,7 +12,7 @@
         isOpen: boolean;
         title: string;
         description?: string;
-        size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl';
+        size?: '2xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl';
         role?: 'dialog' | 'alertdialog';
         compact?: boolean;
         scrollBody?: boolean;
@@ -62,6 +62,7 @@
     });
 
     const sizeStyles = {
+        '2xs': 'max-w-2xs',
         sm: 'max-w-sm',
         md: 'max-w-md',
         lg: 'max-w-lg',
@@ -179,8 +180,8 @@
                         scope: trapShortcuts ? shortcutScope : undefined
                     }}
                     class={cn(
-                        'absolute inline-flex size-6.5 cursor-pointer items-center justify-center rounded-md text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring',
-                        compact ? 'top-3.5 right-3.5' : 'top-4 right-4'
+                        'absolute inline-flex aspect-square h-[1lh] cursor-pointer items-center justify-center rounded-md text-base leading-tight text-text-muted transition-colors hover:bg-surface-hover hover:text-text-primary focus-visible:outline-2 focus-visible:outline-focus-ring',
+                        compact ? 'top-5 right-3.5' : 'top-6 right-4'
                     )}>
                     <X class="size-4" />
                 </button>
@@ -190,7 +191,7 @@
                 <h2
                     id="dialog-title"
                     class={cn(
-                        'flex items-center gap-2 text-base font-bold text-text-primary',
+                        'flex items-center gap-2 text-base leading-tight font-bold text-text-primary',
                         isDestructive ? 'text-danger' : ''
                     )}>
                     {#if isDestructive}
