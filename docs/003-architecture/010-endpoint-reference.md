@@ -47,6 +47,16 @@ All routes are `GET`/`HEAD` (`OPTIONS` returns 204), rate-limited to 60 requests
 | `/.well-known/openid-configuration`, `/.well-known/jwks.json` | OpenID Connect discovery and the public signing key; 404 without `OIDC_SIGNING_KEY`. CORS `*` |
 | `/.well-known/openapi.{json,yaml}`, `/.well-known/llms.txt`, `/.well-known/api-catalog`, `/.well-known/ard.json`, `/.well-known/agent-skills/index.json`, `/.well-known/agent-skills/[name]/SKILL.md` | discovery ([docs/004-api/001-v1/006-discovery.md](../004-api/001-v1/006-discovery.md)) |
 
+### `/oauth/**`: OpenID Connect, CORS `*`
+
+| Route | Methods | Guard |
+| --- | --- | --- |
+| `/oauth/token` | POST (`OPTIONS`) | client auth (`client_secret_basic`, `client_secret_post`, or `none` with PKCE), lockout per client and IP, rate limit per IP. `authorization_code` with PKCE S256 and `refresh_token` with rotation; RFC 6749 error bodies |
+| `/oauth/userinfo` | GET, POST (`OPTIONS`) | Bearer `at+jwt` access token whose grant is still active |
+| `/oauth/revoke` | POST (`OPTIONS`) | client auth; revokes a refresh token (RFC 7009), answers 200 for unknown tokens |
+
+All three answer 404 without `OIDC_SIGNING_KEY`. Logic: `packages/lib/src/server/oidc/endpoints.ts`.
+
 ### `/api/ard/**`: public, CORS `*`
 
 | Route              | Method |
@@ -74,7 +84,7 @@ Details: [004-public-write-endpoints.md](004-public-write-endpoints.md).
 
 ## idstead-admin: `admin.example.com`
 
-Pages: `/` (dashboard), `/new`, `/login`. All of them pass the hook's session + MFA guard, except `/login`. Other routes: `/robots.txt` (disallow all) and the identity assets. Blog banners, images and videos are served from the CDN.
+Pages: `/` (dashboard), `/new`, `/login`, `/oauth/authorize` (OpenID Connect authorize and consent; its load also checks the session and MFA itself). All of them pass the hook's session + MFA guard, except `/login`. Other routes: `/robots.txt` (disallow all) and the identity assets. Blog banners, images and videos are served from the CDN.
 
 API routes authenticate themselves:
 
@@ -87,6 +97,8 @@ API routes authenticate themselves:
 | --- | --- | --- |
 | `/api/internal/admin/login` | POST | same-origin, lockout, Turnstile (Supabase Auth `captchaToken`) |
 | `/api/internal/admin/logout` | POST | same-origin |
+| `/api/internal/admin/oidc/clients` | GET, POST | `blogAdmin`; POST `action` is `create`, `update`, `rotate` or `delete` |
+| `/api/internal/admin/oidc/authorize` | POST | `blogAdmin` plus the cookie session with MFA; records consent and returns the redirect URL |
 | `/api/internal/admin/password` | POST | `blogAdmin` + lockout |
 | `/api/internal/admin/posts` | GET, POST | `blogAdmin` |
 | `/api/internal/admin/posts/notify` | POST | `blogAdmin` |
