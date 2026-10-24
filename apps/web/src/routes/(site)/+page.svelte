@@ -6,6 +6,7 @@
     import { Button, EmptyState, PageContainer, PageMain, Section } from '@idstead/ui';
     import Tag from '@idstead/ui/components/Tag.svelte';
     import { argKey, buttonKey } from '@idstead/ui/shortcuts.ts';
+    import { cn } from '@idstead/ui/utils/cn.ts';
     import { decodeHtmlEntities } from '@mdrs/core';
     import { goto } from '$app/navigation';
     import {
@@ -171,7 +172,10 @@
 <PageMain variant="site">
     <Section
         spacing="none"
-        class="relative z-10 pt-6 pb-6 sm:pt-8 md:pb-8">
+        class={cn(
+            'relative z-10 pt-6 pb-6 sm:pt-8 md:pb-8',
+            !author && 'flex flex-1 flex-col justify-center'
+        )}>
         <PageContainer
             width="standard"
             class="flex flex-col gap-4 sm:gap-5">
@@ -333,7 +337,7 @@
         </PageContainer>
     </Section>
 
-    <FooterSection divided />
+    <FooterSection />
 </PageMain>
 
 <QrCodeDialog

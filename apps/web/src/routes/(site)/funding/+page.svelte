@@ -47,5 +47,5 @@
         emptyTitle="No funding platforms yet"
         emptyDescription="Check back soon for ways to support this work." />
 
-    <FooterSection divided />
+    <FooterSection />
 </PageMain>

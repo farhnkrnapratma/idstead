@@ -1136,17 +1136,12 @@
                 </section>
 
                 {#if !readingModeStore.active}
-                    <div
-                        class="mt-8 mb-6 w-full border-t border-border-subtle/60"
-                        aria-hidden="true">
-                    </div>
-
                     <FooterSection
                         width="full"
                         showFontSelect={true}
                         readingMode={readingModeStore.active}
                         onToggleReadingMode={readingModeStore.toggle}
-                        class="mt-0 w-full pb-0 md:pb-0 lg:pb-20" />
+                        class="mt-8 w-full pb-0 md:pb-0 lg:pb-20" />
                 {/if}
             {/if}
         </article>

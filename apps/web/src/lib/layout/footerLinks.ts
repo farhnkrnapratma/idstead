@@ -10,6 +10,6 @@ export const FOOTER_SITE_LINKS: FooterSiteLinkItem[] = [
     { label: 'Privacy', href: '/privacy', shortcut: 'privacyLink' },
     { label: 'Security', href: '/security', shortcut: 'securityLink' },
     { label: 'Cookies', action: 'cookies', shortcut: 'cookiesLink' },
-    { label: 'Sitemap', href: '/sitemap.xml', shortcut: 'sitemapLink' },
-    { label: 'RSS', href: '/atom.xml', shortcut: 'feed' }
+    { label: 'RSS', href: '/atom.xml', shortcut: 'feed' },
+    { label: 'Sitemap', href: '/sitemap.xml', shortcut: 'sitemapLink' }
 ];

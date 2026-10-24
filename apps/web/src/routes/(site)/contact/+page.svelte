@@ -340,5 +340,5 @@
         </Section>
     {/if}
 
-    <FooterSection divided />
+    <FooterSection />
 </PageMain>
