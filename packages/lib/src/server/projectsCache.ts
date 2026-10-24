@@ -1,5 +1,5 @@
 import type { Project } from '@idstead/domain/types.ts';
-import { fetchProjects } from '#lib/server/githubProjects.ts';
+import { fetchProjects, githubToken } from '#lib/server/githubProjects.ts';
 import { runInBackground } from '#lib/server/workerEnv.ts';
 import { configuredSiteUrl } from '#lib/server/siteUrl.ts';
 
@@ -22,8 +22,8 @@ function cacheHost(platform: unknown) {
     }
 }
 
-function cacheKey(githubUsername: string, platform: unknown) {
-    return `https://projects-cache.${cacheHost(platform)}/github/${encodeURIComponent(githubUsername.toLowerCase())}`;
+function cacheKey(platform: unknown) {
+    return `https://projects-cache.${cacheHost(platform)}/github/repos`;
 }
 
 async function readCachedProjects(cache: EdgeCache, key: string): Promise<Project[] | null> {
@@ -38,20 +38,19 @@ async function readCachedProjects(cache: EdgeCache, key: string): Promise<Projec
 }
 
 export async function fetchCachedProjects(
-    githubUsername: string,
     fetchFn: typeof fetch,
     platform: unknown
 ): Promise<Project[]> {
-    if (!githubUsername) return [];
+    if (!githubToken(platform)) return [];
 
     const cache = edgeCache();
-    const key = cacheKey(githubUsername, platform);
+    const key = cacheKey(platform);
     if (cache) {
         const cached = await readCachedProjects(cache, key);
         if (cached) return cached;
     }
 
-    const projects = await fetchProjects(githubUsername, fetchFn, platform);
+    const projects = await fetchProjects(fetchFn, platform);
 
     if (cache && projects.length > 0) {
         const response = Response.json(projects, {

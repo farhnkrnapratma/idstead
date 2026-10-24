@@ -19,7 +19,7 @@ The columns show which apps read each variable, from a code search on 2026-10-18
 | `RESEND_API_KEY` | **secret** | ✓ | ✓ | – | ✓ | email: confirm, contact, login alert, newsletter |
 | `SUBSCRIBER_FROM_EMAIL` | var | ✓ | ✓ | – | ✓ | sender address for those emails |
 | `IP_SALT` | **secret** | ✓ | ✓ | – | – | salt for SHA-256 IP hashing |
-| `GITHUB_PAT` | **secret**, optional | ✓ | ✓ | – | – | raises the GitHub API rate limit for the projects section and the admin CV import |
+| `GITHUB_PAT` | **secret**, optional | ✓ | ✓ | – | – | GitHub token whose owner's public, non-fork, non-archived repositories fill the projects section and the admin CV import; a fine-grained token with read-only access to public repositories is enough. Without it there are no projects |
 | `PUBLIC_SENTRY_DSN` | public | ✓ | ✓ | ✓ | ✓ | Sentry DSN |
 | `PUBLIC_SENTRY_ENVIRONMENT` | public | ✓ | ✓ | ✓ | ✓ | `production`, `preview` or `development`. `preview` also turns on `noindex`. |
 | `PUBLIC_GA_MEASUREMENT_ID` | public, optional | ✓ | – | – | – | Google Analytics 4 property for `app.html`. Without it no analytics script loads. |

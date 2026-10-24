@@ -18,6 +18,7 @@ interface GitHubRepo {
     topics: string[];
     fork: boolean;
     archived: boolean;
+    private: boolean;
     license: { key: string; name: string; spdx_id: string; url: string } | null;
 }
 
@@ -77,17 +78,16 @@ async function fetchRepoExtras(
 }
 
 async function fetchRepoOpenGraphImages(
-    username: string,
     token: string,
     fetchFn: typeof fetch
 ): Promise<Map<string, string>> {
     const map = new Map<string, string>();
-    if (!token || !username) return map;
+    if (!token) return map;
 
     const query = `
-    query($login: String!) {
-      user(login: $login) {
-        repositories(first: 30, orderBy: {field: PUSHED_AT, direction: DESC}, privacy: PUBLIC, isFork: false) {
+    query {
+      viewer {
+        repositories(first: 30, orderBy: {field: PUSHED_AT, direction: DESC}, privacy: PUBLIC, isFork: false, ownerAffiliations: [OWNER]) {
           nodes {
             name
             openGraphImageUrl
@@ -105,13 +105,13 @@ async function fetchRepoOpenGraphImages(
                 'Content-Type': 'application/json',
                 'User-Agent': 'portfolio-sveltekit'
             },
-            body: JSON.stringify({ query, variables: { login: username } }),
+            body: JSON.stringify({ query }),
             signal: AbortSignal.timeout(4000)
         });
 
         if (res.ok) {
             const json = await res.json();
-            const nodes = json?.data?.user?.repositories?.nodes;
+            const nodes = json?.data?.viewer?.repositories?.nodes;
             if (Array.isArray(nodes)) {
                 for (const node of nodes) {
                     if (node?.name && node?.openGraphImageUrl) {
@@ -127,29 +127,22 @@ async function fetchRepoOpenGraphImages(
     return map;
 }
 
-export function extractGitHubUsername(author: any): string {
-    if (author?.username && typeof author.username === 'string') {
-        return author.username.trim();
-    }
-    if (Array.isArray(author?.socialLinks)) {
-        const githubLink = author.socialLinks.find(
-            (link: any) => link?.platform?.toLowerCase() === 'github'
-        );
-        if (githubLink?.url) {
-            const match = githubLink.url.match(/github\.com\/([a-zA-Z0-9_.-]+)/i);
-            if (match) return match[1];
-        }
-    }
-    return '';
+export function githubToken(platform: unknown): string {
+    return (
+        (platform as any)?.env?.GITHUB_PAT
+        ?? privateEnv.GITHUB_PAT
+        ?? process.env.GITHUB_PAT
+        ?? ''
+    ).trim();
 }
 
 export async function fetchProjects(
-    githubUsername: string,
     fetchFn: typeof fetch,
     platform: unknown,
     excludedNames: string[] = []
 ): Promise<Project[]> {
-    if (!githubUsername) return [];
+    const token = githubToken(platform);
+    if (!token) return [];
 
     const excludedLower = new Set(excludedNames.map(n => n.toLowerCase()));
     const filterExcluded = (list: Project[]) =>
@@ -170,32 +163,21 @@ export async function fetchProjects(
     try {
         const headers: Record<string, string> = {
             Accept: 'application/vnd.github.v3+json',
-            'User-Agent': 'portfolio-sveltekit'
+            'User-Agent': 'portfolio-sveltekit',
+            Authorization: `Bearer ${token}`
         };
-
-        const token =
-            (platform as any)?.env?.GITHUB_PAT
-            ?? privateEnv.GITHUB_PAT
-            ?? process.env.GITHUB_PAT
-            ?? '';
-
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
 
         const [res, ogImages] = await Promise.all([
             fetchFn(
-                `https://api.github.com/users/${encodeURIComponent(githubUsername)}/repos?sort=pushed&direction=desc&per_page=30&type=owner`,
+                'https://api.github.com/user/repos?visibility=public&affiliation=owner&sort=pushed&direction=desc&per_page=30',
                 { headers, signal: AbortSignal.timeout(4000) }
             ),
-            token ?
-                fetchRepoOpenGraphImages(githubUsername, token, fetchFn)
-            :   Promise.resolve(new Map<string, string>())
+            fetchRepoOpenGraphImages(token, fetchFn)
         ]);
 
         if (res.ok) {
             const repos: GitHubRepo[] = await res.json();
-            const activeRepos = repos.filter(repo => !repo.fork && !repo.archived);
+            const activeRepos = repos.filter(repo => !repo.private && !repo.fork && !repo.archived);
 
             projects = await Promise.all(
                 activeRepos.map(async repo => {

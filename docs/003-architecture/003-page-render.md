@@ -15,7 +15,7 @@ sequenceDiagram
     Note over W: +layout.server.ts
     W->>DB: author.profile(), author.socialLinks()<br/>db_profiles, db_links
     par
-        W->>GH: fetchCachedProjects(username) (edge cache, 10 min)
+        W->>GH: fetchCachedProjects() (token owner's public repos, edge cache, 10 min)
         W->>DB: author.projectRepoRules() (drop excluded repos, pinned names)
     end
     W-->>W: Cache-Control s-maxage=60
