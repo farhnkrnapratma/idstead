@@ -21,11 +21,7 @@
     }: Props = $props();
 </script>
 
-<div
-    class={cn(
-        'flex flex-col items-center justify-center dashed-surface p-8 text-center select-none',
-        className
-    )}>
+<div class={cn('flex flex-col items-center justify-center p-8 text-center select-none', className)}>
     <div class="mb-3 flex items-center justify-center text-text-muted">
         <Icon class={cn('size-7', iconClass)} />
     </div>
