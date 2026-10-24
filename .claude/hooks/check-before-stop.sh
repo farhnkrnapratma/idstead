@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+if [ -z "$(git status --porcelain 2>/dev/null)" ]; then
+  echo '{}'
+  exit 0
+fi
+
 out=$({ bun run --parallel --no-exit-on-error fmt:check check && bunx eslint .; } 2>&1)
 status=$?
 
