@@ -1,17 +1,10 @@
-import { describe, expect, test } from 'bun:test';
-import {
-    ADMIN_AUTHOR_SEED,
-    adminAuthorContract,
-    type AdminAuthorSeed
-} from './contracts/adminAuthor.contract.ts';
+import { adminAuthorContract, type AdminAuthorSeed } from './contracts/adminAuthor.contract.ts';
 import { authorFetch, d1AuthorRows } from './support/authorTables.ts';
 import {
     createD1AdminAuthorStore,
     createD1AuthorWriter
 } from '../packages/data/src/d1/adminAuthor.ts';
 import { d1Shim, insertRows } from './support/d1.ts';
-
-const NEW_PROFILE = '00000000-0000-4000-8000-000000000777';
 
 function d1FromSeed(seed: AdminAuthorSeed) {
     const shim = d1Shim();
