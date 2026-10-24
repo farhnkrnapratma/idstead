@@ -1,5 +1,4 @@
 import type { RequestHandler } from './$types';
-import { verifyTurnstileToken } from '#lib/server/turnstile.ts';
 import { apiError } from '#lib/server/apiError.ts';
 import {
     checkLoginLockout,
@@ -104,7 +103,6 @@ export const POST: RequestHandler = async ({
 
     const email = typeof body?.email === 'string' ? body.email.trim() : '';
     const password = typeof body?.password === 'string' ? body.password : '';
-    const turnstileToken = typeof body?.turnstileToken === 'string' ? body.turnstileToken : '';
     const captchaToken = typeof body?.captchaToken === 'string' ? body.captchaToken : '';
 
     if (!email || !password) {
@@ -142,12 +140,12 @@ export const POST: RequestHandler = async ({
         return apiError(403, 'ADMIN_LOGIN_TURNSTILE_FAILED', 'Turnstile verification failed.');
     };
 
-    if (!(await verifyTurnstileToken(turnstileToken, clientIp, platform))) return rejectTurnstile();
+    if (!captchaToken) return rejectTurnstile();
 
     const { data, error } = await locals.supabase.auth.signInWithPassword({
         email,
         password,
-        options: { captchaToken: captchaToken || undefined }
+        options: { captchaToken }
     });
     if (error?.code === 'captcha_failed') return rejectTurnstile();
 

@@ -14,12 +14,13 @@ sequenceDiagram
     participant DB as Supabase (service-role)
 
     alt Path A: email + password
-        B->>B: two Turnstile tokens: turnstileToken (route) and captchaToken (Supabase Auth)
-        B->>L: {email, password, turnstileToken, captchaToken}
+        B->>B: Turnstile token, solved in the background when the page renders
+        B->>L: {email, password, captchaToken}
         L->>L: isSameOriginRequest, else 403
         L->>L: checkLoginLockout('ip:…'), then ('email-ip:…'): 5 failures / 15 min, else 429 ADMIN_LOGIN_LOCKED
-        L->>TS: verifyTurnstileToken, else recordFailedLogin + 403
+        L->>L: no captchaToken, else recordFailedLogin + 403
         L->>SA: signInWithPassword with captchaToken (sets the auth cookies)
+        SA->>TS: siteverify captchaToken
         alt captcha_failed
             L-->>B: recordFailedLogin + 403 ADMIN_LOGIN_TURNSTILE_FAILED
         end
@@ -76,7 +77,7 @@ The retired Postgres schema enforced the same rule in `public.is_admin()`; on D1
     - Options are `path=/`, `sameSite=lax`, and `secure` on HTTPS.
     - The code spreads the `@supabase/ssr` options and overrides only those three. It does not set `httpOnly` itself.
 - **Login lockout:** `packages/lib/src/server/loginRateLimit.ts` counts failures in `db_login_failures` through the `service_role` RPCs `db_login_lockout`, `db_login_record_failure` and `db_login_clear`, so every isolate shares one count. Keys (`ip:…`, `email-ip:…`, `password-change:…`) are stored only as salted SHA-256 hashes. If the RPC fails, the isolate's in-memory `Map` is used instead.
-- **Supabase Auth CAPTCHA:** the browser can call Supabase Auth directly (`/auth/v1/token`, passkey sign-in), skipping this route's Turnstile check and lockout. Every sign-in therefore also forwards a Turnstile token as `captchaToken`: the login route, the passkey button and the `data/delete-all` password check. Supabase verifies it only when **CAPTCHA protection** is enabled in the Supabase dashboard (Authentication → Attack Protection, provider Turnstile, the production `TURNSTILE_SECRET`). Until then Supabase ignores the token. A Turnstile token can be verified once, so the login page requests two: one for the route's own `siteverify` and one for Supabase.
+- **Supabase Auth CAPTCHA:** the browser can call Supabase Auth directly (`/auth/v1/token`, passkey sign-in), skipping this route's lockout. Every sign-in therefore forwards one Turnstile token as `captchaToken`: the login route, the passkey button and the `data/delete-all` password check. Supabase verifies it only when **CAPTCHA protection** is enabled in the Supabase dashboard (Authentication → Attack Protection, provider Turnstile, the production `TURNSTILE_SECRET`); until then neither path checks the token, and the route rejects only a missing one. A Turnstile token can be verified once, so the route does not call `siteverify` itself: Supabase is the single verifier. The login widget renders with `execution: 'render'`, so the token is solved in the background while the page loads and the button submits without waiting; after each attempt the widget resets and solves a fresh token.
 - **`data/delete-all`** re-checks the password with a per-request client, behind the shared lockout (`delete-all:…`).
 - **`logout`** checks same-origin only. **`password`** uses `blogAdmin()` plus the lockout.
 - **Page responses:** every admin response gets `X-Robots-Tag: noindex, nofollow` and `Cache-Control: no-store`.

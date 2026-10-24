@@ -37,7 +37,7 @@ bun run --filter @idstead/jobs dev       # jobs worker, http://localhost:8788 (-
 
 - **Local API:** to point the site at a locally running API, set `PUBLIC_API_BASE_URL=http://localhost:8787` for the web process.
 - **Workers AI:** the `AI` binding is `remote: true`, so local dev calls real Workers AI. It needs `CLOUDFLARE_API_TOKEN` for wrangler auth. Comment moderation and ARD search do not work offline.
-- **Admin Turnstile:** Development uses Cloudflare's dummy Turnstile keys, so the login route's own check passes locally. All environments share one Supabase project, so once Supabase Auth CAPTCHA protection is enabled with the production secret, dummy tokens fail Supabase's check and local password and passkey sign-in stop working. Use a real Turnstile widget that allows `localhost` for development, or sign in on production.
+- **Admin Turnstile:** Development uses Cloudflare's dummy Turnstile keys. Admin sign-in sends its token only to Supabase Auth, and all environments share one Supabase project, so once Supabase Auth CAPTCHA protection is enabled with the production secret, dummy tokens fail Supabase's check and local password and passkey sign-in stop working. Use a real Turnstile widget that allows `localhost` for development, or sign in on production.
 
 ## Everyday commands
 

@@ -43,7 +43,7 @@ The suite sends about 50 requests. The rate limit is 60 per minute, so wait a mi
 | `robots.test.ts` | `robots.txt` directives and preview blocking |
 | `moderation.test.ts`, `inferenceQueue.test.ts` | Llama Guard moderation parsing; Workers AI concurrency limit |
 | `adminAuthState.test.ts` | MFA/passkey session rules (`requiresAdminMfa`) |
-| `authCaptcha.test.ts`, `loginRateLimit.test.ts` | Admin login Turnstile (route token, Supabase Auth `captchaToken`); login lockout (salted hashes, shared counter, in-memory fallback) |
+| `authCaptcha.test.ts`, `loginRateLimit.test.ts` | Admin login Turnstile (one token forwarded to Supabase Auth as `captchaToken`); login lockout (salted hashes, shared counter, in-memory fallback) |
 | `ipSalt.test.ts` | `ipSalt` prefers the Worker binding and never falls back to a hard-coded salt |
 | `safeRedirect.test.ts` | Admin login `redirectTo` safety |
 | `adminNoShortcuts.test.ts`, `adminEmptyStates.test.ts` | Admin UI rules |

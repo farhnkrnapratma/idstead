@@ -51,6 +51,7 @@ export interface TurnstileWidgetOptions {
 const executionResolvers = new WeakMap<HTMLElement, (token: string) => void>();
 const pendingRenders = new WeakMap<HTMLElement, () => Promise<void>>();
 const widgetAppearances = new WeakMap<HTMLElement, TurnstileWidgetOptions['appearance']>();
+const widgetExecutions = new WeakMap<HTMLElement, TurnstileWidgetOptions['execution']>();
 const LAZY_RENDER_MARGIN = '200px';
 let turnstileScriptPromise: Promise<void> | undefined;
 
@@ -122,6 +123,7 @@ export function turnstileWidget(node: HTMLElement, options: TurnstileWidgetOptio
     const appearance = options.appearance ?? 'interaction-only';
     const isInteractionOnly = appearance === 'interaction-only';
     widgetAppearances.set(node, appearance);
+    widgetExecutions.set(node, options.execution ?? 'execute');
 
     function collapseNode() {
         if (!isInteractionOnly) return;
@@ -264,6 +266,7 @@ export function turnstileWidget(node: HTMLElement, options: TurnstileWidgetOptio
             stopWatching();
             pendingRenders.delete(node);
             widgetAppearances.delete(node);
+            widgetExecutions.delete(node);
             executionResolvers.delete(node);
             if (widgetId && window.turnstile) {
                 try {
@@ -303,11 +306,13 @@ export async function executeTurnstile(node: HTMLElement | null): Promise<string
     return new Promise(resolve => {
         executionResolvers.set(node, resolve);
 
-        try {
-            window.turnstile?.execute(node);
-        } catch {
-            executionResolvers.delete(node);
-            resolve('');
+        if (widgetExecutions.get(node) !== 'render') {
+            try {
+                window.turnstile?.execute(node);
+            } catch {
+                executionResolvers.delete(node);
+                resolve('');
+            }
         }
 
         setTimeout(() => {
@@ -334,18 +339,4 @@ export function resetTurnstile(node: HTMLElement | null) {
         node.style.overflow = 'hidden';
         node.style.pointerEvents = 'none';
     }
-}
-
-export async function executeTurnstileTokens(
-    node: HTMLElement | null,
-    count: number
-): Promise<string[]> {
-    const tokens: string[] = [];
-    for (let i = 0; i < count; i++) {
-        if (i) resetTurnstile(node);
-        const token = await executeTurnstile(node);
-        if (!token) return [];
-        tokens.push(token);
-    }
-    return tokens;
 }
