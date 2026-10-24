@@ -25,8 +25,8 @@
         "cloudflare-api": { "type": "http", "url": "https://mcp.cloudflare.com/mcp" },
         "cloudflare-observability": {
             "type": "http",
-            "url": "https://observability.mcp.cloudflare.com/sse",
-            "serverUrl": "https://observability.mcp.cloudflare.com/sse"
+            "url": "https://observability.mcp.cloudflare.com/mcp",
+            "serverUrl": "https://observability.mcp.cloudflare.com/mcp"
         },
         "cloudflare-bindings": {
             "type": "http",
