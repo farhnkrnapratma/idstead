@@ -233,6 +233,18 @@ The same tables also exist as a Cloudflare D1 (SQLite) schema in `packages/data/
 - **Read cache:** `db_cache_generations` holds one generation per cached domain (`author`, `blog`, `legal` and `comments:<post id>`), bumped by triggers on every write to the tables behind it.
 - **Dropped:** the full-text (`gin`) indexes and the foreign key from `db_admin_settings` to `auth.users`.
 
+### D1-only tables
+
+`0003_oidc.sql` adds the tables behind "Sign in with Idstead" (the OpenID Connect provider), which never existed in Postgres. They are reached only through `OidcClientStore` and `OidcAuthStore` (`packages/data/src/oidc.ts`), are never cached, are left out of the data export (they hold credentials), and are emptied by delete-all except the subject.
+
+| Table | Contents |
+| --- | --- |
+| `db_oidc_subject` | One row: the instance's random `subject` (32 hex), the `sub` claim of every token. Kept by delete-all so connected apps still recognise the owner. |
+| `db_oidc_clients` | Registered apps: public `client_id`, `name`, `redirect_uris` (JSON array, 1–10), `secret_hash` (SHA-256 of the client secret; `NULL` for public clients that use PKCE only). |
+| `db_oidc_grants` | Consent per client: random `public_id`, `scopes` (JSON array), `created_at`, `last_used_at`, `revoked_at`. A partial unique index allows one active grant per client. |
+| `db_oidc_codes` | Authorization codes by `code_hash`, with the grant, `redirect_uri`, `scopes`, `nonce`, the S256 `code_challenge`, `auth_time`, `expires_at` and `used_at`. Spending a code twice revokes its grant. |
+| `db_oidc_refresh_tokens` | Refresh tokens by `token_hash`, with the grant, `scopes`, `auth_time`, `expires_at`, `rotated_at` and `revoked_at`. Each use rotates the token; presenting a rotated one revokes the whole grant. |
+
 `tests/d1Schema.test.ts` loads every migration into SQLite and checks that each column of the live Postgres schema (`tests/fixtures/postgresColumns.json`) still exists and that the triggers behave as before. Apply new migrations with `bunx wrangler d1 migrations apply <database> --remote` from `apps/web`, and to the shared local database used by the dev servers with `bun run db:local`.
 
 ## Maintenance

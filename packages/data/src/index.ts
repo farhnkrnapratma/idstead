@@ -10,6 +10,7 @@ export type * from './adminAuthor';
 export type * from './ard';
 export type * from './identity';
 export type * from './lockout';
+export type * from './oidc';
 export type * from './maintenance';
 export type * from './adminPosts';
 export type * from './cvDocuments';
@@ -42,6 +43,7 @@ export {
     createD1PostOperationStore
 } from './d1/adminPosts';
 export { createD1LegalPageRepository, createD1LegalPageWriter } from './d1/legal';
+export { createD1OidcAuthStore, createD1OidcClientStore } from './d1/oidc';
 export {
     createD1ArdIndexStore,
     createD1IdentityVersionReader,
