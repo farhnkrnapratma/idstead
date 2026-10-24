@@ -1,7 +1,7 @@
 import { SITE_BANNER_HEIGHT, SITE_BANNER_WIDTH } from '#lib/blogBanner.ts';
 import type { SvgPath } from '#lib/siteIdentity.ts';
 
-export const FALLBACK_LAYOUT_VERSION = 1;
+const FALLBACK_LAYOUT_VERSION = 1;
 export const BANNER_SAFE_WIDTH = 1040;
 
 export type BannerFont = 'sans' | 'mono';
@@ -19,7 +19,7 @@ export interface BannerInput {
     social: BannerSocial | null;
 }
 
-export type BannerSegment =
+type BannerSegment =
     { kind: 'text'; text: string; x: number } | { kind: 'icon'; x: number; size: number };
 
 export interface BannerRow {
@@ -52,7 +52,7 @@ export function socialHandle(url: string): string | null {
     return `@${handle}`;
 }
 
-export function displayHost(url: string): string {
+function displayHost(url: string): string {
     try {
         return new URL(url).host.replace(/^www\./, '');
     } catch {
@@ -69,7 +69,7 @@ export function displaySiteUrl(siteUrl: string): string {
     }
 }
 
-export function truncate(text: string, fits: (candidate: string) => boolean): string {
+function truncate(text: string, fits: (candidate: string) => boolean): string {
     if (fits(text)) return text;
     const chars = Array.from(text);
     for (let length = chars.length - 1; length > 0; length--) {

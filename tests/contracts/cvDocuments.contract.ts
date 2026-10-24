@@ -12,7 +12,7 @@ export type CvDocumentStoresFactory = (seed: CvDocumentSeed) => {
     keys: OpenPgpKeyStore;
 };
 
-export const CV_DOCUMENT_SEED: CvDocumentSeed = {
+const CV_DOCUMENT_SEED: CvDocumentSeed = {
     author: AUTHOR_SEED,
     snapshots: [{ documentUuid: AUTHOR_SEED.documents[1].uuid, content: { version: 1 } }]
 };

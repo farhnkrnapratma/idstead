@@ -3,7 +3,7 @@ const CLOSE = '\uE001';
 const MAX_PLACEHOLDER_EXPANSIONS = 5000;
 
 export const PLACEHOLDER_TOKEN_RE = /\uE000[A-Z_]+_\d+\uE001/g;
-export const PLACEHOLDER_CHAR_RE = /[\uE000\uE001]/g;
+const PLACEHOLDER_CHAR_RE = /[\uE000\uE001]/g;
 
 export function placeholderKey(kind: string, index: number): string {
     return `${OPEN}${kind}_${index}${CLOSE}`;

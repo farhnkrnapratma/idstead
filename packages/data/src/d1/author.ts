@@ -15,7 +15,7 @@ import {
 import { DataError } from '../errors';
 import type { D1Like } from './client';
 
-export function parseJsonColumns(row: Row, columns: string[]): Row {
+function parseJsonColumns(row: Row, columns: string[]): Row {
     const parsed: Row = { ...row };
     for (const column of columns) {
         if (typeof parsed[column] !== 'string') continue;
@@ -40,15 +40,15 @@ export function profileRow(row: Row): Row {
     return parseJsonColumns(row, ['manifest_settings']);
 }
 
-export function cvEntryRow(row: Row): Row {
+function cvEntryRow(row: Row): Row {
     return booleanColumns(row, ['currently_in']);
 }
 
-export function documentRow(row: Row): Row {
+function documentRow(row: Row): Row {
     return booleanColumns(parseJsonColumns(row, ['checksums']), ['is_active']);
 }
 
-export function openPgpKeyRow(row: Row): Row {
+function openPgpKeyRow(row: Row): Row {
     return booleanColumns(parseJsonColumns(row, ['user_ids', 'keyservers']), ['is_active']);
 }
 

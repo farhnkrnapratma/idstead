@@ -50,7 +50,7 @@ export async function evaluateDefineBlock(
 
 const LEADING_WS_RE = /^[\s\uFEFF]*/;
 
-export const DEFINE_BLOCK_RE = /^:::define[^\n]*\r?\n(?:([\s\S]*?)\r?\n)?:::[ \t]*(?=\r?\n|$)/i;
+const DEFINE_BLOCK_RE = /^:::define[^\n]*\r?\n(?:([\s\S]*?)\r?\n)?:::[ \t]*(?=\r?\n|$)/i;
 
 const STRAY_DEFINE_OPEN_RE = /^[ \t]*:::define\b/i;
 

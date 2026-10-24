@@ -10,7 +10,7 @@ import { tokenize } from './lexer';
 import { Parser } from './parser';
 import { type DefineValue, toDisplayString } from './values';
 
-export interface InterpolationToken {
+interface InterpolationToken {
     start: number;
     end: number;
     kind: 'conditional' | 'plain';
@@ -68,7 +68,7 @@ function findMatchingBracket(
     return -1;
 }
 
-export function scanInterpolationTokens(text: string): InterpolationToken[] {
+function scanInterpolationTokens(text: string): InterpolationToken[] {
     const tokens: InterpolationToken[] = [];
     const budget: ScanBudget = { left: MAX_SCAN_STEPS };
     let i = 0;

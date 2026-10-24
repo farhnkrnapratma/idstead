@@ -1,7 +1,7 @@
 export function browserTimeZone() {
     return Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
-export function zonedDate(date: Date, timeZone: string) {
+function zonedDate(date: Date, timeZone: string) {
     return new Intl.DateTimeFormat('en-CA', {
         timeZone,
         year: 'numeric',
@@ -32,7 +32,7 @@ export function zonedMidnight(day: string, timeZone: string) {
     }
     return new Date(value).toISOString();
 }
-export function shiftDay(day: string, count: number) {
+function shiftDay(day: string, count: number) {
     const value = new Date(`${day}T12:00:00Z`);
     value.setUTCDate(value.getUTCDate() + count);
     return value.toISOString().slice(0, 10);

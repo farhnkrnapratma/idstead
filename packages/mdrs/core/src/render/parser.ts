@@ -69,7 +69,7 @@ function isInternalHref(href: string): boolean {
     });
 }
 
-export const markdownParser = new Marked();
+const markdownParser = new Marked();
 
 markdownParser.use({
     renderer: {

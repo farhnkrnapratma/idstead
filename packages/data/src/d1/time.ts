@@ -37,7 +37,7 @@ interface ZonedParts {
     second: number;
 }
 
-export function zonedParts(instant: number, timeZone: string): ZonedParts {
+function zonedParts(instant: number, timeZone: string): ZonedParts {
     const parts = Object.fromEntries(
         formatter(timeZone)
             .formatToParts(new Date(instant))
