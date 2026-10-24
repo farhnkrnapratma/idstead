@@ -11,15 +11,11 @@
     },
     "scripts": {
         "dev": "vite dev",
-        "dev:production": "vite dev --mode production",
-        "dev:preview": "vite dev --mode preview",
         "build": "vite build",
-        "build:preview": "vite build --mode preview",
         "preview": "vite preview",
         "deploy": "wrangler deploy",
         "prepare": "svelte-kit sync",
-        "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --diagnostic-sources \"js,svelte\"",
-        "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --diagnostic-sources \"js,svelte\" --watch"
+        "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --diagnostic-sources \"js,svelte\""
     },
     "dependencies": {
         "@idstead/data": "workspace:*",

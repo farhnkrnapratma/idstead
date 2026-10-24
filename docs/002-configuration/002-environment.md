@@ -29,7 +29,6 @@ The columns show which apps read each variable, from a code search on 2026-10-18
 | `PUBLIC_STATUS_PAGE_HOST`, `PUBLIC_STATUS_PAGE_CODE` | public, optional | ✓ | – | – | – | Instatus page for the footer status badge, hidden without them |
 | `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` | **secret**, build | – | – | – | – | source-map upload during `vite build` |
 | `CLOUDFLARE_API_TOKEN` | **secret**, local | – | – | – | – | wrangler auth, needed for the remote `AI` binding in local dev |
-| `SUPABASE_ACCESS_TOKEN` | **secret**, local | – | – | – | – | Supabase CLI/MCP. Not read by the apps. |
 
 ## Bindings (not variables)
 
@@ -53,7 +52,7 @@ In production each Worker gets its variables as Worker secrets and reads them at
 
 `wrangler deploy` fails for `api` and `jobs` while a key in their `secrets.required` is missing on the Worker. The [setup script](../001-getting-started/001-setup-script.md) uploads each Worker's secrets with its deploy; afterwards, change one with `bunx wrangler secret put <KEY> --name <worker>`.
 
-Build-time and tooling values are never Worker secrets: `SENTRY_AUTH_TOKEN`, `SENTRY_ORG` and `SENTRY_PROJECT` (source-map upload during `vite build`), and `CLOUDFLARE_API_TOKEN` and `SUPABASE_ACCESS_TOKEN` (tooling).
+Build-time and tooling values are never Worker secrets: `SENTRY_AUTH_TOKEN`, `SENTRY_ORG` and `SENTRY_PROJECT` (source-map upload during `vite build`), and `CLOUDFLARE_API_TOKEN` (wrangler).
 
 ## Using a secret manager
 

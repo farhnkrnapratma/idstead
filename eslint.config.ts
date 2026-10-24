@@ -166,7 +166,7 @@ export default defineConfig(
                     patterns: [
                         {
                             group: ['@idstead/data'],
-                            importNamePattern: '^create(D1|Supabase)',
+                            importNamePattern: '^createD1',
                             message:
                                 'Build data stores through dataStores() in packages/lib/src/server/data.ts, the only place that picks a data adapter.'
                         }
