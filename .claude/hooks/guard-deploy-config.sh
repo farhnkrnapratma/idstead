@@ -11,6 +11,9 @@ jq -r '.tool_input.file_path // empty' | {
   elif [ "$rel" = "idstead.jsonc" ] || [[ "$rel" =~ ^apps/[^/]+/wrangler\.template\.jsonc$ ]]; then
     decision="ask"
     reason="$rel sets the live Workers, bindings, routes and crons once rendered by bun run configure. Confirm this edit is intentional."
+  elif [ "$rel" = "apps/web/_headers" ]; then
+    decision="ask"
+    reason="$rel sets security headers on the site's static assets (the Cloudflare adapter copies it into the build). Confirm this edit is intentional."
   elif [[ "$rel" =~ ^\.github/workflows/[^/]+\.ya?ml$ ]]; then
     decision="ask"
     reason="$rel runs Claude Code on GitHub with the CLAUDE_CODE_OAUTH_TOKEN secret. Confirm this edit is intentional."
