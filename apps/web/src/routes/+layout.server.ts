@@ -1,7 +1,6 @@
 import type { LayoutServerLoad } from './$types';
 import { publicRepositories } from '#lib/server/repositories.ts';
 import { avatarSource } from '#lib/siteIdentity.ts';
-import { extractGitHubUsername } from '#lib/server/githubProjects.ts';
 import { fetchCachedProjects, withoutExcludedProjects } from '#lib/server/projectsCache.ts';
 import { publishedLegalSlugs } from '@idstead/domain/legal.ts';
 import { resendApiKey, senderAddress } from '#lib/server/subscribers.ts';
@@ -18,9 +17,8 @@ export const load: LayoutServerLoad = async ({ fetch, platform, setHeaders }) =>
     ]);
     const author = profile ? { ...profile, socialLinks } : null;
 
-    const githubUsername = extractGitHubUsername(author);
     const [projects, repoRules] = await Promise.all([
-        githubUsername ? fetchCachedProjects(githubUsername, fetch, platform) : [],
+        fetchCachedProjects(fetch, platform),
         authorRepository.projectRepoRules().catch(() => ({ excluded: [], pinned: [] }))
     ]);
 

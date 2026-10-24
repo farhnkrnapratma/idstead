@@ -14,7 +14,7 @@ import {
 } from '#lib/server/pdfGenerator.ts';
 import { loadCvFonts } from '#lib/server/cvFonts.ts';
 import { readAvatarBytes } from '#lib/server/profileAssets.ts';
-import { fetchProjects, extractGitHubUsername } from '#lib/server/githubProjects.ts';
+import { fetchProjects } from '#lib/server/githubProjects.ts';
 import type { CvDocumentStore, StoredCvDocument } from '@idstead/data';
 import {
     cvSnapshot,
@@ -347,11 +347,7 @@ export async function processCvGenerate(
         const educations = source.educations as unknown as EducationData[];
         const skillCategories: SkillCategoryData[] = source.skills;
 
-        const githubUsername = extractGitHubUsername({ ...profile, socialLinks: socials });
-        const repositories =
-            githubUsername ?
-                await fetchProjects(githubUsername, fetch, platform, repoRules.excluded)
-            :   [];
+        const repositories = await fetchProjects(fetch, platform, repoRules.excluded);
         const pinned = new Set(repoRules.pinned.map(name => name.toLowerCase()));
         const projects: ProjectData[] = [...repositories]
             .sort(
