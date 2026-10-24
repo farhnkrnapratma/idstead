@@ -43,6 +43,8 @@ All routes are `GET`/`HEAD` (`OPTIONS` returns 204), rate-limited to 60 requests
 | `/atom.xml`, `/sitemap.xml`, `/robots.txt`, `/site.webmanifest`, `/llms.txt` | metadata |
 | `/pgp.asc` | the active OpenPGP public key, armored (404 when none is published) |
 | `/.well-known/openpgpkey/hu/[hash]`, `/.well-known/openpgpkey/policy` | Web Key Directory (WKD) lookup for the active key, and its empty policy file |
+| `/.well-known/webfinger` | WebFinger (RFC 7033) for `acct:<username or email local part>@<site host>` or the site URL: profile page, avatar and OpenID Connect issuer links, filtered by `rel`. CORS `*` |
+| `/.well-known/openid-configuration`, `/.well-known/jwks.json` | OpenID Connect discovery and the public signing key; 404 without `OIDC_SIGNING_KEY`. CORS `*` |
 | `/.well-known/openapi.{json,yaml}`, `/.well-known/llms.txt`, `/.well-known/api-catalog`, `/.well-known/ard.json`, `/.well-known/agent-skills/index.json`, `/.well-known/agent-skills/[name]/SKILL.md` | discovery ([docs/004-api/001-v1/006-discovery.md](../004-api/001-v1/006-discovery.md)) |
 
 ### `/api/ard/**`: public, CORS `*`

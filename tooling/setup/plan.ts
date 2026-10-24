@@ -66,6 +66,7 @@ export function setupVariables(env: Variables, config: InstanceConfig): Record<s
     const variables: Record<string, string> = {
         PUBLIC_SITE_URL: `https://${config.domains.site}`,
         PUBLIC_API_BASE_URL: `https://${config.domains.api}`,
+        PUBLIC_ADMIN_URL: `https://${config.domains.admin}`,
         PUBLIC_SENTRY_ENVIRONMENT: 'production'
     };
     for (const [key, value] of Object.entries(env))

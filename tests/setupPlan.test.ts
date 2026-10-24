@@ -69,6 +69,7 @@ describe('variables', () => {
         expect(setupVariables({}, config)).toMatchObject({
             PUBLIC_SITE_URL: 'https://example.org',
             PUBLIC_API_BASE_URL: 'https://api.example.org',
+            PUBLIC_ADMIN_URL: 'https://admin.example.org',
             PUBLIC_SENTRY_ENVIRONMENT: 'production'
         });
         expect(
