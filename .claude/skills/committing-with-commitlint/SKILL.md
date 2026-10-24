@@ -18,7 +18,7 @@ Any of these means commitlint is in play:
 ## 2. Read the enforced rules
 
 ```bash
-npx commitlint --print-config json
+bunx commitlint --print-config json
 ```
 
 If this exits non-zero, the configuration itself is broken (for example an unresolvable `extends`) — read the error on stderr instead of guessing.
@@ -66,7 +66,7 @@ printf '%s' "feat(parser): add support for inline issue references
 
 Explain what changed and why.
 
-Closes #123" | npx commitlint
+Closes #123" | bunx commitlint
 ```
 
 Exit code 0 with no output means the message passes. Validate the complete message (header and body), not just the first line — body rules are checked too. Doing this before committing is cheaper than a failed commit.
