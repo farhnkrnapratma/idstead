@@ -12,7 +12,7 @@ export type AdminAuthorStoresFactory = (seed: AdminAuthorSeed) => {
     writer: AuthorWriter;
 };
 
-export const ADMIN_AUTHOR_SEED: AdminAuthorSeed = {
+const ADMIN_AUTHOR_SEED: AdminAuthorSeed = {
     author: AUTHOR_SEED,
     identityVersions: [
         {

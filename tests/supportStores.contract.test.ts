@@ -1,5 +1,4 @@
 import { describe, expect, test } from 'bun:test';
-import { DataError } from '../packages/data/src/errors.ts';
 import {
     createD1ArdIndexStore,
     createD1IdentityVersionReader,
