@@ -33,13 +33,6 @@
         :   `${siteUrl ? siteUrl.replace(/^https?:\/\//, '') + '/blog' : 'Blog'} — RSS Feed`
     );
 
-    const isBlogPost = $derived(page.route.id === '/blog/[slug]');
-    const isLegalPage = $derived(
-        page.route.id === '/terms' || page.route.id === '/privacy' || page.route.id === '/security'
-    );
-    const isArticleLikePage = $derived(isBlogPost || isLegalPage);
-    const isPageWithFeedback = $derived(!page.error && page.url.pathname !== '/feedback');
-
     onMount(() => {
         platformStore.detect();
         const cleanupTheme = themeStore.init();
@@ -146,10 +139,24 @@
 
 <ScrollToTopButton
     show={scrollStore.pastThreshold && !readingModeStore.active}
-    class={isArticleLikePage ? 'lg:hidden' : ''} />
+    class={(
+        page.route.id === '/blog/[slug]'
+        || page.route.id === '/terms'
+        || page.route.id === '/privacy'
+        || page.route.id === '/security'
+    ) ?
+        'lg:hidden'
+    :   ''} />
 <FeedbackButton
-    show={isPageWithFeedback && !readingModeStore.active}
-    class={isArticleLikePage ? 'lg:hidden' : ''} />
+    show={!page.error && page.url.pathname !== '/feedback' && !readingModeStore.active}
+    class={(
+        page.route.id === '/blog/[slug]'
+        || page.route.id === '/terms'
+        || page.route.id === '/privacy'
+        || page.route.id === '/security'
+    ) ?
+        'lg:hidden'
+    :   ''} />
 
 <ConsentBanner />
 <Toast />
