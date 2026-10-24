@@ -14,7 +14,7 @@ Wraps this repo's git-flow-next `feature finish`/`bugfix finish` workflow (see `
 
 2. **Working tree must be clean**: `git status --short`. If there are uncommitted changes, stop and ask the user whether to commit, stash, or discard them first — never finish a branch with dirty state.
 
-3. **Run the correctness gates**: `phase run --env dev -- bun run test`, `phase run --env dev -- bun run check` and `bun run lint`. There is no CI pipeline, so these local runs are the only gate before Workers Builds deploys (`.claude/hooks/block-bad-commit.sh` only checks that staged files are Prettier-formatted). If any of them fails, report the failures and stop — don't finish a branch that doesn't pass.
+3. **Run the correctness gates**: `phase run --env dev -- bun run test`, `phase run --env dev -- bun run check` and `bun run lint`. There is no CI pipeline, so these local runs are the only gate before Workers Builds deploys (`.claude/hooks/block-bad-commit.sh` also blocks a commit when the staged files are not Prettier-formatted, ESLint fails on them, or `bun run check` fails, but it does not run the tests). If any of them fails, report the failures and stop — don't finish a branch that doesn't pass.
 
 4. **Draft a summary**: `git log develop..HEAD --oneline` (or `main..HEAD` if the topic branched from `main`) to list the commits being merged. Turn this into a short human-readable summary (what changed, why) — present it to the user as the merge/PR description. This repo has no `CHANGELOG.md`; don't invent one unless the user asks for it, just surface the summary for them to use (PR description, release notes, or their own changelog).
 

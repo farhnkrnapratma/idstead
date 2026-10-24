@@ -1,6 +1,6 @@
 # AI Agent Setup
 
-Ask the agent to "set up Idstead with the setup-idstead skill". The skill is in `.agents/skills/setup-idstead/SKILL.md`, with a link in `.claude/skills/` for Claude Code. It tells the agent to:
+Open the repository in [Claude Code](https://claude.com/claude-code) and ask it to "set up Idstead with the setup-idstead skill" (or run `/setup-idstead`). The skill is in `.claude/skills/setup-idstead/SKILL.md`. It tells Claude Code to:
 
 - collect the domain and admin email from you,
 - write the answers file,

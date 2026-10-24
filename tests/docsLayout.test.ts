@@ -6,7 +6,7 @@ const root = resolve(import.meta.dir, '..');
 const docs = join(root, 'docs');
 const EXEMPT = new Set(['README.md', 'SHOWCASE.md']);
 const ENTRY_RE = /^(\d{3})-[a-z0-9]+(?:-[a-z0-9]+)*(\.md)?$/;
-const ROOT_FILES = ['README.md', 'CLAUDE.md', 'AGENTS.md', 'CONTRIBUTING.md', 'SECURITY.md'];
+const ROOT_FILES = ['README.md', 'CLAUDE.md', 'CONTRIBUTING.md', 'SECURITY.md'];
 
 function directories(dir: string): string[] {
     return [

@@ -32,7 +32,7 @@ The data layer runs on Cloudflare D1. Every schema change is a new, never-edited
     - **Contract suite:** add or extend `tests/contracts/<group>.contract.ts` and run it against the adapter through the `bun:sqlite` D1 shim (`tests/support/d1.ts`, which applies every migration).
     - **Schema checks:** `tests/d1Schema.test.ts` covers the retired Postgres columns and the triggers; extend it when you add triggers or constraints that guard data.
 
-7. **Document it**: update `docs/003-architecture/009-database-schema.md` (D1-only tables go under "D1-only tables") and, for a new port group, the data layer paragraph in `CLAUDE.md` / `AGENTS.md`.
+7. **Document it**: update `docs/003-architecture/009-database-schema.md` (D1-only tables go under "D1-only tables") and, for a new port group, the data layer paragraph in `CLAUDE.md`.
 
 8. **Apply it**:
     - **Locally:** `bun run db:local` applies every pending migration to the shared local D1 that the dev servers use; run it, then `phase run --env dev -- bun run test`.

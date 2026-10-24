@@ -62,7 +62,7 @@ Documentation for Idstead, a self-hostable personal site and identity home. The 
 ## Related
 
 - [CONTRIBUTING.md](../CONTRIBUTING.md): branching, commits and checks.
-- `CLAUDE.md` / `AGENTS.md`: conventions for coding agents.
+- `CLAUDE.md`: conventions for Claude Code, the coding agent this repository is set up for.
 - [`templates/`](../templates/legal/README.md): starter content for a new site.
 
 ## Keeping docs accurate

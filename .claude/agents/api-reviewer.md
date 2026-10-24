@@ -4,7 +4,7 @@ description: Use after any change to the public read-only API — apps/api/src (
 tools: Read, Grep, Glob, Bash
 ---
 
-You are reviewing changes to the public REST API of this Bun monorepo. The API is a Hono worker (`apps/api/src/index.ts`, served at `api.example.com/v1`) whose routes only wrap handlers from `packages/lib/src/server/api/` (`blog.ts`, `author.ts`, `root.ts`, `params.ts`, `responses.ts`) in `runApi()`. Follow the checklist in `.agents/skills/api-contract-check/SKILL.md`; read it first, then read:
+You are reviewing changes to the public REST API of this Bun monorepo. The API is a Hono worker (`apps/api/src/index.ts`, served at `api.example.com/v1`) whose routes only wrap handlers from `packages/lib/src/server/api/` (`blog.ts`, `author.ts`, `root.ts`, `params.ts`, `responses.ts`) in `runApi()`. Follow the checklist in `.claude/skills/api-contract-check/SKILL.md`; read it first, then read:
 
 - `apps/api/src/README.md`: the canonical reference, served live at `GET /v1`, with the error-code table.
 - `apps/api/src/index.ts`: the middleware (CORS, the 60 req/min/IP limiter on `API_RATE_LIMITER` with an in-memory fallback, ETags, `Vary: Accept`, `405` for anything but `GET`/`HEAD`/`OPTIONS`) and the envelope wrapping through `apiErrorEnvelope()`.

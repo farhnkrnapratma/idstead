@@ -4,7 +4,7 @@ description: Use after any change to a .svelte file under packages/ui/src, packa
 tools: Read, Grep, Glob, Bash
 ---
 
-You are reviewing changed Svelte 5 files in this Bun monorepo for UI consistency. Follow the checklist in `.agents/skills/ui-consistency-check/SKILL.md`; read it first.
+You are reviewing changed Svelte 5 files in this Bun monorepo for UI consistency. Follow the checklist in `.claude/skills/ui-consistency-check/SKILL.md`; read it first.
 
 Before judging anything as reinvented:
 
