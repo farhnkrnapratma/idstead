@@ -33,7 +33,6 @@
         readingMode?: boolean;
         onToggleReadingMode?: () => void;
         width?: 'standard' | 'full' | 'reading';
-        divided?: boolean;
         class?: string;
     }
 
@@ -54,7 +53,6 @@
         readingMode = false,
         onToggleReadingMode,
         width = 'standard',
-        divided = false,
         class: className = ''
     }: Props = $props();
 
@@ -86,12 +84,6 @@
         widthStyles[width],
         className
     )}>
-    {#if divided}
-        <div
-            class="mt-2 mb-6 w-full border-t border-border-subtle/60"
-            aria-hidden="true">
-        </div>
-    {/if}
     <div class="rounded-md glass-card p-3.5 sm:p-6">
         <div class="flex flex-col gap-5 sm:gap-6">
             <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-10">
@@ -101,7 +93,7 @@
                         class="flex min-w-0 flex-col gap-2">
                         <h4 class="text-xs font-semibold text-text-primary">Navigation</h4>
                         <ul
-                            class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs font-normal text-text-secondary">
+                            class="grid auto-cols-fr grid-flow-col grid-rows-3 gap-x-4 gap-y-2 text-xs font-normal text-text-secondary">
                             {#each resolvedNavItems as item (item.url)}
                                 <li class="text-xs">
                                     {#if onNavClick}
@@ -137,7 +129,7 @@
                     class="flex min-w-0 flex-col gap-2">
                     <h4 class="text-xs font-semibold text-text-primary">Site</h4>
                     <ul
-                        class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs font-normal text-text-secondary">
+                        class="grid auto-cols-fr grid-flow-col grid-rows-3 gap-x-4 gap-y-2 text-xs font-normal text-text-secondary">
                         {#each siteLinks as item (item.label)}
                             <li class="text-xs">
                                 <FooterSiteLink

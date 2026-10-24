@@ -91,5 +91,5 @@
         </PageContainer>
     </Section>
 
-    <FooterSection divided />
+    <FooterSection />
 </PageMain>
