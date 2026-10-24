@@ -14,6 +14,7 @@
 - **A public read-only REST API** (`/v1`) for posts, comments, the author profile, CV and search, with an OpenAPI description.
 - **An admin portal** on its own host, behind MFA or a passkey: a post editor with live preview, comment moderation, profile, CV and legal page management, and activity analytics.
 - **A downloadable CV** with checksums and a detached OpenPGP signature.
+- **An identity home**: WebFinger, your avatar by email hash the way apps use Gravatar, and "Sign in with Idstead", an OpenID Connect provider for the apps you register ([Identity provider](docs/003-architecture/012-identity-provider.md)).
 - **Visitor controls**: light and dark themes, font scale, reduced motion, higher contrast, a dyslexia-friendly font and keyboard-first navigation.
 
 All personal content (name, bio, CV, skills, links, posts) lives in the database. The code holds none of it, so one codebase serves any number of sites.

@@ -112,3 +112,14 @@ describe('webfinger', () => {
         expect(document.links.map(link => link.rel)).toEqual([WEBFINGER_RELS.profilePage]);
     });
 });
+
+describe('setup key check', () => {
+    test('accepts generated keys and rejects public or malformed ones', async () => {
+        const { isSigningKey } = await import('../tooling/oidc-key.ts');
+        const raw = await generateSigningKey();
+        expect(await isSigningKey(raw)).toBe(true);
+        const { d: _d, ...publicOnly } = JSON.parse(raw);
+        expect(await isSigningKey(JSON.stringify(publicOnly))).toBe(false);
+        expect(await isSigningKey('{')).toBe(false);
+    });
+});
