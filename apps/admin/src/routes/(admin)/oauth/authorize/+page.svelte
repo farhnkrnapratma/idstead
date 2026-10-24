@@ -48,7 +48,7 @@
             variant="spinner"
             label="Returning to the app..." />
     {:else if data.outcome.kind === 'fatal'}
-        <div class="flex w-full max-w-md flex-col items-center gap-4">
+        <div class="flex w-full max-w-sm flex-col items-center gap-4">
             <ErrorState
                 title="Can't continue the sign-in"
                 description={data.outcome.message} />
@@ -61,7 +61,7 @@
         </div>
     {:else}
         {@const outcome = data.outcome}
-        <Card class="flex w-full max-w-md flex-col gap-5">
+        <Card class="flex w-full max-w-sm flex-col gap-5">
             <div class="flex flex-col gap-2">
                 <div
                     class="flex size-10 items-center justify-center rounded-md bg-surface-hover text-text-secondary">
