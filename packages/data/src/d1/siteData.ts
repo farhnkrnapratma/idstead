@@ -155,6 +155,10 @@ export function createD1SiteDataStore(db: D1Like, bucket: ContentBucket): SiteDa
             try {
                 await db.batch(
                     [
+                        'DELETE FROM db_oidc_refresh_tokens',
+                        'DELETE FROM db_oidc_codes',
+                        'DELETE FROM db_oidc_grants',
+                        'DELETE FROM db_oidc_clients',
                         'DELETE FROM db_admin_notifications',
                         'DELETE FROM db_feedback_operations',
                         'DELETE FROM db_feedback_events',

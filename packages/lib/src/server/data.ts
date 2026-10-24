@@ -11,6 +11,8 @@ import {
     type LegalPageWriter,
     type LoginLockoutStore,
     type MaintenanceStore,
+    type OidcAuthStore,
+    type OidcClientStore,
     type OpenPgpKeyStore,
     type PostRenderStore,
     type Repositories,
@@ -36,6 +38,8 @@ import {
     createD1LoginLockoutStore,
     createD1MaintenanceStore,
     createD1NewsletterStore,
+    createD1OidcAuthStore,
+    createD1OidcClientStore,
     createD1OpenPgpKeyStore,
     createD1PostCleanupStore,
     createD1PostOperationStore,
@@ -75,6 +79,8 @@ export interface ServiceStores extends Repositories {
     siteData: SiteDataStore;
     authorWriter: AuthorWriter;
     legalWriter: LegalPageWriter;
+    oidcClients: OidcClientStore;
+    oidcAuth: OidcAuthStore;
 }
 
 export interface DataStores {
@@ -145,7 +151,9 @@ function d1ServiceStores(backend: D1Backend): ServiceStores {
         openPgpKeys: createD1OpenPgpKeyStore(db),
         siteData: createD1SiteDataStore(db, bucket),
         authorWriter: createD1AuthorWriter(db),
-        legalWriter: createD1LegalPageWriter(db)
+        legalWriter: createD1LegalPageWriter(db),
+        oidcClients: createD1OidcClientStore(db),
+        oidcAuth: createD1OidcAuthStore(db)
     };
 }
 
