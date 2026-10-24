@@ -49,6 +49,7 @@
         Layers,
         Share2,
         HeartHandshake,
+        AppWindow,
         Send,
         AtSign,
         Lock,
@@ -119,6 +120,8 @@
     const loadActivityLogWorkspace = () =>
         import('#app/components/admin/ActivityLogWorkspace.svelte');
     const loadAccountSettings = () => import('#app/components/admin/AccountSettings.svelte');
+    const loadIdentityProviderSettings = () =>
+        import('#app/components/admin/IdentityProviderSettings.svelte');
     const loadPostEditor = () => import('#app/components/admin/PostEditor.svelte');
     const loadMarkdownEditor = () => import('@mdrs/editor');
     import { formatBadgeCount } from '@idstead/domain/formatters.ts';
@@ -394,6 +397,7 @@
         'socials',
         'funding',
         'contact',
+        'apps',
         'privacy',
         'security',
         'terms',
@@ -3342,6 +3346,7 @@
         { id: 'socials', label: 'Socials', icon: Share2, section: 'profile' },
         { id: 'funding', label: 'Funding', icon: HeartHandshake, section: 'profile' },
         { id: 'contact', label: 'Contact', icon: AtSign, section: 'profile' },
+        { id: 'apps', label: 'Connected apps', icon: AppWindow, section: 'profile' },
         { id: 'privacy', label: 'Privacy Policy', icon: ShieldUser, section: 'legal' },
         { id: 'security', label: 'Security Policy', icon: Lock, section: 'legal' },
         { id: 'terms', label: 'Terms of Service', icon: ScrollText, section: 'legal' }
@@ -6886,6 +6891,14 @@
                         stickyTopClass="top-12 md:top-0" />
                 {/await}
             </FormSection>
+        {:else if activeAdminTab === 'apps'}
+            {#await loadIdentityProviderSettings()}
+                <LoadingState
+                    variant="spinner"
+                    label="Loading apps..." />
+            {:then { default: IdentityProviderSettings }}
+                <IdentityProviderSettings />
+            {/await}
         {:else if activeAdminTab === 'account'}
             {#await loadAccountSettings()}
                 <LoadingState
