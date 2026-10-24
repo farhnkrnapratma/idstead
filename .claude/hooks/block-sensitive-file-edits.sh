@@ -3,11 +3,14 @@ jq -r '.tool_input.file_path // empty' | {
   read -r f
   [ -z "$f" ] && { echo '{}'; exit 0; }
   base=$(basename "$f")
-  if [ "$base" = "bun.lock" ]; then
-    printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"bun.lock must only change via `bun install`/`bun add`, never a direct edit."}}'
-  elif [ "$base" = ".env" ]; then
-    printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":".env holds live secrets (Supabase service-role key, R2, Sentry, Turnstile). Edit .env.example for structure, or set real values outside Claude Code."}}'
-  else
-    echo '{}'
-  fi
+  deny() {
+    jq -n --arg reason "$1" '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":$reason}}'
+    exit 0
+  }
+  case "$base" in
+    bun.lock) deny "bun.lock must only change through bun install, bun add or bun remove, never a direct edit." ;;
+    .env.example) ;;
+    .env | .env.* | .dev.vars | .dev.vars.*) deny "$base would hold secrets. This repo takes them from Phase (see .claude/rules/phase.md): edit .env.example for the list of keys, and ask the user to set values with phase secrets." ;;
+  esac
+  echo '{}'
 }

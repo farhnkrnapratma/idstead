@@ -8,3 +8,4 @@ docs/**/SHOWCASE.md
 
 templates/legal/*.md
 !templates/legal/README.md
+skills-lock.json

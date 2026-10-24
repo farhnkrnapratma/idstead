@@ -2,41 +2,22 @@
     "mcpServers": {
         "supabase": {
             "type": "http",
-            "url": "https://mcp.supabase.com/mcp?project_ref=vbjerskcgtasmjodabsy&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching%2Cstorage",
-            "serverUrl": "https://mcp.supabase.com/mcp?project_ref=vbjerskcgtasmjodabsy&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching%2Cstorage"
+            "url": "https://mcp.supabase.com/mcp?project_ref=vbjerskcgtasmjodabsy&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching%2Cstorage"
         },
-        "svelte": { "type": "stdio", "command": "bunx", "args": ["-y", "@sveltejs/mcp"] },
-        "sentry": {
-            "type": "http",
-            "url": "https://mcp.sentry.dev/mcp/farhnkrnapratma/idstead",
-            "serverUrl": "https://mcp.sentry.dev/mcp/farhnkrnapratma/idstead"
-        },
-        "resend": {
-            "type": "http",
-            "url": "https://mcp.resend.com/mcp",
-            "serverUrl": "https://mcp.resend.com/mcp"
-        },
+        "svelte": { "type": "stdio", "command": "bunx", "args": ["-y", "@sveltejs/mcp@0.1.27"] },
+        "sentry": { "type": "http", "url": "https://mcp.sentry.dev/mcp/farhnkrnapratma/idstead" },
+        "resend": { "type": "http", "url": "https://mcp.resend.com/mcp" },
         "chrome-devtools": {
             "type": "stdio",
             "command": "bunx",
-            "args": ["chrome-devtools-mcp@latest"]
+            "args": ["-y", "chrome-devtools-mcp@1.12.0"]
         },
-        "playwright": { "command": "bunx", "args": ["@playwright/mcp@latest"] },
+        "playwright": {
+            "type": "stdio",
+            "command": "bunx",
+            "args": ["-y", "@playwright/mcp@0.0.83"]
+        },
         "cloudflare-api": { "type": "http", "url": "https://mcp.cloudflare.com/mcp" },
-        "cloudflare-observability": {
-            "type": "http",
-            "url": "https://observability.mcp.cloudflare.com/mcp",
-            "serverUrl": "https://observability.mcp.cloudflare.com/mcp"
-        },
-        "cloudflare-bindings": {
-            "type": "http",
-            "url": "https://bindings.mcp.cloudflare.com/mcp",
-            "serverUrl": "https://bindings.mcp.cloudflare.com/mcp"
-        },
-        "graphify": {
-            "type": "http",
-            "url": "https://api.graphify.com/mcp",
-            "serverUrl": "https://api.graphify.com/mcp"
-        }
+        "graphify": { "type": "http", "url": "https://api.graphify.com/mcp" }
     }
 }
