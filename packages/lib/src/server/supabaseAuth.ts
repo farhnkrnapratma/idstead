@@ -11,6 +11,7 @@ export interface AdminSession {
     role: string;
     aal: string;
     mfaSatisfied: boolean;
+    authTime: number;
 }
 
 function projectUrl(): string {
@@ -47,6 +48,15 @@ export function safeGetSession(client: AuthClient) {
     };
 }
 
+function latestAuthentication(methods: unknown[]): number {
+    const times = methods.map(method =>
+        typeof (method as { timestamp?: unknown })?.timestamp === 'number' ?
+            (method as { timestamp: number }).timestamp
+        :   0
+    );
+    return Math.max(0, ...times);
+}
+
 async function resolveSession(client: AuthClient): Promise<AdminSession | null> {
     const {
         data: { user },
@@ -69,6 +79,7 @@ async function resolveSession(client: AuthClient): Promise<AdminSession | null> 
         email: user.email ?? '',
         role: (user.app_metadata as { role?: string } | null)?.role ?? '',
         aal: levels.currentLevel ?? '',
-        mfaSatisfied: !requiresAdminMfa(levels)
+        mfaSatisfied: !requiresAdminMfa(levels),
+        authTime: latestAuthentication(levels.currentAuthenticationMethods ?? [])
     };
 }
