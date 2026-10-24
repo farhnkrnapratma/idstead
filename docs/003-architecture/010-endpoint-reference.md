@@ -39,6 +39,7 @@ All routes are `GET`/`HEAD` (`OPTIONS` returns 204), rate-limited to 60 requests
 | `/blog/[slug].md`, `/blog/[slug].txt` | raw post (`textformat` matcher) |
 | `/[legal].md`, `/[legal].txt` | legal pages (`legal` matcher) |
 | `/{icon}.png`, `/favicon.ico`, `/favicon.svg`, `/avatar.{webp,avif}`, `/hero.png` | identity assets, served from the hook |
+| `/avatar/[hash]` | Gravatar-style lookup: `[hash]` is the SHA-256 (64 hex) or MD5 (32 hex) of the trimmed, lowercased profile email. A match serves the smallest stored avatar at least `s`/`size` pixels (default 80, at most 512); anything else, or a profile without its own avatar, answers 404. CORS `*` |
 | `/static/*`, `/fonts/*`, `/logo/*` | proxied to `PUBLIC_CDN_BASE_URL` from the hook |
 | `/atom.xml`, `/sitemap.xml`, `/robots.txt`, `/site.webmanifest`, `/llms.txt` | metadata |
 | `/pgp.asc` | the active OpenPGP public key, armored (404 when none is published) |
