@@ -42,10 +42,7 @@
         "PostToolUse": [
             {
                 "matcher": "Edit|Write",
-                "hooks": [
-                    { "type": "command", "command": "bash .claude/hooks/format-on-write.sh" },
-                    { "type": "command", "command": "bash .claude/hooks/sync-claude-agents-md.sh" }
-                ]
+                "hooks": [{ "type": "command", "command": "bash .claude/hooks/format-on-write.sh" }]
             }
         ],
         "Stop": [

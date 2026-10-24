@@ -11,7 +11,6 @@ const MIGRATION_FILES = new Set([
 ]);
 
 const INSTANCE_FILES = new Set([
-    'AGENTS.md',
     'CLAUDE.md',
     'README.md',
     'SECURITY.md',
