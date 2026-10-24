@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import { AppWindow, Copy, KeyRound, Pencil, Plus, Trash } from '@lucide/svelte';
+    import { AppWindow, Copy, KeyRound, Pencil, Plus, ShieldOff, Trash } from '@lucide/svelte';
     import Button from '@idstead/ui/components/Button.svelte';
     import Card from '@idstead/ui/components/Card.svelte';
     import Checkbox from '@idstead/ui/components/Checkbox.svelte';
@@ -12,6 +12,7 @@
     import FormField from '@idstead/ui/components/FormField.svelte';
     import Input from '@idstead/ui/components/Input.svelte';
     import LoadingState from '@idstead/ui/components/LoadingState.svelte';
+    import RelativeTime from '@idstead/ui/components/RelativeTime.svelte';
     import StatusBanner from '@idstead/ui/components/StatusBanner.svelte';
     import Tag from '@idstead/ui/components/Tag.svelte';
     import Textarea from '@idstead/ui/components/Textarea.svelte';
@@ -27,6 +28,15 @@
         confidential: boolean;
         createdAt: string;
         updatedAt: string;
+    }
+
+    interface OidcGrant {
+        id: string;
+        clientId: string;
+        clientName: string;
+        scopes: string[];
+        createdAt: string;
+        lastUsedAt: string | null;
     }
 
     interface ClientsResponse {
@@ -52,11 +62,20 @@
     let pendingDelete = $state<OidcClient | null>(null);
     let deleting = $state(false);
 
+    let grants = $state<OidcGrant[]>([]);
+    let pendingRevoke = $state<OidcGrant | null>(null);
+    let revoking = $state(false);
+
     async function load() {
         loading = true;
         loadError = '';
         try {
-            data = await adminRequest<ClientsResponse>('oidc/clients');
+            const [clients, access] = await Promise.all([
+                adminRequest<ClientsResponse>('oidc/clients'),
+                adminRequest<{ grants: OidcGrant[] }>('oidc/grants')
+            ]);
+            data = clients;
+            grants = access.grants;
         } catch (error) {
             loadError = error instanceof Error ? error.message : 'Could not load the apps.';
         } finally {
@@ -160,6 +179,29 @@
             deleting = false;
         }
     }
+
+    async function confirmRevoke() {
+        if (!pendingRevoke) return;
+        revoking = true;
+        try {
+            await adminRequest('oidc/grants', { body: { action: 'revoke', id: pendingRevoke.id } });
+            toastStore.success(`${pendingRevoke.clientName} no longer has access.`);
+            pendingRevoke = null;
+            await load();
+        } catch (error) {
+            toastStore.error(error instanceof Error ? error.message : 'Could not revoke access.');
+        } finally {
+            revoking = false;
+        }
+    }
+
+    const grantColumns = [
+        { key: 'clientName', header: 'App', width: '24%' },
+        { key: 'scopes', header: 'Access', width: '30%' },
+        { key: 'createdAt', header: 'Allowed', width: '18%' },
+        { key: 'lastUsedAt', header: 'Last used', width: '18%' },
+        { key: 'actions', header: '', srHeader: 'Actions', align: 'right' as const, width: '10%' }
+    ];
 
     const columns = [
         { key: 'name', header: 'App', width: '28%' },
@@ -271,6 +313,51 @@
                             aria-label={`Delete ${client.name}`}
                             onclick={() => (pendingDelete = client)}>
                             <Trash class="size-3.5" />
+                        </Button>
+                    </div>
+                {/if}
+            {/snippet}
+        </DataTable>
+
+        {#snippet emptyGrants()}
+            <EmptyState
+                icon={ShieldOff}
+                title="No app has access"
+                description="Apps you allow to sign you in appear here." />
+        {/snippet}
+
+        <DataTable
+            title="Apps with access"
+            caption="Apps with access"
+            state={grants.length ? undefined : emptyGrants}
+            columns={grantColumns}
+            data={grants as unknown as Record<string, unknown>[]}>
+            {#snippet cell(row, key)}
+                {@const grant = row as unknown as OidcGrant}
+                {#if key === 'clientName'}
+                    <span class="font-semibold text-text-primary">{grant.clientName}</span>
+                {:else if key === 'scopes'}
+                    <div class="flex flex-wrap gap-1">
+                        {#each grant.scopes as scope (scope)}
+                            <Tag>{scope}</Tag>
+                        {/each}
+                    </div>
+                {:else if key === 'createdAt'}
+                    <RelativeTime date={grant.createdAt} />
+                {:else if key === 'lastUsedAt'}
+                    {#if grant.lastUsedAt}
+                        <RelativeTime date={grant.lastUsedAt} />
+                    {:else}
+                        <span class="text-text-muted">Never</span>
+                    {/if}
+                {:else if key === 'actions'}
+                    <div class="flex justify-end">
+                        <Button
+                            type="ghost"
+                            size="xs"
+                            aria-label={`Revoke access for ${grant.clientName}`}
+                            onclick={() => (pendingRevoke = grant)}>
+                            Revoke
                         </Button>
                     </div>
                 {/if}
@@ -397,3 +484,15 @@
     isLoading={deleting}
     onConfirm={confirmDelete}
     onCancel={() => (pendingDelete = null)} />
+
+<ConfirmationDialog
+    isOpen={pendingRevoke !== null}
+    title="Revoke access"
+    message={pendingRevoke ?
+        `${pendingRevoke.clientName} will have to ask again before it can sign you in, and its tokens stop working.`
+    :   ''}
+    confirmLabel="Revoke access"
+    isDestructive
+    isLoading={revoking}
+    onConfirm={confirmRevoke}
+    onCancel={() => (pendingRevoke = null)} />

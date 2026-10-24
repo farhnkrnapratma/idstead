@@ -1,8 +1,6 @@
 import type { RequestHandler } from './$types';
 import { apiError } from '#lib/server/apiError.ts';
-import { blogAdmin } from '#lib/server/blogPostAuth.ts';
-import { getSupabaseAdminClient } from '#lib/server/supabaseAdmin.ts';
-import { dataStores } from '#lib/server/data.ts';
+import { oidcAdmin } from '#lib/server/oidc/admin.ts';
 import { logActivity } from '#lib/server/activityLog.ts';
 import { ipSalt } from '#lib/server/ipSalt.ts';
 import { oidcSigningKey } from '#lib/server/oidc/keys.ts';
@@ -18,17 +16,10 @@ export const POST: RequestHandler = async ({
     locals,
     getClientAddress
 }) => {
-    const db = getSupabaseAdminClient(platform);
-    if (!db) return apiError(503, 'OIDC_UNAVAILABLE', 'Admin auth is unavailable.');
-    const auth = await blogAdmin(request, url, db);
-    if (auth.status)
-        return apiError(
-            auth.status,
-            auth.code ?? (auth.status === 401 ? 'ADMIN_AUTH_REQUIRED' : 'ADMIN_FORBIDDEN'),
-            auth.message
-        );
-    const { service } = dataStores(platform);
-    if (!service || !(await oidcSigningKey(platform)))
+    const auth = await oidcAdmin(request, url, platform);
+    if (!auth.ok) return auth.response;
+    const { service } = auth;
+    if (!(await oidcSigningKey(platform)))
         return apiError(503, 'OIDC_UNAVAILABLE', 'Sign in with Idstead is not set up.');
 
     let body: { query?: unknown; decision?: unknown };
