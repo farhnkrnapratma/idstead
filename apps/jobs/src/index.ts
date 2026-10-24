@@ -82,6 +82,7 @@ async function cleanup(env: Env) {
         cleanupBlogAssets(service.adminPosts, { env } as App.Platform),
         service.maintenance.pruneStaleSubscriptions(),
         service.maintenance.pruneActivityLog(),
+        service.oidcAuth.prune(),
         cleanupAssets({ env } as App.Platform),
         refreshRenders(env)
     ]);
