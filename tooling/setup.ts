@@ -10,6 +10,7 @@ import {
     type InstanceConfig
 } from '../packages/domain/src/instance.ts';
 import { renderWranglerConfigs } from './configure.ts';
+import { isSigningKey } from './oidc-key.ts';
 import {
     APPS,
     LEGAL_SLUGS,
@@ -151,6 +152,14 @@ async function variables(config: InstanceConfig, keys: WorkerKeys) {
             `Missing: ${missing.join(', ')}. Set them in .env or your secret manager (.env.example lists every key) and run setup again.`
         );
     note('Every required variable is set.');
+    if (!values.OIDC_SIGNING_KEY)
+        note(
+            'OIDC_SIGNING_KEY is not set, so Sign in with Idstead stays off. bun tooling/oidc-key.ts prints a key to store in your secret manager.'
+        );
+    else if (!(await isSigningKey(values.OIDC_SIGNING_KEY)))
+        throw new SetupStop(
+            'OIDC_SIGNING_KEY is not a private P-256 JWK. bun tooling/oidc-key.ts prints one.'
+        );
     return values;
 }
 
