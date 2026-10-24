@@ -5,7 +5,7 @@ import type {
     SubscriberStatus
 } from '../../packages/data/src/index.ts';
 
-export interface SeedSubscriber {
+interface SeedSubscriber {
     email: string;
     status: SubscriberStatus;
     unsubscribeToken: string;
@@ -13,7 +13,7 @@ export interface SeedSubscriber {
     confirmSentAt?: string | null;
 }
 
-export interface SeedBroadcastPost {
+interface SeedBroadcastPost {
     id: string;
     title: string;
     slug: string;
@@ -36,7 +36,7 @@ const token = (char: string) => char.repeat(64);
 const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const MINUTE = 60 * 1000;
 
-export const SUBSCRIBER_SEED: SubscriberSeed = {
+const SUBSCRIBER_SEED: SubscriberSeed = {
     subscribers: [
         { email: 'zed@example.com', status: 'active', unsubscribeToken: token('a') },
         { email: 'amy@example.com', status: 'active', unsubscribeToken: token('b') },

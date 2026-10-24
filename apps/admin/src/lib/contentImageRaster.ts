@@ -15,7 +15,7 @@ function fitCeiling(width: number, height: number) {
     return { width: Math.round(width * scale), height: Math.round(height * scale) };
 }
 
-export async function encodeWebpContentImage(canvas: Pick<OffscreenCanvas, 'convertToBlob'>) {
+async function encodeWebpContentImage(canvas: Pick<OffscreenCanvas, 'convertToBlob'>) {
     for (const quality of CONTENT_IMAGE_QUALITIES) {
         const blob = await canvas.convertToBlob({ type: 'image/webp', quality });
         if (blob.type !== 'image/webp')
@@ -35,7 +35,7 @@ export async function encodeWebpContentImage(canvas: Pick<OffscreenCanvas, 'conv
     );
 }
 
-export async function encodeAvifContentImage(canvas: OffscreenCanvas) {
+async function encodeAvifContentImage(canvas: OffscreenCanvas) {
     const { encode } = await import('@jsquash/avif');
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Image processing is unavailable in this browser.');

@@ -1,4 +1,4 @@
-export type SavedPost = {
+type SavedPost = {
     id: string;
     post_revision: number;
     banner_version: string | null;

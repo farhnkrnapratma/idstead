@@ -42,7 +42,7 @@ export function jsToDefineValue(x: unknown): DefineValue {
     return stringVal(String(x));
 }
 
-export function defineValueToJs(v: DefineValue): unknown {
+function defineValueToJs(v: DefineValue): unknown {
     if (v.type === 'array') return (v.value as DefineValue[]).map(defineValueToJs);
     if (v.type === 'object') {
         const out: Record<string, unknown> = {};

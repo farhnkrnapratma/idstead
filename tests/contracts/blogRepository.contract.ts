@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import type { BlogRepository, CommentRepository, Writers } from '../../packages/data/src/index.ts';
 
-export interface SeedPost {
+interface SeedPost {
     uuid: string;
     publicId: string;
     slug: string;
@@ -16,7 +16,7 @@ export interface SeedPost {
     render?: string;
 }
 
-export interface SeedComment {
+interface SeedComment {
     uuid: string;
     publicId: string;
     postUuid: string;
@@ -43,7 +43,7 @@ const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
 const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const hex = (char: string, prefix = '') => prefix + char.repeat(64 - prefix.length);
 
-export const SEED: ContractSeed = {
+const SEED: ContractSeed = {
     posts: [
         {
             uuid: uuid(1),

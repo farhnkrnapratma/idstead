@@ -39,7 +39,7 @@ export const DEFAULT_MEMORABLE_PASSWORD: MemorablePasswordOptions = {
     numbers: false
 };
 
-export const PASSWORD_SYMBOLS = '!@#$%^&*()-_=+[]{};:,.?';
+const PASSWORD_SYMBOLS = '!@#$%^&*()-_=+[]{};:,.?';
 
 function randomPicker() {
     const values = new Uint32Array(64);

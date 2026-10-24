@@ -59,7 +59,7 @@ const LANGUAGE_RESERVED = new Set(['this', 'api', 'db']);
 
 const EXTRA_RESERVED = new Set(['null', 'undefined', 'NaN', 'Infinity']);
 
-export const RESERVED_WORDS = new Set([...JS_RESERVED, ...LANGUAGE_RESERVED, ...EXTRA_RESERVED]);
+const RESERVED_WORDS = new Set([...JS_RESERVED, ...LANGUAGE_RESERVED, ...EXTRA_RESERVED]);
 
 export function isValidIdentifierName(name: string): boolean {
     return IDENTIFIER_RE.test(name) && !RESERVED_WORDS.has(name);

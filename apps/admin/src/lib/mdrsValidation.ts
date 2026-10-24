@@ -16,7 +16,7 @@ function readMessages(body: unknown): string[] {
     return (details || message).split(/\n| \| /).filter(Boolean);
 }
 
-export async function validateMdrsRemote(markdown: string): Promise<string> {
+async function validateMdrsRemote(markdown: string): Promise<string> {
     if (!markdown.trim()) return '';
     const { data } = await supabase.auth.getSession();
     const accessToken = data.session?.access_token;

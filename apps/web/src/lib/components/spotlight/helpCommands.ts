@@ -40,7 +40,7 @@ import {
 } from '@lucide/svelte';
 import type { HelpCategory } from './types';
 
-export const helpCommandCategories: HelpCategory[] = [
+const helpCommandCategories: HelpCategory[] = [
     {
         id: 'pages',
         label: 'Pages & Sections',

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import type { OidcAuthStore, OidcClientStore } from '../../packages/data/src/index.ts';
 
-export interface OidcClock {
+interface OidcClock {
     advance(ms: number): void;
 }
 

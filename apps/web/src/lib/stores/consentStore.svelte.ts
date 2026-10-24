@@ -2,7 +2,7 @@ import { readStorage } from '@idstead/ui/utils/storageKeys.ts';
 
 export type ConsentStatus = 'granted' | 'denied';
 
-export interface ConsentSignals {
+interface ConsentSignals {
     analytics_storage: ConsentStatus;
     ad_storage: ConsentStatus;
     ad_user_data: ConsentStatus;

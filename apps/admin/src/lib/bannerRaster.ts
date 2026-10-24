@@ -9,7 +9,7 @@ import {
 import { inspectWebp } from '#lib/webp.ts';
 import { isSupportedRasterImage } from './imageFormat';
 
-export async function encodeWebpBanner(canvas: Pick<OffscreenCanvas, 'convertToBlob'>) {
+async function encodeWebpBanner(canvas: Pick<OffscreenCanvas, 'convertToBlob'>) {
     for (const quality of BANNER_QUALITIES) {
         const blob = await canvas.convertToBlob({ type: 'image/webp', quality });
         if (blob.type !== 'image/webp')
@@ -24,7 +24,7 @@ export async function encodeWebpBanner(canvas: Pick<OffscreenCanvas, 'convertToB
     throw new Error('This image cannot fit within 500 KiB at 1280 × 640. Choose a simpler image.');
 }
 
-export async function encodeAvifBanner(canvas: OffscreenCanvas) {
+async function encodeAvifBanner(canvas: OffscreenCanvas) {
     const { encode } = await import('@jsquash/avif');
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Image processing is unavailable in this browser.');

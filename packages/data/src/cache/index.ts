@@ -27,7 +27,7 @@ export interface CachedRepositoryOptions {
 
 const SOURCE_KEY = '$postSource';
 
-export function encodeCached(value: unknown): unknown {
+function encodeCached(value: unknown): unknown {
     if (isPostSource(value)) return { [SOURCE_KEY]: sourceRecord(value) };
     if (Array.isArray(value)) return value.map(encodeCached);
     if (value && typeof value === 'object')
@@ -37,7 +37,7 @@ export function encodeCached(value: unknown): unknown {
     return value;
 }
 
-export function decodeCached(value: unknown): unknown {
+function decodeCached(value: unknown): unknown {
     if (Array.isArray(value)) return value.map(decodeCached);
     if (value && typeof value === 'object') {
         const record = (value as Record<string, unknown>)[SOURCE_KEY];

@@ -12,7 +12,7 @@ export interface D1Like {
     batch<T = D1Row>(statements: D1Statement[]): Promise<Array<{ results: T[] }>>;
 }
 
-export interface ContentObject {
+interface ContentObject {
     text(): Promise<string>;
 }
 

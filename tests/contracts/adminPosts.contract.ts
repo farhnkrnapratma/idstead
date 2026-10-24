@@ -44,7 +44,7 @@ const post = (n: number, fields: Partial<SeedAdminPost>): SeedAdminPost => ({
     ...fields
 });
 
-export const ADMIN_POST_SEED: AdminPostSeed = {
+const ADMIN_POST_SEED: AdminPostSeed = {
     posts: [
         post(1, {
             published: true,
