@@ -83,7 +83,7 @@ API routes authenticate themselves:
 
 | Route | Methods | Guard |
 | --- | --- | --- |
-| `/api/internal/admin/login` | POST | same-origin, lockout, Turnstile (route + Supabase Auth `captchaToken`) |
+| `/api/internal/admin/login` | POST | same-origin, lockout, Turnstile (Supabase Auth `captchaToken`) |
 | `/api/internal/admin/logout` | POST | same-origin |
 | `/api/internal/admin/password` | POST | `blogAdmin` + lockout |
 | `/api/internal/admin/posts` | GET, POST | `blogAdmin` |

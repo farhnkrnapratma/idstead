@@ -12,12 +12,12 @@ const { POST: login } =
 const realFetch = globalThis.fetch;
 const siteverifyTokens: string[] = [];
 
-function stubSiteverify(success: boolean) {
+function stubSiteverify() {
     siteverifyTokens.length = 0;
     globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
         if (String(input).includes('/turnstile/v0/siteverify')) {
             siteverifyTokens.push(new URLSearchParams(String(init?.body)).get('response') ?? '');
-            return Response.json({ success });
+            return Response.json({ success: true });
         }
         return new Response('{}', { status: 503 });
     }) as typeof fetch;
@@ -43,24 +43,19 @@ function loginEvent(body: Record<string, unknown>, signIn: (credentials: unknown
 }
 
 describe('admin login CAPTCHA', () => {
-    test('verifies the route token itself and forwards the second token to Supabase Auth', async () => {
-        stubSiteverify(true);
+    test('forwards the single token to Supabase Auth without spending it on siteverify', async () => {
+        stubSiteverify();
         const calls: unknown[] = [];
         const response = await login(
             loginEvent(
-                {
-                    email: 'admin@example.com',
-                    password: 'wrong',
-                    turnstileToken: 'route-token',
-                    captchaToken: 'supabase-token'
-                },
+                { email: 'admin@example.com', password: 'wrong', captchaToken: 'supabase-token' },
                 credentials => {
                     calls.push(credentials);
                     return { data: { session: null }, error: { code: 'invalid_credentials' } };
                 }
             )
         );
-        expect(siteverifyTokens).toEqual(['route-token']);
+        expect(siteverifyTokens).toEqual([]);
         expect(calls).toEqual([
             {
                 email: 'admin@example.com',
@@ -72,15 +67,10 @@ describe('admin login CAPTCHA', () => {
     });
 
     test('maps a Supabase CAPTCHA rejection to the Turnstile error', async () => {
-        stubSiteverify(true);
+        stubSiteverify();
         const response = await login(
             loginEvent(
-                {
-                    email: 'admin@example.com',
-                    password: 'secret',
-                    turnstileToken: 'route-token',
-                    captchaToken: 'stale-token'
-                },
+                { email: 'admin@example.com', password: 'secret', captchaToken: 'stale-token' },
                 () => ({ data: { session: null }, error: { code: 'captcha_failed' } })
             )
         );
@@ -88,24 +78,17 @@ describe('admin login CAPTCHA', () => {
         expect((await response.json()).code).toBe('ADMIN_LOGIN_TURNSTILE_FAILED');
     });
 
-    test('never reaches Supabase Auth when the route token fails', async () => {
-        stubSiteverify(false);
+    test('never reaches Supabase Auth without a token', async () => {
+        stubSiteverify();
         let called = false;
         const response = await login(
-            loginEvent(
-                {
-                    email: 'admin@example.com',
-                    password: 'secret',
-                    turnstileToken: 'bad-token',
-                    captchaToken: 'supabase-token'
-                },
-                () => {
-                    called = true;
-                    return { data: { session: null }, error: null };
-                }
-            )
+            loginEvent({ email: 'admin@example.com', password: 'secret' }, () => {
+                called = true;
+                return { data: { session: null }, error: null };
+            })
         );
         expect(response.status).toBe(403);
+        expect((await response.json()).code).toBe('ADMIN_LOGIN_TURNSTILE_FAILED');
         expect(called).toBe(false);
     });
 });

@@ -12,7 +12,6 @@
     import {
         turnstileWidget,
         executeTurnstile,
-        executeTurnstileTokens,
         resetTurnstile,
         turnstileSiteKey
     } from '#lib/utils/turnstile.ts';
@@ -203,7 +202,7 @@
         e.preventDefault();
         if (!(await validate())) return;
 
-        const [turnstileToken, captchaToken] = await executeTurnstileTokens(turnstileEl, 2);
+        const captchaToken = await executeTurnstile(turnstileEl);
         if (!captchaToken) {
             resetTurnstile(turnstileEl);
             toastStore.error('Please complete the verification challenge before submitting.');
@@ -216,12 +215,7 @@
             const res = await fetch('/api/internal/admin/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    email: email.trim(),
-                    password: password,
-                    turnstileToken,
-                    captchaToken
-                })
+                body: JSON.stringify({ email: email.trim(), password: password, captchaToken })
             });
 
             const result = await res.json();
@@ -295,7 +289,7 @@
             action: 'admin-login',
             theme: 'auto',
             appearance: 'interaction-only',
-            execution: 'execute'
+            execution: 'render'
         }}>
     </div>
 {/snippet}
