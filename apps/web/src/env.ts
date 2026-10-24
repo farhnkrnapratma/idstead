@@ -3,6 +3,7 @@ import { defineEnvVars } from '@sveltejs/kit/env';
 const optional = (value: string | undefined) => value;
 
 export const variables = defineEnvVars({
+    PUBLIC_ADMIN_URL: { public: true, schema: optional },
     PUBLIC_API_BASE_URL: { public: true, schema: optional },
     PUBLIC_CDN_BASE_URL: { public: true, schema: optional },
     PUBLIC_GA_MEASUREMENT_ID: { public: true, schema: optional },
@@ -17,6 +18,7 @@ export const variables = defineEnvVars({
     DATA_CACHE: { schema: optional },
     GITHUB_PAT: { schema: optional },
     IP_SALT: { schema: optional },
+    OIDC_SIGNING_KEY: { schema: optional },
     RESEND_API_KEY: { schema: optional },
     SUBSCRIBER_FROM_EMAIL: { schema: optional },
     SUPABASE_SERVICE_ROLE_KEY: { schema: optional },
