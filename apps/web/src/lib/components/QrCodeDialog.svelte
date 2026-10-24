@@ -6,6 +6,7 @@
     import Input from '@idstead/ui/components/Input.svelte';
     import LoadingState from '@idstead/ui/components/LoadingState.svelte';
     import Tooltip from '@idstead/ui/components/Tooltip.svelte';
+    import { themeStore } from '@idstead/ui/stores/themeStore.svelte.ts';
     import { toastStore } from '@idstead/ui/stores/toastStore.svelte.ts';
     import { copyText } from '@idstead/ui/utils/fileActions.ts';
     import { renderQrSvg } from '../qrSvg';
@@ -68,10 +69,24 @@
         });
     }
 
-    async function createQrSvg(target: string, avatar: string): Promise<string> {
+    function mutedColor(): string {
+        if (typeof document === 'undefined') return '';
+        return getComputedStyle(document.documentElement)
+            .getPropertyValue('--color-text-muted')
+            .trim();
+    }
+
+    async function createQrSvgs(
+        target: string,
+        avatar: string,
+        color: string
+    ): Promise<{ display: string; image: string }> {
         try {
             const logoDataUrl = await prepareLogoDataUrl(avatar);
-            return renderQrSvg(target, { logoDataUrl });
+            return {
+                display: renderQrSvg(target, { logoDataUrl, color, background: 'none' }),
+                image: renderQrSvg(target, { logoDataUrl })
+            };
         } catch (err) {
             console.error('QR code generation error:', err);
             throw err;
@@ -80,7 +95,10 @@
 
     const qrSvg = $derived.by(() => {
         void attempt;
-        return isOpen && targetUrl ? createQrSvg(targetUrl, resolvedAvatarUrl) : null;
+        void themeStore.isDark;
+        return isOpen && targetUrl ?
+                createQrSvgs(targetUrl, resolvedAvatarUrl, mutedColor())
+            :   null;
     });
 
     function renderPng(svgString: string): Promise<Blob> {
@@ -145,7 +163,7 @@
     <LoadingState
         variant="spinner"
         label="Generating QR code..."
-        class="size-full rounded-md bg-white" />
+        class="size-full" />
 {/snippet}
 
 {#snippet actions(svg: string | null)}
@@ -195,17 +213,17 @@
 <Dialog
     bind:isOpen
     title="Scan QR code"
-    size="sm"
+    size="2xs"
     {onClose}>
-    <div class="flex flex-col items-center gap-4 pt-1 pb-1">
+    <div class="flex flex-col items-center gap-4">
         <div
-            class="relative flex aspect-square w-full items-center justify-center rounded-md border border-border-subtle bg-white p-2">
+            class="relative flex aspect-square w-full items-center justify-center rounded-md border border-border-subtle p-1">
             {#await qrSvg}
                 {@render generating()}
-            {:then svg}
-                {#if svg}
+            {:then qr}
+                {#if qr}
                     <img
-                        src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`}
+                        src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(qr.display)}`}
                         alt={`QR code for ${targetUrl}`}
                         class="size-full select-none"
                         draggable="false" />
@@ -231,8 +249,8 @@
 
         {#await qrSvg}
             {@render actions(null)}
-        {:then svg}
-            {@render actions(svg)}
+        {:then qr}
+            {@render actions(qr?.image ?? null)}
         {:catch}
             {@render actions(null)}
         {/await}

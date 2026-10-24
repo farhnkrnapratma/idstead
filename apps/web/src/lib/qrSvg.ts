@@ -3,12 +3,13 @@ import { encode, QrCodeDataType } from 'uqr';
 export const QR_COLOR = '#000000';
 export const QR_BACKGROUND = '#ffffff';
 
-const QUIET_ZONE = 3;
+const QUIET_ZONE = 2;
 const DOT_RADIUS = 0.44;
 const FINDER_SIZE = 7;
 const MODULE_PX = 16;
 const DATA_URL_PATTERN = /^data:image\/(png|webp|jpeg);base64,[A-Za-z0-9+/]+={0,2}$/;
 const COLOR_PATTERN = /^#[0-9a-f]{6}$/i;
+const BACKGROUND_PATTERN = /^(?:#[0-9a-f]{6}|none)$/i;
 
 export interface QrSvgOptions {
     logoDataUrl?: string;
@@ -60,7 +61,7 @@ function isAlignmentCenter(types: QrCodeDataType[][], data: boolean[][], x: numb
 export function renderQrSvg(text: string, options: QrSvgOptions = {}) {
     const color = COLOR_PATTERN.test(options.color ?? '') ? options.color! : QR_COLOR;
     const background =
-        COLOR_PATTERN.test(options.background ?? '') ? options.background! : QR_BACKGROUND;
+        BACKGROUND_PATTERN.test(options.background ?? '') ? options.background! : QR_BACKGROUND;
     const logo =
         options.logoDataUrl && DATA_URL_PATTERN.test(options.logoDataUrl) ?
             options.logoDataUrl
