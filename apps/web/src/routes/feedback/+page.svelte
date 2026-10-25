@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { cn } from '@idstead/ui/utils/cn.ts';
     import { FieldValidation, requiredText, emailError } from '@idstead/domain/fieldValidation.ts';
     import { publicAvatarUrl, publicBannerOgUrl } from '#lib/siteIdentity.ts';
     import { page } from '$app/state';
@@ -24,13 +25,12 @@
         SkipLink,
         PageMain,
         PageContainer,
-        Badge,
         toastStore
     } from '@idstead/ui';
-    import TopNav from '#app/components/TopNav.svelte';
+    import SiteNav from '#app/components/SiteNav.svelte';
     import FooterSection from '#app/layout/FooterSection.svelte';
     import ConsentNotice from '#app/components/ConsentNotice.svelte';
-    import { Section, StatusBanner } from '@idstead/ui';
+    import { EmptyState, Section } from '@idstead/ui';
     import {
         turnstileWidget,
         executeTurnstile,
@@ -118,6 +118,49 @@
             formValid.url = result.valid;
         }
     });
+    const FEEDBACK_CATEGORIES = [
+        {
+            value: 'Writing error',
+            label: 'Writing errors',
+            icon: PenLine,
+            description: 'Grammatical mistakes, typos, spelling, or poor phrasing.'
+        },
+        {
+            value: 'Technical inaccuracy',
+            label: 'Technical inaccuracies',
+            icon: CodeXml,
+            description:
+                "Code snippets that don't compile, wrong command usages, or faulty explanation logic."
+        },
+        {
+            value: 'Outdated information',
+            label: 'Outdated information',
+            icon: ClockFading,
+            description:
+                'Deprecated package API calls, tools that are no longer active, or outdated tutorial steps.'
+        },
+        {
+            value: 'Broken link',
+            label: 'Broken links',
+            icon: Link2Off,
+            description: '404 links, invalid references, or missing static download files.'
+        },
+        {
+            value: 'Website issue',
+            label: 'Website issues',
+            icon: Bug,
+            description:
+                'UI layout bugs, visual display mistakes, broken styling, or slow loading times.'
+        },
+        {
+            value: 'Other issue',
+            label: 'Other issues',
+            icon: CircleQuestionMark,
+            description:
+                'General inquiries, suggestions, content ideas, or feedback outside listed categories.'
+        }
+    ];
+
     function selectCategory(categoryTitle: string) {
         const prefix = `[${categoryTitle}] `;
         if (!formMessage.startsWith('[')) {
@@ -261,173 +304,76 @@
 
 <SkipLink />
 
-<TopNav
-    ariaLabel="Feedback page navigation"
-    backHref="/"
-    backLabel="Home"
-    projects={pageProjects} />
+<SiteNav projects={pageProjects} />
 
-<PageMain>
+<PageMain variant="site">
     <Section
         spacing="none"
-        class="relative z-10 pt-5 pb-6 md:pt-8 md:pb-8">
+        class={cn(
+            'relative z-10 pt-5 pb-6 md:pt-8 md:pb-8',
+            !contactEmail && 'flex flex-1 flex-col justify-center'
+        )}>
         <PageContainer
             width="standard"
             class="flex flex-col gap-8">
-            <div
-                class="pointer-events-none absolute top-16.5 left-[50%] z-0 h-80 w-[320px] translate-x-[-50%] rounded-full bg-accent/10 blur-[80px]">
-            </div>
-
-            <div class="relative z-10 flex flex-col items-start text-left select-none">
-                <Badge
-                    variant="accent"
-                    size="sm"
-                    class="mb-3">
-                    <MessageSquareWarning class="size-3" />
-                    Feedback & Reports
-                </Badge>
-                <h1 class="type-page-title md:text-4xl">Your feedback matters</h1>
-                <p class="mt-4 max-w-2xl text-base leading-relaxed text-fg-secondary">
-                    Your valuable feedback helps improve the quality of articles and ensures the
-                    website's technical systems run reliably. Please let me know if you spot any
-                    issues.
-                </p>
-            </div>
-
-            <Card
-                variant="glass"
-                class="relative z-10 p-5 select-none">
-                <div class="flex flex-col gap-3.5">
-                    <div class="flex flex-col">
-                        <h2 class="type-card-title">Feedback categories</h2>
-                        <p class="mt-0.5 text-xs text-fg-muted">
-                            Click any category to quickly populate your message below.
-                        </p>
-                    </div>
-
-                    <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                        <button
-                            type="button"
-                            onclick={() => selectCategory('Writing error')}
-                            use:shortcut={{ combo: '1', label: 'Writing errors' }}
-                            class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-line-subtle/70 bg-surface/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface/80 focus-visible:border-accent focus-visible:outline-none"
-                            aria-label="Select category: Writing errors">
-                            <div class="flex items-center gap-2">
-                                <PenLine
-                                    class="size-4 shrink-0 text-fg-accent transition-transform group-hover:scale-105" />
-                                <span
-                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-fg transition-colors group-hover:text-fg-accent">
-                                    Writing errors
-                                </span>
-                            </div>
-                            <p class="type-body text-fg-secondary">
-                                Grammatical mistakes, typos, spelling, or poor phrasing.
-                            </p>
-                        </button>
-
-                        <button
-                            type="button"
-                            onclick={() => selectCategory('Technical inaccuracy')}
-                            use:shortcut={{ combo: '2', label: 'Technical inaccuracies' }}
-                            class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-line-subtle/70 bg-surface/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface/80 focus-visible:border-accent focus-visible:outline-none"
-                            aria-label="Select category: Technical inaccuracies">
-                            <div class="flex items-center gap-2">
-                                <CodeXml
-                                    class="size-4 shrink-0 text-fg-accent transition-transform group-hover:scale-105" />
-                                <span
-                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-fg transition-colors group-hover:text-fg-accent">
-                                    Technical inaccuracies
-                                </span>
-                            </div>
-                            <p class="type-body text-fg-secondary">
-                                Code snippets that don't compile, wrong command usages, or faulty
-                                explanation logic.
-                            </p>
-                        </button>
-
-                        <button
-                            type="button"
-                            onclick={() => selectCategory('Outdated information')}
-                            use:shortcut={{ combo: '3', label: 'Outdated information' }}
-                            class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-line-subtle/70 bg-surface/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface/80 focus-visible:border-accent focus-visible:outline-none"
-                            aria-label="Select category: Outdated information">
-                            <div class="flex items-center gap-2">
-                                <ClockFading
-                                    class="size-4 shrink-0 text-fg-accent transition-transform group-hover:scale-105" />
-                                <span
-                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-fg transition-colors group-hover:text-fg-accent">
-                                    Outdated information
-                                </span>
-                            </div>
-                            <p class="type-body text-fg-secondary">
-                                Deprecated package API calls, tools that are no longer active, or
-                                outdated tutorial steps.
-                            </p>
-                        </button>
-
-                        <button
-                            type="button"
-                            onclick={() => selectCategory('Broken link')}
-                            use:shortcut={{ combo: '4', label: 'Broken links' }}
-                            class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-line-subtle/70 bg-surface/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface/80 focus-visible:border-accent focus-visible:outline-none"
-                            aria-label="Select category: Broken links">
-                            <div class="flex items-center gap-2">
-                                <Link2Off
-                                    class="size-4 shrink-0 text-fg-accent transition-transform group-hover:scale-105" />
-                                <span
-                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-fg transition-colors group-hover:text-fg-accent">
-                                    Broken links
-                                </span>
-                            </div>
-                            <p class="type-body text-fg-secondary">
-                                404 links, invalid references, or missing static download files.
-                            </p>
-                        </button>
-
-                        <button
-                            type="button"
-                            onclick={() => selectCategory('Website issue')}
-                            use:shortcut={{ combo: '5', label: 'Website issues' }}
-                            class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-line-subtle/70 bg-surface/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface/80 focus-visible:border-accent focus-visible:outline-none"
-                            aria-label="Select category: Website issues">
-                            <div class="flex items-center gap-2">
-                                <Bug
-                                    class="size-4 shrink-0 text-fg-accent transition-transform group-hover:scale-105" />
-                                <span
-                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-fg transition-colors group-hover:text-fg-accent">
-                                    Website issues
-                                </span>
-                            </div>
-                            <p class="type-body text-fg-secondary">
-                                UI layout bugs, visual display mistakes, broken styling, or slow
-                                loading times.
-                            </p>
-                        </button>
-
-                        <button
-                            type="button"
-                            onclick={() => selectCategory('Other issue')}
-                            use:shortcut={{ combo: '6', label: 'Other issues' }}
-                            class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-line-subtle/70 bg-surface/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface/80 focus-visible:border-accent focus-visible:outline-none"
-                            aria-label="Select category: Other issues">
-                            <div class="flex items-center gap-2">
-                                <CircleQuestionMark
-                                    class="size-4 shrink-0 text-fg-accent transition-transform group-hover:scale-105" />
-                                <span
-                                    class="translate-y-[0.5px] text-sm leading-none font-semibold text-fg transition-colors group-hover:text-fg-accent">
-                                    Other issues
-                                </span>
-                            </div>
-                            <p class="type-body text-fg-secondary">
-                                General inquiries, suggestions, content ideas, or feedback outside
-                                listed categories.
-                            </p>
-                        </button>
-                    </div>
+            {#if !contactEmail}
+                <EmptyState
+                    icon={MessageSquareWarning}
+                    title="Feedback is not available yet"
+                    description="This site cannot receive feedback until its owner adds a contact email." />
+            {:else}
+                <div
+                    class="pointer-events-none absolute top-16.5 left-[50%] z-0 h-80 w-[320px] translate-x-[-50%] rounded-full bg-accent/10 blur-[80px]">
                 </div>
-            </Card>
 
-            {#if contactEmail}
+                <div class="relative z-10 flex flex-col items-start text-left select-none">
+                    <h1 class="type-page-title md:text-4xl">Your feedback matters</h1>
+                    <p class="mt-4 max-w-2xl text-base leading-relaxed text-fg-secondary">
+                        Your valuable feedback helps improve the quality of articles and ensures the
+                        website's technical systems run reliably. Please let me know if you spot any
+                        issues.
+                    </p>
+                </div>
+
+                <Card
+                    variant="glass"
+                    class="relative z-10 p-5 select-none">
+                    <div class="flex flex-col gap-3.5">
+                        <div class="flex flex-col">
+                            <h2 class="type-card-title">Feedback categories</h2>
+                            <p class="mt-0.5 text-xs text-fg-muted">
+                                Click any category to quickly populate your message below.
+                            </p>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                            {#each FEEDBACK_CATEGORIES as category, index (category.value)}
+                                <button
+                                    type="button"
+                                    onclick={() => selectCategory(category.value)}
+                                    use:shortcut={{
+                                        combo: String(index + 1),
+                                        label: category.label
+                                    }}
+                                    class="group relative flex cursor-pointer flex-col gap-1.5 rounded-md border border-line-subtle/70 bg-surface/40 p-3.5 text-left transition-all hover:border-accent/40 hover:bg-surface/80 focus-visible:border-accent focus-visible:outline-none"
+                                    aria-label="Select category: {category.label}">
+                                    <div class="flex items-center gap-2">
+                                        <category.icon
+                                            class="size-4 shrink-0 text-fg-accent transition-transform group-hover:scale-105" />
+                                        <span
+                                            class="translate-y-[0.5px] text-sm leading-none font-semibold text-fg transition-colors group-hover:text-fg-accent">
+                                            {category.label}
+                                        </span>
+                                    </div>
+                                    <p class="type-body text-fg-secondary">
+                                        {category.description}
+                                    </p>
+                                </button>
+                            {/each}
+                        </div>
+                    </div>
+                </Card>
+
                 <form
                     novalidate
                     onsubmit={handleSubmit}
@@ -559,7 +505,12 @@
 
                     {#if turnstileSiteKey}
                         <div
-                            bind:this={turnstileFeedbackEl}
+                            {@attach node => {
+                                turnstileFeedbackEl = node;
+                                return () => {
+                                    turnstileFeedbackEl = null;
+                                };
+                            }}
                             class="turnstile-widget select-none"
                             use:turnstileWidget={{
                                 sitekey: turnstileSiteKey,
@@ -601,10 +552,6 @@
                         </Button>
                     </div>
                 </form>
-            {:else}
-                <StatusBanner
-                    title="Feedback is not available yet"
-                    message="This site cannot receive feedback until its owner adds a contact email." />
             {/if}
         </PageContainer>
     </Section>
