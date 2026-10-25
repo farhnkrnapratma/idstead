@@ -1,7 +1,6 @@
 <script lang="ts">
     import type { Snippet } from 'svelte';
     import {
-        FolderArchive,
         GitFork,
         Pin,
         RotateCcwClock,
@@ -10,10 +9,10 @@
         SquareArrowOutUpRight,
         Star
     } from '@lucide/svelte';
-    import ImageWithSkeleton from '@idstead/ui/components/ImageWithSkeleton.svelte';
     import Tag from '@idstead/ui/components/Tag.svelte';
     import { shortcut } from '@idstead/ui/utils/shortcut.svelte.ts';
     import { pluralize } from '@idstead/domain/pluralize.ts';
+    import { formatExactDateTime, formatRelativeTime } from '@idstead/domain/formatters.ts';
     import type { Project } from '@idstead/domain/types.ts';
 
     const MAX_PILLS = 5;
@@ -40,12 +39,9 @@
         onLanguageSelect
     }: Props = $props();
 
-    let bannerFailed = $state(false);
     let showAllTags = $state(false);
 
-    const repoBannerUrl = $derived(
-        project.openGraphImageUrl || `https://opengraph.githubassets.com/1/${project.fullName}`
-    );
+    const updated = $derived(formatRelativeTime(project.pushedAt));
     const language = $derived(project.lang ?? '');
     const tags = $derived(project.tags ?? []);
     const tagLimit = $derived(MAX_PILLS - (language ? 1 : 0));
@@ -53,25 +49,7 @@
     const hiddenTagCount = $derived(tags.length - visibleTags.length);
 </script>
 
-<div
-    class="relative flex h-full flex-col rounded-md glass-card border-0! text-left sm:grid sm:grid-cols-[minmax(0,13rem)_minmax(0,1fr)] dark:border-0!">
-    <div
-        class="relative aspect-2/1 w-full shrink-0 overflow-hidden rounded-t-md sm:m-4 sm:mr-0 sm:w-auto sm:self-start sm:rounded-sm">
-        {#if !bannerFailed}
-            <ImageWithSkeleton
-                src={repoBannerUrl}
-                alt=""
-                rounded=""
-                onerror={() => (bannerFailed = true)}
-                class="h-full w-full object-cover" />
-        {:else}
-            <div
-                class="relative flex h-full w-full items-center justify-center overflow-hidden bg-linear-to-br from-accent/15 to-accent/5 select-none">
-                <FolderArchive class="size-8 text-fg-muted" />
-            </div>
-        {/if}
-    </div>
-
+<div class="relative flex h-full flex-col rounded-md glass-card border-0! text-left dark:border-0!">
     <div class="flex min-w-0 flex-1 flex-col gap-1.5 p-3 font-sans sm:gap-2 sm:p-4">
         <svelte:element
             this={headingTag}
@@ -112,30 +90,38 @@
         </svelte:element>
 
         <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-fg-secondary">
-            <span class="inline-flex items-center gap-1 leading-none whitespace-nowrap">
-                <Star
-                    aria-hidden="true"
-                    class="size-3.5 shrink-0 text-fg-muted"
-                    strokeWidth={1.75}
-                    absoluteStrokeWidth={true} />
-                <span>{pluralize(project.stars, 'star')}</span>
-            </span>
-            <span class="hidden items-center gap-1 leading-none whitespace-nowrap sm:inline-flex">
-                <GitFork
-                    aria-hidden="true"
-                    class="size-3.5 shrink-0 text-fg-muted"
-                    strokeWidth={1.75}
-                    absoluteStrokeWidth={true} />
-                <span>{pluralize(project.forks, 'fork')}</span>
-            </span>
-            <span class="hidden items-center gap-1 leading-none whitespace-nowrap sm:inline-flex">
-                <RotateCcwClock
-                    aria-hidden="true"
-                    class="size-3.5 shrink-0 text-fg-muted"
-                    strokeWidth={1.75}
-                    absoluteStrokeWidth={true} />
-                <span>{pluralize(project.commits, 'commit')}</span>
-            </span>
+            {#if project.stars > 0}
+                <span class="inline-flex items-center gap-1 leading-none whitespace-nowrap">
+                    <Star
+                        aria-hidden="true"
+                        class="size-3.5 shrink-0 text-fg-muted"
+                        strokeWidth={1.75}
+                        absoluteStrokeWidth={true} />
+                    <span>{pluralize(project.stars, 'star')}</span>
+                </span>
+            {/if}
+            {#if project.forks > 0}
+                <span class="inline-flex items-center gap-1 leading-none whitespace-nowrap">
+                    <GitFork
+                        aria-hidden="true"
+                        class="size-3.5 shrink-0 text-fg-muted"
+                        strokeWidth={1.75}
+                        absoluteStrokeWidth={true} />
+                    <span>{pluralize(project.forks, 'fork')}</span>
+                </span>
+            {/if}
+            {#if updated}
+                <span
+                    class="inline-flex items-center gap-1 leading-none whitespace-nowrap"
+                    title={formatExactDateTime(project.pushedAt)}>
+                    <RotateCcwClock
+                        aria-hidden="true"
+                        class="size-3.5 shrink-0 text-fg-muted"
+                        strokeWidth={1.75}
+                        absoluteStrokeWidth={true} />
+                    <span>Updated {updated}</span>
+                </span>
+            {/if}
             {#if project.licenseName}
                 <span class="inline-flex items-center gap-1 leading-none whitespace-nowrap">
                     <Scale

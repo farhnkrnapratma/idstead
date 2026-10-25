@@ -212,17 +212,17 @@
                                     class="relative flex h-6.5 w-7 shrink-0 cursor-pointer items-center justify-center">
                                     <ToggleLeft
                                         class={cn(
-                                            'absolute size-6.5 transition-[transform,opacity] duration-150',
-                                            checked ? 'scale-75 opacity-0' : (
-                                                'scale-100 text-fg-muted opacity-100 group-hover/item:text-fg-secondary'
+                                            'absolute size-6.5 transition-transform duration-150',
+                                            checked ? 'invisible scale-75' : (
+                                                'visible scale-100 text-fg-muted group-hover/item:text-fg-secondary'
                                             )
                                         )} />
                                     <ToggleRight
                                         class={cn(
-                                            'absolute size-6.5 transition-[transform,opacity] duration-150',
+                                            'absolute size-6.5 transition-transform duration-150',
                                             checked ?
-                                                'scale-100 text-fg-accent opacity-100'
-                                            :   'scale-75 opacity-0'
+                                                'visible scale-100 text-fg-accent'
+                                            :   'invisible scale-75'
                                         )} />
                                 </button>
                             </div>

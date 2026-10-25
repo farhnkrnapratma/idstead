@@ -1440,10 +1440,8 @@
                                             <CornerDownLeft
                                                 strokeWidth={1.5}
                                                 class={cn(
-                                                    'size-3 text-fg-accent transition-opacity group-hover:opacity-100',
-                                                    activeIndex === idx ? 'opacity-100' : (
-                                                        'opacity-0'
-                                                    )
+                                                    'size-3 text-fg-accent group-hover:visible',
+                                                    activeIndex === idx ? 'visible' : 'invisible'
                                                 )} />
                                         </span>
                                     </div>
@@ -1651,9 +1649,10 @@
                                                 <CornerDownLeft
                                                     strokeWidth={1.5}
                                                     class={cn(
-                                                        'size-3 text-fg-accent transition-opacity group-hover:opacity-100',
-                                                        activeIndex === globalIdx ? 'opacity-100'
-                                                        :   'opacity-0'
+                                                        'size-3 text-fg-accent group-hover:visible',
+                                                        activeIndex === globalIdx ? 'visible' : (
+                                                            'invisible'
+                                                        )
                                                     )} />
                                             </span>
                                         </div>

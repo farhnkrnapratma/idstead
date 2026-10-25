@@ -3792,7 +3792,7 @@
                                     {:else}
                                         <div
                                             class="relative flex h-full w-full items-center justify-center overflow-hidden bg-linear-to-br from-accent/15 to-accent/5 select-none">
-                                            <ImageIcon class="size-10 text-accent/50" />
+                                            <ImageIcon class="size-10 text-fg-muted" />
                                         </div>
                                     {/if}
                                 </div>

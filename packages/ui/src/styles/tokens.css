@@ -40,6 +40,7 @@
     --color-accent-active: var(--color-blue-700);
     --color-accent-strong: var(--color-blue-700);
     --color-accent-subtle: color-mix(in oklab, var(--color-blue-500) 8%, transparent);
+    --color-accent-tint: color-mix(in oklab, var(--color-accent) 15%, var(--color-surface));
     --color-focus-ring: var(--color-blue-700);
     --color-highlight: var(--color-amber-400);
 

@@ -144,7 +144,7 @@
                 class="absolute inset-0 rounded-full border border-dashed border-line-subtle/80 bg-surface/40">
             </div>
             <MessageSquareQuote
-                class="absolute top-4 left-4 size-9 fill-accent/15 text-fg-accent"
+                class="absolute top-4 left-4 size-9 fill-accent-tint text-fg-accent"
                 strokeWidth={1.5} />
             <AtSign
                 class="absolute right-3 bottom-3 size-8 rounded-full bg-surface p-1 text-success"

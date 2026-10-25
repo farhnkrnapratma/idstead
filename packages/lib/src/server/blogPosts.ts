@@ -6,7 +6,6 @@ import { decodeHtmlEntities } from '@mdrs/core';
 import { publicRepositories } from './repositories';
 
 export interface BlogPost extends PublicPostFields {
-    bannerPublicUrl?: string | null;
     read_time?: string;
     comment_count?: number;
     views_count?: number;
@@ -36,7 +35,6 @@ export async function loadPublishedPosts(
                 const fields = publicPostFields(post);
                 return {
                     ...fields,
-                    bannerPublicUrl: post.banner_url,
                     tags: fields.tags.map(decodeHtmlEntities),
                     read_time: await postReadTime(blog, post),
                     comment_count: post.comment_count,
